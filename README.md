@@ -14,4 +14,15 @@ This project uses [`lerna`](https://github.com/lerna/lerna) as a utility to impo
 
 ```
 npx lerna init
+cd .. && mkdir scratch-fresh && cd scratch-latest
+git clone https://github.com/LLK/scratch-vm.git
+git clone https://github.com/LLK/scratch-gui.git
+git clone https://github.com/LLK/scratch-render.git
+git clone https://github.com/LLK/scratch-blocks.git
+cd prg-scratch-extension-boilerplate
+npx lerna import ../scratch-latest/scratch-vm --preserve-commit
+npx lerna import ../scratch-latest/scratch-gui --preserve-commit
+npx lerna import ../scratch-latest/scratch-render --preserve-commit
+npx lerna import ../scratch-latest/scratch-blocks --preserve-commit
 ```
+
