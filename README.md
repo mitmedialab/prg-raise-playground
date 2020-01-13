@@ -20,7 +20,7 @@ It is structured as a monorepo, where the Scratch components you'll typically wa
 ## ⚡ Quick Setup️
 
 ```shell script
-git clone git@github.com:mitmedialab/prg-scratch-extension-boilerplate.git
+git clone git@github.com:mitmedialab/prg-extension-boilerplate.git
 # Cloning the full history (300mb) takes about 20 seconds on fast internet. Include -–depth 1 for a 4 second checkout
 npx lerna bootstrap --force-local
 # This will symlink the packages together to allow for seamless local development, and installs dependencies for each package
@@ -71,7 +71,7 @@ git clone https://github.com/LLK/scratch-vm.git
 git clone https://github.com/LLK/scratch-gui.git
 git clone https://github.com/LLK/scratch-render.git
 git clone https://github.com/LLK/scratch-blocks.git
-cd prg-scratch-extension-boilerplate
+cd prg-extension-boilerplate
 npx lerna import ../scratch-latest/scratch-vm --preserve-commit --flatten 
 npx lerna import ../scratch-latest/scratch-gui --preserve-commit --flatten 
 npx lerna import ../scratch-latest/scratch-render --preserve-commit --flatten 
