@@ -60,6 +60,8 @@ sh: webpack: command not found
 
 ## 💡 How this was made:
 
+### Sub-packages
+
 This project uses [`lerna`](https://github.com/lerna/lerna) as a utility to import npm packages with their git history (relatively) intact. That way stuff like `git log` and `git blame` will continue to provide a bit of insight into why code in the repository is the way it is! 
 
 ```shell script
@@ -75,6 +77,12 @@ npx lerna import ../scratch-latest/scratch-gui --preserve-commit --flatten
 npx lerna import ../scratch-latest/scratch-render --preserve-commit --flatten 
 npx lerna import ../scratch-latest/scratch-blocks --preserve-commit --flatten 
 ```
+
+### Deployment
+
+We use GitHub Actions to build the combined scratch-gui using `npm`, and [actions-gh-pages](https://github.com/peaceiris/actions-gh-pages) to deploy to GitHub Pages.
+
+Note that there is a step of adding an access token to the repository due to a bug with GitHub Actions. [Follow the steps here](https://github.com/marketplace/actions/deploy-to-github-pages#configuration-) to add an access token to your repository.
 
 ## 😸 Caveats
 

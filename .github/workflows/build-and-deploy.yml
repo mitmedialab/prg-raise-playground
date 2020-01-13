@@ -26,3 +26,11 @@ jobs:
         npm test
       env:
         CI: true
+
+    - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@releases/v3
+        with:
+          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          BRANCH: gh-pages
+          FOLDER: 'packages/scratch-gui/build'
+          TARGET_FOLDER: ${GITHUB_REF##*/}
