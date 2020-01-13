@@ -1,14 +1,14 @@
-# Scratch-like Coding Environment Boilerplate
+# ✨ Drag-and-Drop Coding Environment Boilerplate
 
-This is intended to be a repository that makes it simple to play with and deploy a Scratch-3.0-like GUI! It may be handy for:
+This is intended to be a repository that makes it simple to play with and deploy a GUI based on Scratch-3.0 components! It may be handy for:
 
 - Developing prototype Scratch 3.0 extensions that don't fit within the current extension limitations
-- Experimenting with tweaks to the Scratch GUI
+- Experimenting with tweaks to the Scratch 3.0 GUI
 - Quickly deploying a fork of the Scratch 3.0 GUI
 
 It is not so great for:
 
-- Pushing small changes back to upstream Scratch often (it's possible, and this project retains the git history of the constituent sub-projects, but there's an extra messy step to get your work together for a pull request)
+- Pushing small changes back to upstream Scratch components often (it's possible, and this project retains the git history of the constituent sub-projects, but there's an extra messy step to get your work together for a pull request)
 
 It is structured as a monorepo, where the Scratch components you'll typically want to modify live within the repository so you can edit them all at once, manage their versions all in one place, and perform a simple static site deploy of the GUI with the synced dependencies.
 
@@ -17,7 +17,7 @@ It is structured as a monorepo, where the Scratch components you'll typically wa
 - [packages/scratch-render](packages/scratch-render)
 - [packages/scratch-blocks](packages/scratch-blocks)
 
-## Quick Setup!
+## ⚡ Quick Setup️
 
 ```shell script
 git clone git@github.com:mitmedialab/prg-scratch-extension-boilerplate.git
@@ -42,7 +42,7 @@ Now you can make changes, and they will auto-build from the scratch-gui watcher 
     # And re-start scratch-gui's npm start
     ```
 
-### Troubleshooting
+### 🤔 Troubleshooting
 
 #### If you see `sh: webpack: command not found`:
 
@@ -54,7 +54,7 @@ sh: webpack: command not found
 
 **Solution**: This may mean you have a half-installed node_modules version of webpack. Try starting fresh!
 
-## How this was made:
+## 💡 How this was made:
 
 This project uses [`lerna`](https://github.com/lerna/lerna) as a utility to import npm packages with their git history (relatively) intact. That way stuff like `git log` and `git blame` will continue to provide a bit of insight into why code in the repository is the way it is! 
 
@@ -72,7 +72,7 @@ npx lerna import ../scratch-latest/scratch-render --preserve-commit --flatten
 npx lerna import ../scratch-latest/scratch-blocks --preserve-commit --flatten 
 ```
 
-## Caveats 😸
+## 😸 Caveats
 
 Eventually, work on Scratch Extensions may supersede this project's utility! This repo is most convenient for projects that can't accomplish what they need to within the Extensions framework.
 
