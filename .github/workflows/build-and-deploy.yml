@@ -33,3 +33,4 @@ jobs:
         BRANCH: gh-pages
         FOLDER: 'packages/scratch-gui/build'
         TARGET_FOLDER: ${{ GITHUB_REF##*/ }}
+#        https://stackoverflow.com/questions/58033366/how-to-get-current-branch-within-github-actions
