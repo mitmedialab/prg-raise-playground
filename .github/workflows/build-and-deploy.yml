@@ -26,11 +26,14 @@ jobs:
         npm test
       env:
         CI: true
+    - name: Extract branch name
+      shell: bash
+      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+      id: extract_branch
     - name: Deploy
       uses: JamesIves/github-pages-deploy-action@3.1.3
       with:
         ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
         BRANCH: gh-pages
         FOLDER: 'packages/scratch-gui/build'
-        TARGET_FOLDER: ${{ GITHUB_REF##*/ }}
-#        https://stackoverflow.com/questions/58033366/how-to-get-current-branch-within-github-actions
+        TARGET_FOLDER: ${{ steps.extract_branch.outputs.branch }}
