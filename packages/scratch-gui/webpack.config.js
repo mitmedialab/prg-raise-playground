@@ -20,7 +20,8 @@ const base = {
     devServer: {
         contentBase: path.resolve(__dirname, 'build'),
         host: '0.0.0.0',
-        port: process.env.PORT || 8601
+        port: process.env.PORT || 8601,
+        disableHostCheck: true, // fixes viewing over ssh tunneled ports, e.g. with gitpod.io
     },
     output: {
         library: 'GUI',
