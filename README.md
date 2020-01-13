@@ -41,6 +41,10 @@ Now you can make changes, and they will auto-build from the scratch-gui watcher 
     npm run prepublish
     # And re-start scratch-gui's npm start
     ```
+  
+Alternatively, use GitPod!
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/mitmedialab/prg-extension-boilerplate)
 
 ### 🤔 Troubleshooting
 
