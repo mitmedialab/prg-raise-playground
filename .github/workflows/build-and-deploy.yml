@@ -32,4 +32,4 @@ jobs:
         ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
         BRANCH: gh-pages
         FOLDER: 'packages/scratch-gui/build'
-        TARGET_FOLDER: ${GITHUB_REF##*/}
+        TARGET_FOLDER: ${{ GITHUB_REF##*/ }}
