@@ -56,6 +56,8 @@ sh: webpack: command not found
 
 ## How this was made:
 
+This project uses [`lerna`](https://github.com/lerna/lerna) as a utility to import npm packages with their git history (relatively) intact. That way stuff like `git log` and `git blame` will continue to provide a bit of insight into why code in the repository is the way it is! 
+
 ```shell script
 npx lerna init
 cd .. && mkdir scratch-fresh && cd scratch-latest
@@ -69,3 +71,9 @@ npx lerna import ../scratch-latest/scratch-gui --preserve-commit --flatten
 npx lerna import ../scratch-latest/scratch-render --preserve-commit --flatten 
 npx lerna import ../scratch-latest/scratch-blocks --preserve-commit --flatten 
 ```
+
+## Caveats 😸
+
+Eventually, work on Scratch Extensions may supersede this project's utility! This repo is most convenient for projects that can't accomplish what they need to within the Extensions framework.
+
+Note the [`LICENSE`](packages/scratch-gui/LICENSE)s and especially [`TRADEMARK`](packages/scratch-gui/TRADEMARK)s for each Scratch component project carefully — e.g., you may not use the Scratch name, logo, cat, etc. in derivative projects without permission.  
