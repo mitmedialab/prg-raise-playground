@@ -1,6 +1,6 @@
 ports:
   - port: 8601
-    onOpen: preview
+    onOpen: open-preview
 tasks:
   - init: >
       nvm install &&
