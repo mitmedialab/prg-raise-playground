@@ -20,9 +20,9 @@ git clone https://github.com/LLK/scratch-gui.git
 git clone https://github.com/LLK/scratch-render.git
 git clone https://github.com/LLK/scratch-blocks.git
 cd prg-scratch-extension-boilerplate
-npx lerna import ../scratch-latest/scratch-vm --preserve-commit
-npx lerna import ../scratch-latest/scratch-gui --preserve-commit
-npx lerna import ../scratch-latest/scratch-render --preserve-commit
-npx lerna import ../scratch-latest/scratch-blocks --preserve-commit
+npx lerna import ../scratch-latest/scratch-vm --preserve-commit --flatten 
+npx lerna import ../scratch-latest/scratch-gui --preserve-commit --flatten 
+npx lerna import ../scratch-latest/scratch-render --preserve-commit --flatten 
+npx lerna import ../scratch-latest/scratch-blocks --preserve-commit --flatten 
 ```
 
