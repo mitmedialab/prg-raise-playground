@@ -9,6 +9,12 @@ const Video = require('../../io/video');
 
 const VideoMotion = require('./library');
 
+// import * as tf from '@tensorflow/tfjs';
+// import * as tmImage from '@teachablemachine/image';
+
+const tf = require('@tensorflow/tfjs');
+const tmImage = require('@teachablemachine/image');
+
 /**
  * Icon svg to be displayed in the blocks category menu, encoded as a data URI.
  * @type {string}
@@ -437,6 +443,48 @@ class Scratch3VideoSensingBlocks {
                     }
                 },
                 {
+                    // @todo this hat needs to be set itself to restart existing
+                    // threads like Scratch 2's behaviour.
+                    opcode: 'whenModelMatches',
+                    text: formatMessage({
+                        id: 'teachableMachine.whenModelMatches',
+                        default: 'when model [MODEL_URL] matches [CLASS_NAME]',
+                        description: 'Event that triggers when the provided model matches [CLASS_NAME]'
+                    }),
+                    blockType: BlockType.HAT,
+                    arguments: {
+                        MODEL_URL: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'https://teachablemachine.withgoogle.com/models/pwY3KJ3E/'
+                        },
+                        CLASS_NAME: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'Class 1'
+                        }
+                    },
+                },
+
+                // {
+                //     opcode: 'playDrumForBeats',
+                //     blockType: BlockType.COMMAND,
+                //     text: formatMessage({
+                //         id: 'music.playDrumForBeats',
+                //         default: 'play drum [DRUM] for [BEATS] beats',
+                //         description: 'play drum sample for a number of beats'
+                //     }),
+                //     arguments: {
+                //         DRUM: {
+                //             type: ArgumentType.NUMBER,
+                //             menu: 'DRUM',
+                //             defaultValue: 1
+                //         },
+                //         BEATS: {
+                //             type: ArgumentType.NUMBER,
+                //             defaultValue: 0.25
+                //         }
+                //     }
+                // }
+                {
                     opcode: 'videoOn',
                     blockType: BlockType.REPORTER,
                     text: formatMessage({
@@ -551,6 +599,75 @@ class Scratch3VideoSensingBlocks {
         this.detect.analyzeFrame();
         const state = this._analyzeLocalMotion(util.target);
         return state.motionAmount > Number(args.REFERENCE);
+    }
+
+    /**
+     * A scratch hat block edge handle that downloads a teachable machine model and determines whether the
+     * current video frame matches the model class.
+     * @param {object} args - the block arguments
+     * @param {BlockUtility} util - the block utility
+     * @returns {boolean} true if the model matches
+     *   reference
+     */
+    whenModelMatches (args, util) {
+        let modelUrl = args.MODEL_URL;
+        let className = args.CLASS_NAME;
+
+        return new Promise(async (resolve, reject) => {
+            if (!this.teachableModel) {
+                // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
+                await this.initModel(modelUrl);
+            }
+
+            console.log(modelUrl);
+            console.log(className);
+            await this.predictModel();
+
+            this.detect.analyzeFrame();
+            const state = this._analyzeLocalMotion(util.target);
+            resolve(state.motionAmount > Number(args.REFERENCE));
+        });
+    }
+
+    // Load the image model and setup the webcam
+    async initModel(modelUrl) {
+        const modelURL = modelUrl + "model.json";
+        const metadataURL = modelUrl + "metadata.json";
+
+        // load the model and metadata
+        // Refer to tmImage.loadFromFiles() in the API to support files from a file picker
+        // or files from your local hard drive
+        // Note: the pose library adds "tmImage" object to your window (window.tmImage)
+        model = await tmImage.load(modelURL, metadataURL);
+        const maxPredictions = model.getTotalClasses();
+
+        // Convenience function to setup a webcam
+        // const flip = true; // whether to flip the webcam
+        // const webcam = new tmImage.Webcam(200, 200, flip); // width, height, flip
+        // await webcam.setup(); // request access to the webcam
+        // await webcam.play();
+        // window.requestAnimationFrame(loop);
+
+        // append elements to the DOM
+        document.getElementById("webcam-container").appendChild(webcam.canvas);
+        const labelContainer = document.getElementById("label-container");
+        for (let i = 0; i < maxPredictions; i++) { // and class labels
+            labelContainer.appendChild(document.createElement("div"));
+        }
+        this.teachableModel = model;
+    }
+
+    // run the webcam image through the image model
+    async predictModel() {
+        console.log("Loaded model!");
+        console.log(this.teachableModel);
+        // predict can take in an image, video or canvas html element
+        const prediction = await this.teachableModel.predict(webcam.canvas);
+        for (let i = 0; i < maxPredictions; i++) {
+            const classPrediction =
+                prediction[i].className + ": " + prediction[i].probability.toFixed(2);
+            labelContainer.childNodes[i].innerHTML = classPrediction;
+        }
     }
 
     /**
