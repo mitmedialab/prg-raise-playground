@@ -50,6 +50,26 @@ export default [
     {
         name: (
             <FormattedMessage
+                defaultMessage="Teachable Machine"
+                description="Teachable Machine name"
+                id="gui.extension.teachable-machine.name"
+            />
+        ),
+        extensionId: 'teachableMachine',
+        iconURL: musicIconURL,
+        insetIconURL: musicInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Use your Teachable Machine models in your Scratch project!"
+                description="Teachable Machine Description"
+                id="gui.extension.teachable-machine.description"
+            />
+        ),
+        featured: true
+    },
+    {
+        name: (
+            <FormattedMessage
                 defaultMessage="Music"
                 description="Name for the 'Music' extension"
                 id="gui.extension.music.name"
