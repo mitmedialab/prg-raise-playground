@@ -1,3 +1,4 @@
+require("regenerator-runtime/runtime");
 const Runtime = require('../../engine/runtime');
 
 const ArgumentType = require('../../extension-support/argument-type');
@@ -455,7 +456,7 @@ class Scratch3VideoSensingBlocks {
                     arguments: {
                         MODEL_URL: {
                             type: ArgumentType.STRING,
-                            defaultValue: 'https://teachablemachine.withgoogle.com/models/pwY3KJ3E/'
+                            defaultValue: 'https://teachablemachine.withgoogle.com/models/ixy1rebO/'
                         },
                         CLASS_NAME: {
                             type: ArgumentType.STRING,
@@ -609,24 +610,18 @@ class Scratch3VideoSensingBlocks {
      * @returns {boolean} true if the model matches
      *   reference
      */
-    whenModelMatches (args, util) {
+    async whenModelMatches (args, util) {
         let modelUrl = args.MODEL_URL;
         let className = args.CLASS_NAME;
 
-        return new Promise(async (resolve, reject) => {
-            if (!this.teachableModel) {
-                // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
-                await this.initModel(modelUrl);
-            }
+        if (!this.teachableModel) {
+            // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
+            await this.initModel(modelUrl);
+            console.log("Loaded model at URL:", modelUrl);
+        }
 
-            console.log(modelUrl);
-            console.log(className);
-            await this.predictModel();
-
-            this.detect.analyzeFrame();
-            const state = this._analyzeLocalMotion(util.target);
-            resolve(state.motionAmount > Number(args.REFERENCE));
-        });
+        const currentMaxClass = await this.predictModel();
+        return (currentMaxClass === String(className));
     }
 
     // Load the image model and setup the webcam
@@ -638,36 +633,32 @@ class Scratch3VideoSensingBlocks {
         // Refer to tmImage.loadFromFiles() in the API to support files from a file picker
         // or files from your local hard drive
         // Note: the pose library adds "tmImage" object to your window (window.tmImage)
-        model = await tmImage.load(modelURL, metadataURL);
-        const maxPredictions = model.getTotalClasses();
-
-        // Convenience function to setup a webcam
-        // const flip = true; // whether to flip the webcam
-        // const webcam = new tmImage.Webcam(200, 200, flip); // width, height, flip
-        // await webcam.setup(); // request access to the webcam
-        // await webcam.play();
-        // window.requestAnimationFrame(loop);
-
-        // append elements to the DOM
-        document.getElementById("webcam-container").appendChild(webcam.canvas);
-        const labelContainer = document.getElementById("label-container");
-        for (let i = 0; i < maxPredictions; i++) { // and class labels
-            labelContainer.appendChild(document.createElement("div"));
-        }
-        this.teachableModel = model;
+        this.teachableModel = await tmImage.load(modelURL, metadataURL);
     }
 
     // run the webcam image through the image model
     async predictModel() {
-        console.log("Loaded model!");
-        console.log(this.teachableModel);
-        // predict can take in an image, video or canvas html element
-        const prediction = await this.teachableModel.predict(webcam.canvas);
+        const maxPredictions = this.teachableModel.getTotalClasses();
+        const frame = this.runtime.ioDevices.video.getFrame({
+            format: Video.FORMAT_IMAGE_DATA,
+            dimensions: Scratch3VideoSensingBlocks.DIMENSIONS
+        });
+        const imageBitmap = await createImageBitmap(frame);
+        const prediction = await this.teachableModel.predict(imageBitmap);
+
+        let maxProbability = 0;
+        let maxClassName = "";
         for (let i = 0; i < maxPredictions; i++) {
-            const classPrediction =
-                prediction[i].className + ": " + prediction[i].probability.toFixed(2);
-            labelContainer.childNodes[i].innerHTML = classPrediction;
+            const probability = prediction[i].probability.toFixed(2);
+            const className = prediction[i].className;
+            const classPrediction = className + ": " + probability;
+            console.log(classPrediction);
+            if (probability > maxProbability) {
+                maxClassName = className;
+                maxProbability = probability;
+            }
         }
+        return maxClassName;
     }
 
     /**
