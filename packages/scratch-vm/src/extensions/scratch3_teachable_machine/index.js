@@ -255,6 +255,8 @@ class Scratch3VideoSensingBlocks {
                 this._lastUpdate = time;
                 this.detect.addFrame(frame.data);
             }
+
+
         }
     }
 
@@ -620,6 +622,7 @@ class Scratch3VideoSensingBlocks {
             console.log("Loaded model at URL:", modelUrl);
         }
 
+        // TODO: store prediction on local state and check here instead of waiting!
         const currentMaxClass = await this.predictModel();
         return (currentMaxClass === String(className));
     }
