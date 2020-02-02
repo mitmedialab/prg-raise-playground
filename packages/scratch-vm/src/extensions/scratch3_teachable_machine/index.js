@@ -447,24 +447,7 @@ class Scratch3VideoSensingBlocks {
             menuIconURI: menuIconURI,
             blocks: [
                 {
-                    // @todo this hat needs to be set itself to restart existing
-                    // threads like Scratch 2's behaviour.
-                    opcode: 'whenMotionGreaterThan',
-                    text: formatMessage({
-                        id: 'videoSensing.whenMotionGreaterThan',
-                        default: 'when video motion > [REFERENCE]',
-                        description: 'Event that triggers when the amount of motion is greater than [REFERENCE]'
-                    }),
-                    blockType: BlockType.HAT,
-                    arguments: {
-                        REFERENCE: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 10
-                        }
-                    }
-                },
-                {
-                    // @todo this hat needs to be set itself to restart existing
+                    // @todo (copied from motion) this hat needs to be set itself to restart existing
                     // threads like Scratch 2's behaviour.
                     opcode: 'whenModelMatches',
                     text: formatMessage({
@@ -476,55 +459,13 @@ class Scratch3VideoSensingBlocks {
                     arguments: {
                         MODEL_URL: {
                             type: ArgumentType.STRING,
-                            defaultValue: 'https://teachablemachine.withgoogle.com/models/ixy1rebO/'
+                            defaultValue: 'ixy1rebO'
                         },
                         CLASS_NAME: {
                             type: ArgumentType.STRING,
                             defaultValue: 'Class 1'
                         }
                     },
-                },
-
-                // {
-                //     opcode: 'playDrumForBeats',
-                //     blockType: BlockType.COMMAND,
-                //     text: formatMessage({
-                //         id: 'music.playDrumForBeats',
-                //         default: 'play drum [DRUM] for [BEATS] beats',
-                //         description: 'play drum sample for a number of beats'
-                //     }),
-                //     arguments: {
-                //         DRUM: {
-                //             type: ArgumentType.NUMBER,
-                //             menu: 'DRUM',
-                //             defaultValue: 1
-                //         },
-                //         BEATS: {
-                //             type: ArgumentType.NUMBER,
-                //             defaultValue: 0.25
-                //         }
-                //     }
-                // }
-                {
-                    opcode: 'videoOn',
-                    blockType: BlockType.REPORTER,
-                    text: formatMessage({
-                        id: 'videoSensing.videoOn',
-                        default: 'video [ATTRIBUTE] on [SUBJECT]',
-                        description: 'Reporter that returns the amount of [ATTRIBUTE] for the selected [SUBJECT]'
-                    }),
-                    arguments: {
-                        ATTRIBUTE: {
-                            type: ArgumentType.NUMBER,
-                            menu: 'ATTRIBUTE',
-                            defaultValue: SensingAttribute.MOTION
-                        },
-                        SUBJECT: {
-                            type: ArgumentType.NUMBER,
-                            menu: 'SUBJECT',
-                            defaultValue: SensingSubject.SPRITE
-                        }
-                    }
                 },
                 {
                     opcode: 'videoToggle',
@@ -574,55 +515,6 @@ class Scratch3VideoSensingBlocks {
     }
 
     /**
-     * Analyze a part of the frame that a target overlaps.
-     * @param {Target} target - a target to determine where to analyze
-     * @returns {MotionState} the motion state for the given target
-     */
-    _analyzeLocalMotion (target) {
-        const drawable = this.runtime.renderer._allDrawables[target.drawableID];
-        const state = this._getMotionState(target);
-        this.detect.getLocalMotion(drawable, state);
-        return state;
-    }
-
-    /**
-     * A scratch reporter block handle that analyzes the last two frames and
-     * depending on the arguments, returns the motion or direction for the
-     * whole stage or just the target sprite.
-     * @param {object} args - the block arguments
-     * @param {BlockUtility} util - the block utility
-     * @returns {number} the motion amount or direction of the stage or sprite
-     */
-    videoOn (args, util) {
-        this.detect.analyzeFrame();
-
-        let state = this.detect;
-        if (args.SUBJECT === SensingSubject.SPRITE) {
-            state = this._analyzeLocalMotion(util.target);
-        }
-
-        if (args.ATTRIBUTE === SensingAttribute.MOTION) {
-            return state.motionAmount;
-        }
-        return state.motionDirection;
-    }
-
-    /**
-     * A scratch hat block edge handle that analyzes the last two frames where
-     * the target sprite overlaps and if it has more motion than the given
-     * reference value.
-     * @param {object} args - the block arguments
-     * @param {BlockUtility} util - the block utility
-     * @returns {boolean} true if the sprite overlaps more motion than the
-     *   reference
-     */
-    whenMotionGreaterThan (args, util) {
-        this.detect.analyzeFrame();
-        const state = this._analyzeLocalMotion(util.target);
-        return state.motionAmount > Number(args.REFERENCE);
-    }
-
-    /**
      * PredictionState:
      *
      * {
@@ -631,6 +523,12 @@ class Scratch3VideoSensingBlocks {
      *     }
      * }
      */
+
+    modelArgumentToURL(modelArg) {
+        return modelArg.startsWith('https://teachablemachine.withgoogle.com/models/') ?
+            modelArg :
+            `https://teachablemachine.withgoogle.com/models/${modelArg}/`;
+    }
 
     /**
      * A scratch hat block edge handle that downloads a teachable machine model and determines whether the
@@ -641,12 +539,12 @@ class Scratch3VideoSensingBlocks {
      *   reference
      */
     whenModelMatches(args, util) {
-        let modelUrl = args.MODEL_URL;
+        let modelUrl = this.modelArgumentToURL(args.MODEL_URL);
 
         let className = args.CLASS_NAME;
         const predictionState = this.predictionState[modelUrl];
         if (!predictionState) {
-            this.startPredicting(args.MODEL_URL); // TODO: Stop predicting on no block
+            this.startPredicting(modelUrl); // TODO: Stop predicting on no block
             return false;
         }
 
