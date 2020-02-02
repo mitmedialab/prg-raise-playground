@@ -245,18 +245,35 @@ class Scratch3VideoSensingBlocks {
         if (this._lastUpdate === null) {
             this._lastUpdate = time;
         }
+        if (!this._isPredicting) {
+            this._isPredicting = 0;
+        }
         const offset = time - this._lastUpdate;
-        if (offset > Scratch3VideoSensingBlocks.INTERVAL) {
+
+        // TOOD: Self-throttle interval if slow to run predictions
+        if (offset > Scratch3VideoSensingBlocks.INTERVAL && this._isPredicting === 0) {
             const frame = this.runtime.ioDevices.video.getFrame({
                 format: Video.FORMAT_IMAGE_DATA,
                 dimensions: Scratch3VideoSensingBlocks.DIMENSIONS
             });
+
             if (frame) {
                 this._lastUpdate = time;
-                this.detect.addFrame(frame.data);
+                this._isPredicting = 0;
+                this.predictAllBlocks(frame);
             }
+        }
+    }
 
-
+    async predictAllBlocks(frame) {
+        for (let modelUrl in this.predictionState) {
+            if (!this.predictionState[modelUrl].model) {
+                continue;
+            }
+            ++this._isPredicting;
+            const prediction = await this.predictModel(modelUrl, frame);
+            this.predictionState[modelUrl].topClass = prediction;
+            --this._isPredicting;
         }
     }
 
@@ -415,6 +432,7 @@ class Scratch3VideoSensingBlocks {
             this.globalVideoTransparency = 50;
             this.updateVideoDisplay();
             this.firstInstall = false;
+            this.predictionState = {};
         }
 
         // Return extension definition
@@ -605,6 +623,16 @@ class Scratch3VideoSensingBlocks {
     }
 
     /**
+     * PredictionState:
+     *
+     * {
+     *     [modelUrl]: {
+     *         topClass: 'Class1',
+     *     }
+     * }
+     */
+
+    /**
      * A scratch hat block edge handle that downloads a teachable machine model and determines whether the
      * current video frame matches the model class.
      * @param {object} args - the block arguments
@@ -612,42 +640,41 @@ class Scratch3VideoSensingBlocks {
      * @returns {boolean} true if the model matches
      *   reference
      */
-    async whenModelMatches (args, util) {
+    whenModelMatches(args, util) {
         let modelUrl = args.MODEL_URL;
-        let className = args.CLASS_NAME;
 
-        if (!this.teachableModel) {
-            // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
-            await this.initModel(modelUrl);
-            console.log("Loaded model at URL:", modelUrl);
+        let className = args.CLASS_NAME;
+        const predictionState = this.predictionState[modelUrl];
+        if (!predictionState) {
+            this.startPredicting(args.MODEL_URL); // TODO: Stop predicting on no block
+            return false;
         }
 
-        // TODO: store prediction on local state and check here instead of waiting!
-        const currentMaxClass = await this.predictModel();
+        const currentMaxClass = predictionState.topClass;
         return (currentMaxClass === String(className));
     }
 
-    // Load the image model and setup the webcam
+    async startPredicting(modelDataUrl) {
+        if (!this.predictionState[modelDataUrl]) {
+            this.predictionState[modelDataUrl] = {};
+            // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
+            const model = await this.initModel(modelDataUrl);
+            console.log("Loaded model at URL:", modelDataUrl);
+            this.predictionState[modelDataUrl].model = model;
+        }
+    }
+
     async initModel(modelUrl) {
         const modelURL = modelUrl + "model.json";
         const metadataURL = modelUrl + "metadata.json";
-
-        // load the model and metadata
-        // Refer to tmImage.loadFromFiles() in the API to support files from a file picker
-        // or files from your local hard drive
-        // Note: the pose library adds "tmImage" object to your window (window.tmImage)
-        this.teachableModel = await tmImage.load(modelURL, metadataURL);
+        return await tmImage.load(modelURL, metadataURL);
     }
 
-    // run the webcam image through the image model
-    async predictModel() {
-        const maxPredictions = this.teachableModel.getTotalClasses();
-        const frame = this.runtime.ioDevices.video.getFrame({
-            format: Video.FORMAT_IMAGE_DATA,
-            dimensions: Scratch3VideoSensingBlocks.DIMENSIONS
-        });
+    async predictModel(modelUrl, frame) {
+        const model = this.predictionState[modelUrl].model;
+        const maxPredictions = model.getTotalClasses();
         const imageBitmap = await createImageBitmap(frame);
-        const prediction = await this.teachableModel.predict(imageBitmap);
+        const prediction = await model.predict(imageBitmap);
 
         let maxProbability = 0;
         let maxClassName = "";
