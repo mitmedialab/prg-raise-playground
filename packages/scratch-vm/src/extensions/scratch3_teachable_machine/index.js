@@ -468,6 +468,22 @@ class Scratch3VideoSensingBlocks {
                     },
                 },
                 {
+                    opcode: 'modelPrediction',
+                    text: formatMessage({
+                        id: 'teachableMachine.modelPrediction',
+                        default: 'model [MODEL_URL] prediction',
+                        description: 'Value of latest model prediction'
+                    }),
+                    blockType: BlockType.REPORTER,
+                    isTerminal: true,
+                    arguments: {
+                        MODEL_URL: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'ixy1rebO'
+                        },
+                    },
+                },
+                {
                     opcode: 'videoToggle',
                     text: formatMessage({
                         id: 'videoSensing.videoToggle',
@@ -539,17 +555,42 @@ class Scratch3VideoSensingBlocks {
      *   reference
      */
     whenModelMatches(args, util) {
-        let modelUrl = this.modelArgumentToURL(args.MODEL_URL);
+        const modelUrl = this.modelArgumentToURL(args.MODEL_URL);
+        const className = args.CLASS_NAME;
 
-        let className = args.CLASS_NAME;
-        const predictionState = this.predictionState[modelUrl];
+        const predictionState = this.getPredictionStateOrStartPredicting(modelUrl);
         if (!predictionState) {
-            this.startPredicting(modelUrl); // TODO: Stop predicting on no block
             return false;
         }
 
         const currentMaxClass = predictionState.topClass;
         return (currentMaxClass === String(className));
+    }
+
+    /**
+     * A scratch hat block reporter that returns whether the current video frame matches the model class.
+     * @param {object} args - the block arguments
+     * @param {BlockUtility} util - the block utility
+     * @returns {string} class name if video frame matched, empty string if model not loaded yet
+     */
+    modelPrediction(args, util) {
+        const modelUrl = this.modelArgumentToURL(args.MODEL_URL);
+        const predictionState = this.getPredictionStateOrStartPredicting(modelUrl);
+        if (!predictionState) {
+            return '';
+        }
+
+        return predictionState.topClass;
+    }
+
+    getPredictionStateOrStartPredicting(modelUrl) {
+        const predictionState = this.predictionState[modelUrl];
+        if (!predictionState) {
+            this.startPredicting(modelUrl);
+            return null;
+        }
+
+        return predictionState;
     }
 
     async startPredicting(modelDataUrl) {
