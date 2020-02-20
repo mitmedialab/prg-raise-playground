@@ -50,6 +50,26 @@ export default [
     {
         name: (
             <FormattedMessage
+                defaultMessage="PoseNet"
+                description="Posenet name"
+                id="gui.extension.posenet.name"
+            />
+        ),
+        extensionId: 'posenet',
+        iconURL: musicIconURL,
+        insetIconURL: musicInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Play with PoseNet position recognition"
+                description="Teachable Machine Description"
+                id="gui.extension.posenet.description"
+            />
+        ),
+        featured: true
+    },
+    {
+        name: (
+            <FormattedMessage
                 defaultMessage="Teachable Machine"
                 description="Teachable Machine name"
                 id="gui.extension.teachable-machine.name"
