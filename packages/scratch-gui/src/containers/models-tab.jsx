@@ -229,23 +229,6 @@ class ModelsTab extends React.Component {
         this.fileInput.click();
     }
     handleDrop (dropInfo) {
-        if (dropInfo.dragType === DragConstants.COSTUME) {
-            const sprite = this.props.vm.editingTarget.sprite;
-            const activeCostume = sprite.costumes[this.state.selectedCostumeIndex];
-            this.props.vm.reorderCostume(this.props.vm.editingTarget.id,
-                dropInfo.index, dropInfo.newIndex);
-            this.setState({selectedCostumeIndex: sprite.costumes.indexOf(activeCostume)});
-        } else if (dropInfo.dragType === DragConstants.BACKPACK_COSTUME) {
-            this.props.vm.addCostume(dropInfo.payload.body, {
-                name: dropInfo.payload.name
-            });
-        } else if (dropInfo.dragType === DragConstants.BACKPACK_SOUND) {
-            this.props.onActivateSoundsTab();
-            this.props.vm.addSound({
-                md5: dropInfo.payload.body,
-                name: dropInfo.payload.name
-            });
-        }
     }
     setFileInput (input) {
         this.fileInput = input;
@@ -284,10 +267,11 @@ class ModelsTab extends React.Component {
         const addLibraryFunc = isStage ? onNewLibraryBackdropClick : onNewLibraryCostumeClick;
         const addLibraryIcon = isStage ? addLibraryBackdropIcon : addLibraryCostumeIcon;
 
+        // TODO: Make this a list of models end-to-end!
         const costumeData = target.costumes ? target.costumes.map(costume => ({
-            name: costume.name,
+            name: 'cat detector',
             asset: costume.asset,
-            details: costume.size ? this.formatCostumeDetails(costume.size, costume.bitmapResolution) : null,
+            details: '4 classes', //costume.size ? this.formatCostumeDetails(costume.size, costume.bitmapResolution) : null,
             dragPayload: costume
         })) : [];
         return (
