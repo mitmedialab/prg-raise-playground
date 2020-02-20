@@ -245,13 +245,13 @@ class Scratch3VideoSensingBlocks {
         if (this._lastUpdate === null) {
             this._lastUpdate = time;
         }
-        if (!this._isPredicting) {
-            this._isPredicting = 0;
+        if (!this._isUpdatingPose) {
+            this._isUpdatingPose = 0;
         }
         const offset = time - this._lastUpdate;
 
         // TOOD: Self-throttle interval if slow to run predictions
-        if (offset > Scratch3VideoSensingBlocks.INTERVAL && this._isPredicting === 0) {
+        if (offset > Scratch3VideoSensingBlocks.INTERVAL && this._isUpdatingPose === 0) {
             const frame = this.runtime.ioDevices.video.getFrame({
                 format: Video.FORMAT_IMAGE_DATA,
                 dimensions: Scratch3VideoSensingBlocks.DIMENSIONS
@@ -259,10 +259,24 @@ class Scratch3VideoSensingBlocks {
 
             if (frame) {
                 this._lastUpdate = time;
-                this._isPredicting = 0;
-                this.predictAllBlocks(frame);
+                this._isUpdatingPose = 1;
+                this.estimatePoseOnImage(frame).then((pose) => {
+                    console.log(pose);
+                    this.poseState = pose;
+                    this._isUpdatingPose = 0;
+                });
             }
         }
+    }
+
+    async estimatePoseOnImage(imageElement) {
+        // load the posenet model from a checkpoint
+        const net = await posenet.load();
+
+        const pose = await net.estimateSinglePose(imageElement, {
+            flipHorizontal: false
+        });
+        return pose;
     }
 
     async predictAllBlocks(frame) {
@@ -270,10 +284,10 @@ class Scratch3VideoSensingBlocks {
             if (!this.predictionState[modelUrl].model) {
                 continue;
             }
-            ++this._isPredicting;
+            ++this._isUpdatingPose;
             const prediction = await this.predictModel(modelUrl, frame);
             this.predictionState[modelUrl].topClass = prediction;
-            --this._isPredicting;
+            --this._isUpdatingPose;
         }
     }
 
@@ -447,40 +461,27 @@ class Scratch3VideoSensingBlocks {
             menuIconURI: menuIconURI,
             blocks: [
                 {
-                    // @todo (copied from motion) this hat needs to be set itself to restart existing
-                    // threads like Scratch 2's behaviour.
-                    opcode: 'whenModelMatches',
-                    text: formatMessage({
-                        id: 'teachableMachine.whenModelMatches',
-                        default: 'when model [MODEL_URL] matches [CLASS_NAME]',
-                        description: 'Event that triggers when the provided model matches [CLASS_NAME]'
-                    }),
-                    blockType: BlockType.HAT,
-                    arguments: {
-                        MODEL_URL: {
-                            type: ArgumentType.STRING,
-                            defaultValue: 'ixy1rebO'
-                        },
-                        CLASS_NAME: {
-                            type: ArgumentType.STRING,
-                            defaultValue: 'Class 1'
-                        }
-                    },
-                },
-                {
-                    opcode: 'modelPrediction',
-                    text: formatMessage({
-                        id: 'teachableMachine.modelPrediction',
-                        default: 'model [MODEL_URL] prediction',
-                        description: 'Value of latest model prediction'
-                    }),
+                    opcode: 'headPositionX',
+                    text: 'head position X',
                     blockType: BlockType.REPORTER,
                     isTerminal: true,
                     arguments: {
-                        MODEL_URL: {
-                            type: ArgumentType.STRING,
-                            defaultValue: 'ixy1rebO'
-                        },
+                        // MODEL_URL: {
+                        //     type: ArgumentType.STRING,
+                        //     defaultValue: 'ixy1rebO'
+                        // },
+                    },
+                },
+                {
+                    opcode: 'headPositionY',
+                    text: 'head position Y',
+                    blockType: BlockType.REPORTER,
+                    isTerminal: true,
+                    arguments: {
+                        // MODEL_URL: {
+                        //     type: ArgumentType.STRING,
+                        //     defaultValue: 'ixy1rebO'
+                        // },
                     },
                 },
                 {
@@ -530,21 +531,6 @@ class Scratch3VideoSensingBlocks {
         };
     }
 
-    /**
-     * PredictionState:
-     *
-     * {
-     *     [modelUrl]: {
-     *         topClass: 'Class1',
-     *     }
-     * }
-     */
-
-    modelArgumentToURL(modelArg) {
-        return modelArg.startsWith('https://teachablemachine.withgoogle.com/models/') ?
-            modelArg :
-            `https://teachablemachine.withgoogle.com/models/${modelArg}/`;
-    }
 
     /**
      * A scratch hat block edge handle that downloads a teachable machine model and determines whether the
@@ -555,17 +541,41 @@ class Scratch3VideoSensingBlocks {
      *   reference
      */
     whenModelMatches(args, util) {
-        const modelUrl = this.modelArgumentToURL(args.MODEL_URL);
-        const className = args.CLASS_NAME;
-
-        const predictionState = this.getPredictionStateOrStartPredicting(modelUrl);
-        if (!predictionState) {
-            return false;
-        }
-
-        const currentMaxClass = predictionState.topClass;
-        return (currentMaxClass === String(className));
+        // const modelUrl = this.modelArgumentToURL(args.MODEL_URL);
+        // const className = args.CLASS_NAME;
+        //
+        // const predictionState = this.getPredictionStateOrStartPredicting(modelUrl);
+        // if (!predictionState) {
+        //     return false;
+        // }
+        //
+        // const currentMaxClass = predictionState.topClass;
+        // return (currentMaxClass === String(className));
     }
+
+    /**
+     *  {score: 0.9992446899414062, part: "nose", position: {…}}
+     1: {score: 0.9997885823249817, part: "leftEye", position: {…}}
+     2: {score: 0.9678763151168823, part: "rightEye", position: {…}}
+     3: {score: 0.9921389222145081, part: "leftEar", position: {…}}
+     4: {score: 0.04963252693414688, part: "rightEar", position: {…}}
+     5: {score: 0.9789063930511475, part: "leftShoulder", position: {…}}
+     6: {score: 0.9410436153411865, part: "rightShoulder", position: {…}}
+     7: {score: 0.40415656566619873, part: "leftElbow", position: {…}}
+     8: {score: 0.32139334082603455, part: "rightElbow", position: {…}}
+     9: {score: 0.17399859428405762, part: "leftWrist", position: {…}}
+     10: {score: 0.0349324494600296, part: "rightWrist", position: {…}}
+     11: {score: 0.0391412079334259, part: "leftHip", position: {…}}
+     12: {score: 0.031115926802158356, part: "rightHip", position: {…}}
+     13: {score: 0.032657451927661896, part: "leftKnee", position: {…}}
+     14: {score: 0.032283131033182144, part: "rightKnee", position: {…}}
+     15: {score: 0.03393574431538582, part: "leftAnkle", position: {…}}
+     16: {score: 0.021240800619125366, part: "rightAnkle", position: {…}}
+     length: 17
+     __proto__: Array(0)
+     __proto__: Object
+
+     */
 
     /**
      * A scratch hat block reporter that returns whether the current video frame matches the model class.
@@ -573,61 +583,26 @@ class Scratch3VideoSensingBlocks {
      * @param {BlockUtility} util - the block utility
      * @returns {string} class name if video frame matched, empty string if model not loaded yet
      */
-    modelPrediction(args, util) {
-        const modelUrl = this.modelArgumentToURL(args.MODEL_URL);
-        const predictionState = this.getPredictionStateOrStartPredicting(modelUrl);
-        if (!predictionState) {
-            return '';
-        }
-
-        return predictionState.topClass;
+    headPositionX(args, util) {
+        return this.poseState.keypoints.find(point => point.part === "nose").position.x - 250;
+        // const modelUrl = this.modelArgumentToURL(args.MODEL_URL);
+        // const predictionState = this.getPredictionStateOrStartPredicting(modelUrl);
+        // if (!predictionState) {
+        //     return '';
+        // }
+        //
+        // return predictionState.topClass;
     }
 
-    getPredictionStateOrStartPredicting(modelUrl) {
-        const predictionState = this.predictionState[modelUrl];
-        if (!predictionState) {
-            this.startPredicting(modelUrl);
-            return null;
-        }
-
-        return predictionState;
-    }
-
-    async startPredicting(modelDataUrl) {
-        if (!this.predictionState[modelDataUrl]) {
-            this.predictionState[modelDataUrl] = {};
-            // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
-            const model = await this.initModel(modelDataUrl);
-            console.log("Loaded model at URL:", modelDataUrl);
-            this.predictionState[modelDataUrl].model = model;
-        }
-    }
-
-    async initModel(modelUrl) {
-        const modelURL = modelUrl + "model.json";
-        const metadataURL = modelUrl + "metadata.json";
-        return await tmImage.load(modelURL, metadataURL);
-    }
-
-    async predictModel(modelUrl, frame) {
-        const model = this.predictionState[modelUrl].model;
-        const maxPredictions = model.getTotalClasses();
-        const imageBitmap = await createImageBitmap(frame);
-        const prediction = await model.predict(imageBitmap);
-
-        let maxProbability = 0;
-        let maxClassName = "";
-        for (let i = 0; i < maxPredictions; i++) {
-            const probability = prediction[i].probability.toFixed(2);
-            const className = prediction[i].className;
-            const classPrediction = className + ": " + probability;
-            console.log(classPrediction);
-            if (probability > maxProbability) {
-                maxClassName = className;
-                maxProbability = probability;
-            }
-        }
-        return maxClassName;
+    headPositionY(args, util) {
+        return 200 - this.poseState.keypoints.find(point => point.part === "nose").position.y;
+        // const modelUrl = this.modelArgumentToURL(args.MODEL_URL);
+        // const predictionState = this.getPredictionStateOrStartPredicting(modelUrl);
+        // if (!predictionState) {
+        //     return '';
+        // }
+        //
+        // return predictionState.topClass;
     }
 
     /**
