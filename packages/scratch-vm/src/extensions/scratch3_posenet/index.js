@@ -461,27 +461,29 @@ class Scratch3VideoSensingBlocks {
             menuIconURI: menuIconURI,
             blocks: [
                 {
-                    opcode: 'headPositionX',
-                    text: 'head position X',
+                    opcode: 'posePositionX',
+                    text: '[PART] position X',
                     blockType: BlockType.REPORTER,
                     isTerminal: true,
                     arguments: {
-                        // MODEL_URL: {
-                        //     type: ArgumentType.STRING,
-                        //     defaultValue: 'ixy1rebO'
-                        // },
+                        PART: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'nose',
+                            menu: 'PART'
+                        },
                     },
                 },
                 {
-                    opcode: 'headPositionY',
-                    text: 'head position Y',
+                    opcode: 'posePositionY',
+                    text: '[PART] position Y',
                     blockType: BlockType.REPORTER,
                     isTerminal: true,
                     arguments: {
-                        // MODEL_URL: {
-                        //     type: ArgumentType.STRING,
-                        //     defaultValue: 'ixy1rebO'
-                        // },
+                        PART: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'nose',
+                            menu: 'PART'
+                        },
                     },
                 },
                 {
@@ -515,6 +517,13 @@ class Scratch3VideoSensingBlocks {
                 }
             ],
             menus: {
+                PART: {
+                    acceptReporters: true,
+                    items: ['nose', 'leftEye', 'rightEye', 'leftEar', 'rightEar', 'leftShoulder', 'rightShoulder', 'leftElbow', 'rightElbow', 'leftWrist', 'rightWrist',
+                        'leftHip', 'rightHip', 'leftKnee',
+                        'rightKnee', 'leftAnkle', 'rightAnkle']
+                        .map((item) => ({text: item, value: item}))
+                },
                 ATTRIBUTE: {
                     acceptReporters: true,
                     items: this._buildMenu(this.ATTRIBUTE_INFO)
@@ -583,8 +592,8 @@ class Scratch3VideoSensingBlocks {
      * @param {BlockUtility} util - the block utility
      * @returns {string} class name if video frame matched, empty string if model not loaded yet
      */
-    headPositionX(args, util) {
-        return this.poseState.keypoints.find(point => point.part === "nose").position.x - 250;
+    posePositionX(args, util) {
+        return this.poseState.keypoints.find(point => point.part === args['PART']).position.x - 250;
         // const modelUrl = this.modelArgumentToURL(args.MODEL_URL);
         // const predictionState = this.getPredictionStateOrStartPredicting(modelUrl);
         // if (!predictionState) {
@@ -594,8 +603,8 @@ class Scratch3VideoSensingBlocks {
         // return predictionState.topClass;
     }
 
-    headPositionY(args, util) {
-        return 200 - this.poseState.keypoints.find(point => point.part === "nose").position.y;
+    posePositionY(args, util) {
+        return 200 - this.poseState.keypoints.find(point => point.part === args['PART']).position.y;
         // const modelUrl = this.modelArgumentToURL(args.MODEL_URL);
         // const predictionState = this.getPredictionStateOrStartPredicting(modelUrl);
         // if (!predictionState) {
