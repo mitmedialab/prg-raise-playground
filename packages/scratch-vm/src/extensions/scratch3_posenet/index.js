@@ -563,30 +563,6 @@ class Scratch3VideoSensingBlocks {
     }
 
     /**
-     *  {score: 0.9992446899414062, part: "nose", position: {…}}
-     1: {score: 0.9997885823249817, part: "leftEye", position: {…}}
-     2: {score: 0.9678763151168823, part: "rightEye", position: {…}}
-     3: {score: 0.9921389222145081, part: "leftEar", position: {…}}
-     4: {score: 0.04963252693414688, part: "rightEar", position: {…}}
-     5: {score: 0.9789063930511475, part: "leftShoulder", position: {…}}
-     6: {score: 0.9410436153411865, part: "rightShoulder", position: {…}}
-     7: {score: 0.40415656566619873, part: "leftElbow", position: {…}}
-     8: {score: 0.32139334082603455, part: "rightElbow", position: {…}}
-     9: {score: 0.17399859428405762, part: "leftWrist", position: {…}}
-     10: {score: 0.0349324494600296, part: "rightWrist", position: {…}}
-     11: {score: 0.0391412079334259, part: "leftHip", position: {…}}
-     12: {score: 0.031115926802158356, part: "rightHip", position: {…}}
-     13: {score: 0.032657451927661896, part: "leftKnee", position: {…}}
-     14: {score: 0.032283131033182144, part: "rightKnee", position: {…}}
-     15: {score: 0.03393574431538582, part: "leftAnkle", position: {…}}
-     16: {score: 0.021240800619125366, part: "rightAnkle", position: {…}}
-     length: 17
-     __proto__: Array(0)
-     __proto__: Object
-
-     */
-
-    /**
      * A scratch hat block reporter that returns whether the current video frame matches the model class.
      * @param {object} args - the block arguments
      * @param {BlockUtility} util - the block utility
