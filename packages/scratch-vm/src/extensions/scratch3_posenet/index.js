@@ -451,9 +451,9 @@ class Scratch3VideoSensingBlocks {
 
         // Return extension definition
         return {
-            id: 'poseNet',
+            id: 'posenet',
             name: formatMessage({
-                id: 'poseNet.categoryName',
+                id: 'posenet.categoryName',
                 default: 'PoseNet',
                 description: 'Label for PoseNet category'
             }),
