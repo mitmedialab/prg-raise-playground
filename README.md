@@ -58,6 +58,15 @@ sh: webpack: command not found
 
 **Solution**: This may mean you have a half-installed node_modules version of webpack. Try starting fresh!
 
+#### If you see `Error: Closure not found.`:
+
+```shell script
+Error: Closure not found.  Read this:
+  developers.google.com/blockly/guides/modify/web/closure
+```
+
+**Solution**: In the `prg-extension-boilerplate` directory go to `packages` and delete the `closure-library` file (assuming it's even there). In the `packages` directory, run `git clone https://github.com/google/closure-library.git` to install the closure library. Run `npx lerna bootstrap --force-local` again.
+
 ## 💡 How this was made:
 
 ### Sub-packages
