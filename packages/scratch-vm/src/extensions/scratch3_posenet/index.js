@@ -451,11 +451,11 @@ class Scratch3VideoSensingBlocks {
 
         // Return extension definition
         return {
-            id: 'teachableMachine',
+            id: 'poseNet',
             name: formatMessage({
-                id: 'videoSensing.categoryName',
-                default: 'Teachable Machine',
-                description: 'Label for the Teachable Machine extension category'
+                id: 'poseNet.categoryName',
+                default: 'PoseNet',
+                description: 'Label for PoseNet category'
             }),
             blockIconURI: blockIconURI,
             menuIconURI: menuIconURI,
