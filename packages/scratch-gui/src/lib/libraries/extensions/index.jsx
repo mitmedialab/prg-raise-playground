@@ -50,6 +50,26 @@ export default [
     {
         name: (
             <FormattedMessage
+                defaultMessage="Virtual Agent"
+                description="Agent Name"
+                id="gui.extension.avatar.name"
+            />
+        ),
+        extensionId: 'avatar',
+        iconURL: musicIconURL,
+        insetIconURL: musicInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Program a Virtual Agent"
+                description="Teachable Machine Description"
+                id="gui.extension.avatar.description"
+            />
+        ),
+        featured: true
+    },
+    {
+        name: (
+            <FormattedMessage
                 defaultMessage="PoseNet"
                 description="Posenet name"
                 id="gui.extension.posenet.name"

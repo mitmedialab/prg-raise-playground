@@ -26,6 +26,7 @@ const builtinExtensions = {
     gdxfor: () => require('../extensions/scratch3_gdx_for'),
     teachableMachine: () => require('../extensions/scratch3_teachable_machine'),
     posenet: () => require('../extensions/scratch3_posenet'),
+    avatar: () => require('../extensions/scratch3_avatar'),
 
 };
 
