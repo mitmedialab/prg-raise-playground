@@ -271,7 +271,7 @@ class Scratch3VideoSensingBlocks {
 
     async estimatePoseOnImage(imageElement) {
         // load the posenet model from a checkpoint
-        const net = await posenet.load();
+        const net = await posenet.load(); // todo: maybe store this!
 
         const pose = await net.estimateSinglePose(imageElement, {
             flipHorizontal: false

@@ -29,14 +29,6 @@ const ColorParam = {
 };
 
 /**
- * @typedef {object} PenState - the pen state associated with a particular target.
- * @property {Boolean} penDown - tracks whether the pen should draw for this target.
- * @property {number} color - the current color (hue) of the pen.
- * @property {PenAttributes} penAttributes - cached pen attributes for the renderer. This is the authoritative value for
- *   diameter but not for pen color.
- */
-
-/**
  * Host for the Pen-related blocks in Scratch 3.0
  * @param {Runtime} runtime - the runtime instantiating this block package.
  * @constructor
@@ -51,77 +43,12 @@ class Scratch3AvatarBlocks {
         // runtime.on('targetWasCreated', this._onTargetCreated);
         runtime.on('RUNTIME_DISPOSED', this.clear.bind(this));
     }
-
-    /**
-     * The default pen state, to be used when a target has no existing pen state.
-     * @type {PenState}
-     */
-    static get DEFAULT_PEN_STATE () {
-        return {
-            penDown: false,
-        };
-    }
-
-
-    /**
-     * The minimum and maximum allowed pen size.
-     * The maximum is twice the diagonal of the stage, so that even an
-     * off-stage sprite can fill it.
-     * @type {{min: number, max: number}}
-     */
-    static get PEN_SIZE_RANGE () {
-        return {min: 1, max: 1200};
-    }
-
     /**
      * The key to load & store a target's pen-related state.
      * @type {string}
      */
     static get STATE_KEY () {
-        return 'Scratch.pen';
-    }
-
-    /**
-     * Clamp a pen size value to the range allowed by the pen.
-     * @param {number} requestedSize - the requested pen size.
-     * @returns {number} the clamped size.
-     * @private
-     */
-    _clampPenSize (requestedSize) {
-        return MathUtil.clamp(
-            requestedSize,
-            Scratch3AvatarBlocks.PEN_SIZE_RANGE.min,
-            Scratch3AvatarBlocks.PEN_SIZE_RANGE.max
-        );
-    }
-
-    /**
-     * Retrieve the ID of the renderer "Skin" corresponding to the pen layer. If
-     * the pen Skin doesn't yet exist, create it.
-     * @returns {int} the Skin ID of the pen layer, or -1 on failure.
-     * @private
-     */
-    _getPenLayerID () {
-        if (this._penSkinId < 0 && this.runtime.renderer) {
-            this._penSkinId = this.runtime.renderer.createPenSkin();
-            this._penDrawableId = this.runtime.renderer.createDrawable(StageLayering.PEN_LAYER);
-            this.runtime.renderer.updateDrawableProperties(this._penDrawableId, {skinId: this._penSkinId});
-        }
-        return this._penSkinId;
-    }
-
-    /**
-     * @param {Target} target - collect pen state for this target. Probably, but not necessarily, a RenderedTarget.
-     * @returns {PenState} the mutable pen state associated with that target. This will be created if necessary.
-     * @private
-     */
-    _getPenState (target) {
-        let penState = target.getCustomState(Scratch3AvatarBlocks.STATE_KEY);
-        if (!penState) {
-            penState = Clone.simple(Scratch3AvatarBlocks.DEFAULT_PEN_STATE);
-            target.setCustomState(Scratch3AvatarBlocks.STATE_KEY, penState);
-        }
-        return penState;
+        return 'Scratch.avatar';
     }
 
     /**
