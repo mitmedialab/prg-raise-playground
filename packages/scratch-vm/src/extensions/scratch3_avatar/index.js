@@ -41,7 +41,7 @@ class Scratch3AvatarBlocks {
          */
         this.runtime = runtime;
         // runtime.on('targetWasCreated', this._onTargetCreated);
-        runtime.on('RUNTIME_DISPOSED', this.clear.bind(this));
+        runtime.on('RUNTIME_DISPOSED', () => this.hide());
     }
     /**
      * The key to load & store a target's pen-related state.
@@ -84,25 +84,35 @@ class Scratch3AvatarBlocks {
             blockIconURI: blockIconURI,
             blocks: [
                 {
-                    opcode: 'clear',
+                    opcode: 'show',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
-                        id: 'avatar.clear',
-                        default: 'erase all',
-                        description: 'erase all avatar trails and stamps'
+                        id: 'avatar.show',
+                        default: 'show 3D scene',
+                        description: 'displays the avatar in a 3D scene'
                     })
                 },
+                {
+                    opcode: 'hide',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'avatar.hide',
+                        default: 'hide 3D scene',
+                        description: 'hides the avatar in a 3D scene'
+                    })
+                }
             ],
             menus: {
             }
         };
     }
 
-    /**
-     * The pen "clear" block clears the pen layer's contents.
-     */
-    clear () {
-        console.log("Controlling avatar!!!");
+    show() {
+        this.runtime.emit("avatarVisible", true);
+    }
+
+    hide() {
+        this.runtime.emit("avatarVisible", false);
     }
 }
 

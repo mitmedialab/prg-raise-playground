@@ -173,6 +173,7 @@ const StageComponent = props => {
         colorInfo,
         micIndicator,
         question,
+        avatarVisible,
         stageSize,
         useEditorDragStyle,
         onDeactivateColorPicker,
@@ -207,64 +208,73 @@ const StageComponent = props => {
                         width: stageDimensions.width
                     }}
                 >
-                    <a-scene
-                        id="scene"
-                        shadow="type: pcfsoft"
-                        embedded
-                        renderer="
-           antialias: true;
-           colorManagement: true;
-            "
-                        fog="type: linear; color: #e0e0e0; near: 20; far: 100"
-                    >
-                        <a-entity
-                            lerp="properties: light"
-                            duration=".2"
-                            id="directional-light" light="type: directional; color: #ffffff; castShadow: true; " position="10 13 10"></a-entity>
-                        <a-entity light="type: hemisphere; groundColor: #444444; skyColor: #FFFFFF" castShadow position="0 20 0"></a-entity>
-                        <a-entity position="0 0 3"
-                                  rotation="0 0 0"
-                                  look-controls
-                                  wasd-controls="acceleration: 300"
-                                  comment="add offset, also rotate 180 degs around y axis?"
-                                  firebase-broadcast="components: position, rotation, scale"
-                                  shadow="cast: true"
-                        >
-                            <a-entity gltf-model="src: url(https://bcjordan.com/aframe-play/lib/RobotExpressive.glb);"
-                                      animation-mixer="clip: Running;"
-                                      scale=".3 .3 .3"
-                                      rotation="0 180 0"
-                                      visible="false">
-                            </a-entity>
-                            <a-entity camera="fov: 45" position="0 .6 0"></a-entity>
-                        </a-entity>
-                        <a-entity position="0 0 0"
-                                  rotation="0 0 0"
-                                  scale=".3 .3 .3"
-                                  id="test-robot"
-                                  animation-mixer="clip: Wave;"
-                                  gltf-model="src: url(https://bcjordan.com/aframe-play/lib/RobotExpressive.glb);"
-                                  shadow="cast: true; receive: false;"
-                                  lerp="properties: position, rotation, scale"
-                                  duration="0.001"
-                                  modify-materials="color: #4f2eff"
-                        >
-                        </a-entity>
-                        <a-entity position="0 0 0">
-                            <a-box position="-2 0.5 -1.8" rotation="0 45 0" color="#4CC3D9" shadow="cast: true"></a-box>
-                            <a-sphere position="1 1.25 -5" radius="1.25" color="#EF2D5E" shadow="cast: true"></a-sphere>
-                            <a-cylinder position="2 0.75 -1.6" radius="0.5" height="1.5" color="#FFC65D" shadow="cast: true"></a-cylinder>
-                        </a-entity>
-                        <a-plane position="0 0 -4" rotation="-90 0 0" width="20" height="20" color="#7BC8A4" shadow="receive: true"></a-plane>
-                    </a-scene>
-                    <DOMElementRenderer
-                        domElement={canvas}
-                        style={{
-                            height: stageDimensions.height,
-                            width: stageDimensions.width
-                        }}
-                        {...boxProps}
-                    />
+                    <div style={{
+                        position: 'absolute',
+                        top: 0
+                    }}>
+                        <DOMElementRenderer
+                            domElement={canvas}
+                            style={{
+                                height: stageDimensions.height,
+                                width: stageDimensions.width
+                            }}
+                            {...boxProps}
+                        />
+                    </div>
+                    {
+                        avatarVisible &&
+                            <a-scene
+                                style={{opacity: "50%"}}
+                                id="scene"
+                                shadow="type: pcfsoft"
+                                embedded
+                                renderer="
+                   antialias: true;
+                   colorManagement: true;
+                    "
+                                fog="type: linear; color: #e0e0e0; near: 20; far: 100"
+                            >
+                                <a-entity
+                                    lerp="properties: light"
+                                    duration=".2"
+                                    id="directional-light" light="type: directional; color: #ffffff; castShadow: true; " position="10 13 10"></a-entity>
+                                <a-entity light="type: hemisphere; groundColor: #444444; skyColor: #FFFFFF" castShadow position="0 20 0"></a-entity>
+                                <a-entity position="0 0 3"
+                                          rotation="0 0 0"
+                                          // look-controls
+                                          // wasd-controls="acceleration: 300"
+                                          comment="add offset, also rotate 180 degs around y axis?"
+                                          firebase-broadcast="components: position, rotation, scale"
+                                          shadow="cast: true"
+                                >
+                                    <a-entity gltf-model="src: url(https://bcjordan.com/aframe-play/lib/RobotExpressive.glb);"
+                                              animation-mixer="clip: Running;"
+                                              scale=".3 .3 .3"
+                                              rotation="0 180 0"
+                                              visible="false">
+                                    </a-entity>
+                                    <a-entity camera="fov: 45" position="0 .6 0"></a-entity>
+                                </a-entity>
+                                <a-entity position="0 0 0"
+                                          rotation="0 0 0"
+                                          scale=".3 .3 .3"
+                                          id="test-robot"
+                                          animation-mixer="clip: Wave;"
+                                          gltf-model="src: url(https://bcjordan.com/aframe-play/lib/RobotExpressive.glb);"
+                                          shadow="cast: true; receive: false;"
+                                          lerp="properties: position, rotation, scale"
+                                          duration="0.001"
+                                          modify-materials="color: #4f2eff"
+                                >
+                                </a-entity>
+                                <a-entity position="0 0 0">
+                                    <a-box position="-2 0.5 -1.8" rotation="0 45 0" color="#4CC3D9" shadow="cast: true"></a-box>
+                                    <a-sphere position="1 1.25 -5" radius="1.25" color="#EF2D5E" shadow="cast: true"></a-sphere>
+                                    <a-cylinder position="2 0.75 -1.6" radius="0.5" height="1.5" color="#FFC65D" shadow="cast: true"></a-cylinder>
+                                </a-entity>
+                                <a-plane position="0 0 -4" rotation="-90 0 0" width="20" height="20" color="#7BC8A4" shadow="receive: true"></a-plane>
+                            </a-scene>
+                    }
                 </Box>
                 {/*<Box className={styles.monitorWrapper}>*/}
                 {/*</Box>*/}
@@ -347,6 +357,7 @@ StageComponent.propTypes = {
     onDoubleClick: PropTypes.func,
     onQuestionAnswered: PropTypes.func,
     question: PropTypes.string,
+    avatarVisible: PropTypes.bool,
     stageSize: PropTypes.oneOf(Object.keys(STAGE_DISPLAY_SIZES)).isRequired,
     useEditorDragStyle: PropTypes.bool
 };
