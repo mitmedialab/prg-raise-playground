@@ -289,9 +289,11 @@ class Scratch3VideoSensingBlocks {
 
     async estimatePoseOnImage(imageElement) {
         // load the posenet model from a checkpoint
-        const net = await posenet.load(); // todo: maybe store this!
+        if (!this.net) {
+            this.net = await posenet.load();
+        }
 
-        const pose = await net.estimateSinglePose(imageElement, {
+        const pose = await this.net.estimateSinglePose(imageElement, {
             flipHorizontal: false
         });
         return pose;
@@ -299,8 +301,10 @@ class Scratch3VideoSensingBlocks {
 
     async estimateHandPoseOnImage(imageElement) {
         // load the posenet model from a checkpoint
-        const net = await handpose.load(); // todo: maybe store this!
-        const pose = await net.estimateHands(imageElement, {
+        if (!this.handNet) {
+            this.handNet = await handpose.load();
+        }
+        const pose = await this.handNet.estimateHands(imageElement, {
             flipHorizontal: false
         });
         return pose;
