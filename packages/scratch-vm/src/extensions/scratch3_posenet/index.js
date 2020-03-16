@@ -539,7 +539,7 @@ class Scratch3VideoSensingBlocks {
                         },
                         HAND_SUB_PART: {
                             type: ArgumentType.NUMBER,
-                            defaultValue: 'tip',
+                            defaultValue: 3,
                             menu: 'HAND_SUB_PART'
                         },
                     },
@@ -557,7 +557,7 @@ class Scratch3VideoSensingBlocks {
                         },
                         HAND_SUB_PART: {
                             type: ArgumentType.NUMBER,
-                            defaultValue: 'tip',
+                            defaultValue: 3,
                             menu: 'HAND_SUB_PART'
                         },
                     },
@@ -575,7 +575,7 @@ class Scratch3VideoSensingBlocks {
                         },
                         HAND_SUB_PART: {
                             type: ArgumentType.NUMBER,
-                            defaultValue: 'tip',
+                            defaultValue: 3,
                             menu: 'HAND_SUB_PART'
                         },
                     },
@@ -700,7 +700,7 @@ class Scratch3VideoSensingBlocks {
         if (this.handPoseState.length > 0) {
             console.log("going to hand part");
             const partPosition = this.handPoseState[0].annotations[args['HAND_PART']][args['HAND_SUB_PART']];
-            const [x, y, z] = partPosition;
+            const [x, y, z] = [partPosition[0], partPosition[1], partPosition[2]];
             const {x: scratchX, y: scratchY} = this.tfCoordsToScratch({x, y, z});
             console.log(x,y,z);
             console.log(scratchX, scratchY);
