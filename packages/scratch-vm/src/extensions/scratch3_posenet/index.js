@@ -514,6 +514,37 @@ class Scratch3VideoSensingBlocks {
                     },
                 },
                 {
+                    opcode: 'goToPart',
+                    text: 'go to [PART]',
+                    blockType: BlockType.COMMAND,
+                    isTerminal: false,
+                    arguments: {
+                        PART: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'nose',
+                            menu: 'PART'
+                        },
+                    },
+                },
+                {
+                    opcode: 'goToHandPart',
+                    text: 'go to [HAND_PART] [HAND_SUB_PART]',
+                    blockType: BlockType.COMMAND,
+                    isTerminal: false,
+                    arguments: {
+                        HAND_PART: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'thumb',
+                            menu: 'HAND_PART'
+                        },
+                        HAND_SUB_PART: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 'tip',
+                            menu: 'HAND_SUB_PART'
+                        },
+                    },
+                },
+                {
                     opcode: 'handPosePositionX',
                     text: '[HAND_PART] [HAND_SUB_PART] X',
                     blockType: BlockType.REPORTER,
@@ -660,13 +691,21 @@ class Scratch3VideoSensingBlocks {
         // return (currentMaxClass === String(className));
     }
 
-    /**
-     * @param {object} args - the block arguments
-     * @param {BlockUtility} util - the block utility
-     * @returns {number} class name if video frame matched, empty number if model not loaded yet
-     */
-    posePositionX(args, util) {
-        return this.tfCoordsToScratch(this.poseState.keypoints.find(point => point.part === args['PART']).position.x, 0).x;
+    goToPart(args, util) {
+        const {x, y} = this.tfCoordsToScratch(this.poseState.keypoints.find(point => point.part === args['PART']).position);
+        util.target.setXY(x, y, false);
+    }
+
+    goToHandPart(args, util) {
+        if (this.handPoseState.length > 0) {
+            console.log("going to hand part");
+            const partPosition = this.handPoseState[0].annotations[args['HAND_PART']][args['HAND_SUB_PART']];
+            const [x, y, z] = partPosition;
+            const {x: scratchX, y: scratchY} = this.tfCoordsToScratch({x, y, z});
+            console.log(x,y,z);
+            console.log(scratchX, scratchY);
+            util.target.setXY(scratchX, scratchY, false);
+        }
     }
 
     /**
@@ -674,8 +713,18 @@ class Scratch3VideoSensingBlocks {
      * @param {BlockUtility} util - the block utility
      * @returns {number} class name if video frame matched, empty number if model not loaded yet
      */
+    posePositionX(args, util) {
+        return this.tfCoordsToScratch({x: this.poseState.keypoints.find(point => point.part === args['PART']).position}).x;
+    }
+
+
+    /**
+     * @param {object} args - the block arguments
+     * @param {BlockUtility} util - the block utility
+     * @returns {number} class name if video frame matched, empty number if model not loaded yet
+     */
     posePositionY(args, util) {
-        return this.tfCoordsToScratch(0, this.poseState.keypoints.find(point => point.part === args['PART']).position.y).y;
+        return this.tfCoordsToScratch({y: this.poseState.keypoints.find(point => point.part === args['PART']).position.y}).y;
     }
 
     /**
@@ -685,22 +734,20 @@ class Scratch3VideoSensingBlocks {
      */
     handPosePositionX(args, util) {
         if (this.handPoseState.length > 0) {
-            return this.tfCoordsToScratch(this.handPoseState[0].annotations['thumb'][3][0], 0).x;
-            // return this.handPoseState.keypoints.find(point => point.part === args['PART']).position.x - 250;
+            return this.tfCoordsToScratch({x: this.handPoseState[0].annotations[args['HAND_PART']][args['HAND_SUB_PART']][0]}).x;
         } else {
             return 0;
         }
     }
     handPosePositionY(args, util) {
         if (this.handPoseState.length > 0) {
-            return this.tfCoordsToScratch(0, this.handPoseState[0].annotations['thumb'][3][1]).y;
-            // return this.handPoseState.keypoints.find(point => point.part === args['PART']).position.x - 250;
+            return this.tfCoordsToScratch({y: this.handPoseState[0].annotations[args['HAND_PART']][args['HAND_SUB_PART']][1]}).y;
         } else {
             return 0;
         }
     }
 
-    tfCoordsToScratch(x, y) {
+    tfCoordsToScratch({x, y}) {
         return {x: x - 250, y: 200 - y};
     }
 
