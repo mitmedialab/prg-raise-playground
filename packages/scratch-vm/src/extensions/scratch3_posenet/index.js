@@ -268,6 +268,7 @@ class Scratch3VideoSensingBlocks {
             if (frame) {
                 this._lastUpdate = time;
                 this._isUpdatingPose = 1;
+                // TODO: add checkboxes that enable and disable each model!
                 this.estimatePoseOnImage(frame).then((pose) => {
                     console.log(pose);
                     this.poseState = pose;
@@ -280,8 +281,8 @@ class Scratch3VideoSensingBlocks {
                         this.handPoseState = pose;
                         console.log(`last hand time: ${Date.now() - this._lastUpdate}`);
                         this._lastUpdate = Date.now();
+                        this._isUpdatingPose = 0;
                     });
-                    this._isUpdatingPose = 0;
                 });
             }
         }
