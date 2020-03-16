@@ -15,6 +15,14 @@ const VideoMotion = require('./library');
 
 const tf = require('@tensorflow/tfjs');
 const posenet = require('@tensorflow-models/posenet');
+const handpose = require('@tensorflow-models/handpose');
+
+
+let lastFrameTime = 0;
+
+// const stats = new Stats();
+// stats.showPanel(0);
+// document.body.appendChild(stats.dom);
 
 /**
  * Icon svg to be displayed in the blocks category menu, encoded as a data URI.
@@ -263,6 +271,16 @@ class Scratch3VideoSensingBlocks {
                 this.estimatePoseOnImage(frame).then((pose) => {
                     console.log(pose);
                     this.poseState = pose;
+                    console.log(`last body time: ${Date.now() - this._lastUpdate}`);
+                    this._lastUpdate = Date.now();
+                    this.estimateHandPoseOnImage(frame).then((pose) => {
+                        console.log("Handpose:");
+                        console.log(pose);
+                        /** @type {AnnotatedPrediction[]} */
+                        this.handPoseState = pose;
+                        console.log(`last hand time: ${Date.now() - this._lastUpdate}`);
+                        this._lastUpdate = Date.now();
+                    });
                     this._isUpdatingPose = 0;
                 });
             }
@@ -274,6 +292,15 @@ class Scratch3VideoSensingBlocks {
         const net = await posenet.load(); // todo: maybe store this!
 
         const pose = await net.estimateSinglePose(imageElement, {
+            flipHorizontal: false
+        });
+        return pose;
+    }
+
+    async estimateHandPoseOnImage(imageElement) {
+        // load the posenet model from a checkpoint
+        const net = await handpose.load(); // todo: maybe store this!
+        const pose = await net.estimateHands(imageElement, {
             flipHorizontal: false
         });
         return pose;
@@ -487,6 +514,42 @@ class Scratch3VideoSensingBlocks {
                     },
                 },
                 {
+                    opcode: 'handPosePositionX',
+                    text: '[HAND_PART] [HAND_SUB_PART] X',
+                    blockType: BlockType.REPORTER,
+                    isTerminal: true,
+                    arguments: {
+                        HAND_PART: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'thumb',
+                            menu: 'HAND_PART'
+                        },
+                        HAND_SUB_PART: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 'tip',
+                            menu: 'HAND_SUB_PART'
+                        },
+                    },
+                },
+                {
+                    opcode: 'handPosePositionY',
+                    text: '[HAND_PART] [HAND_SUB_PART] Y',
+                    blockType: BlockType.REPORTER,
+                    isTerminal: true,
+                    arguments: {
+                        HAND_PART: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'thumb',
+                            menu: 'HAND_PART'
+                        },
+                        HAND_SUB_PART: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 'tip',
+                            menu: 'HAND_SUB_PART'
+                        },
+                    },
+                },
+                {
                     opcode: 'videoToggle',
                     text: formatMessage({
                         id: 'videoSensing.videoToggle',
@@ -497,7 +560,7 @@ class Scratch3VideoSensingBlocks {
                         VIDEO_STATE: {
                             type: ArgumentType.NUMBER,
                             menu: 'VIDEO_STATE',
-                            defaultValue: VideoState.ON
+                            defaultValue: VideoState.OFF
                         }
                     }
                 },
@@ -519,10 +582,45 @@ class Scratch3VideoSensingBlocks {
             menus: {
                 PART: {
                     acceptReporters: true,
-                    items: ['nose', 'leftEye', 'rightEye', 'leftEar', 'rightEar', 'leftShoulder', 'rightShoulder', 'leftElbow', 'rightElbow', 'leftWrist', 'rightWrist',
-                        'leftHip', 'rightHip', 'leftKnee',
-                        'rightKnee', 'leftAnkle', 'rightAnkle']
-                        .map((item) => ({text: item, value: item}))
+                    items: [
+                        {text: 'nose', value: 'nose'},
+                        {text: 'left eye', value: 'leftEye'},
+                        {text: 'right eye', value: 'rightEye'},
+                        {text: 'left ear', value: 'leftEar'},
+                        {text: 'right ear', value: 'rightEar'},
+                        {text: 'left shoulder', value: 'leftShoulder'},
+                        {text: 'right shoulder', value: 'rightShoulder'},
+                        {text: 'left elbow', value: 'leftElbow'},
+                        {text: 'right elbow', value: 'rightElbow'},
+                        {text: 'left wrist', value: 'leftWrist'},
+                        {text: 'right wrist', value: 'rightWrist'},
+                        {text: 'left hip', value: 'leftHip'},
+                        {text: 'right hip', value: 'rightHip'},
+                        {text: 'left knee', value: 'leftKnee'},
+                        {text: 'right knee', value: 'rightKnee'},
+                        {text: 'left ankle', value: 'leftAnkle'},
+                        {text: 'right ankle', value: 'rightAnkle'},
+                    ]
+                },
+                HAND_PART: {
+                    acceptReporters: true,
+                    items: [
+                        {text: 'thumb', value: 'thumb'},
+                        {text: 'index finger', value: 'indexFinger'},
+                        {text: 'middle finger', value: 'middleFinger'},
+                        {text: 'ring finger', value: 'ringFinger'},
+                        {text: 'pinky', value: 'pinky'},
+                        {text: 'base of palm', value: 'palmBase'},
+                    ]
+                },
+                HAND_SUB_PART: {
+                    acceptReporters: true,
+                    items: [
+                        {text: 'base', value: 0},
+                        {text: 'first knuckle', value: 1},
+                        {text: 'second knuckle', value: 2},
+                        {text: 'tip', value: 3},
+                    ]
                 },
                 ATTRIBUTE: {
                     acceptReporters: true,
@@ -563,31 +661,47 @@ class Scratch3VideoSensingBlocks {
     }
 
     /**
-     * A scratch hat block reporter that returns whether the current video frame matches the model class.
      * @param {object} args - the block arguments
      * @param {BlockUtility} util - the block utility
-     * @returns {string} class name if video frame matched, empty string if model not loaded yet
+     * @returns {number} class name if video frame matched, empty number if model not loaded yet
      */
     posePositionX(args, util) {
-        return this.poseState.keypoints.find(point => point.part === args['PART']).position.x - 250;
-        // const modelUrl = this.modelArgumentToURL(args.MODEL_URL);
-        // const predictionState = this.getPredictionStateOrStartPredicting(modelUrl);
-        // if (!predictionState) {
-        //     return '';
-        // }
-        //
-        // return predictionState.topClass;
+        return this.tfCoordsToScratch(this.poseState.keypoints.find(point => point.part === args['PART']).position.x, 0).x;
     }
 
+    /**
+     * @param {object} args - the block arguments
+     * @param {BlockUtility} util - the block utility
+     * @returns {number} class name if video frame matched, empty number if model not loaded yet
+     */
     posePositionY(args, util) {
-        return 200 - this.poseState.keypoints.find(point => point.part === args['PART']).position.y;
-        // const modelUrl = this.modelArgumentToURL(args.MODEL_URL);
-        // const predictionState = this.getPredictionStateOrStartPredicting(modelUrl);
-        // if (!predictionState) {
-        //     return '';
-        // }
-        //
-        // return predictionState.topClass;
+        return this.tfCoordsToScratch(0, this.poseState.keypoints.find(point => point.part === args['PART']).position.y).y;
+    }
+
+    /**
+     * @param {object} args - the block arguments
+     * @param {BlockUtility} util - the block utility
+     * @returns {number} class name if video frame matched, empty number if model not loaded yet
+     */
+    handPosePositionX(args, util) {
+        if (this.handPoseState.length > 0) {
+            return this.tfCoordsToScratch(this.handPoseState[0].annotations['thumb'][3][0], 0).x;
+            // return this.handPoseState.keypoints.find(point => point.part === args['PART']).position.x - 250;
+        } else {
+            return 0;
+        }
+    }
+    handPosePositionY(args, util) {
+        if (this.handPoseState.length > 0) {
+            return this.tfCoordsToScratch(0, this.handPoseState[0].annotations['thumb'][3][1]).y;
+            // return this.handPoseState.keypoints.find(point => point.part === args['PART']).position.x - 250;
+        } else {
+            return 0;
+        }
+    }
+
+    tfCoordsToScratch(x, y) {
+        return {x: x - 250, y: 200 - y};
     }
 
     /**
