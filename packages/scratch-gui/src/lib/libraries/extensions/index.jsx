@@ -48,6 +48,26 @@ import gdxforConnectionSmallIconURL from './gdxfor/gdxfor-small.svg';
 
 export default [
     {
+         name: (
+            <FormattedMessage
+                defaultMessage="PRG Arduino Robot"
+                description="Name for the 'Arduino Robot' Extension"
+                id="gui.extension.arduino-robot.name"
+            />
+        ),
+        extensionId: 'arduinoRobot',
+        iconURL: musicIconURL,
+        insetIconURL: musicInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Use Scratch to program an Arduino smart car robot"
+                description="PRG Arduino Robot Car description"
+                id="gui.extension.arduino-robot.description"
+            />
+        ),
+        featured: true
+    },
+    {
         name: (
             <FormattedMessage
                 defaultMessage="Music"
@@ -151,7 +171,7 @@ export default [
         featured: true,
         internetConnectionRequired: true
     },
-    {
+    /*{
         name: 'Makey Makey',
         extensionId: 'makeymakey',
         collaborator: 'JoyLabz',
@@ -317,5 +337,5 @@ export default [
             />
         ),
         helpLink: 'https://scratch.mit.edu/vernier'
-    }
+    }*/
 ];
