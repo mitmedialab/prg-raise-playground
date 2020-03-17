@@ -21,11 +21,7 @@ const iconURI = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAFCAAAAACyO
  * @type {string}
  */
 // eslint-disable-next-line max-len
-const menuIconURI = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAFCAAAAACyOJm3AAAAFklEQVQYV2P4DwMMEMgAI/+DEUIMBgAEWB7i7uidhAAAAABJRU5ErkJggg==';
-
-
-const CHROME_EXTENSION_ID = "molfimodiodghknifkeikkldkogpapki"; //"jpehlabbcdkiocalmhikacglppfenoeo"; // APP ID on Chrome Web Store
-        
+const menuIconURI = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAFCAAAAACyOJm3AAAAFklEQVQYV2P4DwMMEMgAI/+DEUIMBgAEWB7i7uidhAAAAABJRU5ErkJggg==';        
 
 // Core, Team, and Official extension classes should be registered statically with the Extension Manager.
 // See: scratch-vm/src/extension-support/extension-manager.js
@@ -42,31 +38,13 @@ class ArduinoRobot {
         
         this._mStatus = 1;
         this._mConnection = null;
-        
+        this.CHROME_EXTENSION_ID = "jpehlabbcdkiocalmhikacglppfenoeo"; // "molfimodiodghknifkeikkldkogpapki"; APP ID on Chrome Web Store
+
         this.msg1 = {};
         this.msg2 = {};
         this.dist_read  = 0;
     
-        // Connect to the Chrome runtime
-        // Randi - this causes a problem because I can no longer access the ArduinoRobot object       
-        var boundMsgHandler = this.onMsgFromExtension.bind(this);
-        
-        chrome.runtime.sendMessage(CHROME_EXTENSION_ID, {message: "STATUS"}, function (response) {
-            if (response === undefined) { //Chrome app not found
-                console.log("Chrome app not found");
-                _mStatus = 0;
-            } else if (response.status === false) { //Chrome app says not connected
-                console.log("Chome app is not running"); // what does this mean?
-                _mStatus = 1;
-            } else {// Chrome app is connected
-                console.log("Chrome app found");
-                if (this._mStatus !== 2) {
-                    _mConnection = chrome.runtime.connect(CHROME_EXTENSION_ID);
-                    _mConnection.onMessage.addListener(boundMsgHandler); // THIS IS WRONG
-                    _mStatus = 1;
-                }
-            }
-        });
+        this.connectToExtension();
     }
 
     /**
@@ -114,6 +92,37 @@ class ArduinoRobot {
             distance = -1;
         }
         return distance;
+    }
+    
+    connectToExtension() {
+        // Connect to the Chrome runtime
+        // Randi - this causes a problem because I can no longer access the ArduinoRobot object       
+        var boundMsgHandler = this.onMsgFromExtension.bind(this);
+        var robot = this;
+        
+        chrome.runtime.sendMessage(this.CHROME_EXTENSION_ID, {message: "STATUS"}, function (response) {
+            if (response === undefined) { //Chrome app not found
+                console.log("Chrome app not found with extension ID: " + robot.CHROME_EXTENSION_ID);
+                robot.CHROME_EXTENSION_ID = window.localStorage.getItem('gizmo_extension_id');
+                console.log("Stored extension ID: " + robot.CHROME_EXTENSION_ID);
+                if (robot.CHROME_EXTENSION_ID === undefined || robot.CHROME_EXTENSION_ID === "" || robot.CHROME_EXTENSION_ID === null) {
+                   robot.CHROME_EXTENSION_ID = window.prompt("Enter the correct Chrome Extension ID", "pnjoidacmeigcdbikhgjolnadkdiegca");  
+                }
+                robot._mStatus = 0;
+                robot.connectToExtension();
+            } else if (response.status === false) { //Chrome app says not connected
+                console.log("Chome extension is not running"); // what does this mean?
+                robot._mStatus = 1;
+            } else {// Chrome app is connected
+                console.log("Chrome extension found");
+                window.localStorage.setItem('gizmo_extension_id', robot.CHROME_EXTENSION_ID);
+                if (robot._mStatus !== 2) {
+                    robot._mConnection = chrome.runtime.connect(robot.CHROME_EXTENSION_ID);
+                    robot._mConnection.onMessage.addListener(boundMsgHandler); // THIS IS WRONG
+                    robot._mStatus = 1;
+                }
+            }
+        });
     }
     
     onMsgFromExtension (msg) {
