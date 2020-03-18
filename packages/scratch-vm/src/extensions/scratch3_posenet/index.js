@@ -17,12 +17,26 @@ const tf = require('@tensorflow/tfjs');
 const posenet = require('@tensorflow-models/posenet');
 const handpose = require('@tensorflow-models/handpose');
 
+const Stats = require('stats.js');
 
 let lastFrameTime = 0;
 
-// const stats = new Stats();
-// stats.showPanel(0);
-// document.body.appendChild(stats.dom);
+
+
+const fpsStats = new Stats();
+fpsStats.showPanel(0);
+
+document.body.appendChild(fpsStats.dom);
+function animate() {
+    fpsStats.begin();
+
+    // monitored code goes here
+
+    fpsStats.end();
+    requestAnimationFrame( animate );
+}
+
+requestAnimationFrame( animate );
 
 /**
  * Icon svg to be displayed in the blocks category menu, encoded as a data URI.
@@ -113,6 +127,8 @@ class Scratch3VideoSensingBlocks {
          * @type {boolean}
          */
         this.firstInstall = true;
+
+        console.log("Ayy");
 
         if (this.runtime.ioDevices) {
             // Configure the video device with values from globally stored locations.
@@ -270,16 +286,17 @@ class Scratch3VideoSensingBlocks {
                 this._isUpdatingPose = 1;
                 // TODO: add checkboxes that enable and disable each model!
                 this.estimatePoseOnImage(frame).then((pose) => {
-                    console.log(pose);
+                    // console.log(pose);
                     this.poseState = pose;
                     console.log(`last body time: ${Date.now() - this._lastUpdate}`);
                     this._lastUpdate = Date.now();
                     this.estimateHandPoseOnImage(frame).then((pose) => {
-                        console.log("Handpose:");
-                        console.log(pose);
+                        // console.log("Handpose:");
+                        // console.log(pose);
                         /** @type {AnnotatedPrediction[]} */
                         this.handPoseState = pose;
                         console.log(`last hand time: ${Date.now() - this._lastUpdate}`);
+                        console.log(pose && pose.length > 0 && pose[0]);
                         this._lastUpdate = Date.now();
                         this._isUpdatingPose = 0;
                     });
@@ -718,7 +735,7 @@ class Scratch3VideoSensingBlocks {
      * @returns {number} class name if video frame matched, empty number if model not loaded yet
      */
     posePositionX(args, util) {
-        return this.tfCoordsToScratch({x: this.poseState.keypoints.find(point => point.part === args['PART']).position}).x;
+        return this.tfCoordsToScratch({x: this.poseState.keypoints.find(point => point.part === args['PART']).position.x}).x;
     }
 
 
