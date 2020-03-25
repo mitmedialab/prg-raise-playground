@@ -3,40 +3,38 @@ const Runtime = require('../../engine/runtime');
 
 const ArgumentType = require('../../extension-support/argument-type');
 const BlockType = require('../../extension-support/block-type');
-const Clone = require('../../util/clone');
 const Cast = require('../../util/cast');
 const formatMessage = require('format-message');
 const Video = require('../../io/video');
 
-const VideoMotion = require('./library');
-
-// import * as tf from '@tensorflow/tfjs';
-// import * as tmImage from '@teachablemachine/image';
-
-const tf = require('@tensorflow/tfjs');
 const posenet = require('@tensorflow-models/posenet');
 const handpose = require('@tensorflow-models/handpose');
 
 const Stats = require('stats.js');
 
-let lastFrameTime = 0;
-
-
-
-const fpsStats = new Stats();
-fpsStats.showPanel(0);
-
-document.body.appendChild(fpsStats.dom);
-function animate() {
-    fpsStats.begin();
-
-    // monitored code goes here
-
-    fpsStats.end();
-    requestAnimationFrame( animate );
+function initializeFPSStats() {
+    const fpsStats = new Stats();
+    fpsStats.showPanel(0);
+    document.body.appendChild(fpsStats.dom);
+    const animate = () => {
+        fpsStats.begin();
+        fpsStats.end();
+        requestAnimationFrame(animate);
+    };
+    requestAnimationFrame(animate);
 }
 
-requestAnimationFrame( animate );
+function initializeModelStats() {
+    const modelStats = new Stats();
+    modelStats.showPanel(0);
+    document.body.appendChild(modelStats.dom);
+    modelStats.dom.style.left = null;
+    modelStats.dom.style.right = 0;
+    return modelStats;
+}
+
+const modelStats = initializeModelStats();
+initializeFPSStats();
 
 /**
  * Icon svg to be displayed in the blocks category menu, encoded as a data URI.
@@ -99,7 +97,7 @@ const VideoState = {
  * @param {Runtime} runtime - the runtime instantiating this block package.
  * @constructor
  */
-class Scratch3VideoSensingBlocks {
+class Scratch3PoseNetBlocks {
     constructor (runtime) {
         /**
          * The runtime instantiating this block package.
@@ -108,36 +106,15 @@ class Scratch3VideoSensingBlocks {
         this.runtime = runtime;
 
         /**
-         * The motion detection algoritm used to power the motion amount and
-         * direction values.
-         * @type {VideoMotion}
-         */
-        this.detect = new VideoMotion();
-
-        /**
-         * The last millisecond epoch timestamp that the video stream was
-         * analyzed.
-         * @type {number}
-         */
-        this._lastUpdate = null;
-
-        /**
          * A flag to determine if this extension has been installed in a project.
          * It is set to false the first time getInfo is run.
          * @type {boolean}
          */
         this.firstInstall = true;
 
-        console.log("Ayy");
-
         if (this.runtime.ioDevices) {
-            // Configure the video device with values from globally stored locations.
-            this.runtime.on(Runtime.PROJECT_LOADED, this.updateVideoDisplay.bind(this));
-
-            // Clear target motion state values when the project starts.
+            this.runtime.on(Runtime.PROJECT_LOADED, this.projectStarted.bind(this));
             this.runtime.on(Runtime.PROJECT_RUN_START, this.reset.bind(this));
-
-            // Kick off looping the analysis logic.
             this._loop();
         }
     }
@@ -165,7 +142,7 @@ class Scratch3VideoSensingBlocks {
      * @type {string}
      */
     static get STATE_KEY () {
-        return 'Scratch.videoSensing';
+        return 'Scratch.poseNet';
     }
 
     /**
@@ -229,7 +206,7 @@ class Scratch3VideoSensingBlocks {
      * Get the latest values for video transparency and state,
      * and set the video device to use them.
      */
-    updateVideoDisplay () {
+    projectStarted () {
         this.setVideoTransparency({
             TRANSPARENCY: this.globalVideoTransparency
         });
@@ -238,106 +215,59 @@ class Scratch3VideoSensingBlocks {
         });
     }
 
-    /**
-     * Reset the extension's data motion detection data. This will clear out
-     * for example old frames, so the first analyzed frame will not be compared
-     * against a frame from before reset was called.
-     */
     reset () {
-        this.detect.reset();
-
-        const targets = this.runtime.targets;
-        for (let i = 0; i < targets.length; i++) {
-            const state = targets[i].getCustomState(Scratch3VideoSensingBlocks.STATE_KEY);
-            if (state) {
-                state.motionAmount = 0;
-                state.motionDirection = 0;
-            }
-        }
     }
 
-    /**
-     * Occasionally step a loop to sample the video, stamp it to the preview
-     * skin, and add a TypedArray copy of the canvas's pixel data.
-     * @private
-     */
-    _loop () {
-        setTimeout(this._loop.bind(this), Math.max(this.runtime.currentStepTime, Scratch3VideoSensingBlocks.INTERVAL));
-
-        // Add frame to detector
-        const time = Date.now();
-        if (this._lastUpdate === null) {
-            this._lastUpdate = time;
-        }
-        if (!this._isUpdatingPose) {
-            this._isUpdatingPose = 0;
-        }
-        const offset = time - this._lastUpdate;
-
-        // TOOD: Self-throttle interval if slow to run predictions
-        if (offset > Scratch3VideoSensingBlocks.INTERVAL && this._isUpdatingPose === 0) {
+    async _loop () {
+        while (1) {
+            modelStats.begin();
             const frame = this.runtime.ioDevices.video.getFrame({
                 format: Video.FORMAT_IMAGE_DATA,
-                dimensions: Scratch3VideoSensingBlocks.DIMENSIONS
+                dimensions: Scratch3PoseNetBlocks.DIMENSIONS
             });
 
+            const time = +new Date();
             if (frame) {
-                this._lastUpdate = time;
-                this._isUpdatingPose = 1;
-                // TODO: add checkboxes that enable and disable each model!
-                this.estimatePoseOnImage(frame).then((pose) => {
-                    // console.log(pose);
-                    this.poseState = pose;
-                    console.log(`last body time: ${Date.now() - this._lastUpdate}`);
-                    this._lastUpdate = Date.now();
-                    this.estimateHandPoseOnImage(frame).then((pose) => {
-                        // console.log("Handpose:");
-                        // console.log(pose);
-                        /** @type {AnnotatedPrediction[]} */
-                        this.handPoseState = pose;
-                        console.log(`last hand time: ${Date.now() - this._lastUpdate}`);
-                        console.log(pose && pose.length > 0 && pose[0]);
-                        this._lastUpdate = Date.now();
-                        this._isUpdatingPose = 0;
-                    });
-                });
+                this.poseState = await this.estimatePoseOnImage(frame);
+                this.handPoseState = await this.estimateHandPoseOnImage(frame);
             }
+            const estimateThrottleTimeout = (+new Date() - time) / 4;
+            await new Promise(r => setTimeout(r, estimateThrottleTimeout));
+            modelStats.end();
         }
     }
 
     async estimatePoseOnImage(imageElement) {
         // load the posenet model from a checkpoint
-        if (!this.net) {
-            this.net = await posenet.load();
-        }
-
-        const pose = await this.net.estimateSinglePose(imageElement, {
+        const bodyModel = await this.ensureBodyModelLoaded();
+        return await bodyModel.estimateSinglePose(imageElement, {
             flipHorizontal: false
         });
-        return pose;
     }
 
+    async ensureBodyModelLoaded() {
+        if (!this._bodyModel) {
+            this._bodyModel = await posenet.load();
+        }
+        return this._bodyModel;
+    }
+
+    /**
+     * @param imageElement
+     * @returns {Promise<AnnotatedPrediction[]>}
+     */
     async estimateHandPoseOnImage(imageElement) {
-        // load the posenet model from a checkpoint
-        if (!this.handNet) {
-            this.handNet = await handpose.load();
-        }
-        const pose = await this.handNet.estimateHands(imageElement, {
+        const handModel = await this.getLoadedHandModel();
+        return await handModel.estimateHands(imageElement, {
             flipHorizontal: false
         });
-        return pose;
     }
 
-    async predictAllBlocks(frame) {
-        for (let modelUrl in this.predictionState) {
-            if (!this.predictionState[modelUrl].model) {
-                continue;
-            }
-            ++this._isUpdatingPose;
-            const prediction = await this.predictModel(modelUrl, frame);
-            this.predictionState[modelUrl].topClass = prediction;
-            --this._isUpdatingPose;
+    async getLoadedHandModel() {
+        if (!this._handModel) {
+            this._handModel = await handpose.load();
         }
+        return this._handModel;
     }
 
     /**
@@ -356,21 +286,6 @@ class Scratch3VideoSensingBlocks {
             obj.value = entry.value || String(index + 1);
             return obj;
         });
-    }
-
-    /**
-     * @param {Target} target - collect motion state for this target.
-     * @returns {MotionState} the mutable motion state associated with that
-     *   target. This will be created if necessary.
-     * @private
-     */
-    _getMotionState (target) {
-        let motionState = target.getCustomState(Scratch3VideoSensingBlocks.STATE_KEY);
-        if (!motionState) {
-            motionState = Clone.simple(Scratch3VideoSensingBlocks.DEFAULT_MOTION_STATE);
-            target.setCustomState(Scratch3VideoSensingBlocks.STATE_KEY, motionState);
-        }
-        return motionState;
     }
 
     static get SensingAttribute () {
@@ -493,9 +408,11 @@ class Scratch3VideoSensingBlocks {
         if (this.firstInstall) {
             this.globalVideoState = VideoState.ON;
             this.globalVideoTransparency = 50;
-            this.updateVideoDisplay();
+            this.projectStarted();
             this.firstInstall = false;
             this.predictionState = {};
+            this._bodyModel = null;
+            this._handModel = null;
         }
 
         // Return extension definition
@@ -509,6 +426,22 @@ class Scratch3VideoSensingBlocks {
             blockIconURI: blockIconURI,
             menuIconURI: menuIconURI,
             blocks: [
+                {
+
+                    opcode: 'enableBodyPoseButton',
+                    blockType: BlockType.BUTTON,
+                    text: 'Track Body Parts',
+                    func: 'POSE_ENABLE_BODY'
+                },
+                '---',
+                {
+
+                    opcode: 'enableHandPoseButton',
+                    blockType: BlockType.BUTTON,
+                    text: 'Track Hand Parts',
+                    func: 'POSE_ENABLE_HAND'
+                },
+                '---',
                 {
                     opcode: 'posePositionX',
                     text: '[PART] position X',
@@ -691,28 +624,6 @@ class Scratch3VideoSensingBlocks {
         };
     }
 
-
-    /**
-     * A scratch hat block edge handle that downloads a teachable machine model and determines whether the
-     * current video frame matches the model class.
-     * @param {object} args - the block arguments
-     * @param {BlockUtility} util - the block utility
-     * @returns {boolean} true if the model matches
-     *   reference
-     */
-    whenModelMatches(args, util) {
-        // const modelUrl = this.modelArgumentToURL(args.MODEL_URL);
-        // const className = args.CLASS_NAME;
-        //
-        // const predictionState = this.getPredictionStateOrStartPredicting(modelUrl);
-        // if (!predictionState) {
-        //     return false;
-        // }
-        //
-        // const currentMaxClass = predictionState.topClass;
-        // return (currentMaxClass === String(className));
-    }
-
     goToPart(args, util) {
         const {x, y} = this.tfCoordsToScratch(this.poseState.keypoints.find(point => point.part === args['PART']).position);
         util.target.setXY(x, y, false);
@@ -720,11 +631,8 @@ class Scratch3VideoSensingBlocks {
 
     goToHandPart(args, util) {
         if (this.handPoseState.length > 0) {
-            console.log("going to hand part");
             const [x, y, z] = this.handPoseState[0].annotations[args['HAND_PART']][args['HAND_SUB_PART']];
             const {x: scratchX, y: scratchY} = this.tfCoordsToScratch({x, y, z});
-            console.log(x,y,z);
-            console.log(scratchX, scratchY);
             util.target.setXY(scratchX, scratchY, false);
         }
     }
@@ -737,7 +645,6 @@ class Scratch3VideoSensingBlocks {
     posePositionX(args, util) {
         return this.tfCoordsToScratch({x: this.poseState.keypoints.find(point => point.part === args['PART']).position.x}).x;
     }
-
 
     /**
      * @param {object} args - the block arguments
@@ -754,18 +661,16 @@ class Scratch3VideoSensingBlocks {
      * @returns {number} class name if video frame matched, empty number if model not loaded yet
      */
     handPosePositionX(args, util) {
-        if (this.handPoseState.length > 0) {
-            return this.tfCoordsToScratch({x: this.handPoseState[0].annotations[args['HAND_PART']][args['HAND_SUB_PART']][0]}).x;
-        } else {
-            return 0;
-        }
+        return this.handPoseState.length > 0 ? this.tfCoordsToScratch({x: this.handPoseState[0].annotations[args['HAND_PART']][args['HAND_SUB_PART']][0]}).x : 0;
     }
+
+    /**
+     * @param {object} args - the block arguments
+     * @param {BlockUtility} util - the block utility
+     * @returns {number} class name if video frame matched, empty number if model not loaded yet
+     */
     handPosePositionY(args, util) {
-        if (this.handPoseState.length > 0) {
-            return this.tfCoordsToScratch({y: this.handPoseState[0].annotations[args['HAND_PART']][args['HAND_SUB_PART']][1]}).y;
-        } else {
-            return 0;
-        }
+        return this.handPoseState.length > 0 ? this.tfCoordsToScratch({y: this.handPoseState[0].annotations[args['HAND_PART']][args['HAND_SUB_PART']][1]}).y : 0;
     }
 
     tfCoordsToScratch({x, y}) {
@@ -804,4 +709,4 @@ class Scratch3VideoSensingBlocks {
     }
 }
 
-module.exports = Scratch3VideoSensingBlocks;
+module.exports = Scratch3PoseNetBlocks;

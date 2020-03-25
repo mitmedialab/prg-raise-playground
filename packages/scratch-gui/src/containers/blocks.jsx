@@ -111,6 +111,14 @@ class Blocks extends React.Component {
         toolboxWorkspace.registerButtonCallback('MAKE_A_VARIABLE', varListButtonCallback(''));
         toolboxWorkspace.registerButtonCallback('MAKE_A_LIST', varListButtonCallback('list'));
         toolboxWorkspace.registerButtonCallback('MAKE_A_PROCEDURE', procButtonCallback);
+        toolboxWorkspace.registerButtonCallback('POSE_ENABLE_BODY', () => {
+            console.log("Enabling body pose tracking!");
+            // TODO: store in VM runtime
+        });
+        toolboxWorkspace.registerButtonCallback('POSE_ENABLE_HAND', () => {
+            console.log("Enabling hand pose tracking!");
+            // TODO: store in VM runtime
+        });
 
         // Store the xml of the toolbox that is actually rendered.
         // This is used in componentDidUpdate instead of prevProps, because
