@@ -891,7 +891,7 @@ class Scratch3PoseNetBlocks {
         if (!this.affdexState || !this.affdexState.emotions) {
             return 0;
         }
-        return this.affdexState.emotions[args['EMOTION']] * 100;
+        return this.affdexState.emotions[args['EMOTION']];
     }
 
     affdexEyesClosed() {
