@@ -36,6 +36,13 @@ function initializeModelStats() {
 const modelStats = initializeModelStats();
 initializeFPSStats();
 
+const ALL_EMOTIONS = ['joy',
+    'sadness',
+    'disgust',
+    'anger',
+    'fear'
+];
+
 /**
  * Icon svg to be displayed in the blocks category menu, encoded as a data URI.
  * @type {string}
@@ -228,13 +235,60 @@ class Scratch3PoseNetBlocks {
 
             const time = +new Date();
             if (frame) {
-                this.poseState = await this.estimatePoseOnImage(frame);
-                this.handPoseState = await this.estimateHandPoseOnImage(frame);
+                this.affdexState = await this.estimateAffdexOnImage(frame);
+                console.log(this.affdexState);
+                // this.poseState = await this.estimatePoseOnImage(frame);
+                // this.handPoseState = await this.estimateHandPoseOnImage(frame);
             }
             const estimateThrottleTimeout = (+new Date() - time) / 4;
             await new Promise(r => setTimeout(r, estimateThrottleTimeout));
             modelStats.end();
         }
+    }
+
+    async estimateAffdexOnImage(imageElement) {
+        const affdexDetector = await this.ensureAffdexLoaded(imageElement);
+
+        affdexDetector.process(imageElement, 0);
+        return new Promise((resolve, reject) => {
+            const resultListener = function(faces, image, timestamp) {
+                affdexDetector.removeEventListener("onImageResultsSuccess", resultListener);
+                if (faces.length < 1) {
+                    resolve(null);
+                    return;
+                }
+                resolve(faces[0]);
+            };
+            affdexDetector.addEventListener("onImageResultsSuccess", resultListener);
+        });
+    }
+
+    async ensureAffdexLoaded(imageElement) {
+        if (!this._affdex) {
+            const affdexLoader = new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                document.body.appendChild(script);
+                script.onload = resolve;
+                script.onerror = reject;
+                script.async = true;
+                script.src = 'https://download.affectiva.com/js/3.2.1/affdex.js';
+            });
+            await affdexLoader;
+            const affdexStarter = new Promise((resolve, reject) => {
+                const width = 640;
+                const height = 480;
+                const faceMode = window.affdex.FaceDetectorMode.LARGE_FACES;
+                //Construct a CameraDetector and specify the image width / height and face detector mode.
+                const detector = new window.affdex.PhotoDetector(imageElement, width, height, faceMode);
+                detector.detectAllEmotions();
+                detector.detectAllExpressions();
+                detector.start();
+                this._affdex = detector;
+                detector.addEventListener("onInitializeSuccess", resolve);
+            });
+            await affdexStarter;
+        }
+        return this._affdex;
     }
 
     async estimatePoseOnImage(imageElement) {
@@ -443,6 +497,80 @@ class Scratch3PoseNetBlocks {
                 },
                 '---',
                 {
+                    opcode: 'affdexSmile',
+                    text: 'smiling',
+                    blockType: BlockType.BOOLEAN,
+                    isTerminal: true,
+                },
+                {
+                    opcode: 'affdexEyesClosed',
+                    text: 'eyes are closed',
+                    blockType: BlockType.BOOLEAN,
+                    isTerminal: true,
+                },
+                {
+                    opcode: 'affdexMouthOpen',
+                    text: 'mouth is open',
+                    blockType: BlockType.BOOLEAN,
+                    isTerminal: true,
+                },
+                {
+                    opcode: 'affdexBrowRaise',
+                    text: 'eyebrow raise',
+                    blockType: BlockType.REPORTER,
+                    isTerminal: true,
+                },
+                {
+                    opcode: 'affdexSmileAmount',
+                    text: 'smile amount',
+                    blockType: BlockType.REPORTER,
+                    isTerminal: true,
+                },
+                {
+                    opcode: 'affdexMouthOpenAmount',
+                    text: 'mouth open amount',
+                    blockType: BlockType.REPORTER,
+                    isTerminal: true,
+                },
+                {
+                    opcode: 'affdexTopEmotionName',
+                    text: 'top emotion',
+                    blockType: BlockType.REPORTER,
+                    isTerminal: true,
+                },
+                {
+                    opcode: 'affdexTopEmotionAmount',
+                    text: 'top emotion amount',
+                    blockType: BlockType.REPORTER,
+                    isTerminal: true,
+                },
+                {
+                    opcode: 'affdexIsTopEmotion',
+                    text: 'top emotion is [EMOTION]',
+                    blockType: BlockType.BOOLEAN,
+                    isTerminal: true,
+                    arguments: {
+                        EMOTION: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'joy',
+                            menu: 'EMOTION'
+                        },
+                    },
+                },
+                {
+                    opcode: 'affdexIsEmotion',
+                    text: 'emotion is [EMOTION]',
+                    blockType: BlockType.BOOLEAN,
+                    isTerminal: true,
+                    arguments: {
+                        EMOTION: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'joy',
+                            menu: 'EMOTION'
+                        },
+                    },
+                },
+                {
                     opcode: 'posePositionX',
                     text: '[PART] position X',
                     blockType: BlockType.REPORTER,
@@ -566,6 +694,20 @@ class Scratch3PoseNetBlocks {
                 }
             ],
             menus: {
+                EMOTION: {
+                    acceptReporters: true,
+                    items: [
+                        {text: 'joy', value: 'joy'},
+                        {text: 'sadness', value: 'sadness'},
+                        {text: 'disgust', value: 'disgust'},
+                        // {text: 'contempt', value: 'contempt'},
+                        {text: 'anger', value: 'anger'},
+                        {text: 'fear', value: 'fear'},
+                        // {text: 'surprise', value: 'surprise'},
+                        // {text: 'valence', value: 'valence'},
+                        // {text: 'engagement', value: 'engagement'},
+                    ]
+                },
                 PART: {
                     acceptReporters: true,
                     items: [
@@ -622,6 +764,142 @@ class Scratch3PoseNetBlocks {
                 }
             }
         };
+    }
+
+    /**
+     smile: 0
+     innerBrowRaise: 0
+     browRaise: 0
+     browFurrow: 0
+     noseWrinkle: 0
+     upperLipRaise: 0
+     lipCornerDepressor: 0
+     chinRaise: 0
+     lipPucker: 0
+     lipPress: 0
+     lipSuck: 0
+     mouthOpen: 0
+     smirk: 0
+     eyeClosure: 0
+     attention: 87.72370910644531
+     lidTighten: 0
+     jawDrop: 0
+     dimpler: 0
+     eyeWiden: 0
+     cheekRaise: 0
+     lipStretch: 0
+     */
+
+    /**
+     *
+     joy: 0
+     sadness: 0
+     disgust: 0
+     contempt: 0
+     anger: 0
+     fear: 0
+     surprise: 0
+     valence: 0
+     engagement: 0
+     * @returns {null|boolean}
+     */
+
+
+    affdexMouthOpen() {
+        if (!this.affdexState || !this.affdexState.expressions) {
+            return null;
+        }
+        return this.affdexState.expressions.mouthOpen > .5;
+    }
+
+    affdexMouthOpenAmount() {
+        if (!this.affdexState || !this.affdexState.expressions) {
+            return null;
+        }
+        return this.affdexState.expressions.mouthOpen;
+    }
+
+    affdexIsEmotion(args, util) {
+        if (!this.affdexState || !this.affdexState.emotions) {
+            return null;
+        }
+        return this.affdexState.emotions[args['EMOTION']] > 50;
+    }
+
+    affdexIsTopEmotion(args, util) {
+        if (!this.affdexState || !this.affdexState.emotions) {
+            return null;
+        }
+        let maxEmotionValue = -Number.MAX_VALUE;
+        let maxEmotion = null;
+        ALL_EMOTIONS.forEach((emotion) => {
+            const emotionValue = this.affdexState.emotions[emotion];
+            if (emotionValue > maxEmotionValue) {
+                maxEmotionValue = emotionValue;
+                maxEmotion = emotion;
+            }
+        });
+        return args['EMOTION'] === maxEmotion;
+    }
+
+    affdexTopEmotionName(args, util) {
+        if (!this.affdexState || !this.affdexState.emotions) {
+            return null;
+        }
+        let maxEmotionValue = -Number.MAX_VALUE;
+        let maxEmotion = null;
+        ALL_EMOTIONS.forEach((emotion) => {
+            const emotionValue = this.affdexState.emotions[emotion];
+            if (emotionValue > maxEmotionValue) {
+                maxEmotionValue = emotionValue;
+                maxEmotion = emotion;
+            }
+        });
+        return maxEmotion;
+    }
+
+    affdexTopEmotionAmount(args, util) {
+        if (!this.affdexState || !this.affdexState.emotions) {
+            return null;
+        }
+        let maxEmotionValue = -Number.MAX_VALUE;
+        let maxEmotion = null;
+        ALL_EMOTIONS.forEach((emotion) => {
+            const emotionValue = this.affdexState.emotions[emotion];
+            if (emotionValue > maxEmotionValue) {
+                maxEmotionValue = emotionValue;
+                maxEmotion = emotion;
+            }
+        });
+        return maxEmotionValue;
+    }
+
+    affdexEyesClosed() {
+        if (!this.affdexState || !this.affdexState.expressions) {
+            return null;
+        }
+        return this.affdexState.expressions.eyeClosure > .5;
+    }
+
+    affdexSmile() {
+        if (!this.affdexState || !this.affdexState.expressions) {
+            return null;
+        }
+        return this.affdexState.expressions.smile > .5;
+    }
+
+    affdexSmileAmount() {
+        if (!this.affdexState || !this.affdexState.expressions) {
+            return null;
+        }
+        return this.affdexState.expressions.smile;
+    }
+
+    affdexBrowRaise() {
+        if (!this.affdexState || !this.affdexState.expressions) {
+            return null;
+        }
+        return this.affdexState.expressions.browRaise;
     }
 
     goToPart(args, util) {
