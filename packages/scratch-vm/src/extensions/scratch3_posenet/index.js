@@ -545,6 +545,19 @@ class Scratch3PoseNetBlocks {
                     isTerminal: true,
                 },
                 {
+                    opcode: 'affdexEmotionAmount',
+                    text: '[EMOTION] amount',
+                    blockType: BlockType.REPORTER,
+                    isTerminal: true,
+                    arguments: {
+                        EMOTION: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'joy',
+                            menu: 'EMOTION'
+                        },
+                    },
+                },
+                {
                     opcode: 'affdexIsTopEmotion',
                     text: 'top emotion is [EMOTION]',
                     blockType: BlockType.BOOLEAN,
@@ -872,6 +885,13 @@ class Scratch3PoseNetBlocks {
             }
         });
         return maxEmotionValue;
+    }
+
+    affdexEmotionAmount(args, util) {
+        if (!this.affdexState || !this.affdexState.emotions) {
+            return 0;
+        }
+        return this.affdexState.emotions[args['EMOTION']] * 100;
     }
 
     affdexEyesClosed() {
