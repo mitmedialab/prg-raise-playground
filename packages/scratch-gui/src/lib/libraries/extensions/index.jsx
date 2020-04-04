@@ -56,8 +56,8 @@ export default [
             />
         ),
         extensionId: 'arduinoRobot',
-        iconURL: musicIconURL,
-        insetIconURL: musicInsetIconURL,
+        iconURL: microbitIconURL,
+        insetIconURL: microbitInsetIconURL,
         description: (
             <FormattedMessage
                 defaultMessage="Use Scratch to program an Arduino smart car robot"
