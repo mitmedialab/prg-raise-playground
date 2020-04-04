@@ -1,6 +1,9 @@
 import React from 'react';
 import {FormattedMessage} from 'react-intl';
 
+import arduinoRobotIconURL from './arduino_extension/arduino_extension.png';
+import arduinoRobotInsetIconURL from './arduino_extension/arduino_small.svg';
+
 import musicIconURL from './music/music.png';
 import musicInsetIconURL from './music/music-small.svg';
 
@@ -56,8 +59,8 @@ export default [
             />
         ),
         extensionId: 'arduinoRobot',
-        iconURL: microbitIconURL,
-        insetIconURL: microbitInsetIconURL,
+        iconURL: arduinoRobotIconURL,
+        insetIconURL: arduinoRobotInsetIconURL,
         description: (
             <FormattedMessage
                 defaultMessage="Use Scratch to program an Arduino smart car robot"
