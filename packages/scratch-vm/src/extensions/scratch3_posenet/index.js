@@ -33,6 +33,10 @@ function initializeModelStats() {
     return modelStats;
 }
 
+function friendlyRound(amount) {
+    return Number(amount).toFixed(2);
+}
+
 const modelStats = initializeModelStats();
 initializeFPSStats();
 
@@ -546,14 +550,14 @@ class Scratch3PoseNetBlocks {
                 },
                 {
                     opcode: 'affdexEmotionAmount',
-                    text: '[EMOTION] amount',
+                    text: '[EMOTION_ALL] amount',
                     blockType: BlockType.REPORTER,
                     isTerminal: true,
                     arguments: {
-                        EMOTION: {
+                        EMOTION_ALL: {
                             type: ArgumentType.STRING,
                             defaultValue: 'joy',
-                            menu: 'EMOTION'
+                            menu: 'EMOTION_ALL'
                         },
                     },
                 },
@@ -572,14 +576,14 @@ class Scratch3PoseNetBlocks {
                 },
                 {
                     opcode: 'affdexIsEmotion',
-                    text: 'emotion is [EMOTION]',
+                    text: 'emotion is [EMOTION_ALL]',
                     blockType: BlockType.BOOLEAN,
                     isTerminal: true,
                     arguments: {
-                        EMOTION: {
+                        EMOTION_ALL: {
                             type: ArgumentType.STRING,
                             defaultValue: 'joy',
-                            menu: 'EMOTION'
+                            menu: 'EMOTION_ALL'
                         },
                     },
                 },
@@ -721,6 +725,20 @@ class Scratch3PoseNetBlocks {
                         // {text: 'engagement', value: 'engagement'},
                     ]
                 },
+                EMOTION_ALL: {
+                    acceptReporters: true,
+                    items: [
+                        {text: 'joy', value: 'joy'},
+                        {text: 'sadness', value: 'sadness'},
+                        {text: 'disgust', value: 'disgust'},
+                        {text: 'contempt', value: 'contempt'},
+                        {text: 'anger', value: 'anger'},
+                        {text: 'fear', value: 'fear'},
+                        {text: 'surprise', value: 'surprise'},
+                        {text: 'valence', value: 'valence'},
+                        {text: 'engagement', value: 'engagement'},
+                    ]
+                },
                 PART: {
                     acceptReporters: true,
                     items: [
@@ -829,14 +847,14 @@ class Scratch3PoseNetBlocks {
         if (!this.affdexState || !this.affdexState.expressions) {
             return null;
         }
-        return this.affdexState.expressions.mouthOpen;
+        return friendlyRound(this.affdexState.expressions.mouthOpen);
     }
 
     affdexIsEmotion(args, util) {
         if (!this.affdexState || !this.affdexState.emotions) {
             return null;
         }
-        return this.affdexState.emotions[args['EMOTION']] > 50;
+        return this.affdexState.emotions[args['EMOTION_ALL']] > 50;
     }
 
     affdexIsTopEmotion(args, util) {
@@ -884,14 +902,14 @@ class Scratch3PoseNetBlocks {
                 maxEmotion = emotion;
             }
         });
-        return maxEmotionValue;
+        return friendlyRound(maxEmotionValue);
     }
 
     affdexEmotionAmount(args, util) {
         if (!this.affdexState || !this.affdexState.emotions) {
             return 0;
         }
-        return this.affdexState.emotions[args['EMOTION']];
+        return friendlyRound(this.affdexState.emotions[args['EMOTION_ALL']]);
     }
 
     affdexEyesClosed() {
@@ -912,14 +930,14 @@ class Scratch3PoseNetBlocks {
         if (!this.affdexState || !this.affdexState.expressions) {
             return null;
         }
-        return this.affdexState.expressions.smile;
+        return friendlyRound(this.affdexState.expressions.smile);
     }
 
     affdexBrowRaise() {
         if (!this.affdexState || !this.affdexState.expressions) {
             return null;
         }
-        return this.affdexState.expressions.browRaise;
+        return friendlyRound(this.affdexState.expressions.browRaise);
     }
 
     goToPart(args, util) {
