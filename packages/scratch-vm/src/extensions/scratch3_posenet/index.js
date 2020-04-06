@@ -230,7 +230,7 @@ class Scratch3PoseNetBlocks {
     }
 
     async _loop () {
-        while (1) {
+        while (true) {
             modelStats.begin();
             const frame = this.runtime.ioDevices.video.getFrame({
                 format: Video.FORMAT_IMAGE_DATA,
@@ -239,8 +239,8 @@ class Scratch3PoseNetBlocks {
 
             const time = +new Date();
             if (frame) {
+                // TODO(bcjordan): pre-load models but lazy-evaluate on first block call!
                 this.affdexState = await this.estimateAffdexOnImage(frame);
-                console.log(this.affdexState);
                 // this.poseState = await this.estimatePoseOnImage(frame);
                 // this.handPoseState = await this.estimateHandPoseOnImage(frame);
             }
@@ -282,7 +282,6 @@ class Scratch3PoseNetBlocks {
                 const width = 640;
                 const height = 480;
                 const faceMode = window.affdex.FaceDetectorMode.LARGE_FACES;
-                //Construct a CameraDetector and specify the image width / height and face detector mode.
                 const detector = new window.affdex.PhotoDetector(imageElement, width, height, faceMode);
                 detector.detectAllEmotions();
                 detector.detectAllExpressions();
