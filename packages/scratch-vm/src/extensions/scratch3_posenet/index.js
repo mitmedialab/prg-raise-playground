@@ -279,8 +279,8 @@ class Scratch3PoseNetBlocks {
             });
             await affdexLoader;
             const affdexStarter = new Promise((resolve, reject) => {
-                const width = 640;
-                const height = 480;
+                const width = Video.DIMENSIONS[0];
+                const height = Video.DIMENSIONS[1];
                 const faceMode = window.affdex.FaceDetectorMode.LARGE_FACES;
                 const detector = new window.affdex.PhotoDetector(imageElement, width, height, faceMode);
                 detector.detectAllEmotions();
@@ -626,6 +626,19 @@ class Scratch3PoseNetBlocks {
                     },
                 },
                 {
+                    opcode: 'affdexGoToPart',
+                    text: 'go to [AFFDEX_POINT]',
+                    blockType: BlockType.COMMAND,
+                    isTerminal: false,
+                    arguments: {
+                        AFFDEX_POINT: {
+                            type: ArgumentType.STRING,
+                            defaultValue: "0",
+                            menu: 'AFFDEX_POINT'
+                        },
+                    },
+                },
+                {
                     opcode: 'goToHandPart',
                     text: 'go to [HAND_PART] [HAND_SUB_PART]',
                     blockType: BlockType.COMMAND,
@@ -710,6 +723,44 @@ class Scratch3PoseNetBlocks {
                 }
             ],
             menus: {
+                AFFDEX_POINT: {
+                    items: [
+                        {text: '0', value: '0'},
+                        {text: '1', value: '1'},
+                        {text: '2', value: '2'},
+                        {text: '3', value: '3'},
+                        {text: '4', value: '4'},
+                        {text: '5', value: '5'},
+                        {text: '6', value: '6'},
+                        {text: '7', value: '7'},
+                        {text: '8', value: '8'},
+                        {text: '9', value: '9'},
+                        {text: '10', value: '10'},
+                        {text: '11', value: '11'},
+                        {text: '12', value: '12'},
+                        {text: '13', value: '13'},
+                        {text: '14', value: '14'},
+                        {text: '15', value: '15'},
+                        {text: '16', value: '16'},
+                        {text: '17', value: '17'},
+                        {text: '18', value: '18'},
+                        {text: '19', value: '19'},
+                        {text: '20', value: '20'},
+                        {text: '21', value: '21'},
+                        {text: '22', value: '22'},
+                        {text: '23', value: '23'},
+                        {text: '24', value: '24'},
+                        {text: '25', value: '25'},
+                        {text: '26', value: '26'},
+                        {text: '27', value: '27'},
+                        {text: '28', value: '28'},
+                        {text: '29', value: '29'},
+                        {text: '30', value: '30'},
+                        {text: '31', value: '31'},
+                        {text: '32', value: '32'},
+                        {text: '33', value: '33'},
+                    ]
+                },
                 EMOTION: {
                     acceptReporters: true,
                     items: [
@@ -939,6 +990,23 @@ class Scratch3PoseNetBlocks {
         return friendlyRound(this.affdexState.expressions.browRaise);
     }
 
+
+    //featurePoints:
+    // 0: {x: 135.26345825195312, y: 209.16903686523438}
+    // indices 0 to 33
+
+    affdexGoToPart(args, util) {
+        if (!this.affdexState || !this.affdexState.featurePoints) {
+            return null;
+        }
+        const featurePoint = this.affdexState.featurePoints[parseInt(args['AFFDEX_POINT'], 10)];
+        console.log("Raw point:");
+        console.log( featurePoint);
+        const {x, y} = this.affdexCoordsToScratch(featurePoint);
+        console.log({x,y});
+        util.target.setXY(x, y, false);
+    }
+
     goToPart(args, util) {
         const {x, y} = this.tfCoordsToScratch(this.poseState.keypoints.find(point => point.part === args['PART']).position);
         util.target.setXY(x, y, false);
@@ -990,6 +1058,10 @@ class Scratch3PoseNetBlocks {
 
     tfCoordsToScratch({x, y}) {
         return {x: x - 250, y: 200 - y};
+    }
+
+    affdexCoordsToScratch({x, y}) {
+        return {x: x - (Video.DIMENSIONS[0] / 2), y: (Video.DIMENSIONS[1] / 2) - y};
     }
 
     /**
