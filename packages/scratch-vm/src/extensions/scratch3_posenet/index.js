@@ -1036,9 +1036,10 @@ class Scratch3PoseNetBlocks {
     }
 
     goToPart(args, util) {
-        if (this.poseState && this.poseState.keypoints)
-        const {x, y} = this.tfCoordsToScratch(this.poseState.keypoints.find(point => point.part === args['PART']).position);
-        util.target.setXY(x, y, false);
+        if (this.poseState && this.poseState.keypoints) {
+            const {x, y} = this.tfCoordsToScratch(this.poseState.keypoints.find(point => point.part === args['PART']).position);
+            util.target.setXY(x, y, false);
+        }
     }
 
     goToHandPart(args, util) {
