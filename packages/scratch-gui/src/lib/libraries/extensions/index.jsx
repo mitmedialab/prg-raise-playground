@@ -70,7 +70,7 @@ export default [
     {
         name: (
             <FormattedMessage
-                defaultMessage="PoseNet"
+                defaultMessage="Face, Hand, Body"
                 description="Posenet name"
                 id="gui.extension.posenet.name"
             />
@@ -80,7 +80,7 @@ export default [
         insetIconURL: musicInsetIconURL,
         description: (
             <FormattedMessage
-                defaultMessage="Play with PoseNet position recognition"
+                defaultMessage="Sense movement of your face, hand, and body"
                 description="Teachable Machine Description"
                 id="gui.extension.posenet.description"
             />

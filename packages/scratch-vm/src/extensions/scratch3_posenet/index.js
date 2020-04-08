@@ -239,7 +239,9 @@ class Scratch3PoseNetBlocks {
 
             const time = +new Date();
             if (frame) {
-                // TODO(bcjordan): pre-load models but lazy-evaluate on first block call!
+                // TODO(bcjordan): find good flow for toggling these
+                // blocks / buttons to enable / disable?
+                // lazy-evaluate when called? (requires async block execution)
                 this.affdexState = await this.estimateAffdexOnImage(frame);
                 // this.poseState = await this.estimatePoseOnImage(frame);
                 // this.handPoseState = await this.estimateHandPoseOnImage(frame);
@@ -477,12 +479,19 @@ class Scratch3PoseNetBlocks {
             id: 'posenet',
             name: formatMessage({
                 id: 'posenet.categoryName',
-                default: 'PoseNet',
+                default: 'Face, Hand, Body',
                 description: 'Label for PoseNet category'
             }),
             blockIconURI: blockIconURI,
             menuIconURI: menuIconURI,
             blocks: [
+                {
+
+                    opcode: 'enableBodyPoseButton',
+                    blockType: BlockType.BUTTON,
+                    text: 'Track Body Parts',
+                    func: 'POSE_ENABLE_BODY'
+                },
                 {
 
                     opcode: 'enableBodyPoseButton',
@@ -500,22 +509,87 @@ class Scratch3PoseNetBlocks {
                 },
                 '---',
                 {
-                    opcode: 'affdexSmile',
-                    text: 'smiling',
-                    blockType: BlockType.BOOLEAN,
+                    opcode: 'affdexExpressionAmount',
+                    text: '[EXPRESSION] amount',
+                    blockType: BlockType.REPORTER,
                     isTerminal: true,
+                    arguments: {
+                        EXPRESSION: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'smile',
+                            menu: 'EXPRESSION'
+                        },
+                    }
                 },
                 {
-                    opcode: 'affdexEyesClosed',
-                    text: 'eyes are closed',
-                    blockType: BlockType.BOOLEAN,
+                    opcode: 'affdexEmotionAmount',
+                    text: '[EMOTION_ALL] amount',
+                    blockType: BlockType.REPORTER,
                     isTerminal: true,
+                    arguments: {
+                        EMOTION_ALL: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'joy',
+                            menu: 'EMOTION_ALL'
+                        },
+                    },
                 },
                 {
-                    opcode: 'affdexMouthOpen',
-                    text: 'mouth is open',
+                    opcode: 'affdexIsTopEmotion',
+                    text: 'top emotion is [EMOTION]',
                     blockType: BlockType.BOOLEAN,
                     isTerminal: true,
+                    arguments: {
+                        EMOTION: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'joy',
+                            menu: 'EMOTION'
+                        },
+                    },
+                },
+                {
+                    opcode: 'affdexGoToPart',
+                    text: 'go to [AFFDEX_POINT]',
+                    blockType: BlockType.COMMAND,
+                    isTerminal: false,
+                    arguments: {
+                        AFFDEX_POINT: {
+                            type: ArgumentType.STRING,
+                            defaultValue: "0",
+                            menu: 'AFFDEX_POINT'
+                        },
+                    },
+                },
+                {
+                    opcode: 'goToPart',
+                    text: 'go to [PART]',
+                    blockType: BlockType.COMMAND,
+                    isTerminal: false,
+                    arguments: {
+                        PART: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'rightShoulder',
+                            menu: 'PART'
+                        },
+                    },
+                },
+                {
+                    opcode: 'goToHandPart',
+                    text: 'go to [HAND_PART] [HAND_SUB_PART]',
+                    blockType: BlockType.COMMAND,
+                    isTerminal: false,
+                    arguments: {
+                        HAND_PART: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'thumb',
+                            menu: 'HAND_PART'
+                        },
+                        HAND_SUB_PART: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 3,
+                            menu: 'HAND_SUB_PART'
+                        },
+                    },
                 },
                 {
                     opcode: 'affdexBrowRaise',
@@ -548,32 +622,6 @@ class Scratch3PoseNetBlocks {
                     isTerminal: true,
                 },
                 {
-                    opcode: 'affdexEmotionAmount',
-                    text: '[EMOTION_ALL] amount',
-                    blockType: BlockType.REPORTER,
-                    isTerminal: true,
-                    arguments: {
-                        EMOTION_ALL: {
-                            type: ArgumentType.STRING,
-                            defaultValue: 'joy',
-                            menu: 'EMOTION_ALL'
-                        },
-                    },
-                },
-                {
-                    opcode: 'affdexIsTopEmotion',
-                    text: 'top emotion is [EMOTION]',
-                    blockType: BlockType.BOOLEAN,
-                    isTerminal: true,
-                    arguments: {
-                        EMOTION: {
-                            type: ArgumentType.STRING,
-                            defaultValue: 'joy',
-                            menu: 'EMOTION'
-                        },
-                    },
-                },
-                {
                     opcode: 'affdexIsEmotion',
                     text: 'emotion is [EMOTION_ALL]',
                     blockType: BlockType.BOOLEAN,
@@ -585,6 +633,24 @@ class Scratch3PoseNetBlocks {
                             menu: 'EMOTION_ALL'
                         },
                     },
+                },
+                {
+                    opcode: 'affdexSmile',
+                    text: 'smiling',
+                    blockType: BlockType.BOOLEAN,
+                    isTerminal: true,
+                },
+                {
+                    opcode: 'affdexEyesClosed',
+                    text: 'eyes are closed',
+                    blockType: BlockType.BOOLEAN,
+                    isTerminal: true,
+                },
+                {
+                    opcode: 'affdexMouthOpen',
+                    text: 'mouth is open',
+                    blockType: BlockType.BOOLEAN,
+                    isTerminal: true,
                 },
                 {
                     opcode: 'posePositionX',
@@ -609,50 +675,6 @@ class Scratch3PoseNetBlocks {
                             type: ArgumentType.STRING,
                             defaultValue: 'nose',
                             menu: 'PART'
-                        },
-                    },
-                },
-                {
-                    opcode: 'goToPart',
-                    text: 'go to [PART]',
-                    blockType: BlockType.COMMAND,
-                    isTerminal: false,
-                    arguments: {
-                        PART: {
-                            type: ArgumentType.STRING,
-                            defaultValue: 'nose',
-                            menu: 'PART'
-                        },
-                    },
-                },
-                {
-                    opcode: 'affdexGoToPart',
-                    text: 'go to [AFFDEX_POINT]',
-                    blockType: BlockType.COMMAND,
-                    isTerminal: false,
-                    arguments: {
-                        AFFDEX_POINT: {
-                            type: ArgumentType.STRING,
-                            defaultValue: "0",
-                            menu: 'AFFDEX_POINT'
-                        },
-                    },
-                },
-                {
-                    opcode: 'goToHandPart',
-                    text: 'go to [HAND_PART] [HAND_SUB_PART]',
-                    blockType: BlockType.COMMAND,
-                    isTerminal: false,
-                    arguments: {
-                        HAND_PART: {
-                            type: ArgumentType.STRING,
-                            defaultValue: 'thumb',
-                            menu: 'HAND_PART'
-                        },
-                        HAND_SUB_PART: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 3,
-                            menu: 'HAND_SUB_PART'
                         },
                     },
                 },
@@ -725,40 +747,40 @@ class Scratch3PoseNetBlocks {
             menus: {
                 AFFDEX_POINT: {
                     items: [
-                        {text: '0', value: '0'},
-                        {text: '1', value: '1'},
-                        {text: '2', value: '2'},
-                        {text: '3', value: '3'},
-                        {text: '4', value: '4'},
-                        {text: '5', value: '5'},
-                        {text: '6', value: '6'},
-                        {text: '7', value: '7'},
-                        {text: '8', value: '8'},
-                        {text: '9', value: '9'},
-                        {text: '10', value: '10'},
-                        {text: '11', value: '11'},
-                        {text: '12', value: '12'},
-                        {text: '13', value: '13'},
-                        {text: '14', value: '14'},
-                        {text: '15', value: '15'},
-                        {text: '16', value: '16'},
-                        {text: '17', value: '17'},
-                        {text: '18', value: '18'},
-                        {text: '19', value: '19'},
-                        {text: '20', value: '20'},
-                        {text: '21', value: '21'},
-                        {text: '22', value: '22'},
-                        {text: '23', value: '23'},
-                        {text: '24', value: '24'},
-                        {text: '25', value: '25'},
-                        {text: '26', value: '26'},
-                        {text: '27', value: '27'},
-                        {text: '28', value: '28'},
-                        {text: '29', value: '29'},
-                        {text: '30', value: '30'},
-                        {text: '31', value: '31'},
-                        {text: '32', value: '32'},
-                        {text: '33', value: '33'},
+                        {text: 'left ear', value: '0'},
+                        {text: 'left chin', value: '1'},
+                        {text: 'chin', value: '2'},
+                        {text: 'right chin', value: '3'},
+                        {text: 'right ear', value: '4'},
+                        {text: 'left outer eyebrow', value: '5'},
+                        {text: 'left eyebrow', value: '6'},
+                        {text: 'left inner eyebrow', value: '7'},
+                        {text: 'right inner eyebrow', value: '8'},
+                        {text: 'right eyebrow', value: '9'},
+                        {text: 'right outer eyebrow', value: '10'},
+                        {text: 'nose bridge', value: '11'},
+                        {text: 'nose tip', value: '12'},
+                        {text: 'left nostril', value: '13'},
+                        {text: 'nose tip', value: '14'},
+                        {text: 'right nostril', value: '15'},
+                        {text: 'left outer eye crease', value: '16'},
+                        {text: 'left inner eye crease', value: '17'},
+                        {text: 'right inner eye crease', value: '18'},
+                        {text: 'right outer eye crease', value: '19'},
+                        {text: 'left mouth crease', value: '20'},
+                        {text: 'left upper lip point', value: '21'},
+                        {text: 'upper lip', value: '22'},
+                        {text: 'right upper lip point', value: '23'},
+                        {text: 'right mouth crease', value: '24'},
+                        {text: 'right lower lip point', value: '25'},
+                        {text: 'lower lip', value: '26'},
+                        {text: 'left lower lip point', value: '27'},
+                        {text: 'upper lip bottom', value: '28'},
+                        {text: 'lower lip top', value: '29'},
+                        {text: 'left upper eyelid', value: '30'},
+                        {text: 'left lower eyelid', value: '31'},
+                        {text: 'right upper eyelid', value: '32'},
+                        {text: 'right lower eyelid', value: '33'},
                     ]
                 },
                 EMOTION: {
@@ -773,6 +795,32 @@ class Scratch3PoseNetBlocks {
                         // {text: 'surprise', value: 'surprise'},
                         // {text: 'valence', value: 'valence'},
                         // {text: 'engagement', value: 'engagement'},
+                    ]
+                },
+                EXPRESSION: {
+                    acceptReporters: true,
+                    items: [
+                        {text: 'smile', value: 'smile'},
+                        // {text:'innerBrowRaise', value: 'innerBrowRaise'},
+                        {text: 'eyebrow raise', value: 'browRaise'},
+                        {text: 'eyebrow furrow', value: 'browFurrow'},
+                        {text: 'nose wrinkle', value: 'noseWrinkle'},
+                        {text: 'upper lip raise', value: 'upperLipRaise'},
+                        {text: 'lip corner pull', value: 'lipCornerDepressor'},
+                        {text: 'chin raise', value: 'chinRaise'},
+                        {text: 'lip pucker', value: 'lipPucker'},
+                        // {text:'lip press', value:  'lipPress'},
+                        // {text:'lip suck', value:  'lipSuck'},
+                        {text: 'mouth open', value: 'mouthOpen'},
+                        {text: 'smirk', value: 'smirk'},
+                        {text: 'eye close', value: 'eyeClosure'},
+                        {text: 'attention', value: 'attention'},
+                        {text: 'eyelid tighten', value: 'lidTighten'},
+                        {text: 'jaw drop', value: 'jawDrop'},
+                        {text: 'cheek dimple', value: 'dimpler'},
+                        {text: 'eye widen', value: 'eyeWiden'},
+                        {text: 'cheek raise', value: 'cheekRaise'},
+                        {text: 'lip stretch', value: 'lipStretch'},
                     ]
                 },
                 EMOTION_ALL: {
@@ -852,6 +900,20 @@ class Scratch3PoseNetBlocks {
             return null;
         }
         return this.affdexState.expressions.mouthOpen > .5;
+    }
+
+    affdexIsExpression(args, util) {
+        if (!this.affdexState || !this.affdexState.expressions) {
+            return null;
+        }
+        return this.affdexState.expressions[args['EXPRESSION']] > .5;
+    }
+
+    affdexExpressionAmount(args, util) {
+        if (!this.affdexState || !this.affdexState.expressions) {
+            return null;
+        }
+        return friendlyRound(this.affdexState.expressions[args['EXPRESSION']]);
     }
 
     affdexMouthOpenAmount() {
