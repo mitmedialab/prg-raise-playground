@@ -30,7 +30,7 @@ npx lerna bootstrap --force-local
 cd packages/scratch-gui
 npm start
 
-# Open http://0.0.0.0:8601/ in your browser
+# Open http://localhost:8601/ in your browser
 ```
 
 Now you can make changes, and they will auto-build from the scratch-gui watcher and live-reload!
