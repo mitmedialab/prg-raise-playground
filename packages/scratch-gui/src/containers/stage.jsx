@@ -50,7 +50,8 @@ class Stage extends React.Component {
             dragOffset: null,
             dragId: null,
             colorInfo: null,
-            question: null
+            question: null,
+            avatarVisible: false
         };
         if (this.props.vm.renderer) {
             this.renderer = this.props.vm.renderer;
@@ -77,6 +78,7 @@ class Stage extends React.Component {
         this.attachMouseEvents(this.canvas);
         this.updateRect();
         this.props.vm.runtime.addListener('QUESTION', this.questionListener);
+        this.props.vm.runtime.addListener('avatarVisible', this.avatarVisibleListener.bind(this));
     }
     shouldComponentUpdate (nextProps, nextState) {
         return this.props.stageSize !== nextProps.stageSize ||
@@ -84,6 +86,7 @@ class Stage extends React.Component {
             this.state.colorInfo !== nextState.colorInfo ||
             this.props.isFullScreen !== nextProps.isFullScreen ||
             this.state.question !== nextState.question ||
+            this.state.avatarVisible !== nextState.avatarVisible ||
             this.props.micIndicator !== nextProps.micIndicator ||
             this.props.isStarted !== nextProps.isStarted;
     }
@@ -101,9 +104,13 @@ class Stage extends React.Component {
         this.detachRectEvents();
         this.stopColorPickingLoop();
         this.props.vm.runtime.removeListener('QUESTION', this.questionListener);
+        this.props.vm.runtime.removeListener('avatarVisible', this.avatarVisibleListener.bind(this));
     }
     questionListener (question) {
         this.setState({question: question});
+    }
+    avatarVisibleListener (visibility) {
+        this.setState({avatarVisible: visibility});
     }
     handleQuestionAnswered (answer) {
         this.setState({question: null}, () => {
@@ -414,6 +421,7 @@ class Stage extends React.Component {
                 question={this.state.question}
                 onDoubleClick={this.handleDoubleClick}
                 onQuestionAnswered={this.handleQuestionAnswered}
+                avatarVisible={this.state.avatarVisible}
                 {...props}
             />
         );

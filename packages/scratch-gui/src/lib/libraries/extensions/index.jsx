@@ -50,6 +50,66 @@ export default [
     {
         name: (
             <FormattedMessage
+                defaultMessage="Virtual Agent"
+                description="Agent Name"
+                id="gui.extension.avatar.name"
+            />
+        ),
+        extensionId: 'avatar',
+        iconURL: musicIconURL,
+        insetIconURL: musicInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Program a Virtual Agent"
+                description="Teachable Machine Description"
+                id="gui.extension.avatar.description"
+            />
+        ),
+        featured: true
+    },
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="Face, Hand, Body"
+                description="Posenet name"
+                id="gui.extension.posenet.name"
+            />
+        ),
+        extensionId: 'posenet',
+        iconURL: musicIconURL,
+        insetIconURL: musicInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Sense movement of your face, hand, and body"
+                description="Teachable Machine Description"
+                id="gui.extension.posenet.description"
+            />
+        ),
+        featured: true
+    },
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="Teachable Machine"
+                description="Teachable Machine name"
+                id="gui.extension.teachable-machine.name"
+            />
+        ),
+        extensionId: 'teachableMachine',
+        iconURL: musicIconURL,
+        insetIconURL: musicInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Use your Teachable Machine models in your Scratch project!"
+                description="Teachable Machine Description"
+                id="gui.extension.teachable-machine.description"
+            />
+        ),
+        featured: true
+    },
+    {
+        name: (
+            <FormattedMessage
                 defaultMessage="Music"
                 description="Name for the 'Music' extension"
                 id="gui.extension.music.name"
