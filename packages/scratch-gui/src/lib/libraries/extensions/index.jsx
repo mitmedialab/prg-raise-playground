@@ -1,6 +1,10 @@
 import React from 'react';
 import {FormattedMessage} from 'react-intl';
 
+import teachableMachineBlocksIconURL from './teachable-machine-blocks/teachable-machine-blocks.png';
+import teachableMachineBlocksInsetIconURL from './teachable-machine-blocks/teachable-machine-blocks-small.svg';
+
+
 import musicIconURL from './music/music.png';
 import musicInsetIconURL from './music/music-small.svg';
 
@@ -56,8 +60,8 @@ export default [
             />
         ),
         extensionId: 'teachableMachine',
-        iconURL: musicIconURL,
-        insetIconURL: musicInsetIconURL,
+        iconURL: teachableMachineBlocksIconURL,
+        insetIconURL: teachableMachineBlocksInsetIconURL,
         description: (
             <FormattedMessage
                 defaultMessage="Use your Teachable Machine models in your Scratch project!"
