@@ -4,6 +4,11 @@ import {FormattedMessage} from 'react-intl';
 import arduinoRobotIconURL from './arduino_extension/arduino_extension.png';
 import arduinoRobotInsetIconURL from './arduino_extension/arduino_small.svg';
 
+import microbitRobotIconURL from './arduino_extension/microbot_extension.png';
+
+import gizmoRobotIconURL from './arduino_extension/gizmo_extension.png';
+import gizmoRobotInsetIconURL from './arduino_extension/gizmo_small.png';
+
 import musicIconURL from './music/music.png';
 import musicInsetIconURL from './music/music-small.svg';
 
@@ -50,7 +55,46 @@ import gdxforConnectionIconURL from './gdxfor/gdxfor-illustration.svg';
 import gdxforConnectionSmallIconURL from './gdxfor/gdxfor-small.svg';
 
 export default [
+    /*{
+         name: (
+            <FormattedMessage
+                defaultMessage="PRG Microbit Robot"
+                description="Name for the 'Microbit Robot' Extension"
+                id="gui.extension.microbit-robot.name"
+            />
+        ),
+        extensionId: 'microbitRobot',
+        iconURL: microbitRobotIconURL,
+        insetIconURL: microbitInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Use Scratch to program a Microbit smart car robot"
+                description="PRG Microbit Robot description"
+                id="gui.extension.microbit-robot.description"
+            />
+        ),
+        featured: true
+    },*/
     {
+         name: (
+            <FormattedMessage
+                defaultMessage="PRG Gizmo Robot"
+                description="Name for the 'Gizmo Robot' Extension"
+                id="gui.extension.gizmo-robot.name"
+            />
+        ),
+        extensionId: 'gizmoRobot',
+        iconURL: gizmoRobotIconURL,
+        insetIconURL: gizmoRobotInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Use Scratch to program the Gizmo robot"
+                description="PRG Gizmo Robot description"
+                id="gui.extension.gizmo-robot.description"
+            />
+        ),
+        featured: true
+    },{
          name: (
             <FormattedMessage
                 defaultMessage="PRG Arduino Robot"

@@ -25,7 +25,9 @@ const builtinExtensions = {
     //makeymakey: () => require('../extensions/scratch3_makeymakey'),
     //boost: () => require('../extensions/scratch3_boost'),
     //gdxfor: () => require('../extensions/scratch3_gdx_for')
-    arduinoRobot: () => require('../extensions/scratch3_carbot')
+    arduinoRobot: () => require('../extensions/scratch3_arduinobot'),
+    gizmoRobot: () => require('../extensions/scratch3_gizmo'),
+    microbitRobot: () => require('../extensions/scratch3_microbot')
 };
 
 /**
