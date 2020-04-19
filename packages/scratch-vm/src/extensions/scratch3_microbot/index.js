@@ -10,10 +10,14 @@ const Video = require('../../io/video');
 
 
 const blockIconURI = 'data:image/png;base64,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';
+const _colors = ['red', 'green', 'blue', 'magenta', 'yellow', 'cyan', 'white', 'random'];
+const _icons = ['heart', 'check', 'X', 'smile', 'frown', 'ghost', 'triangle', 'diamond', 'square', 'checkers', 'note'];
+const _drive = ['forward', 'backward'];
+const _turn = ['left', 'right'];
 
 // Core, Team, and Official extension classes should be registered statically with the Extension Manager.
 // See: scratch-vm/src/extension-support/extension-manager.js
-class MicrobotRobot {    
+class MicrobitRobot {    
     constructor (runtime) {
         /**
          * Store this for later communication with the Scratch VM runtime.
@@ -31,8 +35,10 @@ class MicrobotRobot {
         this.msg1 = {};
         this.msg2 = {};
         this.dist_read  = 0;
+        this.last_reading = 0;
+        
     
-        this.scratch_vm.on('PROJECT_STOP_ALL', this.stopMotors.bind(this));
+        this.scratch_vm.on('PROJECT_STOP_ALL', this.resetRobot.bind(this));
     
         this.connectToExtension();
     }
@@ -54,22 +60,24 @@ class MicrobotRobot {
 
             blocks: [
                 {
-                    opcode: 'setLEDColor',
+                    opcode: 'setRgbLedColor',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
                         id: 'arduinoBot.setLEDColor',
-                        default: 'set LED color [COLOR]',
-                        description: 'Set the LED color'
+                        default: 'set headlight color [COLOR]',
+                        description: 'Set the RGB headlight color'
                     }),
                     arguments: {
                         COLOR: {
-                            type:ArgumentType.COLOR
+                            type:ArgumentType.STRING,
+                            menu: 'COLORS',
+                            defaultValue: _colors[0]
                             // should I put a default color?
                         }    
                     }
                 },
                 {
-                    opcode: 'ledOff',
+                    opcode: 'rgbLedOff',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
                         id: 'arduinoBot.ledOff',
@@ -77,6 +85,72 @@ class MicrobotRobot {
                         description: 'Turn off the LED'
                     }),
                     arguments: { }
+                },
+                {
+                    opcode: 'setLEDDisplay',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'arduinoBot.setLEDDisplay',
+                        default: 'set LED display [ICON]',
+                        description: 'Set the LED display to an icon'
+                    }),
+                    arguments: {
+                        ICON: {
+                            type:ArgumentType.STRING,
+                            menu: 'ICONS',
+                            defaultValue: _icons[0]
+                        }    
+                    }
+                },
+                {
+                    opcode: 'ledDisplayOff',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'arduinoBot.ledDisplayOff',
+                        default: 'turn LED display off',
+                        description: 'Turn off the LED display'
+                    }),
+                    arguments: { }
+                },
+                {
+                    opcode: 'drive',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'arduinoBot.driveForwardBackward',
+                        default: 'drive [DIR] for [NUM] second(s)',
+                        description: 'Send command to robot to drive forward or backward'
+                    }),
+                    arguments: {
+                        NUM: {
+                            type:ArgumentType.NUMBER,
+                            defaultValue: 1
+                        },
+                        DIR: {
+                            type:ArgumentType.String,
+                            menu: 'DIRS',
+                            defaultValue: _drive[0]
+                        }
+                    }
+                },
+                {
+                    opcode: 'turn',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'arduinoBot.turnRightLeft',
+                        default: 'turn [TURN] for [NUM] second(s)',
+                        description: 'Send command to robot to turn right or left'
+                    }),
+                    arguments: {
+                        NUM: {
+                            type:ArgumentType.NUMBER,
+                            defaultValue: 1
+                        },
+                        TURN: {
+                            type:ArgumentType.String,
+                            menu: 'TURNS',
+                            defaultValue: _turn[0]
+                        }
+                    }
                 },
                 {
                     opcode: 'readDistance',
@@ -87,40 +161,27 @@ class MicrobotRobot {
                         description: 'Get distance read from ultrasonic distance sensor'
                     }),
                     arguments: { }
-                },
-                {
-                    opcode: 'driveForward',
-                    blockType: BlockType.COMMAND,
-                    text: formatMessage({
-                        id: 'arduinoBot.driveForward',
-                        default: 'drive forward [NUM] second(s)',
-                        description: 'The amount of time to drive forward for'
-                    }),
-                    arguments: {
-                        NUM: {
-                            type:ArgumentType.NUMBER,
-                            defaultValue: 1
-                        }
-                    }
-                },
-                {
-                    opcode: 'driveBackward',
-                    blockType: BlockType.COMMAND,
-                    text: formatMessage({
-                        id: 'arduinoBot.driveBackward',
-                        default: 'drive backward [NUM] second(s)',
-                        description: 'The amount of time to drive backward for'
-                    }),
-                    arguments: {
-                        NUM: {
-                            type:ArgumentType.NUMBER,
-                            defaultValue: 1
-                        }
-                    }
                 }
-                // add blocks for turning, should I do degrees?
                 // add blocks for speech?
-            ]
+            ],
+            menus: {
+                COLORS: {
+                    acceptReporters: false,
+                    items: _colors
+                },
+                ICONS: {
+                    acceptReporters: false,
+                    items: _icons
+                },
+                DIRS: {
+                    acceptReporters: false,
+                    items: _drive
+                },
+                TURNS: {
+                    acceptReporters: false,
+                    items: _turn
+                },
+            }
         };
     }
 
@@ -176,14 +237,14 @@ class MicrobotRobot {
       var buffer = msg.buffer;
       
       // The beginning of the buffer (from firmata) starts with 224, if this buffer starts with 224 it is the beginning of the message
-      if ( buffer[0]==224) {
+      if (buffer[0]==224) {
         this.messageParser(buffer);
-        last_reading = 0; // Last reading signifies that the last thing stored in the msg buffer is the first part of the message
+        this.last_reading = 0; // Last reading signifies that the last thing stored in the msg buffer is the first part of the message
       }
   
-      if (buffer[0] != 224 && last_reading == 0) { // Checking last reading makes sure that we don't concatenate the wrong part of the message
+      if (buffer[0] != 224 && this.last_reading == 0) { // Checking last reading makes sure that we don't concatenate the wrong part of the message
           this.messageParser(buffer);
-          last_reading = 1;
+          this.last_reading = 1;
       }
     }
     
@@ -213,47 +274,56 @@ class MicrobotRobot {
         // We currently don't read any other data from the robot, but if we did we would put it here
       }
   }
+  resetRobot() {
+    this.stopMotors();
+    this.rgbLedOff();
+    this.ledDisplayOff();
+  }
+  /**
+   *
+   */
+  setRgbLedColor (args) {
+    console.log("set LED color: " + args.COLOR);    
+    
+    // Translate color to index
+    var idxStr = (_colors.indexOf(args.COLOR) + 1).toString(16).charCodeAt(0);
+    
+    // Send message
+    var msg = {};
+	msg.buffer = [76,idxStr,10]; 
+    this._mConnection.postMessage(msg);
+    
+  }
+  rgbLedOff () {
+    console.log("Headlights off");
+    var msg = {};
+    msg.buffer = [76,48,10];
+    this._mConnection.postMessage(msg);
+        
+    return;
+  }
   
   /**
    *
    */
-  setLEDColor (args) {
-    var h = args.COLOR;
+  setLEDDisplay (args) {
+    console.log("set LED display: " + args.ICON);
     
-    // Translate color arg to red, green, blue values
-    var rVal = parseInt("0x" + h[1] + h[2], 16);
-    var gVal = parseInt("0x" + h[3] + h[4], 16);
-    var bVal = parseInt("0x" + h[5] + h[6], 16);
-
-    console.log("set LED color: " + args.COLOR);    
-    console.log("R:" + rVal + " B:" + bVal + " G:" + gVal);
-    
+    // Translate color to index
+    var idx = (_icons.indexOf(args.ICON) + 1).toString(16);
+    var idxStr = (_icons.indexOf(args.ICON) + 1).toString(16).charCodeAt(0);
     // Send message
-    var msg = {}
-    msg.buffer = [204,rVal];
+    var msg = {};
+	msg.buffer = [83,idxStr,10]; 
     this._mConnection.postMessage(msg);
     
-    msg.buffer = [205,gVal];
-    this._mConnection.postMessage(msg);
-	
-	msg.buffer = [206,bVal]; 
-    this._mConnection.postMessage(msg);
-    
-    return;
   }
-  
-  ledOff () {
-    console.log("LED off");
-    var msg = {}
-    msg.buffer = [204,0];
+  ledDisplayOff () {
+    console.log("LED display off");
+    var msg = {};
+    msg.buffer = [83,48,10];
     this._mConnection.postMessage(msg);
-    
-    msg.buffer = [205,0];
-    this._mConnection.postMessage(msg);
-	
-	msg.buffer = [206,0]; 
-    this._mConnection.postMessage(msg);
-    
+        
     return;
   }
   
@@ -271,41 +341,30 @@ class MicrobotRobot {
 
     stopMotors () {
         var msg = {};
-        console.log("Sending 207 to stop servos");
-        msg.buffer = [207,99];
+        console.log("Sending D0 to stop servos");
+        msg.buffer = [68,48,10];
         this._mConnection.postMessage(msg);
       }
-  
-  /**
-   * Implement driveForward
-   * @secs {number} the number of seconds to drive forward
-   * @callback {function} the code to call when this function is done executing
-   */
-  driveForward (args) {
-	var msg = {};
-    var secs = args.NUM;
-	console.log("Sending 208 to drive forward, secs: " + secs);
-	msg.buffer = [208,99];
-    this._mConnection.postMessage(msg);
     
-    return new Promise(resolve => {
-            setTimeout(() => {
-                this.stopMotors();
-                resolve();
-            }, secs*1000);
-        });
-  }
-  
   /**
-   * Implement driveBackward
+   * Implement drive to drive forward or backward
    * @secs {number} the number of seconds to drive backward
+   * @dir {string} whether to turn "left" or "right"
    * @callback {function} the code to call when this function is done executing
    */
-  driveBackward (args) {
+  drive (args) {
 	var msg = {};
     var secs = args.NUM;
-	console.log("Sending 209 to drive backward, secs: " + secs);
-	msg.buffer = [209,99];
+    var dir = args.DIR;
+    
+    if (dir == 'forward') {
+        console.log("Sending D1 to drive forward, secs: " + secs);
+        msg.buffer = [68,49,10];
+    } else {
+        console.log('Sending D2 to drive backward, secs: ' + secs);
+        msg.buffer = [68,50,10];
+
+    }
     this._mConnection.postMessage(msg);
     
     return new Promise(resolve => {
@@ -316,6 +375,34 @@ class MicrobotRobot {
         });
   }
   
+  /**
+   * Implement turn to turn left or right
+   * @secs {number} the number of seconds to turn left
+   * @dir {string} whether to turn "left" or "right"
+   * @callback {function} the code to call when this function is done executing
+   */
+  turn(args) {
+	var msg = {};
+    var secs = args.NUM;
+    var dir = args.TURN;
+    
+    if (dir == 'left') {
+    	console.log("Sending D3 to turn left, secs: " + secs);
+        msg.buffer = [68,51,10];
+    } else {
+    	console.log("Sending D4 to turn right, secs: " + secs);
+        msg.buffer = [68,52,10];
+    }
 
+    this._mConnection.postMessage(msg);
+    
+    return new Promise(resolve => {
+            setTimeout(() => {
+                this.stopMotors();
+                resolve();
+            }, secs*1000);
+        });
+  }
+ 
 }
 module.exports = MicrobitRobot;
