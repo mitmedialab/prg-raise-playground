@@ -35,6 +35,10 @@ class MicrobitRobot {
         this.msg1 = {};
         this.msg2 = {};
         this.dist_read  = 0;
+        this.a_button = 0;
+        this.b_button = 0;
+        this.left_line = 0;
+        this.right_line = 0;
         this.last_reading = 0;
         
     
@@ -48,15 +52,14 @@ class MicrobitRobot {
      */
     getInfo () {
         return {
-            id: 'arduinoRobot',
+            id: 'microbitRobot',
             name: formatMessage({
-                id: 'arduinoRobot',
-                default: 'PRG Arduino Robot Blocks',
-                description: 'Extension using Gizmo Robot Chrome extension to communicate with Arduino robot'
+                id: 'microbitRobot',
+                default: 'PRG Microbit Robot Blocks',
+                description: 'Extension using Gizmo Robot Chrome extension to communicate with Microbit robot'
             }),
             blockIconURI: blockIconURI,
             menuIconURI: blockIconURI,
-            docsURI: 'https://aieducation.mit.edu/poppet.html',
 
             blocks: [
                 {
@@ -81,7 +84,7 @@ class MicrobitRobot {
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
                         id: 'arduinoBot.ledOff',
-                        default: 'turn LED off',
+                        default: 'turn headlights off',
                         description: 'Turn off the LED'
                     }),
                     arguments: { }
@@ -161,7 +164,40 @@ class MicrobitRobot {
                         description: 'Get distance read from ultrasonic distance sensor'
                     }),
                     arguments: { }
+                },
+                {
+                    opcode: 'readButtonStatus',
+                    blockType: BlockType.BOOLEAN,
+                    text: formatMessage({
+                        id: 'arduinoBot.readButtonStatus',
+                        default: '[BUTTON] button pressed',
+                        description: 'Get distance read from ultrasonic distance sensor'
+                    }),
+                    arguments: {
+                        BUTTON: {
+                            type:ArgumentType.String,
+                            menu: 'BUTTON_STATES',
+                            defaultValue: 'A'
+                        }
+                    }
+                },
+                {
+                    opcode: 'readLineStatus',
+                    blockType: BlockType.BOOLEAN,
+                    text: formatMessage({
+                        id: 'arduinoBot.readLineSensorStatus',
+                        default: 'line sensor state is [LINE]',
+                        description: 'detect line sensor state'
+                    }),
+                    arguments: {
+                        LINE: {
+                            type:ArgumentType.String,
+                            menu: 'LINE_STATES',
+                            defaultValue: 'right'
+                        }
+                    }
                 }
+                // play sounds
                 // add blocks for speech?
             ],
             menus: {
@@ -180,6 +216,14 @@ class MicrobitRobot {
                 TURNS: {
                     acceptReporters: false,
                     items: _turn
+                },
+                BUTTON_STATES: {
+                    acceptReporters: false,
+                    items: ['A','B','A or B','A and B','neither A nor B']
+                },
+                LINE_STATES: {
+                    acceptReporters: false,
+                    items: ['right', 'left', 'neither', 'both']
                 },
             }
         };
@@ -257,7 +301,7 @@ class MicrobitRobot {
      */
     messageParser (buf) {
       var msg = {};
-      if (buf[0]==224){
+      if (buf[0]==224){ // RANDI these 200 numbers are arbitrary and could be changed here and in the microbit code
         this.msg1 = buf;
       } else if (buf[0] != 224) {
         this.msg2 = buf;
@@ -268,10 +312,21 @@ class MicrobitRobot {
         msg.buffer = msg.buffer.slice(0,10); // The length of the buffer (from firmata) is only 10 bytes
       }
       if (msg.buffer.length == 10){
-        if (msg.buffer[8] == 240) { // The opcode key before the ultrasonic distance reading data is 240
-          this.dist_read = Math.round(msg.buffer[9] );
+        if (msg.buffer[0] == 224) {  // RANDI these 200 numbers are arbitrary and could be changed here and in the microbit code
+          this.a_button = Math.round(msg.buffer[1]);
         }
-        // We currently don't read any other data from the robot, but if we did we would put it here
+        if (msg.buffer[2] == 237) { 
+          this.b_button = Math.round(msg.buffer[3]);
+        }
+        if (msg.buffer[4] == 238) { 
+          this.left_line = Math.round(msg.buffer[5]);
+        }
+        if (msg.buffer[6] == 239) { 
+          this.right_line = Math.round(msg.buffer[7]);
+        }
+        if (msg.buffer[8] == 240) { // The opcode key before the ultrasonic distance reading data is 240
+          this.dist_read = Math.round(msg.buffer[9]);
+        }
       }
   }
   resetRobot() {
@@ -338,13 +393,53 @@ class MicrobitRobot {
     }
     return distance;
   }
+  
+    /**
+     * Implement readButtonStaus
+     * @returns {string} t
+     */
+  readButtonStatus (args) {
+    var state = args.BUTTON;
+    
+    if (state == 'A') {
+        return this.a_button == 1;   
+    } else if (state == 'B') {
+        return this.b_button == 1;
+    } else if (state == 'A or B') {
+        return (this.a_button == 1) || (this.b_button == 1);
+    } else if (state == 'A and B') {
+        return (this.a_button == 1) && (this.b_button == 1);
+    } else if (state == 'neither A nor B') {
+        return (this.a_button == 0) && (this.b_button == 0);
+    }
+    return false; // should never get here
+  }
+  
+  /**
+     * Implement readLineStatus
+     * @returns {string} t
+     */
+  readLineStatus (args) {
+    var state = args.LINE;
+    
+    if (state == 'right') {
+        return this.right_line == 1;   
+    } else if (state == 'left') {
+        return this.left_line == 1;
+    } else if (state == 'both') {
+        return (this.right_line == 1) && (this.left_line == 1);
+    } else if (state == 'neither') {
+        return (this.right_line == 0) && (this.left_line == 0);
+    }
+    return false; // should never get here
+  }
 
-    stopMotors () {
-        var msg = {};
-        console.log("Sending D0 to stop servos");
-        msg.buffer = [68,48,10];
-        this._mConnection.postMessage(msg);
-      }
+  stopMotors () {
+    var msg = {};
+    console.log("Sending D0 to stop servos");
+    msg.buffer = [68,48,10];
+    this._mConnection.postMessage(msg);
+  }
     
   /**
    * Implement drive to drive forward or backward

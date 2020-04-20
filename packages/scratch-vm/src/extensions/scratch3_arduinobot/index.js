@@ -350,7 +350,6 @@ class ArduinoRobot {
         });
   }
  
-   
   /**
    * Implement turnLeft
    * @secs {number} the number of seconds to turn left
