@@ -66,6 +66,7 @@ export default appTarget => {
         simulateScratchDesktop ?
             <WrappedGui
                 canEditTitle
+                showBranding={false}
                 isScratchDesktop
                 showTelemetryModal
                 canSave={false}
@@ -76,7 +77,8 @@ export default appTarget => {
             <WrappedGui
                 canEditTitle
                 backpackVisible
-                showComingSoon
+                showBranding={false}
+                showComingSoon={false}
                 backpackHost={backpackHost}
                 canSave={false}
                 onClickLogo={onClickLogo}
