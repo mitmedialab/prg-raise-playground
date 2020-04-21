@@ -109,6 +109,7 @@ var Player = function Player(_ref) {
   }, 'See inside'), react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_containers_gui_jsx__WEBPACK_IMPORTED_MODULE_7__["default"], {
     canEditTitle: true,
     enableCommunity: true,
+    canShare: false,
     isPlayerOnly: isPlayerOnly,
     projectId: projectId
   }));
