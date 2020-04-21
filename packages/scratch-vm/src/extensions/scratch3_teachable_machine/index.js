@@ -10,10 +10,6 @@ const Video = require('../../io/video');
 
 const VideoMotion = require('./library');
 
-// import * as tf from '@tensorflow/tfjs';
-// import * as tmImage from '@teachablemachine/image';
-
-const tf = require('@tensorflow/tfjs');
 const tmImage = require('@teachablemachine/image');
 
 /**
