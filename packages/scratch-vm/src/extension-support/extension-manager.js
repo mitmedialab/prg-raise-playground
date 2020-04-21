@@ -23,11 +23,7 @@ const builtinExtensions = {
     ev3: () => require('../extensions/scratch3_ev3'),
     makeymakey: () => require('../extensions/scratch3_makeymakey'),
     boost: () => require('../extensions/scratch3_boost'),
-    gdxfor: () => require('../extensions/scratch3_gdx_for'),
-    teachableMachine: () => require('../extensions/scratch3_teachable_machine'),
-    posenet: () => require('../extensions/scratch3_posenet'),
-    avatar: () => require('../extensions/scratch3_avatar'),
-
+    gdxfor: () => require('../extensions/scratch3_gdx_for')
 };
 
 /**

@@ -12,7 +12,6 @@ import Renderer from 'scratch-render';
 
 import Blocks from '../../containers/blocks.jsx';
 import CostumeTab from '../../containers/costume-tab.jsx';
-import ModelsTab from '../../containers/models-tab.jsx';
 import TargetPane from '../../containers/target-pane.jsx';
 import SoundTab from '../../containers/sound-tab.jsx';
 import StageWrapper from '../../containers/stage-wrapper.jsx';
@@ -40,7 +39,6 @@ import addExtensionIcon from './icon--extensions.svg';
 import codeIcon from './icon--code.svg';
 import costumesIcon from './icon--costumes.svg';
 import soundsIcon from './icon--sounds.svg';
-import modelsIcon from './icon--sounds.svg';
 
 const messages = defineMessages({
     addExtension: {
@@ -90,7 +88,6 @@ const GUIComponent = props => {
         isShared,
         loading,
         logo,
-        modelsTabVisible,
         renderLogin,
         onClickAccountNav,
         onCloseAccountNav,
@@ -99,7 +96,6 @@ const GUIComponent = props => {
         onToggleLoginOpen,
         onActivateCostumesTab,
         onActivateSoundsTab,
-        onActivateModelsTab,
         onActivateTab,
         onClickLogo,
         onExtensionButtonClick,
@@ -291,20 +287,6 @@ const GUIComponent = props => {
                                             id="gui.gui.soundsTab"
                                         />
                                     </Tab>
-                                    <Tab
-                                        className={tabClassNames.tab}
-                                        onClick={onActivateModelsTab}
-                                    >
-                                        <img
-                                            draggable={false}
-                                            src={modelsIcon}
-                                        />
-                                        <FormattedMessage
-                                            defaultMessage="Models"
-                                            description="Button to get to the models panel"
-                                            id="gui.gui.modelsTab"
-                                        />
-                                    </Tab>
                                 </TabList>
                                 <TabPanel className={tabClassNames.tabPanel}>
                                     <Box className={styles.blocksWrapper}>
@@ -341,9 +323,6 @@ const GUIComponent = props => {
                                 </TabPanel>
                                 <TabPanel className={tabClassNames.tabPanel}>
                                     {soundsTabVisible ? <SoundTab vm={vm} /> : null}
-                                </TabPanel>
-                                <TabPanel className={tabClassNames.tabPanel}>
-                                    {modelsTabVisible ? <ModelsTab vm={vm} /> : null}
                                 </TabPanel>
                             </Tabs>
                             {backpackVisible ? (
@@ -461,5 +440,5 @@ const mapStateToProps = state => ({
 });
 
 export default injectIntl(connect(
-)(GUIComponent));
     mapStateToProps
+)(GUIComponent));
