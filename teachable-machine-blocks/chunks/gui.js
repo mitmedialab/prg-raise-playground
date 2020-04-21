@@ -196,7 +196,6 @@ var handleTelemetryModalOptOut = function handleTelemetryModalOptOut() {
   react_dom__WEBPACK_IMPORTED_MODULE_1___default.a.render( // important: this is checking whether `simulateScratchDesktop` is truthy, not just defined!
   simulateScratchDesktop ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(WrappedGui, {
     canEditTitle: true,
-    showBranding: false,
     isScratchDesktop: true,
     showTelemetryModal: true,
     canSave: false,
@@ -206,7 +205,6 @@ var handleTelemetryModalOptOut = function handleTelemetryModalOptOut() {
   }) : react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(WrappedGui, {
     canEditTitle: true,
     backpackVisible: true,
-    showBranding: false,
     showComingSoon: false,
     backpackHost: backpackHost,
     canSave: false,
