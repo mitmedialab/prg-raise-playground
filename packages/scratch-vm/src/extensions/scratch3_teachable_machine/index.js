@@ -11,6 +11,7 @@ const Video = require('../../io/video');
 const VideoMotion = require('./library');
 
 const tmImage = require('@teachablemachine/image');
+const tmPose = require('@teachablemachine/pose');
 
 /**
  * Icon svg to be displayed in the blocks category menu, encoded as a data URI.
@@ -467,7 +468,7 @@ class Scratch3VideoSensingBlocks {
                     opcode: 'modelPrediction',
                     text: formatMessage({
                         id: 'teachableMachine.modelPrediction',
-                        default: 'model [MODEL_URL] prediction',
+                        default: 'prediction for [MODEL_URL]',
                         description: 'Value of latest model prediction'
                     }),
                     blockType: BlockType.REPORTER,
@@ -601,14 +602,19 @@ class Scratch3VideoSensingBlocks {
     async initModel(modelUrl) {
         const modelURL = modelUrl + "model.json";
         const metadataURL = modelUrl + "metadata.json";
-        return await tmImage.load(modelURL, metadataURL);
+        return await tmPose.load(modelURL, metadataURL);
     }
 
     async predictModel(modelUrl, frame) {
         const model = this.predictionState[modelUrl].model;
         const maxPredictions = model.getTotalClasses();
         const imageBitmap = await createImageBitmap(frame);
-        const prediction = await model.predict(imageBitmap);
+
+        // Prediction #1: run input through posenet
+        // estimatePose can take in an image, video or canvas html element
+        const { pose, posenetOutput } = await model.estimatePose(frame);
+        // Prediction 2: run input through teachable machine classification model
+        const prediction = await model.predict(posenetOutput);
 
         let maxProbability = 0;
         let maxClassName = "";
