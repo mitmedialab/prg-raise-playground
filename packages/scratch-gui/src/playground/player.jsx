@@ -25,6 +25,7 @@ const Player = ({isPlayerOnly, onSeeInside, projectId}) => (
         <GUI
             canEditTitle
             enableCommunity
+            canShare={false}
             isPlayerOnly={isPlayerOnly}
             projectId={projectId}
         />
