@@ -147,7 +147,7 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
 
 
 var onClickLogo = function onClickLogo() {
-  window.location = 'https://scratch.mit.edu';
+  window.location = 'https://aieducation.mit.edu';
 };
 
 var handleTelemetryModalCancel = function handleTelemetryModalCancel() {
@@ -205,7 +205,7 @@ var handleTelemetryModalOptOut = function handleTelemetryModalOptOut() {
   }) : react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(WrappedGui, {
     canEditTitle: true,
     backpackVisible: true,
-    showComingSoon: true,
+    showComingSoon: false,
     backpackHost: backpackHost,
     canSave: false,
     onClickLogo: onClickLogo
