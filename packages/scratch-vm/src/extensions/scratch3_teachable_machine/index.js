@@ -10,10 +10,6 @@ const Video = require('../../io/video');
 
 const VideoMotion = require('./library');
 
-// import * as tf from '@tensorflow/tfjs';
-// import * as tmImage from '@teachablemachine/image';
-
-const tf = require('@tensorflow/tfjs');
 const tmImage = require('@teachablemachine/image');
 
 /**
@@ -598,7 +594,6 @@ class Scratch3VideoSensingBlocks {
             this.predictionState[modelDataUrl] = {};
             // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
             const model = await this.initModel(modelDataUrl);
-            console.log("Loaded model at URL:", modelDataUrl);
             this.predictionState[modelDataUrl].model = model;
         }
     }
@@ -621,7 +616,6 @@ class Scratch3VideoSensingBlocks {
             const probability = prediction[i].probability.toFixed(2);
             const className = prediction[i].className;
             const classPrediction = className + ": " + probability;
-            console.log(classPrediction);
             if (probability > maxProbability) {
                 maxClassName = className;
                 maxProbability = probability;

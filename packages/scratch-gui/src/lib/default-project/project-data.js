@@ -82,15 +82,15 @@ const projectData = translateFunction => {
                         rotationCenterX: 48,
                         rotationCenterY: 50
                     },
-                    {
-                        assetId: 'e6ddc55a6ddd9cc9d84fe0b4c21e016f',
-                        name: translator(messages.costume, {index: 2}),
-                        bitmapResolution: 1,
-                        md5ext: 'e6ddc55a6ddd9cc9d84fe0b4c21e016f.svg',
-                        dataFormat: 'svg',
-                        rotationCenterX: 46,
-                        rotationCenterY: 53
-                    }
+                    // {
+                    //     assetId: 'e6ddc55a6ddd9cc9d84fe0b4c21e016f',
+                    //     name: translator(messages.costume, {index: 2}),
+                    //     bitmapResolution: 1,
+                    //     md5ext: 'e6ddc55a6ddd9cc9d84fe0b4c21e016f.svg',
+                    //     dataFormat: 'svg',
+                    //     rotationCenterX: 46,
+                    //     rotationCenterY: 53
+                    // }
                 ],
                 sounds: [
                     {
