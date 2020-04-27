@@ -905,42 +905,42 @@ class Scratch3PoseNetBlocks {
 
     affdexMouthOpen() {
         if (!this.affdexState || !this.affdexState.expressions) {
-            return null;
+            return false;
         }
         return this.affdexState.expressions.mouthOpen > .5;
     }
 
     affdexIsExpression(args, util) {
         if (!this.affdexState || !this.affdexState.expressions) {
-            return null;
+            return false;
         }
         return this.affdexState.expressions[args['EXPRESSION']] > .5;
     }
 
     affdexExpressionAmount(args, util) {
         if (!this.affdexState || !this.affdexState.expressions) {
-            return null;
+            return 0;
         }
         return friendlyRound(this.affdexState.expressions[args['EXPRESSION']]);
     }
 
     affdexMouthOpenAmount() {
         if (!this.affdexState || !this.affdexState.expressions) {
-            return null;
+            return 0;
         }
         return friendlyRound(this.affdexState.expressions.mouthOpen);
     }
 
     affdexIsEmotion(args, util) {
         if (!this.affdexState || !this.affdexState.emotions) {
-            return null;
+            return false;
         }
         return this.affdexState.emotions[args['EMOTION_ALL']] > 50;
     }
 
     affdexIsTopEmotion(args, util) {
         if (!this.affdexState || !this.affdexState.emotions) {
-            return null;
+            return false;
         }
         let maxEmotionValue = -Number.MAX_VALUE;
         let maxEmotion = null;
@@ -956,10 +956,10 @@ class Scratch3PoseNetBlocks {
 
     affdexTopEmotionName(args, util) {
         if (!this.affdexState || !this.affdexState.emotions) {
-            return null;
+            return '';
         }
         let maxEmotionValue = -Number.MAX_VALUE;
-        let maxEmotion = null;
+        let maxEmotion = '';
         ALL_EMOTIONS.forEach((emotion) => {
             const emotionValue = this.affdexState.emotions[emotion];
             if (emotionValue > maxEmotionValue) {
@@ -972,7 +972,7 @@ class Scratch3PoseNetBlocks {
 
     affdexTopEmotionAmount(args, util) {
         if (!this.affdexState || !this.affdexState.emotions) {
-            return null;
+            return 0;
         }
         let maxEmotionValue = -Number.MAX_VALUE;
         let maxEmotion = null;
@@ -995,28 +995,28 @@ class Scratch3PoseNetBlocks {
 
     affdexEyesClosed() {
         if (!this.affdexState || !this.affdexState.expressions) {
-            return null;
+            return false;
         }
         return this.affdexState.expressions.eyeClosure > .5;
     }
 
     affdexSmile() {
         if (!this.affdexState || !this.affdexState.expressions) {
-            return null;
+            return false;
         }
         return this.affdexState.expressions.smile > .5;
     }
 
     affdexSmileAmount() {
         if (!this.affdexState || !this.affdexState.expressions) {
-            return null;
+            return 0;
         }
         return friendlyRound(this.affdexState.expressions.smile);
     }
 
     affdexBrowRaise() {
         if (!this.affdexState || !this.affdexState.expressions) {
-            return null;
+            return 0;
         }
         return friendlyRound(this.affdexState.expressions.browRaise);
     }
@@ -1028,7 +1028,7 @@ class Scratch3PoseNetBlocks {
 
     affdexGoToPart(args, util) {
         if (!this.affdexState || !this.affdexState.featurePoints) {
-            return null;
+            return;
         }
         const featurePoint = this.affdexState.featurePoints[parseInt(args['AFFDEX_POINT'], 10)];
         const {x, y} = this.affdexCoordsToScratch(featurePoint);
