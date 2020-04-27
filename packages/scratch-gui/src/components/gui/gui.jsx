@@ -291,20 +291,20 @@ const GUIComponent = props => {
                                             id="gui.gui.soundsTab"
                                         />
                                     </Tab>
-                                    <Tab
-                                        className={tabClassNames.tab}
-                                        onClick={onActivateModelsTab}
-                                    >
-                                        <img
-                                            draggable={false}
-                                            src={modelsIcon}
-                                        />
-                                        <FormattedMessage
-                                            defaultMessage="Models"
-                                            description="Button to get to the models panel"
-                                            id="gui.gui.modelsTab"
-                                        />
-                                    </Tab>
+                                    {/*<Tab*/}
+                                    {/*    className={tabClassNames.tab}*/}
+                                    {/*    onClick={onActivateModelsTab}*/}
+                                    {/*>*/}
+                                    {/*    <img*/}
+                                    {/*        draggable={false}*/}
+                                    {/*        src={modelsIcon}*/}
+                                    {/*    />*/}
+                                    {/*    <FormattedMessage*/}
+                                    {/*        defaultMessage="Models"*/}
+                                    {/*        description="Button to get to the models panel"*/}
+                                    {/*        id="gui.gui.modelsTab"*/}
+                                    {/*    />*/}
+                                    {/*</Tab>*/}
                                 </TabList>
                                 <TabPanel className={tabClassNames.tabPanel}>
                                     <Box className={styles.blocksWrapper}>
