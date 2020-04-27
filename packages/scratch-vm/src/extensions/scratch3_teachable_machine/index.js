@@ -266,6 +266,9 @@ class Scratch3VideoSensingBlocks {
             if (!this.predictionState[modelUrl].model) {
                 continue;
             }
+            if (this.teachableImageModel !== modelUrl) {
+                continue;
+            }
             ++this._isPredicting;
             const prediction = await this.predictModel(modelUrl, frame);
             this.predictionState[modelUrl].topClass = prediction;
@@ -427,11 +430,101 @@ class Scratch3VideoSensingBlocks {
             this.globalVideoState = VideoState.ON;
             this.globalVideoTransparency = 50;
             this.updateVideoDisplay();
+            this.updateToStageModel();
             this.firstInstall = false;
             this.predictionState = {};
         }
 
         // Return extension definition
+        const blocks = [
+            {
+                opcode: 'useModelBlock',
+                text: `use model [MODEL_URL]`,
+                arguments: {
+                    MODEL_URL: {
+                        type: ArgumentType.STRING,
+                        defaultValue: this.teachableImageModel || 'https://teachablemachine.withgoogle.com/models/fZsf3AXlg/'
+                    }
+                }
+            },
+            {
+                // @todo (copied from motion) this hat needs to be set itself to restart existing
+                // threads like Scratch 2's behaviour.
+                opcode: 'whenModelMatches',
+                text: formatMessage({
+                    id: 'teachableMachine.whenModelMatches',
+                    default: 'when model matches [CLASS_NAME]',
+                    description: 'Event that triggers when the provided model matches [CLASS_NAME]'
+                }),
+                blockType: BlockType.HAT,
+                arguments: {
+                    CLASS_NAME: {
+                        type: ArgumentType.STRING,
+                        defaultValue: this.getCurrentClasses()[0],
+                        menu: 'CLASS_NAME'
+                    }
+                },
+            },
+            {
+                opcode: 'modelPrediction',
+                text: formatMessage({
+                    id: 'teachableMachine.modelPrediction',
+                    default: 'model prediction',
+                    description: 'Value of latest model prediction'
+                }),
+                blockType: BlockType.REPORTER,
+                isTerminal: true,
+            },
+            {
+                // @todo (copied from motion) this hat needs to be set itself to restart existing
+                // threads like Scratch 2's behaviour.
+                opcode: 'modelMatches',
+                text: formatMessage({
+                    id: 'teachableMachine.modelMatches',
+                    default: 'prediction is [CLASS_NAME]',
+                    description: 'Boolean that is true when the model matches [CLASS_NAME]'
+                }),
+                blockType: BlockType.BOOLEAN,
+                arguments: {
+                    CLASS_NAME: {
+                        type: ArgumentType.STRING,
+                        defaultValue: this.getCurrentClasses()[0],
+                        menu: 'CLASS_NAME'
+                    }
+                },
+            },
+            '---',
+            {
+                opcode: 'videoToggle',
+                text: formatMessage({
+                    id: 'videoSensing.videoToggle',
+                    default: 'turn video [VIDEO_STATE]',
+                    description: 'Controls display of the video preview layer'
+                }),
+                arguments: {
+                    VIDEO_STATE: {
+                        type: ArgumentType.NUMBER,
+                        menu: 'VIDEO_STATE',
+                        defaultValue: VideoState.ON
+                    }
+                }
+            },
+            {
+                opcode: 'setVideoTransparency',
+                text: formatMessage({
+                    id: 'videoSensing.setVideoTransparency',
+                    default: 'set video transparency to [TRANSPARENCY]',
+                    description: 'Controls transparency of the video preview layer'
+                }),
+                arguments: {
+                    TRANSPARENCY: {
+                        type: ArgumentType.NUMBER,
+                        defaultValue: 50
+                    }
+                }
+            }
+        ];
+
         return {
             id: 'teachableMachine',
             name: formatMessage({
@@ -441,75 +534,9 @@ class Scratch3VideoSensingBlocks {
             }),
             blockIconURI: blockIconURI,
             menuIconURI: menuIconURI,
-            blocks: [
-                {
-                    // @todo (copied from motion) this hat needs to be set itself to restart existing
-                    // threads like Scratch 2's behaviour.
-                    opcode: 'whenModelMatches',
-                    text: formatMessage({
-                        id: 'teachableMachine.whenModelMatches',
-                        default: 'when model [MODEL_URL] matches [CLASS_NAME]',
-                        description: 'Event that triggers when the provided model matches [CLASS_NAME]'
-                    }),
-                    blockType: BlockType.HAT,
-                    arguments: {
-                        MODEL_URL: {
-                            type: ArgumentType.STRING,
-                            defaultValue: 'ixy1rebO'
-                        },
-                        CLASS_NAME: {
-                            type: ArgumentType.STRING,
-                            defaultValue: 'Class 1'
-                        }
-                    },
-                },
-                {
-                    opcode: 'modelPrediction',
-                    text: formatMessage({
-                        id: 'teachableMachine.modelPrediction',
-                        default: 'model [MODEL_URL] prediction',
-                        description: 'Value of latest model prediction'
-                    }),
-                    blockType: BlockType.REPORTER,
-                    isTerminal: true,
-                    arguments: {
-                        MODEL_URL: {
-                            type: ArgumentType.STRING,
-                            defaultValue: 'ixy1rebO'
-                        },
-                    },
-                },
-                {
-                    opcode: 'videoToggle',
-                    text: formatMessage({
-                        id: 'videoSensing.videoToggle',
-                        default: 'turn video [VIDEO_STATE]',
-                        description: 'Controls display of the video preview layer'
-                    }),
-                    arguments: {
-                        VIDEO_STATE: {
-                            type: ArgumentType.NUMBER,
-                            menu: 'VIDEO_STATE',
-                            defaultValue: VideoState.ON
-                        }
-                    }
-                },
-                {
-                    opcode: 'setVideoTransparency',
-                    text: formatMessage({
-                        id: 'videoSensing.setVideoTransparency',
-                        default: 'set video transparency to [TRANSPARENCY]',
-                        description: 'Controls transparency of the video preview layer'
-                    }),
-                    arguments: {
-                        TRANSPARENCY: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 50
-                        }
-                    }
-                }
-            ],
+            blocks: blocks,
             menus: {
+                CLASS_NAME: 'getCurrentClasses',
                 ATTRIBUTE: {
                     acceptReporters: true,
                     items: this._buildMenu(this.ATTRIBUTE_INFO)
@@ -526,15 +553,34 @@ class Scratch3VideoSensingBlocks {
         };
     }
 
-    /**
-     * PredictionState:
-     *
-     * {
-     *     [modelUrl]: {
-     *         topClass: 'Class1',
-     *     }
-     * }
-     */
+    updateToStageModel() {
+        const stage = this.runtime.getTargetForStage();
+        if (stage) {
+            this.teachableImageModel = stage.teachableImageModel;
+            if (this.teachableImageModel) {
+                this.useModel(this.teachableImageModel);
+            }
+        }
+    }
+
+    updateStageModel(modelUrl) {
+        const stage = this.runtime.getTargetForStage();
+        this.teachableImageModel = modelUrl;
+        if (stage) {
+            stage.teachableImageModel = modelUrl;
+        }
+    }
+
+    useModelBlock(args, util) {
+        const modelArg = args.MODEL_URL;
+        this.useModel(modelArg);
+    }
+
+    useModel(modelArg) {
+        const modelUrl = this.modelArgumentToURL(modelArg);
+        this.getPredictionStateOrStartPredicting(modelUrl);
+        this.updateStageModel(modelUrl);
+    }
 
     modelArgumentToURL(modelArg) {
         return modelArg.startsWith('https://teachablemachine.withgoogle.com/models/') ?
@@ -551,7 +597,20 @@ class Scratch3VideoSensingBlocks {
      *   reference
      */
     whenModelMatches(args, util) {
-        const modelUrl = this.modelArgumentToURL(args.MODEL_URL);
+        const modelUrl = this.teachableImageModel;
+        const className = args.CLASS_NAME;
+
+        const predictionState = this.getPredictionStateOrStartPredicting(modelUrl);
+        if (!predictionState) {
+            return false;
+        }
+
+        const currentMaxClass = predictionState.topClass;
+        return (currentMaxClass === String(className));
+    }
+
+    modelMatches(args, util) {
+        const modelUrl = this.teachableImageModel;
         const className = args.CLASS_NAME;
 
         const predictionState = this.getPredictionStateOrStartPredicting(modelUrl);
@@ -570,7 +629,7 @@ class Scratch3VideoSensingBlocks {
      * @returns {string} class name if video frame matched, empty string if model not loaded yet
      */
     modelPrediction(args, util) {
-        const modelUrl = this.modelArgumentToURL(args.MODEL_URL);
+        const modelUrl = this.teachableImageModel;
         const predictionState = this.getPredictionStateOrStartPredicting(modelUrl);
         if (!predictionState) {
             return '';
@@ -580,13 +639,21 @@ class Scratch3VideoSensingBlocks {
     }
 
     getPredictionStateOrStartPredicting(modelUrl) {
-        const predictionState = this.predictionState[modelUrl];
-        if (!predictionState) {
+        const hasPredictionState = this.predictionState.hasOwnProperty(modelUrl);
+        if (!hasPredictionState) {
             this.startPredicting(modelUrl);
             return null;
         }
+        return this.predictionState[modelUrl];
+    }
 
-        return predictionState;
+    getCurrentClasses() {
+        console.log("Getting classes")
+        if (!this.teachableImageModel || !this.predictionState || !this.predictionState[this.teachableImageModel]) {
+            return ["Class 1"];
+        }
+
+        return this.predictionState[this.teachableImageModel].model.getClassLabels();
     }
 
     async startPredicting(modelDataUrl) {
@@ -595,6 +662,9 @@ class Scratch3VideoSensingBlocks {
             // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
             const model = await this.initModel(modelDataUrl);
             this.predictionState[modelDataUrl].model = model;
+            this.runtime.requestToolboxExtensionsUpdate();
+            this.runtime.emit(Runtime.BLOCKS_NEED_UPDATE);
+            this.runtime.emit(Runtime.BLOCKSINFO_UPDATE, this.getInfo());
         }
     }
 
