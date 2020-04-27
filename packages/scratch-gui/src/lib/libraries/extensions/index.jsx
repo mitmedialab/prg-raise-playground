@@ -14,6 +14,9 @@ import penInsetIconURL from './pen/pen-small.svg';
 import videoSensingIconURL from './videoSensing/video-sensing.png';
 import videoSensingInsetIconURL from './videoSensing/video-sensing-small.svg';
 
+// import posenetIconURL from './posenet/video-sensing.png';
+import posenetInsetIconURL from './posenet/posenet-small.svg';
+
 import text2speechIconURL from './text2speech/text2speech.png';
 import text2speechInsetIconURL from './text2speech/text2speech-small.svg';
 
@@ -59,6 +62,7 @@ export default [
                 id="gui.extension.avatar.name"
             />
         ),
+        hidden: true,
         extensionId: 'avatar',
         iconURL: musicIconURL,
         insetIconURL: musicInsetIconURL,
@@ -80,12 +84,12 @@ export default [
             />
         ),
         extensionId: 'posenet',
-        iconURL: musicIconURL,
-        insetIconURL: musicInsetIconURL,
+        iconURL: videoSensingIconURL,
+        insetIconURL: posenetInsetIconURL,
         description: (
             <FormattedMessage
-                defaultMessage="Sense movement of your face, hand, and body"
-                description="Teachable Machine Description"
+                defaultMessage="Sense face, hand, and body movement with the camera."
+                description="PoseNet Description"
                 id="gui.extension.posenet.description"
             />
         ),
@@ -104,7 +108,7 @@ export default [
         insetIconURL: teachableMachineBlocksInsetIconURL,
         description: (
             <FormattedMessage
-                defaultMessage="Use your Teachable Machine models in your Scratch project!"
+                defaultMessage="Use Google Teachable Machine models in your Scratch project."
                 description="Teachable Machine Description"
                 id="gui.extension.teachable-machine.description"
             />
