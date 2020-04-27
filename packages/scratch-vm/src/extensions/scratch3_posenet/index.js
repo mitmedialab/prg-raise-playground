@@ -243,8 +243,8 @@ class Scratch3PoseNetBlocks {
                 // blocks / buttons to enable / disable?
                 // lazy-evaluate when called? (requires async block execution)
                 this.affdexState = await this.estimateAffdexOnImage(frame);
-                // this.poseState = await this.estimatePoseOnImage(frame);
-                // this.handPoseState = await this.estimateHandPoseOnImage(frame);
+                this.poseState = await this.estimatePoseOnImage(frame);
+                this.handPoseState = await this.estimateHandPoseOnImage(frame);
             }
             const estimateThrottleTimeout = (+new Date() - time) / 4;
             await new Promise(r => setTimeout(r, estimateThrottleTimeout));
