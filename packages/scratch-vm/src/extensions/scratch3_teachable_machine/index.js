@@ -11,6 +11,7 @@ const Video = require('../../io/video');
 const VideoMotion = require('./library');
 
 const tmImage = require('@teachablemachine/image');
+const tmPose = require('@teachablemachine/pose');
 
 /**
  * Icon svg to be displayed in the blocks category menu, encoded as a data URI.
@@ -67,6 +68,11 @@ const VideoState = {
     /** Video turned on without default y axis mirroring. */
     ON_FLIPPED: 'on-flipped'
 };
+
+const ModelType = {
+    POSE: 'pose',
+    IMAGE: 'image',
+}
 
 /**
  * Class for the motion-related blocks in Scratch 3.0
@@ -659,7 +665,8 @@ class Scratch3VideoSensingBlocks {
         if (!this.predictionState[modelDataUrl]) {
             this.predictionState[modelDataUrl] = {};
             // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
-            const model = await this.initModel(modelDataUrl);
+            const {model, type} = await this.initModel(modelDataUrl);
+            this.predictionState[modelDataUrl].modelType = type;
             this.predictionState[modelDataUrl].model = model;
             this.runtime.requestToolboxExtensionsUpdate();
         }
@@ -668,27 +675,42 @@ class Scratch3VideoSensingBlocks {
     async initModel(modelUrl) {
         const modelURL = modelUrl + "model.json";
         const metadataURL = modelUrl + "metadata.json";
-        return await tmImage.load(modelURL, metadataURL);
+        const customMobileNet = await tmImage.load(modelURL, metadataURL);
+        if (customMobileNet._metadata.packageName === "@teachablemachine/pose") {
+            console.log("We got a pose net yay")
+            const customPoseNet = await tmPose.load(modelURL, metadataURL);
+            return {model: customPoseNet, type: ModelType.POSE};
+        } else {
+            console.log("Not a pose net yay")
+           return {model: customMobileNet, type: ModelType.IMAGE};
+        }
     }
 
     async predictModel(modelUrl, frame) {
-        const model = this.predictionState[modelUrl].model;
-        const maxPredictions = model.getTotalClasses();
-        const imageBitmap = await createImageBitmap(frame);
-        const prediction = await model.predict(imageBitmap);
-
+        const predictions = await this.getPredictionFromModel(modelUrl, frame);
         let maxProbability = 0;
         let maxClassName = "";
-        for (let i = 0; i < maxPredictions; i++) {
-            const probability = prediction[i].probability.toFixed(2);
-            const className = prediction[i].className;
-            const classPrediction = className + ": " + probability;
+        for (let i = 0; i < predictions.length; i++) {
+            const probability = predictions[i].probability.toFixed(2);
+            const className = predictions[i].className;
             if (probability > maxProbability) {
                 maxClassName = className;
                 maxProbability = probability;
             }
         }
         return maxClassName;
+    }
+
+    async getPredictionFromModel(modelUrl, frame) {
+        const {model, modelType} = this.predictionState[modelUrl];
+        switch (modelType) {
+            case ModelType.IMAGE:
+                const imageBitmap = await createImageBitmap(frame);
+                return await model.predict(imageBitmap);
+            case ModelType.POSE:
+                const {pose, posenetOutput} = await model.estimatePose(frame);
+                return await model.predict(posenetOutput);
+        }
     }
 
     /**
