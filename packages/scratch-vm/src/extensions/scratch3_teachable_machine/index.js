@@ -663,8 +663,6 @@ class Scratch3VideoSensingBlocks {
             const model = await this.initModel(modelDataUrl);
             this.predictionState[modelDataUrl].model = model;
             this.runtime.requestToolboxExtensionsUpdate();
-            this.runtime.emit(Runtime.BLOCKS_NEED_UPDATE);
-            this.runtime.emit(Runtime.BLOCKSINFO_UPDATE, this.getInfo());
         }
     }
 
