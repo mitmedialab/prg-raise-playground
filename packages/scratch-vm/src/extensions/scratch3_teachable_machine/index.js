@@ -648,7 +648,6 @@ class Scratch3VideoSensingBlocks {
     }
 
     getCurrentClasses() {
-        console.log("Getting classes")
         if (!this.teachableImageModel || !this.predictionState || !this.predictionState[this.teachableImageModel]) {
             return ["Class 1"];
         }
