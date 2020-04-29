@@ -147,7 +147,7 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
 
 
 var onClickLogo = function onClickLogo() {
-  window.location = 'https://aieducation.mit.edu';
+  window.location = 'https://' + 'dancingwithai.github.io';
 };
 
 var handleTelemetryModalCancel = function handleTelemetryModalCancel() {
