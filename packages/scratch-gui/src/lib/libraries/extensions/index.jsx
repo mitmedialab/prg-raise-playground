@@ -76,21 +76,43 @@ export default [
         featured: true
     },
     {
-        name: (
-            <FormattedMessage
-                defaultMessage="Face, Hand, Body"
-                description="Posenet name"
-                id="gui.extension.posenet.name"
-            />
-        ),
-        extensionId: 'posenet',
+        name: "Hand Sensing",
+        extensionId: 'poseHand',
         iconURL: videoSensingIconURL,
         insetIconURL: posenetInsetIconURL,
         description: (
             <FormattedMessage
-                defaultMessage="Sense face, hand, and body movement with the camera."
+                defaultMessage="Sense hand movement with the camera."
                 description="PoseNet Description"
-                id="gui.extension.posenet.description"
+                id="gui.extension.pose_hand.description"
+            />
+        ),
+        featured: true
+    },
+    {
+        name: "Face Sensing",
+        extensionId: 'poseFace',
+        iconURL: videoSensingIconURL,
+        insetIconURL: posenetInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Sense face movement with the camera."
+                description="PoseNet Description"
+                id="gui.extension.pose_face.description"
+            />
+        ),
+        featured: true
+    },
+    {
+        name: "Body Sensing",
+        extensionId: 'poseBody',
+        iconURL: videoSensingIconURL,
+        insetIconURL: posenetInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Sense body position with the camera."
+                description="PoseNet Description"
+                id="gui.extension.pose_body.description"
             />
         ),
         featured: true

@@ -7,38 +7,9 @@ const Cast = require('../../util/cast');
 const formatMessage = require('format-message');
 const Video = require('../../io/video');
 
-const posenet = require('@tensorflow-models/posenet');
-const handpose = require('@tensorflow-models/handpose');
-
-const Stats = require('stats.js');
-
-function initializeFPSStats() {
-    const fpsStats = new Stats();
-    fpsStats.showPanel(0);
-    document.body.appendChild(fpsStats.dom);
-    const animate = () => {
-        fpsStats.begin();
-        fpsStats.end();
-        requestAnimationFrame(animate);
-    };
-    requestAnimationFrame(animate);
-}
-
-function initializeModelStats() {
-    const modelStats = new Stats();
-    modelStats.showPanel(0);
-    document.body.appendChild(modelStats.dom);
-    modelStats.dom.style.left = null;
-    modelStats.dom.style.right = 0;
-    return modelStats;
-}
-
 function friendlyRound(amount) {
     return Number(amount).toFixed(2);
 }
-
-const modelStats = initializeModelStats();
-initializeFPSStats();
 
 const ALL_EMOTIONS = ['joy',
     'sadness',
@@ -231,7 +202,6 @@ class Scratch3PoseNetBlocks {
 
     async _loop () {
         while (true) {
-            modelStats.begin();
             const frame = this.runtime.ioDevices.video.getFrame({
                 format: Video.FORMAT_IMAGE_DATA,
                 dimensions: Scratch3PoseNetBlocks.DIMENSIONS
@@ -239,16 +209,10 @@ class Scratch3PoseNetBlocks {
 
             const time = +new Date();
             if (frame) {
-                // TODO(bcjordan): find good flow for toggling these
-                // blocks / buttons to enable / disable?
-                // lazy-evaluate when called? (requires async block execution)
                 this.affdexState = await this.estimateAffdexOnImage(frame);
-                this.poseState = await this.estimatePoseOnImage(frame);
-                this.handPoseState = await this.estimateHandPoseOnImage(frame);
             }
             const estimateThrottleTimeout = (+new Date() - time) / 4;
             await new Promise(r => setTimeout(r, estimateThrottleTimeout));
-            modelStats.end();
         }
     }
 
@@ -469,36 +433,19 @@ class Scratch3PoseNetBlocks {
             this.globalVideoTransparency = 50;
             this.projectStarted();
             this.firstInstall = false;
-            this.predictionState = {};
-            this._bodyModel = null;
-            this._handModel = null;
         }
 
         // Return extension definition
         return {
-            id: 'posenet',
+            id: 'poseFace',
             name: formatMessage({
-                id: 'posenet.categoryName',
-                default: 'Face, Hand, Body',
+                id: 'face.categoryName',
+                default: 'Face Sensing',
                 description: 'Label for PoseNet category'
             }),
             blockIconURI: blockIconURI,
             menuIconURI: menuIconURI,
             blocks: [
-                // {
-                //
-                //     opcode: 'enableBodyPoseButton',
-                //     blockType: BlockType.BUTTON,
-                //     text: 'Track Body Parts',
-                //     func: 'POSE_ENABLE_BODY'
-                // },
-                // {
-                //
-                //     opcode: 'enableHandPoseButton',
-                //     blockType: BlockType.BUTTON,
-                //     text: 'Track Hand Parts',
-                //     func: 'POSE_ENABLE_HAND'
-                // },
                 {
                     opcode: 'affdexGoToPart',
                     text: 'go to [AFFDEX_POINT]',
@@ -509,37 +456,6 @@ class Scratch3PoseNetBlocks {
                             type: ArgumentType.STRING,
                             defaultValue: "0",
                             menu: 'AFFDEX_POINT'
-                        },
-                    },
-                },
-                {
-                    opcode: 'goToHandPart',
-                    text: 'go to [HAND_PART] [HAND_SUB_PART]',
-                    blockType: BlockType.COMMAND,
-                    isTerminal: false,
-                    arguments: {
-                        HAND_PART: {
-                            type: ArgumentType.STRING,
-                            defaultValue: 'thumb',
-                            menu: 'HAND_PART'
-                        },
-                        HAND_SUB_PART: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 3,
-                            menu: 'HAND_SUB_PART'
-                        },
-                    },
-                },
-                {
-                    opcode: 'goToPart',
-                    text: 'go to [PART]',
-                    blockType: BlockType.COMMAND,
-                    isTerminal: false,
-                    arguments: {
-                        PART: {
-                            type: ArgumentType.STRING,
-                            defaultValue: 'rightShoulder',
-                            menu: 'PART'
                         },
                     },
                 },
@@ -627,130 +543,6 @@ class Scratch3PoseNetBlocks {
                         }
                     }
                 },
-                '---',
-                // {
-                //     opcode: 'affdexBrowRaise',
-                //     text: 'eyebrow raise',
-                //     blockType: BlockType.REPORTER,
-                //     isTerminal: true,
-                // },
-                // {
-                //     opcode: 'affdexSmileAmount',
-                //     text: 'smile size',
-                //     blockType: BlockType.REPORTER,
-                //     isTerminal: true,
-                // },
-                // {
-                //     opcode: 'affdexMouthOpenAmount',
-                //     text: 'mouth opening',
-                //     blockType: BlockType.REPORTER,
-                //     isTerminal: true,
-                // },
-                // {
-                //     opcode: 'affdexTopEmotionName',
-                //     text: 'top emotion',
-                //     blockType: BlockType.REPORTER,
-                //     isTerminal: true,
-                // },
-                // // {
-                // //     opcode: 'affdexTopEmotionAmount',
-                // //     text: 'top emotion amount',
-                // //     blockType: BlockType.REPORTER,
-                // //     isTerminal: true,
-                // // },
-                // {
-                //     opcode: 'affdexIsEmotion',
-                //     text: 'emotion is [EMOTION_ALL]',
-                //     blockType: BlockType.BOOLEAN,
-                //     isTerminal: true,
-                //     arguments: {
-                //         EMOTION_ALL: {
-                //             type: ArgumentType.STRING,
-                //             defaultValue: 'joy',
-                //             menu: 'EMOTION_ALL'
-                //         },
-                //     },
-                // },
-                // {
-                //     opcode: 'affdexSmile',
-                //     text: 'smiling',
-                //     blockType: BlockType.BOOLEAN,
-                //     isTerminal: true,
-                // },
-                // {
-                //     opcode: 'affdexEyesClosed',
-                //     text: 'eyes are closed',
-                //     blockType: BlockType.BOOLEAN,
-                //     isTerminal: true,
-                // },
-                // {
-                //     opcode: 'affdexMouthOpen',
-                //     text: 'mouth is open',
-                //     blockType: BlockType.BOOLEAN,
-                //     isTerminal: true,
-                // },
-                // {
-                //     opcode: 'posePositionX',
-                //     text: '[PART] position X',
-                //     blockType: BlockType.REPORTER,
-                //     isTerminal: true,
-                //     arguments: {
-                //         PART: {
-                //             type: ArgumentType.STRING,
-                //             defaultValue: 'nose',
-                //             menu: 'PART'
-                //         },
-                //     },
-                // },
-                // {
-                //     opcode: 'posePositionY',
-                //     text: '[PART] position Y',
-                //     blockType: BlockType.REPORTER,
-                //     isTerminal: true,
-                //     arguments: {
-                //         PART: {
-                //             type: ArgumentType.STRING,
-                //             defaultValue: 'nose',
-                //             menu: 'PART'
-                //         },
-                //     },
-                // },
-                // {
-                //     opcode: 'handPosePositionX',
-                //     text: '[HAND_PART] [HAND_SUB_PART] X',
-                //     blockType: BlockType.REPORTER,
-                //     isTerminal: true,
-                //     arguments: {
-                //         HAND_PART: {
-                //             type: ArgumentType.STRING,
-                //             defaultValue: 'thumb',
-                //             menu: 'HAND_PART'
-                //         },
-                //         HAND_SUB_PART: {
-                //             type: ArgumentType.NUMBER,
-                //             defaultValue: 3,
-                //             menu: 'HAND_SUB_PART'
-                //         },
-                //     },
-                // },
-                // {
-                //     opcode: 'handPosePositionY',
-                //     text: '[HAND_PART] [HAND_SUB_PART] Y',
-                //     blockType: BlockType.REPORTER,
-                //     isTerminal: true,
-                //     arguments: {
-                //         HAND_PART: {
-                //             type: ArgumentType.STRING,
-                //             defaultValue: 'thumb',
-                //             menu: 'HAND_PART'
-                //         },
-                //         HAND_SUB_PART: {
-                //             type: ArgumentType.NUMBER,
-                //             defaultValue: 3,
-                //             menu: 'HAND_SUB_PART'
-                //         },
-                //     },
-                // },
             ],
             menus: {
                 AFFDEX_POINT: {
@@ -843,48 +635,6 @@ class Scratch3PoseNetBlocks {
                         {text: 'surprise', value: 'surprise'},
                         {text: 'valence', value: 'valence'},
                         {text: 'engagement', value: 'engagement'},
-                    ]
-                },
-                PART: {
-                    acceptReporters: true,
-                    items: [
-                        {text: 'nose', value: 'nose'},
-                        {text: 'left eye', value: 'leftEye'},
-                        {text: 'right eye', value: 'rightEye'},
-                        {text: 'left ear', value: 'leftEar'},
-                        {text: 'right ear', value: 'rightEar'},
-                        {text: 'left shoulder', value: 'leftShoulder'},
-                        {text: 'right shoulder', value: 'rightShoulder'},
-                        {text: 'left elbow', value: 'leftElbow'},
-                        {text: 'right elbow', value: 'rightElbow'},
-                        {text: 'left wrist', value: 'leftWrist'},
-                        {text: 'right wrist', value: 'rightWrist'},
-                        {text: 'left hip', value: 'leftHip'},
-                        {text: 'right hip', value: 'rightHip'},
-                        {text: 'left knee', value: 'leftKnee'},
-                        {text: 'right knee', value: 'rightKnee'},
-                        {text: 'left ankle', value: 'leftAnkle'},
-                        {text: 'right ankle', value: 'rightAnkle'},
-                    ]
-                },
-                HAND_PART: {
-                    acceptReporters: true,
-                    items: [
-                        {text: 'thumb', value: 'thumb'},
-                        {text: 'index finger', value: 'indexFinger'},
-                        {text: 'middle finger', value: 'middleFinger'},
-                        {text: 'ring finger', value: 'ringFinger'},
-                        {text: 'pinky', value: 'pinky'},
-                        {text: 'base of palm', value: 'palmBase'},
-                    ]
-                },
-                HAND_SUB_PART: {
-                    acceptReporters: true,
-                    items: [
-                        {text: 'base', value: 0},
-                        {text: 'first knuckle', value: 1},
-                        {text: 'second knuckle', value: 2},
-                        {text: 'tip', value: 3},
                     ]
                 },
                 ATTRIBUTE: {
@@ -1021,11 +771,6 @@ class Scratch3PoseNetBlocks {
         return friendlyRound(this.affdexState.expressions.browRaise);
     }
 
-
-    //featurePoints:
-    // 0: {x: 135.26345825195312, y: 209.16903686523438}
-    // indices 0 to 33
-
     affdexGoToPart(args, util) {
         if (!this.affdexState || !this.affdexState.featurePoints) {
             return;
@@ -1033,61 +778,6 @@ class Scratch3PoseNetBlocks {
         const featurePoint = this.affdexState.featurePoints[parseInt(args['AFFDEX_POINT'], 10)];
         const {x, y} = this.affdexCoordsToScratch(featurePoint);
         util.target.setXY(x, y, false);
-    }
-
-    goToPart(args, util) {
-        if (this.poseState && this.poseState.keypoints) {
-            const {x, y} = this.tfCoordsToScratch(this.poseState.keypoints.find(point => point.part === args['PART']).position);
-            util.target.setXY(x, y, false);
-        }
-    }
-
-    goToHandPart(args, util) {
-        if (this.handPoseState && this.handPoseState.length > 0) {
-            const [x, y, z] = this.handPoseState[0].annotations[args['HAND_PART']][args['HAND_SUB_PART']];
-            const {x: scratchX, y: scratchY} = this.tfCoordsToScratch({x, y, z});
-            util.target.setXY(scratchX, scratchY, false);
-        }
-    }
-
-    /**
-     * @param {object} args - the block arguments
-     * @param {BlockUtility} util - the block utility
-     * @returns {number} class name if video frame matched, empty number if model not loaded yet
-     */
-    posePositionX(args, util) {
-        return this.tfCoordsToScratch({x: this.poseState.keypoints.find(point => point.part === args['PART']).position.x}).x;
-    }
-
-    /**
-     * @param {object} args - the block arguments
-     * @param {BlockUtility} util - the block utility
-     * @returns {number} class name if video frame matched, empty number if model not loaded yet
-     */
-    posePositionY(args, util) {
-        return this.tfCoordsToScratch({y: this.poseState.keypoints.find(point => point.part === args['PART']).position.y}).y;
-    }
-
-    /**
-     * @param {object} args - the block arguments
-     * @param {BlockUtility} util - the block utility
-     * @returns {number} class name if video frame matched, empty number if model not loaded yet
-     */
-    handPosePositionX(args, util) {
-        return this.handPoseState.length > 0 ? this.tfCoordsToScratch({x: this.handPoseState[0].annotations[args['HAND_PART']][args['HAND_SUB_PART']][0]}).x : 0;
-    }
-
-    /**
-     * @param {object} args - the block arguments
-     * @param {BlockUtility} util - the block utility
-     * @returns {number} class name if video frame matched, empty number if model not loaded yet
-     */
-    handPosePositionY(args, util) {
-        return this.handPoseState.length > 0 ? this.tfCoordsToScratch({y: this.handPoseState[0].annotations[args['HAND_PART']][args['HAND_SUB_PART']][1]}).y : 0;
-    }
-
-    tfCoordsToScratch({x, y}) {
-        return {x: x - 250, y: 200 - y};
     }
 
     affdexCoordsToScratch({x, y}) {

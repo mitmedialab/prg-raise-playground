@@ -25,7 +25,9 @@ const builtinExtensions = {
     boost: () => require('../extensions/scratch3_boost'),
     gdxfor: () => require('../extensions/scratch3_gdx_for'),
     teachableMachine: () => require('../extensions/scratch3_teachable_machine'),
-    posenet: () => require('../extensions/scratch3_posenet'),
+    poseFace: () => require('../extensions/scratch3_pose_face'),
+    poseHand: () => require('../extensions/scratch3_pose_hand'),
+    poseBody: () => require('../extensions/scratch3_pose_body'),
     avatar: () => require('../extensions/scratch3_avatar'),
 
 };
