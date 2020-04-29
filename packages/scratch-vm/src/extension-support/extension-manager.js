@@ -20,14 +20,15 @@ const builtinExtensions = {
     text2speech: () => require('../extensions/scratch3_text2speech'),
     speech2text: () => require('../extensions/scratch3_speech2text'),
     translate: () => require('../extensions/scratch3_translate'),
-    videoSensing: () => require('../extensions/scratch3_video_sensing'),
+    //videoSensing: () => require('../extensions/scratch3_video_sensing'),
     //ev3: () => require('../extensions/scratch3_ev3'),
     //makeymakey: () => require('../extensions/scratch3_makeymakey'),
     //boost: () => require('../extensions/scratch3_boost'),
     //gdxfor: () => require('../extensions/scratch3_gdx_for')
     arduinoRobot: () => require('../extensions/scratch3_arduinobot'),
     gizmoRobot: () => require('../extensions/scratch3_gizmo'),
-    microbitRobot: () => require('../extensions/scratch3_microbot')
+    microbitRobot: () => require('../extensions/scratch3_microbot'),
+    teachableMachine: () => require('../extensions/scratch3_teachable_machine')
 };
 
 /**
