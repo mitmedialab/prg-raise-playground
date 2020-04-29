@@ -442,7 +442,7 @@ class Scratch3PoseNetBlocks {
                         {text: 'middle finger', value: 'middleFinger'},
                         {text: 'ring finger', value: 'ringFinger'},
                         {text: 'pinky', value: 'pinky'},
-                        {text: 'base of palm', value: 'palmBase'},
+                        // {text: 'base of palm', value: 'palmBase'},
                     ]
                 },
                 HAND_SUB_PART: {
