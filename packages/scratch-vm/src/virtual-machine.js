@@ -8,6 +8,7 @@ if (typeof TextEncoder === 'undefined') {
 const EventEmitter = require('events');
 const JSZip = require('jszip');
 
+const nets = require('nets');
 const Buffer = require('buffer').Buffer;
 const centralDispatch = require('./dispatch/central-dispatch');
 const ExtensionManager = require('./extension-support/extension-manager');
@@ -367,6 +368,14 @@ class VirtualMachine extends EventEmitter {
         promise.then(projectAsset => {
             vm.loadProject(projectAsset.data);
         });
+    }
+
+    downloadProjectFromURLDirect(url) {
+        return new Promise((resolve, reject) => {
+            nets({ url: url }, (err, resp, body) => {
+                resolve(this.loadProject(body));
+            })
+        })
     }
 
     /**
