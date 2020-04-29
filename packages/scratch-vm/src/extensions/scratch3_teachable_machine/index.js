@@ -583,9 +583,13 @@ class Scratch3VideoSensingBlocks {
     }
 
     useModel(modelArg) {
-        const modelUrl = this.modelArgumentToURL(modelArg);
-        this.getPredictionStateOrStartPredicting(modelUrl);
-        this.updateStageModel(modelUrl);
+        try {
+            const modelUrl = this.modelArgumentToURL(modelArg);
+            this.getPredictionStateOrStartPredicting(modelUrl);
+            this.updateStageModel(modelUrl);
+        } catch (e) {
+            this.teachableImageModel = null;
+        }
     }
 
     modelArgumentToURL(modelArg) {
@@ -654,7 +658,12 @@ class Scratch3VideoSensingBlocks {
     }
 
     getCurrentClasses() {
-        if (!this.teachableImageModel || !this.predictionState || !this.predictionState[this.teachableImageModel]) {
+        if (
+            !this.teachableImageModel ||
+            !this.predictionState ||
+            !this.predictionState[this.teachableImageModel] ||
+            !this.predictionState[this.teachableImageModel].hasOwnProperty('model')
+        ) {
             return ["Class 1"];
         }
 
