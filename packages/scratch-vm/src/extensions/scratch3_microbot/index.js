@@ -120,7 +120,7 @@ class MicrobitRobot {
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
                         id: 'arduinoBot.driveForwardBackward',
-                        default: 'drive [DIR] for [NUM] second(s)',
+                        default: 'drive [DIR] for [NUM] steps',
                         description: 'Send command to robot to drive forward or backward'
                     }),
                     arguments: {
@@ -140,13 +140,13 @@ class MicrobitRobot {
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
                         id: 'arduinoBot.turnRightLeft',
-                        default: 'turn [TURN] for [NUM] second(s)',
+                        default: 'turn [TURN] [NUM] degrees',
                         description: 'Send command to robot to turn right or left'
                     }),
                     arguments: {
                         NUM: {
                             type:ArgumentType.NUMBER,
-                            defaultValue: 1
+                            defaultValue: 90
                         },
                         TURN: {
                             type:ArgumentType.String,
@@ -224,12 +224,17 @@ class MicrobitRobot {
                 LINE_STATES: {
                     acceptReporters: false,
                     items: ['right', 'left', 'neither', 'both']
-                },
+                }
             }
         };
     }
 
     connectToExtension() {
+        // Can probably do this without Chrome extension
+        // VID is a Vendor ID. For the micro:bit this is 0x0d28, PID is a Product ID. For the micro:bit this is 0x0204
+        // navigator.getUSBDevices https://developers.google.com/web/updates/2016/03/access-usb-devices-on-the-web
+        // https://developers.google.com/web/updates/2015/07/interact-with-ble-devices-on-the-web
+        
         // Save reference to robot for use later
         var robot = this;
         var boundMsgHandler = this.onMsgFromExtension.bind(this);
@@ -365,7 +370,6 @@ class MicrobitRobot {
     console.log("set LED display: " + args.ICON);
     
     // Translate color to index
-    var idx = (_icons.indexOf(args.ICON) + 1).toString(16);
     var idxStr = (_icons.indexOf(args.ICON) + 1).toString(16).charCodeAt(0);
     // Send message
     var msg = {};
@@ -453,10 +457,10 @@ class MicrobitRobot {
     var dir = args.DIR;
     
     if (dir == 'forward') {
-        console.log("Sending D1 to drive forward, secs: " + secs);
+        console.log("Sending D1 to drive forward, steos: " + secs);
         msg.buffer = [68,49,10];
     } else {
-        console.log('Sending D2 to drive backward, secs: ' + secs);
+        console.log('Sending D2 to drive backward, steps: ' + secs);
         msg.buffer = [68,50,10];
 
     }
@@ -466,7 +470,7 @@ class MicrobitRobot {
             setTimeout(() => {
                 this.stopMotors();
                 resolve();
-            }, secs*1000);
+            }, secs*100);
         });
   }
   
@@ -478,14 +482,14 @@ class MicrobitRobot {
    */
   turn(args) {
 	var msg = {};
-    var secs = args.NUM;
+    var secs = args.NUM / 90;
     var dir = args.TURN;
     
     if (dir == 'left') {
-    	console.log("Sending D3 to turn left, secs: " + secs);
+    	console.log("Sending D3 to turn left, steps: " + secs);
         msg.buffer = [68,51,10];
     } else {
-    	console.log("Sending D4 to turn right, secs: " + secs);
+    	console.log("Sending D4 to turn right, steps: " + secs);
         msg.buffer = [68,52,10];
     }
 
@@ -495,7 +499,7 @@ class MicrobitRobot {
             setTimeout(() => {
                 this.stopMotors();
                 resolve();
-            }, secs*1000);
+            }, secs*450);
         });
   }
  
