@@ -58,7 +58,7 @@ import gdxforConnectionIconURL from './gdxfor/gdxfor-illustration.svg';
 import gdxforConnectionSmallIconURL from './gdxfor/gdxfor-small.svg';
 
 export default [
-    {
+    /*{
         name: (
             <FormattedMessage
                 defaultMessage="Teachable Machine"
@@ -77,7 +77,7 @@ export default [
             />
         ),
         featured: true
-    },{
+    },*/{
          name: (
             <FormattedMessage
                 defaultMessage="PRG Microbit Robot"
