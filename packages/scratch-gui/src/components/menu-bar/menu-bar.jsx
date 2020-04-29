@@ -320,17 +320,12 @@ class MenuBar extends React.Component {
             >
                 <div className={styles.mainMenu}>
                     <div className={styles.fileGroup}>
-                        <div className={classNames(styles.menuBarItem)}>
-                            <img
-                                alt="Scratch"
-                                className={classNames(styles.scratchLogo, {
-                                    [styles.clickable]: typeof this.props.onClickLogo !== 'undefined'
-                                })}
-                                draggable={false}
-                                src={this.props.logo}
-                                onClick={this.props.onClickLogo}
-                            />
-                        </div>
+                        <a
+                            className={classNames(styles.menuBarItem, styles.hoverable)}
+                            href="https://dancingwithai.github.io/?"
+                        >
+                            ⬅ Back to Curriculum
+                        </a>
                         {(this.props.canChangeLanguage) && (<div
                             className={classNames(styles.menuBarItem, styles.hoverable, styles.languageMenu)}
                         >
