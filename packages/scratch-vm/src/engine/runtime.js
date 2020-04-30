@@ -468,6 +468,22 @@ class Runtime extends EventEmitter {
     }
 
     /**
+     * Event name for turning on turbo mode.
+     * @const {string}
+     */
+    static get RECORDING_ON () {
+        return 'RECORDING_ON';
+    }
+
+    /**
+     * Event name for turning off turbo mode.
+     * @const {string}
+     */
+    static get RECORDING_OFF () {
+        return 'RECORDING_OFF';
+    }
+
+    /**
      * Event name when the project is started (threads may not necessarily be
      * running).
      * @const {string}
