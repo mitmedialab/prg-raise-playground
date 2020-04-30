@@ -2,8 +2,8 @@ import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import React from 'react';
 
-import recordIcon from './icon--record.svg';
-import stopIcon from '../stop-all/icon--stop-all.svg';
+import recordIcon from './icon--record-new.svg';
+import stopIcon from './icon--record-stop.svg';
 import styles from './record-button.css';
 
 const RecordComponent = function (props) {

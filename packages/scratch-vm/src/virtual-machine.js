@@ -147,12 +147,13 @@ class ScratchCanvasRecorder {
         const a = document.createElement('a');
         a.style.display = 'none';
         a.href = url;
-        a.download = 'MyRecording.webm';
+        a.target = "_blank";
+        // a.download = 'MyRecording.webm';
         document.body.appendChild(a);
         a.click();
         setTimeout(() => {
             document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
+            // window.URL.revokeObjectURL(url);
         }, 100);
     }
 }
@@ -351,7 +352,9 @@ class VirtualMachine extends EventEmitter {
      * Stop all threads and running activities.
      */
     stopAll () {
-        this.mediaRecorder.stopRecording();
+        if (this.runtime.recording) {
+            this.stopRecording();
+        }
         this.runtime.stopAll();
     }
 
