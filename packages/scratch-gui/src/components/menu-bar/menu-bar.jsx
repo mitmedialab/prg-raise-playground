@@ -322,9 +322,9 @@ class MenuBar extends React.Component {
                     <div className={styles.fileGroup}>
                         <a
                             className={classNames(styles.menuBarItem, styles.hoverable)}
-                            href="https://dancingwithai.github.io/?"
+                            href="https://project-clip-train.glitch.me/"
                         >
-                            ⬅ Back to Curriculum
+                            ⬅ Back to Clip Train
                         </a>
                         {(this.props.canChangeLanguage) && (<div
                             className={classNames(styles.menuBarItem, styles.hoverable, styles.languageMenu)}
