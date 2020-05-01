@@ -44,6 +44,15 @@ const CORE_EXTENSIONS = [
 
 class ScratchCanvasRecorder {
     constructor(canvas) {
+        if (window.confirm('Would you like to share your project clips with others? This is an experiment!'))
+        {
+
+        }
+        else
+        {
+            window.location = "http://google.com";
+            // They clicked no do something else.
+        }
         this.mediaSource = new MediaSource();
         this.mediaSource.addEventListener('sourceopen', this.handleSourceOpen.bind(this), false);
         this.mediaRecorder = undefined;
@@ -144,6 +153,38 @@ class ScratchCanvasRecorder {
     download() {
         const blob = new Blob(this.recordedBlobs, {type: 'video/webm'});
         const url = window.URL.createObjectURL(blob);
+
+        sendBlobAsBase64(blob);
+
+        function sendBlobAsBase64(blob) {
+            console.log("sending blob");
+            const reader = new FileReader();
+
+            reader.addEventListener('load', () => {
+                const dataUrl = reader.result;
+                const base64EncodedData = dataUrl.split(',')[1];
+                console.log(base64EncodedData)
+                sendDataToBackend(base64EncodedData);
+            });
+
+            reader.readAsDataURL(blob);
+        }
+
+        function sendDataToBackend(base64EncodedData) {
+            const body = JSON.stringify({
+                data: base64EncodedData
+            });
+            nets({
+                url: 'https://project-clip-train.glitch.me/api',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body
+            })
+        }
+
+
         const a = document.createElement('a');
         a.style.display = 'none';
         a.href = url;
