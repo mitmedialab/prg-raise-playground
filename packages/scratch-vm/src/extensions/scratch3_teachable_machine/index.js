@@ -672,12 +672,17 @@ class Scratch3VideoSensingBlocks {
 
     async startPredicting(modelDataUrl) {
         if (!this.predictionState[modelDataUrl]) {
-            this.predictionState[modelDataUrl] = {};
-            // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
-            const {model, type} = await this.initModel(modelDataUrl);
-            this.predictionState[modelDataUrl].modelType = type;
-            this.predictionState[modelDataUrl].model = model;
-            this.runtime.requestToolboxExtensionsUpdate();
+            try {
+                this.predictionState[modelDataUrl] = {};
+                // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
+                const {model, type} = await this.initModel(modelDataUrl);
+                this.predictionState[modelDataUrl].modelType = type;
+                this.predictionState[modelDataUrl].model = model;
+                this.runtime.requestToolboxExtensionsUpdate();
+            } catch (e) {
+                this.predictionState[modelDataUrl] = {};
+                console.log("Model initialization failure!", e);
+            }
         }
     }
 
