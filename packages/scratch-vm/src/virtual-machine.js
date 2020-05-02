@@ -54,6 +54,7 @@ class ScratchCanvasRecorder {
         this.video = document.createElement('video');
         this.video.width=500;
         this.video.height=500;
+        this.video.style.pointerEvents = 'none';
         this.video.style.position = 'fixed';
         this.video.style.top = '0';
         this.video.style.left = '0';
