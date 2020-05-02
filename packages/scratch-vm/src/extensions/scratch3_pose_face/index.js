@@ -461,6 +461,19 @@ class Scratch3PoseNetBlocks {
                 },
                 '---',
                 {
+                    opcode: 'affdexWhenExpression',
+                    text: 'when [EXPRESSION] detected',
+                    blockType: BlockType.HAT,
+                    isTerminal: true,
+                    arguments: {
+                        EXPRESSION: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'smile',
+                            menu: 'EXPRESSION'
+                        },
+                    }
+                },
+                {
                     opcode: 'affdexExpressionAmount',
                     text: 'amount of [EXPRESSION]',
                     blockType: BlockType.REPORTER,
@@ -487,6 +500,19 @@ class Scratch3PoseNetBlocks {
                     }
                 },
                 '---',
+                {
+                    opcode: 'affdexWhenEmotion',
+                    text: 'when [EMOTION] feeling detected',
+                    blockType: BlockType.HAT,
+                    isTerminal: true,
+                    arguments: {
+                        EMOTION: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'joy',
+                            menu: 'EMOTION'
+                        },
+                    }
+                },
                 {
                     opcode: 'affdexEmotionAmount',
                     text: 'level of [EMOTION_ALL]',
@@ -686,6 +712,14 @@ class Scratch3PoseNetBlocks {
             return false;
         }
         return this.affdexState.emotions[args['EMOTION_ALL']] > 50;
+    }
+
+    affdexWhenExpression() {
+        return this.affdexIsExpression(...arguments);
+    }
+
+    affdexWhenEmotion() {
+        return this.affdexIsTopEmotion(...arguments);
     }
 
     affdexIsTopEmotion(args, util) {
