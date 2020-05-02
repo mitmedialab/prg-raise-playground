@@ -457,11 +457,7 @@ class Scratch3VideoSensingBlocks {
                 // @todo (copied from motion) this hat needs to be set itself to restart existing
                 // threads like Scratch 2's behaviour.
                 opcode: 'whenModelMatches',
-                text: formatMessage({
-                    id: 'teachableMachine.whenModelMatches',
-                    default: 'when model matches [CLASS_NAME]',
-                    description: 'Event that triggers when the provided model matches [CLASS_NAME]'
-                }),
+                text: 'when model detects [CLASS_NAME]',
                 blockType: BlockType.HAT,
                 arguments: {
                     CLASS_NAME: {
