@@ -54,6 +54,10 @@ class ScratchCanvasRecorder {
         this.video = document.createElement('video');
         this.video.width=500;
         this.video.height=500;
+        this.video.style.position = 'fixed';
+        this.video.style.top = '0';
+        this.video.style.left = '0';
+        this.video.style.opacity = '0';
         document.body.appendChild(this.video);
         this.stream = canvas.captureStream(); // frames per second
         console.log('Started stream capture from canvas element: ', this.stream);
@@ -148,11 +152,20 @@ class ScratchCanvasRecorder {
         a.style.display = 'none';
         a.href = url;
         a.target = "_blank";
-        // a.download = 'MyRecording.webm';
+
+        const a2 = document.createElement('a');
+        a2.style.display = 'none';
+        a2.href = url;
+        a2.download = 'MyRecording.webm';
+
+        document.body.appendChild(a2);
         document.body.appendChild(a);
+
         a.click();
+        a2.click();
         setTimeout(() => {
             document.body.removeChild(a);
+            document.body.removeChild(a2);
             // window.URL.revokeObjectURL(url);
         }, 100);
     }
