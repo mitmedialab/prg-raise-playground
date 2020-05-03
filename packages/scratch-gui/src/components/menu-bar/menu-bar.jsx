@@ -367,6 +367,24 @@ class MenuBar extends React.Component {
                                             {newProjectMessage}
                                         </MenuItem>
                                     </MenuSection>
+                                    <MenuSection>
+                                        <MenuItem
+                                            isRtl={this.props.isRtl}
+                                            onClick={() => {
+                                                this.props.vm.sendLastClipToGfy();
+                                            }}
+                                        >
+                                            Upload Clip to Gfycat
+                                        </MenuItem>
+                                        <MenuItem
+                                            isRtl={this.props.isRtl}
+                                            onClick={() => {
+                                                this.props.vm.loadLastClipOnGfy();
+                                            }}
+                                        >
+                                            Load Last Uploaded Clip
+                                        </MenuItem>
+                                    </MenuSection>
                                     {(this.props.canSave || this.props.canCreateCopy || this.props.canRemix) && (
                                         <MenuSection>
                                             {this.props.canSave && (

@@ -62,7 +62,6 @@ class ScratchCanvasRecorder {
         document.body.appendChild(this.video);
         this.stream = canvas.captureStream(); // frames per second
         console.log('Started stream capture from canvas element: ', this.stream);
-
     }
 
     handleSourceOpen(event) {
@@ -146,8 +145,70 @@ class ScratchCanvasRecorder {
         return this.recording;
     }
 
+    sendLastClipToGfy() {
+        if (this.lastBlob) {
+            this.sendBlobAsBase64(this.lastBlob);
+        }
+    }
+
+    loadLastClipOnGfy() {
+        if (this.lastGfy) {
+            this.loadPage(this.lastGfy);
+        }
+    }
+
+    sendBlobAsBase64(blob) {
+        const reader = new FileReader();
+        reader.addEventListener('load', () => {
+            const dataUrl = reader.result;
+            const base64EncodedData = dataUrl.split(',')[1];
+            console.log(base64EncodedData)
+            this.sendDataToBackend(base64EncodedData);
+        });
+        reader.readAsDataURL(blob);
+    }
+
+    sendDataToBackend(base64EncodedData) {
+        const body = JSON.stringify({
+            data: base64EncodedData
+        });
+        nets({
+            url: 'https://project-clip-train.glitch.me/gfy',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            encoding: undefined,
+            body
+        },(err, resp, body) => {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            console.log("Got a response!");
+            console.log(resp);
+            const url = JSON.parse(body).url;
+            this.lastGfy = url;
+            console.log(url);
+        })
+    }
+
+
+    loadPage(url) {
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.target = "_blank";
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            document.body.removeChild(a);
+        }, 100);
+    }
+
     download() {
         const blob = new Blob(this.recordedBlobs, {type: 'video/webm'});
+        this.lastBlob = blob;
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.style.display = 'none';
@@ -370,6 +431,14 @@ class VirtualMachine extends EventEmitter {
             this.stopRecording();
         }
         this.runtime.stopAll();
+    }
+
+    sendLastClipToGfy() {
+        this.mediaRecorder.sendLastClipToGfy();
+    }
+
+    loadLastClipOnGfy() {
+        this.mediaRecorder.loadLastClipOnGfy();
     }
 
     /**
