@@ -69,6 +69,8 @@ const VideoState = {
     ON_FLIPPED: 'on-flipped'
 };
 
+const EXTENSION_ID = 'poseBody';
+
 /**
  * Class for the motion-related blocks in Scratch 3.0
  * @param {Runtime} runtime - the runtime instantiating this block package.
@@ -81,6 +83,10 @@ class Scratch3PoseNetBlocks {
          * @type {Runtime}
          */
         this.runtime = runtime;
+
+        this.runtime.registerPeripheralExtension(EXTENSION_ID, this);
+        this.runtime.connectPeripheral(EXTENSION_ID, 0);
+        this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
 
         /**
          * A flag to determine if this extension has been installed in a project.
@@ -195,6 +201,13 @@ class Scratch3PoseNetBlocks {
     reset () {
     }
 
+    isConnected() {
+        return !!this.poseState;
+    }
+
+    connect() {
+    }
+
     async _loop () {
         while (true) {
             const frame = this.runtime.ioDevices.video.getFrame({
@@ -205,6 +218,7 @@ class Scratch3PoseNetBlocks {
             const time = +new Date();
             if (frame) {
                 this.poseState = await this.estimatePoseOnImage(frame);
+                this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
             }
             const estimateThrottleTimeout = (+new Date() - time) / 4;
             await new Promise(r => setTimeout(r, estimateThrottleTimeout));
@@ -371,12 +385,13 @@ class Scratch3PoseNetBlocks {
 
         // Return extension definition
         return {
-            id: 'poseBody',
+            id: EXTENSION_ID,
             name: formatMessage({
                 id: 'posenet.categoryName',
                 default: 'Body Pose Sensing',
                 description: 'Label for PoseNet category'
             }),
+            showStatusButton: true,
             blockIconURI: blockIconURI,
             menuIconURI: menuIconURI,
             blocks: [

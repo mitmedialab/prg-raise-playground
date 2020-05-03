@@ -74,6 +74,8 @@ const ModelType = {
     IMAGE: 'image',
 }
 
+const EXTENSION_ID = 'teachableMachine';
+
 /**
  * Class for the motion-related blocks in Scratch 3.0
  * @param {Runtime} runtime - the runtime instantiating this block package.
@@ -86,6 +88,9 @@ class Scratch3VideoSensingBlocks {
          * @type {Runtime}
          */
         this.runtime = runtime;
+        this.runtime.registerPeripheralExtension(EXTENSION_ID, this);
+        this.runtime.connectPeripheral(EXTENSION_ID, 0);
+        this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
 
         /**
          * The motion detection algoritm used to power the motion amount and
@@ -267,6 +272,16 @@ class Scratch3VideoSensingBlocks {
         }
     }
 
+    isConnected() {
+        return this.predictionState &&
+            this.teachableImageModel &&
+            this.predictionState.hasOwnProperty(this.teachableImageModel);
+    }
+
+    connect() {
+    }
+
+
     async predictAllBlocks(frame) {
         for (let modelUrl in this.predictionState) {
             if (!this.predictionState[modelUrl].model) {
@@ -278,6 +293,7 @@ class Scratch3VideoSensingBlocks {
             ++this._isPredicting;
             const prediction = await this.predictModel(modelUrl, frame);
             this.predictionState[modelUrl].topClass = prediction;
+            this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
             --this._isPredicting;
         }
     }
@@ -528,12 +544,13 @@ class Scratch3VideoSensingBlocks {
         ];
 
         return {
-            id: 'teachableMachine',
+            id: EXTENSION_ID,
             name: formatMessage({
                 id: 'videoSensing.categoryName',
                 default: 'Teachable Machine',
                 description: 'Label for the Teachable Machine extension category'
             }),
+            showStatusButton: true,
             blockIconURI: blockIconURI,
             menuIconURI: menuIconURI,
             blocks: blocks,
