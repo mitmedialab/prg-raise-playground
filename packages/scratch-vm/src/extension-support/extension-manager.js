@@ -27,8 +27,8 @@ const builtinExtensions = {
     //gdxfor: () => require('../extensions/scratch3_gdx_for')
     arduinoRobot: () => require('../extensions/scratch3_arduinobot'),
     gizmoRobot: () => require('../extensions/scratch3_gizmo'),
-    microbitRobot: () => require('../extensions/scratch3_microbot')
-    //teachableMachine: () => require('../extensions/scratch3_teachable_machine')
+    microbitRobot: () => require('../extensions/scratch3_microbot'),
+    teachableMachine: () => require('../extensions/scratch3_teachable_machine')
 };
 
 /**
