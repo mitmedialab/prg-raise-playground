@@ -19,6 +19,8 @@ It is structured as a monorepo, where the Scratch components you'll typically wa
 
 ## ⚡ Quick Setup️
 
+Requirements, your java version should be 8 or higher. Check `java -version`.
+
 ```shell script
 git clone git@github.com:mitmedialab/prg-extension-boilerplate.git
 # Cloning the full history (300mb) takes about 20 seconds on fast internet. Include -–depth 1 for a 4 second checkout
@@ -28,7 +30,7 @@ npx lerna bootstrap --force-local
 cd packages/scratch-gui
 npm start
 
-# Open http://0.0.0.0:8601/ in your browser
+# Open http://localhost:8601/ in your browser
 ```
 
 Now you can make changes, and they will auto-build from the scratch-gui watcher and live-reload!
