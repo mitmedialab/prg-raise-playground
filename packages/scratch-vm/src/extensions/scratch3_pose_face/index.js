@@ -213,6 +213,9 @@ class Scratch3PoseNetBlocks {
     connect() {
     }
 
+    scan() {
+    }
+
     async _loop () {
         while (true) {
             const frame = this.runtime.ioDevices.video.getFrame({
@@ -223,8 +226,13 @@ class Scratch3PoseNetBlocks {
             const time = +new Date();
             if (frame) {
                 this.affdexState = await this.estimateAffdexOnImage(frame);
-                this.hasResult = true;
-                this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
+                if (this.affdexState) {
+                    this.hasResult = true;
+                    this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
+                } else {
+                    this.hasResult = false;
+                    this.runtime.emit(this.runtime.constructor.PERIPHERAL_DISCONNECTED);
+                }
             }
             const estimateThrottleTimeout = (+new Date() - time) / 4;
             await new Promise(r => setTimeout(r, estimateThrottleTimeout));

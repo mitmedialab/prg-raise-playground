@@ -201,8 +201,11 @@ class Scratch3PoseNetBlocks {
     reset () {
     }
 
+    scan() {
+    }
+
     isConnected() {
-        return !!this.poseState;
+        return this.hasPose();
     }
 
     connect() {
@@ -218,7 +221,11 @@ class Scratch3PoseNetBlocks {
             const time = +new Date();
             if (frame) {
                 this.poseState = await this.estimatePoseOnImage(frame);
-                this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
+                if (this.hasPose()) {
+                    this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
+                } else {
+                    this.runtime.emit(this.runtime.constructor.PERIPHERAL_DISCONNECTED);
+                }
             }
             const estimateThrottleTimeout = (+new Date() - time) / 4;
             await new Promise(r => setTimeout(r, estimateThrottleTimeout));
@@ -479,10 +486,14 @@ class Scratch3PoseNetBlocks {
     }
 
     goToPart(args, util) {
-        if (this.poseState && this.poseState.keypoints) {
+        if (this.hasPose()) {
             const {x, y} = this.tfCoordsToScratch(this.poseState.keypoints.find(point => point.part === args['PART']).position);
             util.target.setXY(x, y, false);
         }
+    }
+
+    hasPose() {
+        return this.poseState && this.poseState.keypoints && this.poseState.score > 0.01;
     }
 
     /**

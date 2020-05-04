@@ -203,7 +203,10 @@ class Scratch3PoseNetBlocks {
     }
 
     isConnected() {
-        return !!this.handPoseState;
+        return !!this.handPoseState && this.handPoseState.length > 0;
+    }
+
+    scan() {
     }
 
     connect() {
@@ -219,7 +222,11 @@ class Scratch3PoseNetBlocks {
             const time = +new Date();
             if (frame) {
                 this.handPoseState = await this.estimateHandPoseOnImage(frame);
-                this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
+                if (this.isConnected()) {
+                    this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
+                } else {
+                    this.runtime.emit(this.runtime.constructor.PERIPHERAL_DISCONNECTED);
+                }
             }
             const estimateThrottleTimeout = (+new Date() - time) / 4;
             await new Promise(r => setTimeout(r, estimateThrottleTimeout));
