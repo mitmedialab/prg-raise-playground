@@ -21,13 +21,9 @@ const CrashMessage = props => (
                 />
             </h2>
             <p>
-                <FormattedMessage
-                    defaultMessage={'We are so sorry, but it looks like Scratch has crashed. This bug has been' +
-                        ' automatically reported to the Scratch Team. Please refresh your page to try' +
-                        ' again.'}
-                    description="Message to inform the user that page has crashed."
-                    id="gui.crashMessage.description"
-                />
+                We are so sorry, but it looks like the block editor has crashed.<br/>
+                This bug has been automatically reported to the team.<br/>
+                Please refresh your page to try again.<br/>
             </p>
             {props.eventId && (
                 <p>
@@ -41,6 +37,13 @@ const CrashMessage = props => (
                     />
                 </p>
             )}
+            <a
+                href="https://dancingwithai.github.io/?"
+                className={styles.reloadButton}
+                style={{textDecoration: 'none', display: 'inline-block', marginBottom: 14}}
+            >
+                Back to Curriculum
+            </a><br/>
             <button
                 className={styles.reloadButton}
                 onClick={props.onReload}
