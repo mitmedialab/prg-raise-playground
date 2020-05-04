@@ -116,10 +116,6 @@ class Scratch3VideoSensingBlocks {
         if (this.runtime.ioDevices) {
             // Configure the video device with values from globally stored locations.
             this.runtime.on(Runtime.PROJECT_LOADED, this.updateVideoDisplay.bind(this));
-
-            // Clear target motion state values when the project starts.
-            this.runtime.on(Runtime.PROJECT_RUN_START, this.reset.bind(this));
-
             // Kick off looping the analysis logic.
             this._loop();
         }
@@ -222,24 +218,6 @@ class Scratch3VideoSensingBlocks {
     }
 
     /**
-     * Reset the extension's data motion detection data. This will clear out
-     * for example old frames, so the first analyzed frame will not be compared
-     * against a frame from before reset was called.
-     */
-    reset () {
-        this.detect.reset();
-
-        const targets = this.runtime.targets;
-        for (let i = 0; i < targets.length; i++) {
-            const state = targets[i].getCustomState(Scratch3VideoSensingBlocks.STATE_KEY);
-            if (state) {
-                state.motionAmount = 0;
-                state.motionDirection = 0;
-            }
-        }
-    }
-
-    /**
      * Occasionally step a loop to sample the video, stamp it to the preview
      * skin, and add a TypedArray copy of the canvas's pixel data.
      * @private
@@ -270,6 +248,12 @@ class Scratch3VideoSensingBlocks {
                 this.predictAllBlocks(frame);
             }
         }
+    }
+
+    scan() {
+    }
+
+    reset () {
     }
 
     isConnected() {
