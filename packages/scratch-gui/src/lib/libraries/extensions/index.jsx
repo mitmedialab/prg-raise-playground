@@ -1,7 +1,10 @@
 import React from 'react';
 import {FormattedMessage} from 'react-intl';
 
-import teachableMachineBlocksIconURL from './teachable-machine-blocks/teachable-machine-blocks.png';
+import poseBodyBlocksIconURL from './posenet/pose-body.png';
+import poseHandBlocksIconURL from './posenet/pose-hand.png';
+import poseFaceBlocksIconURL from './posenet/pose-face.png';
+import teachableMachineBlocksIconURL from './teachable-machine-blocks/teachable-machine-logo.png';
 import teachableMachineBlocksInsetIconURL from './teachable-machine-blocks/teachable-machine-blocks-small.svg';
 
 
@@ -15,7 +18,7 @@ import videoSensingIconURL from './videoSensing/video-sensing.png';
 import videoSensingInsetIconURL from './videoSensing/video-sensing-small.svg';
 
 // import posenetIconURL from './posenet/video-sensing.png';
-import posenetInsetIconURL from './posenet/posenet-small.svg';
+import poseHandInsetIconURL from './posenet/pose-hand-small-3.svg';
 import poseFaceInsetIconURL from './posenet/pose-face-small.svg';
 import poseBodyInsetIconURL from './posenet/pose-body-small.svg';
 
@@ -59,6 +62,26 @@ export default [
     {
         name: (
             <FormattedMessage
+                defaultMessage="Teachable Machine"
+                description="Teachable Machine name"
+                id="gui.extension.teachable-machine.name"
+            />
+        ),
+        extensionId: 'teachableMachine',
+        iconURL: teachableMachineBlocksIconURL,
+        insetIconURL: teachableMachineBlocksInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Use Google Teachable Machine models in your Scratch project."
+                description="Teachable Machine Description"
+                id="gui.extension.teachable-machine.description"
+            />
+        ),
+        featured: true
+    },
+    {
+        name: (
+            <FormattedMessage
                 defaultMessage="Virtual Agent"
                 description="Agent Name"
                 id="gui.extension.avatar.name"
@@ -80,8 +103,8 @@ export default [
     {
         name: "Hand Sensing",
         extensionId: 'poseHand',
-        iconURL: videoSensingIconURL,
-        insetIconURL: posenetInsetIconURL,
+        iconURL: poseHandBlocksIconURL,
+        insetIconURL: poseHandInsetIconURL,
         description: (
             <FormattedMessage
                 defaultMessage="Sense hand movement with the camera."
@@ -94,7 +117,7 @@ export default [
     {
         name: "Face Sensing",
         extensionId: 'poseFace',
-        iconURL: videoSensingIconURL,
+        iconURL: poseFaceBlocksIconURL,
         insetIconURL: poseFaceInsetIconURL,
         description: (
             <FormattedMessage
@@ -108,33 +131,13 @@ export default [
     {
         name: "Body Sensing",
         extensionId: 'poseBody',
-        iconURL: videoSensingIconURL,
+        iconURL: poseBodyBlocksIconURL,
         insetIconURL: poseBodyInsetIconURL,
         description: (
             <FormattedMessage
                 defaultMessage="Sense body position with the camera."
                 description="PoseNet Description"
                 id="gui.extension.pose_body.description"
-            />
-        ),
-        featured: true
-    },
-    {
-        name: (
-            <FormattedMessage
-                defaultMessage="Teachable Machine"
-                description="Teachable Machine name"
-                id="gui.extension.teachable-machine.name"
-            />
-        ),
-        extensionId: 'teachableMachine',
-        iconURL: teachableMachineBlocksIconURL,
-        insetIconURL: teachableMachineBlocksInsetIconURL,
-        description: (
-            <FormattedMessage
-                defaultMessage="Use Google Teachable Machine models in your Scratch project."
-                description="Teachable Machine Description"
-                id="gui.extension.teachable-machine.description"
             />
         ),
         featured: true
