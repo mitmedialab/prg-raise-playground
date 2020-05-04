@@ -16,6 +16,8 @@ import videoSensingInsetIconURL from './videoSensing/video-sensing-small.svg';
 
 // import posenetIconURL from './posenet/video-sensing.png';
 import posenetInsetIconURL from './posenet/posenet-small.svg';
+import poseFaceInsetIconURL from './posenet/pose-face-small.svg';
+import poseBodyInsetIconURL from './posenet/pose-body-small.svg';
 
 import text2speechIconURL from './text2speech/text2speech.png';
 import text2speechInsetIconURL from './text2speech/text2speech-small.svg';
@@ -93,7 +95,7 @@ export default [
         name: "Face Sensing",
         extensionId: 'poseFace',
         iconURL: videoSensingIconURL,
-        insetIconURL: posenetInsetIconURL,
+        insetIconURL: poseFaceInsetIconURL,
         description: (
             <FormattedMessage
                 defaultMessage="Sense face movement with the camera."
@@ -107,7 +109,7 @@ export default [
         name: "Body Sensing",
         extensionId: 'poseBody',
         iconURL: videoSensingIconURL,
-        insetIconURL: posenetInsetIconURL,
+        insetIconURL: poseBodyInsetIconURL,
         description: (
             <FormattedMessage
                 defaultMessage="Sense body position with the camera."
