@@ -494,9 +494,9 @@ class MenuBar extends React.Component {
                     >
                         Teachable Machine
                     </a>
-                    {this.props.showTutorials ? (
+                    <Divider className={classNames(styles.divider)} />
+                    {true ? (
                         <div>
-                            <Divider className={classNames(styles.divider)} />
                             <div
                                 aria-label={this.props.intl.formatMessage(ariaMessages.tutorials)}
                                 className={classNames(styles.menuBarItem, styles.hoverable)}
@@ -506,7 +506,7 @@ class MenuBar extends React.Component {
                                     className={styles.helpIcon}
                                     src={helpIcon}
                                 />
-                                <FormattedMessage {...ariaMessages.tutorials} />
+                                Scratch Tutorials
                             </div>
                         </div>) :
                         null
