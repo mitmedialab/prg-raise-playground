@@ -31,7 +31,7 @@ const RESERVED_NAMES = ['_mouse_', '_stage_', '_edge_', '_myself_', '_random_'];
 const urlParams = new URLSearchParams(window.location.search);
 const microworld = urlParams.get('microworld');
 const microworlds = {
-    face: [
+    faceAttach: [
         'poseFace',
     ],
     hand: [

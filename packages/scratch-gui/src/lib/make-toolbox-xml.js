@@ -729,9 +729,31 @@ const microworlds = {
         </value>
     </block>
         `,
-    face: `
-
-    <block type="poseFace_affdexGoToPart" id="I4GV0TRjo4{]_1SW2QQS" x="168" y="169">
+    faceAttach: `
+    <block type="event_whenflagclicked" id="e;ffDd-)IpFTVfJ33(#d" x="193" y="161"></block>
+    <block type="control_forever" id="i]XA=gGZM;NI$YsMeYvv" x="202" y="263"></block>
+    <block type="poseFace_affdexWhenExpression" id="{hCvVZsqFsCbUcClhgFq" x="200" y="467">
+        <value name="EXPRESSION">
+            <shadow type="poseFace_menu_EXPRESSION" id="r.iDB1b-8CeEFzE(3wA0">
+                <field name="EXPRESSION">smile</field>
+            </shadow>
+        </value>
+    </block>
+    <block type="looks_say" id="scM~5],Lm^cgJh[SJLW8" x="207" y="581">
+        <value name="MESSAGE">
+            <shadow type="text" id="!}xQMXiNFA;+St56v5|2">
+                <field name="TEXT">Hello!</field>
+            </shadow>
+        </value>
+    </block>
+    <block type="looks_switchcostumeto" id="7GD?TJ@2%T^%?D$X}1=|" x="203" y="709">
+        <value name="COSTUME">
+            <shadow type="looks_costume" id="^gYE~W9wf|4f%hfHGOe.">
+                <field name="COSTUME">angry</field>
+            </shadow>
+        </value>
+    </block>
+    <block type="poseFace_affdexGoToPart" id="]NwJxfV}Ya92%?0J(xcO" x="205" y="845">
         <field name="AFFDEX_POINT">0</field>
     </block>
 
