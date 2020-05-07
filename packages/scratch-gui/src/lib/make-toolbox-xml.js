@@ -732,6 +732,16 @@ const microworlds = {
     faceAttach: `
     <block type="event_whenflagclicked" id="e;ffDd-)IpFTVfJ33(#d" x="193" y="161"></block>
     <block type="control_forever" id="i]XA=gGZM;NI$YsMeYvv" x="202" y="263"></block>
+    <block type="poseBody_goToPart" id="yGcL:|}/TRE8{Nzlv-.F" x="80" y="267">
+        <value name="PART">
+            <shadow type="poseBody_menu_PART" id="]a0bZ_(]d,I_^;;hC[aN">
+                <field name="PART">rightShoulder</field>
+            </shadow>
+        </value>
+    </block>
+    <block type="poseFace_affdexGoToPart" id="]NwJxfV}Ya92%?0J(xcO" x="205" y="845">
+        <field name="AFFDEX_POINT">0</field>
+    </block>
     <block type="poseFace_affdexWhenExpression" id="{hCvVZsqFsCbUcClhgFq" x="200" y="467">
         <value name="EXPRESSION">
             <shadow type="poseFace_menu_EXPRESSION" id="r.iDB1b-8CeEFzE(3wA0">
@@ -749,13 +759,11 @@ const microworlds = {
     <block type="looks_switchcostumeto" id="7GD?TJ@2%T^%?D$X}1=|" x="203" y="709">
         <value name="COSTUME">
             <shadow type="looks_costume" id="^gYE~W9wf|4f%hfHGOe.">
-                <field name="COSTUME">angry</field>
+                <field name="COSTUME">ecstatic</field>
             </shadow>
         </value>
     </block>
-    <block type="poseFace_affdexGoToPart" id="]NwJxfV}Ya92%?0J(xcO" x="205" y="845">
-        <field name="AFFDEX_POINT">0</field>
-    </block>
+
 
     `,
     body: `

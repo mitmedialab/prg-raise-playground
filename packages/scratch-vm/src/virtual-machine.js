@@ -32,7 +32,7 @@ const urlParams = new URLSearchParams(window.location.search);
 const microworld = urlParams.get('microworld');
 const microworlds = {
     faceAttach: [
-        'poseFace',
+        'poseFace', 'poseBody',
     ],
     hand: [
         'poseHand',
