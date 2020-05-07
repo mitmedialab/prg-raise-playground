@@ -713,6 +713,31 @@ const myBlocks = function () {
 const xmlOpen = '<xml style="display: none">';
 const xmlClose = '</xml>';
 
+// HACK: sync between this and virtual-machine.js
+const microworlds = {
+    hand: `
+    <block type="poseHand_goToHandPart" id="xl\`ZjFYyJ7x\`rF+BhxMZ" x="77" y="108">
+        <value name="HAND_PART">
+            <shadow type="poseHand_menu_HAND_PART" id="8s^\`~B\`%5M.2%06W\`R:K">
+                <field name="HAND_PART">thumb</field>
+            </shadow>
+        </value>
+        <value name="HAND_SUB_PART">
+            <shadow type="poseHand_menu_HAND_SUB_PART" id="Ih2q1To8h7h^%%0lB$vc">
+                <field name="HAND_SUB_PART">3</field>
+            </shadow>
+        </value>
+    </block>
+        `,
+    face: `
+
+    <block type="poseFace_affdexGoToPart" id="I4GV0TRjo4{]_1SW2QQS" x="168" y="169">
+        <field name="AFFDEX_POINT">0</field>
+    </block>
+
+    `
+}
+
 /**
  * @param {!boolean} isStage - Whether the toolbox is for a stage-type target.
  * @param {?string} targetId - The current editing target
@@ -753,18 +778,34 @@ const makeToolboxXML = function (isStage, targetId, categoriesXML = [],
     const variablesXML = moveCategory('data') || variables(isStage, targetId);
     const myBlocksXML = moveCategory('procedures') || myBlocks(isStage, targetId);
 
-    const everything = [
-        xmlOpen,
-        motionXML, gap,
-        looksXML, gap,
-        soundXML, gap,
-        eventsXML, gap,
-        controlXML, gap,
-        sensingXML, gap,
-        operatorsXML, gap,
-        variablesXML, gap,
-        myBlocksXML
-    ];
+    const urlParams = new URLSearchParams(window.location.search);
+    const microworld = urlParams.get('microworld')
+    let mwXml = undefined;
+    if (!!microworld) {
+        mwXml = microworlds[microworld];
+    }
+
+    const everything = mwXml ?
+        [
+            xmlOpen,
+            `
+    <category name="Microworld" id="motion" colour="#4C97FF" secondaryColour="#3373CC">
+${mwXml}
+</category>
+`
+        ] : [
+            xmlOpen,
+            motionXML, gap,
+            looksXML, gap,
+            soundXML, gap,
+            eventsXML, gap,
+            controlXML, gap,
+            sensingXML, gap,
+            operatorsXML, gap,
+            variablesXML, gap,
+            myBlocksXML
+        ]
+    ;
 
     for (const extensionCategory of categoriesXML) {
         everything.push(gap, extensionCategory.xml);

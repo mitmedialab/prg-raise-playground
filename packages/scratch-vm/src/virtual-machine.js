@@ -28,9 +28,22 @@ require('canvas-toBlob');
 
 const RESERVED_NAMES = ['_mouse_', '_stage_', '_edge_', '_myself_', '_random_'];
 
-const CORE_EXTENSIONS = [
-    // 'teachableMachine',
-    // 'posenet',
+const urlParams = new URLSearchParams(window.location.search);
+const microworld = urlParams.get('microworld');
+const microworlds = {
+    face: [
+        'poseFace',
+    ],
+    hand: [
+        'poseHand',
+    ],
+    body: [
+        'poseBody',
+    ]
+}
+
+const microworldExtensions = microworlds[microworld];
+const CORE_EXTENSIONS = !!microworldExtensions ? microworldExtensions : [
     // 'motion',
     // 'looks',
     // 'sound',
