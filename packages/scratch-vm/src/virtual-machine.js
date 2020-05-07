@@ -39,7 +39,10 @@ const microworlds = {
     ],
     body: [
         'poseBody',
-    ]
+    ],
+    teachableMachine: [
+        'teachableMachine',
+    ],
 }
 
 const microworldExtensions = microworlds[microworld];

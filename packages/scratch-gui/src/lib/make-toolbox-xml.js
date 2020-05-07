@@ -713,7 +713,7 @@ const myBlocks = function () {
 const xmlOpen = '<xml style="display: none">';
 const xmlClose = '</xml>';
 
-// HACK: sync between this and virtual-machine.js
+// Configure extensions list in virtual-machine.js
 const microworlds = {
     hand: `
     <block type="poseHand_goToHandPart" id="xl\`ZjFYyJ7x\`rF+BhxMZ" x="77" y="108">
@@ -733,6 +733,32 @@ const microworlds = {
 
     <block type="poseFace_affdexGoToPart" id="I4GV0TRjo4{]_1SW2QQS" x="168" y="169">
         <field name="AFFDEX_POINT">0</field>
+    </block>
+
+    `,
+    body: `
+
+    <block type="poseBody_goToPart" id="?0a/}3UWsFry^F_?o#^c" x="37" y="89">
+        <value name="PART">
+            <shadow type="poseBody_menu_PART" id="$-1A-LR\`mg$Sar/E3\`)F">
+                <field name="PART">rightShoulder</field>
+            </shadow>
+        </value>
+    </block>
+
+    `,
+    teachableMachine: `
+
+    <block type="teachableMachine_useModelBlock" id="9pm*(x53?qB@4/Tv;I__" x="108" y="30">
+        <value name="MODEL_URL">
+            <shadow type="text" id="6D,POFFAHF/fsbV3-s6a">
+                <field name="TEXT">Put model URL here!</field>
+            </shadow>
+        </value>
+    </block>
+    <block type="teachableMachine_modelPrediction" id="\`!W1{cI$zCO41IkYFayP" x="96" y="136"></block>
+    <block type="teachableMachine_whenModelMatches" id="~M6_3y:h$~\`emp[XK}.f" x="83" y="233">
+        <field name="CLASS_NAME">Class 1</field>
     </block>
 
     `
