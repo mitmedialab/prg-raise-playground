@@ -747,18 +747,39 @@ const microworlds = {
     </block>
 
     `,
-    teachableMachine: `
+    teachableDog: `
 
-    <block type="teachableMachine_useModelBlock" id="9pm*(x53?qB@4/Tv;I__" x="108" y="30">
+    <block type="event_whenflagclicked" id="0Il($9RrAl!G?=6[nC[M" x="126" y="118"></block>
+    <block type="teachableMachine_useModelBlock" id="R@j.46\`%^gV@2l^![^2}" x="128" y="231">
         <value name="MODEL_URL">
-            <shadow type="text" id="6D,POFFAHF/fsbV3-s6a">
-                <field name="TEXT">Put model URL here!</field>
+            <shadow type="text" id="T6{g|QNj//[kE)NHEnf(">
+                <field name="TEXT">Enter Model URL Here!</field>
             </shadow>
         </value>
     </block>
-    <block type="teachableMachine_modelPrediction" id="\`!W1{cI$zCO41IkYFayP" x="96" y="136"></block>
-    <block type="teachableMachine_whenModelMatches" id="~M6_3y:h$~\`emp[XK}.f" x="83" y="233">
+    <block type="teachableMachine_whenModelMatches" id="^t_~1olaTjF;@,rO4Lh:" x="129" y="372">
         <field name="CLASS_NAME">Class 1</field>
+    </block>
+    <block type="looks_switchcostumeto" id="hhQ]Px9No0)WmtWKK#/W" x="129" y="477">
+        <value name="COSTUME">
+            <shadow type="looks_costume" id="|zp#.Pb;1?)#QolAR+/x">
+                <field name="COSTUME">dot-away</field>
+            </shadow>
+        </value>
+    </block>
+    <block type="looks_switchcostumeto" id="}t(K-:~#i*k_hQ68@Yd_" x="133" y="592">
+        <value name="COSTUME">
+            <shadow type="looks_costume" id="2Iy~?59qG}y,n6@DZ{Wh">
+                <field name="COSTUME">dot-forward</field>
+            </shadow>
+        </value>
+    </block>
+    <block type="looks_say" id="xeY_wJ|;K)(sBO(m6R*4" x="135" y="708">
+        <value name="MESSAGE">
+            <shadow type="text" id="8IUNrD4^7AUPeVAtx~a!">
+                <field name="TEXT">Yay!</field>
+            </shadow>
+        </value>
     </block>
 
     `

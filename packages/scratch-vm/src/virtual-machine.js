@@ -43,6 +43,9 @@ const microworlds = {
     teachableMachine: [
         'teachableMachine',
     ],
+    teachableDog: [
+        'teachableMachine',
+    ],
 }
 
 const microworldExtensions = microworlds[microworld];
