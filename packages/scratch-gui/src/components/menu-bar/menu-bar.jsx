@@ -320,12 +320,12 @@ class MenuBar extends React.Component {
             >
                 <div className={styles.mainMenu}>
                     <div className={styles.fileGroup}>
-                        {/*<a*/}
-                        {/*    className={classNames(styles.menuBarItem, styles.hoverable)}*/}
-                        {/*    href="https://dancingwithai.github.io/?"*/}
-                        {/*>*/}
-                        {/*    ⬅ Back to Curriculum*/}
-                        {/*</a>*/}
+                        <a
+                            className={classNames(styles.menuBarItem, styles.hoverable)}
+                            href="https://brian-microworlds-experiments.github.io?"
+                        >
+                            ⬅ Back to Experiments
+                        </a>
                         {(this.props.canChangeLanguage) && (<div
                             className={classNames(styles.menuBarItem, styles.hoverable, styles.languageMenu)}
                         >
