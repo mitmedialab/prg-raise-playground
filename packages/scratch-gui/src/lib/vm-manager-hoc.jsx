@@ -52,7 +52,13 @@ const vmManagerHOC = function (WrappedComponent) {
             }
         }
         loadProject () {
-            return this.props.vm.loadProject(this.props.projectData)
+            const urlParams = new URLSearchParams(window.location.search);
+            const project = urlParams.get('project')
+            let firstPromise = this.props.vm.loadProject(this.props.projectData);
+            if (!!project) {
+                firstPromise = this.props.vm.downloadProjectFromURLDirect(project);
+            }
+            return firstPromise
                 .then(() => {
                     this.props.onLoadedProject(this.props.loadingState, this.props.canSave);
                     // Wrap in a setTimeout because skin loading in

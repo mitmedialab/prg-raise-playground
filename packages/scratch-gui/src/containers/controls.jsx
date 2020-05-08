@@ -35,6 +35,7 @@ class Controls extends React.Component {
             isStarted, // eslint-disable-line no-unused-vars
             projectRunning,
             turbo,
+            recording,
             ...props
         } = this.props;
         return (
@@ -44,6 +45,21 @@ class Controls extends React.Component {
                 turbo={turbo}
                 onGreenFlagClick={this.handleGreenFlagClick}
                 onStopAllClick={this.handleStopAllClick}
+                onRecordClick={() => {
+                    if (recording) {
+                        this.props.vm.stopRecording();
+                        this.props.vm.downloadRecording();
+                    } else {
+                        this.props.vm.startRecording();
+                    }
+                }}
+                onStopRecordClick={() => {
+                    this.props.vm.stopRecording()
+                }}
+                onDownloadClick={() => {
+                    this.props.vm.downloadRecording()
+                }}
+                recording={recording}
             />
         );
     }
@@ -53,12 +69,14 @@ Controls.propTypes = {
     isStarted: PropTypes.bool.isRequired,
     projectRunning: PropTypes.bool.isRequired,
     turbo: PropTypes.bool.isRequired,
+    recording: PropTypes.bool.isRequired,
     vm: PropTypes.instanceOf(VM)
 };
 
 const mapStateToProps = state => ({
     isStarted: state.scratchGui.vmStatus.running,
     projectRunning: state.scratchGui.vmStatus.running,
+    recording: state.scratchGui.vmStatus.recording,
     turbo: state.scratchGui.vmStatus.turbo
 });
 // no-op function to prevent dispatch prop being passed to component
