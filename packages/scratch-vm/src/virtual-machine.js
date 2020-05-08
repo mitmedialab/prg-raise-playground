@@ -8,6 +8,7 @@ if (typeof TextEncoder === 'undefined') {
 const EventEmitter = require('events');
 const JSZip = require('jszip');
 
+const nets = require('nets');
 const Buffer = require('buffer').Buffer;
 const centralDispatch = require('./dispatch/central-dispatch');
 const ExtensionManager = require('./extension-support/extension-manager');
@@ -39,6 +40,197 @@ const CORE_EXTENSIONS = [
     // 'variables',
     // 'myBlocks'
 ];
+
+class ScratchCanvasRecorder {
+    constructor(canvas) {
+        this.mediaSource = new MediaSource();
+        this.mediaSource.addEventListener('sourceopen', this.handleSourceOpen.bind(this), false);
+        this.mediaRecorder = undefined;
+        this.recordedBlobs = undefined;
+        this.sourceBuffer = undefined;
+        this.recording = false;
+        this.canvas = canvas;
+        this.video = document.createElement('video');
+        this.video.width=500;
+        this.video.height=500;
+        this.video.style.pointerEvents = 'none';
+        this.video.style.position = 'fixed';
+        this.video.style.top = '0';
+        this.video.style.left = '0';
+        this.video.style.opacity = '0';
+        document.body.appendChild(this.video);
+        this.stream = canvas.captureStream(); // frames per second
+        console.log('Started stream capture from canvas element: ', this.stream);
+    }
+
+    handleSourceOpen(event) {
+        console.log('MediaSource opened');
+        this.sourceBuffer = this.mediaSource.addSourceBuffer('video/webm; codecs="vp8"');
+        console.log('Source buffer: ', this.sourceBuffer);
+    }
+
+    handleDataAvailable(event) {
+        if (event.data && event.data.size > 0) {
+            this.recordedBlobs.push(event.data);
+        }
+    }
+
+    handleStop(event) {
+        console.log('Recorder stopped: ', event);
+        const superBuffer = new Blob(this.recordedBlobs, {type: 'video/webm'});
+        this.video.src = window.URL.createObjectURL(superBuffer);
+    }
+
+    toggleRecording() {
+        if (recordButton.textContent === 'Start Recording') {
+            startRecording();
+        } else {
+            stopRecording();
+            recordButton.textContent = 'Start Recording';
+            playButton.disabled = false;
+            downloadButton.disabled = false;
+        }
+    }
+
+    // The nested try blocks will be simplified when Chrome 47 moves to Stable
+    startRecording() {
+        this.recording = true;
+        let options = {mimeType: 'video/webm'};
+        this.recordedBlobs = [];
+        try {
+            this.mediaRecorder = new MediaRecorder(this.stream, options);
+        } catch (e0) {
+            console.log('Unable to create MediaRecorder with options Object: ', e0);
+            try {
+                options = {mimeType: 'video/webm,codecs=vp9'};
+                this.mediaRecorder = new MediaRecorder(this.stream, options);
+            } catch (e1) {
+                console.log('Unable to create MediaRecorder with options Object: ', e1);
+                try {
+                    options = 'video/vp8'; // Chrome 47
+                    this.mediaRecorder = new MediaRecorder(this.stream, options);
+                } catch (e2) {
+                    alert('MediaRecorder is not supported by this browser.\n\n' +
+                        'Try Firefox 29 or later, or Chrome 47 or later, ' +
+                        'with Enable experimental Web Platform features enabled from chrome://flags.');
+                    console.error('Exception while creating MediaRecorder:', e2);
+                    return;
+                }
+            }
+        }
+        console.log('Created MediaRecorder', this.mediaRecorder, 'with options', options);
+        // TODO: Toggle turn off state
+        // recordButton.textContent = 'Stop Recording';
+        // playButton.disabled = true;
+        // downloadButton.disabled = true;
+        this.mediaRecorder.onstop = this.handleStop.bind(this);
+        this.mediaRecorder.ondataavailable = this.handleDataAvailable.bind(this);
+        this.mediaRecorder.start(100); // collect 100ms of data
+        console.log('MediaRecorder started', this.mediaRecorder);
+    }
+
+    stopRecording() {
+        this.mediaRecorder.stop();
+        console.log('Recorded Blobs: ', this.recordedBlobs);
+        this.video.controls = true;
+        this.recording = false;
+    }
+
+    play() {
+        this.video.play();
+    }
+
+    isRecording() {
+        return this.recording;
+    }
+
+    sendLastClipToGfy() {
+        if (this.lastBlob) {
+            this.sendBlobAsBase64(this.lastBlob);
+        }
+    }
+
+    loadLastClipOnGfy() {
+        if (this.lastGfy) {
+            this.loadPage(this.lastGfy);
+        }
+    }
+
+    sendBlobAsBase64(blob) {
+        const reader = new FileReader();
+        reader.addEventListener('load', () => {
+            const dataUrl = reader.result;
+            const base64EncodedData = dataUrl.split(',')[1];
+            console.log(base64EncodedData)
+            this.sendDataToBackend(base64EncodedData);
+        });
+        reader.readAsDataURL(blob);
+    }
+
+    sendDataToBackend(base64EncodedData) {
+        const body = JSON.stringify({
+            data: base64EncodedData
+        });
+        nets({
+            url: 'https://project-clip-train.glitch.me/gfy',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            encoding: undefined,
+            body
+        },(err, resp, body) => {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            console.log("Got a response!");
+            console.log(resp);
+            const url = JSON.parse(body).url;
+            this.lastGfy = url;
+            console.log(url);
+        })
+    }
+
+
+    loadPage(url) {
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.target = "_blank";
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            document.body.removeChild(a);
+        }, 100);
+    }
+
+    download() {
+        const blob = new Blob(this.recordedBlobs, {type: 'video/webm'});
+        this.lastBlob = blob;
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.target = "_blank";
+
+        const a2 = document.createElement('a');
+        a2.style.display = 'none';
+        a2.href = url;
+        a2.download = 'MyRecording.webm';
+
+        document.body.appendChild(a2);
+        document.body.appendChild(a);
+
+        a.click();
+        a2.click();
+        setTimeout(() => {
+            document.body.removeChild(a);
+            document.body.removeChild(a2);
+            // window.URL.revokeObjectURL(url);
+        }, 100);
+    }
+}
 
 /**
  * Handles connections between blocks, stage, and extensions.
@@ -180,6 +372,24 @@ class VirtualMachine extends EventEmitter {
         this.runtime.greenFlag();
     }
 
+    startRecording() {
+        this.setRecordingMode(true);
+        this.mediaRecorder.startRecording();
+    }
+
+    stopRecording() {
+        this.setRecordingMode(false);
+        this.mediaRecorder.stopRecording();
+    }
+
+    downloadRecording() {
+        this.mediaRecorder.download();
+    }
+
+    isRecording() {
+        return this.mediaRecorder && this.mediaRecorder.isRecording();
+    }
+
     /**
      * Set whether the VM is in "turbo mode."
      * When true, loops don't yield to redraw.
@@ -191,6 +401,15 @@ class VirtualMachine extends EventEmitter {
             this.emit(Runtime.TURBO_MODE_ON);
         } else {
             this.emit(Runtime.TURBO_MODE_OFF);
+        }
+    }
+
+    setRecordingMode (recordingOn) {
+        this.runtime.recording = !!recordingOn;
+        if (this.runtime.recording) {
+            this.emit(Runtime.RECORDING_ON);
+        } else {
+            this.emit(Runtime.RECORDING_OFF);
         }
     }
 
@@ -207,7 +426,18 @@ class VirtualMachine extends EventEmitter {
      * Stop all threads and running activities.
      */
     stopAll () {
+        if (this.runtime.recording) {
+            this.stopRecording();
+        }
         this.runtime.stopAll();
+    }
+
+    sendLastClipToGfy() {
+        this.mediaRecorder.sendLastClipToGfy();
+    }
+
+    loadLastClipOnGfy() {
+        this.mediaRecorder.loadLastClipOnGfy();
     }
 
     /**
@@ -366,6 +596,14 @@ class VirtualMachine extends EventEmitter {
         promise.then(projectAsset => {
             vm.loadProject(projectAsset.data);
         });
+    }
+
+    downloadProjectFromURLDirect(url) {
+        return new Promise((resolve, reject) => {
+            nets({ url: url }, (err, resp, body) => {
+                resolve(this.loadProject(body));
+            })
+        })
     }
 
     /**
@@ -1079,6 +1317,7 @@ class VirtualMachine extends EventEmitter {
      */
     attachRenderer (renderer) {
         this.runtime.attachRenderer(renderer);
+        this.mediaRecorder = new ScratchCanvasRecorder(renderer.canvas)
     }
 
     /**
