@@ -466,7 +466,10 @@ class Blocks extends React.Component {
         this.setState(p);
     }
     handleConnectionModalStart (extensionId) {
-        this.props.onOpenConnectionModal(extensionId);
+        let prgCustomExtensions = ['microbitRobot'];
+        if (!prgCustomExtensions.includes(extensionId)) {
+            this.props.onOpenConnectionModal(extensionId);
+        }
     }
     handleStatusButtonUpdate () {
         this.ScratchBlocks.refreshStatusButtons(this.workspace);
