@@ -191,7 +191,7 @@ class MicrobitRobot {
                     blockType: BlockType.BOOLEAN,
                     text: formatMessage({
                         id: 'arduinoBot.readLineSensorStatus',
-                        default: 'line sensor state is [LINE]',
+                        default: 'line detected on [LINE]',
                         description: 'detect line sensor state'
                     }),
                     arguments: {
@@ -228,7 +228,7 @@ class MicrobitRobot {
                 },
                 LINE_STATES: {
                     acceptReporters: false,
-                    items: ['right', 'left', 'neither', 'both']
+                    items: ['right side', 'left side', 'neither side', 'both side']
                 }
             }
         };
@@ -238,8 +238,14 @@ class MicrobitRobot {
         return (this._mStatus == 2);
     }
     scan() {
+        console.log("microbitRobotScan");
+        this.connectToExtension();
     }
     connect() {
+    }
+    disconnect() {
+        console.log("Closing extension");
+        chrome.runtime.sendMessage(this.CHROME_EXTENSION_ID, { close: true });
     }
     disconnectedFromExtension() {
         this._mStatus = 1;
