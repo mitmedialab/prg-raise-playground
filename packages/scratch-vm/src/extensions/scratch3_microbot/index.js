@@ -14,6 +14,7 @@ const _colors = ['red', 'green', 'blue', 'yellow', 'cyan', 'magenta', 'white', '
 const _icons = ['heart', 'check', 'X', 'smile', 'frown', 'ghost', 'triangle', 'diamond', 'square', 'checkers', 'note'];
 const _drive = ['forward', 'backward'];
 const _turn = ['left', 'right'];
+const EXTENSION_ID = 'microbitRobot';
 
 // Core, Team, and Official extension classes should be registered statically with the Extension Manager.
 // See: scratch-vm/src/extension-support/extension-manager.js
@@ -25,11 +26,14 @@ class MicrobitRobot {
          * @type {Runtime}
          */
         this.scratch_vm = runtime;
+        this.scratch_vm.registerPeripheralExtension(EXTENSION_ID, this);
+        this.scratch_vm.connectPeripheral(EXTENSION_ID, 0);
         
         this.robot = this;
         
         this._mStatus = 1;
         this._mConnection = null;
+        this._mConnectionTimeout = null;
         this.CHROME_EXTENSION_ID = "jpehlabbcdkiocalmhikacglppfenoeo"; // "molfimodiodghknifkeikkldkogpapki"; APP ID on Chrome Web Store
 
         this.msg1 = {};
@@ -52,12 +56,13 @@ class MicrobitRobot {
      */
     getInfo () {
         return {
-            id: 'microbitRobot',
+            id: EXTENSION_ID,
             name: formatMessage({
                 id: 'microbitRobot',
                 default: 'PRG Microbit Robot Blocks',
                 description: 'Extension using Gizmo Robot Chrome extension to communicate with Microbit robot'
             }),
+            showStatusButton: true,
             blockIconURI: blockIconURI,
             menuIconURI: blockIconURI,
 
@@ -228,7 +233,19 @@ class MicrobitRobot {
             }
         };
     }
-
+    isConnected() {
+        //console.log("isConnected status: " + this._mStatus);
+        return (this._mStatus == 2);
+    }
+    scan() {
+    }
+    connect() {
+    }
+    disconnectedFromExtension() {
+        this._mStatus = 1;
+        console.log("Lost connection to robot");   
+        this.scratch_vm.emit(this.scratch_vm.constructor.PERIPHERAL_DISCONNECTED);
+    }
     connectToExtension() {
         // Can probably do this without Chrome extension
         // VID is a Vendor ID. For the micro:bit this is 0x0d28, PID is a Product ID. For the micro:bit this is 0x0204
@@ -236,11 +253,12 @@ class MicrobitRobot {
         // https://developers.google.com/web/updates/2015/07/interact-with-ble-devices-on-the-web
         
         // Save reference to robot for use later
+        
         var robot = this;
         var boundMsgHandler = this.onMsgFromExtension.bind(this);
         
         // Attenpt to connect to the Gizmo Chrome Extension
-        chrome.runtime.sendMessage(this.CHROME_EXTENSION_ID, {message: "STATUS"}, function (response) {
+        chrome.runtime.sendMessage(this.CHROME_EXTENSION_ID, { launch: true }, function (response) {
             if (response === undefined) { //Chrome app not found
                 // Must have the wrong extension ID (if extension was not downloaded from Chrome webstore, the extension id is not consistent)
                 console.log("Chrome app not found with extension ID: " + robot.CHROME_EXTENSION_ID);
@@ -282,7 +300,9 @@ class MicrobitRobot {
       if (this._mStatus == 1) {
         console.log("Receiving messages from robot");
       }
+      
       this._mStatus = 2;
+      this.scratch_vm.emit(this.scratch_vm.constructor.PERIPHERAL_CONNECTED);
       var buffer = msg.buffer;
       
       // The beginning of the buffer (from firmata) starts with 224, if this buffer starts with 224 it is the beginning of the message
@@ -295,6 +315,10 @@ class MicrobitRobot {
           this.messageParser(buffer);
           this.last_reading = 1;
       }
+      
+      // Detect if the robot gets disconnected
+      if (this._mConnectionTimeout != null) clearTimeout(this._mConnectionTimeout);
+      this._mConnectionTimeout = setTimeout(this.disconnectedFromExtension.bind(this), 1000);
     }
     
     /**
