@@ -5,7 +5,6 @@ const BlockType = require('../../extension-support/block-type');
 const Clone = require('../../util/clone');
 const Cast = require('../../util/cast');
 const formatMessage = require('format-message');
-const Video = require('../../io/video');
 
 
 
@@ -14,6 +13,8 @@ const _colors = ['red', 'green', 'blue', 'yellow', 'cyan', 'magenta', 'white', '
 const _icons = ['heart', 'check', 'X', 'smile', 'frown', 'ghost', 'triangle', 'diamond', 'square', 'checkers', 'note'];
 const _drive = ['forward', 'backward'];
 const _turn = ['left', 'right'];
+const _button = ['A','B','A or B','A and B','neither A nor B'];
+const _line_states = ['right side', 'left side', 'neither side', 'both side'];
 const EXTENSION_ID = 'microbitRobot';
 
 // Core, Team, and Official extension classes should be registered statically with the Extension Manager.
@@ -125,7 +126,7 @@ class MicrobitRobot {
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
                         id: 'arduinoBot.driveForwardBackward',
-                        default: 'drive [DIR] for [NUM] steps',
+                        default: 'drive [DIR] for [NUM] seconds',
                         description: 'Send command to robot to drive forward or backward'
                     }),
                     arguments: {
@@ -145,13 +146,13 @@ class MicrobitRobot {
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
                         id: 'arduinoBot.turnRightLeft',
-                        default: 'turn [TURN] [NUM] degrees',
+                        default: 'turn [TURN] for [NUM] seconds',
                         description: 'Send command to robot to turn right or left'
                     }),
                     arguments: {
                         NUM: {
                             type:ArgumentType.NUMBER,
-                            defaultValue: 90
+                            defaultValue: 1
                         },
                         TURN: {
                             type:ArgumentType.String,
@@ -161,28 +162,18 @@ class MicrobitRobot {
                     }
                 },
                 {
-                    opcode: 'readDistance',
-                    blockType: BlockType.REPORTER,
-                    text: formatMessage({
-                        id: 'arduinoBot.readDistance',
-                        default: 'read distance',
-                        description: 'Get distance read from ultrasonic distance sensor'
-                    }),
-                    arguments: { }
-                },
-                {
-                    opcode: 'readButtonStatus',
-                    blockType: BlockType.BOOLEAN,
+                    opcode: 'whenButtonPressed',
                     text: formatMessage({
                         id: 'arduinoBot.readButtonStatus',
-                        default: '[BUTTON] button pressed',
-                        description: 'Get distance read from ultrasonic distance sensor'
+                        default: 'when [BUTTON] button pressed',
+                        description: 'Trigger when buttons on microbit are pressed'
                     }),
+                    blockType: BlockType.HAT,
                     arguments: {
                         BUTTON: {
                             type:ArgumentType.String,
                             menu: 'BUTTON_STATES',
-                            defaultValue: 'A'
+                            defaultValue: _button[0]
                         }
                     }
                 },
@@ -198,9 +189,19 @@ class MicrobitRobot {
                         LINE: {
                             type:ArgumentType.String,
                             menu: 'LINE_STATES',
-                            defaultValue: 'right'
+                            defaultValue: _line_states[0]
                         }
                     }
+                },
+                {
+                    opcode: 'readDistance',
+                    blockType: BlockType.REPORTER,
+                    text: formatMessage({
+                        id: 'arduinoBot.readDistance',
+                        default: 'read distance',
+                        description: 'Get distance read from ultrasonic distance sensor'
+                    }),
+                    arguments: { }
                 }
                 // play sounds
                 // add blocks for speech?
@@ -224,11 +225,11 @@ class MicrobitRobot {
                 },
                 BUTTON_STATES: {
                     acceptReporters: false,
-                    items: ['A','B','A or B','A and B','neither A nor B']
+                    items: _button
                 },
                 LINE_STATES: {
                     acceptReporters: false,
-                    items: ['right side', 'left side', 'neither side', 'both side']
+                    items: _line_states
                 }
             }
         };
@@ -270,7 +271,12 @@ class MicrobitRobot {
                 console.log("Chrome app not found with extension ID: " + robot.CHROME_EXTENSION_ID);
                 
                 // Attempt to get the extension ID from local browser storage
-                robot.CHROME_EXTENSION_ID = window.localStorage.getItem('gizmo_extension_id');
+                let stored_id = window.localStorage.getItem('gizmo_extension_id');
+                if (robot.CHROME_EXTENSION_ID !== stored_id) {
+                    robot.CHROME_EXTENSION_ID = stored_id;
+                } else {
+                    robot.CHROME_EXTENSION_ID = "";
+                }
                 console.log("Stored extension ID: " + robot.CHROME_EXTENSION_ID);
                 if (robot.CHROME_EXTENSION_ID === undefined || robot.CHROME_EXTENSION_ID === "" || robot.CHROME_EXTENSION_ID === null) {
                     // If there is no extension ID in local browser storage, prompt user to enter one
@@ -430,7 +436,6 @@ class MicrobitRobot {
   
     /**
      * Implement readButtonStaus
-     * @returns {string} t
      */
   readButtonStatus (args) {
     var state = args.BUTTON;
@@ -448,6 +453,25 @@ class MicrobitRobot {
     }
     return false; // should never get here
   }
+  /**
+     * Implement whenButtonPressed
+     */
+    whenButtonPressed(args, util) {
+        var state = args.BUTTON;
+    
+        if (state == 'A') {
+            return this.a_button == 1;   
+        } else if (state == 'B') {
+            return this.b_button == 1;
+        } else if (state == 'A or B') {
+            return (this.a_button == 1) || (this.b_button == 1);
+        } else if (state == 'A and B') {
+            return (this.a_button == 1) && (this.b_button == 1);
+        } else if (state == 'neither A nor B') {
+            return (this.a_button == 0) && (this.b_button == 0);
+        }
+        return false; // should never get here
+    }
   
   /**
      * Implement readLineStatus
@@ -487,10 +511,10 @@ class MicrobitRobot {
     var dir = args.DIR;
     
     if (dir == 'forward') {
-        console.log("Sending D1 to drive forward, steos: " + secs);
+        console.log("Sending D1 to drive forward, secs: " + secs);
         msg.buffer = [68,49,10];
     } else {
-        console.log('Sending D2 to drive backward, steps: ' + secs);
+        console.log('Sending D2 to drive backward, secs: ' + secs);
         msg.buffer = [68,50,10];
 
     }
@@ -500,7 +524,7 @@ class MicrobitRobot {
             setTimeout(() => {
                 this.stopMotors();
                 resolve();
-            }, secs*100);
+            }, secs*1000);
         });
   }
   
@@ -512,14 +536,14 @@ class MicrobitRobot {
    */
   turn(args) {
 	var msg = {};
-    var secs = args.NUM / 90;
+    var secs = args.NUM;
     var dir = args.TURN;
     
     if (dir == 'left') {
-    	console.log("Sending D3 to turn left, steps: " + secs);
+    	console.log("Sending D3 to turn left, secs: " + secs);
         msg.buffer = [68,51,10];
     } else {
-    	console.log("Sending D4 to turn right, steps: " + secs);
+    	console.log("Sending D4 to turn right, secs: " + secs);
         msg.buffer = [68,52,10];
     }
 
@@ -529,7 +553,7 @@ class MicrobitRobot {
             setTimeout(() => {
                 this.stopMotors();
                 resolve();
-            }, secs*450);
+            }, secs*1000);
         });
   }
  
