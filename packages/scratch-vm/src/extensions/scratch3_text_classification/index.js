@@ -243,28 +243,13 @@ class Scratch3TextClassificationBlocks {
             menuIconURI: menuIconURI,
             blocks: [
                 {
-                    opcode: 'onLoudSound',
+                    opcode: 'ifTextMatchesClass',
                     text: formatMessage({
-                        id: 'textClassification.onLoudSound',
-                        default: 'when loudness > [THRESHOLD]',
-                        description: 'Event that triggers when a sound is heard above a threshold'
+                        id: 'textClassification.ifTextMatchesClass',
+                        default: 'if [TEXT] matches [CLASS_NAME]',
+                        description: 'Conditional that is true when the text matches the text classification model class [CLASS_NAME]'
                     }),
-                    blockType: BlockType.HAT,
-                    arguments: {
-                        THRESHOLD: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 10
-                        }
-                    },
-                },
-                {
-                    opcode: 'whenModelMatches',
-                    text: formatMessage({
-                        id: 'textClassification.whenModelMatches',
-                        default: 'when [TEXT] matches [CLASS_NAME]',
-                        description: 'Event that triggers when the text matches the text classification model class [CLASS_NAME]'
-                    }),
-                    blockType: BlockType.REPORTER,
+                    blockType: BlockType.BOOLEAN,
                     arguments: {
                         TEXT: {
                             type: ArgumentType.STRING,
@@ -291,6 +276,7 @@ class Scratch3TextClassificationBlocks {
                         }
                     },
                 },
+                '---',
                 {
                     opcode: 'speakText',
                     text: formatMessage({
@@ -345,6 +331,22 @@ class Scratch3TextClassificationBlocks {
                             defaultValue: SQUEAK_ID
                         }
                     }
+                },
+                '---',
+                {
+                    opcode: 'onHeardSound',
+                    text: formatMessage({
+                        id: 'textClassification.onHeardSound',
+                        default: 'when heard sound > [THRESHOLD]',
+                        description: 'Event that triggers when a sound is heard above a threshold'
+                    }),
+                    blockType: BlockType.HAT,
+                    arguments: {
+                        THRESHOLD: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 10
+                        }
+                    },
                 }
             ],
             menus: {
@@ -356,7 +358,7 @@ class Scratch3TextClassificationBlocks {
         };
     }
     
-    onLoudSound(args) {
+    onHeardSound(args) {
         let threshold = args.THRESHOLD;
         
         return this.getLoudness() > threshold;
@@ -513,18 +515,19 @@ class Scratch3TextClassificationBlocks {
     }
 
     /**
-     * A scratch hat block edge handle that downloads a teachable machine model and determines whether the
-     * current video frame matches the model class.
+     * A scratch conditional block that checks if a text example is a part of a particular class
      * @param {object} args - the block arguments
      * @param {BlockUtility} util - the block utility
      * @returns {boolean} true if the model matches
      *   reference
      */
-    whenModelMatches(args, util) {
-        const modelUrl = this.modelArgumentToURL(args.MODEL_URL);
+    ifTextMatchesClass(args, util) {
+        const text = args.MODEL_URL;
         const className = args.CLASS_NAME;
 
-        const predictionState = this.getPredictionStateOrStartPredicting(modelUrl);
+        return false;
+    
+        const predictionState = this.getPredictionStateOrStartPredicting(text);
         if (!predictionState) {
             return false;
         }
@@ -534,14 +537,16 @@ class Scratch3TextClassificationBlocks {
     }
 
     /**
-     * A scratch hat block reporter that returns whether the current video frame matches the model class.
+     * A scratch hat block reporter that returns whether the input text matches the model class.
      * @param {object} args - the block arguments
      * @param {BlockUtility} util - the block utility
-     * @returns {string} class name if video frame matched, empty string if model not loaded yet
+     * @returns {string} class name if input text matched, empty string if there's a problem with the model
      */
-    modelPrediction(args, util) {
-        const modelUrl = this.modelArgumentToURL(args.MODEL_URL);
-        const predictionState = this.getPredictionStateOrStartPredicting(modelUrl);
+    getModelPrediction(args) {
+        const text = args.TEXT;
+        
+        return ' ';
+    const predictionState = this.getPredictionStateOrStartPredicting(text);
         if (!predictionState) {
             return '';
         }

@@ -95,6 +95,7 @@ class MicrobitRobot {
                     }),
                     arguments: { }
                 },
+                '---',
                 {
                     opcode: 'setLEDDisplay',
                     blockType: BlockType.COMMAND,
@@ -121,6 +122,7 @@ class MicrobitRobot {
                     }),
                     arguments: { }
                 },
+                '---',
                 {
                     opcode: 'drive',
                     blockType: BlockType.COMMAND,
@@ -161,6 +163,7 @@ class MicrobitRobot {
                         }
                     }
                 },
+                '---',
                 {
                     opcode: 'whenButtonPressed',
                     text: formatMessage({

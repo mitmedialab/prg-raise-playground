@@ -479,6 +479,7 @@ class Scratch3VideoSensingBlocks {
                         },
                     },
                 },
+                '---',
                 {
                     opcode: 'videoToggle',
                     text: formatMessage({
