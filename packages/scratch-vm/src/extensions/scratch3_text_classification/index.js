@@ -1,3 +1,10 @@
+/*
+ * Resources:
+ *  - Text to speech extension written by Scratch Team 2019
+ *  - Speech to text extension written by Sayamindu Dasgupta <sayamindu@media.mit.edu>, April 2014
+ *  - Knn Classifier model written by Katya3141 https://katya3141.github.io/scratch-gui/teachable-classifier/ August 2019
+ */
+
 require("regenerator-runtime/runtime");
 const Runtime = require('../../engine/runtime');
 const nets = require('nets');
@@ -120,6 +127,39 @@ class Scratch3TextClassificationBlocks {
             this.scratch_vm.on('targetWasCreated', this._onTargetCreated);
         }
         
+        this.scratch_vm.on('EDIT_TEXT_MODEL', modelInfo => {
+            console.log(modelInfo);
+            console.log("Calling bound function");
+            this.editModel.bind(this, modelInfo);
+        });
+        
+        this.labelList = [];
+        this.labelListEmpty = true;
+        
+        // When a project is loaded, reset all the model data
+        this.scratch_vm.on('PROJECT_LOADED', () => {
+            this.clearAll(); // RANDI is there a better place to intiialize scratch_vm model data?
+            this.loadModelFromRuntime();
+        });
+        // Listen for model editing events emitted by the modal
+        this.scratch_vm.on('NEW_EXAMPLES', (examples, label) => {
+            this.newExamples(examples, label);
+        });
+        this.scratch_vm.on('DELETE_EXAMPLE', (label, exampleNum) => {
+            this.deleteExample(label, exampleNum);
+        });
+        this.scratch_vm.on('RENAME_LABEL', (oldName, newName) => {
+            this.renameLabel(oldName, newName);
+        });
+        this.scratch_vm.on('DELETE_LABEL', (label) => {
+            this.clearAllWithLabel({LABEL: label});
+        });
+        this.scratch_vm.on('CLEAR_ALL_LABELS', () => {
+            if (!this.labelListEmpty && confirm('Are you sure you want to clear all labels?')) {    //confirm with alert dialogue before clearing the model
+                this.clearAll(); 
+            }
+        });
+        
         this._recognizedSpeech = "";
     }
 
@@ -241,7 +281,13 @@ class Scratch3TextClassificationBlocks {
             }),
             blockIconURI: blockIconURI,
             menuIconURI: menuIconURI,
+            //color1, color2, color3
             blocks: [
+                {
+                    func: 'EDIT_TEXT_MODEL',
+                    blockType: BlockType.BUTTON,
+                    text: 'Edit Model'
+                },
                 {
                     opcode: 'ifTextMatchesClass',
                     text: formatMessage({
@@ -358,12 +404,141 @@ class Scratch3TextClassificationBlocks {
         };
     }
     
+    /**
+     * TODO Moves info from the runtime into the classifier, called when a project is loaded
+     */    
+    loadModelFromRuntime () {
+        this.labelList = [];
+        let classifierData = {...this.scratch_vm.modelData.classifierData};//this.scratch_vm.textModelData.classifierData;
+        
+        if (this.labelListEmpty) {
+            this.labelList.push('');    //if the label list is empty, fill it with an empty string
+        }
+    }
+
+    /**
+     * Return label list for block menus
+     * @return {array of strings} an array of the labels for the text model classifier
+     */
+    getLabels () {
+        return this.labelList;
+    }
+
+    /**
+     * TODO grab text and add it as an example
+     * @param {string} args.LABEL the name of the label to add an example to
+     */
+    textExample (args) {
+        console.log("Get text example");
+        // TODO grab text
+        let text = '';
+         if (frame) {
+             this.newExamples([text], args.LABEL);
+         }
+    }
+
+    /**
+     * TODO Add new examples to a label
+     * @param {array of strings} examples a list of text examples to add to a label
+     * @param {string} label the name of the label
+     */
+    newExamples (text_examples, label) {   //add examples for a label
+        console.log("Add examples to label " + label);
+        for (let text_example of text_examples) {
+            if (this.labelListEmpty) {
+                // Edit label list accordingly
+                this.labelList.splice(this.labelList.indexOf(''), 1);
+                this.labelListEmpty = false;
+            }
+            if (!this.labelList.includes(label)) {
+                this.labelList.push(label);
+            }
+            this.scratch_vm.modelData.textData[label] = [text_example];
+        }
+    }
+
+    /**
+     * TODO Rename a label
+     * @param {string} oldName the name of the label to change
+     * @param {string} newname the new name for the label
+     */
+    renameLabel (oldName, newName) {
+        console.log("Rename a label");
+        this.scratch_vm.modelData.classifierData[newName] = this.scratch_vm.modelData.classifierData[oldName];  //reset the runtime's model data with the new renamed label (to share with GUI)
+        delete this.scratch_vm.modelData.classifierData[oldName];
+
+        this.scratch_vm.modelData.textData[newName] = this.scratch_vm.modelData.textData[oldName];  //reset the runtime's model data with the new renamed label (to share with GUI)
+        delete this.scratch_vm.modelData.textData[oldName];
+
+        this.labelList.splice(this.labelList.indexOf(oldName), 1);  //reset label list with the new renamed label
+        this.labelList.push(newName)
+    }
+
+    /**
+     * TODO Delete an example (or all loaded examples, if exampleNum === -1)
+     * @param {string} label the name of the label with the example to be removed
+     * @param {integer} exampleNum which example, in the array of a label's examples, to remove
+     */
+    deleteExample (label, exampleNum) { 
+        let labelExamples = data[label].arraySync();
+        console.log("Delete example " + exampleNum + " with label " + label);
+    }
+
+    /**
+     * TODO Clear all data stored in the classifier and label list
+     */
+    clearLocal () {
+        console.log("Clear local data")
+        this.labelList = [''];
+        this.labelListEmpty = true;
+    }
+
+    /**
+     * TODO Clear local label list, but also clear all data stored in the runtime
+     */
+    clearAll () {
+        console.log("Clear all data");
+        this.clearLocal();
+        // Clear runtime's model data
+        this.scratch_vm.modelData = {textData: {}, classifierData: {}, nextLabelNumber: 1};
+    }
+
+    /**
+     * TODO Clear all examples with a given label
+     * @param {string} args.LABEL the name of the label to remove from the model
+     */
+    clearAllWithLabel (args) {
+        console.log("Get rid of all examples with label " + args.LABEL);
+        if (this.labelList.includes(args.LABEL)) {
+            // Remove label from labelList
+            this.labelList.splice(this.labelList.indexOf(args.LABEL), 1);
+            // Remove label from the runtime's model data (to share with the GUI)
+            delete this.scratch_vm.modelData.classifierData[args.LABEL];  
+            delete this.scratch_vm.modelData.textData[args.LABEL];
+            // If the label list is now empty, fill it with an empty string
+            if (this.labelList.length === 0) {  
+                this.labelListEmpty = true;
+                this.labelList.push('');
+            }
+        }
+    }
+    
+    
+    /**
+     * Detects if the sound from the input mic is louder than a particular threshold
+     * @param args.THRESHOLD {integer} the threshold of loudness to trigger on
+     * @return {integer} true if the loudness is above the threshold and false if it is not
+     */    
     onHeardSound(args) {
         let threshold = args.THRESHOLD;
         
         return this.getLoudness() > threshold;
     }
     
+    /**
+     * Get the input volume from the mic
+     * @return {integer} mic volume at current time
+     */
     getLoudness () {
         if (typeof this.scratch_vm.audioEngine === 'undefined') return -1;
         if (this.scratch_vm.currentStepTime === null) return -1;
@@ -554,50 +729,6 @@ class Scratch3TextClassificationBlocks {
         return predictionState.topClass;
     }
 
-    getPredictionStateOrStartPredicting(modelUrl) {
-        const predictionState = this.predictionState[modelUrl];
-        if (!predictionState) {
-            this.startPredicting(modelUrl);
-            return null;
-        }
-
-        return predictionState;
-    }
-
-    async startPredicting(modelDataUrl) {
-        if (!this.predictionState[modelDataUrl]) {
-            this.predictionState[modelDataUrl] = {};
-            // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
-            const model = await this.initModel(modelDataUrl);
-            this.predictionState[modelDataUrl].model = model;
-        }
-    }
-
-    async initModel(modelUrl) {
-        const modelURL = modelUrl + "model.json";
-        const metadataURL = modelUrl + "metadata.json";
-        return await tmImage.load(modelURL, metadataURL);
-    }
-
-    async predictModel(modelUrl, frame) {
-        const model = this.predictionState[modelUrl].model;
-        const maxPredictions = model.getTotalClasses();
-        const imageBitmap = await createImageBitmap(frame);
-        const prediction = await model.predict(imageBitmap);
-
-        let maxProbability = 0;
-        let maxClassName = "";
-        for (let i = 0; i < maxPredictions; i++) {
-            const probability = prediction[i].probability.toFixed(2);
-            const className = prediction[i].className;
-            const classPrediction = className + ": " + probability;
-            if (probability > maxProbability) {
-                maxClassName = className;
-                maxProbability = probability;
-            }
-        }
-        return maxClassName;
-    }
 }
 
 module.exports = Scratch3TextClassificationBlocks;

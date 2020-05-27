@@ -552,6 +552,9 @@ const serialize = function (runtime, targetId) {
 
     // Assemble extension list
     obj.extensions = Array.from(extensions);
+    
+    // Save training data for the text classifier model
+    obj.textModel = runtime.textModelData.classifierData;
 
     // Assemble metadata
     const meta = Object.create(null);
@@ -1216,6 +1219,16 @@ const deserialize = function (json, runtime, zip, isSingleSprite) {
         extensionIDs: new Set(),
         extensionURLs: new Map()
     };
+    
+    // Unpack the data for the text model
+    runtime.textModelData = {"textData": {}, "classifierData": {}, "nextLabelNumber": 1};
+    if (json.hasOwnProperty("model")) {
+        // RANDI should make sure this works
+        runtime.textModelData.classifierData = json.model;
+        for (let label of Object.keys(json.model)) {
+            runtime.textModelData.textData[label] = [];
+        }
+    }
 
     // First keep track of the current target order in the json,
     // then sort by the layer order property before parsing the targets
