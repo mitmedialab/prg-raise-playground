@@ -1,4 +1,3 @@
-require("regenerator-runtime/runtime");
 const Runtime = require('../../engine/runtime');
 
 const ArgumentType = require('../../extension-support/argument-type');
@@ -15,8 +14,6 @@ const _colors = ['red', 'green', 'blue', 'yellow', 'cyan', 'magenta', 'white', '
 const _icons = ['heart', 'check', 'X', 'smile', 'frown', 'ghost', 'triangle', 'diamond', 'square', 'checkers', 'note'];
 const _drive = ['forward', 'backward'];
 const _turn = ['left', 'right'];
-const _button = ['A','B','A or B','A and B','neither A nor B'];
-const _line_states = ['right side', 'left side', 'neither side', 'both side'];
 const EXTENSION_ID = 'microbitRobot';
 
 // Core, Team, and Official extension classes should be registered statically with the Extension Manager.
@@ -37,7 +34,7 @@ class MicrobitRobot {
         this._mStatus = 1;
         this._mConnection = null;
         this._mConnectionTimeout = null;
-        this._ip = "192.168.1.124";
+        this.CHROME_EXTENSION_ID = "jpehlabbcdkiocalmhikacglppfenoeo"; // "molfimodiodghknifkeikkldkogpapki"; APP ID on Chrome Web Store
 
         this.msg1 = {};
         this.msg2 = {};
@@ -50,9 +47,8 @@ class MicrobitRobot {
         
     
         this.scratch_vm.on('PROJECT_STOP_ALL', this.resetRobot.bind(this));
-        
-        // RANDI make it possible to check if scratch_vm has an IP address?
-        this.connect(this._ip);
+    
+        this.connectToExtension();
     }
 
     /**
@@ -64,29 +60,13 @@ class MicrobitRobot {
             name: formatMessage({
                 id: 'microbitRobot',
                 default: 'PRG Microbit Robot Blocks',
-                description: 'Extension using ESP32 cam webserver to communicate with Microbit robot'
+                description: 'Extension using Gizmo Robot Chrome extension to communicate with Microbit robot'
             }),
             showStatusButton: true,
             blockIconURI: blockIconURI,
             menuIconURI: blockIconURI,
 
             blocks: [
-                {
-                    opcode: 'setIPAddress',
-                    blockType: BlockType.COMMAND,
-                    text: formatMessage({
-                        id: 'microbitBot.setIP',
-                        default: 'use robot [IP_ADDRESS]',
-                        description: 'Set the IP address for this robot and open a websocket connection'
-                    }),
-                    arguments: {
-                        IP_ADDRESS: {
-                            type:ArgumentType.STRING,
-                            defaultValue: this._ip
-                        }    
-                    }
-                },
-                '---',
                 {
                     opcode: 'setRgbLedColor',
                     blockType: BlockType.COMMAND,
@@ -114,7 +94,6 @@ class MicrobitRobot {
                     }),
                     arguments: { }
                 },
-                '---',
                 {
                     opcode: 'setLEDDisplay',
                     blockType: BlockType.COMMAND,
@@ -141,13 +120,12 @@ class MicrobitRobot {
                     }),
                     arguments: { }
                 },
-                '---',
                 {
                     opcode: 'drive',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
                         id: 'arduinoBot.driveForwardBackward',
-                        default: 'drive [DIR] for [NUM] seconds',
+                        default: 'drive [DIR] for [NUM] steps',
                         description: 'Send command to robot to drive forward or backward'
                     }),
                     arguments: {
@@ -167,13 +145,13 @@ class MicrobitRobot {
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
                         id: 'arduinoBot.turnRightLeft',
-                        default: 'turn [TURN] for [NUM] seconds',
+                        default: 'turn [TURN] [NUM] degrees',
                         description: 'Send command to robot to turn right or left'
                     }),
                     arguments: {
                         NUM: {
                             type:ArgumentType.NUMBER,
-                            defaultValue: 1
+                            defaultValue: 90
                         },
                         TURN: {
                             type:ArgumentType.String,
@@ -182,20 +160,29 @@ class MicrobitRobot {
                         }
                     }
                 },
-                '---',
                 {
-                    opcode: 'whenButtonPressed',
+                    opcode: 'readDistance',
+                    blockType: BlockType.REPORTER,
+                    text: formatMessage({
+                        id: 'arduinoBot.readDistance',
+                        default: 'read distance',
+                        description: 'Get distance read from ultrasonic distance sensor'
+                    }),
+                    arguments: { }
+                },
+                {
+                    opcode: 'readButtonStatus',
+                    blockType: BlockType.BOOLEAN,
                     text: formatMessage({
                         id: 'arduinoBot.readButtonStatus',
-                        default: 'when [BUTTON] button pressed',
-                        description: 'Trigger when buttons on microbit are pressed'
+                        default: '[BUTTON] button pressed',
+                        description: 'Get distance read from ultrasonic distance sensor'
                     }),
-                    blockType: BlockType.HAT,
                     arguments: {
                         BUTTON: {
                             type:ArgumentType.String,
                             menu: 'BUTTON_STATES',
-                            defaultValue: _button[0]
+                            defaultValue: 'A'
                         }
                     }
                 },
@@ -211,19 +198,9 @@ class MicrobitRobot {
                         LINE: {
                             type:ArgumentType.String,
                             menu: 'LINE_STATES',
-                            defaultValue: _line_states[0]
+                            defaultValue: 'right'
                         }
                     }
-                },
-                {
-                    opcode: 'readDistance',
-                    blockType: BlockType.REPORTER,
-                    text: formatMessage({
-                        id: 'arduinoBot.readDistance',
-                        default: 'read distance',
-                        description: 'Get distance read from ultrasonic distance sensor'
-                    }),
-                    arguments: { }
                 }
                 // play sounds
                 // add blocks for speech?
@@ -247,11 +224,11 @@ class MicrobitRobot {
                 },
                 BUTTON_STATES: {
                     acceptReporters: false,
-                    items: _button
+                    items: ['A','B','A or B','A and B','neither A nor B']
                 },
                 LINE_STATES: {
                     acceptReporters: false,
-                    items: _line_states
+                    items: ['right side', 'left side', 'neither side', 'both side']
                 }
             }
         };
@@ -264,133 +241,179 @@ class MicrobitRobot {
         console.log("microbitRobotScan");
         this.connectToExtension();
     }
-    async connect(ip_address) {
-        this._ip = ip_address;
-        console.log("Connect to this IP Address: http://" + this._ip);
-        // Start getting data from robot
-        let result = await this.requestFromRobot();
-        if (result) {
-          this.scratch_vm.emit(this.scratch_vm.constructor.PERIPHERAL_CONNECTED);
-            return "Connected!";
-        }
-        return "Could not connect to robot.";
+    connect() {
     }
     disconnect() {
-        console.log("Closing websocket");
+        console.log("Closing extension");
+        chrome.runtime.sendMessage(this.CHROME_EXTENSION_ID, { close: true });
     }
-    disconnectedFromRobot() {
+    disconnectedFromExtension() {
         this._mStatus = 1;
         console.log("Lost connection to robot");   
         this.scratch_vm.emit(this.scratch_vm.constructor.PERIPHERAL_DISCONNECTED);
     }
-    async sendToRobot(category, command) {
-        let result = null;
-        let cmd = "/control?var=rcmd&val=" + category + "&cmd=" + command;
-        let boundDisconnectHandler = this.disconnectedFromRobot.bind(this);
-        let url = this._ip + cmd;
-        if (url.substring(0,7) != "http://") {
-            url = "http://" + url;
-        }
-        return fetch(url).then(response => {
-            // Update robot status? this._mStatus = 1;
-            return;
-        })
-        .catch(function(err) {
-            console.log('Error with fetch: ', err);
-            boundDisconnectHandler();
+    connectToExtension() {
+        // Can probably do this without Chrome extension
+        // VID is a Vendor ID. For the micro:bit this is 0x0d28, PID is a Product ID. For the micro:bit this is 0x0204
+        // navigator.getUSBDevices https://developers.google.com/web/updates/2016/03/access-usb-devices-on-the-web
+        // https://developers.google.com/web/updates/2015/07/interact-with-ble-devices-on-the-web
+        
+        // Save reference to robot for use later
+        
+        var robot = this;
+        var boundMsgHandler = this.onMsgFromExtension.bind(this);
+        
+        // Attenpt to connect to the Gizmo Chrome Extension
+        chrome.runtime.sendMessage(this.CHROME_EXTENSION_ID, { launch: true }, function (response) {
+            if (response === undefined) { //Chrome app not found
+                // Must have the wrong extension ID (if extension was not downloaded from Chrome webstore, the extension id is not consistent)
+                console.log("Chrome app not found with extension ID: " + robot.CHROME_EXTENSION_ID);
+                
+                // Attempt to get the extension ID from local browser storage
+                robot.CHROME_EXTENSION_ID = window.localStorage.getItem('gizmo_extension_id');
+                console.log("Stored extension ID: " + robot.CHROME_EXTENSION_ID);
+                if (robot.CHROME_EXTENSION_ID === undefined || robot.CHROME_EXTENSION_ID === "" || robot.CHROME_EXTENSION_ID === null) {
+                    // If there is no extension ID in local browser storage, prompt user to enter one
+                   robot.CHROME_EXTENSION_ID = window.prompt("Enter the correct Chrome Extension ID", "pnjoidacmeigcdbikhgjolnadkdiegca");  
+                }
+                robot._mStatus = 0;
+                // Try to connect to the Chrome extension again
+                robot.connectToExtension();
+            } else if (response.status === false) { //Chrome app says not connected
+                console.log("Chome extension is not running"); // what does this mean?
+                robot._mStatus = 1;
+            } else {// Chrome app is connected
+                console.log("Chrome extension found");
+                // Save the extension ID in local browser storage for next time
+                window.localStorage.setItem('gizmo_extension_id', robot.CHROME_EXTENSION_ID);
+                if (robot._mStatus !== 2) {
+                    robot._mConnection = chrome.runtime.connect(robot.CHROME_EXTENSION_ID);
+                    // Add listener that triggers onMsgFromExtension everytime the Chrome extension gets a message from the robot
+                    robot._mConnection.onMessage.addListener(boundMsgHandler);
+                    // We're not sure that it's working until we start receiving messages
+                    robot._mStatus = 1;
+                }
+            }
         });
     }
-    async caller(_url) {
-        let boundDisconnectHandler = this.disconnectedFromRobot.bind(this);
-        if (_url.substring(0,7) != "http://") {
-            _url = "http://" + _url;
-        }
-        return fetch(_url).then(response => {
-            return response.json();
-      })
-      .catch(function(err) {
-          console.log('Error with fetch: ', err);
-            boundDisconnectHandler();
-       });
-    }
+    
     /**
-     * Implement 
-     * @param
-     * Desc
+     * Implement onMsgFromExtension
+     * @msg {chrome.runtime.Message} the message received from the connected Chrome extension
+     * When a message is received from the Chrome extension, and therefore the robot, this handles that message
      */
-    async requestFromRobot() {
-      let cmd = "/status";
-      let rstatus = await this.caller(this._ip + cmd);
+    onMsgFromExtension (msg) {
+      if (this._mStatus == 1) {
+        console.log("Receiving messages from robot");
+      }
       
-      if (rstatus == undefined) {
-        return false;
+      this._mStatus = 2;
+      this.scratch_vm.emit(this.scratch_vm.constructor.PERIPHERAL_CONNECTED);
+      var buffer = msg.buffer;
+      
+      // The beginning of the buffer (from firmata) starts with 224, if this buffer starts with 224 it is the beginning of the message
+      if (buffer[0]==224) {
+        this.messageParser(buffer);
+        this.last_reading = 0; // Last reading signifies that the last thing stored in the msg buffer is the first part of the message
       }
-      // Update sensors
-      this.a_button = Math.round(rstatus.a_button);
-      this.b_button = Math.round(rstatus.b_button);
-      this.left_line = Math.round(rstatus.left_line);
-      this.right_line = Math.round(rstatus.right_line);
-      this.dist_read = Math.round(rstatus.ultrasonic);
-        
-      // Update robot status?
-        
-      // Set timeout to wait for next update 
-      if (this._mConnectionTimeout != null) {
-        clearTimeout(this._mConnectionTimeout);
+  
+      if (buffer[0] != 224 && this.last_reading == 0) { // Checking last reading makes sure that we don't concatenate the wrong part of the message
+          this.messageParser(buffer);
+          this.last_reading = 1;
       }
-      this._mConnectionTimeout = setTimeout(this.requestFromRobot.bind(this), 100);
-      return true;
+      
+      // Detect if the robot gets disconnected
+      if (this._mConnectionTimeout != null) clearTimeout(this._mConnectionTimeout);
+      this._mConnectionTimeout = setTimeout(this.disconnectedFromExtension.bind(this), 1000);
     }
     
+    /**
+     * Implement messageParser
+     * @buf {byte buffer} a buffer containing a series of opcode keys and data value pairs
+     * @dist_read {int} the last reading from the ultrasonic distance sensor
+     * @msg1 {byte buffer} since the entire buffer does not always get transmitted in a message, this will store the first part of the buffer
+     * @msg2 {byte buffer} since the entire buffer does not always get transmitted in a message, this will store the second part of the buffer
+     */
+    messageParser (buf) {
+      var msg = {};
+      if (buf[0]==224){ // RANDI these 200 numbers are arbitrary and could be changed here and in the microbit code
+        this.msg1 = buf;
+      } else if (buf[0] != 224) {
+        this.msg2 = buf;
+      }
+      msg.buffer = this.msg1.concat(this.msg2);
+      
+      if (msg.buffer.length > 10) {
+        msg.buffer = msg.buffer.slice(0,10); // The length of the buffer (from firmata) is only 10 bytes
+      }
+      if (msg.buffer.length == 10){
+        if (msg.buffer[0] == 224) {  // RANDI these 200 numbers are arbitrary and could be changed here and in the microbit code
+          this.a_button = Math.round(msg.buffer[1]);
+        }
+        if (msg.buffer[2] == 237) { 
+          this.b_button = Math.round(msg.buffer[3]);
+        }
+        if (msg.buffer[4] == 238) { 
+          this.left_line = Math.round(msg.buffer[5]);
+        }
+        if (msg.buffer[6] == 239) { 
+          this.right_line = Math.round(msg.buffer[7]);
+        }
+        if (msg.buffer[8] == 240) { // The opcode key before the ultrasonic distance reading data is 240
+          this.dist_read = Math.round(msg.buffer[9]);
+        }
+      }
+  }
   resetRobot() {
     this.stopMotors();
     this.rgbLedOff();
     this.ledDisplayOff();
   }
-  async setIPAddress(args) {
-    return await this.connect(args.IP_ADDRESS);
-  }
-
   /**
    *
    */
-  async setRgbLedColor (args) {
+  setRgbLedColor (args) {
     console.log("set LED color: " + args.COLOR);    
     
     // Translate color to index
     var idxStr = (_colors.indexOf(args.COLOR) + 1).toString(16).charCodeAt(0);
     
     // Send message
-    let cmd = 'L';
-    return await this.sendToRobot(cmd.charCodeAt(0), idxStr);
+    var msg = {};
+	msg.buffer = [76,idxStr,10]; 
+    this._mConnection.postMessage(msg);
+    
   }
-  async rgbLedOff () {
+  rgbLedOff () {
     console.log("Headlights off");
-    // Send message
-    let cmd = 'L0';
-    return await this.sendToRobot(cmd.charCodeAt(0), cmd.charCodeAt(1));
+    var msg = {};
+    msg.buffer = [76,48,10];
+    this._mConnection.postMessage(msg);
+        
+    return;
   }
   
   /**
    *
    */
-  async setLEDDisplay (args) {
+  setLEDDisplay (args) {
     console.log("set LED display: " + args.ICON);
     
     // Translate color to index
     var idxStr = (_icons.indexOf(args.ICON) + 1).toString(16).charCodeAt(0);
     // Send message
-    let cmd = 'S';
-
-    return this.sendToRobot(cmd.charCodeAt(0), idxStr);
+    var msg = {};
+	msg.buffer = [83,idxStr,10]; 
+    this._mConnection.postMessage(msg);
     
   }
-  async ledDisplayOff () {
+  ledDisplayOff () {
     console.log("LED display off");
-    // Send message
-    let cmd = 'S0';
-    this.sendToRobot(cmd.charCodeAt(0), cmd.charCodeAt(1));
-    return this.sendToRobot(cmd.charCodeAt(0), cmd.charCodeAt(1));
+    var msg = {};
+    msg.buffer = [83,48,10];
+    this._mConnection.postMessage(msg);
+        
+    return;
   }
   
   /**
@@ -407,6 +430,7 @@ class MicrobitRobot {
   
     /**
      * Implement readButtonStaus
+     * @returns {string} t
      */
   readButtonStatus (args) {
     var state = args.BUTTON;
@@ -424,25 +448,6 @@ class MicrobitRobot {
     }
     return false; // should never get here
   }
-  /**
-     * Implement whenButtonPressed
-     */
-    whenButtonPressed(args, util) {
-        var state = args.BUTTON;
-    
-        if (state == 'A') {
-            return this.a_button == 1;   
-        } else if (state == 'B') {
-            return this.b_button == 1;
-        } else if (state == 'A or B') {
-            return (this.a_button == 1) || (this.b_button == 1);
-        } else if (state == 'A and B') {
-            return (this.a_button == 1) && (this.b_button == 1);
-        } else if (state == 'neither A nor B') {
-            return (this.a_button == 0) && (this.b_button == 0);
-        }
-        return false; // should never get here
-    }
   
   /**
      * Implement readLineStatus
@@ -463,44 +468,40 @@ class MicrobitRobot {
     return false; // should never get here
   }
 
-  async stopMotors () {
+  stopMotors () {
+    var msg = {};
     console.log("Sending D0 to stop servos");
-    // Send message
-    let cmd = 'D0';
-    //this.sendToRobot(cmd.charCodeAt(0), cmd.charCodeAt(1));
-    return this.sendToRobot(cmd.charCodeAt(0), cmd.charCodeAt(1));
+    msg.buffer = [68,48,10];
+    this._mConnection.postMessage(msg);
   }
-  
-  async wait(secs) {
-    return new Promise(resolve => {
-        setTimeout(resolve, secs*1000);
-    });
-  }
+    
   /**
    * Implement drive to drive forward or backward
    * @secs {number} the number of seconds to drive backward
    * @dir {string} whether to turn "left" or "right"
    * @callback {function} the code to call when this function is done executing
    */
-  async drive (args) {
+  drive (args) {
+	var msg = {};
     var secs = args.NUM;
     var dir = args.DIR;
     
     if (dir == 'forward') {
-        console.log("Sending D1 to drive forward, secs: " + secs);
-        // Send message
-        let cmd = 'D1';
-        this.sendToRobot(cmd.charCodeAt(0), cmd.charCodeAt(1));
+        console.log("Sending D1 to drive forward, steos: " + secs);
+        msg.buffer = [68,49,10];
     } else {
-        console.log('Sending D2 to drive backward, secs: ' + secs);
-        // Send message
-        let cmd = 'D2';
-        this.sendToRobot(cmd.charCodeAt(0), cmd.charCodeAt(1));
+        console.log('Sending D2 to drive backward, steps: ' + secs);
+        msg.buffer = [68,50,10];
 
     }
+    this._mConnection.postMessage(msg);
     
-    await this.wait(secs);
-    return this.stopMotors();
+    return new Promise(resolve => {
+            setTimeout(() => {
+                this.stopMotors();
+                resolve();
+            }, secs*100);
+        });
   }
   
   /**
@@ -509,25 +510,28 @@ class MicrobitRobot {
    * @dir {string} whether to turn "left" or "right"
    * @callback {function} the code to call when this function is done executing
    */
-  async turn(args) {
-    var secs = args.NUM;
+  turn(args) {
+	var msg = {};
+    var secs = args.NUM / 90;
     var dir = args.TURN;
     
     if (dir == 'left') {
-    	console.log("Sending D3 to turn left, secs: " + secs);
-        // Send message
-        let cmd = 'D3';
-        this.sendToRobot(cmd.charCodeAt(0), cmd.charCodeAt(1));
+    	console.log("Sending D3 to turn left, steps: " + secs);
+        msg.buffer = [68,51,10];
     } else {
-    	console.log("Sending D4 to turn right, secs: " + secs);
-        // Send message
-        let cmd = 'D4';
-        this.sendToRobot(cmd.charCodeAt(0), cmd.charCodeAt(1));
+    	console.log("Sending D4 to turn right, steps: " + secs);
+        msg.buffer = [68,52,10];
     }
+
+    this._mConnection.postMessage(msg);
     
-    await this.wait(secs);
-    return this.stopMotors();
+    return new Promise(resolve => {
+            setTimeout(() => {
+                this.stopMotors();
+                resolve();
+            }, secs*450);
+        });
   }
  
 }
-module.exports = MicrobitRobot;
+//module.exports = MicrobitRobot;
