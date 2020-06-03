@@ -72,6 +72,7 @@ export default [
         extensionId: 'teachableMachine',
         iconURL: teachableMachineBlocksIconURL,
         insetIconURL: teachableMachineBlocksInsetIconURL,
+        launchPeripheralConnectionFlow: true,
         description: (
             <FormattedMessage
                 defaultMessage="Use your Teachable Machine models in your Scratch project!"

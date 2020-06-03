@@ -197,7 +197,7 @@ class Scratch3VideoSensingBlocks {
         return state;
     }
 
-    /**
+    /** 
      * Get the latest values for video transparency and state,
      * and set the video device to use them.
      */

@@ -12,89 +12,96 @@ class ConnectionModal extends React.Component {
     constructor (props) {
         super(props);
         bindAll(this, [
-            'handleScanning',
+            'handleEditModel',
+            'handleAddLabel',
+            'handleEditLabel',
+            'handleRenameLabel',
+            'handleDeleteLabel',
+            'handleAddExamples',
+            'handleNewExamples',
+            'handleDeleteExample',
+            'handleDeleteLoadedExamples',
+            'handleClearAll',
             'handleCancel',
-            'handleConnected',
-            'handleConnecting',
-            'handleDisconnect',
-            'handleError',
             'handleHelp'
         ]);
         this.state = {
             extension: extensionData.find(ext => ext.extensionId === props.extensionId),
-            phase: props.vm.getPeripheralIsConnected(props.extensionId) ?
-                PHASES.connected : PHASES.scanning
+            phase: Object.keys(props.vm.runtime.modelData.imageData).length === 0 ? PHASES.exampleEditor : PHASES.modelEditor,            
+                imageData: props.vm.runtime.modelData.imageData,  //when the modal opens, get the model data and the next label number from the vm runtime
+            nextLabelNumber: props.vm.runtime.modelData.nextLabelNumber,
+            activeLabel: "Label " + props.vm.runtime.modelData.nextLabelNumber   //used by the label and example editors to keep track of the label currently being viewed/edited
+
         };
     }
-    componentDidMount () {
-        this.props.vm.on('PERIPHERAL_CONNECTED', this.handleConnected);
-        this.props.vm.on('PERIPHERAL_REQUEST_ERROR', this.handleError);
+    handleEditModel () {    //change to model editor        
+        this.setState({           
+        phase: PHASES.modelEditor
+        });
     }
-    componentWillUnmount () {
-        this.props.vm.removeListener('PERIPHERAL_CONNECTED', this.handleConnected);
-        this.props.vm.removeListener('PERIPHERAL_REQUEST_ERROR', this.handleError);
+    handleAddLabel () { //when a new label is first created, create a new active label and change to the example editor        
+        this.setState({            
+        activeLabel: "Label " + this.state.nextLabelNumber,
+            phase: PHASES.exampleEditor
+        });
     }
-    handleScanning () {
+    handleEditLabel (labelName) {   //change to label editor, set active label based on which label's "edit" button was pressed
         this.setState({
-            phase: PHASES.scanning
+            phase: PHASES.labelEditor,
+            activeLabel: labelName
         });
     }
-    handleConnecting (peripheralId) {
-        this.props.vm.connectPeripheral(this.props.extensionId, peripheralId);
+    handleRenameLabel (labelName, newLabelName) {   //rename a label: emit an event so the label changes in the vm, change active label accordingly, and reset model data with the new label name	        
+        this.props.vm.runtime.emit('RENAME_LABEL', labelName, newLabelName);
         this.setState({
-            phase: PHASES.connecting
-        });
-        analytics.event({
-            category: 'extensions',
-            action: 'connecting',
-            label: this.props.extensionId
+            imageData: this.props.vm.runtime.modelData.imageData,
+            classifierData: this.props.vm.runtime.modelData.classifierData,
+            activeLabel: newLabelName
         });
     }
-    handleDisconnect () {
-        try {
-            this.props.vm.disconnectPeripheral(this.props.extensionId);
-        } finally {
-            this.props.onCancel();
-        }
-    }
-    handleCancel () {
-        try {
-            // If we're not connected to a peripheral, close the websocket so we stop scanning.
-            if (!this.props.vm.getPeripheralIsConnected(this.props.extensionId)) {
-                this.props.vm.disconnectPeripheral(this.props.extensionId);
-            }
-        } finally {
-            // Close the modal.
-            this.props.onCancel();
-        }
-    }
-    handleError () {
-        // Assume errors that come in during scanning phase are the result of not
-        // having scratch-link installed.
-        if (this.state.phase === PHASES.scanning || this.state.phase === PHASES.unavailable) {
-            this.setState({
-                phase: PHASES.unavailable
-            });
-        } else {
-            this.setState({
-                phase: PHASES.error
-            });
-            analytics.event({
-                category: 'extensions',
-                action: 'connecting error',
-                label: this.props.extensionId
-            });
-        }
-    }
-    handleConnected () {
+    handleDeleteLabel (labelName) { //delete a label: emit an event so the label is deleted in the vm, reset model data without the deleted label
+        this.props.vm.runtime.emit('DELETE_LABEL', labelName);
         this.setState({
-            phase: PHASES.connected
+            imageData: this.props.vm.runtime.modelData.imageData
         });
-        analytics.event({
-            category: 'extensions',
-            action: 'connected',
-            label: this.props.extensionId
+    }
+    handleAddExamples () {  //change to example editor
+        this.setState({
+            phase: PHASES.exampleEditor
+        });    
+    }
+    handleNewExamples (examples, incrementLabelNum) {    //add new examples: emit an event so the example is added in the vm, switch back to label editor, reset model data with the new example
+        this.props.vm.runtime.emit('NEW_EXAMPLES', examples, this.state.activeLabel);
+        if (incrementLabelNum) {
+            this.props.vm.runtime.modelData.nextLabelNumber++;
+        }
+        this.setState({
+            nextLabelNumber: incrementLabelNum ? ++this.state.nextLabelNumber : this.state.nextLabelNumber,
+            imageData: this.props.vm.runtime.modelData.imageData,
+            phase: PHASES.labelEditor
         });
+    }
+    handleDeleteExample (exampleNum) {
+        this.props.vm.runtime.emit('DELETE_EXAMPLE', this.state.activeLabel, exampleNum);
+        this.setState({
+            imageData: this.props.vm.runtime.modelData.imageData
+        })
+    }
+    handleDeleteLoadedExamples () {
+        this.props.vm.runtime.emit('DELETE_LOADED_EXAMPLES', this.state.activeLabel);
+        this.setState({
+            imageData: this.props.vm.runtime.modelData.imageData
+        })
+    }
+    handleClearAll () { //clear all labels/examples: emit an event so the data is cleared in the vm, reset model data to be empty
+        this.props.vm.runtime.emit('CLEAR_ALL_LABELS');
+        this.setState({
+            imageData: this.props.vm.runtime.modelData.imageData
+        })
+    }
+    handleCancel () {   //when modal closed, store the next label number in the runtime for later, then call props.onCancel() to close the modal
+        this.props.vm.runtime.modelDatanextLabelNumber = this.state.nextLabelNumber;
+        this.props.onCancel();
     }
     handleHelp () {
         window.open(this.state.extension.helpLink, '_blank');
@@ -107,22 +114,27 @@ class ConnectionModal extends React.Component {
     render () {
         return (
             <ConnectionModalComponent
-                connectingMessage={this.state.extension && this.state.extension.connectingMessage}
-                connectionIconURL={this.state.extension && this.state.extension.connectionIconURL}
-                connectionSmallIconURL={this.state.extension && this.state.extension.connectionSmallIconURL}
-                connectionTipIconURL={this.state.extension && this.state.extension.connectionTipIconURL}
                 extensionId={this.props.extensionId}
                 name={this.state.extension && this.state.extension.name}
                 phase={this.state.phase}
                 title={this.props.extensionId}
-                useAutoScan={this.state.extension && this.state.extension.useAutoScan}
                 vm={this.props.vm}
                 onCancel={this.handleCancel}
-                onConnected={this.handleConnected}
-                onConnecting={this.handleConnecting}
-                onDisconnect={this.handleDisconnect}
                 onHelp={this.handleHelp}
-                onScanning={this.handleScanning}
+                onEditModel={this.handleEditModel}
+                onAddLabel={this.handleAddLabel}
+                onEditLabel={this.handleEditLabel}
+                onRenameLabel={this.handleRenameLabel}
+                onDeleteLabel={this.handleDeleteLabel}
+                onAddExamples={this.handleAddExamples}
+                onNewExamples={this.handleNewExamples}
+                onDeleteExample={this.handleDeleteExample}
+                onDeleteLoadedExamples={this.handleDeleteLoadedExamples}
+                onClearAll={this.handleClearAll}
+                imageData={this.state.imageData}
+                classifierData={this.props.vm.runtime.modelData.classifierData}
+                nextLabelNumber={this.state.nextLabelNumber}
+                activeLabel={this.state.activeLabel}
             />
         );
     }
