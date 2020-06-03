@@ -12,35 +12,35 @@ class ExampleTile extends React.Component {
     constructor (props) {
         super(props);
         bindAll(this, [
-            'handleDeleteExample',
-            'componentDidUpdate'
+            'handleDeleteExample'
         ]);
     }
-    componentDidUpdate () {
-        this.setCanvas(this.canvas);
-    }
     handleDeleteExample () {
-        this.props.onDeleteExample(this.props.id);
+        this.props.onDeleteExample(this.props.label, this.props.id);
     }
 
 
     render () {
         return (
             <div className={styles.canvas}>
-            Here is text
                 {this.props.closeButton ?
-                    <CloseButton
-                        className={styles.deleteButton}
-                        size={CloseButton.SIZE_SMALL}
-                        onClick={this.handleDeleteExample}
-                    />
-                : <div></div>}
+                <>
+                 <span className={styles.removable}> {this.props.text} </span>
+                 <CloseButton
+                   className={styles.deleteButton}
+                   size={CloseButton.SIZE_SMALL}
+                   onClick={this.handleDeleteExample}
+                 />
+                 </>
+                :
+                <div> {this.props.text} </div> }
             </div>
         );
     }
 }
 
 ExampleTile.propTypes = {
+    label: PropTypes.string,
     text: PropTypes.string,
     onDeleteExample: PropTypes.func,
     closeButton: PropTypes.bool

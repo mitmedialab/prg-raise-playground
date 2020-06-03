@@ -145,6 +145,9 @@ class Scratch3TextClassificationBlocks {
         this.scratch_vm.on('NEW_EXAMPLES', (examples, label) => {
             this.newExamples(examples, label);
         });
+        this.scratch_vm.on('NEW_LABEL', (label) => {
+            this.newLabel(label);
+        });
         this.scratch_vm.on('DELETE_EXAMPLE', (label, exampleNum) => {
             this.deleteExample(label, exampleNum);
         });
@@ -303,9 +306,10 @@ class Scratch3TextClassificationBlocks {
                         },
                         CLASS_NAME: {
                             type: ArgumentType.STRING,
-                            defaultValue: 'Class 1'
+                            menu: 'model_classes',
+                            defaultValue: ''
                         }
-                    },
+                    }
                 },
                 {
                     opcode: 'getModelPrediction',
@@ -399,6 +403,10 @@ class Scratch3TextClassificationBlocks {
                 voices: {
                     acceptReporters: true,
                     items: this.getVoiceMenu()
+                },
+                model_classes: {
+                    acceptReporters: false,
+                    items: 'getLabels'
                 }
             }
         };
@@ -409,11 +417,14 @@ class Scratch3TextClassificationBlocks {
      */    
     loadModelFromRuntime () {
         this.labelList = [];
-        let classifierData = {...this.scratch_vm.modelData.classifierData};//this.scratch_vm.textModelData.classifierData;
         
         if (this.labelListEmpty) {
             this.labelList.push('');    //if the label list is empty, fill it with an empty string
         }
+        //console.log("RANDI try a practice class");
+        //this.scratch_vm.modelData = {textData: {'Class 1':['Example 1','Example 2','Here\'s a really long example to make sure things are working','Example 3','Example 4','Example 5','Example 6']}, classifierData: {'Class 1':['Example 1','Example 2','Here\'s a really long example to make sure things are working','Example 3','Example 4','Example 5','Example 6']}, nextLabelNumber: 2};
+        //this.labelList = ['Class 1'];
+        //this.labelListEmpty = false;
     }
 
     /**
@@ -444,18 +455,44 @@ class Scratch3TextClassificationBlocks {
      */
     newExamples (text_examples, label) {   //add examples for a label
         console.log("Add examples to label " + label);
+        console.log(text_examples);
+        if (this.labelListEmpty) {
+            // Edit label list accordingly
+            this.labelList.splice(this.labelList.indexOf(''), 1);
+            this.labelListEmpty = false;
+        }
+        if (!this.labelList.includes(label)) {
+            this.labelList.push(label);
+        }
         for (let text_example of text_examples) {
-            if (this.labelListEmpty) {
-                // Edit label list accordingly
-                this.labelList.splice(this.labelList.indexOf(''), 1);
-                this.labelListEmpty = false;
-            }
-            if (!this.labelList.includes(label)) {
-                this.labelList.push(label);
-            }
-            this.scratch_vm.modelData.textData[label] = [text_example];
+            console.log(text_example);
+            this.scratch_vm.modelData.textData[label].push(text_example);
+            this.scratch_vm.modelData.classifierData[label].push(text_example);
         }
     }
+    
+    /**
+     * TODO Add a new label to labelList
+     * @param {string} label the name of the label
+     */
+    newLabel (newLabelName) {   //add the name of a new label
+        if (this.labelListEmpty) {
+            // Edit label list accordingly
+            this.labelList.splice(this.labelList.indexOf(''), 1);
+            this.labelListEmpty = false;
+        }
+        if (!this.labelList.includes(newLabelName)) {
+            this.labelList.push(newLabelName);
+        }
+        
+        this.scratch_vm.modelData.textData[newLabelName] = [];
+        this.scratch_vm.modelData.classifierData[newLabelName] = [];
+        // update drowndown of class names
+        this.scratch_vm.emit("TOOLBOX_EXTENSIONS_NEED_UPDATE");
+    }
+    
+
+
 
     /**
      * TODO Rename a label
@@ -471,7 +508,7 @@ class Scratch3TextClassificationBlocks {
         delete this.scratch_vm.modelData.textData[oldName];
 
         this.labelList.splice(this.labelList.indexOf(oldName), 1);  //reset label list with the new renamed label
-        this.labelList.push(newName)
+        this.labelList.push(newName);
     }
 
     /**
@@ -479,16 +516,23 @@ class Scratch3TextClassificationBlocks {
      * @param {string} label the name of the label with the example to be removed
      * @param {integer} exampleNum which example, in the array of a label's examples, to remove
      */
-    deleteExample (label, exampleNum) { 
-        let labelExamples = data[label].arraySync();
+    deleteExample (label, exampleNum) {
         console.log("Delete example " + exampleNum + " with label " + label);
+         // Remove label from the runtime's model data (to share with the GUI)
+         this.scratch_vm.modelData.textData[label].splice(exampleNum, 1);
+         this.scratch_vm.modelData.classifierData[label].splice(exampleNum - this.scratch_vm.modelData.textData[label].length - 1, 1);
     }
 
     /**
      * TODO Clear all data stored in the classifier and label list
      */
     clearLocal () {
-        console.log("Clear local data")
+        console.log("Clear local data");
+        let labels = this.labelList.slice();
+        for (let label of labels) {
+            this.clearAllWithLabel({LABEL: label});
+        }
+        this.scratch_vm.emit("TOOLBOX_EXTENSIONS_NEED_UPDATE");
         this.labelList = [''];
         this.labelListEmpty = true;
     }
@@ -501,6 +545,7 @@ class Scratch3TextClassificationBlocks {
         this.clearLocal();
         // Clear runtime's model data
         this.scratch_vm.modelData = {textData: {}, classifierData: {}, nextLabelNumber: 1};
+        
     }
 
     /**
@@ -719,7 +764,7 @@ class Scratch3TextClassificationBlocks {
      */
     getModelPrediction(args) {
         const text = args.TEXT;
-        
+        console.log(this.scratch_vm.modelData.textData);
         return ' ';
     const predictionState = this.getPredictionStateOrStartPredicting(text);
         if (!predictionState) {

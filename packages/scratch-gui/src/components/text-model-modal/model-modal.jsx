@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import keyMirror from 'keymirror';
 
 import Box from '../box/box.jsx';
 import Modal from '../../containers/modal.jsx';
@@ -9,15 +8,10 @@ import ModelEditor from './model-editor.jsx';
 
 import styles from './model-modal.css';
 
-const PHASES = keyMirror({
-    modelEditor: null,
-    labelEditor: null
-});
-
 const TextModelModalComponent = props => (
     <Modal
         className={styles.modalContent}
-        contentLabel="Text Model Modal"
+        contentLabel="Edit Text Model"
         headerClassName={styles.header}
         headerImage={props.connectionSmallIconURL}
         id="textModelModal"
@@ -31,8 +25,13 @@ const TextModelModalComponent = props => (
                 onClearAll={props.onClearAll}
                 onDeleteLabel={props.onDeleteLabel}
                 onEditLabel={props.onEditLabel}
+                onDoneEditLabel={props.onDoneEditLabel}
+                onDeleteExample={props.onDeleteExample}
+                onRenameLabel={props.onRenameLabel}
+                onNewExamples={props.onNewExamples}
                 classifierData={props.classifierData}
-                imageData={props.imageData} />
+                textData={props.textData}
+                activeLabel={props.activeLabel} />
         </Box>
     </Modal>
 );
@@ -40,11 +39,9 @@ const TextModelModalComponent = props => (
 TextModelModalComponent.propTypes = {
     name: PropTypes.node,
     onCancel: PropTypes.func.isRequired,
-    onHelp: PropTypes.func.isRequired,
-    phase: PropTypes.oneOf(Object.keys(PHASES)).isRequired
+    onHelp: PropTypes.func.isRequired
 };
 
 export {
-    TextModelModalComponent as default,
-    PHASES
+    TextModelModalComponent as default
 };

@@ -36,7 +36,6 @@
     border-radius: 0.25rem;
     padding: 10px;
     width: 100%;
-    height: 120px;
     margin-bottom: 0.5rem;
 }
 
@@ -45,6 +44,13 @@
     align-items: center;
     height: 2rem;
     margin-left: 0.25rem;
+}
+
+.label-tile-footer {
+    display: flex;
+    align-items: center;
+    height: 2rem;
+    margin-top: 0.5rem;
 }
 
 .label-tile-name {
@@ -57,12 +63,17 @@
 }
 
 .label-tile button {
+    margin:0.25rem;
+    
     padding: 0.3rem 0.5rem;
-    margin-right: 0.25rem;
+    
     border: none;
     border-radius: 0.25rem;
+    
     font-weight: 600;
     font-size: 0.85rem;
+    line-height:1rem;
+    
     background: $motion-primary;
     border: $motion-primary;
     color: white;
@@ -77,20 +88,42 @@
     width: 100%;
 }
 
-.example-preview {
-    overflow-x: auto;
-    overflow-y: hidden;
+.example-box {
     align-items: center;
     display: flex;
+    flex-wrap: wrap;
     height: calc(100% - 2rem);
     width: calc(100% - 1rem);
-    margin-left: 1rem;
+    margin-left:1.5rem;
 }
 
 .example-viewer-text {
-    margin-left: 0.25rem;
+    margin: 0.5rem 0.25rem;
     height: 1.5rem;
     justify-content: flex-start;
+}
+
+.add-example-row {
+    position: relative;
+    margin:auto;
+    
+    border-width: 1px;
+    border-style: solid;
+    border-color: hsla(0, 0%, 0%, 0.15);
+    border-radius: 0.25rem;
+}
+
+.add-example-row input {
+    font-size: 0.85rem;
+    background-color: none;
+    
+    border-width: 0px;
+    border-color: hsla(0, 0%, 0%, 0.15);
+    border-radius: 0.25rem;
+}
+.add-example-row button {
+    background-color: hsla(0, 0%, 0%, 0.35);
+    margin:0;
 }
 
 .example-viewer-image-container {
@@ -114,12 +147,19 @@
     border-radius: 0.25rem;
 }
 
-.example-image {
+.example-text {
     height: 70%;
-    margin: 0.8rem;
-    border-radius: 2px;
+    max-width:200px;
+    margin: 0.2rem 0.8rem;
     position: relative;
+    background-color: $motion-light-transparent;
+    
+    display: flex;
+    align-items: center;
+    
+    border-radius: 0.5rem;
 }
+
 
 .canvas-area {
     height: calc(100% - 1.5rem);
@@ -131,7 +171,12 @@
 .canvas {
     height: 100%;
     position: relative;
-    border-radius: 5%;
+    display: block;
+    padding: 0.6rem 0.35rem;
+}
+
+.removable {
+    padding-right: 1.25rem;
 }
 
 .loading-camera-message {
@@ -142,8 +187,8 @@
 
 .delete-button {
     position: absolute;
-    top: 0.125rem;
-    right: 0.125rem;
+    top: 0.25rem;
+    right: 0.25rem;
     z-index: auto;
 }
 
@@ -151,13 +196,13 @@
     height: 1.3rem;
     padding: 0 0.75rem;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 0.625rem;
+    font-size: 0.875rem;
     font-weight: bold;
     color: hsla(225, 15%, 40%, 1);
     border-width: 1px;
     border-style: solid;
     border-color: hsla(0, 0%, 0%, 0.15);
-    border-radius: 2rem;
+    border-radius: 0.25rem;
     outline: none;
     cursor: text;
     transition: 0.25s ease-out;

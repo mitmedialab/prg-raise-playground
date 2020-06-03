@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import React from 'react';
 import bindAll from 'lodash.bindall';
+import keyMirror from 'keymirror';
+
 import Box from '../box/box.jsx';
 import ExampleTile from './example-tile.jsx';
 
@@ -12,34 +14,36 @@ class LabelTile extends React.Component {
     constructor (props) {
         super(props);
         bindAll(this, [
-            'handleEditLabel',
-            'handleDeleteLabel'
+            'handleEditLabel'
         ]);
+        this.state = {
+            inputText: ""
+        };
     }
-    handleEditLabel () {    //call props.onEditLabel with this label name
-        this.props.onEditLabel(this.props.name);
+    handleEditLabel () {    
+        console.log("Text Model Modal: edit label " + this.props.labelName);
+        this.props.onEditLabel(this.props.labelName);
     }
-    handleDeleteLabel () {  //call props.onDeleteLabel with this label name
-        this.props.onDeleteLabel(this.props.name);
-    }
+
 
     render () {
         return (
             <Box className={styles.labelTile}>
                 <Box className={styles.verticalLayout}>
                     <Box className={styles.labelTileHeader}>
-                        <Box className={styles.labelTileName}>
-                            {this.props.name+" ("+this.props.exampleCount+" examples)"}
+                        <Box className={styles.exampleViewerText}>
+                            {this.props.labelName}
+                            {" ("+this.props.exampleCount+" examples)"}
                         </Box>
-                        <button onClick={this.handleEditLabel}>Edit</button>
-                        <button onClick={this.handleDeleteLabel}>Delete</button>
+                        <button onClick={this.handleEditLabel}>Edit Label</button>
                     </Box>
-                    <Box className={styles.examplePreview}>
-                        {this.props.imageData[this.props.name].map(example => (
-                            <Box className={styles.exampleImage} key={this.props.imageData[this.props.name].findIndex(obj => obj.data === example.data)}>
-                                <ExampleTile 
-                                    image={example} 
-                                    id={this.props.imageData[this.props.name].findIndex(obj => obj.data === example.data)} 
+                    <Box className={styles.exampleBox}>
+                        {this.props.textData[this.props.labelName].map(example => (
+                            <Box className={styles.exampleText} key={this.props.textData[this.props.labelName].indexOf(example)}>
+                                <ExampleTile
+                                    label={this.props.labelName}
+                                    text={example} 
+                                    id={this.props.textData[this.props.labelName].indexOf(example)} 
                                     closeButton={false}
                                 />
                             </Box>
@@ -52,10 +56,10 @@ class LabelTile extends React.Component {
 }
 
 LabelTile.propTypes = {
-    name: PropTypes.string,
+    labelName: PropTypes.string,
     onEditLabel: PropTypes.func,
-    onDeleteLabel: PropTypes.func,
-    imageData: PropTypes.object,
+    onNewExamples: PropTypes.func,
+    textData: PropTypes.object,
     exampleCount: PropTypes.number
 };
 

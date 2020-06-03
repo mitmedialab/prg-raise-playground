@@ -2,9 +2,11 @@ import {FormattedMessage} from 'react-intl';
 import PropTypes from 'prop-types';
 import React from 'react';
 import classNames from 'classnames';
+import keyMirror from 'keymirror';
 
 import Box from '../box/box.jsx';
 import LabelTile from './label-tile.jsx';
+import EditLabelTile from './label-editor.jsx';
 import Dots from './dots.jsx';
 
 import styles from './model-modal.css';
@@ -13,14 +15,24 @@ const ModelEditor = props => (
     <Box className={styles.body}>
         <Box className={styles.activityArea}>
             <div className={styles.labelTilePane}>
-                {Object.keys(props.imageData).map(label => (    //create column of label tiles
-                    <LabelTile
-                        name={label}
+                {Object.keys(props.textData).map(label => (    //create column of label tiles
+                    label === props.activeLabel ? <EditLabelTile
+                        labelName={label}
+                        key={label}
+                        exampleCount={props.classifierData[label].length}
+                        onDoneEditLabel={props.onDoneEditLabel}
+                        onRenameLabel={props.onRenameLabel}                    
+                        onDeleteExample={props.onDeleteExample}
+                        onDeleteLabel={props.onDeleteLabel}
+                        onNewExamples={props.onNewExamples}
+                        textData={props.textData}
+                    />
+                    : <LabelTile
+                        labelName={label}
                         key={label}
                         exampleCount={props.classifierData[label].length}
                         onEditLabel={props.onEditLabel}
-                        onDeleteLabel={props.onDeleteLabel}
-                        imageData={props.imageData}
+                        textData={props.textData}
                     />
                 ))}
             </div>
@@ -40,9 +52,13 @@ ModelEditor.propTypes = {
     onCancel: PropTypes.func,
     onClearAll: PropTypes.func,
     onDeleteLabel: PropTypes.func,
+    onDeleteExample: PropTypes.func,
     onEditLabel: PropTypes.func,
+    onDoneEditLabel: PropTypes.func,
+    onRenameLabel: PropTypes.func,
+    onNewExamples: PropTypes.func,
     classifierData: PropTypes.object,
-    imageData: PropTypes.object
+    activeLabel: PropTypes.string
 };
 
 export default ModelEditor;

@@ -1,66 +1,84 @@
 import {FormattedMessage} from 'react-intl';
 import PropTypes from 'prop-types';
-import React from 'react';
 import classNames from 'classnames';
+import React from 'react';
 import bindAll from 'lodash.bindall';
+import keyMirror from 'keymirror';
 
 import Box from '../box/box.jsx';
 import ExampleTile from './example-tile.jsx';
-import Dots from './dots.jsx';
-import CloseButton from '../close-button/close-button.jsx';
 
 import styles from './model-modal.css';
 
-class LabelEditor extends React.Component {
+class EditLabelTile extends React.Component {
     constructor (props) {
         super(props);
         bindAll(this, [
-            'handleRenameLabel'
+            'handleRenameLabel',
+            'handleDeleteLabel',
+            'handleNewExample',
+            'handleInputForNewExample',
+            'handleDoneEditLabel'
         ]);
+        this.state = {
+            inputText: ""
+        };
+    }
+    handleDoneEditLabel () {    
+        console.log("Text Model Modal: done editing label " + this.props.labelName);
+        this.props.onDoneEditLabel(this.props.labelName);
     }
     handleRenameLabel (input) { //call props.onRenameLabel with the current active label and the value in the input field
-        if (this.props.activeLabel !== input.target.value) {
-            this.props.onRenameLabel(this.props.activeLabel, input.target.value);
+        if (this.props.labelName !== input.target.value) {
+            this.props.onRenameLabel(this.props.labelName, input.target.value);
         }
+    }
+    handleDeleteLabel () {  //call props.onDeleteLabel with this label name
+        this.props.onDeleteLabel(this.props.labelName);
+    }
+    handleNewExample () {  //call props.onAddExample
+        let newExample = this.state.inputText;
+        if (newExample != undefined && newExample != '') {
+            this.props.onNewExamples(this.props.labelName, [newExample]);
+        }
+    }
+    handleInputForNewExample (input) {  //call props.onAddExample
+        this.setState({
+            inputText: input.target.value
+        });
+        
     }
 
     render () {
         return (
-            <Box className={styles.body}>
-                <Box className={styles.activityArea}>
-                    <Box className={styles.verticalLayout}>
+            <Box className={styles.labelTile}>
+                <Box className={styles.verticalLayout}>
+                    <Box className={styles.labelTileHeader}>
                         <Box className={styles.exampleViewerText}>
-                            Label <input type="text" className={styles.inputField} defaultValue={this.props.activeLabel} onBlur={this.handleRenameLabel}/> {"("+this.props.classifierData[this.props.activeLabel].length+" examples)"}
+                            <input type="text" className={styles.inputField} defaultValue={this.props.labelName} onBlur={this.handleRenameLabel}/>
+                            {" ("+this.props.exampleCount+" examples)"}
                         </Box>
-                        <Box className={styles.exampleViewerImageContainer}>
-                            {this.props.classifierData[this.props.activeLabel].length !== this.props.imageData[this.props.activeLabel].length ?
-                                <Box className={styles.loadedExamplesBox}>
-                                    <CloseButton
-                                        className={styles.deleteButton}
-                                        size={CloseButton.SIZE_SMALL}
-                                        onClick={this.props.onDeleteLoadedExamples}
-                                    />
-                                    {this.props.classifierData[this.props.activeLabel].length-this.props.imageData[this.props.activeLabel].length} examples loaded from file
-                                </Box>
-                                : <div></div>
-                            }
-                            {this.props.imageData[this.props.activeLabel].map(example => (
-                                <Box className={styles.exampleImage} key={this.props.imageData[this.props.activeLabel].findIndex(obj => obj.data === example.data)}>
-                                    <ExampleTile 
-                                        image={example} 
-                                        id={this.props.imageData[this.props.activeLabel].findIndex(obj => obj.data === example.data)} 
-                                        closeButton={true} 
-                                        onDeleteExample={this.props.onDeleteExample}
-                                    />
-                                </Box>
-                            ))}
-                        </Box>
+                        <button onClick={this.handleDoneEditLabel}>Done Editing</button>
+                        <button onClick={this.handleDeleteLabel}>Delete Label</button>
                     </Box>
-                </Box>
-                <Box className={classNames(styles.bottomArea)}>
-                    <Box className={classNames(styles.bottomAreaItem, styles.buttonRow)}>
-                        <button onClick={this.props.onAddExamples}>Add Examples</button>
-                        <button onClick={this.props.onEditModel}>Done</button>
+                    <Box className={styles.exampleBox}>
+                        {this.props.textData[this.props.labelName].map(example => (
+                            <Box className={styles.exampleText} key={this.props.textData[this.props.labelName].indexOf(example)}>
+                                <ExampleTile
+                                    label={this.props.labelName}
+                                    text={example} 
+                                    id={this.props.textData[this.props.labelName].indexOf(example)} 
+                                    closeButton={true}  // RANDI make this true?                                    
+                                    onDeleteExample={this.props.onDeleteExample}
+                                />
+                            </Box>
+                        ))}
+                    </Box>
+                    <Box className={styles.labelTileFooter}>
+                        <Box className={styles.addExampleRow}>
+                            <input type="text" className={styles.inputField} onBlur={this.handleInputForNewExample}/>
+                            <button onClick={this.handleNewExample}>Add Example</button>
+                        </Box>
                     </Box>
                 </Box>
             </Box>
@@ -68,15 +86,15 @@ class LabelEditor extends React.Component {
     }
 }
 
-LabelEditor.propTypes = {
-    onAddExamples: PropTypes.func,
-    onDeleteExample: PropTypes.func,
-    onDeleteLoadedExamples: PropTypes.func,
-    onEditModel: PropTypes.func,
+EditLabelTile.propTypes = {
+    labelName: PropTypes.string,
     onRenameLabel: PropTypes.func,
-    activeLabel: PropTypes.string,
-    classifierData: PropTypes.object,
-    imageData: PropTypes.object
+    onDeleteExample: PropTypes.func,
+    onDeleteLabel: PropTypes.func,
+    onNewExamples: PropTypes.func,
+    onDoneEditLabel: PropTypes.func,
+    textData: PropTypes.object,
+    exampleCount: PropTypes.number
 };
 
-export default LabelEditor;
+export default EditLabelTile;
