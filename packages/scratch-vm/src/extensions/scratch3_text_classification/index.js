@@ -17,6 +17,7 @@ const Cast = require('../../util/cast');
 const formatMessage = require('format-message');
 const Video = require('../../io/video');
 const Timer = require('../../util/timer');
+//const natural = require('natural');
 
 /**
  * Icon svg to be displayed in the blocks category menu, encoded as a data URI.
@@ -80,6 +81,8 @@ const FEMALE_TENOR_RATE = 0.89; // -2 semitones
  */
 const FEMALE_GIANT_RATE = 0.79; // -4 semitones
 
+
+
 /**
  * Class for the motion-related blocks in Scratch 3.0
  * @param {Runtime} runtime - the runtime instantiating this block package.
@@ -92,6 +95,9 @@ class Scratch3TextClassificationBlocks {
          * @type {Runtime}
          */
          this.scratch_vm = runtime;
+         this.predictedLabel=null;
+
+
          
         /**
          * The timer utility.
@@ -164,6 +170,7 @@ class Scratch3TextClassificationBlocks {
         });
         
         this._recognizedSpeech = "";
+
     }
 
     /**
@@ -276,7 +283,7 @@ class Scratch3TextClassificationBlocks {
 
         // Return extension definition
         return {
-            id: 'tectClassification',
+            id: 'textClassification',
             name: formatMessage({
                 id: 'textClassification.categoryName',
                 default: 'Text Classification',
@@ -468,6 +475,7 @@ class Scratch3TextClassificationBlocks {
             console.log(text_example);
             this.scratch_vm.modelData.textData[label].push(text_example);
             this.scratch_vm.modelData.classifierData[label].push(text_example);
+
         }
     }
     
@@ -742,18 +750,19 @@ class Scratch3TextClassificationBlocks {
      *   reference
      */
     ifTextMatchesClass(args, util) {
-        const text = args.MODEL_URL;
+        const text = args.TEXT;
         const className = args.CLASS_NAME;
-
-        return false;
-    
-        const predictionState = this.getPredictionStateOrStartPredicting(text);
+        const predictionState = this.getPredictedClass(text,className);
+        
         if (!predictionState) {
             return false;
+        } else {
+            return true;
         }
-
+        /*
         const currentMaxClass = predictionState.topClass;
         return (currentMaxClass === String(className));
+        */
     }
 
     /**
@@ -773,6 +782,47 @@ class Scratch3TextClassificationBlocks {
 
         return predictionState.topClass;
     }
+
+    getPredictedClass(text,className) { //checks if a text example is a part of a particular class
+        if (!this.labelListEmpty) {   //whenever the classifier has some data
+            for (let example of this.scratch_vm.modelData.textData[className]) {
+                if (text.toLowerCase() === example.toLowerCase()) {
+                    return true;
+                }
+            }
+            
+        } else { //if there is no data in the classifier
+            return false;
+        }
+
+    }
+
+/* method that holds the code to classify new text
+    getPredictionStateOrStartPredicting(text) {
+        console.log(this.scratch_vm.modelData.textData);
+        if (!this.labelListEmpty) {   //whenever the classifier has some data
+            for (let className of this.labelList) {
+                for (let example of this.scratch_vm.modelData.textData[className]) {
+                    //code to input examples and conduct text classification
+            }
+
+            }
+
+
+           
+            if (maxScore > 0.8) {  //if it recognized a word with high enough probability, set both commands to that word; otherwise reset newCommand
+                  console.log(command);
+                  this.predictedLabel = command;
+          } else {
+              this.predictedLabel = '';
+        }
+        } else {
+            this.predictedLabel = '';
+        }
+        return this.predictedLabel;
+    }
+    */
+
 
 }
 
