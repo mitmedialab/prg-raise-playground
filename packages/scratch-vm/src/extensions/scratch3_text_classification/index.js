@@ -144,7 +144,7 @@ class Scratch3TextClassificationBlocks {
         
         // When a project is loaded, reset all the model data
         this.scratch_vm.on('PROJECT_LOADED', () => {
-            this.clearAll(); // RANDI is there a better place to intiialize scratch_vm model data?
+            this.clearLocal();
             this.loadModelFromRuntime();
         });
         // Listen for model editing events emitted by the modal
@@ -423,15 +423,21 @@ class Scratch3TextClassificationBlocks {
      * TODO Moves info from the runtime into the classifier, called when a project is loaded
      */    
     loadModelFromRuntime () {
+        //console.log("Load model from runtime");
         this.labelList = [];
         
-        if (this.labelListEmpty) {
-            this.labelList.push('');    //if the label list is empty, fill it with an empty string
+        for (let label in this.scratch_vm.modelData.textData) {
+            this.labelList.push(label);
         }
-        //console.log("RANDI try a practice class");
-        //this.scratch_vm.modelData = {textData: {'Class 1':['Example 1','Example 2','Here\'s a really long example to make sure things are working','Example 3','Example 4','Example 5','Example 6']}, classifierData: {'Class 1':['Example 1','Example 2','Here\'s a really long example to make sure things are working','Example 3','Example 4','Example 5','Example 6']}, nextLabelNumber: 2};
-        //this.labelList = ['Class 1'];
-        //this.labelListEmpty = false;
+        
+        if (this.labelList.length == 0) {
+            this.labelList.push('');    //if the label list is empty, fill it with an empty string
+            this.labelListEmpty = true;
+        }
+        /*console.log("RANDI try a practice class");
+        this.scratch_vm.modelData = {textData: {'Class 1':['Example 1','Example 2','Here\'s a really long example to make sure things are working','Example 3','Example 4','Example 5','Example 6']}, classifierData: {'Class 1':['Example 1','Example 2','Here\'s a really long example to make sure things are working','Example 3','Example 4','Example 5','Example 6']}, nextLabelNumber: 2};
+        this.labelList = ['Class 1'];
+        this.labelListEmpty = false;*/
     }
 
     /**
@@ -536,10 +542,6 @@ class Scratch3TextClassificationBlocks {
      */
     clearLocal () {
         console.log("Clear local data");
-        let labels = this.labelList.slice();
-        for (let label of labels) {
-            this.clearAllWithLabel({LABEL: label});
-        }
         this.scratch_vm.emit("TOOLBOX_EXTENSIONS_NEED_UPDATE");
         this.labelList = [''];
         this.labelListEmpty = true;
