@@ -16,7 +16,7 @@ const _icons = ['heart', 'check', 'X', 'smile', 'frown', 'ghost', 'triangle', 'd
 const _drive = ['forward', 'backward'];
 const _turn = ['left', 'right'];
 const _button = ['A','B','A or B','A and B','neither A nor B'];
-const _line_states = ['right side', 'left side', 'neither side', 'both side'];
+const _line_states = ['right side', 'left side', 'neither side', 'both sides'];
 const EXTENSION_ID = 'microbitRobot';
 
 // Core, Team, and Official extension classes should be registered statically with the Extension Manager.
@@ -271,6 +271,7 @@ class MicrobitRobot {
         let result = await this.requestFromRobot();
         if (result) {
           this.scratch_vm.emit(this.scratch_vm.constructor.PERIPHERAL_CONNECTED);
+          this._mStatus = 2;
             return "Connected!";
         }
         return "Could not connect to robot.";
@@ -427,21 +428,8 @@ class MicrobitRobot {
   /**
      * Implement whenButtonPressed
      */
-    whenButtonPressed(args, util) {
-        var state = args.BUTTON;
-    
-        if (state == 'A') {
-            return this.a_button == 1;   
-        } else if (state == 'B') {
-            return this.b_button == 1;
-        } else if (state == 'A or B') {
-            return (this.a_button == 1) || (this.b_button == 1);
-        } else if (state == 'A and B') {
-            return (this.a_button == 1) && (this.b_button == 1);
-        } else if (state == 'neither A nor B') {
-            return (this.a_button == 0) && (this.b_button == 0);
-        }
-        return false; // should never get here
+    whenButtonPressed(args) {
+        return this.readButtonStatus(args);
     }
   
   /**
@@ -450,16 +438,17 @@ class MicrobitRobot {
      */
   readLineStatus (args) {
     var state = args.LINE;
-    
-    if (state == 'right') {
+    console.log(state + " " + this.right_line + " " + this.left_line);
+    if (state == 'right side') {
         return this.right_line == 1;   
-    } else if (state == 'left') {
+    } else if (state == 'left side') {
         return this.left_line == 1;
-    } else if (state == 'both') {
+    } else if (state == 'both sides') {
         return (this.right_line == 1) && (this.left_line == 1);
-    } else if (state == 'neither') {
+    } else if (state == 'neither side') {
         return (this.right_line == 0) && (this.left_line == 0);
     }
+    console.log("Should never get here");
     return false; // should never get here
   }
 
