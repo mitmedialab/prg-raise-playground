@@ -425,9 +425,12 @@ class Scratch3TextClassificationBlocks {
     loadModelFromRuntime () {
         //console.log("Load model from runtime");
         this.labelList = [];
+        this.labelListEmpty = false;
         
         for (let label in this.scratch_vm.modelData.textData) {
-            this.labelList.push(label);
+            if (this.scratch_vm.modelData.textData.hasOwnProperty(label)) {
+                this.labelList.push(label);
+            }
         }
         
         if (this.labelList.length == 0) {
@@ -467,8 +470,7 @@ class Scratch3TextClassificationBlocks {
      * @param {string} label the name of the label
      */
     newExamples (text_examples, label) {   //add examples for a label
-        console.log("Add examples to label " + label);
-        console.log(text_examples);
+        console.log("Add examples to label " + label + text_examples);
         if (this.labelListEmpty) {
             // Edit label list accordingly
             this.labelList.splice(this.labelList.indexOf(''), 1);
@@ -478,7 +480,6 @@ class Scratch3TextClassificationBlocks {
             this.labelList.push(label);
         }
         for (let text_example of text_examples) {
-            console.log(text_example);
             this.scratch_vm.modelData.textData[label].push(text_example);
             this.scratch_vm.modelData.classifierData[label].push(text_example);
 
