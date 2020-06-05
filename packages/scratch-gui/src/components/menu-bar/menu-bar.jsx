@@ -489,7 +489,7 @@ class MenuBar extends React.Component {
                     <Divider className={classNames(styles.divider)} />
                     <a
                         className={classNames(styles.menuBarItem, styles.hoverable, styles.blankLink)}
-                        href="https://teachablemachine.withgoogle.com/"
+                        href="https://teachablemachine.withgoogle.com/train/"
                         target="_blank"
                     >
                         Teachable Machine
