@@ -182,10 +182,32 @@ class Scratch3PoseNetBlocks {
         return VideoState.OFF;
     }
 
+    static get VIDEO_SOURCE () {
+        return {
+            CAMERA: 'camera',
+        };
+    }
+
+    get globalVideoSource () {
+        const stage = this.runtime.getTargetForStage();
+        if (stage) {
+            return stage.videoSource;
+        }
+        return Scratch3PoseNetBlocks.VIDEO_SOURCE.CAMERA;
+    }
+
     set globalVideoState (state) {
         const stage = this.runtime.getTargetForStage();
         if (stage) {
             stage.videoState = state;
+        }
+        return state;
+    }
+
+    set globalVideoSource (state) {
+        const stage = this.runtime.getTargetForStage();
+        if (stage) {
+            stage.videoSource = state;
         }
         return state;
     }
@@ -200,6 +222,9 @@ class Scratch3PoseNetBlocks {
         });
         this.videoToggle({
             VIDEO_STATE: this.globalVideoState
+        });
+        this.setVideoSource({
+            VIDEO_SOURCE: this.globalVideoSource
         });
     }
 
@@ -270,7 +295,7 @@ class Scratch3PoseNetBlocks {
             const affdexStarter = new Promise((resolve, reject) => {
                 const width = Video.DIMENSIONS[0];
                 const height = Video.DIMENSIONS[1];
-                const faceMode = window.affdex.FaceDetectorMode.LARGE_FACES;
+                const faceMode = window.affdex.FaceDetectorMode.SMALL_FACES;
                 const detector = new window.affdex.PhotoDetector(imageElement, width, height, faceMode);
                 detector.detectAllEmotions();
                 detector.detectAllExpressions();
@@ -580,6 +605,21 @@ class Scratch3PoseNetBlocks {
                     }
                 },
                 {
+                    opcode: 'setVideoSource',
+                    text: formatMessage({
+                        id: 'videoSensing.setVideoSource',
+                        default: 'set video source [VIDEO_SOURCE]',
+                        description: 'Changes video source'
+                    }),
+                    arguments: {
+                        VIDEO_SOURCE: {
+                            type: ArgumentType.STRING,
+                            // menu: 'VIDEO_SOURCE',
+                            defaultValue: 'https://dancingwithai.media.mit.edu/projects/ChirpBirdForever.webm'
+                        }
+                    }
+                },
+                {
                     opcode: 'setVideoTransparency',
                     text: formatMessage({
                         id: 'videoSensing.setVideoTransparency',
@@ -698,7 +738,14 @@ class Scratch3PoseNetBlocks {
                 VIDEO_STATE: {
                     acceptReporters: true,
                     items: this._buildMenu(this.VIDEO_STATE_INFO)
-                }
+                },
+                VIDEO_SOURCE: {
+                    acceptReporters: true,
+                    items: [
+                        {text: 'camera', value: Scratch3PoseNetBlocks.VIDEO_SOURCE.CAMERA},
+                        {text: 'trailer1', value: 'https://dancingwithai.media.mit.edu/projects/ChirpBirdForever.webm'},
+                    ]
+                },
             }
         };
     }
@@ -857,6 +904,25 @@ class Scratch3PoseNetBlocks {
             this.runtime.ioDevices.video.enableVideo();
             // Mirror if state is ON. Do not mirror if state is ON_FLIPPED.
             this.runtime.ioDevices.video.mirror = state === VideoState.ON;
+        }
+    }
+
+    /**
+     * A scratch command block handle that configures the video source from passed arguments.
+     * @param {object} args - the block arguments
+     * @param {VideoState} args.VIDEO_SOURCE - the video source string to set the device to
+     */
+    setVideoSource (args) {
+        const state = args.VIDEO_SOURCE;
+        this.globalVideoState = state;
+        if (state === Scratch3PoseNetBlocks.VIDEO_SOURCE.CAMERA) {
+            this.runtime.ioDevices.video.disableVideo().then(() => {
+                this.runtime.ioDevices.video.enableVideo();
+            });
+        } else {
+            this.runtime.ioDevices.video.disableVideo().then(() => {
+                this.runtime.ioDevices.video.setVideoTo(state);
+            });
         }
     }
 

@@ -465,6 +465,7 @@ const serializeTarget = function (target, extensions) {
         if (target.hasOwnProperty('tempo')) obj.tempo = target.tempo;
         if (target.hasOwnProperty('videoTransparency')) obj.videoTransparency = target.videoTransparency;
         if (target.hasOwnProperty('videoState')) obj.videoState = target.videoState;
+        if (target.hasOwnProperty('videoSource')) obj.videoSource = target.videoSource;
         if (target.hasOwnProperty('teachableImageModel')) obj.teachableImageModel = target.teachableImageModel;
         if (target.hasOwnProperty('textToSpeechLanguage')) obj.textToSpeechLanguage = target.textToSpeechLanguage;
     } else { // The stage does not need the following properties, but sprites should
@@ -968,6 +969,9 @@ const parseScratchObject = function (object, runtime, extensions, zip, assets) {
     }
     if (object.hasOwnProperty('videoState')) {
         target.videoState = object.videoState;
+    }
+    if (object.hasOwnProperty('videoSource')) {
+        target.videoSource = object.videoSource;
     }
     if (object.hasOwnProperty('teachableImageModel')) {
         target.teachableImageModel = object.teachableImageModel;

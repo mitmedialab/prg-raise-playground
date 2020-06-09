@@ -154,6 +154,7 @@ class RenderedTarget extends Target {
          * @type {string}
          */
         this.videoState = RenderedTarget.VIDEO_STATE.ON;
+        this.videoSource = RenderedTarget.VIDEO_SOURCE.CAMERA;
 
         /**
          * The language to use for speech synthesis, in the text2speech extension.
@@ -255,6 +256,12 @@ class RenderedTarget extends Target {
             OFF: 'off',
             ON: 'on',
             ON_FLIPPED: 'on-flipped'
+        };
+    }
+
+    static get VIDEO_SOURCE () {
+        return {
+            CAMERA: 'camera',
         };
     }
 
@@ -1121,7 +1128,8 @@ class RenderedTarget extends Target {
             tempo: this.tempo,
             volume: this.volume,
             videoTransparency: this.videoTransparency,
-            videoState: this.videoState
+            videoState: this.videoState,
+            videoSource: this.videoSource
 
         };
     }

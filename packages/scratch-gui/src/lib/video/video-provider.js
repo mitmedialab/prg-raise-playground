@@ -78,6 +78,11 @@ class VideoProvider {
         return this._setupVideo();
     }
 
+    setVideoTo(url) {
+        this.enabled = true;
+        return this._setupVideo(url);
+    }
+
     /**
      * Disable video stream (turn video off)
      */
@@ -85,7 +90,7 @@ class VideoProvider {
         this.enabled = false;
         // If we have begun a setup process, call _teardown after it completes
         if (this._singleSetup) {
-            this._singleSetup
+            return this._singleSetup
                 .then(this._teardown.bind(this))
                 .catch(err => this.onError(err));
         }
@@ -143,13 +148,18 @@ class VideoProvider {
                 context.scale(-1, 1);
                 context.translate(width * -1, 0);
             }
+            var scale = Math.min(width / videoWidth, height / videoHeight);
+            // get the top left position of the image
+            var x = (width / 2) - (videoWidth / 2) * scale;
+            var y = (height / 2) - (videoHeight / 2) * scale;
+            context.drawImage(this._video, x, y, videoWidth * scale, videoHeight * scale);
 
-            context.drawImage(this._video,
-                // source x, y, width, height
-                0, 0, videoWidth, videoHeight,
-                // dest x, y, width, height
-                0, 0, width, height
-            );
+            // context.drawImage(this._video,
+            //     // source x, y, width, height
+            //     0, 0, videoWidth, videoHeight,
+            //     // dest x, y, width, height
+            //     0, 0, width, height
+            // );
 
             // context.resetTransform() doesn't work on Edge but the following should
             context.setTransform(1, 0, 0, 1, 0, 0);
@@ -198,40 +208,67 @@ class VideoProvider {
      * @private
      * @return {Promise} When video has been received, rejected if video is not received
      */
-    _setupVideo () {
+    _setupVideo (url) {
         // We cache the result of this setup so that we can only ever have a single
         // video/getUserMedia request happen at a time.
         if (this._singleSetup) {
             return this._singleSetup;
         }
 
-        this._singleSetup = requestVideoStream({
-            width: {min: 480, ideal: 640},
-            height: {min: 360, ideal: 480}
-        })
-            .then(stream => {
-                this._video = document.createElement('video');
-
-                // Use the new srcObject API, falling back to createObjectURL
-                try {
-                    this._video.srcObject = stream;
-                } catch (error) {
-                    this._video.src = window.URL.createObjectURL(stream);
-                }
-                // Hint to the stream that it should load. A standard way to do this
-                // is add the video tag to the DOM. Since this extension wants to
-                // hide the video tag and instead render a sample of the stream into
-                // the webgl rendered Scratch canvas, another hint like this one is
-                // needed.
-                this._video.play(); // Needed for Safari/Firefox, Chrome auto-plays.
-                this._track = stream.getTracks()[0];
-                return this;
+        if (!!url) {
+            this._singleSetup = requestVideoStream({
+                width: {min: 480, ideal: 640},
+                height: {min: 360, ideal: 480}
             })
-            .catch(error => {
-                this._singleSetup = null;
-                this.onError(error);
-            });
+                .then(stream => {
+                    this._video = document.createElement('video');
+                    this._video.width = 640;
+                    this._video.height = 480;
+                    this._video.style.objectFit = "contain";
+                    const source = document.createElement('source');
+                    this._video.setAttribute('crossorigin', 'anonymous');
+                    this._video.setAttribute('autoplay', '');
+                    this._video.setAttribute('preload', '');
+                    this._video.setAttribute('loop', '');
+                    source.setAttribute('src', url);
+                    this._video.appendChild(source);
+                    this._video.load();
+                    this._video.play(); // Needed for Safari/Firefox, Chrome auto-plays.
+                    document.body.appendChild(this._video);
+                    this._track = stream.getTracks()[0];
+                    return this;
+                }).catch(error => {
+                    this._singleSetup = null;
+                    this.onError(error);
+                });
+        } else {
+            this._singleSetup = requestVideoStream({
+                width: {min: 480, ideal: 640},
+                height: {min: 360, ideal: 480}
+            })
+                .then(stream => {
+                    this._video = document.createElement('video');
 
+                    // Use the new srcObject API, falling back to createObjectURL
+                    try {
+                        this._video.srcObject = stream;
+                    } catch (error) {
+                        this._video.src = window.URL.createObjectURL(stream);
+                    }
+                    // Hint to the stream that it should load. A standard way to do this
+                    // is add the video tag to the DOM. Since this extension wants to
+                    // hide the video tag and instead render a sample of the stream into
+                    // the webgl rendered Scratch canvas, another hint like this one is
+                    // needed.
+                    this._video.play(); // Needed for Safari/Firefox, Chrome auto-plays.
+                    this._track = stream.getTracks()[0];
+                    return this;
+                })
+                .catch(error => {
+                    this._singleSetup = null;
+                    this.onError(error);
+                });
+        }
         return this._singleSetup;
     }
 

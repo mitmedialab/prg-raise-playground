@@ -94,7 +94,12 @@ class Video {
     disableVideo () {
         this._disablePreview();
         if (!this.provider) return null;
-        this.provider.disableVideo();
+        return this.provider.disableVideo();
+    }
+
+    setVideoTo (url) {
+        if (!this.provider) return null;
+        this.provider.setVideoTo(url).then(() => this._setupPreview());
     }
 
     /**
@@ -116,7 +121,9 @@ class Video {
         format = Video.FORMAT_IMAGE_DATA,
         cacheTimeout = this._frameCacheTimeout
     }) {
-        if (this.provider) return this.provider.getFrame({dimensions, mirror, format, cacheTimeout});
+        if (this.provider) {
+            return this.provider.getFrame({dimensions, mirror, format, cacheTimeout});
+        }
         return null;
     }
 
