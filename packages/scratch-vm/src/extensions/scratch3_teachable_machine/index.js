@@ -12,6 +12,7 @@ const VideoMotion = require('./library');
 
 const tmImage = require('@teachablemachine/image');
 const tmPose = require('@teachablemachine/pose');
+const tmAudioSpeechCommands = require('@tensorflow-models/speech-commands');
 
 /**
  * Icon svg to be displayed in the blocks category menu, encoded as a data URI.
@@ -72,6 +73,7 @@ const VideoState = {
 const ModelType = {
     POSE: 'pose',
     IMAGE: 'image',
+    AUDIO: 'audio',
 }
 
 const EXTENSION_ID = 'teachableMachine';
@@ -664,6 +666,10 @@ class Scratch3VideoSensingBlocks {
             return ["Class 1"];
         }
 
+        if (this.predictionState[this.teachableImageModel].modelType === ModelType.AUDIO) {
+            return this.predictionState[this.teachableImageModel].model.wordLabels();
+        }
+
         return this.predictionState[this.teachableImageModel].model.getClassLabels();
     }
 
@@ -687,7 +693,22 @@ class Scratch3VideoSensingBlocks {
         const modelURL = modelUrl + "model.json";
         const metadataURL = modelUrl + "metadata.json";
         const customMobileNet = await tmImage.load(modelURL, metadataURL);
-        if (customMobileNet._metadata.packageName === "@teachablemachine/pose") {
+        if (customMobileNet._metadata.hasOwnProperty('tfjsSpeechCommandsVersion')) {
+            // customMobileNet.dispose(); // too early to dispose
+            console.log("We got a speech net yay")
+            const recognizer = tmAudioSpeechCommands.create("BROWSER_FFT", undefined, modelURL, metadataURL);
+            await recognizer.ensureModelLoaded();
+            await recognizer.listen(result => {
+                this.latestAudioResults = result;
+                console.log(result);
+            }, {
+                includeSpectrogram: true, // in case listen should return result.spectrogram
+                probabilityThreshold: 0.75,
+                invokeCallbackOnNoiseAndUnknown: true,
+                overlapFactor: 0.50 // probably want between 0.5 and 0.75. More info in README
+            });
+            return {model: recognizer, type: ModelType.AUDIO};
+        } else if (customMobileNet._metadata.packageName === "@teachablemachine/pose") {
             console.log("We got a pose net yay")
             const customPoseNet = await tmPose.load(modelURL, metadataURL);
             return {model: customPoseNet, type: ModelType.POSE};
@@ -699,6 +720,9 @@ class Scratch3VideoSensingBlocks {
 
     async predictModel(modelUrl, frame) {
         const predictions = await this.getPredictionFromModel(modelUrl, frame);
+        if (!predictions) {
+            return;
+        }
         let maxProbability = 0;
         let maxClassName = "";
         for (let i = 0; i < predictions.length; i++) {
@@ -721,6 +745,14 @@ class Scratch3VideoSensingBlocks {
             case ModelType.POSE:
                 const {pose, posenetOutput} = await model.estimatePose(frame);
                 return await model.predict(posenetOutput);
+            case ModelType.AUDIO:
+                if (this.latestAudioResults) {
+                    return model.wordLabels().map((label, i) => {
+                        return {className: label, probability: this.latestAudioResults.scores[i]}
+                    });
+                } else {
+                    return null;
+                }
         }
     }
 
