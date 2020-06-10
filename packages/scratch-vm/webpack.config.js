@@ -4,6 +4,9 @@ const path = require('path');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
 const base = {
+    node: {
+        fs: "empty"
+    },
     mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
     devServer: {
         contentBase: false,
