@@ -80,6 +80,9 @@ class Scratch3VideoSensingBlocks {
          * @type {Runtime}
          */
         this.runtime = runtime;
+        this.runtime.registerPeripheralExtension('teachableMachine', this);	
+        this.runtime.connectPeripheral('teachableMachine', 0);	
+        this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
 
         /**
          * The motion detection algoritm used to power the motion amount and
@@ -107,7 +110,7 @@ class Scratch3VideoSensingBlocks {
             this.runtime.on(Runtime.PROJECT_LOADED, this.updateVideoDisplay.bind(this));
 
             // Clear target motion state values when the project starts.
-            this.runtime.on(Runtime.PROJECT_RUN_START, this.reset.bind(this));
+            //this.runtime.on(Runtime.PROJECT_RUN_START, this.reset.bind(this));
 
             // Kick off looping the analysis logic.
             this._loop();
@@ -211,24 +214,6 @@ class Scratch3VideoSensingBlocks {
     }
 
     /**
-     * Reset the extension's data motion detection data. This will clear out
-     * for example old frames, so the first analyzed frame will not be compared
-     * against a frame from before reset was called.
-     */
-    reset () {
-        this.detect.reset();
-
-        const targets = this.runtime.targets;
-        for (let i = 0; i < targets.length; i++) {
-            const state = targets[i].getCustomState(Scratch3VideoSensingBlocks.STATE_KEY);
-            if (state) {
-                state.motionAmount = 0;
-                state.motionDirection = 0;
-            }
-        }
-    }
-
-    /**
      * Occasionally step a loop to sample the video, stamp it to the preview
      * skin, and add a TypedArray copy of the canvas's pixel data.
      * @private
@@ -260,15 +245,31 @@ class Scratch3VideoSensingBlocks {
             }
         }
     }
-
+    
+    scan() {	
+    }	
+    reset () {	
+    }	
+    isConnected() {	
+        return this.predictionState &&	
+            this.teachableImageModel &&	
+            this.predictionState.hasOwnProperty(this.teachableImageModel);	
+    }	
+    connect() {	
+    }
+    
     async predictAllBlocks(frame) {
         for (let modelUrl in this.predictionState) {
             if (!this.predictionState[modelUrl].model) {
                 continue;
             }
-            ++this._isPredicting;
-            const prediction = await this.predictModel(modelUrl, frame);
-            this.predictionState[modelUrl].topClass = prediction;
+            if (this.teachableImageModel !== modelUrl) {	
+                continue;	
+            }	
+            ++this._isPredicting;	
+            const prediction = await this.predictModel(modelUrl, frame);	
+            this.predictionState[modelUrl].topClass = prediction;	
+            this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
             --this._isPredicting;
         }
     }
@@ -427,6 +428,7 @@ class Scratch3VideoSensingBlocks {
             this.globalVideoState = VideoState.ON;
             this.globalVideoTransparency = 50;
             this.updateVideoDisplay();
+            this.updateToStageModel();	
             this.firstInstall = false;
             this.predictionState = {};
         }
@@ -439,103 +441,124 @@ class Scratch3VideoSensingBlocks {
                 default: 'Teachable Machine',
                 description: 'Label for the Teachable Machine extension category'
             }),
+            showStatusButton: true,
             blockIconURI: blockIconURI,
             menuIconURI: menuIconURI,
             blocks: [
-                {
-                    // @todo (copied from motion) this hat needs to be set itself to restart existing
-                    // threads like Scratch 2's behaviour.
-                    opcode: 'whenModelMatches',
-                    text: formatMessage({
-                        id: 'teachableMachine.whenModelMatches',
-                        default: 'when model [MODEL_URL] matches [CLASS_NAME]',
-                        description: 'Event that triggers when the provided model matches [CLASS_NAME]'
-                    }),
-                    blockType: BlockType.HAT,
-                    arguments: {
-                        MODEL_URL: {
-                            type: ArgumentType.STRING,
-                            defaultValue: 'ixy1rebO'
-                        },
-                        CLASS_NAME: {
-                            type: ArgumentType.STRING,
-                            defaultValue: 'Class 1'
-                        }
-                    },
-                },
-                {
-                    opcode: 'modelPrediction',
-                    text: formatMessage({
-                        id: 'teachableMachine.modelPrediction',
-                        default: 'model [MODEL_URL] prediction',
-                        description: 'Value of latest model prediction'
-                    }),
-                    blockType: BlockType.REPORTER,
-                    isTerminal: true,
-                    arguments: {
-                        MODEL_URL: {
-                            type: ArgumentType.STRING,
-                            defaultValue: 'ixy1rebO'
-                        },
-                    },
-                },
-                {
-                    opcode: 'videoToggle',
-                    text: formatMessage({
-                        id: 'videoSensing.videoToggle',
-                        default: 'turn video [VIDEO_STATE]',
-                        description: 'Controls display of the video preview layer'
-                    }),
-                    arguments: {
-                        VIDEO_STATE: {
-                            type: ArgumentType.NUMBER,
-                            menu: 'VIDEO_STATE',
-                            defaultValue: VideoState.ON
-                        }
-                    }
-                },
-                {
-                    opcode: 'setVideoTransparency',
-                    text: formatMessage({
-                        id: 'videoSensing.setVideoTransparency',
-                        default: 'set video transparency to [TRANSPARENCY]',
-                        description: 'Controls transparency of the video preview layer'
-                    }),
-                    arguments: {
-                        TRANSPARENCY: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 50
-                        }
-                    }
+                {	
+                    opcode: 'useModelBlock',	
+                    text: `use model [MODEL_URL]`,	
+                    arguments: {	
+                        MODEL_URL: {	
+                            type: ArgumentType.STRING,	
+                            defaultValue: this.teachableImageModel || 'https://teachablemachine.withgoogle.com/models/-2wS02uZo/'	
+                        }	
+                    }	
+                },	
+                '---',	
+                {	
+                    // @todo (copied from motion) this hat needs to be set itself to restart existing	
+                    // threads like Scratch 2's behaviour.	
+                    opcode: 'whenModelMatches',	
+                    text: 'when model detects [CLASS_NAME]',	
+                    blockType: BlockType.HAT,	
+                    arguments: {	
+                        CLASS_NAME: {	
+                            type: ArgumentType.STRING,	
+                            defaultValue: this.getCurrentClasses()[0],	
+                            menu: 'CLASS_NAME'	
+                        }	
+                    },	
+                },	
+                {	
+                    opcode: 'modelPrediction',	
+                    text: formatMessage({	
+                        id: 'teachableMachine.modelPrediction',	
+                        default: 'model prediction',	
+                        description: 'Value of latest model prediction'	
+                    }),	
+                    blockType: BlockType.REPORTER,	
+                    isTerminal: true,	
+                },	
+                '---',	
+                {	
+                    opcode: 'videoToggle',	
+                    text: formatMessage({	
+                        id: 'videoSensing.videoToggle',	
+                        default: 'turn video [VIDEO_STATE]',	
+                        description: 'Controls display of the video preview layer'	
+                    }),	
+                    arguments: {	
+                        VIDEO_STATE: {	
+                            type: ArgumentType.NUMBER,	
+                            menu: 'VIDEO_STATE',	
+                            defaultValue: VideoState.ON	
+                        }	
+                    }	
+                },	
+                {	
+                    opcode: 'setVideoTransparency',	
+                    text: formatMessage({	
+                        id: 'videoSensing.setVideoTransparency',	
+                        default: 'set video transparency to [TRANSPARENCY]',	
+                        description: 'Controls transparency of the video preview layer'	
+                    }),	
+                    arguments: {	
+                        TRANSPARENCY: {	
+                            type: ArgumentType.NUMBER,	
+                            defaultValue: 50	
+                        }	
+                    }	
                 }
             ],
-            menus: {
-                ATTRIBUTE: {
-                    acceptReporters: true,
-                    items: this._buildMenu(this.ATTRIBUTE_INFO)
-                },
-                SUBJECT: {
-                    acceptReporters: true,
-                    items: this._buildMenu(this.SUBJECT_INFO)
-                },
-                VIDEO_STATE: {
-                    acceptReporters: true,
-                    items: this._buildMenu(this.VIDEO_STATE_INFO)
-                }
-            }
+            menus: {	
+                CLASS_NAME: 'getCurrentClasses',	
+                ATTRIBUTE: {	
+                    acceptReporters: true,	
+                    items: this._buildMenu(this.ATTRIBUTE_INFO)	
+                },	
+                SUBJECT: {	
+                    acceptReporters: true,	
+                    items: this._buildMenu(this.SUBJECT_INFO)	
+                },	
+                VIDEO_STATE: {	
+                    acceptReporters: true,	
+                    items: this._buildMenu(this.VIDEO_STATE_INFO)	
+                }	
+            }	
         };
     }
 
-    /**
-     * PredictionState:
-     *
-     * {
-     *     [modelUrl]: {
-     *         topClass: 'Class1',
-     *     }
-     * }
-     */
-
+    updateToStageModel() {	
+        const stage = this.runtime.getTargetForStage();	
+        if (stage) {	
+            this.teachableImageModel = stage.teachableImageModel;	
+            if (this.teachableImageModel) {	
+                this.useModel(this.teachableImageModel);	
+            }	
+        }	
+    }	
+    updateStageModel(modelUrl) {	
+        const stage = this.runtime.getTargetForStage();	
+        this.teachableImageModel = modelUrl;	
+        if (stage) {	
+            stage.teachableImageModel = modelUrl;	
+        }	
+    }	
+    useModelBlock(args, util) {	
+        const modelArg = args.MODEL_URL;	
+        this.useModel(modelArg);	
+    }	
+    useModel(modelArg) {	
+        try {	
+            const modelUrl = this.modelArgumentToURL(modelArg);	
+            this.getPredictionStateOrStartPredicting(modelUrl);	
+            this.updateStageModel(modelUrl);	
+        } catch (e) {	
+            this.teachableImageModel = null;	
+        }	
+    }
+    
     modelArgumentToURL(modelArg) {
         return modelArg.startsWith('https://teachablemachine.withgoogle.com/models/') ?
             modelArg :
@@ -551,7 +574,17 @@ class Scratch3VideoSensingBlocks {
      *   reference
      */
     whenModelMatches(args, util) {
-        const modelUrl = this.modelArgumentToURL(args.MODEL_URL);
+        const modelUrl = this.teachableImageModel;	
+        const className = args.CLASS_NAME;	
+        const predictionState = this.getPredictionStateOrStartPredicting(modelUrl);	
+        if (!predictionState) {	
+            return false;	
+        }	
+        const currentMaxClass = predictionState.topClass;	
+        return (currentMaxClass === String(className));	
+    }	
+    modelMatches(args, util) {	
+        const modelUrl = this.teachableImageModel;
         const className = args.CLASS_NAME;
 
         const predictionState = this.getPredictionStateOrStartPredicting(modelUrl);
@@ -570,7 +603,7 @@ class Scratch3VideoSensingBlocks {
      * @returns {string} class name if video frame matched, empty string if model not loaded yet
      */
     modelPrediction(args, util) {
-        const modelUrl = this.modelArgumentToURL(args.MODEL_URL);
+        const modelUrl = this.teachableImageModel;
         const predictionState = this.getPredictionStateOrStartPredicting(modelUrl);
         if (!predictionState) {
             return '';
@@ -579,49 +612,67 @@ class Scratch3VideoSensingBlocks {
         return predictionState.topClass;
     }
 
-    getPredictionStateOrStartPredicting(modelUrl) {
-        const predictionState = this.predictionState[modelUrl];
-        if (!predictionState) {
-            this.startPredicting(modelUrl);
-            return null;
-        }
-
-        return predictionState;
-    }
-
-    async startPredicting(modelDataUrl) {
-        if (!this.predictionState[modelDataUrl]) {
-            this.predictionState[modelDataUrl] = {};
-            // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
-            const model = await this.initModel(modelDataUrl);
-            this.predictionState[modelDataUrl].model = model;
-        }
-    }
-
-    async initModel(modelUrl) {
-        const modelURL = modelUrl + "model.json";
-        const metadataURL = modelUrl + "metadata.json";
-        return await tmImage.load(modelURL, metadataURL);
-    }
-
-    async predictModel(modelUrl, frame) {
+getPredictionStateOrStartPredicting(modelUrl) {	
+        const hasPredictionState = this.predictionState.hasOwnProperty(modelUrl);	
+        if (!hasPredictionState) {	
+            this.startPredicting(modelUrl);	
+            return null;	
+        }	
+        return this.predictionState[modelUrl];	
+    }	
+    getCurrentClasses() {	
+        if (	
+            !this.teachableImageModel ||	
+            !this.predictionState ||	
+            !this.predictionState[this.teachableImageModel] ||	
+            !this.predictionState[this.teachableImageModel].hasOwnProperty('model')	
+        ) {	
+            return ["Class 1"];	
+        }	
+        return this.predictionState[this.teachableImageModel].model.getClassLabels();	
+    }	
+    async startPredicting(modelDataUrl) {	
+        if (!this.predictionState[modelDataUrl]) {	
+            try {	
+                this.predictionState[modelDataUrl] = {};	
+                // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image	
+                const model = await this.initModel(modelDataUrl);
+                this.predictionState[modelDataUrl].model = model;	
+                this.runtime.requestToolboxExtensionsUpdate();	
+            } catch (e) {	
+                this.predictionState[modelDataUrl] = {};	
+                console.log("Model initialization failure!", e);	
+            }	
+        }	
+    }	
+    async initModel(modelUrl) {	
+        const modelURL = modelUrl + "model.json";	
+        const metadataURL = modelUrl + "metadata.json";	
+        const customMobileNet = await tmImage.load(modelURL, metadataURL);
+        
+        return customMobileNet;
+    }	
+    async predictModel(modelUrl, frame) {	
+        const predictions = await this.getPredictionFromModel(modelUrl, frame);	
+        if (!predictions) {	
+            return;	
+        }	
+        let maxProbability = 0;	
+        let maxClassName = "";	
+        for (let i = 0; i < predictions.length; i++) {	
+            const probability = predictions[i].probability.toFixed(2);	
+            const className = predictions[i].className;	
+            if (probability > maxProbability) {	
+                maxClassName = className;	
+                maxProbability = probability;	
+            }	
+        }	
+        return maxClassName;	
+    }	
+    async getPredictionFromModel(modelUrl, frame) {	
         const model = this.predictionState[modelUrl].model;
-        const maxPredictions = model.getTotalClasses();
         const imageBitmap = await createImageBitmap(frame);
-        const prediction = await model.predict(imageBitmap);
-
-        let maxProbability = 0;
-        let maxClassName = "";
-        for (let i = 0; i < maxPredictions; i++) {
-            const probability = prediction[i].probability.toFixed(2);
-            const className = prediction[i].className;
-            const classPrediction = className + ": " + probability;
-            if (probability > maxProbability) {
-                maxClassName = className;
-                maxProbability = probability;
-            }
-        }
-        return maxClassName;
+        return await model.predict(imageBitmap);	
     }
 
     /**
