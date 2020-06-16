@@ -18,11 +18,8 @@ const formatMessage = require('format-message');
 const Video = require('../../io/video');
 const Timer = require('../../util/timer');
 const tf = require('@tensorflow/tfjs');
-//const mobilenetModule = require('@tensorflow-models/mobilenet');
 const knnClassifier = require('@tensorflow-models/knn-classifier');
-//var natural = require('natural');
 const use = require('@tensorflow-models/universal-sentence-encoder');
-//var w2v = require( './../lib' );
 
 
 /**
@@ -105,7 +102,6 @@ class Scratch3TextClassificationBlocks {
          //this.mobilenetModule = null;
          this.classifier = knnClassifier.create();
          this.embedding = null;
-         this.model = use.load();
          
 
 
@@ -493,13 +489,11 @@ class Scratch3TextClassificationBlocks {
             this.labelList.push(label);
         }
         for (let text_example of text_examples) {
-            const embeddedexample = this.getembeddedwords(text_example); //delayed by one example
-            this.classifier.addExample(embeddedexample, label);
-            console.log(this.classifier.getClassifierDataset());
+            const embeddedexample = this.getembeddedwords(text_example,label,"example"); //delayed by one example
             this.scratch_vm.modelData.textData[label].push(text_example);
             this.scratch_vm.modelData.classifierData[label].push(text_example);
-
         }
+
     }
     
     /**
@@ -537,10 +531,7 @@ class Scratch3TextClassificationBlocks {
         if (data[oldName]) {
             data[newName] = data[oldName];
             delete data[oldName];
-            this.classifier.clearAllClasses();
             this.classifier.setClassifierDataset(data);
-            console.log("keep label");
-            console.log(this.classifier.getClassifierDataset());
         }
 
 
@@ -828,11 +819,17 @@ class Scratch3TextClassificationBlocks {
      */
     async getModelPrediction(args) {
         const text = args.TEXT;
-        const predictionState = await this.startPredicting(text);
+        const predictionState = await this.get_embeddings(text,"none","predict");
         return predictionState;
     }
 
-    getPredictedClass(text,className) { //checks if a text example is a part of a particular class
+    /**
+     * Returns whether or not the text inputted is one of the examples inputted
+     * @param text - the text inputted
+     * @param className - the class whose examples are being checked
+     * @returns a boolean true if the text is an example or false if the text is not an example
+     */
+    getPredictedClass(text,className) { 
         if (!this.labelListEmpty) {   //whenever the classifier has some data
             try {
             for (let example of this.scratch_vm.modelData.textData[className]) {
@@ -850,31 +847,47 @@ class Scratch3TextClassificationBlocks {
 
     }
 
-      async startPredicting(text) {  //predicts the label for the inputted text
-        if (!this.labelListEmpty) {   //whenever the classifier has some data
-            const embeddedtext = await this.getembeddedwords(text);
-            return this.classifier.predictClass(embeddedtext).then( async result => {
-                this.predictedLabel = result.label; //delayed by one
-                console.log(result.confidences);
-                return this.predictedLabel;
-            });
+    /**
+     * Calls the method which embeds text as a 2d tensor
+     * @param text - the text inputted
+     * @param label - this is always "none" when embedding examples
+     * @param direction - is either "example" when an example is being inputted or "predict" when a word to be classified is inputted
+     */
+        async getembeddedwords(text,label,direction) {
+            if (!this.labelListEmpty) {
+                const embeddedtext = await this.get_embeddings(text,label,direction);
             }
         }
 
 
-        
-        getembeddedwords(text) { //calls the method which changes text into a 2d tensor and returns the result
-            const embeddedtext = this.get_embeddings(text);
-            return this.embedding;
-        }
-
-        get_embeddings(text) { //changes text into a 2d tensor
-           this.model.then(model => {
-            model.embed(text).then(embeddings => {
+    /**
+     * Embeds text and either adds examples to classifier or returns the predicted label
+     * @param text - the text inputted
+     * @param label - the label to add the example to
+     * @param direction - is either "example" when an example is being inputted or "predict" when a word to be classified is inputted
+     * @returns if the direction is "predict" returns the predicted label for the text inputted
+     */
+        async get_embeddings(text,label,direction) { //changes text into a 2d tensor
+            if (!this.labelListEmpty) {  
+           await use.load().then(async model => {
+            await model.embed(text).then(async embeddings => {
                 this.embedding = embeddings;
+                console.log(this.embedding);
             });
         });
+        if (direction === "example") {
+            this.classifier.addExample(this.embedding, label);
+        } else if (direction === "predict") {
+            return await this.classifier.predictClass(this.embedding).then( async result => {
+                this.predictedLabel = await result.label; //delayed by one
+                console.log(result.confidences);
+                return this.predictedLabel;
+            });
         }
+        } else {
+            return "No classes inputted";
+        }
+    }
 
       
 }

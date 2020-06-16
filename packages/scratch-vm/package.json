@@ -45,14 +45,12 @@
     "immutable": "3.8.1",
     "jszip": "^3.1.5",
     "minilog": "3.1.0",
-    "natural": "^2.1.5",
     "nets": "3.2.0",
     "scratch-parser": "5.0.0",
     "scratch-sb1-converter": "0.2.7",
     "scratch-translate-extension-languages": "0.0.20191118205314",
     "socket.io-client": "2.0.4",
     "text-encoding": "0.7.0",
-    "word2vec": "^1.1.4",
     "worker-loader": "^1.1.1"
   },
   "devDependencies": {
