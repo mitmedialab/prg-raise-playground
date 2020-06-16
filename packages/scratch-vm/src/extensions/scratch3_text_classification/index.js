@@ -17,7 +17,10 @@ const Cast = require('../../util/cast');
 const formatMessage = require('format-message');
 const Video = require('../../io/video');
 const Timer = require('../../util/timer');
-//const natural = require('natural');
+const tf = require('@tensorflow/tfjs');
+const knnClassifier = require('@tensorflow-models/knn-classifier');
+const use = require('@tensorflow-models/universal-sentence-encoder');
+
 
 /**
  * Icon svg to be displayed in the blocks category menu, encoded as a data URI.
@@ -96,6 +99,10 @@ class Scratch3TextClassificationBlocks {
          */
          this.scratch_vm = runtime;
          this.predictedLabel=null;
+         //this.mobilenetModule = null;
+         this.classifier = knnClassifier.create();
+         this.embedding = null;
+         
 
 
          
@@ -426,9 +433,11 @@ class Scratch3TextClassificationBlocks {
         //console.log("Load model from runtime");
         this.labelList = [];
         this.labelListEmpty = false;
+        let classifierData = {...this.scratch_vm.modelData.classifierData};
         
         for (let label in this.scratch_vm.modelData.textData) {
             if (this.scratch_vm.modelData.textData.hasOwnProperty(label)) {
+                classifierData[label] = tf.tensor(classifierData[label]);
                 this.labelList.push(label);
             }
         }
@@ -480,10 +489,11 @@ class Scratch3TextClassificationBlocks {
             this.labelList.push(label);
         }
         for (let text_example of text_examples) {
+            const embeddedexample = this.getembeddedwords(text_example,label,"example"); //delayed by one example
             this.scratch_vm.modelData.textData[label].push(text_example);
             this.scratch_vm.modelData.classifierData[label].push(text_example);
-
         }
+
     }
     
     /**
@@ -516,6 +526,15 @@ class Scratch3TextClassificationBlocks {
      */
     renameLabel (oldName, newName) {
         console.log("Rename a label");
+
+        let data = {...this.classifier.getClassifierDataset()};  //reset the classifier dataset with the renamed label
+        if (data[oldName]) {
+            data[newName] = data[oldName];
+            delete data[oldName];
+            this.classifier.setClassifierDataset(data);
+        }
+
+
         this.scratch_vm.modelData.classifierData[newName] = this.scratch_vm.modelData.classifierData[oldName];  //reset the runtime's model data with the new renamed label (to share with GUI)
         delete this.scratch_vm.modelData.classifierData[oldName];
 
@@ -533,9 +552,27 @@ class Scratch3TextClassificationBlocks {
      */
     deleteExample (label, exampleNum) {
         console.log("Delete example " + exampleNum + " with label " + label);
+        let data = {...this.classifier.getClassifierDataset()};  //reset the classifier dataset with the deleted example
+        let labelExamples = data[label].arraySync();
          // Remove label from the runtime's model data (to share with the GUI)
+         if (exampleNum === -1) {    //if this is true, delete all the loaded examples
+            let numLoadedExamples = this.scratch_vm.modelData.classifierData[label].length - this.scratch_vm.modelData.textData[label].length;   //imageData[label].length is ONLY the length of the NEW examples (not the saved and then loaded ones!)
+            this.scratch_vm.modelData.classifierData[label].splice(0, numLoadedExamples);
+            labelExamples.splice(0, numLoadedExamples);
+         } else {
          this.scratch_vm.modelData.textData[label].splice(exampleNum, 1);
          this.scratch_vm.modelData.classifierData[label].splice(exampleNum - this.scratch_vm.modelData.textData[label].length - 1, 1);
+         labelExamples.splice(exampleNum - this.scratch_vm.modelData.textData[label].length - 1, 1);
+         }
+
+         if (labelExamples.length > 0) {
+            data[label] = tf.tensor(labelExamples);
+            this.classifier.clearAllClasses();
+            this.classifier.setClassifierDataset(data);
+        } else {
+            this.classifier.clearClass(label);  //if there are no more examples for this label, don't consider it in the classifier anymore (but keep it in labelList and the runtime model data)
+        }
+
     }
 
     /**
@@ -546,6 +583,7 @@ class Scratch3TextClassificationBlocks {
         this.scratch_vm.emit("TOOLBOX_EXTENSIONS_NEED_UPDATE");
         this.labelList = [''];
         this.labelListEmpty = true;
+        this.classifier.clearAllClasses();
     }
 
     /**
@@ -566,6 +604,11 @@ class Scratch3TextClassificationBlocks {
     clearAllWithLabel (args) {
         console.log("Get rid of all examples with label " + args.LABEL);
         if (this.labelList.includes(args.LABEL)) {
+            if (this.classifier.getClassExampleCount()[args.LABEL] > 0) {
+                this.classifier.clearClass(args.LABEL);  //remove label from the classifier
+                console.log("number of classes");
+                console.log(this.classifier.getNumClasses());
+            }
             // Remove label from labelList
             this.labelList.splice(this.labelList.indexOf(args.LABEL), 1);
             // Remove label from the runtime's model data (to share with the GUI)
@@ -774,59 +817,79 @@ class Scratch3TextClassificationBlocks {
      * @param {BlockUtility} util - the block utility
      * @returns {string} class name if input text matched, empty string if there's a problem with the model
      */
-    getModelPrediction(args) {
+    async getModelPrediction(args) {
         const text = args.TEXT;
-        console.log(this.scratch_vm.modelData.textData);
-        return ' ';
-    const predictionState = this.getPredictionStateOrStartPredicting(text);
-        if (!predictionState) {
-            return '';
-        }
-
-        return predictionState.topClass;
+        const predictionState = await this.get_embeddings(text,"none","predict");
+        return predictionState;
     }
 
-    getPredictedClass(text,className) { //checks if a text example is a part of a particular class
+    /**
+     * Returns whether or not the text inputted is one of the examples inputted
+     * @param text - the text inputted
+     * @param className - the class whose examples are being checked
+     * @returns a boolean true if the text is an example or false if the text is not an example
+     */
+    getPredictedClass(text,className) { 
         if (!this.labelListEmpty) {   //whenever the classifier has some data
+            try {
             for (let example of this.scratch_vm.modelData.textData[className]) {
                 if (text.toLowerCase() === example.toLowerCase()) {
                     return true;
                 }
             }
-            
+        } catch(err) {
+            return false;
+        }
         } else { //if there is no data in the classifier
             return false;
         }
+    
 
     }
 
-/* method that holds the code to classify new text
-    getPredictionStateOrStartPredicting(text) {
-        console.log(this.scratch_vm.modelData.textData);
-        if (!this.labelListEmpty) {   //whenever the classifier has some data
-            for (let className of this.labelList) {
-                for (let example of this.scratch_vm.modelData.textData[className]) {
-                    //code to input examples and conduct text classification
+    /**
+     * Calls the method which embeds text as a 2d tensor
+     * @param text - the text inputted
+     * @param label - this is always "none" when embedding examples
+     * @param direction - is either "example" when an example is being inputted or "predict" when a word to be classified is inputted
+     */
+        async getembeddedwords(text,label,direction) {
+            if (!this.labelListEmpty) {
+                const embeddedtext = await this.get_embeddings(text,label,direction);
             }
+        }
 
-            }
 
-
-           
-            if (maxScore > 0.8) {  //if it recognized a word with high enough probability, set both commands to that word; otherwise reset newCommand
-                  console.log(command);
-                  this.predictedLabel = command;
-          } else {
-              this.predictedLabel = '';
+    /**
+     * Embeds text and either adds examples to classifier or returns the predicted label
+     * @param text - the text inputted
+     * @param label - the label to add the example to
+     * @param direction - is either "example" when an example is being inputted or "predict" when a word to be classified is inputted
+     * @returns if the direction is "predict" returns the predicted label for the text inputted
+     */
+        async get_embeddings(text,label,direction) { //changes text into a 2d tensor
+            if (!this.labelListEmpty) {  
+           await use.load().then(async model => {
+            await model.embed(text).then(async embeddings => {
+                this.embedding = embeddings;
+                console.log(this.embedding);
+            });
+        });
+        if (direction === "example") {
+            this.classifier.addExample(this.embedding, label);
+        } else if (direction === "predict") {
+            return await this.classifier.predictClass(this.embedding).then( async result => {
+                this.predictedLabel = await result.label; //delayed by one
+                console.log(result.confidences);
+                return this.predictedLabel;
+            });
         }
         } else {
-            this.predictedLabel = '';
+            return "No classes inputted";
         }
-        return this.predictedLabel;
     }
-    */
 
-
+      
 }
 
 module.exports = Scratch3TextClassificationBlocks;
