@@ -102,6 +102,7 @@ class Scratch3TextClassificationBlocks {
          //this.mobilenetModule = null;
          this.classifier = knnClassifier.create();
          this.embedding = null;
+         this.count = 0;
          
 
 
@@ -491,9 +492,12 @@ class Scratch3TextClassificationBlocks {
             this.labelList.push(label);
         }
         for (let text_example of text_examples) {
-            const embeddedexample = this.getembeddedwords(text_example,label,"example"); //delayed by one example
-            this.scratch_vm.modelData.textData[label].push(text_example);
-            this.scratch_vm.modelData.classifierData[label].push(text_example);
+            if (!this.scratch_vm.modelData.textData[label].includes(text_example)) {
+                const embeddedexample = this.getembeddedwords(text_example,label,"example"); //delayed by one example
+                this.scratch_vm.modelData.textData[label].push(text_example);
+                this.scratch_vm.modelData.classifierData[label].push(text_example);
+                this.count++;
+            }
         }
 
     }
@@ -878,7 +882,7 @@ class Scratch3TextClassificationBlocks {
         if (direction === "example") {
             this.classifier.addExample(this.embedding, label);
         } else if (direction === "predict") {
-            return await this.classifier.predictClass(this.embedding).then( async result => {
+            return await this.classifier.predictClass(this.embedding,Math.sqrt(this.count)).then( async result => {
                 this.predictedLabel = await result.label; //delayed by one
                 console.log(result.confidences);
                 return this.predictedLabel;
