@@ -309,7 +309,7 @@ class Scratch3TextClassificationBlocks {
                     opcode: 'ifTextMatchesClass',
                     text: formatMessage({
                         id: 'textClassification.ifTextMatchesClass',
-                        default: 'if [TEXT] matches [CLASS_NAME]',
+                        default: '[TEXT] matches [CLASS_NAME] ?',
                         description: 'Conditional that is true when the text matches the text classification model class [CLASS_NAME]'
                     }),
                     blockType: BlockType.BOOLEAN,
@@ -321,7 +321,7 @@ class Scratch3TextClassificationBlocks {
                         CLASS_NAME: {
                             type: ArgumentType.STRING,
                             menu: 'model_classes',
-                            defaultValue: ''
+                            defaultValue: this.getLabels()[0],
                         }
                     }
                 },
@@ -433,12 +433,13 @@ class Scratch3TextClassificationBlocks {
         //console.log("Load model from runtime");
         this.labelList = [];
         this.labelListEmpty = false;
-        let classifierData = {...this.scratch_vm.modelData.classifierData};
+        let textData = this.scratch_vm.modelData.textData;
         
         for (let label in this.scratch_vm.modelData.textData) {
             if (this.scratch_vm.modelData.textData.hasOwnProperty(label)) {
-                classifierData[label] = tf.tensor(classifierData[label]);
-                this.labelList.push(label);
+                let textExamples = textData[label];
+                this.newLabel(label);
+                this.newExamples(textExamples, label);
             }
         }
         
@@ -479,7 +480,8 @@ class Scratch3TextClassificationBlocks {
      * @param {string} label the name of the label
      */
     newExamples (text_examples, label) {   //add examples for a label
-        console.log("Add examples to label " + label + text_examples);
+        console.log("Add examples to label " + label);
+        console.log(text_examples);
         if (this.labelListEmpty) {
             // Edit label list accordingly
             this.labelList.splice(this.labelList.indexOf(''), 1);
@@ -513,7 +515,8 @@ class Scratch3TextClassificationBlocks {
         this.scratch_vm.modelData.textData[newLabelName] = [];
         this.scratch_vm.modelData.classifierData[newLabelName] = [];
         // update drowndown of class names
-        this.scratch_vm.emit("TOOLBOX_EXTENSIONS_NEED_UPDATE");
+        //this.scratch_vm.emit("TOOLBOX_EXTENSIONS_NEED_UPDATE");
+        this.scratch_vm.requestToolboxExtensionsUpdate();
     }
     
 
@@ -795,20 +798,17 @@ class Scratch3TextClassificationBlocks {
      * @returns {boolean} true if the model matches
      *   reference
      */
-    ifTextMatchesClass(args, util) {
+    async ifTextMatchesClass(args, util) {
         const text = args.TEXT;
         const className = args.CLASS_NAME;
-        const predictionState = this.getPredictedClass(text,className);
+        const predictionState = await this.get_embeddings(text,"none","predict");
         
         if (!predictionState) {
             return false;
         } else {
-            return true;
+            const currentMaxClass = predictionState;
+            return (currentMaxClass == String(className));
         }
-        /*
-        const currentMaxClass = predictionState.topClass;
-        return (currentMaxClass === String(className));
-        */
     }
 
     /**
