@@ -832,7 +832,7 @@ class Scratch3TextClassificationBlocks {
      * @param className - the class whose examples are being checked
      * @returns a boolean true if the text is an example or false if the text is not an example
      */
-    getPredictedClass(text,className) { 
+    getPredictedClass(text,className) {
         if (!this.labelListEmpty) {   //whenever the classifier has some data
             try {
             for (let example of this.scratch_vm.modelData.textData[className]) {
@@ -870,23 +870,24 @@ class Scratch3TextClassificationBlocks {
      * @param direction - is either "example" when an example is being inputted or "predict" when a word to be classified is inputted
      * @returns if the direction is "predict" returns the predicted label for the text inputted
      */
-        async get_embeddings(text,label,direction) { //changes text into a 2d tensor
-            if (!this.labelListEmpty) {  
-           await use.load().then(async model => {
-            await model.embed(text).then(async embeddings => {
-                this.embedding = embeddings;
-                console.log(this.embedding);
+    async get_embeddings(text,label,direction) { //changes text into a 2d tensor
+        if (!this.labelListEmpty) {  
+            await use.load().then(async model => {
+                await model.embed(text).then(async embeddings => {
+                    this.embedding = embeddings;
+                    console.log(this.embedding);
+                });
             });
-        });
-        if (direction === "example") {
-            this.classifier.addExample(this.embedding, label);
-        } else if (direction === "predict") {
-            return await this.classifier.predictClass(this.embedding,Math.sqrt(this.count)).then( async result => {
-                this.predictedLabel = await result.label; //delayed by one
-                console.log(result.confidences);
-                return this.predictedLabel;
-            });
-        }
+            if (direction === "example") {
+                console.log("Adding example " + this.count + ": " + text + " " + label);
+                this.classifier.addExample(this.embedding, label);
+            } else if (direction === "predict") {
+                return await this.classifier.predictClass(this.embedding,Math.sqrt(this.count)).then( async result => {
+                    this.predictedLabel = await result.label; //delayed by one
+                    console.log(result.confidences);
+                    return this.predictedLabel;
+                });
+            }
         } else {
             return "No classes inputted";
         }
