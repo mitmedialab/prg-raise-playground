@@ -22,7 +22,7 @@ import defineDynamicBlock from '../lib/define-dynamic-block';
 import {connect} from 'react-redux';
 import {updateToolbox} from '../reducers/toolbox';
 import {activateColorPicker} from '../reducers/color-picker';
-import {closeExtensionLibrary, openSoundRecorder, openConnectionModal} from '../reducers/modals';
+import {closeExtensionLibrary, openSoundRecorder, openConnectionModal, openTextModelModal} from '../reducers/modals';
 import {activateCustomProcedures, deactivateCustomProcedures} from '../reducers/custom-procedures';
 import {setConnectionModalExtensionId} from '../reducers/connection-modal';
 
@@ -107,10 +107,14 @@ class Blocks extends React.Component {
         const procButtonCallback = () => {
             this.ScratchBlocks.Procedures.createProcedureDefCallback_(this.workspace);
         };
+        const textModelEditButtonCallback = () => {
+            this.props.onOpenTextModelModal();
+        };
 
         toolboxWorkspace.registerButtonCallback('MAKE_A_VARIABLE', varListButtonCallback(''));
         toolboxWorkspace.registerButtonCallback('MAKE_A_LIST', varListButtonCallback('list'));
         toolboxWorkspace.registerButtonCallback('MAKE_A_PROCEDURE', procButtonCallback);
+        toolboxWorkspace.registerButtonCallback('EDIT_TEXT_MODEL', textModelEditButtonCallback);
 
         // Store the xml of the toolbox that is actually rendered.
         // This is used in componentDidUpdate instead of prevProps, because
@@ -527,6 +531,7 @@ class Blocks extends React.Component {
             onActivateCustomProcedures,
             onRequestCloseExtensionLibrary,
             onRequestCloseCustomProcedures,
+            onOpenTextModelModal,
             toolboxXML,
             ...props
         } = this.props;
@@ -583,6 +588,7 @@ Blocks.propTypes = {
     onActivateColorPicker: PropTypes.func,
     onActivateCustomProcedures: PropTypes.func,
     onOpenConnectionModal: PropTypes.func,
+    onOpenTextModelModal: PropTypes.func,
     onOpenSoundRecorder: PropTypes.func,
     onRequestCloseCustomProcedures: PropTypes.func,
     onRequestCloseExtensionLibrary: PropTypes.func,
@@ -666,6 +672,9 @@ const mapDispatchToProps = dispatch => ({
     onOpenConnectionModal: id => {
         dispatch(setConnectionModalExtensionId(id));
         dispatch(openConnectionModal());
+    },
+    onOpenTextModelModal: () => {
+        dispatch(openTextModelModal());
     },
     onOpenSoundRecorder: () => {
         dispatch(activateTab(SOUNDS_TAB_INDEX));
