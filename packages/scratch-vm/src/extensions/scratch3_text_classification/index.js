@@ -725,7 +725,6 @@ class Scratch3TextClassificationBlocks {
         path += `?locale=${locale}`;
         path += `&gender=${gender}`;
         path += `&text=${encodeURIComponent(words.substring(0, 128))}`;
-
         // Perform HTTP request to get audio file
         return new Promise(resolve => {
             nets({
@@ -733,12 +732,12 @@ class Scratch3TextClassificationBlocks {
                 timeout: SERVER_TIMEOUT
             }, (err, res, body) => {
                 if (err) {
-                    log.warn(err);
+                    console.warn(err);
                     return resolve();
                 }
 
                 if (res.statusCode !== 200) {
-                    log.warn(res.statusCode);
+                    console.warn(res.statusCode);
                     return resolve();
                 }
 
