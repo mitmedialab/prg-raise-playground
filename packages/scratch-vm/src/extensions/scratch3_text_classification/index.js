@@ -146,6 +146,16 @@ class Scratch3TextClassificationBlocks {
             console.log("Calling bound function");
             this.editModel.bind(this, modelInfo);
         });
+        this.scratch_vm.on('SAVE_TEXT_MODEL', modelInfo => {
+            console.log(modelInfo);
+            console.log("Calling bound function");
+            this.editModel.bind(this, modelInfo);
+        });
+        this.scratch_vm.on('LOAD_TEXT_MODEL', textModelInfo => {
+            console.log(textModelInfo);
+            console.log("Calling bound function");
+            this.editModel.bind(this, modelInfo);
+        });
         
         this.labelList = [];
         this.labelListEmpty = true;
@@ -307,6 +317,17 @@ class Scratch3TextClassificationBlocks {
                     text: 'Edit Model'
                 },
                 {
+                    func: 'SAVE_TEXT_MODEL',
+                    blockType: BlockType.BUTTON,
+                    text: 'Save Model'
+                },
+                {
+                    func: 'LOAD_TEXT_MODEL',
+                    blockType: BlockType.BUTTON,
+                    text: 'Load Model'
+                },
+                
+                {
                     opcode: 'ifTextMatchesClass',
                     text: formatMessage({
                         id: 'textClassification.ifTextMatchesClass',
@@ -435,7 +456,7 @@ class Scratch3TextClassificationBlocks {
         this.labelList = [];
         this.labelListEmpty = false;
         let textData = this.scratch_vm.modelData.textData;
-        
+
         for (let label in this.scratch_vm.modelData.textData) {
             if (this.scratch_vm.modelData.textData.hasOwnProperty(label)) {
                 let textExamples = textData[label];

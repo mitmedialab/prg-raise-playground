@@ -21,11 +21,13 @@ class TextModelModal extends React.Component {
             'handleDeleteLoadedExamples',
             'handleClearAll',
             'handleCancel',
-            'handleHelp'
+            'handleHelp',
+            'saveTextModel'
         ]);
         this.state = {
             textData: props.vm.runtime.modelData.textData,  //when the modal opens, get the model data and the next label number from the vm runtime
             nextLabelNumber: props.vm.runtime.modelData.nextLabelNumber,
+            //classifiedData: props.vm.runtime.this.classifier.getClassifierDataset(),
             activeLabel: ""   //used by the label and example editors to keep track of the label currently being viewed/edited
         };
     }
@@ -95,6 +97,16 @@ class TextModelModal extends React.Component {
         console.log("Text Model Modal: Help requested");
         //window.open(link, '_blank');
     }
+    saveTextModel () {
+        console.log("Text Model Modal: save text model");
+        
+        let newModelName = "Text Model Name";
+        this.props.vm.runtime.emit('NEW_LABEL', newModelName);
+
+        this.setState({
+            activeLabel: newModelName
+        });
+    }
     render () {
         return (
             <TextModelModalComponent
@@ -115,6 +127,7 @@ class TextModelModal extends React.Component {
                 classifierData={this.props.vm.runtime.modelData.classifierData}
                 nextLabelNumber={this.state.nextLabelNumber}
                 activeLabel={this.state.activeLabel}
+                saveTextModel={this.saveTextModel}
             />
         );
     }
