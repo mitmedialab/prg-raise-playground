@@ -458,7 +458,7 @@ class Scratch3VideoSensingBlocks {
                 arguments: {
                     MODEL_URL: {
                         type: ArgumentType.STRING,
-                        defaultValue: this.teachableImageModel || 'https://teachablemachine.withgoogle.com/models/fZsf3AXlg/'
+                        defaultValue: this.teachableImageModel || 'Paste URL Here!'
                     }
                 }
             },
