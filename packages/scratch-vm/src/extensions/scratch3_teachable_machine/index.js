@@ -238,7 +238,13 @@ class Scratch3VideoSensingBlocks {
         const offset = time - this._lastUpdate;
 
         // TOOD: Self-throttle interval if slow to run predictions
-        if (offset > Scratch3VideoSensingBlocks.INTERVAL && this._isPredicting === 0) {
+        const isAudioModel = this.isAudio();
+        if (isAudioModel) {
+            this.predictAllBlocks(null);
+            this._lastUpdate = time;
+            this._isPredicting = 0;
+        }
+        else if (offset > Scratch3VideoSensingBlocks.INTERVAL && this._isPredicting === 0) {
             const frame = this.runtime.ioDevices.video.getFrame({
                 format: Video.FORMAT_IMAGE_DATA,
                 dimensions: Scratch3VideoSensingBlocks.DIMENSIONS
@@ -269,6 +275,7 @@ class Scratch3VideoSensingBlocks {
 
 
     async predictAllBlocks(frame) {
+        console.log("Predicting");
         for (let modelUrl in this.predictionState) {
             if (!this.predictionState[modelUrl].model) {
                 continue;
@@ -665,12 +672,19 @@ class Scratch3VideoSensingBlocks {
         ) {
             return ["Class 1"];
         }
+        console.log("Cyrrent state:");
 
+        console.log(this.predictionState);
         if (this.predictionState[this.teachableImageModel].modelType === ModelType.AUDIO) {
             return this.predictionState[this.teachableImageModel].model.wordLabels();
         }
 
         return this.predictionState[this.teachableImageModel].model.getClassLabels();
+    }
+
+    isAudio() {
+        return this.predictionState && this.predictionState[this.teachableImageModel] &&
+            this.predictionState[this.teachableImageModel].modelType === ModelType.AUDIO;
     }
 
     async startPredicting(modelDataUrl) {
@@ -700,6 +714,7 @@ class Scratch3VideoSensingBlocks {
             await recognizer.ensureModelLoaded();
             await recognizer.listen(result => {
                 this.latestAudioResults = result;
+                console.log("New Result:");
                 console.log(result);
             }, {
                 includeSpectrogram: true, // in case listen should return result.spectrogram
@@ -719,6 +734,7 @@ class Scratch3VideoSensingBlocks {
     }
 
     async predictModel(modelUrl, frame) {
+        console.log("Predicting model");
         const predictions = await this.getPredictionFromModel(modelUrl, frame);
         if (!predictions) {
             return;
@@ -738,6 +754,9 @@ class Scratch3VideoSensingBlocks {
 
     async getPredictionFromModel(modelUrl, frame) {
         const {model, modelType} = this.predictionState[modelUrl];
+        console.log(this.predictionState[modelUrl]);
+        console.log("Labels:")
+        console.log(model.wordLabels());
         switch (modelType) {
             case ModelType.IMAGE:
                 const imageBitmap = await createImageBitmap(frame);
