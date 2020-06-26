@@ -22,7 +22,6 @@ class TextModelModal extends React.Component {
             'handleClearAll',
             'handleCancel',
             'handleHelp',
-            'saveTextModel'
         ]);
         this.state = {
             textData: props.vm.runtime.modelData.textData,  //when the modal opens, get the model data and the next label number from the vm runtime
@@ -97,16 +96,6 @@ class TextModelModal extends React.Component {
         console.log("Text Model Modal: Help requested");
         //window.open(link, '_blank');
     }
-    saveTextModel () {
-        console.log("Text Model Modal: save text model");
-        
-        let newModelName = "Text Model Name";
-        this.props.vm.runtime.emit('NEW_LABEL', newModelName);
-
-        this.setState({
-            activeLabel: newModelName
-        });
-    }
     render () {
         return (
             <TextModelModalComponent
@@ -127,7 +116,6 @@ class TextModelModal extends React.Component {
                 classifierData={this.props.vm.runtime.modelData.classifierData}
                 nextLabelNumber={this.state.nextLabelNumber}
                 activeLabel={this.state.activeLabel}
-                saveTextModel={this.saveTextModel}
             />
         );
     }

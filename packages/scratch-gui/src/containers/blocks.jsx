@@ -22,7 +22,7 @@ import defineDynamicBlock from '../lib/define-dynamic-block';
 import {connect} from 'react-redux';
 import {updateToolbox} from '../reducers/toolbox';
 import {activateColorPicker} from '../reducers/color-picker';
-import {closeExtensionLibrary, openSoundRecorder, openConnectionModal, openTextModelModal} from '../reducers/modals';
+import {closeExtensionLibrary, openSoundRecorder, openConnectionModal, openTextModelModal,openClassifierModelModal} from '../reducers/modals';
 import {activateCustomProcedures, deactivateCustomProcedures} from '../reducers/custom-procedures';
 import {setConnectionModalExtensionId} from '../reducers/connection-modal';
 
@@ -110,11 +110,17 @@ class Blocks extends React.Component {
         const textModelEditButtonCallback = () => {
             this.props.onOpenTextModelModal();
         };
+        const classifierModelEditButtonCallback = () => {
+            this.props.onOpenClassifierModelModal();
+        }
 
         toolboxWorkspace.registerButtonCallback('MAKE_A_VARIABLE', varListButtonCallback(''));
         toolboxWorkspace.registerButtonCallback('MAKE_A_LIST', varListButtonCallback('list'));
         toolboxWorkspace.registerButtonCallback('MAKE_A_PROCEDURE', procButtonCallback);
         toolboxWorkspace.registerButtonCallback('EDIT_TEXT_MODEL', textModelEditButtonCallback);
+        toolboxWorkspace.registerButtonCallback('SAVE_TEXT_MODEL', classifierModelEditButtonCallback);
+        toolboxWorkspace.registerButtonCallback('LOAD_TEXT_MODEL', classifierModelEditButtonCallback);
+
 
         // Store the xml of the toolbox that is actually rendered.
         // This is used in componentDidUpdate instead of prevProps, because
@@ -532,6 +538,7 @@ class Blocks extends React.Component {
             onRequestCloseExtensionLibrary,
             onRequestCloseCustomProcedures,
             onOpenTextModelModal,
+            onOpenClassifierModelModal,
             toolboxXML,
             ...props
         } = this.props;
@@ -589,6 +596,7 @@ Blocks.propTypes = {
     onActivateCustomProcedures: PropTypes.func,
     onOpenConnectionModal: PropTypes.func,
     onOpenTextModelModal: PropTypes.func,
+    onOpenClassifierModelModal: PropTypes.func,
     onOpenSoundRecorder: PropTypes.func,
     onRequestCloseCustomProcedures: PropTypes.func,
     onRequestCloseExtensionLibrary: PropTypes.func,
@@ -675,6 +683,9 @@ const mapDispatchToProps = dispatch => ({
     },
     onOpenTextModelModal: () => {
         dispatch(openTextModelModal());
+    },
+    onOpenClassifierModelModal: () => {
+        dispatch(openClassifierModelModal());
     },
     onOpenSoundRecorder: () => {
         dispatch(activateTab(SOUNDS_TAB_INDEX));

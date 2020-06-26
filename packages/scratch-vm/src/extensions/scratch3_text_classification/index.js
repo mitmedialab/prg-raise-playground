@@ -165,7 +165,7 @@ class Scratch3TextClassificationBlocks {
             this.clearLocal();
             this.loadModelFromRuntime();
         });
-        // Listen for model editing events emitted by the modal
+        // Listen for model editing events emitted by the text modal
         this.scratch_vm.on('NEW_EXAMPLES', (examples, label) => {
             this.newExamples(examples, label);
         });
@@ -186,6 +186,15 @@ class Scratch3TextClassificationBlocks {
                 this.clearAll(); 
             }
         });
+
+        //Listen for model editing events emitted by the classifier modal
+        this.scratch_vm.on('EXPORT_CLASSIFIER', (name) => {
+            this.exportClassifier(name);
+        });
+        this.scratch_vm.on('LOAD_CLASSIFIER', (name) => {
+            this.loadClassifier(name);
+        });
+
         
         this._recognizedSpeech = "";
 
@@ -543,6 +552,14 @@ class Scratch3TextClassificationBlocks {
         //this.scratch_vm.emit("TOOLBOX_EXTENSIONS_NEED_UPDATE");
         this.scratch_vm.requestToolboxExtensionsUpdate();
     }
+
+    newClassifier (newLabelName) {   //add the name of a new label
+        //add classifier data to classifier data in dictionary
+        //add examples to new dictionary too
+
+        //clear labels and examples
+        //reset classifier
+    }
     
 
 
@@ -595,7 +612,6 @@ class Scratch3TextClassificationBlocks {
 
          if (labelExamples.length > 0) {
             data[label] = tf.tensor(labelExamples);
-            this.classifier.clearAllClasses();
             this.classifier.setClassifierDataset(data);
         } else {
             this.classifier.clearClass(label);  //if there are no more examples for this label, don't consider it in the classifier anymore (but keep it in labelList and the runtime model data)
@@ -903,15 +919,40 @@ class Scratch3TextClassificationBlocks {
             this.classifier.addExample(this.embedding, label);
         } else if (direction === "predict") {
             return await this.classifier.predictClass(this.embedding,Math.sqrt(this.count)).then( async result => {
-                this.predictedLabel = await result.label; //delayed by one
+                this.predictedLabel = await result.label;
                 console.log(result.confidences);
                 return this.predictedLabel;
             });
         }
         } else {
             return "No classes inputted";
+            
         }
     }
+
+      exportClassifier(name) { //exports classifier as JSON file
+        let dataset = this.classifier.getClassifierDataset();
+        console.log("worked");
+        var datasetObj = {};
+        Object.keys(dataset).forEach((key) => {
+          let data = dataset[key].dataSync();
+          datasetObj[key] = Array.from(data); //converts to an array string
+        });
+        let jsonStr = JSON.stringify(datasetObj);
+        console.log(jsonStr);
+        //can be change to other source
+        localStorage.setItem(name, jsonStr); //try to save to downloads instead
+      }
+
+      loadClassifier(name) { //loads classifier to project
+       let dataset = localStorage.getItem(name); //change to another source
+       let tensorObj = JSON.parse(dataset);
+       //covert back to tensor
+       Object.keys(tensorObj).forEach((key) => {
+         tensorObj[key] = tf.tensor(tensorObj[key], [tensorObj[key].length / 512, 512]);
+       })
+       this.classifier.setClassifierDataset(tensorObj);
+     }
 
       
 }
