@@ -118,8 +118,7 @@ class Blocks extends React.Component {
         toolboxWorkspace.registerButtonCallback('MAKE_A_LIST', varListButtonCallback('list'));
         toolboxWorkspace.registerButtonCallback('MAKE_A_PROCEDURE', procButtonCallback);
         toolboxWorkspace.registerButtonCallback('EDIT_TEXT_MODEL', textModelEditButtonCallback);
-        toolboxWorkspace.registerButtonCallback('SAVE_TEXT_MODEL', classifierModelEditButtonCallback);
-        toolboxWorkspace.registerButtonCallback('LOAD_TEXT_MODEL', classifierModelEditButtonCallback);
+        toolboxWorkspace.registerButtonCallback('EDIT_TEXT_CLASSIFIER', classifierModelEditButtonCallback);
 
 
         // Store the xml of the toolbox that is actually rendered.

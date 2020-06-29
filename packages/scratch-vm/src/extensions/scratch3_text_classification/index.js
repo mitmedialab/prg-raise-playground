@@ -146,13 +146,8 @@ class Scratch3TextClassificationBlocks {
             console.log("Calling bound function");
             this.editModel.bind(this, modelInfo);
         });
-        this.scratch_vm.on('SAVE_TEXT_MODEL', modelInfo => {
+        this.scratch_vm.on('EDIT_TEXT_CLASSIFIER', modelInfo => {
             console.log(modelInfo);
-            console.log("Calling bound function");
-            this.editModel.bind(this, modelInfo);
-        });
-        this.scratch_vm.on('LOAD_TEXT_MODEL', textModelInfo => {
-            console.log(textModelInfo);
             console.log("Calling bound function");
             this.editModel.bind(this, modelInfo);
         });
@@ -188,11 +183,12 @@ class Scratch3TextClassificationBlocks {
         });
 
         //Listen for model editing events emitted by the classifier modal
-        this.scratch_vm.on('EXPORT_CLASSIFIER', (name) => {
-            this.exportClassifier(name);
+        this.scratch_vm.on('EXPORT_CLASSIFIER', () => {
+            this.exportClassifier();
         });
-        this.scratch_vm.on('LOAD_CLASSIFIER', (name) => {
-            this.loadClassifier(name);
+        this.scratch_vm.on('LOAD_CLASSIFIER', (fileData) => {
+            console.log("load");
+            this.loadClassifier();
         });
 
         
@@ -326,14 +322,9 @@ class Scratch3TextClassificationBlocks {
                     text: 'Edit Model'
                 },
                 {
-                    func: 'SAVE_TEXT_MODEL',
+                    func: 'EDIT_TEXT_CLASSIFIER',
                     blockType: BlockType.BUTTON,
-                    text: 'Save Model'
-                },
-                {
-                    func: 'LOAD_TEXT_MODEL',
-                    blockType: BlockType.BUTTON,
-                    text: 'Load Model'
+                    text: 'Edit Text Classifier'
                 },
                 
                 {
@@ -551,14 +542,6 @@ class Scratch3TextClassificationBlocks {
         // update drowndown of class names
         //this.scratch_vm.emit("TOOLBOX_EXTENSIONS_NEED_UPDATE");
         this.scratch_vm.requestToolboxExtensionsUpdate();
-    }
-
-    newClassifier (newLabelName) {   //add the name of a new label
-        //add classifier data to classifier data in dictionary
-        //add examples to new dictionary too
-
-        //clear labels and examples
-        //reset classifier
     }
     
 
@@ -930,23 +913,28 @@ class Scratch3TextClassificationBlocks {
         }
     }
 
-      exportClassifier(name) { //exports classifier as JSON file
+      exportClassifier() { //exports classifier as JSON file
         let dataset = this.classifier.getClassifierDataset();
-        console.log("worked");
         var datasetObj = {};
         Object.keys(dataset).forEach((key) => {
           let data = dataset[key].dataSync();
           datasetObj[key] = Array.from(data); //converts to an array string
         });
         let jsonStr = JSON.stringify(datasetObj);
-        console.log(jsonStr);
-        //can be change to other source
-        localStorage.setItem(name, jsonStr); //try to save to downloads instead
+        //exports json file
+        var data = "text/json;charset=utf-8," + encodeURIComponent(jsonStr);
+        var a = document.createElement('a');
+        a.setAttribute("href", "data:" + data);
+        a.setAttribute("download", "classifier-info.json");
+        a.click();
       }
 
-      loadClassifier(name) { //loads classifier to project
+      loadClassifier(data) { //loads classifier to project
+        //var classifiedData = document.getElementById("imported-classifier");
        let dataset = localStorage.getItem(name); //change to another source
+       let dataset = fileData;
        let tensorObj = JSON.parse(dataset);
+       console.log(tensorObj);
        //covert back to tensor
        Object.keys(tensorObj).forEach((key) => {
          tensorObj[key] = tf.tensor(tensorObj[key], [tensorObj[key].length / 512, 512]);
