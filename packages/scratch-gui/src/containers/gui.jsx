@@ -152,7 +152,6 @@ const mapStateToProps = state => {
         tipsLibraryVisible: state.scratchGui.modals.tipsLibrary,
         textModelModalVisible: state.scratchGui.modals.textModelModal,
         vm: state.scratchGui.vm,
-        textModelModalVisible: state.scratchGui.modals.textModelModal,
     };
 };
 
