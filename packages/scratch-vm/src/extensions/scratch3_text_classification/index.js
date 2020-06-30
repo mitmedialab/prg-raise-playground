@@ -931,6 +931,8 @@ class Scratch3TextClassificationBlocks {
 
       loadClassifier(data) { //loads classifier to project
         //var classifiedData = document.getElementById("imported-classifier");
+
+        /*
        let dataset = localStorage.getItem(name); //change to another source
        let dataset = fileData;
        let tensorObj = JSON.parse(dataset);
@@ -940,6 +942,7 @@ class Scratch3TextClassificationBlocks {
          tensorObj[key] = tf.tensor(tensorObj[key], [tensorObj[key].length / 512, 512]);
        })
        this.classifier.setClassifierDataset(tensorObj);
+       */
      }
 
       
