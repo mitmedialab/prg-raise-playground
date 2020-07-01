@@ -103,6 +103,7 @@ class Scratch3TextClassificationBlocks {
          this.classifier = knnClassifier.create();
          this.embedding = null;
          this.count = 0;
+         this.classifiedData = null;
          
 
 
@@ -186,7 +187,7 @@ class Scratch3TextClassificationBlocks {
         this.scratch_vm.on('EXPORT_CLASSIFIER', () => {
             this.exportClassifier();
         });
-        this.scratch_vm.on('LOAD_CLASSIFIER', (fileData) => {
+        this.scratch_vm.on('LOAD_CLASSIFIER', () => {
             console.log("load");
             this.loadClassifier();
         });
@@ -464,7 +465,7 @@ class Scratch3TextClassificationBlocks {
                 this.newExamples(textExamples, label);
             }
         }
-        
+
         if (this.labelList.length == 0) {
             this.labelList.push('');    //if the label list is empty, fill it with an empty string
             this.labelListEmpty = true;
@@ -620,6 +621,7 @@ class Scratch3TextClassificationBlocks {
         console.log("Clear all data");
         this.clearLocal();
         // Clear runtime's model data
+        
         this.scratch_vm.modelData = {textData: {}, classifierData: {}, nextLabelNumber: 1};
         
     }
@@ -912,15 +914,12 @@ class Scratch3TextClassificationBlocks {
             
         }
     }
-
+   /**
+     * Exports the labels and examples in the form of a json document with the default name of "classifier-info.json"
+     */
       exportClassifier() { //exports classifier as JSON file
-        let dataset = this.classifier.getClassifierDataset();
-        var datasetObj = {};
-        Object.keys(dataset).forEach((key) => {
-          let data = dataset[key].dataSync();
-          datasetObj[key] = Array.from(data); //converts to an array string
-        });
-        let jsonStr = JSON.stringify(datasetObj);
+        let dataset = this.scratch_vm.modelData.textData;
+        let jsonStr = JSON.stringify(dataset);
         //exports json file
         var data = "text/json;charset=utf-8," + encodeURIComponent(jsonStr);
         var a = document.createElement('a');
@@ -928,22 +927,39 @@ class Scratch3TextClassificationBlocks {
         a.setAttribute("download", "classifier-info.json");
         a.click();
       }
+   /**
+     * Loads the json document which contains labels and examples. Inputs the labels and examples into the classifier
+     */
+      async loadClassifier() { //loads classifier to project
+        var self = this
+        var dataset = document.getElementById("imported-classifier").files[0];
+        if (dataset !== undefined) {
+        fr = new FileReader();
+        fr.onload = receivedText;
+        fr.readAsText(dataset);
+        }
+  
+      function receivedText(e) { //parses through the json document and adds to the model textData and classifier
+        let lines = e.target.result;
+        try {
+        var newArr = JSON.parse(lines);
+        self.clearAll();
+        for (let label in newArr) {
+            if (newArr.hasOwnProperty(label)) {
+                let textExamples = newArr[label];
+                self.newLabel(label);
+                self.newExamples(textExamples, label);
+            }
+        }
+    } catch (err) {
+        console.log("Incorrect document form");
+    }
+        
+      }
+    }
+     
 
-      loadClassifier(data) { //loads classifier to project
-        //var classifiedData = document.getElementById("imported-classifier");
 
-        /*
-       let dataset = localStorage.getItem(name); //change to another source
-       let dataset = fileData;
-       let tensorObj = JSON.parse(dataset);
-       console.log(tensorObj);
-       //covert back to tensor
-       Object.keys(tensorObj).forEach((key) => {
-         tensorObj[key] = tf.tensor(tensorObj[key], [tensorObj[key].length / 512, 512]);
-       })
-       this.classifier.setClassifierDataset(tensorObj);
-       */
-     }
 
       
 }
