@@ -1,0 +1,264 @@
+@import "../../css/colors.css";
+@import "../../css/units.css";
+
+.modal-content {
+    width: 600px;
+}
+
+.header {
+    background-color: $pen-primary;
+}
+
+.body {
+    background: $ui-white;
+}
+
+.centered-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.label-tile-pane {
+    overflow-y: auto;
+    width: 100%;
+    height: 100%;
+}
+
+.label-tile {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    background-color: $ui-white;
+    border-radius: 0.25rem;
+    padding: 10px;
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+.label-tile-header {
+    display: flex;
+    align-items: center;
+    height: 2rem;
+    margin-left: 0.25rem;
+}
+
+.label-tile-footer {
+    display: flex;
+    align-items: center;
+    height: 2rem;
+    margin-top: 0.5rem;
+}
+
+.label-tile-name {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    font-size: 0.875rem;
+    margin-right: 1rem;
+}
+
+.label-tile button {
+    margin:0.25rem;
+    
+    padding: 0.3rem 0.5rem;
+    
+    border: none;
+    border-radius: 0.25rem;
+    
+    font-weight: 600;
+    font-size: 0.85rem;
+    line-height:1rem;
+    
+    background: $motion-primary;
+    border: $motion-primary;
+    color: white;
+    cursor: pointer;
+}
+
+.vertical-layout {
+    align-items: flex-start;
+    align-self: flex-start;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+}
+
+.example-box {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    height: calc(100% - 2rem);
+    width: calc(100% - 1rem);
+    margin-left:1.5rem;
+}
+
+.example-viewer-text {
+    margin: 0.5rem 0.25rem;
+    height: 1.5rem;
+    justify-content: flex-start;
+}
+
+.add-example-row {
+    position: relative;
+    margin:auto;
+    
+    border-width: 1px;
+    border-style: solid;
+    border-color: hsla(0, 0%, 0%, 0.15);
+    border-radius: 0.25rem;
+}
+
+.add-example-row input {
+    font-size: 0.85rem;
+    background-color: none;
+    
+    border-width: 0px;
+    border-color: hsla(0, 0%, 0%, 0.15);
+    border-radius: 0.25rem;
+}
+.add-example-row button {
+    background-color: hsla(0, 0%, 0%, 0.35);
+    margin:0;
+}
+
+.example-viewer-image-container {
+    display: flex;
+    overflow-y: auto;
+    flex-wrap: wrap;
+    height: calc(100% - 1.5rem);
+    margin-left: 1rem;
+}
+
+.loaded-examples-box {
+    height: 50%;
+    width: 80%;
+    margin: 0.7rem;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background-color: $ui-white;
+    border-radius: 0.25rem;
+}
+
+.example-text {
+    height: 70%;
+    max-width:200px;
+    margin: 0.2rem 0.8rem;
+    position: relative;
+    background-color: $motion-light-transparent;
+    
+    display: flex;
+    align-items: center;
+    
+    border-radius: 0.5rem;
+}
+
+
+.canvas-area {
+    height: calc(100% - 1.5rem);
+    margin: 0.25rem;
+    display: flex;
+    justify-content: center;
+}
+
+.canvas {
+    height: 100%;
+    position: relative;
+    display: block;
+    padding: 0.6rem 0.35rem;
+}
+
+.removable {
+    padding-right: 1.25rem;
+}
+
+.loading-camera-message {
+    position: absolute;
+    display: flex;
+    align-self: center;
+}
+
+.delete-button {
+    position: absolute;
+    top: 0.25rem;
+    right: 0.25rem;
+    z-index: auto;
+}
+
+.input-field {
+    height: 1.3rem;
+    padding: 0 0.75rem;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 0.875rem;
+    font-weight: bold;
+    color: hsla(225, 15%, 40%, 1);
+    border-width: 1px;
+    border-style: solid;
+    border-color: hsla(0, 0%, 0%, 0.15);
+    border-radius: 0.25rem;
+    outline: none;
+    cursor: text;
+    transition: 0.25s ease-out;
+    box-shadow: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.activity-area {
+    height: 300px;
+    background-color: $motion-light-transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: .5rem;
+}
+
+.button-row {
+    font-weight: bolder;
+    text-align: center;
+    display: flex;
+}
+
+.button-row button {
+    padding: 0.6rem 0.75rem;
+    border-radius: 0.5rem;
+    background: $motion-primary;
+    color: white;
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin: 0.25rem;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.bottom-area {
+    background-color: $ui-white;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 1rem;
+    padding-bottom: .75rem;
+    padding-left: .75rem;
+    padding-right: .75rem;
+}
+
+.bottom-area .bottom-area-item+.bottom-area-item {
+    margin-top: 1rem;
+}
+
+.instructions {
+    text-align: center;
+    height: 1.5rem;
+}
