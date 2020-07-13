@@ -205,7 +205,7 @@ class Scratch3TextClassificationBlocks {
             [SQUEAK_ID]: {
                 name: formatMessage({
                     id: 'text2speech.squeak',
-                    default: 'squeak',
+                    default: 'chillido',
                     description: 'Name for a funny voice with a high pitch.'
                 }),
                 gender: 'female',
@@ -232,7 +232,7 @@ class Scratch3TextClassificationBlocks {
             [GIANT_ID]: {
                 name: formatMessage({
                     id: 'text2speech.giant',
-                    default: 'giant',
+                    default: 'gigante',
                     description: 'Name for a funny voice with a low pitch.'
                 }),
                 gender: 'male',
@@ -320,28 +320,28 @@ class Scratch3TextClassificationBlocks {
                 {
                     func: 'EDIT_TEXT_MODEL',
                     blockType: BlockType.BUTTON,
-                    text: 'Edit Model'
+                    text: 'Cambie Modelo'
                 },
                 {
                     func: 'EDIT_TEXT_CLASSIFIER',
                     blockType: BlockType.BUTTON,
-                    text: 'Edit Text Classifier'
+                    text: 'Cambie Clasificador de Texto'
                 },
                 
                 {
                     opcode: 'ifTextMatchesClass',
                     text: formatMessage({
                         id: 'textClassification.ifTextMatchesClass',
-                        default: '[TEXT] matches [CLASS_NAME] ?',
-                        description: 'Conditional that is true when the text matches the text classification model class [CLASS_NAME]'
+                        default: '¿[TEXTO] es lo mismo que [EL_NOMBRE_DE_CLASE] ?',
+                        description: 'Conditional that is true when the text matches the text classification model class [EL_NOMBRE_DE_CLASE]'
                     }),
                     blockType: BlockType.BOOLEAN,
                     arguments: {
-                        TEXT: {
+                        TEXTO: {
                             type: ArgumentType.STRING,
-                            defaultValue: 'text'
+                            defaultValue: 'texto'
                         },
-                        CLASS_NAME: {
+                        EL_NOMBRE_DE_CLASE: {
                             type: ArgumentType.STRING,
                             menu: 'model_classes',
                             defaultValue: this.getLabels()[0],
@@ -352,14 +352,14 @@ class Scratch3TextClassificationBlocks {
                     opcode: 'getModelPrediction',
                     text: formatMessage({
                         id: 'textClassification.getModelPrediction',
-                        default: 'predict class for [TEXT]',
+                        default: 'predecir clase para [TEXT]',
                         description: 'Get the class name that the input text matches'
                     }),
                     blockType: BlockType.REPORTER,
                     arguments: {
                         TEXT: {
                             type: ArgumentType.STRING,
-                            defaultValue: 'text'
+                            defaultValue: 'texto'
                         }
                     },
                 },
@@ -368,14 +368,14 @@ class Scratch3TextClassificationBlocks {
                     opcode: 'speakText',
                     text: formatMessage({
                         id: 'textClassification.speakText',
-                        default: 'speak [TEXT]',
+                        default: 'Hablar [TEXT]',
                         description: 'Send text to the speech to text engine'
                     }),
                     blockType: BlockType.COMMAND,
                     arguments: {
                         TEXT: {
                             type: ArgumentType.STRING,
-                            defaultValue: 'Hello'
+                            defaultValue: 'Hola'
                         }
                     },
                 },
@@ -383,14 +383,14 @@ class Scratch3TextClassificationBlocks {
                     opcode: 'askSpeechRecognition',
                     text: formatMessage({
                         id: 'textClassification.askSpeechRecognition',
-                        default: 'ask [PROMPT] and wait',
+                        default: 'pregunta [PROMPT] y espera',
                         description: 'Get the class name that the input text matches'
                     }),
                     blockType: BlockType.COMMAND,
                     arguments: {
                         PROMPT: {
                             type: ArgumentType.STRING,
-                            defaultValue: 'How are you?'
+                            defaultValue: '¿Cómo está?'
                         }
                     },
                 },
@@ -398,7 +398,7 @@ class Scratch3TextClassificationBlocks {
                     opcode: 'getRecognizedSpeech',
                     text: formatMessage({
                         id: 'textClassification.getRecognizedSpeech',
-                        default: 'answer',
+                        default: 'la respuesta',
                         description: 'Return the results of the speech recognition'
                     }),
                     blockType: BlockType.REPORTER,
@@ -407,7 +407,7 @@ class Scratch3TextClassificationBlocks {
                     opcode: 'setVoice',
                     text: formatMessage({
                         id: 'text2speech.setVoiceBlock',
-                        default: 'set voice to [VOICE]',
+                        default: 'poner voz a [VOICE]',
                         description: 'Set the voice for speech synthesis.'
                     }),
                     blockType: BlockType.COMMAND,
@@ -424,7 +424,7 @@ class Scratch3TextClassificationBlocks {
                     opcode: 'onHeardSound',
                     text: formatMessage({
                         id: 'textClassification.onHeardSound',
-                        default: 'when heard sound > [THRESHOLD]',
+                        default: 'cuando sonido oído > [THRESHOLD]',
                         description: 'Event that triggers when a sound is heard above a threshold'
                     }),
                     blockType: BlockType.HAT,
@@ -824,8 +824,8 @@ class Scratch3TextClassificationBlocks {
      *   reference
      */
     async ifTextMatchesClass(args, util) {
-        const text = args.TEXT;
-        const className = args.CLASS_NAME;
+        const text = args.TEXTO;
+        const className = args.EL_NOMBRE_DE_CLASE;
         const predictionState = await this.get_embeddings(text,"none","predict");
         
         if (!predictionState) {

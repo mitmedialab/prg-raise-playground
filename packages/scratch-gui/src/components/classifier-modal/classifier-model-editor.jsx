@@ -15,11 +15,11 @@ const ClassifierModelEditor = props => (
     <Box className={styles.body}>
         <Box className={classNames(styles.bottomArea)}>
             <Box className={classNames(styles.bottomAreaItem, styles.buttonRow)}>
-                <button onClick={props.onExport}>Export Classifier</button>
-                <button onClick={props.onFileUploader}>Import Classifier
+                <button onClick={props.onExport}>Exporte El Clasificador</button>
+                <button onClick={props.onFileUploader}>Importe El Clasificador
                     <input type="file" id="imported-classifier" accept=".json"></input>
                 </button> 
-                <button onClick={props.onCancel}>Done</button>
+                <button onClick={props.onCancel}>Listo</button>
             </Box>
         </Box>
     </Box>

@@ -56,10 +56,10 @@ class EditLabelTile extends React.Component {
                     <Box className={styles.labelTileHeader}>
                         <Box className={styles.exampleViewerText}>
                             <input type="text" className={styles.inputField} defaultValue={this.props.labelName} onBlur={this.handleRenameLabel}/>
-                            {" ("+this.props.exampleCount+" examples)"}
+                            {" ("+this.props.exampleCount+" ejemplos)"}
                         </Box>
-                        <button onClick={this.handleDoneEditLabel}>Done Editing</button>
-                        <button onClick={this.handleDeleteLabel}>Delete Label</button>
+                        <button onClick={this.handleDoneEditLabel}>Cambio Hecho</button>
+                        <button onClick={this.handleDeleteLabel}>Elimine Etiqueta</button>
                     </Box>
                     <Box className={styles.exampleBox}>
                         {this.props.textData[this.props.labelName].map(example => (
@@ -77,7 +77,7 @@ class EditLabelTile extends React.Component {
                     <Box className={styles.labelTileFooter}>
                         <Box className={styles.addExampleRow}>
                             <input type="text" className={styles.inputField} onBlur={this.handleInputForNewExample}/>
-                            <button onClick={this.handleNewExample}>Add Example</button>
+                            <button onClick={this.handleNewExample}>Añada Ejemplo</button>
                         </Box>
                     </Box>
                 </Box>

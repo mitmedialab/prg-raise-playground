@@ -11,7 +11,7 @@ import styles from './classifier-model-modal.css';
 const ClassifierModelModalComponent = props => (
     <Modal
         className={styles.modalContent}
-        contentLabel="Edit Classifier Model"
+        contentLabel="Cambie Modelo de Clasificador"
         headerClassName={styles.header}
         headerImage={props.connectionSmallIconURL}
         id="classifierModelModal"

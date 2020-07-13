@@ -33,9 +33,9 @@ class LabelTile extends React.Component {
                     <Box className={styles.labelTileHeader}>
                         <Box className={styles.exampleViewerText}>
                             {this.props.labelName}
-                            {" ("+this.props.exampleCount+" examples)"}
+                            {" ("+this.props.exampleCount+" ejemplos)"}
                         </Box>
-                        <button onClick={this.handleEditLabel}>Edit Label</button>
+                        <button onClick={this.handleEditLabel}>Cambie Etiqueta</button>
                     </Box>
                     <Box className={styles.exampleBox}>
                         {this.props.textData[this.props.labelName].map(example => (

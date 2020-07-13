@@ -11,7 +11,7 @@ import styles from './model-modal.css';
 const TextModelModalComponent = props => (
     <Modal
         className={styles.modalContent}
-        contentLabel="Edit Text Model"
+        contentLabel="Cambie Modelo de Texto"
         headerClassName={styles.header}
         headerImage={props.connectionSmallIconURL}
         id="textModelModal"
