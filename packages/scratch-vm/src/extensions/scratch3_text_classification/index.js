@@ -18,10 +18,8 @@ const formatMessage = require('format-message');
 const Video = require('../../io/video');
 const Timer = require('../../util/timer');
 const tf = require('@tensorflow/tfjs');
-const tfconv = require('@tensorflow/tfjs-converter');
 const knnClassifier = require('@tensorflow-models/knn-classifier');
 const use = require('@tensorflow-models/universal-sentence-encoder');
-const translate = require('translate');
 
 
 
@@ -42,6 +40,18 @@ const menuIconURI = 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZ
 const blockIconURI = 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjxzdmcKICAgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIgogICB4bWxuczpjYz0iaHR0cDovL2NyZWF0aXZlY29tbW9ucy5vcmcvbnMjIgogICB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiCiAgIHhtbG5zOnN2Zz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiAgIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIKICAgeG1sbnM6c29kaXBvZGk9Imh0dHA6Ly9zb2RpcG9kaS5zb3VyY2Vmb3JnZS5uZXQvRFREL3NvZGlwb2RpLTAuZHRkIgogICB4bWxuczppbmtzY2FwZT0iaHR0cDovL3d3dy5pbmtzY2FwZS5vcmcvbmFtZXNwYWNlcy9pbmtzY2FwZSIKICAgaWQ9IkxheWVyXzFfMV8iCiAgIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgMCAwIDY0IDY0IgogICBoZWlnaHQ9IjU5LjExODY0OSIKICAgdmlld0JveD0iMCAwIDcuMzg5ODMwMSA3LjM4OTgzMTEiCiAgIHdpZHRoPSI1OS4xMTg2NDEiCiAgIHZlcnNpb249IjEuMSIKICAgaW5rc2NhcGU6dmVyc2lvbj0iMC40OC40IHI5OTM5IgogICBzb2RpcG9kaTpkb2NuYW1lPSJ0ZXh0LWNsYXNzaWZpY2F0aW9uLWJsb2Nrcy1zbWFsbC5zdmciPgogIDxtZXRhZGF0YQogICAgIGlkPSJtZXRhZGF0YTIxIj4KICAgIDxyZGY6UkRGPgogICAgICA8Y2M6V29yawogICAgICAgICByZGY6YWJvdXQ9IiI+CiAgICAgICAgPGRjOmZvcm1hdD5pbWFnZS9zdmcreG1sPC9kYzpmb3JtYXQ+CiAgICAgICAgPGRjOnR5cGUKICAgICAgICAgICByZGY6cmVzb3VyY2U9Imh0dHA6Ly9wdXJsLm9yZy9kYy9kY21pdHlwZS9TdGlsbEltYWdlIiAvPgogICAgICAgIDxkYzp0aXRsZT48L2RjOnRpdGxlPgogICAgICA8L2NjOldvcms+CiAgICA8L3JkZjpSREY+CiAgPC9tZXRhZGF0YT4KICA8ZGVmcwogICAgIGlkPSJkZWZzMTkiIC8+CiAgPHNvZGlwb2RpOm5hbWVkdmlldwogICAgIHBhZ2Vjb2xvcj0iI2ZmZmZmZiIKICAgICBib3JkZXJjb2xvcj0iIzY2NjY2NiIKICAgICBib3JkZXJvcGFjaXR5PSIxIgogICAgIG9iamVjdHRvbGVyYW5jZT0iMTAiCiAgICAgZ3JpZHRvbGVyYW5jZT0iMTAiCiAgICAgZ3VpZGV0b2xlcmFuY2U9IjEwIgogICAgIGlua3NjYXBlOnBhZ2VvcGFjaXR5PSIwIgogICAgIGlua3NjYXBlOnBhZ2VzaGFkb3c9IjIiCiAgICAgaW5rc2NhcGU6d2luZG93LXdpZHRoPSIxMDA3IgogICAgIGlua3NjYXBlOndpbmRvdy1oZWlnaHQ9Ijc4MyIKICAgICBpZD0ibmFtZWR2aWV3MTciCiAgICAgc2hvd2dyaWQ9ImZhbHNlIgogICAgIGZpdC1tYXJnaW4tdG9wPSIwIgogICAgIGZpdC1tYXJnaW4tbGVmdD0iMCIKICAgICBmaXQtbWFyZ2luLXJpZ2h0PSIwIgogICAgIGZpdC1tYXJnaW4tYm90dG9tPSIwIgogICAgIGlua3NjYXBlOnpvb209IjcuMzc1IgogICAgIGlua3NjYXBlOmN4PSI0MC4yNDQyNjQiCiAgICAgaW5rc2NhcGU6Y3k9IjI3LjM3NDM5NCIKICAgICBpbmtzY2FwZTp3aW5kb3cteD0iNjI3IgogICAgIGlua3NjYXBlOndpbmRvdy15PSIxNzgiCiAgICAgaW5rc2NhcGU6d2luZG93LW1heGltaXplZD0iMCIKICAgICBpbmtzY2FwZTpjdXJyZW50LWxheWVyPSJMYXllcl8xXzFfIiAvPgogIDxwYXRoCiAgICAgZD0ibSAxLjg0NzQ1OCw1LjE3Mjg4MSBjIDAsMC4xMzkxNzUgLTAuMDMyMDIsMC4yNjk3MjkgLTAuMDkxMTQsMC4zODU1MDMgLTAuMTQwNDA3LDAuMjgzMjc3IC0wLjQzMzUzNywwLjQ3NjY0NCAtMC43NzEwMDYsMC40NzY2NDQgLTAuNDc2NjQ0LDAgLTAuODYyMTQ3LC0wLjM4NTUwMyAtMC44NjIxNDcsLTAuODYyMTQ3IDAsLTAuNDc2NjQ0IDAuMzg1NTAzLC0wLjg2MjE0NyAwLjg2MjE0NywtMC44NjIxNDcgMC4xNzM2NjEsMCAwLjMzMzc3NCwwLjA1MDUgMC40NjgwMjMsMC4xMzc5NDMgMC4yMzc3MDYsMC4xNTM5NTUgMC4zOTQxMjQsMC40MTk5ODkgMC4zOTQxMjQsMC43MjQyMDQgeiIKICAgICBpZD0icGF0aDMiCiAgICAgaW5rc2NhcGU6Y29ubmVjdG9yLWN1cnZhdHVyZT0iMCIKICAgICBzdHlsZT0iZmlsbDojMDAwMDgwO2ZpbGwtb3BhY2l0eToxIiAvPgogIDxwYXRoCiAgICAgZD0ibSA2LjM2ODU2NTQsMi44OTI2OTIzIGMgMC40NzY2NDQsMCAwLjg2MjE0NywwLjM4NTUwMyAwLjg2MjE0NywwLjg2MjE0NyAwLDAuNDc2NjQ0IC0wLjM4NTUwMywwLjg2MjE0NyAtMC44NjIxNDcsMC44NjIxNDcgLTAuMjMxNTQ4LDAgLTAuNDQwOTI2LC0wLjA4OTkxIC0wLjU5NDg4MSwtMC4yNDAxNyAtMC4xNjUwNCwtMC4xNTUxODYgLTAuMjY3MjY2LC0wLjM3Njg4MSAtMC4yNjcyNjYsLTAuNjIxOTc3IDAsLTAuMDM5NDEgMC4wMDI1LC0wLjA3NzU5IDAuMDA4NiwtMC4xMTU3NzQgMC4wMjQ2MywtMC4xOTIxMzYgMC4xMTMzMTEsLTAuMzYzMzM0IDAuMjQzODY0LC0wLjQ5Mzg4NyAwLjE1NjQxOCwtMC4xNTY0MTggMC4zNzA3MjMsLTAuMjUyNDg2IDAuNjA5NjYxLC0wLjI1MjQ4NiB6IgogICAgIGlkPSJwYXRoNyIKICAgICBpbmtzY2FwZTpjb25uZWN0b3ItY3VydmF0dXJlPSIwIgogICAgIHN0eWxlPSJmaWxsOiMwMDAwODAiIC8+CiAgPHBhdGgKICAgICBzdHlsZT0iZmlsbDojMDAwMDgwO2ZpbGwtb3BhY2l0eToxO3N0cm9rZTpub25lIgogICAgIGQ9Ik0gMC41NTI1NTMxLDIuNjc2ODk0IEMgMC4xMzEzMjQ4LDIuMzk4MTc3MyAwLjA2ODk3NDMsMS43ODE2NjU3IDAuNDI0MDQ1MywxLjQwNjIyODcgMC43NzA1OTM4LDEuMDM5ODAzMSAxLjM2MzUxMzIsMS4wOTg3OTg2IDEuNjQ3ODI2NSwxLjUyNzk5NDkgMi4xMTMyNjE1LDIuMjMwNjEwNyAxLjI0ODY5MSwzLjEzNzUxMTMgMC41NTI1NTMxLDIuNjc2ODk0IHoiCiAgICAgaWQ9InBhdGgyOTg4IgogICAgIGlua3NjYXBlOmNvbm5lY3Rvci1jdXJ2YXR1cmU9IjAiIC8+CiAgPHBhdGgKICAgICBzdHlsZT0iZmlsbDojMDAwMDgwO2ZpbGwtb3BhY2l0eToxO3N0cm9rZTpub25lIgogICAgIGQ9Ik0gMy4xNzMyMzkxLDEuNjEzMTIxMiBDIDIuODgxMTA1MywxLjM2MzcyNDUgMi44MDI1OTA2LDEuMDM2NTc2MSAyLjk0OTM0NTksMC42ODAyMjI3MSAzLjE3NDc1MzEsMC4xMzI4ODU5MSAzLjg0Njc0NiwtMC4wMzc5NTMxMiA0LjI1Njk4NiwwLjM0Nzc4NDYxIDUuMDY2MTYyMSwxLjEwODYzMTcgNC4wMTcwNzEyLDIuMzMzNTA1NSAzLjE3MzIzOTEsMS42MTMxMjEyIHoiCiAgICAgaWQ9InBhdGgyOTkwIgogICAgIGlua3NjYXBlOmNvbm5lY3Rvci1jdXJ2YXR1cmU9IjAiIC8+CiAgPHBhdGgKICAgICBzdHlsZT0iZmlsbDojMDAwMDgwO2ZpbGwtb3BhY2l0eToxO3N0cm9rZTpub25lIgogICAgIGQ9Ik0gMy4yNDY4MzE5LDQuMDExMTU0MSBDIDIuNjk2MTcxMiwzLjY3NjQwODQgMi43NjExODAzLDIuODg1ODgwMyAzLjM2MjE1MjksMi42MDg4MjI0IDMuNzM0NDIyNywyLjQzNzE5OTkgNC4xNTc3MTY5LDIuNTY1NzM1NCA0LjM3ODQ1MjIsMi45MTc0MjY4IDQuNTk4NTIwOSwzLjI2ODA1NjMgNC41NzczMTEzLDMuNTU5OTAyMiA0LjMxMDg5NTYsMy44NDcwMTM4IDQuMDEzOTgzNSw0LjE2Njk5MDcgMy42MDY1NjksNC4yMjk4Mzc2IDMuMjQ2ODMxOSw0LjAxMTE1NDEgeiIKICAgICBpZD0icGF0aDI5OTIiCiAgICAgaW5rc2NhcGU6Y29ubmVjdG9yLWN1cnZhdHVyZT0iMCIgLz4KICA8cGF0aAogICAgIHN0eWxlPSJmaWxsOiMwMDAwODA7ZmlsbC1vcGFjaXR5OjE7c3Ryb2tlOm5vbmUiCiAgICAgZD0iTSAzLjE5Mjk2MTUsNy4wMTc1MjgxIEMgMi45MDUwMTk1LDYuNzczNDI4NCAyLjgyNzYzMTIsNi40NTMyMjgyIDIuOTcyMjgwOSw2LjEwNDQ0MzQgMy4xOTQ0NTM3LDUuNTY4NzMxMiAzLjg1NjgwNDIsNS40MDE1MjA2IDQuMjYxMTU3Nyw1Ljc3OTA2NTggNS4wNTg3MjMyLDYuNTIzNzUzNSA0LjAyNDY4NTQsNy43MjI2MTI3IDMuMTkyOTYxNSw3LjAxNzUyODEgeiIKICAgICBpZD0icGF0aDI5OTQiCiAgICAgaW5rc2NhcGU6Y29ubmVjdG9yLWN1cnZhdHVyZT0iMCIgLz4KICA8cGF0aAogICAgIHN0eWxlPSJmaWxsOiNmNmRiNDA7ZmlsbC1vcGFjaXR5OjE7c3Ryb2tlOm5vbmUiCiAgICAgZD0iIgogICAgIGlkPSJwYXRoMzAwMSIKICAgICBpbmtzY2FwZTpjb25uZWN0b3ItY3VydmF0dXJlPSIwIiAvPgogIDxwYXRoCiAgICAgZD0iTSAxLjQxMTk1MSw0LjI4NjEwMSBDIDEuMjgyNjI5LDQuMjIzNjYxIDEuMTM4MjgxLDQuMTg3NTcxIDAuOTg1MzExLDQuMTg3NTcxIDAuNDQyMDM2LDQuMTg3NTcxIDAsNC42Mjk2MDYgMCw1LjE3Mjg4MiBjIDAsMC41NDMyNzYgMC40NDIwMzYsMC45ODUzMTEgMC45ODUzMTEsMC45ODUzMTEgMC4zNDA5MTgsMCAwLjY0MTgwNywtMC4xNzQxNTQgMC44MTg3OTMsLTAuNDM4MDk0IGwgMC45MzA3NSwwLjQ2NTkyOSBjIC0wLjAxNjAxLDAuMDcwMzMgLTAuMDI1MjUsMC4xNDMzNjIgLTAuMDI1MjUsMC4yMTg0OTIgMCwwLjU0MzI3NiAwLjQ0MjAzNSwwLjk4NTMxMSAwLjk4NTMxMSwwLjk4NTMxMSAwLjU0MzI3NSwwIDAuOTg1MzEsLTAuNDQyMDM1IDAuOTg1MzEsLTAuOTg1MzExIDAsLTAuMjA0MjA1IC0wLjA2MjQ0LC0wLjM5NDAwMSAtMC4xNjkzNSwtMC41NTE1MjcgTCA1LjgxODc1Miw0LjQ4NTUwNCBjIDAuMTY0MDU0LDAuMTIxNjg2IDAuMzY2Mjg5LDAuMTk0NzIyIDAuNTg1NzY3LDAuMTk0NzIyIDAuNTQzMjc2LDAgMC45ODUzMTEsLTAuNDQyMDM1IDAuOTg1MzExLC0wLjk4NTMxIDAsLTAuNTQzMjc2IC0wLjQ0MjAzNSwtMC45ODUzMTEgLTAuOTg1MzExLC0wLjk4NTMxMSAtMC4yMjczNiwwIC0wLjQzNjI0NiwwLjA3ODA5IC0wLjYwMzI1NiwwLjIwNzkwMSBMIDQuNDcyMzI1LDEuNTg4NTY4IEMgNC42MDIxNCwxLjQyMTU1OCA0LjY4MDIyNSwxLjIxMjY3MiA0LjY4MDIyNSwwLjk4NTMxMTAxIDQuNjgwMjI1LDAuNDQyMDM2MDEgNC4yMzgxOSwwIDMuNjk0OTE1LDAgMy4xNTE2MzksMCAyLjcwOTYwNCwwLjQ0MjAzNjAxIDIuNzA5NjA0LDAuOTg1MzExMDEgYyAwLDAuMDc0ODggMC4wMDkxLDAuMTQ3NjczOTkgMC4wMjUxMiwwLjIxNzg3Njk5IEwgMS44NjEyNDYsMS41MjE0NDMgQyAxLjY5NzU2OCwxLjIwMzU1NyAxLjM2Njc1LDAuOTg1MzEwMDEgMC45ODUzMTEsMC45ODUzMTAwMSAwLjQ0MjAzNiwwLjk4NTMxMDAxIDAsMS40MjczNDUgMCwxLjk3MDYyMSBjIDAsMC41NDMyNzYgMC40NDIwMzYsMC45ODUzMTEgMC45ODUzMTEsMC45ODUzMTEgMC4xNDAxNjEsMCAwLjI3MzMwMSwtMC4wMjk4MSAwLjM5NDEyNSwtMC4wODI4OSBsIDAuNDUzMzY2LDAuNzYzIHogbSAtMC40MjY2NCwxLjYyNTc2MyBjIC0wLjQwNzU0OSwwIC0wLjczODk4MywtMC4zMzE0MzQgLTAuNzM4OTgzLC0wLjczODk4MyAwLC0wLjQwNzU0OSAwLjMzMTQzNCwtMC43Mzg5ODMgMC43Mzg5ODMsLTAuNzM4OTgzIDAuNDA3NTQ5LDAgMC43Mzg5ODMsMC4zMzE0MzQgMC43Mzg5ODMsMC43Mzg5ODMgMCwwLjQwNzU0OSAtMC4zMzE0MzQsMC43Mzg5ODMgLTAuNzM4OTgzLDAuNzM4OTgzIHogTSAxLjkxMzg0Myw1LjQ5OTM4OCBDIDEuOTQ5OTMzLDUuMzk3MDM5IDEuOTcwNjIzLDUuMjg3NDIzIDEuOTcwNjIzLDUuMTcyODgxIDEuOTcwNjIzLDQuODcwNzYgMS44MzM2NjUsNC42MDAyOTIgMS42MTg5OSw0LjQxOTQ4OCBMIDEuOTczMjA5LDMuODcyMzk0IDMuMDQxMTYzLDUuNjY5NDc3IEMgMi45NTEyNTMsNS43NDk1MzcgMi44NzYsNS44NDUzNTUgMi44MjAyMDcsNS45NTMxMjQgeiBNIDMuNjk0OTE2LDEuOTcwNjIxIGMgMC4yMjczNiwwIDAuNDM2MjQ2LC0wLjA3ODA5IDAuNjAzMjU2LC0wLjIwNzkwMSBMIDUuNjI3MjMzLDMuMDkxNzgxIEMgNS41NDc1NDMsMy4xOTQyNTQgNS40ODc5MzUsMy4zMTI2MTQgNS40NTM1NzIsMy40NDE0NDQgTCA0LjY3OTg1NywzLjMzNTAzIGMgLTEuMjNlLTQsLTAuMDAzMiAzLjY5ZS00LC0wLjAwNjQgMy42OWUtNCwtMC4wMDk2IDAsLTAuNTQzMjc1IC0wLjQ0MjAzNSwtMC45ODUzMTEgLTAuOTg1MzEsLTAuOTg1MzExIC0wLjM0MDkxOCwwIC0wLjY0MTkzLDAuMTc0MTU0IC0wLjgxODc5MywwLjQzODA5NCBMIDIuNzI5MTg4LDIuNzA0ODAzIDMuMjY4Mzk5LDEuODcyMDkyIGMgMC4xMjkxOTksMC4wNjI0NCAwLjI3MzU0NywwLjA5ODUzIDAuNDI2NTE3LDAuMDk4NTMgeiBNIDMuODE4MDgsNS40Mjc3MDcgViA0LjMwMjExMiBDIDQuMjE4MzYyLDQuMjUxODYyIDQuNTQ0MDA3LDMuOTYwOTQ5IDQuNjQ1OTg3LDMuNTc4ODk0IGwgMC43NzM3MTUsMC4xMDY0MTQgYyAwLDAuMDAzMiAtNC45MmUtNCwwLjAwNjQgLTQuOTJlLTQsMC4wMDk2IDAsMC4yMzUyNDMgMC4wODMwMSwwLjQ1MTE0OSAwLjIyMTA3OSwwLjYyMDc0NiBMIDQuMzQ3MDY4LDUuNjY3ODY5IEMgNC4yMDIxMDQsNS41Mzk0MDkgNC4wMTk2OTksNS40NTMwNzIgMy44MTgwOCw1LjQyNzcgeiBNIDMuNjk0OTE2LDIuNTg2NDQgYyAwLjQwNzU0OSwwIDAuNzM4OTgzLDAuMzMxNDM0IDAuNzM4OTgzLDAuNzM4OTgzIDAsMC40MDc1NDkgLTAuMzMxNDM0LDAuNzM4OTgzIC0wLjczODk4MywwLjczODk4MyAtMC40MDc1NDksMCAtMC43Mzg5ODMsLTAuMzMxNDM0IC0wLjczODk4MywtMC43Mzg5ODMgMCwtMC40MDc1NDkgMC4zMzE0MzQsLTAuNzM4OTgzIDAuNzM4OTgzLC0wLjczODk4MyB6IE0gMi43NjYzODQsMi45OTg5MTYgYyAtMC4wMzYwOSwwLjEwMjM0OSAtMC4wNTY3OCwwLjIxMTk2NSAtMC4wNTY3OCwwLjMyNjUwNyAwLDAuNTAxNTIzIDAuMzc2ODgxLDAuOTE1ODQ3IDAuODYyMTQ3LDAuOTc2ODEzIFYgNS40Mjc4MyBDIDMuNDU0OTkyLDUuNDQyNDkgMy4zNDQ3Niw1LjQ3NzQ3IDMuMjQ0MzgxLDUuNTI5MzE3IEwgMi4xMjI2MDUsMy42NDE1ODUgMi41OTQ0NDYsMi45MTI5NDggeiBtIDAuOTI4NTMyLDQuMTQ0NTg2IGMgLTAuNDA3NTQ5LDAgLTAuNzM4OTgzLC0wLjMzMTQzNCAtMC43Mzg5ODMsLTAuNzM4OTgzIDAsLTAuNDA3NTQ5IDAuMzMxNDM0LC0wLjczODk4MyAwLjczODk4MywtMC43Mzg5ODMgMC40MDc1NDksMCAwLjczODk4MywwLjMzMTQzNCAwLjczODk4MywwLjczODk4MyAwLDAuNDA3NTQ5IC0wLjMzMTQzNCwwLjczODk4MyAtMC43Mzg5ODMsMC43Mzg5ODMgeiBNIDYuNDA0NTIsMi45NTU5MzIgYyAwLjQwNzU0OSwwIDAuNzM4OTgzLDAuMzMxNDM0IDAuNzM4OTgzLDAuNzM4OTgzIDAsMC40MDc1NDkgLTAuMzMxNDM0LDAuNzM4OTgzIC0wLjczODk4MywwLjczODk4MyAtMC40MDc1NDksMCAtMC43Mzg5ODMsLTAuMzMxNDM0IC0wLjczODk4MywtMC43Mzg5ODMgMCwtMC40MDc1NDkgMC4zMzE0MzQsLTAuNzM4OTgzIDAuNzM4OTgzLC0wLjczODk4MyB6IE0gMy42OTQ5MTYsMC4yNDYzMjcwMSBjIDAuNDA3NTQ5LDAgMC43Mzg5ODMsMC4zMzE0MzQgMC43Mzg5ODMsMC43Mzg5ODMgMCwwLjQwNzU0ODk5IC0wLjMzMTQzNCwwLjczODk4Mjk5IC0wLjczODk4MywwLjczODk4Mjk5IC0wLjQwNzU0OSwwIC0wLjczODk4MywtMC4zMzE0MzQgLTAuNzM4OTgzLC0wLjczODk4Mjk5IDAsLTAuNDA3NTQ5IDAuMzMxNDM0LC0wLjczODk4MyAwLjczODk4MywtMC43Mzg5ODMgeiBNIDIuODE5MDk4LDEuNDM0NDg5IGMgMC4wNjAyMywwLjExNjg4MiAwLjE0MjYyMywwLjIyMDIxNyAwLjI0MjI2MywwLjMwNDIxNCBMIDIuNTA3NjE2LDIuNTkzOTUzIDEuOTEzOTY3LDIuMjk3MTI4IGMgMC4wMzU5NiwtMC4xMDIzNDkgMC4wNTY2NSwtMC4yMTE5NjUgMC4wNTY2NSwtMC4zMjY1MDcgMCwtMC4wNzQ4OCAtMC4wMDkxLC0wLjE0NzY3MyAtMC4wMjUxMiwtMC4yMTc4NzcgeiBtIC0yLjU3Mjc3LDAuNTM2MTMyIGMgMCwtMC40MDc1NDkgMC4zMzE0MzQsLTAuNzM4OTgzIDAuNzM4OTgzLC0wLjczODk4MyAwLjQwNzU0OSwwIDAuNzM4OTgzLDAuMzMxNDM0IDAuNzM4OTgzLDAuNzM4OTgzIDAsMC40MDc1NDkgLTAuMzMxNDM0LDAuNzM4OTgzIC0wLjczODk4MywwLjczODk4MyAtMC40MDc1NDksMCAtMC43Mzg5ODMsLTAuMzMxNDM0IC0wLjczODk4MywtMC43Mzg5ODMgeiBNIDEuNTkwNjYyLDIuNzQ2NDMgQyAxLjY3MzE4MiwyLjY4MTg5IDEuNzQ1NjAyLDIuNjA1MDM4IDEuODA0MTA0LDIuNTE3ODM4IEwgMi4zNzI3NTIsMi44MDIxIDEuOTgyMTk5LDMuNDA1MjMzIHoiCiAgICAgaWQ9InBhdGgxNSIKICAgICBpbmtzY2FwZTpjb25uZWN0b3ItY3VydmF0dXJlPSIwIgogICAgIHN0eWxlPSJmaWxsOiMwMDAwMDAiIC8+Cjwvc3ZnPgo=';
 
 /**
+ * The url of the translate server.
+ * @type {string}
+ */
+const serverURL = 'https://translate-service.scratch.mit.edu/';
+
+/**
+ * How long to wait in ms before timing out requests to translate server.
+ * @type {int}
+ */
+const serverTimeoutMs = 10000; // 10 seconds (chosen arbitrarily).
+
+/**
  * The url of the synthesis server.
  * @type {string}
  */
@@ -58,6 +68,7 @@ const SERVER_TIMEOUT = 10000; // 10 seconds
  * @type {number}
  */
 const SPEECH_VOLUME = 250;
+
 
 /**
  * An id for one of the voices.
@@ -98,6 +109,29 @@ const FEMALE_GIANT_RATE = 0.79; // -4 semitones
  */
 class Scratch3TextClassificationBlocks {
     constructor (runtime) {
+
+        /**
+         * The result from the most recent translation.
+         * @type {string}
+         * @private
+         */
+        this._translateResult = '';
+
+        /**
+         * The language of the text most recently translated.
+         * @type {string}
+         * @private
+         */
+        this._lastLangTranslated = '';
+
+        /**
+         * The text most recently translated.
+         * @type {string}
+         * @private
+         */
+        this._lastTextTranslated = '';
+
+
         /**
          * The runtime instantiating this block package.
          * @type {Runtime}
@@ -109,8 +143,6 @@ class Scratch3TextClassificationBlocks {
          this.count = 0;
          this.classifiedData = null;
          
-         translate.engine = 'google';
-         translate.key = 'AIzaSyCP--4mzF1-ltkwg8gIXDaGJRuDfFwQ2gs';
          
          
 
@@ -901,8 +933,7 @@ class Scratch3TextClassificationBlocks {
      * @returns if the direction is "predict" returns the predicted label for the text inputted
      */
         async get_embeddings(text,label,direction) { //changes text into a 2d tensor
-
-            const newText = await translate(text, { from: 'es', to: 'en' }); //translates from Spanish to English
+            const newText = await this.getTranslate(text,"en"); //translates text from any language to english
             console.log(newText);
 
             if (!this.labelListEmpty) {  
@@ -925,8 +956,6 @@ class Scratch3TextClassificationBlocks {
             return "No classes inputted";
             
         }
-        console.log("classifier data");
-        console.log(this.classifier.getClassifierDataset());
     }
    /**
      * Exports the labels and examples in the form of a json document with the default name of "classifier-info.json"
@@ -971,6 +1000,52 @@ class Scratch3TextClassificationBlocks {
         
       }
     }
+
+    getTranslate (words,language) {
+        // Don't remake the request if we already have the value.
+        if (this._lastTextTranslated === words &&
+            this._lastLangTranslated === language) {
+            return this._translateResult;
+        }
+
+        const lang = language;
+
+        let urlBase = `${serverURL}translate?language=`;
+        urlBase += lang;
+        urlBase += '&text=';
+        urlBase += encodeURIComponent(words);
+
+        const tempThis = this;
+        const translatePromise = new Promise(resolve => {
+            nets({
+                url: urlBase,
+                timeout: serverTimeoutMs
+            }, (err, res, body) => {
+                if (err) {
+                    log.warn(`error fetching translate result! ${res}`);
+                    resolve('');
+                    return '';
+                }
+                const translated = JSON.parse(body).result;
+                tempThis._translateResult = translated;
+                // Cache what we just translated so we don't keep making the
+                // same call over and over.
+                tempThis._lastTextTranslated = words;
+                tempThis._lastLangTranslated = language;
+                resolve(translated);
+                return translated;
+            });
+
+        });
+        translatePromise.then(translatedText => translatedText);
+        return translatePromise;
+    }
+
+
+
+    
+
+      
      
 
 
