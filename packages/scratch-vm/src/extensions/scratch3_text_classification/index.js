@@ -18,8 +18,13 @@ const formatMessage = require('format-message');
 const Video = require('../../io/video');
 const Timer = require('../../util/timer');
 const tf = require('@tensorflow/tfjs');
+const tfconv = require('@tensorflow/tfjs-converter');
 const knnClassifier = require('@tensorflow-models/knn-classifier');
 const use = require('@tensorflow-models/universal-sentence-encoder');
+const translate = require('translate');
+
+
+
 
 
 /**
@@ -99,11 +104,14 @@ class Scratch3TextClassificationBlocks {
          */
          this.scratch_vm = runtime;
          this.predictedLabel=null;
-         //this.mobilenetModule = null;
          this.classifier = knnClassifier.create();
          this.embedding = null;
          this.count = 0;
          this.classifiedData = null;
+         
+         translate.engine = 'google';
+         translate.key = 'AIzaSyCP--4mzF1-ltkwg8gIXDaGJRuDfFwQ2gs';
+         
          
 
 
@@ -893,9 +901,13 @@ class Scratch3TextClassificationBlocks {
      * @returns if the direction is "predict" returns the predicted label for the text inputted
      */
         async get_embeddings(text,label,direction) { //changes text into a 2d tensor
+
+            const newText = await translate(text, { from: 'es', to: 'en' }); //translates from Spanish to English
+            console.log(newText);
+
             if (!this.labelListEmpty) {  
            await use.load().then(async model => {
-            await model.embed(text).then(async embeddings => {
+            await model.embed(newText).then(async embeddings => {
                 this.embedding = embeddings;
                 console.log(this.embedding);
             });
@@ -913,6 +925,8 @@ class Scratch3TextClassificationBlocks {
             return "No classes inputted";
             
         }
+        console.log("classifier data");
+        console.log(this.classifier.getClassifierDataset());
     }
    /**
      * Exports the labels and examples in the form of a json document with the default name of "classifier-info.json"

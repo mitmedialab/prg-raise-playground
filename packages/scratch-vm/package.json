@@ -32,6 +32,8 @@
     "@teachablemachine/image": "^0.8.4",
     "@tensorflow-models/knn-classifier": "^1.2.2",
     "@tensorflow-models/universal-sentence-encoder": "^1.2.2",
+    "translate":"1.1.2",
+    "watson-developer-cloud": "4.0.1",
     "@tensorflow/tfjs": "^1.5.1",
     "@vernier/godirect": "1.5.0",
     "arraybuffer-loader": "^1.0.6",
