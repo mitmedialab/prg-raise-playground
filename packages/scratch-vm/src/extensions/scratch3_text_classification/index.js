@@ -365,7 +365,7 @@ class Scratch3TextClassificationBlocks {
                 {
                     func: 'EDIT_TEXT_CLASSIFIER',
                     blockType: BlockType.BUTTON,
-                    text: 'Cambie Clasificador de Texto'
+                    text: 'Cargar / Guardar un Modelo'
                 },
                 
                 {
@@ -408,7 +408,7 @@ class Scratch3TextClassificationBlocks {
                     opcode: 'speakText',
                     text: formatMessage({
                         id: 'textClassification.speakText',
-                        default: 'Hablar [TEXT]',
+                        default: 'hablar [TEXT]',
                         description: 'Send text to the speech to text engine'
                     }),
                     blockType: BlockType.COMMAND,

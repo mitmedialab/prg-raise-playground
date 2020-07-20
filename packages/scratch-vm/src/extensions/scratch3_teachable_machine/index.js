@@ -82,7 +82,7 @@ class Scratch3VideoSensingBlocks {
         this.runtime = runtime;
         this.runtime.registerPeripheralExtension('teachableMachine', this);	
         this.runtime.connectPeripheral('teachableMachine', 0);	
-        this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
+        //this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
 
         /**
          * The motion detection algoritm used to power the motion amount and
@@ -437,7 +437,7 @@ class Scratch3VideoSensingBlocks {
         return {
             id: 'teachableMachine',
             name: formatMessage({
-                id: 'videoSensing.categoryName',
+                id: 'teachableMachine.categoryName',
                 default: 'Teachable Machine',
                 description: 'Label for the Teachable Machine extension category'
             }),
@@ -447,7 +447,7 @@ class Scratch3VideoSensingBlocks {
             blocks: [
                 {	
                     opcode: 'useModelBlock',	
-                    text: `use model [MODEL_URL]`,	
+                    text: `usar modelo [MODEL_URL]`,	
                     arguments: {	
                         MODEL_URL: {	
                             type: ArgumentType.STRING,	
@@ -460,7 +460,11 @@ class Scratch3VideoSensingBlocks {
                     // @todo (copied from motion) this hat needs to be set itself to restart existing	
                     // threads like Scratch 2's behaviour.	
                     opcode: 'whenModelMatches',	
-                    text: 'when model detects [CLASS_NAME]',	
+                    text: formatMessage({	
+                        id: 'teachableMachine.whenModelMatches',	
+                        default: 'cuando la clase de imagen es [CLASS_NAME]',	
+                        description: 'Hat block for classifying model matches'	
+                    }),
                     blockType: BlockType.HAT,	
                     arguments: {	
                         CLASS_NAME: {	
@@ -474,7 +478,7 @@ class Scratch3VideoSensingBlocks {
                     opcode: 'modelPrediction',	
                     text: formatMessage({	
                         id: 'teachableMachine.modelPrediction',	
-                        default: 'model prediction',	
+                        default: 'predicir clase de imagen',	
                         description: 'Value of latest model prediction'	
                     }),	
                     blockType: BlockType.REPORTER,	
@@ -525,7 +529,7 @@ class Scratch3VideoSensingBlocks {
                     acceptReporters: true,	
                     items: this._buildMenu(this.VIDEO_STATE_INFO)	
                 }	
-            }	
+            }
         };
     }
 
