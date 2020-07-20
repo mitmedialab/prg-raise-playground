@@ -21,11 +21,12 @@ class TextModelModal extends React.Component {
             'handleDeleteLoadedExamples',
             'handleClearAll',
             'handleCancel',
-            'handleHelp'
+            'handleHelp',
         ]);
         this.state = {
             textData: props.vm.runtime.modelData.textData,  //when the modal opens, get the model data and the next label number from the vm runtime
             nextLabelNumber: props.vm.runtime.modelData.nextLabelNumber,
+            //classifiedData: props.vm.runtime.this.classifier.getClassifierDataset(),
             activeLabel: ""   //used by the label and example editors to keep track of the label currently being viewed/edited
         };
     }

@@ -43,6 +43,19 @@ const blockIconURI = 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNv
 const SERVER_HOST = 'https://synthesis-service.scratch.mit.edu';
 
 /**
+ * The url of the translate server.
+ * @type {string}
+ */
+const serverURL = 'https://translate-service.scratch.mit.edu/';
+
+/**
+ * How long to wait in ms before timing out requests to translate server.
+ * @type {int}
+ */
+const serverTimeoutMs = 10000; // 10 seconds (chosen arbitrarily).
+
+
+/**
  * How long to wait in ms before timing out requests to synthesis server.
  * @type {int}
  */
@@ -93,6 +106,28 @@ const FEMALE_GIANT_RATE = 0.79; // -4 semitones
  */
 class Scratch3TextClassificationBlocks {
     constructor (runtime) {
+
+         /**
+         * The result from the most recent translation.
+         * @type {string}
+         * @private
+         */
+        this._translateResult = '';
+
+        /**
+         * The language of the text most recently translated.
+         * @type {string}
+         * @private
+         */
+        this._lastLangTranslated = '';
+
+        /**
+         * The text most recently translated.
+         * @type {string}
+         * @private
+         */
+        this._lastTextTranslated = '';
+
         /**
          * The runtime instantiating this block package.
          * @type {Runtime}
@@ -103,6 +138,7 @@ class Scratch3TextClassificationBlocks {
          this.classifier = knnClassifier.create();
          this.embedding = null;
          this.count = 0;
+         this.classifiedData = null;
          
 
 
@@ -146,6 +182,11 @@ class Scratch3TextClassificationBlocks {
             console.log("Calling bound function");
             this.editModel.bind(this, modelInfo);
         });
+        this.scratch_vm.on('EDIT_TEXT_CLASSIFIER', modelInfo => {
+            console.log(modelInfo);
+            console.log("Calling bound function");
+            this.editModel.bind(this, modelInfo);
+        });
         
         this.labelList = [];
         this.labelListEmpty = true;
@@ -155,7 +196,7 @@ class Scratch3TextClassificationBlocks {
             this.clearLocal();
             this.loadModelFromRuntime();
         });
-        // Listen for model editing events emitted by the modal
+        // Listen for model editing events emitted by the text modal
         this.scratch_vm.on('NEW_EXAMPLES', (examples, label) => {
             this.newExamples(examples, label);
         });
@@ -176,6 +217,16 @@ class Scratch3TextClassificationBlocks {
                 this.clearAll(); 
             }
         });
+
+        //Listen for model editing events emitted by the classifier modal
+        this.scratch_vm.on('EXPORT_CLASSIFIER', () => {
+            this.exportClassifier();
+        });
+        this.scratch_vm.on('LOAD_CLASSIFIER', () => {
+            console.log("load");
+            this.loadClassifier();
+        });
+
         
         this._recognizedSpeech = "";
 
@@ -307,6 +358,12 @@ class Scratch3TextClassificationBlocks {
                     text: 'Edit Model'
                 },
                 {
+                    func: 'EDIT_TEXT_CLASSIFIER',
+                    blockType: BlockType.BUTTON,
+                    text: 'Load / Save Model'
+                },
+                
+                {
                     opcode: 'ifTextMatchesClass',
                     text: formatMessage({
                         id: 'textClassification.ifTextMatchesClass',
@@ -435,7 +492,7 @@ class Scratch3TextClassificationBlocks {
         this.labelList = [];
         this.labelListEmpty = false;
         let textData = this.scratch_vm.modelData.textData;
-        
+
         for (let label in this.scratch_vm.modelData.textData) {
             if (this.scratch_vm.modelData.textData.hasOwnProperty(label)) {
                 let textExamples = textData[label];
@@ -443,7 +500,7 @@ class Scratch3TextClassificationBlocks {
                 this.newExamples(textExamples, label);
             }
         }
-        
+
         if (this.labelList.length == 0) {
             this.labelList.push('');    //if the label list is empty, fill it with an empty string
             this.labelListEmpty = true;
@@ -574,7 +631,6 @@ class Scratch3TextClassificationBlocks {
 
          if (labelExamples.length > 0) {
             data[label] = tf.tensor(labelExamples);
-            this.classifier.clearAllClasses();
             this.classifier.setClassifierDataset(data);
         } else {
             this.classifier.clearClass(label);  //if there are no more examples for this label, don't consider it in the classifier anymore (but keep it in labelList and the runtime model data)
@@ -600,6 +656,7 @@ class Scratch3TextClassificationBlocks {
         console.log("Clear all data");
         this.clearLocal();
         // Clear runtime's model data
+        
         this.scratch_vm.modelData = {textData: {}, classifierData: {}, nextLabelNumber: 1};
         
     }
@@ -832,7 +889,7 @@ class Scratch3TextClassificationBlocks {
      * @param className - the class whose examples are being checked
      * @returns a boolean true if the text is an example or false if the text is not an example
      */
-    getPredictedClass(text,className) {
+    getPredictedClass(text,className) { 
         if (!this.labelListEmpty) {   //whenever the classifier has some data
             try {
             for (let example of this.scratch_vm.modelData.textData[className]) {
@@ -870,28 +927,117 @@ class Scratch3TextClassificationBlocks {
      * @param direction - is either "example" when an example is being inputted or "predict" when a word to be classified is inputted
      * @returns if the direction is "predict" returns the predicted label for the text inputted
      */
-    async get_embeddings(text,label,direction) { //changes text into a 2d tensor
-        if (!this.labelListEmpty) {  
-            await use.load().then(async model => {
-                await model.embed(text).then(async embeddings => {
-                    this.embedding = embeddings;
-                    console.log(this.embedding);
-                });
+        async get_embeddings(text,label,direction) { //changes text into a 2d tensor
+            const newText = await this.getTranslate(text,"en"); //translates text from any language to english
+            console.log(newText);
+
+            if (!this.labelListEmpty) {  
+           await use.load().then(async model => {
+            await model.embed(newText).then(async embeddings => {
+                this.embedding = embeddings;
+                console.log(this.embedding);
             });
-            if (direction === "example") {
-                console.log("Adding example " + this.count + ": " + text + " " + label);
-                this.classifier.addExample(this.embedding, label);
-            } else if (direction === "predict") {
-                return await this.classifier.predictClass(this.embedding,Math.sqrt(this.count)).then( async result => {
-                    this.predictedLabel = await result.label; //delayed by one
-                    console.log(result.confidences);
-                    return this.predictedLabel;
-                });
-            }
+        });
+        if (direction === "example") {
+            this.classifier.addExample(this.embedding, label);
+        } else if (direction === "predict") {
+            return await this.classifier.predictClass(this.embedding,Math.sqrt(this.count)).then( async result => {
+                this.predictedLabel = await result.label;
+                console.log(result.confidences);
+                return this.predictedLabel;
+            });
+        }
         } else {
             return "No classes inputted";
+            
         }
     }
+   /**
+     * Exports the labels and examples in the form of a json document with the default name of "classifier-info.json"
+     */
+      exportClassifier() { //exports classifier as JSON file
+        let dataset = this.scratch_vm.modelData.textData;
+        let jsonStr = JSON.stringify(dataset);
+        //exports json file
+        var data = "text/json;charset=utf-8," + encodeURIComponent(jsonStr);
+        var a = document.createElement('a');
+        a.setAttribute("href", "data:" + data);
+        a.setAttribute("download", "classifier-info.json");
+        a.click();
+      }
+   /**
+     * Loads the json document which contains labels and examples. Inputs the labels and examples into the classifier
+     */
+      async loadClassifier() { //loads classifier to project
+        var self = this
+        var dataset = document.getElementById("imported-classifier").files[0];
+        if (dataset !== undefined) {
+        fr = new FileReader();
+        fr.onload = receivedText;
+        fr.readAsText(dataset);
+        }
+  
+      function receivedText(e) { //parses through the json document and adds to the model textData and classifier
+        let lines = e.target.result;
+        try {
+        var newArr = JSON.parse(lines);
+        self.clearAll();
+        for (let label in newArr) {
+            if (newArr.hasOwnProperty(label)) {
+                let textExamples = newArr[label];
+                self.newLabel(label);
+                self.newExamples(textExamples, label);
+            }
+        }
+    } catch (err) {
+        console.log("Incorrect document form");
+    }
+        
+      }
+    }
+
+    getTranslate (words,language) {
+        // Don't remake the request if we already have the value.
+        if (this._lastTextTranslated === words &&
+            this._lastLangTranslated === language) {
+            return this._translateResult;
+        }
+
+        const lang = language;
+
+        let urlBase = `${serverURL}translate?language=`;
+        urlBase += lang;
+        urlBase += '&text=';
+        urlBase += encodeURIComponent(words);
+
+        const tempThis = this;
+        const translatePromise = new Promise(resolve => {
+            nets({
+                url: urlBase,
+                timeout: serverTimeoutMs
+            }, (err, res, body) => {
+                if (err) {
+                    log.warn(`error fetching translate result! ${res}`);
+                    resolve('');
+                    return '';
+                }
+                const translated = JSON.parse(body).result;
+                tempThis._translateResult = translated;
+                // Cache what we just translated so we don't keep making the
+                // same call over and over.
+                tempThis._lastTextTranslated = words;
+                tempThis._lastLangTranslated = language;
+                resolve(translated);
+                return translated;
+            });
+
+        });
+        translatePromise.then(translatedText => translatedText);
+        return translatePromise;
+    }
+     
+
+
 
       
 }
