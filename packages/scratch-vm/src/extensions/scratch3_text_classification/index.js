@@ -325,7 +325,7 @@ class Scratch3TextClassificationBlocks {
                 {
                     func: 'EDIT_TEXT_CLASSIFIER',
                     blockType: BlockType.BUTTON,
-                    text: 'Edit Text Classifier'
+                    text: 'Load / Save Model'
                 },
                 
                 {
