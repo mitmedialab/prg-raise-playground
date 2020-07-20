@@ -102,7 +102,7 @@ export default [
         ),
         featured: true
     },
-    {
+    /*{
          name: (
             <FormattedMessage
                 defaultMessage="PRG Microbit Robot"
@@ -160,7 +160,7 @@ export default [
             />
         ),
         featured: true
-    },
+    },*/
     {
         name: (
             <FormattedMessage
