@@ -43,6 +43,19 @@ const blockIconURI = 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNv
 const SERVER_HOST = 'https://synthesis-service.scratch.mit.edu';
 
 /**
+ * The url of the translate server.
+ * @type {string}
+ */
+const serverURL = 'https://translate-service.scratch.mit.edu/';
+
+/**
+ * How long to wait in ms before timing out requests to translate server.
+ * @type {int}
+ */
+const serverTimeoutMs = 10000; // 10 seconds (chosen arbitrarily).
+
+
+/**
  * How long to wait in ms before timing out requests to synthesis server.
  * @type {int}
  */
@@ -93,6 +106,28 @@ const FEMALE_GIANT_RATE = 0.79; // -4 semitones
  */
 class Scratch3TextClassificationBlocks {
     constructor (runtime) {
+
+         /**
+         * The result from the most recent translation.
+         * @type {string}
+         * @private
+         */
+        this._translateResult = '';
+
+        /**
+         * The language of the text most recently translated.
+         * @type {string}
+         * @private
+         */
+        this._lastLangTranslated = '';
+
+        /**
+         * The text most recently translated.
+         * @type {string}
+         * @private
+         */
+        this._lastTextTranslated = '';
+
         /**
          * The runtime instantiating this block package.
          * @type {Runtime}
@@ -893,9 +928,12 @@ class Scratch3TextClassificationBlocks {
      * @returns if the direction is "predict" returns the predicted label for the text inputted
      */
         async get_embeddings(text,label,direction) { //changes text into a 2d tensor
+            const newText = await this.getTranslate(text,"en"); //translates text from any language to english
+            console.log(newText);
+
             if (!this.labelListEmpty) {  
            await use.load().then(async model => {
-            await model.embed(text).then(async embeddings => {
+            await model.embed(newText).then(async embeddings => {
                 this.embedding = embeddings;
                 console.log(this.embedding);
             });
@@ -956,6 +994,46 @@ class Scratch3TextClassificationBlocks {
     }
         
       }
+    }
+
+    getTranslate (words,language) {
+        // Don't remake the request if we already have the value.
+        if (this._lastTextTranslated === words &&
+            this._lastLangTranslated === language) {
+            return this._translateResult;
+        }
+
+        const lang = language;
+
+        let urlBase = `${serverURL}translate?language=`;
+        urlBase += lang;
+        urlBase += '&text=';
+        urlBase += encodeURIComponent(words);
+
+        const tempThis = this;
+        const translatePromise = new Promise(resolve => {
+            nets({
+                url: urlBase,
+                timeout: serverTimeoutMs
+            }, (err, res, body) => {
+                if (err) {
+                    log.warn(`error fetching translate result! ${res}`);
+                    resolve('');
+                    return '';
+                }
+                const translated = JSON.parse(body).result;
+                tempThis._translateResult = translated;
+                // Cache what we just translated so we don't keep making the
+                // same call over and over.
+                tempThis._lastTextTranslated = words;
+                tempThis._lastLangTranslated = language;
+                resolve(translated);
+                return translated;
+            });
+
+        });
+        translatePromise.then(translatedText => translatedText);
+        return translatePromise;
     }
      
 
