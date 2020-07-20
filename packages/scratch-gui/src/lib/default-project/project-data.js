@@ -82,33 +82,33 @@ const projectData = translateFunction => {
                         rotationCenterX: 48,
                         rotationCenterY: 50
                     },
-                    // {
-                    //     assetId: 'e6ddc55a6ddd9cc9d84fe0b4c21e016f',
-                    //     name: translator(messages.costume, {index: 2}),
-                    //     bitmapResolution: 1,
-                    //     md5ext: 'e6ddc55a6ddd9cc9d84fe0b4c21e016f.svg',
-                    //     dataFormat: 'svg',
-                    //     rotationCenterX: 46,
-                    //     rotationCenterY: 53
-                    // }
+                    {
+                        assetId: 'e6ddc55a6ddd9cc9d84fe0b4c21e016f',
+                        name: translator(messages.costume, {index: 2}),
+                        bitmapResolution: 1,
+                        md5ext: 'e6ddc55a6ddd9cc9d84fe0b4c21e016f.svg',
+                        dataFormat: 'svg',
+                        rotationCenterX: 46,
+                        rotationCenterY: 53
+                    }
                 ],
                 sounds: [
                     {
-                        assetId: '83c36d806dc92327b9e7049a565c6bff',
-                        name: translator(messages.meow),
+                        assetId: '93c36d806dc92327b9e7049a565c6bff',
+                        name: 'Robot',
                         dataFormat: 'wav',
                         format: '',
                         rate: 22050,
                         sampleCount: 18688,
-                        md5ext: '83c36d806dc92327b9e7049a565c6bff.wav'
+                        md5ext: '93c36d806dc92327b9e7049a565c6bff.wav'
                     }
                 ],
                 volume: 100,
                 visible: true,
                 x: 0,
                 y: 0,
-                size: 100,
-                direction: 90,
+                size: 30,
+                direction: 0,
                 draggable: false,
                 rotationStyle: 'all around'
             }
