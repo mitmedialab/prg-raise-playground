@@ -365,7 +365,7 @@ class Scratch3TextClassificationBlocks {
                 {
                     func: 'EDIT_TEXT_CLASSIFIER',
                     blockType: BlockType.BUTTON,
-                    text: 'Cargar / Guardar un Modelo'
+                    text: 'Subir / Guardar un Modelo'
                 },
                 
                 {
@@ -403,78 +403,6 @@ class Scratch3TextClassificationBlocks {
                         }
                     },
                 },
-                '---',
-                {
-                    opcode: 'speakText',
-                    text: formatMessage({
-                        id: 'textClassification.speakText',
-                        default: 'hablar [TEXT]',
-                        description: 'Send text to the speech to text engine'
-                    }),
-                    blockType: BlockType.COMMAND,
-                    arguments: {
-                        TEXT: {
-                            type: ArgumentType.STRING,
-                            defaultValue: 'Hola'
-                        }
-                    },
-                },
-                {
-                    opcode: 'askSpeechRecognition',
-                    text: formatMessage({
-                        id: 'textClassification.askSpeechRecognition',
-                        default: 'pregunta [PROMPT] y espera',
-                        description: 'Get the class name that the input text matches'
-                    }),
-                    blockType: BlockType.COMMAND,
-                    arguments: {
-                        PROMPT: {
-                            type: ArgumentType.STRING,
-                            defaultValue: '¿Cómo está?'
-                        }
-                    },
-                },
-                {
-                    opcode: 'getRecognizedSpeech',
-                    text: formatMessage({
-                        id: 'textClassification.getRecognizedSpeech',
-                        default: 'la respuesta',
-                        description: 'Return the results of the speech recognition'
-                    }),
-                    blockType: BlockType.REPORTER,
-                },
-                {
-                    opcode: 'setVoice',
-                    text: formatMessage({
-                        id: 'text2speech.setVoiceBlock',
-                        default: 'poner voz a [VOICE]',
-                        description: 'Set the voice for speech synthesis.'
-                    }),
-                    blockType: BlockType.COMMAND,
-                    arguments: {
-                        VOICE: {
-                            type: ArgumentType.STRING,
-                            menu: 'voices',
-                            defaultValue: SQUEAK_ID
-                        }
-                    }
-                },
-                '---',
-                {
-                    opcode: 'onHeardSound',
-                    text: formatMessage({
-                        id: 'textClassification.onHeardSound',
-                        default: 'cuando sonido oído > [THRESHOLD]',
-                        description: 'Event that triggers when a sound is heard above a threshold'
-                    }),
-                    blockType: BlockType.HAT,
-                    arguments: {
-                        THRESHOLD: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 10
-                        }
-                    },
-                }
             ],
             menus: {
                 voices: {
