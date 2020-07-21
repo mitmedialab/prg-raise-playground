@@ -379,7 +379,7 @@ class MenuBar extends React.Component {
                                                 this.props.vm.sendLastClipToGfy();	                                           
                                             }}	                                   
                                         >	                                    
-                                            Upload Clip to Gfycat	                                  
+                                            Guardar Clip a Gfycat	                                  
                                         </MenuItem>	                                  
                                         <MenuItem	                                  
                                             isRtl={this.props.isRtl}	                                   
@@ -387,7 +387,7 @@ class MenuBar extends React.Component {
                                                 this.props.vm.loadLastClipOnGfy();	                                   
                                             }}	                                   
                                         >	                                  
-                                            Load Last Uploaded Clip	                                  
+                                            Subir el Último Clip Guardado                                  
                                         </MenuItem>	                                 
                                     </MenuSection>
                                     {(this.props.canSave || this.props.canCreateCopy || this.props.canRemix) && (
