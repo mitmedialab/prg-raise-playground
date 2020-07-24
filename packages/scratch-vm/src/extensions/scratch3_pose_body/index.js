@@ -95,6 +95,14 @@ class Scratch3PoseNetBlocks {
          */
         this.firstInstall = true;
 
+        this.currentModelConfig = {
+            architecture: 'MobileNetV1',
+            outputStride: 16, // TODO: make a param. higher: faster, worse
+            inputResolution: 200,
+            multiplier: 0.75,
+            quantBytes: 2
+        };
+
         if (this.runtime.ioDevices) {
             this.runtime.on(Runtime.PROJECT_LOADED, this.projectStarted.bind(this));
             this.runtime.on(Runtime.PROJECT_RUN_START, this.reset.bind(this));
@@ -242,9 +250,17 @@ class Scratch3PoseNetBlocks {
 
     async ensureBodyModelLoaded() {
         if (!this._bodyModel) {
-            this._bodyModel = await posenet.load();
+            await this.updateModelWithSettings();
         }
         return this._bodyModel;
+    }
+
+    async updateModelWithSettings() {
+        if (this._bodyModel) {
+            this._bodyModel.dispose();
+            this._bodyModel = null;
+        }
+        this._bodyModel = await posenet.load(this.currentModelConfig);
     }
 
     /**
@@ -417,6 +433,33 @@ class Scratch3PoseNetBlocks {
                 },
                 '---',
                 {
+                    opcode: 'setArchitecture',
+                    text: 'set to type [ARCHITECTURE]',
+                    blockType: BlockType.COMMAND,
+                    isTerminal: false,
+                    arguments: {
+                        ARCHITECTURE: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'MobileNetV1',
+                            menu: 'ARCHITECTURE'
+                        },
+                    },
+                },
+                {
+                    opcode: 'setResolution',
+                    text: 'set model resolution [RESOLUTION]',
+                    blockType: BlockType.COMMAND,
+                    isTerminal: false,
+                    arguments: {
+                        RESOLUTION: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 200,
+                            menu: 'RESOLUTION'
+                        },
+                    },
+                },
+                '---',
+                {
                     opcode: 'videoToggle',
                     text: formatMessage({
                         id: 'videoSensing.videoToggle',
@@ -447,6 +490,22 @@ class Scratch3PoseNetBlocks {
                 },
             ],
             menus: {
+                ARCHITECTURE: {
+                    acceptReporters: true,
+                    items: [
+                        {text: 'mobile net (faster)', value: 'MobileNetV1'},
+                        {text: 'RESNet (more accurate)', value: 'ResNet50'},
+                    ]
+                },
+                RESOLUTION: {
+                    acceptReporters: true,
+                    items: [
+                        {text: '200', value: 200},
+                        {text: '350', value: 350},
+                        {text: '500', value: 500},
+                        {text: '800', value: 800},
+                    ]
+                },
                 PART: {
                     acceptReporters: true,
                     items: [
@@ -483,6 +542,18 @@ class Scratch3PoseNetBlocks {
                 }
             }
         };
+    }
+
+    setArchitecture({ARCHITECTURE}) {
+        this.currentModelConfig.architecture = ARCHITECTURE;
+        const isResNet = ARCHITECTURE === 'ResNet50';
+        this.currentModelConfig.multiplier = isResNet ? 1 : 0.75;
+        this.updateModelWithSettings();
+    }
+
+    setResolution({RESOLUTION}) {
+        this.currentModelConfig.resolution = RESOLUTION;
+        this.updateModelWithSettings();
     }
 
     goToPart(args, util) {
