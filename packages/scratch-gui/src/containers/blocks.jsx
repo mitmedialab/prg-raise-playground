@@ -113,12 +113,16 @@ class Blocks extends React.Component {
         const classifierModelEditButtonCallback = () => {
             this.props.onOpenClassifierModelModal();
         }
+        const connectMicrobitRobotCallback = () => {
+            this.props.vm.runtime.emit('CONNECT_MICROBIT_ROBOT');
+        }
 
         toolboxWorkspace.registerButtonCallback('MAKE_A_VARIABLE', varListButtonCallback(''));
         toolboxWorkspace.registerButtonCallback('MAKE_A_LIST', varListButtonCallback('list'));
         toolboxWorkspace.registerButtonCallback('MAKE_A_PROCEDURE', procButtonCallback);
         toolboxWorkspace.registerButtonCallback('EDIT_TEXT_MODEL', textModelEditButtonCallback);
         toolboxWorkspace.registerButtonCallback('EDIT_TEXT_CLASSIFIER', classifierModelEditButtonCallback);
+        toolboxWorkspace.registerButtonCallback('CONNECT_MICROBIT_ROBOT', connectMicrobitRobotCallback);
 
 
         // Store the xml of the toolbox that is actually rendered.

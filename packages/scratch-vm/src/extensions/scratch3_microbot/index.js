@@ -37,7 +37,7 @@ class MicrobitRobot {
         this._mStatus = 1;
         this._mConnection = null;
         this._mConnectionTimeout = null;
-        this.CHROME_EXTENSION_ID = "jpehlabbcdkiocalmhikacglppfenoeo"; // "eejmodfdiabmdkoejdldmoppnnafbpkb" APP ID on Chrome Web Store
+        this.CHROME_EXTENSION_ID = "jpehlabbcdkiocalmhikacglppfenoeo"; // APP ID on Chrome Web Store
 
         this.msg1 = {};
         this.msg2 = {};
@@ -50,8 +50,7 @@ class MicrobitRobot {
         
     
         this.scratch_vm.on('PROJECT_STOP_ALL', this.resetRobot.bind(this));
-    
-        this.connectToExtension();
+        this.scratch_vm.on('CONNECT_MICROBIT_ROBOT', this.connectToExtension.bind(this));
     }
 
     /**
@@ -70,6 +69,12 @@ class MicrobitRobot {
             menuIconURI: blockIconURI,
 
             blocks: [
+                {
+                    func: 'CONNECT_MICROBIT_ROBOT',
+                    blockType: BlockType.BUTTON,
+                    text: 'Connect Robot'
+                },
+                '---',
                 {
                     opcode: 'playMusic',
                     blockType: BlockType.COMMAND,
@@ -300,11 +305,15 @@ class MicrobitRobot {
                 console.log("Stored extension ID: " + robot.CHROME_EXTENSION_ID);
                 if (robot.CHROME_EXTENSION_ID === undefined || robot.CHROME_EXTENSION_ID === "" || robot.CHROME_EXTENSION_ID === null) {
                     // If there is no extension ID in local browser storage, prompt user to enter one
-                   robot.CHROME_EXTENSION_ID = window.prompt("Enter the correct Chrome Extension ID", "pnjoidacmeigcdbikhgjolnadkdiegca");  
+                   robot.CHROME_EXTENSION_ID = window.prompt("Enter the correct Chrome Extension ID", "jpehlabbcdkiocalmhikacglppfenoeo");
                 }
                 robot._mStatus = 0;
                 // Try to connect to the Chrome extension again
-                robot.connectToExtension();
+                if (robot.CHROME_EXTENSION_ID === null) { // user must have hit cancel
+                    robot.CHROME_EXTENSION_ID = "jpehlabbcdkiocalmhikacglppfenoeo"; // molfimodiodghknifkeikkldkogpapki
+                } else {
+                    robot.connectToExtension();
+                }
             } else if (response.status === false) { //Chrome app says not connected
                 console.log("Chome extension is not running"); // what does this mean?
                 robot._mStatus = 1;
