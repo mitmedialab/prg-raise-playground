@@ -6,6 +6,7 @@ const BlockType = require('../../extension-support/block-type');
 const Cast = require('../../util/cast');
 const formatMessage = require('format-message');
 const Video = require('../../io/video');
+const nets = require('nets');
 
 function friendlyRound(amount) {
     return Number(amount).toFixed(2);
@@ -604,18 +605,46 @@ class Scratch3PoseNetBlocks {
                         }
                     }
                 },
+                // {
+                //     opcode: 'setVideoSource',
+                //     text: formatMessage({
+                //         id: 'videoSensing.setVideoSource',
+                //         default: 'set source [VIDEO_SOURCE]',
+                //         description: 'Changes video source'
+                //     }),
+                //     arguments: {
+                //         VIDEO_SOURCE: {
+                //             type: ArgumentType.STRING,
+                //             menu: 'VIDEO_SOURCE',
+                //         }
+                //     }
+                // },
                 {
-                    opcode: 'setVideoSource',
+                    opcode: 'setVideoURL',
                     text: formatMessage({
-                        id: 'videoSensing.setVideoSource',
-                        default: 'set video source [VIDEO_SOURCE]',
-                        description: 'Changes video source'
+                        id: 'videoSensing.setVideoSourceTikTok',
+                        default: 'play video URL [VIDEO_URL]',
+                        description: 'Changes video source to a looping URL'
                     }),
                     arguments: {
-                        VIDEO_SOURCE: {
+                        VIDEO_URL: {
                             type: ArgumentType.STRING,
-                            // menu: 'VIDEO_SOURCE',
-                            defaultValue: 'https://dancingwithai.media.mit.edu/projects/ChirpBirdForever.webm'
+                            defaultValue: 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2FPexels%20Videos%202795750.mp4?alt=media&token=fb248867-c2a8-4aa2-96da-426d0df3fb17'
+                        }
+                    }
+                },
+
+                {
+                    opcode: 'setVideoTikTok',
+                    text: formatMessage({
+                        id: 'videoSensing.setVideoTikTok',
+                        default: 'play tiktok [TIK_TOK_URL]',
+                        description: 'Changes video source to a TikTok URL'
+                    }),
+                    arguments: {
+                        TIK_TOK_URL: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'https://www.tiktok.com/@messyjurdock/video/6682159214393036037'
                         }
                     }
                 },
@@ -905,6 +934,34 @@ class Scratch3PoseNetBlocks {
             // Mirror if state is ON. Do not mirror if state is ON_FLIPPED.
             this.runtime.ioDevices.video.mirror = state === VideoState.ON;
         }
+    }
+
+    setVideoTikTok (args) {
+        try {
+            nets({
+                url: `https://dancing-with-ai.web.app/tikTokToVideo?tikTokURL=${args.TIK_TOK_URL}`,
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                encoding: undefined,
+            },(err, resp, body) => {
+                if (err) {
+                    console.log(err);
+                    return;
+                }
+                this.runtime.ioDevices.video.disableVideo().then(() => {
+                    this.runtime.ioDevices.video.setVideoTo(JSON.parse(body).videoURL);
+                });
+            })
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    async setVideoURL(args) {
+        await this.runtime.ioDevices.video.disableVideo();
+        this.runtime.ioDevices.video.setVideoTo(args.VIDEO_URL);
     }
 
     /**
