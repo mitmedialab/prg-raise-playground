@@ -236,6 +236,8 @@ class VideoProvider {
                     this._video.play(); // Needed for Safari/Firefox, Chrome auto-plays.
                     document.body.appendChild(this._video);
                     this._track = stream.getTracks()[0];
+                    window.videoBeingPlayed = this._video;
+                    window.videoURL = url;
                     return this;
                 }).catch(error => {
                     this._singleSetup = null;

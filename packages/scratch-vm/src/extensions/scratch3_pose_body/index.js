@@ -230,6 +230,13 @@ class Scratch3PoseNetBlocks {
             if (frame) {
                 this.poseState = await this.estimatePoseOnImage(frame);
                 if (this.hasPose()) {
+                    if (window.videoBeingPlayed) {
+                        console.log("Capturing video frame data.");
+                        const timeToTag = Math.floor(window.videoBeingPlayed.currentTime);
+                        window.allVideoData = window.allVideoData || {};
+                        window.allVideoData[timeToTag] = this.poseState;
+                        console.log(window.allVideoData);
+                    }
                     this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
                 } else {
                     this.runtime.emit(this.runtime.constructor.PERIPHERAL_DISCONNECTED);

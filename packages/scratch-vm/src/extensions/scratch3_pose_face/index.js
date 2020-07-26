@@ -7,6 +7,11 @@ const Cast = require('../../util/cast');
 const formatMessage = require('format-message');
 const Video = require('../../io/video');
 const nets = require('nets');
+const { promisify } = require('util')
+
+const precomputedOutputs = {
+    'https://www.tiktok.com/@_ashuu_555_/video/6776613430515289346': 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/precomputedOutputs%2Ftest2.json?alt=media&token=41d70f91-a3f7-46b2-b3d0-3584d47dd11d'
+}
 
 function friendlyRound(amount) {
     return Number(amount).toFixed(2);
@@ -251,8 +256,18 @@ class Scratch3PoseNetBlocks {
 
             const time = +new Date();
             if (frame) {
-                this.affdexState = await this.estimateAffdexOnImage(frame);
+                if (this.videoPrecomputed) {
+                    this.affdexState = this.getNearestFor(this.videoPrecomputed, window.videoBeingPlayed.currentTime);
+                } else {
+                    this.affdexState = await this.estimateAffdexOnImage(frame);
+                }
                 if (this.affdexState) {
+                    const shouldPrecompute = false; // TODO: automate this
+                    if (shouldPrecompute && window.videoBeingPlayed && !this.videoPrecomputed) {
+                        const timeToTag = window.videoBeingPlayed.currentTime;
+                        window.allVideoData = window.allVideoData || {};
+                        window.allVideoData[`${timeToTag}`] = this.affdexState;
+                    }
                     this.hasResult = true;
                     this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
                 } else {
@@ -644,7 +659,8 @@ class Scratch3PoseNetBlocks {
                     arguments: {
                         TIK_TOK_URL: {
                             type: ArgumentType.STRING,
-                            defaultValue: 'https://www.tiktok.com/@messyjurdock/video/6682159214393036037'
+                            defaultValue: 'https://www.tiktok.com/@_ashuu_555_/video/6776613430515289346'
+                            // defaultValue: 'https://www.tiktok.com/@messyjurdock/video/6682159214393036037'
                         }
                     }
                 },
@@ -936,24 +952,38 @@ class Scratch3PoseNetBlocks {
         }
     }
 
-    setVideoTikTok (args) {
+    async setVideoTikTok (args) {
         try {
-            nets({
+            const promiseNets = promisify(nets)
+
+            const {body} = await promiseNets({
                 url: `https://dancing-with-ai.web.app/tikTokToVideo?tikTokURL=${args.TIK_TOK_URL}`,
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 encoding: undefined,
-            },(err, resp, body) => {
-                if (err) {
-                    console.log(err);
-                    return;
-                }
-                this.runtime.ioDevices.video.disableVideo().then(() => {
-                    this.runtime.ioDevices.video.setVideoTo(JSON.parse(body).videoURL);
+            });
+            await this.runtime.ioDevices.video.disableVideo();
+            await this.runtime.ioDevices.video.setVideoTo(JSON.parse(body).videoURL);
+            console.log("Starting download");
+            if (window.videoBeingPlayed && precomputedOutputs.hasOwnProperty(args.TIK_TOK_URL)) {
+                const startDownload = +new Date();
+                const result = await promiseNets({
+                    url: precomputedOutputs[args.TIK_TOK_URL],
+                    method: 'GET',
+                    // the content type header blocks response from
+                    // including access-control-allow-origin header, so we don't set!
+                    encoding: undefined,
                 });
-            })
+                const timeFromDownload = +new Date() - startDownload;
+                console.log(timeFromDownload);
+
+                const startDecode = +new Date();
+                this.videoPrecomputed = JSON.parse(result.body);
+                const timeFromDecode = +new Date() - startDecode;
+                console.log(timeFromDecode);
+            }
         } catch (e) {
             console.log(e);
         }
@@ -994,6 +1024,20 @@ class Scratch3PoseNetBlocks {
         const transparency = Cast.toNumber(args.TRANSPARENCY);
         this.globalVideoTransparency = transparency;
         this.runtime.ioDevices.video.setPreviewGhost(transparency);
+    }
+
+    getNearestFor(videoPrecomputed, currentTime) {
+        const needle = currentTime;
+        const numbers = Object.keys(videoPrecomputed).map(n => parseFloat(n));
+        numbers.sort((a, b) => {
+            return Math.abs(needle - a) - Math.abs(needle - b);
+        })
+
+        const result = numbers[0];
+        console.log("Closest is:");
+        console.log(result);
+        const precomputed = videoPrecomputed[`${result}`];
+        return precomputed;
     }
 }
 

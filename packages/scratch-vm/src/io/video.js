@@ -99,7 +99,7 @@ class Video {
 
     setVideoTo (url) {
         if (!this.provider) return null;
-        this.provider.setVideoTo(url).then(() => this._setupPreview());
+        return this.provider.setVideoTo(url).then(() => this._setupPreview());
     }
 
     /**
