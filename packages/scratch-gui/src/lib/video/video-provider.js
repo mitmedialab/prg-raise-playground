@@ -216,33 +216,25 @@ class VideoProvider {
         }
 
         if (!!url) {
-            this._singleSetup = requestVideoStream({
-                width: {min: 480, ideal: 640},
-                height: {min: 360, ideal: 480}
-            })
-                .then(stream => {
-                    this._video = document.createElement('video');
-                    this._video.width = 640;
-                    this._video.height = 480;
-                    this._video.style.objectFit = "contain";
-                    const source = document.createElement('source');
-                    this._video.setAttribute('crossorigin', 'anonymous');
-                    this._video.setAttribute('autoplay', '');
-                    this._video.setAttribute('preload', '');
-                    this._video.setAttribute('loop', '');
-                    source.setAttribute('src', url);
-                    this._video.appendChild(source);
-                    this._video.load();
-                    this._video.play(); // Needed for Safari/Firefox, Chrome auto-plays.
-                    document.body.appendChild(this._video);
-                    this._track = stream.getTracks()[0];
-                    window.videoBeingPlayed = this._video;
-                    window.videoURL = url;
-                    return this;
-                }).catch(error => {
-                    this._singleSetup = null;
-                    this.onError(error);
-                });
+            this._singleSetup = new Promise(resolve => {
+                this._video = document.createElement('video');
+                this._video.width = 640;
+                this._video.height = 480;
+                this._video.style.objectFit = "contain";
+                const source = document.createElement('source');
+                this._video.setAttribute('crossorigin', 'anonymous');
+                this._video.setAttribute('autoplay', '');
+                this._video.setAttribute('preload', '');
+                this._video.setAttribute('loop', '');
+                source.setAttribute('src', url);
+                this._video.appendChild(source);
+                this._video.load();
+                this._video.play(); // Needed for Safari/Firefox, Chrome auto-plays.
+                document.body.appendChild(this._video);
+                window.videoBeingPlayed = this._video;
+                window.videoURL = url;
+                resolve();
+            });
         } else {
             this._singleSetup = requestVideoStream({
                 width: {min: 480, ideal: 640},
@@ -278,10 +270,7 @@ class VideoProvider {
         if (!this.enabled) {
             return false;
         }
-        if (!this._video) {
-            return false;
-        }
-        if (!this._track) {
+        if (!this._video && !this._track) {
             return false;
         }
         const {videoWidth, videoHeight} = this._video;
