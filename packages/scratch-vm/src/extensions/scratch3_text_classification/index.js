@@ -214,7 +214,11 @@ class Scratch3TextClassificationBlocks {
         });
         this.scratch_vm.on('CLEAR_ALL_LABELS', () => {
             if (!this.labelListEmpty && confirm('Are you sure you want to clear all labels?')) {    //confirm with alert dialogue before clearing the model
-                this.clearAll(); 
+                let labels = [...this.labelList];
+                for (var i = 0; i < labels.length; i++) {
+                    this.clearAllWithLabel({LABEL: labels[i]});
+                }
+                //this.clearAll(); this crashed Scratch for some reason
             }
         });
 
