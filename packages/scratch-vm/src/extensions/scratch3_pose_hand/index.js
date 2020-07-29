@@ -345,6 +345,12 @@ class Scratch3PoseNetBlocks {
         }
     }
 
+    uuidv4() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
 
     /**
      * @param imageElement
@@ -618,6 +624,7 @@ class Scratch3PoseNetBlocks {
                 VIDEO_SELECT: {
                     acceptReporters: true,
                     items: [
+                        {text: 'hand dance', value: 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fhand-dance-challenge.mp4?alt=media&token=c9cef976-05f9-4e8a-a4ee-2ea3b723e1c3'},
                         {text: 'roof dancing', value: 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fdancing-guy.mp4?alt=media&token=012e0937-1109-42ea-b419-b3ccee00b61f'},
                     ]
                 },
