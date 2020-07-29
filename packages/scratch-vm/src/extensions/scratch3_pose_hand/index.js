@@ -13,6 +13,8 @@ const handpose = require('@tensorflow-models/handpose');
 
 const precomputedOutputs = {
     'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fface-reaction.mp4?alt=media&token=c8eae246-2f0e-4fd7-8e0a-e178e46f69ed': 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/precomputedOutputs%2Ftest2.json?alt=media&token=41d70f91-a3f7-46b2-b3d0-3584d47dd11d'
+    ,
+    'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fhand-dance-challenge.mp4?alt=media&token=c9cef976-05f9-4e8a-a4ee-2ea3b723e1c3': 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fhand-dance-challenge-2.json?alt=media&token=20e06d8b-a1ed-4d37-8be8-05f2795906ef'
 };
 
 function friendlyRound(amount) {
@@ -555,7 +557,7 @@ class Scratch3PoseNetBlocks {
                         VIDEO_SELECT: {
                             type: ArgumentType.STRING,
                             menu: 'VIDEO_SELECT',
-                            defaultValue: 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fdancing-guy.mp4?alt=media&token=012e0937-1109-42ea-b419-b3ccee00b61f'
+                            defaultValue: 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fhand-dance-challenge.mp4?alt=media&token=c9cef976-05f9-4e8a-a4ee-2ea3b723e1c3'
                         }
                     }
                 },
