@@ -10,7 +10,7 @@ const nets = require('nets');
 const { promisify } = require('util')
 
 const precomputedOutputs = {
-    'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fface-reaction.mp4?alt=media&token=c8eae246-2f0e-4fd7-8e0a-e178e46f69ed': 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/precomputedOutputs%2Ftest2.json?alt=media&token=41d70f91-a3f7-46b2-b3d0-3584d47dd11d'
+    'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fface-reaction.mp4?alt=media&token=c8eae246-2f0e-4fd7-8e0a-e178e46f69ed': 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/precomputedOutputs%2Ftest2.json?alt=media&token=41d70f91-a3f7-46b2-b3d0-3584d47dd11d',
 };
 function friendlyRound(amount) {
     return Number(amount).toFixed(2);
@@ -98,7 +98,7 @@ class Scratch3PoseNetBlocks {
         this.runtime.connectPeripheral(EXTENSION_ID, 0);
         this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
 
-        this.runtime.on('PROJECT_START', this.unmute.bind(this));
+        // this.runtime.on('PROJECT_START', this.unmute.bind(this));
         this.runtime.on('PROJECT_STOP_ALL', this.mute.bind(this));
 
         /**
@@ -636,7 +636,7 @@ class Scratch3PoseNetBlocks {
                         VIDEO_SELECT: {
                             type: ArgumentType.STRING,
                             menu: 'VIDEO_SELECT',
-                            defaultValue: 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fdancing-guy.mp4?alt=media&token=012e0937-1109-42ea-b419-b3ccee00b61f'
+                            defaultValue: 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fface-reaction.mp4?alt=media&token=c8eae246-2f0e-4fd7-8e0a-e178e46f69ed'
                         }
                     }
                 },
@@ -717,6 +717,7 @@ class Scratch3PoseNetBlocks {
                 VIDEO_SELECT: {
                     acceptReporters: true,
                     items: [
+                        {text: 'face reactions', value: 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fface-reaction.mp4?alt=media&token=c8eae246-2f0e-4fd7-8e0a-e178e46f69ed'},
                         {text: 'roof dancing', value: 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fdancing-guy.mp4?alt=media&token=012e0937-1109-42ea-b419-b3ccee00b61f'},
                     ]
                 },
@@ -1035,6 +1036,7 @@ class Scratch3PoseNetBlocks {
 
     async setVideoDropdownBlock(args) {
         await this.setVideoURL(args.VIDEO_SELECT);
+        this.mute();
     }
 
     async setVideoURL(url) {

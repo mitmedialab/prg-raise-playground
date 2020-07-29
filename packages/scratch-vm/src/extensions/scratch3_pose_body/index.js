@@ -22,7 +22,8 @@ const precomputedOutputs = {
     'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fpose-challenge.mp4?alt=media&token=8ce79d39-1f12-478c-b645-4e8a6474944f':
         'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fpose-challenge.json?alt=media&token=a54a7857-a58b-47d1-b08e-f41b30f2937a',
 
-
+    'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fpajama-car-dance.mp4?alt=media&token=723f7187-4e04-4410-adcf-2237350a906f':
+    'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fpajama-car-dance.json?alt=media&token=e5f3f842-fc7c-440f-ba84-a7293949f303'
 }
 
 
@@ -678,6 +679,7 @@ class Scratch3PoseNetBlocks {
                 VIDEO_SELECT: {
                     acceptReporters: true,
                     items: [
+                        {text: 'pajama dancer', value: 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fpajama-car-dance.mp4?alt=media&token=723f7187-4e04-4410-adcf-2237350a906f'},
                         {text: 'roof dancing', value: 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fdancing-guy.mp4?alt=media&token=012e0937-1109-42ea-b419-b3ccee00b61f'},
                         {text: 'pose challenge', value: 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fpose-challenge.mp4?alt=media&token=8ce79d39-1f12-478c-b645-4e8a6474944f'},
                     ]
