@@ -97,6 +97,16 @@ class Video {
         return this.provider.disableVideo();
     }
 
+    muteVideo () {
+        if (!this.provider) return null;
+        return this.provider.muteVideo();
+    }
+
+    unmuteVideo () {
+        if (!this.provider) return null;
+        return this.provider.unmuteVideo();
+    }
+
     setVideoTo (url) {
         if (!this.provider) return null;
         return this.provider.setVideoTo(url).then(() => this._setupPreview());

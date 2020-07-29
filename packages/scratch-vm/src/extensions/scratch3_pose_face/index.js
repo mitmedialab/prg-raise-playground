@@ -99,12 +99,17 @@ class Scratch3PoseNetBlocks {
         this.runtime.connectPeripheral(EXTENSION_ID, 0);
         this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
 
+        this.runtime.on('PROJECT_START', this.unmute.bind(this));
+        this.runtime.on('PROJECT_STOP_ALL', this.mute.bind(this));
+
         /**
          * A flag to determine if this extension has been installed in a project.
          * It is set to false the first time getInfo is run.
          * @type {boolean}
          */
         this.firstInstall = true;
+
+        this.videoPrecomputed = {};
 
         if (this.runtime.ioDevices) {
             this.runtime.on(Runtime.PROJECT_LOADED, this.projectStarted.bind(this));
@@ -256,8 +261,8 @@ class Scratch3PoseNetBlocks {
 
             const time = +new Date();
             if (frame) {
-                if (this.videoPrecomputed) {
-                    this.affdexState = this.getNearestFor(this.videoPrecomputed, window.videoBeingPlayed.currentTime);
+                if (this.hasPrecomputed()) {
+                    this.affdexState = this.getNearestFor(this.videoPrecomputed[window.videoURL], window.videoBeingPlayed.currentTime);
                 } else {
                     this.affdexState = await this.estimateAffdexOnImage(frame);
                 }
@@ -943,7 +948,7 @@ class Scratch3PoseNetBlocks {
     videoToggle (args) {
         const state = args.VIDEO_STATE;
         this.globalVideoState = state;
-        if (state === VideoState.OFF) {
+        if (state === VideoState.OFF || !this.cameraEnabled()) {
             this.runtime.ioDevices.video.disableVideo();
         } else {
             this.runtime.ioDevices.video.enableVideo();
@@ -966,8 +971,10 @@ class Scratch3PoseNetBlocks {
             });
             await this.runtime.ioDevices.video.disableVideo();
             await this.runtime.ioDevices.video.setVideoTo(JSON.parse(body).videoURL);
-            console.log("Starting download");
-            if (window.videoBeingPlayed && precomputedOutputs.hasOwnProperty(args.TIK_TOK_URL)) {
+            if (window.videoBeingPlayed &&
+                precomputedOutputs.hasOwnProperty(args.TIK_TOK_URL) &&
+                !this.videoPrecomputed[window.videoURL]
+            ) {
                 const startDownload = +new Date();
                 const result = await promiseNets({
                     url: precomputedOutputs[args.TIK_TOK_URL],
@@ -977,16 +984,26 @@ class Scratch3PoseNetBlocks {
                     encoding: undefined,
                 });
                 const timeFromDownload = +new Date() - startDownload;
-                console.log(timeFromDownload);
 
                 const startDecode = +new Date();
-                this.videoPrecomputed = JSON.parse(result.body);
+                this.videoPrecomputed[window.videoURL] = JSON.parse(result.body);
                 const timeFromDecode = +new Date() - startDecode;
-                console.log(timeFromDecode);
             }
         } catch (e) {
             console.log(e);
         }
+    }
+
+    hasPrecomputed() {
+        return !!window.videoBeingPlayed && !!window.videoURL && this.videoPrecomputed.hasOwnProperty(window.videoURL);
+    }
+
+    mute() {
+        this.runtime.ioDevices.video.muteVideo();
+    }
+
+    unmute() {
+        this.runtime.ioDevices.video.unmuteVideo();
     }
 
     async setVideoURL(args) {
@@ -1002,15 +1019,24 @@ class Scratch3PoseNetBlocks {
     setVideoSource (args) {
         const state = args.VIDEO_SOURCE;
         this.globalVideoState = state;
+
         if (state === Scratch3PoseNetBlocks.VIDEO_SOURCE.CAMERA) {
-            this.runtime.ioDevices.video.disableVideo().then(() => {
-                this.runtime.ioDevices.video.enableVideo();
-            });
+            if (this.cameraEnabled()) {
+                this.runtime.ioDevices.video.disableVideo().then(() => {
+                    this.runtime.ioDevices.video.enableVideo();
+                });
+            }
         } else {
             this.runtime.ioDevices.video.disableVideo().then(() => {
                 this.runtime.ioDevices.video.setVideoTo(state);
             });
         }
+    }
+
+    cameraEnabled() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const nocamera = urlParams.get('nocamera')
+        return !nocamera;
     }
 
     /**
@@ -1034,8 +1060,6 @@ class Scratch3PoseNetBlocks {
         })
 
         const result = numbers[0];
-        console.log("Closest is:");
-        console.log(result);
         const precomputed = videoPrecomputed[`${result}`];
         return precomputed;
     }

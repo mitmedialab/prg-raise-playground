@@ -89,6 +89,7 @@ class VideoProvider {
     disableVideo () {
         this.enabled = false;
         // If we have begun a setup process, call _teardown after it completes
+        this.tryTeardownVideo();
         if (this._singleSetup) {
             return this._singleSetup
                 .then(this._teardown.bind(this))
@@ -107,10 +108,23 @@ class VideoProvider {
             this._singleSetup = null;
             // by clearing refs to video and track, we should lose our hold over the camera
             this._video = null;
+            this.tryTeardownVideo();
             if (this._track && disableTrack) {
                 this._track.stop();
             }
             this._track = null;
+        }
+    }
+
+    muteVideo() {
+        if (this._video) {
+            this._video.muted = 'muted';
+        }
+    }
+
+    unmuteVideo() {
+        if (this._video) {
+            this._video.muted = undefined;
         }
     }
 
@@ -215,12 +229,16 @@ class VideoProvider {
             return this._singleSetup;
         }
 
+        this.tryTeardownVideo();
+
         if (!!url) {
             this._singleSetup = new Promise(resolve => {
                 this._video = document.createElement('video');
                 this._video.width = 640;
                 this._video.height = 480;
                 this._video.style.objectFit = "contain";
+                // this._video.style.visibility = "hidden";
+                this._video.style.display = "none";
                 const source = document.createElement('source');
                 this._video.setAttribute('crossorigin', 'anonymous');
                 this._video.setAttribute('autoplay', '');
@@ -264,6 +282,16 @@ class VideoProvider {
                 });
         }
         return this._singleSetup;
+    }
+
+    tryTeardownVideo() {
+        if (this._video && window.videoBeingPlayed) {
+            console.log("Removing video!");
+            this._video.remove();
+            window.videoBeingPlayed = null;
+            window.videoURL = null;
+            this._video = null;
+        }
     }
 
     get videoReady () {
