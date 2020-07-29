@@ -75,7 +75,10 @@ const EXTENSION_ID = 'poseBody';
 
 
 const precomputedOutputs = {
-    'https://www.tiktok.com/@_ashuu_555_/video/6776613430515289346': 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/precomputedOutputs%2Ftest2.json?alt=media&token=41d70f91-a3f7-46b2-b3d0-3584d47dd11d'
+    'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fdancing-guy.mp4?alt=media&token=012e0937-1109-42ea-b419-b3ccee00b61f':
+        'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fdancing-guy.json?alt=media&token=9d9c9b85-79c2-4a35-b52d-1c8a5637e6a8',
+
+
 }
 
 /**
@@ -167,7 +170,9 @@ class Scratch3PoseNetBlocks {
     }
 
     hasPrecomputed() {
-        return !!window.videoBeingPlayed && !!window.videoURL && this.videoPrecomputed.hasOwnProperty(window.videoURL);
+        const isPrecomputed = !!window.videoBeingPlayed && !!window.videoURL && this.videoPrecomputed.hasOwnProperty(window.videoURL);
+        console.log("using precomputed: " + isPrecomputed);
+        return isPrecomputed;
     }
 
     mute() {
@@ -198,6 +203,10 @@ class Scratch3PoseNetBlocks {
 
     async setVideoURLBlock(args) {
         await this.setVideoURL(args.VIDEO_URL);
+    }
+
+    async setVideoDropdownBlock(args) {
+        await this.setVideoURL(args.VIDEO_SELECT);
     }
 
     async setVideoURL(url) {
@@ -292,6 +301,13 @@ class Scratch3PoseNetBlocks {
     connect() {
     }
 
+    uuidv4() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+
     async _loop () {
         while (true) {
             const frame = this.runtime.ioDevices.video.getFrame({
@@ -301,15 +317,14 @@ class Scratch3PoseNetBlocks {
 
             const time = +new Date();
             if (frame) {
-                this.poseState = await this.estimatePoseOnImage(frame);
+                if (this.hasPrecomputed()) {
+                    this.poseState = this.getNearestFor(this.videoPrecomputed[window.videoURL], window.videoBeingPlayed.currentTime);
+                } else {
+                    this.poseState = await this.estimatePoseOnImage(frame);
+                }
+
                 if (this.hasPose()) {
-                    if (window.videoBeingPlayed) {
-                        console.log("Capturing video frame data.");
-                        const timeToTag = Math.floor(window.videoBeingPlayed.currentTime);
-                        window.allVideoData = window.allVideoData || {};
-                        window.allVideoData[timeToTag] = this.poseState;
-                        console.log(window.allVideoData);
-                    }
+                    this.tryCaptureState(this.poseState);
                     this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
                 } else {
                     this.runtime.emit(this.runtime.constructor.PERIPHERAL_DISCONNECTED);
@@ -318,6 +333,38 @@ class Scratch3PoseNetBlocks {
             const estimateThrottleTimeout = (+new Date() - time) / 4;
             await new Promise(r => setTimeout(r, estimateThrottleTimeout));
         }
+    }
+
+    tryCaptureState(state) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const record = urlParams.get('record')
+        const shouldPrecompute = !!record;
+        if (shouldPrecompute && window.videoBeingPlayed) {
+            const timeToTag = window.videoBeingPlayed.currentTime;
+            window.allVideoData = window.allVideoData || {};
+            window.allVideoData[`${timeToTag}`] = state;
+            window.downloadVideoData = () => {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(window.allVideoData));
+                const dlAnchorElem = document.createElement('a');
+                dlAnchorElem.setAttribute("href", dataStr);
+                dlAnchorElem.setAttribute("download", `${this.uuidv4()}.json`);
+                document.body.appendChild(dlAnchorElem);
+                dlAnchorElem.click();
+                console.log(window.videoURL);
+            }
+        }
+    }
+
+    getNearestFor(videoPrecomputed, currentTime) {
+        const needle = currentTime;
+        const numbers = Object.keys(videoPrecomputed).map(n => parseFloat(n));
+        numbers.sort((a, b) => {
+            return Math.abs(needle - a) - Math.abs(needle - b);
+        })
+
+        const result = numbers[0];
+        const precomputed = videoPrecomputed[`${result}`];
+        return precomputed;
     }
 
     async estimatePoseOnImage(imageElement) {
@@ -513,6 +560,37 @@ class Scratch3PoseNetBlocks {
                 },
                 '---',
                 {
+                    opcode: 'setVideoDropdownBlock',
+                    text: formatMessage({
+                        id: 'videoSensing.setVideoDropdownBlock',
+                        default: 'play video [VIDEO_SELECT]',
+                        description: 'Changes video source to a looping URL'
+                    }),
+                    arguments: {
+                        VIDEO_SELECT: {
+                            type: ArgumentType.STRING,
+                            menu: 'VIDEO_SELECT',
+                            defaultValue: 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fdancing-guy.mp4?alt=media&token=012e0937-1109-42ea-b419-b3ccee00b61f'
+                        }
+                    }
+                },
+                {
+                    opcode: 'videoToggle',
+                    text: formatMessage({
+                        id: 'videoSensing.videoToggle',
+                        default: 'turn video [VIDEO_STATE]',
+                        description: 'Controls display of the video preview layer'
+                    }),
+                    arguments: {
+                        VIDEO_STATE: {
+                            type: ArgumentType.NUMBER,
+                            menu: 'VIDEO_STATE',
+                            defaultValue: VideoState.OFF
+                        }
+                    }
+                },
+                '---',
+                {
                     opcode: 'setArchitecture',
                     text: 'set to type [ARCHITECTURE]',
                     blockType: BlockType.COMMAND,
@@ -539,21 +617,6 @@ class Scratch3PoseNetBlocks {
                     },
                 },
                 '---',
-                {
-                    opcode: 'videoToggle',
-                    text: formatMessage({
-                        id: 'videoSensing.videoToggle',
-                        default: 'turn video [VIDEO_STATE]',
-                        description: 'Controls display of the video preview layer'
-                    }),
-                    arguments: {
-                        VIDEO_STATE: {
-                            type: ArgumentType.NUMBER,
-                            menu: 'VIDEO_STATE',
-                            defaultValue: VideoState.OFF
-                        }
-                    }
-                },
                 {
                     opcode: 'setVideoTransparency',
                     text: formatMessage({
@@ -605,6 +668,12 @@ class Scratch3PoseNetBlocks {
                     items: [
                         {text: 'mobile net (faster)', value: 'MobileNetV1'},
                         {text: 'RESNet (more accurate)', value: 'ResNet50'},
+                    ]
+                },
+                VIDEO_SELECT: {
+                    acceptReporters: true,
+                    items: [
+                        {text: 'roof dancing', value: 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fdancing-guy.mp4?alt=media&token=012e0937-1109-42ea-b419-b3ccee00b61f'},
                     ]
                 },
                 RESOLUTION: {

@@ -6,8 +6,14 @@ const BlockType = require('../../extension-support/block-type');
 const Cast = require('../../util/cast');
 const formatMessage = require('format-message');
 const Video = require('../../io/video');
+const nets = require('nets');
+const { promisify } = require('util')
 
 const handpose = require('@tensorflow-models/handpose');
+
+const precomputedOutputs = {
+    'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fface-reaction.mp4?alt=media&token=c8eae246-2f0e-4fd7-8e0a-e178e46f69ed': 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/precomputedOutputs%2Ftest2.json?alt=media&token=41d70f91-a3f7-46b2-b3d0-3584d47dd11d'
+};
 
 function friendlyRound(amount) {
     return Number(amount).toFixed(2);
@@ -89,6 +95,11 @@ class Scratch3PoseNetBlocks {
         this.runtime.connectPeripheral(EXTENSION_ID, 0);
         this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
 
+        this.runtime.on('PROJECT_START', this.unmute.bind(this));
+        this.runtime.on('PROJECT_STOP_ALL', this.mute.bind(this));
+
+        this.videoPrecomputed = {};
+
         /**
          * A flag to determine if this extension has been installed in a project.
          * It is set to false the first time getInfo is run.
@@ -141,6 +152,81 @@ class Scratch3PoseNetBlocks {
         };
     }
 
+    cameraEnabled() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const nocamera = urlParams.get('nocamera')
+        return !nocamera;
+    }
+
+    hasPrecomputed() {
+        return !!window.videoBeingPlayed && !!window.videoURL && this.videoPrecomputed.hasOwnProperty(window.videoURL);
+    }
+
+    mute() {
+        this.runtime.ioDevices.video.muteVideo();
+    }
+
+    unmute() {
+        this.runtime.ioDevices.video.unmuteVideo();
+    }
+
+    async setVideoTikTok (args) {
+        try {
+            const promiseNets = promisify(nets)
+
+            const {body} = await promiseNets({
+                url: `https://dancing-with-ai.web.app/tikTokToVideo?tikTokURL=${args.TIK_TOK_URL}`,
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                encoding: undefined,
+            });
+            await this.setVideoURL(JSON.parse(body).videoURL);
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    async setVideoDropdownBlock(args) {
+        await this.setVideoURL(args.VIDEO_SELECT);
+    }
+
+    async setVideoURLBlock(args) {
+        await this.setVideoURL(args.VIDEO_URL);
+    }
+
+    async setVideoURL(url) {
+        await this.runtime.ioDevices.video.disableVideo();
+        await this.runtime.ioDevices.video.setVideoTo(url);
+        await this.loadPrecomputedIfAvailable(url);
+    }
+
+    async loadPrecomputedIfAvailable(url) {
+        const promiseNets = promisify(nets)
+        if (window.videoBeingPlayed &&
+            precomputedOutputs.hasOwnProperty(url) &&
+            !this.videoPrecomputed[url]
+        ) {
+            const result = await promiseNets({
+                url: precomputedOutputs[url],
+                method: 'GET',
+                encoding: undefined,
+            });
+            this.videoPrecomputed[url] = JSON.parse(result.body);
+        }
+    }
+    getNearestFor(videoPrecomputed, currentTime) {
+        const needle = currentTime;
+        const numbers = Object.keys(videoPrecomputed).map(n => parseFloat(n));
+        numbers.sort((a, b) => {
+            return Math.abs(needle - a) - Math.abs(needle - b);
+        })
+
+        const result = numbers[0];
+        const precomputed = videoPrecomputed[`${result}`];
+        return precomputed;
+    }
     /**
      * The transparency setting of the video preview stored in a value
      * accessible by any object connected to the virtual machine.
@@ -221,8 +307,14 @@ class Scratch3PoseNetBlocks {
 
             const time = +new Date();
             if (frame) {
-                this.handPoseState = await this.estimateHandPoseOnImage(frame);
+                if (this.hasPrecomputed()) {
+                    this.handPoseState = this.getNearestFor(this.videoPrecomputed[window.videoURL], window.videoBeingPlayed.currentTime);
+                } else {
+                    this.handPoseState = await this.estimateHandPoseOnImage(frame);
+                }
+
                 if (this.isConnected()) {
+                    this.tryCaptureState(this.handPoseState);
                     this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
                 } else {
                     this.runtime.emit(this.runtime.constructor.PERIPHERAL_DISCONNECTED);
@@ -232,6 +324,27 @@ class Scratch3PoseNetBlocks {
             await new Promise(r => setTimeout(r, estimateThrottleTimeout));
         }
     }
+
+    tryCaptureState(state) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const record = urlParams.get('record')
+        const shouldPrecompute = !!record;
+        if (shouldPrecompute && window.videoBeingPlayed) {
+            const timeToTag = window.videoBeingPlayed.currentTime;
+            window.allVideoData = window.allVideoData || {};
+            window.allVideoData[`${timeToTag}`] = state;
+            window.downloadVideoData = () => {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(window.allVideoData));
+                const dlAnchorElem = document.createElement('a');
+                dlAnchorElem.setAttribute("href", dataStr);
+                dlAnchorElem.setAttribute("download", `${this.uuidv4()}.json`);
+                document.body.appendChild(dlAnchorElem);
+                dlAnchorElem.click();
+                console.log(window.videoURL);
+            }
+        }
+    }
+
 
     /**
      * @param imageElement
@@ -426,6 +539,21 @@ class Scratch3PoseNetBlocks {
                 },
                 '---',
                 {
+                    opcode: 'setVideoDropdownBlock',
+                    text: formatMessage({
+                        id: 'videoSensing.setVideoDropdownBlock',
+                        default: 'play video [VIDEO_SELECT]',
+                        description: 'Changes video source to a looping URL'
+                    }),
+                    arguments: {
+                        VIDEO_SELECT: {
+                            type: ArgumentType.STRING,
+                            menu: 'VIDEO_SELECT',
+                            defaultValue: 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fdancing-guy.mp4?alt=media&token=012e0937-1109-42ea-b419-b3ccee00b61f'
+                        }
+                    }
+                },
+                {
                     opcode: 'videoToggle',
                     text: formatMessage({
                         id: 'videoSensing.videoToggle',
@@ -454,9 +582,46 @@ class Scratch3PoseNetBlocks {
                         }
                     }
                 },
+                {
+                    opcode: 'setVideoURLBlock',
+                    text: formatMessage({
+                        id: 'videoSensing.setVideoSourceTikTok',
+                        default: 'play video URL [VIDEO_URL]',
+                        description: 'Changes video source to a looping URL'
+                    }),
+                    arguments: {
+                        VIDEO_URL: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2FPexels%20Videos%202795750.mp4?alt=media&token=fb248867-c2a8-4aa2-96da-426d0df3fb17'
+                        }
+                    }
+                },
+
+                {
+                    opcode: 'setVideoTikTok',
+                    text: formatMessage({
+                        id: 'videoSensing.setVideoTikTok',
+                        default: 'play tiktok [TIK_TOK_URL]',
+                        description: 'Changes video source to a TikTok URL'
+                    }),
+                    arguments: {
+                        TIK_TOK_URL: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'https://www.tiktok.com/@_ashuu_555_/video/6776613430515289346'
+                            // defaultValue: 'https://www.tiktok.com/@messyjurdock/video/6682159214393036037'
+                        }
+                    }
+                },
                 '---',
             ],
             menus: {
+                VIDEO_SELECT: {
+                    acceptReporters: true,
+                    items: [
+                        {text: 'roof dancing', value: 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fdancing-guy.mp4?alt=media&token=012e0937-1109-42ea-b419-b3ccee00b61f'},
+                    ]
+                },
+
                 HAND_PART: {
                     acceptReporters: true,
                     items: [

@@ -630,6 +630,17 @@ class Scratch3PoseNetBlocks {
                 },
                 '---',
                 {
+                    opcode: 'setVideoDropdownBlock',
+                    text: 'play video [VIDEO_SELECT]',
+                    arguments: {
+                        VIDEO_SELECT: {
+                            type: ArgumentType.STRING,
+                            menu: 'VIDEO_SELECT',
+                            defaultValue: 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fdancing-guy.mp4?alt=media&token=012e0937-1109-42ea-b419-b3ccee00b61f'
+                        }
+                    }
+                },
+                {
                     opcode: 'videoToggle',
                     text: formatMessage({
                         id: 'videoSensing.videoToggle',
@@ -672,7 +683,6 @@ class Scratch3PoseNetBlocks {
                         }
                     }
                 },
-
                 {
                     opcode: 'setVideoTikTok',
                     text: formatMessage({
@@ -704,6 +714,12 @@ class Scratch3PoseNetBlocks {
                 },
             ],
             menus: {
+                VIDEO_SELECT: {
+                    acceptReporters: true,
+                    items: [
+                        {text: 'roof dancing', value: 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fdancing-guy.mp4?alt=media&token=012e0937-1109-42ea-b419-b3ccee00b61f'},
+                    ]
+                },
                 AFFDEX_POINT: {
                     items: [
                         {text: 'left ear', value: '0'},
@@ -1015,6 +1031,10 @@ class Scratch3PoseNetBlocks {
 
     async setVideoURLBlock(args) {
         await this.setVideoURL(args.VIDEO_URL);
+    }
+
+    async setVideoDropdownBlock(args) {
+        await this.setVideoURL(args.VIDEO_SELECT);
     }
 
     async setVideoURL(url) {
