@@ -10,9 +10,8 @@ const nets = require('nets');
 const { promisify } = require('util')
 
 const precomputedOutputs = {
-    'https://www.tiktok.com/@_ashuu_555_/video/6776613430515289346': 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/precomputedOutputs%2Ftest2.json?alt=media&token=41d70f91-a3f7-46b2-b3d0-3584d47dd11d'
-}
-
+    'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fface-reaction.mp4?alt=media&token=c8eae246-2f0e-4fd7-8e0a-e178e46f69ed': 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/precomputedOutputs%2Ftest2.json?alt=media&token=41d70f91-a3f7-46b2-b3d0-3584d47dd11d'
+};
 function friendlyRound(amount) {
     return Number(amount).toFixed(2);
 }
@@ -252,6 +251,13 @@ class Scratch3PoseNetBlocks {
     scan() {
     }
 
+    uuidv4() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+
     async _loop () {
         while (true) {
             const frame = this.runtime.ioDevices.video.getFrame({
@@ -264,14 +270,27 @@ class Scratch3PoseNetBlocks {
                 if (this.hasPrecomputed()) {
                     this.affdexState = this.getNearestFor(this.videoPrecomputed[window.videoURL], window.videoBeingPlayed.currentTime);
                 } else {
+                    console.log("No precomputed, estimating");
                     this.affdexState = await this.estimateAffdexOnImage(frame);
                 }
+                console.log(this.affdexState);
                 if (this.affdexState) {
-                    const shouldPrecompute = false; // TODO: automate this
-                    if (shouldPrecompute && window.videoBeingPlayed && !this.videoPrecomputed) {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const record = urlParams.get('record')
+                    const shouldPrecompute = !!record;
+                    if (shouldPrecompute && window.videoBeingPlayed) {
                         const timeToTag = window.videoBeingPlayed.currentTime;
                         window.allVideoData = window.allVideoData || {};
                         window.allVideoData[`${timeToTag}`] = this.affdexState;
+                        window.downloadVideoData = () => {
+                            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(window.allVideoData));
+                            const dlAnchorElem = document.createElement('a');
+                            dlAnchorElem.setAttribute("href", dataStr);
+                            dlAnchorElem.setAttribute("download", `${this.uuidv4()}.json`);
+                            document.body.appendChild(dlAnchorElem);
+                            dlAnchorElem.click();
+                            console.log(window.videoURL);
+                        }
                     }
                     this.hasResult = true;
                     this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
@@ -640,16 +659,16 @@ class Scratch3PoseNetBlocks {
                 //     }
                 // },
                 {
-                    opcode: 'setVideoURL',
+                    opcode: 'setVideoURLBlock',
                     text: formatMessage({
-                        id: 'videoSensing.setVideoSourceTikTok',
+                        id: 'videoSensing.setVideoSource',
                         default: 'play video URL [VIDEO_URL]',
                         description: 'Changes video source to a looping URL'
                     }),
                     arguments: {
                         VIDEO_URL: {
                             type: ArgumentType.STRING,
-                            defaultValue: 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2FPexels%20Videos%202795750.mp4?alt=media&token=fb248867-c2a8-4aa2-96da-426d0df3fb17'
+                            defaultValue: 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fface-reaction.mp4?alt=media&token=c8eae246-2f0e-4fd7-8e0a-e178e46f69ed'
                         }
                     }
                 },
@@ -957,6 +976,25 @@ class Scratch3PoseNetBlocks {
         }
     }
 
+    cameraEnabled() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const nocamera = urlParams.get('nocamera')
+        return !nocamera;
+    }
+
+    hasPrecomputed() {
+        const isPrecomputed = !!window.videoBeingPlayed && !!window.videoURL && this.videoPrecomputed.hasOwnProperty(window.videoURL);
+        return isPrecomputed;
+    }
+
+    mute() {
+        this.runtime.ioDevices.video.muteVideo();
+    }
+
+    unmute() {
+        this.runtime.ioDevices.video.unmuteVideo();
+    }
+
     async setVideoTikTok (args) {
         try {
             const promiseNets = promisify(nets)
@@ -969,46 +1007,35 @@ class Scratch3PoseNetBlocks {
                 },
                 encoding: undefined,
             });
-            await this.runtime.ioDevices.video.disableVideo();
-            await this.runtime.ioDevices.video.setVideoTo(JSON.parse(body).videoURL);
-            if (window.videoBeingPlayed &&
-                precomputedOutputs.hasOwnProperty(args.TIK_TOK_URL) &&
-                !this.videoPrecomputed[window.videoURL]
-            ) {
-                const startDownload = +new Date();
-                const result = await promiseNets({
-                    url: precomputedOutputs[args.TIK_TOK_URL],
-                    method: 'GET',
-                    // the content type header blocks response from
-                    // including access-control-allow-origin header, so we don't set!
-                    encoding: undefined,
-                });
-                const timeFromDownload = +new Date() - startDownload;
-
-                const startDecode = +new Date();
-                this.videoPrecomputed[window.videoURL] = JSON.parse(result.body);
-                const timeFromDecode = +new Date() - startDecode;
-            }
+            await this.setVideoURL(JSON.parse(body).videoURL);
         } catch (e) {
             console.log(e);
         }
     }
 
-    hasPrecomputed() {
-        return !!window.videoBeingPlayed && !!window.videoURL && this.videoPrecomputed.hasOwnProperty(window.videoURL);
+    async setVideoURLBlock(args) {
+        await this.setVideoURL(args.VIDEO_URL);
     }
 
-    mute() {
-        this.runtime.ioDevices.video.muteVideo();
-    }
-
-    unmute() {
-        this.runtime.ioDevices.video.unmuteVideo();
-    }
-
-    async setVideoURL(args) {
+    async setVideoURL(url) {
         await this.runtime.ioDevices.video.disableVideo();
-        this.runtime.ioDevices.video.setVideoTo(args.VIDEO_URL);
+        await this.runtime.ioDevices.video.setVideoTo(url);
+        await this.loadPrecomputedIfAvailable(url);
+    }
+
+    async loadPrecomputedIfAvailable(url) {
+        const promiseNets = promisify(nets)
+        if (window.videoBeingPlayed &&
+            precomputedOutputs.hasOwnProperty(url) &&
+            !this.videoPrecomputed[url]
+        ) {
+            const result = await promiseNets({
+                url: precomputedOutputs[url],
+                method: 'GET',
+                encoding: undefined,
+            });
+            this.videoPrecomputed[url] = JSON.parse(result.body);
+        }
     }
 
     /**
@@ -1031,12 +1058,6 @@ class Scratch3PoseNetBlocks {
                 this.runtime.ioDevices.video.setVideoTo(state);
             });
         }
-    }
-
-    cameraEnabled() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const nocamera = urlParams.get('nocamera')
-        return !nocamera;
     }
 
     /**

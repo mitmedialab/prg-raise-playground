@@ -6,6 +6,8 @@ const BlockType = require('../../extension-support/block-type');
 const Cast = require('../../util/cast');
 const formatMessage = require('format-message');
 const Video = require('../../io/video');
+const nets = require('nets');
+const { promisify } = require('util')
 
 const posenet = require('@tensorflow-models/posenet');
 
@@ -71,6 +73,11 @@ const VideoState = {
 
 const EXTENSION_ID = 'poseBody';
 
+
+const precomputedOutputs = {
+    'https://www.tiktok.com/@_ashuu_555_/video/6776613430515289346': 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/precomputedOutputs%2Ftest2.json?alt=media&token=41d70f91-a3f7-46b2-b3d0-3584d47dd11d'
+}
+
 /**
  * Class for the motion-related blocks in Scratch 3.0
  * @param {Runtime} runtime - the runtime instantiating this block package.
@@ -94,6 +101,11 @@ class Scratch3PoseNetBlocks {
          * @type {boolean}
          */
         this.firstInstall = true;
+
+        this.videoPrecomputed = {};
+        this.runtime.on('PROJECT_START', this.unmute.bind(this));
+        this.runtime.on('PROJECT_STOP_ALL', this.mute.bind(this));
+
 
         this.currentModelConfig = {
             architecture: 'MobileNetV1',
@@ -146,6 +158,67 @@ class Scratch3PoseNetBlocks {
             motionAmount: 0,
             motionDirection: 0
         };
+    }
+
+    cameraEnabled() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const nocamera = urlParams.get('nocamera')
+        return !nocamera;
+    }
+
+    hasPrecomputed() {
+        return !!window.videoBeingPlayed && !!window.videoURL && this.videoPrecomputed.hasOwnProperty(window.videoURL);
+    }
+
+    mute() {
+        this.runtime.ioDevices.video.muteVideo();
+    }
+
+    unmute() {
+        this.runtime.ioDevices.video.unmuteVideo();
+    }
+
+    async setVideoTikTok (args) {
+        try {
+            const promiseNets = promisify(nets)
+
+            const {body} = await promiseNets({
+                url: `https://dancing-with-ai.web.app/tikTokToVideo?tikTokURL=${args.TIK_TOK_URL}`,
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                encoding: undefined,
+            });
+            await this.setVideoURL(JSON.parse(body).videoURL);
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    async setVideoURLBlock(args) {
+        await this.setVideoURL(args.VIDEO_URL);
+    }
+
+    async setVideoURL(url) {
+        await this.runtime.ioDevices.video.disableVideo();
+        await this.runtime.ioDevices.video.setVideoTo(url);
+        await this.loadPrecomputedIfAvailable(url);
+    }
+
+    async loadPrecomputedIfAvailable(url) {
+        const promiseNets = promisify(nets)
+        if (window.videoBeingPlayed &&
+            precomputedOutputs.hasOwnProperty(url) &&
+            !this.videoPrecomputed[url]
+        ) {
+            const result = await promiseNets({
+                url: precomputedOutputs[url],
+                method: 'GET',
+                encoding: undefined,
+            });
+            this.videoPrecomputed[url] = JSON.parse(result.body);
+        }
     }
 
     /**
@@ -492,6 +565,36 @@ class Scratch3PoseNetBlocks {
                         TRANSPARENCY: {
                             type: ArgumentType.NUMBER,
                             defaultValue: 50
+                        }
+                    }
+                },
+                {
+                    opcode: 'setVideoURLBlock',
+                    text: formatMessage({
+                        id: 'videoSensing.setVideoSourceTikTok',
+                        default: 'play video URL [VIDEO_URL]',
+                        description: 'Changes video source to a looping URL'
+                    }),
+                    arguments: {
+                        VIDEO_URL: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2FPexels%20Videos%202795750.mp4?alt=media&token=fb248867-c2a8-4aa2-96da-426d0df3fb17'
+                        }
+                    }
+                },
+
+                {
+                    opcode: 'setVideoTikTok',
+                    text: formatMessage({
+                        id: 'videoSensing.setVideoTikTok',
+                        default: 'play tiktok [TIK_TOK_URL]',
+                        description: 'Changes video source to a TikTok URL'
+                    }),
+                    arguments: {
+                        TIK_TOK_URL: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'https://www.tiktok.com/@_ashuu_555_/video/6776613430515289346'
+                            // defaultValue: 'https://www.tiktok.com/@messyjurdock/video/6682159214393036037'
                         }
                     }
                 },
