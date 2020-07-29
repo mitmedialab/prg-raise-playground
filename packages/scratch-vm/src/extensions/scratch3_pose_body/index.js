@@ -15,6 +15,17 @@ function friendlyRound(amount) {
     return Number(amount).toFixed(2);
 }
 
+const precomputedOutputs = {
+    'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fdancing-guy.mp4?alt=media&token=012e0937-1109-42ea-b419-b3ccee00b61f':
+        'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fdancing-guy.json?alt=media&token=9d9c9b85-79c2-4a35-b52d-1c8a5637e6a8',
+
+    'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fpose-challenge.mp4?alt=media&token=8ce79d39-1f12-478c-b645-4e8a6474944f':
+        'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fpose-challenge.json?alt=media&token=a54a7857-a58b-47d1-b08e-f41b30f2937a',
+
+
+}
+
+
 /**
  * Icon svg to be displayed in the blocks category menu, encoded as a data URI.
  * @type {string}
@@ -74,12 +85,6 @@ const VideoState = {
 const EXTENSION_ID = 'poseBody';
 
 
-const precomputedOutputs = {
-    'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fdancing-guy.mp4?alt=media&token=012e0937-1109-42ea-b419-b3ccee00b61f':
-        'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fdancing-guy.json?alt=media&token=9d9c9b85-79c2-4a35-b52d-1c8a5637e6a8',
-
-
-}
 
 /**
  * Class for the motion-related blocks in Scratch 3.0
@@ -570,7 +575,7 @@ class Scratch3PoseNetBlocks {
                         VIDEO_SELECT: {
                             type: ArgumentType.STRING,
                             menu: 'VIDEO_SELECT',
-                            defaultValue: 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fdancing-guy.mp4?alt=media&token=012e0937-1109-42ea-b419-b3ccee00b61f'
+                            defaultValue: 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fpose-challenge.mp4?alt=media&token=8ce79d39-1f12-478c-b645-4e8a6474944f'
                         }
                     }
                 },
@@ -674,6 +679,7 @@ class Scratch3PoseNetBlocks {
                     acceptReporters: true,
                     items: [
                         {text: 'roof dancing', value: 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fdancing-guy.mp4?alt=media&token=012e0937-1109-42ea-b419-b3ccee00b61f'},
+                        {text: 'pose challenge', value: 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fpose-challenge.mp4?alt=media&token=8ce79d39-1f12-478c-b645-4e8a6474944f'},
                     ]
                 },
                 RESOLUTION: {
