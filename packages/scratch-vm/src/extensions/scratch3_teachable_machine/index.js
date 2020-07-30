@@ -83,7 +83,7 @@ class Scratch3VideoSensingBlocks {
         this.runtime.registerPeripheralExtension('teachableMachine', this);	
         this.runtime.connectPeripheral('teachableMachine', 0);	
         this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
-
+    
         /**
          * The motion detection algoritm used to power the motion amount and
          * direction values.
@@ -234,10 +234,9 @@ class Scratch3VideoSensingBlocks {
         // TOOD: Self-throttle interval if slow to run predictions
         if (offset > Scratch3VideoSensingBlocks.INTERVAL && this._isPredicting === 0) {
             const frame = this.runtime.ioDevices.video.getFrame({
-                format: Video.FORMAT_IMAGE_DATA,
-                dimensions: Scratch3VideoSensingBlocks.DIMENSIONS
+                    format: Video.FORMAT_IMAGE_DATA,
+                    dimensions: Scratch3VideoSensingBlocks.DIMENSIONS
             });
-
             if (frame) {
                 this._lastUpdate = time;
                 this._isPredicting = 0;
@@ -454,33 +453,35 @@ class Scratch3VideoSensingBlocks {
                             defaultValue: this.teachableImageModel || 'https://teachablemachine.withgoogle.com/models/-2wS02uZo/'	
                         }	
                     }	
-                },	
+                },
                 '---',	
                 {	
                     // @todo (copied from motion) this hat needs to be set itself to restart existing	
                     // threads like Scratch 2's behaviour.	
                     opcode: 'whenModelMatches',	
-                    text: 'when model detects [CLASS_NAME]',	
+                    text: 'when camera detects [CLASS_NAME]',	
                     blockType: BlockType.HAT,	
                     arguments: {	
                         CLASS_NAME: {	
                             type: ArgumentType.STRING,	
                             defaultValue: this.getCurrentClasses()[0],	
                             menu: 'CLASS_NAME'	
-                        }	
-                    },	
-                },	
-                {	
-                    opcode: 'modelPrediction',	
-                    text: formatMessage({	
-                        id: 'teachableMachine.modelPrediction',	
-                        default: 'model prediction',	
-                        description: 'Value of latest model prediction'	
-                    }),	
-                    blockType: BlockType.REPORTER,	
-                    isTerminal: true,	
-                },	
-                '---',	
+                        }
+                    }
+                },
+                {
+                    opcode: 'getPredictionFor',
+                    blockType: BlockType.REPORTER,
+                    text: 'model prediction for [IMAGE_SRC]',
+                    arguments: {
+                        IMAGE_SRC: {	
+                            type: ArgumentType.STRING,	
+                            defaultValue: 'camera',	
+                            menu: 'IMAGE_SOURCES'	
+                        }
+                    }
+                },
+                '---',
                 {	
                     opcode: 'videoToggle',	
                     text: formatMessage({	
@@ -524,7 +525,11 @@ class Scratch3VideoSensingBlocks {
                 VIDEO_STATE: {	
                     acceptReporters: true,	
                     items: this._buildMenu(this.VIDEO_STATE_INFO)	
-                }	
+                },	
+                IMAGE_SOURCES: {	
+                    acceptReporters: true,	
+                    items: ['camera', 'costume image']
+                }
             }	
         };
     }
@@ -547,7 +552,7 @@ class Scratch3VideoSensingBlocks {
     }	
     useModelBlock(args, util) {	
         const modelArg = args.MODEL_URL;	
-        this.useModel(modelArg);	
+        this.useModel(modelArg);
     }	
     useModel(modelArg) {	
         try {	
@@ -575,7 +580,8 @@ class Scratch3VideoSensingBlocks {
      */
     whenModelMatches(args, util) {
         const modelUrl = this.teachableImageModel;	
-        const className = args.CLASS_NAME;	
+        const className = args.CLASS_NAME;
+        const source = args.IMAGE_SRC;
         const predictionState = this.getPredictionStateOrStartPredicting(modelUrl);	
         if (!predictionState) {	
             return false;	
@@ -586,7 +592,6 @@ class Scratch3VideoSensingBlocks {
     modelMatches(args, util) {	
         const modelUrl = this.teachableImageModel;
         const className = args.CLASS_NAME;
-
         const predictionState = this.getPredictionStateOrStartPredicting(modelUrl);
         if (!predictionState) {
             return false;
@@ -610,6 +615,38 @@ class Scratch3VideoSensingBlocks {
         }
 
         return predictionState.topClass;
+    }
+    
+    async getPredictionFor(args, util) {
+        let image_source = args.IMAGE_SRC;
+        const modelUrl = this.teachableImageModel;
+        let frame;
+        if (image_source == 'camera') {
+            frame = this.runtime.ioDevices.video.getFrame({
+                format: Video.FORMAT_IMAGE_DATA,
+                dimensions: Scratch3VideoSensingBlocks.DIMENSIONS
+            });
+        } else if (image_source == 'costume image') {
+            const drawable = this.runtime.renderer._allDrawables[util.target.drawableID];
+            const drawableSkin = drawable._skin; // can be an SVGskin or bitmap skin
+            if (drawableSkin.hasOwnProperty("_svgRenderer")) {
+                frame = drawableSkin._svgRenderer._cachedImage;
+            } else {
+                const asset = util.target.getCurrentCostume().asset;
+                if (asset && this.runtime && this.runtime.storage) {
+                    const format = asset.dataFormat;
+                    if (format === this.runtime.storage.DataFormat.PNG ||
+                        format === this.runtime.storage.DataFormat.JPG) {
+                        frame = new Image();
+                        frame.src = asset.encodeDataURI();
+                    }
+                }
+            }
+        } else {
+            frame = new Image();
+            frame.src = image_source;
+        }
+        return this.predictModel(modelUrl, frame);
     }
 
 getPredictionStateOrStartPredicting(modelUrl) {	
@@ -652,9 +689,16 @@ getPredictionStateOrStartPredicting(modelUrl) {
         
         return customMobileNet;
     }	
-    async predictModel(modelUrl, frame) {	
-        const predictions = await this.getPredictionFromModel(modelUrl, frame);	
-        if (!predictions) {	
+    async predictModel(modelUrl, frame) {
+        let predictions = null;
+        if (frame.data != null) { // have ImageData object
+            predictions = await this.getPredictionFromModel(modelUrl, frame);
+        } else { // raw base 64 image string?
+            const model = this.predictionState[modelUrl].model;
+            predictions = await model.predict(frame);	    
+        }
+        if (!predictions) {
+            console.log("no predictions in predict model");
             return;	
         }	
         let maxProbability = 0;	
@@ -671,7 +715,7 @@ getPredictionStateOrStartPredicting(modelUrl) {
     }	
     async getPredictionFromModel(modelUrl, frame) {	
         const model = this.predictionState[modelUrl].model;
-        const imageBitmap = await createImageBitmap(frame);
+        imageBitmap = await createImageBitmap(frame);
         return await model.predict(imageBitmap);	
     }
 
