@@ -576,7 +576,7 @@ class Scratch3PoseNetBlocks {
                         VIDEO_SELECT: {
                             type: ArgumentType.STRING,
                             menu: 'VIDEO_SELECT',
-                            defaultValue: 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fpose-challenge.mp4?alt=media&token=8ce79d39-1f12-478c-b645-4e8a6474944f'
+                            defaultValue: 'https://firebasestorage.googleapis.com/v0/b/dancing-with-ai.appspot.com/o/videos%2Fdancing-guy.mp4?alt=media&token=012e0937-1109-42ea-b419-b3ccee00b61f'
                         }
                     }
                 },
