@@ -1,11 +1,11 @@
+require("regenerator-runtime/runtime");
 const Runtime = require('../../engine/runtime');
 
 const ArgumentType = require('../../extension-support/argument-type');
 const BlockType = require('../../extension-support/block-type');
-const Clone = require('../../util/clone');
-const Cast = require('../../util/cast');
 const formatMessage = require('format-message');
-const Video = require('../../io/video');
+
+const microbit  = require("microbit-web-bluetooth");
 
 
 
@@ -50,7 +50,8 @@ class MicrobitRobot {
         
     
         this.scratch_vm.on('PROJECT_STOP_ALL', this.resetRobot.bind(this));
-        this.scratch_vm.on('CONNECT_MICROBIT_ROBOT', this.connectToExtension.bind(this));
+        this.scratch_vm.on('CONNECT_MICROBIT_ROBOT', this.connectToBLE.bind(this));
+        //this.scratch_vm.on('CONNECT_MICROBIT_ROBOT', this.connectToExtension.bind(this));
     }
 
     /**
@@ -282,6 +283,14 @@ class MicrobitRobot {
         this._mStatus = 1;
         console.log("Lost connection to robot");   
         this.scratch_vm.emit(this.scratch_vm.constructor.PERIPHERAL_DISCONNECTED);
+    }
+    async connectToBLE() {
+        console.log("Getting BLE device");
+        if (window.navigator.bluetooth) { // RANDI doesn't work on linux
+            const device = await microbit.requestMicrobit(window.navigator.bluetooth);
+            const services = await microbit.getServices(device);
+            console.log(services);
+        }
     }
     connectToExtension() {
         // Can probably do this without Chrome extension
