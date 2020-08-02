@@ -121,7 +121,7 @@ export default [
         ),
         featured: true
     },
-    {
+    /*{
          name: (
             <FormattedMessage
                 defaultMessage="PRG Gizmo Robot"
@@ -159,7 +159,7 @@ export default [
             />
         ),
         featured: true
-    },
+    }, */ // RANDI Removing extensions I don't want students to play with
     {
         name: (
             <FormattedMessage
