@@ -37,6 +37,8 @@ class MicrobitRobot {
         this._mStatus = 1;
         this._mConnection = null;
         this._mConnectionTimeout = null;
+        this._mDevice = null;
+        this._mServices = null;
         this.CHROME_EXTENSION_ID = "jpehlabbcdkiocalmhikacglppfenoeo"; // APP ID on Chrome Web Store
 
         this.msg1 = {};
@@ -75,7 +77,22 @@ class MicrobitRobot {
                     blockType: BlockType.BUTTON,
                     text: 'Connect Robot'
                 },
-                '---',
+                {
+                    opcode: 'sendCommand',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'arduinoBot.sendCommand',
+                        default: 'send command [COMMAND]',
+                        description: 'Send command to BLE robot'
+                    }),
+                    arguments: {
+                        COMMAND: {
+                            type:ArgumentType.STRING,
+                            defaultValue: 'A#'
+                        }    
+                    }
+                }
+                /*'---',
                 {
                     opcode: 'playMusic',
                     blockType: BlockType.COMMAND,
@@ -229,8 +246,7 @@ class MicrobitRobot {
                         description: 'Get distance read from ultrasonic distance sensor'
                     }),
                     arguments: { }
-                }
-                // play sounds
+                }*/
                 // add blocks for speech?
             ],
             menus: {
@@ -277,7 +293,6 @@ class MicrobitRobot {
     }
     disconnect() {
         console.log("Closing extension");
-        chrome.runtime.sendMessage(this.CHROME_EXTENSION_ID, { close: true });
     }
     disconnectedFromExtension() {
         this._mStatus = 1;
@@ -287,9 +302,9 @@ class MicrobitRobot {
     async connectToBLE() {
         console.log("Getting BLE device");
         if (window.navigator.bluetooth) { // RANDI doesn't work on linux
-            const device = await microbit.requestMicrobit(window.navigator.bluetooth);
-            const services = await microbit.getServices(device);
-            console.log(services);
+            this._mDevice = await microbit.requestMicrobit(window.navigator.bluetooth);
+            this._mServices = await microbit.getServices(this._mDevice);
+            console.log(this._mServices);
         }
     }
     connectToExtension() {
@@ -419,6 +434,16 @@ class MicrobitRobot {
     this.rgbLedOff();
     this.stopMusic();
     this.ledDisplayOff();
+  }
+  
+  /**
+   * RANDI test out sending commands to robot via bt
+   */
+  sendCommand (args) {
+    let command = args.COMMAND;
+    if (this._mServices) this._mServices.uartService.sendText(command);
+    else console.log("No device");
+    console.log(command);
   }
 
   /**
