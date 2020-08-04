@@ -73,22 +73,6 @@ class MicrobitRobot {
                 },
                 '---',
                 {
-                    opcode: 'playNote',
-                    blockType: BlockType.COMMAND,
-                    text: formatMessage({
-                        id: 'microbitBot.playNote',
-                        default: 'play note [NOTE]',
-                        description: 'Play note using the piezo'
-                    }),
-                    arguments: {
-                        NOTE: {
-                            type:ArgumentType.NOTE,
-                            defaultValue: 60
-                        }    
-                    }
-                },
-                '---',
-                {
                     opcode: 'setRgbLedColor',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
@@ -113,6 +97,26 @@ class MicrobitRobot {
                         description: 'Turn off the LED'
                     }),
                     arguments: { }
+                },
+                '---',
+                {
+                    opcode: 'playNote',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'microbitBot.playNote',
+                        default: 'play note [NOTE] for [NUM] seconds',
+                        description: 'Play note using the piezo'
+                    }),
+                    arguments: {
+                        NUM: {
+                            type:ArgumentType.NUMBER,
+                            defaultValue: 1
+                        },
+                        NOTE: {
+                            type:ArgumentType.NOTE,
+                            defaultValue: 60
+                        }    
+                    }
                 },
                 '---',
                 {
@@ -154,34 +158,7 @@ class MicrobitRobot {
                             defaultValue: _turn[0]
                         }
                     }
-                },
-                {
-                    opcode: 'readDistance',
-                    blockType: BlockType.REPORTER,
-                    text: formatMessage({
-                        id: 'microbitBot.readDistance',
-                        default: 'read distance',
-                        description: 'Get distance read from ultrasonic distance sensor'
-                    }),
-                    arguments: { }
                 }
-                ,'---',
-                {
-                    opcode: 'sendCommand',
-                    blockType: BlockType.COMMAND,
-                    text: formatMessage({
-                        id: 'microbitBot.sendCommand',
-                        default: 'send command [COMMAND]',
-                        description: 'Send command to BLE robot'
-                    }),
-                    arguments: {
-                        COMMAND: {
-                            type:ArgumentType.STRING,
-                            defaultValue: 'A#'
-                        }    
-                    }
-                },
-                // add blocks for speech?
             ],
             menus: {
                 COLORS: {
@@ -202,16 +179,14 @@ class MicrobitRobot {
     
     /* The following 4 functions have to exist for the peripherial indicator */
     connect() {
-        
     }
     disconnect() {
-        
     }
     scan() {
         
     }
     isConnected() {
-        //console.log("isConnected status: " + this._mStatus);
+        console.log("isConnected status: " + this._mStatus);
         return (this._mStatus == 2);
     }
     
@@ -222,16 +197,17 @@ class MicrobitRobot {
     
     async connectToBLE() {
         console.log("Getting BLE device");
+        
         if (window.navigator.bluetooth) {
             this._mDevice = await microbit.requestMicrobit(window.navigator.bluetooth);
             this._mServices = await microbit.getServices(this._mDevice);
             
             console.log(this._mServices);
-            
+  
             if (this._mServices.deviceInformationServices) {
+                this._mStatus = 2;            
                 this.scratch_vm.emit(this.scratch_vm.constructor.PERIPHERAL_CONNECTED);
-                this._mStatus = 2;
-                
+
                 if (this._mServices.uartService) this._mServices.uartService.addEventListener("receiveText", updateDistance);
             }
         } else {
@@ -260,7 +236,7 @@ class MicrobitRobot {
    */
   playNote (args) {
     console.log("play note: " + args.NOTE);
-    
+    let secs = args.NUM;
     let noteIdx = Cast.toNumber(args.NOTE);
     noteIdx = MathUtil.clamp(noteIdx, MIN_PIEZO_NOTE, MAX_PIEZO_NOTE) - 60;
     let note = _notes_protocol[noteIdx];
@@ -269,7 +245,12 @@ class MicrobitRobot {
     // Play song  
     if (this._mServices) this._mServices.uartService.sendText(note);
     
-    return this.stopMusic();
+    return new Promise(resolve => {
+            setTimeout(() => {
+                this.stopMusic();
+                resolve();
+            }, secs*1000);
+        });
   }
   
   stopMusic () {
