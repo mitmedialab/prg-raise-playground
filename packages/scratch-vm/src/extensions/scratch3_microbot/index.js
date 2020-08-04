@@ -204,11 +204,11 @@ class MicrobitRobot {
             
             console.log(this._mServices);
   
-            if (this._mServices.deviceInformationServices) {
+            if (this._mServices.deviceInformationService) {
                 this._mStatus = 2;            
                 this.scratch_vm.emit(this.scratch_vm.constructor.PERIPHERAL_CONNECTED);
 
-                if (this._mServices.uartService) this._mServices.uartService.addEventListener("receiveText", updateDistance);
+                if (this._mServices.uartService) this._mServices.uartService.addEventListener("receiveText", this.updateDistance.bind(this));
             }
         } else {
             console.log("Your device does not support BLE connections"); // RANDI make a way to display this more obviously
