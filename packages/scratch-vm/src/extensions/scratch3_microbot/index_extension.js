@@ -5,6 +5,13 @@ const BlockType = require('../../extension-support/block-type');
 const Clone = require('../../util/clone');
 const Cast = require('../../util/cast');
 const formatMessage = require('format-message');
+const Video = require('../../io/video');const Runtime = require('../../engine/runtime');
+
+const ArgumentType = require('../../extension-support/argument-type');
+const BlockType = require('../../extension-support/block-type');
+const Clone = require('../../util/clone');
+const Cast = require('../../util/cast');
+const formatMessage = require('format-message');
 const Video = require('../../io/video');
 
 
@@ -37,7 +44,7 @@ class MicrobitRobot {
         this._mStatus = 1;
         this._mConnection = null;
         this._mConnectionTimeout = null;
-        this.CHROME_EXTENSION_ID = "jpehlabbcdkiocalmhikacglppfenoeo"; // "eejmodfdiabmdkoejdldmoppnnafbpkb" APP ID on Chrome Web Store
+        this.CHROME_EXTENSION_ID = "jpehlabbcdkiocalmhikacglppfenoeo"; // APP ID on Chrome Web Store
 
         this.msg1 = {};
         this.msg2 = {};
@@ -50,8 +57,7 @@ class MicrobitRobot {
         
     
         this.scratch_vm.on('PROJECT_STOP_ALL', this.resetRobot.bind(this));
-    
-        this.connectToExtension();
+        this.scratch_vm.on('CONNECT_MICROBIT_ROBOT', this.connectToExtension.bind(this));
     }
 
     /**
@@ -70,6 +76,12 @@ class MicrobitRobot {
             menuIconURI: blockIconURI,
 
             blocks: [
+                {
+                    func: 'CONNECT_MICROBIT_ROBOT',
+                    blockType: BlockType.BUTTON,
+                    text: 'Connect Robot'
+                },
+                '---',
                 {
                     opcode: 'playMusic',
                     blockType: BlockType.COMMAND,
@@ -275,8 +287,11 @@ class MicrobitRobot {
     }
     disconnectedFromExtension() {
         this._mStatus = 1;
+        var msg = {}; 
         console.log("Lost connection to robot");   
         this.scratch_vm.emit(this.scratch_vm.constructor.PERIPHERAL_DISCONNECTED);
+        msg.status = "disconnected";
+        if (this._mConnection != null) this._mConnection.postMessage(msg);  
     }
     connectToExtension() {
         // Can probably do this without Chrome extension
@@ -300,11 +315,15 @@ class MicrobitRobot {
                 console.log("Stored extension ID: " + robot.CHROME_EXTENSION_ID);
                 if (robot.CHROME_EXTENSION_ID === undefined || robot.CHROME_EXTENSION_ID === "" || robot.CHROME_EXTENSION_ID === null) {
                     // If there is no extension ID in local browser storage, prompt user to enter one
-                   robot.CHROME_EXTENSION_ID = window.prompt("Enter the correct Chrome Extension ID", "pnjoidacmeigcdbikhgjolnadkdiegca");  
+                   robot.CHROME_EXTENSION_ID = window.prompt("Enter the correct Chrome Extension ID", "jpehlabbcdkiocalmhikacglppfenoeo");
                 }
                 robot._mStatus = 0;
                 // Try to connect to the Chrome extension again
-                robot.connectToExtension();
+                if (robot.CHROME_EXTENSION_ID === null) { // user must have hit cancel
+                    robot.CHROME_EXTENSION_ID = "jpehlabbcdkiocalmhikacglppfenoeo"; // molfimodiodghknifkeikkldkogpapki
+                } else {
+                    robot.connectToExtension();
+                }
             } else if (response.status === false) { //Chrome app says not connected
                 console.log("Chome extension is not running"); // what does this mean?
                 robot._mStatus = 1;
@@ -414,15 +433,15 @@ class MicrobitRobot {
     
     // Send message
     var msg = {};
-	msg.buffer = [77,idxStr,10]; 
-    this._mConnection.postMessage(msg);  
+	msg.buffer = [77,idxStr,10];
+    if (this._mConnection != null) this._mConnection.postMessage(msg);  
   }
   
   stopMusic (args) {
     console.log("Music off");
     var msg = {};
     msg.buffer = [77,48,10];
-    this._mConnection.postMessage(msg);
+    if (this._mConnection != null) this._mConnection.postMessage(msg);  
         
     return;
   }
@@ -439,14 +458,14 @@ class MicrobitRobot {
     // Send message
     var msg = {};
 	msg.buffer = [76,idxStr,10]; 
-    this._mConnection.postMessage(msg);
+    if (this._mConnection != null) this._mConnection.postMessage(msg);  
     
   }
   rgbLedOff () {
     console.log("Headlights off");
     var msg = {};
     msg.buffer = [76,48,10];
-    this._mConnection.postMessage(msg);
+    if (this._mConnection != null) this._mConnection.postMessage(msg);  
         
     return;
   }
@@ -462,14 +481,14 @@ class MicrobitRobot {
     // Send message
     var msg = {};
 	msg.buffer = [83,idxStr,10]; 
-    this._mConnection.postMessage(msg);
+    if (this._mConnection != null) this._mConnection.postMessage(msg);  
     
   }
   ledDisplayOff () {
     console.log("LED display off");
     var msg = {};
     msg.buffer = [83,48,10];
-    this._mConnection.postMessage(msg);
+    if (this._mConnection != null) this._mConnection.postMessage(msg);  
         
     return;
   }
@@ -536,7 +555,7 @@ class MicrobitRobot {
     var msg = {};
     console.log("Sending D0 to stop servos");
     msg.buffer = [68,48,10];
-    this._mConnection.postMessage(msg);
+    if (this._mConnection != null) this._mConnection.postMessage(msg);  
   }
     
   /**
@@ -558,7 +577,7 @@ class MicrobitRobot {
         msg.buffer = [68,50,10];
 
     }
-    this._mConnection.postMessage(msg);
+    if (this._mConnection != null) this._mConnection.postMessage(msg);  
     
     return new Promise(resolve => {
             setTimeout(() => {
@@ -587,7 +606,7 @@ class MicrobitRobot {
         msg.buffer = [68,52,10];
     }
 
-    this._mConnection.postMessage(msg);
+    if (this._mConnection != null) this._mConnection.postMessage(msg);  
     
     return new Promise(resolve => {
             setTimeout(() => {
