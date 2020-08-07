@@ -330,7 +330,8 @@ class MicrobitRobot {
     let colorCmd = 0;
     
     if (args.COLOR == 'random') {
-        colorCmd = Math.floor(Math.random() * (_colors.length - 1))
+        let idx = Math.floor(Math.random() * (_colors.length - 1));
+        colorCmd = _colors_protocol[idx];
     } else {
         colorCmd = _colors_protocol[_colors.indexOf(args.COLOR)];
     }
