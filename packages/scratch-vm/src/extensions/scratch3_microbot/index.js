@@ -230,9 +230,10 @@ class MicrobitRobot {
         return (this._mStatus == 2);
     }
     
-    disconnectedFromExtension() {
+    onDeviceDisconnected() {
         console.log("Lost connection to robot");   
         this.scratch_vm.emit(this.scratch_vm.constructor.PERIPHERAL_DISCONNECTED);
+        this._mStatus = 1;
     }
     
     async connectToBLE() {
@@ -248,7 +249,10 @@ class MicrobitRobot {
                     this._mStatus = 2;            
                     this.scratch_vm.emit(this.scratch_vm.constructor.PERIPHERAL_CONNECTED);
     
-                    if (this._mServices.uartService) this._mServices.uartService.addEventListener("receiveText", this.updateDistance.bind(this));
+                    if (this._mServices.uartService) {
+                        this._mServices.uartService.addEventListener("receiveText", this.updateDistance.bind(this));
+                        this._mDevice.addEventListener("gattserverdisconnected", this.onDeviceDisconnected.bind(this));
+                    }
                 }
             } catch(err) {
                 alert("Your device does not support BLE connections");
