@@ -52,10 +52,12 @@ class MicrobitRobot {
         this._mServices = null;
 
         this.dist_read  = 0;
-        this.last_reading = 0;
+        this.last_reading_time = 0;
         
-        this.scratch_vm.on('PROJECT_STOP_ALL', this.resetRobot.bind(this));
+        this.scratch_vm.on('PROJEeCT_STOP_ALL', this.resetRobot.bind(this));
         this.scratch_vm.on('CONNECT_MICROBIT_ROBOT', this.connectToBLE.bind(this));
+        
+        console.log("Version: setting time interval on distance read");
     }
 
     /**
@@ -305,6 +307,7 @@ class MicrobitRobot {
     
     // Play song  
     if (this._mServices) this._mServices.uartService.sendText(note);
+    if (this._mServices) this._mServices.uartService.sendText("Q#");
     
     return new Promise(resolve => {
             setTimeout(() => {
@@ -317,6 +320,7 @@ class MicrobitRobot {
   stopMusic () {
     console.log("Music off");     
     if (this._mServices) this._mServices.uartService.sendText('O#');
+    if (this._mServices) this._mServices.uartService.sendText('W#');
     
     return;
   }
@@ -364,7 +368,13 @@ class MicrobitRobot {
      * @returns {string} the distance, in cm, of the nearest object. -1 means error
      */
   readDistance () {
-    if (this._mServices) this._mServices.uartService.sendText('W#'); // send command to trigger distance read
+    let current_time = Date.now();
+    if (current_time - this.last_reading_time > 250) {
+        console.log("Updating distance");
+        // send command to trigger distance read
+        if (this._mServices) this._mServices.uartService.sendText('W#');
+        this.last_reading_time = current_time;
+    }
     
     let distance = this.dist_read;
     if (distance == 0) {
