@@ -363,11 +363,12 @@ class MicrobitRobot {
      * @returns {string} the distance, in cm, of the nearest object. -1 means error
      */
   readDistance () {
+    if (this._mServices) this._mServices.uartService.sendText('W#'); // send command to trigger distance read
+    
     let distance = this.dist_read;
     if (distance == 0) {
         distance = -1;
     }
-    
     
     return distance;
   }
