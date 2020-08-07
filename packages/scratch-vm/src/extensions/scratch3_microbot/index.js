@@ -307,7 +307,6 @@ class MicrobitRobot {
     
     // Play song  
     if (this._mServices) this._mServices.uartService.sendText(note);
-    if (this._mServices) this._mServices.uartService.sendText("Q#");
     
     return new Promise(resolve => {
             setTimeout(() => {
@@ -320,7 +319,6 @@ class MicrobitRobot {
   stopMusic () {
     console.log("Music off");     
     if (this._mServices) this._mServices.uartService.sendText('O#');
-    if (this._mServices) this._mServices.uartService.sendText('W#');
     
     return;
   }
