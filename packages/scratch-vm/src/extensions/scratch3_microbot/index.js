@@ -182,6 +182,16 @@ class MicrobitRobot {
                             defaultValue: _turn[0]
                         }
                     }
+                },
+                '---',
+                {
+                    opcode: 'readDistance',
+                    blockType: BlockType.REPORTER,
+                    text: formatMessage({
+                        id: 'arduinoBot.readDistance',
+                        default: 'read distance',
+                        description: 'Get distance read from ultrasonic distance sensor'
+                    })
                 }
             ],
             menus: {
@@ -242,7 +252,7 @@ class MicrobitRobot {
                 alert("Your device does not support BLE connections");
             }
         } else {
-            alert("Your device does not support BLE connections");
+            alert("Error trying to connect to BLE devices. Please try again.");
         }
     }
    
@@ -341,7 +351,11 @@ class MicrobitRobot {
    */
   updateDistance (event) {
     console.log("Got UART data: " + event.detail);
-    console.log(event);
+    //console.log(event);
+    
+    let distance_string = event.detail.split(",")[0];
+    this.dist_read = parseInt(distance_string.substring(4));
+    if (isNaN(this.dist_read)) this.dist_read = 0;
   }
   
   /**
@@ -349,10 +363,12 @@ class MicrobitRobot {
      * @returns {string} the distance, in cm, of the nearest object. -1 means error
      */
   readDistance () {
-    var distance = this.dist_read;
+    let distance = this.dist_read;
     if (distance == 0) {
         distance = -1;
     }
+    
+    
     return distance;
   }
 
