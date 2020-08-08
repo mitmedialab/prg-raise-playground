@@ -12,12 +12,12 @@ const microbit  = require("microbit-web-bluetooth");
 
 
 const blockIconURI = 'data:image/png;base64,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';
-const _colors = ['red', 'green', 'blue', 'yellow', 'cyan', 'magenta', 'random'];
+const _colors = ['red', 'green', 'blue', 'yellow', 'cyan', 'magenta', 'white', 'random'];
 const _colors_protocol = ['G#','H#','I#','J#','K#','L#','M#'];
 
 const _songs = ['happy','sad','sleeping','angry','up', 'down', 'victory'];
 const _songs_notes = [[64, 65, 67], // happy
-                      [69, 67, 65, 62], // sad
+                      [69, 67, 65, 62, 60], // sad
                       [60, 62, 64, 60, 60, 62, 64, 60], // sleeping
                       [67, 67, 67, 64, 64, 65, 65, 65, 62], // angry
                       [64, 65, 67, 69, 71, 72], // up
@@ -29,6 +29,10 @@ const MAX_PIEZO_NOTE = 72;
 
 const _drive = ['forward', 'backward'];
 const _turn = ['left', 'right'];
+
+const _button = ['A','B','A or B','A and B','neither A nor B'];
+const _line_states = ['right side', 'left side', 'neither side', 'both sides'];
+
 const EXTENSION_ID = 'microbitRobot';
 
 
@@ -52,12 +56,16 @@ class MicrobitRobot {
         this._mServices = null;
 
         this.dist_read  = 0;
+        this.a_button = 0;
+        this.b_button = 0;
+        this.left_line = 0;
+        this.right_line = 0;
         this.last_reading_time = 0;
         
         this.scratch_vm.on('PROJEeCT_STOP_ALL', this.resetRobot.bind(this));
         this.scratch_vm.on('CONNECT_MICROBIT_ROBOT', this.connectToBLE.bind(this));
         
-        console.log("Version: setting time interval on distance read");
+        console.log("Version: adding new microbit blocks");
     }
 
     /**
@@ -98,6 +106,37 @@ class MicrobitRobot {
                 },
                 '---',
                 {
+                    opcode: 'setLedDisplay',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'microbitBot.setLEDDisplay',
+                        default: 'display [MATRIX]',
+                        description: 'Set the LED display'
+                    }),
+                    arguments: {
+                        MATRIX: {
+                            type: ArgumentType.MATRIX,
+                            defaultValue: '0101010101100010101000100'
+                        }
+                    }
+                },
+                {
+                    opcode: 'writeLedString',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'microbitBot.writeLEDString',
+                        default: 'display text [TEXT]',
+                        description: 'Write string to LED display'
+                    }),
+                    arguments: {
+                        TEXT: {
+                            type: ArgumentType.STRING,
+                            defaultValue: "Hello"
+                        }
+                    }
+                },
+                '---',
+                {
                     opcode: 'setRgbLedColor',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
@@ -122,42 +161,6 @@ class MicrobitRobot {
                         description: 'Turn off the LED'
                     }),
                     arguments: { }
-                },
-                '---',
-                {
-                    opcode: 'playMusic',
-                    blockType: BlockType.COMMAND,
-                    text: formatMessage({
-                        id: 'arduinoBot.playMusic',
-                        default: 'play song [SONG]',
-                        description: 'Play song using the piezo'
-                    }),
-                    arguments: {
-                        SONG: {
-                            type:ArgumentType.STRING,
-                            menu: 'SONGS',
-                            defaultValue: _songs[0]
-                        }    
-                    }
-                },
-                {
-                    opcode: 'playNote',
-                    blockType: BlockType.COMMAND,
-                    text: formatMessage({
-                        id: 'microbitBot.playNote',
-                        default: 'play note [NOTE] for [NUM] seconds',
-                        description: 'Play note using the piezo'
-                    }),
-                    arguments: {
-                        NUM: {
-                            type:ArgumentType.NUMBER,
-                            defaultValue: 1
-                        },
-                        NOTE: {
-                            type:ArgumentType.NOTE,
-                            defaultValue: 60
-                        }    
-                    }
                 },
                 '---',
                 {
@@ -202,6 +205,74 @@ class MicrobitRobot {
                 },
                 '---',
                 {
+                    opcode: 'playMusic',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'arduinoBot.playMusic',
+                        default: 'play song [SONG]',
+                        description: 'Play song using the piezo'
+                    }),
+                    arguments: {
+                        SONG: {
+                            type:ArgumentType.STRING,
+                            menu: 'SONGS',
+                            defaultValue: _songs[0]
+                        }    
+                    }
+                },
+                {
+                    opcode: 'playNote',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'microbitBot.playNote',
+                        default: 'play note [NOTE] for [NUM] seconds',
+                        description: 'Play note using the piezo'
+                    }),
+                    arguments: {
+                        NUM: {
+                            type:ArgumentType.NUMBER,
+                            defaultValue: 1
+                        },
+                        NOTE: {
+                            type:ArgumentType.NOTE,
+                            defaultValue: 60
+                        }    
+                    }
+                },
+                '---',
+                {
+                    opcode: 'whenButtonPressed',
+                    text: formatMessage({
+                        id: 'arduinoBot.readButtonStatus',
+                        default: 'when [BUTTON] button pressed',
+                        description: 'Trigger when buttons on microbit are pressed'
+                    }),
+                    blockType: BlockType.HAT,
+                    arguments: {
+                        BUTTON: {
+                            type:ArgumentType.String,
+                            menu: 'BUTTON_STATES',
+                            defaultValue: _button[0]
+                        }
+                    }
+                },
+                {
+                    opcode: 'readLineStatus',
+                    blockType: BlockType.BOOLEAN,
+                    text: formatMessage({
+                        id: 'arduinoBot.readLineSensorStatus',
+                        default: 'line detected on [LINE]',
+                        description: 'detect line sensor state'
+                    }),
+                    arguments: {
+                        LINE: {
+                            type:ArgumentType.String,
+                            menu: 'LINE_STATES',
+                            defaultValue: _line_states[0]
+                        }
+                    }
+                },
+                {
                     opcode: 'readDistance',
                     blockType: BlockType.REPORTER,
                     text: formatMessage({
@@ -227,6 +298,14 @@ class MicrobitRobot {
                 TURNS: {
                     acceptReporters: false,
                     items: _turn
+                },
+                BUTTON_STATES: {
+                    acceptReporters: false,
+                    items: _button
+                },
+                LINE_STATES: {
+                    acceptReporters: false,
+                    items: _line_states
                 }
             }
         };
@@ -265,12 +344,13 @@ class MicrobitRobot {
                     this.scratch_vm.emit(this.scratch_vm.constructor.PERIPHERAL_CONNECTED);
     
                     if (this._mServices.uartService) {
-                        this._mServices.uartService.addEventListener("receiveText", this.updateDistance.bind(this));
+                        this._mServices.uartService.addEventListener("receiveText", this.updateSensors.bind(this));
                         this._mDevice.addEventListener("gattserverdisconnected", this.onDeviceDisconnected.bind(this));
                     }
                 }
             } catch(err) {
-                alert("Your device does not support BLE connections");
+                console.log(err);
+                if (err instanceof DOMException) alert("Your device does not support BLE connections");
             }
         } else {
             alert("Error trying to connect to BLE devices. Please try again.");
@@ -290,7 +370,28 @@ class MicrobitRobot {
     let command = args.COMMAND;
     if (this._mServices) this._mServices.uartService.sendText(command);
     else console.log("No device");
-    console.log(command);
+  }
+  
+  setLedDisplay (args) {
+    let matrix = args.MATRIX;
+    let ledMatrix = [[false, false, false, false, false],
+                     [false, false, false, false, false],
+                     [false, false, false, false, false],
+                     [false, false, false, false, false],
+                     [false, false, false, false, false]];
+    for (let i = 0; i < 5; i++) {
+        for (let j = 0; j < 5; j++) {
+            if (matrix[5*i+j] == 1) ledMatrix[i][j] = true;
+        }
+    }
+    if (this._mServices) this._mServices.ledService.sendText(ledMatrix);
+    console.log("Set led matrix: " + ledMatrix);
+  }
+  
+  writeLedString (args) {
+    let text = args.TEXT;
+    if (this._mServices) this._mServices.ledService.writeText(text);
+    console.log("Write led string: " + text);
   }
   
    /**
@@ -346,7 +447,6 @@ class MicrobitRobot {
    *
    */
   setRgbLedColor (args) {
-    console.log("set LED color: " + args.COLOR);
     // Translate color to ble protocol command
     let colorCmd = 0;
     
@@ -357,13 +457,14 @@ class MicrobitRobot {
         colorCmd = _colors_protocol[_colors.indexOf(args.COLOR)];
     }
     
+    console.log("set LED color: " + args.COLOR + " " + colorCmd);
     // Send message
     if (this._mServices) this._mServices.uartService.sendText(colorCmd);
     
   }
   rgbLedOff () {
-    console.log("Headlights off");
-    if (this._mServices) this._mServices.uartService.sendText('M#');
+    console.log("Headlights off: " + "O#");
+    if (this._mServices) this._mServices.uartService.sendText('O#');
         
     return;
   }
@@ -371,12 +472,17 @@ class MicrobitRobot {
   /**
    *
    */
-  updateDistance (event) {
+  updateSensors (event) {
     console.log("Got UART data: " + event.detail);
     //console.log(event);
-    
-    let distance_string = event.detail.split(",")[0];
-    this.dist_read = parseInt(distance_string.substring(4));
+    let readings = event.detail.split(",")
+    if (readings.length == 5) {
+        this.dist_read = parseInt(readings[0].substring(4));
+        this.a_button = parseInt(readings[1]);
+        this.b_button = parseInt(readings[2]);
+        this.right_line = parseInt(readings[3]);
+        this.left_line = parseInt(readings[4]);
+    }
     if (isNaN(this.dist_read)) this.dist_read = 0;
   }
   
@@ -387,7 +493,7 @@ class MicrobitRobot {
   readDistance () {
     let current_time = Date.now();
     if (current_time - this.last_reading_time > 250) {
-        console.log("Updating distance");
+        console.log("Updating sensors");
         // send command to trigger distance read
         if (this._mServices) this._mServices.uartService.sendText('W#');
         this.last_reading_time = current_time;
@@ -399,6 +505,65 @@ class MicrobitRobot {
     }
     
     return distance;
+  }
+  
+      /**
+     * Implement readButtonStaus
+     * @returns {string} t
+     */
+  readButtonStatus (args) {
+    if (current_time - this.last_reading_time > 250) {
+        console.log("Updating sensors");
+        // send command to trigger distance read
+        if (this._mServices) this._mServices.uartService.sendText('W#');
+        this.last_reading_time = current_time;
+    }
+    
+    var state = args.BUTTON;
+    if (state == 'A') {
+        return this.a_button == 1;   
+    } else if (state == 'B') {
+        return this.b_button == 1;
+    } else if (state == 'A or B') {
+        return (this.a_button == 1) || (this.b_button == 1);
+    } else if (state == 'A and B') {
+        return (this.a_button == 1) && (this.b_button == 1);
+    } else if (state == 'neither A nor B') {
+        return (this.a_button == 0) && (this.b_button == 0);
+    }
+    return false; // should never get here
+  }
+  /**
+    * Implement whenButtonPressed
+    */
+  whenButtonPressed(args) {
+    return this.readButtonStatus(args);
+  }
+  
+  /**
+     * Implement readLineStatus
+     * @returns {string} t
+     */
+  readLineStatus (args) {
+    if (current_time - this.last_reading_time > 250) {
+        console.log("Updating sensors");
+        // send command to trigger distance read
+        if (this._mServices) this._mServices.uartService.sendText('W#');
+        this.last_reading_time = current_time;
+    }
+    
+    var state = args.LINE;
+    
+    if (state == 'right side') {
+        return this.right_line == 1;   
+    } else if (state == 'left side') {
+        return this.left_line == 1;
+    } else if (state == 'both sides') {
+        return (this.right_line == 1) && (this.left_line == 1);
+    } else if (state == 'neither side') {
+        return (this.right_line == 0) && (this.left_line == 0);
+    }
+    return false; // should never get here
   }
 
   stopMotors () {
