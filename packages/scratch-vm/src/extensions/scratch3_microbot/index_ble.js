@@ -65,7 +65,7 @@ class MicrobitRobot {
         this.scratch_vm.on('PROJEeCT_STOP_ALL', this.resetRobot.bind(this));
         this.scratch_vm.on('CONNECT_MICROBIT_ROBOT', this.connectToBLE.bind(this));
         
-        console.log("Version: adding new microbit blocks");
+        console.log("Version: fixing matrix, sensor, and headlight issues");
     }
 
     /**
@@ -384,14 +384,16 @@ class MicrobitRobot {
             if (matrix[5*i+j] == 1) ledMatrix[i][j] = true;
         }
     }
-    if (this._mServices) this._mServices.ledService.sendText(ledMatrix);
     console.log("Set led matrix: " + ledMatrix);
+    if (this._mServices) this._mServices.ledService.writeMatrixState(ledMatrix);
+
   }
   
   writeLedString (args) {
     let text = args.TEXT;
-    if (this._mServices) this._mServices.ledService.writeText(text);
     console.log("Write led string: " + text);
+    if (this._mServices) this._mServices.ledService.writeText(text);
+
   }
   
    /**
@@ -464,7 +466,7 @@ class MicrobitRobot {
   }
   rgbLedOff () {
     console.log("Headlights off: " + "O#");
-    if (this._mServices) this._mServices.uartService.sendText('O#');
+    if (this._mServices) this._mServices.uartService.sendText('N#');
         
     return;
   }
@@ -480,10 +482,14 @@ class MicrobitRobot {
         this.dist_read = parseInt(readings[0].substring(4));
         this.a_button = parseInt(readings[1]);
         this.b_button = parseInt(readings[2]);
-        this.right_line = parseInt(readings[3]);
-        this.left_line = parseInt(readings[4]);
+        this.left_line = parseInt(readings[3]);
+        this.right_line = parseInt(readings[4]);
     }
     if (isNaN(this.dist_read)) this.dist_read = 0;
+    if (isNaN(this.a_button)) this.a_button = 0;
+    if (isNaN(this.b_button)) this.b_button = 0;
+    if (isNaN(this.left_line)) this.left_line = 0;
+    if (isNaN(this.right_line)) this.right_line = 0;
   }
   
   /**
@@ -512,6 +518,7 @@ class MicrobitRobot {
      * @returns {string} t
      */
   readButtonStatus (args) {
+    let current_time = Date.now();
     if (current_time - this.last_reading_time > 250) {
         console.log("Updating sensors");
         // send command to trigger distance read
@@ -545,6 +552,7 @@ class MicrobitRobot {
      * @returns {string} t
      */
   readLineStatus (args) {
+    let current_time = Date.now();
     if (current_time - this.last_reading_time > 250) {
         console.log("Updating sensors");
         // send command to trigger distance read
