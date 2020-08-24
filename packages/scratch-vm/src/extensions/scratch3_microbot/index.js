@@ -77,7 +77,7 @@ class MicrobitRobot {
             name: formatMessage({
                 id: 'microbitRobot',
                 default: 'PRG Microbit Robot Blocks',
-                description: 'Extension using BLE to communicate with Microbit robot. Based off Yahboom bluetooth protocol http://www.yahboom.net/xiazai/Download/MBIT_Bluetooth_protocol/APP%20communication%20protocol.pdf'
+                description: 'Extension using BLE to communicate with Microbit robot. Use hex file in https://sites.google.com/view/httyr-setup'
             }),
             showStatusButton: true,
             blockIconURI: blockIconURI,
@@ -361,7 +361,7 @@ class MicrobitRobot {
                 }
             } catch(err) {
                 console.log(err);
-                if (err.message == "Bluetooth adapter not available.") alert("Your device does not support BLE connections");
+                if (err.message == "Bluetooth adapter not available.") alert("Your device does not support BLE connections. Please use USB or go to the robot setup instructions to install the Gizmo Robot Extension.");
             }
         } else {
             alert("Error trying to connect to BLE devices. Please try again.");
