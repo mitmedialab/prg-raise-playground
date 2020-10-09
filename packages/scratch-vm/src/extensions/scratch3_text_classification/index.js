@@ -378,7 +378,7 @@ class Scratch3TextClassificationBlocks {
                     arguments: {
                         TEXT: {
                             type: ArgumentType.STRING,
-                            defaultValue: 'text'
+                            defaultValue: 'Enter text or answer block'
                         },
                         CLASS_NAME: {
                             type: ArgumentType.STRING,
@@ -398,7 +398,7 @@ class Scratch3TextClassificationBlocks {
                     arguments: {
                         TEXT: {
                             type: ArgumentType.STRING,
-                            defaultValue: 'text'
+                            defaultValue: 'Enter text or answer block'
                         }
                     },
                 },
