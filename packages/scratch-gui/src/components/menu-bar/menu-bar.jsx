@@ -387,7 +387,7 @@ class MenuBar extends React.Component {
                                                 this.props.vm.loadLastClipOnGfy();	                                   
                                             }}	                                   
                                         >	                                  
-                                            Load Last Uploaded Clip	                                  
+                                            Load Last Uploaded Clip                                 
                                         </MenuItem>	                                 
                                     </MenuSection>
                                     {(this.props.canSave || this.props.canCreateCopy || this.props.canRemix) && (
