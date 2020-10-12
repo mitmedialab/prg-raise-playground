@@ -30,9 +30,12 @@
   },
   "dependencies": {
     "@teachablemachine/image": "^0.8.4",
+    "@teachablemachine/pose": "^0.8.6",
+    "@tensorflow-models/handpose": "0.0.3",
+    "@tensorflow-models/posenet": "^2.2.1",
+    "@tensorflow-models/speech-commands": "^0.4.2",
     "@tensorflow-models/knn-classifier": "^1.2.2",
     "@tensorflow-models/universal-sentence-encoder": "^1.2.2",
-    "watson-developer-cloud": "4.0.1",
     "@tensorflow/tfjs": "^1.5.1",
     "@vernier/godirect": "1.5.0",
     "arraybuffer-loader": "^1.0.6",
