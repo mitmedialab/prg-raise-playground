@@ -212,6 +212,15 @@ class MicrobitRobot {
                         }
                     }
                 },
+                {
+                    opcode: 'stopMotors',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'arduinoBot.stopMotors',
+                        default: 'stop motors',
+                        description: 'Stop both motors on the robot'
+                    })
+                },
                 '---',
                 {
                     opcode: 'playMusic',
@@ -621,6 +630,9 @@ class MicrobitRobot {
     }
     if (this._mConnection != null) this._mConnection.postMessage(msg);  
     
+    if (secs == '') // if seconds is left blank, don't pump the brakes
+        return;
+    
     return new Promise(resolve => {
             setTimeout(() => {
                 this.stopMotors();
@@ -649,6 +661,9 @@ class MicrobitRobot {
     }
 
     if (this._mConnection != null) this._mConnection.postMessage(msg);  
+
+    if (secs == '') // if seconds is left blank, don't pump the brakes
+        return;
     
     return new Promise(resolve => {
             setTimeout(() => {
