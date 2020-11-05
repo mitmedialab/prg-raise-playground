@@ -278,7 +278,7 @@ export default [
             />
         ),
         featured: true
-    },
+    },*/
     {
         name: 'micro:bit',
         extensionId: 'microbit',
@@ -309,7 +309,7 @@ export default [
         ),
         helpLink: 'https://scratch.mit.edu/microbit'
     },
-    {
+    /*{
         name: 'LEGO MINDSTORMS EV3',
         extensionId: 'ev3',
         collaborator: 'LEGO',
