@@ -20,6 +20,8 @@ const Timer = require('../../util/timer');
 const tf = require('@tensorflow/tfjs');
 const knnClassifier = require('@tensorflow-models/knn-classifier');
 const use = require('@tensorflow-models/universal-sentence-encoder');
+const Papa = require('papaparse');
+const { range } = require("@tensorflow/tfjs");
 
 
 /**
@@ -538,8 +540,7 @@ class Scratch3TextClassificationBlocks {
      * @param {string} label the name of the label
      */
     newExamples (text_examples, label) {   //add examples for a label
-        console.log("Add examples to label " + label);
-        console.log(text_examples);
+        console.log("Add examples" + text_examples + " to label " + label);
         if (this.labelListEmpty) {
             // Edit label list accordingly
             this.labelList.splice(this.labelList.indexOf(''), 1);
@@ -964,6 +965,7 @@ class Scratch3TextClassificationBlocks {
         a.setAttribute("href", "data:" + data);
         a.setAttribute("download", "classifier-info.json");
         a.click();
+
       }
    /**
      * Loads the json document which contains labels and examples. Inputs the labels and examples into the classifier
@@ -972,13 +974,16 @@ class Scratch3TextClassificationBlocks {
         var self = this
         var dataset = document.getElementById("imported-classifier").files[0];
         if (dataset !== undefined) {
-        fr = new FileReader();
-        fr.onload = receivedText;
-        fr.readAsText(dataset);
+            fr = new FileReader();
+            fr.onload = receivedText;
+            fr.readAsText(dataset);
         }
-  
-      function receivedText(e) { //parses through the json document and adds to the model textData and classifier
+
+      // parses through the json document and adds to the model textData and classifier
+      function receivedText(e) { 
         let lines = e.target.result;
+
+        // check if JSON is in the correct form
         try {
         var newArr = JSON.parse(lines);
         self.clearAll();
@@ -990,12 +995,35 @@ class Scratch3TextClassificationBlocks {
             }
         }
     } catch (err) {
-        console.log("Incorrect document form");
+        // check if spreadsheet CSV is in the correct form
+        try {
+            // converts the csv file into JSON
+            var newArr = Papa.parse(lines,{ header: true, skipEmptyLines: 'greedy' });
+            self.clearAll();
+            // adds the labels to the classifier
+            for (let row in newArr.data) {
+                for (let col in newArr.data[row]) {
+                    // if we have not already added the label
+                    if (!(col in self.scratch_vm.modelData.textData)) { 
+                        if (col) {
+                            self.newLabel(col);
+                        }
+                    }
+                    // adds the examples to the classifier
+                    if (newArr.data[row][col]) {
+                        console.log(newArr.data[row][col])
+                        self.newExamples([newArr.data[row][col]],[col])
+                    }
+            }
+        }
+        } catch (err) {
+            console.log("CSV didn't work")
+        }
+        console.log("JSON and CSV didn't work");
     }
         
       }
     }
-
     getTranslate (words,language) {
         // Don't remake the request if we already have the value.
         if (this._lastTextTranslated === words &&
