@@ -551,7 +551,8 @@ class Scratch3VideoSensingBlocks {
         }	
     }	
     useModelBlock(args, util) {
-	    this.runtime.emit(this.runtime.constructor.PERIPHERAL_DISCONNECTED); // update status indicator
+	    this.runtime.emit(this.runtime.constructor.PERIPHERAL_D ); // update status indicator
+	    console.log("Loading new model");
         const modelArg = args.MODEL_URL;	
         this.useModel(modelArg);
     }	

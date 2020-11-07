@@ -338,7 +338,6 @@ class MicrobitRobot {
         
     }
     isConnected() {
-        console.log("isConnected status: " + this._mStatus);
         return (this._mStatus == 2);
     }
     
