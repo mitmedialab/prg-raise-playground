@@ -550,7 +550,8 @@ class Scratch3VideoSensingBlocks {
             stage.teachableImageModel = modelUrl;	
         }	
     }	
-    useModelBlock(args, util) {	
+    useModelBlock(args, util) {
+	    this.runtime.emit(this.runtime.constructor.PERIPHERAL_DISCONNECTED); // update status indicator
         const modelArg = args.MODEL_URL;	
         this.useModel(modelArg);
     }	
