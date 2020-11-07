@@ -62,7 +62,7 @@ class MicrobitRobot {
         this.right_line = 0;
         this.last_reading_time = 0;
         
-        this.scratch_vm.on('PROJEeCT_STOP_ALL', this.resetRobot.bind(this));
+        this.scratch_vm.on('PROJECT_STOP_ALL', this.resetRobot.bind(this));
         this.scratch_vm.on('CONNECT_MICROBIT_ROBOT', this.connectToBLE.bind(this));
         
         console.log("Version: adding clear led display");
