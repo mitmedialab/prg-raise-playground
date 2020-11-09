@@ -4,6 +4,9 @@ const path = require('path');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
 const base = {
+    node: {
+        fs: "empty"
+    },
     mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
     devServer: {
         contentBase: false,
@@ -20,8 +23,16 @@ const base = {
             test: /\.js$/,
             loader: 'babel-loader',
             include: path.resolve(__dirname, 'src'),
-            query: {
-                presets: [['@babel/preset-env', {targets: {browsers: ['last 3 versions', 'Safari >= 8', 'iOS >= 8']}}]]
+            options: {
+                // Explicitly disable babelrc so we don't catch various config
+                // in much lower dependencies.
+                babelrc: false,
+                plugins: [
+                    '@babel/plugin-syntax-dynamic-import',
+                    '@babel/plugin-transform-async-to-generator',
+                    '@babel/plugin-proposal-object-rest-spread'
+                ],
+                presets: ['@babel/preset-env']
             }
         },
         {
