@@ -891,6 +891,14 @@ class Scratch3TextClassificationBlocks {
      * @returns a boolean true if the text is an example or false if the text is not an example
      */
     getPredictedClass(text,className) { 
+        function printObject(o) {
+            var out = '';
+            for (var p in o) {
+              out += p + ': ' + o[p] + '\n';
+            }
+            alert(out);
+          }
+        console.log(this.printObject(this.classifier.getClassifierDataset()))
         if (!this.labelListEmpty) {   //whenever the classifier has some data
             try {
             for (let example of this.scratch_vm.modelData.textData[className]) {
@@ -958,15 +966,75 @@ class Scratch3TextClassificationBlocks {
      */
       exportClassifier() { //exports classifier as JSON file
         let dataset = this.scratch_vm.modelData.textData;
-        let jsonStr = JSON.stringify(dataset);
-        //exports json file
-        var data = "text/json;charset=utf-8," + encodeURIComponent(jsonStr);
-        var a = document.createElement('a');
-        a.setAttribute("href", "data:" + data);
-        a.setAttribute("download", "classifier-info.json");
-        a.click();
+        // let jsonStr = JSON.stringify(dataset);
+        // //exports json file
+        // var data = "text/json;charset=utf-8," + encodeURIComponent(jsonStr);
+        // var a = document.createElement('a');
+        // a.setAttribute("href", "data:" + data);
+        // a.setAttribute("download", "classifier-info.json");
+        // a.click();
 
+        csvdata = []
+        temp = [] // holds the arrays in the array
+        for (let label in this.scratch_vm.modelData.textData) {
+            temp.push(label) 
+        }
+        csvdata.push(temp)
+        temp = []
+        csvconvert = this.convertToCSV(dataset)
       }
+
+    convertToCSV(objArray) {
+        var array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
+        var str = '';
+
+        console.log(array.length)
+        for (var i = 0; i < array.length; i++) {
+            var line = '';
+            console.log(i)
+            for (var index in array[i]) {
+                if (line != '') line += ','
+                console.log('array[i][index]')
+                console.log(array[i][index])
+                line += array[i][index];
+                console.log(line)
+            }
+
+            str += line + '\r\n';
+        }
+
+        return str;
+    }
+
+    exportCSVFile(headers, items, fileTitle) {
+        if (headers) {
+            items.unshift(headers);
+        }
+    
+        // Convert Object to JSON
+        var jsonObject = JSON.stringify(items);
+    
+        var csv = this.convertToCSV(jsonObject);
+    
+        var exportedFilenmae = fileTitle + '.csv' || 'export.csv';
+    
+        var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        if (navigator.msSaveBlob) { // IE 10+
+            navigator.msSaveBlob(blob, exportedFilenmae);
+        } else {
+            var link = document.createElement("a");
+            if (link.download !== undefined) { // feature detection
+                // Browsers that support HTML5 download attribute
+                var url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", exportedFilenmae);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+    }
    /**
      * Loads the json document which contains labels and examples. Inputs the labels and examples into the classifier
      */
