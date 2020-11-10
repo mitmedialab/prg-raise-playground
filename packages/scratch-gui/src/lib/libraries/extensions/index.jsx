@@ -75,7 +75,7 @@ export default [
         launchPeripheralConnectionFlow: true,
         description: (
             <FormattedMessage
-                defaultMessage="Use your Teachable Machine models in your Scratch project!"
+                defaultMessage="Usar un modelo de Teachable Machine en su proyecto."
                 description="Teachable Machine Description"
                 id="gui.extension.teachable-machine.description"
             />
@@ -95,7 +95,7 @@ export default [
         insetIconURL: textClassificationBlocksInsetIconURL,
         description: (
             <FormattedMessage
-                defaultMessage="Create a text classification model for use in a Scratch project!"
+                defaultMessage="Hacer un classificado de texto y usarlo en su proyecto."
                 description="Text Classification Description"
                 id="gui.extension.text-classification.description"
             />

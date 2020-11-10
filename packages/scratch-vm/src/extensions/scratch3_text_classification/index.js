@@ -350,7 +350,7 @@ class Scratch3TextClassificationBlocks {
             id: 'textClassification',
             name: formatMessage({
                 id: 'textClassification.categoryName',
-                default: 'Text Classification',
+                default: 'Classificador de Texto',
                 description: 'Label for the Text Classification extension category'
             }),
             blockIconURI: blockIconURI,
