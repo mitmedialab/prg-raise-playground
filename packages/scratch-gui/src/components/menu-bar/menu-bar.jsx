@@ -475,8 +475,16 @@ class MenuBar extends React.Component {
                     </div>
                     <Divider className={classNames(styles.divider)} />
                     <a
+                        className={classNames(styles.menuBarItem, styles.hoverable)}
+                        href="https://httyr.media.mit.edu/tutorials"
+                        target="_blank"
+                    >
+                        Curriculum  Tutorials
+                    </a>
+                    <Divider className={classNames(styles.divider)} />
+                    <a
                         className={classNames(styles.menuBarItem, styles.hoverable, styles.blankLink)}
-                        href="https://teachablemachine.withgoogle.com/"
+                        href="https://teachablemachine.withgoogle.com/train"
                         target="_blank"
                     >
                         Teachable Machine
