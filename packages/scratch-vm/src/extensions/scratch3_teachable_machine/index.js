@@ -115,6 +115,10 @@ class Scratch3VideoSensingBlocks {
          * @type {boolean}
          */
         this.firstInstall = true;
+        
+        // What is the confidence of the latest prediction
+        this.maxConfidence = '';
+        this.modelConfidences = {};
 
         if (this.runtime.ioDevices) {
             // Configure the video device with values from globally stored locations.
@@ -478,7 +482,7 @@ class Scratch3VideoSensingBlocks {
                     description: 'Value of latest model prediction'
                 }),
                 blockType: BlockType.REPORTER,
-                isTerminal: true,
+                isTerminal: true
             },
             {
                 // @todo (copied from motion) this hat needs to be set itself to restart existing
@@ -490,6 +494,33 @@ class Scratch3VideoSensingBlocks {
                     description: 'Boolean that is true when the model matches [CLASS_NAME]'
                 }),
                 blockType: BlockType.BOOLEAN,
+                arguments: {
+                    CLASS_NAME: {
+                        type: ArgumentType.STRING,
+                        defaultValue: this.getCurrentClasses()[0],
+                        menu: 'CLASS_NAME'
+                    }
+                },
+            },
+            /*{
+                opcode: 'modelCon',
+                text: formatMessage({
+                    id: 'teachableMachine.modelConfidence',
+                    default: 'prediction confidence',
+                    description: 'Confidence value of latest model prediction'
+                }),
+                blockType: BlockType.REPORTER,
+                isTerminal: true
+            },*/
+            {
+                opcode: 'classConfidence',
+                text: formatMessage({
+                    id: 'teachableMachine.classConfidence',
+                    default: 'confidence for [CLASS_NAME]',
+                    description: 'Reporter that returns the model confience level for [CLASS_NAME]'
+                }),
+                blockType: BlockType.REPORTER,
+                isTerminal: true,
                 arguments: {
                     CLASS_NAME: {
                         type: ArgumentType.STRING,
@@ -631,9 +662,20 @@ class Scratch3VideoSensingBlocks {
         const currentMaxClass = predictionState.topClass;
         return (currentMaxClass === String(className));
     }
+    
+    classConfidence(args, util) {
+        const className = args.CLASS_NAME;
+        
+        return this.modelConfidences[className];
+    }
+    
+    
+    modelCon(args, util) {
+        return this.maxConfidence;
+    }
 
     /**
-     * A scratch hat block reporter that returns whether the current video frame matches the model class.
+     * A scratch reporter that returns the top class seen in the current video frame
      * @param {object} args - the block arguments
      * @param {BlockUtility} util - the block utility
      * @returns {string} class name if video frame matched, empty string if model not loaded yet
@@ -644,9 +686,9 @@ class Scratch3VideoSensingBlocks {
         if (!predictionState) {
             return '';
         }
-
         return predictionState.topClass;
     }
+    
 
     getPredictionStateOrStartPredicting(modelUrl) {
         const hasPredictionState = this.predictionState.hasOwnProperty(modelUrl);
@@ -696,12 +738,12 @@ class Scratch3VideoSensingBlocks {
         const customMobileNet = await tmImage.load(modelURL, metadataURL);
         if (customMobileNet._metadata.hasOwnProperty('tfjsSpeechCommandsVersion')) {
             // customMobileNet.dispose(); // too early to dispose
-            console.log("We got a speech net yay")
+            //console.log("We got a speech net yay")
             const recognizer = tmAudioSpeechCommands.create("BROWSER_FFT", undefined, modelURL, metadataURL);
             await recognizer.ensureModelLoaded();
             await recognizer.listen(result => {
                 this.latestAudioResults = result;
-                console.log(result);
+                //console.log(result);
             }, {
                 includeSpectrogram: true, // in case listen should return result.spectrogram
                 probabilityThreshold: 0.75,
@@ -710,11 +752,9 @@ class Scratch3VideoSensingBlocks {
             });
             return {model: recognizer, type: ModelType.AUDIO};
         } else if (customMobileNet._metadata.packageName === "@teachablemachine/pose") {
-            console.log("We got a pose net yay")
             const customPoseNet = await tmPose.load(modelURL, metadataURL);
             return {model: customPoseNet, type: ModelType.POSE};
         } else {
-            console.log("Not a pose net yay")
            return {model: customMobileNet, type: ModelType.IMAGE};
         }
     }
@@ -729,11 +769,13 @@ class Scratch3VideoSensingBlocks {
         for (let i = 0; i < predictions.length; i++) {
             const probability = predictions[i].probability.toFixed(2);
             const className = predictions[i].className;
+            this.modelConfidences[className] = probability; // update for reporter block
             if (probability > maxProbability) {
                 maxClassName = className;
                 maxProbability = probability;
             }
         }
+        this.maxConfidence = maxProbability; // update for reporter block
         return maxClassName;
     }
 
