@@ -965,7 +965,7 @@ class Scratch3TextClassificationBlocks {
      * Exports the labels and examples in the form of a json document with the default name of "classifier-info.json"
      */
       exportClassifier() { //exports classifier as JSON file
-        let dataset = this.scratch_vm.modelData.textData;
+        // let dataset = this.scratch_vm.modelData.textData;
         // let jsonStr = JSON.stringify(dataset);
         // //exports json file
         // var data = "text/json;charset=utf-8," + encodeURIComponent(jsonStr);
@@ -974,67 +974,52 @@ class Scratch3TextClassificationBlocks {
         // a.setAttribute("download", "classifier-info.json");
         // a.click();
 
-        csvdata = []
-        temp = [] // holds the arrays in the array
+        var headers = {'fields':[]} // holds the formatted headers and data
+        var data = [];
+        maximum = 0
+        // creates a dictionary of headers to put into the CSV file
         for (let label in this.scratch_vm.modelData.textData) {
-            temp.push(label) 
+            console.log(label)
+            headers['fields'].push(String(label).replace(/,/g, ''));
+
+            // finds the maximum row length
+            if (this.scratch_vm.modelData.textData[label].length > maximum) {
+                maximum = this.scratch_vm.modelData.textData[label].length;
+            }
         }
-        csvdata.push(temp)
-        temp = []
-        csvconvert = this.convertToCSV(dataset)
+        
+        // formats data so each embedded array represents a row
+        for (var i = 0; i < maximum; i++) {
+            temp = []
+            for (let label in this.scratch_vm.modelData.textData) {
+                try {
+                    temp.push(this.scratch_vm.modelData.textData[label][i].replace(/,/g, ''));
+                } catch (error) {
+                    temp.push(' '); 
+                }
+            }
+            data.push(temp) //adds array to the total arrays
+        }
+
+        headers['data'] = data // adds the formatted examples to the dictionary with the labels
+
+        // exports data to a CSV file
+        var csv = Papa.unparse(headers) // converts to a CSV format
+        var csvData = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+        var csvURL =  null;
+        if (navigator.msSaveBlob) {
+            csvURL = navigator.msSaveBlob(csvData,'classifier-export.csv');
+        } else {
+            csvURL = window.URL.createObjectURL(csvData);
+        }
+        var tempLink = document.createElement('a');
+        // tempLink.href = csvURL;
+        tempLink.setAttribute("href", csvURL);
+        tempLink.setAttribute('download', 'classifier-export.csv');
+        tempLink.click();
+        
       }
 
-    convertToCSV(objArray) {
-        var array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
-        var str = '';
-
-        console.log(array.length)
-        for (var i = 0; i < array.length; i++) {
-            var line = '';
-            console.log(i)
-            for (var index in array[i]) {
-                if (line != '') line += ','
-                console.log('array[i][index]')
-                console.log(array[i][index])
-                line += array[i][index];
-                console.log(line)
-            }
-
-            str += line + '\r\n';
-        }
-
-        return str;
-    }
-
-    exportCSVFile(headers, items, fileTitle) {
-        if (headers) {
-            items.unshift(headers);
-        }
-    
-        // Convert Object to JSON
-        var jsonObject = JSON.stringify(items);
-    
-        var csv = this.convertToCSV(jsonObject);
-    
-        var exportedFilenmae = fileTitle + '.csv' || 'export.csv';
-    
-        var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        if (navigator.msSaveBlob) { // IE 10+
-            navigator.msSaveBlob(blob, exportedFilenmae);
-        } else {
-            var link = document.createElement("a");
-            if (link.download !== undefined) { // feature detection
-                // Browsers that support HTML5 download attribute
-                var url = URL.createObjectURL(blob);
-                link.setAttribute("href", url);
-                link.setAttribute("download", exportedFilenmae);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
-        }
-    }
    /**
      * Loads the json document which contains labels and examples. Inputs the labels and examples into the classifier
      */
@@ -1080,7 +1065,7 @@ class Scratch3TextClassificationBlocks {
                     // adds the examples to the classifier
                     if (newArr.data[row][col]) {
                         console.log(newArr.data[row][col])
-                        self.newExamples([newArr.data[row][col]],[col])
+                        self.newExamples([newArr.data[row][col]],col)
                     }
             }
         }
