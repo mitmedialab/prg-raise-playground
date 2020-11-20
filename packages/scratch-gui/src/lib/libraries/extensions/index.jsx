@@ -46,6 +46,22 @@ import gdxforInsetIconURL from './gdxfor/gdxfor-small.svg';
 import gdxforConnectionIconURL from './gdxfor/gdxfor-illustration.svg';
 import gdxforConnectionSmallIconURL from './gdxfor/gdxfor-small.svg';
 
+import signalAnalysisIconURL from './signalAnalysis/signalAnalysis.png';
+import signalAnalysisInsetIconURL from './signalAnalysis/signalAnalysis-small.svg';
+
+import signalVizIconURL from './signalViz/signalViz.png';
+import signalVizInsetIconURL from './signalViz/signalViz-small.svg';
+
+import signalControlIconURL from './signalControl/signalControl.png';
+import signalControlInsetIconURL from './signalControl/signalControl-small.svg';
+
+import musicCreationIconURL from './musicCreation/musicCreation.png';
+import musicCreationInsetIconURL from './musicCreation/musicCreation-small.svg';
+
+import musicAccompanimentIconURL from './musicAccompaniment/musicAccompaniment.png';
+import musicAccompanimentInsetIconURL from './musicAccompaniment/musicAccompaniment-small.svg';
+
+
 export default [
     {
         name: (
@@ -317,5 +333,102 @@ export default [
             />
         ),
         helpLink: 'https://scratch.mit.edu/vernier'
+
+    },
+    {
+        name: 'Signal Analysis',
+        extensionId: 'signalanalysis',
+        iconURL: signalAnalysisIconURL,
+        insetIconURL: signalAnalysisInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Analyze music of your choice."
+                description="my block"
+                id="gui.extension.signalanalysis.description"
+            />
+        ),
+        featured: true,
+        disabled: false,
+        internetConnectionRequired: true,
+        bluetoothRequired: false,
+        helpLink: 'https://scratch.mit.edu/wedo'
+
+    },
+    {
+        name: 'Signal Visualization',
+        extensionId: 'signalviz',
+        iconURL: signalVizIconURL,
+        insetIconURL: signalVizInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Visualize music of your choice in time, frequency, or sheet music representation."
+                description="my block"
+                id="gui.extension.signalviz.description"
+            />
+        ),
+        featured: true,
+        disabled: false,
+        internetConnectionRequired: true,
+        bluetoothRequired: false,
+        helpLink: 'https://scratch.mit.edu/wedo'
+
+    },
+    {
+        name: 'Signal Control',
+        extensionId: 'signalcontrol',
+        iconURL: signalControlIconURL,
+        insetIconURL: signalControlInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Utilize properties of signals to add exciting elements to your programs."
+                description="my block"
+                id="gui.extension.signalcontrol.description"
+            />
+        ),
+        featured: true,
+        disabled: false,
+        internetConnectionRequired: true,
+        bluetoothRequired: false,
+        helpLink: 'https://scratch.mit.edu/wedo'
+
+    },
+    {
+        name: 'Music Creation',
+        extensionId: 'musiccreation',
+        iconURL: musicCreationIconURL,
+        insetIconURL: musicCreationInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Create music of your choice."
+                description="my block"
+                id="gui.extension.musiccreation.description"
+            />
+        ),
+        featured: true,
+        disabled: false,
+        internetConnectionRequired: true,
+        bluetoothRequired: false,
+        helpLink: 'https://scratch.mit.edu/wedo'
+
+    },
+    {
+        name: 'Music Accompaniment',
+        extensionId: 'musicaccompaniment',
+        iconURL: musicAccompanimentIconURL,
+        insetIconURL: musicAccompanimentInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Design a process to accompany your favorite song, or music of your creation."
+                description="my block"
+                id="gui.extension.musicaccompaniment.description"
+            />
+        ),
+        featured: true,
+        disabled: false,
+        internetConnectionRequired: true,
+        bluetoothRequired: false,
+        helpLink: 'https://scratch.mit.edu/wedo'
+
     }
+
 ];
