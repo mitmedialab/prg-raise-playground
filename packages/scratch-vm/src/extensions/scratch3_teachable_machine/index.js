@@ -510,6 +510,7 @@ class Scratch3VideoSensingBlocks {
                     }
                 }
             ],
+
             menus: {
                 ATTRIBUTE: {
                     acceptReporters: true,

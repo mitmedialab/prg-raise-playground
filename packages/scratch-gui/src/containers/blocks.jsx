@@ -475,7 +475,7 @@ class Blocks extends React.Component {
         this.setState(p);
     }
     handleConnectionModalStart (extensionId) {
-        let prgCustomExtensions = ['microbitRobot'];
+        let prgCustomExtensions = ['textClassification'];
         if (!prgCustomExtensions.includes(extensionId)) {
             this.props.onOpenConnectionModal(extensionId);
         }

@@ -22,6 +22,7 @@ const knnClassifier = require('@tensorflow-models/knn-classifier');
 const use = require('@tensorflow-models/universal-sentence-encoder');
 const Papa = require('papaparse');
 const { range } = require("@tensorflow/tfjs");
+const EXTENSION_ID = 'textClassification';
 
 
 /**
@@ -141,9 +142,10 @@ class Scratch3TextClassificationBlocks {
          this.embedding = null;
          this.count = 0;
          this.classifiedData = null;
-         
-
-
+         this._mStatus = 1;
+         this.scratch_vm.registerPeripheralExtension(EXTENSION_ID, this);
+         this.scratch_vm.connectPeripheral(EXTENSION_ID, 0);
+        
          
         /**
          * The timer utility.
@@ -351,6 +353,7 @@ class Scratch3TextClassificationBlocks {
                 description: 'Label for the Text Classification extension category'
             }),
             blockIconURI: blockIconURI,
+            showStatusButton: true,
             menuIconURI: menuIconURI,
             //color1, color2, color3
             blocks: [
@@ -484,6 +487,24 @@ class Scratch3TextClassificationBlocks {
                 }
             }
         };
+    }
+    connect() {
+    }
+    disconnect() {
+    }
+    scan() {
+        
+    }
+    isConnected() {
+        return (this._mStatus == 2);
+    }
+    
+    onDeviceDisconnected() {
+        console.log("Lost connection to robot");   
+        this.scratch_vm.emit(this.scratch_vm.constructor.PERIPHERAL_DISCONNECTED);
+        this._mDevice = null;
+        this._mServices = null;
+        this._mStatus = 1;
     }
     
     /**
@@ -925,6 +946,8 @@ class Scratch3TextClassificationBlocks {
         async getembeddedwords(text,label,direction) {
             if (!this.labelListEmpty) {
                 const embeddedtext = await this.get_embeddings(text,label,direction);
+                this._mStatus = 2;            
+                this.scratch_vm.emit(this.scratch_vm.constructor.PERIPHERAL_CONNECTED);
             }
         }
 
@@ -1030,7 +1053,7 @@ class Scratch3TextClassificationBlocks {
             fr = new FileReader();
             fr.onload = receivedText;
             fr.readAsText(dataset);
-        }
+        } 
 
       // parses through the json document and adds to the model textData and classifier
       function receivedText(e) { 
@@ -1065,7 +1088,7 @@ class Scratch3TextClassificationBlocks {
                     // adds the examples to the classifier
                     if (newArr.data[row][col]) {
                         console.log(newArr.data[row][col])
-                        self.newExamples([newArr.data[row][col]],col)
+                        self.newExamples([newArr.data[row][col]],[col])
                     }
             }
         }
