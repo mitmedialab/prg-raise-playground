@@ -25,6 +25,7 @@ const { range } = require("@tensorflow/tfjs");
 const EXTENSION_ID = 'textClassification';
 
 
+
 /**
  * Icon svg to be displayed in the blocks category menu, encoded as a data URI.
  * @type {string}
@@ -996,6 +997,8 @@ class Scratch3TextClassificationBlocks {
         // a.setAttribute("href", "data:" + data);
         // a.setAttribute("download", "classifier-info.json");
         // a.click();
+
+        // start of exporting csv
 
         var headers = {'fields':[]} // holds the formatted headers and data
         var data = [];
