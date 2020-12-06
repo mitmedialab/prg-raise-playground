@@ -22,6 +22,8 @@ try {
 }
 
 
+
+
 class Scratch3MusicCreation {
     constructor (runtime) {
         this.runtime = runtime;
@@ -46,6 +48,17 @@ class Scratch3MusicCreation {
 
         this._playNoteForPicker = this._playNoteForPicker.bind(this);
         this.runtime.on('PLAY_NOTE', this._playNoteForPicker);
+
+        instrumentNames = this._buildMenu(this.INSTRUMENT_INFO);
+        
+        volumes = [{text: "pianissimo", value: 15}, 
+                    {text: "piano", value: 30}, 
+                    {text: "mezzo-piano", value: 45},
+                    {text: "mezzo-forte", value: 60},
+                    {text: "forte", value: 85},
+                    {text: "fortissimo", value: 100}];
+        log.log(volumes);
+
     }
 
     /**
@@ -141,7 +154,7 @@ class Scratch3MusicCreation {
      * @type {string}
      */
     static get STATE_KEY () {
-        return 'Scratch.music';
+        return 'Scratch.musiccreation';
     }
 
     /**
@@ -169,13 +182,6 @@ class Scratch3MusicCreation {
      */
     static get BEAT_RANGE () {
         return {min: 0, max: 100};
-    }
-
-    /** The minimum and maximum tempo values, in bpm.
-     * @type {{min: number, max: number}}
-     */
-    static get TEMPO_RANGE () {
-        return {min: 20, max: 500};
     }
 
     /**
@@ -231,6 +237,15 @@ class Scratch3MusicCreation {
                 dirName: '4-guitar',
                 releaseTime: 0.5,
                 samples: [60]
+            },            {
+                name: formatMessage({
+                    id: 'music.instrumentBass',
+                    default: 'Bass',
+                    description: 'Sound of an accoustic upright bass'
+                }),
+                dirName: '6-bass',
+                releaseTime: 0.25,
+                samples: [36, 48]
             },
             {
                 name: formatMessage({
@@ -250,6 +265,15 @@ class Scratch3MusicCreation {
                 }),
                 dirName: '11-saxophone',
                 samples: [36, 60, 84]
+            },
+            {
+                name: formatMessage({
+                    id: 'music.instrumentClarinet',
+                    default: 'Clarinet',
+                    description: 'Sound of a clarinet being played'
+                }),
+                dirName: '10-clarinet',
+                samples: [48, 60]
             },
             {
                 name: formatMessage({
@@ -328,6 +352,15 @@ class Scratch3MusicCreation {
                         description: 'get the current volume'
                     }),
                     blockType: BlockType.REPORTER
+                },
+                {
+                    opcode: 'getInstrument',
+                    text: formatMessage({
+                        id: 'musiccreation.getInstrument',
+                        default: 'instrument',
+                        description: 'get the current instrument'
+                    }),
+                    blockType: BlockType.REPORTER
                 }
             ],
             menus: {
@@ -349,6 +382,15 @@ class Scratch3MusicCreation {
         };
     }
 
+    findInstrumentForNumber (number) {
+        for (var m in instrumentNames) {
+            if (instrumentNames[m].value == number) {
+                return instrumentNames[m].text;
+            }
+        } 
+        return "Piano";
+    }
+
     /**
      * Select an instrument for playing notes.
      * @param {object} args - the block arguments.
@@ -359,27 +401,35 @@ class Scratch3MusicCreation {
         this._setInstrument(args.INSTRUMENT, util, false);
     }
 
-    /**
-     * Set the current tempo to a new value.
-     * @param {object} args - the block arguments.
-     * @property {number} TEMPO - the tempo, in beats per minute.
-     */
-    setTempo (args) {
-        const volume = Cast.toNumber(args.VOLUME);
-        this._updateVolume(volume);
-    }
-
-/**
-     * Update the current tempo, clamping it to the min and max allowable range.
-     * @param {number} tempo - the tempo to set, in beats per minute.
-     * @private
-     */
-    _updateVolume (volume) {
-        volume = MathUtil.clamp(volume, 0, 100);
+    getInstrument (util) {
         const stage = this.runtime.getTargetForStage();
         if (stage) {
-            stage.tempo = tempo;
+            if (!stage.instrument) {
+                stage.instrument = "Piano";
+            }
+            return stage.instrument;
         }
+        return 0;
+    }
+
+    /**
+     * Internal code to select an instrument for playing notes. If mapMidi is true, set the instrument according to
+     * the MIDI to Scratch instrument mapping.
+     * @param {number} instNum - the instrument number.
+     * @param {object} util - utility object provided by the runtime.
+     * @param {boolean} mapMidi - whether or not instNum is a MIDI instrument number.
+     */
+    _setInstrument (instNum, util, mapMidi) {
+        const musicState = this._getMusicState(util.target);
+        instNum = Cast.toNumber(instNum);
+        instNum = Math.round(instNum);
+        const stage = this.runtime.getTargetForStage();
+        if (stage) {
+            stage.instrument = this.findInstrumentForNumber(instNum);
+        }
+        instNum -= 1; // instruments are one-indexed
+        instNum = MathUtil.wrapClamp(instNum, 0, this.INSTRUMENT_INFO.length - 1);
+        musicState.currentInstrument = instNum;
     }
 
     _playNoteForPicker (noteNum, category) {
@@ -398,6 +448,15 @@ class Scratch3MusicCreation {
         target.sprite.soundBank.setEffects(target);
     }
 
+    findVolumeForNumber (number) {
+        for (var m in volumes) {
+            if (volumes[m].value == number) {
+                return volumes[m].text;
+            }
+        } 
+        return "mezzo-forte";
+    }
+
     /**
      * Set the current tempo to a new value.
      * @param {object} args - the block arguments.
@@ -405,7 +464,7 @@ class Scratch3MusicCreation {
      */
     setVolume (args, util) {
         const volume = Cast.toNumber(args.VOLUME);
-        this._updateTempo(volume, util);
+        this._updateVolume(volume, util);
     }
 
 
@@ -414,44 +473,24 @@ class Scratch3MusicCreation {
      * @param {number} tempo - the tempo to set, in beats per minute.
      * @private
      */
-    _updateTempo (volume, util) {
+    _updateVolume (volume, util) {
         volume = MathUtil.clamp(volume, 0, 100);
         util.target.volume = volume;
         const stage = this.runtime.getTargetForStage();
         if (stage) {
-            stage.volume = volume;
+            stage.volume = this.findVolumeForNumber(volume);
         }
     }
 
-    /**
-     * Get the current tempo.
-     * @return {number} - the current tempo, in beats per minute.
-     */
     getVolume () {
         const stage = this.runtime.getTargetForStage();
         if (stage) {
+            if (stage.volume == 100) {
+                stage.volume = "fortissimo";
+            }
             return stage.volume;
         }
-        return 60;
-    }
-
-    /**
-     * Internal code to select an instrument for playing notes. If mapMidi is true, set the instrument according to
-     * the MIDI to Scratch instrument mapping.
-     * @param {number} instNum - the instrument number.
-     * @param {object} util - utility object provided by the runtime.
-     * @param {boolean} mapMidi - whether or not instNum is a MIDI instrument number.
-     */
-    _setInstrument (instNum, util, mapMidi) {
-        const musicState = this._getMusicState(util.target);
-        instNum = Cast.toNumber(instNum);
-        instNum = Math.round(instNum);
-        instNum -= 1; // instruments are one-indexed
-        if (mapMidi) {
-            instNum = (this.MIDI_INSTRUMENTS[instNum] || 0) - 1;
-        }
-        instNum = MathUtil.wrapClamp(instNum, 0, this.INSTRUMENT_INFO.length - 1);
-        musicState.currentInstrument = instNum;
+        return "mezzo-forte";
     }
 
     playNote (args, util) {
@@ -528,7 +567,6 @@ class Scratch3MusicCreation {
         // to the output.
         const context = engine.audioContext;
         const volumeGain = context.createGain();
-        log.log(util.target.volume);
         volumeGain.gain.setValueAtTime(util.target.volume / 100, engine.currentTime);
         const releaseGain = context.createGain();
         volumeGain.connect(releaseGain);
