@@ -40,6 +40,9 @@ class Scratch3MusicCreation {
          */
         this._instrumentPlayerNoteArrays = [];
         this._loadAllSounds();
+
+        this._playNoteForPicker = this._playNoteForPicker.bind(this);
+        this.runtime.on('PLAY_NOTE', this._playNoteForPicker);
     }
 
 
@@ -107,8 +110,6 @@ class Scratch3MusicCreation {
      */
     _buildMenu (info) {
         return info.map((entry, index) => {
-            log.log(entry);
-            log.log(index);
             const obj = {};
             obj.text = entry.name;
             obj.value = String(index + 1);
@@ -280,7 +281,7 @@ class Scratch3MusicCreation {
                     text: 'play note with frequency [NOTE] for [SECS] seconds',
                     arguments: {
                         NOTE: {
-                            type: ArgumentType.NUMBER,
+                            type: ArgumentType.NOTE,
                             defaultValue: 60
                         },
                         SECS: {
@@ -349,6 +350,15 @@ class Scratch3MusicCreation {
      */
     setVolume (args, util) {
         this._setVolume(args.VOLUME, util);
+    }
+
+    _playNoteForPicker (noteNum, category) {
+        if (category !== this.getInfo().name) return;
+        const util = {
+            runtime: this.runtime,
+            target: this.runtime.getEditingTarget()
+        };
+        this._playNote(util, noteNum, 0.25);
     }
 
     /**
