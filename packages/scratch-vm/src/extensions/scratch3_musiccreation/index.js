@@ -41,8 +41,27 @@ class Scratch3MusicCreation {
         this._instrumentPlayerNoteArrays = [];
         this._loadAllSounds();
 
+        this._onTargetCreated = this._onTargetCreated.bind(this);
+        this.runtime.on('targetWasCreated', this._onTargetCreated);
+
         this._playNoteForPicker = this._playNoteForPicker.bind(this);
         this.runtime.on('PLAY_NOTE', this._playNoteForPicker);
+    }
+
+    /**
+     * When a music-playing Target is cloned, clone the music state.
+     * @param {Target} newTarget - the newly created target.
+     * @param {Target} [sourceTarget] - the target used as a source for the new clone, if any.
+     * @listens Runtime#event:targetWasCreated
+     * @private
+     */
+    _onTargetCreated (newTarget, sourceTarget) {
+        if (sourceTarget) {
+            const musicState = sourceTarget.getCustomState(Scratch3MusicCreation.STATE_KEY);
+            if (musicState) {
+                newTarget.setCustomState(Scratch3MusicCreation.STATE_KEY, Clone.simple(musicState));
+            }
+        }
     }
 
 
@@ -131,8 +150,7 @@ class Scratch3MusicCreation {
      */
     static get DEFAULT_MUSIC_STATE () {
         return {
-            currentInstrument: 0,
-            currentVolume: 1
+            currentInstrument: 0
         };
     }
 
@@ -267,11 +285,12 @@ class Scratch3MusicCreation {
                 {
                     opcode: 'setVolume',
                     blockType: BlockType.COMMAND,
-                    text: 'set volume to [VOLUME] dB',
+                    text: 'set volume to [VOLUME]',
                     arguments: {
                         VOLUME: {
                             type: ArgumentType.NUMBER,
-                            defaultValue: 60
+                            defaultValue: 60,
+                            menu: "volumes"
                         }
                     }
                 },
@@ -300,29 +319,27 @@ class Scratch3MusicCreation {
                             defaultValue: "myMusic"
                         }
                     }
+                },
+                {
+                    opcode: 'getVolume',
+                    text: formatMessage({
+                        id: 'musiccreation.getVolume',
+                        default: 'volume',
+                        description: 'get the current volume'
+                    }),
+                    blockType: BlockType.REPORTER
                 }
             ],
             menus: {
-                instruments: {
+                volumes: {
                     acceptReporters: true,
                     items: [
-                        {text: "violin", value: "violin"}, 
-                        {text: "flute", value: "flute"}, 
-                        {text: "saxophone", value: "saxophone"},
-                        {text: "clarinet", value: "clarinet"},
-                        {text: "trumpet", value: "trumpet"}]
-                },
-                pitches: {
-                    acceptReporters: true,
-                    items: [
-                        {text: "D3", value: "D3"}, 
-                        {text: "E3", value: "E3"}, 
-                        {text: "F3", value: "F3"},
-                        {text: "G3", value: "G3"},
-                        {text: "A4", value: "A4"},
-                        {text: "B4", value: "B4"},
-                        {text: "C4", value: "C4"},
-                        {text: "D4", value: "D4"}]
+                        {text: "pianissimo", value: 15}, 
+                        {text: "piano", value: 30}, 
+                        {text: "mezzo-piano", value: 45},
+                        {text: "mezzo-forte", value: 60},
+                        {text: "forte", value: 85},
+                        {text: "fortissimo", value: 100}]
                 },
                 INSTRUMENT: {
                     acceptReporters: true,
@@ -343,13 +360,26 @@ class Scratch3MusicCreation {
     }
 
     /**
-     * Select an instrument for playing notes.
+     * Set the current tempo to a new value.
      * @param {object} args - the block arguments.
-     * @param {object} util - utility object provided by the runtime.
-     * @property {int} INSTRUMENT - the number of the instrument to select.
+     * @property {number} TEMPO - the tempo, in beats per minute.
      */
-    setVolume (args, util) {
-        this._setVolume(args.VOLUME, util);
+    setTempo (args) {
+        const volume = Cast.toNumber(args.VOLUME);
+        this._updateVolume(volume);
+    }
+
+/**
+     * Update the current tempo, clamping it to the min and max allowable range.
+     * @param {number} tempo - the tempo to set, in beats per minute.
+     * @private
+     */
+    _updateVolume (volume) {
+        volume = MathUtil.clamp(volume, 0, 100);
+        const stage = this.runtime.getTargetForStage();
+        if (stage) {
+            stage.tempo = tempo;
+        }
     }
 
     _playNoteForPicker (noteNum, category) {
@@ -361,18 +391,48 @@ class Scratch3MusicCreation {
         this._playNote(util, noteNum, 0.25);
     }
 
+    _syncEffectsForTarget (target) {
+        if (!target || !target.sprite.soundBank) return;
+        target.soundEffects = this._getSoundState(target).effects;
+
+        target.sprite.soundBank.setEffects(target);
+    }
+
     /**
-     * Internal code to select an instrument for playing notes. If mapMidi is true, set the instrument according to
-     * the MIDI to Scratch instrument mapping.
-     * @param {number} instNum - the instrument number.
-     * @param {object} util - utility object provided by the runtime.
-     * @param {boolean} mapMidi - whether or not instNum is a MIDI instrument number.
+     * Set the current tempo to a new value.
+     * @param {object} args - the block arguments.
+     * @property {number} TEMPO - the tempo, in beats per minute.
      */
-    _setVolume (volume, util) {
-        const musicState = this._getMusicState(util.target);
-        instVol = Cast.toNumber(volume);
-        instVol = clampV
-        musicState.currentVolume = instNum;
+    setVolume (args, util) {
+        const volume = Cast.toNumber(args.VOLUME);
+        this._updateTempo(volume, util);
+    }
+
+
+    /**
+     * Update the current tempo, clamping it to the min and max allowable range.
+     * @param {number} tempo - the tempo to set, in beats per minute.
+     * @private
+     */
+    _updateTempo (volume, util) {
+        volume = MathUtil.clamp(volume, 0, 100);
+        util.target.volume = volume;
+        const stage = this.runtime.getTargetForStage();
+        if (stage) {
+            stage.volume = volume;
+        }
+    }
+
+    /**
+     * Get the current tempo.
+     * @return {number} - the current tempo, in beats per minute.
+     */
+    getVolume () {
+        const stage = this.runtime.getTargetForStage();
+        if (stage) {
+            return stage.volume;
+        }
+        return 60;
     }
 
     /**
@@ -392,11 +452,6 @@ class Scratch3MusicCreation {
         }
         instNum = MathUtil.wrapClamp(instNum, 0, this.INSTRUMENT_INFO.length - 1);
         musicState.currentInstrument = instNum;
-    }
-
-    setVolume (args) {
-        const text = Cast.toString(args.VOLUME);
-        log.log(text);
     }
 
     playNote (args, util) {
@@ -473,6 +528,7 @@ class Scratch3MusicCreation {
         // to the output.
         const context = engine.audioContext;
         const volumeGain = context.createGain();
+        log.log(util.target.volume);
         volumeGain.gain.setValueAtTime(util.target.volume / 100, engine.currentTime);
         const releaseGain = context.createGain();
         volumeGain.connect(releaseGain);
@@ -584,16 +640,6 @@ class Scratch3MusicCreation {
      */
     _clampBeats (beats) {
         return MathUtil.clamp(beats, Scratch3MusicCreation.BEAT_RANGE.min, Scratch3MusicCreation.BEAT_RANGE.max);
-    }
-
-    /**
-     * Clamp a duration in beats to the allowed min and max duration.
-     * @param  {number} beats - a duration in beats.
-     * @return {number} - the clamped duration.
-     * @private
-     */
-    _clampVolume (volume) {
-        return MathUtil.clamp(volume, Scratch3MusicCreation.BEAT_RANGE.min, Scratch3MusicCreation.BEAT_RANGE.max);
     }
 
 
