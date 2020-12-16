@@ -973,6 +973,7 @@ class Scratch3TextClassificationBlocks {
         });
         if (direction === "example") {
             this.classifier.addExample(this.embedding, label);
+            console.log(JSON.stringify(this.classifier.getClassifierDataset()) + '\n' + 'example is ' + text + 'label is ' + label)
         } else if (direction === "predict") {
             return await this.classifier.predictClass(this.embedding,Math.sqrt(this.count)).then( async result => {
                 this.predictedLabel = await result.label;
@@ -1039,7 +1040,7 @@ class Scratch3TextClassificationBlocks {
             csvURL = window.URL.createObjectURL(csvData);
         }
         var tempLink = document.createElement('a');
-        // tempLink.href = csvURL;
+
         tempLink.setAttribute("href", csvURL);
         tempLink.setAttribute('download', 'classifier-export.csv');
         tempLink.click();
