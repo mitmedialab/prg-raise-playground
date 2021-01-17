@@ -6,8 +6,10 @@ const formatMessage = require('format-message');
 const MathUtil = require('../../util/math-util');
 const Timer = require('../../util/timer');
 const log = require('../../util/log');
-//const mvae = require('@magenta/music/node/music_vae');
-//const core = require('@magenta/music/node/core');
+
+const hrtime = require('browser-hrtime');
+const mvae = require('@magenta/music/node/music_vae');
+const core = require('@magenta/music/node/core');
 
 /**
  * The instrument and drum sounds, loaded as static assets.
@@ -43,6 +45,9 @@ class Scratch3MusicCreation {
         this._instrumentPlayerNoteArrays = [];
         this._loadAllSounds();
 
+        this.noteList = [];
+        log.log(this.noteList);
+
         this._onTargetCreated = this._onTargetCreated.bind(this);
         this.runtime.on('targetWasCreated', this._onTargetCreated);
 
@@ -57,7 +62,7 @@ class Scratch3MusicCreation {
                     {text: "mezzo-forte", value: 60},
                     {text: "forte", value: 85},
                     {text: "fortissimo", value: 100}];
-        log.log(volumes);
+        
 
     }
 
@@ -334,6 +339,21 @@ class Scratch3MusicCreation {
                     }
                 },
                 {
+                    opcode: 'recordNotes',
+                    blockType: BlockType.COMMAND,
+                    text: 'record notes with frequency [NOTE] for [SECS] seconds',
+                    arguments: {
+                        NOTE: {
+                            type: ArgumentType.NOTE,
+                            defaultValue: 60
+                        },
+                        SECS: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0.25
+                        }
+                    }
+                },
+                {
                     opcode: 'saveFile',
                     blockType: BlockType.COMMAND,
                     text: 'save file to [FILENAME].wav',
@@ -361,6 +381,15 @@ class Scratch3MusicCreation {
                         description: 'get the current instrument'
                     }),
                     blockType: BlockType.REPORTER
+                },
+                {
+                    opcode: 'testMagenta',
+                    text: formatMessage({
+                        id: 'musiccreation.testMagenta',
+                        default: 'test Magenta',
+                        description: 'test Magenta'
+                    }),
+                    blockType: BlockType.COMMAND
                 }
             ],
             menus: {
@@ -401,6 +430,32 @@ class Scratch3MusicCreation {
         this._setInstrument(args.INSTRUMENT, util, false);
     }
 
+    testMagenta (util) {
+        TWINKLE_TWINKLE = {
+		  notes: [
+		    {pitch: 60, startTime: 0.0, endTime: 0.5},
+		    {pitch: 60, startTime: 0.5, endTime: 1.0},
+		    {pitch: 67, startTime: 1.0, endTime: 1.5},
+		    {pitch: 67, startTime: 1.5, endTime: 2.0},
+		    {pitch: 69, startTime: 2.0, endTime: 2.5},
+		    {pitch: 69, startTime: 2.5, endTime: 3.0},
+		    {pitch: 67, startTime: 3.0, endTime: 4.0},
+		    {pitch: 65, startTime: 4.0, endTime: 4.5},
+		    {pitch: 65, startTime: 4.5, endTime: 5.0},
+		    {pitch: 64, startTime: 5.0, endTime: 5.5},
+		    {pitch: 64, startTime: 5.5, endTime: 6.0},
+		    {pitch: 62, startTime: 6.0, endTime: 6.5},
+		    {pitch: 62, startTime: 6.5, endTime: 7.0},
+		    {pitch: 60, startTime: 7.0, endTime: 8.0},  
+		  ],
+		  totalTime: 8
+		};
+		const player = new core.SoundFontPlayer('https://storage.googleapis.com/magentadata/js/soundfonts/sgm_plus');
+		player.start(TWINKLE_TWINKLE);
+		player.stop();
+		log.log(TWINKLE_TWINKLE);
+    }
+
     getInstrument (util) {
         const stage = this.runtime.getTargetForStage();
         if (stage) {
@@ -438,6 +493,8 @@ class Scratch3MusicCreation {
             runtime: this.runtime,
             target: this.runtime.getEditingTarget()
         };
+        this.noteList.push(noteNum);
+        log.log(this.noteList);
         this._playNote(util, noteNum, 0.25);
     }
 
@@ -493,9 +550,43 @@ class Scratch3MusicCreation {
         return "mezzo-forte";
     }
 
+    recordNotes (args, util) {
+    	for (var n in this.nodeList) {
+    		this.playNote(args, util);
+    	}
+    	/*
+    	if (this._stackTimerNeedsInit(util)) {
+        	for (var n in this.noteList) {
+        		note = this.noteList[n];
+        		log.log(note);
+	            let note = Cast.toNumber(note);
+	            log.log(note);
+	            note = MathUtil.clamp(note,
+	                Scratch3MusicCreation.MIDI_NOTE_RANGE.min, Scratch3MusicCreation.MIDI_NOTE_RANGE.max);
+	            log.log(note);
+	            let beats = Cast.toNumber(args.SECS);
+	            beats = this._clampBeats(beats);
+	            // If the duration is 0, do not play the note. In Scratch 2.0, "play drum for 0 beats" plays the drum,
+	            // but "play note for 0 beats" is silent.
+	            if (beats === 0) return;
+
+	            const durationSec = beats;
+
+	            this._playNote(util, note, durationSec);
+
+	            this._startStackTimer(util, durationSec);
+	        }
+	    } else {
+	            this._checkStackTimer(util);
+	    }
+	    */
+    }
+
     playNote (args, util) {
+    	log.log("here");
         if (this._stackTimerNeedsInit(util)) {
             let note = Cast.toNumber(args.NOTE);
+            log.log(args.NOTE);
             note = MathUtil.clamp(note,
                 Scratch3MusicCreation.MIDI_NOTE_RANGE.min, Scratch3MusicCreation.MIDI_NOTE_RANGE.max);
             let beats = Cast.toNumber(args.SECS);
