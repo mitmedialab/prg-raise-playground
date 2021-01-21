@@ -212,6 +212,22 @@ class MicrobitRobot {
                         }
                     }
                 },
+                
+                {
+                    opcode: 'track',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'microbitBot.trackLine',
+                        default: 'track line for [NUM] seconds',
+                        description: 'Send command to robot to track the black line'
+                    }),
+                    arguments: {
+                        NUM: {
+                            type:ArgumentType.NUMBER,
+                            defaultValue: 1
+                        }
+                    }
+                },
                 '---',
                 {
                     opcode: 'playMusic',
@@ -648,6 +664,28 @@ class MicrobitRobot {
         if (this._mServices) this._mServices.uartService.sendText('D#');
     }
 
+    if (this._mConnection != null) this._mConnection.postMessage(msg);  
+    
+    return new Promise(resolve => {
+            setTimeout(() => {
+                this.stopMotors();
+                resolve();
+            }, secs*1000);
+        });
+  }
+  
+  /**
+   * Implement track black line
+   * @secs {number} the number of seconds to turn left
+   * @callback {function} the code to call when this function is done executing
+   */
+  track(args) {
+	var msg = {};
+    var secs = args.NUM;
+    
+    console.log("Tracking black line, secs: " + secs);        
+    if (this._mServices) this._mServices.uartService.sendText('C#');
+   
     if (this._mConnection != null) this._mConnection.postMessage(msg);  
     
     return new Promise(resolve => {
