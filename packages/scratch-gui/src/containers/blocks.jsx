@@ -476,7 +476,10 @@ class Blocks extends React.Component {
         this.setState(p);
     }
     handleConnectionModalStart (extensionId) {
-        this.props.onOpenConnectionModal(extensionId);
+        let prgCustomExtensions = ['teachableMachine', 'poseHand', 'poseFace', 'poseBody'];
+        if (!prgCustomExtensions.includes(extensionId)) {
+            this.props.onOpenConnectionModal(extensionId);
+        }
     }
     handleStatusButtonUpdate () {
         this.ScratchBlocks.refreshStatusButtons(this.workspace);
