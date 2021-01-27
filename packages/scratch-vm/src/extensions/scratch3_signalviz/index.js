@@ -523,32 +523,107 @@ class Scratch3SignalViz {
             util.target.setXY(startX, y);
             this.penDown(args, util);
             util.target.setXY(endX, y);
-            y = y+25;
+            y = y+8;
         }
     }
 
     drawMusic(args, util) {
         x = -200;
         y = -130;
-        staffWidth = 25;
-        xStep = 30;
-        signal = [-1, 0, 1, 2, 3, 4];
+        staffWidth = 8;
+        xStep = 40;
+        signal = [[-1, 1/4], [7, 1/2], [7, 3], [8, 4], [3, 2], [2, 1]]
         for (i in signal) {
-            note = signal[i];
-            this.penUp(args, util);
+            note = signal[i][0];
+            duration = signal[i][1];
+            if (note <= 4) {
+                up = true;
+            } else {
+                up = false;
+            }
             x = x+xStep;
-            noteY = y+note*staffWidth/2-3;
-            util.target.setXY(x, noteY);
-            this.penDown(args, util);
-            util.target.setXY(x+10, noteY+6);
-
-            this.penUp(args, util);
-            util.target.setXY(x, noteY+6);
-            this.penDown(args, util);
-            util.target.setXY(x+10, noteY);
+            ymid = y+note*staffWidth/2;
+            xmid = x - 8;
+            this.drawNote(xmid, ymid, duration, up, args, util);
 
         }
         this.penUp(args, util);
+    }
+
+    drawNote(xmid, ymid, duration, up, args, util) {
+        xrad = 8;
+        yrad = 4;
+        if (up) {
+            flip = 1;
+        } else {
+            flip = -1;
+        }
+        step = Math.PI/100;
+        if (duration <= 1){
+            for (var theta = 0; theta < 2*Math.PI; theta +=step) {
+                this.penUp(args, util);
+                util.target.setXY(xmid, ymid);
+                var x = xmid + xrad*Math.cos(theta);
+                var y = ymid - yrad*Math.sin(theta);
+                this.penDown(args, util);
+                util.target.setXY(x, y);
+            }
+        } else {
+            x = xmid + xrad;
+            y = ymid;
+            for (var theta = 0; theta < 2*Math.PI; theta +=step) {
+                this.penUp(args, util);
+                util.target.setXY(x, y);
+                x = xmid + xrad*Math.cos(theta);
+                y = ymid - yrad*Math.sin(theta);
+                this.penDown(args, util);
+                util.target.setXY(x, y);
+            }
+            x = xmid + xrad-1;
+            y = ymid;
+            for (var theta = 0; theta < 2*Math.PI; theta +=step) {
+                this.penUp(args, util);
+                util.target.setXY(x, y);
+                x = xmid + (xrad-1)*Math.cos(theta);
+                y = ymid - (yrad-1)*Math.sin(theta);
+                this.penDown(args, util);
+                util.target.setXY(x, y);
+            }
+        }
+        if (duration == 3) {
+            dotrad = 2;
+            for (var theta = 0; theta < 2*Math.PI; theta +=step) {
+                this.penUp(args, util);
+                util.target.setXY(xmid+12, ymid);
+                var x = xmid + 12 + dotrad*Math.cos(theta);
+                var y = ymid - dotrad*Math.sin(theta);
+                this.penDown(args, util);
+                util.target.setXY(x, y);
+            }
+        }
+        if (duration != 4) {
+            this.penUp(args, util);
+            util.target.setXY(xmid+flip*xrad, ymid);
+            this.penDown(args, util);
+            util.target.setXY(xmid+flip*xrad, ymid+flip*30);
+        }
+        if (duration < 1) {
+            offset = 0;
+            for (var i = 0; i < 1/(duration*2); i++) {
+                this.penUp(args, util);
+                util.target.setXY(xmid+flip*xrad, ymid+flip*(30+offset*6));
+                this.penDown(args, util);
+                util.target.setXY(xmid+flip*xrad+2, ymid + flip*(30 + offset*6 - 8));
+                util.target.setXY(xmid+flip*xrad+10, ymid + flip*(30 + offset*6 - 12));
+                this.penUp(args, util);
+                util.target.setXY(xmid+flip*xrad, ymid+flip*(30+offset*6+2));
+                this.penDown(args, util);
+                util.target.setXY(xmid+flip*xrad+2, ymid + flip*(30 + offset*6 - 8+2));
+                util.target.setXY(xmid+flip*xrad+10, ymid + flip*(30 + offset*6 - 12+2));
+                offset += 1;
+                this.penUp(args, util);
+            }
+        }
     }
 
     drawSignal(args, util) {
@@ -599,7 +674,6 @@ class Scratch3SignalViz {
      * @param {object} util - utility object provided by the runtime.
      */
     penDown (args, util) {
-        log.log("here now");
         const target = util.target;
         const penState = this._getPenState(target);
 
