@@ -62,6 +62,16 @@ class Scratch3SignalViz {
 
         runtime.on('targetWasCreated', this._onTargetCreated);
         runtime.on('RUNTIME_DISPOSED', this.clear.bind(this));
+
+        this.axisStartX = -200;
+        this.axisStartY = -75;
+        this.xAxisLength = 400;
+        this.yAxisLength = 200;
+        this.staffLength = 400;
+        this.staffStartX = -200;
+        this.staffStartY = -130;
+        this.staffWidth = 8;
+
     }
 
     /**
@@ -99,7 +109,7 @@ class Scratch3SignalViz {
      * @type {string}
      */
     static get STATE_KEY () {
-        return 'Scratch.pen';
+        return 'Scratch.signalviz';
     }
 
     /**
@@ -175,6 +185,7 @@ class Scratch3SignalViz {
     _onTargetMoved (target, oldX, oldY, isForce) {
         // Only move the pen if the movement isn't forced (ie. dragged).
         if (!isForce) {
+            log.log(target);
             const penSkinId = this._getPenLayerID();
             if (penSkinId >= 0) {
                 const penState = this._getPenState(target);
@@ -505,25 +516,44 @@ class Scratch3SignalViz {
     }
 
     drawAxes(args, util) {
-        util.target.setXY(-200, 130);
+        util.target.setXY(this.axisStartX, this.axisStartY + this.yAxisLength);
         this.penDown(args, util);
-        util.target.setXY(-200, -150);
-        util.target.setXY(200, -150);
+        util.target.setXY(this.axisStartX, this.axisStartY);
+        util.target.setXY(this.axisStartX+this.xAxisLength, this.axisStartY);
+        this.penUp(args, util);
+    }
+
+    drawSignal(args, util) {
+        x = this.axisStartX;
+        y = this.axisStartY;
+        signal = [1, 2,3, 4, 5, 6, 1, 2,3, 4, 5, 6, 1, 2,3, 4, 5, 6, 1, 2,3, 4, 5, 6, 1, 2,3, 4, 5, 6];
+        log.log(signal);
+        xStep = Math.floor(this.xAxisLength/(signal.length-1));
+        heightScaling = Math.round(this.yAxisLength/Math.max(...signal));
+        for (i in signal) {
+            val = signal[i];
+            this.penUp(args, util)
+            util.target.setXY(x, y);
+            this.penDown(args, util);
+            util.target.setXY(x, y+val*heightScaling);
+            x = x+xStep;
+        }
         this.penUp(args, util);
     }
 
     drawStaff(args, util) {
         var i;
-        startX = -200;
-        endX = 200;
-        y = -130;
+        startX = this.staffStartX;
+        endX = this.staffStartX+this.staffLength;
+        y = this.staffStartY;
+        yStep = this.staffWidth;
         for (i = 0; i < 5; i++) {
             log.log(i);
             this.penUp(args, util);
             util.target.setXY(startX, y);
             this.penDown(args, util);
             util.target.setXY(endX, y);
-            y = y+8;
+            y = y+yStep;
         }
         this.drawTreble(args, util);
     }
@@ -594,7 +624,6 @@ class Scratch3SignalViz {
     drawMusic(args, util) {
         x = -190;
         y = -130;
-        staffWidth = 8;
         xStep = 40;
         signal = [[-1, 1/4], [7, 1/2], [7, 3], [8, 4], [3, 2], [2, 1]]
         for (i in signal) {
@@ -606,7 +635,7 @@ class Scratch3SignalViz {
                 up = false;
             }
             x = x+xStep;
-            ymid = y+note*staffWidth/2;
+            ymid = y+note*this.staffWidth/2;
             xmid = x - 8;
             this.drawNote(xmid, ymid, duration, up, args, util);
 
@@ -688,23 +717,6 @@ class Scratch3SignalViz {
                 this.penUp(args, util);
             }
         }
-    }
-
-    drawSignal(args, util) {
-        x = -200;
-        y = -150;
-        signal = [1, 2,3, 4, 5, 6, 1, 2,3, 4, 5, 6, 1, 2,3, 4, 5, 6, 1, 2,3, 4, 5, 6, 1, 2,3, 4, 5, 6];
-        log.log(signal);
-        for (i in signal) {
-            val = signal[i];
-            this.penUp(args, util)
-            x = x+10;
-            util.target.setXY(x, y);
-            this.penDown(args, util);
-            util.target.setXY(x, y+val*25);
-
-        }
-        this.penUp(args, util);
     }
 
     /**
