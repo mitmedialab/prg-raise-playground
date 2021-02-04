@@ -62,6 +62,54 @@ class Scratch3MusicCreation {
                     {text: "forte", value: 85},
                     {text: "fortissimo", value: 100}];
 
+        pitchToLetter = {
+            60: "C1",
+            61: "C1 #",
+            62: "D",
+            63: "Eb",
+            64: "E",
+            65: "F",
+            66: "F #",
+            67: "G",
+            68: "G #",
+            69: "A",
+            70: "B b",
+            71: "B",
+            72: "C",
+            73: "C #"
+        }
+        
+        letterToStaff = {
+            "C": -2,
+            "D": -1,
+            "E": 0,
+            "F": 1,
+            "G": 2,
+            "A": 3,
+            "B": 4,
+            "C": 5
+
+        }
+
+        pitchToStaff = {
+            60: -2,
+            61: -2,
+            62: -1,
+            63: 0,
+            64: 0,
+            65: 2,
+            66: 2,
+            67: 3,
+            68: 3,
+            69: 4,
+            70: 5,
+            71: 5,
+            72: 6,
+            73: 6,
+            75: 7,
+            76: 8
+        }
+
         this._playNoteForPicker = this._playNoteForPicker.bind(this);
         this.runtime.on('PLAY_NOTE', this._playNoteForPicker);
 
@@ -94,9 +142,6 @@ class Scratch3MusicCreation {
         this.runtime.on('targetWasCreated', this._onTargetCreated);
 
         this._onTargetMoved = this._onTargetMoved.bind(this);
-
-
-        //runtime.on('RUNTIME_DISPOSED', this.clear.bind(this));
     }
 
 
@@ -106,6 +151,14 @@ class Scratch3MusicCreation {
      */
     static get STATE_KEY () {
         return 'Scratch.musiccreation';
+    }
+
+    /**
+     * The key to load & store a target's music-related state.
+     * @type {string}
+     */
+    static get VIZ_STATE_KEY () {
+        return 'Scratch.musicviz';
     }
     
 
@@ -144,6 +197,16 @@ class Scratch3MusicCreation {
         return 30;
     }
 
+    /**
+     * The minimum and maximum allowed pen size.
+     * The maximum is twice the diagonal of the stage, so that even an
+     * off-stage sprite can fill it.
+     * @type {{min: number, max: number}}
+     */
+    static get PEN_SIZE_RANGE () {
+        return {min: 1, max: 1200};
+    }
+
     static get DEFAULT_PEN_STATE () {
         return {
             penDown: false,
@@ -169,10 +232,10 @@ class Scratch3MusicCreation {
     }
 
     _getPenState (target) {
-        let penState = target.getCustomState(Scratch3MusicCreation.STATE_KEY);
+        let penState = target.getCustomState(Scratch3MusicCreation.VIZ_STATE_KEY);
         if (!penState) {
             penState = Clone.simple(Scratch3MusicCreation.DEFAULT_PEN_STATE);
-            target.setCustomState(Scratch3MusicCreation.STATE_KEY, penState);
+            target.setCustomState(Scratch3MusicCreation.VIZ_STATE_KEY, penState);
         }
         return penState;
     }
@@ -190,6 +253,13 @@ class Scratch3MusicCreation {
             const musicState = sourceTarget.getCustomState(Scratch3MusicCreation.STATE_KEY);
             if (musicState) {
                 newTarget.setCustomState(Scratch3MusicCreation.STATE_KEY, Clone.simple(musicState));
+            }
+            const penState = sourceTarget.getCustomState(Scratch3MusicCreation.VIZ_STATE_KEY);
+            if (penState) {
+                newTarget.setCustomState(Scratch3MusicCreation.VIZ_STATE_KEY, Clone.simple(penState));
+                if (penState.penDown) {
+                    newTarget.addListener(RenderedTarget.EVENT_TARGET_MOVED, this._onTargetMoved);
+                }
             }
         }
     }
@@ -531,37 +601,35 @@ class Scratch3MusicCreation {
     }
 
     penUp (args, util) {
-        const target = util.target;
-        const penState = this._getPenState(target);
-
+        const penState = this._getPenState(util.target);
         if (penState.penDown) {
             penState.penDown = false;
-            target.removeListener(RenderedTarget.EVENT_TARGET_MOVED, this._onTargetMoved);
+            util.target.removeListener(RenderedTarget.EVENT_TARGET_MOVED, this._onTargetMoved);
         }
     }
 
     penDown (args, util) {
-        const target = util.target;
-        const penState = this._getPenState(target);
-
+        const penState = this._getPenState(util.target);
         if (!penState.penDown) {
             penState.penDown = true;
-            target.addListener(RenderedTarget.EVENT_TARGET_MOVED, this._onTargetMoved);
+            util.target.addListener(RenderedTarget.EVENT_TARGET_MOVED, this._onTargetMoved);
         }
 
         const penSkinId = this._getPenLayerID();
         if (penSkinId >= 0) {
-            this.runtime.renderer.penPoint(penSkinId, penState.penAttributes, target.x, target.y);
+            this.runtime.renderer.penPoint(penSkinId, penState.penAttributes, util.target.x, util.target.y);
             this.runtime.requestRedraw();
         }
     }
 
     testWaveformViz (args, util) {
+        this.clear();
         this.drawAxes(args, util);
         this.drawSignal(args, util);
     }
 
     testSheetMusicViz (args, util) {
+        this.clear();
         this.drawStaff(args, util);
         this.drawMusic(args, util);
     }
@@ -578,7 +646,7 @@ class Scratch3MusicCreation {
         x = this.axisStartX;
         y = this.axisStartY;
         signal = [1, 2,3, 4, 5, 6, 1, 2,3, 4, 5, 6, 1, 2,3, 4, 5, 6, 1, 2,3, 4, 5, 6, 1, 2,3, 4, 5, 6];
-        log.log(signal);
+
         xStep = Math.floor(this.xAxisLength/(signal.length-1));
         heightScaling = Math.round(this.yAxisLength/Math.max(...signal));
         for (i in signal) {
@@ -599,7 +667,6 @@ class Scratch3MusicCreation {
         y = this.staffStartY;
         yStep = this.staffWidth;
         for (i = 0; i < 5; i++) {
-            log.log(i);
             this.penUp(args, util);
             util.target.setXY(startX, y);
             this.penDown(args, util);
@@ -612,9 +679,7 @@ class Scratch3MusicCreation {
     drawTreble(args, util) {
         xstart = -200;
         ystart = -80;
-        //treble = [[61.70984455958549, 316.77720207253884], [63.76683937823834, 321.919689119171], [67.88082901554404, 328.09067357512953], [76.10880829015544, 332.2046632124352], [83.30829015544042, 334.2616580310881], [93.59326424870466, 334.2616580310881], [102.84974093264249, 331.1761658031088], [111.07772020725389, 326.03367875647666], [113.13471502590673, 315.74870466321244], [116.220207253886, 304.43523316062175], [116.220207253886, 299.2927461139896], [116.220207253886, 291.06476683937825], [75.08031088082902, 69.93782383419689], [75.08031088082902, 65.82383419689118], [75.08031088082902, 56.567357512953365], [75.08031088082902, 47.310880829015545], [78.16580310880829, 39.082901554404145], [82.27979274611398, 31.88341968911917], [86.39378238341969, 25.712435233160623], [90.50777202072538, 18.512953367875646], [98.73575129533678, 15.427461139896373], [103.87823834196891, 19.541450777202073], [111.07772020725389, 26.740932642487046], [113.13471502590673, 37.02590673575129], [114.16321243523316, 48.339378238341965], [114.16321243523316, 59.65284974093264], [111.07772020725389, 69.93782383419689], [106.96373056994818, 81.25129533678756], [99.76424870466322, 89.47927461139896], [92.56476683937824, 99.76424870466322], [49.36787564766839, 143.9896373056995], [40.11139896373057, 154.2746113989637], [34.968911917098445, 168.67357512953367], [30.854922279792746, 187.1865284974093], [30.854922279792746, 199.52849740932643], [31.88341968911917, 211.87046632124353], [37.02590673575129, 222.15544041450778], [43.196891191709845, 231.4119170984456], [47.310880829015545, 237.58290155440415], [57.59585492227979, 244.78238341968913], [69.93782383419689, 253.0103626943005], [84.33678756476684, 255.06735751295335], [95.65025906735751, 256.0958549222798], [110.04922279792746, 254.03886010362694], [120.33419689119171, 245.81088082901553], [129.59067357512953, 235.52590673575128], [133.70466321243524, 219.0699481865285], [132.6761658031088, 208.78497409326425], [130.61917098445596, 201.58549222797927], [123.41968911917098, 193.35751295336786], [116.220207253886, 187.1865284974093], [102.84974093264249, 185.12953367875647], [91.53626943005182, 185.12953367875647], [80.22279792746114, 191.30051813471502], [75.08031088082902, 203.6424870466321], [74.05181347150258, 213.92746113989637], [77.13730569948186, 228.32642487046633], [85.36528497409326, 235.52590673575128]];
         treble = symbols.treble;
-        log.log('did it through symbols');
         this.penUp(args, util);
         for (var i in treble) {
             coord = treble[i];
@@ -633,11 +698,25 @@ class Scratch3MusicCreation {
         }
     }
 
+    convertSignalToMusicList (args, util) {
+        signal = [];
+        for (var i in this.noteList) {
+            freq = this.noteList[i][0];
+            staff = pitchToStaff[freq];
+            dur = this.noteList[i][1]*4 ;
+            signal.push([staff, dur]);
+        }
+        this.noteList = [];
+        return signal;
+    }
+
     drawMusic(args, util) {
         x = -190;
         y = -130;
         xStep = 40;
-        signal = [[-1, 1/4], [7, 1/2], [7, 3], [8, 4], [3, 2], [2, 1]]
+        signal = this.noteList;
+        log.log(this.noteList);
+        signal = this.convertSignalToMusicList(args, util);
         for (i in signal) {
             note = signal[i][0];
             duration = signal[i][1];
@@ -731,6 +810,17 @@ class Scratch3MusicCreation {
         }
     }
 
+    /**
+     * The pen "clear" block clears the pen layer's contents.
+     */
+    clear () {
+        const penSkinId = this._getPenLayerID();
+        if (penSkinId >= 0) {
+            this.runtime.renderer.penClear(penSkinId);
+            this.runtime.requestRedraw();
+        }
+    }
+
     findInstrumentForNumber (number) {
         for (var m in instrumentNames) {
             if (instrumentNames[m].value == number) {
@@ -773,7 +863,6 @@ class Scratch3MusicCreation {
 		const player = new core.SoundFontPlayer('https://storage.googleapis.com/magentadata/js/soundfonts/sgm_plus');
 		player.start(TWINKLE_TWINKLE);
 		player.stop();
-		log.log(TWINKLE_TWINKLE);
     }
 
     testMagentaRNN (utils) {
@@ -885,8 +974,6 @@ class Scratch3MusicCreation {
             runtime: this.runtime,
             target: this.runtime.getEditingTarget()
         };
-        this.noteList.push(noteNum);
-        log.log(this.noteList);
         this._playNote(util, noteNum, 0.25);
     }
 
@@ -949,16 +1036,17 @@ class Scratch3MusicCreation {
     }
 
     playNote (args, util) {
-    	log.log("here");
+        log.log(util.target);
         if (this._stackTimerNeedsInit(util)) {
             let note = Cast.toNumber(args.NOTE);
-            log.log(args.NOTE);
             note = MathUtil.clamp(note,
                 Scratch3MusicCreation.MIDI_NOTE_RANGE.min, Scratch3MusicCreation.MIDI_NOTE_RANGE.max);
             let beats = Cast.toNumber(args.SECS);
             beats = this._clampBeats(beats);
             this.noteList.push([note, beats]);
-            log.log(this.noteList);
+            for (var i in this.noteList) {
+                log.log(this.noteList[i]);
+            }
             // If the duration is 0, do not play the note. In Scratch 2.0, "play drum for 0 beats" plays the drum,
             // but "play note for 0 beats" is silent.
             if (beats === 0) return;
@@ -993,6 +1081,7 @@ class Scratch3MusicCreation {
 
         // Determine which of the audio samples for this instrument to play
         const musicState = this._getMusicState(util.target);
+        log.log(musicState);
         const inst = musicState.currentInstrument;
         const instrumentInfo = this.INSTRUMENT_INFO[inst];
         const sampleArray = instrumentInfo.samples;
@@ -1091,7 +1180,6 @@ class Scratch3MusicCreation {
 
     saveFile (args) {
         const text = Cast.toString(args.FILENAME);
-        log.log(text);
     }
 
     /**
