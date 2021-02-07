@@ -1,10 +1,4 @@
-const ArgumentType = require('../../extension-support/argument-type');
-const BlockType = require('../../extension-support/block-type');
 const Clone = require('../../util/clone');
-const Cast = require('../../util/cast');
-const formatMessage = require('format-message');
-const MathUtil = require('../../util/math-util');
-const Timer = require('../../util/timer');
 const log = require('../../util/log');
 const RenderedTarget = require('../../sprites/rendered-target');
 const StageLayering = require('../../engine/stage-layering');
@@ -88,6 +82,16 @@ class VizHelpers {
         };
     }
 
+    /**
+     * The minimum and maximum allowed pen size.
+     * The maximum is twice the diagonal of the stage, so that even an
+     * off-stage sprite can fill it.
+     * @type {{min: number, max: number}}
+     */
+    static get PEN_SIZE_RANGE () {
+        return {min: 1, max: 1200};
+    }
+
         /**
      * When a music-playing Target is cloned, clone the music state.
      * @param {Target} newTarget - the newly created target.
@@ -163,7 +167,7 @@ class VizHelpers {
     drawSignal(args, util) {
         x = this.axisStartX;
         y = this.axisStartY;
-        signal = [1, 2,3, 4, 5, 6, 1, 2,3, 4, 5, 6, 1, 2,3, 4, 5, 6, 1, 2,3, 4, 5, 6, 1, 2,3, 4, 5, 6];
+        signal = [1, 2,3, 4, 5, 6, 1, 2,3, 4, 5, 6, 1, 2,3, 4, 5, 6, 1, 2,3, 4, 5, 6, 1, 2,3, 4, 5, 6]; //test
 
         xStep = Math.floor(this.xAxisLength/(signal.length-1));
         heightScaling = Math.round(this.yAxisLength/Math.max(...signal));
