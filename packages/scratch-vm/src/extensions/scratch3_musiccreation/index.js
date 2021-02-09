@@ -8,7 +8,7 @@ const log = require('../../util/log');
 const VizHelpers = require('./vizhelpers');
 const MusicCreationHelpers = require('./musiccreationhelpers');
 const MusicAccompanimentHelpers = require('./musicaccompanimenthelpers');
-
+const AnalysisHelpers = require('./analysishelpers');
 
 
 class Scratch3MusicCreation {
@@ -18,6 +18,7 @@ class Scratch3MusicCreation {
         this.vizHelper = new VizHelpers(runtime);
         this.musicCreationHelper = new MusicCreationHelpers(runtime);
         this.musicAccompanimentHelper = new MusicAccompanimentHelpers(runtime);
+        this.analysisHelper = new AnalysisHelpers(runtime);
 
 
         this.noteList = [];
@@ -28,6 +29,13 @@ class Scratch3MusicCreation {
                     {text: "mezzo-forte", value: 60},
                     {text: "forte", value: 85},
                     {text: "fortissimo", value: 100}];
+
+        this.files = [{text: "mystery 1", value: 1}, 
+                    {text: "mystery 2", value: 2}, 
+                    {text: "mystery 3", value: 3},
+                    {text: "mystery 4", value: 4},
+                    {text: "mystery 5", value: 5},
+                    {text: "mystery 6", value: 6}];
 
 
         this._playNoteForPicker = this._playNoteForPicker.bind(this);
@@ -207,32 +215,6 @@ class Scratch3MusicCreation {
                     }
                 },
                 {
-                    opcode: 'recordNotes',
-                    blockType: BlockType.COMMAND,
-                    text: 'record notes with frequency [NOTE] for [SECS] seconds',
-                    arguments: {
-                        NOTE: {
-                            type: ArgumentType.NOTE,
-                            defaultValue: 60
-                        },
-                        SECS: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 0.25
-                        }
-                    }
-                },
-                {
-                    opcode: 'saveFile',
-                    blockType: BlockType.COMMAND,
-                    text: 'save file to [FILENAME].wav',
-                    arguments: {
-                        FILENAME: {
-                            type: ArgumentType.STRING,
-                            defaultValue: "myMusic"
-                        }
-                    }
-                },
-                {
                     opcode: 'getVolume',
                     text: formatMessage({
                         id: 'musiccreation.getVolume',
@@ -295,6 +277,59 @@ class Scratch3MusicCreation {
                     }),
                     blockType: BlockType.COMMAND
                 },
+                {
+                    opcode: 'compareFiles',
+                    blockType: BlockType.COMMAND,
+                    text: 'compare [FILE1] and [FILE2]',
+                    arguments: {
+                        FILE1: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 1,
+                            menu: "FILES"
+                        },
+                        FILE2: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 2,
+                            menu: "FILES"
+                        },
+                    },
+                },
+                {
+                    opcode: 'getLouder',
+                    text: formatMessage({
+                        id: 'musiccreation.getLouder',
+                        default: 'louder',
+                        description: 'get the current louder note'
+                    }),
+                    blockType: BlockType.REPORTER
+                },
+                {
+                    opcode: 'getHigher',
+                    text: formatMessage({
+                        id: 'musiccreation.getHigher',
+                        default: 'higher',
+                        description: 'get the current higher note'
+                    }),
+                    blockType: BlockType.REPORTER
+                },
+                {
+                    opcode: 'getInst1',
+                    text: formatMessage({
+                        id: 'musiccreation.getInst1',
+                        default: 'instrument 1',
+                        description: 'get the current instrument 1'
+                    }),
+                    blockType: BlockType.REPORTER
+                },
+                {
+                    opcode: 'getInst2',
+                    text: formatMessage({
+                        id: 'musiccreation.getInst2',
+                        default: 'instrument 2',
+                        description: 'get the current instrument 2'
+                    }),
+                    blockType: BlockType.REPORTER
+                }
 
             ],
             menus: {
@@ -305,6 +340,10 @@ class Scratch3MusicCreation {
                 INSTRUMENT: {
                     acceptReporters: true,
                     items: this._buildMenu(this.INSTRUMENT_INFO)
+                },
+                FILES: {
+                    acceptReporters: true,
+                    items: this.files
                 }
             }
         };
@@ -369,13 +408,6 @@ class Scratch3MusicCreation {
         return this.musicCreationHelper.getVolume();
     }
 
-    //TODO
-    recordNotes (args, util) {
-    	for (var n in this.noteList) {
-    		this.playNote(args, util);
-        }
-    }
-
     playNote (args, util) {
         toAdd = this.musicCreationHelper.playNote(args, util);
         if (toAdd.length == 2) {
@@ -383,9 +415,24 @@ class Scratch3MusicCreation {
         }
     }
 
-    //TODO
-    saveFile (args) {
-        const text = Cast.toString(args.FILENAME);
+    compareFiles (args, util) {
+        this.analysisHelper.compareFiles(args, util);
+    }
+
+    getLouder (util) {
+        return this.analysisHelper.getLouder(util);
+    }
+
+    getHigher (util) {
+        return this.analysisHelper.getHigher(util);
+    }
+
+    getInst1 (util) {
+        return this.analysisHelper.getInst1(util);
+    }
+
+    getInst2 (util) {
+        return this.analysisHelper.getInst2(util);
     }
 
 
