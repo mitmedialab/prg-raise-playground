@@ -4,6 +4,7 @@ const RenderedTarget = require('../../sprites/rendered-target');
 const StageLayering = require('../../engine/stage-layering');
 
 const symbols = require('./symbols');
+const { updateVariableIdentifiers } = require('../../util/variable-util');
 
 class VizHelpers {
     constructor (runtime) {
@@ -26,7 +27,7 @@ class VizHelpers {
         this.noteList = [];
 
         this.axisStartX = -200;
-        this.axisStartY = -75;
+        this.axisStartY = -45;
         this.xAxisLength = 400;
         this.yAxisLength = 200;
         this.staffLength = 400;
@@ -141,8 +142,9 @@ class VizHelpers {
         return penState;
     }
 
-    testWaveformViz (args, util) {
+    testWaveformViz (noteList, args, util) {
         log.log("HELPER");
+        this.noteList = noteList;
         this.clear();
         this.drawAxes(args, util);
         this.drawSignal(args, util);
@@ -160,26 +162,41 @@ class VizHelpers {
         util.target.setXY(this.axisStartX, this.axisStartY + this.yAxisLength);
         this.penDown(args, util);
         util.target.setXY(this.axisStartX, this.axisStartY);
-        util.target.setXY(this.axisStartX+this.xAxisLength, this.axisStartY);
+        this.penUp(args, util);
+        util.target.setXY(this.axisStartX, this.axisStartY+this.yAxisLength/2);
+        this.penDown(args, util);
+        util.target.setXY(this.axisStartX+this.xAxisLength, this.axisStartY+this.yAxisLength/2);
         this.penUp(args, util);
     }
 
     drawSignal(args, util) {
         x = this.axisStartX;
-        y = this.axisStartY;
-        signal = [1, 2,3, 4, 5, 6, 1, 2,3, 4, 5, 6, 1, 2,3, 4, 5, 6, 1, 2,3, 4, 5, 6, 1, 2,3, 4, 5, 6]; //test
-
-        xStep = Math.floor(this.xAxisLength/(signal.length-1));
-        heightScaling = Math.round(this.yAxisLength/Math.max(...signal));
-        for (i in signal) {
-            val = signal[i];
-            this.penUp(args, util)
-            util.target.setXY(x, y);
-            this.penDown(args, util);
-            util.target.setXY(x, y+val*heightScaling);
-            x = x+xStep;
+        y = this.axisStartY+this.yAxisLength/2;
+        signal = this.noteList;
+        fs = 500;
+        const totalSamples = fs*signal
+            .map( v => v[1] )                                
+            .reduce( (sum, current) => sum + current, 0 );
+        xStep = this.xAxisLength/totalSamples;
+        log.log(xStep);
+        heightScaling = 100;
+        util.target.setXY(x, y);
+        this.penDown(args, util);
+        for (var i in signal) {
+            note = signal[i];
+            midi = note[0];
+            dur = note[1];
+            freq = 2**((midi - 69)/12)*440;
+            Omega = 2*Math.PI*freq/fs;
+            log.log(dur*fs);
+            for (var s = 0; s < dur*fs; s++) {
+                val = heightScaling*(Math.sin(2*Math.PI*freq/44140*s));
+                util.target.setXY(x, y + val);
+                x = x+xStep;
+            }
+            log.log(freq, dur);
         }
-        this.penUp(args, util);
+        this.penUp(args,util);
     }
 
     drawStaff(args, util) {
@@ -270,7 +287,7 @@ class VizHelpers {
                 this.penDown(args, util);
                 util.target.setXY(x, y);
             }
-            x = xmid + xrad-1;
+            x = xmid + xrad - 1;
             y = ymid;
             for (var theta = 0; theta < 2*Math.PI; theta +=step) {
                 this.penUp(args, util);

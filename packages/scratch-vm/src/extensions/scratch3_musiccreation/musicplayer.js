@@ -17,7 +17,7 @@ try {
     // Non-webpack environment, don't worry about assets.
 }
 
-class MusicCreationHelpers {
+class MusicPlayer {
     constructor (runtime) {
         this.runtime = runtime;
 
@@ -49,6 +49,16 @@ class MusicCreationHelpers {
         {text: "mezzo-forte", value: 60},
         {text: "forte", value: 85},
         {text: "fortissimo", value: 100}];
+
+        instruments = {
+            "piano": 0,
+            "guitar": 1,
+            "bass":2, 
+            "cello": 3, 
+            "saxophone":4, 
+            "clarinet": 5,
+            "synth": 6
+        }
     }
 
     /**
@@ -184,9 +194,9 @@ class MusicCreationHelpers {
      */
     _onTargetCreated (newTarget, sourceTarget) {
         if (sourceTarget) {
-            const musicState = sourceTarget.getCustomState(MusicCreationHelpers.STATE_KEY);
+            const musicState = sourceTarget.getCustomState(MusicPlayer.STATE_KEY);
             if (musicState) {
-                newTarget.setCustomState(MusicCreationHelpers.STATE_KEY, Clone.simple(musicState));
+                newTarget.setCustomState(MusicPlayer.STATE_KEY, Clone.simple(musicState));
             }
         }
     }
@@ -268,10 +278,10 @@ class MusicCreationHelpers {
      * @private
      */
     _getMusicState (target) {
-        let musicState = target.getCustomState(MusicCreationHelpers.STATE_KEY);
+        let musicState = target.getCustomState(MusicPlayer.STATE_KEY);
         if (!musicState) {
-            musicState = Clone.simple(MusicCreationHelpers.DEFAULT_MUSIC_STATE);
-            target.setCustomState(MusicCreationHelpers.STATE_KEY, musicState);
+            musicState = Clone.simple(MusicPlayer.DEFAULT_MUSIC_STATE);
+            target.setCustomState(MusicPlayer.STATE_KEY, musicState);
         }
         return musicState;
     }
@@ -357,7 +367,7 @@ class MusicCreationHelpers {
         if (this._stackTimerNeedsInit(util)) {
             let note = Cast.toNumber(args.NOTE);
             note = MathUtil.clamp(note,
-                MusicCreationHelpers.MIDI_NOTE_RANGE.min, MusicCreationHelpers.MIDI_NOTE_RANGE.max);
+                MusicPlayer.MIDI_NOTE_RANGE.min, MusicPlayer.MIDI_NOTE_RANGE.max);
             let beats = Cast.toNumber(args.SECS);
             beats = this._clampBeats(beats);
             // If the duration is 0, do not play the note. In Scratch 2.0, "play drum for 0 beats" plays the drum,
@@ -386,21 +396,19 @@ class MusicCreationHelpers {
      * @param {number} durationSec - the duration in seconds to play the note.
      * @private
      */
-    _playNote (util, note, durationSec) {
+    _playNote (util, note, durationSec, instrument = 0) {
         if (util.runtime.audioEngine === null) return;
         if (util.target.sprite.soundBank === null) return;
 
         // If we're playing too many sounds, do not play the note.
-        if (this._concurrencyCounter > MusicCreationHelpers.CONCURRENCY_LIMIT) {
+        if (this._concurrencyCounter > MusicPlayer.CONCURRENCY_LIMIT) {
             return;
         }
 
         // Determine which of the audio samples for this instrument to play
         const musicState = this._getMusicState(util.target);
-        const inst = musicState.currentInstrument;
-        log.log("INST", inst);
+        const inst = (instrument == 0) ? musicState.currentInstrument : instruments[instrument.toLowerCase()];
         const instrumentInfo = this.INSTRUMENT_INFO[inst];
-        log.log(instrumentInfo);
         const sampleArray = instrumentInfo.samples;
         const sampleIndex = this._selectSampleIndexForNote(note, sampleArray);
 
@@ -537,10 +545,10 @@ class MusicCreationHelpers {
      * @private
      */
     _clampBeats (beats) {
-        return MathUtil.clamp(beats, MusicCreationHelpers.BEAT_RANGE.min, MusicCreationHelpers.BEAT_RANGE.max);
+        return MathUtil.clamp(beats, MusicPlayer.BEAT_RANGE.min, MusicPlayer.BEAT_RANGE.max);
     }
 
 
 }
 
-module.exports = MusicCreationHelpers;
+module.exports = MusicPlayer;

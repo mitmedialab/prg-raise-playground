@@ -9,12 +9,15 @@ const VizHelpers = require('./vizhelpers');
 const MusicCreationHelpers = require('./musiccreationhelpers');
 const MusicAccompanimentHelpers = require('./musicaccompanimenthelpers');
 const AnalysisHelpers = require('./analysishelpers');
+const MusicPlayers = require('./musicplayer')
+
 
 
 class Scratch3MusicCreation {
     constructor (runtime) {
         this.runtime = runtime;
 
+        this.musicPlayer = new MusicPlayers(runtime);
         this.vizHelper = new VizHelpers(runtime);
         this.musicCreationHelper = new MusicCreationHelpers(runtime);
         this.musicAccompanimentHelper = new MusicAccompanimentHelpers(runtime);
@@ -350,7 +353,8 @@ class Scratch3MusicCreation {
     }
 
     testWaveformViz (args, util) {
-        this.vizHelper.testWaveformViz(args, util);
+        this.vizHelper.testWaveformViz(this.noteList, args, util);
+        this.noteList = [];
     }
 
     testSheetMusicViz (args, util) {
