@@ -182,18 +182,24 @@ class VizHelpers {
         heightScaling = 100;
         util.target.setXY(x, y);
         this.penDown(args, util);
+        st = 0;
         for (var i in signal) {
             note = signal[i];
+            log.log(note[2]);
             midi = note[0];
             dur = note[1];
+            vol = note[2];
+            log.log(vol);
             freq = 2**((midi - 69)/12)*440;
             Omega = 2*Math.PI*freq/fs;
             log.log(dur*fs);
-            for (var s = 0; s < dur*fs; s++) {
-                val = heightScaling*(Math.sin(2*Math.PI*freq/44140*s));
+            var s = 0;
+            for (s = st; s < st + dur*fs; s++) {
+                val = vol*(Math.sin(2*Math.PI*freq/44140*s));
                 util.target.setXY(x, y + val);
                 x = x+xStep;
             }
+            st = s;
             log.log(freq, dur);
         }
         this.penUp(args,util);

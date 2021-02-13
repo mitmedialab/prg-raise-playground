@@ -25,6 +25,7 @@ class Scratch3MusicCreation {
 
 
         this.noteList = [];
+        this.wavenoteList = [];
         
         this.volumes = [{text: "pianissimo", value: 15}, 
                     {text: "piano", value: 30}, 
@@ -248,10 +249,20 @@ class Scratch3MusicCreation {
                     opcode: 'testMagentaRNN',
                     text: formatMessage({
                         id: 'musiccreation.testMagentaRNN',
-                        default: 'test Magenta RNN',
+                        default: 'test Magenta RNN with [STEPS] steps and [TEMP] temperature',
                         description: 'test Magenta RNN'
                     }),
-                    blockType: BlockType.COMMAND
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        STEPS: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 20
+                        },
+                        TEMP: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 1.5
+                        },
+                    },
                 },
                 {
                     opcode: 'testMagentaMVAE',
@@ -279,6 +290,18 @@ class Scratch3MusicCreation {
                         description: 'test waveform viz'
                     }),
                     blockType: BlockType.COMMAND
+                },
+                {
+                    opcode: 'playMystery',
+                    blockType: BlockType.COMMAND,
+                    text: 'play [FILE]',
+                    arguments: {
+                        FILE: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 1,
+                            menu: "FILES"
+                        }
+                    },
                 },
                 {
                     opcode: 'compareFiles',
@@ -353,8 +376,8 @@ class Scratch3MusicCreation {
     }
 
     testWaveformViz (args, util) {
-        this.vizHelper.testWaveformViz(this.noteList, args, util);
-        this.noteList = [];
+        this.vizHelper.testWaveformViz(this.wavenoteList, args, util);
+        this.wavenoteList = [];
     }
 
     testSheetMusicViz (args, util) {
@@ -373,11 +396,12 @@ class Scratch3MusicCreation {
     }
 
     testMagentaPlayer (util) {
-        this.musicAccompanimentHelper.testMagentaPlayer(util);
+        this.musicAccompanimentHelper.testMagentaPlayer(this.noteList, util);
     }
 
-    testMagentaRNN (utils) {
-        this.musicAccompanimentHelper.testMagentaRNN(utils);
+    testMagentaRNN (args, utils) {
+        this.musicAccompanimentHelper.testMagentaRNN(this.noteList, args, utils);
+        this.noteList = [];
     }
 
     testMagentaMVAE (utils) {
@@ -416,7 +440,18 @@ class Scratch3MusicCreation {
         toAdd = this.musicCreationHelper.playNote(args, util);
         if (toAdd.length == 2) {
             this.noteList.push(toAdd);
+            vol = (this.getVolume());
+            for (var m in volumes) {
+                if (volumes[m].text == vol) {
+                    toAdd.push(volumes[m].value);
+                }
+            }
+            this.wavenoteList.push(toAdd);
         }
+    }
+
+    playMystery (args, util) {
+        this.analysisHelper.playFile(args, util);
     }
 
     compareFiles (args, util) {

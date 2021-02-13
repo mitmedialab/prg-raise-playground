@@ -1,10 +1,12 @@
 const log = require('../../util/log');
+const Cast = require('../../util/cast');
 const hrtime = require('browser-hrtime');
 const mvae = require('@magenta/music/node/music_vae');
 const core = require('@magenta/music/node/core');
 const rnn = require('@magenta/music/node/music_rnn');
 
 const symbols = require('./symbols');
+const { time } = require('format-message');
 
 
 /**
@@ -42,27 +44,48 @@ class MusicAccompanimentHelpers {
             totalTime: 8
           };
 
+          this.noteList = [];
+
     }
 
-    testMagentaPlayer (util) {
+    configure(noteList) {
+        newNotes = {
+            notes: [
+
+            ],
+            totalTime: 0
+        };
+        t = 0;
+        for (var i in noteList) {
+            note = noteList[i];
+            newNotes.notes.push({pitch: note[0], startTime: t, endTime: t + note[1]});
+            t = t + note[1];
+            newNotes.totalTime += note[1];
+        }
+        return newNotes;
+    }
+
+    testMagentaPlayer (noteList, util) {
         log.log("MAGENTA");
+        notes = this.configure(noteList);
 		const player = new core.SoundFontPlayer('https://storage.googleapis.com/magentadata/js/soundfonts/sgm_plus');
-		player.start(TWINKLE_TWINKLE);
+		player.start(notes);
 		player.stop();
     }
 
-    testMagentaRNN (utils) {
+    testMagentaRNN (noteList, args, utils) {
         const player = new core.SoundFontPlayer('https://storage.googleapis.com/magentadata/js/soundfonts/sgm_plus');
         if (player.isPlaying()) {
             player.stop();
             return;
         }
+        notes = this.configure(noteList);
         music_rnn = new rnn.MusicRNN('https://storage.googleapis.com/magentadata/js/checkpoints/music_rnn/basic_rnn');
         music_rnn.initialize();
-        rnn_steps = 20;
-        rnn_temperature = 1.5;
+        rnn_steps = Cast.toNumber(args.STEPS);
+        rnn_temperature = Cast.toNumber(args.TEMP);
               
-        const qns = core.sequences.quantizeNoteSequence(TWINKLE_TWINKLE, 4);
+        const qns = core.sequences.quantizeNoteSequence(notes, 4);
         music_rnn
         .continueSequence(qns, rnn_steps, rnn_temperature)
         .then((sample) => player.start(sample));

@@ -5,7 +5,6 @@ const MathUtil = require('../../util/math-util');
 const Timer = require('../../util/timer');
 const log = require('../../util/log');
 const musicPlayers = require("./musicplayer");
-const { WaterfallSVGVisualizer } = require('@magenta/music/node/core');
 
 class AnalysisHelpers {
     constructor (runtime) {
@@ -36,6 +35,11 @@ class AnalysisHelpers {
         this.inst1 = "";
         this.inst2 = "";
 
+    }
+
+    playFile (args, util) {
+        note1 = this.filenameToNote[Cast.toNumber(args.FILE)];
+        this.play(note1, util);
     }
 
     compareFiles (args, util) {
