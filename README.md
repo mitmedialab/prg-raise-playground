@@ -62,6 +62,20 @@ sh: webpack: command not found
 
 **Solution**: This may mean you have a half-installed node_modules version of webpack. Try starting fresh!
 
+## Adding a new Scratch Extension
+
+The most common modification to Scratch that you will be doing is adding a new category of blocks, also called an extension, to the toolbox. To complete this work, you will primarily be working in [packages/scratch-vm](packages/scratch-vm).
+1. Enter `packages/scratch-vm` and navigate to `packages/scratch-vm/src/extensions`. This folder contains all of the extensions that currently exist in your toolbox.
+2. Make a new folder for the extension that you want to create. For example, make a folder called `scratch3_test`. Then enter that folder.
+3. In `scratch3_test`, create a new file, `index.js`.
+4. To populate the `index.js` file that you created, look at [this annonated Scratch extension example](https://github.com/LLK/scratch-vm/blob/develop/docs/extensions.md#annotated-example). This example can be copied directly as a starting point. Another starting point to consider would be copying the `index.js` of another extension in the `packages/scratch-vm/extensions` folder that has most of the functionality that you are looking for.
+5. Once your index.js is settled, add the name of the extension to `scratch-vm/src/extension-support/extension-manager.js`. Look at the other extensions added there as a template for how you should add your new extension.
+6. Now you will have to navigate to `packages/scratch-gui`. Add the extension name and url of your new extension to `scratch-gui/src/lib/libraries/extensions/index.jsx`.
+7. [Optional] If you want the extension to automatically be loaded whenever you load the page, add it as a CORE_EXTENSION in `scratch-vm/src/virtual-machine.js`.
+
+More information about creating a new Scratch extension [can be found here](https://github.com/LLK/scratch-vm/blob/develop/docs/extensions.md).
+
+
 ## 💡 How this was made:
 
 ### Sub-packages
