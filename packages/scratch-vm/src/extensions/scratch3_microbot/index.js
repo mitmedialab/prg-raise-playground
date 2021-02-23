@@ -62,7 +62,7 @@ class MicrobitRobot {
         this.right_line = 0;
         this.last_reading_time = 0;
         
-        this.scratch_vm.on('PROJEeCT_STOP_ALL', this.resetRobot.bind(this));
+        this.scratch_vm.on('PROJECT_STOP_ALL', this.resetRobot.bind(this));
         this.scratch_vm.on('CONNECT_MICROBIT_ROBOT', this.connectToBLE.bind(this));
         
         console.log("Version: adding clear led display");
@@ -234,6 +234,22 @@ class MicrobitRobot {
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
                         id: 'arduinoBot.playMusic',
+                        default: 'play song [SONG]',
+                        description: 'Play song using the piezo'
+                    }),
+                    arguments: {
+                        SONG: {
+                            type:ArgumentType.STRING,
+                            menu: 'SONGS',
+                            defaultValue: _songs[0]
+                        }    
+                    }
+                },
+                {
+                    opcode: 'playSong',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'arduinoBot.playSong',
                         default: 'play song [SONG]',
                         description: 'Play song using the piezo'
                     }),
@@ -438,6 +454,23 @@ class MicrobitRobot {
    */
   async playMusic (args) {
     console.log("play song: " + args.SONG);    
+    
+    // Translate song to index to get notes
+    let idxStr = _songs.indexOf(args.SONG);
+    let song_notes = _songs_notes[idxStr];
+    
+    // Loop through notes and play them
+    let arg = {};
+    
+    for (let i=0; i<_songs_notes[idxStr].length; i++) {
+        arg.NOTE = _songs_notes[idxStr][i];
+        arg.NUM = 0.25;
+        await this.playNote(arg);
+    }
+  }
+
+  async playSong (args) {
+    console.log("i'm playing it" + args.SONG);    
     
     // Translate song to index to get notes
     let idxStr = _songs.indexOf(args.SONG);
