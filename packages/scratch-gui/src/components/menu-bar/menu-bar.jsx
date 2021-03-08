@@ -390,7 +390,23 @@ class MenuBar extends React.Component {
                                                 </MenuItem>
                                             )}
                                         </MenuSection>
-                                    )}
+                                    )} {/* RANDI Google Drive section here */}
+                                    <MenuSection>
+                                        <MenuItem>
+                                            <FormattedMessage
+                                                        defaultMessage="Open from Google Drive"
+                                                        description="Menu bar item for loading a project from Google Drive" // eslint-disable-line max-len
+                                                        id="gui.menuBar.loadFromDrive"
+                                                    />
+                                        </MenuItem>
+                                        <MenuItem>
+                                            <FormattedMessage
+                                                        defaultMessage="Save to Google Drive"
+                                                        description="Menu bar item for saving a project to Google Drive" // eslint-disable-line max-len
+                                                        id="gui.menuBar.saveToDrive"
+                                                    />
+                                        </MenuItem>
+                                    </MenuSection>
                                     <MenuSection>
                                         <SBFileUploader
                                             canSave={this.props.canSave}
