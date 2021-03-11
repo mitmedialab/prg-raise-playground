@@ -278,7 +278,6 @@ class MusicCreationHelpers {
 
     getInstrument (util) {
         const stage = this.runtime.getTargetForStage();
-        log.log(stage);
         if (stage) {
             if (!stage.instrument) {
                 stage.instrument = "Piano";
@@ -307,7 +306,6 @@ class MusicCreationHelpers {
         instNum -= 1; // instruments are one-indexed
         instNum = MathUtil.wrapClamp(instNum, 0, this.INSTRUMENT_INFO.length - 1);
         musicState.currentInstrument = instNum;
-        log.log(stage.instrument);
     }
 
     findInstrumentForNumber (number) {
@@ -369,7 +367,10 @@ class MusicCreationHelpers {
             this._playNote(util, note, durationSec);
 
             this._startStackTimer(util, durationSec);
-            return [note, beats];
+            const musicState = this._getMusicState(util.target);
+            const inst = musicState.currentInstrument;
+            const instrumentInfo = this.INSTRUMENT_INFO[inst]
+            return [note, beats, instrumentInfo.name];
         } else {
             this._checkStackTimer(util);
             return [];
@@ -398,9 +399,7 @@ class MusicCreationHelpers {
         // Determine which of the audio samples for this instrument to play
         const musicState = this._getMusicState(util.target);
         const inst = musicState.currentInstrument;
-        log.log("INST", inst);
         const instrumentInfo = this.INSTRUMENT_INFO[inst];
-        log.log(instrumentInfo);
         const sampleArray = instrumentInfo.samples;
         const sampleIndex = this._selectSampleIndexForNote(note, sampleArray);
 

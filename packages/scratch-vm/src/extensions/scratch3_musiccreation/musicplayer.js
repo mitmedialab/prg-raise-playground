@@ -288,12 +288,10 @@ class MusicPlayer {
 
     getInstrument (util) {
         const stage = this.runtime.getTargetForStage();
-        log.log(stage);
         if (stage) {
             if (!stage.instrument) {
                 stage.instrument = "Piano";
             }
-            log.log(stage.instrument);
             return stage.instrument;
         }
         return 0;
@@ -317,7 +315,6 @@ class MusicPlayer {
         instNum -= 1; // instruments are one-indexed
         instNum = MathUtil.wrapClamp(instNum, 0, this.INSTRUMENT_INFO.length - 1);
         musicState.currentInstrument = instNum;
-        log.log(stage.instrument);
     }
 
     findInstrumentForNumber (number) {
@@ -379,7 +376,9 @@ class MusicPlayer {
             this._playNote(util, note, durationSec);
 
             this._startStackTimer(util, durationSec);
-            return [note, beats];
+            var inst = (instrument == 0) ? musicState.currentInstrument : instruments[instrument.toLowerCase()]
+            log.log("NEW INST");
+            return [note, beats, inst];
         } else {
             this._checkStackTimer(util);
             return [];

@@ -180,6 +180,11 @@ class Scratch3MusicCreation {
             name: 'Music Creation',
             blocks: [
                 {
+                    opcode: 'resetMusic',
+                    blockType: BlockType.COMMAND,
+                    text: 'reset music'
+                },
+                {
                     opcode: 'setInstrument',
                     blockType: BlockType.COMMAND,
                     text: 'set instrument to [INSTRUMENT]',
@@ -206,7 +211,7 @@ class Scratch3MusicCreation {
                 {
                     opcode: 'playNote',
                     blockType: BlockType.COMMAND,
-                    text: 'play note with frequency [NOTE] for [SECS] seconds',
+                    text: 'play note [NOTE] for [SECS] beats',
                     arguments: {
                         NOTE: {
                             type: ArgumentType.NOTE,
@@ -240,7 +245,7 @@ class Scratch3MusicCreation {
                     opcode: 'testMagentaPlayer',
                     text: formatMessage({
                         id: 'musiccreation.testMagentaPlayer',
-                        default: 'test Magenta player',
+                        default: 'play music with Magenta player',
                         description: 'test Magenta'
                     }),
                     blockType: BlockType.COMMAND
@@ -249,7 +254,7 @@ class Scratch3MusicCreation {
                     opcode: 'testMagentaRNN',
                     text: formatMessage({
                         id: 'musiccreation.testMagentaRNN',
-                        default: 'test Magenta RNN with [STEPS] steps and [TEMP] temperature',
+                        default: 'complete music with [STEPS] steps and [TEMP] temperature',
                         description: 'test Magenta RNN'
                     }),
                     blockType: BlockType.COMMAND,
@@ -268,7 +273,7 @@ class Scratch3MusicCreation {
                     opcode: 'testMagentaMVAE',
                     text: formatMessage({
                         id: 'musiccreation.testMagentaMVAE',
-                        default: 'test Magenta MVAE',
+                        default: 'generate new music',
                         description: 'test Magenta MVAE'
                     }),
                     blockType: BlockType.COMMAND
@@ -277,7 +282,7 @@ class Scratch3MusicCreation {
                     opcode: 'testSheetMusicViz',
                     text: formatMessage({
                         id: 'musiccreation.testSheetMusicViz',
-                        default: 'test sheet music viz',
+                        default: 'display sheet music',
                         description: 'test sheet music viz'
                     }),
                     blockType: BlockType.COMMAND
@@ -286,11 +291,21 @@ class Scratch3MusicCreation {
                     opcode: 'testWaveformViz',
                     text: formatMessage({
                         id: 'musiccreation.testWaveformViz',
-                        default: 'test waveform viz',
+                        default: 'display waveform',
                         description: 'test waveform viz'
                     }),
                     blockType: BlockType.COMMAND
                 },
+                {
+                    opcode: 'testFreqViz',
+                    text: formatMessage({
+                        id: 'musiccreation.testFreqViz',
+                        default: 'display frequencies',
+                        description: 'test frequency viz'
+                    }),
+                    blockType: BlockType.COMMAND
+                },
+
                 {
                     opcode: 'playMystery',
                     blockType: BlockType.COMMAND,
@@ -375,14 +390,21 @@ class Scratch3MusicCreation {
         };
     }
 
+    resetMusic (args, util) {
+        this.noteList = [];
+        this.wavenoteList = [];
+    }
+
     testWaveformViz (args, util) {
         this.vizHelper.testWaveformViz(this.wavenoteList, args, util);
-        this.wavenoteList = [];
     }
 
     testSheetMusicViz (args, util) {
         this.vizHelper.testSheetMusicViz(this.noteList, args, util);
-        this.noteList = [];
+    }
+
+    testFreqViz (args, util) {
+        this.vizHelper.testFreqViz(this.noteList, args, util);
     }
 
     /**
@@ -438,7 +460,7 @@ class Scratch3MusicCreation {
 
     playNote (args, util) {
         toAdd = this.musicCreationHelper.playNote(args, util);
-        if (toAdd.length == 2) {
+        if (toAdd.length == 3) {
             this.noteList.push(toAdd);
             vol = (this.getVolume());
             for (var m in volumes) {

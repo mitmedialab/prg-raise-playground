@@ -27,13 +27,21 @@ class VizHelpers {
         this.noteList = [];
 
         this.axisStartX = -200;
-        this.axisStartY = -45;
+        this.axisStartY = -150;
         this.xAxisLength = 400;
-        this.yAxisLength = 200;
+        this.yAxisLength = 300;
+
         this.staffLength = 400;
         this.staffStartX = -200;
-        this.staffStartY = -130;
+        this.staffStartY = 130;
         this.staffWidth = 8;
+
+        this.spaceBetween = 60;
+
+        this.wavePen = -1;
+        this.musicPen = 2;
+        this.FFTPen = 3;
+        this.spectPen = 4;
 
         this._onTargetCreated = this._onTargetCreated.bind(this);
         this.runtime.on('targetWasCreated', this._onTargetCreated);
@@ -57,6 +65,16 @@ class VizHelpers {
             73: 6,
             75: 7,
             76: 8
+        }
+
+        harmonics = {
+            "Piano": [[1,1], [2, 0.5]],
+            "Guitar": [[1,1], [2, 0.25]],
+            "Bass": [[1,1], [3, 0.5]],
+            "Cello": [[1,1], [4, 0.5]],
+            "Saxophone": [[1,1], [5, 0.5]],
+            "Clarinet": [[1,1], [6, 0.5]],
+            "Synth":[[1,1]] 
         }
     }
 
@@ -133,6 +151,15 @@ class VizHelpers {
         return this._penSkinId;
     }
 
+    _getWavePenLayerID () {
+        if (this.wavePen < 0 && this.runtime.renderer) {
+            this.wavePen = this.runtime.renderer.createPenSkin();
+            this.wavePenDrawableId = this.runtime.renderer.createDrawable(StageLayering.PEN_LAYER);
+            this.runtime.renderer.updateDrawableProperties(this.wavePenDrawableId, {skinId: this.wavePen});
+        }
+        return this.wavePen;
+    }
+
     _getPenState (target) {
         let penState = target.getCustomState(VizHelpers.VIZ_STATE_KEY);
         if (!penState) {
@@ -143,7 +170,6 @@ class VizHelpers {
     }
 
     testWaveformViz (noteList, args, util) {
-        log.log("HELPER");
         this.noteList = noteList;
         this.clear();
         this.drawAxes(args, util);
@@ -152,10 +178,66 @@ class VizHelpers {
 
     testSheetMusicViz (noteList, args, util) {
         this.noteList = noteList;
-        log.log("HELPER");
         this.clear();
         this.drawStaff(args, util);
         this.drawMusic(args, util);
+    }
+
+    testFreqViz (noteList, args, util) {
+        this.noteList = noteList;
+        this.clear();
+        this.drawAxes(args, util);
+        this.drawFFT(args, util);
+
+    }
+
+    drawFFT(args, util) {
+        freqs = [];
+        amps = [];
+        for (i in this.noteList) {
+            midi = this.noteList[i][0];
+            inst = this.noteList[i][2];
+            log.log(inst);
+            harmonic = harmonics[inst];
+            pitch = 2**((midi - 69)/12)*440;
+            for (i in harmonic) {
+                k = harmonic[i][0];
+                coeff = harmonic[i][1];
+                hPitch = pitch*k;
+                exists = false;
+                for (f in freqs) {
+                    fr = freqs[f];
+                    if (Math.abs(hPitch-fr) < 10**-9) {
+                        amps[f] += coeff;
+                        exists = true;
+                    }
+                }
+                if (!exists) {
+                    amp = coeff;
+                    freqs.push(hPitch);
+                    amps.push(amp);
+                }
+
+            }
+        }
+        log.log(freqs);
+        log.log(amps);
+        maxFreq = Math.max( ...freqs );
+        maxAmp = Math.max( ...amps );
+        for (i in freqs) {
+            freq = freqs[i];
+            log.log(freq);
+            amp = amps[i];
+            log.log(amp);
+            ratio = freq/maxFreq;
+            ratioAmp = amp/maxAmp;
+            log.log(ratioAmp);
+            this.penUp(args, util);
+            util.target.setXY(this.axisStartX + ratio*this.xAxisLength, this.axisStartY+this.yAxisLength/2);
+            this.penDown(args, util);
+            util.target.setXY(this.axisStartX + ratio*this.xAxisLength, this.axisStartY+this.yAxisLength/2 + this.yAxisLength/2*ratioAmp);
+            this.penUp(args, util);    
+        }
     }
 
     drawAxes(args, util) {
@@ -178,29 +260,35 @@ class VizHelpers {
             .map( v => v[1] )                                
             .reduce( (sum, current) => sum + current, 0 );
         xStep = this.xAxisLength/totalSamples;
-        log.log(xStep);
         heightScaling = 100;
         util.target.setXY(x, y);
         this.penDown(args, util);
         st = 0;
+        prevFreq = 0;
         for (var i in signal) {
             note = signal[i];
-            log.log(note[2]);
+            log.log("NOTE", note);
             midi = note[0];
             dur = note[1];
-            vol = note[2];
-            log.log(vol);
+            inst = note[2];
+            vol = note[3];
             freq = 2**((midi - 69)/12)*440;
-            Omega = 2*Math.PI*freq/fs;
-            log.log(dur*fs);
-            var s = 0;
+            Omega = 2*Math.PI*freq/44140;
+            var st = st*prevFreq/Omega;
+            prevFreq = Omega;
             for (s = st; s < st + dur*fs; s++) {
-                val = vol*(Math.sin(2*Math.PI*freq/44140*s));
-                util.target.setXY(x, y + val);
+                val = 0
+                for (var k in harmonics[inst]) {
+                    harmonic = harmonics[inst][k];
+                    coeff = harmonic[1];
+                    newk = harmonic[0];
+                    log.log(harmonic);
+                    val = val + coeff*(Math.sin(Omega*newk*s));
+                }
+                util.target.setXY(x, y + vol*val);
                 x = x+xStep;
             }
-            st = s;
-            log.log(freq, dur);
+            st = st + dur*fs;
         }
         this.penUp(args,util);
     }
@@ -210,19 +298,22 @@ class VizHelpers {
         endX = this.staffStartX+this.staffLength;
         y = this.staffStartY;
         yStep = this.staffWidth;
-        for (var i = 0; i < 5; i++) {
-            this.penUp(args, util);
-            util.target.setXY(startX, y);
-            this.penDown(args, util);
-            util.target.setXY(endX, y);
-            y = y+yStep;
+        for (var j = 0; j < 6; j++) {
+            for (var i = 0; i < 5; i++) {
+                this.penUp(args, util);
+                util.target.setXY(startX, y);
+                this.penDown(args, util);
+                util.target.setXY(endX, y);
+                y = y+yStep;
+            }
+            y = y - this.spaceBetween - yStep*5;
         }
         this.drawTreble(args, util);
     }
 
     drawTreble(args, util) {
-        xstart = -200;
-        ystart = -80;
+        xstart = this.staffStartX;
+        ystart = this.staffStartY+47;
         treble = symbols.treble;
         this.penUp(args, util);
         for (var i in treble) {
@@ -240,13 +331,16 @@ class VizHelpers {
             util.target.setXY(x, y);
             this.penDown(args, util);     
         }
+        this.penUp(args, util);
     }
 
     drawMusic(args, util) {
-        x = -190;
-        y = -130;
+        xinit = this.staffStartX+20;
+        x = xinit;
+        y = this.staffStartY;
         xStep = 40;
         signal = this.convertSignalToMusicList(args, util);
+        volume = this.findCrescDecresc();
         for (i in signal) {
             note = signal[i][0];
             duration = signal[i][1];
@@ -256,12 +350,30 @@ class VizHelpers {
                 up = false;
             }
             x = x+xStep;
+            if (x > this.staffStartX + this.staffLength) {
+                x = xinit;
+                y = y - this.spaceBetween;
+            }
             ymid = y+note*this.staffWidth/2;
             xmid = x - 8;
             this.drawNote(xmid, ymid, duration, up, args, util);
 
         }
         this.penUp(args, util);
+        
+    }
+
+    findCrescDecresc() {
+        //CHANGE TO MP AND P ETC
+        up = [];
+        down = [];
+        upstart = 0;
+        downstart = 0;
+        for (var i in this.noteList) {
+            log.log(this.noteList[i][3]);
+
+        }
+
     }
 
     drawNote(xmid, ymid, duration, up, args, util) {
@@ -348,7 +460,6 @@ class VizHelpers {
             dur = this.noteList[i][1]*4 ;
             signal.push([staff, dur]);
         }
-        this.noteList = [];
         return signal;
     }
 
@@ -360,14 +471,14 @@ class VizHelpers {
         }
     }
 
-    penDown (args, util) {
+    penDown (args, util, penSkinId) {
         const penState = this._getPenState(util.target);
         if (!penState.penDown) {
             penState.penDown = true;
             util.target.addListener(RenderedTarget.EVENT_TARGET_MOVED, this._onTargetMoved);
         }
 
-        const penSkinId = this._getPenLayerID();
+        penSkinId = this._getPenLayerID();
         if (penSkinId >= 0) {
             this.runtime.renderer.penPoint(penSkinId, penState.penAttributes, util.target.x, util.target.y);
             this.runtime.requestRedraw();
@@ -378,7 +489,7 @@ class VizHelpers {
      * The pen "clear" block clears the pen layer's contents.
      */
     clear () {
-        const penSkinId = this._getPenLayerID();
+        penSkinId = this._getPenLayerID();
         if (penSkinId >= 0) {
             this.runtime.renderer.penClear(penSkinId);
             this.runtime.requestRedraw();
