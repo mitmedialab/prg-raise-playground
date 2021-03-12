@@ -61,6 +61,8 @@ class MicrobitRobot {
         this.left_line = 0;
         this.right_line = 0;
         this.last_reading_time = 0;
+        this.magno_read = " ";
+        this.temp_read = 0;
         
         this.scratch_vm.on('PROJECT_STOP_ALL', this.resetRobot.bind(this));
         this.scratch_vm.on('CONNECT_MICROBIT_ROBOT', this.connectToBLE.bind(this));
@@ -89,7 +91,7 @@ class MicrobitRobot {
                     blockType: BlockType.BUTTON,
                     text: 'Connect Robot'
                 },
-                /*{
+                {
                     opcode: 'sendCommand',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
@@ -103,7 +105,7 @@ class MicrobitRobot {
                             defaultValue: "A#"
                         }
                     }
-                },*/
+                },
                 '---',
                 {
                     opcode: 'writeLedString',
@@ -298,11 +300,21 @@ class MicrobitRobot {
                     }
                 },
                 {
+                    opcode: 'whenReadMagno',
+                    blockType: BlockType.HAT,
+                    text: formatMessage({
+                        id: 'arduinoBot.readMagno',
+                        default: 'when robot is shaking',
+                        description: 'Trigger when robot is shaking'
+                    }) 
+                // TODO: can add other things like tilt
+                },
+                {
                     opcode: 'readLineStatus',
                     blockType: BlockType.BOOLEAN,
                     text: formatMessage({
                         id: 'arduinoBot.readLineSensorStatus',
-                        default: 'line detected on [LINE]',
+                        default: 'line detected on [LINE]?',
                         description: 'detect line sensor state'
                     }),
                     arguments: {
@@ -321,7 +333,16 @@ class MicrobitRobot {
                         default: 'read distance',
                         description: 'Get distance read from ultrasonic distance sensor'
                     })
-                }
+                },
+                {
+                    opcode: 'readTemp',
+                    blockType: BlockType.REPORTER,
+                    text: formatMessage({
+                        id: 'arduinoBot.readTemperature',
+                        default: 'read temp (°C)',
+                        description: 'Get temperature read from thermal sensor'
+                    })
+                } ,
             ],
             menus: {
                 SONGS: {
@@ -546,20 +567,23 @@ class MicrobitRobot {
    */
   updateSensors (event) {
     console.log("Got UART data: " + event.detail);
-    //console.log(event);
+    console.log(event);
     let readings = event.detail.split(",")
-    if (readings.length == 5) {
+    if (readings.length == 7) {
         this.dist_read = parseInt(readings[0].substring(4));
         this.a_button = parseInt(readings[1]);
         this.b_button = parseInt(readings[2]);
         this.left_line = parseInt(readings[3]);
         this.right_line = parseInt(readings[4]);
+        this.magno_read = readings[5];
+        this.temp_read = parseInt(readings[6]);
     }
     if (isNaN(this.dist_read)) this.dist_read = 0;
     if (isNaN(this.a_button)) this.a_button = 0;
     if (isNaN(this.b_button)) this.b_button = 0;
     if (isNaN(this.left_line)) this.left_line = 0;
     if (isNaN(this.right_line)) this.right_line = 0;
+    if (isNaN(this.temp_read)) this.temp_read = 0;
   }
   
   /**
@@ -581,6 +605,41 @@ class MicrobitRobot {
     }
     
     return distance;
+  }
+
+  readTemp () {
+    let current_time = Date.now();
+    if (current_time - this.last_reading_time > 250) {
+        console.log("Updating sensors");
+        // send command to trigger temperature read
+        if (this._mServices) this._mServices.uartService.sendText('W#');
+        this.last_reading_time = current_time;
+    }
+    
+    let temp = this.temp_read;
+    if (temp == 0) {
+        temp = -1;
+    }
+    
+    return temp;
+  }
+
+  whenReadMagno () {
+    let current_time = Date.now();
+    if (current_time - this.last_reading_time > 250) {
+        console.log("Updating sensors");
+        // send command to trigger magno read
+        if (this._mServices) this._mServices.uartService.sendText('W#');
+        this.last_reading_time = current_time;
+    }
+    
+    let magno = this.magno_read;
+    if (magno == " ") {
+        magno = "Err";
+        console.log("Error reading magnotometer")
+    }
+    
+    return magno == "S";
   }
   
       /**
