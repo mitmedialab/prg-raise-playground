@@ -305,7 +305,15 @@ class Scratch3MusicCreation {
                     }),
                     blockType: BlockType.COMMAND
                 },
-
+                {
+                    opcode: 'testSpectViz',
+                    text: formatMessage({
+                        id: 'musiccreation.testSpectViz',
+                        default: 'display frequencies over time',
+                        description: 'test frequency over time viz'
+                    }),
+                    blockType: BlockType.COMMAND
+                },
                 {
                     opcode: 'playMystery',
                     blockType: BlockType.COMMAND,
@@ -405,6 +413,10 @@ class Scratch3MusicCreation {
 
     testFreqViz (args, util) {
         this.vizHelper.testFreqViz(this.noteList, args, util);
+    }
+
+    testSpectViz (args, util) {
+        this.vizHelper.testSpectViz(this.noteList, args, util);
     }
 
     /**

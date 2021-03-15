@@ -1,5 +1,7 @@
 const Clone = require('../../util/clone');
 const log = require('../../util/log');
+const Cast = require('../../util/cast');
+const Color = require('../../util/color');
 const RenderedTarget = require('../../sprites/rendered-target');
 const StageLayering = require('../../engine/stage-layering');
 
@@ -23,6 +25,7 @@ class VizHelpers {
          * @private
          */
         this._penDrawableId = -1;
+        this.black = '0x000000';
 
         this.noteList = [];
 
@@ -36,7 +39,7 @@ class VizHelpers {
         this.staffStartY = 130;
         this.staffWidth = 8;
 
-        this.spaceBetween = 60;
+        this.spaceBetween = 70;
 
         this.wavePen = -1;
         this.musicPen = 2;
@@ -75,6 +78,15 @@ class VizHelpers {
             "Saxophone": [[1,1], [5, 0.5]],
             "Clarinet": [[1,1], [6, 0.5]],
             "Synth":[[1,1]] 
+        }
+
+        this.symbols = {
+            15: [symbols.piano, symbols.piano],
+            30: [symbols.piano],
+            45: [symbols.mezzo, symbols.piano],
+            60: [symbols.mezzo, symbols.forte],
+            85: [symbols.forte],
+            100: [symbols.forte, symbols.forte]
         }
     }
 
@@ -170,6 +182,7 @@ class VizHelpers {
     }
 
     testWaveformViz (noteList, args, util) {
+        this.setPenColorToColor(this.black, util);
         this.noteList = noteList;
         this.clear();
         this.drawAxes(args, util);
@@ -177,6 +190,7 @@ class VizHelpers {
     }
 
     testSheetMusicViz (noteList, args, util) {
+        this.setPenColorToColor(this.black, util);
         this.noteList = noteList;
         this.clear();
         this.drawStaff(args, util);
@@ -184,11 +198,62 @@ class VizHelpers {
     }
 
     testFreqViz (noteList, args, util) {
+        this.setPenColorToColor(this.black, util);
         this.noteList = noteList;
         this.clear();
         this.drawAxes(args, util);
         this.drawFFT(args, util);
 
+    }
+
+    testSpectViz (noteList, args, util) {
+        this.setPenColorToColor(this.black, util);
+        this.noteList = noteList;
+        this.clear();
+        this.drawAxes(args, util);
+        this.drawSpectrogram(args, util);
+
+    }
+
+    drawSpectrogram(args, util) {
+        freqs = [];
+        amps = [];
+        durs = [];
+        d = 0;
+        for (i in this.noteList) {
+            midi = this.noteList[i][0];
+            inst = this.noteList[i][2];
+            dur = this.noteList[i][1];
+            harmonic = harmonics[inst];
+            pitch = 2**((midi - 69)/12)*440;
+            for (i in harmonic) {
+                k = harmonic[i][0];
+                coeff = harmonic[i][1];
+                hPitch = pitch*k;
+                freqs.push(hPitch);
+                amps.push(coeff);
+                durs.push([d, d+dur])
+
+            }
+            d += dur;
+        }
+        maxDuration = d;
+        maxFreq = Math.max( ...freqs );
+        for (i in freqs) {
+            f = freqs[i]/maxFreq;
+            d = durs[i];
+            start = d[0];
+            end = d[1];
+            start = start/maxDuration;
+            end = end/maxDuration;
+
+            this.penUp(args, util);
+            util.target.setXY(this.axisStartX + start*this.xAxisLength, this.axisStartY+this.yAxisLength/2+this.yAxisLength/2*f);
+            this.penDown(args, util);
+            util.target.setXY(this.axisStartX + end*this.xAxisLength, this.axisStartY+this.yAxisLength/2 + this.yAxisLength/2*f);
+            this.penUp(args, util);  
+
+        }
     }
 
     drawFFT(args, util) {
@@ -197,7 +262,6 @@ class VizHelpers {
         for (i in this.noteList) {
             midi = this.noteList[i][0];
             inst = this.noteList[i][2];
-            log.log(inst);
             harmonic = harmonics[inst];
             pitch = 2**((midi - 69)/12)*440;
             for (i in harmonic) {
@@ -220,18 +284,13 @@ class VizHelpers {
 
             }
         }
-        log.log(freqs);
-        log.log(amps);
         maxFreq = Math.max( ...freqs );
         maxAmp = Math.max( ...amps );
         for (i in freqs) {
             freq = freqs[i];
-            log.log(freq);
             amp = amps[i];
-            log.log(amp);
             ratio = freq/maxFreq;
             ratioAmp = amp/maxAmp;
-            log.log(ratioAmp);
             this.penUp(args, util);
             util.target.setXY(this.axisStartX + ratio*this.xAxisLength, this.axisStartY+this.yAxisLength/2);
             this.penDown(args, util);
@@ -252,6 +311,7 @@ class VizHelpers {
     }
 
     drawSignal(args, util) {
+        colors = ['0xff0000', '0x0000ff']
         x = this.axisStartX;
         y = this.axisStartY+this.yAxisLength/2;
         signal = this.noteList;
@@ -266,8 +326,9 @@ class VizHelpers {
         st = 0;
         prevFreq = 0;
         for (var i in signal) {
+            c = colors[i%2];
+            this.setPenColorToColor(c, util);
             note = signal[i];
-            log.log("NOTE", note);
             midi = note[0];
             dur = note[1];
             inst = note[2];
@@ -282,7 +343,6 @@ class VizHelpers {
                     harmonic = harmonics[inst][k];
                     coeff = harmonic[1];
                     newk = harmonic[0];
-                    log.log(harmonic);
                     val = val + coeff*(Math.sin(Omega*newk*s));
                 }
                 util.target.setXY(x, y + vol*val);
@@ -311,9 +371,23 @@ class VizHelpers {
         this.drawTreble(args, util);
     }
 
+    drawSymbol(symbol, args, util, xStart, yStart) {
+        symbolX = 0;
+        symbolY = 0;
+        this.penUp(args, util);
+        for (var i in symbol) {
+            coord = symbol[i];
+            symbolX = coord[0]/2 + xStart;
+            symbolY = -coord[1]/2 + yStart;
+            util.target.setXY(symbolX, symbolY);
+            this.penDown(args, util);  
+        }
+        this.penUp(args, util);
+    }
+
     drawTreble(args, util) {
-        xstart = this.staffStartX;
-        ystart = this.staffStartY+47;
+        xstart = this.staffStartX+10;
+        ystart = this.staffStartY-12;
         treble = symbols.treble;
         this.penUp(args, util);
         for (var i in treble) {
@@ -340,10 +414,12 @@ class VizHelpers {
         y = this.staffStartY;
         xStep = 40;
         signal = this.convertSignalToMusicList(args, util);
-        volume = this.findCrescDecresc();
+        pastVol = 0;
+        //volume = this.findCrescDecresc();
         for (i in signal) {
             note = signal[i][0];
             duration = signal[i][1];
+            volume = signal[i][2];
             if (note <= 4) {
                 up = true;
             } else {
@@ -357,7 +433,21 @@ class VizHelpers {
             ymid = y+note*this.staffWidth/2;
             xmid = x - 8;
             this.drawNote(xmid, ymid, duration, up, args, util);
-
+            if ((volume!=pastVol)) {
+                newX = xmid;
+                newY = y-this.spaceBetween/4;
+                log.log("VOLUME", volume);
+                sym = this.symbols[volume];
+                log.log(sym);
+                initial = 0;
+                for (i in sym) {
+                    log.log(i);
+                    s = sym[i];
+                    this.drawSymbol(s, args, util, newX+initial, newY);
+                    initial += 10;
+                }
+            }
+            pastVol = volume;
         }
         this.penUp(args, util);
         
@@ -457,8 +547,9 @@ class VizHelpers {
         for (var i in this.noteList) {
             freq = this.noteList[i][0];
             staff = pitchToStaff[freq];
-            dur = this.noteList[i][1]*4 ;
-            signal.push([staff, dur]);
+            dur = this.noteList[i][1]*4;
+            amp = this.noteList[i][3];
+            signal.push([staff, dur, amp]);
         }
         return signal;
     }
@@ -483,6 +574,62 @@ class VizHelpers {
             this.runtime.renderer.penPoint(penSkinId, penState.penAttributes, util.target.x, util.target.y);
             this.runtime.requestRedraw();
         }
+    }
+
+    /**
+     * The pen "set pen color to {color}" block sets the pen to a particular RGB color.
+     * The transparency is reset to 0.
+     * @param {object} args - the block arguments.
+     *  @property {int} COLOR - the color to set, expressed as a 24-bit RGB value (0xRRGGBB).
+     * @param {object} util - utility object provided by the runtime.
+     */
+    setPenColorToColor (newColor, util) {
+        const penState = this._getPenState(util.target);
+        const rgb = Cast.toRgbColorObject(newColor);
+        const hsv = Color.rgbToHsv(rgb);
+        penState.color = (hsv.h / 360) * 100;
+        penState.saturation = hsv.s * 100;
+        penState.brightness = hsv.v * 100;
+        if (rgb.hasOwnProperty('a')) {
+            penState.transparency = 100 * (1 - (rgb.a / 255.0));
+        } else {
+            penState.transparency = 0;
+        }
+
+        // Set the legacy "shade" value the same way scratch 2 did.
+        penState._shade = penState.brightness / 2;
+
+        this._updatePenColor(penState);
+    }
+
+    /**
+     * Update the cached color from the color, saturation, brightness and transparency values
+     * in the provided PenState object.
+     * @param {PenState} penState - the pen state to update.
+     * @private
+     */
+    _updatePenColor (penState) {
+        const rgb = Color.hsvToRgb({
+            h: penState.color * 360 / 100,
+            s: penState.saturation / 100,
+            v: penState.brightness / 100
+        });
+        penState.penAttributes.color4f[0] = rgb.r / 255.0;
+        penState.penAttributes.color4f[1] = rgb.g / 255.0;
+        penState.penAttributes.color4f[2] = rgb.b / 255.0;
+        penState.penAttributes.color4f[3] = this._transparencyToAlpha(penState.transparency);
+    }
+
+    /**
+     * Convert a pen transparency value to an alpha value.
+     * Alpha ranges from 0 to 1, where 0 is transparent and 1 is opaque.
+     * Transparency ranges from 0 to 100, where 0 is opaque and 100 is transparent.
+     * @param {number} transparency - the input transparency value.
+     * @returns {number} the alpha value.
+     * @private
+     */
+    _transparencyToAlpha (transparency) {
+        return 1.0 - (transparency / 100.0);
     }
 
     /**
