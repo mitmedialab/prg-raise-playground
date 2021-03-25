@@ -29,6 +29,7 @@ import SB3Downloader from '../../containers/sb3-downloader.jsx';
 import DeletionRestorer from '../../containers/deletion-restorer.jsx';
 import TurboMode from '../../containers/turbo-mode.jsx';
 import MenuBarHOC from '../../containers/menu-bar-hoc.jsx';
+import GooglePicker from 'react-google-picker';
 
 import {openTipsLibrary} from '../../reducers/modals';
 import {setPlayer} from '../../reducers/mode';
@@ -140,6 +141,10 @@ MenuItemTooltip.propTypes = {
     id: PropTypes.string,
     isRtl: PropTypes.bool
 };
+
+const CLIENT_ID = '906634949042-5jbc7q594e69spg2i0bkt9a14iojvtsp.apps.googleusercontent.com';
+const DEVELOPER_KEY = 'AIzaSyDRoOjwaDXOxq4cda1nrCVLaVQvTCh5GYE';
+const DRIVE_SCOPE = ['https://www.googleapis.com/auth/drive.readonly'];
 
 class MenuBar extends React.Component {
     constructor (props) {
@@ -390,21 +395,45 @@ class MenuBar extends React.Component {
                                                 </MenuItem>
                                             )}
                                         </MenuSection>
-                                    )} {/* RANDI Google Drive section here */}
+                                    )} {/* RANDI Google Drive section here */}     
                                     <MenuSection>
+                                        {/* authImmediate is more flexible with false, faster with true
+                                          * /* createPicker={ (google, oauthToken) => {
+                                            const docsView = new google.picker.View(google.picker.ViewId.DOCS);
+                                            docsView.setQuery('.sb3');
+                                            const uploadView = new google.picker.DocsUploadView();                  
+                                            const picker = new window.google.picker.PickerBuilder()
+                                                .addView(docsView)
+                                                .addView(uploadView)
+                                                .setOAuthToken(oauthToken)
+                                                .setDeveloperKey(DEVELOPER_KEY);
+                                            picker.build().setVisible(true);
+                                            }} */}
+                                        <GooglePicker clientId={CLIENT_ID}
+                                            developerKey={DEVELOPER_KEY}
+                                            scope={DRIVE_SCOPE}
+                                            onChange={data => console.log('on change:', data)}
+                                            onAuthFailed={data => console.log('on auth failed:', data)}
+                                            multiselect={false}
+                                            navHidden={false}
+                                            authImmediate={false}
+                                            viewID={'DOCS'}
+                                            query={'.sb3'}
+                                            >
+                                            <MenuItem classname="google">
+                                                <FormattedMessage
+                                                    defaultMessage="Open from Google Drive"
+                                                    description="Menu bar item for loading a project from Google Drive" // eslint-disable-line max-len
+                                                    id="gui.menuBar.loadFromDrive"
+                                                />
+                                            </MenuItem>
+                                        </GooglePicker>
                                         <MenuItem>
                                             <FormattedMessage
-                                                        defaultMessage="Open from Google Drive"
-                                                        description="Menu bar item for loading a project from Google Drive" // eslint-disable-line max-len
-                                                        id="gui.menuBar.loadFromDrive"
-                                                    />
-                                        </MenuItem>
-                                        <MenuItem>
-                                            <FormattedMessage
-                                                        defaultMessage="Save to Google Drive"
-                                                        description="Menu bar item for saving a project to Google Drive" // eslint-disable-line max-len
-                                                        id="gui.menuBar.saveToDrive"
-                                                    />
+                                                defaultMessage="Save to Google Drive"
+                                                description="Menu bar item for saving a project to Google Drive" // eslint-disable-line max-len
+                                                id="gui.menuBar.saveToDrive"
+                                            />
                                         </MenuItem>
                                     </MenuSection>
                                     <MenuSection>
