@@ -232,22 +232,6 @@ class MicrobitRobot {
                 },
                 '---',
                 {
-                    opcode: 'playMusic',
-                    blockType: BlockType.COMMAND,
-                    text: formatMessage({
-                        id: 'arduinoBot.playMusic',
-                        default: 'play song [SONG]',
-                        description: 'Play song using the piezo'
-                    }),
-                    arguments: {
-                        SONG: {
-                            type:ArgumentType.STRING,
-                            menu: 'SONGS',
-                            defaultValue: _songs[0]
-                        }    
-                    }
-                },
-                {
                     opcode: 'playSong',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({

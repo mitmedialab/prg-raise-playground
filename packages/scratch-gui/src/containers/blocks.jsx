@@ -684,12 +684,6 @@ const mapDispatchToProps = dispatch => ({
         dispatch(setConnectionModalExtensionId(id));
         dispatch(openConnectionModal());
     },
-    onOpenTextModelModal: () => {
-        dispatch(openTextModelModal());
-    },
-    onOpenClassifierModelModal: () => {
-        dispatch(openClassifierModelModal());
-    },
     onOpenSoundRecorder: () => {
         dispatch(activateTab(SOUNDS_TAB_INDEX));
         dispatch(openSoundRecorder());
