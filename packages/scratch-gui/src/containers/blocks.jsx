@@ -423,9 +423,11 @@ class Blocks extends React.Component {
 
         // scratch-blocks implements a menu or custom field as a special kind of block ("shadow" block)
         // these actually define blocks and MUST run regardless of the UI state
-        defineBlocks(
-            Object.getOwnPropertyNames(categoryInfo.customFieldTypes)
-                .map(fieldTypeName => categoryInfo.customFieldTypes[fieldTypeName].scratchBlocksDefinition));
+        if (categoryInfo.customFieldTypes) {
+            defineBlocks(
+                Object.getOwnPropertyNames(categoryInfo.customFieldTypes)
+                    .map(fieldTypeName => categoryInfo.customFieldTypes[fieldTypeName].scratchBlocksDefinition));
+        }
         defineBlocks(categoryInfo.menus);
         defineBlocks(categoryInfo.blocks);
 

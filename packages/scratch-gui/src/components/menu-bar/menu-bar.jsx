@@ -325,17 +325,12 @@ class MenuBar extends React.Component {
             >
                 <div className={styles.mainMenu}>
                     <div className={styles.fileGroup}>
-                        <div className={classNames(styles.menuBarItem)}>
-                            <img
-                                alt="Scratch"
-                                className={classNames(styles.scratchLogo, {
-                                    [styles.clickable]: typeof this.props.onClickLogo !== 'undefined'
-                                })}
-                                draggable={false}
-                                src={this.props.logo}
-                                onClick={this.props.onClickLogo}
-                            />
-                        </div>
+                        <a
+                            className={classNames(styles.menuBarItem, styles.hoverable)}
+                            href="https://dancingwithai.github.io/?"
+                        >
+                            ⬅ Back to Curriculum
+                        </a>
                         {(this.props.canChangeLanguage) && (<div
                             className={classNames(styles.menuBarItem, styles.hoverable, styles.languageMenu)}
                         >
@@ -377,6 +372,24 @@ class MenuBar extends React.Component {
                                             {newProjectMessage}
                                         </MenuItem>
                                     </MenuSection>
+                                    {/*<MenuSection>*/}
+                                    {/*    <MenuItem*/}
+                                    {/*        isRtl={this.props.isRtl}*/}
+                                    {/*        onClick={() => {*/}
+                                    {/*            this.props.vm.sendLastClipToGfy();*/}
+                                    {/*        }}*/}
+                                    {/*    >*/}
+                                    {/*        Upload Clip to Gfycat*/}
+                                    {/*    </MenuItem>*/}
+                                    {/*    <MenuItem*/}
+                                    {/*        isRtl={this.props.isRtl}*/}
+                                    {/*        onClick={() => {*/}
+                                    {/*            this.props.vm.loadLastClipOnGfy();*/}
+                                    {/*        }}*/}
+                                    {/*    >*/}
+                                    {/*        Load Last Uploaded Clip*/}
+                                    {/*    </MenuItem>*/}
+                                    {/*</MenuSection>*/}
                                     {(this.props.canSave || this.props.canCreateCopy || this.props.canRemix) && (
                                         <MenuSection>
                                             {this.props.canSave && (
@@ -518,9 +531,17 @@ class MenuBar extends React.Component {
                             </MenuBarMenu>
                         </div>
                     </div>
-                    {this.props.showTutorials ? (
+                    <Divider className={classNames(styles.divider)} />
+                    <a
+                        className={classNames(styles.menuBarItem, styles.hoverable, styles.blankLink)}
+                        href="https://teachablemachine.withgoogle.com/train/"
+                        target="_blank"
+                    >
+                        Teachable Machine
+                    </a>
+                    <Divider className={classNames(styles.divider)} />
+                    {true ? (
                         <div>
-                            <Divider className={classNames(styles.divider)} />
                             <div
                                 aria-label={this.props.intl.formatMessage(ariaMessages.tutorials)}
                                 className={classNames(styles.menuBarItem, styles.hoverable)}
@@ -530,7 +551,7 @@ class MenuBar extends React.Component {
                                     className={styles.helpIcon}
                                     src={helpIcon}
                                 />
-                                <FormattedMessage {...ariaMessages.tutorials} />
+                                Scratch Tutorials
                             </div>
                         </div>) :
                         null
