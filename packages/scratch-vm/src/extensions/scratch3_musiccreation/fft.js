@@ -6,13 +6,9 @@ const RenderedTarget = require('../../sprites/rendered-target');
 const StageLayering = require('../../engine/stage-layering');
 
 const symbols = require('./symbols');
-const SheetMusicHelper = require('./sheetmusic');
-const WaveformHelper = require('./waveform');
-const SpectrogramHelper = require('./spectrogram');
-const FFTHelper = require('./fft');
 const { updateVariableIdentifiers } = require('../../util/variable-util');
 
-class VizHelpers {
+class FFT {
     constructor (runtime) {
         this.runtime = runtime;
 
@@ -38,46 +34,10 @@ class VizHelpers {
         this.xAxisLength = 400;
         this.yAxisLength = 300;
 
-        this.staffLength = 400;
-        this.staffStartX = -200;
-        this.staffStartY = 130;
-        this.staffWidth = 8;
-
-        this.spaceBetween = 70;
-
-        this.sheetMusicViz = new SheetMusicHelper(runtime);
-        this.waveformViz = new WaveformHelper(runtime);
-        this.spectrogramViz = new SpectrogramHelper(runtime);
-        this.fftViz = new FFTHelper(runtime);
-
-        this.wavePen = -1;
-        this.musicPen = 2;
-        this.FFTPen = 3;
-        this.spectPen = 4;
-
         this._onTargetCreated = this._onTargetCreated.bind(this);
         this.runtime.on('targetWasCreated', this._onTargetCreated);
 
         this._onTargetMoved = this._onTargetMoved.bind(this);
-
-        pitchToStaff = {
-            60: -2,
-            61: -2,
-            62: -1,
-            63: 0,
-            64: 0,
-            65: 2,
-            66: 2,
-            67: 3,
-            68: 3,
-            69: 4,
-            70: 5,
-            71: 5,
-            72: 6,
-            73: 6,
-            75: 7,
-            76: 8
-        }
 
         harmonics = {
             "Piano": [[1,1], [2, 0.5]],
@@ -87,24 +47,6 @@ class VizHelpers {
             "Saxophone": [[1,1], [5, 0.5]],
             "Clarinet": [[1,1], [6, 0.5]],
             "Synth":[[1,1]] 
-        }
-
-        this.symbols = {
-            15: [symbols.piano, symbols.piano],
-            30: [symbols.piano],
-            45: [symbols.mezzo, symbols.piano],
-            60: [symbols.mezzo, symbols.forte],
-            85: [symbols.forte],
-            100: [symbols.forte, symbols.forte]
-        }
-
-        this.spacing = {
-            15: [10, 0],
-            30: [10, 0],
-            45: [5, 0],
-            60: [10, 0],
-            85: [10, 0],
-            100: [10, 0]
         }
     }
 
@@ -150,9 +92,9 @@ class VizHelpers {
      */
     _onTargetCreated (newTarget, sourceTarget) {
         if (sourceTarget) {
-            const penState = sourceTarget.getCustomState(VizHelpers.VIZ_STATE_KEY);
+            const penState = sourceTarget.getCustomState(FFT.VIZ_STATE_KEY);
             if (penState) {
-                newTarget.setCustomState(VizHelpers.VIZ_STATE_KEY, Clone.simple(penState));
+                newTarget.setCustomState(FFT.VIZ_STATE_KEY, Clone.simple(penState));
                 if (penState.penDown) {
                     newTarget.addListener(RenderedTarget.EVENT_TARGET_MOVED, this._onTargetMoved);
                 }
@@ -191,37 +133,26 @@ class VizHelpers {
     }
 
     _getPenState (target) {
-        let penState = target.getCustomState(VizHelpers.VIZ_STATE_KEY);
+        let penState = target.getCustomState(FFT.VIZ_STATE_KEY);
         if (!penState) {
-            penState = Clone.simple(VizHelpers.DEFAULT_PEN_STATE);
-            target.setCustomState(VizHelpers.VIZ_STATE_KEY, penState);
+            penState = Clone.simple(FFT.DEFAULT_PEN_STATE);
+            target.setCustomState(FFT.VIZ_STATE_KEY, penState);
         }
         return penState;
     }
 
-    testWaveformViz (noteList, args, util) {
-        this.clear();
-        this.waveformViz.testWaveformViz(noteList, args, util);
-    }
-
-    testSheetMusicViz (noteList, args, util) {
-        this.clear();
-        this.sheetMusicViz.testSheetMusicViz(noteList, args, util);
-    }
-
     testFreqViz (noteList, args, util) {
+        this.setPenColorToColor(this.black, util);
+        this.noteList = noteList;
         this.clear();
-        this.fftViz.testFreqViz(noteList, args, util);
-
-    }
-
-    testSpectViz (noteList, args, util) {
-        this.clear();
-        this.spectrogramViz.testSpectViz(noteList, args, util);
+        this.drawAxes(args, util);
+        this.drawFFT(args, util);
 
     }
 
     drawFFT(args, util) {
+        colors = ['0xff0000', '0x0000ff', '0x00ff00', '0xffa500'];
+        this.setPenColorToColor(colors[1], util);
         freqs = [];
         amps = [];
         for (i in this.noteList) {
@@ -257,9 +188,9 @@ class VizHelpers {
             ratio = freq/maxFreq;
             ratioAmp = amp/maxAmp;
             this.penUp(args, util);
-            util.target.setXY(this.axisStartX + ratio*this.xAxisLength, this.axisStartY+this.yAxisLength/2);
+            util.target.setXY(this.axisStartX + ratio*this.xAxisLength, this.axisStartY);
             this.penDown(args, util);
-            util.target.setXY(this.axisStartX + ratio*this.xAxisLength, this.axisStartY+this.yAxisLength/2 + this.yAxisLength/2*ratioAmp);
+            util.target.setXY(this.axisStartX + ratio*this.xAxisLength, this.axisStartY+this.yAxisLength*ratio);
             this.penUp(args, util);    
         }
     }
@@ -269,9 +200,9 @@ class VizHelpers {
         this.penDown(args, util);
         util.target.setXY(this.axisStartX, this.axisStartY);
         this.penUp(args, util);
-        util.target.setXY(this.axisStartX, this.axisStartY+this.yAxisLength/2);
+        util.target.setXY(this.axisStartX, this.axisStartY);
         this.penDown(args, util);
-        util.target.setXY(this.axisStartX+this.xAxisLength, this.axisStartY+this.yAxisLength/2);
+        util.target.setXY(this.axisStartX+this.xAxisLength, this.axisStartY);
         this.penUp(args, util);
     }
 
@@ -391,4 +322,4 @@ class VizHelpers {
 
 }
 
-module.exports = VizHelpers;
+module.exports = FFT;

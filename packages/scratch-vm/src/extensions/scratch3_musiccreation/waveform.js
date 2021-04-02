@@ -6,13 +6,9 @@ const RenderedTarget = require('../../sprites/rendered-target');
 const StageLayering = require('../../engine/stage-layering');
 
 const symbols = require('./symbols');
-const SheetMusicHelper = require('./sheetmusic');
-const WaveformHelper = require('./waveform');
-const SpectrogramHelper = require('./spectrogram');
-const FFTHelper = require('./fft');
 const { updateVariableIdentifiers } = require('../../util/variable-util');
 
-class VizHelpers {
+class Waveform {
     constructor (runtime) {
         this.runtime = runtime;
 
@@ -38,46 +34,11 @@ class VizHelpers {
         this.xAxisLength = 400;
         this.yAxisLength = 300;
 
-        this.staffLength = 400;
-        this.staffStartX = -200;
-        this.staffStartY = 130;
-        this.staffWidth = 8;
-
-        this.spaceBetween = 70;
-
-        this.sheetMusicViz = new SheetMusicHelper(runtime);
-        this.waveformViz = new WaveformHelper(runtime);
-        this.spectrogramViz = new SpectrogramHelper(runtime);
-        this.fftViz = new FFTHelper(runtime);
-
-        this.wavePen = -1;
-        this.musicPen = 2;
-        this.FFTPen = 3;
-        this.spectPen = 4;
-
         this._onTargetCreated = this._onTargetCreated.bind(this);
         this.runtime.on('targetWasCreated', this._onTargetCreated);
 
         this._onTargetMoved = this._onTargetMoved.bind(this);
 
-        pitchToStaff = {
-            60: -2,
-            61: -2,
-            62: -1,
-            63: 0,
-            64: 0,
-            65: 2,
-            66: 2,
-            67: 3,
-            68: 3,
-            69: 4,
-            70: 5,
-            71: 5,
-            72: 6,
-            73: 6,
-            75: 7,
-            76: 8
-        }
 
         harmonics = {
             "Piano": [[1,1], [2, 0.5]],
@@ -87,24 +48,6 @@ class VizHelpers {
             "Saxophone": [[1,1], [5, 0.5]],
             "Clarinet": [[1,1], [6, 0.5]],
             "Synth":[[1,1]] 
-        }
-
-        this.symbols = {
-            15: [symbols.piano, symbols.piano],
-            30: [symbols.piano],
-            45: [symbols.mezzo, symbols.piano],
-            60: [symbols.mezzo, symbols.forte],
-            85: [symbols.forte],
-            100: [symbols.forte, symbols.forte]
-        }
-
-        this.spacing = {
-            15: [10, 0],
-            30: [10, 0],
-            45: [5, 0],
-            60: [10, 0],
-            85: [10, 0],
-            100: [10, 0]
         }
     }
 
@@ -150,9 +93,9 @@ class VizHelpers {
      */
     _onTargetCreated (newTarget, sourceTarget) {
         if (sourceTarget) {
-            const penState = sourceTarget.getCustomState(VizHelpers.VIZ_STATE_KEY);
+            const penState = sourceTarget.getCustomState(Waveform.VIZ_STATE_KEY);
             if (penState) {
-                newTarget.setCustomState(VizHelpers.VIZ_STATE_KEY, Clone.simple(penState));
+                newTarget.setCustomState(Waveform.VIZ_STATE_KEY, Clone.simple(penState));
                 if (penState.penDown) {
                     newTarget.addListener(RenderedTarget.EVENT_TARGET_MOVED, this._onTargetMoved);
                 }
@@ -191,77 +134,20 @@ class VizHelpers {
     }
 
     _getPenState (target) {
-        let penState = target.getCustomState(VizHelpers.VIZ_STATE_KEY);
+        let penState = target.getCustomState(Waveform.VIZ_STATE_KEY);
         if (!penState) {
-            penState = Clone.simple(VizHelpers.DEFAULT_PEN_STATE);
-            target.setCustomState(VizHelpers.VIZ_STATE_KEY, penState);
+            penState = Clone.simple(Waveform.DEFAULT_PEN_STATE);
+            target.setCustomState(Waveform.VIZ_STATE_KEY, penState);
         }
         return penState;
     }
 
     testWaveformViz (noteList, args, util) {
+        this.setPenColorToColor(this.black, util);
+        this.noteList = noteList;
         this.clear();
-        this.waveformViz.testWaveformViz(noteList, args, util);
-    }
-
-    testSheetMusicViz (noteList, args, util) {
-        this.clear();
-        this.sheetMusicViz.testSheetMusicViz(noteList, args, util);
-    }
-
-    testFreqViz (noteList, args, util) {
-        this.clear();
-        this.fftViz.testFreqViz(noteList, args, util);
-
-    }
-
-    testSpectViz (noteList, args, util) {
-        this.clear();
-        this.spectrogramViz.testSpectViz(noteList, args, util);
-
-    }
-
-    drawFFT(args, util) {
-        freqs = [];
-        amps = [];
-        for (i in this.noteList) {
-            midi = this.noteList[i][0];
-            inst = this.noteList[i][2];
-            harmonic = harmonics[inst];
-            pitch = 2**((midi - 69)/12)*440;
-            for (i in harmonic) {
-                k = harmonic[i][0];
-                coeff = harmonic[i][1];
-                hPitch = pitch*k;
-                exists = false;
-                for (f in freqs) {
-                    fr = freqs[f];
-                    if (Math.abs(hPitch-fr) < 10**-9) {
-                        amps[f] += coeff;
-                        exists = true;
-                    }
-                }
-                if (!exists) {
-                    amp = coeff;
-                    freqs.push(hPitch);
-                    amps.push(amp);
-                }
-
-            }
-        }
-        maxFreq = Math.max( ...freqs );
-        maxAmp = Math.max( ...amps );
-        for (i in freqs) {
-            freq = freqs[i];
-            amp = amps[i];
-            ratio = freq/maxFreq;
-            ratioAmp = amp/maxAmp;
-            this.penUp(args, util);
-            util.target.setXY(this.axisStartX + ratio*this.xAxisLength, this.axisStartY+this.yAxisLength/2);
-            this.penDown(args, util);
-            util.target.setXY(this.axisStartX + ratio*this.xAxisLength, this.axisStartY+this.yAxisLength/2 + this.yAxisLength/2*ratioAmp);
-            this.penUp(args, util);    
-        }
+        this.drawAxes(args, util);
+        this.drawSignal(args, util);
     }
 
     drawAxes(args, util) {
@@ -275,30 +161,58 @@ class VizHelpers {
         this.penUp(args, util);
     }
 
-    findCrescDecresc() {
-        //CHANGE TO MP AND P ETC
-        up = [];
-        down = [];
-        upstart = 0;
-        downstart = 0;
-        for (var i in this.noteList) {
-            log.log(this.noteList[i][3]);
-
+    drawSignal(args, util) {
+        colors = ['0xff0000', '0x0000ff', '0x00ff00', '0xffa500']
+        var freqToColor = {};
+        x = this.axisStartX;
+        y = this.axisStartY+this.yAxisLength/2;
+        signal = this.noteList;
+        fs = 500;
+        const totalSamples = fs*signal
+            .map( v => v[1] )                                
+            .reduce( (sum, current) => sum + current, 0 );
+        xStep = this.xAxisLength/totalSamples;
+        heightScaling = 100;
+        util.target.setXY(x, y);
+        this.penDown(args, util);
+        st = 0;
+        prevFreq = 0;
+        for (var i in signal) {
+            note = signal[i];
+            midi = note[0];
+            dur = note[1];
+            inst = note[2];
+            vol = note[3];
+            if (midi in freqToColor) {
+                log.log("HERE");
+                c = freqToColor[midi];
+                this.setPenColorToColor(c, util);
+            } else {
+                log.log("CATCH");
+                c = colors[i%4];
+                this.setPenColorToColor(c, util);
+                freqToColor[midi] = c;
+            }
+            freq = 2**((midi - 69)/12)*440;
+            Omega = 2*Math.PI*freq/44140;
+            var st = st*prevFreq/Omega;
+            prevFreq = Omega;
+            for (s = st; s < st + dur*fs; s++) {
+                val = 0
+                for (var k in harmonics[inst]) {
+                    harmonic = harmonics[inst][k];
+                    coeff = harmonic[1];
+                    newk = harmonic[0];
+                    val = val + coeff*(Math.sin(Omega*newk*s));
+                }
+                util.target.setXY(x, y + vol*val);
+                x = x+xStep;
+            }
+            st = st + dur*fs;
         }
-
+        this.penUp(args,util);
     }
 
-    convertSignalToMusicList (args, util) {
-        signal = [];
-        for (var i in this.noteList) {
-            freq = this.noteList[i][0];
-            staff = pitchToStaff[freq];
-            dur = this.noteList[i][1]*4;
-            amp = this.noteList[i][3];
-            signal.push([staff, dur, amp]);
-        }
-        return signal;
-    }
 
     penUp (args, util) {
         const penState = this._getPenState(util.target);
@@ -391,4 +305,4 @@ class VizHelpers {
 
 }
 
-module.exports = VizHelpers;
+module.exports = Waveform;
