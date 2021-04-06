@@ -6,6 +6,7 @@ const RenderedTarget = require('../../sprites/rendered-target');
 const StageLayering = require('../../engine/stage-layering');
 
 const symbols = require('./symbols');
+const textRender = require('./textrender');
 const { updateVariableIdentifiers } = require('../../util/variable-util');
 
 class Waveform {
@@ -34,8 +35,17 @@ class Waveform {
         this.xAxisLength = 400;
         this.yAxisLength = 300;
 
+        this.legendStartX = 150;
+        this.legendStartY = 80;
+        this.legendLengthX = 75;
+        this.legendLengthY = 80;
+
+        this.textRenderer = new textRender(runtime);
+
         this._onTargetCreated = this._onTargetCreated.bind(this);
         this.runtime.on('targetWasCreated', this._onTargetCreated);
+
+
 
         this._onTargetMoved = this._onTargetMoved.bind(this);
 
@@ -49,6 +59,8 @@ class Waveform {
             "Clarinet": [[1,1], [6, 0.5]],
             "Synth":[[1,1]] 
         }
+
+        freqToColor = {};
     }
 
     /**
@@ -148,6 +160,55 @@ class Waveform {
         this.clear();
         this.drawAxes(args, util);
         this.drawSignal(args, util);
+        this.drawLegend(args, util);
+    }
+
+    drawLegend (args, util) {
+        log.log("HERE");
+        //draw Box
+        this.penUp(args, util);
+        util.target.setXY(this.legendStartX, this.legendStartY);
+        this.penDown(args, util);
+        util.target.setXY(this.legendStartX+this.legendLengthX, this.legendStartY);
+        this.penDown(args, util);
+        util.target.setXY(this.legendStartX+this.legendLengthX, this.legendStartY+this.legendLengthY);
+        this.penDown(args, util);
+        util.target.setXY(this.legendStartX, this.legendStartY+this.legendLengthY);
+        this.penDown(args, util);
+        util.target.setXY(this.legendStartX, this.legendStartY);
+        this.penUp(args, util);
+
+        //draw Title
+        colorX = this.legendStartX + 5 ;
+        colorY = this.legendStartY + this.legendLengthY - 20;
+        this.setPenColorToColor(this.black, util);
+        this.penUp(args, util);
+        util.target.setXY(colorX, this.legendStartY + this.legendLengthY - 15);
+        this.penDown(args, util);
+        util.target.setXY(colorX+65, this.legendStartY + this.legendLengthY - 15);
+
+        //draw Color mappings
+        for (var i in freqToColor) {
+            log.log(freqToColor[i]);
+            log.log(i);
+            this.setPenColorToColor(freqToColor[i], util);
+            for (var c = 0; c <= 10; c++) {
+                log.log(c);
+                this.penUp(args, util);
+                util.target.setXY(colorX, colorY-c);
+                this.penDown(args, util);
+                util.target.setXY(colorX+15, colorY-c);
+            }
+            this.setPenColorToColor(this.black, util);
+            this.penUp(args, util);
+            util.target.setXY(colorX+25, colorY-10);
+            this.penDown(args, util);
+            util.target.setXY(colorX+60, colorY-10);
+            colorY -= 15;
+        }
+        this.setPenColorToColor(this.black, util);
+        this.penUp(args, util);
+
     }
 
     drawAxes(args, util) {
@@ -159,11 +220,17 @@ class Waveform {
         this.penDown(args, util);
         util.target.setXY(this.axisStartX+this.xAxisLength, this.axisStartY+this.yAxisLength/2);
         this.penUp(args, util);
+        //this.drawLabels(args, util);
+    }
+
+    drawLabels(args, util) {
+        log.log(util);
+        //this.textRenderer.setText("here", args, util);
     }
 
     drawSignal(args, util) {
         colors = ['0xff0000', '0x0000ff', '0x00ff00', '0xffa500']
-        var freqToColor = {};
+        freqToColor = {};
         x = this.axisStartX;
         y = this.axisStartY+this.yAxisLength/2;
         signal = this.noteList;
@@ -211,6 +278,7 @@ class Waveform {
             st = st + dur*fs;
         }
         this.penUp(args,util);
+        this.setPenColorToColor(this.black, util);
     }
 
 

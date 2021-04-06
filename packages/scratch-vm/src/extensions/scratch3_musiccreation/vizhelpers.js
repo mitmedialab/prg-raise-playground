@@ -200,23 +200,36 @@ class VizHelpers {
     }
 
     testWaveformViz (noteList, args, util) {
-        this.clear();
+        this.fftViz.clear();
+        this.sheetMusicViz.clear();
+        this.spectrogramViz.clear();
+        this.waveformViz.clear();
         this.waveformViz.testWaveformViz(noteList, args, util);
     }
 
     testSheetMusicViz (noteList, args, util) {
         this.clear();
+        this.fftViz.clear();
+        this.sheetMusicViz.clear();
+        this.spectrogramViz.clear();
+        this.waveformViz.clear();
         this.sheetMusicViz.testSheetMusicViz(noteList, args, util);
     }
 
     testFreqViz (noteList, args, util) {
-        this.clear();
+        this.fftViz.clear();
+        this.sheetMusicViz.clear();
+        this.spectrogramViz.clear();
+        this.waveformViz.clear();
         this.fftViz.testFreqViz(noteList, args, util);
 
     }
 
     testSpectViz (noteList, args, util) {
-        this.clear();
+        this.fftViz.clear();
+        this.sheetMusicViz.clear();
+        this.spectrogramViz.clear();
+        this.waveformViz.clear();
         this.spectrogramViz.testSpectViz(noteList, args, util);
 
     }
