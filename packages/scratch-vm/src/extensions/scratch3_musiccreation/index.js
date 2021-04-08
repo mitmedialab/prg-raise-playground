@@ -10,6 +10,7 @@ const MusicCreationHelpers = require('./musiccreationhelpers');
 const MusicAccompanimentHelpers = require('./musicaccompanimenthelpers');
 const AnalysisHelpers = require('./analysishelpers');
 const MusicPlayers = require('./musicplayer')
+const textRender = require('./textrender');
 
 
 
@@ -41,6 +42,7 @@ class Scratch3MusicCreation {
                     {text: "mystery 5", value: 5},
                     {text: "mystery 6", value: 6}];
 
+        this.textRenderer = new textRender(runtime);
 
         this._playNoteForPicker = this._playNoteForPicker.bind(this);
         this.runtime.on('PLAY_NOTE', this._playNoteForPicker);
@@ -378,6 +380,21 @@ class Scratch3MusicCreation {
                         description: 'get the current instrument 2'
                     }),
                     blockType: BlockType.REPORTER
+                },
+                {
+                    opcode: 'setText',
+                    text: formatMessage({
+                        id: 'musiccreation.setText',
+                        default: 'show text [TEXT]',
+                        description: ''
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        TEXT: {
+                            type: ArgumentType.STRING,
+                            defaultValue: "DEFAULT"
+                        }
+                    }
                 }
 
             ],
@@ -396,6 +413,11 @@ class Scratch3MusicCreation {
                 }
             }
         };
+    }
+
+    setText (args, util) {
+        log.log("SET TEXT");
+        this.textRenderer.say(args.TEXT, args, util);
     }
 
     resetMusic (args, util) {

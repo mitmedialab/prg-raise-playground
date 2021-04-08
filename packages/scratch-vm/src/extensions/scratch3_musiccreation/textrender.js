@@ -1,356 +1,278 @@
-const Clone = require('../../util/clone');
-const log = require('../../util/log');
 const Cast = require('../../util/cast');
-const Color = require('../../util/color');
+const Clone = require('../../util/clone');
 const RenderedTarget = require('../../sprites/rendered-target');
+const uid = require('../../util/uid');
+const StageLayering = require('../../engine/stage-layering');
+const MathUtil = require('../../util/math-util');
+const log = require('../../util/log');
 
-class TextRender{
-    constructor (runtime){
+/**
+ * @typedef {object} TextBoxState - the bubble state associated with a particular target.
+ * @property {Boolean} onSpriteRight - tracks whether the bubble is right or left of the sprite.
+ * @property {?int} drawableId - the ID of the associated bubble Drawable, null if none.
+ * @property {string} text - the text of the bubble.
+ * @property {string} type - the type of the bubble, "say" or "think"
+ * @property {?string} usageId - ID indicating the most recent usage of the say/think bubble.
+ *      Used for comparison when determining whether to clear a say/think bubble.
+ */
+
+class TextRender {
+    constructor (runtime) {
         /**
-     * The runtime instantiating this block package.
-     * @type {Runtime}
-     */
+         * The runtime instantiating this block package.
+         * @type {Runtime}
+         */
         this.runtime = runtime;
+
+        this._onTargetChanged = this._onTargetChanged.bind(this);
+        this._onResetTextBoxes = this._onResetTextBoxes.bind(this);
         this._onTargetWillExit = this._onTargetWillExit.bind(this);
+        this._updateTextBox = this._updateTextBox.bind(this);
+
+        // Reset all bubbles on start/stop
+        this.runtime.on('PROJECT_STOP_ALL', this._onResetTextBoxes);
         this.runtime.on('targetWasRemoved', this._onTargetWillExit);
-        this._onTargetCreated = this._onTargetCreated.bind(this);
-        this.runtime.on('targetWasCreated', this._onTargetCreated);
-        this.runtime.on('PROJECT_STOP_ALL', this.stopAll.bind(this));
-    }
-    static get STATE_KEY (){
-        return 'Scratch.musicviz';
-    }
-    static get DEFAULT_TEXT_STATE (){
-        return ({skinId: null, text: 'Welcome to my project!', font: 'Handwriting', color: 'hsla(225, 15%, 40%, 1', size: 24, maxWidth: 480, align: 'center', strokeWidth: 0, strokeColor: 'black', rainbow: false, visible: false, targetSize: null, fullText: null});
+
+        // Enable other blocks to use bubbles like ask/answer
+        this.runtime.on('TEXT', this._updateTextBox);
     }
 
-    _getTextState (target) {
-        let textState = target.getCustomState(TextRender.STATE_KEY);
+    /**
+     * The default bubble state, to be used when a target has no existing bubble state.
+     * @type {TextBoxState}
+     */
+    static get DEFAULT_TEXT_BOX_STATE () {
+        return {
+            drawableId: null,
+            onSpriteRight: true,
+            skinId: null,
+            text: '',
+            type: 'say',
+            usageId: null
+        };
+    }
 
-        if (!textState) {
-            textState = Clone.simple(TextRender.DEFAULT_TEXT_STATE);
-            target.setCustomState(TextRender.STATE_KEY, textState);
+    /**
+     * The key to load & store a target's bubble-related state.
+     * @type {string}
+     */
+    static get STATE_KEY () {
+        return 'Scratch.text';
+    }
+
+    /**
+     * Limit for say bubble string.
+     * @const {string}
+     */
+    static get SAY_TEXT_BOX_LIMIT () {
+        return 330;
+    }
+
+    /**
+     * Limit for ghost effect
+     * @const {object}
+     */
+    static get EFFECT_GHOST_LIMIT (){
+        return {min: 0, max: 100};
+    }
+
+    /**
+     * Limit for brightness effect
+     * @const {object}
+     */
+    static get EFFECT_BRIGHTNESS_LIMIT (){
+        return {min: -100, max: 100};
+    }
+
+    /**
+     * @param {Target} target - collect bubble state for this target. Probably, but not necessarily, a RenderedTarget.
+     * @returns {TextBoxState} the mutable bubble state associated with that target. This will be created if necessary.
+     * @private
+     */
+    _getTextBoxState (target) {
+        let textBoxState = target.getCustomState(TextRender.STATE_KEY);
+        if (!textBoxState) {
+            textBoxState = Clone.simple(TextRender.DEFAULT_TEXT_BOX_STATE);
+            target.setCustomState(TextRender.STATE_KEY, textBoxState);
         }
-
-        return textState;
+        return textBoxState;
     }
-    
-    setText (text, args, util) {
-        const textState = this._getTextState(util.target);
 
-        textState.text = this._formatText(text);
-        textState.visible = true;
-        textState.animating = false;
-
-        this._renderText(util.target); // Yield until the next tick.
-
-
-        return Promise.resolve();
+    /**
+     * Handle a target which has moved.
+     * @param {RenderedTarget} target - the target which has moved.
+     * @private
+     */
+    _onTargetChanged (target) {
+        const textBoxState = this._getTextBoxState(target);
+        if (textBoxState.drawableId) {
+            this._positionTextBox(target);
+        }
     }
-    clearText (args, util) {
-        const target = util.target;
 
-        const textState = this._getTextState(target);
-
-        textState.visible = false; // Set state so that clones can know not to render text
-
-        textState.animating = false;
-        const costume = target.getCostumes()[target.currentCostume];
-        this.runtime.renderer.updateDrawableSkinId(target.drawableID, costume.skinId); // Yield until the next tick.
-
-        return Promise.resolve();
+    /**
+     * Handle a target which is exiting.
+     * @param {RenderedTarget} target - the target.
+     * @private
+     */
+    _onTargetWillExit (target) {
+        const textBoxState = this._getTextBoxState(target);
+        if (textBoxState.drawableId && textBoxState.skinId) {
+            this.runtime.renderer.destroyDrawable(textBoxState.drawableId, StageLayering.SPRITE_LAYER);
+            this.runtime.renderer.destroySkin(textBoxState.skinId);
+            textBoxState.drawableId = null;
+            textBoxState.skinId = null;
+            this.runtime.requestRedraw();
+        }
+        target.removeListener(RenderedTarget.EVENT_TARGET_VISUAL_CHANGE, this._onTargetChanged);
     }
-    stopAll () {
 
-        this.runtime.targets.forEach(target => {
-            this.clearText({}, {
-                target: target
-            });
-        });
+    /**
+     * Handle project start/stop by clearing all visible bubbles.
+     * @private
+     */
+    _onResetTextBoxes () {
+        for (let n = 0; n < this.runtime.targets.length; n++) {
+            const textBoxState = this._getTextBoxState(this.runtime.targets[n]);
+            textBoxState.text = '';
+            this._onTargetWillExit(this.runtime.targets[n]);
+        }
+        clearTimeout(this._textBoxTimeout);
     }
-    addText (args, util) {
-        const textState = this._getTextState(util.target);
 
-        textState.text += this._formatText(args.TEXT);
-        textState.visible = true;
-        textState.animating = false;
-
-        this._renderText(util.target); // Yield until the next tick.
-
-
-        return Promise.resolve();
-    }
-    addLine (args, util) {
-        const textState = this._getTextState(util.target);
-
-        textState.text += '\n'.concat(this._formatText(args.TEXT));
-        textState.visible = true;
-        textState.animating = false;
-
-        this._renderText(util.target); // Yield until the next tick.
-
-
-        return Promise.resolve();
-    }
-    setFont (args, util) {
-        const textState = this._getTextState(util.target);
-
-        if (args.FONT === RANDOM_ID) {
-            textState.font = this._randomFontOtherThan(textState.font);
+    /**
+     * Position the bubble of a target. If it doesn't fit on the specified side, flip and rerender.
+     * @param {!Target} target Target whose bubble needs positioning.
+     * @private
+     */
+    _positionTextBox (target) {
+        log.log("POSITION");
+        if (!target.visible) return;
+        const textBoxState = this._getTextBoxState(target);
+        const [textBoxWidth, textBoxHeight] = this.runtime.renderer.getCurrentSkinSize(textBoxState.drawableId);
+        let targetBounds;
+        try {
+            targetBounds = target.getBoundsForTextBox();
+        } catch (error_) {
+            // Bounds calculation could fail (e.g. on empty costumes), in that case
+            // use the x/y position of the target.
+            targetBounds = {
+                left: target.x,
+                right: target.x,
+                top: target.y,
+                bottom: target.y
+            };
+        }
+        const stageSize = this.runtime.renderer.getNativeSize();
+        const stageBounds = {
+            left: -stageSize[0] / 2,
+            right: stageSize[0] / 2,
+            top: stageSize[1] / 2,
+            bottom: -stageSize[1] / 2
+        };
+        if (textBoxState.onSpriteRight && textBoxWidth + targetBounds.right > stageBounds.right &&
+            (targetBounds.left - textBoxWidth > stageBounds.left)) { // Only flip if it would fit
+            textBoxState.onSpriteRight = false;
+            this._renderTextBox(target);
+        } else if (!textBoxState.onSpriteRight && targetBounds.left - textBoxWidth < stageBounds.left &&
+            (textBoxWidth + targetBounds.right < stageBounds.right)) { // Only flip if it would fit
+            textBoxState.onSpriteRight = true;
+            this._renderTextBox(target);
         } else {
-            textState.font = args.FONT;
-        }
-
-        this._renderText(util.target);
-    }
-    _randomFontOtherThan (currentFont) {
-        const otherFonts = this.FONT_IDS.filter(id => id !== currentFont);
-        return otherFonts[Math.floor(Math.random() * otherFonts.length)];
-    }
-    setColor (args, util) {
-        const textState = this._getTextState(util.target);
-
-        textState.color = args.COLOR;
-
-        this._renderText(util.target);
-    }
-    setWidth (args, util) {
-        const textState = this._getTextState(util.target);
-
-        textState.maxWidth = Cast.toNumber(args.WIDTH);
-        textState.align = args.ALIGN;
-
-        this._renderText(util.target);
-    }
-    setSize (args, util) {
-        const textState = this._getTextState(util.target);
-
-        textState.size = Cast.toNumber(args.SIZE);
-
-        this._renderText(util.target);
-    }
-    setAlign (args, util) {
-        const textState = this._getTextState(util.target);
-
-        textState.maxWidth = Cast.toNumber(args.WIDTH);
-        textState.align = args.ALIGN;
-
-        this._renderText(util.target);
-    }
-    setOutlineWidth (args, util) {
-        const textState = this._getTextState(util.target);
-
-        textState.strokeWidth = Cast.toNumber(args.WIDTH);
-
-        this._renderText(util.target);
-    }
-    setOutlineColor (args, util) {
-        const textState = this._getTextState(util.target);
-
-        textState.strokeColor = args.COLOR;
-        textState.visible = true;
-
-        this._renderText(util.target);
-    }
-    _animateText (args, util) {
-
-        const target = util.target;
-
-        const textState = this._getTextState(target);
-
-        if (textState.fullText !== null) return; // Let the running animation finish, do nothing
-        // On "first tick", set the text and force animation flags on and render
-
-        textState.fullText = this._formatText(args.TEXT);
-        textState.text = textState.fullText[0]; // Start with first char visible
-
-        textState.visible = true;
-        textState.animating = true;
-
-        this._renderText(target);
-
-        this.runtime.requestRedraw();
-        return new Promise(resolve => {
-            var interval = setInterval(() => {
-                if (textState.animating && textState.visible && textState.text !== textState.fullText) {
-                    textState.text = textState.fullText.substring(0, textState.text.length + 1);
-                } else {
-                    // NB there is no need to update the .text state here, since it is at the end of the
-                    // animation (when text == fullText), is being cancelled by force setting text,
-                    // or is being cancelled by hitting the stop button which hides the text anyway.
-                    textState.fullText = null;
-                    clearInterval(interval);
-                    resolve();
-                }
-
-                this._renderText(target);
-
-                this.runtime.requestRedraw();
-            }, 60
-                /* ms, about 1 char every 2 frames */
-            );
-        });
-    }
-    _zoomText (args, util) {
-
-        const target = util.target;
-
-        const textState = this._getTextState(target);
-
-        if (textState.targetSize !== null) return; // Let the running animation finish, do nothing
-
-        const timer = new Timer();
-        const durationMs = Cast.toNumber(args.SECS || 0.5) * 1000; // On "first tick", set the text and force animation flags on and render
-
-        textState.text = this._formatText(args.TEXT);
-        textState.visible = true;
-        textState.animating = true;
-        textState.targetSize = target.size;
-        target.setSize(0);
-
-        this._renderText(target);
-
-        this.runtime.requestRedraw();
-        timer.start();
-        return new Promise(resolve => {
-            var interval = setInterval(() => {
-                const timeElapsed = timer.timeElapsed();
-
-                if (textState.animating && textState.visible && timeElapsed < durationMs) {
-                    target.setSize(textState.targetSize * timeElapsed / durationMs);
-                } else {
-                    target.setSize(textState.targetSize);
-                    textState.targetSize = null;
-                    clearInterval(interval);
-                    resolve();
-                }
-
-                this._renderText(target);
-
-                this.runtime.requestRedraw();
-            }, this.runtime.currentStepTime);
-        });
-    }
-    animateText (args, util) {
-        switch (args.ANIMATE) {
-        case 'rainbow':
-            return this.rainbow(args, util);
-
-        case 'type':
-            return this._animateText(args, util);
-
-        case 'zoom':
-            return this._zoomText(args, util);
+            this.runtime.renderer.updateDrawableProperties(textBoxState.drawableId, {
+                position: [
+                    textBoxState.onSpriteRight ? (
+                        Math.max(
+                            stageBounds.left, // Bubble should not extend past left edge of stage
+                            Math.min(stageBounds.right - textBoxWidth, targetBounds.right)
+                        )
+                    ) : (
+                        Math.min(
+                            stageBounds.right - textBoxWidth, // Bubble should not extend past right edge of stage
+                            Math.max(stageBounds.left, targetBounds.left - bubbleWidth)
+                        )
+                    ),
+                    // Bubble should not extend past the top of the stage
+                    Math.min(stageBounds.top, targetBounds.bottom + textBoxHeight)
+                ]
+            });
+            this.runtime.requestRedraw();
         }
     }
-    rainbow (args, util) {
-        const target = util.target;
 
-        const textState = this._getTextState(target);
-
-        if (textState.rainbow) return; // Let the running animation finish, do nothing
-
-        const timer = new Timer();
-        const durationMs = Cast.toNumber(args.SECS || 2) * 1000; // On "first tick", set the text and force animation flags on and render
-
-        textState.text = this._formatText(args.TEXT);
-        textState.visible = true;
-        textState.animating = true;
-        textState.rainbow = true;
-
-        this._renderText(target);
-
-        timer.start();
-        return new Promise(resolve => {
-            var interval = setInterval(() => {
-                const timeElapsed = timer.timeElapsed();
-
-                if (textState.animating && textState.visible && timeElapsed < durationMs) {
-                    textState.rainbow = true;
-                    target.setEffect('color', timeElapsed / -5);
-                } else {
-                    textState.rainbow = false;
-                    target.setEffect('color', 0);
-                    clearInterval(interval);
-                    resolve();
-                }
-
-                this._renderText(target);
-            }, this.runtime.currentStepTime);
-        });
-    }
-
-    _formatText (text) {
-        if (text === '') return text; // Non-integers should be rounded to 2 decimal places (no more, no less), unless they're small enough that
-        // rounding would display them as 0.00. This matches 2.0's behavior:
-        // https://github.com/LLK/scratch-flash/blob/2e4a402ceb205a0428…7f54b26eebe1c2e6da6c0/src/scratch/ScratchSprite.as#L579-L585
-
-        if (typeof text === 'number' && Math.abs(text) >= 0.01 && text % 1 !== 0) {
-            text = text.toFixed(2);
-        }
-
-        text = Cast.toString(text);
-        return text;
-    }
-    _renderText (target) {
+    /**
+     * Create a visible bubble for a target. If a bubble exists for the target,
+     * just set it to visible and update the type/text. Otherwise create a new
+     * bubble and update the relevant custom state.
+     * @param {!Target} target Target who needs a bubble.
+     * @return {undefined} Early return if text is empty string.
+     * @private
+     */
+    _renderTextBox (target) {
         if (!this.runtime.renderer) return;
 
-        const textState = this._getTextState(target);
-        log.log(textState);
+        const textBoxState = this._getTextBoxState(target);
+        const {type, text, onSpriteRight} = textBoxState;
 
-        if (!textState.visible) return; // Resetting to costume is done in clear block, early return here is for clones
-
-        textState.skinId = this.runtime.renderer.updateTextCostumeSkin(textState);
-        this.runtime.renderer.updateDrawableSkinId(target.drawableID, textState.skinId);
-    }
-    _onTargetCreated (newTarget, sourceTarget) {
-        log.log("JERE");
-
-        if (sourceTarget) {
-            const sourceTextState = sourceTarget.getCustomState(TextRender.STATE_KEY);
-
-            if (sourceTextState) {
-                newTarget.setCustomState(TextRender.STATE_KEY, Clone.simple(sourceTextState));
-                const newTargetState = newTarget.getCustomState(TextRender.STATE_KEY); // Note here that clones do not share skins with their original target. This is a subtle but important
-                // departure from the rest of Scratch, where clones always stay in sync with the originals costume.
-                // The "rule" is anything that can be done with the blocks is clone-specific, since that is where you make clones,
-                // but anything outside of the blocks (costume/sounds) are shared.
-                // For example, graphic effects are clone-specific, but changing the costume in the paint editor is shared.
-                // Since you can change the text on the skin from the blocks, each clone needs its own skin.
-
-                newTargetState.skinId = null; // Unset all of the animation flags
-
-                newTargetState.rainbow = false;
-                newTargetState.targetSize = null;
-                newTargetState.fullText = null;
-                newTargetState.animating = false; // Must wait until the drawable has been initialized, but before render. We can
-                // wait for the first EVENT_TARGET_VISUAL_CHANGE for this.
-
-                var onDrawableReady = () => {
-                    this._renderText(newTarget);
-
-                    newTarget.off('EVENT_TARGET_VISUAL_CHANGE', onDrawableReady);
-                };
-
-                newTarget.on('EVENT_TARGET_VISUAL_CHANGE', onDrawableReady);
-            }
+        // Remove the bubble if target is not visible, or text is being set to blank.
+        if (!target.visible || text === '') {
+            this._onTargetWillExit(target);
+            return;
         }
-    }
-    _onTargetWillExit (target) {
-        const textState = this._getTextState(target);
 
-        if (textState.skinId) {
-        // The drawable will get cleaned up by RenderedTarget#dispose, but that doesn't
-        // automatically destroy attached skins (because they are usually shared between clones).
-        // For text skins, however, all clones get their own, so we need to manually destroy them.
-            this.runtime.renderer.destroySkin(textState.skinId);
-            textState.skinId = null;
+        if (textBoxState.skinId) {
+            this.runtime.renderer.updateTextBoxSkin(textBoxState.skinId, type, text, onSpriteRight, [0, 0]);
+        } else {
+            target.addListener(RenderedTarget.EVENT_TARGET_VISUAL_CHANGE, this._onTargetChanged);
+            textBoxState.drawableId = this.runtime.renderer.createDrawable(StageLayering.SPRITE_LAYER);
+            textBoxState.skinId = this.runtime.renderer.createTextBoxSkin(type, text, textBoxState.onSpriteRight, [0, 0]);
+            this.runtime.renderer.updateDrawableProperties(textBoxState.drawableId, {
+                skinId: textBoxState.skinId
+            });
         }
+
+        this._positionTextBox(target);
     }
-    get FONT_IDS (){
-        return ['Sans Serif', 'Serif', 'Handwriting', 'Marker', 'Curly', 'Pixel'];
+
+    /**
+     * The entry point for say/think blocks. Clears existing bubble if the text is empty.
+     * Set the bubble custom state and then call _renderBubble.
+     * @param {!Target} target Target that say/think blocks are being called on.
+     * @param {!string} type Either "say" or "think"
+     * @param {!string} text The text for the bubble, empty string clears the bubble.
+     * @private
+     */
+    _updateTextBox (target, type, text) {
+        const textBoxState = this._getTextBoxState(target);
+        textBoxState.type = type;
+        textBoxState.text = text;
+        textBoxState.usageId = uid();
+        this._renderTextBox(target);
     }
-    
-    
+
+    say (text, args, util) {
+        // @TODO in 2.0 calling say/think resets the right/left bias of the bubble
+        let message = text;
+        if (typeof message === 'number') {
+            message = parseFloat(message.toFixed(2));
+        }
+        message = String(message).substr(0, TextRender.SAY_TEXT_BOX_LIMIT);
+        this.runtime.emit('TEXT', util.target, 'say', message);
+    }
+
+    changeSize (args, util) {
+        const change = Cast.toNumber(args.CHANGE);
+        util.target.setSize(util.target.size + change);
+    }
+
+    setSize (args, util) {
+        const size = Cast.toNumber(args.SIZE);
+        util.target.setSize(size);
+    }
+
+    getSize (args, util) {
+        return Math.round(util.target.size);
+    }
 }
+
 module.exports = TextRender;

@@ -220,12 +220,12 @@ class Waveform {
         this.penDown(args, util);
         util.target.setXY(this.axisStartX+this.xAxisLength, this.axisStartY+this.yAxisLength/2);
         this.penUp(args, util);
-        //this.drawLabels(args, util);
+        this.drawLabels(args, util);
     }
 
     drawLabels(args, util) {
         log.log(util);
-        //this.textRenderer.setText("here", args, util);
+        //this.textRenderer.say('here', args, util);
     }
 
     drawSignal(args, util) {
