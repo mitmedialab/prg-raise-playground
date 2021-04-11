@@ -34,6 +34,14 @@ class Scratch3MusicCreation {
                     {text: "mezzo-forte", value: 60},
                     {text: "forte", value: 85},
                     {text: "fortissimo", value: 100}];
+        
+        this.beats = [{text: "1/8", value: 0.03125}, 
+                    {text: "1/4", value: 0.0625}, 
+                    {text: "1/2", value: 0.125},
+                    {text: "1", value: 0.25},
+                    {text: "2", value: 0.5},
+                    {text: "3", value: 0.75},
+                    {text: "4", value: 1}];
 
         this.files = [{text: "mystery 1", value: 1}, 
                     {text: "mystery 2", value: 2}, 
@@ -221,7 +229,8 @@ class Scratch3MusicCreation {
                         },
                         SECS: {
                             type: ArgumentType.NUMBER,
-                            defaultValue: 0.25
+                            defaultValue: 0.25,
+                            menu: "BEATS"
                         }
                     }
                 },
@@ -410,6 +419,10 @@ class Scratch3MusicCreation {
                 FILES: {
                     acceptReporters: true,
                     items: this.files
+                },
+                BEATS: {
+                    acceptReporters: true,
+                    items: this.beats
                 }
             }
         };

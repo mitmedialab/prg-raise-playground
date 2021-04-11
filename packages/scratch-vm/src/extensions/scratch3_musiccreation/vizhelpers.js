@@ -60,25 +60,6 @@ class VizHelpers {
 
         this._onTargetMoved = this._onTargetMoved.bind(this);
 
-        pitchToStaff = {
-            60: -2,
-            61: -2,
-            62: -1,
-            63: 0,
-            64: 0,
-            65: 2,
-            66: 2,
-            67: 3,
-            68: 3,
-            69: 4,
-            70: 5,
-            71: 5,
-            72: 6,
-            73: 6,
-            75: 7,
-            76: 8
-        }
-
         harmonics = {
             "Piano": [[1,1], [2, 0.5]],
             "Guitar": [[1,1], [2, 0.25]],
@@ -299,18 +280,6 @@ class VizHelpers {
 
         }
 
-    }
-
-    convertSignalToMusicList (args, util) {
-        signal = [];
-        for (var i in this.noteList) {
-            freq = this.noteList[i][0];
-            staff = pitchToStaff[freq];
-            dur = this.noteList[i][1]*4;
-            amp = this.noteList[i][3];
-            signal.push([staff, dur, amp]);
-        }
-        return signal;
     }
 
     penUp (args, util) {

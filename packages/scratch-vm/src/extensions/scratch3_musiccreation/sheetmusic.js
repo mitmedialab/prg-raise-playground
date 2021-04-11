@@ -40,6 +40,7 @@ class SheetMusic {
         this.staffWidth = 8;
 
         this.spaceBetween = 70;
+        this.spaceBetweenStaffs = 5*12;
 
         this.wavePen = -1;
         this.musicPen = 2;
@@ -57,18 +58,44 @@ class SheetMusic {
             62: -1,
             63: 0,
             64: 0,
-            65: 2,
-            66: 2,
-            67: 3,
-            68: 3,
-            69: 4,
-            70: 5,
-            71: 5,
-            72: 6,
-            73: 6,
+            65: 1,
+            66: 1,
+            67: 2,
+            68: 2,
+            69: 3,
+            70: 4,
+            71: 4,
+            72: 5,
+            73: 5,
+            74: 6,
             75: 7,
-            76: 8
-        }
+            76: 7
+        }  
+
+
+        pitchToStaffBass = {
+            39: -2, //F
+            40: -2, //G
+            41: -1, //A
+            42: -1, //DONE
+            43: 0,
+            44: 0,
+            45: 1,
+            46: 2,
+            47: 2,
+            48: 3,//DONE
+            49: 3,
+            50: 4,
+            51: 5,
+            52: 5,
+            53: 6,
+            54: 6,
+            55: 7,
+            56: 7,
+            57: 8,
+            58: 9,
+            59: 9,
+        }  
 
         harmonics = {
             "Piano": [[1,1], [2, 0.5]],
@@ -192,9 +219,9 @@ class SheetMusic {
     drawStaff(args, util) {
         startX = this.staffStartX;
         endX = this.staffStartX+this.staffLength;
-        y = this.staffStartY;
+        var y = this.staffStartY;
         yStep = this.staffWidth;
-        for (var j = 0; j < 6; j++) {
+        for (var j = 0; j < 2; j++) {
             for (var i = 0; i < 5; i++) {
                 this.penUp(args, util);
                 util.target.setXY(startX, y);
@@ -203,8 +230,18 @@ class SheetMusic {
                 y = y+yStep;
             }
             y = y - this.spaceBetween - yStep*5;
+            for (var i = 0; i < 5; i++) {
+                this.penUp(args, util);
+                util.target.setXY(startX, y);
+                this.penDown(args, util);
+                util.target.setXY(endX, y);
+                y = y+yStep;
+            }
+            y = y - this.spaceBetween - this.spaceBetweenStaffs;
+            this.drawTreble(this.staffStartX+10, this.staffStartY-12 -j*(this.spaceBetween+yStep*5+this.spaceBetweenStaffs-12), args, util);
+            
         }
-        this.drawTreble(args, util);
+        //this.drawBass(args, util);
     }
 
     drawSymbol(symbol, args, util, xStart, yStart) {
@@ -221,15 +258,15 @@ class SheetMusic {
         this.penUp(args, util);
     }
 
-    drawTreble(args, util) {
-        xstart = this.staffStartX+10;
-        ystart = this.staffStartY-12;
+    drawTreble(xstart, ystart, args, util) {
+        //xstart = this.staffStartX+10;
+        //ystart = this.staffStartY-12;
         treble = symbols.treble;
         this.penUp(args, util);
         for (var i in treble) {
             coord = treble[i];
-            x = coord[0]/5 + xstart;
-            y = -coord[1]/5 + ystart;
+            var x = coord[0]/5 + xstart;
+            var y = -coord[1]/5 + ystart;
             util.target.setXY(x, y);
             this.penDown(args, util);     
         }
@@ -263,11 +300,17 @@ class SheetMusic {
             }
             x = x+xStep;
             if (x > this.staffStartX + this.staffLength) {
-                x = xinit;
-                y = y - this.spaceBetween;
+                x = xinit+xStep;
+                y = y - this.spaceBetween-11*this.staffWidth;
             }
-            ymid = y+note*this.staffWidth/2;
-            xmid = x - 8;
+            if (signal[i][3] == 'treble') {
+                ymid = y+note*this.staffWidth/2;
+                xmid = x - 8;
+            } else {
+                xmid = x - 8;
+                ymid = y+note*this.staffWidth/2 - this.spaceBetween;
+            }
+
             this.drawNote(xmid, ymid, duration, up, args, util);
             if ((volume!=pastVol)) {
                 newX = xmid;
@@ -287,19 +330,6 @@ class SheetMusic {
         }
         this.penUp(args, util);
         
-    }
-
-    findCrescDecresc() {
-        //CHANGE TO MP AND P ETC
-        up = [];
-        down = [];
-        upstart = 0;
-        downstart = 0;
-        for (var i in this.noteList) {
-            log.log(this.noteList[i][3]);
-
-        }
-
     }
 
     drawNote(xmid, ymid, duration, up, args, util) {
@@ -382,10 +412,21 @@ class SheetMusic {
         signal = [];
         for (var i in this.noteList) {
             freq = this.noteList[i][0];
-            staff = pitchToStaff[freq];
-            dur = this.noteList[i][1]*4;
-            amp = this.noteList[i][3];
-            signal.push([staff, dur, amp]);
+            log.log("FREQ", freq);
+            if (freq >= 60) {
+                staff = pitchToStaff[freq];
+                log.log("STAFF", staff);
+                dur = this.noteList[i][1]*4;
+                amp = this.noteList[i][3];
+                signal.push([staff, dur, amp, "treble"]);
+            } else {
+                staff = pitchToStaffBass[freq];
+                log.log("STAFF", staff);
+                dur = this.noteList[i][1]*4;
+                amp = this.noteList[i][3];
+                signal.push([staff, dur, amp, "bass"]);
+            }
+
         }
         return signal;
     }
