@@ -79,6 +79,7 @@ class MusicAccompanimentHelpers {
             player.stop();
             return;
         }
+        log.log("player done");
         notes = this.configure(noteList);
         music_rnn = new rnn.MusicRNN('https://storage.googleapis.com/magentadata/js/checkpoints/music_rnn/basic_rnn');
         music_rnn.initialize();
@@ -89,6 +90,7 @@ class MusicAccompanimentHelpers {
         music_rnn
         .continueSequence(qns, rnn_steps, rnn_temperature)
         .then((sample) => player.start(sample));
+        log.log(sample);
         log.log(TWINKLE_TWINKLE);
     }
 

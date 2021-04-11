@@ -426,6 +426,7 @@ class Scratch3MusicCreation {
     }
 
     testWaveformViz (args, util) {
+        log.log("WAVE");
         this.vizHelper.testWaveformViz(this.wavenoteList, args, util);
     }
 

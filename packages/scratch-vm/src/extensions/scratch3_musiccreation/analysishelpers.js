@@ -45,8 +45,6 @@ class AnalysisHelpers {
     compareFiles (args, util) {
         note1 = this.filenameToNote[Cast.toNumber(args.FILE1)];
         note2 = this.filenameToNote[Cast.toNumber(args.FILE2)];
-        this.play(note1, util);
-        this.play(note2, util);
         this.inst1 = note1.instrument;
         this.inst2 = note2.instrument;
         this.louder =  (this.compareVolumes[note1.volume] == this.compareVolumes[note2.volume]) ? "equal" : ((this.compareVolumes[note1.volume] > this.compareVolumes[note2.volume]) ? args.FILE1 : args.FILE2);
