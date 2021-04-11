@@ -5,6 +5,7 @@ const Color = require('../../util/color');
 const RenderedTarget = require('../../sprites/rendered-target');
 const StageLayering = require('../../engine/stage-layering');
 
+const letters = require('./letters');
 const symbols = require('./symbols');
 const { updateVariableIdentifiers } = require('../../util/variable-util');
 
@@ -37,10 +38,10 @@ class SheetMusic {
         this.staffLength = 400;
         this.staffStartX = -200;
         this.staffStartY = 130;
-        this.staffWidth = 8;
+        this.staffWidth = 10;
 
-        this.spaceBetween = 70;
-        this.spaceBetweenStaffs = 5*12;
+        this.spaceBetween = 80;
+        this.spaceBetweenStaffs = 80;
 
         this.wavePen = -1;
         this.musicPen = 2;
@@ -213,7 +214,66 @@ class SheetMusic {
         this.noteList = noteList;
         this.clear();
         this.drawStaff(args, util);
+        this.labelStaff(args, util);
         this.drawMusic(args, util);
+    }
+
+    labelStaff (args, util) {
+        startX = this.staffStartX;
+        endX = this.staffStartX+this.staffLength;
+        var y = this.staffStartY;
+        yStep = this.staffWidth;
+        //treble
+        this.drawString('e', this.staffStartX + this.staffLength +2, this.staffStartY+3, 0.5, args, util);
+        this.drawString('g', this.staffStartX + this.staffLength +2, this.staffStartY + yStep+3, 0.5, args, util);
+        this.drawString('b', this.staffStartX + this.staffLength +2, this.staffStartY+yStep*2+3, 0.5, args, util);
+        this.drawString('d', this.staffStartX + this.staffLength +2, this.staffStartY+yStep*3+3, 0.5, args, util);
+        this.drawString('f', this.staffStartX + this.staffLength +2, this.staffStartY+yStep*4+3, 0.5, args, util);
+        
+        //bass
+        this.drawString('g', this.staffStartX + this.staffLength +2, this.staffStartY-this.spaceBetween+3, 0.5, args, util);
+        this.drawString('b', this.staffStartX + this.staffLength +2, this.staffStartY-this.spaceBetween+yStep+3, 0.5, args, util);
+        this.drawString('d', this.staffStartX + this.staffLength +2, this.staffStartY-this.spaceBetween+yStep*2+3, 0.5, args, util);
+        this.drawString('f', this.staffStartX + this.staffLength +2, this.staffStartY-this.spaceBetween+yStep*3+3, 0.5, args, util);
+        this.drawString('a', this.staffStartX + this.staffLength +2, this.staffStartY-this.spaceBetween+yStep*4+3, 0.5, args, util);
+
+        //this.drawString('sheet music', this.axisStartX + this.xAxisLength/2 -70, this.axisStartY+this.yAxisLength + 20, 1, args, util);
+    }
+
+
+    drawString (str, xstart, ystart, size, args, util) {
+        log.log(str);
+        for (var i in str) {
+            log.log(i);
+            log.log(str[i]);
+            xstart += 5*size;
+            if (i >= 1) {
+                xstart += this.spacing[str[i-1]]/5*size;
+            }
+            this.drawLetter(str[i], xstart, ystart, size, args, util);
+        }
+
+    }
+
+    drawLetter(letter, xstart, ystart, size, args, util) {
+        letter = letters[letter];
+        this.penUp(args, util);
+        for (var i in letter) {
+            coord = letter[i];
+            x = coord[0]/5*size + xstart;
+            y = -coord[1]/5*size + ystart;
+            util.target.setXY(x, y);
+            this.penDown(args, util);     
+        }
+        this.penUp(args, util);
+        for (var i in letter) {
+            coord = letter[i];
+            x = coord[0]/5*size + xstart+1;
+            y = -coord[1]/5*size + ystart;
+            util.target.setXY(x, y);
+            this.penDown(args, util);     
+        }
+        this.penUp(args, util);
     }
 
     drawStaff(args, util) {
@@ -238,10 +298,10 @@ class SheetMusic {
                 y = y+yStep;
             }
             y = y - this.spaceBetween - this.spaceBetweenStaffs;
-            this.drawTreble(this.staffStartX+10, this.staffStartY-12 -j*(this.spaceBetween+yStep*5+this.spaceBetweenStaffs-12), args, util);
-            
+            this.drawTreble(this.staffStartX+10, this.staffStartY-12 -j*(this.spaceBetween+yStep*5 -12 +this.spaceBetweenStaffs-8), args, util);
+            this.drawBass(this.staffStartX+8, this.staffStartY-12-yStep*7 -j*(this.spaceBetween+yStep*5 -12 +this.spaceBetweenStaffs-8), args, util);
         }
-        //this.drawBass(args, util);
+
     }
 
     drawSymbol(symbol, args, util, xStart, yStart) {
@@ -281,6 +341,45 @@ class SheetMusic {
         this.penUp(args, util);
     }
 
+    drawBass(xstart, ystart, args, util) {
+        //xstart = this.staffStartX+10;
+        //ystart = this.staffStartY-12;
+        bass = symbols.bass;
+        this.penUp(args, util);
+        for (var i in bass) {
+            coord = bass[i];
+            var x = coord[0]/7 + xstart;
+            var y = -coord[1]/7 + ystart;
+            util.target.setXY(x, y);
+            this.penDown(args, util);     
+        }
+        this.penUp(args, util);
+        for (var i in bass) {
+            coord = bass[i];
+            x = coord[0]/7 + xstart+1;
+            y = -coord[1]/7 + ystart;
+            util.target.setXY(x, y);
+            this.penDown(args, util);     
+        }
+        this.penUp(args, util);
+        for (var i = 0; i < 2; i++) {
+            var xmid = xstart + 30;
+            var ymid = ystart + 27 + i*10;
+            var step = Math.PI/100;
+            var rad = 2;
+            for (var theta = 0; theta < 2*Math.PI; theta +=step) {
+                this.penUp(args, util);
+                util.target.setXY(xmid, ymid);
+                var x = xmid + rad*Math.cos(theta);
+                var y = ymid - rad*Math.sin(theta);
+                this.penDown(args, util);
+                util.target.setXY(x, y);
+            }
+        }
+
+
+    }
+
     drawMusic(args, util) {
         xinit = this.staffStartX+20;
         x = xinit;
@@ -293,7 +392,7 @@ class SheetMusic {
             note = signal[i][0];
             duration = signal[i][1];
             volume = signal[i][2];
-            if (note <= 4) {
+            if (note <= 3) {
                 up = true;
             } else {
                 up = false;
