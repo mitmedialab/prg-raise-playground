@@ -502,15 +502,15 @@ class Scratch3MusicCreation {
         this.musicCreationHelper._updateVolume(volume, util);
     }
 
-    getVolume () {
-        return this.musicCreationHelper.getVolume();
+    getVolume (util) {
+        return this.musicCreationHelper.getVolume(util);
     }
 
     playNote (args, util) {
         toAdd = this.musicCreationHelper.playNote(args, util);
         if (toAdd.length == 3) {
             this.noteList.push(toAdd);
-            vol = (this.getVolume());
+            vol = (this.getVolume(util));
             for (var m in volumes) {
                 if (volumes[m].text == vol) {
                     toAdd.push(volumes[m].value);

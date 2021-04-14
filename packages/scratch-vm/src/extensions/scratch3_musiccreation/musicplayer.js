@@ -343,19 +343,16 @@ class MusicPlayer {
     _updateVolume (volume, util) {
         volume = MathUtil.clamp(volume, 0, 100);
         util.target.volume = volume;
-        const stage = this.runtime.getTargetForStage();
-        if (stage) {
-            stage.volume = this.findVolumeForNumber(volume);
-        }
+        log.log(util.target.volume);
     }
 
     getVolume () {
         const stage = this.runtime.getTargetForStage();
         if (stage) {
             if (stage.volume == 100) {
-                stage.volume = "fortissimo";
+                return "fortissimo";
             }
-            return stage.volume;
+            return this.findVolumeForNumber(util.target.volume);
         }
         return "mezzo-forte";
     }

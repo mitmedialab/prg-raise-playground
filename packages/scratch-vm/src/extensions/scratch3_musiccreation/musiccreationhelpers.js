@@ -49,6 +49,8 @@ class MusicCreationHelpers {
         {text: "mezzo-forte", value: 60},
         {text: "forte", value: 85},
         {text: "fortissimo", value: 100}];
+
+        globalVolume = "mezzo-forte";
     }
 
     /**
@@ -335,18 +337,24 @@ class MusicCreationHelpers {
         volume = MathUtil.clamp(volume, 0, 100);
         util.target.volume = volume;
         const stage = this.runtime.getTargetForStage();
+        globalVolume = this.findVolumeForNumber(volume);
+        /*
         if (stage) {
             stage.volume = this.findVolumeForNumber(volume);
         }
+        */
     }
 
-    getVolume () {
+    getVolume (util) {
+        return globalVolume;
         const stage = this.runtime.getTargetForStage();
         if (stage) {
+            /*
             if (stage.volume == 100) {
                 stage.volume = "fortissimo";
             }
-            return stage.volume;
+            */
+            return this.findVolumeForNumber(util.target.volume);
         }
         return "mezzo-forte";
     }
