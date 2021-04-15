@@ -37,7 +37,7 @@ class SheetMusic {
 
         this.staffLength = 400;
         this.staffStartX = -200;
-        this.staffStartY = 130;
+        this.staffStartY = 115;
         this.staffWidth = 10;
 
         this.spaceBetween = 80;
@@ -70,11 +70,29 @@ class SheetMusic {
             73: 5,
             74: 6,
             75: 7,
-            76: 7
+            76: 7,
+            77: 8,
+            78: 8,
+            79: 9,
+            80: 9,
+            81: 10,
+            82: 11,
+            83: 11,
+            84: 12,
+            85: 12
+
         }  
+
+        sharps = [37, 42, 44, 49, 54, 56, 61, 66, 68, 73, 78, 80, 85];
+        flats = [39, 46, 51, 58, 63, 70, 75, 82];
 
 
         pitchToStaffBass = {
+            34: -5,
+            35: -5,
+            36: -4,
+            37: -4,
+            38: -3,
             39: -2, //F
             40: -2, //G
             41: -1, //A
@@ -242,10 +260,7 @@ class SheetMusic {
 
 
     drawString (str, xstart, ystart, size, args, util) {
-        log.log(str);
         for (var i in str) {
-            log.log(i);
-            log.log(str[i]);
             xstart += 5*size;
             if (i >= 1) {
                 xstart += this.spacing[str[i-1]]/5*size;
@@ -390,6 +405,7 @@ class SheetMusic {
         //volume = this.findCrescDecresc();
         for (i in signal) {
             note = signal[i][0];
+            log.log(note);
             duration = signal[i][1];
             volume = signal[i][2];
             if (note <= 3) {
@@ -409,17 +425,25 @@ class SheetMusic {
                 xmid = x - 8;
                 ymid = y+note*this.staffWidth/2 - this.spaceBetween;
             }
+            if (note > 9 || note < -1) {
+                this.addLedgers(xmid, ymid, note, args, util);
+            }
+            /*
+            if (signal[i][4]) {
+                this.addAccidental(xmid, ymid, note, signal[i][4], args, util);
+            }
+            */
 
             this.drawNote(xmid, ymid, duration, up, args, util);
             if ((volume!=pastVol)) {
                 newX = xmid;
                 newY = y-this.spaceBetween/4;
-                log.log("VOLUME", volume);
+                if (signal[i][3] == 'bass') {
+                    newY = newY - this.spaceBetween;
+                }
                 sym = this.symbols[volume];
-                log.log(sym);
                 initial = 0;
                 for (i in sym) {
-                    log.log(i);
                     s = sym[i];
                     this.drawSymbol(s, args, util, newX+initial, newY);
                     initial += this.spacing[volume][i];
@@ -429,6 +453,103 @@ class SheetMusic {
         }
         this.penUp(args, util);
         
+    }
+
+    addAccidental (xmid, ymid, note, acc, args, util) {
+        xrad = 8;
+        yrad = 4;
+        if (acc == "sharp") {
+            this.penUp(args, util);
+            util.target.setXY(xmid-xrad*5/2, ymid+yrad*2+1);
+            this.penDown(args, util);
+            util.target.setXY(xmid-xrad*5/2, ymid-yrad*2-1);
+
+            this.penUp(args, util);
+            util.target.setXY(xmid-xrad*3/2, ymid+yrad*2+1);
+            this.penDown(args, util);
+            util.target.setXY(xmid-xrad*3/2, ymid-yrad*2-1);
+
+            this.penUp(args, util);
+            util.target.setXY(xmid-xrad, ymid+yrad-2);
+            this.penDown(args, util);
+            util.target.setXY(xmid-xrad, ymid+yrad-2);
+
+            this.penUp(args, util);
+            util.target.setXY(xmid-xrad-2, ymid-yrad+2);
+            this.penDown(args, util);
+            util.target.setXY(xmid-xrad-2, ymid-yrad+2);
+        }
+        if (acc == "flat") {
+            log.log("flat");
+        }
+    }
+
+    addLedgers(xmid, ymid, note, args, util) {
+        xrad = 8;
+        yrad = 4;
+        if (note > 0) { //treble
+            if (note%2 == 0) {
+                this.penUp(args, util);
+                util.target.setXY(xmid-xrad-3, ymid);
+                this.penDown(args, util);
+                util.target.setXY(xmid+xrad+3, ymid);
+            }
+            else {
+                this.penUp(args, util);
+                util.target.setXY(xmid-xrad-3, ymid-yrad);
+                this.penDown(args, util);
+                util.target.setXY(xmid+xrad+3, ymid-yrad);
+            }
+            for (var i = 0; i < note-9; i+=2) {
+                log.log(i/2);
+                if (i/2 != 0){
+                    if (note%2 == 0) {
+                        this.penUp(args, util);
+                        util.target.setXY(xmid-xrad-3, ymid-yrad*i);
+                        this.penDown(args, util);
+                        util.target.setXY(xmid+xrad+3, ymid-yrad*i);
+                    }
+                    else {
+                        this.penUp(args, util);
+                        util.target.setXY(xmid-xrad-3, ymid-yrad-yrad*i);
+                        this.penDown(args, util);
+                        util.target.setXY(xmid+xrad+3, ymid-yrad-yrad*i);
+                    }
+                }
+            }
+        } else { //bass
+            if (note%2 == 0) {
+                this.penUp(args, util);
+                util.target.setXY(xmid-xrad-3, ymid);
+                this.penDown(args, util);
+                util.target.setXY(xmid+xrad+3, ymid);
+            }
+            else {
+                this.penUp(args, util);
+                util.target.setXY(xmid-xrad-3, ymid+yrad);
+                this.penDown(args, util);
+                util.target.setXY(xmid+xrad+3, ymid+yrad);
+            }
+            
+            for (var i = 0; i < -note-1; i+=2) {
+                log.log(i/2);
+                if (i/2 != 0){
+                    if (note%2 == 0) {
+                        this.penUp(args, util);
+                        util.target.setXY(xmid-xrad-3, ymid+yrad*i);
+                        this.penDown(args, util);
+                        util.target.setXY(xmid+xrad+3, ymid+yrad*i);
+                    }
+                    else {
+                        this.penUp(args, util);
+                        util.target.setXY(xmid-xrad-3, ymid+yrad+yrad*i);
+                        this.penDown(args, util);
+                        util.target.setXY(xmid+xrad+3, ymid+yrad+yrad*i);
+                    }
+                }
+            }
+            
+        }
     }
 
     drawNote(xmid, ymid, duration, up, args, util) {
@@ -505,25 +626,32 @@ class SheetMusic {
                 this.penUp(args, util);
             }
         }
+
     }
 
     convertSignalToMusicList (args, util) {
         signal = [];
         for (var i in this.noteList) {
             freq = this.noteList[i][0];
-            log.log("FREQ", freq);
+            var acc = "";
+            if (sharps.includes(freq)) {
+                acc = "sharp";
+                log.log("sharp");
+            }
+            if (flats.includes(freq)) {
+                acc = "flat";
+                log.log("flat");
+            }
             if (freq >= 60) {
                 staff = pitchToStaff[freq];
-                log.log("STAFF", staff);
                 dur = this.noteList[i][1]*4;
                 amp = this.noteList[i][3];
-                signal.push([staff, dur, amp, "treble"]);
+                signal.push([staff, dur, amp, "treble", acc]);
             } else {
                 staff = pitchToStaffBass[freq];
-                log.log("STAFF", staff);
                 dur = this.noteList[i][1]*4;
                 amp = this.noteList[i][3];
-                signal.push([staff, dur, amp, "bass"]);
+                signal.push([staff, dur, amp, "bass", acc]);
             }
 
         }

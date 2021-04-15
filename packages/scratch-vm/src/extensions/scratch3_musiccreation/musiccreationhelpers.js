@@ -338,11 +338,6 @@ class MusicCreationHelpers {
         util.target.volume = volume;
         const stage = this.runtime.getTargetForStage();
         globalVolume = this.findVolumeForNumber(volume);
-        /*
-        if (stage) {
-            stage.volume = this.findVolumeForNumber(volume);
-        }
-        */
     }
 
     getVolume (util) {
