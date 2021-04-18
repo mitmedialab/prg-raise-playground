@@ -396,6 +396,7 @@ class SheetMusic {
     }
 
     drawMusic(args, util) {
+        log.log("here");
         xinit = this.staffStartX+20;
         x = xinit;
         y = this.staffStartY;
