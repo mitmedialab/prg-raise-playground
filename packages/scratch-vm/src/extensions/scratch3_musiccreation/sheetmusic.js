@@ -143,6 +143,92 @@ class SheetMusic {
             85: [10, 0],
             100: [10, 0]
         }
+
+        this.letters = {
+            'a': letters.a,
+            'b': letters.b,
+            'c': letters.c,
+            'd': letters.d,
+            'e': letters.e,
+            'f': letters.f,
+            'g': letters.g,
+            'h': letters.h,
+            'i': letters.i,
+            'j': letters.j,
+            'h': letters.h,
+            'i': letters.i,
+            'j': letters.j,
+            'k': letters.k,
+            'l': letters.l,
+            'm': letters.m,
+            'n': letters.n,
+            'o': letters.o,
+            'p': letters.p,
+            'q': letters.q,
+            'r': letters.r,
+            's': letters.s,
+            't': letters.t,
+            'u': letters.u,
+            'v': letters.v,
+            'w': letters.w,
+            'x': letters.x,
+            'y': letters.y,
+            'z': letters.z,
+            '1': letters.one,
+            '2': letters.two,
+            '3': letters.three,
+            '4': letters.four,
+            '5': letters.five,
+            '6': letters.six,
+            '7': letters.seven,
+            '8': letters.eight,
+            '9': letters.nine,
+            '0': letters.zero,
+            'F': letters.flat,
+            'S': letters.sharp
+
+        }
+
+        this.spacingLetters = {
+            'a': 59.03383897316219,
+            'b': 35.666277712952166,
+            'c': 55.59820426487096,
+            'd': 51.65460910151694,
+            'e': 33.821470245040814,
+            'f': 35.05134189031503,
+            'g': 62.10851808634772,
+            'h': 51.65460910151691,
+            'i': 0.0,
+            'j': 27.057176196032685,
+            'k': 44.275379229871646,
+            'l': 33.20653442240376,
+            'm': 76.86697782963824,
+            'n': 57.803967327887975,
+            'o': 62.108518086347715,
+            'p': 35.05134189031503,
+            'q': 62.72345390898482,
+            'r': 34.305274971941685,
+            's': 39.62850729517402,
+            't': 51.03967327887982,
+            'u': 50.42473745624271,
+            'v': 52.88448074679113,
+            'w': 88.55075845974329,
+            'x': 45.50525087514586,
+            'y': 47.350058343057185,
+            'z': 55.959159859976694,
+            '1': 29.467911318553092,
+            '2': 61.498249708284675,
+            '3': 60.21703617269554,
+            '4': 74.31038506417735,
+            '5': 58.935822637106185,
+            '6': 55.09218203033845,
+            '7': 65.34189031505252,
+            '8': 55.092182030338336,
+            '9': 57.654609101516826,
+            '0': 55.09218203033856,
+            'F': 67.9352750809062, //flat
+            'S': 122.6148867313916 //sharp
+        }
     }
 
     /**
@@ -263,7 +349,7 @@ class SheetMusic {
         for (var i in str) {
             xstart += 5*size;
             if (i >= 1) {
-                xstart += this.spacing[str[i-1]]/5*size;
+                xstart += this.spacingLetters[str[i-1]]/5*size;
             }
             this.drawLetter(str[i], xstart, ystart, size, args, util);
         }
@@ -271,7 +357,7 @@ class SheetMusic {
     }
 
     drawLetter(letter, xstart, ystart, size, args, util) {
-        letter = letters[letter];
+        letter = this.letters[letter];
         this.penUp(args, util);
         for (var i in letter) {
             coord = letter[i];
@@ -314,9 +400,21 @@ class SheetMusic {
             }
             y = y - this.spaceBetween - this.spaceBetweenStaffs;
             this.drawTreble(this.staffStartX+10, this.staffStartY-12 -j*(this.spaceBetween+yStep*5 -12 +this.spaceBetweenStaffs-8), args, util);
-            this.drawBass(this.staffStartX+8, this.staffStartY-12-yStep*7 -j*(this.spaceBetween+yStep*5 -12 +this.spaceBetweenStaffs-8), args, util);
+            this.drawBass(this.staffStartX, this.staffStartY-12-yStep*7 -j*(this.spaceBetween+yStep*5 -12 +this.spaceBetweenStaffs-8), args, util);
         }
+        this.penUp(args, util);
+        this.drawTimeSignature(args, util);
 
+    }
+
+    drawTimeSignature (args, util) {
+        var startX = this.staffStartX;
+        var y = this.staffStartY;
+        this.drawString("4", startX+25, y+18, 1.2, args, util);
+        this.drawString("4", startX+25, y+38, 1.2, args, util);
+
+        this.drawString("4", startX+25, y+18-this.spaceBetween, 1.2, args, util);
+        this.drawString("4", startX+25, y+38-this.spaceBetween, 1.2, args, util);
     }
 
     drawSymbol(symbol, args, util, xStart, yStart) {
@@ -378,7 +476,7 @@ class SheetMusic {
         }
         this.penUp(args, util);
         for (var i = 0; i < 2; i++) {
-            var xmid = xstart + 30;
+            var xmid = xstart + 27;
             var ymid = ystart + 27 + i*10;
             var step = Math.PI/100;
             var rad = 2;
@@ -397,12 +495,12 @@ class SheetMusic {
 
     drawMusic(args, util) {
         log.log("here");
-        xinit = this.staffStartX+20;
-        x = xinit;
-        y = this.staffStartY;
-        xStep = 40;
-        signal = this.convertSignalToMusicList(args, util);
-        pastVol = 0;
+        var xinit = this.staffStartX+40;
+        var x = xinit;
+        var y = this.staffStartY;
+        var xStep = 40;
+        var signal = this.convertSignalToMusicList(args, util);
+        var pastVol = 0;
         //volume = this.findCrescDecresc();
         for (i in signal) {
             note = signal[i][0];
@@ -457,8 +555,8 @@ class SheetMusic {
     }
 
     addAccidental (xmid, ymid, note, acc, args, util) {
-        xrad = 8;
-        yrad = 4;
+        var xrad = 8;
+        var yrad = 4;
         if (acc == "sharp") {
             this.penUp(args, util);
             util.target.setXY(xmid-xrad*5/2, ymid+yrad*2+1);
@@ -486,8 +584,8 @@ class SheetMusic {
     }
 
     addLedgers(xmid, ymid, note, args, util) {
-        xrad = 8;
-        yrad = 4;
+        var xrad = 8;
+        var yrad = 4;
         if (note > 0) { //treble
             if (note%2 == 0) {
                 this.penUp(args, util);
@@ -554,8 +652,8 @@ class SheetMusic {
     }
 
     drawNote(xmid, ymid, duration, up, args, util) {
-        xrad = 8;
-        yrad = 4;
+        var xrad = 8;
+        var yrad = 4;
         if (up) {
             flip = 1;
         } else {
@@ -631,7 +729,7 @@ class SheetMusic {
     }
 
     convertSignalToMusicList (args, util) {
-        signal = [];
+        var signal = [];
         for (var i in this.noteList) {
             freq = this.noteList[i][0];
             var acc = "";
