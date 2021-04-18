@@ -498,7 +498,7 @@ class SheetMusic {
         var xinit = this.staffStartX+40;
         var x = xinit;
         var y = this.staffStartY;
-        var xStep = 40;
+        var xStep = 45;
         var signal = this.convertSignalToMusicList(args, util);
         var pastVol = 0;
         //volume = this.findCrescDecresc();
@@ -507,6 +507,7 @@ class SheetMusic {
             log.log(note);
             duration = signal[i][1];
             volume = signal[i][2];
+            acc = signal[i][4];
             if (note <= 3) {
                 up = true;
             } else {
@@ -527,11 +528,11 @@ class SheetMusic {
             if (note > 9 || note < -1) {
                 this.addLedgers(xmid, ymid, note, args, util);
             }
-            /*
-            if (signal[i][4]) {
-                this.addAccidental(xmid, ymid, note, signal[i][4], args, util);
+            
+            if (acc) {
+                this.addAccidental(xmid, ymid, note, acc, args, util);
             }
-            */
+            
 
             this.drawNote(xmid, ymid, duration, up, args, util);
             if ((volume!=pastVol)) {
@@ -557,29 +558,14 @@ class SheetMusic {
     addAccidental (xmid, ymid, note, acc, args, util) {
         var xrad = 8;
         var yrad = 4;
+        var xmid = xmid;
+        var ymid = ymid;
         if (acc == "sharp") {
-            this.penUp(args, util);
-            util.target.setXY(xmid-xrad*5/2, ymid+yrad*2+1);
-            this.penDown(args, util);
-            util.target.setXY(xmid-xrad*5/2, ymid-yrad*2-1);
-
-            this.penUp(args, util);
-            util.target.setXY(xmid-xrad*3/2, ymid+yrad*2+1);
-            this.penDown(args, util);
-            util.target.setXY(xmid-xrad*3/2, ymid-yrad*2-1);
-
-            this.penUp(args, util);
-            util.target.setXY(xmid-xrad, ymid+yrad-2);
-            this.penDown(args, util);
-            util.target.setXY(xmid-xrad, ymid+yrad-2);
-
-            this.penUp(args, util);
-            util.target.setXY(xmid-xrad-2, ymid-yrad+2);
-            this.penDown(args, util);
-            util.target.setXY(xmid-xrad-2, ymid-yrad+2);
+            this.drawString("S", xmid-xrad*4, ymid+yrad*1.5, 0.75, args, util)
         }
         if (acc == "flat") {
-            log.log("flat");
+            this.drawString("F", xmid-xrad*3, ymid+yrad*1.5+2, 0.8, args, util);
+
         }
     }
 
@@ -735,11 +721,9 @@ class SheetMusic {
             var acc = "";
             if (sharps.includes(freq)) {
                 acc = "sharp";
-                log.log("sharp");
             }
             if (flats.includes(freq)) {
                 acc = "flat";
-                log.log("flat");
             }
             if (freq >= 60) {
                 staff = pitchToStaff[freq];
