@@ -77,7 +77,20 @@ class Waveform {
             'w': letters.w,
             'x': letters.x,
             'y': letters.y,
-            'z': letters.z
+            'z': letters.z,
+            '1': letters.one,
+            '2': letters.two,
+            '3': letters.three,
+            '4': letters.four,
+            '5': letters.five,
+            '6': letters.six,
+            '7': letters.seven,
+            '8': letters.eight,
+            '9': letters.nine,
+            '0': letters.zero,
+            'F': letters.flat,
+            'S': letters.sharp
+
         }
 
         this.spacing = {
@@ -106,7 +119,19 @@ class Waveform {
             'w': 88.55075845974329,
             'x': 45.50525087514586,
             'y': 47.350058343057185,
-            'z': 55.959159859976694
+            'z': 55.959159859976694,
+            '1': 29.467911318553092,
+            '2': 61.498249708284675,
+            '3': 60.21703617269554,
+            '4': 74.31038506417735,
+            '5': 58.935822637106185,
+            '6': 55.09218203033845,
+            '7': 65.34189031505252,
+            '8': 55.092182030338336,
+            '9': 57.654609101516826,
+            '0': 55.09218203033856,
+            'F': 67.9352750809062,
+            'S': 122.6148867313916
         }
 
         harmonics = {
@@ -117,6 +142,59 @@ class Waveform {
             "Saxophone": [[1,1], [5, 0.5]],
             "Clarinet": [[1,1], [6, 0.5]],
             "Synth":[[1,1]] 
+        }
+
+        freqToName = {
+            36: "c2",
+            37: "cS2",
+            38: "d2",
+            39: "eF2",
+            40: "e2",
+            41: "f2",
+            42: "fS2",
+            43: "g2",
+            44: "gS2",
+            45: "a2",
+            46: "bF2",
+            47: "b2",
+            48: "c3",
+            49: "cS3",
+            50: "d3",
+            51: "eF3",
+            52: "e3",
+            53: "f3",
+            54: "fS3",
+            55: "g3",
+            56: "gS3",
+            57: "a3",
+            58: "bF3",
+            59: "b3",
+            60: "c4",
+            61: "cS4",
+            62: "d4",
+            63: "eF4",
+            64: "e4",
+            65: "f4",
+            66: "fS4",
+            67: "g4",
+            68: "gS4",
+            69: "a4",
+            70: "bF4",
+            71: "b4",
+            72: "c5",
+            73: "cS5",
+            74: "d5",
+            75: "eF5",
+            76: "e5",
+            77: "f5",
+            78: "fS5",
+            79: "g5",
+            80: "gS5",
+            81: "a5",
+            82: "bF5",
+            83: "b5",
+            84: "c6",
+            85: "cS6" 
         }
 
         freqToColor = {};
@@ -247,7 +325,7 @@ class Waveform {
     }
 
     drawLetter(letter, xstart, ystart, size, args, util) {
-        letter = letters[letter];
+        letter = this.letters[letter];
         this.penUp(args, util);
         for (var i in letter) {
             coord = letter[i];
@@ -306,9 +384,7 @@ class Waveform {
             }
             this.setPenColorToColor(this.black, util);
             this.penUp(args, util);
-            util.target.setXY(colorX+25, colorY-10);
-            this.penDown(args, util);
-            util.target.setXY(colorX+60, colorY-10);
+            this.drawString(freqToName[i], colorX+25, colorY, 0.6, args, util);
             colorY -= 15;
         }
         this.setPenColorToColor(this.black, util);
