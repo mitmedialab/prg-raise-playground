@@ -590,6 +590,11 @@ class SheetMusic {
             if (acc) {
                 this.addAccidental(xmid, ymid, note, acc, args, util);
             }
+
+            if (signal[i][5] == "tie") {
+                log.log("tie");
+                this.addTie(xmid, ymid, up, xStep, args, util);
+            }
             
 
             this.drawNote(xmid, ymid, duration, up, args, util);
@@ -611,6 +616,76 @@ class SheetMusic {
         }
         this.penUp(args, util);
         
+    }
+
+    addMultiLineTie(xmid, ymid, up, xstep, args, util) {
+        var xrad = 8;
+            var yrad = 4;
+            if (up) {
+                var sign = -1;
+            } else {
+                sign = 1;
+            }
+            var xrad = xrad + xstep/2-8-xrad/4;
+            var yrad = xrad/2;
+            var xmid = xmid + xrad;
+            var ymid = ymid + sign*yrad;
+            var x = xmid;
+            var y = ymid+sign*yrad;
+            var step = Math.PI/100;
+            for (var theta = Math.PI/2; theta < Math.PI; theta +=step) {
+                this.penUp(args, util);
+                util.target.setXY(x, y);
+                var x = xmid + xrad*Math.cos(theta);
+                var y = ymid + sign*yrad*Math.sin(theta);
+                this.penDown(args, util);
+                util.target.setXY(x, y);
+                this.penUp(args, util);
+            }
+
+            var x = this.staffStartX+xstep+xrad;
+            var y = ymid - this.spaceBetween-11*this.staffWidth;
+            var xmid = this.staffStartX+xstep;
+            var ymid = ymid - this.spaceBetween-11*this.staffWidth;
+            for (var theta = 0; theta < Math.PI/2; theta +=step) {
+                this.penUp(args, util);
+                util.target.setXY(x, y);
+                var x = xmid + xrad*Math.cos(theta);
+                var y = ymid + sign*yrad*Math.sin(theta);
+                this.penDown(args, util);
+                util.target.setXY(x, y);
+                this.penUp(args, util);
+            }
+    }
+
+    addTie(xmid, ymid, up, xstep, args, util) {
+        if (xmid + xstep > this.staffStartX + this.staffLength) {
+            this.addMultiLineTie(xmid, ymid, up, xstep, args, util);
+        } else {
+            var xrad = 8;
+            var yrad = 4;
+            if (up) {
+                var sign = -1;
+            } else {
+                sign = 1;
+            }
+            var xrad = xrad + xstep/2-8-xrad/4;
+            var yrad = xrad/2;
+            var xmid = xmid + xrad;
+            var ymid = ymid + sign*yrad;
+            var x = xmid+xrad;
+            var y = ymid;
+            var step = Math.PI/100;
+            for (var theta = 0; theta < Math.PI; theta +=step) {
+                this.penUp(args, util);
+                util.target.setXY(x, y);
+                var x = xmid + xrad*Math.cos(theta);
+                var y = ymid + sign*yrad*Math.sin(theta);
+                this.penDown(args, util);
+                util.target.setXY(x, y);
+                this.penUp(args, util);
+            }
+        }
     }
 
     addRest(xmid, ymid, dur, args, util) {
@@ -839,7 +914,7 @@ class SheetMusic {
                 newBeats = 0;
                 signal.push([staff, dur, amp, clef, acc, ""]);
             } else if (beats + dur > 4) {
-                signal.push([staff, 4-beats, amp, clef, acc, ""]);
+                signal.push([staff, 4-beats, amp, clef, acc, "tie"]);
                 signal.push([staff, dur-(4-beats), amp, clef, acc, ""]);
                 newBeats = dur-(4-beats);
             } else {
