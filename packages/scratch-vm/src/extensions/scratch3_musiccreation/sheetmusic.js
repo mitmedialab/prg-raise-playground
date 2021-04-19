@@ -614,16 +614,20 @@ class SheetMusic {
     }
 
     addRest(xmid, ymid, dur, args, util) {
-        var restSymbol = this.rests[dur];
+        var symbolDur = dur;
+        if (dur == 3) {
+            symbolDur = 2; //add normal half note rest and then dot it
+        }
+        var restSymbol = this.rests[symbolDur];
         var restX = xmid;
         var restY = ymid;
-        var offset = this.restOffset[dur];
+        var offset = this.restOffset[symbolDur];
         if (dur > 1) {
             var xOffset = 8;
         } else {
             var xOffset = 0;
         }
-        var scale = this.restScale[dur];
+        var scale = this.restScale[symbolDur];
         this.penUp(args, util);
         for (var i in restSymbol) {
             coord = restSymbol[i];
@@ -633,6 +637,20 @@ class SheetMusic {
             this.penDown(args, util);  
         }
         this.penUp(args, util);
+        if (dur == 3) {
+            var xmid = xmid + 15;
+            var ymid = ymid + offset;
+            var step = Math.PI/100;
+            var rad = 2;
+            for (var theta = 0; theta < 2*Math.PI; theta +=step) {
+                this.penUp(args, util);
+                util.target.setXY(xmid, ymid);
+                var restX = xmid + rad*Math.cos(theta);
+                var restY = ymid - rad*Math.sin(theta);
+                this.penDown(args, util);
+                util.target.setXY(restX, restY);
+            }
+        }
 
     }
 
@@ -795,6 +813,7 @@ class SheetMusic {
 
     convertSignalToMusicList (args, util) {
         var signal = [];
+        var beats = 0;
         for (var i in this.noteList) {
             freq = this.noteList[i][0];
             var acc = "";
@@ -805,16 +824,30 @@ class SheetMusic {
                 acc = "flat";
             }
             if (freq >= 60) {
-                staff = pitchToStaff[freq];
-                dur = this.noteList[i][1]*4;
-                amp = this.noteList[i][3];
-                signal.push([staff, dur, amp, "treble", acc]);
+                var staff = pitchToStaff[freq];
+                var dur = this.noteList[i][1]*4;
+                var amp = this.noteList[i][3];
+                var clef = "treble";
             } else {
-                staff = pitchToStaffBass[freq];
-                dur = this.noteList[i][1]*4;
-                amp = this.noteList[i][3];
-                signal.push([staff, dur, amp, "bass", acc]);
+                var staff = pitchToStaffBass[freq];
+                var dur = this.noteList[i][1]*4;
+                var amp = this.noteList[i][3];
+                var clef = "bass";
             }
+            var newBeats = 0;
+            if (beats + dur == 4) {
+                newBeats = 0;
+                signal.push([staff, dur, amp, clef, acc, ""]);
+            } else if (beats + dur > 4) {
+                signal.push([staff, 4-beats, amp, clef, acc, ""]);
+                signal.push([staff, dur-(4-beats), amp, clef, acc, ""]);
+                newBeats = dur-(4-beats);
+            } else {
+                newBeats = beats + dur;
+                signal.push([staff, dur, amp, clef, acc, ""]);
+            }
+            beats = newBeats;
+
 
         }
         return signal;
