@@ -35,8 +35,7 @@ class Scratch3MusicCreation {
                     {text: "forte", value: 85},
                     {text: "fortissimo", value: 100}];
         
-        this.beats = [{text: "1/8", value: 0.03125}, 
-                    {text: "1/4", value: 0.0625}, 
+        this.beats = [{text: "1/4", value: 0.0625}, 
                     {text: "1/2", value: 0.125},
                     {text: "1", value: 0.25},
                     {text: "2", value: 0.5},

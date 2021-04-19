@@ -40,14 +40,14 @@ class FFT {
 
         this._onTargetMoved = this._onTargetMoved.bind(this);
 
-        harmonics = {
-            "Piano": [[1,1], [2, 0.5]],
-            "Guitar": [[1,1], [2, 0.25]],
-            "Bass": [[1,1], [3, 0.5]],
-            "Cello": [[1,1], [4, 0.5]],
-            "Saxophone": [[1,1], [5, 0.5]],
-            "Clarinet": [[1,1], [6, 0.5]],
-            "Synth":[[1,1]] 
+        this.harmonics = {
+            "Piano": [[1,1], [3, 0.42], [4, 0.22]], //DONE
+            "Guitar": [[1,0.55], [2, 0.47], [3, 0.68], [4, 0.24]],
+            "Bass": [[1,1], [3, 0.78], [4, 0.22]],
+            "Cello": [[1,1], [2, 0.47], [3, 0.24], [4, 0.15]], //DONE
+            "Saxophone": [[1,1], [2, 0.38], [3, 0.14], [4, 0.02]], //DONE
+            "Clarinet": [[1,0.57], [2, 0.87], [3, 0.23]], //DONE
+            "Synth":[[1,1]]  //DONE
         }
 
         this.letters = {
@@ -223,10 +223,7 @@ class FFT {
 
 
     drawString (str, xstart, ystart, size, args, util) {
-        log.log(str);
         for (var i in str) {
-            log.log(i);
-            log.log(str[i]);
             xstart += 5*size;
             if (i >= 1) {
                 xstart += this.spacing[str[i-1]]/5*size;
@@ -265,7 +262,7 @@ class FFT {
         for (i in this.noteList) {
             midi = this.noteList[i][0];
             inst = this.noteList[i][2];
-            harmonic = harmonics[inst];
+            harmonic = this.harmonics[inst];
             pitch = 2**((midi - 69)/12)*440;
             for (i in harmonic) {
                 k = harmonic[i][0];
@@ -314,18 +311,6 @@ class FFT {
         this.labelAxes(args, util);
     }
 
-    findCrescDecresc() {
-        //CHANGE TO MP AND P ETC
-        up = [];
-        down = [];
-        upstart = 0;
-        downstart = 0;
-        for (var i in this.noteList) {
-            log.log(this.noteList[i][3]);
-
-        }
-
-    }
 
     convertSignalToMusicList (args, util) {
         signal = [];
