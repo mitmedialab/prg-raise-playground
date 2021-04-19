@@ -83,6 +83,33 @@ class SheetMusic {
 
         }  
 
+        this.rests = {
+            4: symbols.restfour,
+            2: symbols.resttwo,
+            1: symbols.restone,
+            0.5: symbols.resthalf,
+            0.25: symbols.restquarter,
+            0.125: symbols.resteighth
+        }
+
+        this.restOffset = {
+            4: 29,
+            2: 22,
+            1: 35,
+            0.5: 26,
+            0.25: 26,
+            0.125: 33
+        }
+        
+        this.restScale = {
+            4: 8,
+            2: 8,
+            1: 4,
+            0.5: 4,
+            0.25: 4,
+            0.125: 4
+        }
+
         sharps = [37, 42, 44, 49, 54, 56, 61, 66, 68, 73, 78, 80, 85];
         flats = [39, 46, 51, 58, 63, 70, 75, 82];
 
@@ -492,6 +519,7 @@ class SheetMusic {
 
 
     }
+
     drawMeasure(x, y, args, util) {
         this.penUp(args, util);
         util.target.setXY(x+10, y);
@@ -541,15 +569,19 @@ class SheetMusic {
                 y = y - this.spaceBetween-11*this.staffWidth;
             }
             if (beats%4 == 0 && beats != 0) {
-                log.log(beats);
                 this.drawMeasure(x, y, args, util);
             }
+            ymidTreble = y+note*this.staffWidth/2;
+            ymidBass = y+note*this.staffWidth/2 - this.spaceBetween;
             if (signal[i][3] == 'treble') {
-                ymid = y+note*this.staffWidth/2;
+                ymid = ymidTreble;
                 xmid = x - 8;
+                this.addRest(xmid, ymidBass-note*this.staffWidth/2, duration, args, util);
             } else {
                 xmid = x - 8;
-                ymid = y+note*this.staffWidth/2 - this.spaceBetween;
+                ymid = ymidBass;
+                this.addRest(xmid, ymidTreble-note*this.staffWidth/2, duration, args, util);
+                
             }
             if (note > 9 || note < -1) {
                 this.addLedgers(xmid, ymid, note, args, util);
@@ -579,6 +611,29 @@ class SheetMusic {
         }
         this.penUp(args, util);
         
+    }
+
+    addRest(xmid, ymid, dur, args, util) {
+        var restSymbol = this.rests[dur];
+        var restX = xmid;
+        var restY = ymid;
+        var offset = this.restOffset[dur];
+        if (dur > 1) {
+            var xOffset = 8;
+        } else {
+            var xOffset = 0;
+        }
+        var scale = this.restScale[dur];
+        this.penUp(args, util);
+        for (var i in restSymbol) {
+            coord = restSymbol[i];
+            restX = coord[0]/scale + xmid - xOffset;
+            restY = -coord[1]/scale + ymid+offset;
+            util.target.setXY(restX, restY);
+            this.penDown(args, util);  
+        }
+        this.penUp(args, util);
+
     }
 
     addAccidental (xmid, ymid, note, acc, args, util) {
