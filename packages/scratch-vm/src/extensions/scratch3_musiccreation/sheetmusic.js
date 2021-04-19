@@ -35,7 +35,7 @@ class SheetMusic {
         this.xAxisLength = 400;
         this.yAxisLength = 300;
 
-        this.staffLength = 400;
+        this.staffLength = 411;
         this.staffStartX = -200;
         this.staffStartY = 115;
         this.staffWidth = 10;
@@ -492,22 +492,44 @@ class SheetMusic {
 
 
     }
+    drawMeasure(x, y, args, util) {
+        this.penUp(args, util);
+        util.target.setXY(x+10, y);
+        this.penDown(args, util);
+        util.target.setXY(x+10, y+40);
+        this.penUp(args, util);
+        this.penUp(args, util);
+        util.target.setXY(x+11, y);
+        this.penDown(args, util);
+        util.target.setXY(x+11, y+40);
+        this.penUp(args, util);
+
+        this.penUp(args, util);
+        util.target.setXY(x+10, y-this.spaceBetween);
+        this.penDown(args, util);
+        util.target.setXY(x+10, y+40-this.spaceBetween);
+        this.penUp(args, util);
+        this.penUp(args, util);
+        util.target.setXY(x+11, y-this.spaceBetween);
+        this.penDown(args, util);
+        util.target.setXY(x+11, y+40-this.spaceBetween);
+        this.penUp(args, util);
+    }
 
     drawMusic(args, util) {
-        log.log("here");
         var xinit = this.staffStartX+40;
         var x = xinit;
         var y = this.staffStartY;
         var xStep = 45;
         var signal = this.convertSignalToMusicList(args, util);
         var pastVol = 0;
-        //volume = this.findCrescDecresc();
+        var beats = 0;
         for (i in signal) {
             note = signal[i][0];
-            log.log(note);
             duration = signal[i][1];
             volume = signal[i][2];
             acc = signal[i][4];
+            beats += duration;
             if (note <= 3) {
                 up = true;
             } else {
@@ -517,6 +539,10 @@ class SheetMusic {
             if (x > this.staffStartX + this.staffLength) {
                 x = xinit+xStep;
                 y = y - this.spaceBetween-11*this.staffWidth;
+            }
+            if (beats%4 == 0 && beats != 0) {
+                log.log(beats);
+                this.drawMeasure(x, y, args, util);
             }
             if (signal[i][3] == 'treble') {
                 ymid = y+note*this.staffWidth/2;
@@ -586,7 +612,6 @@ class SheetMusic {
                 util.target.setXY(xmid+xrad+3, ymid-yrad);
             }
             for (var i = 0; i < note-9; i+=2) {
-                log.log(i/2);
                 if (i/2 != 0){
                     if (note%2 == 0) {
                         this.penUp(args, util);
@@ -617,7 +642,6 @@ class SheetMusic {
             }
             
             for (var i = 0; i < -note-1; i+=2) {
-                log.log(i/2);
                 if (i/2 != 0){
                     if (note%2 == 0) {
                         this.penUp(args, util);
