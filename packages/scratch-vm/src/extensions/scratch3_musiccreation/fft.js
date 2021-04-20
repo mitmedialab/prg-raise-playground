@@ -46,8 +46,8 @@ class FFT {
             "Bass": [[1,1], [3, 0.78], [4, 0.22]],
             "Cello": [[1,1], [2, 0.47], [3, 0.24], [4, 0.15]], //DONE
             "Saxophone": [[1,1], [2, 0.38], [3, 0.14], [4, 0.02]], //DONE
-            "Clarinet": [[1,0.57], [2, 0.87], [3, 0.23]], //DONE
-            "Synth":[[1,1]]  //DONE
+            "Clarinet": [[1,0.57], [2, 0.87], [3, 0.23], [4, 0]], //DONE
+            "Synth":[[1,1], [2, 0], [3, 0], [4, 0]]  //DONE
         }
 
         this.letters = {
@@ -263,6 +263,8 @@ class FFT {
             midi = this.noteList[i][0];
             inst = this.noteList[i][2];
             harmonic = this.harmonics[inst];
+            log.log(inst);
+            log.log(this.harmonics[inst]);
             pitch = 2**((midi - 69)/12)*440;
             for (i in harmonic) {
                 k = harmonic[i][0];
@@ -291,10 +293,11 @@ class FFT {
             amp = amps[i];
             ratio = freq/maxFreq;
             ratioAmp = amp/maxAmp;
+            log.log(ratio, ratioAmp);
             this.penUp(args, util);
             util.target.setXY(this.axisStartX + ratio*this.xAxisLength, this.axisStartY);
             this.penDown(args, util);
-            util.target.setXY(this.axisStartX + ratio*this.xAxisLength, this.axisStartY+this.yAxisLength*ratio);
+            util.target.setXY(this.axisStartX + ratio*this.xAxisLength, this.axisStartY+this.yAxisLength*ratioAmp);
             this.penUp(args, util);    
         }
     }

@@ -48,8 +48,8 @@ class Spectrogram {
             "Bass": [[1,1], [3, 0.78], [4, 0.22]],
             "Cello": [[1,1], [2, 0.47], [3, 0.24], [4, 0.15]], //DONE
             "Saxophone": [[1,1], [2, 0.38], [3, 0.14], [4, 0.02]], //DONE
-            "Clarinet": [[1,0.57], [2, 0.87], [3, 0.23]], //DONE
-            "Synth":[[1,1]]  //DONE
+            "Clarinet": [[1,0.57], [2, 0.87], [3, 0.23], [4, 0]], //DONE
+            "Synth":[[1,1], [2, 0], [3, 0], [4, 0]]  //DONE
         }
 
         this.letters = {
@@ -217,6 +217,7 @@ class Spectrogram {
         freqs = [];
         amps = [];
         durs = [];
+        coeffs = [];
         d = 0;
         this.setPenColorToColor(this.yellow, util);
         for (i in this.noteList) {
@@ -232,7 +233,7 @@ class Spectrogram {
                 freqs.push(hPitch);
                 amps.push(coeff);
                 durs.push([d, d+dur])
-
+                coeffs.push(coeff);
             }
             d += dur;
         }
@@ -241,22 +242,24 @@ class Spectrogram {
         for (i in freqs) {
             f = freqs[i]/(maxFreq+5);
             d = durs[i];
+            coeff = coeffs[i];
             start = d[0];
             end = d[1];
             start = start/maxDuration;
             end = end/maxDuration;
-
-            this.penUp(args, util);
-            util.target.setXY(this.axisStartX + start*this.xAxisLength, this.axisStartY+this.yAxisLength*f);
-            this.penDown(args, util);
-            util.target.setXY(this.axisStartX + end*this.xAxisLength, this.axisStartY+this.yAxisLength*f);
-            this.penUp(args, util);  
-
-            this.penUp(args, util);
-            util.target.setXY(this.axisStartX + start*this.xAxisLength, this.axisStartY+this.yAxisLength*f+1);
-            this.penDown(args, util);
-            util.target.setXY(this.axisStartX + end*this.xAxisLength, this.axisStartY+this.yAxisLength*f+1);
-            this.penUp(args, util);  
+            if (coeff != 0) {
+                this.penUp(args, util);
+                util.target.setXY(this.axisStartX + start*this.xAxisLength, this.axisStartY+this.yAxisLength*f);
+                this.penDown(args, util);
+                util.target.setXY(this.axisStartX + end*this.xAxisLength, this.axisStartY+this.yAxisLength*f);
+                this.penUp(args, util);  
+    
+                this.penUp(args, util);
+                util.target.setXY(this.axisStartX + start*this.xAxisLength, this.axisStartY+this.yAxisLength*f+1);
+                this.penDown(args, util);
+                util.target.setXY(this.axisStartX + end*this.xAxisLength, this.axisStartY+this.yAxisLength*f+1);
+                this.penUp(args, util);  
+            }
 
         }
     }
