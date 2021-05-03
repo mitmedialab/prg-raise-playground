@@ -28,7 +28,8 @@ import {setConnectionModalExtensionId} from '../reducers/connection-modal';
 
 import {
     activateTab,
-    SOUNDS_TAB_INDEX
+    SOUNDS_TAB_INDEX,
+    PROGRESS_TAB_INDEX
 } from '../reducers/editor-tab';
 
 const addFunctionListener = (object, property, callback) => {
