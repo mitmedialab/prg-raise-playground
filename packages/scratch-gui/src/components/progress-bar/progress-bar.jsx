@@ -27,6 +27,7 @@ class ProgressBarExample extends React.Component {
     calculatePercentage () {
         let keys = this.props.children[1].classifierData;
         let blocks_used = this.props.children[3].targets[1].blocks._blocks;
+        console.log(blocks_used);
 
         if (this.state.percentage === 100) return;
         if (this.state.percentage === 100) return;
@@ -34,7 +35,7 @@ class ProgressBarExample extends React.Component {
         this.numberOfClasses(keys);
         this.atLeastFive(keys);
         this.balancedClasses(keys);
-        this.countBlocks(blocks_used);
+        this.analyzeBlocks(blocks_used);
         
         this.setState({ 
             improvements: Array.from(this.state.improvements)
@@ -114,15 +115,57 @@ class ProgressBarExample extends React.Component {
         }
     }
 
-    countBlocks (blocks) {
-        let count = 0
+    analyzeBlocks (blocks) {
+        let count = 0;
+        let parent = '';
+        let sensing = 0;
+        let answer = 0;
+
+        // go through all of the blocks
         for (let block in blocks) {
             if (blocks[block].opcode.includes('textClassification')) {
                 console.log(blocks[block].opcode);
                 count = count + 1;
             }
+            if (blocks[block].opcode.includes('control_if') && !blocks[block].parent) {
+                parent = blocks[block].id;
+            }
+
+            if (blocks[block].opcode.includes("sensing_askandwait")) {
+                sensing = sensing + 1;
+            }
+
+            if (blocks[block].opcode.includes("sensing_answer")) {
+                answer = answer + 1;
+            }
+        }
+
+        // check if sensing and answer matches
+        if (sensing !== answer) {
+            this.setState({ 
+                improvements: this.state.improvements.push("It seems like you're not using the same answer and asking blocks.")
+            });
+        }
+
+        // check if there is an embedded
+        for (let block in blocks) {
+            if (blocks[block].opcode.includes('control_if')) {
+                if (blocks[block].parent == parent) {
+                    this.setState({ 
+                        compliments: this.state.compliments.push("Having embedded conditionals makes your code more complex.")
+                    });
+                }
+            }
+        }
+
+        // if not an embedded
+        if (parent == '') {
+            this.setState({ 
+                improvements: this.state.improvements.push("Try embeddeding conditionals to make your code more complex.")
+            });
         }
         
+        // check how many text classification blocks there are
         if (count == 2) {
             this.setState(prevState => ({ percentage: prevState.percentage + 15 }));
             this.setState({ 
