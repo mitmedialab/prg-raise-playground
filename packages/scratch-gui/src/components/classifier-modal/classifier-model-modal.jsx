@@ -26,6 +26,7 @@ const ClassifierModelModalComponent = props => (
                 onExport={props.onExport}
                 classifierData={props.classifierData}
                 textData={props.textData}
+                imageData={props.imageData}
                 activeLabel={props.activeLabel} />
         </Box>
     </Modal>

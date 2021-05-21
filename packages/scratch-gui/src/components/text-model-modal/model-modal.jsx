@@ -31,6 +31,7 @@ const TextModelModalComponent = props => (
                 onNewExamples={props.onNewExamples}
                 classifierData={props.classifierData}
                 textData={props.textData}
+                imageData={props.imageData}
                 activeLabel={props.activeLabel} />
         </Box>
     </Modal>

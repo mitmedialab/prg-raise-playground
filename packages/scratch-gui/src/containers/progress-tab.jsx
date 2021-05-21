@@ -5,7 +5,7 @@ import {defineMessages, intlShape, injectIntl} from 'react-intl';
 import VM from 'scratch-vm';
 
 import ProgressBarExample from '../components/progress-bar/progress-bar.jsx';
-import soundIcon from '../components/asset-panel/icon--sound.svg';
+import progressIcon from '../components/asset-panel/progress--icon.svg';
 import soundIconRtl from '../components/asset-panel/icon--sound-rtl.svg';
 
 
@@ -183,7 +183,7 @@ class ProgressTab extends React.Component {
 
         const sounds = sprite.sounds ? sprite.sounds.map(sound => (
             {
-                url: isRtl ? soundIconRtl : soundIcon,
+                url: isRtl ? progressIcon : progressIcon,
                 name: sound.name,
                 details: (sound.sampleCount / sound.rate).toFixed(2),
                 dragPayload: sound

@@ -42,6 +42,7 @@ import addExtensionIcon from './icon--extensions.svg';
 import codeIcon from './icon--code.svg';
 import costumesIcon from './icon--costumes.svg';
 import soundsIcon from './icon--sounds.svg';
+import progressIcon from './blue-progress-bar.svg';
 
 const messages = defineMessages({
     addExtension: {
@@ -310,7 +311,7 @@ const GUIComponent = props => {
                                     >
                                         <img
                                             draggable={false}
-                                            src={soundsIcon}
+                                            src={progressIcon}
                                         />
                                         <FormattedMessage
                                             defaultMessage="Progress"

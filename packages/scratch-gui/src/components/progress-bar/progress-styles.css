@@ -13,24 +13,54 @@ html, body {
 }
 
 .filler {
-  background: #1DA598;
+  background: #5094fc;
   height: 100%;
   border-radius: inherit;
   transition: width .2s ease-in;
 }
 
 .progresslocation {
-    display: block;
+    display: flex;
+    flex-direction: column;
     margin-left: auto;
     margin-right: auto;
-    width: 40%;
+    width: 70%;
+    height: 100%;
     text-align: center;
+    padding: 10px;
 }
 
 .progressGoodMessages {
-    width: 40%;
-    text-align: left;
-    border: 1px solid #333;
-    padding: 1rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
   
+}
+
+.progressCompletedText {
+  color:black;
+  font-weight: bold;
+}
+
+.progressNotComplete {
+  color:black;
+  opacity: .5;
+}
+
+.progressUnderline {
+  text-decoration: underline;
+}
+
+.progressBorderBox {
+  border: 2px dashed black;
+  background-color: rgba(80, 148, 252, 0.3);
+  border-radius: 4px;
+  padding: 15px;
+  margin: 10px;
+  box-shadow: 3px 3px 5px 6px rgb(0, 0, 0, .2);
+  
+}
+
+.progressBarBox {
+  padding: 20px;
 }
