@@ -90,6 +90,7 @@ class TextModelModal extends React.Component {
         this.setState({
             activeLabel: ""
         });
+        this.props.vm.runtime.emit('DONE');
         this.props.onCancel();
     }
     handleHelp () { //TODO?
