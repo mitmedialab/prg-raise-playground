@@ -1048,7 +1048,7 @@ class Scratch3TextClassificationBlocks {
      * Embeds text and either adds examples to classifier or returns the predicted label
      * @param text - the text inputted
      * @param label - the label to add the example to
-     * @param direction - is either "example" when an example is being inputted or "predict" when a word to be classified is inputted
+     * @param direction - is eitfher "example" when an example is being inputted or "predict" when a word to be classified is inputted
      * @returns if the direction is "predict" returns the predicted label for the text inputted
      */
     async get_confidence(text,label,direction) { //changes text into a 2d tensor
@@ -1079,6 +1079,9 @@ class Scratch3TextClassificationBlocks {
             return "No classes inputted";
         }
 
+        //console.log(this.scratch_vm)
+        this.scratch_vm.emit('SAY', this.scratch_vm.executableTargets[1], 'think', 'wait .. loading model');
+
         // console.log(this.labelList)
         this.custom_NLP_model = tf.sequential();
         this.sentencesample = [];
@@ -1093,6 +1096,23 @@ class Scratch3TextClassificationBlocks {
         }
         console.log(this.labledsample)
         console.log(this.sentencesample)
+
+
+        // console.log('model::'+JSON.stringify(this.custom_NLP_model));
+        const ys = tf.oneHot(tf.tensor1d(this.labledsample.map((a) => 
+            this.labelList.findIndex(e => e === a)), 'int32'), numClass);
+        // console.log('ys',ys);
+
+        const trainingData = await use.load()
+        .then(model => {
+            return model.embed(this.sentencesample)
+                .then(embeddings => {
+                    return embeddings;
+                });
+        })
+        .catch(err => console.error('Fit Error:', err));
+        // console.log(trainingData)
+
 
         // Add layers to the model
         // trying: layers: 3-1 , activation: sigmid/softmax, kernelInitializer: ones/not, 
@@ -1163,34 +1183,78 @@ class Scratch3TextClassificationBlocks {
         //     metrics: ['acc']
         // });
 
-        // console.log('model::'+JSON.stringify(this.custom_NLP_model));
-        const ys = tf.oneHot(tf.tensor1d(this.labledsample.map((a) => 
-            this.labelList.findIndex(e => e === a)), 'int32'), numClass);
-        // console.log('ys',ys);
 
-        const trainingData = await use.load()
-        .then(model => {
-            return model.embed(this.sentencesample)
-                .then(embeddings => {
-                    return embeddings;
-                });
-        })
-        .catch(err => console.error('Fit Error:', err));
-        // console.log(trainingData)
         await this.custom_NLP_model.fit(trainingData, ys, {
-            epochs: 500,
+            epochs: 100,
             batchSize: 4,
             shuffle: true,
             validationSplit: 0.15,
             doValidation: true,
             callbacks: [
-                tf.callbacks.earlyStopping({monitor: 'val_loss', patience:100})
+                tf.callbacks.earlyStopping({monitor: 'val_loss', patience:50})
             ]
          }).then(info => {
            console.log('Final accuracy', info);
          });
 
+
+        // // This is LSTM exprement - wasn't good
+        // const window_size = 512; 
+        // const n_epochs = 500; 
+        // const learning_rate = 0.0001;
+        // const  n_layers = 1;
+
+        // const input_layer_shape  = window_size;
+        // const input_layer_neurons = 100;
+
+        // const rnn_input_layer_features = 10;
+        // const rnn_input_layer_timesteps = input_layer_neurons / rnn_input_layer_features;
+
+        // const rnn_input_shape  = [rnn_input_layer_features, rnn_input_layer_timesteps];
+        // const rnn_output_neurons = 20;
+
+        // const rnn_batch_size = 4;
+
+        // const output_layer_shape = rnn_output_neurons;
+        // const output_layer_neurons = numClass;
+
+
+        // this.custom_NLP_model.add(tf.layers.dense({units: input_layer_neurons, inputShape: [input_layer_shape]}));
+        // this.custom_NLP_model.add(tf.layers.reshape({targetShape: rnn_input_shape}));
+
+        // let lstm_cells = [];
+        // for (let index = 0; index < n_layers; index++) {
+        //    lstm_cells.push(tf.layers.lstmCell({units: rnn_output_neurons}));
+        // }
+
+        // this.custom_NLP_model.add(tf.layers.rnn({
+        //     cell: lstm_cells,
+        //     inputShape: rnn_input_shape,
+        //     returnSequences: false
+        // }));
+
+        // this.custom_NLP_model.add(tf.layers.dense({units: output_layer_neurons, inputShape: [output_layer_shape]}));
+
+        // this.custom_NLP_model.compile({
+        //     optimizer: tf.train.adam(learning_rate),
+        //     loss: 'meanSquaredError'
+        // });
+
+        // const hist = await this.custom_NLP_model.fit(trainingData, ys,{ 
+        //     batchSize: rnn_batch_size, 
+        //     epochs: n_epochs,
+        //     validationSplit: 0.15, 
+        //     doValidation: true,
+        //     shuffle: true,
+        //     callbacks: [
+        //         tf.callbacks.earlyStopping({monitor: 'val_loss', patience:100})
+        //     ]
+        // });
+        // console.log('Final accuracy: ', hist);
+
         console.log('model is trained')
+        this.scratch_vm.emit('SAY', this.scratch_vm.executableTargets[1], 'say', 'The model is ready');
+        
     }
 
     /**
