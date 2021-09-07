@@ -27,8 +27,7 @@ const _notes_protocol = ['1#','B1#', '2#','B2#', '3#','4#','B3#', '5#','B4#', '6
 const MIN_PIEZO_NOTE = 60;
 const MAX_PIEZO_NOTE = 72;
 
-const _drive = ['forward', 'backward'];
-const _turn = ['left', 'right'];
+const _drive = ['forward', 'backward', 'left', 'right'];
 
 const _button = ['A','B','A or B','A and B','neither A nor B'];
 const _line_states = ['right side', 'left side', 'neither side', 'both sides'];
@@ -173,12 +172,12 @@ class MicrobitRobot {
                 },
                 '---',
                 {
-                    opcode: 'drive',
+                    opcode: 'drive_for',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
-                        id: 'microbitBot.driveForwardBackward',
+                        id: 'microbitBot.driveFor',
                         default: 'drive [DIR] for [NUM] seconds',
-                        description: 'Send command to robot to drive forward or backward'
+                        description: 'Send command to robot to drive in a direction for a certain amount of time'
                     }),
                     arguments: {
                         NUM: {
@@ -193,22 +192,18 @@ class MicrobitRobot {
                     }
                 },
                 {
-                    opcode: 'turn',
+                    opcode: 'drive_forever',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
-                        id: 'microbitBot.turnRightLeft',
-                        default: 'turn [TURN] for [NUM] seconds',
-                        description: 'Send command to robot to turn right or left'
+                        id: 'microbitBot.driveForever',
+                        default: 'drive [DIR] forever',
+                        description: 'Send command to robot to drive in a direction forever'
                     }),
                     arguments: {
-                        NUM: {
-                            type:ArgumentType.NUMBER,
-                            defaultValue: 1
-                        },
-                        TURN: {
+                        DIR: {
                             type:ArgumentType.String,
-                            menu: 'TURNS',
-                            defaultValue: _turn[0]
+                            menu: 'DIRS',
+                            defaultValue: _drive[0]
                         }
                     }
                 },
@@ -312,10 +307,6 @@ class MicrobitRobot {
                 DIRS: {
                     acceptReporters: false,
                     items: _drive
-                },
-                TURNS: {
-                    acceptReporters: false,
-                    items: _turn
                 },
                 BUTTON_STATES: {
                     acceptReporters: false,
@@ -609,12 +600,12 @@ class MicrobitRobot {
   }
     
   /**
-   * Implement drive to drive forward or backward
-   * @secs {number} the number of seconds to drive backward
-   * @dir {string} whether to turn "left" or "right"
+   * Implement drive to drive for a specified amount of time
+   * @secs {number} the number of seconds to drive
+   * @dir {string} whether to turn "forward" "backward" "left" or "right"
    * @callback {function} the code to call when this function is done executing
    */
-  drive (args) {
+  drive_for (args) {
 	var msg = {};
     var secs = args.NUM;
     var dir = args.DIR;
@@ -622,16 +613,22 @@ class MicrobitRobot {
     if (dir == 'forward') {
         console.log("Sending drive forward, secs: " + secs);        
         if (this._mServices) this._mServices.uartService.sendText('A#');
-    } else {
+    } else if (dir == 'backward') {
         console.log('Sending drive backward, secs: ' + secs);
         if (this._mServices) this._mServices.uartService.sendText('B#');
 
+    } else if (dir == 'left') {
+        console.log("Sending turn left, secs: " + secs);        
+        if (this._mServices) this._mServices.uartService.sendText('E#');
+    } else {
+        console.log("Sending turn right, secs: " + secs);        
+        if (this._mServices) this._mServices.uartService.sendText('D#');
     }
-    if (this._mConnection != null) this._mConnection.postMessage(msg);  
+    if (this._mConnection != null) this._mConnection.postMessage(msg);
     
-    if (secs == '') // if seconds is left blank, don't pump the brakes
-        return;
-    
+    if (secs == '') // if seconds is left blank, only go for 0 seconds
+        secs = 0
+        
     return new Promise(resolve => {
             setTimeout(() => {
                 this.stopMotors();
@@ -641,35 +638,29 @@ class MicrobitRobot {
   }
   
   /**
-   * Implement turn to turn left or right
-   * @secs {number} the number of seconds to turn left
-   * @dir {string} whether to turn "left" or "right"
+   * Implement drive to drive forever
+   * @dir {string} whether to turn "forward" "backward" "left" or "right"
    * @callback {function} the code to call when this function is done executing
    */
-  turn(args) {
+  drive_forever(args) {
 	var msg = {};
-    var secs = args.NUM;
-    var dir = args.TURN;
+    var dir = args.DIR;
     
-    if (dir == 'left') {
-        console.log("Sending turn left, secs: " + secs);        
+    if (dir == 'forward') {
+        console.log("Sending drive forward, forever");        
+        if (this._mServices) this._mServices.uartService.sendText('A#');
+    } else if (dir == 'backward') {
+        console.log('Sending drive backward, forever');
+        if (this._mServices) this._mServices.uartService.sendText('B#');
+    } else if (dir == 'left') {
+        console.log("Sending turn left, forever");        
         if (this._mServices) this._mServices.uartService.sendText('E#');
     } else {
-        console.log("Sending turn right, secs: " + secs);        
+        console.log("Sending turn right, forever");        
         if (this._mServices) this._mServices.uartService.sendText('D#');
     }
+    if (this._mConnection != null) this._mConnection.postMessage(msg);
 
-    if (this._mConnection != null) this._mConnection.postMessage(msg);  
-
-    if (secs == '') // if seconds is left blank, don't pump the brakes
-        return;
-    
-    return new Promise(resolve => {
-            setTimeout(() => {
-                this.stopMotors();
-                resolve();
-            }, secs*1000);
-        });
   }
  
 }
