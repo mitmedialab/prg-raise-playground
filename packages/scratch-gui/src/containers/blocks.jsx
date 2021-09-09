@@ -22,7 +22,7 @@ import defineDynamicBlock from '../lib/define-dynamic-block';
 import {connect} from 'react-redux';
 import {updateToolbox} from '../reducers/toolbox';
 import {activateColorPicker} from '../reducers/color-picker';
-import {closeExtensionLibrary, openSoundRecorder, openConnectionModal, openTextModelModal,openClassifierModelModal} from '../reducers/modals';
+import {closeExtensionLibrary, openSoundRecorder, openConnectionModal} from '../reducers/modals';
 import {activateCustomProcedures, deactivateCustomProcedures} from '../reducers/custom-procedures';
 import {setConnectionModalExtensionId} from '../reducers/connection-modal';
 
@@ -107,12 +107,6 @@ class Blocks extends React.Component {
         const procButtonCallback = () => {
             this.ScratchBlocks.Procedures.createProcedureDefCallback_(this.workspace);
         };
-        const textModelEditButtonCallback = () => {
-            this.props.onOpenTextModelModal();
-        };
-        const classifierModelEditButtonCallback = () => {
-            this.props.onOpenClassifierModelModal();
-        }
         const connectMicrobitRobotCallback = () => {
             this.props.vm.runtime.emit('CONNECT_MICROBIT_ROBOT');
         }
@@ -544,8 +538,6 @@ class Blocks extends React.Component {
             onActivateCustomProcedures,
             onRequestCloseExtensionLibrary,
             onRequestCloseCustomProcedures,
-            onOpenTextModelModal,
-            onOpenClassifierModelModal,
             toolboxXML,
             ...props
         } = this.props;
@@ -602,8 +594,6 @@ Blocks.propTypes = {
     onActivateColorPicker: PropTypes.func,
     onActivateCustomProcedures: PropTypes.func,
     onOpenConnectionModal: PropTypes.func,
-    onOpenTextModelModal: PropTypes.func,
-    onOpenClassifierModelModal: PropTypes.func,
     onOpenSoundRecorder: PropTypes.func,
     onRequestCloseCustomProcedures: PropTypes.func,
     onRequestCloseExtensionLibrary: PropTypes.func,
@@ -687,12 +677,6 @@ const mapDispatchToProps = dispatch => ({
     onOpenConnectionModal: id => {
         dispatch(setConnectionModalExtensionId(id));
         dispatch(openConnectionModal());
-    },
-    onOpenTextModelModal: () => {
-        dispatch(openTextModelModal());
-    },
-    onOpenClassifierModelModal: () => {
-        dispatch(openClassifierModelModal());
     },
     onOpenSoundRecorder: () => {
         dispatch(activateTab(SOUNDS_TAB_INDEX));
