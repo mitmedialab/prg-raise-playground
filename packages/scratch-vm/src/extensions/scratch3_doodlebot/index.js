@@ -13,7 +13,9 @@ const blockIconURI = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAAA5CAYA
 const _colors = ['red', 'green', 'blue', 'yellow', 'cyan', 'magenta', 'white', 'random'];
 
 const EXTENSION_ID = 'doodlebot';
-
+const UARTSERVICE_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+const UART_RX_CHARACTERISTIC_UUID = "6E400002B5A3F393E0A9E50E24DCCA9E";
+const UART_TX_CHARACTERISTIC_UUID = "6E400003B5A3F393E0A9E50E24DCCA9E";
 
 // Core, Team, and Official extension classes should be registered statically with the Extension Manager.
 // See: scratch-vm/src/extension-support/extension-manager.js
@@ -107,19 +109,20 @@ class Doodlebot {
         
         if (window.navigator.bluetooth) {
             try {
-                this._bleDevice = await navigator.bluetooth.requestDevice({"filters":[{"namePrefix":"Bluefruit52"}]})
+                this._bleDevice = await navigator.bluetooth.requestDevice({"filters":[{"namePrefix":"BBC micro:bit"}]})
                 this._bleDevice.gatt.connect().then(server => {
-                    console.log("Connected to bluetooth device: ", server);
-          
+                    console.log("Connected to bluetooth device: ", {device: this._bleDevice, server: server});
+                    this._bleDevice.addEventListener("gattserverdisconnected", this.onDeviceDisconnected.bind(this));
+                    return server.getPrimaryService(UARTSERVICE_SERVICE_UUID);
                     /*if (this._bleServices.deviceInformationService) {
                         this._bleStatus = 2;            
                         this.scratch_vm.emit(this.scratch_vm.constructor.PERIPHERAL_CONNECTED);
-        
-                        if (this._bleServices.uartService) {
-                            this._bleServices.uartService.addEventListener("receiveText", this.updateSensors.bind(this));
-                            this._bleDevice.addEventListener("gattserverdisconnected", this.onDeviceDisconnected.bind(this));
-                        }
                     }*/
+                }).then(service => {
+                    console.log("Got UART service: ", service);
+                    console.log("Services: ", service.getCharacteristics());
+                    this._bleServices = service
+                    //this._bleServices.uartService.addEventListener("receiveText", this.updateSensors.bind(this));
                 })
             } catch(err) {
                 console.log(err);
