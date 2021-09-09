@@ -81,6 +81,26 @@ export default [
     {
          name: (
             <FormattedMessage
+                defaultMessage="PRG Doodlebot"
+                description="Name for the Doodlebot Extension"
+                id="gui.extension.doodlebot.name"
+            />
+        ),
+        extensionId: 'doodlebot',
+        iconURL: arduinoRobotIconURL,
+        insetIconURL: arduinoRobotInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Use Scratch to program a Doodlebot robot"
+                description="PRG Doodlebot description"
+                id="gui.extension.doodlebot.description"
+            />
+        ),
+        featured: true
+    },
+    {
+         name: (
+            <FormattedMessage
                 defaultMessage="PRG Microbit Robot"
                 description="Name for the 'Microbit Robot' Extension"
                 id="gui.extension.microbit-robot.name"

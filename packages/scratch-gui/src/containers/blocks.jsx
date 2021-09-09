@@ -116,6 +116,9 @@ class Blocks extends React.Component {
         const connectMicrobitRobotCallback = () => {
             this.props.vm.runtime.emit('CONNECT_MICROBIT_ROBOT');
         }
+        const connectDoodlebotCallback = () => {
+            this.props.vm.runtime.emit('CONNECT_DOODLEBOT');
+        }
 
         toolboxWorkspace.registerButtonCallback('MAKE_A_VARIABLE', varListButtonCallback(''));
         toolboxWorkspace.registerButtonCallback('MAKE_A_LIST', varListButtonCallback('list'));
@@ -123,6 +126,7 @@ class Blocks extends React.Component {
         toolboxWorkspace.registerButtonCallback('EDIT_TEXT_MODEL', textModelEditButtonCallback);
         toolboxWorkspace.registerButtonCallback('EDIT_TEXT_CLASSIFIER', classifierModelEditButtonCallback);
         toolboxWorkspace.registerButtonCallback('CONNECT_MICROBIT_ROBOT', connectMicrobitRobotCallback);
+        toolboxWorkspace.registerButtonCallback('CONNECT_DOODLEBOT', connectDoodlebotCallback);
 
 
         // Store the xml of the toolbox that is actually rendered.
@@ -479,7 +483,7 @@ class Blocks extends React.Component {
         this.setState(p);
     }
     handleConnectionModalStart (extensionId) {
-        let prgCustomExtensions = ['microbitRobot','teachableMachine'];
+        let prgCustomExtensions = ['doodlebot','microbitRobot','teachableMachine'];
         if (!prgCustomExtensions.includes(extensionId)) {
             this.props.onOpenConnectionModal(extensionId);
         }
