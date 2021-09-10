@@ -14,8 +14,8 @@ const _colors = ['red', 'green', 'blue', 'yellow', 'cyan', 'magenta', 'white', '
 
 const EXTENSION_ID = 'doodlebot';
 const UARTSERVICE_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
-const UART_RX_CHARACTERISTIC_UUID = "6E400002B5A3F393E0A9E50E24DCCA9E";
-const UART_TX_CHARACTERISTIC_UUID = "6E400003B5A3F393E0A9E50E24DCCA9E";
+const UART_RX_CHARACTERISTIC_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+const UART_TX_CHARACTERISTIC_UUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
 
 // Core, Team, and Official extension classes should be registered statically with the Extension Manager.
 // See: scratch-vm/src/extension-support/extension-manager.js
@@ -96,11 +96,20 @@ class Doodlebot {
         return (this._bleStatus == 2);
     }
     
+    onDeviceConnected() {
+        console.log("Connected to bluetooth device: ", this._bleDevice);
+        this._bleStatus = 2;
+        this.scratch_vm.emit(this.scratch_vm.constructor.PERIPHERAL_CONNECTED);
+        this._bleDevice.addEventListener("gattserverdisconnected", this.onDeviceDisconnected.bind(this));
+
+    }
     onDeviceDisconnected() {
-        console.log("Lost connection to robot");   
+        console.log("Lost connection to robot");
         this.scratch_vm.emit(this.scratch_vm.constructor.PERIPHERAL_DISCONNECTED);
+        this._bleDevice.removeEventListener("gattserverdisconnected");
+
         this._bleDevice = null;
-        this. bleServices = null;
+        this._bleServices = null;
         this._bleStatus = 1;
     }
     
@@ -109,20 +118,20 @@ class Doodlebot {
         
         if (window.navigator.bluetooth) {
             try {
-                this._bleDevice = await navigator.bluetooth.requestDevice({"filters":[{"namePrefix":"BBC micro:bit"}]})
+                this._bleDevice = await navigator.bluetooth.requestDevice({"filters":[{"namePrefix":"Bluefruit52"}], "optionalServices":[UARTSERVICE_SERVICE_UUID]})
                 this._bleDevice.gatt.connect().then(server => {
-                    console.log("Connected to bluetooth device: ", {device: this._bleDevice, server: server});
-                    this._bleDevice.addEventListener("gattserverdisconnected", this.onDeviceDisconnected.bind(this));
+                    this.onDeviceConnected()
                     return server.getPrimaryService(UARTSERVICE_SERVICE_UUID);
-                    /*if (this._bleServices.deviceInformationService) {
-                        this._bleStatus = 2;            
-                        this.scratch_vm.emit(this.scratch_vm.constructor.PERIPHERAL_CONNECTED);
-                    }*/
                 }).then(service => {
                     console.log("Got UART service: ", service);
-                    console.log("Services: ", service.getCharacteristics());
                     this._bleServices = service
-                    //this._bleServices.uartService.addEventListener("receiveText", this.updateSensors.bind(this));
+                    return service.getCharacteristics();
+                }).then(uartCharacteristics => {
+                    console.log("Services: ", uartCharacteristics)
+                    uartCharacteristics.forEach(c => {
+                        if (c.uuid == UART_RX_CHARACTERISTIC_UUID) console.log("Got RX characteristic")
+                        if (c.uuid == UART_TX_CHARACTERISTIC_UUID) console.log("Got TX characteristic")
+                    })
                 })
             } catch(err) {
                 console.log(err);
@@ -147,6 +156,9 @@ class Doodlebot {
         console.log("Sending uart command: ", command);
     }
     else console.log("No device");
+
+    // https://github.com/thegecko/microbit-web-bluetooth/blob/master/src/services/uart.ts
+    // https://github.com/joakimtoe/node-uartBLE/blob/master/lib/uartble.js
   }
  
 }
