@@ -1,0 +1,3 @@
+[submodule "doodlebot-web-bluetooth"]
+	path = doodlebot-web-bluetooth
+	url = https://github.com/randi-c-dubs/doodlebot-web-bluetooth.git
