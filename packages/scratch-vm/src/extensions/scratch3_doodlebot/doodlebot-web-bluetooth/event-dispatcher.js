@@ -23,7 +23,7 @@
 * SOFTWARE.
 */
 
-import { EventEmitter } from "events";
+const EventEmitter = require("events");
 
 /**
  * interface TypedDispatcher<T> {
@@ -48,9 +48,11 @@ import { EventEmitter } from "events";
  ** getMaxListeners(): number;
   */
 
-export class EventDispatcher extends EventEmitter {
+class EventDispatcher extends EventEmitter {
 
-    isEventListenerObject = (listener) => listener.handleEvent !== undefined;
+    isEventListenerObject (listener) {
+        return listener.handleEvent !== undefined;
+    }
 
     addEventListener(type, listener) {
         if (listener) {
@@ -79,3 +81,4 @@ export class EventDispatcher extends EventEmitter {
         return super.emit(event.type, event);
     }
 }
+module.exports = EventDispatcher;

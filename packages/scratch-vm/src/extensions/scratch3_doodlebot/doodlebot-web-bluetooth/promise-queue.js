@@ -30,12 +30,13 @@
  ** reject: (reason?: any) => void; 
  */
 
-export class PromiseQueue {
+require("regenerator-runtime/runtime");
 
-    queue = [];
-    running = 0;
+class PromiseQueue {
 
-    constructor(concurrent = 1) {
+    constructor(concurrent = 1) {        
+        this.queue = [];
+        this.running = 0;
     }
 
     async pump() {
@@ -74,3 +75,4 @@ export class PromiseQueue {
         });
     }
 }
+module.exports = PromiseQueue;

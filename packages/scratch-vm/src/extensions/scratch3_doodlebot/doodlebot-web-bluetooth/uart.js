@@ -22,9 +22,9 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
-
-import { EventDispatcher, TypedDispatcher } from "./event-dispatcher";
-import { ServiceHelper } from "./service-helper";
+require("regenerator-runtime/runtime");
+const EventDispatcher = require("./event-dispatcher");
+const ServiceHelper = require("./service-helper");
 
 /**
  * Events raised by the UART service
@@ -37,11 +37,15 @@ import { ServiceHelper } from "./service-helper";
 /**
  * UART Service
  */
-export class UartService extends (EventDispatcher) {
 
-    static uuid = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
-    static tx = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
-    static rx = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+const uuid = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+const tx_uuid = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+const rx_uuid = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+
+class UartService extends (EventDispatcher) {
+    static getUUID() {
+        return uuid
+    }
 
     static async create(service) {
         const bluetoothService = new UartService(service);
@@ -55,8 +59,8 @@ export class UartService extends (EventDispatcher) {
     }
 
     async init() {
-        await this.helper.handleListener("receive", tx, this.receiveHandler.bind(this));
-        await this.helper.handleListener("receiveText", tx, this.receiveTextHandler.bind(this));
+        await this.helper.handleListener("receive", tx_uuid, this.receiveHandler.bind(this));
+        await this.helper.handleListener("receiveText", tx_uuid, this.receiveTextHandler.bind(this));
     }
 
     /**
@@ -64,7 +68,7 @@ export class UartService extends (EventDispatcher) {
      * @param value The buffer to send
      */
     async send(value) {
-        return this.helper.setCharacteristicValue(rx, value);
+        return this.helper.setCharacteristicValue(rx_uuid, value);
     }
 
     /**
@@ -73,7 +77,7 @@ export class UartService extends (EventDispatcher) {
      */
     async sendText(value) {
         const arrayData = value.split("").map((e) => e.charCodeAt(0));
-        return this.helper.setCharacteristicValue(rx, new Uint8Array(arrayData).buffer);
+        return this.helper.setCharacteristicValue(rx_uuid, new Uint8Array(arrayData).buffer);
     }
 
     receiveHandler(event) {
@@ -89,3 +93,4 @@ export class UartService extends (EventDispatcher) {
         this.dispatchEvent("receiveText", value);
     }
 }
+module.exports = UartService;

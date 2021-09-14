@@ -22,8 +22,8 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
-
-import { PromiseQueue } from "./promise-queue";
+require("regenerator-runtime/runtime");
+const PromiseQueue = require("./promise-queue");
 
 /**
  * interface ServiceEventHandler {
@@ -31,11 +31,12 @@ import { PromiseQueue } from "./promise-queue";
  ** handler: (event: Event) => void;
  */
 
-export class ServiceHelper {
-
-    static queue = new PromiseQueue();
-
+ 
+class ServiceHelper {
     constructor(service, emitter) {
+        this.queue = new PromiseQueue();
+        this.service = service;
+        this.emitter = emitter;
     }
 
     async getCharacteristic(uuid) {
@@ -53,7 +54,7 @@ export class ServiceHelper {
             throw new Error("Unable to locate characteristic");
         }
 
-        return await ServiceHelper.queue.add(async () => characteristic.readValue());
+        return await queue.add(async () => characteristic.readValue());
     }
 
     async setCharacteristicValue(uuid, value) {
@@ -63,7 +64,7 @@ export class ServiceHelper {
             throw new Error("Unable to locate characteristic");
         }
 
-        await ServiceHelper.queue.add(async () => characteristic.writeValue(value));
+        await queue.add(async () => characteristic.writeValue(value));
     }
 
     async handleListener(event, uuid, handler) {
@@ -73,14 +74,14 @@ export class ServiceHelper {
             return;
         }
 
-        await ServiceHelper.queue.add(async () => characteristic.startNotifications());
+        await queue.add(async () => characteristic.startNotifications());
 
         this.emitter.on("newListener", (emitterEvent) => {
             if (emitterEvent !== event || this.emitter.listenerCount(event) > 0) {
                 return;
             }
 
-            return ServiceHelper.queue.add(async () => characteristic.addEventListener("characteristicvaluechanged", handler));
+            return queue.add(async () => characteristic.addEventListener("characteristicvaluechanged", handler));
         });
 
         this.emitter.on("removeListener", (emitterEvent) => {
@@ -88,7 +89,8 @@ export class ServiceHelper {
                 return;
             }
 
-            return ServiceHelper.queue.add(async () => characteristic.removeEventListener("characteristicvaluechanged", handler));
+            return queue.add(async () => characteristic.removeEventListener("characteristicvaluechanged", handler));
         });
     }
 }
+module.exports = ServiceHelper;

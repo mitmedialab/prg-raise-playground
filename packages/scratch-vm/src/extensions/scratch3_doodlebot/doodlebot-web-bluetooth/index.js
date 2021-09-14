@@ -24,38 +24,37 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
+require("regenerator-runtime/runtime");
+const UartService = require("./uart");
 
-import { UartService } from "./uart";
-
-class ServiceBuilder {
-    async createService(serviceClass) {
-        const found = this.services.find(service => service.uuid === serviceClass.uuid);
+class Doodlebot {
+    static async createService(services, serviceClass) {
+        const found = services.find(service => service.uuid === "6e400001-b5a3-f393-e0a9-e50e24dcca9e"); // serviceClass.uuid);
 
         if (!found) {
+            console.log("Service was not found")
             return undefined;
         }
 
         return await serviceClass.create(found);
     }
-}
 
-export class Doodlebot {
-    async requestRobot(bluetooth) {
+    static async requestRobot(bluetooth) {
         const device = await bluetooth.requestDevice({
             filters: [
                 {
-                    namePrefix: "Bluefruit52"
+                    namePrefix: "BBC micro:bit" // "Bluefruit52"
                 }
             ],
             optionalServices: [
-                UartService.uuid
+                "6e400001-b5a3-f393-e0a9-e50e24dcca9e" // UartServices.uuid
             ]
         });
 
         return device;
     }
 
-    async getServices (device) {
+    static async getServices (device) {
         if (!device || !device.gatt) {
             return {};
         }
@@ -65,12 +64,12 @@ export class Doodlebot {
         }
 
         const services = await device.gatt.getPrimaryServices();
-        const builder = new ServiceBuilder(services);
 
-        const uartService = await builder.createService(UartService);
+        const uartService = await Doodlebot.createService(services, UartService);
 
         return {
             uartService
         };
     }
 }
+module.exports = Doodlebot;
