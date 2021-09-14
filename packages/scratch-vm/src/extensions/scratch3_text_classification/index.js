@@ -548,7 +548,6 @@ class Scratch3TextClassificationBlocks {
      * @param {string} args.LABEL the name of the label to add an example to
      */
     textExample (args) {
-        console.log("Get text example");
         // TODO grab text
         let text = '';
          if (frame) {
@@ -562,7 +561,6 @@ class Scratch3TextClassificationBlocks {
      * @param {string} label the name of the label
      */
     newExamples (text_examples, label) {   //add examples for a label
-        console.log("Add examples" + text_examples + " to label " + label);
         if (this.labelListEmpty) {
             // Edit label list accordingly
             this.labelList.splice(this.labelList.indexOf(''), 1);
@@ -612,8 +610,6 @@ class Scratch3TextClassificationBlocks {
      * @param {string} newname the new name for the label
      */
     renameLabel (oldName, newName) {
-        console.log("Rename a label");
-
         let data = {...this.classifier.getClassifierDataset()};  //reset the classifier dataset with the renamed label
         if (data[oldName]) {
             data[newName] = data[oldName];
@@ -638,7 +634,6 @@ class Scratch3TextClassificationBlocks {
      * @param {integer} exampleNum which example, in the array of a label's examples, to remove
      */
     deleteExample (label, exampleNum) {
-        console.log("Delete example " + exampleNum + " with label " + label);
         let data = {...this.classifier.getClassifierDataset()};  //reset the classifier dataset with the deleted example
         let labelExamples = data[label].arraySync();
          // Remove label from the runtime's model data (to share with the GUI)
@@ -665,7 +660,6 @@ class Scratch3TextClassificationBlocks {
      * TODO Clear all data stored in the classifier and label list
      */
     clearLocal () {
-        console.log("Clear local data");
         this.scratch_vm.emit("TOOLBOX_EXTENSIONS_NEED_UPDATE");
         this.labelList = [''];
         this.labelListEmpty = true;
@@ -676,7 +670,6 @@ class Scratch3TextClassificationBlocks {
      * TODO Clear local label list, but also clear all data stored in the runtime
      */
     clearAll () {
-        console.log("Clear all data");
         this.clearLocal();
         // Clear runtime's model data
         
@@ -689,12 +682,9 @@ class Scratch3TextClassificationBlocks {
      * @param {string} args.LABEL the name of the label to remove from the model
      */
     clearAllWithLabel (args) {
-        console.log("Get rid of all examples with label " + args.LABEL);
         if (this.labelList.includes(args.LABEL)) {
             if (this.classifier.getClassExampleCount()[args.LABEL] > 0) {
                 this.classifier.clearClass(args.LABEL);  //remove label from the classifier
-                console.log("number of classes");
-                console.log(this.classifier.getNumClasses());
             }
             // Remove label from labelList
             this.labelList.splice(this.labelList.indexOf(args.LABEL), 1);
@@ -920,7 +910,6 @@ class Scratch3TextClassificationBlocks {
             }
             alert(out);
           }
-        console.log(this.printObject(this.classifier.getClassifierDataset()))
         if (!this.labelListEmpty) {   //whenever the classifier has some data
             try {
             for (let example of this.scratch_vm.modelData.textData[className]) {
@@ -962,22 +951,18 @@ class Scratch3TextClassificationBlocks {
      */
         async get_embeddings(text,label,direction) { //changes text into a 2d tensor
             const newText = await this.getTranslate(text,"en"); //translates text from any language to english
-            console.log(newText);
 
             if (!this.labelListEmpty) {  
            await use.load().then(async model => {
             await model.embed(newText).then(async embeddings => {
                 this.embedding = embeddings;
-                console.log(this.embedding);
             });
         });
         if (direction === "example") {
             this.classifier.addExample(this.embedding, label);
-            console.log(JSON.stringify(this.classifier.getClassifierDataset()) + '\n' + 'example is ' + text + 'label is ' + label)
         } else if (direction === "predict") {
             return await this.classifier.predictClass(this.embedding,Math.sqrt(this.count)).then( async result => {
                 this.predictedLabel = await result.label;
-                console.log(result.confidences);
                 return this.predictedLabel;
             });
         }
@@ -1006,7 +991,6 @@ class Scratch3TextClassificationBlocks {
         maximum = 0
         // creates a dictionary of headers to put into the CSV file
         for (let label in this.scratch_vm.modelData.textData) {
-            console.log(label)
             headers['fields'].push(String(label).replace(/,/g, ''));
 
             // finds the maximum row length
@@ -1091,7 +1075,6 @@ class Scratch3TextClassificationBlocks {
                     }
                     // adds the examples to the classifier
                     if (newArr.data[row][col]) {
-                        console.log(newArr.data[row][col])
                         self.newExamples([newArr.data[row][col]],[col])
                     }
             }
