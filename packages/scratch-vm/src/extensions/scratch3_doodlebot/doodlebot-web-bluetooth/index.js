@@ -29,7 +29,7 @@ const UartService = require("./uart");
 
 class Doodlebot {
     static async createService(services, serviceClass) {
-        const found = services.find(service => service.uuid === "6e400001-b5a3-f393-e0a9-e50e24dcca9e"); // serviceClass.uuid);
+        const found = services.find(service => service.uuid === serviceClass.uuid);
 
         if (!found) {
             console.log("Service was not found")
@@ -47,7 +47,7 @@ class Doodlebot {
                 }
             ],
             optionalServices: [
-                "6e400001-b5a3-f393-e0a9-e50e24dcca9e" // UartServices.uuid
+                UartService.uuid
             ]
         });
 

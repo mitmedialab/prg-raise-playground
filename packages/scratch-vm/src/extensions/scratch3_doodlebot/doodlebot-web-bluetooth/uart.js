@@ -38,13 +38,17 @@ const ServiceHelper = require("./service-helper");
  * UART Service
  */
 
-const uuid = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
-const tx_uuid = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
-const rx_uuid = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
-
 class UartService extends (EventDispatcher) {
-    static getUUID() {
-        return uuid
+    static get uuid () {
+        return "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+    }
+
+    static get tx_uuid () {
+        return "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+    }
+
+    static get rx_uuid () {
+        return "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
     }
 
     static async create(service) {
@@ -59,8 +63,8 @@ class UartService extends (EventDispatcher) {
     }
 
     async init() {
-        await this.helper.handleListener("receive", tx_uuid, this.receiveHandler.bind(this));
-        await this.helper.handleListener("receiveText", tx_uuid, this.receiveTextHandler.bind(this));
+        await this.helper.handleListener("receive", UartService.tx_uuid, this.receiveHandler.bind(this));
+        await this.helper.handleListener("receiveText", UartService.tx_uuid, this.receiveTextHandler.bind(this));
     }
 
     /**
@@ -68,7 +72,7 @@ class UartService extends (EventDispatcher) {
      * @param value The buffer to send
      */
     async send(value) {
-        return this.helper.setCharacteristicValue(rx_uuid, value);
+        return this.helper.setCharacteristicValue(UartService.rx_uuid, value);
     }
 
     /**
@@ -77,7 +81,7 @@ class UartService extends (EventDispatcher) {
      */
     async sendText(value) {
         const arrayData = value.split("").map((e) => e.charCodeAt(0));
-        return this.helper.setCharacteristicValue(rx_uuid, new Uint8Array(arrayData).buffer);
+        return this.helper.setCharacteristicValue(UartService.rx_uuid, new Uint8Array(arrayData).buffer);
     }
 
     receiveHandler(event) {
