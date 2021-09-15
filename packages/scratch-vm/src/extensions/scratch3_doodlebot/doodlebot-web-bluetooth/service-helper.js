@@ -54,7 +54,7 @@ class ServiceHelper {
             throw new Error("Unable to locate characteristic");
         }
 
-        return await queue.add(async () => characteristic.readValue());
+        return await this.queue.add(async () => characteristic.readValue());
     }
 
     async setCharacteristicValue(uuid, value) {
@@ -64,7 +64,7 @@ class ServiceHelper {
             throw new Error("Unable to locate characteristic");
         }
 
-        await queue.add(async () => characteristic.writeValue(value));
+        await this.queue.add(async () => characteristic.writeValue(value));
     }
 
     async handleListener(event, uuid, handler) {
@@ -74,14 +74,14 @@ class ServiceHelper {
             return;
         }
 
-        await queue.add(async () => characteristic.startNotifications());
+        await this.queue.add(async () => characteristic.startNotifications());
 
         this.emitter.on("newListener", (emitterEvent) => {
             if (emitterEvent !== event || this.emitter.listenerCount(event) > 0) {
                 return;
             }
 
-            return queue.add(async () => characteristic.addEventListener("characteristicvaluechanged", handler));
+            return this.queue.add(async () => characteristic.addEventListener("characteristicvaluechanged", handler));
         });
 
         this.emitter.on("removeListener", (emitterEvent) => {
@@ -89,7 +89,7 @@ class ServiceHelper {
                 return;
             }
 
-            return queue.add(async () => characteristic.removeEventListener("characteristicvaluechanged", handler));
+            return this.queue.add(async () => characteristic.removeEventListener("characteristicvaluechanged", handler));
         });
     }
 }

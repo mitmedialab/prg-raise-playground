@@ -39,11 +39,11 @@ class Doodlebot {
         return await serviceClass.create(found);
     }
 
-    static async requestRobot(bluetooth) {
+    static async requestRobot(bluetooth, deviceName) {
         const device = await bluetooth.requestDevice({
             filters: [
                 {
-                    namePrefix: "BBC micro:bit" // "Bluefruit52"
+                    namePrefix: deviceName
                 }
             ],
             optionalServices: [

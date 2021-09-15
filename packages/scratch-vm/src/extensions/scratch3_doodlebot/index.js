@@ -100,80 +100,107 @@ class DoodlebotBlocks {
     
     onDeviceConnected() {
         console.log("Connected to bluetooth device: ", this._robotDevice);
+
+        // update peripheral indicator
         this._robotStatus = 2;
         this.scratch_vm.emit(this.scratch_vm.constructor.PERIPHERAL_CONNECTED);
+
+        // start receiving messages from uart service
+        console.log("Receive mesages from uart service")
+        this._robotUart.addEventListener("receiveText", this.updateSensors.bind(this));
+        // set listener for device disconnected
+        console.log("Listen for device disconnect")
         this._robotDevice.addEventListener("gattserverdisconnected", this.onDeviceDisconnected.bind(this));
 
     }
     onDeviceDisconnected() {
         console.log("Lost connection to robot");
+        
+        // update peripheral indicator
         this.scratch_vm.emit(this.scratch_vm.constructor.PERIPHERAL_DISCONNECTED);
-        this._robotDevice.removeEventListener("gattserverdisconnected");
+        this._robotStatus = 1;
 
+        // remove event listeners
+        this._robotUart.removeEventListener("receiveText", this.updateSensors.bind(this));
+        this._robotDevice.removeEventListener("gattserverdisconnected", this.onDeviceDisconnected.bind(this));
+
+        // reset robot variables
         this._robotDevice = null;
         this._robotUart = null;
-        this._robotStatus = 1;
     }
     
     async connectToBLE() {
         console.log("Getting BLE device");
+
+        // for development
+        let version = "library"; // "no-library"
+        let deviceName = "Bluefruit52"; // "BBC micro:bit";
         
-        if (window.navigator.bluetooth) {
-            
+        if (window.navigator.bluetooth && version == "library") {
             try {
                 console.log("Running version with library")
-                // Bluefruit52
-                this._robotDevice = await Doodlebot.requestRobot(window.navigator.bluetooth);
-                this._robotUart = await Doodlebot.getServices(this._robotDevice);
-                console.log("Got UART service: ", this._robotUart);
                 
+                this._robotDevice = await Doodlebot.requestRobot(window.navigator.bluetooth, deviceName);
+                const services = await Doodlebot.getServices(this._robotDevice);
+                console.log("Got robot services: ", services);
+
+                if (services.uartService) {
+                    this._robotUart = services.uartService;
+                    console.log("Got UART service: ", this._robotUart);
+
+                    this.onDeviceConnected();
+                }
             } catch(err) {
                 console.log(err);
                 if (err.message == "Bluetooth adapter not available.") alert("Your device does not support BLE connections.");
             }
-
-            /*try {
-                console.log("Running version without library")
-                // Bluefruit52
-                this._robotDevice = await window.navigator.bluetooth.requestDevice({"filters":[{"namePrefix":"BBC micro:bit"}], "optionalServices":[UART_UUID]})
+        } else if (window.navigator.bluetooth && version == "no-library") {
+            try {
+                console.log("Running version without library");
+                // Bluefruit52 or BBC micro:bit
+                this._robotDevice = await window.navigator.bluetooth.requestDevice({"filters": [{"namePrefix":deviceName}], "optionalServices":[UART_UUID]});
                 this._robotDevice.gatt.connect().then(server => {
-                    this.onDeviceConnected()
+                    this.onDeviceConnected();
                     return server.getPrimaryService(UART_UUID);
                 }).then(service => {
                     console.log("Got UART service: ", service);
-                    this._robotUart = service
+                    this._robotUart = service;
                     return service.getCharacteristics();
                 }).then(uartCharacteristics => {
-                    console.log("Services: ", uartCharacteristics)
+                    console.log("Services: ", uartCharacteristics);
                     uartCharacteristics.forEach(c => {
-                        if (c.uuid == UART_RX) console.log("Got RX characteristic")
-                        if (c.uuid == UART_TX) console.log("Got TX characteristic")
-                    })
-                })
+                        if (c.uuid == UART_RX) console.log("Got RX characteristic");
+                        if (c.uuid == UART_TX) console.log("Got TX characteristic");
+                    });
+                });
             } catch(err) {
                 console.log(err);
                 if (err.message == "Bluetooth adapter not available.") alert("Your device does not support BLE connections.");
-            }*/
+            }
         }
     }
    
   resetRobot() {
       console.log("Stop everything on robot")
   }
+
+  /**
+   * For reading data back from the device
+   */
+   updateSensors (event) {
+    console.log("Got UART data: " + event.detail);
+    }
   
   /**
-   * RANDI just for testing out sending commands to robot via ble
+   * Just for testing out sending commands to robot via ble
    */
   sendCommand (args) {
     let command = args.COMMAND;
     if (this._robotUart) {
-        this._robotUart.uartService.sendText(command);
+        this._robotUart.sendText(command);
         console.log("Sending uart command: ", command);
     }
     else console.log("No device");
-
-    // https://github.com/thegecko/microbit-web-bluetooth/blob/master/src/services/uart.ts
-    // https://github.com/joakimtoe/node-uartBLE/blob/master/lib/uartble.js
   }
  
 }
