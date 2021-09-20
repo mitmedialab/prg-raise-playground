@@ -131,20 +131,15 @@ class DoodlebotBlocks {
         console.log("Getting BLE device");
 
         // for development
-        let version = "library"; // "no-library"
         let deviceName = "Bluefruit52"; // "BBC micro:bit"; 
         
-        if (window.navigator.bluetooth && version == "library") {
-            try {
-                console.log("Running version with library")
-                
+        if (window.navigator.bluetooth) {
+            try {                
                 this._robotDevice = await Doodlebot.requestRobot(window.navigator.bluetooth, deviceName);
                 const services = await Doodlebot.getServices(this._robotDevice);
-                console.log("Got robot services: ", services);
 
                 if (services.uartService) {
                     this._robotUart = services.uartService;
-                    console.log("Got UART service: ", this._robotUart);
 
                     this.onDeviceConnected();
                 }
@@ -155,29 +150,6 @@ class DoodlebotBlocks {
                 } else {
                     alert("There was a problem connecting your device, please try again or request assistance.");
                 }
-            }
-        } else if (window.navigator.bluetooth && version == "no-library") {
-            try {
-                console.log("Running version without library");
-                // Bluefruit52 or BBC micro:bit
-                this._robotDevice = await window.navigator.bluetooth.requestDevice({"filters": [{"namePrefix":deviceName}], "optionalServices":[UartService.uuid]});
-                this._robotDevice.gatt.connect().then(server => {
-                    return server.getPrimaryService(UartService.uuid);
-                }).then(service => {
-                    console.log("Got UART service: ", service);
-                    this._robotUart = service;
-                    this.onDeviceConnected();
-                    return service.getCharacteristics();
-                }).then(uartCharacteristics => {
-                    console.log("Services: ", uartCharacteristics);
-                    uartCharacteristics.forEach(c => {
-                        if (c.uuid == UartService.rx_uuid) console.log("Got RX characteristic");
-                        if (c.uuid == UartService.tx_uuid) console.log("Got TX characteristic");
-                    });
-                });
-            } catch(err) {
-                console.log(err);
-                if (err.message == "Bluetooth adapter not available.") alert("Your device does not support BLE connections.");
             }
         }
     }

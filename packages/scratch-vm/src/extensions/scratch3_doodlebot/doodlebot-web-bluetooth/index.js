@@ -32,7 +32,6 @@ class Doodlebot {
         const found = services.find(service => service.uuid === serviceClass.uuid);
 
         if (!found) {
-            console.log("Service was not found")
             return undefined;
         }
 
@@ -64,7 +63,6 @@ class Doodlebot {
         }
 
         const services = await device.gatt.getPrimaryServices();
-
         const uartService = await Doodlebot.createService(services, UartService);
 
         return {
