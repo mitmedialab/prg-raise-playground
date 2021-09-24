@@ -13,9 +13,8 @@ const blockIconURI = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAAA5CAYA
 
 const EXTENSION_ID = 'doodlebot';
 
-const _colors = ['red', 'green', 'blue', 'yellow', 'cyan', 'magenta', 'white', 'random'];
-// blue 255 green 65280 red 16711680 
-
+const _pixel_modes = ['blink', 'chase', 'solid'];
+const NUM_PIXELS = 8;
 
 const _drive = ['forward', 'backward', 'left', 'right'];
 const _drive_protocol = ['0,0', '1,1', '0,1', '1,0'];
@@ -105,15 +104,50 @@ class DoodlebotBlocks {
                 },
                 '---',
                 {
+                    opcode: 'setAllPixels',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'doodlebot.setAllLEDColors',
+                        default: 'set all pixels to [COLOR]',
+                        description: 'Set the neopixels to the same color'
+                    }),
+                    arguments: {
+                        COLOR: {
+                            type: ArgumentType.COLOR
+                        }
+                    }
+                },
+                {
                     opcode: 'setPixelColor',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
                         id: 'doodlebot.setLEDColor',
-                        default: 'set pixels to [COLOR]',
+                        default: 'set pixels to [COLOR1] [COLOR2] [COLOR3] [COLOR4] [COLOR5] [COLOR6] [COLOR7] [COLOR8]',
                         description: 'Set the neopixel color'
                     }),
                     arguments: {
-                        COLOR: {
+                        COLOR1: {
+                            type: ArgumentType.COLOR
+                        },
+                        COLOR2: {
+                            type: ArgumentType.COLOR
+                        },
+                        COLOR3: {
+                            type: ArgumentType.COLOR
+                        },
+                        COLOR4: {
+                            type: ArgumentType.COLOR
+                        },
+                        COLOR5: {
+                            type: ArgumentType.COLOR
+                        },
+                        COLOR6: {
+                            type: ArgumentType.COLOR
+                        },
+                        COLOR7: {
+                            type: ArgumentType.COLOR
+                        },
+                        COLOR8: {
                             type: ArgumentType.COLOR
                         }
                     }
@@ -322,22 +356,37 @@ class DoodlebotBlocks {
         if (this._robotUart) this._robotUart.sendText('(d,c)');    
     }
 
-    //setPixelColor
+    /**
+   * For setting individual neopixel colors
+   */
+   setAllPixels(args) {
+    this.setPixelColor(args);
+   }
   /**
-   * For setting neopixel colors
+   * For setting individual neopixel colors
    */
    setPixelColor(args) {
-    // Translate hex color to binary
-    const color = Color.hexToDecimal(args.COLOR);
+    // get all the color args as array
+    const colorArgs = Object.entries(args)
+        .filter(entry => entry[0].startsWith("COLOR"))
+        .map(entry => entry[1]);
+    const colorArr = [];
+    let color = Color.hexToDecimal(colorArgs[0]);
+    // count the pixels backward to line up with the order of the pixels on the robot
+    for(let i = NUM_PIXELS-1; i >= 0; i--) {
+        // if there is a list of colors, use the correct index, otherwise use the first color in the array
+        if (colorArgs.length > i) {
+            // Translate hex color to binary
+            color = Color.hexToDecimal(colorArgs[i]);
+        }
+        colorArr.push(color);
+    }
 
-    // TODO allow different color patterns
-    const colorArr = [color, color, color, color, color, color, color, color];
 
-    console.log("set color: " + args.COLOR + " " + colorArr.join(','));
-
+    console.log("set color: " + colorArr.join(','));
     // Send message
     if (this._robotUart) this._robotUart.sendText('(p,' + colorArr.join(',') + ')');
-}
+   }
   /**
    * For turning off all of the pixels
    */
