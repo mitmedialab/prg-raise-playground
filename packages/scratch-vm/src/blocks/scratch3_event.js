@@ -1,19 +1,19 @@
-const Cast = require('../util/cast');
+const Cast = require("../util/cast");
 
 class Scratch3EventBlocks {
-    constructor (runtime) {
+    constructor(runtime) {
         /**
          * The runtime instantiating this block package.
          * @type {Runtime}
          */
         this.runtime = runtime;
 
-        this.runtime.on('KEY_PRESSED', key => {
-            this.runtime.startHats('event_whenkeypressed', {
-                KEY_OPTION: key
+        this.runtime.on("KEY_PRESSED", (key) => {
+            this.runtime.startHats("event_whenkeypressed", {
+                KEY_OPTION: key,
             });
-            this.runtime.startHats('event_whenkeypressed', {
-                KEY_OPTION: 'any'
+            this.runtime.startHats("event_whenkeypressed", {
+                KEY_OPTION: "any",
             });
         });
     }
@@ -22,84 +22,96 @@ class Scratch3EventBlocks {
      * Retrieve the block primitives implemented by this package.
      * @return {object.<string, Function>} Mapping of opcode to Function.
      */
-    getPrimitives () {
+    getPrimitives() {
         return {
             event_whentouchingobject: this.touchingObject,
             event_broadcast: this.broadcast,
             event_broadcastandwait: this.broadcastAndWait,
-            event_whengreaterthan: this.hatGreaterThanPredicate
+            event_whengreaterthan: this.hatGreaterThanPredicate,
         };
     }
 
-    getHats () {
+    getHats() {
         return {
             event_whenflagclicked: {
-                restartExistingThreads: true
+                restartExistingThreads: true,
             },
             event_whenkeypressed: {
-                restartExistingThreads: false
+                restartExistingThreads: false,
             },
             event_whenthisspriteclicked: {
-                restartExistingThreads: true
+                restartExistingThreads: true,
             },
             event_whentouchingobject: {
                 restartExistingThreads: false,
-                edgeActivated: true
+                edgeActivated: true,
             },
             event_whenstageclicked: {
-                restartExistingThreads: true
+                restartExistingThreads: true,
             },
             event_whenbackdropswitchesto: {
-                restartExistingThreads: true
+                restartExistingThreads: true,
             },
             event_whengreaterthan: {
                 restartExistingThreads: false,
-                edgeActivated: true
+                edgeActivated: true,
             },
             event_whenbroadcastreceived: {
-                restartExistingThreads: true
-            }
+                restartExistingThreads: true,
+            },
         };
     }
 
-    touchingObject (args, util) {
+    touchingObject(args, util) {
         return util.target.isTouchingObject(args.TOUCHINGOBJECTMENU);
     }
 
-    hatGreaterThanPredicate (args, util) {
+    hatGreaterThanPredicate(args, util) {
         const option = Cast.toString(args.WHENGREATERTHANMENU).toLowerCase();
         const value = Cast.toNumber(args.VALUE);
         switch (option) {
-        case 'timer':
-            return util.ioQuery('clock', 'projectTimer') > value;
-        case 'loudness':
-            return this.runtime.audioEngine && this.runtime.audioEngine.getLoudness() > value;
+            case "timer":
+                return util.ioQuery("clock", "projectTimer") > value;
+            case "loudness":
+                return (
+                    this.runtime.audioEngine &&
+                    this.runtime.audioEngine.getLoudness() > value
+                );
         }
         return false;
     }
 
-    broadcast (args, util) {
-        const broadcastVar = util.runtime.getTargetForStage().lookupBroadcastMsg(
-            args.BROADCAST_OPTION.id, args.BROADCAST_OPTION.name);
+    broadcast(args, util) {
+        const broadcastVar = util.runtime
+            .getTargetForStage()
+            .lookupBroadcastMsg(
+                args.BROADCAST_OPTION.id,
+                args.BROADCAST_OPTION.name
+            );
         if (broadcastVar) {
             const broadcastOption = broadcastVar.name;
-            util.startHats('event_whenbroadcastreceived', {
-                BROADCAST_OPTION: broadcastOption
+            util.startHats("event_whenbroadcastreceived", {
+                BROADCAST_OPTION: broadcastOption,
             });
         }
     }
 
-    broadcastAndWait (args, util) {
-        const broadcastVar = util.runtime.getTargetForStage().lookupBroadcastMsg(
-            args.BROADCAST_OPTION.id, args.BROADCAST_OPTION.name);
+    broadcastAndWait(args, util) {
+        const broadcastVar = util.runtime
+            .getTargetForStage()
+            .lookupBroadcastMsg(
+                args.BROADCAST_OPTION.id,
+                args.BROADCAST_OPTION.name
+            );
         if (broadcastVar) {
             const broadcastOption = broadcastVar.name;
             // Have we run before, starting threads?
             if (!util.stackFrame.startedThreads) {
                 // No - start hats for this broadcast.
                 util.stackFrame.startedThreads = util.startHats(
-                    'event_whenbroadcastreceived', {
-                        BROADCAST_OPTION: broadcastOption
+                    "event_whenbroadcastreceived",
+                    {
+                        BROADCAST_OPTION: broadcastOption,
                     }
                 );
                 if (util.stackFrame.startedThreads.length === 0) {
@@ -113,15 +125,17 @@ class Scratch3EventBlocks {
             // runtime.threads. Threads that have run all their blocks, or are
             // marked done but still in runtime.threads are still considered to
             // be waiting.
-            const waiting = util.stackFrame.startedThreads
-                .some(thread => instance.runtime.threads.indexOf(thread) !== -1);
+            const waiting = util.stackFrame.startedThreads.some(
+                (thread) => instance.runtime.threads.indexOf(thread) !== -1
+            );
             if (waiting) {
                 // If all threads are waiting for the next tick or later yield
                 // for a tick as well. Otherwise yield until the next loop of
                 // the threads.
                 if (
-                    util.stackFrame.startedThreads
-                        .every(thread => instance.runtime.isWaitingThread(thread))
+                    util.stackFrame.startedThreads.every((thread) =>
+                        instance.runtime.isWaitingThread(thread)
+                    )
                 ) {
                     util.yieldTick();
                 } else {

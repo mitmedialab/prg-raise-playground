@@ -1,27 +1,27 @@
 /*
-* micro:bit Web Bluetooth
-* Copyright (c) 2019 Rob Moran
-*
-* The MIT License (MIT)
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to deal
-* in the Software without restriction, including without limitation the rights
-* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-* copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in all
-* copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-* SOFTWARE.
-*/
+ * micro:bit Web Bluetooth
+ * Copyright (c) 2019 Rob Moran
+ *
+ * The MIT License (MIT)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 require("regenerator-runtime/runtime");
 const PromiseQueue = require("./promise-queue");
 
@@ -31,7 +31,6 @@ const PromiseQueue = require("./promise-queue");
  ** handler: (event: Event) => void;
  */
 
- 
 class ServiceHelper {
     constructor(service, emitter) {
         this.queue = new PromiseQueue();
@@ -44,7 +43,9 @@ class ServiceHelper {
             this.characteristics = await this.service.getCharacteristics();
         }
 
-        return this.characteristics.find(characteristic => characteristic.uuid === uuid);
+        return this.characteristics.find(
+            (characteristic) => characteristic.uuid === uuid
+        );
     }
 
     async getCharacteristicValue(uuid) {
@@ -77,19 +78,35 @@ class ServiceHelper {
         await this.queue.add(async () => characteristic.startNotifications());
 
         this.emitter.on("newListener", (emitterEvent) => {
-            if (emitterEvent !== event || this.emitter.listenerCount(event) > 0) {
+            if (
+                emitterEvent !== event ||
+                this.emitter.listenerCount(event) > 0
+            ) {
                 return;
             }
 
-            return this.queue.add(async () => characteristic.addEventListener("characteristicvaluechanged", handler));
+            return this.queue.add(async () =>
+                characteristic.addEventListener(
+                    "characteristicvaluechanged",
+                    handler
+                )
+            );
         });
 
         this.emitter.on("removeListener", (emitterEvent) => {
-            if (emitterEvent !== event || this.emitter.listenerCount(event) > 0) {
+            if (
+                emitterEvent !== event ||
+                this.emitter.listenerCount(event) > 0
+            ) {
                 return;
             }
 
-            return this.queue.add(async () => characteristic.removeEventListener("characteristicvaluechanged", handler));
+            return this.queue.add(async () =>
+                characteristic.removeEventListener(
+                    "characteristicvaluechanged",
+                    handler
+                )
+            );
         });
     }
 }

@@ -1,4 +1,4 @@
-const {Record} = require('immutable');
+const { Record } = require("immutable");
 
 const MonitorRecord = Record({
     id: null, // Block Id
@@ -9,7 +9,7 @@ const MonitorRecord = Record({
     opcode: null,
     value: null,
     params: null,
-    mode: 'default',
+    mode: "default",
     sliderMin: 0,
     sliderMax: 100,
     isDiscrete: true,
@@ -17,7 +17,7 @@ const MonitorRecord = Record({
     y: null,
     width: 0,
     height: 0,
-    visible: true
+    visible: true,
 });
 
 module.exports = MonitorRecord;
