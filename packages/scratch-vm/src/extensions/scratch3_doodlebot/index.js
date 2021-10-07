@@ -14,14 +14,25 @@ const blockIconURI =
 
 const EXTENSION_ID = "doodlebot";
 
-const _pixel_modes = ["blink", "chase", "solid"];
-const NUM_PIXELS = 8;
 
 const _drive = ["forward", "backward", "left", "right"];
 const _drive_protocol = ["0,0", "1,1", "0,1", "1,0"];
 
 const _pen_dirs = ["up", "down"];
 const _pen_protocol = ["0", "45"];
+
+const _pixel_anims = ["blink", "chase", "solid"];
+const _pixels = [
+    "light 1",
+    "light 2",
+    "light 3",
+    "light 4",
+    "light 5",
+    "light 6",
+    "light 7",
+    "light 8",
+    "all lights"
+];
 
 const _faces = [
     "angry",
@@ -37,7 +48,6 @@ const _faces = [
     "sad",
     "wrong",
     "surprise",
-    "blink",
     "neutral",
 ];
 const _face_protocol = [
@@ -54,7 +64,6 @@ const _face_protocol = [
     "s",
     "w",
     "p",
-    "b",
     "n",
 ];
 
@@ -91,6 +100,9 @@ class DoodlebotBlocks {
         this._robotDevice = null;
         this._robotUart = null;
 
+        this._colorArr = [0,0,0,0,0,0,0,0];
+        this._currentFace = "(d,n)";
+
         this.scratch_vm.on("PROJECT_STOP_ALL", this.resetRobot.bind(this));
         this.scratch_vm.on("CONNECT_DOODLEBOT", this.connectToBLE.bind(this));
 
@@ -121,15 +133,15 @@ class DoodlebotBlocks {
                 },
                 "---",
                 {
-                    opcode: "displayFace",
+                    opcode: "playAnimation",
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
-                        id: "doodlebot.displayFace",
-                        default: "display [FACE] face",
-                        description: "Set the face display",
+                        id: "doodlebot.playAnimation",
+                        default: "play [ANIM] animation",
+                        description: "Start an animation",
                     }),
                     arguments: {
-                        FACE: {
+                        ANIM: {
                             type: ArgumentType.STRING,
                             menu: "FACES",
                             defaultValue: "neutral",
@@ -148,14 +160,19 @@ class DoodlebotBlocks {
                 },
                 "---",
                 {
-                    opcode: "setAllPixels",
+                    opcode: "setPixels",
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
-                        id: "doodlebot.setAllLEDColors",
-                        default: "set all pixels to [COLOR]",
-                        description: "Set the neopixels to the same color",
+                        id: "doodlebot.setPixels",
+                        default: "set [PIXEL] to [COLOR]",
+                        description: "Set the neopixel lights",
                     }),
                     arguments: {
+                        PIXEL: {
+                            type: ArgumentType.STRING,
+                            menu: "PIXELS",
+                            defaultValue: "all lights",
+                        },
                         COLOR: {
                             type: ArgumentType.COLOR,
                         },
@@ -275,6 +292,10 @@ class DoodlebotBlocks {
                 },
             ],
             menus: {
+                PIXELS: {
+                    acceptReporters: false,
+                    items: _pixels,
+                },
                 FACES: {
                     acceptReporters: false,
                     items: _faces,
@@ -322,6 +343,9 @@ class DoodlebotBlocks {
                 this.updateSensors.bind(this)
             );
         }
+
+        // Start up robot with neutral face
+        if (this._robotUart) this._robotUart.sendText("(d,n)");
     }
     onDeviceDisconnected() {
         console.log("Lost connection to robot");
@@ -386,7 +410,7 @@ class DoodlebotBlocks {
         // pen up?
 
         // make face neutral
-        this.displayFace({ FACE: "neutral" });
+        this.playAnimation({ ANIM: "neutral" });
         // stop motors
         this.stopMotors();
         // turn off lights
@@ -401,16 +425,24 @@ class DoodlebotBlocks {
     }
 
     /**
-     * For setting face display
+     * For playing robot animations
      */
-    displayFace(args) {
+    playAnimation(args) {
         // Translate face to ble protocol command
-        const faceCmd = _face_protocol[_faces.indexOf(args.FACE)];
+        const faceCmd = _face_protocol[_faces.indexOf(args.ANIM)];
 
         console.log("set face: " + args.FACE + " " + faceCmd);
         // Send message
         if (this._robotUart) this._robotUart.sendText("(d," + faceCmd + ")");
     }
+    /**
+     * For playing the blinking animation
+     */
+     playBlink(args) {
+        // Send message
+        if (this._robotUart) this._robotUart.sendText("(d,b)");
+    }
+
     /**
      * For clearing the diplay
      */
@@ -423,8 +455,23 @@ class DoodlebotBlocks {
     /**
      * For setting individual neopixel colors
      */
-    setAllPixels(args) {
-        this.setPixelColor(args);
+    setPixels(args) {
+        if (args.PIXEL == "all lights") {
+            for (let i = 0; i < this._colorArr.length; i++) {
+                // Translate hex color to binary
+                color = Color.hexToDecimal(args.COLOR);
+                this._colorArr[i] = color;
+            }
+        } else {
+            // calculate the index of the pixel, note light 1 is on top, light 8 is on bottom
+            const idx = _this.colorArr.length - _pixels.indexOf(args.PIXEL);
+            this._colorArr[idx] = Color.hexToDecimal(args.COLOR);
+        }
+
+        console.log("set pixels: " + this._colorArr.join(","));
+        // Send message
+        if (this._robotUart)
+            this._robotUart.sendText("(p," + this._colorArr.join(",") + ")");
     }
     /**
      * For setting individual neopixel colors
@@ -434,22 +481,22 @@ class DoodlebotBlocks {
         const colorArgs = Object.entries(args)
             .filter((entry) => entry[0].startsWith("COLOR"))
             .map((entry) => entry[1]);
-        const colorArr = [];
+
         let color = Color.hexToDecimal(colorArgs[0]);
         // count the pixels backward to line up with the order of the pixels on the robot
-        for (let i = NUM_PIXELS - 1; i >= 0; i--) {
+        for (let i = this._colorArr.length - 1; i >= 0; i--) {
             // if there is a list of colors, use the correct index, otherwise use the first color in the array
             if (colorArgs.length > i) {
                 // Translate hex color to binary
                 color = Color.hexToDecimal(colorArgs[i]);
             }
-            colorArr.push(color);
+            this._colorArr[i] = color;
         }
 
-        console.log("set color: " + colorArr.join(","));
+        console.log("set color: " + this._colorArr.join(","));
         // Send message
         if (this._robotUart)
-            this._robotUart.sendText("(p," + colorArr.join(",") + ")");
+            this._robotUart.sendText("(p," + this._colorArr.join(",") + ")");
     }
     /**
      * For turning off all of the pixels
