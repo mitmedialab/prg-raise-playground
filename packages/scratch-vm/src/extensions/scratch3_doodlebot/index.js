@@ -16,6 +16,7 @@ const EXTENSION_ID = "doodlebot";
 
 
 const _drive = ["forward", "backward", "left", "right"];
+const _turns = ["left", "right"];
 const _drive_protocol = ["0,0", "1,1", "0,1", "1,0"];
 
 const _pen_dirs = ["up", "down"];
@@ -247,6 +248,27 @@ class DoodlebotBlocks {
                     },
                 },
                 {
+                    opcode: "turn",
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: "doodlebot.turnFor",
+                        default: "turn [DIR] [NUM] degrees",
+                        description:
+                            "Send command to robot to turn motors a certain angle",
+                    }),
+                    arguments: {
+                        NUM: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 90,
+                        },
+                        DIR: {
+                            type: ArgumentType.String,
+                            menu: "TURNS",
+                            defaultValue: _turns[0],
+                        },
+                    },
+                },
+                {
                     opcode: "stopMotors",
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
@@ -303,6 +325,10 @@ class DoodlebotBlocks {
                 DIRS: {
                     acceptReporters: false,
                     items: _drive,
+                },
+                TURNS: {
+                    acceptReports: false,
+                    items: _turns,
                 },
                 PEN_DIRS: {
                     acceptReporters: false,
@@ -429,11 +455,32 @@ class DoodlebotBlocks {
      */
     playAnimation(args) {
         // Translate face to ble protocol command
-        const faceCmd = _face_protocol[_faces.indexOf(args.ANIM)];
+        this._currentFace = _face_protocol[_faces.indexOf(args.ANIM)];
 
-        console.log("set face: " + args.FACE + " " + faceCmd);
-        // Send message
-        if (this._robotUart) this._robotUart.sendText("(d," + faceCmd + ")");
+        console.log("set face: " + args.ANIM + " " + this._currentFace);
+        if (args.ANIM == "happy") {
+            const happy_pause = 250;
+            // Send message
+
+            // Display the happy face
+            if (this._robotUart) this._robotUart.sendText("(d," + this._currentFace + ")");
+            setTimeout(() => {
+                // Bounce the pen twice to indicate joy
+                if (this._robotUart) this._robotUart.sendText("(u,0)");
+                setTimeout(() => { 
+                    if (this._robotUart) this._robotUart.sendText("(u,45)");
+                    setTimeout(() => { 
+                        if (this._robotUart) this._robotUart.sendText("(u,0)");
+                        setTimeout(() => { 
+                            if (this._robotUart) this._robotUart.sendText("(u,45)");
+                        }, happy_pause);
+                    }, happy_pause);
+                }, happy_pause);
+            }, happy_pause);
+        } else {
+            // Send message
+            if (this._robotUart) this._robotUart.sendText("(d," + this._currentFace + ")");
+        }
     }
     /**
      * For playing the blinking animation
@@ -441,6 +488,11 @@ class DoodlebotBlocks {
      playBlink(args) {
         // Send message
         if (this._robotUart) this._robotUart.sendText("(d,b)");
+
+        setTimeout(() => {
+            // pause, then return back to gace
+            if (this._robotUart) this._robotUart.sendText("(d," + this._currentFace + ")");
+        }, 250);
     }
 
     /**
@@ -464,7 +516,7 @@ class DoodlebotBlocks {
             }
         } else {
             // calculate the index of the pixel, note light 1 is on top, light 8 is on bottom
-            const idx = _this.colorArr.length - _pixels.indexOf(args.PIXEL);
+            const idx = (this._colorArr.length-1) - _pixels.indexOf(args.PIXEL);
             this._colorArr[idx] = Color.hexToDecimal(args.COLOR);
         }
 
@@ -484,13 +536,13 @@ class DoodlebotBlocks {
 
         let color = Color.hexToDecimal(colorArgs[0]);
         // count the pixels backward to line up with the order of the pixels on the robot
-        for (let i = this._colorArr.length - 1; i >= 0; i--) {
+        for (let i = 0; i < this._colorArr.length; i++) {
             // if there is a list of colors, use the correct index, otherwise use the first color in the array
             if (colorArgs.length > i) {
                 // Translate hex color to binary
                 color = Color.hexToDecimal(colorArgs[i]);
             }
-            this._colorArr[i] = color;
+            this._colorArr[(this._colorArr.length - 1) - i] = color;
         }
 
         console.log("set color: " + this._colorArr.join(","));
@@ -528,9 +580,45 @@ class DoodlebotBlocks {
             this._robotUart.sendText(
                 "(m," + driveCmd + "," + args.NUM + "," + args.NUM + ")"
             );
+
+        // wait for the motor command to finish executing
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, args.NUM * 25);
+        });
+    }
+    turn(args) {
+        // Translate direction to ble protocol command
+        let driveCmd = _drive_protocol[_drive.indexOf(args.DIR)];
+
+        console.log(
+            "turn command: " +
+                args.DIR +
+                " " +
+                driveCmd +
+                " " +
+                args.NUM +
+                " degrees"
+        );
+        // Convert the number of degrees into the number of steps the robot needs take
+        const num_steps = args.NUM * 80 / 90;
+
+        // Send message
+        if (this._robotUart)
+            this._robotUart.sendText(
+                "(m," + driveCmd + "," + num_steps + "," + num_steps + ")"
+            );
+
+        // wait for the motor command to finish executing
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, num_steps * 25);
+        });
     }
     /**
-     * For activating the motors
+     * For moving the pen
      */
     movePen(args) {
         // Translate direction to ble protocol command
