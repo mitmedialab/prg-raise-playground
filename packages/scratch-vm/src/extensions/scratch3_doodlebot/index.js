@@ -35,37 +35,39 @@ const _pixels = [
     "all lights"
 ];
 
-const _faces = [
+const _no_blinks = [
+];
+const _anims = [
     "angry",
-    "happy",
-    "confused",
-    "worried",
     "annoyed",
-    "sleeping",
-    "fear",
+    "confused",
     "disgust",
     "engaged",
+    "fear",
+    "happy",
     "love",
-    "sad",
-    "wrong",
-    "surprise",
     "neutral",
+    "sad",
+    "sleeping",
+    "surprise",
+    "worried",
+    "wrong"
 ];
-const _face_protocol = [
+const _anim_protocol = [
     "a",
-    "h",
-    "m",
-    "r",
     "y",
-    "l",
-    "f",
+    "m",
     "d",
     "e",
+    "f",
+    "h",
     "o",
-    "s",
-    "w",
-    "p",
     "n",
+    "s",
+    "l",
+    "p",
+    "r",
+    "w"
 ];
 
 const _sensors = [
@@ -102,7 +104,9 @@ class DoodlebotBlocks {
         this._robotUart = null;
 
         this._colorArr = [0,0,0,0,0,0,0,0];
-        this._currentFace = "(d,n)";
+        this._currentFace = null;
+        this._blink_interval = null;
+        this._pixel_interval = null;
 
         this.scratch_vm.on("PROJECT_STOP_ALL", this.resetRobot.bind(this));
         this.scratch_vm.on("CONNECT_DOODLEBOT", this.connectToBLE.bind(this));
@@ -144,8 +148,8 @@ class DoodlebotBlocks {
                     arguments: {
                         ANIM: {
                             type: ArgumentType.STRING,
-                            menu: "FACES",
-                            defaultValue: "neutral",
+                            menu: "ANIMS",
+                            defaultValue: "happy",
                         },
                     },
                 },
@@ -185,7 +189,7 @@ class DoodlebotBlocks {
                     text: formatMessage({
                         id: "doodlebot.setLEDColor",
                         default:
-                            "set pixels to [COLOR1] [COLOR2] [COLOR3] [COLOR4] [COLOR5] [COLOR6] [COLOR7] [COLOR8]",
+                            "set lights to [COLOR1] [COLOR2] [COLOR3] [COLOR4] [COLOR5] [COLOR6] [COLOR7] [COLOR8]",
                         description: "Set the neopixel color",
                     }),
                     arguments: {
@@ -212,6 +216,22 @@ class DoodlebotBlocks {
                         },
                         COLOR8: {
                             type: ArgumentType.COLOR,
+                        },
+                    },
+                },
+                {
+                    opcode: "setPixelAnim",
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: "doodlebot.setPixelAnim",
+                        default: "set light animation to [ANIM]",
+                        description: "Start a neopixel light animation",
+                    }),
+                    arguments: {
+                        ANIM: {
+                            type: ArgumentType.STRING,
+                            menu: "PIXEL_ANIMS",
+                            defaultValue: "blink",
                         },
                     },
                 },
@@ -314,25 +334,29 @@ class DoodlebotBlocks {
                 },
             ],
             menus: {
-                PIXELS: {
+                ANIMS: {
                     acceptReporters: false,
-                    items: _pixels,
-                },
-                FACES: {
-                    acceptReporters: false,
-                    items: _faces,
+                    items: _anims,
                 },
                 DIRS: {
                     acceptReporters: false,
                     items: _drive,
                 },
-                TURNS: {
-                    acceptReports: false,
-                    items: _turns,
-                },
                 PEN_DIRS: {
                     acceptReporters: false,
                     items: _pen_dirs,
+                },
+                PIXELS: {
+                    acceptReporters: false,
+                    items: _pixels,
+                },
+                PIXEL_ANIMS: {
+                    acceptReporters: false,
+                    items: _pixel_anims,
+                },
+                TURNS: {
+                    acceptReports: false,
+                    items: _turns,
                 },
             },
         };
@@ -370,11 +394,16 @@ class DoodlebotBlocks {
             );
         }
 
-        // Start up robot with neutral face
-        if (this._robotUart) this._robotUart.sendText("(d,n)");
+        // start with face neutral
+        this.playAnimation({ ANIM: "neutral" });
     }
     onDeviceDisconnected() {
         console.log("Lost connection to robot");
+        
+        // stop blinking
+        this.stopBlink();
+
+        // TODO stop pixel animation interval
 
         // update peripheral indicator
         this.scratch_vm.emit(
@@ -455,15 +484,22 @@ class DoodlebotBlocks {
      */
     playAnimation(args) {
         // Translate face to ble protocol command
-        this._currentFace = _face_protocol[_faces.indexOf(args.ANIM)];
+        this._currentFace = args.ANIM;
+        const animFace = _anim_protocol[_anims.indexOf(this._currentFace)];
 
-        console.log("set face: " + args.ANIM + " " + this._currentFace);
+        // stop blinking
+        this.stopBlink();
+
+        // blink to transition faces
+        console.log("play animation: " + args.ANIM + " " + animFace);
+        this.playBlink();
+
         if (args.ANIM == "happy") {
             const happy_pause = 250;
             // Send message
 
             // Display the happy face
-            if (this._robotUart) this._robotUart.sendText("(d," + this._currentFace + ")");
+            if (this._robotUart) this._robotUart.sendText("(d," + animFace + ")");
             setTimeout(() => {
                 // Bounce the pen twice to indicate joy
                 if (this._robotUart) this._robotUart.sendText("(u,0)");
@@ -479,20 +515,41 @@ class DoodlebotBlocks {
             }, happy_pause);
         } else {
             // Send message
-            if (this._robotUart) this._robotUart.sendText("(d," + this._currentFace + ")");
+            if (this._robotUart) this._robotUart.sendText("(d," + animFace + ")");
+        }
+
+        // start blinking
+        if (this._robotUart && !this._blink_interval) {
+            console.log("starting blink interval");
+            this._blink_interval = setInterval(this.playBlink.bind(this), 4000);
         }
     }
     /**
      * For playing the blinking animation
      */
-     playBlink(args) {
-        // Send message
+     playBlink() {
+        console.log("play animation: blink");
+
+        // send message
         if (this._robotUart) this._robotUart.sendText("(d,b)");
 
         setTimeout(() => {
-            // pause, then return back to gace
-            if (this._robotUart) this._robotUart.sendText("(d," + this._currentFace + ")");
-        }, 250);
+            // pause, then return back to face
+            const animFace = _anim_protocol[_anims.indexOf(this._currentFace)];
+            if (this._robotUart) this._robotUart.sendText("(d," + animFace + ")");
+        }, 150);
+    }   
+    /**
+     * For stopping the blinking animation
+     */
+     stopBlink() {
+        console.log("stopping blink interval");
+
+        // send message
+        if (this._blink_interval) {
+            clearInterval(this._blink_interval);
+            this._blink_interval = null;
+        }
     }
 
     /**
@@ -500,6 +557,10 @@ class DoodlebotBlocks {
      */
     clearDisplay(args) {
         console.log("clear display");
+
+        // stop blinking
+        this.stopBlink();
+
         // Send message
         if (this._robotUart) this._robotUart.sendText("(d,c)");
     }
@@ -549,6 +610,14 @@ class DoodlebotBlocks {
         // Send message
         if (this._robotUart)
             this._robotUart.sendText("(p," + this._colorArr.join(",") + ")");
+    }
+    /**
+     * For turning off all of the pixels
+     */
+    setPixelAnim(args) {
+        console.log("set neopixel animation: " + args.ANIM);
+
+        // _pixel_interval
     }
     /**
      * For turning off all of the pixels
