@@ -7,6 +7,7 @@ const formatMessage = require("format-message");
 const Color = require("../../util/color");
 
 const Doodlebot = require("./doodlebot-web-bluetooth/index.js");
+const { rgbToDecimal } = require("../../util/color");
 
 // eslint-disable-next-line max-len
 const blockIconURI =
@@ -69,6 +70,22 @@ const _anim_protocol = [
     "r",
     "w"
 ];
+const _anim_sounds = [
+    "4",
+    "",
+    "63",
+    "29",
+    "72",
+    "150",
+    "88",
+    "",
+    "",
+    "53",
+    "",
+    "",
+    "",
+    "136"
+];
 
 const _sensors = [
     "bumpers",
@@ -104,9 +121,11 @@ class DoodlebotBlocks {
         this._robotUart = null;
 
         this._colorArr = [0,0,0,0,0,0,0,0];
+        this._pixelStatus = 0;
+        this._pixelSpeed = 500;
         this._currentFace = null;
-        this._blink_interval = null;
-        this._pixel_interval = null;
+        this._blinkInterval = null;
+        this._pixelInterval = null;
 
         this.scratch_vm.on("PROJECT_STOP_ALL", this.resetRobot.bind(this));
         this.scratch_vm.on("CONNECT_DOODLEBOT", this.connectToBLE.bind(this));
@@ -486,6 +505,7 @@ class DoodlebotBlocks {
         // Translate face to ble protocol command
         this._currentFace = args.ANIM;
         const animFace = _anim_protocol[_anims.indexOf(this._currentFace)];
+        const animSound = _anim_sounds[_anims.indexOf(this._currentFace)];
 
         // stop blinking
         this.stopBlink();
@@ -494,12 +514,16 @@ class DoodlebotBlocks {
         console.log("play animation: " + args.ANIM + " " + animFace);
         this.playBlink();
 
+        
+        // send message
+        if (this._robotUart) {   
+            this._robotUart.sendText("(d," + animFace + ")");
+            if (animSound != "") this._robotUart.sendText("(s," + animSound + ")");
+        }
+
         if (args.ANIM == "happy") {
             const happy_pause = 250;
-            // Send message
 
-            // Display the happy face
-            if (this._robotUart) this._robotUart.sendText("(d," + animFace + ")");
             setTimeout(() => {
                 // Bounce the pen twice to indicate joy
                 if (this._robotUart) this._robotUart.sendText("(u,0)");
@@ -513,15 +537,12 @@ class DoodlebotBlocks {
                     }, happy_pause);
                 }, happy_pause);
             }, happy_pause);
-        } else {
-            // Send message
-            if (this._robotUart) this._robotUart.sendText("(d," + animFace + ")");
         }
 
         // start blinking
-        if (this._robotUart && !this._blink_interval) {
+        if (this._robotUart && !this._blinkInterval) {
             console.log("starting blink interval");
-            this._blink_interval = setInterval(this.playBlink.bind(this), 4000);
+            this._blinkInterval = setInterval(this.playBlink.bind(this), 4023);
         }
     }
     /**
@@ -546,9 +567,9 @@ class DoodlebotBlocks {
         console.log("stopping blink interval");
 
         // send message
-        if (this._blink_interval) {
-            clearInterval(this._blink_interval);
-            this._blink_interval = null;
+        if (this._blinkInterval) {
+            clearInterval(this._blinkInterval);
+            this._blinkInterval = null;
         }
     }
 
@@ -561,7 +582,7 @@ class DoodlebotBlocks {
         // stop blinking
         this.stopBlink();
 
-        // Send message
+        // send message
         if (this._robotUart) this._robotUart.sendText("(d,c)");
     }
 
@@ -582,7 +603,7 @@ class DoodlebotBlocks {
         }
 
         console.log("set pixels: " + this._colorArr.join(","));
-        // Send message
+        // send message
         if (this._robotUart)
             this._robotUart.sendText("(p," + this._colorArr.join(",") + ")");
     }
@@ -607,9 +628,40 @@ class DoodlebotBlocks {
         }
 
         console.log("set color: " + this._colorArr.join(","));
-        // Send message
+        // send message
         if (this._robotUart)
             this._robotUart.sendText("(p," + this._colorArr.join(",") + ")");
+    }
+    /**
+     * For shifting the colors of the lights in the neopixel array
+     */
+    shiftPixels() {
+        let tmp = null;
+        for (let i = 1; i < this._colorArr.length; i++) {
+            tmp = this._colorArr[i];
+            this._colorArr[i] = this._colorArr[i-1];
+            this._colorArr[i-1] = tmp;
+        }
+
+        console.log("shift pixels: " + this._colorArr.join(","));
+        // send message
+        if (this._robotUart)
+            this._robotUart.sendText("(p," + this._colorArr.join(",") + ")");
+    }
+    /**
+     * For blinking the lights in the neopixel array
+     */
+    togglePixels() {
+        if (this._pixelStatus == 0) {
+            // send message
+            if (this._robotUart)
+                this._robotUart.sendText("(p," + this._colorArr.join(",") + ")");
+            this._pixelStatus = 1;
+        } else {
+            // lights off
+            if (this._robotUart) this._robotUart.sendText("(p,0,0,0,0,0,0,0,0)");
+            this._pixelStatus = 0;
+        }
     }
     /**
      * For turning off all of the pixels
@@ -617,14 +669,35 @@ class DoodlebotBlocks {
     setPixelAnim(args) {
         console.log("set neopixel animation: " + args.ANIM);
 
-        // _pixel_interval
+        // clear the preivous interval
+        if (this._pixelInterval) {
+            console.log("Clear pixel interval");
+            clearInterval(this._pixelInterval);
+            this._pixelInterval = null;
+        }
+
+        if (args.ANIM == "blink") {
+            console.log("starting neopixel blink interval");
+            this._pixelInterval = setInterval(this.togglePixels.bind(this), this._pixelSpeed);
+        } else if (args.ANIM == "chase") {
+            console.log("starting pixel chase interval");
+            this._pixelInterval = setInterval(this.shiftPixels.bind(this), this._pixelSpeed);
+        }
     }
     /**
      * For turning off all of the pixels
      */
     pixelsOff(args) {
         console.log("turning off neopixels");
-        // Send message
+
+        // clear the preivous interval
+        if (this._pixelInterval) {
+            console.log("Clear pixel interval");
+            clearInterval(this._pixelInterval);
+            this._pixelInterval = null;
+        }
+
+        // send message
         if (this._robotUart) this._robotUart.sendText("(p,0,0,0,0,0,0,0,0)");
     }
 
@@ -644,7 +717,7 @@ class DoodlebotBlocks {
                 args.NUM +
                 " steps"
         );
-        // Send message
+        // send message
         if (this._robotUart)
             this._robotUart.sendText(
                 "(m," + driveCmd + "," + args.NUM + "," + args.NUM + ")"
@@ -673,7 +746,7 @@ class DoodlebotBlocks {
         // Convert the number of degrees into the number of steps the robot needs take
         const num_steps = args.NUM * 80 / 90;
 
-        // Send message
+        // send message
         if (this._robotUart)
             this._robotUart.sendText(
                 "(m," + driveCmd + "," + num_steps + "," + num_steps + ")"
@@ -694,7 +767,7 @@ class DoodlebotBlocks {
         let penCmd = _pen_protocol[_pen_dirs.indexOf(args.DIR)];
 
         console.log("move pen: " + args.DIR + " " + penCmd);
-        // Send message
+        // send message
         if (this._robotUart) this._robotUart.sendText("(u," + penCmd + ")");
     }
     /**
@@ -702,7 +775,7 @@ class DoodlebotBlocks {
      */
     stopMotors(args) {
         console.log("stopping motors");
-        // Send message
+        // send message
         if (this._robotUart) this._robotUart.sendText("(m,s)");
     }
 
