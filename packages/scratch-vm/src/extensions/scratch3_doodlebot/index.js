@@ -37,6 +37,8 @@ const _pixels = [
 ];
 
 const _no_blinks = [
+    "sleeping",
+    "wink"
 ];
 const _anims = [
     "angry",
@@ -51,6 +53,7 @@ const _anims = [
     "sad",
     "sleeping",
     "surprise",
+    "wink",
     "worried",
     "wrong"
 ];
@@ -67,6 +70,7 @@ const _anim_protocol = [
     "s",
     "l",
     "p",
+    "i",
     "r",
     "w"
 ];
@@ -511,9 +515,9 @@ class DoodlebotBlocks {
         this.stopBlink();
 
         // blink to transition faces
+        this._robotUart.sendText("(d,b)");
+        
         console.log("play animation: " + args.ANIM + " " + animFace);
-        this.playBlink();
-
         
         // send message
         if (this._robotUart) {   
