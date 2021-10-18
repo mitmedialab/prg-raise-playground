@@ -37,6 +37,11 @@ const _pixels = [
 ];
 
 const _no_blinks = [
+    "confused",
+    "disgust",
+    "happy",
+    "love",
+    "sad",
     "sleeping",
     "wink"
 ];
@@ -515,36 +520,51 @@ class DoodlebotBlocks {
         this.stopBlink();
 
         // blink to transition faces
-        this._robotUart.sendText("(d,b)");
+        if (this._robotUart) this._robotUart.sendText("(d,b)");
         
         console.log("play animation: " + args.ANIM + " " + animFace);
         
         // send message
-        if (this._robotUart) {   
-            this._robotUart.sendText("(d," + animFace + ")");
-            if (animSound != "") this._robotUart.sendText("(s," + animSound + ")");
-        }
+        const pause = 100;
 
-        if (args.ANIM == "happy") {
+        if (this._robotUart && args.ANIM == "happy") {
             const happy_pause = 250;
-
             setTimeout(() => {
-                // Bounce the pen twice to indicate joy
-                if (this._robotUart) this._robotUart.sendText("(u,0)");
-                setTimeout(() => { 
-                    if (this._robotUart) this._robotUart.sendText("(u,45)");
-                    setTimeout(() => { 
-                        if (this._robotUart) this._robotUart.sendText("(u,0)");
-                        setTimeout(() => { 
-                            if (this._robotUart) this._robotUart.sendText("(u,45)");
+                this._robotUart.sendText("(d,b)");
+                setTimeout(()=> {
+                    this._robotUart.sendText("(d," + animFace + ")");
+                    setTimeout(()=> {
+                        if (animSound != "") this._robotUart.sendText("(s," + animSound + ")");                        
+                        setTimeout(() => {
+                            // Bounce the pen twice to indicate joy
+                            this._robotUart.sendText("(u,0)");
+                            setTimeout(() => { 
+                                this._robotUart.sendText("(u,45)");
+                                setTimeout(() => { 
+                                    this._robotUart.sendText("(u,0)");
+                                    setTimeout(() => { 
+                                    this._robotUart.sendText("(u,45)");
+                                    }, happy_pause);
+                                }, happy_pause);
+                            }, happy_pause);
                         }, happy_pause);
-                    }, happy_pause);
-                }, happy_pause);
-            }, happy_pause);
+                    }, pause);
+                }, pause);
+            }, pause);
+        } else if (this._robotUart) {
+            setTimeout(() => {
+                this._robotUart.sendText("(d,b)");
+                setTimeout(()=> {
+                    this._robotUart.sendText("(d," + animFace + ")");
+                    setTimeout(()=> {
+                        if (animSound != "") this._robotUart.sendText("(s," + animSound + ")");
+                    }, pause);
+                }, pause);
+            }, pause);
         }
 
         // start blinking
-        if (this._robotUart && !this._blinkInterval) {
+        if (_no_blinks.indexOf(args.ANIM) == -1 && !this._blinkInterval) {
             console.log("starting blink interval");
             this._blinkInterval = setInterval(this.playBlink.bind(this), 4023);
         }

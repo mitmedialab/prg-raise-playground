@@ -59,6 +59,7 @@ class PromiseQueue {
         }
 
         this.running--;
+        
         return this.pump();
     }
 
