@@ -15,15 +15,12 @@ const BlockType = require('../../extension-support/block-type');
 const Clone = require('../../util/clone');
 const Cast = require('../../util/cast');
 const formatMessage = require('format-message');
-const Video = require('../../io/video');
 const Timer = require('../../util/timer');
 const tf = require('@tensorflow/tfjs');
 const knnClassifier = require('@tensorflow-models/knn-classifier');
 const use = require('@tensorflow-models/universal-sentence-encoder');
 const Papa = require('papaparse');
-const { range } = require("@tensorflow/tfjs");
 const EXTENSION_ID = 'textClassification';
-
 
 
 /**
@@ -102,7 +99,6 @@ const FEMALE_TENOR_RATE = 0.89; // -2 semitones
 const FEMALE_GIANT_RATE = 0.79; // -4 semitones
 
 
-
 /**
  * Class for the motion-related blocks in Scratch 3.0
  * @param {Runtime} runtime - the runtime instantiating this block package.
@@ -111,7 +107,7 @@ const FEMALE_GIANT_RATE = 0.79; // -4 semitones
 class Scratch3TextClassificationBlocks {
     constructor (runtime) {
 
-         /**
+        /**
          * The result from the most recent translation.
          * @type {string}
          * @private
@@ -136,16 +132,17 @@ class Scratch3TextClassificationBlocks {
          * The runtime instantiating this block package.
          * @type {Runtime}
          */
-         this.scratch_vm = runtime;
-         this.predictedLabel=null;
-         //this.mobilenetModule = null;
-         this.classifier = knnClassifier.create();
-         this.embedding = null;
-         this.count = 0;
-         this.classifiedData = null;
-         this._mStatus = 1;
-         this.scratch_vm.registerPeripheralExtension(EXTENSION_ID, this);
-         this.scratch_vm.connectPeripheral(EXTENSION_ID, 0);
+        this.scratch_vm = runtime;
+        this.predictedLabel = null;
+        this.classifier = knnClassifier.create();
+        this.embedding = null;
+        this.count = 0;
+        this.classifiedData = null;
+        this._mStatus = 1;
+        this.scratch_vm.registerPeripheralExtension(EXTENSION_ID, this);
+        this.scratch_vm.connectPeripheral(EXTENSION_ID, 0);
+        this.similarity = 0;
+        this.k = 0;
         
          
         /**
@@ -166,7 +163,7 @@ class Scratch3TextClassificationBlocks {
          */
         this._cachedLoudnessTimestamp = 0;
          
-         /**
+        /**
          * Map of soundPlayers by sound id.
          * @type {Map<string, SoundPlayer>}
          */
@@ -183,13 +180,9 @@ class Scratch3TextClassificationBlocks {
         }
         
         this.scratch_vm.on('EDIT_TEXT_MODEL', modelInfo => {
-            console.log(modelInfo);
-            console.log("Calling bound function");
             this.editModel.bind(this, modelInfo);
         });
         this.scratch_vm.on('EDIT_TEXT_CLASSIFIER', modelInfo => {
-            console.log(modelInfo);
-            console.log("Calling bound function");
             this.editModel.bind(this, modelInfo);
         });
         
@@ -201,11 +194,12 @@ class Scratch3TextClassificationBlocks {
             this.clearLocal();
             this.loadModelFromRuntime();
         });
+
         // Listen for model editing events emitted by the text modal
         this.scratch_vm.on('NEW_EXAMPLES', (examples, label) => {
             this.newExamples(examples, label);
         });
-        this.scratch_vm.on('NEW_LABEL', (label) => {
+        this.scratch_vm.on('NEW_LABEL', label => {
             this.newLabel(label);
         });
         this.scratch_vm.on('DELETE_EXAMPLE', (label, exampleNum) => {
@@ -214,26 +208,27 @@ class Scratch3TextClassificationBlocks {
         this.scratch_vm.on('RENAME_LABEL', (oldName, newName) => {
             this.renameLabel(oldName, newName);
         });
-        this.scratch_vm.on('DELETE_LABEL', (label) => {
+        this.scratch_vm.on('DELETE_LABEL', label => {
             this.clearAllWithLabel({LABEL: label});
         });
         this.scratch_vm.on('CLEAR_ALL_LABELS', () => {
-            if (!this.labelListEmpty && confirm('Are you sure you want to clear all labels?')) {    //confirm with alert dialogue before clearing the model
-                this.clearAll(); 
+            // confirm with alert dialogue before clearing the model
+            if (!this.labelListEmpty && confirm('Are you sure you want to clear all labels?')) {
+                this.clearAll();
             }
         });
 
-        //Listen for model editing events emitted by the classifier modal
+        // Listen for model editing events emitted by the classifier modal
         this.scratch_vm.on('EXPORT_CLASSIFIER', () => {
             this.exportClassifier();
         });
         this.scratch_vm.on('LOAD_CLASSIFIER', () => {
-            console.log("load");
+            console.log('load');
             this.loadClassifier();
         });
 
         
-        this._recognizedSpeech = "";
+        this._recognizedSpeech = '';
 
     }
 
@@ -281,18 +276,18 @@ class Scratch3TextClassificationBlocks {
         };
     }
     
-     /**
-     * The key to load & store a target's text2speech state.
-     * @return {string} The key.
-     */
+    /**
+    * The key to load & store a target's text2speech state.
+    * @return {string} The key.
+    */
     static get STATE_KEY () {
         return 'Scratch.text2speech';
     }
 
     /**
-     * The default state, to be used when a target has no existing state.
-     * @type {Text2SpeechState}
-     */
+    * The default state, to be used when a target has no existing state.
+    * @type {Text2SpeechState}
+    */
     static get DEFAULT_TEXT2SPEECH_STATE () {
         return {
             voiceId: SQUEAK_ID
@@ -356,7 +351,6 @@ class Scratch3TextClassificationBlocks {
             blockIconURI: blockIconURI,
             showStatusButton: true,
             menuIconURI: menuIconURI,
-            //color1, color2, color3
             blocks: [
                 {
                     func: 'EDIT_TEXT_MODEL',
@@ -385,7 +379,7 @@ class Scratch3TextClassificationBlocks {
                         CLASS_NAME: {
                             type: ArgumentType.STRING,
                             menu: 'model_classes',
-                            defaultValue: this.getLabels()[0],
+                            defaultValue: this.getLabels()[0]
                         }
                     }
                 },
@@ -402,7 +396,56 @@ class Scratch3TextClassificationBlocks {
                             type: ArgumentType.STRING,
                             defaultValue: 'text'
                         }
-                    },
+                    }
+                },
+                {
+                    opcode: 'getConfidence',
+                    text: formatMessage({
+                        id: 'textClassification.getConfidence',
+                        default: 'get confidence for [TEXT]',
+                        description: 'get the confidence for the labeling of a specified text'
+                    }),
+                    blockType: BlockType.REPORTER,
+                    arguments: {
+                        TEXT: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'text'
+                        }
+                    }
+                },
+                {
+                    opcode: 'getSimilarity',
+                    text: formatMessage({
+                        id: 'textClassification.getSimilarity',
+                        default: 'similarity for [TEXT] and [TEXT_TWO]',
+                        description: 'get the similarity between two words/sentences'
+                    }),
+                    blockType: BlockType.REPORTER,
+                    arguments: {
+                        TEXT: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'text'
+                        },
+                        TEXT_TWO: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'text'
+                        }
+                    }
+                },
+                {
+                    opcode: 'getNearestNeighbors',
+                    text: formatMessage({
+                        id: 'textClassification.getNearestNeighbors',
+                        default: 'get nearest neighbors for [TEXT]',
+                        description: 'get the nearest neighbors for inputted word'
+                    }),
+                    blockType: BlockType.REPORTER,
+                    arguments: {
+                        TEXT: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'text'
+                        }
+                    }
                 },
                 '---',
                 {
@@ -418,7 +461,7 @@ class Scratch3TextClassificationBlocks {
                             type: ArgumentType.STRING,
                             defaultValue: 'Hello'
                         }
-                    },
+                    }
                 },
                 {
                     opcode: 'askSpeechRecognition',
@@ -433,7 +476,7 @@ class Scratch3TextClassificationBlocks {
                             type: ArgumentType.STRING,
                             defaultValue: 'How are you?'
                         }
-                    },
+                    }
                 },
                 {
                     opcode: 'getRecognizedSpeech',
@@ -442,7 +485,7 @@ class Scratch3TextClassificationBlocks {
                         default: 'answer',
                         description: 'Return the results of the speech recognition'
                     }),
-                    blockType: BlockType.REPORTER,
+                    blockType: BlockType.REPORTER
                 },
                 {
                     opcode: 'setVoice',
@@ -474,7 +517,7 @@ class Scratch3TextClassificationBlocks {
                             type: ArgumentType.NUMBER,
                             defaultValue: 10
                         }
-                    },
+                    }
                 }
             ],
             menus: {
@@ -489,19 +532,19 @@ class Scratch3TextClassificationBlocks {
             }
         };
     }
-    connect() {
+    connect () {
     }
-    disconnect() {
+    disconnect () {
     }
-    scan() {
+    scan () {
         
     }
-    isConnected() {
-        return (this._mStatus == 2);
+    isConnected () {
+        return (this._mStatus === 2);
     }
     
-    onDeviceDisconnected() {
-        console.log("Lost connection to robot");   
+    onDeviceDisconnected () {
+        console.log('Lost connection to robot');
         this.scratch_vm.emit(this.scratch_vm.constructor.PERIPHERAL_DISCONNECTED);
         this._mDevice = null;
         this._mServices = null;
@@ -509,30 +552,26 @@ class Scratch3TextClassificationBlocks {
     }
     
     /**
-     * TODO Moves info from the runtime into the classifier, called when a project is loaded
-     */    
+     * Moves info from the runtime into the classifier, called when a project is loaded
+    */ 
     loadModelFromRuntime () {
-        //console.log("Load model from runtime");
         this.labelList = [];
         this.labelListEmpty = false;
-        let textData = this.scratch_vm.modelData.textData;
+        const textData = this.scratch_vm.modelData.textData;
 
-        for (let label in this.scratch_vm.modelData.textData) {
+        for (const label in this.scratch_vm.modelData.textData) {
             if (this.scratch_vm.modelData.textData.hasOwnProperty(label)) {
-                let textExamples = textData[label];
+                const textExamples = textData[label];
                 this.newLabel(label);
                 this.newExamples(textExamples, label);
             }
         }
 
-        if (this.labelList.length == 0) {
-            this.labelList.push('');    //if the label list is empty, fill it with an empty string
+        if (this.labelList.length === 0) {
+            // if the label list is empty, fill it with an empty string
+            this.labelList.push('');
             this.labelListEmpty = true;
         }
-        /*console.log("RANDI try a practice class");
-        this.scratch_vm.modelData = {textData: {'Class 1':['Example 1','Example 2','Here\'s a really long example to make sure things are working','Example 3','Example 4','Example 5','Example 6']}, classifierData: {'Class 1':['Example 1','Example 2','Here\'s a really long example to make sure things are working','Example 3','Example 4','Example 5','Example 6']}, nextLabelNumber: 2};
-        this.labelList = ['Class 1'];
-        this.labelListEmpty = false;*/
     }
 
     /**
@@ -544,23 +583,22 @@ class Scratch3TextClassificationBlocks {
     }
 
     /**
-     * TODO grab text and add it as an example
+     * Grab text and add it as an example
      * @param {string} args.LABEL the name of the label to add an example to
      */
     textExample (args) {
-        // TODO grab text
-        let text = '';
+        const text = '';
          if (frame) {
              this.newExamples([text], args.LABEL);
          }
     }
 
     /**
-     * TODO Add new examples to a label
+     * Add new examples to a label
      * @param {array of strings} examples a list of text examples to add to a label
      * @param {string} label the name of the label
      */
-    newExamples (text_examples, label) {   //add examples for a label
+    newExamples (textExamples, label) {   //add examples for a label
         if (this.labelListEmpty) {
             // Edit label list accordingly
             this.labelList.splice(this.labelList.indexOf(''), 1);
@@ -569,11 +607,11 @@ class Scratch3TextClassificationBlocks {
         if (!this.labelList.includes(label)) {
             this.labelList.push(label);
         }
-        for (let text_example of text_examples) {
-            if (!this.scratch_vm.modelData.textData[label].includes(text_example)) {
-                const embeddedexample = this.getembeddedwords(text_example,label,"example"); //delayed by one example
-                this.scratch_vm.modelData.textData[label].push(text_example);
-                this.scratch_vm.modelData.classifierData[label].push(text_example);
+        for (let textExample of textExamples) {
+            if (!this.scratch_vm.modelData.textData[label].includes(textExample)) {
+                const embeddedExample = this.getembeddedwords(textExample, label, 'example'); // delayed by one example
+                this.scratch_vm.modelData.textData[label].push(textExample);
+                this.scratch_vm.modelData.classifierData[label].push(textExample);
                 this.count++;
             }
         }
@@ -581,10 +619,10 @@ class Scratch3TextClassificationBlocks {
     }
     
     /**
-     * TODO Add a new label to labelList
+     * Add a new label to labelList
      * @param {string} label the name of the label
      */
-    newLabel (newLabelName) {   //add the name of a new label
+    newLabel (newLabelName) {   // add the name of a new label
         if (this.labelListEmpty) {
             // Edit label list accordingly
             this.labelList.splice(this.labelList.indexOf(''), 1);
@@ -596,13 +634,9 @@ class Scratch3TextClassificationBlocks {
         
         this.scratch_vm.modelData.textData[newLabelName] = [];
         this.scratch_vm.modelData.classifierData[newLabelName] = [];
-        // update drowndown of class names
-        //this.scratch_vm.emit("TOOLBOX_EXTENSIONS_NEED_UPDATE");
         this.scratch_vm.requestToolboxExtensionsUpdate();
     }
     
-
-
 
     /**
      * TODO Rename a label
@@ -610,54 +644,60 @@ class Scratch3TextClassificationBlocks {
      * @param {string} newname the new name for the label
      */
     renameLabel (oldName, newName) {
-        let data = {...this.classifier.getClassifierDataset()};  //reset the classifier dataset with the renamed label
+        const data = {...this.classifier.getClassifierDataset()};  // reset the classifier dataset with the renamed label
         if (data[oldName]) {
             data[newName] = data[oldName];
             delete data[oldName];
             this.classifier.setClassifierDataset(data);
         }
 
-
-        this.scratch_vm.modelData.classifierData[newName] = this.scratch_vm.modelData.classifierData[oldName];  //reset the runtime's model data with the new renamed label (to share with GUI)
+        // reset the runtime's model data with the new renamed label (to share with GUI)
+        this.scratch_vm.modelData.classifierData[newName] = this.scratch_vm.modelData.classifierData[oldName];
         delete this.scratch_vm.modelData.classifierData[oldName];
 
-        this.scratch_vm.modelData.textData[newName] = this.scratch_vm.modelData.textData[oldName];  //reset the runtime's model data with the new renamed label (to share with GUI)
+        // reset the runtime's model data with the new renamed label (to share with GUI)
+        this.scratch_vm.modelData.textData[newName] = this.scratch_vm.modelData.textData[oldName];
         delete this.scratch_vm.modelData.textData[oldName];
 
-        this.labelList.splice(this.labelList.indexOf(oldName), 1);  //reset label list with the new renamed label
+        // reset label list with the new renamed label
+        this.labelList.splice(this.labelList.indexOf(oldName), 1);
         this.labelList.push(newName);
     }
 
     /**
-     * TODO Delete an example (or all loaded examples, if exampleNum === -1)
+     * Delete an example (or all loaded examples, if exampleNum === -1)
      * @param {string} label the name of the label with the example to be removed
      * @param {integer} exampleNum which example, in the array of a label's examples, to remove
      */
     deleteExample (label, exampleNum) {
-        let data = {...this.classifier.getClassifierDataset()};  //reset the classifier dataset with the deleted example
-        let labelExamples = data[label].arraySync();
-         // Remove label from the runtime's model data (to share with the GUI)
-         if (exampleNum === -1) {    //if this is true, delete all the loaded examples
-            let numLoadedExamples = this.scratch_vm.modelData.classifierData[label].length - this.scratch_vm.modelData.textData[label].length;   //imageData[label].length is ONLY the length of the NEW examples (not the saved and then loaded ones!)
+        // reset the classifier dataset with the deleted example
+        const data = {...this.classifier.getClassifierDataset()};
+        const labelExamples = data[label].arraySync();
+        // Remove label from the runtime's model data (to share with the GUI)
+        // if this is true, delete all the loaded examples
+        if (exampleNum === -1) {
+            // imageData[label].length is ONLY the length of the NEW examples (not the saved and then loaded ones!)
+            const numLoadedExamples = this.scratch_vm.modelData.classifierData[label].length - this.scratch_vm.modelData.textData[label].length;
             this.scratch_vm.modelData.classifierData[label].splice(0, numLoadedExamples);
             labelExamples.splice(0, numLoadedExamples);
-         } else {
-         this.scratch_vm.modelData.textData[label].splice(exampleNum, 1);
-         this.scratch_vm.modelData.classifierData[label].splice(exampleNum - this.scratch_vm.modelData.textData[label].length - 1, 1);
-         labelExamples.splice(exampleNum - this.scratch_vm.modelData.textData[label].length - 1, 1);
-         }
+        } else {
+            this.scratch_vm.modelData.textData[label].splice(exampleNum, 1);
+            this.scratch_vm.modelData.classifierData[label].splice(exampleNum - this.scratch_vm.modelData.textData[label].length - 1, 1);
+            labelExamples.splice(exampleNum - this.scratch_vm.modelData.textData[label].length - 1, 1);
+        }
 
-         if (labelExamples.length > 0) {
+        if (labelExamples.length > 0) {
             data[label] = tf.tensor(labelExamples);
             this.classifier.setClassifierDataset(data);
         } else {
-            this.classifier.clearClass(label);  //if there are no more examples for this label, don't consider it in the classifier anymore (but keep it in labelList and the runtime model data)
+            // if there are no more examples for this label, don't consider it in the classifier anymore (but keep it in labelList and the runtime model data)
+            this.classifier.clearClass(label);
         }
 
     }
 
     /**
-     * TODO Clear all data stored in the classifier and label list
+     * Clear all data stored in the classifier and label list
      */
     clearLocal () {
         this.scratch_vm.emit("TOOLBOX_EXTENSIONS_NEED_UPDATE");
@@ -667,12 +707,12 @@ class Scratch3TextClassificationBlocks {
     }
 
     /**
-     * TODO Clear local label list, but also clear all data stored in the runtime
+     * Clear local label list, but also clear all data stored in the runtime
      */
     clearAll () {
         this.clearLocal();
+
         // Clear runtime's model data
-        
         this.scratch_vm.modelData = {textData: {}, classifierData: {}, nextLabelNumber: 1};
         
     }
@@ -684,15 +724,16 @@ class Scratch3TextClassificationBlocks {
     clearAllWithLabel (args) {
         if (this.labelList.includes(args.LABEL)) {
             if (this.classifier.getClassExampleCount()[args.LABEL] > 0) {
-                this.classifier.clearClass(args.LABEL);  //remove label from the classifier
+                // remove label from the classifier
+                this.classifier.clearClass(args.LABEL);
             }
             // Remove label from labelList
             this.labelList.splice(this.labelList.indexOf(args.LABEL), 1);
             // Remove label from the runtime's model data (to share with the GUI)
-            delete this.scratch_vm.modelData.classifierData[args.LABEL];  
+            delete this.scratch_vm.modelData.classifierData[args.LABEL];
             delete this.scratch_vm.modelData.textData[args.LABEL];
             // If the label list is now empty, fill it with an empty string
-            if (this.labelList.length === 0) {  
+            if (this.labelList.length === 0) {
                 this.labelListEmpty = true;
                 this.labelList.push('');
             }
@@ -782,13 +823,13 @@ class Scratch3TextClassificationBlocks {
      */
     async speakText(args, util) {
         // Cast input to string
-        let words = Cast.toString(args.TEXT);
-        let locale = 'en-US';
+        const words = Cast.toString(args.TEXT);
+        const locale = 'en-US';
 
         const state = this._getState(util.target);
 
-        let gender = this.VOICE_INFO[state.voiceId].gender;
-        let playbackRate = this.VOICE_INFO[state.voiceId].playbackRate;
+        const gender = this.VOICE_INFO[state.voiceId].gender;
+        const playbackRate = this.VOICE_INFO[state.voiceId].playbackRate;
         
         // Build up URL
         let path = `${SERVER_HOST}/synth`;
@@ -838,13 +879,13 @@ class Scratch3TextClassificationBlocks {
         });
     }
     
-    recognizeSpeech() {
-        let recognition = new webkitSpeechRecognition();
-        let self = this;
+    recognizeSpeech () {
+        const recognition = new webkitSpeechRecognition();
+        const self = this;
         
         return new Promise(resolve => {
             recognition.start();
-            recognition.onresult = function(event) {
+            recognition.onresult = function (event) {
                 if (event.results.length > 0) {
                     self._recognizedSpeech = event.results[0][0].transcript;
                 }
@@ -853,14 +894,14 @@ class Scratch3TextClassificationBlocks {
         });
     }
     
-    async askSpeechRecognition(args, util) {
-        let prompt = Cast.toString(args.PROMPT);
+    async askSpeechRecognition (args, util) {
+        const prompt = Cast.toString(args.PROMPT);
         args.TEXT = prompt;
-        let speakTextResolved = await this.speakText(args, util);
+        const speakTextResolved = await this.speakText(args, util);
         return this.recognizeSpeech();
      }
     
-    getRecognizedSpeech() {
+    getRecognizedSpeech () {
         return this._recognizedSpeech;
     }
 
@@ -871,16 +912,17 @@ class Scratch3TextClassificationBlocks {
      * @returns {boolean} true if the model matches
      *   reference
      */
-    async ifTextMatchesClass(args, util) {
+    async ifTextMatchesClass (args) {
         const text = args.TEXT;
         const className = args.CLASS_NAME;
-        const predictionState = await this.get_embeddings(text,"none","predict");
+        let predictionState = await this.get_embeddings(text, 'none', 'predict');
+        predictionState = predictionState[0];
         
         if (!predictionState) {
             return false;
         } else {
             const currentMaxClass = predictionState;
-            return (currentMaxClass == String(className));
+            return (currentMaxClass === String(className));
         }
     }
 
@@ -890,11 +932,97 @@ class Scratch3TextClassificationBlocks {
      * @param {BlockUtility} util - the block utility
      * @returns {string} class name if input text matched, empty string if there's a problem with the model
      */
-    async getModelPrediction(args) {
+    async getModelPrediction (args) {
         const text = args.TEXT;
-        const predictionState = await this.get_embeddings(text,"none","predict");
-        return predictionState;
+        const predictionState = await this.get_embeddings(text, 'none', 'predict');
+        // const outputString = `${predictionState[0]} with confidence of ${predictionState[1].toFixed(2)}`;
+        return predictionState[0];
     }
+
+    async getConfidence (args) {
+        const text = args.TEXT;
+        const predictionState = await this.get_embeddings(text, 'none', 'predict');
+        // const outputString = `${predictionState[0]} with confidence of ${predictionState[1].toFixed(2)}`;
+        return predictionState[1].toFixed(2);
+    }
+
+    async getNearestNeighbors (args) {
+       // get k parameter
+        const text = args.TEXT;
+        let count = 0;
+        for (const label in this.scratch_vm.modelData.textData) {
+            for (const _ of this.scratch_vm.modelData.textData[label]) {
+                count = count + 1;
+            }
+        }
+        this.k = Math.floor(Math.sqrt(count));
+        
+        // get similarity for word to other words, keep k highest
+        const allSimilarities = {};
+
+        for (const label in this.scratch_vm.modelData.textData) {
+            for (const word of this.scratch_vm.modelData.textData[label]) {
+                let similarity = await this.getSimilarityOutput(word, text);
+                allSimilarities[word] = similarity;
+            }
+        }
+
+        
+
+    }
+
+    async getSimilarity (args) {
+        const firstText = args.TEXT;
+        const secondText = args.TEXT_TWO;
+        return this.getSimilarityOutput(firstText, secondText);
+
+    }
+
+    async getSimilarityOutput(firstText, secondText) {
+        let similarityScore;
+        function dotProduct (vector1, vector2) {
+            let result = 0;
+            for (let i = 0; i < vector1.length; i++) {
+              result += vector1[i] * vector2[i];
+            }
+            return result;
+        }
+
+
+        function magnitude (vector){
+            let sum = 0;
+            for (let i = 0;i<vector.length;i++){
+                sum += vector[i] * vector[i];
+            }
+            return Math.sqrt(sum);
+        }
+
+        function cosineSimilarity(a, b) {
+            var magnitudeA = Math.sqrt(dotProduct(a, a));
+            var magnitudeB = Math.sqrt(dotProduct(b, b));
+            if (magnitudeA && magnitudeB) {
+                return dotProduct(a,b) / (magnitude(a) * magnitude(b));
+            } else {
+                return false
+            }
+        }
+
+
+        await use.loadQnA().then(async model => {
+            const input = {queries: [firstText, secondText], responses: []};
+
+            let allEmbeddings = await model.embed(input);
+            allEmbeddings = allEmbeddings['queryEmbedding'].arraySync();
+            
+            similarityScore = await cosineSimilarity(allEmbeddings[0], allEmbeddings[1]);
+            similarityScore = similarityScore - .9;
+            this.similarity = await similarityScore;
+        });
+
+        this.similarity = this.similarity * 1000;
+        return this.similarity.toFixed(2);
+    }
+    
 
     /**
      * Returns whether or not the text inputted is one of the examples inputted
@@ -902,24 +1030,18 @@ class Scratch3TextClassificationBlocks {
      * @param className - the class whose examples are being checked
      * @returns a boolean true if the text is an example or false if the text is not an example
      */
-    getPredictedClass(text,className) { 
-        function printObject(o) {
-            var out = '';
-            for (var p in o) {
-              out += p + ': ' + o[p] + '\n';
-            }
-            alert(out);
-          }
-        if (!this.labelListEmpty) {   //whenever the classifier has some data
+    getPredictedClass (text, className) {
+        // whenever the classifier has some data
+        if (!this.labelListEmpty) {
             try {
-            for (let example of this.scratch_vm.modelData.textData[className]) {
-                if (text.toLowerCase() === example.toLowerCase()) {
-                    return true;
+                for (let example of this.scratch_vm.modelData.textData[className]) {
+                    if (text.toLowerCase() === example.toLowerCase()) {
+                        return true;
+                    }
                 }
+            } catch(err) {
+                return false;
             }
-        } catch(err) {
-            return false;
-        }
         } else { //if there is no data in the classifier
             return false;
         }
@@ -933,64 +1055,58 @@ class Scratch3TextClassificationBlocks {
      * @param label - this is always "none" when embedding examples
      * @param direction - is either "example" when an example is being inputted or "predict" when a word to be classified is inputted
      */
-        async getembeddedwords(text,label,direction) {
-            if (!this.labelListEmpty) {
-                const embeddedtext = await this.get_embeddings(text,label,direction);
-                this._mStatus = 2;            
-                this.scratch_vm.emit(this.scratch_vm.constructor.PERIPHERAL_CONNECTED);
-            }
+    async getembeddedwords (text, label, direction) {
+        if (!this.labelListEmpty) {
+            const embeddedText = await this.get_embeddings(text, label, direction);
+            this._mStatus = 2;        
+            this.scratch_vm.emit(this.scratch_vm.constructor.PERIPHERAL_CONNECTED);
         }
+    }
 
 
     /**
      * Embeds text and either adds examples to classifier or returns the predicted label
+     * Changes text into a 2d tensor
      * @param text - the text inputted
      * @param label - the label to add the example to
      * @param direction - is either "example" when an example is being inputted or "predict" when a word to be classified is inputted
      * @returns if the direction is "predict" returns the predicted label for the text inputted
      */
-        async get_embeddings(text,label,direction) { //changes text into a 2d tensor
-            const newText = await this.getTranslate(text,"en"); //translates text from any language to english
+        async get_embeddings(text, label, direction) {
+            // translates text from any language to english
+            const newText = await this.getTranslate(text, 'en');
 
             if (!this.labelListEmpty) {  
-           await use.load().then(async model => {
-            await model.embed(newText).then(async embeddings => {
-                this.embedding = embeddings;
-            });
-        });
-        if (direction === "example") {
-            this.classifier.addExample(this.embedding, label);
-        } else if (direction === "predict") {
-            return await this.classifier.predictClass(this.embedding,Math.sqrt(this.count)).then( async result => {
-                this.predictedLabel = await result.label;
-                return this.predictedLabel;
-            });
-        }
-        } else {
-            return "No classes inputted";
-            
-        }
+                await use.load().then(async model => {
+                    await model.embed(newText).then(async embeddings => {
+                    this.embedding = embeddings;
+                    });
+                });
+                if (direction === "example") {
+                    this.classifier.addExample(this.embedding, label);
+                } else if (direction === "predict") {
+                    return await this.classifier.predictClass(this.embedding,Math.sqrt(this.count)).then( async result => {
+                        this.predictedLabel = await result.label;
+                        return [this.predictedLabel, result.confidences[this.predictedLabel]];
+                    });
+                }
+            } else {
+                return "No classes inputted";
+                
+            }
     }
    /**
-     * Exports the labels and examples in the form of a json document with the default name of "classifier-info.json"
+     * Exports the labels and examples in the form of a JSON file with the default name of "classifier-info.json"
      */
-      exportClassifier() { //exports classifier as JSON file
-        // let dataset = this.scratch_vm.modelData.textData;
-        // let jsonStr = JSON.stringify(dataset);
-        // //exports json file
-        // var data = "text/json;charset=utf-8," + encodeURIComponent(jsonStr);
-        // var a = document.createElement('a');
-        // a.setAttribute("href", "data:" + data);
-        // a.setAttribute("download", "classifier-info.json");
-        // a.click();
-
+      exportClassifier () {
         // start of exporting csv
 
-        var headers = {'fields':[]} // holds the formatted headers and data
-        var data = [];
-        maximum = 0
+        // holds the formatted headers and data
+        const headers = {'fields':[]}
+        const data = [];
+        let maximum = 0;
         // creates a dictionary of headers to put into the CSV file
-        for (let label in this.scratch_vm.modelData.textData) {
+        for (const label in this.scratch_vm.modelData.textData) {
             headers['fields'].push(String(label).replace(/,/g, ''));
 
             // finds the maximum row length
@@ -1000,94 +1116,98 @@ class Scratch3TextClassificationBlocks {
         }
         
         // formats data so each embedded array represents a row
-        for (var i = 0; i < maximum; i++) {
-            temp = []
-            for (let label in this.scratch_vm.modelData.textData) {
+        for (let i = 0; i < maximum; i++) {
+            const temp = [];
+            for (const label in this.scratch_vm.modelData.textData) {
                 try {
                     temp.push(this.scratch_vm.modelData.textData[label][i].replace(/,/g, ''));
                 } catch (error) {
-                    temp.push(' '); 
+                    temp.push(' ');
                 }
             }
-            data.push(temp) //adds array to the total arrays
+            // adds array to the total arrays
+            data.push(temp);
         }
 
-        headers['data'] = data // adds the formatted examples to the dictionary with the labels
+        // adds the formatted examples to the dictionary with the labels
+        headers['data'] = data;
 
         // exports data to a CSV file
-        var csv = Papa.unparse(headers) // converts to a CSV format
-        var csvData = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
-        var csvURL =  null;
+        const csv = Papa.unparse(headers); // converts to a CSV format
+        const csvData = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+        let csvURL = null;
         if (navigator.msSaveBlob) {
             csvURL = navigator.msSaveBlob(csvData,'classifier-export.csv');
         } else {
             csvURL = window.URL.createObjectURL(csvData);
         }
-        var tempLink = document.createElement('a');
+        let tempLink = document.createElement('a');
 
-        tempLink.setAttribute("href", csvURL);
+        tempLink.setAttribute('href', csvURL);
         tempLink.setAttribute('download', 'classifier-export.csv');
         tempLink.click();
         
-      }
+    }
 
-   /**
+    /**
      * Loads the json document which contains labels and examples. Inputs the labels and examples into the classifier
      */
-      async loadClassifier() { //loads classifier to project
-        var self = this
-        var dataset = document.getElementById("imported-classifier").files[0];
-        if (dataset !== undefined) {
-            fr = new FileReader();
-            fr.onload = receivedText;
-            fr.readAsText(dataset);
-        } 
+    async loadClassifier() { //loads classifier to project
+        const self = this;
+        const dataset = document.getElementById("imported-classifier").files[0];
+        /**
+         * parses through the json document and adds to the model textData and classifier
+         * @param e the JSON document that we are loading
+        */
+        function receivedText(e) { 
+            let lines = e.target.result;
 
-      // parses through the json document and adds to the model textData and classifier
-      function receivedText(e) { 
-        let lines = e.target.result;
-
-        // check if JSON is in the correct form
-        try {
-        var newArr = JSON.parse(lines);
-        self.clearAll();
-        for (let label in newArr) {
-            if (newArr.hasOwnProperty(label)) {
-                let textExamples = newArr[label];
-                self.newLabel(label);
-                self.newExamples(textExamples, label);
-            }
-        }
-    } catch (err) {
-        // check if spreadsheet CSV is in the correct form
-        try {
-            // converts the csv file into JSON
-            var newArr = Papa.parse(lines,{ header: true, skipEmptyLines: 'greedy' });
-            self.clearAll();
-            // adds the labels to the classifier
-            for (let row in newArr.data) {
-                for (let col in newArr.data[row]) {
-                    // if we have not already added the label
-                    if (!(col in self.scratch_vm.modelData.textData)) { 
-                        if (col) {
-                            self.newLabel(col);
+            // check if JSON is in the correct form
+            try {
+                var newArr = JSON.parse(lines);
+                self.clearAll();
+                for (let label in newArr) {
+                    if (newArr.hasOwnProperty(label)) {
+                        let textExamples = newArr[label];
+                        self.newLabel(label);
+                        self.newExamples(textExamples, label);
+                    }
+                }
+            } catch (err) {
+                // check if spreadsheet CSV is in the correct form
+                try {
+                    // converts the csv file into JSON
+                    let newArr = Papa.parse(lines,{ header: true, skipEmptyLines: 'greedy' });
+                    self.clearAll();
+                    // adds the labels to the classifier
+                    for (let row in newArr.data) {
+                        for (let col in newArr.data[row]) {
+                            // if we have not already added the label
+                            if (!(col in self.scratch_vm.modelData.textData)) { 
+                                if (col) {
+                                    self.newLabel(col);
+                                }
+                            }
+                            // adds the examples to the classifier
+                            if (newArr.data[row][col]) {
+                                self.newExamples([newArr.data[row][col]],[col])
+                            }
                         }
                     }
-                    // adds the examples to the classifier
-                    if (newArr.data[row][col]) {
-                        self.newExamples([newArr.data[row][col]],[col])
-                    }
+                } catch (err) {
+                    console.log("CSV didn't work")
+                }
+                console.log("JSON and CSV didn't work");
             }
-        }
-        } catch (err) {
-            console.log("CSV didn't work")
-        }
-        console.log("JSON and CSV didn't work");
-    }
         
-      }
+        }
+        if (dataset !== undefined) {
+            const fr = new FileReader();
+            fr.onload = receivedText;
+            fr.readAsText(dataset);
+        }
     }
-    getTranslate (words,language) {
+    getTranslate (words, language) {
         // Don't remake the request if we already have the value.
         if (this._lastTextTranslated === words &&
             this._lastLangTranslated === language) {
@@ -1108,7 +1228,7 @@ class Scratch3TextClassificationBlocks {
                 timeout: serverTimeoutMs
             }, (err, res, body) => {
                 if (err) {
-                    log.warn(`error fetching translate result! ${res}`);
+                    // log.warn(`error fetching translate result! ${res}`);
                     resolve('');
                     return '';
                 }
@@ -1127,10 +1247,6 @@ class Scratch3TextClassificationBlocks {
         return translatePromise;
     }
      
-
-
-
-      
 }
 
 module.exports = Scratch3TextClassificationBlocks;

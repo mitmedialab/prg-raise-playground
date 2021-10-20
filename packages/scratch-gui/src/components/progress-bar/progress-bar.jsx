@@ -14,13 +14,13 @@ class ProgressBarExample extends React.Component {
       this.state = {
         percentage: 0,
         compliments: {
-            "At least five examples per text classifier class": false,
-            "Text classifier classes are balanced": false,
-            "Using embedded conditionals": false,
-            "At least two text classification blocks": false,
-            "Good use of image classification blocks": false,
-            "Two image classifier classes": false,
-            "Two text classifier classes": false,
+            'At least five examples per text classifier class': false,
+            'Text classifier classes are balanced': false,
+            'Using embedded conditionals': false,
+            'At least two text classification blocks': false,
+            'Good use of image classification blocks': false,
+            'Two image classifier classes': false,
+            'Two text classifier classes': false,
         },
         improvements: []
       };
@@ -36,14 +36,14 @@ class ProgressBarExample extends React.Component {
         let newCompliment = this.state.compliments;
         newCompliment[check] = !newCompliment[check];
 
-        if (check === "Two text classifier classes") {
-            newCompliment = {...newCompliment, "Three or more text classifier classes" : false };
-        } else if (check === "Three or more text classifier classes") {
-            delete newCompliment["Two text classifier classes"];
-        } else if (check === "Two image classifier classes") {
-            newCompliment = {...newCompliment, "Three or more image classifier classes" : false };
-        } else if (check === "Three or more image classifier classes") {
-            delete newCompliment["Two image classifier classes"];
+        if (check === 'Two text classifier classes') {
+            newCompliment = {...newCompliment, 'Three or more text classifier classes' : false };
+        } else if (check === 'Three or more text classifier classes') {
+            delete newCompliment['Two text classifier classes'];
+        } else if (check === 'Two image classifier classes') {
+            newCompliment = {...newCompliment, 'Three or more image classifier classes' : false };
+        } else if (check === 'Three or more image classifier classes') {
+            delete newCompliment['Two image classifier classes'];
         }
 
         this.setState({compliments: newCompliment});
@@ -75,32 +75,32 @@ class ProgressBarExample extends React.Component {
         keys = Object.keys(keys);
 
         if (keys.length == 2) {
-            this.setState(prevState => ({ percentage: prevState.percentage + 10 }));
+            this.setState(prevState => ({percentage: prevState.percentage + 10}));
             this.setState({ 
-                improvements: this.state.improvements.push("You have two text classifier classes so far. Try to see if you can add more.")
+                improvements: this.state.improvements.push('You have two text classifier classes so far. Try to see if you can add more.')
             });
-            this.handleListUpdate("Two text classifier classes");
+            this.handleListUpdate('Two text classifier classes');
         } else if (keys.length > 2) {
-            this.setState(prevState => ({ percentage: prevState.percentage + 20 }));
-            this.handleListUpdate("Three or more text classifier classes");
+            this.setState(prevState => ({percentage: prevState.percentage + 20}));
+            this.handleListUpdate('Three or more text classifier classes');
         } else {
             this.setState({ 
-                improvements: this.state.improvements.push("Try adding some text classifier classes with the 'Edit Model' button to increase your progress.")
+                improvements: this.state.improvements.push('Try adding some text classifier classes with the \'Edit Model\' button to increase your progress.')
             });
         }
 
         if (imageKeys.length == 2) {
             this.setState(prevState => ({ percentage: prevState.percentage + 10 }));
             this.setState({ 
-                improvements: this.state.improvements.push("You have two image classifier classes so far. Try to see if you can add more.")
+                improvements: this.state.improvements.push('You have two image classifier classes so far. Try to see if you can add more.')
             });
-            this.handleListUpdate("Two image classifier classes");
+            this.handleListUpdate('Two image classifier classes');
         } else if (imageKeys.length > 2) {
             this.setState(prevState => ({ percentage: prevState.percentage + 20 }));
-            this.handleListUpdate("Three or more image classifier classes");
+            this.handleListUpdate('Three or more image classifier classes');
         } else {
             this.setState({ 
-                improvements: this.state.improvements.push("Try adding some classes in Teachable Machine to increase your progress.")
+                improvements: this.state.improvements.push('Try adding some classes in Teachable Machine to increase your progress.')
             });
         }
     }
@@ -120,10 +120,10 @@ class ProgressBarExample extends React.Component {
                 this.setState(prevState => ({ percentage: prevState.percentage - 15 }));
             }
             this.setState({ 
-                improvements: this.state.improvements.push("You need at least 5 examples per class to have an accurate classifier.")
+                improvements: this.state.improvements.push('You need at least 5 examples per class to have an accurate classifier.')
             });
         } else if (Object.keys(keys).length > 0) {
-            this.handleListUpdate("At least five examples per text classifier class");
+            this.handleListUpdate('At least five examples per text classifier class');
             this.setState(prevState => ({ percentage: prevState.percentage + 15 }));
         }
     }
@@ -151,15 +151,15 @@ class ProgressBarExample extends React.Component {
                     this.setState(prevState => ({ percentage: prevState.percentage - 10 }));
                 }
                 this.setState({ 
-                    improvements: this.state.improvements.push("Try making the number of examples per class be the same.")
+                    improvements: this.state.improvements.push('Try making the number of examples per class be the same.')
                 });
             } else {
                 if (minimum === false) {
                     this.setState(prevState => ({ percentage: prevState.percentage + 10 }));
-                    this.handleListUpdate("Text classifier classes are balanced");
+                    this.handleListUpdate('Text classifier classes are balanced');
                 }
                 // this.setState({ 
-                //     compliments: this.state.compliments.push("Your examples in your classes are balanced well. ")
+                //     compliments: this.state.compliments.push('Your examples in your classes are balanced well. ')
                 // });
             }
         }
@@ -181,15 +181,15 @@ class ProgressBarExample extends React.Component {
                 parent = blocks[block].id;
             }
 
-            if (blocks[block].opcode.includes("sensing_askandwait")) {
+            if (blocks[block].opcode.includes('sensing_askandwait')) {
                 sensing = sensing + 1;
             }
 
-            if (blocks[block].opcode.includes("sensing_answer")) {
+            if (blocks[block].opcode.includes('sensing_answer')) {
                 answer = answer + 1;
             }
 
-            if (blocks[block].opcode.includes("teachableMachine")) {
+            if (blocks[block].opcode.includes('teachableMachine')) {
                 teachable_machine = teachable_machine + 1;
             }
         }
@@ -207,9 +207,9 @@ class ProgressBarExample extends React.Component {
             if (blocks[block].opcode.includes('control_if')) {
                 if (blocks[block].parent == parent) {
                     // this.setState({ 
-                    //     compliments: this.state.compliments.push("Having embedded conditionals makes your code more complex.")
+                    //     compliments: this.state.compliments.push('Having embedded conditionals makes your code more complex.')
                     // });
-                    this.handleListUpdate("Using embedded conditionals");
+                    this.handleListUpdate('Using embedded conditionals');
                     this.setState(prevState => ({ percentage: prevState.percentage + 15 }));
                     
                 }
@@ -221,23 +221,23 @@ class ProgressBarExample extends React.Component {
         // if not an embedded
         if (parent == '') {
             this.setState({ 
-                improvements: this.state.improvements.push("Try embeddeding conditionals to make your code more complex.")
+                improvements: this.state.improvements.push('Try embeddeding conditionals to make your code more complex.')
             });
         }
 
         // if using teachable machine
         if (teachable_machine > 0) {
             this.setState(prevState => ({ percentage: prevState.percentage + 10 }));
-            this.handleListUpdate("Good use of image classification blocks");
+            this.handleListUpdate('Good use of image classification blocks');
             // this.setState({ 
-            //     compliments: this.state.compliments.push("You know how to use teachable machine blocks in your code really well.")
+            //     compliments: this.state.compliments.push('You know how to use teachable machine blocks in your code really well.')
             // });
         }
         
         // check how many text classification blocks there are
         if (count >= 2) {
             this.setState(prevState => ({ percentage: prevState.percentage + 10 }));
-            this.handleListUpdate("At least two text classification blocks");
+            this.handleListUpdate('At least two text classification blocks');
         }
     }
 
