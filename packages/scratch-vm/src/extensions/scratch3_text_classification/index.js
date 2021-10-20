@@ -960,14 +960,34 @@ class Scratch3TextClassificationBlocks {
         // get similarity for word to other words, keep k highest
         const allSimilarities = {};
 
+        // create a list to store all of the promises
+        const promises = [];
+        // also create a list to store the words associated with that promise
+        const words = [];
+
         for (const label in this.scratch_vm.modelData.textData) {
             for (const word of this.scratch_vm.modelData.textData[label]) {
-                let similarity = await this.getSimilarityOutput(word, text);
-                allSimilarities[word] = similarity;
+                // execute the code to get similarity output, store the promise in a list
+                //let similarity = await this.getSimilarityOutput(word, text);
+                promises.push(this.getSimilarityOutput(word, text));
+
+                // also push the words into an array to keep them in order
+                words.push(word);
             }
         }
 
-        
+        // wait for all of the promises to resolve, then reassociate promises with words
+        await Promise.all(promises).then(results => {
+            for (let i = 0; i<results.length; i++){
+                const word = words[i];
+                const similarity = results[i];
+                allSimilarities[word] = similarity; 
+            }
+        });
+
+        console.log("allSimilarities: ", allSimilarities);
+
+        // handle the similarities
 
     }
 
