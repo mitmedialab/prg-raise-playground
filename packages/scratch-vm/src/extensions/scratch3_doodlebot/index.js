@@ -15,10 +15,11 @@ const blockIconURI =
 
 const EXTENSION_ID = "doodlebot";
 
+const command_pause = 250;
 
 const _drive = ["forward", "backward", "left", "right"];
 const _turns = ["left", "right"];
-const _drive_protocol = ["0,0", "1,1", "0,1", "1,0"];
+const _drive_protocol = ["0,0", "1,1", "1,0", "0,1"];
 
 const _pen_dirs = ["up", "down"];
 const _pen_protocol = ["0", "45"];
@@ -440,7 +441,7 @@ class DoodlebotBlocks {
         this._robotStatus = 1;
 
         // remove event listeners
-        if (this._robotUart.removeEventListener)
+        if (this._robotUart && this._robotUart.removeEventListener)
             this._robotUart.removeEventListener(
                 "receiveText",
                 this.updateSensors.bind(this)
@@ -525,8 +526,6 @@ class DoodlebotBlocks {
         console.log("play animation: " + args.ANIM + " " + animFace);
         
         // send message
-        const pause = 100;
-
         if (this._robotUart && args.ANIM == "happy") {
             const happy_pause = 250;
             setTimeout(() => {
@@ -548,9 +547,9 @@ class DoodlebotBlocks {
                                 }, happy_pause);
                             }, happy_pause);
                         }, happy_pause);
-                    }, pause);
-                }, pause);
-            }, pause);
+                    }, command_pause);
+                }, command_pause);
+            }, command_pause);
         } else if (this._robotUart) {
             setTimeout(() => {
                 this._robotUart.sendText("(d,b)");
@@ -558,9 +557,9 @@ class DoodlebotBlocks {
                     this._robotUart.sendText("(d," + animFace + ")");
                     setTimeout(()=> {
                         if (animSound != "") this._robotUart.sendText("(s," + animSound + ")");
-                    }, pause);
-                }, pause);
-            }, pause);
+                    }, command_pause);
+                }, command_pause);
+            }, command_pause);
         }
 
         // start blinking
@@ -582,7 +581,7 @@ class DoodlebotBlocks {
             // pause, then return back to face
             const animFace = _anim_protocol[_anims.indexOf(this._currentFace)];
             if (this._robotUart) this._robotUart.sendText("(d," + animFace + ")");
-        }, 150);
+        }, command_pause);
     }   
     /**
      * For stopping the blinking animation
