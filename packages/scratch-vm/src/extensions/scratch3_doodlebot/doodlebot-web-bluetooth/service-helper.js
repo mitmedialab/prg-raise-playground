@@ -65,7 +65,7 @@ class ServiceHelper {
             throw new Error("Unable to locate characteristic");
         }
 
-        await this.queue.add(async () => characteristic.writeValue(value));
+        await this.queue.add(async () => characteristic.writeValueWithoutResponse(value));
     }
 
     async handleListener(event, uuid, handler) {
