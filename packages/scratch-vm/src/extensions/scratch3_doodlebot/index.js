@@ -15,7 +15,7 @@ const blockIconURI =
 
 const EXTENSION_ID = "doodlebot";
 
-const command_pause = 250;
+const command_pause = 100;
 
 const _drive = ["forward", "backward", "left", "right"];
 const _turns = ["left", "right"];
@@ -179,6 +179,21 @@ class DoodlebotBlocks {
                             type: ArgumentType.STRING,
                             menu: "ANIMS",
                             defaultValue: "happy",
+                        },
+                    },
+                },
+                {
+                    opcode: "displayText",
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: "doodlebot.displayText",
+                        default: "display text [TEXT]",
+                        description: "display text on the screen",
+                    }),
+                    arguments: {
+                        TEXT: {
+                            type: ArgumentType.STRING,
+                            defaultValue: "Hello!"
                         },
                     },
                 },
@@ -422,9 +437,14 @@ class DoodlebotBlocks {
                 this.updateSensors.bind(this)
             );
         }
+         
+        // set up the text
+        this._robotUart.sendText("(d,x,2,1,65535)");
+        setTimeout(()=> {
+            // start with face neutral
+            this.playAnimation({ ANIM: "neutral" });
+        }, command_pause);
 
-        // start with face neutral
-        this.playAnimation({ ANIM: "neutral" });
     }
     onDeviceDisconnected() {
         console.log("Lost connection to robot");
@@ -572,6 +592,8 @@ class DoodlebotBlocks {
      * For playing the blinking animation
      */
      playBlink() {
+        const blink_pause = 100;
+
         console.log("play animation: blink");
 
         // send message
@@ -581,7 +603,7 @@ class DoodlebotBlocks {
             // pause, then return back to face
             const animFace = _anim_protocol[_anims.indexOf(this._currentFace)];
             if (this._robotUart) this._robotUart.sendText("(d," + animFace + ")");
-        }, command_pause);
+        }, blink_pause);
     }   
     /**
      * For stopping the blinking animation
@@ -597,7 +619,21 @@ class DoodlebotBlocks {
     }
 
     /**
-     * For clearing the diplay
+     * For setting text on display
+     */
+    displayText(args) {
+        console.log("display text: " + args.TEXT);
+
+        // stop blinking
+        this.stopBlink();
+
+        // send message
+        if (this._robotUart) this._robotUart.sendText("(d,t," + args.TEXT + ")");
+    }
+
+
+    /**
+     * For clearing the display
      */
     clearDisplay(args) {
         console.log("clear display");
