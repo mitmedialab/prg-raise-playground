@@ -38,6 +38,9 @@ class EditLabelTile extends React.Component {
     }
     handleNewExample () {  //call props.onAddExample
         let newExample = this.state.inputText;
+        this.setState({
+            inputText: ""
+        });
         if (newExample != undefined && newExample != '') {
             this.props.onNewExamples(this.props.labelName, [newExample]);
         }
@@ -76,7 +79,7 @@ class EditLabelTile extends React.Component {
                     </Box>
                     <Box className={styles.labelTileFooter}>
                         <Box className={styles.addExampleRow}>
-                            <input type="text" className={styles.inputField} onBlur={this.handleInputForNewExample}/>
+                            <input type="text" className={styles.inputField} value={this.state.inputText} onChange={this.handleInputForNewExample}/>
                             <button onClick={this.handleNewExample}>Add Example</button>
                         </Box>
                     </Box>
