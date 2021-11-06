@@ -160,7 +160,8 @@ class MenuBar extends React.Component {
             'handleLanguageMouseUp',
             'handleRestoreOption',
             'getSaveToComputerHandler',
-            'restoreOptionMessage'
+            'restoreOptionMessage',
+            'handleDriveProjectSelect'
         ]);
     }
     componentDidMount () {
