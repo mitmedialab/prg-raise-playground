@@ -433,7 +433,7 @@ class MenuBar extends React.Component {
                                         <GooglePicker clientId={CLIENT_ID}
                                             developerKey={DEVELOPER_KEY}
                                             scope={DRIVE_SCOPE}
-                                            onChange={handleDriveProjectSelect}
+                                            onChange={this.handleDriveProjectSelect}
                                             onAuthFailed={data => console.log('on auth failed:', data)}
                                             multiselect={false}
                                             navHidden={false}
