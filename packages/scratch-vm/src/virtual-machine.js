@@ -595,7 +595,7 @@ class VirtualMachine extends EventEmitter {
         });
     }
 
-    downloadProjectFromURLDirect(url) {        
+    downloadProjectFromURLDirect(url) {               
         // Handle loading dropbox links
         if (url.includes("dropbox.com")) {
             const dropboxRegex = /\/s\/[A-Za-z0-9]+\/.*.sb3/;

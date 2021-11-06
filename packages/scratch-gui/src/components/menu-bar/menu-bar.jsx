@@ -274,6 +274,14 @@ class MenuBar extends React.Component {
         }
         }
     }
+    handleDriveProjectSelect(data) {
+        console.log('on change:', data);
+        const fileId = data.docs[0].id;
+        const url = 'https://www.googleapis.com/drive/v2/files/' + fileId;
+        console.log("Load Google drive project: " + url);
+        this.props.vm.downloadProjectFromURLDirect(url);
+        //https://www.googleapis.com/drive/v2/files/1C16w3ii37PBFp9f2LXAWZp2QhMCH9KI6
+    }
     render () {
         const saveNowMessage = (
             <FormattedMessage
@@ -425,7 +433,7 @@ class MenuBar extends React.Component {
                                         <GooglePicker clientId={CLIENT_ID}
                                             developerKey={DEVELOPER_KEY}
                                             scope={DRIVE_SCOPE}
-                                            onChange={data => console.log('on change:', data)}
+                                            onChange={handleDriveProjectSelect}
                                             onAuthFailed={data => console.log('on auth failed:', data)}
                                             multiselect={false}
                                             navHidden={false}
