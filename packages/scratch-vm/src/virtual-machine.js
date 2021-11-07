@@ -611,7 +611,6 @@ class VirtualMachine extends EventEmitter {
                     },
                 }, (err, resp, body) => {
                     resolve(this.loadProject(body));
-                    reject(window.alert("This project file is incompatible with this website."));
                 })
             })
         } else if (url.includes("dropbox.com")) {        
@@ -624,7 +623,6 @@ class VirtualMachine extends EventEmitter {
         return new Promise((resolve, reject) => {
             nets({ url: url }, (err, resp, body) => {
                 resolve(this.loadProject(body));
-                reject(window.alert("This project file is incompatible with this website."));
             })
         })
     }

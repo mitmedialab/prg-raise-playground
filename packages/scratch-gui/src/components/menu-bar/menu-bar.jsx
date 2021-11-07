@@ -286,9 +286,17 @@ class MenuBar extends React.Component {
     }
     handleDriveProjectSelect(data) {
         console.log("picked Drive file:", data);
-        const fileId = data.docs[0].id;
-        const url = "https://www.googleapis.com/drive/v3/files/" + fileId + "/?alt=media;" + this.state.authToken;
-        this.props.vm.downloadProjectFromURLDirect(url);
+        if (data.docs) {
+            const fileId = data.docs[0].id;
+            const url = "https://www.googleapis.com/drive/v3/files/" + fileId + "/?alt=media;" + this.state.authToken;
+            
+            const readyToReplaceProject = this.props.confirmReadyToReplaceProject(
+                this.props.intl.formatMessage(sharedMessages.replaceProjectWarning)
+            );
+            if (readyToReplaceProject) {
+                this.props.vm.downloadProjectFromURLDirect(url);
+            }
+        }
     }
     render () {
         const saveNowMessage = (
@@ -424,7 +432,7 @@ class MenuBar extends React.Component {
                                                 </MenuItem>
                                             )}
                                         </MenuSection>
-                                    )} {/* RANDI Google Drive section here */}     
+                                    )}
                                     <MenuSection>
                                         {/* authImmediate is more flexible with false, faster with true
                                           * /* createPicker={ (google, oauthToken) => {
