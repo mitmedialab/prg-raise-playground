@@ -161,8 +161,12 @@ class MenuBar extends React.Component {
             'handleRestoreOption',
             'getSaveToComputerHandler',
             'restoreOptionMessage',
+            'handleDriveAuthenticate',
             'handleDriveProjectSelect'
         ]);
+        this.state = {
+            authToken: ""
+        };
     }
     componentDidMount () {
         document.addEventListener('keydown', this.handleKeyPress);
@@ -275,13 +279,16 @@ class MenuBar extends React.Component {
         }
         }
     }
+    handleDriveAuthenticate(token) {
+        this.setState({
+            authToken: token
+        });
+    }
     handleDriveProjectSelect(data) {
-        console.log('on change:', data);
+        console.log("picked Drive file:", data);
         const fileId = data.docs[0].id;
-        const url = 'https://www.googleapis.com/drive/v2/files/' + fileId;
-        console.log("Load Google drive project: " + url);
+        const url = "https://www.googleapis.com/drive/v3/files/" + fileId + "/?alt=media;" + this.state.authToken;
         this.props.vm.downloadProjectFromURLDirect(url);
-        //https://www.googleapis.com/drive/v2/files/1C16w3ii37PBFp9f2LXAWZp2QhMCH9KI6
     }
     render () {
         const saveNowMessage = (
@@ -434,6 +441,7 @@ class MenuBar extends React.Component {
                                         <GooglePicker clientId={CLIENT_ID}
                                             developerKey={DEVELOPER_KEY}
                                             scope={DRIVE_SCOPE}
+                                            onAuthenticate={this.handleDriveAuthenticate}
                                             onChange={this.handleDriveProjectSelect}
                                             onAuthFailed={data => console.log('on auth failed:', data)}
                                             multiselect={false}

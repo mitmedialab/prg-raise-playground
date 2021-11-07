@@ -574,6 +574,7 @@ class VirtualMachine extends EventEmitter {
                 if (error.hasOwnProperty('validationError')) {
                     return Promise.reject(JSON.stringify(error));
                 }
+
                 return Promise.reject(error);
             });
     }
@@ -595,9 +596,26 @@ class VirtualMachine extends EventEmitter {
         });
     }
 
-    downloadProjectFromURLDirect(url) {               
-        // Handle loading dropbox links
-        if (url.includes("dropbox.com")) {
+    downloadProjectFromURLDirect(url) {
+        // Handle loading google drive files
+        if (url.includes("googleapis.com")) {
+            // get authToken using regex
+            const delimiter = url.indexOf(";");
+            const authToken = url.substr(delimiter+1);
+            url = url.substr(0, delimiter);
+            return new Promise((resolve, reject) => {
+                nets({
+                    url: url,
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken,
+                    },
+                }, (err, resp, body) => {
+                    resolve(this.loadProject(body));
+                    reject(window.alert("This project file is incompatible with this website."));
+                })
+            })
+        } else if (url.includes("dropbox.com")) {        
+            // Handle loading dropbox links
             const dropboxRegex = /\/s\/[A-Za-z0-9]+\/.*.sb3/;
             const found = url.match(dropboxRegex);
             if (found.length > 0) url = 'https://dl.dropboxusercontent.com' + found[0];
@@ -606,6 +624,7 @@ class VirtualMachine extends EventEmitter {
         return new Promise((resolve, reject) => {
             nets({ url: url }, (err, resp, body) => {
                 resolve(this.loadProject(body));
+                reject(window.alert("This project file is incompatible with this website."));
             })
         })
     }
