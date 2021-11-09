@@ -31,6 +31,7 @@ import TurboMode from '../../containers/turbo-mode.jsx';
 import MenuBarHOC from '../../containers/menu-bar-hoc.jsx';
 import GooglePicker from 'react-google-picker';
 
+import {showAlertWithTimeout} from '../../reducers/alerts';
 import {openTipsLibrary} from '../../reducers/modals';
 import {setPlayer} from '../../reducers/mode';
 import {
@@ -38,10 +39,12 @@ import {
     getIsUpdating,
     getIsShowingProject,
     manualUpdateProject,
+    onLoadedProject,
     requestNewProject,
     remixProject,
     saveProjectAsCopy
 } from '../../reducers/project-state';
+
 import {
     openAccountMenu,
     closeAccountMenu,
@@ -74,6 +77,11 @@ import languageIcon from '../language-selector/language-icon.svg';
 import scratchLogo from './prg-white.png';
 
 import sharedMessages from '../../lib/shared-messages';
+
+import loadScript from 'load-script';
+
+const GOOGLE_SDK_URL = 'https://apis.google.com/js/api.js';
+let scriptLoadingStarted = false;
 
 const ariaMessages = defineMessages({
     language: {
@@ -144,7 +152,7 @@ MenuItemTooltip.propTypes = {
 
 const CLIENT_ID = '906634949042-5jbc7q594e69spg2i0bkt9a14iojvtsp.apps.googleusercontent.com';
 const DEVELOPER_KEY = 'AIzaSyDRoOjwaDXOxq4cda1nrCVLaVQvTCh5GYE';
-const DRIVE_SCOPE = ['https://www.googleapis.com/auth/drive.readonly'];
+const DRIVE_SCOPE = ['https://www.googleapis.com/auth/drive.file'];
 
 class MenuBar extends React.Component {
     constructor (props) {
@@ -162,14 +170,26 @@ class MenuBar extends React.Component {
             'getSaveToComputerHandler',
             'restoreOptionMessage',
             'handleDriveAuthenticate',
-            'handleDriveProjectSelect'
+            'handleDriveProjectSelect',
+            'handleClickDriveSave',
+            'onApiLoad'
         ]);
         this.state = {
-            authToken: ""
+            authToken: "",
+            fileId: ""
         };
     }
     componentDidMount () {
         document.addEventListener('keydown', this.handleKeyPress);
+        if(this.isGoogleReady()) {
+            // google api is already exists
+            // init immediately
+            this.onApiLoad();
+        } else if (!scriptLoadingStarted) {
+            // load google api and the init
+            scriptLoadingStarted = true;
+            loadScript(GOOGLE_SDK_URL, this.onApiLoad)
+        }
     }
     componentWillUnmount () {
         document.removeEventListener('keydown', this.handleKeyPress);
@@ -279,6 +299,61 @@ class MenuBar extends React.Component {
         }
         }
     }
+
+    doAuth(callback) {
+        window.gapi.auth.authorize({
+            client_id: CLIENT_ID,
+            scope: DRIVE_SCOPE,
+            immediate: false
+            },
+            callback
+        );
+    }
+    handleClickDriveSave() {
+        // make sure user has logged into Google Drive
+        if (!this.state.authToken) {
+            this.doAuth(response => {
+                if (response.access_token) {
+                    this.handleDriveAuthenticate(response.access_token);
+                    this.handleClickDriveSave();
+                }
+            });
+            this.props.onRequestCloseFile();
+            return;
+        }
+
+        // show alert that we are saving project
+        this.props.onShowSavingAlert();
+
+        // check if we have already created file
+        let fileId = this.state.fileId;
+        if (!fileId) {
+            if (this.isGoogleDriveReady()) {
+                let fileName = prompt("Name your project", this.props.projectTitle);
+
+                if (fileName != null && fileName != "") {
+                    window.gapi.client.drive.files.create({
+                        name: fileName + ".sb3",
+                        mimeType: "application/x-zip"
+                    }).then((response) => {
+                        if (response.status == 200) {
+                            this.setState({
+                                fileId: response.result.id
+                            });
+                            this.handleClickDriveSave();
+                        }
+                    });
+                }
+            }
+            this.props.onRequestCloseFile();
+            return;
+        }
+
+        const url = "https://www.googleapis.com/upload/drive/v3/files/" + fileId + "?uploadType=media;" + this.state.authToken;
+        this.props.vm.uploadProjectToURL(url);
+        this.props.onShowSaveSuccessAlert();
+        this.props.onRequestCloseFile();
+    }
     handleDriveAuthenticate(token) {
         this.setState({
             authToken: token
@@ -297,7 +372,27 @@ class MenuBar extends React.Component {
                 this.props.vm.downloadProjectFromURLDirect(url);
             }
         }
+        this.props.onRequestCloseFile();
     }
+    isGoogleReady() {
+        return !!window.gapi;
+    }
+    
+    isGoogleAuthReady() {
+        return !!window.gapi.auth;
+    }
+
+    isGoogleDriveReady() {
+        return !!window.gapi.client.drive;
+    }
+    
+    onApiLoad() {
+        window.gapi.load('auth');
+        window.gapi.load('client', () => {
+            window.gapi.client.load('drive', 'v3');
+        });
+    }
+
     render () {
         const saveNowMessage = (
             <FormattedMessage
@@ -434,18 +529,6 @@ class MenuBar extends React.Component {
                                         </MenuSection>
                                     )}
                                     <MenuSection>
-                                        {/* authImmediate is more flexible with false, faster with true
-                                          * /* createPicker={ (google, oauthToken) => {
-                                            const docsView = new google.picker.View(google.picker.ViewId.DOCS);
-                                            docsView.setQuery('.sb3');
-                                            const uploadView = new google.picker.DocsUploadView();                  
-                                            const picker = new window.google.picker.PickerBuilder()
-                                                .addView(docsView)
-                                                .addView(uploadView)
-                                                .setOAuthToken(oauthToken)
-                                                .setDeveloperKey(DEVELOPER_KEY);
-                                            picker.build().setVisible(true);
-                                            }} */}
                                         <GooglePicker clientId={CLIENT_ID}
                                             developerKey={DEVELOPER_KEY}
                                             scope={DRIVE_SCOPE}
@@ -460,15 +543,17 @@ class MenuBar extends React.Component {
                                             >
                                             <MenuItem classname="google">
                                                 <FormattedMessage
-                                                    defaultMessage="Open from Google Drive"
+                                                    defaultMessage="Open project from Google Drive"
                                                     description="Menu bar item for loading a project from Google Drive" // eslint-disable-line max-len
                                                     id="gui.menuBar.loadFromDrive"
                                                 />
                                             </MenuItem>
                                         </GooglePicker>
-                                        <MenuItem>
+                                        <MenuItem
+                                            onClick={this.handleClickDriveSave}
+                                        >
                                             <FormattedMessage
-                                                defaultMessage="Save to Google Drive"
+                                                defaultMessage="Save project to Google Drive"
                                                 description="Menu bar item for saving a project to Google Drive" // eslint-disable-line max-len
                                                 id="gui.menuBar.saveToDrive"
                                             />
@@ -839,6 +924,8 @@ MenuBar.propTypes = {
     onRequestCloseLogin: PropTypes.func,
     onSeeCommunity: PropTypes.func,
     onShare: PropTypes.func,
+    onShowSaveSuccessAlert: PropTypes.func,
+    onShowSavingAlert: PropTypes.func,
     onToggleLoginOpen: PropTypes.func,
     projectTitle: PropTypes.string,
     renderLogin: PropTypes.func,
@@ -894,7 +981,9 @@ const mapDispatchToProps = dispatch => ({
     onClickRemix: () => dispatch(remixProject()),
     onClickSave: () => dispatch(manualUpdateProject()),
     onClickSaveAsCopy: () => dispatch(saveProjectAsCopy()),
-    onSeeCommunity: () => dispatch(setPlayer(true))
+    onSeeCommunity: () => dispatch(setPlayer(true)),
+    onShowSaveSuccessAlert: () => showAlertWithTimeout(dispatch, 'saveSuccess'),
+    onShowSavingAlert: () => showAlertWithTimeout(dispatch, 'saving')
 });
 
 export default compose(

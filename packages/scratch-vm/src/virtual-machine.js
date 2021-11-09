@@ -595,6 +595,32 @@ class VirtualMachine extends EventEmitter {
             vm.loadProject(projectAsset.data);
         });
     }
+    
+    uploadProjectToURL(url) {
+        // get authToken using regex
+        const delimiter = url.indexOf(";");
+        const authToken = url.substr(delimiter+1);
+        url = url.substr(0, delimiter);
+        
+        this.saveProjectSb3().then(content => {
+            nets({
+                url: url,
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': content.type,
+                    'Authorization': 'Bearer ' + authToken,
+                },
+                encoding: undefined,
+                body: content
+            },(err, resp, body) => {
+                if (err) {
+                    console.log(err);
+                    return;
+                }
+                // resp.statusCode
+            })
+        });
+    }
 
     downloadProjectFromURLDirect(url) {
         // Handle loading google drive files
