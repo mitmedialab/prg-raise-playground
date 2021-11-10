@@ -20,7 +20,7 @@ class ProgressBarExample extends React.Component {
             'At least two text classification blocks': false,
             'Good use of image classification blocks': false,
             'Two image classifier classes': false,
-            'Two text classifier classes': false,
+            'Two text classifier classes': false
         },
         improvements: []
       };

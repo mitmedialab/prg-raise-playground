@@ -1,3 +1,7 @@
+/* eslint-disable func-style */
+/* eslint-disable require-jsdoc */
+/* eslint-disable indent */
+/* eslint-disable no-negated-condition */
 /*
  * Resources:
  *  - Text to speech extension written by Scratch Team 2019
@@ -135,8 +139,9 @@ class Scratch3TextClassificationBlocks {
         this.scratch_vm = runtime;
         this.predictedLabel = null;
         this.classifier = knnClassifier.create();
-        this.embedding = null;
+        this.embedding = [];
         this.count = 0;
+        this.confidence = 0;
         this.classifiedData = null;
         this._mStatus = 1;
         this.scratch_vm.registerPeripheralExtension(EXTENSION_ID, this);
@@ -915,15 +920,21 @@ class Scratch3TextClassificationBlocks {
     async ifTextMatchesClass (args) {
         const text = args.TEXT;
         const className = args.CLASS_NAME;
-        let predictionState = await this.get_embeddings(text, 'none', 'predict');
-        predictionState = predictionState[0];
-        
-        if (!predictionState) {
-            return false;
+        // let predictionState = await this.get_embeddings(text, 'none', 'predict');
+        // predictionState = predictionState[0];
+        if (className) {
+            this.get_embeddings(text, 'none', 'predict');
+            await this.timeout(2000);
+            let label = await Promise.all([this.predictedLabel]);
+            label = label[0];
+            return await label[0] === String(className);
         } else {
-            const currentMaxClass = predictionState;
-            return (currentMaxClass === String(className));
+            return false;
         }
+    }
+
+    timeout (delay) {
+        return new Promise(res => setTimeout(res, delay));
     }
 
     /**
@@ -934,16 +945,17 @@ class Scratch3TextClassificationBlocks {
      */
     async getModelPrediction (args) {
         const text = args.TEXT;
-        const predictionState = await this.get_embeddings(text, 'none', 'predict');
-        // const outputString = `${predictionState[0]} with confidence of ${predictionState[1].toFixed(2)}`;
-        return predictionState[0];
+        await this.get_embeddings(text, 'none', 'predict');
+        await this.timeout(2000);
+        return await Promise.all([this.predictedLabel]);
+        
     }
 
     async getConfidence (args) {
         const text = args.TEXT;
-        const predictionState = await this.get_embeddings(text, 'none', 'predict');
-        // const outputString = `${predictionState[0]} with confidence of ${predictionState[1].toFixed(2)}`;
-        return predictionState[1].toFixed(2);
+        this.get_embeddings(text, 'none', 'predict');
+        await this.timeout(2000);
+        return await Promise.all([this.confidence]);
     }
 
     async getNearestNeighbors (args) {
@@ -968,8 +980,10 @@ class Scratch3TextClassificationBlocks {
         for (const label in this.scratch_vm.modelData.textData) {
             for (const word of this.scratch_vm.modelData.textData[label]) {
                 // execute the code to get similarity output, store the promise in a list
-                //let similarity = await this.getSimilarityOutput(word, text);
-                promises.push(this.getSimilarityOutput(word, text));
+                // let currentSimilarity = this.getSimilarity(word, text);
+                let currentSimilarity = await this.getSimilarityOutput(word, text);
+                await this.timeout(300);
+                promises.push(currentSimilarity);
 
                 // also push the words into an array to keep them in order
                 words.push(word);
@@ -978,68 +992,76 @@ class Scratch3TextClassificationBlocks {
 
         // wait for all of the promises to resolve, then reassociate promises with words
         await Promise.all(promises).then(results => {
-            for (let i = 0; i<results.length; i++){
+            for (let i = 0; i < results.length; i++){
                 const word = words[i];
                 const similarity = results[i];
-                allSimilarities[word] = similarity; 
+                allSimilarities[word] = similarity;
+                console.log(allSimilarities);
             }
         });
 
-        console.log("allSimilarities: ", allSimilarities);
+        // go through similarities and find nearest k words
+        let nearest = this.k;
+        const nearestWords = [];
+        while (nearest > 0 && Object.keys(allSimilarities).length) {
+            let maxNearest = Object.keys(allSimilarities).reduce((a, b) => allSimilarities[a] > allSimilarities[b] ? a : b);
+            nearest = nearest - 1;
+            nearestWords.push(` ${maxNearest}`);
+            delete allSimilarities[maxNearest];
+        }
 
-        // handle the similarities
+        if (nearestWords.length === 0) {
+            return 'No neighbors found';
+        }
+        return nearestWords;
 
     }
 
     async getSimilarity (args) {
         const firstText = args.TEXT;
         const secondText = args.TEXT_TWO;
-        return this.getSimilarityOutput(firstText, secondText);
+        await this.getSimilarityOutput(firstText, secondText);
+        await this.timeout(500);
+        return this.similarity.toFixed(2);
 
     }
 
-    async getSimilarityOutput(firstText, secondText) {
-        let similarityScore;
-        function dotProduct (vector1, vector2) {
-            let result = 0;
-            for (let i = 0; i < vector1.length; i++) {
-              result += vector1[i] * vector2[i];
-            }
-            return result;
-        }
+    async getSimilarityOutput (firstText, secondText) {
+        this.embedding = [];
+        // await use.loadQnA().then(async model => {
+        //     const input = {queries: [firstText, secondText], responses: []};
 
-
-        function magnitude (vector){
-            let sum = 0;
-            for (let i = 0;i<vector.length;i++){
-                sum += vector[i] * vector[i];
-            }
-            return Math.sqrt(sum);
-        }
-
-        function cosineSimilarity(a, b) {
-            var magnitudeA = Math.sqrt(dotProduct(a, a));
-            var magnitudeB = Math.sqrt(dotProduct(b, b));
-            if (magnitudeA && magnitudeB) {
-                return dotProduct(a,b) / (magnitude(a) * magnitude(b));
-            } else {
-                return false
-            }
-        }
-
-
-        await use.loadQnA().then(async model => {
-            const input = {queries: [firstText, secondText], responses: []};
-
-            let allEmbeddings = await model.embed(input);
-            allEmbeddings = allEmbeddings['queryEmbedding'].arraySync();
+        //     let allEmbeddings = await model.embed(input);
+        //     allEmbeddings = allEmbeddings['queryEmbedding'].arraySync();
             
-            similarityScore = await cosineSimilarity(allEmbeddings[0], allEmbeddings[1]);
-            similarityScore = similarityScore - .9;
-            this.similarity = await similarityScore;
+        //     similarityScore = await cosineSimilarity(allEmbeddings[0], allEmbeddings[1]);
+        //     similarityScore = similarityScore - .9;
+        //     this.similarity = await similarityScore;
+        // });
+        let promises = [];
+        await use.load().then(async model => {
+            model.embed(firstText).then(async embeddings => {
+            promises.push(embeddings);
+            promises = await Promise.all(promises);
+            this.embedding.push(promises[0]);
+
+            });
         });
 
-        this.similarity = this.similarity * 1000;
+        let secondPromise = [];
+        await use.load().then(async model => {
+            model.embed(secondText).then(async embeddings => {
+            secondPromise.push(embeddings);
+            secondPromise = await Promise.all(secondPromise);
+            this.embedding.push(await secondPromise[0]);
+            console.log(this.embedding);
+            const distance = tf.losses.cosineDistance(await this.embedding[0], await this.embedding[1], 1).dataSync();
+            this.similarity = 1 - distance[0];
+
+
+            });
+        });
+
         return this.similarity.toFixed(2);
     }
     
@@ -1092,28 +1114,38 @@ class Scratch3TextClassificationBlocks {
      * @param direction - is either "example" when an example is being inputted or "predict" when a word to be classified is inputted
      * @returns if the direction is "predict" returns the predicted label for the text inputted
      */
-        async get_embeddings(text, label, direction) {
-            // translates text from any language to english
-            const newText = await this.getTranslate(text, 'en');
-
-            if (!this.labelListEmpty) {  
-                await use.load().then(async model => {
-                    await model.embed(newText).then(async embeddings => {
-                    this.embedding = embeddings;
-                    });
-                });
+    async get_embeddings (text, label, direction) {
+        // translates text from any language to english
+        const newText = await this.getTranslate(text, 'en');
+        const promises = [];
+        let newLabel = [];
+        if (!this.labelListEmpty) {
+            newLabel = await use.load().then(async model => {
+                model.embed(newText).then(async embeddings => {
+                // this.embedding = embeddings;
+                await promises.push(embeddings);
+                this.embedding = await Promise.all(promises);
+                
                 if (direction === "example") {
-                    this.classifier.addExample(this.embedding, label);
+                    this.classifier.addExample(await this.embedding[0], label);
+                    return "Inputting to classes";
+    
                 } else if (direction === "predict") {
-                    return await this.classifier.predictClass(this.embedding,Math.sqrt(this.count)).then( async result => {
-                        this.predictedLabel = await result.label;
+                    return await this.classifier.predictClass(await this.embedding[0], Math.sqrt(this.count)).then(async result => {
+                        this.predictedLabel = await Promise.all([result.label]);
+                        this.confidence = await Promise.all([result.confidences[this.predictedLabel]]);
                         return [this.predictedLabel, result.confidences[this.predictedLabel]];
                     });
                 }
-            } else {
-                return "No classes inputted";
-                
-            }
+
+                });
+            });
+
+        } else {
+            return "No class inputted";
+            
+        }
+
     }
    /**
      * Exports the labels and examples in the form of a JSON file with the default name of "classifier-info.json"
