@@ -7,7 +7,7 @@ const formatMessage = require("format-message");
 const Color = require("../../util/color");
 
 const Doodlebot = require("./doodlebot-web-bluetooth/index.js");
-const { rgbToDecimal } = require("../../util/color");
+const EventEmitter = require('events')
 
 // eslint-disable-next-line max-len
 const blockIconURI =
@@ -42,74 +42,56 @@ const _no_blinks = [
     "disgust",
     "happy",
     "love",
-    "sad",
     "sleeping",
     "wink"
 ];
-const _anims = [
-    "angry",
-    "annoyed",
-    "confused",
-    "disgust",
-    "engaged",
-    "fear",
-    "happy",
-    "love",
-    "neutral",
-    "sad",
-    "sleeping",
-    "surprise",
-    "wink",
-    "worried",
-    "wrong"
-];
-const _anim_protocol = [
-    "a",
-    "y",
-    "m",
-    "d",
-    "e",
-    "f",
-    "h",
-    "o",
-    "n",
-    "s",
-    "l",
-    "p",
-    "i",
-    "r",
-    "w"
-];
-const _anim_sounds = [
-    "4",
-    "",
-    "63",
-    "29",
-    "72",
-    "150",
-    "88",
-    "",
-    "",
-    "53",
-    "",
-    "",
-    "",
-    "136"
-];
+const _anims = {
+    "angry": "a",
+    "annoyed": "y",
+    "confused": "m",
+    "disgust": "d",
+    "engaged": "e",
+    "fear": "f",
+    "happy": "h",
+    "love": "o",
+    "neutral": "n",
+    "sad": "s",
+    "sleeping": "l",
+    "surprise": "p",
+    "wink": "i",
+    "worried": "r",
+    "wrong": "w"
+}
+const _anim_sounds = {
+    "angry": "4",
+    "annoyed": "",
+    "confused": "63",
+    "disgust": "29",
+    "engaged": "72",
+    "fear": "150",
+    "happy": "88",
+    "love": "",
+    "neutral": "",
+    "sad": "",
+    "sleeping": "53",
+    "surprise": "",
+    "wink": "",
+    "worried": "",
+    "wrong": "136"
+};
 
-const _sensors = [
-    "bumpers",
-    "distance",
-    "altimeter",
-    "accelerometer",
-    "magenetometer",
-    "gyroscope",
-    "color sensor",
-    "temperature",
-    "humidity",
-    "pressure",
-];
-const _sensor_protocol = ["b", "d", "u", "x", "o", "g", "l", "t", "h", "p"];
+const _sensors = {
+    "bumpers": "b",
+    "distance": "d",
+    "altimeter": "u",
+    "accelerometer": "x",
+    "magenetometer": "o",
+    "gyroscope": "g",
+    "color sensor": "l",
+    "temperature": "t",
+    "humidity": "h",
+    "pressure": "p",
+};
 
 // Core, Team, and Official extension classes should be registered statically with the Extension Manager.
 // See: scratch-vm/src/extension-support/extension-manager.js
@@ -137,10 +119,13 @@ class DoodlebotBlocks {
         this._blinkInterval = null;
         this._pixelInterval = null;
 
+        this.sensorValues = {};
+        this.sensorEvent = new EventEmitter()
+
         this.scratch_vm.on("PROJECT_STOP_ALL", this.resetRobot.bind(this));
         this.scratch_vm.on("CONNECT_DOODLEBOT", this.connectToBLE.bind(this));
 
-        console.log("Version: initial commands for new doodlebot");
+        console.log("Version: implementing sensors");
     }
 
     /**
@@ -362,6 +347,51 @@ class DoodlebotBlocks {
                 },
                 "---",
                 {
+                    opcode: "enableSensor",
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: "doodlebot.enableSensor",
+                        default: "enable [SENSOR]",
+                        description:
+                            "Send command to enable a sensor",
+                    }),
+                    arguments: {
+                        SENSOR: {
+                            type: ArgumentType.String,
+                            menu: "SENSORS",
+                            defaultValue: _sensors[0],
+                        },
+                    },
+                },
+                {
+                    opcode: "disableSensor",
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: "doodlebot.disableSensor",
+                        default: "disable [SENSOR]",
+                        description:
+                            "Send command to disable a sensor",
+                    }),
+                    arguments: {
+                        SENSOR: {
+                            type: ArgumentType.String,
+                            menu: "SENSORS",
+                            defaultValue: _sensors[0],
+                        },
+                    },
+                },
+                {
+                    opcode: "readBattery",
+                    blockType: BlockType.REPORTER,
+                    text: formatMessage({
+                        id: "arduinoBot.readBattery",
+                        default: "battery level",
+                        description:
+                            "Get battery reading from robot",
+                    }),
+                },
+                "---",
+                {
                     opcode: "sendCommand",
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
@@ -380,7 +410,7 @@ class DoodlebotBlocks {
             menus: {
                 ANIMS: {
                     acceptReporters: false,
-                    items: _anims,
+                    items: Object.keys(_anims),
                 },
                 DIRS: {
                     acceptReporters: false,
@@ -397,6 +427,10 @@ class DoodlebotBlocks {
                 PIXEL_ANIMS: {
                     acceptReporters: false,
                     items: _pixel_anims,
+                },
+                SENSORS: {
+                    acceptReports: false,
+                    items: Object.keys(_sensors),
                 },
                 TURNS: {
                     acceptReports: false,
@@ -415,7 +449,7 @@ class DoodlebotBlocks {
         return this._robotStatus == 2;
     }
 
-    onDeviceConnected() {
+    async onDeviceConnected() {
         console.log("Connected to bluetooth device: ", this._robotDevice);
 
         // update peripheral indicator
@@ -439,12 +473,12 @@ class DoodlebotBlocks {
         }
          
         // set up the text
+        await this.sendCommandToRobot(
+            "(d,x,2,1,65535)", command_pause
+        );
         this._robotUart.sendText("(d,x,2,1,65535)");
-        setTimeout(()=> {
-            // start with face neutral
-            this.playAnimation({ ANIM: "neutral" });
-        }, command_pause);
-
+        // start with face neutral
+        this.playAnimation({ ANIM: "neutral" });
     }
     onDeviceDisconnected() {
         console.log("Lost connection to robot");
@@ -524,62 +558,166 @@ class DoodlebotBlocks {
     /**
      * For reading data back from the device
      */
+    readBattery(args) {
+        // enable battery
+        if (this._robotUart) {
+            this._robotUart.sendText("(e,f)");
+
+            // wait for sensor to return
+            return new Promise((resolve) => {
+                this.sensorEvent.on('battery', (value) =>{ 
+                    // disable battery read
+                    this._robotUart.sendText("(x,f)");
+                    resolve(value);
+                });
+            });
+        }
+        return -1;
+    }
+
+    sendCommandToRobot(command, delayInMs) {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                if (this._robotUart) this._robotUart.sendText(command);
+                resolve();
+            }, delayInMs);
+        });
+    }
+
+    async enableAllSensors(args) {
+        const cmd = args.MODE == "enable" ? "e" : "x";
+        const sensor_pause = 50;
+
+        console.log("all sensors", args.MODE);
+
+        for (const [sensor, sensor_cmd] of Object.entries(_sensors)) {
+            await this.sendCommandToRobot(
+                "(" + cmd + "," + sensor_cmd + ")", sensor_pause
+            );
+        }
+    }
+
+    /**
+     * For enabling sensors
+     */
+    enableSensor(args) {
+        // send message
+        if (this._robotUart) this._robotUart.sendText("(e,f)");
+    }
+
+    /**
+     * For disabling sensors
+     */
+    disableSensor(args) {
+        // send message
+        if (this._robotUart) this._robotUart.sendText("(x,f)");
+    }
+
+    /**
+     * For returning battery reading
+     */
     updateSensors(event) {
-        console.log("Got UART data: " + event.detail);
+        const dataLine = event.detail.split("(");
+
+        for (let i=0; i<dataLine.length; i++) {
+            let data = dataLine[i];
+            if (data && data != "") {
+                let ds = data.split(",");
+                const sensor = ds[0];
+                switch(sensor) {
+                    case "b":
+                        this.sensorEvent.emit('bumper.front', Number.parseInt(ds[1]));
+                        this.sensorEvent.emit('bumper.back', Number.parseInt(ds[2]));
+                        this.sensorVals['bumper.front'] = Number.parseInt(ds[1]);
+                        this.sensorVals['bumper.back'] = Number.parseInt(ds[2]);
+                        break;
+                    case "l":
+                        this.sensorEvent.emit('color.red', Number.parseFloat(ds[1]));
+                        this.sensorEvent.emit('color.green', Number.parseFloat(ds[2]));
+                        this.sensorEvent.emit('color.blue', Number.parseFloat(ds[3]));
+                        this.sensorVals['color.red'] = Number.parseFloat(ds[1]);
+                        this.sensorVals['color.green'] = Number.parseFloat(ds[2]);
+                        this.sensorVals['color.blue'] = Number.parseFloat(ds[3]);
+                        break;
+                    case "d":
+                        this.sensorEvent.emit('distance', Number.parseInt(ds[1]));
+                        this.sensorVals['distance'] = Number.parseInt(ds[1]);
+                        break;
+                    case "h":
+                        this.sensorEvent.emit('humidity', Number.parseFloat(ds[1]));
+                        this.sensorVals['humidity'] = Number.parseFloat(ds[1]);
+                        break;
+                    case "t":
+                        this.sensorEvent.emit('temperature', Number.parseFloat(ds[1]));
+                        this.sensorVals['temperature'] = Number.parseFloat(ds[1]);
+                        break;
+                    case "p":
+                        this.sensorEvent.emit('pressure', Number.parseFloat(ds[1]));
+                        this.sensorVals['pressure'] = Number.parseFloat(ds[1]);
+                        break;
+                    case "o":
+                        this.sensorEvent.emit('magnetometer.roll', Number.parseFloat(ds[1]));
+                        this.sensorEvent.emit('magnetometer.pitch', Number.parseFloat(ds[2]));
+                        this.sensorEvent.emit('magnetometer.yaw', Number.parseFloat(ds[3]));
+                        this.sensorVals['magnetometer.roll'] = Number.parseFloat(ds[1]);
+                        this.sensorVals['magnetometer.pitch'] = Number.parseFloat(ds[2]);
+                        this.sensorVals['magnetometer.yaw'] = Number.parseFloat(ds[3]);
+                        break;
+                    case "u":
+                        this.sensorEvent.emit('altitude', Number.parseFloat(ds[1]));
+                        this.sensorVals['altitude'] = Number.parseFloat(ds[1]);
+                        break;
+                    case "x":
+                        this.sensorEvent.emit('accelerometer.x', Number.parseFloat(ds[1]));
+                        this.sensorEvent.emit('accelerometer.y', Number.parseFloat(ds[2]));
+                        this.sensorEvent.emit('accelerometer.z', Number.parseFloat(ds[3]));
+                        this.sensorVals['accelerometer.x'] = Number.parseFloat(ds[1]);
+                        this.sensorVals['accelerometer.y'] = Number.parseFloat(ds[2]);
+                        this.sensorVals['accelerometer.z'] = Number.parseFloat(ds[3]);
+                        break;
+                    case "f":
+                        this.sensorEvent.emit('battery', Number.parseFloat(ds[1]));
+                        break;
+                    default:
+                        console.log("Received unrecognized data:", ds[0]);
+                }
+            }
+        }
     }
 
     /**
      * For playing robot animations
      */
-    playAnimation(args) {
+    async playAnimation(args) {
         // Translate face to ble protocol command
         this._currentFace = args.ANIM;
-        const animFace = _anim_protocol[_anims.indexOf(this._currentFace)];
-        const animSound = _anim_sounds[_anims.indexOf(this._currentFace)];
+        const animFace = _anims[this._currentFace];
+        const animSound = _anim_sounds[this._currentFace];
+        console.log("play animation: " + args.ANIM + " " + animFace);
 
         // stop blinking
         this.stopBlink();
 
         // blink to transition faces
-        if (this._robotUart) this._robotUart.sendText("(d,b)");
-        
-        console.log("play animation: " + args.ANIM + " " + animFace);
+        await this.sendCommandToRobot("(d,b)", command_pause);
+        await this.sendCommandToRobot(
+            "(d," + animFace + ")", command_pause
+        );
+        // play sound associated with animation
+        if (animSound != "") {
+            await this.sendCommandToRobot(
+                "(s," + animSound + ")", command_pause
+            );
+        }
         
         // send message
         if (this._robotUart && args.ANIM == "happy") {
             const happy_pause = 250;
-            setTimeout(() => {
-                this._robotUart.sendText("(d,b)");
-                setTimeout(()=> {
-                    this._robotUart.sendText("(d," + animFace + ")");
-                    setTimeout(()=> {
-                        if (animSound != "") this._robotUart.sendText("(s," + animSound + ")");                        
-                        setTimeout(() => {
-                            // Bounce the pen twice to indicate joy
-                            this._robotUart.sendText("(u,0)");
-                            setTimeout(() => { 
-                                this._robotUart.sendText("(u,45)");
-                                setTimeout(() => { 
-                                    this._robotUart.sendText("(u,0)");
-                                    setTimeout(() => { 
-                                    this._robotUart.sendText("(u,45)");
-                                    }, happy_pause);
-                                }, happy_pause);
-                            }, happy_pause);
-                        }, happy_pause);
-                    }, command_pause);
-                }, command_pause);
-            }, command_pause);
-        } else if (this._robotUart) {
-            setTimeout(() => {
-                this._robotUart.sendText("(d,b)");
-                setTimeout(()=> {
-                    this._robotUart.sendText("(d," + animFace + ")");
-                    setTimeout(()=> {
-                        if (animSound != "") this._robotUart.sendText("(s," + animSound + ")");
-                    }, command_pause);
-                }, command_pause);
-            }, command_pause);
+            // Bounce the pen twice to indicate joy
+            await this.sendCommandToRobot("(u,0)", happy_pause);
+            await this.sendCommandToRobot("(u,45)", happy_pause);
+            await this.sendCommandToRobot("(u,0)", happy_pause);
+            await this.sendCommandToRobot("(u,45)", happy_pause);
         }
 
         // start blinking
@@ -591,24 +729,22 @@ class DoodlebotBlocks {
     /**
      * For playing the blinking animation
      */
-     playBlink() {
-        const blink_pause = 100;
+    async playBlink() {
+        const animFace = _anims[this._currentFace];
+        const blink_pause = 150;
 
         console.log("play animation: blink");
 
         // send message
-        if (this._robotUart) this._robotUart.sendText("(d,b)");
-
-        setTimeout(() => {
-            // pause, then return back to face
-            const animFace = _anim_protocol[_anims.indexOf(this._currentFace)];
-            if (this._robotUart) this._robotUart.sendText("(d," + animFace + ")");
-        }, blink_pause);
+        await this.sendCommandToRobot("(d,b)", command_pause);
+        await this.sendCommandToRobot(
+            "(d," + animFace + ")", blink_pause
+        );
     }   
     /**
      * For stopping the blinking animation
      */
-     stopBlink() {
+    stopBlink() {
         console.log("stopping blink interval");
 
         // send message
