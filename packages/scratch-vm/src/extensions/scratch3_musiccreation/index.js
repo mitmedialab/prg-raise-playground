@@ -252,15 +252,6 @@ class Scratch3MusicCreation {
                     blockType: BlockType.REPORTER
                 },
                 {
-                    opcode: 'testMagentaPlayer',
-                    text: formatMessage({
-                        id: 'musiccreation.testMagentaPlayer',
-                        default: 'play music with Magenta player',
-                        description: 'test Magenta'
-                    }),
-                    blockType: BlockType.COMMAND
-                },
-                {
                     opcode: 'testMagentaRNN',
                     text: formatMessage({
                         id: 'musiccreation.testMagentaRNN',
@@ -464,12 +455,9 @@ class Scratch3MusicCreation {
         this.musicCreationHelper._setInstrument(args.INSTRUMENT, util, false);
     }
 
-    testMagentaPlayer (util) {
-        this.musicAccompanimentHelper.testMagentaPlayer(this.noteList, util);
-    }
-
     testMagentaRNN (args, utils) {
-        this.musicAccompanimentHelper.testMagentaRNN(this.noteList, args, utils);
+        notes = this.musicAccompanimentHelper.testMagentaRNN(this.noteList, args, utils);
+        log.log("NOTES", notes);
         this.noteList = [];
     }
 

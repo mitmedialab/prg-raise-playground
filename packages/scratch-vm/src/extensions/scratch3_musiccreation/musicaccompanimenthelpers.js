@@ -4,6 +4,7 @@ const hrtime = require('browser-hrtime');
 const mvae = require('@magenta/music/node/music_vae');
 const core = require('@magenta/music/node/core');
 const rnn = require('@magenta/music/node/music_rnn');
+const regeneratorRuntime = require("regenerator-runtime");
 
 const symbols = require('./symbols');
 const { time } = require('format-message');
@@ -45,6 +46,15 @@ class MusicAccompanimentHelpers {
           };
 
           this.noteList = [];
+          player = new core.SoundFontPlayer('https://storage.googleapis.com/magentadata/js/soundfonts/sgm_plus');
+          rnnPlayer = new core.SoundFontPlayer('https://storage.googleapis.com/magentadata/js/soundfonts/sgm_plus');
+          vaePlayer = new core.SoundFontPlayer('https://storage.googleapis.com/magentadata/js/soundfonts/sgm_plus');
+
+          music_rnn = new rnn.MusicRNN('https://storage.googleapis.com/magentadata/js/checkpoints/music_rnn/basic_rnn');
+          music_rnn.initialize();
+
+          music_vae = new mvae.MusicVAE('https://storage.googleapis.com/magentadata/js/checkpoints/music_vae/mel_4bar_small_q2');
+          music_vae.initialize();
 
     }
 
@@ -65,49 +75,52 @@ class MusicAccompanimentHelpers {
         return newNotes;
     }
 
-    testMagentaPlayer (noteList, util) {
-        log.log("MAGENTA");
-        notes = this.configure(noteList);
-		const player = new core.SoundFontPlayer('https://storage.googleapis.com/magentadata/js/soundfonts/sgm_plus');
-		player.start(notes);
-		player.stop();
+    processed(notes) {
+        newNoteList = [];
+        for (var i in notes) {
+            note = notes[i];
+            newNoteList.push(note.pitch);
+        }
+        return newNoteList;
     }
 
-    testMagentaRNN (noteList, args, utils) {
-        const player = new core.SoundFontPlayer('https://storage.googleapis.com/magentadata/js/soundfonts/sgm_plus');
-        if (player.isPlaying()) {
-            player.stop();
+    async testMagentaRNN (noteList, args, utils) {
+        if (rnnPlayer.isPlaying()) {
+            rnnPlayer.stop();
             return;
         }
-        log.log("player done");
         notes = this.configure(noteList);
-        music_rnn = new rnn.MusicRNN('https://storage.googleapis.com/magentadata/js/checkpoints/music_rnn/basic_rnn');
-        music_rnn.initialize();
+
         rnn_steps = Cast.toNumber(args.STEPS);
         rnn_temperature = Cast.toNumber(args.TEMP);
               
+        // The model expects a quantized sequence, and ours was unquantized:
         const qns = core.sequences.quantizeNoteSequence(notes, 4);
-        music_rnn
+        var newNotes = [];
+        await music_rnn
         .continueSequence(qns, rnn_steps, rnn_temperature)
-        .then((sample) => player.start(sample));
-        log.log(sample);
-        log.log(TWINKLE_TWINKLE);
+        .then((sample) => {
+            newNotes.push(sample);
+            rnnPlayer.start(sample)});
+        var magentaNotes = newNotes[0].notes;
+        return this.processed(magentaNotes);
+        
     }
 
-    testMagentaMVAE (utils) {
-        const player = new core.SoundFontPlayer('https://storage.googleapis.com/magentadata/js/soundfonts/sgm_plus');
-        if (player.isPlaying()) {
-            player.stop();
+    async testMagentaMVAE (utils) {
+        if (vaePlayer.isPlaying()) {
+            vaePlayer.stop();
             return;
         }
-        music_vae = new mvae.MusicVAE('https://storage.googleapis.com/magentadata/js/checkpoints/music_vae/mel_4bar_small_q2');
-        music_vae.initialize();
-        vae_temperature = 1.5;
-
-        music_vae
-        .sample(1, vae_temperature)
-        .then((sample) => player.start(sample[0]));
-        log.log(TWINKLE_TWINKLE);
+        var vae_temperature = 1.5;
+        var samples = [];
+        await music_vae.sample(1, vae_temperature)
+        .then((sample) => {
+            samples.push(sample);
+            vaePlayer.start(sample[0])});
+        var magentaNotes = samples[0][0].notes;
+        log.log(samples[0][0].notes);
+        return this.processed(magentaNotes);
     }
 
 }
