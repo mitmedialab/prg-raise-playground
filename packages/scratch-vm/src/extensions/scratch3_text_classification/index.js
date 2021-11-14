@@ -216,12 +216,12 @@ class Scratch3TextClassificationBlocks {
         this.scratch_vm.on('DELETE_LABEL', label => {
             this.clearAllWithLabel({LABEL: label});
         });
-        this.scratch_vm.on('CLEAR_ALL_LABELS', () => {
-            // confirm with alert dialogue before clearing the model
-            if (!this.labelListEmpty && confirm('Are you sure you want to clear all labels?')) {
-                this.clearAll();
-            }
-        });
+        // this.scratch_vm.on('CLEAR_ALL_LABELS', () => {
+        //     // confirm with alert dialogue before clearing the model
+        //     if (!this.labelListEmpty && confirm('Are you sure you want to clear all labels?')) {
+        //         this.clearAll();
+        //     }
+        // });
 
         // Listen for model editing events emitted by the classifier modal
         this.scratch_vm.on('EXPORT_CLASSIFIER', () => {
@@ -706,19 +706,23 @@ class Scratch3TextClassificationBlocks {
      */
     clearLocal () {
         this.scratch_vm.emit("TOOLBOX_EXTENSIONS_NEED_UPDATE");
+        while (this.labelList.length > 0) {
+            const label = this.labelList[0];
+            this.clearAllWithLabel({LABEL: label});
+            console.log(label);
+        }
         this.labelList = [''];
         this.labelListEmpty = true;
-        this.classifier.clearAllClasses();
+        console.log('here');
     }
 
     /**
      * Clear local label list, but also clear all data stored in the runtime
      */
     clearAll () {
-        this.clearLocal();
-
-        // Clear runtime's model data
-        this.scratch_vm.modelData = {textData: {}, classifierData: {}, nextLabelNumber: 1};
+        for (const label of this.labelList) {
+            this.clearAllWithLabel({LABEL: label});
+        }
         
     }
 
@@ -981,7 +985,7 @@ class Scratch3TextClassificationBlocks {
             for (const word of this.scratch_vm.modelData.textData[label]) {
                 // execute the code to get similarity output, store the promise in a list
                 // let currentSimilarity = this.getSimilarity(word, text);
-                let currentSimilarity = await this.getSimilarityOutput(word, text);
+                const currentSimilarity = await this.getSimilarityOutput(word, text);
                 await this.timeout(300);
                 promises.push(currentSimilarity);
 
@@ -996,7 +1000,6 @@ class Scratch3TextClassificationBlocks {
                 const word = words[i];
                 const similarity = results[i];
                 allSimilarities[word] = similarity;
-                console.log(allSimilarities);
             }
         });
 
@@ -1004,7 +1007,7 @@ class Scratch3TextClassificationBlocks {
         let nearest = this.k;
         const nearestWords = [];
         while (nearest > 0 && Object.keys(allSimilarities).length) {
-            let maxNearest = Object.keys(allSimilarities).reduce((a, b) => allSimilarities[a] > allSimilarities[b] ? a : b);
+            const maxNearest = Object.keys(allSimilarities).reduce((a, b) => allSimilarities[a] > allSimilarities[b] ? a : b);
             nearest = nearest - 1;
             nearestWords.push(` ${maxNearest}`);
             delete allSimilarities[maxNearest];
@@ -1028,16 +1031,6 @@ class Scratch3TextClassificationBlocks {
 
     async getSimilarityOutput (firstText, secondText) {
         this.embedding = [];
-        // await use.loadQnA().then(async model => {
-        //     const input = {queries: [firstText, secondText], responses: []};
-
-        //     let allEmbeddings = await model.embed(input);
-        //     allEmbeddings = allEmbeddings['queryEmbedding'].arraySync();
-            
-        //     similarityScore = await cosineSimilarity(allEmbeddings[0], allEmbeddings[1]);
-        //     similarityScore = similarityScore - .9;
-        //     this.similarity = await similarityScore;
-        // });
         let promises = [];
         await use.load().then(async model => {
             model.embed(firstText).then(async embeddings => {

@@ -17,9 +17,9 @@ class ProgressBarExample extends React.Component {
             'At least five examples per text classifier class': false,
             'Text classifier classes are balanced': false,
             'Using embedded conditionals': false,
-            'At least two text classification blocks': false,
-            'Good use of image classification blocks': false,
-            'Two image classifier classes': false,
+            'Using two text classification blocks': false,
+            // 'Good use of image classification blocks': false,
+            // 'Two image classifier classes': false,
             'Two text classifier classes': false
         },
         improvements: []
@@ -37,13 +37,21 @@ class ProgressBarExample extends React.Component {
         newCompliment[check] = !newCompliment[check];
 
         if (check === 'Two text classifier classes') {
-            newCompliment = {...newCompliment, 'Three or more text classifier classes' : false };
+            newCompliment = {...newCompliment, 'Three or more text classifier classes' : false};
+
         } else if (check === 'Three or more text classifier classes') {
             delete newCompliment['Two text classifier classes'];
-        } else if (check === 'Two image classifier classes') {
-            newCompliment = {...newCompliment, 'Three or more image classifier classes' : false };
-        } else if (check === 'Three or more image classifier classes') {
-            delete newCompliment['Two image classifier classes'];
+
+        } else if (check === 'Using two text classification blocks') {
+            newCompliment = {...newCompliment, 'Using three text classification blocks' : false};
+
+        } else if (check === 'Using three text classification blocks') {
+            delete newCompliment['Using two text classification blocks'];
+            newCompliment = {...newCompliment, 'Using at least four text classification blocks' : false};
+
+        } else if (check === 'Using at least four text classification blocks') {
+            delete newCompliment['Using two text classification blocks'];
+            delete newCompliment['Using three text classification blocks'];
         }
 
         this.setState({compliments: newCompliment});
@@ -74,40 +82,41 @@ class ProgressBarExample extends React.Component {
     numberOfClasses (keys, imageKeys) {
         keys = Object.keys(keys);
 
-        if (keys.length == 2) {
-            this.setState(prevState => ({percentage: prevState.percentage + 10}));
+        if (keys.length === 2) {
+            this.setState(prevState => ({percentage: prevState.percentage + 20}));
             this.setState({ 
                 improvements: this.state.improvements.push('You have two text classifier classes so far. Try to see if you can add more.')
             });
             this.handleListUpdate('Two text classifier classes');
         } else if (keys.length > 2) {
-            this.setState(prevState => ({percentage: prevState.percentage + 20}));
+            this.setState(prevState => ({percentage: prevState.percentage + 30}));
             this.handleListUpdate('Three or more text classifier classes');
         } else {
-            this.setState({ 
+            this.setState({
                 improvements: this.state.improvements.push('Try adding some text classifier classes with the \'Edit Model\' button to increase your progress.')
             });
         }
 
         if (imageKeys.length == 2) {
-            this.setState(prevState => ({ percentage: prevState.percentage + 10 }));
-            this.setState({ 
+            this.setState(prevState => ({percentage: prevState.percentage + 10}));
+            this.setState({
                 improvements: this.state.improvements.push('You have two image classifier classes so far. Try to see if you can add more.')
             });
             this.handleListUpdate('Two image classifier classes');
         } else if (imageKeys.length > 2) {
-            this.setState(prevState => ({ percentage: prevState.percentage + 20 }));
+            this.setState(prevState => ({percentage: prevState.percentage + 20}));
             this.handleListUpdate('Three or more image classifier classes');
-        } else {
-            this.setState({ 
-                improvements: this.state.improvements.push('Try adding some classes in Teachable Machine to increase your progress.')
-            });
+        // } else {
+        //     this.setState({
+        //         improvements: this.state.improvements.push('Try adding some classes in Teachable Machine to increase your progress.')
+        //     });
         }
+
     }
 
     atLeastFive (keys) {
         let minimum = false;
-        for (let label in keys) {
+        for (const label in keys) {
             if (keys[label].length < 5) {
                 minimum = true;
             }
@@ -115,25 +124,25 @@ class ProgressBarExample extends React.Component {
 
         if (minimum === true) {
             if (this.state.percentage - 15 <= 0) {
-                this.setState({ percentage: 0 });
+                this.setState({percentage: 0});
             } else {
-                this.setState(prevState => ({ percentage: prevState.percentage - 15 }));
+                this.setState(prevState => ({percentage: prevState.percentage - 15}));
             }
-            this.setState({ 
+            this.setState({
                 improvements: this.state.improvements.push('You need at least 5 examples per class to have an accurate classifier.')
             });
         } else if (Object.keys(keys).length > 0) {
             this.handleListUpdate('At least five examples per text classifier class');
-            this.setState(prevState => ({ percentage: prevState.percentage + 15 }));
+            this.setState(prevState => ({percentage: prevState.percentage + 15}));
         }
     }
 
     balancedClasses (keys) {
-        let classNumbers = []
+        let classNumbers = [];
         let minimum = false;
-        for (let label in keys) {
+        for (const label in keys) {
             let count = 0;
-            for (let example in keys[label]) {
+            for (const _ in keys[label]) {
                 count = count + 1;
             }
             if (keys[label].length < 5) {
@@ -146,11 +155,11 @@ class ProgressBarExample extends React.Component {
         if (classNumbers.length > 1) {
             if (classNumbers[classNumbers.length - 1] - classNumbers[0] > 3) {
                 if (this.state.percentage - 10 <= 0) {
-                    this.setState({ percentage: 0 });
+                    this.setState({percentage: 0});
                 } else {
-                    this.setState(prevState => ({ percentage: prevState.percentage - 10 }));
+                    this.setState(prevState => ({percentage: prevState.percentage - 10}));
                 }
-                this.setState({ 
+                this.setState({
                     improvements: this.state.improvements.push('Try making the number of examples per class be the same.')
                 });
             } else {
@@ -158,7 +167,7 @@ class ProgressBarExample extends React.Component {
                     this.setState(prevState => ({ percentage: prevState.percentage + 10 }));
                     this.handleListUpdate('Text classifier classes are balanced');
                 }
-                // this.setState({ 
+                // this.setState({
                 //     compliments: this.state.compliments.push('Your examples in your classes are balanced well. ')
                 // });
             }
@@ -173,7 +182,7 @@ class ProgressBarExample extends React.Component {
         let teachable_machine = 0;
 
         // go through all of the blocks
-        for (let block in blocks) {
+        for (const block in blocks) {
             if (blocks[block].opcode.includes('textClassification')) {
                 count = count + 1;
             }
@@ -196,8 +205,8 @@ class ProgressBarExample extends React.Component {
 
         // check if sensing and answer matches
         if (sensing !== answer) {
-            this.setState(prevState => ({ percentage: prevState.percentage - 15 }));
-            this.setState({ 
+            this.setState(prevState => ({percentage: prevState.percentage - 15}));
+            this.setState({
                 improvements: this.state.improvements.push("It seems like you're not using the same answer and asking blocks.")
             });
         }
@@ -205,8 +214,8 @@ class ProgressBarExample extends React.Component {
         // check if there is an embedded
         for (let block in blocks) {
             if (blocks[block].opcode.includes('control_if')) {
-                if (blocks[block].parent == parent) {
-                    // this.setState({ 
+                if (blocks[block].parent === parent) {
+                    // this.setState({
                     //     compliments: this.state.compliments.push('Having embedded conditionals makes your code more complex.')
                     // });
                     this.handleListUpdate('Using embedded conditionals');
@@ -216,28 +225,42 @@ class ProgressBarExample extends React.Component {
             }
         }
 
-        // if 
-
         // if not an embedded
-        if (parent == '') {
-            this.setState({ 
+        if (parent === '') {
+            this.setState({
                 improvements: this.state.improvements.push('Try embeddeding conditionals to make your code more complex.')
             });
         }
 
         // if using teachable machine
         if (teachable_machine > 0) {
-            this.setState(prevState => ({ percentage: prevState.percentage + 10 }));
+            this.setState(prevState => ({percentage: prevState.percentage + 10 }));
             this.handleListUpdate('Good use of image classification blocks');
-            // this.setState({ 
+            // this.setState({
             //     compliments: this.state.compliments.push('You know how to use teachable machine blocks in your code really well.')
             // });
         }
         
         // check how many text classification blocks there are
-        if (count >= 2) {
-            this.setState(prevState => ({ percentage: prevState.percentage + 10 }));
-            this.handleListUpdate('At least two text classification blocks');
+        if (count === 2) {
+            this.setState(prevState => ({percentage: prevState.percentage + 10}));
+            this.handleListUpdate('Using two text classification blocks');
+            this.setState({
+                improvements: this.state.improvements.push('Try adding a variety of text classification blocks to increase your progress')
+            });
+        } else if (count === 3) {
+            this.setState(prevState => ({percentage: prevState.percentage + 20}));
+            this.handleListUpdate('Using three text classification blocks');
+            this.setState({
+                improvements: this.state.improvements.push('Try adding a variety of text classification blocks to increase your progress')
+            });
+        } else if (count > 3) {
+            this.setState(prevState => ({percentage: prevState.percentage + 30}));
+            this.handleListUpdate('Using at least four text classification blocks');
+        } else {
+            this.setState({
+                improvements: this.state.improvements.push('Try adding a variety of text classification blocks to increase your progress')
+            });
         }
     }
 

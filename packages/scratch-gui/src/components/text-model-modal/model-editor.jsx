@@ -40,7 +40,6 @@ const ModelEditor = props => (
         <Box className={classNames(styles.bottomArea)}>
             <Box className={classNames(styles.bottomAreaItem, styles.buttonRow)}>
                 <button onClick={props.onAddLabel}>Add a Label</button>
-                <button onClick={props.onClearAll}>Clear All</button>
                 <button onClick={props.onCancel}>Done</button>
             </Box>
         </Box>
