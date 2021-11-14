@@ -404,21 +404,6 @@ class Scratch3TextClassificationBlocks {
                     }
                 },
                 {
-                    opcode: 'getConfidence',
-                    text: formatMessage({
-                        id: 'textClassification.getConfidence',
-                        default: 'get confidence for [TEXT]',
-                        description: 'get the confidence for the labeling of a specified text'
-                    }),
-                    blockType: BlockType.REPORTER,
-                    arguments: {
-                        TEXT: {
-                            type: ArgumentType.STRING,
-                            defaultValue: 'text'
-                        }
-                    }
-                },
-                {
                     opcode: 'getSimilarity',
                     text: formatMessage({
                         id: 'textClassification.getSimilarity',
@@ -437,6 +422,23 @@ class Scratch3TextClassificationBlocks {
                         }
                     }
                 },
+                '---',
+                {
+                    opcode: 'getConfidence',
+                    text: formatMessage({
+                        id: 'textClassification.getConfidence',
+                        default: 'get confidence for [TEXT]',
+                        description: 'get the confidence for the labeling of a specified text'
+                    }),
+                    blockType: BlockType.REPORTER,
+                    arguments: {
+                        TEXT: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'text'
+                        }
+                    }
+                },
+                
                 {
                     opcode: 'getNearestNeighbors',
                     text: formatMessage({
