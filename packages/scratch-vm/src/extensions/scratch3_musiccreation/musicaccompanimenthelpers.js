@@ -79,7 +79,7 @@ class MusicAccompanimentHelpers {
         newNoteList = [];
         for (var i in notes) {
             note = notes[i];
-            newNoteList.push(note.pitch);
+            newNoteList.push([note.pitch, (note.quantizedEndStep-note.quantizedStartStep)/4, "Piano", 60]);
         }
         return newNoteList;
     }
@@ -102,6 +102,13 @@ class MusicAccompanimentHelpers {
         .then((sample) => {
             newNotes.push(sample);
             rnnPlayer.start(sample)});
+        const magentaN = async () => {
+            const a = await newNotes;
+            magentaNotes = this.processed(a[0].notes);
+            return magentaNotes;
+            };
+        magentaNotes = await magentaN();
+        return magentaNotes;
         var magentaNotes = newNotes[0].notes;
         return this.processed(magentaNotes);
         
@@ -112,15 +119,19 @@ class MusicAccompanimentHelpers {
             vaePlayer.stop();
             return;
         }
-        var vae_temperature = 1.5;
+        var vae_temperature = 3;
         var samples = [];
         await music_vae.sample(1, vae_temperature)
         .then((sample) => {
             samples.push(sample);
             vaePlayer.start(sample[0])});
-        var magentaNotes = samples[0][0].notes;
-        log.log(samples[0][0].notes);
-        return this.processed(magentaNotes);
+        const magentaN = async () => {
+            const a = await samples;
+            magentaNotes = this.processed(a[0][0].notes);
+            return magentaNotes;
+          };
+        magentaNotes = await magentaN();
+        return magentaNotes;
     }
 
 }

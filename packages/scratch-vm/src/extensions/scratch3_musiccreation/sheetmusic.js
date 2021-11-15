@@ -343,6 +343,7 @@ class SheetMusic {
     testSheetMusicViz (noteList, args, util) {
         this.setPenColorToColor(this.black, util);
         this.noteList = noteList;
+        log.log("SHEET MUSIC", this.noteList);
         this.clear();
         this.drawStaff(args, util);
         this.labelStaff(args, util);
@@ -553,6 +554,7 @@ class SheetMusic {
         var pastVol = 0;
         var beats = 0;
         for (i in signal) {
+            log.log(signal[i]);
             note = signal[i][0];
             duration = signal[i][1];
             volume = signal[i][2];

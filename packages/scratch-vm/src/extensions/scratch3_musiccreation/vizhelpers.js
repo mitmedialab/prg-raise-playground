@@ -194,6 +194,7 @@ class VizHelpers {
         this.sheetMusicViz.clear();
         this.spectrogramViz.clear();
         this.waveformViz.clear();
+        log.log("VIZ", noteList);
         this.sheetMusicViz.testSheetMusicViz(noteList, args, util);
     }
 

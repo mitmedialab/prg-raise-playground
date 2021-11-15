@@ -11,6 +11,7 @@ const MusicAccompanimentHelpers = require('./musicaccompanimenthelpers');
 const AnalysisHelpers = require('./analysishelpers');
 const MusicPlayers = require('./musicplayer')
 const textRender = require('./textrender');
+const regeneratorRuntime = require("regenerator-runtime");
 
 
 
@@ -27,6 +28,7 @@ class Scratch3MusicCreation {
 
         this.noteList = [];
         this.wavenoteList = [];
+        this.magentaNoteList = [];
         
         this.volumes = [{text: "pianissimo", value: 15}, 
                     {text: "piano", value: 30}, 
@@ -419,30 +421,33 @@ class Scratch3MusicCreation {
     }
 
     setText (args, util) {
-        log.log("SET TEXT");
         this.textRenderer.say(args.TEXT, args, util);
     }
 
     resetMusic (args, util) {
         this.noteList = [];
         this.wavenoteList = [];
+        this.magentaNoteList = [];
     }
 
     testWaveformViz (args, util) {
-        log.log("WAVE");
-        this.vizHelper.testWaveformViz(this.wavenoteList, args, util);
+        this.totalNoteList = this.noteList.concat(this.magentaNoteList);
+        this.vizHelper.testWaveformViz(this.totalNoteList, args, util);
     }
 
     testSheetMusicViz (args, util) {
-        this.vizHelper.testSheetMusicViz(this.noteList, args, util);
+        this.totalNoteList = this.noteList.concat(this.magentaNoteList);
+        this.vizHelper.testSheetMusicViz(this.totalNoteList, args, util);
     }
 
     testFreqViz (args, util) {
-        this.vizHelper.testFreqViz(this.noteList, args, util);
+        this.totalNoteList = this.noteList.concat(this.magentaNoteList);
+        this.vizHelper.testFreqViz(this.totalNoteList, args, util);
     }
 
     testSpectViz (args, util) {
-        this.vizHelper.testSpectViz(this.noteList, args, util);
+        this.totalNoteList = this.noteList.concat(this.magentaNoteList);
+        this.vizHelper.testSpectViz(this.totalNoteList, args, util);
     }
 
     /**
@@ -455,14 +460,12 @@ class Scratch3MusicCreation {
         this.musicCreationHelper._setInstrument(args.INSTRUMENT, util, false);
     }
 
-    testMagentaRNN (args, utils) {
-        notes = this.musicAccompanimentHelper.testMagentaRNN(this.noteList, args, utils);
-        log.log("NOTES", notes);
-        this.noteList = [];
+    async testMagentaRNN (args, utils) {
+        this.magentaNoteList = await this.musicAccompanimentHelper.testMagentaRNN(this.noteList, args, utils);
     }
 
-    testMagentaMVAE (utils) {
-        this.musicAccompanimentHelper.testMagentaMVAE(utils);
+    async testMagentaMVAE (utils) {
+        this.magentaNoteList = await this.musicAccompanimentHelper.testMagentaMVAE(utils);
     }
 
     getInstrument (util) {
