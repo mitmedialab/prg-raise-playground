@@ -708,10 +708,9 @@ class Scratch3TextClassificationBlocks {
      */
     clearLocal () {
         this.scratch_vm.emit("TOOLBOX_EXTENSIONS_NEED_UPDATE");
-        while (this.labelList.length > 0) {
-            const label = this.labelList[0];
+        for (const label of this.labelList) {
             this.clearAllWithLabel({LABEL: label});
-            console.log(label);
+            console.log("clear local:", label);
         }
         this.labelList = [''];
         this.labelListEmpty = true;
