@@ -149,6 +149,9 @@ class Scratch3TextClassificationBlocks {
         this.scratch_vm.connectPeripheral(EXTENSION_ID, 0);
         this.similarity = 0;
         this.k = 0;
+        this.labelList = [];
+        this.labelListEmpty = true;
+        this.exampleEmbeddings = {};
         
          
         /**
@@ -191,9 +194,6 @@ class Scratch3TextClassificationBlocks {
         this.scratch_vm.on('EDIT_TEXT_CLASSIFIER', modelInfo => {
             this.editModel.bind(this, modelInfo);
         });
-        
-        this.labelList = [];
-        this.labelListEmpty = true;
         
         // When a project is loaded, reset all the model data
         this.scratch_vm.on('PROJECT_LOADED', () => {
@@ -1096,28 +1096,27 @@ class Scratch3TextClassificationBlocks {
      * @param direction - is either "example" when an example is being inputted or "predict" when a word to be classified is inputted
      * @returns if the direction is "predict" returns the predicted label for the text inputted
      */
+    // TODO rename this function to better align with what it does
     async get_embeddings (text, label, direction) {
         // translates text from any language to english
         const newText = await this.getTranslate(text, 'en');
-        const promises = [];
-        let newLabel = [];
+
         if (!this.labelListEmpty) {
-            newLabel = await use.load().then(async model => {
-                model.embed(newText).then(async embeddings => {
-                // this.embedding = embeddings;
-                await promises.push(embeddings);
-                this.embedding = await Promise.all(promises);
-                
+            await use.load().then(model => {
+                model.embed(newText).then(embeddings => {                
                 if (direction === "example") {
-                    this.classifier.addExample(await this.embedding[0], label);
+                    this.classifier.addExample(embeddings, label);
+
+                    // save embeddings of examples for later use
+                    this.exampleEmbeddings[newText] = embeddings;
                     return "Inputting to classes";
     
                 } else if (direction === "predict") {
                     const k = Math.sqrt(this.count);
                     console.log("k value:", k);
-                    return await this.classifier.predictClass(await this.embedding[0], k).then(async result => {
-                        this.predictedLabel = await Promise.all([result.label]);
-                        this.confidence = await Promise.all([result.confidences[this.predictedLabel]]);
+                    return this.classifier.predictClass(embeddings, k).then(result => {
+                        this.predictedLabel = result.label;
+                        this.confidence = result.confidences[this.predictedLabel];
                         return [this.predictedLabel, result.confidences[this.predictedLabel]];
                     });
                 }
