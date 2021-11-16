@@ -228,7 +228,7 @@ class ProgressBarExample extends React.Component {
         // if not an embedded
         if (parent === '') {
             this.setState({
-                improvements: this.state.improvements.push('Try embeddeding conditionals to make your code more complex.')
+                improvements: this.state.improvements.push('Try embedding conditionals to make your code more complex.')
             });
         }
 
