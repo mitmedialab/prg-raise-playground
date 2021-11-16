@@ -24,6 +24,7 @@ const tf = require('@tensorflow/tfjs');
 const knnClassifier = require('@tensorflow-models/knn-classifier');
 const use = require('@tensorflow-models/universal-sentence-encoder');
 const Papa = require('papaparse');
+const { combineLocations } = require("@tensorflow/tfjs-core/dist/ops/axis_util");
 const EXTENSION_ID = 'textClassification';
 
 
@@ -1031,32 +1032,19 @@ class Scratch3TextClassificationBlocks {
     }
 
     async getSimilarityOutput (firstText, secondText) {
-        this.embedding = [];
         let promises = [];
         await use.load().then(async model => {
-            model.embed(firstText).then(async embeddings => {
-            promises.push(embeddings);
-            promises = await Promise.all(promises);
-            this.embedding.push(promises[0]);
+            promises.push(model.embed(firstText));
+            promises.push(model.embed(secondText));
+            
+            await Promise.all(promises).then(results => {
+                console.log(results);
+                const distance = tf.losses.cosineDistance(results[0], results[1], 1).dataSync();
 
+                this.similarity = 1 - distance[0];
+                return this.similarity.toFixed(2);
             });
         });
-
-        let secondPromise = [];
-        await use.load().then(async model => {
-            model.embed(secondText).then(async embeddings => {
-            secondPromise.push(embeddings);
-            secondPromise = await Promise.all(secondPromise);
-            this.embedding.push(await secondPromise[0]);
-            console.log(this.embedding);
-            const distance = tf.losses.cosineDistance(await this.embedding[0], await this.embedding[1], 1).dataSync();
-            this.similarity = 1 - distance[0];
-
-
-            });
-        });
-
-        return this.similarity.toFixed(2);
     }
     
 
@@ -1125,7 +1113,9 @@ class Scratch3TextClassificationBlocks {
                     return "Inputting to classes";
     
                 } else if (direction === "predict") {
-                    return await this.classifier.predictClass(await this.embedding[0], Math.sqrt(this.count)).then(async result => {
+                    const k = Math.sqrt(this.count);
+                    console.log("k value:", k);
+                    return await this.classifier.predictClass(await this.embedding[0], k).then(async result => {
                         this.predictedLabel = await Promise.all([result.label]);
                         this.confidence = await Promise.all([result.confidences[this.predictedLabel]]);
                         return [this.predictedLabel, result.confidences[this.predictedLabel]];
