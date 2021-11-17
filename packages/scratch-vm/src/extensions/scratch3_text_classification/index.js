@@ -987,12 +987,18 @@ class Scratch3TextClassificationBlocks {
             for (const word of this.scratch_vm.modelData.textData[label]) {
                 // execute the code to get similarity output, store the promise in a list
                 // let currentSimilarity = this.getSimilarity(word, text);
-                const currentSimilarity = await this.getSimilarityOutput(word, text);
-                await this.timeout(300);
-                promises.push(currentSimilarity);
+                // const currentSimilarity = await this.getSimilarityOutput(word, text);
+                // await this.timeout(300);
+                // promises.push(currentSimilarity);
+                // console.log(promises);
+                await this.getSimilarityOutput(word, text).then(async similarity => {
+                    await promises.push(similarity);
+                    console.log(promises);
+                });
 
                 // also push the words into an array to keep them in order
                 words.push(word);
+                console.log('reached here');
             }
         }
 
@@ -1040,6 +1046,7 @@ class Scratch3TextClassificationBlocks {
             promises = await Promise.all(promises);
             this.embedding.push(promises[0]);
 
+
             });
         });
 
@@ -1049,7 +1056,6 @@ class Scratch3TextClassificationBlocks {
             secondPromise.push(embeddings);
             secondPromise = await Promise.all(secondPromise);
             this.embedding.push(await secondPromise[0]);
-            console.log(this.embedding);
             const distance = tf.losses.cosineDistance(await this.embedding[0], await this.embedding[1], 1).dataSync();
             this.similarity = 1 - distance[0];
 
