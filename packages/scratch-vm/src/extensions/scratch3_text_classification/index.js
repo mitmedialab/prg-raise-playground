@@ -717,7 +717,6 @@ class Scratch3TextClassificationBlocks {
 
         // clear saved embeddings
         this.exampleEmbeddings = {};
-        console.log('here');
     }
 
     /**
@@ -931,7 +930,6 @@ class Scratch3TextClassificationBlocks {
 
         if (className) {
             let output = await this.get_embeddings(text, 'none', 'predict');
-            // await this.timeout(2000);
             let label = await Promise.all([this.predictedLabel]);
             return String(label[0]) === String(className);
         }
@@ -989,12 +987,6 @@ class Scratch3TextClassificationBlocks {
 
         for (const label in this.scratch_vm.modelData.textData) {
             for (const word of this.scratch_vm.modelData.textData[label]) {
-                // execute the code to get similarity output, store the promise in a list
-                // let currentSimilarity = this.getSimilarity(word, text);
-                // const currentSimilarity = await this.getSimilarityOutput(word, text);
-                // await this.timeout(300);
-                // promises.push(currentSimilarity);
-                // console.log(promises);
                 await this.getSimilarityOutput(word, text).then(async similarity => {
                     promises.push(similarity);
                 });
@@ -1052,9 +1044,6 @@ class Scratch3TextClassificationBlocks {
 
             if (!firstEmbedding) firstEmbedding = await model.embed(newFirstText);
             if (!secondEmbedding) secondEmbedding = await model.embed(newSecondText);
-
-            // at this point all promises should be resolved
-            console.log([firstEmbedding, secondEmbedding]);
             
             const distance = tf.losses.cosineDistance(firstEmbedding, secondEmbedding, 1).dataSync();
             this.similarity = 1 - distance[0];
@@ -1131,19 +1120,17 @@ class Scratch3TextClassificationBlocks {
                     const k = Math.sqrt(this.count);
                     let finishedInfo = this.classifier.predictClass(embeddings, k).then(result => {
                         this.predictedLabel = result.label;
-                        this.confidence = result.confidences[this.predictedLabel];
-                        console.log(this.confidence);
+                        this.confidence = result.confidences[result.label];
                         // return [this.predictedLabel, result.confidences[this.predictedLabel]];
                         return [result.label, result.confidences[result.label]];
                     });
-                    console.log('all finished info ', finishedInfo);
+
                     return await finishedInfo;
                 }
                 return allInfo;
 
                 });
             });
-            console.log('all predicted info ', predictedInfo);
             return predictedInfo;
         } else {
             return "No class inputted";
