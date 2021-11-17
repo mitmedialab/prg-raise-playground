@@ -24,6 +24,7 @@ const tf = require('@tensorflow/tfjs');
 const knnClassifier = require('@tensorflow-models/knn-classifier');
 const use = require('@tensorflow-models/universal-sentence-encoder');
 const Papa = require('papaparse');
+const { combineLocations } = require("@tensorflow/tfjs-core/dist/ops/axis_util");
 const EXTENSION_ID = 'textClassification';
 
 
@@ -148,6 +149,10 @@ class Scratch3TextClassificationBlocks {
         this.scratch_vm.connectPeripheral(EXTENSION_ID, 0);
         this.similarity = 0;
         this.k = 0;
+        this.labelList = [];
+        this.labelListEmpty = true;
+        this.exampleEmbeddings = {};
+        this.textEmbedding = {};
         
          
         /**
@@ -190,9 +195,6 @@ class Scratch3TextClassificationBlocks {
         this.scratch_vm.on('EDIT_TEXT_CLASSIFIER', modelInfo => {
             this.editModel.bind(this, modelInfo);
         });
-        
-        this.labelList = [];
-        this.labelListEmpty = true;
         
         // When a project is loaded, reset all the model data
         this.scratch_vm.on('PROJECT_LOADED', () => {
@@ -404,6 +406,22 @@ class Scratch3TextClassificationBlocks {
                     }
                 },
                 {
+                    opcode: 'getConfidence',
+                    text: formatMessage({
+                        id: 'textClassification.getConfidence',
+                        default: 'get confidence for [TEXT]',
+                        description: 'get the confidence for the labeling of a specified text'
+                    }),
+                    blockType: BlockType.REPORTER,
+                    arguments: {
+                        TEXT: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'text'
+                        }
+                    }
+                },
+                '---',
+                {
                     opcode: 'getSimilarity',
                     text: formatMessage({
                         id: 'textClassification.getSimilarity',
@@ -422,23 +440,6 @@ class Scratch3TextClassificationBlocks {
                         }
                     }
                 },
-                '---',
-                {
-                    opcode: 'getConfidence',
-                    text: formatMessage({
-                        id: 'textClassification.getConfidence',
-                        default: 'get confidence for [TEXT]',
-                        description: 'get the confidence for the labeling of a specified text'
-                    }),
-                    blockType: BlockType.REPORTER,
-                    arguments: {
-                        TEXT: {
-                            type: ArgumentType.STRING,
-                            defaultValue: 'text'
-                        }
-                    }
-                },
-                
                 {
                     opcode: 'getNearestNeighbors',
                     text: formatMessage({
@@ -646,7 +647,6 @@ class Scratch3TextClassificationBlocks {
     
 
     /**
-     * TODO Rename a label
      * @param {string} oldName the name of the label to change
      * @param {string} newname the new name for the label
      */
@@ -708,13 +708,15 @@ class Scratch3TextClassificationBlocks {
      */
     clearLocal () {
         this.scratch_vm.emit("TOOLBOX_EXTENSIONS_NEED_UPDATE");
-        while (this.labelList.length > 0) {
-            const label = this.labelList[0];
+        for (const label of this.labelList) {
             this.clearAllWithLabel({LABEL: label});
-            console.log(label);
+            console.log("clear local:", label);
         }
         this.labelList = [''];
         this.labelListEmpty = true;
+
+        // clear saved embeddings
+        this.exampleEmbeddings = {};
         console.log('here');
     }
 
@@ -983,6 +985,12 @@ class Scratch3TextClassificationBlocks {
         // also create a list to store the words associated with that promise
         const words = [];
 
+        // get embeddings for comparison text once at the beginning and save it (more optimized)
+        let translatedText = await this.getTranslate(text, 'en');
+        await use.load().then(async model => {
+            this.textEmbedding[translatedText] = await model.embed(translatedText);
+        });
+
         for (const label in this.scratch_vm.modelData.textData) {
             for (const word of this.scratch_vm.modelData.textData[label]) {
                 // execute the code to get similarity output, store the promise in a list
@@ -1011,6 +1019,9 @@ class Scratch3TextClassificationBlocks {
             }
         });
 
+        // delete embeddings for comparison text
+        delete this.textEmbedding[translatedText];
+
         // go through similarities and find nearest k words
         let nearest = this.k;
         const nearestWords = [];
@@ -1034,36 +1045,27 @@ class Scratch3TextClassificationBlocks {
         await this.getSimilarityOutput(firstText, secondText);
         await this.timeout(500);
         return this.similarity.toFixed(2);
-
     }
 
-    async getSimilarityOutput (firstText, secondText) {
-        this.embedding = [];
-        let promises = [];
+    async getSimilarityOutput (firstText, secondText) {        
+        // translates text from any language to english
+        let newFirstText = await this.getTranslate(firstText, 'en');
+        let newSecondText = await this.getTranslate(secondText, 'en');
+
         await use.load().then(async model => {
-            model.embed(firstText).then(async embeddings => {
-            promises.push(embeddings);
-            promises = await Promise.all(promises);
-            this.embedding.push(promises[0]);
+            let firstEmbedding = this.exampleEmbeddings[newFirstText] || this.textEmbedding[newFirstText];
+            let secondEmbedding = this.exampleEmbeddings[newSecondText] || this.textEmbedding[newSecondText];
 
+            if (!firstEmbedding) firstEmbedding = await model.embed(newFirstText);
+            if (!secondEmbedding) secondEmbedding = await model.embed(newSecondText);
 
-            });
-        });
-
-        let secondPromise = [];
-        await use.load().then(async model => {
-            model.embed(secondText).then(async embeddings => {
-            secondPromise.push(embeddings);
-            secondPromise = await Promise.all(secondPromise);
-            this.embedding.push(await secondPromise[0]);
-            const distance = tf.losses.cosineDistance(await this.embedding[0], await this.embedding[1], 1).dataSync();
+            // at this point all promises should be resolved
+            console.log([firstEmbedding, secondEmbedding]);
+            
+            const distance = tf.losses.cosineDistance(firstEmbedding, secondEmbedding, 1).dataSync();
             this.similarity = 1 - distance[0];
-
-
-            });
+            return this.similarity.toFixed(2);
         });
-
-        return this.similarity.toFixed(2);
     }
     
 
@@ -1115,26 +1117,28 @@ class Scratch3TextClassificationBlocks {
      * @param direction - is either "example" when an example is being inputted or "predict" when a word to be classified is inputted
      * @returns if the direction is "predict" returns the predicted label for the text inputted
      */
+    // TODO rename this function to better align with what it does
     async get_embeddings (text, label, direction) {
         // translates text from any language to english
         const newText = await this.getTranslate(text, 'en');
-        const promises = [];
-        let newLabel = [];
+
         if (!this.labelListEmpty) {
-            newLabel = await use.load().then(async model => {
-                model.embed(newText).then(async embeddings => {
-                // this.embedding = embeddings;
-                await promises.push(embeddings);
-                this.embedding = await Promise.all(promises);
-                
+            await use.load().then(model => {
+                model.embed(newText).then(embeddings => {                
                 if (direction === "example") {
-                    this.classifier.addExample(await this.embedding[0], label);
+                    this.classifier.addExample(embeddings, label);
+
+                    // save embeddings of examples for later use
+                    this.exampleEmbeddings[newText] = embeddings;
                     return "Inputting to classes";
     
                 } else if (direction === "predict") {
-                    return await this.classifier.predictClass(await this.embedding[0], Math.sqrt(this.count)).then(async result => {
-                        this.predictedLabel = await Promise.all([result.label]);
-                        this.confidence = await Promise.all([result.confidences[this.predictedLabel]]);
+                    // TODO consider making this value the n-th root of the number of labels e.g. for 5 labels, take the 5th root
+                    const k = Math.sqrt(this.count);
+                    console.log("k value:", k);
+                    return this.classifier.predictClass(embeddings, k).then(result => {
+                        this.predictedLabel = result.label;
+                        this.confidence = result.confidences[this.predictedLabel];
                         return [this.predictedLabel, result.confidences[this.predictedLabel]];
                     });
                 }
