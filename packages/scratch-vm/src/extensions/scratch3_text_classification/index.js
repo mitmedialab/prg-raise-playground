@@ -928,17 +928,15 @@ class Scratch3TextClassificationBlocks {
     async ifTextMatchesClass (args) {
         const text = args.TEXT;
         const className = args.CLASS_NAME;
-        // let predictionState = await this.get_embeddings(text, 'none', 'predict');
-        // predictionState = predictionState[0];
+
         if (className) {
-            this.get_embeddings(text, 'none', 'predict');
-            await this.timeout(2000);
+            let output = await this.get_embeddings(text, 'none', 'predict');
+            // await this.timeout(2000);
             let label = await Promise.all([this.predictedLabel]);
-            label = label[0];
-            return await label[0] === String(className);
-        } else {
-            return false;
+            return String(label[0]) === String(className);
         }
+
+        return false;
     }
 
     timeout (delay) {
@@ -953,16 +951,14 @@ class Scratch3TextClassificationBlocks {
      */
     async getModelPrediction (args) {
         const text = args.TEXT;
-        await this.get_embeddings(text, 'none', 'predict');
-        await this.timeout(2000);
+        let output = await this.get_embeddings(text, 'none', 'predict');
         return await Promise.all([this.predictedLabel]);
         
     }
 
     async getConfidence (args) {
         const text = args.TEXT;
-        this.get_embeddings(text, 'none', 'predict');
-        await this.timeout(2000);
+        let output = await this.get_embeddings(text, 'none', 'predict');
         return await Promise.all([this.confidence]);
     }
 
@@ -1000,13 +996,11 @@ class Scratch3TextClassificationBlocks {
                 // promises.push(currentSimilarity);
                 // console.log(promises);
                 await this.getSimilarityOutput(word, text).then(async similarity => {
-                    await promises.push(similarity);
-                    console.log(promises);
+                    promises.push(similarity);
                 });
 
                 // also push the words into an array to keep them in order
                 words.push(word);
-                console.log('reached here');
             }
         }
 
@@ -1123,8 +1117,8 @@ class Scratch3TextClassificationBlocks {
         const newText = await this.getTranslate(text, 'en');
 
         if (!this.labelListEmpty) {
-            await use.load().then(model => {
-                model.embed(newText).then(embeddings => {                
+            let predictedInfo = await use.load().then(async model => {
+                let allInfo = await model.embed(newText).then(async embeddings => {
                 if (direction === "example") {
                     this.classifier.addExample(embeddings, label);
 
@@ -1135,17 +1129,22 @@ class Scratch3TextClassificationBlocks {
                 } else if (direction === "predict") {
                     // TODO consider making this value the n-th root of the number of labels e.g. for 5 labels, take the 5th root
                     const k = Math.sqrt(this.count);
-                    console.log("k value:", k);
-                    return this.classifier.predictClass(embeddings, k).then(result => {
+                    let finishedInfo = this.classifier.predictClass(embeddings, k).then(result => {
                         this.predictedLabel = result.label;
                         this.confidence = result.confidences[this.predictedLabel];
-                        return [this.predictedLabel, result.confidences[this.predictedLabel]];
+                        console.log(this.confidence);
+                        // return [this.predictedLabel, result.confidences[this.predictedLabel]];
+                        return [result.label, result.confidences[result.label]];
                     });
+                    console.log('all finished info ', finishedInfo);
+                    return await finishedInfo;
                 }
+                return allInfo;
 
                 });
             });
-
+            console.log('all predicted info ', predictedInfo);
+            return predictedInfo;
         } else {
             return "No class inputted";
             
