@@ -491,6 +491,26 @@ class MenuBar extends React.Component {
                             </MenuBarMenu>
                         </div>
                     </div>
+                    <Divider className={classNames(styles.divider)} />
+                    <img
+                                    className={styles.helpIcon}
+                                    src={helpIcon}
+                                />
+                    <a
+                        className={classNames(styles.menuBarItem, styles.hoverable)}
+                        href="https://docs.google.com/presentation/d/1JFvhBqcBlHy803c2had5akcUGfpO6ghnJl2eVX6TJyM/edit?usp=sharing"
+                        target="_blank"
+                    >
+                        Text Classifier Tutorial
+                    </a>
+                    <Divider className={classNames(styles.divider)} />
+                    <a
+                        className={classNames(styles.menuBarItem, styles.hoverable)}
+                        href="https://docs.google.com/presentation/d/1aZgkGoO7Y5WrZGQ8Z2ez4U1VSZD7wxxAsWNKSTK_uaU/edit?usp=sharing"
+                        target="_blank"
+                    >
+                        Progress Tab Doc
+                    </a>
                     {this.props.showTutorials ? (
                         <div>
                             <Divider className={classNames(styles.divider)} />
