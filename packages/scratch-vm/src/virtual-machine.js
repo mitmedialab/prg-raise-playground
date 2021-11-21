@@ -600,6 +600,12 @@ class VirtualMachine extends EventEmitter {
     }
 
     downloadProjectFromURLDirect(url) {
+         // Handle loading dropbox links
+         if (url.includes("dropbox.com")) {
+            const dropboxRegex = /\/s\/[A-Za-z0-9]+\/.*.sb3/;
+            const found = url.match(dropboxRegex);
+            if (found.length > 0) url = 'https://dl.dropboxusercontent.com' + found[0];
+        }
         return new Promise((resolve, reject) => {
             nets({ url: url }, (err, resp, body) => {
                 resolve(this.loadProject(body));
