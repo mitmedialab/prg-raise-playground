@@ -176,10 +176,11 @@ class ProgressBarExample extends React.Component {
 
     analyzeBlocks (blocks) {
         let count = 0;
-        let parent = '';
+        const parents = [];
         let sensing = 0;
         let answer = 0;
         let teachable_machine = 0;
+        let usedEmbeddedConditionals = false;
 
         // go through all of the blocks
         for (const block in blocks) {
@@ -187,7 +188,7 @@ class ProgressBarExample extends React.Component {
                 count = count + 1;
             }
             if (blocks[block].opcode.includes('control_if') && !blocks[block].parent) {
-                parent = blocks[block].id;
+                parents.push(blocks[block].id);
             }
 
             if (blocks[block].opcode.includes('sensing_askandwait')) {
@@ -204,29 +205,26 @@ class ProgressBarExample extends React.Component {
         }
 
         // check if sensing and answer matches
-        if (sensing !== answer) {
+        if (sensing !== 0 && answer === 0) {
             this.setState(prevState => ({percentage: prevState.percentage - 15}));
             this.setState({
-                improvements: this.state.improvements.push("It seems like you're not using the same answer and asking blocks.")
+                improvements: this.state.improvements.push("It seems like you're not using the same type of answer and asking blocks.")
             });
         }
 
         // check if there is an embedded
         for (let block in blocks) {
             if (blocks[block].opcode.includes('control_if')) {
-                if (blocks[block].parent === parent) {
-                    // this.setState({
-                    //     compliments: this.state.compliments.push('Having embedded conditionals makes your code more complex.')
-                    // });
+                if (parents.includes(blocks[block].parent)) {
                     this.handleListUpdate('Using embedded conditionals');
-                    this.setState(prevState => ({ percentage: prevState.percentage + 15 }));
-                    
+                    this.setState(prevState => ({percentage: prevState.percentage + 15}));
+                    usedEmbeddedConditionals = true;
                 }
             }
         }
 
         // if not an embedded
-        if (parent === '') {
+        if (!usedEmbeddedConditionals) {
             this.setState({
                 improvements: this.state.improvements.push('Try embedding conditionals to make your code more complex.')
             });
