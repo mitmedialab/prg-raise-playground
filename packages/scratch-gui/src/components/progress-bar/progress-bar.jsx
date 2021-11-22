@@ -214,9 +214,8 @@ class ProgressBarExample extends React.Component {
         }
 
         // check if there is an embedded
-        for (let block in blocks) {
+        for (const block in blocks) {
             if (blocks[block].opcode.includes('control_if')) {
-                console.log(blocks[block].parent, parents);
                 if (parents.includes(blocks[block].parent)) {
                     usedEmbeddedConditionals = true;
                 }
