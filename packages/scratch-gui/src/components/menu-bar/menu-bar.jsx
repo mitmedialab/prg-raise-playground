@@ -506,7 +506,7 @@ class MenuBar extends React.Component {
                     <Divider className={classNames(styles.divider)} />
                     <a
                         className={classNames(styles.menuBarItem, styles.hoverable)}
-                        href="https://docs.google.com/presentation/d/1aZgkGoO7Y5WrZGQ8Z2ez4U1VSZD7wxxAsWNKSTK_uaU/edit?usp=sharing"
+                        href="https://docs.google.com/presentation/d/1tdWzwRMUkDoAxyt5QHdJ3AKJcdrRE6aQ8URdVt_R0xk/edit?usp=sharing"
                         target="_blank"
                     >
                         Progress Tab Doc
