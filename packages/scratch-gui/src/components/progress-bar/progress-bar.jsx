@@ -1,3 +1,4 @@
+/* eslint-disable no-negated-condition */
 import React from 'react';
 import PropTypes from 'prop-types';
 import bindAll from 'lodash.bindall';
@@ -187,7 +188,7 @@ class ProgressBarExample extends React.Component {
             if (blocks[block].opcode.includes('textClassification')) {
                 count = count + 1;
             }
-            if (blocks[block].opcode.includes('control_if') && !blocks[block].parent) {
+            if (blocks[block].opcode.includes('control_if')) {
                 parents.push(blocks[block].id);
             }
 
@@ -215,9 +216,8 @@ class ProgressBarExample extends React.Component {
         // check if there is an embedded
         for (let block in blocks) {
             if (blocks[block].opcode.includes('control_if')) {
+                console.log(blocks[block].parent, parents);
                 if (parents.includes(blocks[block].parent)) {
-                    this.handleListUpdate('Using embedded conditionals');
-                    this.setState(prevState => ({percentage: prevState.percentage + 15}));
                     usedEmbeddedConditionals = true;
                 }
             }
@@ -228,15 +228,15 @@ class ProgressBarExample extends React.Component {
             this.setState({
                 improvements: this.state.improvements.push('Try embedding conditionals to make your code more complex.')
             });
+        } else {
+            this.handleListUpdate('Using embedded conditionals');
+            this.setState(prevState => ({percentage: prevState.percentage + 15}));
         }
 
         // if using teachable machine
         if (teachable_machine > 0) {
             this.setState(prevState => ({percentage: prevState.percentage + 10 }));
             this.handleListUpdate('Good use of image classification blocks');
-            // this.setState({
-            //     compliments: this.state.compliments.push('You know how to use teachable machine blocks in your code really well.')
-            // });
         }
         
         // check how many text classification blocks there are
