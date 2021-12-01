@@ -455,7 +455,7 @@ class Scratch3TextClassificationBlocks {
                         }
                     }
                 },
-                '---',
+                /*'---',
                 {
                     opcode: 'speakText',
                     text: formatMessage({
@@ -526,7 +526,7 @@ class Scratch3TextClassificationBlocks {
                             defaultValue: 10
                         }
                     }
-                }
+                }*/
             ],
             menus: {
                 voices: {
