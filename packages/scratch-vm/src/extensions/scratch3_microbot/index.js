@@ -29,6 +29,7 @@ const MAX_PIEZO_NOTE = 72;
 
 const _drive = ['forward', 'backward'];
 const _turn = ['left', 'right'];
+const _trackDirs = ['straight', 'left', 'right'];
 
 const _button = ['A','B','A or B','A and B','neither A nor B'];
 const _line_states = ['right side', 'left side', 'neither side', 'both sides'];
@@ -213,9 +214,8 @@ class MicrobitRobot {
                             defaultValue: _turn[0]
                         }
                     }
-                },
-                
-                {
+                },                
+                /*{
                     opcode: 'track',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
@@ -227,6 +227,22 @@ class MicrobitRobot {
                         NUM: {
                             type:ArgumentType.NUMBER,
                             defaultValue: 1
+                        }
+                    }
+                },*/
+                {
+                    opcode: 'trackDir',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'microbitBot.trackLineDir',
+                        default: 'track line [DIR]',
+                        description: 'Send command to robot to track the black line in a direction'
+                    }),
+                    arguments: {
+                        DIR: {
+                            type:ArgumentType.STRING,
+                            menu: 'TRACK_DIRS',
+                            defaultValue: _trackDirs[0]
                         }
                     }
                 },
@@ -352,6 +368,10 @@ class MicrobitRobot {
                 LINE_STATES: {
                     acceptReporters: false,
                     items: _line_states
+                },
+                TRACK_DIRS: {
+                    acceptReports: false,
+                    items: _trackDirs
                 }
             }
         };
@@ -752,7 +772,7 @@ class MicrobitRobot {
   
   /**
    * Implement track black line
-   * @secs {number} the number of seconds to turn left
+   * @secs {number} the number of seconds to track the line
    * @callback {function} the code to call when this function is done executing
    */
   track(args) {
@@ -771,6 +791,43 @@ class MicrobitRobot {
             }, secs*1000);
         });
   }
- 
+   /**
+   * Implement track black line in a particular direction
+   * @dir {string} the direction (straight | left | right) to follow the line
+   * @callback {function} the code to call when this function is done executing
+   */
+    trackDir(args) {
+        var msg = {};
+        var dir = args.DIR;
+
+        // default: if straight, go through black line (if any)
+        let pause = 500;
+        // continue for 1/10th of a second
+        let cmd = "D#";
+        
+        console.log("Tracking black line, direction: " + dir);
+        
+        if (dir == "left") {
+            // follow line left
+            cmd = "P#";
+            // continue turning for half a second
+            pause = 500;
+        } else if (dir == "right") {
+            // follow line right
+            cmd = "Q#";
+            // wait half a second
+            pause = 500;
+        }
+
+        if (this._mServices) this._mServices.uartService.sendText(cmd);
+        // Randi TODO not sure what this line does
+        //if (this._mConnection != null) this._mConnection.postMessage(msg);  
+
+        // track line until next fork is reached
+        setTimeout(() => {
+            if (this._mServices) this._mServices.uartService.sendText('C#');
+            resolve();
+        }, pause);
+      }
 }
 module.exports = MicrobitRobot;
