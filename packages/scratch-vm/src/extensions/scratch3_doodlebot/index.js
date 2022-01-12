@@ -24,6 +24,8 @@ const _drive_protocol = ["0,0", "1,1", "1,0", "0,1"];
 const _pen_dirs = ["up", "down"];
 const _pen_protocol = ["0", "45"];
 
+const _bumpers = ["front", "back", "front or back", "front bumper and back", "neither"];
+
 const _pixel_anims = ["blink", "chase", "solid"];
 const _pixels = [
     "light 1",
@@ -120,7 +122,8 @@ class DoodlebotBlocks {
         this._pixelInterval = null;
 
         this.sensorValues = {};
-        this.sensorEvent = new EventEmitter()
+        this.sensorEvent = new EventEmitter();
+        this.last_reading_time = 0;
 
         this.scratch_vm.on("PROJECT_STOP_ALL", this.resetRobot.bind(this));
         this.scratch_vm.on("CONNECT_DOODLEBOT", this.connectToBLE.bind(this));
@@ -381,10 +384,27 @@ class DoodlebotBlocks {
                     },
                 },
                 {
+                    opcode: "whenBumperPressed",
+                    text: formatMessage({
+                        id: "doodlebot.readBumperStatus",
+                        default: "when [BUMPER] bumper pressed",
+                        description:
+                            "Trigger when bumpers on doodlebot are pressed",
+                    }),
+                    blockType: BlockType.HAT,
+                    arguments: {
+                        BUMPER: {
+                            type: ArgumentType.String,
+                            menu: "BUMPERS",
+                            defaultValue: _bumpers[0],
+                        },
+                    },
+                },
+                {
                     opcode: "readBattery",
                     blockType: BlockType.REPORTER,
                     text: formatMessage({
-                        id: "arduinoBot.readBattery",
+                        id: "doodlebot.readBattery",
                         default: "battery level",
                         description:
                             "Get battery reading from robot",
@@ -411,6 +431,10 @@ class DoodlebotBlocks {
                 ANIMS: {
                     acceptReporters: false,
                     items: Object.keys(_anims),
+                },
+                BUMPERS: {
+                    acceptReporters: false,
+                    items: _bumpers,
                 },
                 DIRS: {
                     acceptReporters: false,
@@ -533,7 +557,7 @@ class DoodlebotBlocks {
                 console.log(err);
                 if (err.message == "Bluetooth adapter not available.") {
                     alert("Your device does not support BLE connections.");
-                } else {
+                } else if (err.message !== "User cancelled the requestDevice() chooser.") {
                     alert(
                         "There was a problem connecting your device, please try again or request assistance."
                     );
@@ -556,7 +580,7 @@ class DoodlebotBlocks {
     }
 
     /**
-     * For reading data back from the device
+     * For reading battery data back
      */
     readBattery(args) {
         // enable battery
@@ -573,6 +597,52 @@ class DoodlebotBlocks {
             });
         }
         return -1;
+    }
+
+    /**
+     * Implement whenBumperPressed
+     */
+     whenBumperPressed(args) {
+        return this.readBumperStatus(args);
+    }
+    /**
+     * For reading data back from the device
+     */
+     readBumperStatus(args) {
+        /*let current_time = Date.now();
+        if (current_time - this.last_reading_time > 250) {
+            this.last_reading_time = current_time;
+        }*/
+
+        let state = args.BUMPER;
+        console.log(this.sensorValues);
+        /*let frontSensor = new Promise((resolve) => {
+                this.sensorEvent.on('bumper.front', (value) => {
+                    resolve(value == 1);
+                });
+        });
+
+        return Promise.all([frontSensor])
+            .then((values) => {
+                if (state == "front") {
+                    console.log("Bumper values:", values[0]);
+                    return values[0];
+                } else if (state == "back") {
+                    return values[1];
+                } else if (state == "front or back") {
+                    return values[0] || values[1];
+                } else if (state == "front bumper and back") {
+                    return values[0] && values[1];
+                } else if (state == "neither") {
+                    return !(values[0] || values[1]);
+                }
+            })
+            .catch((error) => {
+                console.error(error.message);
+                return false;
+            });
+        }*/
+        return false; // should never get here
     }
 
     sendCommandToRobot(command, delayInMs) {
@@ -602,7 +672,11 @@ class DoodlebotBlocks {
      */
     enableSensor(args) {
         // send message
-        if (this._robotUart) this._robotUart.sendText("(e,f)");
+        if (this._robotUart) {
+            let sensor_cmd = _sensors[args.SENSOR];
+            console.log("Enable sensor " + sensor_cmd);
+            this._robotUart.sendText("(e," + sensor_cmd + ")");
+        }
     }
 
     /**
@@ -610,11 +684,15 @@ class DoodlebotBlocks {
      */
     disableSensor(args) {
         // send message
-        if (this._robotUart) this._robotUart.sendText("(x,f)");
+        if (this._robotUart) {
+            let sensor_cmd = _sensors[args.SENSOR];
+            console.log("Disable sensor " + sensor_cmd);
+            this._robotUart.sendText("(x," + sensor_cmd + ")");
+        }
     }
 
     /**
-     * For returning battery reading
+     * For returning sensor readings
      */
     updateSensors(event) {
         const dataLine = event.detail.split("(");
@@ -628,52 +706,53 @@ class DoodlebotBlocks {
                     case "b":
                         this.sensorEvent.emit('bumper.front', Number.parseInt(ds[1]));
                         this.sensorEvent.emit('bumper.back', Number.parseInt(ds[2]));
-                        this.sensorVals['bumper.front'] = Number.parseInt(ds[1]);
-                        this.sensorVals['bumper.back'] = Number.parseInt(ds[2]);
+                        /*this.sensorValues['bumper.front'] = Number.parseInt(ds[1]);
+                        this.sensorValues['bumper.back'] = Number.parseInt(ds[2]);
+                        console.log("Got sensor reading: ", ds);*/
                         break;
                     case "l":
                         this.sensorEvent.emit('color.red', Number.parseFloat(ds[1]));
                         this.sensorEvent.emit('color.green', Number.parseFloat(ds[2]));
                         this.sensorEvent.emit('color.blue', Number.parseFloat(ds[3]));
-                        this.sensorVals['color.red'] = Number.parseFloat(ds[1]);
-                        this.sensorVals['color.green'] = Number.parseFloat(ds[2]);
-                        this.sensorVals['color.blue'] = Number.parseFloat(ds[3]);
+                        /*this.sensorValues['color.red'] = Number.parseFloat(ds[1]);
+                        this.sensorValues['color.green'] = Number.parseFloat(ds[2]);
+                        this.sensorValues['color.blue'] = Number.parseFloat(ds[3]);*/
                         break;
                     case "d":
                         this.sensorEvent.emit('distance', Number.parseInt(ds[1]));
-                        this.sensorVals['distance'] = Number.parseInt(ds[1]);
+                        //this.sensorValues['distance'] = Number.parseInt(ds[1]);
                         break;
                     case "h":
                         this.sensorEvent.emit('humidity', Number.parseFloat(ds[1]));
-                        this.sensorVals['humidity'] = Number.parseFloat(ds[1]);
+                        //this.sensorValues['humidity'] = Number.parseFloat(ds[1]);
                         break;
                     case "t":
                         this.sensorEvent.emit('temperature', Number.parseFloat(ds[1]));
-                        this.sensorVals['temperature'] = Number.parseFloat(ds[1]);
+                        this.sensorValues['temperature'] = Number.parseFloat(ds[1]);
                         break;
                     case "p":
                         this.sensorEvent.emit('pressure', Number.parseFloat(ds[1]));
-                        this.sensorVals['pressure'] = Number.parseFloat(ds[1]);
+                        //this.sensorValues['pressure'] = Number.parseFloat(ds[1]);
                         break;
                     case "o":
                         this.sensorEvent.emit('magnetometer.roll', Number.parseFloat(ds[1]));
                         this.sensorEvent.emit('magnetometer.pitch', Number.parseFloat(ds[2]));
                         this.sensorEvent.emit('magnetometer.yaw', Number.parseFloat(ds[3]));
-                        this.sensorVals['magnetometer.roll'] = Number.parseFloat(ds[1]);
-                        this.sensorVals['magnetometer.pitch'] = Number.parseFloat(ds[2]);
-                        this.sensorVals['magnetometer.yaw'] = Number.parseFloat(ds[3]);
+                        /*this.sensorValues['magnetometer.roll'] = Number.parseFloat(ds[1]);
+                        this.sensorValues['magnetometer.pitch'] = Number.parseFloat(ds[2]);
+                        this.sensorValues['magnetometer.yaw'] = Number.parseFloat(ds[3]);*/
                         break;
                     case "u":
                         this.sensorEvent.emit('altitude', Number.parseFloat(ds[1]));
-                        this.sensorVals['altitude'] = Number.parseFloat(ds[1]);
+                        //this.sensorValues['altitude'] = Number.parseFloat(ds[1]);
                         break;
                     case "x":
                         this.sensorEvent.emit('accelerometer.x', Number.parseFloat(ds[1]));
                         this.sensorEvent.emit('accelerometer.y', Number.parseFloat(ds[2]));
                         this.sensorEvent.emit('accelerometer.z', Number.parseFloat(ds[3]));
-                        this.sensorVals['accelerometer.x'] = Number.parseFloat(ds[1]);
-                        this.sensorVals['accelerometer.y'] = Number.parseFloat(ds[2]);
-                        this.sensorVals['accelerometer.z'] = Number.parseFloat(ds[3]);
+                        /*this.sensorValues['accelerometer.x'] = Number.parseFloat(ds[1]);
+                        this.sensorValues['accelerometer.y'] = Number.parseFloat(ds[2]);
+                        this.sensorValues['accelerometer.z'] = Number.parseFloat(ds[3]);*/
                         break;
                     case "f":
                         this.sensorEvent.emit('battery', Number.parseFloat(ds[1]));
@@ -781,20 +860,31 @@ class DoodlebotBlocks {
         if (this._robotUart) this._robotUart.sendText("(d,c)");
     }
 
+    pixelHexToDecimal(inputColor) {
+        let COLOR_ADJUST = 60;
+        let rgbColor = Color.hexToRgb(inputColor);
+        console.log("rgb color: ", rgbColor);
+
+        rgbColor.r = rgbColor.r > COLOR_ADJUST ? rgbColor.r - COLOR_ADJUST : rgbColor.r;
+        rgbColor.g = rgbColor.g > COLOR_ADJUST ? rgbColor.g - COLOR_ADJUST : rgbColor.g;
+        rgbColor.b = rgbColor.b > COLOR_ADJUST ? rgbColor.b - COLOR_ADJUST : rgbColor.b;
+        console.log("updated color: ", rgbColor);
+
+        return Color.rgbToDecimal(rgbColor);
+    }
     /**
      * For setting individual neopixel colors
      */
     setPixels(args) {
         if (args.PIXEL == "all lights") {
             for (let i = 0; i < this._colorArr.length; i++) {
-                // Translate hex color to binary
-                color = Color.hexToDecimal(args.COLOR);
-                this._colorArr[i] = color;
+                // Translate hex color to rgb
+                this._colorArr[i] = this.pixelHexToDecimal(args.COLOR);
             }
         } else {
             // calculate the index of the pixel, note light 1 is on top, light 8 is on bottom
             const idx = (this._colorArr.length-1) - _pixels.indexOf(args.PIXEL);
-            this._colorArr[idx] = Color.hexToDecimal(args.COLOR);
+            this._colorArr[idx] = this.pixelHexToDecimal(args.COLOR);
         }
 
         console.log("set pixels: " + this._colorArr.join(","));
@@ -811,13 +901,13 @@ class DoodlebotBlocks {
             .filter((entry) => entry[0].startsWith("COLOR"))
             .map((entry) => entry[1]);
 
-        let color = Color.hexToDecimal(colorArgs[0]);
+        let color = this.pixelHexToDecimal(colorArgs[0]);
         // count the pixels backward to line up with the order of the pixels on the robot
         for (let i = 0; i < this._colorArr.length; i++) {
             // if there is a list of colors, use the correct index, otherwise use the first color in the array
             if (colorArgs.length > i) {
                 // Translate hex color to binary
-                color = Color.hexToDecimal(colorArgs[i]);
+                color = this.pixelHexToDecimal(colorArgs[i]);
             }
             this._colorArr[(this._colorArr.length - 1) - i] = color;
         }
