@@ -609,39 +609,24 @@ class DoodlebotBlocks {
      * For reading data back from the device
      */
      readBumperStatus(args) {
-        /*let current_time = Date.now();
-        if (current_time - this.last_reading_time > 250) {
-            this.last_reading_time = current_time;
-        }*/
-
         let state = args.BUMPER;
-        console.log(this.sensorValues);
-        /*let frontSensor = new Promise((resolve) => {
-                this.sensorEvent.on('bumper.front', (value) => {
-                    resolve(value == 1);
-                });
-        });
+        
+        // grab current sensor readings
+        let front = this.sensorValues["bumper.front"] == 1;
+        let back = this.sensorValues["bumper.back"] == 1;
 
-        return Promise.all([frontSensor])
-            .then((values) => {
-                if (state == "front") {
-                    console.log("Bumper values:", values[0]);
-                    return values[0];
-                } else if (state == "back") {
-                    return values[1];
-                } else if (state == "front or back") {
-                    return values[0] || values[1];
-                } else if (state == "front bumper and back") {
-                    return values[0] && values[1];
-                } else if (state == "neither") {
-                    return !(values[0] || values[1]);
-                }
-            })
-            .catch((error) => {
-                console.error(error.message);
-                return false;
-            });
-        }*/
+        if (state == "front") {
+            return front;
+        } else if (state == "back") {
+            return back;
+        } else if (state == "front or back") {
+            return front || back;
+        } else if (state == "front bumper and back") {
+            return front && back;
+        } else if (state == "neither") {
+            return !(front || back);
+        }
+
         return false; // should never get here
     }
 
@@ -706,25 +691,24 @@ class DoodlebotBlocks {
                     case "b":
                         this.sensorEvent.emit('bumper.front', Number.parseInt(ds[1]));
                         this.sensorEvent.emit('bumper.back', Number.parseInt(ds[2]));
-                        /*this.sensorValues['bumper.front'] = Number.parseInt(ds[1]);
+                        this.sensorValues['bumper.front'] = Number.parseInt(ds[1]);
                         this.sensorValues['bumper.back'] = Number.parseInt(ds[2]);
-                        console.log("Got sensor reading: ", ds);*/
                         break;
                     case "l":
                         this.sensorEvent.emit('color.red', Number.parseFloat(ds[1]));
                         this.sensorEvent.emit('color.green', Number.parseFloat(ds[2]));
                         this.sensorEvent.emit('color.blue', Number.parseFloat(ds[3]));
-                        /*this.sensorValues['color.red'] = Number.parseFloat(ds[1]);
+                        this.sensorValues['color.red'] = Number.parseFloat(ds[1]);
                         this.sensorValues['color.green'] = Number.parseFloat(ds[2]);
-                        this.sensorValues['color.blue'] = Number.parseFloat(ds[3]);*/
+                        this.sensorValues['color.blue'] = Number.parseFloat(ds[3]);
                         break;
                     case "d":
                         this.sensorEvent.emit('distance', Number.parseInt(ds[1]));
-                        //this.sensorValues['distance'] = Number.parseInt(ds[1]);
+                        this.sensorValues['distance'] = Number.parseInt(ds[1]);
                         break;
                     case "h":
                         this.sensorEvent.emit('humidity', Number.parseFloat(ds[1]));
-                        //this.sensorValues['humidity'] = Number.parseFloat(ds[1]);
+                        this.sensorValues['humidity'] = Number.parseFloat(ds[1]);
                         break;
                     case "t":
                         this.sensorEvent.emit('temperature', Number.parseFloat(ds[1]));
@@ -732,30 +716,31 @@ class DoodlebotBlocks {
                         break;
                     case "p":
                         this.sensorEvent.emit('pressure', Number.parseFloat(ds[1]));
-                        //this.sensorValues['pressure'] = Number.parseFloat(ds[1]);
+                        this.sensorValues['pressure'] = Number.parseFloat(ds[1]);
                         break;
                     case "o":
                         this.sensorEvent.emit('magnetometer.roll', Number.parseFloat(ds[1]));
                         this.sensorEvent.emit('magnetometer.pitch', Number.parseFloat(ds[2]));
                         this.sensorEvent.emit('magnetometer.yaw', Number.parseFloat(ds[3]));
-                        /*this.sensorValues['magnetometer.roll'] = Number.parseFloat(ds[1]);
+                        this.sensorValues['magnetometer.roll'] = Number.parseFloat(ds[1]);
                         this.sensorValues['magnetometer.pitch'] = Number.parseFloat(ds[2]);
-                        this.sensorValues['magnetometer.yaw'] = Number.parseFloat(ds[3]);*/
+                        this.sensorValues['magnetometer.yaw'] = Number.parseFloat(ds[3]);
                         break;
                     case "u":
                         this.sensorEvent.emit('altitude', Number.parseFloat(ds[1]));
-                        //this.sensorValues['altitude'] = Number.parseFloat(ds[1]);
+                        this.sensorValues['altitude'] = Number.parseFloat(ds[1]);
                         break;
                     case "x":
                         this.sensorEvent.emit('accelerometer.x', Number.parseFloat(ds[1]));
                         this.sensorEvent.emit('accelerometer.y', Number.parseFloat(ds[2]));
                         this.sensorEvent.emit('accelerometer.z', Number.parseFloat(ds[3]));
-                        /*this.sensorValues['accelerometer.x'] = Number.parseFloat(ds[1]);
+                        this.sensorValues['accelerometer.x'] = Number.parseFloat(ds[1]);
                         this.sensorValues['accelerometer.y'] = Number.parseFloat(ds[2]);
-                        this.sensorValues['accelerometer.z'] = Number.parseFloat(ds[3]);*/
+                        this.sensorValues['accelerometer.z'] = Number.parseFloat(ds[3]);
                         break;
                     case "f":
                         this.sensorEvent.emit('battery', Number.parseFloat(ds[1]));
+                        this.sensorValues['battery'] = Number.parseFloat(ds[1]);
                         break;
                     default:
                         console.log("Received unrecognized data:", ds[0]);
