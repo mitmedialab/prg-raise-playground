@@ -143,6 +143,7 @@
     }
   },
   "dependencies": {
+    "@techstark/opencv-js": "^4.5.4-release.1",
     "microbit-web-bluetooth": "^0.6.0"
   }
 }

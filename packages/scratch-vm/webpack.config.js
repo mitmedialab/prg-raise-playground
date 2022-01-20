@@ -4,6 +4,9 @@ const path = require('path');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
 const base = {
+    node: {
+        fs: 'empty'
+    },
     mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
     devServer: {
         contentBase: false,
@@ -40,7 +43,17 @@ const base = {
 };
 
 module.exports = [
-    // Web-compatible
+    // Web-compatible,
+    // defaultsDeep({}, base, {
+    //     target: 'node',
+    //     entry: {
+    //         'scratch-vm': './src/index.js',
+    //         'scratch-vm.min': './src/index.js'
+    //     },
+    //     output: {
+    //         path: path.resolve('fs', false)
+    //     }
+    // }),
     defaultsDeep({}, base, {
         target: 'web',
         entry: {
@@ -145,3 +158,4 @@ module.exports = [
         ])
     })
 ];
+
