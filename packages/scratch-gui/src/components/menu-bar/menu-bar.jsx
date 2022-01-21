@@ -152,7 +152,7 @@ MenuItemTooltip.propTypes = {
 
 const CLIENT_ID = '906634949042-5jbc7q594e69spg2i0bkt9a14iojvtsp.apps.googleusercontent.com';
 const DEVELOPER_KEY = 'AIzaSyDRoOjwaDXOxq4cda1nrCVLaVQvTCh5GYE';
-const DRIVE_SCOPE = ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive.readonly'];
+const DRIVE_SCOPE = ['https://www.googleapis.com/auth/drive.file'];
 
 class MenuBar extends React.Component {
     constructor (props) {
@@ -171,6 +171,7 @@ class MenuBar extends React.Component {
             'restoreOptionMessage',
             'handleDriveAuthenticate',
             'handleDriveProjectSelect',
+            'handleClickLoadProjectLink',
             'handleClickDriveSave',
             'onApiLoad'
         ]);
@@ -206,6 +207,9 @@ class MenuBar extends React.Component {
         this.props.onRequestCloseFile();
         if (readyToReplaceProject) {
             this.props.onClickNew(this.props.canSave && this.props.canCreateNew);
+            this.setState({
+                fileId: null
+            });
         }
         this.props.onRequestCloseFile();
     }
@@ -309,6 +313,24 @@ class MenuBar extends React.Component {
             callback
         );
     }
+    handleClickLoadProjectLink() {
+        // TODO make Google drive links work
+        // https://drive.google.com/uc?export=download&id=1Xrgcz-0hQZyzYq8KDIoBPY2GSuxIaIZQ
+        // gets 302 error
+        let templateLink = "https://www.dropbox.com/s/o8jegh940y7f7qc/SimpleProject.sb3";
+        let url = window.prompt("Enter project url (e.g. from Dropbox or Github)", templateLink);
+        
+        const readyToReplaceProject = this.props.confirmReadyToReplaceProject(
+            this.props.intl.formatMessage(sharedMessages.replaceProjectWarning)
+        );
+        if (readyToReplaceProject) {
+            this.props.vm.downloadProjectFromURLDirect(url);
+            this.setState({
+                fileId: null
+            });
+        }
+        this.props.onRequestCloseFile();
+    }
     handleClickDriveSave() {
         // make sure user has logged into Google Drive
         if (!this.state.authToken) {
@@ -321,9 +343,6 @@ class MenuBar extends React.Component {
             this.props.onRequestCloseFile();
             return;
         }
-
-        // show alert that we are saving project
-        this.props.onShowSavingAlert();
 
         // check if we have already created file
         let fileId = this.state.fileId;
@@ -345,13 +364,19 @@ class MenuBar extends React.Component {
                     });
                 }
             }
+
             this.props.onRequestCloseFile();
             return;
         }
 
         const url = "https://www.googleapis.com/upload/drive/v3/files/" + fileId + "?uploadType=media;" + this.state.authToken;
         this.props.vm.uploadProjectToURL(url);
+        
+        // this one doesn't seem to work
         this.props.onShowSaveSuccessAlert();
+
+        // show alert that we are saving project
+        window.alert("Project saved");
         this.props.onRequestCloseFile();
     }
     handleDriveAuthenticate(token) {
@@ -360,7 +385,6 @@ class MenuBar extends React.Component {
         });
     }
     handleDriveProjectSelect(data) {
-        console.log("picked Drive file:", data);
         if (data.docs) {
             const fileId = data.docs[0].id;
             const url = "https://www.googleapis.com/drive/v3/files/" + fileId + "/?alt=media;" + this.state.authToken;
@@ -370,6 +394,9 @@ class MenuBar extends React.Component {
             );
             if (readyToReplaceProject) {
                 this.props.vm.downloadProjectFromURLDirect(url);
+                this.setState({
+                    fileId: fileId
+                });
             }
         }
         this.props.onRequestCloseFile();
@@ -528,38 +555,31 @@ class MenuBar extends React.Component {
                                             )}
                                         </MenuSection>
                                     )}
+                                    
                                     <MenuSection>
-                                        <GooglePicker clientId={CLIENT_ID}
-                                            developerKey={DEVELOPER_KEY}
-                                            scope={DRIVE_SCOPE}
-                                            onAuthenticate={this.handleDriveAuthenticate}
-                                            onChange={this.handleDriveProjectSelect}
-                                            onAuthFailed={data => console.log('on auth failed:', data)}
-                                            multiselect={false}
-                                            navHidden={false}
-                                            authImmediate={false}
-                                            viewID={'DOCS'}
-                                            query={'.sb3'}
-                                            >
-                                            <MenuItem classname="google">
-                                                <FormattedMessage
-                                                    defaultMessage="Open project from Google Drive"
-                                                    description="Menu bar item for loading a project from Google Drive" // eslint-disable-line max-len
-                                                    id="gui.menuBar.loadFromDrive"
-                                                />
-                                            </MenuItem>
-                                        </GooglePicker>
                                         <MenuItem
-                                            onClick={this.handleClickDriveSave}
+                                            onClick={this.handleClickLoadProjectLink}
                                         >
                                             <FormattedMessage
-                                                defaultMessage="Save project to Google Drive"
-                                                description="Menu bar item for saving a project to Google Drive" // eslint-disable-line max-len
-                                                id="gui.menuBar.saveToDrive"
+                                                defaultMessage="Load project from link"
+                                                description="Menu bar item for opening a project from a link" // eslint-disable-line max-len
+                                                id="gui.menuBar.loadFromLink"
                                             />
                                         </MenuItem>
                                     </MenuSection>
                                     <MenuSection>
+                                        <SB3Downloader>{(className, downloadProjectCallback) => (
+                                            <MenuItem
+                                                className={className}
+                                                onClick={this.getSaveToComputerHandler(downloadProjectCallback)}
+                                            >
+                                                <FormattedMessage
+                                                    defaultMessage="Save to your computer"
+                                                    description="Menu bar item for downloading a project to your computer" // eslint-disable-line max-len
+                                                    id="gui.menuBar.downloadToComputer"
+                                                />
+                                            </MenuItem>
+                                        )}</SB3Downloader>
                                         <SBFileUploader
                                             canSave={this.props.canSave}
                                             userOwnsProject={this.props.userOwnsProject}
@@ -576,18 +596,37 @@ class MenuBar extends React.Component {
                                                 </MenuItem>
                                             )}
                                         </SBFileUploader>
-                                        <SB3Downloader>{(className, downloadProjectCallback) => (
-                                            <MenuItem
-                                                className={className}
-                                                onClick={this.getSaveToComputerHandler(downloadProjectCallback)}
+                                    </MenuSection>
+                                    <MenuSection>
+                                        <MenuItem
+                                            onClick={this.handleClickDriveSave}
+                                        >
+                                            <FormattedMessage
+                                                defaultMessage="Save project to Google Drive"
+                                                description="Menu bar item for saving a project to Google Drive" // eslint-disable-line max-len
+                                                id="gui.menuBar.saveToDrive"
+                                            />
+                                        </MenuItem>
+                                        <GooglePicker clientId={CLIENT_ID}
+                                            developerKey={DEVELOPER_KEY}
+                                            scope={DRIVE_SCOPE}
+                                            onAuthenticate={this.handleDriveAuthenticate}
+                                            onChange={this.handleDriveProjectSelect}
+                                            onAuthFailed={data => console.log('on auth failed:', data)}
+                                            multiselect={false}
+                                            navHidden={false}
+                                            authImmediate={false}
+                                            viewID={'DOCS'}
+                                            query={'.sb3'}
                                             >
+                                            <MenuItem classname="google">
                                                 <FormattedMessage
-                                                    defaultMessage="Save to your computer"
-                                                    description="Menu bar item for downloading a project to your computer" // eslint-disable-line max-len
-                                                    id="gui.menuBar.downloadToComputer"
+                                                    defaultMessage="Load project from Google Drive"
+                                                    description="Menu bar item for loading a project from Google Drive" // eslint-disable-line max-len
+                                                    id="gui.menuBar.loadFromDrive"
                                                 />
                                             </MenuItem>
-                                        )}</SB3Downloader>
+                                        </GooglePicker>
                                     </MenuSection>
                                 </MenuBarMenu>
                             </div>
