@@ -14,8 +14,6 @@ const cv = require('@techstark/opencv-js');
 const _ = require('lodash'); // allows fast array transformations in javascript
 const { times } = require('lodash');
 const { Canvas, Image, ImageData } = canvas
-const { get_bbox } = require('./utils.js');
-
 
 /**
  * Sensor attribute video sensor block should report.
@@ -93,6 +91,35 @@ const ShapeAttribute = {
     NUM_SHAPES: 'number of shapes'
 }
 
+const ColorThresDisplayState = {
+    /** Shape drawings turned off. */
+    OFF: 'off',
+
+    /** Shape drawings turned on. */
+    ON: 'on',
+};
+
+const ColorThresAttribute = {
+    CENTER_X: 'x position',
+    CENTER_Y: 'y position',
+    SIZE: 'area',
+    NUM_OBJECTS: 'number of objects'
+}
+
+const EdgesDisplayState = {
+    /** Shape drawings turned off. */
+    OFF: 'off',
+
+    /** Shape drawings turned on. */
+    ON: 'on',
+};
+
+const EdgesAttribute = {
+    CENTER_X: 'x position',
+    CENTER_Y: 'y position',
+    SIZE: 'area',
+}
+
 
 class opencv {
 
@@ -154,6 +181,19 @@ class opencv {
         this.shapeY = null
         this.shapeSize = null
         this.shapeNumShapes = null
+
+        this.colorThresOverlayCanvas = null
+        this.colorThresDisplayState = ColorThresDisplayState.ON
+        this.colorThresX = null
+        this.colorThresY = null
+        this.colorThresSize = null
+        this.colorThresNumObjs = null
+
+        this.edgesOverlayCanvas = null
+        this.edgesDisplayState = EdgesDisplayState.ON
+        this.edgesX = null
+        this.edgesY = null
+        this.edgesSize = null
     }
 
      /**
@@ -416,6 +456,32 @@ class opencv {
         ];
     }
 
+    get COLOR_THRES_DISPLAY_INFO() {
+        return [
+            {
+                name: 'off',
+                value: ColorThresDisplayState.OFF
+            },
+            {
+                name: 'on',
+                value: ColorThresDisplayState.ON
+            }
+        ];
+    }
+    
+    get EDGES_DISPLAY_INFO() {
+        return [
+            {
+                name: 'off',
+                value: EdgesDisplayState.OFF
+            },
+            {
+                name: 'on',
+                value: EdgesDisplayState.ON
+            }
+        ];
+    }
+
     get CIRCLE_ATTRIBUTES() {
         return [
             {
@@ -454,6 +520,65 @@ class opencv {
             {
                 name: 'number of shapes',
                 value: ShapeAttribute.NUM_SHAPES
+            }
+        ]
+    }
+
+    get COLOR_THRES_ATTRIBUTES() {
+        return [
+            {
+                name: 'x position',
+                value: ColorThresAttribute.CENTER_X
+            },
+            {
+                name: 'y position',
+                value: ColorThresAttribute.CENTER_Y
+            },
+            {
+                name: 'area',
+                value: ColorThresAttribute.SIZE
+            },
+            {
+                name: 'number of objects',
+                value: ColorThresAttribute.NUM_OBJECTS
+            }
+        ]
+    }
+
+    get EDGES_ATTRIBUTES() {
+        return [
+            {
+                name: 'x position',
+                value: EdgesAttribute.CENTER_X
+            },
+            {
+                name: 'y position',
+                value: EdgesAttribute.CENTER_Y
+            },
+            {
+                name: 'area',
+                value: EdgesAttribute.SIZE
+            },
+            {
+                name: 'number of objects',
+                value: EdgesAttribute.NUM_OBJECTS
+            }
+        ]
+    }
+
+    get APERTURE_SIZES() {
+        return [
+            {
+                name: '3',
+                value: 3
+            },
+            {
+                name: '5',
+                value: 5
+            },
+            {
+                name: '7',
+                value: 7
             }
         ]
     }
@@ -577,6 +702,105 @@ class opencv {
                             defaultValue: 'x position'
                         }
                     }
+                },
+                {
+                    opcode: 'colorThreshold',
+                    blockType: BlockType.COMMAND,
+                    text: 'detect colors with hue in range [HUE_MIN] to [HUE_MAX], saturation [SAT_MIN] to [SAT_MAX], and \n value [VAL_MIN] to [VAL_MAX]',
+                    arguments: {
+                        HUE_MIN: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0
+                        },
+                        SAT_MIN: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0
+                        },
+                        VAL_MIN: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0
+                        },
+                        HUE_MAX: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 179
+                        },
+                        SAT_MAX: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 255
+                        },
+                        VAL_MAX: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 255
+                        }
+                    }
+                },
+                {
+                    opcode: 'colorThresDisplayToggle',
+                    blockType: BlockType.COMMAND,
+                    text: 'turn color threshold display [COLOR_THRES_DISPLAY_STATE]',
+                    arguments: {
+                        COLOR_THRES_DISPLAY_STATE: {
+                            type: ArgumentType.STRING,
+                            menu: 'COLOR_THRES_DISPLAY_STATE',
+                            defaultValue: 'on'
+                        }
+                    }
+                },
+                {
+                    opcode: 'getColorThresAttribute',
+                    blockType: BlockType.REPORTER,
+                    text: 'get color thresholding attribute [COLOR_THRES_ATTRIBUTE]',
+                    arguments: {
+                        COLOR_THRES_ATTRIBUTE: {
+                            type: ArgumentType.STRING,
+                            menu: 'COLOR_THRES_ATTRIBUTE',
+                            defaultValue: 'x position'
+                        }
+                    }
+                },
+                {
+                    opcode: 'edgeDetection',
+                    blockType: BlockType.COMMAND,
+                    text: 'detect edges using threshold values [THRES1] and [THRES2] and aperture size [APERTURE]',
+                    arguments: {
+                        THRES1: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 100
+                        },
+                        THRES2: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 200
+                        },
+                        APERTURE: {
+                            type: ArgumentType.NUMBER,
+                            menu: 'APERTURE_SIZES',
+                            defaultValue: 3
+                        }
+                    }
+                },
+                {
+                    opcode: 'edgeDisplayToggle',
+                    blockType: BlockType.COMMAND,
+                    text: 'turn edges display [EDGES_DISPLAY_STATE]',
+                    arguments: {
+                        EDGES_DISPLAY_STATE: {
+                            type: ArgumentType.STRING,
+                            menu: 'EDGES_DISPLAY_STATE',
+                            defaultValue: 'on'
+                        }
+                    }
+                },
+                {
+                    opcode: 'getEdgeAttribute',
+                    blockType: BlockType.REPORTER,
+                    text: 'get edges attribute [EDGES_ATTRIBUTE]',
+                    arguments: {
+                        EDGES_ATTRIBUTE: {
+                            type: ArgumentType.STRING,
+                            menu: 'EDGES_ATTRIBUTE',
+                            defaultValue: 'x position'
+                        }
+                    }
                 }
             ],
             menus: {
@@ -586,7 +810,12 @@ class opencv {
                 CIRCLE_DISPLAY_STATE: this._buildMenu(this.CIRCLE_DISPLAY_INFO),
                 CIRCLE_ATTRIBUTE: this._buildMenu(this.CIRCLE_ATTRIBUTES),
                 SHAPE_DISPLAY_STATE: this._buildMenu(this.SHAPE_DISPLAY_INFO),
-                SHAPE_ATTRIBUTE: this._buildMenu(this.SHAPE_ATTRIBUTES)
+                SHAPE_ATTRIBUTE: this._buildMenu(this.SHAPE_ATTRIBUTES),
+                COLOR_THRES_DISPLAY_STATE: this._buildMenu(this.COLOR_THRES_DISPLAY_INFO),
+                COLOR_THRES_ATTRIBUTE: this._buildMenu(this.COLOR_THRES_ATTRIBUTES),
+                EDGES_DISPLAY_STATE: this._buildMenu(this.EDGES_DISPLAY_INFO),
+                EDGES_ATTRIBUTE: this._buildMenu(this.EDGES_ATTRIBUTES),
+                APERTURE_SIZES: this._buildMenu(this.APERTURE_SIZES)
             }
           };
       }
@@ -835,6 +1064,236 @@ class opencv {
             case ShapeAttribute.CENTER_Y: return this.shapeY;
             case ShapeAttribute.SIZE: return this.shapeSize;
             case ShapeAttribute.NUM_SHAPES: return this.shapeNumShapes;
+            default: return null;
+        }
+    }
+
+    colorThreshold(args) {
+        return new Promise((resolve, reject) => {
+            let hue_min = Math.max(0, parseFloat(args.HUE_MIN));
+            let hue_max = Math.min(179, parseFloat(args.HUE_MAX));
+            let sat_min = Math.max(0, parseFloat(args.SAT_MIN));
+            let sat_max = Math.min(255, parseFloat(args.SAT_MAX));
+            let val_min = Math.max(0, parseFloat(args.VAL_MIN));
+            let val_max = Math.min(255, parseFloat(args.VAL_MAX));
+
+            const originCanvas = this.runtime.renderer._gl.canvas
+            let canvas = faceapi.createCanvasFromMedia(this.video) 
+            let context = canvas.getContext('2d');
+
+            let baseCanvas = originCanvas.parentElement.childNodes[0]
+            canvas.width = baseCanvas.width * 0.5
+            canvas.height = baseCanvas.height * 0.5
+
+            originCanvas.parentElement.style.position = 'relative'
+            canvas.style.position = 'absolute'
+            canvas.style.top = '0'
+            canvas.style.left = '0'
+
+            if (this.colorThresDisplayState === ColorThresDisplayState.ON) {
+                if (this.colorThresOverlayCanvas != null) {
+                    originCanvas.parentElement.removeChild(this.colorThresOverlayCanvas)
+                }
+                this.colorThresOverlayCanvas = canvas;
+                originCanvas.parentElement.append(this.colorThresOverlayCanvas);
+            }
+            else {
+                this.colorThresOverlayCanvas = canvas
+            }
+
+            let doStuff = async (w, h) => {
+                const frame = cv.matFromImageData(this.frame_image);
+                cv.resize(frame, frame, new cv.Size(w, h))
+
+                let hsv = new cv.Mat()
+                cv.cvtColor(frame, hsv, cv.COLOR_BGR2HSV)
+
+                let lower_array = []
+                let upper_array = []
+                for(let i = 0; i < hsv.cols*hsv.rows; i++) {
+                    lower_array.push(hue_min, sat_min, val_min)
+                    upper_array.push(hue_max, sat_max, val_max)
+                }
+
+                let lower_hsv = new cv.matFromArray(hsv.rows, hsv.cols, hsv.type(), lower_array)
+                let upper_hsv = new cv.matFromArray(hsv.rows, hsv.cols, hsv.type(), upper_array)
+                cv.inRange(hsv, lower_hsv, upper_hsv, hsv)
+                
+                let contours = new cv.MatVector()
+                let hierarchy = new cv.Mat()
+                cv.findContours(hsv, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+                
+                let largestSize = 0
+                let largestX = null
+                let largestY = null
+                let cntFrame = new cv.Mat(frame.rows, frame.cols, frame.type())
+                for (let i = 0; i < contours.size(); i++) {
+                    let cnt = contours.get(i)
+                    let area = cv.contourArea(cnt)
+
+                    let rect = cv.boundingRect(cnt)
+                    // console.log(rectArray)
+                    let center_x = parseInt(rect['x'] + (rect['width'] / 2))
+                    let center_y = parseInt(rect['y'] + (rect['height'] / 2))
+
+                    cv.drawContours(cntFrame, contours, i, new cv.Scalar(255, 255, 255, 255), -1)
+                    console.log(center_x, center_y, rect['width'], rect['height'])
+
+                    if (area > largestSize) {
+                        largestSize = area
+                        largestX = center_x
+                        largestY = center_y
+                    }
+                }
+
+                let imageData = context.createImageData(cntFrame.cols, cntFrame.rows);
+                imageData.data.set(new Uint8ClampedArray(cntFrame.data, cntFrame.cols, cntFrame.rows));
+                context.putImageData(imageData, 0, 0);
+
+                // console.log('added to context')
+                this.colorThresX = largestX
+                this.colorThresY = largestY
+                this.colorThresSize = largestSize
+                this.colorThresNumObjs = contours.size()
+
+                resolve('success')
+            };
+            doStuff(canvas.width, canvas.height)
+        })
+    }
+
+    colorThresDisplayToggle(args) {
+        const state = args.COLOR_THRES_DISPLAY_STATE;
+        this.colorThresDisplayState = state;
+        const originCanvas = this.runtime.renderer._gl.canvas;
+        if (this.colorThresOverlayCanvas != null) {
+            if (state === ColorThresDisplayState.OFF) {
+                originCanvas.parentElement.removeChild(this.colorThresOverlayCanvas)
+            } else {
+                originCanvas.parentElement.append(this.colorThresOverlayCanvas)
+            }
+        }
+      }
+
+    getColorThresAttribute(args) {
+        const attr = args.COLOR_THRES_ATTRIBUTE
+        switch (attr) {
+            case ColorThresAttribute.CENTER_X: return this.colorThresX;
+            case ColorThresAttribute.CENTER_Y: return this.colorThresY;
+            case ColorThresAttribute.SIZE: return this.colorThresSize;
+            case ColorThresAttribute.NUM_OBJECTS: return this.colorThresNumObjs;
+            default: return null;
+        }
+    }
+
+    edgeDetection(args) {
+        return new Promise((resolve, reject) => {
+            const thres1 = Math.max(1, Math.min(500, args.THRES1))
+            const thres2 = Math.max(1, Math.min(500, args.THRES2))
+            const aper = parseInt(args.APERTURE)
+
+            const originCanvas = this.runtime.renderer._gl.canvas
+            let canvas = faceapi.createCanvasFromMedia(this.video) 
+            let context = canvas.getContext('2d');
+
+            let baseCanvas = originCanvas.parentElement.childNodes[0]
+            canvas.width = baseCanvas.width * 0.5
+            canvas.height = baseCanvas.height * 0.5
+
+            originCanvas.parentElement.style.position = 'relative'
+            canvas.style.position = 'absolute'
+            canvas.style.top = '0'
+            canvas.style.left = '0'
+
+            if (this.edgesDisplayState === EdgesDisplayState.ON) {
+                if (this.edgesOverlayCanvas != null) {
+                    originCanvas.parentElement.removeChild(this.edgesOverlayCanvas)
+                }
+                this.edgesOverlayCanvas = canvas;
+                originCanvas.parentElement.append(this.edgesOverlayCanvas);
+            }
+            else {
+                this.edgesOverlayCanvas = canvas
+            }
+
+            let doStuff = async (w, h) => {
+                const frame = cv.matFromImageData(this.frame_image);
+                cv.resize(frame, frame, new cv.Size(w, h))
+
+                let img_edge = new cv.Mat()
+                let contours = new cv.MatVector()
+                let hierarchy = new cv.Mat()
+                cv.Canny(frame, img_edge, thres1, thres2, apertureSize=aper)
+                cv.findContours(img_edge, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+        
+                let object_area = 0
+                let object_x = 0
+                let object_y = 0
+                let object_w = 0
+                let object_h = 0
+                let center_x = 0
+                let center_y = 0
+
+                let cntFrame = new cv.Mat(frame.rows, frame.cols, frame.type())
+                for (let i = 0; i < contours.size(); i++) {
+                    let contour = contours.get(i)
+                    cv.drawContours(cntFrame, contours, i, new cv.Scalar(255, 255, 255, 255))
+                    let rect = cv.boundingRect(contour)
+                    let x = rect['x']
+                    let y = rect['y']
+                    let width = rect['width']
+                    let height = rect['height']
+                    let found_area = width * height
+                    if (object_area < found_area) {
+                        object_area = found_area
+                        object_x = x
+                        object_y = y
+                        object_w = width
+                        object_h = height
+                        center_x = parseInt(x + (width / 2))
+                        center_y = parseInt(y + (height / 2))
+                    }
+                }
+
+                cv.rectangle(cntFrame, new cv.Point(object_x, object_y), new cv.Point(object_x + object_w, object_y + object_h),
+                new cv.Scalar(0, 255, 0, 255), 2)
+                cv.circle(cntFrame, new cv.Point(center_x, center_y), radius=4, color=new cv.Scalar(0, 0, 255, 255), thickness=2)
+
+                let imageData = context.createImageData(cntFrame.cols, cntFrame.rows);
+                imageData.data.set(new Uint8ClampedArray(cntFrame.data, cntFrame.cols, cntFrame.rows));
+                context.putImageData(imageData, 0, 0);
+
+                // console.log('added to context')
+                this.edgesX = center_x
+                this.edgesY = center_y
+                this.edgesSize = object_area
+                this.edgesNumObjs = contours.size()
+
+                resolve('success')
+            }
+            doStuff(canvas.width, canvas.height)
+        })   
+    }
+
+    edgeDisplayToggle(args) {
+        const state = args.EDGES_DISPLAY_STATE;
+        this.edgesDisplayState = state;
+        const originCanvas = this.runtime.renderer._gl.canvas;
+        if (this.edgesOverlayCanvas != null) {
+            if (state === EdgesDisplayState.OFF) {
+                originCanvas.parentElement.removeChild(this.edgesOverlayCanvas)
+            } else {
+                originCanvas.parentElement.append(this.edgesOverlayCanvas)
+            }
+        }
+      }
+
+    getEdgeAttribute(args) {
+        const attr = args.EDGES_ATTRIBUTE
+        switch (attr) {
+            case EdgesAttribute.CENTER_X: return this.edgesX;
+            case EdgesAttribute.CENTER_Y: return this.edgesY;
+            case EdgesAttribute.SIZE: return this.edgesSize;
             default: return null;
         }
     }
