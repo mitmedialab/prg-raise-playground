@@ -567,7 +567,7 @@ class MenuBar extends React.Component {
                                             )}	
                                         </SBFileUploader>	
                                     </MenuSection>	
-                                    <MenuSection>	
+                                    {/*<MenuSection>	
                                         <MenuItem	
                                             onClick={this.handleClickDriveSave}	
                                         >	
@@ -597,7 +597,7 @@ class MenuBar extends React.Component {
                                                 />	
                                             </MenuItem>	
                                         </GooglePicker>	
-                                    </MenuSection>
+                                    </MenuSection>*/}
                                 </MenuBarMenu>
                             </div>
                         )}
