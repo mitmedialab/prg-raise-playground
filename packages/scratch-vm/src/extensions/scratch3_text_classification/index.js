@@ -139,10 +139,11 @@ class Scratch3TextClassificationBlocks {
          this.embedding = null;
          this.count = 0;
          this.classifiedData = null;
-         
-
-
-         
+         this.confidence = 0;
+         this.classifiedData = null;   
+         this.exampleEmbeddings = {};
+         this.lastEmbedding = {};
+                 
         /**
          * The timer utility.
          * @type {Timer}
@@ -402,6 +403,21 @@ class Scratch3TextClassificationBlocks {
                         }
                     },
                 },
+                {
+                    opcode: 'getConfidence',
+                    text: formatMessage({
+                        id: 'textClassification.getConfidence',
+                        default: 'get confidence for [TEXT]',
+                        description: 'get the confidence for the labeling of a specified text'
+                    }),
+                    blockType: BlockType.REPORTER,
+                    arguments: {
+                        TEXT: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'Enter text or answer block'
+                        }
+                    }
+                },
                 '---',
                 {
                     opcode: 'speakText',
@@ -489,7 +505,7 @@ class Scratch3TextClassificationBlocks {
     }
     
     /**
-     * TODO Moves info from the runtime into the classifier, called when a project is loaded
+     * Moves info from the runtime into the classifier, called when a project is loaded
      */    
     loadModelFromRuntime () {
         //console.log("Load model from runtime");
@@ -509,10 +525,6 @@ class Scratch3TextClassificationBlocks {
             this.labelList.push('');    //if the label list is empty, fill it with an empty string
             this.labelListEmpty = true;
         }
-        /*console.log("RANDI try a practice class");
-        this.scratch_vm.modelData = {textData: {'Class 1':['Example 1','Example 2','Here\'s a really long example to make sure things are working','Example 3','Example 4','Example 5','Example 6']}, classifierData: {'Class 1':['Example 1','Example 2','Here\'s a really long example to make sure things are working','Example 3','Example 4','Example 5','Example 6']}, nextLabelNumber: 2};
-        this.labelList = ['Class 1'];
-        this.labelListEmpty = false;*/
     }
 
     /**
@@ -537,7 +549,7 @@ class Scratch3TextClassificationBlocks {
     }
 
     /**
-     * TODO Add new examples to a label
+     * Add new examples to a label
      * @param {array of strings} examples a list of text examples to add to a label
      * @param {string} label the name of the label
      */
@@ -554,7 +566,7 @@ class Scratch3TextClassificationBlocks {
         }
         for (let text_example of text_examples) {
             if (!this.scratch_vm.modelData.textData[label].includes(text_example)) {
-                const embeddedexample = this.getembeddedwords(text_example,label,"example"); //delayed by one example
+                const embeddedexample = this.getembeddedwords(text_example,label,"example");
                 this.scratch_vm.modelData.textData[label].push(text_example);
                 this.scratch_vm.modelData.classifierData[label].push(text_example);
                 this.count++;
@@ -564,7 +576,7 @@ class Scratch3TextClassificationBlocks {
     }
     
     /**
-     * TODO Add a new label to labelList
+     * Add a new label to labelList
      * @param {string} label the name of the label
      */
     newLabel (newLabelName) {   //add the name of a new label
@@ -583,12 +595,9 @@ class Scratch3TextClassificationBlocks {
         //this.scratch_vm.emit("TOOLBOX_EXTENSIONS_NEED_UPDATE");
         this.scratch_vm.requestToolboxExtensionsUpdate();
     }
-    
-
-
 
     /**
-     * TODO Rename a label
+     * Rename a label
      * @param {string} oldName the name of the label to change
      * @param {string} newname the new name for the label
      */
@@ -614,7 +623,7 @@ class Scratch3TextClassificationBlocks {
     }
 
     /**
-     * TODO Delete an example (or all loaded examples, if exampleNum === -1)
+     * Delete an example (or all loaded examples, if exampleNum === -1)
      * @param {string} label the name of the label with the example to be removed
      * @param {integer} exampleNum which example, in the array of a label's examples, to remove
      */
@@ -643,7 +652,7 @@ class Scratch3TextClassificationBlocks {
     }
 
     /**
-     * TODO Clear all data stored in the classifier and label list
+     * Clear all data stored in the classifier and label list
      */
     clearLocal () {
         console.log("Clear local data");
@@ -654,7 +663,7 @@ class Scratch3TextClassificationBlocks {
     }
 
     /**
-     * TODO Clear local label list, but also clear all data stored in the runtime
+     * Clear local label list, but also clear all data stored in the runtime
      */
     clearAll () {
         console.log("Clear all data");
@@ -666,7 +675,7 @@ class Scratch3TextClassificationBlocks {
     }
 
     /**
-     * TODO Clear all examples with a given label
+     * Clear all examples with a given label
      * @param {string} args.LABEL the name of the label to remove from the model
      */
     clearAllWithLabel (args) {
@@ -862,17 +871,16 @@ class Scratch3TextClassificationBlocks {
      * @returns {boolean} true if the model matches
      *   reference
      */
-    async ifTextMatchesClass(args, util) {
+     async ifTextMatchesClass (args) {
         const text = args.TEXT;
         const className = args.CLASS_NAME;
-        const predictionState = await this.get_embeddings(text,"none","predict");
-        
-        if (!predictionState) {
-            return false;
-        } else {
-            const currentMaxClass = predictionState;
-            return (currentMaxClass == String(className));
+
+        if (className) {
+            await this.get_embeddings(text, 'none', 'predict');
+            return className == this.predictedLabel;
         }
+
+        return false;
     }
 
     /**
@@ -881,34 +889,16 @@ class Scratch3TextClassificationBlocks {
      * @param {BlockUtility} util - the block utility
      * @returns {string} class name if input text matched, empty string if there's a problem with the model
      */
-    async getModelPrediction(args) {
+     async getModelPrediction (args) {
         const text = args.TEXT;
-        const predictionState = await this.get_embeddings(text,"none","predict");
-        return predictionState;
+        await this.get_embeddings(text, 'none', 'predict');
+        return this.predictedLabel;
     }
 
-    /**
-     * Returns whether or not the text inputted is one of the examples inputted
-     * @param text - the text inputted
-     * @param className - the class whose examples are being checked
-     * @returns a boolean true if the text is an example or false if the text is not an example
-     */
-    getPredictedClass(text,className) { 
-        if (!this.labelListEmpty) {   //whenever the classifier has some data
-            try {
-            for (let example of this.scratch_vm.modelData.textData[className]) {
-                if (text.toLowerCase() === example.toLowerCase()) {
-                    return true;
-                }
-            }
-        } catch(err) {
-            return false;
-        }
-        } else { //if there is no data in the classifier
-            return false;
-        }
-    
-
+    async getConfidence (args) {
+        const text = args.TEXT;
+        await this.get_embeddings(text, 'none', 'predict');
+        return this.confidence;
     }
 
     /**
@@ -923,37 +913,45 @@ class Scratch3TextClassificationBlocks {
             }
         }
 
-
     /**
      * Embeds text and either adds examples to classifier or returns the predicted label
+     * Changes text into a 2d tensor
      * @param text - the text inputted
      * @param label - the label to add the example to
      * @param direction - is either "example" when an example is being inputted or "predict" when a word to be classified is inputted
      * @returns if the direction is "predict" returns the predicted label for the text inputted
      */
-        async get_embeddings(text,label,direction) { //changes text into a 2d tensor
-            const newText = await this.getTranslate(text,"en"); //translates text from any language to english
-            console.log(newText);
+    // TODO rename this function to better represent what it does
+    async get_embeddings (text, label, direction) {
+        // translates text from any language to english
+        const newText = await this.getTranslate(text, 'en');
 
-            if (!this.labelListEmpty) {  
-           await use.load().then(async model => {
-            await model.embed(newText).then(async embeddings => {
-                this.embedding = embeddings;
-                console.log(this.embedding);
-            });
-        });
-        if (direction === "example") {
-            this.classifier.addExample(this.embedding, label);
-        } else if (direction === "predict") {
-            return await this.classifier.predictClass(this.embedding,Math.sqrt(this.count)).then( async result => {
-                this.predictedLabel = await result.label;
-                console.log(result.confidences);
-                return this.predictedLabel;
-            });
-        }
+        if (!this.labelListEmpty) {
+            // before going through with the expensive USE model loading
+            //   check to see if we already have an embedding for this input
+            let textEmbeddings = this.exampleEmbeddings[newText] || this.lastEmbedding[newText];
+            if (!textEmbeddings) {
+                let useModel = await use.load();
+                textEmbeddings = await useModel.embed(newText);    
+            }
+            if (direction === "example") {
+                await this.classifier.addExample(textEmbeddings, label);
+
+                // save embeddings of examples for later use
+                this.exampleEmbeddings[newText] = textEmbeddings;
+                return "Inputting to classes";
+    
+            } else if (direction === "predict") {
+                // TODO consider making this value the n-th root of the number of labels e.g. for 5 labels, take the 5th root
+                const k = Math.sqrt(this.count);
+                let prediction = await this.classifier.predictClass(textEmbeddings, k);
+                console.log("get embeddings result:", prediction);
+                this.predictedLabel = prediction.label;
+                this.confidence = prediction.confidences[prediction.label];
+                return [this.predictedLabel, this.confidence];
+            }
         } else {
-            return "No classes inputted";
-            
+            return "No class inputted";
         }
     }
    /**
