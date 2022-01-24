@@ -143,6 +143,7 @@
     }
   },
   "dependencies": {
-    "microbit-web-bluetooth": "^0.6.0"
+    "microbit-web-bluetooth": "^0.6.0",
+    "react-google-picker": "^0.1.0"
   }
 }
