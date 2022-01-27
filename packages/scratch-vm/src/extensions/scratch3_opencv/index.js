@@ -1,4 +1,3 @@
-// import {get_bbox} from './utils.js';
 require('babel-polyfill');
 const Runtime = require('../../engine/runtime');
 
@@ -118,6 +117,7 @@ const EdgesAttribute = {
     CENTER_X: 'x position',
     CENTER_Y: 'y position',
     SIZE: 'area',
+    NUM_OBJECTS: 'number of objects'
 }
 
 
@@ -194,6 +194,7 @@ class opencv {
         this.edgesX = null
         this.edgesY = null
         this.edgesSize = null
+        this.edgesNumObjs = null
     }
 
      /**
@@ -826,8 +827,7 @@ class opencv {
             let max_size = parseFloat(args.MAXRAD);
             let min_dist = parseFloat(args.MINDIST);
 
-            const originCanvas = this.runtime.renderer._gl.canvas
-            // console.log(originCanvas.parentElement.childNodes)  
+            const originCanvas = this.runtime.renderer._gl.canvas 
             let canvas = faceapi.createCanvasFromMedia(this.video) 
             let context = canvas.getContext('2d');
 
@@ -852,31 +852,27 @@ class opencv {
             }
 
             let doStuff = async (w, h) => {
-                // console.log(this.frame_image);
                 const BGRAmat = cv.matFromImageData(this.frame_image);
 
-                let dst = cv.Mat.zeros(BGRAmat.rows, BGRAmat.cols, cv.CV_8UC4);
                 let circles = new cv.Mat();
                 let color = new cv.Scalar(255,255,255,255);
                 cv.cvtColor(BGRAmat, BGRAmat, cv.COLOR_RGBA2GRAY, 0);
-                console.log('cv didnt 777run errors?')
-                // You can try more different parameters
                 cv.HoughCircles(BGRAmat, circles, cv.HOUGH_GRADIENT,
                                 1, min_size, max_size, min_dist, 0, 0);
-                console.log('cv really didnt run errors?')
 
                 let ratio = w / this.frame_image.width 
 
-                // draw circles
                 let largestRadius = 0
                 let largestX, largestY = null
+
+                let dst = cv.Mat.zeros(BGRAmat.rows, BGRAmat.cols, cv.CV_8UC4);
                 for (let i = 0; i < circles.cols; ++i) {
                     let x = circles.data32F[i * 3] * ratio;
                     let y = circles.data32F[i * 3 + 1] * ratio;
+
                     let radius = circles.data32F[i * 3 + 2] * ratio;
                     let center = new cv.Point(x, y);
-                    cv.circle(dst, center, radius, color);
-                    console.log(center, radius)
+                    cv.circle(dst, center, radius, color, 3);
 
                     if (radius > largestRadius) {
                         largestRadius = radius;
@@ -885,7 +881,12 @@ class opencv {
                     }
                 }
 
-                // context.clearRect(0, 0, canvas.width, canvas.height)
+                if (largestX != null) {
+                    let center_point = new cv.Point(largestX, largestY)
+                    cv.circle(dst, center_point, largestRadius, new cv.Scalar(0, 255, 0, 255), 3);
+                    cv.circle(dst, center_point, radius=4, color=new cv.Scalar(0, 0, 255, 255), thickness=2)
+                }
+
                 let imageData = context.createImageData(dst.cols, dst.rows);
                 imageData.data.set(new Uint8ClampedArray(dst.data, dst.cols, dst.rows));
                 context.putImageData(imageData, 0, 0);
@@ -908,7 +909,6 @@ class opencv {
         if (this.circleOverlayCanvas != null) {
             console.log(state)
             if (state === CircleDisplayState.OFF) {
-                console.log('removing canvas')
                 originCanvas.parentElement.removeChild(this.circleOverlayCanvas)
             } else {
                 originCanvas.parentElement.append(this.circleOverlayCanvas)
@@ -944,11 +944,10 @@ class opencv {
 
     shapeDetection(args) {
         return new Promise((resolve, reject) => {
-            let min_area = parseFloat(args.MIN_AREA);
-            let threshold = parseFloat(args.THRESHOLD);
+            let min_a = Math.max(0, parseFloat(args.MIN_AREA));
+            let thres = Math.min(Math.max(0, parseFloat(args.THRESHOLD)));
 
-            const originCanvas = this.runtime.renderer._gl.canvas
-            // console.log(originCanvas.parentElement.childNodes)  
+            const originCanvas = this.runtime.renderer._gl.canvas  
             let canvas = faceapi.createCanvasFromMedia(this.video) 
             let context = canvas.getContext('2d');
 
@@ -973,13 +972,11 @@ class opencv {
             }
 
             let doStuff = async (w, h) => {
-                min_a = Math.max(0, min_area)
-                thres = Math.min(Math.max(0, threshold), 255)
-                const BGRAmat = cv.matFromImageData(this.frame_image);
-                cv.resize(BGRAmat, BGRAmat, new cv.Size(w, h))
+                const frame = cv.matFromImageData(this.frame_image);
+                cv.resize(frame, frame, new cv.Size(w, h))
 
                 let gray = new cv.Mat()
-                cv.cvtColor(BGRAmat, gray, cv.COLOR_BGR2GRAY)
+                cv.cvtColor(frame, gray, cv.COLOR_BGR2GRAY)
                 cv.GaussianBlur(gray, gray, new cv.Size(5, 5), 0)
                 cv.medianBlur(gray, gray, 5)
                 
@@ -988,52 +985,59 @@ class opencv {
                 let kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(5,5));
                 cv.dilate(threshInv, threshInv, kernel)
                 
-                let [object_area, object_x, object_y, object_w, object_h, center_x, center_y] = get_bbox(threshInv)
-                
                 let contours = new cv.MatVector()
                 let hierarchy = new cv.Mat()
                 cv.findContours(threshInv, contours, hierarchy, mode=cv.RETR_EXTERNAL, method=cv.CHAIN_APPROX_NONE)
-
-                let merged = new cv.Mat()
-                let whiteRect = new cv.Mat()
-                // cv.rectangle(whiteRect, new cv.Point(0,0), new cv.Point(w, h), color=new cv.Scalar(255, 255, 255, 255), thickness=-1)
-                cv.bitwise_and(BGRAmat, BGRAmat, merged, mask=threshInv)
                 
-                let frame = new cv.Mat()
-                cv.addWeighted(BGRAmat, 0, merged, 0, 0, frame) // got rid of fill
- 
-                let largestSize = 0
-                let largestX = null
-                let largestY = null
+                let object_area = 0
+                let object_x = 0
+                let object_y = 0
+                let object_w = 0
+                let object_h = 0
+                let center_x = 0
+                let center_y = 0
+                let largest_i = null
+
+                let cntFrame = new cv.Mat.zeros(frame.rows, frame.cols, cv.CV_8UC4)
                 for (let i = 0; i < contours.size(); i++) {
                     let cnt = contours.get(i)
-                    let area = cv.contourArea(cnt)
 
                     let rect = cv.boundingRect(cnt)
-                    // console.log(rectArray)
-                    let center_x = parseInt(rect['x'] + (rect['width'] / 2))
-                    let center_y = parseInt(rect['y'] + (rect['height'] / 2))
+                    let x = rect['x']
+                    let y = rect['y']
+                    let width = rect['width']
+                    let height = rect['height']
+                    let found_area = width * height
 
-                    if (area > min_a) {
-                        cv.drawContours(frame, contours, i, new cv.Scalar(255, 255, 255, 255), 3)
-                        console.log('drawing contour')
-                    }
+                    if (found_area > min_a) {
+                        cv.drawContours(cntFrame, contours, i, new cv.Scalar(255, 255, 255, 255), 3)
+                        cv.drawContours(cntFrame, contours, i, new cv.Scalar(255, 255, 255, 150), -1)
+                        largest_i = i
 
-                    if (area > largestSize) {
-                        largestSize = area
-                        largestX = center_x
-                        largestY = center_y
+                        if (object_area < found_area) {
+                            object_area = found_area
+                            object_x = x
+                            object_y = y
+                            object_w = width
+                            object_h = height
+                            center_x = parseInt(x + (width / 2))
+                            center_y = parseInt(y + (height / 2))
+                        }
                     }
                 }
-                
-                let imageData = context.createImageData(frame.cols, frame.rows);
-                imageData.data.set(new Uint8ClampedArray(frame.data, frame.cols, frame.rows));
+                if (largest_i != null) {
+                    cv.drawContours(cntFrame, contours, largest_i, new cv.Scalar(0, 255, 0, 255), 3)
+                    cv.circle(cntFrame, new cv.Point(center_x, center_y), radius=4, color=new cv.Scalar(0, 0, 255, 255), thickness=2)
+                }
+
+                let imageData = context.createImageData(cntFrame.cols, cntFrame.rows);
+                imageData.data.set(new Uint8ClampedArray(cntFrame.data, cntFrame.cols, cntFrame.rows));
                 context.putImageData(imageData, 0, 0);
 
                 // console.log('added to context')
-                this.shapeX = largestX
-                this.shapeY = largestY
-                this.shapeSize = largestSize
+                this.shapeX = center_x
+                this.shapeY = center_y
+                this.shapeSize = object_area
                 this.shapeNumShapes = contours.size()
 
                 resolve('success')
@@ -1049,7 +1053,6 @@ class opencv {
         if (this.shapeOverlayCanvas != null) {
             console.log(state)
             if (state === ShapeDisplayState.OFF) {
-                console.log('removing canvas')
                 originCanvas.parentElement.removeChild(this.shapeOverlayCanvas)
             } else {
                 originCanvas.parentElement.append(this.shapeOverlayCanvas)
@@ -1123,37 +1126,51 @@ class opencv {
                 let hierarchy = new cv.Mat()
                 cv.findContours(hsv, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
                 
-                let largestSize = 0
-                let largestX = null
-                let largestY = null
+                let object_area = 0
+                let object_x = 0
+                let object_y = 0
+                let object_w = 0
+                let object_h = 0
+                let center_x = 0
+                let center_y = 0
+                let largest_i = null
+
                 let cntFrame = new cv.Mat(frame.rows, frame.cols, frame.type())
                 for (let i = 0; i < contours.size(); i++) {
                     let cnt = contours.get(i)
-                    let area = cv.contourArea(cnt)
+
+                    cv.drawContours(cntFrame, contours, i, new cv.Scalar(255, 255, 255, 255), 3)
+                    cv.drawContours(cntFrame, contours, i, new cv.Scalar(255, 255, 255, 150), -1)
 
                     let rect = cv.boundingRect(cnt)
-                    // console.log(rectArray)
-                    let center_x = parseInt(rect['x'] + (rect['width'] / 2))
-                    let center_y = parseInt(rect['y'] + (rect['height'] / 2))
-
-                    cv.drawContours(cntFrame, contours, i, new cv.Scalar(255, 255, 255, 255), -1)
-                    console.log(center_x, center_y, rect['width'], rect['height'])
-
-                    if (area > largestSize) {
-                        largestSize = area
-                        largestX = center_x
-                        largestY = center_y
+                    let x = rect['x']
+                    let y = rect['y']
+                    let width = rect['width']
+                    let height = rect['height']
+                    let found_area = width * height
+                    if (object_area < found_area) {
+                        largest_i = i
+                        object_area = found_area
+                        object_x = x
+                        object_y = y
+                        object_w = width
+                        object_h = height
+                        center_x = parseInt(x + (width / 2))
+                        center_y = parseInt(y + (height / 2))
                     }
+                }
+                if (largest_i != null) {
+                    cv.drawContours(cntFrame, contours, largest_i, new cv.Scalar(0, 255, 0, 255), 3)
+                    cv.circle(cntFrame, new cv.Point(center_x, center_y), radius=4, color=new cv.Scalar(0, 0, 255, 255), thickness=2)
                 }
 
                 let imageData = context.createImageData(cntFrame.cols, cntFrame.rows);
                 imageData.data.set(new Uint8ClampedArray(cntFrame.data, cntFrame.cols, cntFrame.rows));
                 context.putImageData(imageData, 0, 0);
 
-                // console.log('added to context')
-                this.colorThresX = largestX
-                this.colorThresY = largestY
-                this.colorThresSize = largestSize
+                this.colorThresX = center_x
+                this.colorThresY = center_y
+                this.colorThresSize = object_area
                 this.colorThresNumObjs = contours.size()
 
                 resolve('success')
@@ -1220,10 +1237,13 @@ class opencv {
                 const frame = cv.matFromImageData(this.frame_image);
                 cv.resize(frame, frame, new cv.Size(w, h))
 
-                let img_edge = new cv.Mat()
+                let img_edge = new cv.Mat.zeros(frame.rows, frame.cols, cv.CV_8UC4)
+                cv.cvtColor(frame, img_edge, cv.COLOR_RGBA2GRAY)
+                cv.GaussianBlur(img_edge, img_edge, new cv.Size(5,5), 0)
+                cv.Canny(img_edge, img_edge, thres1, thres2, apertureSize=aper)
+
                 let contours = new cv.MatVector()
                 let hierarchy = new cv.Mat()
-                cv.Canny(frame, img_edge, thres1, thres2, apertureSize=aper)
                 cv.findContours(img_edge, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
         
                 let object_area = 0
@@ -1233,11 +1253,12 @@ class opencv {
                 let object_h = 0
                 let center_x = 0
                 let center_y = 0
+                let largest_i = null
 
-                let cntFrame = new cv.Mat(frame.rows, frame.cols, frame.type())
+                let cntFrame = new cv.Mat.zeros(frame.rows, frame.cols, cv.CV_8UC4)
                 for (let i = 0; i < contours.size(); i++) {
                     let contour = contours.get(i)
-                    cv.drawContours(cntFrame, contours, i, new cv.Scalar(255, 255, 255, 255))
+                    cv.drawContours(cntFrame, contours, i, new cv.Scalar(255, 255, 255, 255), 3)
                     let rect = cv.boundingRect(contour)
                     let x = rect['x']
                     let y = rect['y']
@@ -1245,6 +1266,7 @@ class opencv {
                     let height = rect['height']
                     let found_area = width * height
                     if (object_area < found_area) {
+                        largest_i = i
                         object_area = found_area
                         object_x = x
                         object_y = y
@@ -1255,15 +1277,15 @@ class opencv {
                     }
                 }
 
-                cv.rectangle(cntFrame, new cv.Point(object_x, object_y), new cv.Point(object_x + object_w, object_y + object_h),
-                new cv.Scalar(0, 255, 0, 255), 2)
-                cv.circle(cntFrame, new cv.Point(center_x, center_y), radius=4, color=new cv.Scalar(0, 0, 255, 255), thickness=2)
+                if (largest_i != null) {
+                    cv.drawContours(cntFrame, contours, largest_i, new cv.Scalar(0, 255, 0, 255), 3)
+                    cv.circle(cntFrame, new cv.Point(center_x, center_y), radius=4, color=new cv.Scalar(0, 0, 255, 255), thickness=2)
+                }
 
                 let imageData = context.createImageData(cntFrame.cols, cntFrame.rows);
                 imageData.data.set(new Uint8ClampedArray(cntFrame.data, cntFrame.cols, cntFrame.rows));
                 context.putImageData(imageData, 0, 0);
 
-                // console.log('added to context')
                 this.edgesX = center_x
                 this.edgesY = center_y
                 this.edgesSize = object_area
@@ -1294,6 +1316,7 @@ class opencv {
             case EdgesAttribute.CENTER_X: return this.edgesX;
             case EdgesAttribute.CENTER_Y: return this.edgesY;
             case EdgesAttribute.SIZE: return this.edgesSize;
+            case EdgesAttribute.NUM_OBJECTS: return this.edgesNumObjs;
             default: return null;
         }
     }
