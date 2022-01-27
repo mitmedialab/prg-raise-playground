@@ -7,11 +7,6 @@ const base = {
     node: {
         fs: 'empty'
     },
-    config.resolve.fallback : {
-        fs: false, 
-        path:false, 
-        "crypto": false
-    },
     mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
     devServer: {
         contentBase: false,
