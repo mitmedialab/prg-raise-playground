@@ -7,7 +7,8 @@ const formatMessage = require("format-message");
 const Color = require("../../util/color");
 
 const Doodlebot = require("./doodlebot-web-bluetooth/index.js");
-const EventEmitter = require('events')
+const EventEmitter = require('events');
+const { addAbortSignal } = require("stream");
 
 // eslint-disable-next-line max-len
 const blockIconURI =
@@ -19,7 +20,7 @@ const command_pause = 100;
 
 const _drive = ["forward", "backward", "left", "right"];
 const _turns = ["left", "right"];
-const _drive_protocol = ["0,0", "1,1", "1,0", "0,1"];
+const _drive_protocol = ["0,0", "-0,-0", "-0,0", "0,-0"];
 
 const _pen_dirs = ["up", "down"];
 const _pen_protocol = ["0", "45"];
@@ -121,6 +122,8 @@ class DoodlebotBlocks {
         this._blinkInterval = null;
         this._pixelInterval = null;
 
+        this.motorEvent = new EventEmitter();
+
         this.sensorValues = {};
         this.sensorEvent = new EventEmitter();
         this.last_reading_time = 0;
@@ -128,7 +131,7 @@ class DoodlebotBlocks {
         this.scratch_vm.on("PROJECT_STOP_ALL", this.resetRobot.bind(this));
         this.scratch_vm.on("CONNECT_DOODLEBOT", this.connectToBLE.bind(this));
 
-        console.log("Version: implementing sensors");
+        console.log("Version: trying Jan. firmware updates");
     }
 
     /**
@@ -684,66 +687,71 @@ class DoodlebotBlocks {
 
         for (let i=0; i<dataLine.length; i++) {
             let data = dataLine[i];
-            if (data && data != "") {
-                let ds = data.split(",");
-                const sensor = ds[0];
-                switch(sensor) {
-                    case "b":
-                        this.sensorEvent.emit('bumper.front', Number.parseInt(ds[1]));
-                        this.sensorEvent.emit('bumper.back', Number.parseInt(ds[2]));
-                        this.sensorValues['bumper.front'] = Number.parseInt(ds[1]);
-                        this.sensorValues['bumper.back'] = Number.parseInt(ds[2]);
-                        break;
-                    case "l":
-                        this.sensorEvent.emit('color.red', Number.parseFloat(ds[1]));
-                        this.sensorEvent.emit('color.green', Number.parseFloat(ds[2]));
-                        this.sensorEvent.emit('color.blue', Number.parseFloat(ds[3]));
-                        this.sensorValues['color.red'] = Number.parseFloat(ds[1]);
-                        this.sensorValues['color.green'] = Number.parseFloat(ds[2]);
-                        this.sensorValues['color.blue'] = Number.parseFloat(ds[3]);
-                        break;
-                    case "d":
-                        this.sensorEvent.emit('distance', Number.parseInt(ds[1]));
-                        this.sensorValues['distance'] = Number.parseInt(ds[1]);
-                        break;
-                    case "h":
-                        this.sensorEvent.emit('humidity', Number.parseFloat(ds[1]));
-                        this.sensorValues['humidity'] = Number.parseFloat(ds[1]);
-                        break;
-                    case "t":
-                        this.sensorEvent.emit('temperature', Number.parseFloat(ds[1]));
-                        this.sensorValues['temperature'] = Number.parseFloat(ds[1]);
-                        break;
-                    case "p":
-                        this.sensorEvent.emit('pressure', Number.parseFloat(ds[1]));
-                        this.sensorValues['pressure'] = Number.parseFloat(ds[1]);
-                        break;
-                    case "o":
-                        this.sensorEvent.emit('magnetometer.roll', Number.parseFloat(ds[1]));
-                        this.sensorEvent.emit('magnetometer.pitch', Number.parseFloat(ds[2]));
-                        this.sensorEvent.emit('magnetometer.yaw', Number.parseFloat(ds[3]));
-                        this.sensorValues['magnetometer.roll'] = Number.parseFloat(ds[1]);
-                        this.sensorValues['magnetometer.pitch'] = Number.parseFloat(ds[2]);
-                        this.sensorValues['magnetometer.yaw'] = Number.parseFloat(ds[3]);
-                        break;
-                    case "u":
-                        this.sensorEvent.emit('altitude', Number.parseFloat(ds[1]));
-                        this.sensorValues['altitude'] = Number.parseFloat(ds[1]);
-                        break;
-                    case "x":
-                        this.sensorEvent.emit('accelerometer.x', Number.parseFloat(ds[1]));
-                        this.sensorEvent.emit('accelerometer.y', Number.parseFloat(ds[2]));
-                        this.sensorEvent.emit('accelerometer.z', Number.parseFloat(ds[3]));
-                        this.sensorValues['accelerometer.x'] = Number.parseFloat(ds[1]);
-                        this.sensorValues['accelerometer.y'] = Number.parseFloat(ds[2]);
-                        this.sensorValues['accelerometer.z'] = Number.parseFloat(ds[3]);
-                        break;
-                    case "f":
-                        this.sensorEvent.emit('battery', Number.parseFloat(ds[1]));
-                        this.sensorValues['battery'] = Number.parseFloat(ds[1]);
-                        break;
-                    default:
-                        console.log("Received unrecognized data:", ds[0]);
+            if (data) {
+                if (data == "ms)") {
+                    console.log("Stop the motor");
+                    this.motorEvent.emit('stop');
+                } else if (data != "") {
+                    let ds = data.split(",");
+                    const sensor = ds[0];
+                    switch(sensor) {
+                        case "b":
+                            this.sensorEvent.emit('bumper.front', Number.parseInt(ds[1]));
+                            this.sensorEvent.emit('bumper.back', Number.parseInt(ds[2]));
+                            this.sensorValues['bumper.front'] = Number.parseInt(ds[1]);
+                            this.sensorValues['bumper.back'] = Number.parseInt(ds[2]);
+                            break;
+                        case "l":
+                            this.sensorEvent.emit('color.red', Number.parseFloat(ds[1]));
+                            this.sensorEvent.emit('color.green', Number.parseFloat(ds[2]));
+                            this.sensorEvent.emit('color.blue', Number.parseFloat(ds[3]));
+                            this.sensorValues['color.red'] = Number.parseFloat(ds[1]);
+                            this.sensorValues['color.green'] = Number.parseFloat(ds[2]);
+                            this.sensorValues['color.blue'] = Number.parseFloat(ds[3]);
+                            break;
+                        case "d":
+                            this.sensorEvent.emit('distance', Number.parseInt(ds[1]));
+                            this.sensorValues['distance'] = Number.parseInt(ds[1]);
+                            break;
+                        case "h":
+                            this.sensorEvent.emit('humidity', Number.parseFloat(ds[1]));
+                            this.sensorValues['humidity'] = Number.parseFloat(ds[1]);
+                            break;
+                        case "t":
+                            this.sensorEvent.emit('temperature', Number.parseFloat(ds[1]));
+                            this.sensorValues['temperature'] = Number.parseFloat(ds[1]);
+                            break;
+                        case "p":
+                            this.sensorEvent.emit('pressure', Number.parseFloat(ds[1]));
+                            this.sensorValues['pressure'] = Number.parseFloat(ds[1]);
+                            break;
+                        case "o":
+                            this.sensorEvent.emit('magnetometer.roll', Number.parseFloat(ds[1]));
+                            this.sensorEvent.emit('magnetometer.pitch', Number.parseFloat(ds[2]));
+                            this.sensorEvent.emit('magnetometer.yaw', Number.parseFloat(ds[3]));
+                            this.sensorValues['magnetometer.roll'] = Number.parseFloat(ds[1]);
+                            this.sensorValues['magnetometer.pitch'] = Number.parseFloat(ds[2]);
+                            this.sensorValues['magnetometer.yaw'] = Number.parseFloat(ds[3]);
+                            break;
+                        case "u":
+                            this.sensorEvent.emit('altitude', Number.parseFloat(ds[1]));
+                            this.sensorValues['altitude'] = Number.parseFloat(ds[1]);
+                            break;
+                        case "x":
+                            this.sensorEvent.emit('accelerometer.x', Number.parseFloat(ds[1]));
+                            this.sensorEvent.emit('accelerometer.y', Number.parseFloat(ds[2]));
+                            this.sensorEvent.emit('accelerometer.z', Number.parseFloat(ds[3]));
+                            this.sensorValues['accelerometer.x'] = Number.parseFloat(ds[1]);
+                            this.sensorValues['accelerometer.y'] = Number.parseFloat(ds[2]);
+                            this.sensorValues['accelerometer.z'] = Number.parseFloat(ds[3]);
+                            break;
+                        case "f":
+                            this.sensorEvent.emit('battery', Number.parseFloat(ds[1]));
+                            this.sensorValues['battery'] = Number.parseFloat(ds[1]);
+                            break;
+                        default:
+                            console.log("Received unrecognized data:", ds[0]);
+                    }
                 }
             }
         }
@@ -846,7 +854,7 @@ class DoodlebotBlocks {
     }
 
     pixelHexToDecimal(inputColor) {
-        let COLOR_ADJUST = 60;
+        let COLOR_ADJUST = 0;
         let rgbColor = Color.hexToRgb(inputColor);
         console.log("rgb color: ", rgbColor);
 
@@ -975,58 +983,62 @@ class DoodlebotBlocks {
      * For activating the motors
      */
     drive(args) {
-        // Translate direction to ble protocol command
-        let driveCmd = _drive_protocol[_drive.indexOf(args.DIR)];
-
         console.log(
             "drive command: " +
                 args.DIR +
                 " " +
-                driveCmd +
-                " " +
                 args.NUM +
                 " steps"
         );
+        // determine the number of steps
+        let leftSteps = args.NUM;
+        let rightSteps = args.NUM;
+        if (args.DIR == "backward") {
+            leftSteps = 0 - leftSteps;
+            rightSteps = 0 - rightSteps;
+        } else if (args.DIR == "left") {
+            leftSteps = 0 - leftSteps;
+        } else if (args.DIR == "right") {
+            rightSteps = 0 - rightSteps;
+        }
+
         // send message
         if (this._robotUart)
             this._robotUart.sendText(
-                "(m," + driveCmd + "," + args.NUM + "," + args.NUM + ")"
+                "(m,0,0,"  + leftSteps + "," + rightSteps + ")"
             );
 
         // wait for the motor command to finish executing
         return new Promise((resolve) => {
-            setTimeout(() => {
+            this.motorEvent.on('stop', () =>{ 
                 resolve();
-            }, args.NUM * 25);
+            });
         });
     }
     turn(args) {
-        // Translate direction to ble protocol command
-        let driveCmd = _drive_protocol[_drive.indexOf(args.DIR)];
-
         console.log(
             "turn command: " +
                 args.DIR +
-                " " +
-                driveCmd +
                 " " +
                 args.NUM +
                 " degrees"
         );
         // Convert the number of degrees into the number of steps the robot needs take
-        const num_steps = args.NUM * 80 / 90;
+        let degrees = args.NUM;
+        if (args.DIR == "left")
+            degrees = 0 - degrees;
 
         // send message
         if (this._robotUart)
             this._robotUart.sendText(
-                "(m," + driveCmd + "," + num_steps + "," + num_steps + ")"
+                "(t,0," + degrees + ")"
             );
 
         // wait for the motor command to finish executing
         return new Promise((resolve) => {
-            setTimeout(() => {
+            this.motorEvent.on('stop', () =>{ 
                 resolve();
-            }, num_steps * 25);
+            });
         });
     }
     /**
