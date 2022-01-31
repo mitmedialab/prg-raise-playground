@@ -854,15 +854,13 @@ class DoodlebotBlocks {
     }
 
     pixelHexToDecimal(inputColor) {
-        let COLOR_ADJUST = 0;
         let rgbColor = Color.hexToRgb(inputColor);
-        console.log("rgb color: ", rgbColor);
+        let hsvColor = Color.rgbToHsv(rgbColor);
 
-        rgbColor.r = rgbColor.r > COLOR_ADJUST ? rgbColor.r - COLOR_ADJUST : rgbColor.r;
-        rgbColor.g = rgbColor.g > COLOR_ADJUST ? rgbColor.g - COLOR_ADJUST : rgbColor.g;
-        rgbColor.b = rgbColor.b > COLOR_ADJUST ? rgbColor.b - COLOR_ADJUST : rgbColor.b;
-        console.log("updated color: ", rgbColor);
+        hsvColor.s = hsvColor.s > 0 ? 1 - ((1 - hsvColor.s) / 4) : hsvColor.s;
+        hsvColor.v = hsvColor.v / 4;
 
+        rgbColor = Color.hsvToRgb(hsvColor);
         return Color.rgbToDecimal(rgbColor);
     }
     /**
