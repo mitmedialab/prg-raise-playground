@@ -174,6 +174,7 @@ class opencv {
         this.circleY = null
         this.circleSize = null
         this.circleNumCircles = null
+        // this.circleFlag = true
 
         this.shapeOverlayCanvas = null
         this.shapeDisplayState = ShapeDisplayState.ON
@@ -822,6 +823,10 @@ class opencv {
       }
 
       circleDetection(args) {
+        // if (this.circleFlag === false) {
+        //     return
+        // }
+        // this.circleFlag === false
         return new Promise((resolve, reject) => {
             let min_size = parseFloat(args.MINRAD);
             let max_size = parseFloat(args.MAXRAD);
@@ -851,7 +856,7 @@ class opencv {
                 this.circleOverlayCanvas = canvas
             }
 
-            let doStuff = async (w, h) => {
+            let doStuff = (w, h) => {
                 const BGRAmat = cv.matFromImageData(this.frame_image);
 
                 let circles = new cv.Mat();
@@ -896,14 +901,19 @@ class opencv {
                 this.circleSize = largestRadius
                 this.circleNumCircles = circles.cols
 
-                resolve('success')
+                // this.circleFlag = true
+                // resolve('success')
             };
             doStuff(canvas.width, canvas.height)
+            resolve('success')
         })
       }
 
       circleDisplayToggle(args) {
         const state = args.CIRCLE_DISPLAY_STATE;
+        if (state === this.circleDisplayState) {
+            return
+        }
         this.circleDisplayState = state;
         const originCanvas = this.runtime.renderer._gl.canvas;
         if (this.circleOverlayCanvas != null) {
@@ -1048,6 +1058,9 @@ class opencv {
 
     shapeDisplayToggle(args) {
         const state = args.SHAPE_DISPLAY_STATE;
+        if (state === this.shapeDisplayState) {
+            return
+        }
         this.shapeDisplayState = state;
         const originCanvas = this.runtime.renderer._gl.canvas;
         if (this.shapeOverlayCanvas != null) {
@@ -1084,6 +1097,7 @@ class opencv {
             let canvas = faceapi.createCanvasFromMedia(this.video) 
             let context = canvas.getContext('2d');
 
+            // console.log(originCanvas.parentElement.childNodes)
             let baseCanvas = originCanvas.parentElement.childNodes[0]
             canvas.width = baseCanvas.width * 0.5
             canvas.height = baseCanvas.height * 0.5
@@ -1118,13 +1132,19 @@ class opencv {
                     upper_array.push(hue_max, sat_max, val_max)
                 }
 
-                let lower_hsv = new cv.matFromArray(hsv.rows, hsv.cols, hsv.type(), lower_array)
-                let upper_hsv = new cv.matFromArray(hsv.rows, hsv.cols, hsv.type(), upper_array)
-                cv.inRange(hsv, lower_hsv, upper_hsv, hsv)
+                // try {
+                    let lower_hsv = new cv.matFromArray(hsv.rows, hsv.cols, hsv.type(), lower_array)
+                    let upper_hsv = new cv.matFromArray(hsv.rows, hsv.cols, hsv.type(), upper_array)
+                    cv.inRange(hsv, lower_hsv, upper_hsv, hsv)
+                // }
+                // catch (e) {
+                //     reject('something went wrong')
+                // }
                 
                 let contours = new cv.MatVector()
                 let hierarchy = new cv.Mat()
                 cv.findContours(hsv, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+                // console.log('contours found')
                 
                 let object_area = 0
                 let object_x = 0
@@ -1159,6 +1179,7 @@ class opencv {
                         center_y = parseInt(y + (height / 2))
                     }
                 }
+                // console.log('a largest conour found', largest_i)
                 if (largest_i != null) {
                     cv.drawContours(cntFrame, contours, largest_i, new cv.Scalar(0, 255, 0, 255), 3)
                     cv.circle(cntFrame, new cv.Point(center_x, center_y), radius=4, color=new cv.Scalar(0, 0, 255, 255), thickness=2)
@@ -1181,6 +1202,9 @@ class opencv {
 
     colorThresDisplayToggle(args) {
         const state = args.COLOR_THRES_DISPLAY_STATE;
+        if (state === this.colorThresDisplayState) {
+            return
+        }
         this.colorThresDisplayState = state;
         const originCanvas = this.runtime.renderer._gl.canvas;
         if (this.colorThresOverlayCanvas != null) {
@@ -1299,6 +1323,9 @@ class opencv {
 
     edgeDisplayToggle(args) {
         const state = args.EDGES_DISPLAY_STATE;
+        if (state === this.edgesDisplayState) {
+            return
+        }
         this.edgesDisplayState = state;
         const originCanvas = this.runtime.renderer._gl.canvas;
         if (this.edgesOverlayCanvas != null) {
