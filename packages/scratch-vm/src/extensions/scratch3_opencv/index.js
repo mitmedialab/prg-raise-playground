@@ -896,8 +896,8 @@ class opencv {
                 imageData.data.set(new Uint8ClampedArray(dst.data, dst.cols, dst.rows));
                 context.putImageData(imageData, 0, 0);
 
-                this.circleX = largestX
-                this.circleY = largestY
+                this.circleX = largestX - (canvas.width / 2)
+                this.circleY = largestY - (canvas.height / 2)
                 this.circleSize = largestRadius
                 this.circleNumCircles = circles.cols
 
@@ -1045,8 +1045,8 @@ class opencv {
                 context.putImageData(imageData, 0, 0);
 
                 // console.log('added to context')
-                this.shapeX = center_x
-                this.shapeY = center_y
+                this.shapeX = center_x - (canvas.width / 2)
+                this.shapeY = center_y - (canvas.height / 2)
                 this.shapeSize = object_area
                 this.shapeNumShapes = contours.size()
 
@@ -1189,8 +1189,8 @@ class opencv {
                 imageData.data.set(new Uint8ClampedArray(cntFrame.data, cntFrame.cols, cntFrame.rows));
                 context.putImageData(imageData, 0, 0);
 
-                this.colorThresX = center_x
-                this.colorThresY = center_y
+                this.colorThresX = center_x - (canvas.width / 2)
+                this.colorThresY = center_y - (canvas.height / 2)
                 this.colorThresSize = object_area
                 this.colorThresNumObjs = contours.size()
 
@@ -1310,8 +1310,8 @@ class opencv {
                 imageData.data.set(new Uint8ClampedArray(cntFrame.data, cntFrame.cols, cntFrame.rows));
                 context.putImageData(imageData, 0, 0);
 
-                this.edgesX = center_x
-                this.edgesY = center_y
+                this.edgesX = center_x - (canvas.width / 2)
+                this.edgesY = center_y - (canvas.height / 2)
                 this.edgesSize = object_area
                 this.edgesNumObjs = contours.size()
 
