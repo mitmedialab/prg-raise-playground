@@ -1,0 +1,3 @@
+[submodule "local-node-install"]
+	path = local-node-install
+	url = git@github.com:mitmedialab/local-node-install.git
