@@ -20,7 +20,8 @@ const command_pause = 100;
 
 const _drive = ["forward", "backward", "left", "right"];
 const _turns = ["left", "right"];
-const _drive_protocol = ["0,0", "-0,-0", "-0,0", "0,-0"];
+const _outer_circum = 2 * Math.PI * 3.05; // robot base radius is 3.05
+const _step_length = (2 * Math.PI * 1.75) / 200; // wheel radius is 1.75, number of steps per rotation is 200
 
 const _pen_dirs = ["up", "down"];
 const _pen_protocol = ["0", "45"];
@@ -574,8 +575,6 @@ class DoodlebotBlocks {
         // go into quiet mode? (q,a)
         // pen up?
 
-        // make face neutral
-        this.playAnimation({ ANIM: "neutral" });
         // stop motors
         this.stopMotors();
         // turn off lights
@@ -588,13 +587,15 @@ class DoodlebotBlocks {
     readBattery(args) {
         // enable battery
         if (this._robotUart) {
-            this._robotUart.sendText("(e,f)");
+            // enable the battery if it is not already enabled
+            if (!this.sensorValues['battery']) {
+                console.log("enable battery");
+                this._robotUart.sendText("(e,f)");
+            }
 
             // wait for sensor to return
             return new Promise((resolve) => {
                 this.sensorEvent.on('battery', (value) =>{ 
-                    // disable battery read
-                    this._robotUart.sendText("(x,f)");
                     resolve(value);
                 });
             });
@@ -991,14 +992,10 @@ class DoodlebotBlocks {
         // determine the number of steps
         let leftSteps = args.NUM;
         let rightSteps = args.NUM;
-        if (args.DIR == "backward") {
-            leftSteps = 0 - leftSteps;
-            rightSteps = 0 - rightSteps;
-        } else if (args.DIR == "left") {
-            leftSteps = 0 - leftSteps;
-        } else if (args.DIR == "right") {
-            rightSteps = 0 - rightSteps;
-        }
+        if (args.DIR == "left" || args.DIR == "backward")
+            leftSteps = -leftSteps;
+        if (args.DIR == "right" | args.DIR == "backward")
+            rightSteps = - rightSteps;
 
         // send message
         if (this._robotUart)
@@ -1022,14 +1019,14 @@ class DoodlebotBlocks {
                 " degrees"
         );
         // Convert the number of degrees into the number of steps the robot needs take
-        let degrees = args.NUM;
+        let steps = (_outer_circum * args.NUM / 360)/_step_length;
         if (args.DIR == "left")
-            degrees = 0 - degrees;
+            steps = -steps;
 
         // send message
         if (this._robotUart)
             this._robotUart.sendText(
-                "(t,0," + degrees + ")"
+                "(m,0,0," + steps + "," + (-steps) + ")"
             );
 
         // wait for the motor command to finish executing
