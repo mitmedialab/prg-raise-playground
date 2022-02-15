@@ -544,6 +544,13 @@ class DoodlebotBlocks {
         // for development
         let deviceName = "Bluefruit52"; // "BBC micro:bit";
 
+        // RANDI try bluetooth audio devices
+        const robotName = "Q65"; // "DoodlebotBT"
+        let devices = await window.navigator.mediaDevices.enumerateDevices();
+        let speakers = devices.filter(device => {
+                            return device.kind === "audiooutput" && device.label.indexOf(robotName) >= 0;
+                        });
+
         if (window.navigator.bluetooth) {
             try {
                 this._robotDevice = await Doodlebot.requestRobot(
