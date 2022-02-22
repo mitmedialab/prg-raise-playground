@@ -152,7 +152,8 @@ MenuItemTooltip.propTypes = {
 
 const CLIENT_ID = '906634949042-5jbc7q594e69spg2i0bkt9a14iojvtsp.apps.googleusercontent.com';
 const DEVELOPER_KEY = 'AIzaSyDRoOjwaDXOxq4cda1nrCVLaVQvTCh5GYE';
-const DRIVE_SCOPE = ['https://www.googleapis.com/auth/drive.file'];
+const DRIVE_SCOPE = ['https://www.googleapis.com/auth/drive.file',
+                     'https://www.googleapis.com/auth/drive.readonly'];
 
 class MenuBar extends React.Component {
     constructor (props) {
@@ -314,8 +315,9 @@ class MenuBar extends React.Component {
         );
     }
     handleClickLoadProjectLink() {
-        // TODO make Google drive links work
+        // TODO make Google drive and One Drive links work
         // https://drive.google.com/uc?export=download&id=1Xrgcz-0hQZyzYq8KDIoBPY2GSuxIaIZQ
+        // https://mitprod-my.sharepoint.com/:u:/g/personal/randiw12_mit_edu/EbyH2DBw2X5Mr45Ri1gBuz4BHmklUEuHd7atP1oUvIODSQ?e=pR6T84&download=1
         // gets 302 error
         let templateLink = "https://www.dropbox.com/s/o8jegh940y7f7qc/SimpleProject.sb3";
         let url = window.prompt("Enter project url (e.g. from Dropbox or Github)", templateLink);
