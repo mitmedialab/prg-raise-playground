@@ -648,7 +648,16 @@ class VirtualMachine extends EventEmitter {
 
         return new Promise((resolve, reject) => {
             nets({ url: url }, (err, resp, body) => {
-                resolve(this.loadProject(body));
+                if (err) {
+                    console.log(err);
+                    resolve();
+                }
+
+                if (resp.statusCode !== 200) {
+                    console.log(resp.statusCode);
+                    resolve();
+                } else 
+                    resolve(this.loadProject(body));
             })
         })
     }
