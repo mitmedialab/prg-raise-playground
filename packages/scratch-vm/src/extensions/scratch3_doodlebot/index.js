@@ -89,7 +89,7 @@ const _sensors = {
     "distance": "d",
     "altimeter": "u",
     "accelerometer": "x",
-    "magenetometer": "o",
+    "magnetometer": "o",
     "gyroscope": "g",
     "color sensor": "l",
     "temperature": "t",
@@ -390,12 +390,29 @@ class DoodlebotBlocks {
                 {
                     opcode: "whenBumperPressed",
                     text: formatMessage({
-                        id: "doodlebot.readBumperStatus",
+                        id: "doodlebot.bumperStatusEvent",
                         default: "when [BUMPER] bumper pressed",
                         description:
                             "Trigger when bumpers on doodlebot are pressed",
                     }),
                     blockType: BlockType.HAT,
+                    arguments: {
+                        BUMPER: {
+                            type: ArgumentType.String,
+                            menu: "BUMPERS",
+                            defaultValue: _bumpers[0],
+                        },
+                    },
+                },
+                {
+                    opcode: "ifBumperPressed",
+                    text: formatMessage({
+                        id: "doodlebot.readBumperStatus",
+                        default: "if [BUMPER] bumper pressed",
+                        description:
+                            "Conditional indicating when bumpers on doodlebot are pressed",
+                    }),
+                    blockType: BlockType.BOOLEAN,
                     arguments: {
                         BUMPER: {
                             type: ArgumentType.String,
@@ -413,6 +430,85 @@ class DoodlebotBlocks {
                         description:
                             "Get battery reading from robot",
                     }),
+                },
+                {
+                    opcode: "readTemperature",
+                    blockType: BlockType.REPORTER,
+                    text: formatMessage({
+                        id: "doodlebot.readTemperature",
+                        default: "temperature",
+                        description:
+                            "Get temperature reading from robot",
+                    }),
+                },                {
+                    opcode: "readHumidity",
+                    blockType: BlockType.REPORTER,
+                    text: formatMessage({
+                        id: "doodlebot.readHumidity",
+                        default: "humidity",
+                        description:
+                            "Get humidity reading from robot",
+                    }),
+                },                {
+                    opcode: "readPressure",
+                    blockType: BlockType.REPORTER,
+                    text: formatMessage({
+                        id: "doodlebot.readPressure",
+                        default: "pressure",
+                        description:
+                            "Get pressure reading from robot",
+                    }),
+                },
+                {
+                    opcode: "readAccelerometer",
+                    blockType: BlockType.REPORTER,
+                    text: formatMessage({
+                        id: "doodlebot.readAccelerometer",
+                        default: "accelerometer [DIR]",
+                        description:
+                            "Get accelerometer reading from robot",
+                    }),
+                    arguments: {
+                        DIR: {
+                            type: ArgumentType.String,
+                            menu: "ACC_GYRO_DIRS",
+                            defaultValue: 'x',
+                        },
+                    },
+                },
+                {
+                    opcode: "readMagnetometer",
+                    blockType: BlockType.REPORTER,
+                    text: formatMessage({
+                        id: "doodlebot.readMagnetometer",
+                        default: "magnetometer [DIR]",
+                        description:
+                            "Get magnetometer reading from robot",
+                    }),
+                    arguments: {
+                        DIR: {
+                            type: ArgumentType.String,
+                            menu: "MAG_DIRS",
+                            defaultValue: 'roll',
+                        },
+                    },
+                },
+                {
+                    opcode: "readGyroscope",
+                    blockType: BlockType.REPORTER,
+                    text: formatMessage({
+                        id: "doodlebot.readGyroscope",
+                        default: "gyroscope [DIR]",
+                        description:
+                            "Get gyroscope reading from robot",
+                    }),
+                    arguments: {
+                        DIR: {
+                            type: ArgumentType.String,
+                            menu: "ACC_GYRO_DIRS",
+                            defaultValue: 'x',
+                        },
+                    },
                 },
                 "---",
                 {
@@ -432,6 +528,10 @@ class DoodlebotBlocks {
                 },
             ],
             menus: {
+                ACC_GYRO_DIRS: {
+                    acceptReporters: false,
+                    items: ['x', 'y', 'z'],
+                },
                 ANIMS: {
                     acceptReporters: false,
                     items: Object.keys(_anims),
@@ -443,6 +543,10 @@ class DoodlebotBlocks {
                 DIRS: {
                     acceptReporters: false,
                     items: _drive,
+                },
+                MAG_DIRS: {
+                    acceptReporters: false,
+                    items: ['roll', 'pitch', 'yaw'],
                 },
                 PEN_DIRS: {
                     acceptReporters: false,
@@ -589,37 +693,219 @@ class DoodlebotBlocks {
     }
 
     /**
+     * For reading accelerometer data back
+     */
+     readAccelerometer(args) {
+        let accDir = "accelerometer.x";
+        if (args.DIR == "y") {
+            accDir = "accelerometer.y";
+        } else if (args.DIR == "z") {
+            accDir = "accelerometer.z";
+        }
+        if (this._robotUart) {
+            // enable the accelerometer if it is not already enabled
+            if (!this.sensorValues[accDir]) {
+                console.log("enable accelerometer");
+                this._robotUart.sendText("(e,x)");
+
+                // wait for sensor to return
+                return new Promise((resolve) => {
+                    // listen for when the accelerometer is on
+                    this.sensorEvent.on(accDir, (value) =>{
+                        // stop listening for when the accelerometer is on
+                        this.sensorEvent.removeAllListeners(accDir);
+                        resolve(value);
+                    });
+                });
+            } else {
+                console.log(this.sensorValues["accelerometer.x"] + 
+                ", " + this.sensorValues["accelerometer.y"] +
+                ", " + this.sensorValues["accelerometer.z"]);
+                return this.sensorValues[accDir];
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * For reading magnetometer data back
+     */
+     readMagnetometer(args) {
+        let magDir = "magnetometer.roll";
+        if (args.DIR == "pitch") {
+            magDir = "magnetometer.pitch";
+        } else if (args.DIR == "yaw") {
+            magDir = "magnetometer.yaw";
+        }
+        if (this._robotUart) {
+            // enable the magnetometer if it is not already enabled
+            if (!this.sensorValues[magDir]) {
+                console.log("enable magnetometer");
+                this._robotUart.sendText("(e,o)");
+
+                return new Promise((resolve) => {
+                    // listen for when the magnetometer is on
+                    this.sensorEvent.on(magDir, (value) => {
+                        // stop listening for when the magnetometer is on
+                        this.sensorEvent.removeAllListeners(magDir);
+                        resolve(value);
+                    });
+                });
+            } else {
+                console.log(this.sensorValues["magnetometer.roll"] + 
+                ", " + this.sensorValues["magnetometer.pitch"] +
+                ", " + this.sensorValues["magnetometer.yaw"]);
+                return this.sensorValues[magDir];
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * For reading gyroscope data back
+     */
+         readGyroscope(args) {
+            let gyroDir = "gyroscope.x";
+            if (args.DIR == "y") {
+                gyroDir = "gyroscope.y";
+            } else if (args.DIR == "z") {
+                gyroDir = "gyroscope.z";
+            }
+            if (this._robotUart) {
+                // enable the gyroscope if it is not already enabled
+                if (!this.sensorValues[gyroDir]) {
+                    console.log("enable gyroscope");
+                    this._robotUart.sendText("(e,g)");
+    
+                    return new Promise((resolve) => {
+                        // listen for when the gyroscope is on
+                        this.sensorEvent.on(gyroDir, (value) => {
+                            // stop listening for when the gyroscope is on
+                            this.sensorEvent.removeAllListeners(gyroDir);
+                            resolve(value);
+                        });
+                    });
+                } else {
+                    console.log(this.sensorValues["gyroscope.x"] + 
+                    ", " + this.sensorValues["gyroscope.y"] +
+                    ", " + this.sensorValues["gyroscope.z"]);
+                    return this.sensorValues[gyroDir];
+                }
+            }
+            return -1;
+        }
+
+    /**
+     * For reading temperature data back
+     */
+     readTemperature(args) {
+        if (this._robotUart) {
+            // enable the thermometer if it is not already enabled
+            if (!this.sensorValues["temperature"]) {
+                console.log("enable thermometer");
+                this._robotUart.sendText("(e,t)");
+
+                // wait for sensor to return
+                return new Promise((resolve) => {
+                    this.sensorEvent.on("temperature", (value) => {
+                        // stop listening for when the thermometer is on
+                        this.sensorEvent.removeAllListeners("temperature"); 
+                        resolve(value);
+                    });
+                });
+            } else {
+                return this.sensorValues['temperature'];
+            }
+        }
+        return -1; // should never get here
+    }
+
+    /**
+     * For reading pressure data back
+     */
+     readPressure(args) {
+        if (this._robotUart) {
+            // enable the pressure sensor if it is not already enabled
+            if (!this.sensorValues["pressure"]) {
+                console.log("enable pressure sensor");
+                this._robotUart.sendText("(e,p)");
+
+                // wait for sensor to return
+                return new Promise((resolve) => {
+                    this.sensorEvent.on("pressure", (value) => {
+                        // stop listening for when the thermometer is on
+                        this.sensorEvent.removeAllListeners("pressure"); 
+                        resolve(value);
+                    });
+                });
+            } else {
+                return this.sensorValues['pressure'];
+            }
+        }
+        return -1; // should never get here
+    }
+
+    /**
+     * For reading humidity data back
+     */
+     readHumidity(args) {
+        if (this._robotUart) {
+            // enable the thermometer if it is not already enabled
+            if (!this.sensorValues["humidity"]) {
+                console.log("enable humidity sensor");
+                this._robotUart.sendText("(e,h)");
+
+                // wait for sensor to return
+                return new Promise((resolve) => {
+                    this.sensorEvent.on("humidity", (value) => {
+                        // stop listening for when the thermometer is on
+                        this.sensorEvent.removeAllListeners("humidity"); 
+                        resolve(value);
+                    });
+                });
+            } else {
+                return this.sensorValues['humidity'];
+            }
+        }
+        return -1; // should never get here
+    }
+
+    /**
      * For reading battery data back
      */
     readBattery(args) {
         // enable battery
         if (this._robotUart) {
             // enable the battery if it is not already enabled
-            if (!this.sensorValues['battery']) {
-                console.log("enable battery");
-                this._robotUart.sendText("(e,f)");
-            }
+            console.log("enable battery");
+            this._robotUart.sendText("(e,f)");
 
             // wait for sensor to return
             return new Promise((resolve) => {
-                this.sensorEvent.on('battery', (value) =>{ 
+                this.sensorEvent.on("battery", (value) => {
+                    // disable the battery
+                    console.log("disable battery");
+                    this.sensorEvent.removeAllListeners("battery");
+                    // disable battery
+                    this._robotUart.sendText("(x,f)");
                     resolve(value);
                 });
             });
         }
-        return -1;
+
+        return -1; // should never get here
     }
 
     /**
      * Implement whenBumperPressed
      */
      whenBumperPressed(args) {
-        return this.readBumperStatus(args);
+        return this.ifBumperPressed(args);
     }
     /**
      * For reading data back from the device
      */
-     readBumperStatus(args) {
+     ifBumperPressed(args) {
         let state = args.BUMPER;
         
         // grab current sensor readings
@@ -682,7 +968,23 @@ class DoodlebotBlocks {
         // send message
         if (this._robotUart) {
             let sensor_cmd = _sensors[args.SENSOR];
+
             console.log("Disable sensor " + sensor_cmd);
+            if (args.SENSOR == "accelerometer") {
+                delete this.sensorValues["accelerometer.x"];
+                delete this.sensorValues["accelerometer.y"];
+                delete this.sensorValues["accelerometer.z"];
+            } else if (args.SENSOR == "magnetometer") {
+                delete this.sensorValues["magnetometer.roll"];
+                delete this.sensorValues["magnetometer.pitch"];
+                delete this.sensorValues["magnetometer.yaw"];
+            } else if (args.SENSOR == "gyroscope") {
+                delete this.sensorValues["gyroscope.x"];
+                delete this.sensorValues["gyroscope.y"];
+                delete this.sensorValues["gyroscope.z"];
+            } else {
+                delete this.sensorValues[args.SENSOR];
+            }
             this._robotUart.sendText("(x," + sensor_cmd + ")");
         }
     }
@@ -741,6 +1043,14 @@ class DoodlebotBlocks {
                             this.sensorValues['magnetometer.pitch'] = Number.parseFloat(ds[2]);
                             this.sensorValues['magnetometer.yaw'] = Number.parseFloat(ds[3]);
                             break;
+                        case "g":
+                            this.sensorEvent.emit('gyroscope.x', Number.parseFloat(ds[1]));
+                            this.sensorEvent.emit('gyroscope.y', Number.parseFloat(ds[2]));
+                            this.sensorEvent.emit('gyroscope.z', Number.parseFloat(ds[3]));
+                            this.sensorValues['gyroscope.x'] = Number.parseFloat(ds[1]);
+                            this.sensorValues['gyroscope.y'] = Number.parseFloat(ds[2]);
+                            this.sensorValues['gyroscope.z'] = Number.parseFloat(ds[3]);
+                            break;
                         case "u":
                             this.sensorEvent.emit('altitude', Number.parseFloat(ds[1]));
                             this.sensorValues['altitude'] = Number.parseFloat(ds[1]);
@@ -755,10 +1065,10 @@ class DoodlebotBlocks {
                             break;
                         case "f":
                             this.sensorEvent.emit('battery', Number.parseFloat(ds[1]));
-                            this.sensorValues['battery'] = Number.parseFloat(ds[1]);
+                            this.sensorValues['battery'] = Number.parseFloat(ds[1]); // TODO constantly monitor battery
                             break;
                         default:
-                            console.log("Received unrecognized data:", ds[0]);
+                            console.log("Received unrecognized data:", data);
                     }
                 }
             }
