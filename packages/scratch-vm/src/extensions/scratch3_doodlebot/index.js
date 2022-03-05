@@ -20,8 +20,6 @@ const command_pause = 100;
 
 const _drive = ["forward", "backward", "left", "right"];
 const _turns = ["left", "right"];
-const _outer_circum = 2 * Math.PI * 3.05; // robot base radius is 3.05
-const _step_length = (2 * Math.PI * 1.75) / 200; // wheel radius is 1.75, number of steps per rotation is 200
 
 const _pen_dirs = ["up", "down"];
 const _pen_protocol = ["0", "45"];
@@ -408,7 +406,7 @@ class DoodlebotBlocks {
                     opcode: "ifBumperPressed",
                     text: formatMessage({
                         id: "doodlebot.readBumperStatus",
-                        default: "if [BUMPER] bumper pressed",
+                        default: "[BUMPER] bumper pressed",
                         description:
                             "Conditional indicating when bumpers on doodlebot are pressed",
                     }),
@@ -695,7 +693,7 @@ class DoodlebotBlocks {
     /**
      * For reading accelerometer data back
      */
-     readAccelerometer(args) {
+    async readAccelerometer(args) {
         let accDir = "accelerometer.x";
         if (args.DIR == "y") {
             accDir = "accelerometer.y";
@@ -704,25 +702,14 @@ class DoodlebotBlocks {
         }
         if (this._robotUart) {
             // enable the accelerometer if it is not already enabled
-            if (!this.sensorValues[accDir]) {
-                console.log("enable accelerometer");
-                this._robotUart.sendText("(e,x)");
-
-                // wait for sensor to return
-                return new Promise((resolve) => {
-                    // listen for when the accelerometer is on
-                    this.sensorEvent.on(accDir, (value) =>{
-                        // stop listening for when the accelerometer is on
-                        this.sensorEvent.removeAllListeners(accDir);
-                        resolve(value);
-                    });
-                });
-            } else {
-                console.log(this.sensorValues["accelerometer.x"] + 
+            if (!this.sensorValues.hasOwnProperty(accDir)) {
+                // wait for sensor to turn on
+                await this.enableSensor({SENSOR: "accelerometer"});
+            }
+            console.log(this.sensorValues["accelerometer.x"] + 
                 ", " + this.sensorValues["accelerometer.y"] +
                 ", " + this.sensorValues["accelerometer.z"]);
                 return this.sensorValues[accDir];
-            }
         }
         return -1;
     }
@@ -730,7 +717,7 @@ class DoodlebotBlocks {
     /**
      * For reading magnetometer data back
      */
-     readMagnetometer(args) {
+    async readMagnetometer(args) {
         let magDir = "magnetometer.roll";
         if (args.DIR == "pitch") {
             magDir = "magnetometer.pitch";
@@ -739,24 +726,14 @@ class DoodlebotBlocks {
         }
         if (this._robotUart) {
             // enable the magnetometer if it is not already enabled
-            if (!this.sensorValues[magDir]) {
-                console.log("enable magnetometer");
-                this._robotUart.sendText("(e,o)");
-
-                return new Promise((resolve) => {
-                    // listen for when the magnetometer is on
-                    this.sensorEvent.on(magDir, (value) => {
-                        // stop listening for when the magnetometer is on
-                        this.sensorEvent.removeAllListeners(magDir);
-                        resolve(value);
-                    });
-                });
-            } else {
-                console.log(this.sensorValues["magnetometer.roll"] + 
+            if (!this.sensorValues.hasOwnProperty(magDir)) {
+                // wait for sensor to turn on
+                await this.enableSensor({SENSOR: "magnetometer"});   
+            }
+            console.log(this.sensorValues["magnetometer.roll"] + 
                 ", " + this.sensorValues["magnetometer.pitch"] +
                 ", " + this.sensorValues["magnetometer.yaw"]);
-                return this.sensorValues[magDir];
-            }
+            return this.sensorValues[magDir];
         }
         return -1;
     }
@@ -764,58 +741,39 @@ class DoodlebotBlocks {
     /**
      * For reading gyroscope data back
      */
-         readGyroscope(args) {
-            let gyroDir = "gyroscope.x";
-            if (args.DIR == "y") {
-                gyroDir = "gyroscope.y";
-            } else if (args.DIR == "z") {
-                gyroDir = "gyroscope.z";
-            }
-            if (this._robotUart) {
-                // enable the gyroscope if it is not already enabled
-                if (!this.sensorValues[gyroDir]) {
-                    console.log("enable gyroscope");
-                    this._robotUart.sendText("(e,g)");
-    
-                    return new Promise((resolve) => {
-                        // listen for when the gyroscope is on
-                        this.sensorEvent.on(gyroDir, (value) => {
-                            // stop listening for when the gyroscope is on
-                            this.sensorEvent.removeAllListeners(gyroDir);
-                            resolve(value);
-                        });
-                    });
-                } else {
-                    console.log(this.sensorValues["gyroscope.x"] + 
-                    ", " + this.sensorValues["gyroscope.y"] +
-                    ", " + this.sensorValues["gyroscope.z"]);
-                    return this.sensorValues[gyroDir];
-                }
-            }
-            return -1;
+    async readGyroscope(args) {
+        let gyroDir = "gyroscope.x";
+        if (args.DIR == "y") {
+            gyroDir = "gyroscope.y";
+        } else if (args.DIR == "z") {
+            gyroDir = "gyroscope.z";
         }
+        if (this._robotUart) {
+            // enable the gyroscope if it is not already enabled
+            if (!this.sensorValues.hasOwnProperty(gyroDir)) {
+                // wait for sensor to turn on
+                await this.enableSensor({SENSOR: "gyroscope"});   
+            }
+            console.log(this.sensorValues["gyroscope.x"] + 
+                ", " + this.sensorValues["gyroscope.y"] +
+                ", " + this.sensorValues["gyroscope.z"]);
+            return this.sensorValues[gyroDir];
+        }
+        return -1;
+    }
 
     /**
      * For reading temperature data back
      */
-     readTemperature(args) {
+    async readTemperature() {
         if (this._robotUart) {
             // enable the thermometer if it is not already enabled
-            if (!this.sensorValues["temperature"]) {
-                console.log("enable thermometer");
-                this._robotUart.sendText("(e,t)");
-
-                // wait for sensor to return
-                return new Promise((resolve) => {
-                    this.sensorEvent.on("temperature", (value) => {
-                        // stop listening for when the thermometer is on
-                        this.sensorEvent.removeAllListeners("temperature"); 
-                        resolve(value);
-                    });
-                });
-            } else {
-                return this.sensorValues['temperature'];
+            if (!this.sensorValues.hasOwnProperty('temperature')) {
+                // wait for sensor to turn on
+                await this.enableSensor({SENSOR: "temperature"});   
             }
+            
+            return this.sensorValues['temperature'];
         }
         return -1; // should never get here
     }
@@ -823,24 +781,15 @@ class DoodlebotBlocks {
     /**
      * For reading pressure data back
      */
-     readPressure(args) {
+    async readPressure() {
         if (this._robotUart) {
             // enable the pressure sensor if it is not already enabled
-            if (!this.sensorValues["pressure"]) {
-                console.log("enable pressure sensor");
-                this._robotUart.sendText("(e,p)");
+            if (!this.sensorValues.hasOwnProperty('pressure')) {
+                // wait for sensor to turn on
+                await this.enableSensor({SENSOR: "pressure"});  
+            } 
 
-                // wait for sensor to return
-                return new Promise((resolve) => {
-                    this.sensorEvent.on("pressure", (value) => {
-                        // stop listening for when the thermometer is on
-                        this.sensorEvent.removeAllListeners("pressure"); 
-                        resolve(value);
-                    });
-                });
-            } else {
-                return this.sensorValues['pressure'];
-            }
+            return this.sensorValues['pressure'];
         }
         return -1; // should never get here
     }
@@ -848,24 +797,15 @@ class DoodlebotBlocks {
     /**
      * For reading humidity data back
      */
-     readHumidity(args) {
+    async readHumidity() {
         if (this._robotUart) {
             // enable the thermometer if it is not already enabled
-            if (!this.sensorValues["humidity"]) {
-                console.log("enable humidity sensor");
-                this._robotUart.sendText("(e,h)");
-
-                // wait for sensor to return
-                return new Promise((resolve) => {
-                    this.sensorEvent.on("humidity", (value) => {
-                        // stop listening for when the thermometer is on
-                        this.sensorEvent.removeAllListeners("humidity"); 
-                        resolve(value);
-                    });
-                });
-            } else {
-                return this.sensorValues['humidity'];
+            if (!this.sensorValues.hasOwnProperty('humidity')) {   
+                // wait for sensor to turn on
+                await this.enableSensor({SENSOR: "humidity"});   
             }
+
+            return this.sensorValues['humidity'];
         }
         return -1; // should never get here
     }
@@ -873,7 +813,7 @@ class DoodlebotBlocks {
     /**
      * For reading battery data back
      */
-    readBattery(args) {
+    readBattery() {
         // enable battery
         if (this._robotUart) {
             // enable the battery if it is not already enabled
@@ -882,11 +822,9 @@ class DoodlebotBlocks {
 
             // wait for sensor to return
             return new Promise((resolve) => {
-                this.sensorEvent.on("battery", (value) => {
+                this.sensorEvent.once("battery", (value) => {
                     // disable the battery
                     console.log("disable battery");
-                    this.sensorEvent.removeAllListeners("battery");
-                    // disable battery
                     this._robotUart.sendText("(x,f)");
                     resolve(value);
                 });
@@ -897,34 +835,62 @@ class DoodlebotBlocks {
     }
 
     /**
-     * Implement whenBumperPressed
-     */
-     whenBumperPressed(args) {
-        return this.ifBumperPressed(args);
-    }
-    /**
      * For reading data back from the device
      */
-     ifBumperPressed(args) {
-        let state = args.BUMPER;
-        
-        // grab current sensor readings
-        let front = this.sensorValues["bumper.front"] == 1;
-        let back = this.sensorValues["bumper.back"] == 1;
+    async ifBumperPressed(args) {
+        let bumperSel = args.BUMPER;
 
-        if (state == "front") {
-            return front;
-        } else if (state == "back") {
-            return back;
-        } else if (state == "front or back") {
-            return front || back;
-        } else if (state == "front bumper and back") {
-            return front && back;
-        } else if (state == "neither") {
-            return !(front || back);
+        // enable bumpers
+        if (this._robotUart) {
+            // enable the bumpers if they are not already enabled
+            if (!this.sensorValues.hasOwnProperty('bumper.front') || !this.sensorValues.hasOwnProperty('bumper.back')) {
+                // wait for sensor to turn on
+                await this.enableSensor({SENSOR: "bumpers"});   
+            }
+            
+            const front = this.sensorValues["bumper.front"] == 1;
+            const back = this.sensorValues["bumper.back"] == 1;
+
+            if (bumperSel == "front") {
+                return front;
+            } else if (bumperSel == "back") {
+                return back
+            } else if (bumperSel == "front or back") {
+                return front || back;
+            } else if (bumperSel == "front bumper and back") {
+                return front && back;
+            } else if (bumperSel == "neither") {
+                return !(front || back);
+            }
         }
 
         return false; // should never get here
+    }
+    /**
+     * Implement whenBumperPressed
+     */
+    whenBumperPressed(args) {
+        let bumperSel = args.BUMPER;
+        
+        if (this._robotUart) {
+            // make sure the bumpers are on
+            if (this.sensorValues.hasOwnProperty('bumper.front') && this.sensorValues.hasOwnProperty('bumper.back')) {
+                const front = this.sensorValues["bumper.front"] == 1;
+                const back = this.sensorValues["bumper.back"] == 1;
+
+                if (bumperSel == "front") {
+                    return front;
+                } else if (bumperSel == "back") {
+                    return back
+                } else if (bumperSel == "front or back") {
+                    return front || back;
+                } else if (bumperSel == "front bumper and back") {
+                    return front && back;
+                } else if (bumperSel == "neither") {
+                    return !(front || back);
+                }
+            }
+        }
     }
 
     sendCommandToRobot(command, delayInMs) {
@@ -956,8 +922,25 @@ class DoodlebotBlocks {
         // send message
         if (this._robotUart) {
             let sensor_cmd = _sensors[args.SENSOR];
-            console.log("Enable sensor " + sensor_cmd);
+            console.log("Enable " + args.SENSOR + " sensor: " + sensor_cmd);
             this._robotUart.sendText("(e," + sensor_cmd + ")");
+
+            let sensorName = args.SENSOR;
+            if (args.SENSOR == "accelerometer") {
+                sensorName = "accelerometer.x";
+            } else if (args.SENSOR == "bumpers") {
+                sensorName = "bumper.front";
+            } else if (args.SENSOR == "gyroscope") {
+                sensorName = "gyroscope.x";
+            } else if (args.SENSOR == "magnetometer") {
+                sensorName = "magnetometer.roll";
+            }
+
+            return new Promise((resolve) => {
+                this.sensorEvent.once(sensorName, (value) => {
+                    resolve();
+                });
+            });
         }
     }
 
@@ -974,19 +957,23 @@ class DoodlebotBlocks {
                 delete this.sensorValues["accelerometer.x"];
                 delete this.sensorValues["accelerometer.y"];
                 delete this.sensorValues["accelerometer.z"];
-            } else if (args.SENSOR == "magnetometer") {
-                delete this.sensorValues["magnetometer.roll"];
-                delete this.sensorValues["magnetometer.pitch"];
-                delete this.sensorValues["magnetometer.yaw"];
+            } else if (args.SENSOR == "bumpers") {
+                delete this.sensorValues["bumper.front"];
+                delete this.sensorValues["bumper.back"];
             } else if (args.SENSOR == "gyroscope") {
                 delete this.sensorValues["gyroscope.x"];
                 delete this.sensorValues["gyroscope.y"];
                 delete this.sensorValues["gyroscope.z"];
+            } else if (args.SENSOR == "magnetometer") {
+                delete this.sensorValues["magnetometer.roll"];
+                delete this.sensorValues["magnetometer.pitch"];
+                delete this.sensorValues["magnetometer.yaw"];
             } else {
                 delete this.sensorValues[args.SENSOR];
             }
             this._robotUart.sendText("(x," + sensor_cmd + ")");
         }
+        console.log("Enabled sensors: " + Object.keys(this.sensorValues));
     }
 
     /**
@@ -997,6 +984,7 @@ class DoodlebotBlocks {
 
         for (let i=0; i<dataLine.length; i++) {
             let data = dataLine[i];
+            //console.log("Sensor reading: ", data); // for sensor debugging
             if (data) {
                 if (data == "ms)") {
                     console.log("Stop the motor");
@@ -1335,15 +1323,16 @@ class DoodlebotBlocks {
                 args.NUM +
                 " degrees"
         );
-        // Convert the number of degrees into the number of steps the robot needs take
-        let steps = (_outer_circum * args.NUM / 360)/_step_length;
-        if (args.DIR == "left")
-            steps = -steps;
+        
+        // determine the number of degrees
+        let numDegrees = args.NUM;
+        if (args.DIR == "right")
+            numDegrees = -numDegrees;
 
         // send message
         if (this._robotUart)
             this._robotUart.sendText(
-                "(m,0,0," + steps + "," + (-steps) + ")"
+                "(t,0," + numDegrees + ")"
             );
 
         // wait for the motor command to finish executing
