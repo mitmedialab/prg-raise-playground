@@ -31,7 +31,8 @@ const builtinExtensions = {
     doodlebot: () => require("../extensions/scratch3_doodlebot"),
     teachableMachine: () => require("../extensions/scratch3_teachable_machine"),
     faceapi: () => require('../extensions/scratch3_faceapi'),
-    opencv: () => require('../extensions/scratch3_opencv')
+    opencv: () => require('../extensions/scratch3_opencv'),
+    jibo: () => require('../extensions/scratch3_jibo')
 };
 
 /**

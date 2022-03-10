@@ -7,6 +7,9 @@ import teachableMachineBlocksInsetIconURL from './teachable-machine-blocks/teach
 import arduinoRobotIconURL from './arduino_extension/arduino_extension.png';
 import arduinoRobotInsetIconURL from './arduino_extension/arduino_small.svg';
 
+import jiboRobotIconURL from './jibo_ext/jibo_ext.png';
+import jiboRobotInsetIconURL from './jibo_ext/jibo_small.png';
+
 import microbitRobotIconURL from './arduino_extension/microbot_extension.png';
 
 import gizmoRobotIconURL from './arduino_extension/gizmo_extension.png';
@@ -297,6 +300,26 @@ export default [
                 defaultMessage="openCV"
                 description="bunch of opencv functions hopefully"
                 id="gui.extension.opencv.description"
+            />
+        ),
+        featured: true
+    },
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="Jibo"
+                    description="Jibo Connection to ROS docker"
+                    id="gui.extension.jibo.name"
+                />
+        ),
+        extensionId: 'jibo',
+        iconURL: jiboRobotIconURL,
+        insetIconURL: jiboRobotInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="jibo"
+                description="Jibo Connection to ROS docker"
+                id="gui.extension.jibo.description"
             />
         ),
         featured: true
