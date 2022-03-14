@@ -22,7 +22,7 @@ const _drive = ["forward", "backward", "left", "right"];
 const _turns = ["left", "right"];
 
 const _pen_dirs = ["up", "down"];
-const _pen_protocol = ["0", "45"];
+const _pen_protocol = ["20", "45"];
 
 const _bumpers = ["front", "back", "front or back", "front bumper and back", "neither"];
 
@@ -306,14 +306,39 @@ class DoodlebotBlocks {
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
                         id: "doodlebot.turnFor",
-                        default: "turn [DIR] [NUM] degrees",
+                        default: "spin [DIR] [NUM] degrees",
                         description:
-                            "Send command to robot to turn motors a certain angle",
+                            "Send command to robot to turn in place to a certain angle",
                     }),
                     arguments: {
                         NUM: {
                             type: ArgumentType.NUMBER,
                             defaultValue: 90,
+                        },
+                        DIR: {
+                            type: ArgumentType.String,
+                            menu: "TURNS",
+                            defaultValue: _turns[0],
+                        },
+                    },
+                },
+                {
+                    opcode: "turnArc",
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: "doodlebot.turnArc",
+                        default: "arc [DIR] with radius [RAD] for [NUM] degrees",
+                        description:
+                            "Send command to robot to turn in an arc to a certain angle",
+                    }),
+                    arguments: {
+                        NUM: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 90,
+                        },
+                        RAD: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 2,
                         },
                         DIR: {
                             type: ArgumentType.String,
@@ -606,7 +631,6 @@ class DoodlebotBlocks {
         await this.sendCommandToRobot(
             "(d,x,2,1,65535)", command_pause
         );
-        this._robotUart.sendText("(d,x,2,1,65535)");
         // start with face neutral
         this.playAnimation({ ANIM: "neutral" });
     }
@@ -813,19 +837,23 @@ class DoodlebotBlocks {
     /**
      * For reading battery data back
      */
-    readBattery() {
+    async readBattery() {
         // enable battery
         if (this._robotUart) {
             // enable the battery if it is not already enabled
-            console.log("enable battery");
-            this._robotUart.sendText("(e,f)");
+            console.log("enable battery");    
+            await this.sendCommandToRobot(
+                "(e,f)", command_pause
+            );
 
             // wait for sensor to return
             return new Promise((resolve) => {
-                this.sensorEvent.once("battery", (value) => {
+                this.sensorEvent.once("battery", async (value) => {
                     // disable the battery
                     console.log("disable battery");
-                    this._robotUart.sendText("(x,f)");
+                    await this.sendCommandToRobot(
+                        "(x,f)", command_pause
+                    );
                     resolve(value);
                 });
             });
@@ -893,10 +921,11 @@ class DoodlebotBlocks {
         }
     }
 
-    sendCommandToRobot(command, delayInMs) {
+    async sendCommandToRobot(command, delayInMs) {
         return new Promise(resolve => {
             setTimeout(() => {
                 if (this._robotUart) this._robotUart.sendText(command);
+                else console.log("Robot not available");
                 resolve();
             }, delayInMs);
         });
@@ -918,61 +947,61 @@ class DoodlebotBlocks {
     /**
      * For enabling sensors
      */
-    enableSensor(args) {
+    async enableSensor(args) {
         // send message
-        if (this._robotUart) {
-            let sensor_cmd = _sensors[args.SENSOR];
-            console.log("Enable " + args.SENSOR + " sensor: " + sensor_cmd);
-            this._robotUart.sendText("(e," + sensor_cmd + ")");
+        let sensor_cmd = _sensors[args.SENSOR];
+        console.log("Enable " + args.SENSOR + " sensor: " + sensor_cmd);
+        await this.sendCommandToRobot(
+            "(e," + sensor_cmd + ")", command_pause
+        );
 
-            let sensorName = args.SENSOR;
-            if (args.SENSOR == "accelerometer") {
-                sensorName = "accelerometer.x";
-            } else if (args.SENSOR == "bumpers") {
-                sensorName = "bumper.front";
-            } else if (args.SENSOR == "gyroscope") {
-                sensorName = "gyroscope.x";
-            } else if (args.SENSOR == "magnetometer") {
-                sensorName = "magnetometer.roll";
-            }
-
-            return new Promise((resolve) => {
-                this.sensorEvent.once(sensorName, (value) => {
-                    resolve();
-                });
-            });
+        let sensorName = args.SENSOR;
+        if (args.SENSOR == "accelerometer") {
+            sensorName = "accelerometer.x";
+        } else if (args.SENSOR == "bumpers") {
+            sensorName = "bumper.front";
+        } else if (args.SENSOR == "gyroscope") {
+            sensorName = "gyroscope.x";
+        } else if (args.SENSOR == "magnetometer") {
+            sensorName = "magnetometer.roll";
         }
+
+        return new Promise((resolve) => {
+            this.sensorEvent.once(sensorName, (value) => {
+                resolve();
+            });
+        });
     }
 
     /**
      * For disabling sensors
      */
-    disableSensor(args) {
-        // send message
-        if (this._robotUart) {
-            let sensor_cmd = _sensors[args.SENSOR];
+    async disableSensor(args) {
+        let sensor_cmd = _sensors[args.SENSOR];
 
-            console.log("Disable sensor " + sensor_cmd);
-            if (args.SENSOR == "accelerometer") {
-                delete this.sensorValues["accelerometer.x"];
-                delete this.sensorValues["accelerometer.y"];
-                delete this.sensorValues["accelerometer.z"];
-            } else if (args.SENSOR == "bumpers") {
-                delete this.sensorValues["bumper.front"];
-                delete this.sensorValues["bumper.back"];
-            } else if (args.SENSOR == "gyroscope") {
-                delete this.sensorValues["gyroscope.x"];
-                delete this.sensorValues["gyroscope.y"];
-                delete this.sensorValues["gyroscope.z"];
-            } else if (args.SENSOR == "magnetometer") {
-                delete this.sensorValues["magnetometer.roll"];
-                delete this.sensorValues["magnetometer.pitch"];
-                delete this.sensorValues["magnetometer.yaw"];
-            } else {
-                delete this.sensorValues[args.SENSOR];
-            }
-            this._robotUart.sendText("(x," + sensor_cmd + ")");
+        console.log("Disable sensor " + sensor_cmd);
+        if (args.SENSOR == "accelerometer") {
+            delete this.sensorValues["accelerometer.x"];
+            delete this.sensorValues["accelerometer.y"];
+            delete this.sensorValues["accelerometer.z"];
+        } else if (args.SENSOR == "bumpers") {
+            delete this.sensorValues["bumper.front"];
+            delete this.sensorValues["bumper.back"];
+        } else if (args.SENSOR == "gyroscope") {
+            delete this.sensorValues["gyroscope.x"];
+            delete this.sensorValues["gyroscope.y"];
+            delete this.sensorValues["gyroscope.z"];
+        } else if (args.SENSOR == "magnetometer") {
+            delete this.sensorValues["magnetometer.roll"];
+            delete this.sensorValues["magnetometer.pitch"];
+            delete this.sensorValues["magnetometer.yaw"];
+        } else {
+            delete this.sensorValues[args.SENSOR];
         }
+        await this.sendCommandToRobot(
+            "(x," + sensor_cmd + ")", command_pause
+        );
+
         console.log("Enabled sensors: " + Object.keys(this.sensorValues));
     }
 
@@ -1089,7 +1118,7 @@ class DoodlebotBlocks {
         }
         
         // send message
-        if (this._robotUart && args.ANIM == "happy") {
+        if (args.ANIM == "happy") {
             const happy_pause = 250;
             // Bounce the pen twice to indicate joy
             await this.sendCommandToRobot("(u,0)", happy_pause);
@@ -1125,7 +1154,7 @@ class DoodlebotBlocks {
     stopBlink() {
         console.log("stopping blink interval");
 
-        // send message
+        // stop blink intervals
         if (this._blinkInterval) {
             clearInterval(this._blinkInterval);
             this._blinkInterval = null;
@@ -1135,28 +1164,28 @@ class DoodlebotBlocks {
     /**
      * For setting text on display
      */
-    displayText(args) {
+    async displayText(args) {
         console.log("display text: " + args.TEXT);
 
         // stop blinking
         this.stopBlink();
 
         // send message
-        if (this._robotUart) this._robotUart.sendText("(d,t," + args.TEXT + ")");
+        await this.sendCommandToRobot("(d,t," + args.TEXT + ")", command_pause);
     }
 
 
     /**
      * For clearing the display
      */
-    clearDisplay(args) {
+    async clearDisplay(args) {
         console.log("clear display");
 
         // stop blinking
         this.stopBlink();
 
         // send message
-        if (this._robotUart) this._robotUart.sendText("(d,c)");
+        await this.sendCommandToRobot("(d,c)", command_pause);
     }
 
     pixelHexToDecimal(inputColor) {
@@ -1172,7 +1201,7 @@ class DoodlebotBlocks {
     /**
      * For setting individual neopixel colors
      */
-    setPixels(args) {
+    async setPixels(args) {
         if (args.PIXEL == "all lights") {
             for (let i = 0; i < this._colorArr.length; i++) {
                 // Translate hex color to rgb
@@ -1185,14 +1214,14 @@ class DoodlebotBlocks {
         }
 
         console.log("set pixels: " + this._colorArr.join(","));
+
         // send message
-        if (this._robotUart)
-            this._robotUart.sendText("(p," + this._colorArr.join(",") + ")");
+        await this.sendCommandToRobot("(p," + this._colorArr.join(",") + ")", command_pause);
     }
     /**
      * For setting individual neopixel colors
      */
-    setPixelColor(args) {
+    async setPixelColor(args) {
         // get all the color args as array
         const colorArgs = Object.entries(args)
             .filter((entry) => entry[0].startsWith("COLOR"))
@@ -1210,14 +1239,14 @@ class DoodlebotBlocks {
         }
 
         console.log("set color: " + this._colorArr.join(","));
-        // send message
-        if (this._robotUart)
-            this._robotUart.sendText("(p," + this._colorArr.join(",") + ")");
+
+        // send message      
+        await this.sendCommandToRobot("(p," + this._colorArr.join(",") + ")", command_pause);
     }
     /**
      * For shifting the colors of the lights in the neopixel array
      */
-    shiftPixels() {
+    async shiftPixels() {
         let tmp = null;
         for (let i = 1; i < this._colorArr.length; i++) {
             tmp = this._colorArr[i];
@@ -1226,22 +1255,21 @@ class DoodlebotBlocks {
         }
 
         console.log("shift pixels: " + this._colorArr.join(","));
+
         // send message
-        if (this._robotUart)
-            this._robotUart.sendText("(p," + this._colorArr.join(",") + ")");
+        await this.sendCommandToRobot("(p," + this._colorArr.join(",") + ")", command_pause);
     }
     /**
      * For blinking the lights in the neopixel array
      */
-    togglePixels() {
+    async togglePixels() {
         if (this._pixelStatus == 0) {
-            // send message
-            if (this._robotUart)
-                this._robotUart.sendText("(p," + this._colorArr.join(",") + ")");
+            // send message        
+            await this.sendCommandToRobot("(p," + this._colorArr.join(",") + ")", command_pause);
             this._pixelStatus = 1;
         } else {
             // lights off
-            if (this._robotUart) this._robotUart.sendText("(p,0,0,0,0,0,0,0,0)");
+            await this.sendCommandToRobot("(p,0,0,0,0,0,0,0,0)", command_pause);
             this._pixelStatus = 0;
         }
     }
@@ -1269,7 +1297,7 @@ class DoodlebotBlocks {
     /**
      * For turning off all of the pixels
      */
-    pixelsOff(args) {
+    async pixelsOff(args) {
         console.log("turning off neopixels");
 
         // clear the preivous interval
@@ -1280,13 +1308,13 @@ class DoodlebotBlocks {
         }
 
         // send message
-        if (this._robotUart) this._robotUart.sendText("(p,0,0,0,0,0,0,0,0)");
+        await this.sendCommandToRobot("(p,0,0,0,0,0,0,0,0)", command_pause);
     }
 
     /**
      * For activating the motors
      */
-    drive(args) {
+    async drive(args) {
         console.log(
             "drive command: " +
                 args.DIR +
@@ -1303,19 +1331,16 @@ class DoodlebotBlocks {
             rightSteps = - rightSteps;
 
         // send message
-        if (this._robotUart)
-            this._robotUart.sendText(
-                "(m,0,0,"  + leftSteps + "," + rightSteps + ")"
-            );
-
+        await this.sendCommandToRobot("(m,0,0,"  + leftSteps + "," + rightSteps + ")", command_pause);
+        
         // wait for the motor command to finish executing
         return new Promise((resolve) => {
-            this.motorEvent.on('stop', () =>{ 
+            this.motorEvent.once('stop', () =>{ 
                 resolve();
             });
         });
     }
-    turn(args) {
+    async turn(args) {
         console.log(
             "turn command: " +
                 args.DIR +
@@ -1330,14 +1355,37 @@ class DoodlebotBlocks {
             numDegrees = -numDegrees;
 
         // send message
-        if (this._robotUart)
-            this._robotUart.sendText(
-                "(t,0," + numDegrees + ")"
-            );
+        await this.sendCommandToRobot("(t,0," + numDegrees + ")", command_pause);
 
         // wait for the motor command to finish executing
         return new Promise((resolve) => {
-            this.motorEvent.on('stop', () =>{ 
+            this.motorEvent.once('stop', () =>{ 
+                resolve();
+            });
+        });
+    }
+    async turnArc(args) {
+        console.log(
+            "arc command: " +
+                args.DIR +
+                " " +
+                args.RAD + 
+                " radius " +
+                args.NUM +
+                " degrees"
+        );
+        
+        // determine the number of degrees
+        let numDegrees = args.NUM;
+        if (args.DIR == "right")
+            numDegrees = -numDegrees;
+
+        // send message
+        await this.sendCommandToRobot("(t," + args.RAD + "," + numDegrees + ")", command_pause);
+
+        // wait for the motor command to finish executing
+        return new Promise((resolve) => {
+            this.motorEvent.once('stop', () =>{ 
                 resolve();
             });
         });
@@ -1345,32 +1393,33 @@ class DoodlebotBlocks {
     /**
      * For moving the pen
      */
-    movePen(args) {
+    async movePen(args) {
         // Translate direction to ble protocol command
         let penCmd = _pen_protocol[_pen_dirs.indexOf(args.DIR)];
 
         console.log("move pen: " + args.DIR + " " + penCmd);
         // send message
-        if (this._robotUart) this._robotUart.sendText("(u," + penCmd + ")");
+        await this.sendCommandToRobot("(u," + penCmd + ")", command_pause);
     }
     /**
      * For stopping motors
      */
-    stopMotors(args) {
+    async stopMotors(args) {
         console.log("stopping motors");
         // send message
-        if (this._robotUart) this._robotUart.sendText("(m,s)");
+        await this.sendCommandToRobot("(m,s)", command_pause);
     }
 
     /**
      * Just for testing out sending commands to robot via ble
      */
-    sendCommand(args) {
+    async sendCommand(args) {
         let command = args.COMMAND;
         console.log("Sending uart command: ", command);
 
-        if (this._robotUart) this._robotUart.sendText(command);
-        else console.log("No device"); // TODO remove debugging statement
+        await this.sendCommandToRobot(
+            command, command_pause
+        );
     }
 }
 module.exports = DoodlebotBlocks;
