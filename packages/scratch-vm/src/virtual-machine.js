@@ -599,9 +599,51 @@ class VirtualMachine extends EventEmitter {
         });
     }
 
+    uploadProjectToURL(url) {
+        // get authToken using regex
+        const delimiter = url.indexOf(";");
+        const authToken = url.substr(delimiter+1);
+        url = url.substr(0, delimiter);
+        
+        this.saveProjectSb3().then(content => {
+            nets({
+                url: url,
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': content.type,
+                    'Authorization': 'Bearer ' + authToken,
+                },
+                encoding: undefined,
+                body: content
+            },(err, resp, body) => {
+                if (err) {
+                    console.log(err);
+                    return;
+                }
+                // resp.statusCode
+            })
+        });
+    }
+
     downloadProjectFromURLDirect(url) {
-        // Handle loading dropbox links
-        if (url.includes("dropbox.com")) {
+        // Handle loading google drive files
+        if (url.includes("googleapis.com")) {
+            // get authToken using regex
+            const delimiter = url.indexOf(";");
+            const authToken = url.substr(delimiter+1);
+            url = url.substr(0, delimiter);
+            return new Promise((resolve, reject) => {
+                nets({
+                    url: url,
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken,
+                    },
+                }, (err, resp, body) => {
+                    resolve(this.loadProject(body));
+                })
+            })
+        } else if (url.includes("dropbox.com")) {        
+            // Handle loading dropbox links
             const dropboxRegex = /\/s\/[A-Za-z0-9]+\/.*.sb3/;
             const found = url.match(dropboxRegex);
             if (found.length > 0) url = 'https://dl.dropboxusercontent.com' + found[0];
@@ -609,7 +651,16 @@ class VirtualMachine extends EventEmitter {
 
         return new Promise((resolve, reject) => {
             nets({ url: url }, (err, resp, body) => {
-                resolve(this.loadProject(body));
+                if (err) {
+                    console.log(err);
+                    resolve();
+                }
+
+                if (resp.statusCode !== 200) {
+                    console.log(resp.statusCode);
+                    resolve();
+                } else 
+                    resolve(this.loadProject(body));
             })
         })
     }
