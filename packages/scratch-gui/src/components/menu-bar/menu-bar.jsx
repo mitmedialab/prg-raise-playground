@@ -22,6 +22,7 @@ import ProjectWatcher from '../../containers/project-watcher.jsx';
 import MenuBarMenu from './menu-bar-menu.jsx';
 import {MenuItem, MenuSection} from '../menu/menu.jsx';
 import ProjectTitleInput from './project-title-input.jsx';
+import {setProjectTitle} from '../../reducers/project-title';
 import AuthorInfo from './author-info.jsx';
 import AccountNav from '../../containers/account-nav.jsx';
 import LoginDropdown from './login-dropdown.jsx';
@@ -321,15 +322,19 @@ class MenuBar extends React.Component {
         // gets 302 error
         let templateLink = "https://www.dropbox.com/s/o8jegh940y7f7qc/SimpleProject.sb3";
         let url = window.prompt("Enter project url (e.g. from Dropbox or Github)", templateLink);
-        
-        const readyToReplaceProject = this.props.confirmReadyToReplaceProject(
-            this.props.intl.formatMessage(sharedMessages.replaceProjectWarning)
-        );
-        if (readyToReplaceProject) {
-            this.props.vm.downloadProjectFromURLDirect(url);
-            this.setState({
-                fileId: null
-            });
+
+        if (url != null && url != "") {   
+            const readyToReplaceProject = this.props.confirmReadyToReplaceProject(
+                this.props.intl.formatMessage(sharedMessages.replaceProjectWarning)
+            );
+            if (readyToReplaceProject) {
+                this.props.vm.downloadProjectFromURLDirect(url);
+                
+                this.props.onReceivedProjectTitle(this.getProjectTitleFromFilename(url));
+                this.setState({
+                    fileId: null
+                });
+            }
         }
         this.props.onRequestCloseFile();
     }
@@ -386,7 +391,17 @@ class MenuBar extends React.Component {
             authToken: token
         });
     }
+    getProjectTitleFromFilename (fileInputFilename) {
+        if (!fileInputFilename) return '';
+        // only parse title with valid scratch project extensions
+        // (.sb, .sb2, and .sb3)
+        //const matches = fileInputFilename.match(/^(.*)\.sb[23]?$/);
+        const matches = fileInputFilename.match(/\/?(.[^\/]*)\.sb[23]?/);
+        if (!matches) return '';
+        return matches[1].substring(0, 100); // truncate project title to max 100 chars
+    }
     handleDriveProjectSelect(data) {
+        console.log(data);
         if (data.docs) {
             const fileId = data.docs[0].id;
             const url = "https://www.googleapis.com/drive/v3/files/" + fileId + "/?alt=media;" + this.state.authToken;
@@ -396,9 +411,19 @@ class MenuBar extends React.Component {
             );
             if (readyToReplaceProject) {
                 this.props.vm.downloadProjectFromURLDirect(url);
-                this.setState({
-                    fileId: fileId
-                });
+                
+                this.props.onReceivedProjectTitle(this.getProjectTitleFromFilename(data.docs[0].name));
+                
+                // if project does not have a parentId, it's a shared project and you cannot save
+                if (data.docs[0].parentId !== undefined) {
+                    this.setState({
+                        fileId: fileId
+                    });
+                } else {
+                    this.setState({
+                        fileId: null
+                    });
+                }
             }
         }
         this.props.onRequestCloseFile();
@@ -975,7 +1000,8 @@ MenuBar.propTypes = {
     showComingSoon: PropTypes.bool,
     userOwnsProject: PropTypes.bool,
     username: PropTypes.string,
-    vm: PropTypes.instanceOf(VM).isRequired
+    vm: PropTypes.instanceOf(VM).isRequired,
+    onReceivedProjectTitle: PropTypes.func
 };
 
 MenuBar.defaultProps = {
@@ -1024,7 +1050,8 @@ const mapDispatchToProps = dispatch => ({
     onClickSaveAsCopy: () => dispatch(saveProjectAsCopy()),
     onSeeCommunity: () => dispatch(setPlayer(true)),
     onShowSaveSuccessAlert: () => showAlertWithTimeout(dispatch, 'saveSuccess'),
-    onShowSavingAlert: () => showAlertWithTimeout(dispatch, 'saving')
+    onShowSavingAlert: () => showAlertWithTimeout(dispatch, 'saving'),
+    onReceivedProjectTitle: title => dispatch(setProjectTitle(title))
 });
 
 export default compose(
