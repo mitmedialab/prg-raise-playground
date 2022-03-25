@@ -13,6 +13,19 @@ const blockIconURI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYA
     
 const EXTENSION_ID = "jibo";
 
+const _colors = {
+    "red": {x:255, y:0, z:0},
+    //"orange": {x:255, y:69, z:0},
+    "yellow": {x:255, y:69, z:0},
+    "green": {x:0, y:167, z:0},
+    "cyan": {x:0, y:167, z:48},
+    "blue": {x:0, y:0, z:255},
+    "magenta": {x:255, y:0, z:163},
+    //"pink": {x:255, y:20, z:147},
+    "white": {x:255, y:255, z:255},
+    "random": "random"
+}
+
 const ROSLIB = require('roslib');
 
 class Scratch3Jibo {
@@ -35,6 +48,7 @@ class Scratch3Jibo {
                 description:
                     "Extension using ROS docker to communicate with Jibo",
             }),
+            showStatusButton: true,
             blocks: [
                 {
                     opcode: "RosConnect",
@@ -51,13 +65,34 @@ class Scratch3Jibo {
                 {
                     opcode: 'JiboTTS',
                     blockType: BlockType.COMMAND,
-                    text: 'Say [TEXT]',
+                    text: 'say [TEXT]',
                     arguments: {
                         TEXT: {
                             type: ArgumentType.STRING,
-                            defaultValue: "hello, I am Jibo"
+                            defaultValue: "Hello, I am Jibo"
                         }
                     }
+                },
+                {
+                    opcode: 'JiboAsk',
+                    blockType: BlockType.COMMAND,
+                    text: 'ask [TEXT] and wait',
+                    arguments: {
+                        TEXT: {
+                            type: ArgumentType.STRING,
+                            defaultValue: "How are you?"
+                        }
+                    }
+                },
+                {
+                    opcode: 'JiboListen',
+                    blockType: BlockType.REPORTER,
+                    text: formatMessage({
+                        id: "jibo.listen",
+                        default: "answer",
+                        description:
+                            "returns the speech Jibo hears from his ASR",
+                    }),
                 },
                 {
                     opcode: "JiboVolume",
@@ -74,16 +109,6 @@ class Scratch3Jibo {
                             defaultValue: this.jbVolume,
                         },
                     },
-                },
-                {
-                    opcode: 'JiboListen',
-                    blockType: BlockType.REPORTER,
-                    text: formatMessage({
-                        id: "jibo.listen",
-                        default: "listen to speach",
-                        description:
-                            "Jibo listens to speech",
-                    }),
                 },
                 {
                     opcode: "JiboAnim",
@@ -106,7 +131,7 @@ class Scratch3Jibo {
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
                         id: "jibo.playAudio",
-                        default: "Play Jibo Audio to [VKEY]",
+                        default: "play Jibo Audio to [VKEY]",
                         description: "Play Jibo Audio",
                     }),
                     arguments: {
@@ -127,10 +152,35 @@ class Scratch3Jibo {
                     }),
                     arguments: {
                         COLOR: {
-                            type: ArgumentType.COLOR,
+                            type: ArgumentType.STRING,
+                            menu: "LedColors",
+                            defaultValue: "random",
                         },
                     },
                 },
+                {
+                    opcode: "JiboLEDOff",
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: "jibo.turnLEDOff",
+                        default: "turn Jibo LED off",
+                        description: "Turn off Jibo LED",
+                    }),
+                },
+                /*{
+                    opcode: "JiboLED1",
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: "jibo.setLED",
+                        default: "set Jibo LED to [COLOR]",
+                        description: "Set the LED lights",
+                    }),
+                    arguments: {
+                        COLOR: {
+                            type: ArgumentType.COLOR
+                        },
+                    },
+                },*/
                 {
                     opcode: "JiboLook",
                     blockType: BlockType.COMMAND,
@@ -158,25 +208,39 @@ class Scratch3Jibo {
             menus: {
                 VOLS: {
                     acceptReporters: false,
-                    items: ["1","2","3","4","5","6","7","8","9","10"],
+                    items: ["10","20","30","40","50","60","70","80","90","100"],
                 },
                 AnimKeys: {
-                    acceptReporters: false,
+                    acceptReporters: true,
                     items: ["spider.keys","snail.keys"],
                 },
                 AudioKeys: {
-                    acceptReporters: false,
+                    acceptReporters: true,
                     items: ["instruments/Blocks.mp3"],
+                },
+                LedColors: {
+                    acceptReporters: true,
+                    items: Object.keys(_colors),
                 },
             }
         };
+    }
+
+    /* The following 4 functions have to exist for the peripherial indicator */
+    connect() {
+        console.log("this.connect");
+    }
+    disconnect() {}
+    scan() {}
+    isConnected() {
+        console.log("isConnected status: " + this.connected);
+        return this.connected;
     }
 
     RosConnect (args) {
         const rosIP = Cast.toString(args.rosIP);
         this.rosbridgeIP = "ws://"+rosIP+":9090";
         log.log("ROS: Attempting to connect to rosbridge at " + this.rosbridgeIP);
-
 
         if (!this.connected){
         
@@ -185,11 +249,14 @@ class Scratch3Jibo {
             });
 
             // If connection is successful
-            let connect_cb_factory = function(x) {return function(){x.connected = true;};};
+            let connect_cb_factory = function(x) {return function(){
+                x.connected = true;
+                x.runtime.emit(x.runtime.constructor.PERIPHERAL_CONNECTED);
+            };};
             let connect_cb = connect_cb_factory(this);
             this.ros.on('connection', function() {
                 connect_cb();
-                log.info('ROS: Connected to websocket server.');
+                log.info('ROS: Connected to websocket server.');        
             });
 
             // If connection fails
@@ -236,33 +303,45 @@ class Scratch3Jibo {
         await this.JiboPublish(jibo_msg);
     }
 
-    async JiboListen (args) {
+    async JiboAsk (args) {
+        // say question
+        await this.JiboTTS({TEXT: args.TEXT});
+
+        // listen for answer
         this.JiboASR_request();
-
         // wait for sensor to return
-        return new Promise((resolve) => {
-            //await this.JiboASR_reseive();
-
-            var asr_listener = new ROSLIB.Topic({
-                ros : this.ros,
-                name : '/jibo_asr_result',
-                messageType : 'jibo_msgs/JiboAsrResult'
-            });
-
-            asr_listener.subscribe(function(message) {
-                console.log('Received message on ' + asr_listener.name + ': ');
-                console.log(message);
-                asr_listener.unsubscribe();
-                this.asr_out= message.transcription;
-                resolve(message.transcription);
-            });
-
-            console.log(this.asr_out);
-            this.JiboPublish({"do_tts":true,"tts_text": this.asr_out});
-        });
+        this.asr_out = await this.JiboASR_reseive();
+    }
+    async JiboListen (args) {
+        return this.asr_out;
     }
 
     JiboLED (args) {
+        let ledHex = _colors[args.COLOR];
+
+        if (ledHex == "random") {
+            const randomColorIdx = Math.floor(Math.random() * (Object.keys(_colors).length-1));
+            const randomColor = Object.keys(_colors)[randomColorIdx];
+            ledHex = _colors[randomColor];
+        }
+        log.log(ledHex);
+
+        var jibo_msg ={
+            "do_led":true,
+            "led_color": ledHex
+            };
+        this.JiboPublish(jibo_msg);
+    }
+
+    JiboLEDOff (args) {
+        var jibo_msg ={
+            "do_led":true,
+            "led_color": {x:0, y:0, z:0}
+            };
+        this.JiboPublish(jibo_msg);
+    }
+
+    JiboLED1 (args) {
         const led = Cast.toString(args.COLOR);
         log.log(led);
         log.log(this.hexToRgb(led))
@@ -334,7 +413,6 @@ class Scratch3Jibo {
             "audio_filename": audio_key
             };
         this.JiboPublish(jibo_msg);
-
     }
 
 
@@ -386,18 +464,21 @@ class Scratch3Jibo {
         cmdVel.publish(jibo_msg);
     }
 
-    async JiboASR_reseive(){
-        var asr_listener = new ROSLIB.Topic({
-            ros : this.ros,
-            name : '/jibo_asr_result',
-            messageType : 'jibo_msgs/JiboAsrResult'
-        });
+    async JiboASR_reseive() {
+        return new Promise((resolve) => {
+            var asr_listener = new ROSLIB.Topic({
+                ros : this.ros,
+                name : '/jibo_asr_result',
+                messageType : 'jibo_msgs/JiboAsrResult'
+            });
 
-        asr_listener.subscribe(function(message) {
-            console.log('Received message on ' + asr_listener.name + ': ');
-            console.log(message);
-            asr_listener.unsubscribe();
-            this.asr_out= message.transcription;
+            asr_listener.subscribe(function(message) {
+                console.log('Received message on ' + asr_listener.name + ': ');
+                console.log(message);
+                asr_listener.unsubscribe();
+                //this.asr_out = message.transcription;
+                resolve(message.transcription);
+            });
         });
     }
 

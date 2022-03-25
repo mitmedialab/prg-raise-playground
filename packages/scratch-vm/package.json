@@ -29,8 +29,8 @@
     "version": "json -f package.json -I -e \"this.repository.sha = '$(git log -n1 --pretty=format:%H)'\""
   },
   "dependencies": {
-    "@teachablemachine/image": "^0.8.4",
-    "roslib": "^1.0.0",
+    "@teachablemachine/image": "^0.8.4",    
+    "roslib": "^1.2.0",
     "@techstark/opencv-js": "latest",
     "@tensorflow-models/knn-classifier": "^1.2.2",
     "@tensorflow-models/universal-sentence-encoder": "^1.2.2",
