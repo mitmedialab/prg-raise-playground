@@ -1,7 +1,6 @@
-const JSONRPC = require('../util/jsonrpc');
+const JSONRPC = require("../util/jsonrpc");
 
 class BLE extends JSONRPC {
-
     /**
      * A BLE peripheral socket object.  It handles connecting, over web sockets, to
      * BLE peripherals, and reading and writing data to them.
@@ -11,10 +10,16 @@ class BLE extends JSONRPC {
      * @param {object} connectCallback - a callback for connection.
      * @param {object} resetCallback - a callback for resetting extension state.
      */
-    constructor (runtime, extensionId, peripheralOptions, connectCallback, resetCallback = null) {
+    constructor(
+        runtime,
+        extensionId,
+        peripheralOptions,
+        connectCallback,
+        resetCallback = null
+    ) {
         super();
 
-        this._socket = runtime.getScratchLinkSocket('BLE');
+        this._socket = runtime.getScratchLinkSocket("BLE");
         this._socket.setOnOpen(this.requestPeripheral.bind(this));
         this._socket.setOnClose(this.handleDisconnectError.bind(this));
         this._socket.setOnError(this._handleRequestError.bind(this));
@@ -39,16 +44,20 @@ class BLE extends JSONRPC {
      * Request connection to the peripheral.
      * If the web socket is not yet open, request when the socket promise resolves.
      */
-    requestPeripheral () {
+    requestPeripheral() {
         this._availablePeripherals = {};
         if (this._discoverTimeoutID) {
             window.clearTimeout(this._discoverTimeoutID);
         }
-        this._discoverTimeoutID = window.setTimeout(this._handleDiscoverTimeout.bind(this), 15000);
-        this.sendRemoteRequest('discover', this._peripheralOptions)
-            .catch(e => {
+        this._discoverTimeoutID = window.setTimeout(
+            this._handleDiscoverTimeout.bind(this),
+            15000
+        );
+        this.sendRemoteRequest("discover", this._peripheralOptions).catch(
+            (e) => {
                 this._handleRequestError(e);
-            });
+            }
+        );
     }
 
     /**
@@ -56,14 +65,16 @@ class BLE extends JSONRPC {
      * callback if connection is successful.
      * @param {number} id - the id of the peripheral to connect to
      */
-    connectPeripheral (id) {
-        this.sendRemoteRequest('connect', {peripheralId: id})
+    connectPeripheral(id) {
+        this.sendRemoteRequest("connect", { peripheralId: id })
             .then(() => {
                 this._connected = true;
-                this._runtime.emit(this._runtime.constructor.PERIPHERAL_CONNECTED);
+                this._runtime.emit(
+                    this._runtime.constructor.PERIPHERAL_CONNECTED
+                );
                 this._connectCallback();
             })
-            .catch(e => {
+            .catch((e) => {
                 this._handleRequestError(e);
             });
     }
@@ -71,7 +82,7 @@ class BLE extends JSONRPC {
     /**
      * Close the websocket.
      */
-    disconnect () {
+    disconnect() {
         if (this._connected) {
             this._connected = false;
         }
@@ -91,7 +102,7 @@ class BLE extends JSONRPC {
     /**
      * @return {bool} whether the peripheral is connected.
      */
-    isConnected () {
+    isConnected() {
         return this._connected;
     }
 
@@ -102,16 +113,21 @@ class BLE extends JSONRPC {
      * @param {object} onCharacteristicChanged - callback for characteristic change notifications.
      * @return {Promise} - a promise from the remote startNotifications request.
      */
-    startNotifications (serviceId, characteristicId, onCharacteristicChanged = null) {
+    startNotifications(
+        serviceId,
+        characteristicId,
+        onCharacteristicChanged = null
+    ) {
         const params = {
             serviceId,
-            characteristicId
+            characteristicId,
         };
         this._characteristicDidChangeCallback = onCharacteristicChanged;
-        return this.sendRemoteRequest('startNotifications', params)
-            .catch(e => {
+        return this.sendRemoteRequest("startNotifications", params).catch(
+            (e) => {
                 this.handleDisconnectError(e);
-            });
+            }
+        );
     }
 
     /**
@@ -122,10 +138,15 @@ class BLE extends JSONRPC {
      * @param {object} onCharacteristicChanged - callback for characteristic change notifications.
      * @return {Promise} - a promise from the remote read request.
      */
-    read (serviceId, characteristicId, optStartNotifications = false, onCharacteristicChanged = null) {
+    read(
+        serviceId,
+        characteristicId,
+        optStartNotifications = false,
+        onCharacteristicChanged = null
+    ) {
         const params = {
             serviceId,
-            characteristicId
+            characteristicId,
         };
         if (optStartNotifications) {
             params.startNotifications = true;
@@ -133,10 +154,9 @@ class BLE extends JSONRPC {
         if (onCharacteristicChanged) {
             this._characteristicDidChangeCallback = onCharacteristicChanged;
         }
-        return this.sendRemoteRequest('read', params)
-            .catch(e => {
-                this.handleDisconnectError(e);
-            });
+        return this.sendRemoteRequest("read", params).catch((e) => {
+            this.handleDisconnectError(e);
+        });
     }
 
     /**
@@ -148,18 +168,23 @@ class BLE extends JSONRPC {
      * @param {boolean} withResponse - if true, resolve after peripheral's response.
      * @return {Promise} - a promise from the remote send request.
      */
-    write (serviceId, characteristicId, message, encoding = null, withResponse = null) {
-        const params = {serviceId, characteristicId, message};
+    write(
+        serviceId,
+        characteristicId,
+        message,
+        encoding = null,
+        withResponse = null
+    ) {
+        const params = { serviceId, characteristicId, message };
         if (encoding) {
             params.encoding = encoding;
         }
         if (withResponse !== null) {
             params.withResponse = withResponse;
         }
-        return this.sendRemoteRequest('write', params)
-            .catch(e => {
-                this.handleDisconnectError(e);
-            });
+        return this.sendRemoteRequest("write", params).catch((e) => {
+            this.handleDisconnectError(e);
+        });
     }
 
     /**
@@ -168,25 +193,25 @@ class BLE extends JSONRPC {
      * @param {object} params - a received list of parameters.
      * @return {object} - optional return value.
      */
-    didReceiveCall (method, params) {
+    didReceiveCall(method, params) {
         switch (method) {
-        case 'didDiscoverPeripheral':
-            this._availablePeripherals[params.peripheralId] = params;
-            this._runtime.emit(
-                this._runtime.constructor.PERIPHERAL_LIST_UPDATE,
-                this._availablePeripherals
-            );
-            if (this._discoverTimeoutID) {
-                window.clearTimeout(this._discoverTimeoutID);
-            }
-            break;
-        case 'characteristicDidChange':
-            if (this._characteristicDidChangeCallback) {
-                this._characteristicDidChangeCallback(params.message);
-            }
-            break;
-        case 'ping':
-            return 42;
+            case "didDiscoverPeripheral":
+                this._availablePeripherals[params.peripheralId] = params;
+                this._runtime.emit(
+                    this._runtime.constructor.PERIPHERAL_LIST_UPDATE,
+                    this._availablePeripherals
+                );
+                if (this._discoverTimeoutID) {
+                    window.clearTimeout(this._discoverTimeoutID);
+                }
+                break;
+            case "characteristicDidChange":
+                if (this._characteristicDidChangeCallback) {
+                    this._characteristicDidChangeCallback(params.message);
+                }
+                break;
+            case "ping":
+                return 42;
         }
     }
 
@@ -201,7 +226,7 @@ class BLE extends JSONRPC {
      * Disconnect the socket, and if the extension using this socket has a
      * reset callback, call it. Finally, emit an error to the runtime.
      */
-    handleDisconnectError (/* e */) {
+    handleDisconnectError(/* e */) {
         // log.error(`BLE error: ${JSON.stringify(e)}`);
 
         if (!this._connected) return;
@@ -212,22 +237,25 @@ class BLE extends JSONRPC {
             this._resetCallback();
         }
 
-        this._runtime.emit(this._runtime.constructor.PERIPHERAL_CONNECTION_LOST_ERROR, {
-            message: `Scratch lost connection to`,
-            extensionId: this._extensionId
-        });
+        this._runtime.emit(
+            this._runtime.constructor.PERIPHERAL_CONNECTION_LOST_ERROR,
+            {
+                message: `Scratch lost connection to`,
+                extensionId: this._extensionId,
+            }
+        );
     }
 
-    _handleRequestError (/* e */) {
+    _handleRequestError(/* e */) {
         // log.error(`BLE error: ${JSON.stringify(e)}`);
 
         this._runtime.emit(this._runtime.constructor.PERIPHERAL_REQUEST_ERROR, {
             message: `Scratch lost connection to`,
-            extensionId: this._extensionId
+            extensionId: this._extensionId,
         });
     }
 
-    _handleDiscoverTimeout () {
+    _handleDiscoverTimeout() {
         if (this._discoverTimeoutID) {
             window.clearTimeout(this._discoverTimeoutID);
         }

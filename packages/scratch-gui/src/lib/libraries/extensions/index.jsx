@@ -10,6 +10,9 @@ import teachableMachineBlocksInsetIconURL from './teachable-machine-blocks/teach
 import arduinoRobotIconURL from './arduino_extension/arduino_extension.png';
 import arduinoRobotInsetIconURL from './arduino_extension/arduino_small.svg';
 
+import jiboRobotIconURL from './jibo_ext/jibo_ext.png';
+import jiboRobotInsetIconURL from './jibo_ext/jibo_small.png';
+
 import microbitRobotIconURL from './arduino_extension/microbot_extension.png';
 
 import gizmoRobotIconURL from './arduino_extension/gizmo_extension.png';
@@ -98,6 +101,26 @@ export default [
                 defaultMessage="Create a text classification model for use in a Scratch project!"
                 description="Text Classification Description"
                 id="gui.extension.text-classification.description"
+            />
+        ),
+        featured: true
+    },
+    {
+         name: (
+            <FormattedMessage
+                defaultMessage="PRG Doodlebot"
+                description="Name for the Doodlebot Extension"
+                id="gui.extension.doodlebot.name"
+            />
+        ),
+        extensionId: 'doodlebot',
+        iconURL: arduinoRobotIconURL,
+        insetIconURL: arduinoRobotInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Use Scratch to program a Doodlebot robot"
+                description="PRG Doodlebot description"
+                id="gui.extension.doodlebot.description"
             />
         ),
         featured: true
@@ -264,6 +287,66 @@ export default [
         ),
         featured: true,
         internetConnectionRequired: true
+    },
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="faceapi"
+                    description="Name for the 'faceapi' extension"
+                    id="gui.extension.faceapi.name"
+                />
+        ),
+        extensionId: 'faceapi',
+        // iconURL: faceapiImage,
+        // insetIconURL: faceapiInsetImage,
+        description: (
+            <FormattedMessage
+                defaultMessage="faceapi."
+                description="Description for the 'faceapi' extension"
+                id="gui.extension.faceapi.description"
+            />
+        ),
+        featured: true
+    },
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="openCV"
+                    description="bunch of opencv functions hopefully"
+                    id="gui.extension.opencv.name"
+                />
+        ),
+        extensionId: 'opencv',
+        // iconURL: faceapiImage,
+        // insetIconURL: faceapiInsetImage,
+        description: (
+            <FormattedMessage
+                defaultMessage="openCV"
+                description="bunch of opencv functions hopefully"
+                id="gui.extension.opencv.description"
+            />
+        ),
+        featured: true
+    },
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="Jibo"
+                    description="Jibo Connection to ROS docker"
+                    id="gui.extension.jibo.name"
+                />
+        ),
+        extensionId: 'jibo',
+        iconURL: jiboRobotIconURL,
+        insetIconURL: jiboRobotInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="jibo"
+                description="Jibo Connection to ROS docker"
+                id="gui.extension.jibo.description"
+            />
+        ),
+        featured: true
     },
     /*{
         name: 'Makey Makey',

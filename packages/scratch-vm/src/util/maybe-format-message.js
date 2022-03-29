@@ -1,4 +1,4 @@
-const formatMessage = require('format-message');
+const formatMessage = require("format-message");
 
 /**
  * Check if `maybeMessage` looks like a message object, and if so pass it to `formatMessage`.

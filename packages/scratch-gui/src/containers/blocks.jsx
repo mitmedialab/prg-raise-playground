@@ -107,12 +107,18 @@ class Blocks extends React.Component {
             (() => this.ScratchBlocks.Variables.createVariable(this.workspace, null, type));
         const procButtonCallback = () => {
             this.ScratchBlocks.Procedures.createProcedureDefCallback_(this.workspace);
-        };
+        }
         const textModelEditButtonCallback = () => {
             this.props.onOpenTextModelModal();
-        };
+        }
         const classifierModelEditButtonCallback = () => {
             this.props.onOpenClassifierModelModal();
+        }
+        const connectMicrobitRobotCallback = () => {
+            this.props.vm.runtime.emit('CONNECT_MICROBIT_ROBOT');
+        }
+        const connectDoodlebotCallback = () => {
+            this.props.vm.runtime.emit('CONNECT_DOODLEBOT');
         }
 
         toolboxWorkspace.registerButtonCallback('MAKE_A_VARIABLE', varListButtonCallback(''));
@@ -120,6 +126,8 @@ class Blocks extends React.Component {
         toolboxWorkspace.registerButtonCallback('MAKE_A_PROCEDURE', procButtonCallback);
         toolboxWorkspace.registerButtonCallback('EDIT_TEXT_MODEL', textModelEditButtonCallback);
         toolboxWorkspace.registerButtonCallback('EDIT_TEXT_CLASSIFIER', classifierModelEditButtonCallback);
+        toolboxWorkspace.registerButtonCallback('CONNECT_MICROBIT_ROBOT', connectMicrobitRobotCallback);
+        toolboxWorkspace.registerButtonCallback('CONNECT_DOODLEBOT', connectDoodlebotCallback);
 
 
         // Store the xml of the toolbox that is actually rendered.
@@ -476,7 +484,7 @@ class Blocks extends React.Component {
         this.setState(p);
     }
     handleConnectionModalStart (extensionId) {
-        let prgCustomExtensions = ['textClassification'];
+        let prgCustomExtensions = ['textClassification','jibo','doodlebot','microbitRobot','teachableMachine'];
         if (!prgCustomExtensions.includes(extensionId)) {
             this.props.onOpenConnectionModal(extensionId);
         }

@@ -1,4 +1,4 @@
-const Timer = require('../util/timer');
+const Timer = require("../util/timer");
 
 class RateLimiter {
     /**
@@ -9,7 +9,7 @@ class RateLimiter {
      * @param {number} maxRate the maximum number of sends allowed per second
      * @constructor
      */
-    constructor (maxRate) {
+    constructor(maxRate) {
         /**
          * The maximum number of tokens.
          * @type {number}
@@ -44,7 +44,7 @@ class RateLimiter {
      * taking a token and then checking if we are still under the rate limit.
      * @return {boolean} true if we are under the rate limit
      */
-    okayToSend () {
+    okayToSend() {
         // Calculate the number of tokens to refill the bucket with, based on the
         // amount of time since the last refill.
         const now = this._timer.timeElapsed();

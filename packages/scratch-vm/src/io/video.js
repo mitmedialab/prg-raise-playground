@@ -1,7 +1,7 @@
-const StageLayering = require('../engine/stage-layering');
+const StageLayering = require("../engine/stage-layering");
 
 class Video {
-    constructor (runtime) {
+    constructor(runtime) {
         this.runtime = runtime;
 
         /**
@@ -41,12 +41,12 @@ class Video {
         this._forceTransparentPreview = false;
     }
 
-    static get FORMAT_IMAGE_DATA () {
-        return 'image-data';
+    static get FORMAT_IMAGE_DATA() {
+        return "image-data";
     }
 
-    static get FORMAT_CANVAS () {
-        return 'canvas';
+    static get FORMAT_CANVAS() {
+        return "canvas";
     }
 
     /**
@@ -54,7 +54,7 @@ class Video {
      * sample canvas.
      * @type {Array.<number>}
      */
-    static get DIMENSIONS () {
+    static get DIMENSIONS() {
         return [480, 360];
     }
 
@@ -62,7 +62,7 @@ class Video {
      * Order preview drawable is inserted at in the renderer.
      * @type {number}
      */
-    static get ORDER () {
+    static get ORDER() {
         return 1;
     }
 
@@ -71,7 +71,7 @@ class Video {
      * a video provider can be found in scratch-gui/src/lib/video/video-provider
      * @param {VideoProvider} provider - Video provider to use
      */
-    setProvider (provider) {
+    setProvider(provider) {
         this.provider = provider;
     }
 
@@ -82,7 +82,7 @@ class Video {
      *
      * @return {Promise.<Video>} resolves a promise to this IO device when video is ready.
      */
-    enableVideo () {
+    enableVideo() {
         if (!this.provider) return null;
         return this.provider.enableVideo().then(() => this._setupPreview());
     }
@@ -91,7 +91,7 @@ class Video {
      * Disable video stream (turn video off)
      * @return {void}
      */
-    disableVideo () {
+    disableVideo() {
         this._disablePreview();
         if (!this.provider) return null;
         this.provider.disableVideo();
@@ -110,13 +110,19 @@ class Video {
      *
      * @return {ArrayBuffer|Canvas|string|null} Frame data in requested format, null when errors.
      */
-    getFrame ({
+    getFrame({
         dimensions = Video.DIMENSIONS,
         mirror = this.mirror,
         format = Video.FORMAT_IMAGE_DATA,
-        cacheTimeout = this._frameCacheTimeout
+        cacheTimeout = this._frameCacheTimeout,
     }) {
-        if (this.provider) return this.provider.getFrame({dimensions, mirror, format, cacheTimeout});
+        if (this.provider)
+            return this.provider.getFrame({
+                dimensions,
+                mirror,
+                format,
+                cacheTimeout,
+            });
         return null;
     }
 
@@ -124,33 +130,42 @@ class Video {
      * Set the preview ghost effect
      * @param {number} ghost from 0 (visible) to 100 (invisible) - ghost effect
      */
-    setPreviewGhost (ghost) {
+    setPreviewGhost(ghost) {
         this._ghost = ghost;
         // Confirm that the default value has been changed to a valid id for the drawable
         if (this._drawable !== -1) {
             this.runtime.renderer.updateDrawableProperties(this._drawable, {
-                ghost: this._forceTransparentPreview ? 100 : ghost
+                ghost: this._forceTransparentPreview ? 100 : ghost,
             });
         }
     }
 
-    _disablePreview () {
+    _disablePreview() {
         if (this._skinId !== -1) {
-            this.runtime.renderer.updateBitmapSkin(this._skinId, new ImageData(...Video.DIMENSIONS), 1);
-            this.runtime.renderer.updateDrawableProperties(this._drawable, {visible: false});
+            this.runtime.renderer.updateBitmapSkin(
+                this._skinId,
+                new ImageData(...Video.DIMENSIONS),
+                1
+            );
+            this.runtime.renderer.updateDrawableProperties(this._drawable, {
+                visible: false,
+            });
         }
         this._renderPreviewFrame = null;
     }
 
-    _setupPreview () {
-        const {renderer} = this.runtime;
+    _setupPreview() {
+        const { renderer } = this.runtime;
         if (!renderer) return;
 
         if (this._skinId === -1 && this._drawable === -1) {
-            this._skinId = renderer.createBitmapSkin(new ImageData(...Video.DIMENSIONS), 1);
+            this._skinId = renderer.createBitmapSkin(
+                new ImageData(...Video.DIMENSIONS),
+                1
+            );
             this._drawable = renderer.createDrawable(StageLayering.VIDEO_LAYER);
             renderer.updateDrawableProperties(this._drawable, {
-                skinId: this._skinId
+                skinId: this._skinId,
             });
         }
 
@@ -158,7 +173,7 @@ class Video {
         if (!this._renderPreviewFrame) {
             renderer.updateDrawableProperties(this._drawable, {
                 ghost: this._forceTransparentPreview ? 100 : this._ghost,
-                visible: true
+                visible: true,
             });
 
             this._renderPreviewFrame = () => {
@@ -167,15 +182,22 @@ class Video {
                     return;
                 }
 
-                this._renderPreviewTimeout = setTimeout(this._renderPreviewFrame, this.runtime.currentStepTime);
+                this._renderPreviewTimeout = setTimeout(
+                    this._renderPreviewFrame,
+                    this.runtime.currentStepTime
+                );
 
                 const imageData = this.getFrame({
                     format: Video.FORMAT_IMAGE_DATA,
-                    cacheTimeout: this.runtime.currentStepTime
+                    cacheTimeout: this.runtime.currentStepTime,
                 });
 
                 if (!imageData) {
-                    renderer.updateBitmapSkin(this._skinId, new ImageData(...Video.DIMENSIONS), 1);
+                    renderer.updateBitmapSkin(
+                        this._skinId,
+                        new ImageData(...Video.DIMENSIONS),
+                        1
+                    );
                     return;
                 }
 
@@ -187,7 +209,7 @@ class Video {
         }
     }
 
-    get videoReady () {
+    get videoReady() {
         if (this.provider) return this.provider.videoReady;
         return false;
     }
@@ -199,7 +221,7 @@ class Video {
      * @param {object} - data passed to this IO device.
      * @property {boolean} forceTransparentPreview - whether the preview should be forced transparent.
      */
-    postData ({forceTransparentPreview}) {
+    postData({ forceTransparentPreview }) {
         this._forceTransparentPreview = forceTransparentPreview;
         // Setting the ghost to the current value will pick up the forceTransparentPreview
         // flag and override the current ghost. The complexity is to prevent blocks
@@ -207,6 +229,5 @@ class Video {
         this.setPreviewGhost(this._ghost);
     }
 }
-
 
 module.exports = Video;

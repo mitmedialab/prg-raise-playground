@@ -1,5 +1,5 @@
-const StringUtil = require('../util/string-util');
-const log = require('../util/log');
+const StringUtil = require("../util/string-util");
+const log = require("../util/log");
 
 /**
  * Initialize a sound from an asset asynchronously.
@@ -14,28 +14,29 @@ const log = require('../util/log');
 const loadSoundFromAsset = function (sound, soundAsset, runtime, soundBank) {
     sound.assetId = soundAsset.assetId;
     if (!runtime.audioEngine) {
-        log.error('No audio engine present; cannot load sound asset: ', sound.md5);
+        log.error(
+            "No audio engine present; cannot load sound asset: ",
+            sound.md5
+        );
         return Promise.resolve(sound);
     }
-    return runtime.audioEngine.decodeSoundPlayer(Object.assign(
-        {},
-        sound,
-        {data: soundAsset.data}
-    )).then(soundPlayer => {
-        sound.soundId = soundPlayer.id;
-        // Set the sound sample rate and sample count based on the
-        // the audio buffer from the audio engine since the sound
-        // gets resampled by the audio engine
-        const soundBuffer = soundPlayer.buffer;
-        sound.rate = soundBuffer.sampleRate;
-        sound.sampleCount = soundBuffer.length;
+    return runtime.audioEngine
+        .decodeSoundPlayer(Object.assign({}, sound, { data: soundAsset.data }))
+        .then((soundPlayer) => {
+            sound.soundId = soundPlayer.id;
+            // Set the sound sample rate and sample count based on the
+            // the audio buffer from the audio engine since the sound
+            // gets resampled by the audio engine
+            const soundBuffer = soundPlayer.buffer;
+            sound.rate = soundBuffer.sampleRate;
+            sound.sampleCount = soundBuffer.length;
 
-        if (soundBank !== null) {
-            soundBank.addSoundPlayer(soundPlayer);
-        }
+            if (soundBank !== null) {
+                soundBank.addSoundPlayer(soundPlayer);
+            }
 
-        return sound;
-    });
+            return sound;
+        });
 };
 
 /**
@@ -49,17 +50,20 @@ const loadSoundFromAsset = function (sound, soundAsset, runtime, soundBank) {
  */
 const loadSound = function (sound, runtime, soundBank) {
     if (!runtime.storage) {
-        log.error('No storage module present; cannot load sound asset: ', sound.md5);
+        log.error(
+            "No storage module present; cannot load sound asset: ",
+            sound.md5
+        );
         return Promise.resolve(sound);
     }
-    const idParts = StringUtil.splitFirst(sound.md5, '.');
+    const idParts = StringUtil.splitFirst(sound.md5, ".");
     const md5 = idParts[0];
     const ext = idParts[1].toLowerCase();
     sound.dataFormat = ext;
     return (
         (sound.asset && Promise.resolve(sound.asset)) ||
         runtime.storage.load(runtime.storage.AssetType.Sound, md5, ext)
-    ).then(soundAsset => {
+    ).then((soundAsset) => {
         sound.asset = soundAsset;
         return loadSoundFromAsset(sound, soundAsset, runtime, soundBank);
     });
@@ -67,5 +71,5 @@ const loadSound = function (sound, runtime, soundBank) {
 
 module.exports = {
     loadSound,
-    loadSoundFromAsset
+    loadSoundFromAsset,
 };

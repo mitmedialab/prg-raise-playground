@@ -1,5 +1,5 @@
-const Variable = require('../engine/variable');
-const log = require('../util/log');
+const Variable = require("../engine/variable");
+const log = require("../util/log");
 
 class Cloud {
     /**
@@ -39,7 +39,7 @@ class Cloud {
      * with cloud variables in the current project.
      * @param {Runtime} runtime The runtime context for this cloud io device.
      */
-    constructor (runtime) {
+    constructor(runtime) {
         /**
          * Reference to the cloud data provider, responsible for mananging
          * the web socket connection to the cloud data server.
@@ -65,7 +65,7 @@ class Cloud {
      * Set a reference to the cloud data provider.
      * @param {CloudProvider} provider The cloud data provider
      */
-    setProvider (provider) {
+    setProvider(provider) {
         this.provider = provider;
     }
 
@@ -74,7 +74,7 @@ class Cloud {
      * cloud variables in the project.
      * @param {Target} stage The stage target
      */
-    setStage (stage) {
+    setStage(stage) {
         this.stage = stage;
     }
 
@@ -82,13 +82,13 @@ class Cloud {
      * Handle incoming data to this io device.
      * @param {CloudIOData} data The {@link CloudIOData} object to process
      */
-    postData (data) {
+    postData(data) {
         if (data.varUpdate) {
             this.updateCloudVariable(data.varUpdate);
         }
     }
 
-    requestCreateVariable (variable) {
+    requestCreateVariable(variable) {
         if (this.runtime.canAddCloudVariable()) {
             if (this.provider) {
                 this.provider.createVariable(variable.name, variable.value);
@@ -105,7 +105,7 @@ class Cloud {
      * @param {string} name The name of the variable to update
      * @param {string | number} value The value to update the variable with
      */
-    requestUpdateVariable (name, value) {
+    requestUpdateVariable(name, value) {
         if (this.provider) {
             this.provider.updateVariable(name, value);
         }
@@ -117,7 +117,7 @@ class Cloud {
      * @param {string} oldName The name of the variable to rename
      * @param {string | number} newName The new name for the variable
      */
-    requestRenameVariable (oldName, newName) {
+    requestRenameVariable(oldName, newName) {
         if (this.provider) {
             this.provider.renameVariable(oldName, newName);
         }
@@ -128,7 +128,7 @@ class Cloud {
      * Does nothing if this io device does not have a provider set.
      * @param {string} name The name of the variable to delete
      */
-    requestDeleteVariable (name) {
+    requestDeleteVariable(name) {
         if (this.provider) {
             this.provider.deleteVariable(name);
         }
@@ -140,12 +140,17 @@ class Cloud {
      * @param {VarData} varUpdate A {@link VarData} object describing
      * a cloud variable update received from the cloud data provider.
      */
-    updateCloudVariable (varUpdate) {
+    updateCloudVariable(varUpdate) {
         const varName = varUpdate.name;
 
-        const variable = this.stage.lookupVariableByNameAndType(varName, Variable.SCALAR_TYPE);
+        const variable = this.stage.lookupVariableByNameAndType(
+            varName,
+            Variable.SCALAR_TYPE
+        );
         if (!variable || !variable.isCloud) {
-            log.warn(`Received an update for a cloud variable that does not exist: ${varName}`);
+            log.warn(
+                `Received an update for a cloud variable that does not exist: ${varName}`
+            );
             return;
         }
 
@@ -157,7 +162,7 @@ class Cloud {
      * clear this io device of references to the cloud data provider and the
      * stage.
      */
-    clear () {
+    clear() {
         if (!this.provider) return;
 
         this.provider.requestCloseConnection();

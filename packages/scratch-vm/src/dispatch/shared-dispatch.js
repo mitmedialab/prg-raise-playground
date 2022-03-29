@@ -1,4 +1,4 @@
-const log = require('../util/log');
+const log = require("../util/log");
 
 /**
  * @typedef {object} DispatchCallMessage - a message to the dispatch system representing a service method call
@@ -25,7 +25,7 @@ const log = require('../util/log');
  * {@link CentralDispatch} and {@link WorkerDispatch}.
  */
 class SharedDispatch {
-    constructor () {
+    constructor() {
         /**
          * List of callback registrations for promises waiting for a response from a call to a service on another
          * worker. A callback registration is an array of [resolve,reject] Promise functions.
@@ -55,7 +55,7 @@ class SharedDispatch {
      * @param {*} [args] - the arguments to be copied to the method, if any.
      * @returns {Promise} - a promise for the return value of the service method.
      */
-    call (service, method, ...args) {
+    call(service, method, ...args) {
         return this.transferCall(service, method, null, ...args);
     }
 
@@ -74,12 +74,18 @@ class SharedDispatch {
      * @param {*} [args] - the arguments to be copied to the method, if any.
      * @returns {Promise} - a promise for the return value of the service method.
      */
-    transferCall (service, method, transfer, ...args) {
+    transferCall(service, method, transfer, ...args) {
         try {
-            const {provider, isRemote} = this._getServiceProvider(service);
+            const { provider, isRemote } = this._getServiceProvider(service);
             if (provider) {
                 if (isRemote) {
-                    return this._remoteTransferCall(provider, service, method, transfer, ...args);
+                    return this._remoteTransferCall(
+                        provider,
+                        service,
+                        method,
+                        transfer,
+                        ...args
+                    );
                 }
 
                 const result = provider[method].apply(provider, args);
@@ -97,7 +103,7 @@ class SharedDispatch {
      * @returns {boolean} - true if the service is remote (calls must cross a Worker boundary), false otherwise.
      * @private
      */
-    _isRemoteService (service) {
+    _isRemoteService(service) {
         return this._getServiceProvider(service).isRemote;
     }
 
@@ -109,8 +115,14 @@ class SharedDispatch {
      * @param {*} [args] - the arguments to be copied to the method, if any.
      * @returns {Promise} - a promise for the return value of the service method.
      */
-    _remoteCall (provider, service, method, ...args) {
-        return this._remoteTransferCall(provider, service, method, null, ...args);
+    _remoteCall(provider, service, method, ...args) {
+        return this._remoteTransferCall(
+            provider,
+            service,
+            method,
+            null,
+            ...args
+        );
     }
 
     /**
@@ -122,19 +134,25 @@ class SharedDispatch {
      * @param {*} [args] - the arguments to be copied to the method, if any.
      * @returns {Promise} - a promise for the return value of the service method.
      */
-    _remoteTransferCall (provider, service, method, transfer, ...args) {
+    _remoteTransferCall(provider, service, method, transfer, ...args) {
         return new Promise((resolve, reject) => {
             const responseId = this._storeCallbacks(resolve, reject);
 
             /** @TODO: remove this hack! this is just here so we don't try to send `util` to a worker */
-            if ((args.length > 0) && (typeof args[args.length - 1].yield === 'function')) {
+            if (
+                args.length > 0 &&
+                typeof args[args.length - 1].yield === "function"
+            ) {
                 args.pop();
             }
 
             if (transfer) {
-                provider.postMessage({service, method, responseId, args}, transfer);
+                provider.postMessage(
+                    { service, method, responseId, args },
+                    transfer
+                );
             } else {
-                provider.postMessage({service, method, responseId, args});
+                provider.postMessage({ service, method, responseId, args });
             }
         });
     }
@@ -146,7 +164,7 @@ class SharedDispatch {
      * @returns {*} - a unique response ID for this set of callbacks. See {@link _deliverResponse}.
      * @protected
      */
-    _storeCallbacks (resolve, reject) {
+    _storeCallbacks(resolve, reject) {
         const responseId = this.nextResponseId++;
         this.callbacks[responseId] = [resolve, reject];
         return responseId;
@@ -158,7 +176,7 @@ class SharedDispatch {
      * @param {DispatchResponseMessage} message - the message containing the response value(s).
      * @protected
      */
-    _deliverResponse (responseId, message) {
+    _deliverResponse(responseId, message) {
         try {
             const [resolve, reject] = this.callbacks[responseId];
             delete this.callbacks[responseId];
@@ -178,29 +196,49 @@ class SharedDispatch {
      * @param {MessageEvent} event - the message event to be handled.
      * @protected
      */
-    _onMessage (worker, event) {
+    _onMessage(worker, event) {
         /** @type {DispatchMessage} */
         const message = event.data;
         message.args = message.args || [];
         let promise;
         if (message.service) {
-            if (message.service === 'dispatch') {
+            if (message.service === "dispatch") {
                 promise = this._onDispatchMessage(worker, message);
             } else {
-                promise = this.call(message.service, message.method, ...message.args);
+                promise = this.call(
+                    message.service,
+                    message.method,
+                    ...message.args
+                );
             }
-        } else if (typeof message.responseId === 'undefined') {
-            log.error(`Dispatch caught malformed message from a worker: ${JSON.stringify(event)}`);
+        } else if (typeof message.responseId === "undefined") {
+            log.error(
+                `Dispatch caught malformed message from a worker: ${JSON.stringify(
+                    event
+                )}`
+            );
         } else {
             this._deliverResponse(message.responseId, message);
         }
         if (promise) {
-            if (typeof message.responseId === 'undefined') {
-                log.error(`Dispatch message missing required response ID: ${JSON.stringify(event)}`);
+            if (typeof message.responseId === "undefined") {
+                log.error(
+                    `Dispatch message missing required response ID: ${JSON.stringify(
+                        event
+                    )}`
+                );
             } else {
                 promise.then(
-                    result => worker.postMessage({responseId: message.responseId, result}),
-                    error => worker.postMessage({responseId: message.responseId, error})
+                    (result) =>
+                        worker.postMessage({
+                            responseId: message.responseId,
+                            result,
+                        }),
+                    (error) =>
+                        worker.postMessage({
+                            responseId: message.responseId,
+                            error,
+                        })
                 );
             }
         }
@@ -213,8 +251,10 @@ class SharedDispatch {
      * @returns {{provider:(object|Worker), isRemote:boolean}} - the means to contact the service, if found
      * @protected
      */
-    _getServiceProvider (service) {
-        throw new Error(`Could not get provider for ${service}: _getServiceProvider not implemented`);
+    _getServiceProvider(service) {
+        throw new Error(
+            `Could not get provider for ${service}: _getServiceProvider not implemented`
+        );
     }
 
     /**
@@ -225,8 +265,10 @@ class SharedDispatch {
      * @returns {Promise|undefined} - a promise for the results of this operation, if appropriate
      * @private
      */
-    _onDispatchMessage (worker, message) {
-        throw new Error(`Unimplemented dispatch message handler cannot handle ${message.method} method`);
+    _onDispatchMessage(worker, message) {
+        throw new Error(
+            `Unimplemented dispatch message handler cannot handle ${message.method} method`
+        );
     }
 }
 

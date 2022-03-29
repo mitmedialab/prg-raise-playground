@@ -1,11 +1,11 @@
-const uid = require('./uid');
+const uid = require("./uid");
 
 /**
  * Mutate the given blocks to have new IDs and update all internal ID references.
  * Does not return anything to make it clear that the blocks are updated in-place.
  * @param {array} blocks - blocks to be mutated.
  */
-module.exports = blocks => {
+module.exports = (blocks) => {
     const oldToNew = {};
 
     // First update all top-level IDs and create old-to-new mapping

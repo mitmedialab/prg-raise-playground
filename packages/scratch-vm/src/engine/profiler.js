@@ -53,8 +53,7 @@ const STOP_SIZE = 2;
  * Stored reference to Performance instance provided by the Browser.
  * @const {Performance}
  */
-const performance = typeof window === 'object' && window.performance;
-
+const performance = typeof window === "object" && window.performance;
 
 /**
  * Callback handle called by Profiler for each frame it decodes from its
@@ -70,7 +69,7 @@ class ProfilerFrame {
     /**
      * @param {number} depth Depth of the frame in the recorded stack.
      */
-    constructor (depth) {
+    constructor(depth) {
         /**
          * The numeric id of a record symbol like Runtime._step or
          * blockFunction.
@@ -122,7 +121,7 @@ class Profiler {
      * frame information. Any information that is further stored by the handler
      * should make copies or reduce the information.
      */
-    constructor (onFrame = function () {}) {
+    constructor(onFrame = function () {}) {
         /**
          * A series of START and STOP values followed by arguments. After
          * recording is complete the full set of records is reported back by
@@ -186,14 +185,14 @@ class Profiler {
      * Runtime._step.
      * @param {?*} arg An arbitrary argument value to store with the frame.
      */
-    start (id, arg) {
+    start(id, arg) {
         this.records.push(START, id, arg, performance.now());
     }
 
     /**
      * Stop the current frame.
      */
-    stop () {
+    stop() {
         this.records.push(STOP, performance.now());
     }
 
@@ -201,7 +200,7 @@ class Profiler {
      * Increment the number of times this symbol is called.
      * @param {number} id The id returned by idByName for a name symbol.
      */
-    increment (id) {
+    increment(id) {
         if (!this.increments[id]) {
             this.increments[id] = new ProfilerFrame(-1);
             this.increments[id].id = id;
@@ -218,7 +217,7 @@ class Profiler {
      * @return {{count: number}} A ProfilerFrame-like whose count should be
      *   incremented for each call.
      */
-    frame (id, arg) {
+    frame(id, arg) {
         for (let i = 0; i < this.counters.length; i++) {
             if (this.counters[i].id === id && this.counters[i].arg === arg) {
                 return this.counters[i];
@@ -235,7 +234,7 @@ class Profiler {
     /**
      * Decode records and report all frames to `this.onFrame`.
      */
-    reportFrames () {
+    reportFrames() {
         const stack = this._stack;
         let depth = 1;
 
@@ -247,7 +246,7 @@ class Profiler {
         // passed to the current onFrame callback. This way Frames are "pushed"
         // for each START event and "popped" for each STOP and handed to an
         // outside handle to any desired reduction of the collected data.
-        for (let i = 0; i < this.records.length;) {
+        for (let i = 0; i < this.records.length; ) {
             if (this.records[i] === START) {
                 if (depth >= stack.length) {
                     stack.push(new ProfilerFrame(depth));
@@ -296,7 +295,7 @@ class Profiler {
                 i += STOP_SIZE;
             } else {
                 this.records.length = 0;
-                throw new Error('Unable to decode Profiler records.');
+                throw new Error("Unable to decode Profiler records.");
             }
         }
 
@@ -322,7 +321,7 @@ class Profiler {
      * @param {string} name The name to return an id for.
      * @return {number} The id for the passed name.
      */
-    idByName (name) {
+    idByName(name) {
         return Profiler.idByName(name);
     }
 
@@ -331,7 +330,7 @@ class Profiler {
      * @param {number} id The id to search for.
      * @return {string} The name for the given id.
      */
-    nameById (id) {
+    nameById(id) {
         return Profiler.nameById(id);
     }
 
@@ -341,8 +340,8 @@ class Profiler {
      * @param {string} name The name to return an id for.
      * @return {number} The id for the passed name.
      */
-    static idByName (name) {
-        if (typeof profilerNames[name] !== 'number') {
+    static idByName(name) {
+        if (typeof profilerNames[name] !== "number") {
             profilerNames[name] = nextId++;
         }
         return profilerNames[name];
@@ -354,7 +353,7 @@ class Profiler {
      * @param {number} id The id to search for.
      * @return {string} The name for the given id.
      */
-    static nameById (id) {
+    static nameById(id) {
         for (const name in profilerNames) {
             if (profilerNames[name] === id) {
                 return name;
@@ -367,13 +366,13 @@ class Profiler {
      * Profiler is only available on platforms with the Performance API.
      * @return {boolean} Can the Profiler run in this browser?
      */
-    static available () {
+    static available() {
         return (
-            typeof window === 'object' &&
-            typeof window.performance !== 'undefined');
+            typeof window === "object" &&
+            typeof window.performance !== "undefined"
+        );
     }
 }
-
 
 /**
  * A reference to the START record id constant.
