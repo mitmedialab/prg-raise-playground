@@ -1331,7 +1331,7 @@ class DoodlebotBlocks {
             rightSteps = - rightSteps;
 
         // send message
-        await this.sendCommandToRobot("(m,0,0,"  + leftSteps + "," + rightSteps + ")", command_pause);
+        await this.sendCommandToRobot("(m,100,100,"  + leftSteps + "," + rightSteps + ")", command_pause);
         
         // wait for the motor command to finish executing
         return new Promise((resolve) => {
