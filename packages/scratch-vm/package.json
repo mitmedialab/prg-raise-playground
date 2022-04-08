@@ -11,23 +11,6 @@
   },
   "main": "./dist/node/scratch-vm.js",
   "browser": "./src/index.js",
-  "scripts": {
-    "build": "npm run docs && webpack --progress --colors --bail",
-    "coverage": "tap ./test/{unit,integration}/*.js --coverage --coverage-report=lcov",
-    "deploy": "touch playground/.nojekyll && gh-pages -t -d playground -m \"Build for $(git log --pretty=format:%H -n1)\"",
-    "docs": "jsdoc -c .jsdoc.json",
-    "i18n:src": "mkdirp translations/core && format-message extract --out-file translations/core/en.json src/extensions/**/index.js",
-    "i18n:push": "tx-push-src scratch-editor extensions translations/core/en.json",
-    "lint": "eslint . && format-message lint src/**/*.js",
-    "prepublish": "in-publish && npm run build || not-in-publish",
-    "start": "webpack-dev-server",
-    "tap": "tap ./test/{unit,integration}/*.js",
-    "tap:unit": "tap ./test/unit/*.js",
-    "tap:integration": "tap ./test/integration/*.js",
-    "test": "npm run lint && npm run docs && npm run tap",
-    "watch": "webpack --progress --colors --watch",
-    "version": "json -f package.json -I -e \"this.repository.sha = '$(git log -n1 --pretty=format:%H)'\""
-  },
   "dependencies": {
     "@teachablemachine/image": "^0.8.4",
     "@tensorflow-models/knn-classifier": "^1.2.2",
