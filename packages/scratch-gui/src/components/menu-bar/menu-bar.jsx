@@ -153,8 +153,8 @@ MenuItemTooltip.propTypes = {
 
 const CLIENT_ID = '906634949042-5jbc7q594e69spg2i0bkt9a14iojvtsp.apps.googleusercontent.com';
 const DEVELOPER_KEY = 'AIzaSyDRoOjwaDXOxq4cda1nrCVLaVQvTCh5GYE';
-const DRIVE_SCOPE = ['https://www.googleapis.com/auth/drive.file',
-                     'https://www.googleapis.com/auth/drive.readonly'];
+const DRIVE_SCOPE = ['https://www.googleapis.com/auth/drive.file'];
+                    // 'https://www.googleapis.com/auth/drive.readonly'];
 
 class MenuBar extends React.Component {
     constructor (props) {
@@ -328,15 +328,62 @@ class MenuBar extends React.Component {
                 this.props.intl.formatMessage(sharedMessages.replaceProjectWarning)
             );
             if (readyToReplaceProject) {
-                this.props.vm.downloadProjectFromURLDirect(url);
-                
-                this.props.onReceivedProjectTitle(this.getProjectTitleFromFilename(url));
-                this.setState({
-                    fileId: null
-                });
+                if (url.includes("drive.google.com")) {
+                    this.handleLoadGDriveProject(url);
+                } else {
+                    // Link is not related to Google Drive
+                    this.props.onReceivedProjectTitle(this.getProjectTitleFromFilename(url));
+                    this.setState({
+                        fileId: null
+                    });
+                    this.props.vm.downloadProjectFromURLDirect(url);
+                }
             }
         }
         this.props.onRequestCloseFile();
+    }
+    handleLoadGDriveProject(url) {
+        // make sure user has logged into Google Drive
+        if (!this.state.authToken) {
+            this.doAuth(response => {
+                if (response.access_token) {
+                    this.handleDriveAuthenticate(response.access_token);
+                    this.handleLoadGDriveProject(url);
+                }
+            });
+            this.props.onRequestCloseFile();
+            return;
+        }
+
+        // get file id
+        const gDriveRegex = /\/d\/[A-Za-z0-9_-]+\//;                    
+        const found = url.match(gDriveRegex);
+        let fileId = "";
+        if (found.length > 0) 
+            fileId = found[0].substring(3, found[0].length-1);
+
+        // make a copy of the file for this user
+        window.gapi.client.drive.files.copy({
+            fileId: fileId
+        }).then((response) => {
+            if (response.status == 200) {
+                this.setState({
+                    fileId: response.result.id
+                });
+                
+                url = "https://www.googleapis.com/drive/v3/files/" + response.result.id + "/?alt=media;" + this.state.authToken;
+                this.props.onReceivedProjectTitle(this.getProjectTitleFromFilename(response.result.name));
+                
+                this.props.vm.downloadProjectFromURLDirect(url);
+            }
+        }).catch((error) => {
+            if (error.status == 404) {
+                alert("Error: Either the link is invalid or you do not have access to this file.");
+            } else {
+                console.log("Got response error:");
+                console.log(response);
+            }
+        });
     }
     handleClickDriveSave() {
         // make sure user has logged into Google Drive
@@ -414,14 +461,14 @@ class MenuBar extends React.Component {
                 
                 this.props.onReceivedProjectTitle(this.getProjectTitleFromFilename(data.docs[0].name));
                 
-                // if project does not have a parentId, it's a shared project and you cannot save
-                if (data.docs[0].parentId !== undefined) {
+                // if project does not have a parentId, it's a shared project and user cannot save to it
+                if (data.docs[0].parentId == undefined) {
                     this.setState({
-                        fileId: fileId
+                        fileId: null
                     });
                 } else {
                     this.setState({
-                        fileId: null
+                        fileId: fileId
                     });
                 }
             }
