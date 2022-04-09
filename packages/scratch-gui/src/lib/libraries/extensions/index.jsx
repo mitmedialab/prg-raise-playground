@@ -261,6 +261,46 @@ export default [
         featured: true,
         internetConnectionRequired: true
     },
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="faceapi"
+                    description="Name for the 'faceapi' extension"
+                    id="gui.extension.faceapi.name"
+                />
+        ),
+        extensionId: 'faceapi',
+        // iconURL: faceapiImage,
+        // insetIconURL: faceapiInsetImage,
+        description: (
+            <FormattedMessage
+                defaultMessage="faceapi."
+                description="Description for the 'faceapi' extension"
+                id="gui.extension.faceapi.description"
+            />
+        ),
+        featured: true
+    },
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="openCV"
+                    description="bunch of opencv functions hopefully"
+                    id="gui.extension.opencv.name"
+                />
+        ),
+        extensionId: 'opencv',
+        // iconURL: faceapiImage,
+        // insetIconURL: faceapiInsetImage,
+        description: (
+            <FormattedMessage
+                defaultMessage="openCV"
+                description="bunch of opencv functions hopefully"
+                id="gui.extension.opencv.description"
+            />
+        ),
+        featured: true
+    },
     /*{
         name: 'Makey Makey',
         extensionId: 'makeymakey',
