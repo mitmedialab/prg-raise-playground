@@ -1,3 +1,4 @@
+require("regenerator-runtime/runtime"); // required to use async/await
 require('babel-polyfill');
 const Runtime = require('../../engine/runtime');
 
@@ -623,6 +624,7 @@ class opencv {
                         }
                     }
                 },
+                "---",
                 {
                     opcode: 'circleDetection',
                     blockType: BlockType.COMMAND,
@@ -666,6 +668,7 @@ class opencv {
                         }
                     }
                 },
+                "---",
                 {
                     opcode: 'shapeDetection',
                     blockType: BlockType.COMMAND,
@@ -705,6 +708,7 @@ class opencv {
                         }
                     }
                 },
+                "---",
                 {
                     opcode: 'colorThreshold',
                     blockType: BlockType.COMMAND,
@@ -760,6 +764,7 @@ class opencv {
                         }
                     }
                 },
+                "---",
                 {
                     opcode: 'edgeDetection',
                     blockType: BlockType.COMMAND,
@@ -822,7 +827,7 @@ class opencv {
           };
       }
 
-      circleDetection(args) {
+      async circleDetection(args) {
         // if (this.circleFlag === false) {
         //     return
         // }
@@ -952,7 +957,7 @@ class opencv {
         }
     }
 
-    shapeDetection(args) {
+    async shapeDetection(args) {
         return new Promise((resolve, reject) => {
             let min_a = Math.max(0, parseFloat(args.MIN_AREA));
             let thres = Math.min(Math.max(0, parseFloat(args.THRESHOLD)));
@@ -1084,7 +1089,7 @@ class opencv {
         }
     }
 
-    colorThreshold(args) {
+    async colorThreshold(args) {
         return new Promise((resolve, reject) => {
             let hue_min = Math.max(0, parseFloat(args.HUE_MIN));
             let hue_max = Math.min(179, parseFloat(args.HUE_MAX));
@@ -1227,7 +1232,7 @@ class opencv {
         }
     }
 
-    edgeDetection(args) {
+    async edgeDetection(args) {
         return new Promise((resolve, reject) => {
             const thres1 = Math.max(1, Math.min(500, args.THRES1))
             const thres2 = Math.max(1, Math.min(500, args.THRES2))
