@@ -3,6 +3,9 @@ import {FormattedMessage} from 'react-intl';
 
 // Tutorial thumbnails: Avoid using any text that would need to be
 // translated in thumbnails.
+// TextClassifier
+import textClassifierIntro from './thumbnails/text-classifier.png';
+
 // Intro
 import libraryIntro from './thumbnails/getting-started.jpg';
 
@@ -63,6 +66,79 @@ import moveArrowKeysThumb from './thumbnails/move-arrow-keys.jpg';
 import spinThumb from './thumbnails/spin.jpg';
 
 export default {
+
+    'text-classifier-intro': {
+        name: (
+            <FormattedMessage
+                defaultMessage="Make a Text Classifier"
+                description="Name for the 'Text Classifier' how-to"
+                id="gui.howtos.text-classifier-intro.name"
+            />
+        ),
+        tags: ['classification'],
+        img: textClassifierIntro,
+        steps: [{
+            title: (
+                <FormattedMessage
+                    defaultMessage="How to create a text classifier"
+                    description="Intro for 'Text classifier' tutorial"
+                    id="gui.howtos.text-classifer.intro"
+                />
+            ),
+            image: 'textClassifierIntro'
+        },{
+            title: (
+                <FormattedMessage
+                    defaultMessage="Use text matches blocks in conditionals"
+                    description="Step for text matches blocks"
+                    id="gui.howtos.text-classifer.matches"
+                />
+            ),
+            image: 'textClassifierMatches'
+        }, {
+            title: (
+                <FormattedMessage
+                    defaultMessage="Use confidence blocks in embedded conditionals"
+                    description="Step for using confidence blocks"
+                    id="gui.howtos.text-classifer.confidence"
+                />
+            ),
+            image: 'textClassifierConfidence'
+        }, {
+            title: (
+                <FormattedMessage
+                    defaultMessage="Open the model editor"
+                    description="Step for opening edit model modal"
+                    id="gui.howtos.text-classifer.edit-model"
+                />
+            ),
+            image: 'textClassifierEditModel'
+        }, {
+            title: (
+                <FormattedMessage
+                    defaultMessage="Add class labels and examples to your model"
+                    description="Step for adding labels and examples"
+                    id="gui.howtos.text-classifer.add"
+                />
+            ),
+            image: 'textClassifierAdd'
+        }, {
+            title: (
+                <FormattedMessage
+                    defaultMessage="Add multiple examples to make a strong classifier"
+                    description="Step for completing the model"
+                    id="gui.howtos.text-classiferexamples"
+                />
+            ),
+            image: 'textClassifierExamples'
+        }, {
+            deckIds: [
+                'add-sprite'
+            ]
+        }
+        ],
+        urlId: 'textClassifier'
+    },
 
     'intro-move-sayhello': {
         name: (

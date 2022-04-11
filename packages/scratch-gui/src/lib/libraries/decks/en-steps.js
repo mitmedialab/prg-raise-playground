@@ -1,3 +1,11 @@
+// Text Classifier
+import textClassifierIntro from './steps/text-tutorial-1.svg';
+import textClassifierMatches from './steps/text-tutorial-2.png';
+import textClassifierConfidence from './steps/text-tutorial-3.png';
+import textClassifierEditModel from './steps/text-tutorial-4.png';
+import textClassifierAdd from './steps/text-tutorial-5.png';
+import textClassifierExamples from './steps/text-tutorial-6.png';
+
 // Intro
 import introMove from './steps/intro-move.en.gif';
 import introSayHello from './steps/intro-say-hello.en.gif';
@@ -199,6 +207,14 @@ import talesDanceMoves from './steps/talking-12-dance-moves.en.gif';
 import talesAskAnswer from './steps/talking-13-ask-and-answer.en.gif';
 
 const enImages = {
+    // Text Classifier
+    textClassifierIntro: textClassifierIntro,
+    textClassifierMatches: textClassifierMatches,
+    textClassifierConfidence: textClassifierConfidence,
+    textClassifierEditModel: textClassifierEditModel,
+    textClassifierAdd: textClassifierAdd,
+    textClassifierExamples: textClassifierExamples,
+
     // Intro
     introMove: introMove,
     introSayHello: introSayHello,
