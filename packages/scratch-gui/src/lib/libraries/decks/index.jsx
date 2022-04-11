@@ -6,6 +6,9 @@ import {FormattedMessage} from 'react-intl';
 // TextClassifier
 import textClassifierIntro from './thumbnails/text-classifier.png';
 
+// ProgressBar
+import progressTabIntro from './thumbnails/progress-tab.png';
+
 // Intro
 import libraryIntro from './thumbnails/getting-started.jpg';
 
@@ -133,11 +136,80 @@ export default {
             image: 'textClassifierExamples'
         }, {
             deckIds: [
-                'add-sprite'
+                'ai-progress-tab'
             ]
         }
         ],
         urlId: 'textClassifier'
+    },
+
+    'ai-progress-tab': {
+        name: (
+            <FormattedMessage
+                defaultMessage="Tips for Making a Text Classifier"
+                description="Name for the 'Progress Tab' how-to"
+                id="gui.howtos.progress-tab-intro.name"
+            />
+        ),
+        tags: ['classification', 'progress'],
+        img: progressTabIntro,
+        steps: [{
+            title: (
+                <FormattedMessage
+                    defaultMessage="Check your work using the progress tab"
+                    description="Intro for 'Progress Tab' tutorial"
+                    id="gui.howtos.progress-tab.intro"
+                />
+            ),
+            image: 'progressTabIntro'
+        },{
+            title: (
+                <FormattedMessage
+                    defaultMessage="Make at least two classes"
+                    description="First piece of advice for text classifiers"
+                    id="gui.howtos.progress-tab.classes"
+                />
+            ),
+            image: 'progressTabClasses'
+        }, {
+            title: (
+                <FormattedMessage
+                    defaultMessage="Have at least 5 examples in each class"
+                    description="Second piece of advice for text classifiers"
+                    id="gui.howtos.progress-tab.examples"
+                />
+            ),
+            image: 'progressTabExamples'
+        }, {
+            title: (
+                <FormattedMessage
+                    defaultMessage="Make sure that the number of examples for each class is balanced"
+                    description="Third piece of advice for text classifiers"
+                    id="gui.howtos.progress-tab.balance"
+                />
+            ),
+            image: 'progressTabBalance'
+        }, {
+            title: (
+                <FormattedMessage
+                    defaultMessage="Use at least four text classification blocks"
+                    description="Fourth piece of advice for text classifiers"
+                    id="gui.howtos.progress-tab.blocks"
+                />
+            ),
+            image: 'progressTabBlocks'
+        }, {
+            title: (
+                <FormattedMessage
+                    defaultMessage="Use embedded conditionals in your code"
+                    description="Fifth piece of advice for text classifiers"
+                    id="gui.howtos.progress-tab.embedded"
+                />
+            ),
+            image: 'progressTabEmbedded'
+        }
+        ],
+        urlId: 'progressTab'
     },
 
     'intro-move-sayhello': {

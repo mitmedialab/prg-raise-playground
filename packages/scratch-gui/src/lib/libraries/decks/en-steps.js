@@ -6,6 +6,13 @@ import textClassifierEditModel from './steps/text-tutorial-4.png';
 import textClassifierAdd from './steps/text-tutorial-5.png';
 import textClassifierExamples from './steps/text-tutorial-6.png';
 
+import progressTabIntro from './steps/progress-tab-1.png';
+import progressTabClasses from './steps/progress-tab-2.png';
+import progressTabExamples from './steps/progress-tab-3.png';
+import progressTabBalance from './steps/progress-tab-4.png';
+import progressTabBlocks from './steps/progress-tab-5.png'; 
+import progressTabEmbedded from './steps/progress-tab-6.png';
+
 // Intro
 import introMove from './steps/intro-move.en.gif';
 import introSayHello from './steps/intro-say-hello.en.gif';
@@ -214,6 +221,14 @@ const enImages = {
     textClassifierEditModel: textClassifierEditModel,
     textClassifierAdd: textClassifierAdd,
     textClassifierExamples: textClassifierExamples,
+
+    // Progress Tab
+    progressTabIntro: progressTabIntro,
+    progressTabClasses: progressTabClasses,
+    progressTabExamples: progressTabExamples,
+    progressTabBalance: progressTabBalance,
+    progressTabBlocks: progressTabBlocks,
+    progressTabEmbedded: progressTabEmbedded,
 
     // Intro
     introMove: introMove,
