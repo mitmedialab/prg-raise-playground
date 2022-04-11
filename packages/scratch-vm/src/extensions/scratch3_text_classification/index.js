@@ -624,6 +624,7 @@ class Scratch3TextClassificationBlocks {
             }
         }
 
+        this.scratch_vm.emitProjectChanged();
     }
     
     /**
@@ -643,6 +644,7 @@ class Scratch3TextClassificationBlocks {
         this.scratch_vm.modelData.textData[newLabelName] = [];
         this.scratch_vm.modelData.classifierData[newLabelName] = [];
         this.scratch_vm.requestToolboxExtensionsUpdate();
+        this.scratch_vm.emitProjectChanged();
     }
     
 
@@ -669,6 +671,8 @@ class Scratch3TextClassificationBlocks {
         // reset label list with the new renamed label
         this.labelList.splice(this.labelList.indexOf(oldName), 1);
         this.labelList.push(newName);
+
+        this.scratch_vm.emitProjectChanged();
     }
 
     /**
@@ -701,6 +705,8 @@ class Scratch3TextClassificationBlocks {
             this.classifier.clearClass(label);
         }
 
+        this.scratch_vm.emitProjectChanged();
+
     }
 
     /**
@@ -717,6 +723,8 @@ class Scratch3TextClassificationBlocks {
 
         // clear saved embeddings
         this.exampleEmbeddings = {};
+
+        this.scratch_vm.emitProjectChanged();
     }
 
     /**
@@ -727,6 +735,7 @@ class Scratch3TextClassificationBlocks {
             this.clearAllWithLabel({LABEL: label});
         }
         
+        this.scratch_vm.emitProjectChanged();
     }
 
     /**
@@ -750,6 +759,8 @@ class Scratch3TextClassificationBlocks {
                 this.labelList.push('');
             }
         }
+
+        this.scratch_vm.emitProjectChanged();
     }
     
     

@@ -42,9 +42,30 @@ class Scratch3Jibo {
         this.asr_out="";
 
         // OPTIONAL alert enter rosip
-
-        // call ros connect
+        // connect to jibo via ros
         this.RosConnect({rosIP: "localhost"});
+
+        // prepare to comment on progress
+        this.runtime.on("PROJECT_CHANGED", this.updateProgress.bind(this));
+        this.progress = {
+            compliments: {
+                'At least five examples per text classifier class': false,
+                'Text classifier classes are well balanced': false,
+                'Using embedded conditionals': false,
+                'Using two text classification blocks': false,
+                'Two text classifier classes': false,
+                'Three or more text classifier classes': false,
+            },
+            improvements: {
+                'You have two text classifier classes so far. Try to see if you can add more.': false,
+                'Try adding some text classifier classes with the \'Edit Model\' button to increase your progress.': false,
+                'You need at least 5 examples per class to have an accurate classifier.': false,
+                'Try making the number of examples per class be the same.': false,
+                'Try adding a variety of text classification blocks to increase your progress.': false,
+                'Try embedding conditionals to make your code more complex.': false,
+                'It seems like you\'re not using the same type of answer and asking blocks.': false,
+            }
+          };
     }
 
     getInfo () {
@@ -245,6 +266,217 @@ class Scratch3Jibo {
         return this.connected;
     }
 
+    updateProgress() {
+        this.calculatePercentage();
+    }
+
+    calculatePercentage () {
+        if (!this.runtime || !this.runtime.modelData || this.runtime.targets <= 0) {
+            return ;
+        }
+        console.log("Num targets: ", this.runtime.targets);
+        let modelData = this.runtime.modelData.classifierData;
+        let blocks_used = this.runtime.targets[1].blocks._blocks;
+
+        this.numberOfClasses(modelData);
+        this.atLeastFive(modelData);
+        this.balancedClasses(modelData);
+        this.analyzeBlocks(blocks_used);
+
+        console.log(this.progress);
+        
+        return this.progress.percentage;
+    }
+
+    numberOfClasses (textModel) {
+        textModelClasses = Object.keys(textModel);
+
+        if (textModelClasses.length === 2) {
+            // Jibo comment
+            if (!this.progress.compliments['Two text classifier classes']) {
+                this.JiboTTS({TEXT: 'It\'s great that you have two text classifier classes. Try to keep adding more'});
+            }
+            // update compliments
+            this.progress.compliments['Two text classifier classes'] = true;
+            this.progress.compliments['Three or more text classifier classes'] = false;
+            // update improvements
+            this.progress.improvements['You have two text classifier classes so far. Try to see if you can add more.'] = true;
+            this.progress.improvements['Try adding some text classifier classes with the \'Edit Model\' button to increase your progress.'] = true;
+        } else if (textModelClasses.length > 2) {
+            // Jibo comment
+            if(!this.progress.compliments['Three or more text classifier classes']) {
+                this.JiboTTS({TEXT: 'Great job adding additional classes to your classifier'});
+            }
+            // update compliments
+            this.progress.compliments['Two text classifier classes'] = true;
+            this.progress.compliments['Three or more text classifier classes'] = true;
+            // update improvements
+            this.progress.improvements['You have two text classifier classes so far. Try to see if you can add more.'] = false;
+            this.progress.improvements['Try adding some text classifier classes with the \'Edit Model\' button to increase your progress.'] = true;
+        } else {
+            // Jibo comment
+
+            // update compliments
+            this.progress.compliments['Two text classifier classes'] = false;
+            this.progress.compliments['Three or more text classifier classes'] = false;
+            // update improvements
+            this.progress.improvements['You have two text classifier classes so far. Try to see if you can add more.'] = false;
+            this.progress.improvements['Try adding some text classifier classes with the \'Edit Model\' button to increase your progress.'] = true;
+        }
+    }
+
+    atLeastFive (textModel) {
+        let minimum = false;
+        for (const label in textModel) {
+            if (textModel[label].length < 5) {
+                minimum = true;
+            }
+        }
+
+        if (minimum === true) {
+            // Jibo comment
+            if (this.progress.compliments['At least five examples per text classifier class']) {
+                this.JiboTTS({TEXT: 'Don\'t forget to have at least five examples in each class'});
+            }
+            // update compliments
+            this.progress.compliments['At least five examples per text classifier class'] = false;
+            // update improvements
+            this.progress.improvements['You need at least 5 examples per class to have an accurate classifier.'] = true;
+        } else if (Object.keys(textModel).length > 0) {
+            // Jibo comment
+            if (!this.progress.compliments['At least five examples per text classifier class']) {
+                this.JiboTTS({TEXT: 'Nice! You added at least five examples to every class label'});
+            }
+            // update compliments
+            this.progress.compliments['At least five examples per text classifier class'] = true;
+            // update improvements
+            this.progress.improvements['You need at least 5 examples per class to have an accurate classifier.'] = false;
+        }
+    }
+
+    balancedClasses (keys) {
+        let classNumbers = [];
+        let minimum = false;
+        for (const label in keys) {
+            let count = 0;
+            for (const _ in keys[label]) {
+                count = count + 1;
+            }
+            if (keys[label].length < 5) {
+                minimum = true;
+            }
+            classNumbers.push(count);
+        }
+
+        classNumbers.sort();
+        if (classNumbers.length > 1) {
+            if (classNumbers[classNumbers.length - 1] - classNumbers[0] > 3) {
+                // Jibo comment
+                if (this.progress.compliments['Text classifier classes are well balanced']) {
+                    this.JiboTTS({TEXT: 'Don\'t forget to balance those classes again'});
+                }
+                // update compliments
+                this.progress.compliments['Text classifier classes are well balanced'] = false;
+                // update improvements
+                this.progress.improvements['Try making the number of examples per class be the same.'] = true;
+            } else if (minimum === false) {
+                // Jibo comment
+                if (!this.progress.compliments['Text classifier classes are well balanced']) {
+                    this.JiboTTS({TEXT: 'Look at that, your classes are all well balanced'});
+                }
+                // update compliments
+                this.progress.compliments['Text classifier classes are well balanced'] = true;
+                // update improvements
+                this.progress.improvements['Try making the number of examples per class be the same.'] = false;
+            }
+        }
+    }
+
+    analyzeBlocks (blocks) {
+        let count = 0;
+        const parents = [];
+        let sensing = 0;
+        let answer = 0;
+        let usedEmbeddedConditionals = false;
+
+        // go through all of the blocks
+        for (const block in blocks) {
+            if (blocks[block].opcode.includes('textClassification')) {
+                count = count + 1;
+            }
+            if (blocks[block].opcode.includes('control_if')) {
+                parents.push(blocks[block].id);
+            }
+
+            if (blocks[block].opcode.includes('sensing_askandwait')) {
+                sensing = sensing + 1;
+            }
+
+            if (blocks[block].opcode.includes('sensing_answer')) {
+                answer = answer + 1;
+            }
+        }
+
+        // check if sensing and answer matches
+        if (sensing !== 0 && answer === 0) {
+            // Jibo comment
+
+            // update compliments
+
+            // update improvements
+            this.progress.improvements['It seems like you\'re not using the same type of answer and asking blocks.'] = true;
+        } else {
+            // Jibo comment
+
+            // update compliments
+
+            // update improvements
+            this.progress.improvements['It seems like you\'re not using the same type of answer and asking blocks.'] = false;
+        }
+
+        // check if there is an embedded
+        for (const block in blocks) {
+            if (blocks[block].opcode.includes('control_if')) {
+                if (parents.includes(blocks[block].parent)) {
+                    usedEmbeddedConditionals = true;
+                }
+            }
+        }
+        // if not an embedded
+        if (!usedEmbeddedConditionals) {
+            // Jibo comment
+
+            // update compliments
+            this.progress.compliments['Using embedded conditionals'] = false;
+            // update improvements
+            this.progress.improvements['Try embedding conditionals to make your code more complex.'] = true;
+        } else {
+            // Jibo comment
+            if (!this.progress.compliments['Using embedded conditionals']) {
+                this.JiboTTS({TEXT: 'Good use of embedded conditionals'});
+            }
+            // update compliments
+            this.progress.compliments['Using embedded conditionals'] = true;
+            // update improvements
+            this.progress.improvements['Try embedding conditionals to make your code more complex.'] = false;
+        }
+        
+        // check how many text classification blocks there are
+        if (count >= 2) {
+            // Jibo comment
+            if (!this.progress.compliments['Using two text classification blocks']) {
+                this.JiboTTS({TEXT: 'Nice code. You used a lot of text classification blocks'});
+            }
+            // update compliments
+            this.progress.compliments['Using two text classification blocks'] = true;
+            // update improvements
+            this.progress.improvements['Try adding a variety of text classification blocks to increase your progress.'] = true;
+        } else {
+            this.progress.compliments['Using two text classification blocks'] = false;
+            this.progress.improvements['Try adding a variety of text classification blocks to increase your progress.'] = false;
+        }
+    }
+
     RosConnect (args) {
         const rosIP = Cast.toString(args.rosIP);
         this.rosbridgeIP = "ws://"+rosIP+":9090";
@@ -259,6 +491,8 @@ class Scratch3Jibo {
             // If connection is successful
             let connect_cb_factory = function(x) {return function(){
                 x.connected = true;
+                // send jibo welcome message
+                x.JiboTTS({TEXT: "Hello there. Welcome to A.I. Blocks. We're going to make a classifier that can tell the difference between positive and negative reviews."});
             };};
             let connect_cb = connect_cb_factory(this);
             this.ros.on('connection', function() {
@@ -293,14 +527,6 @@ class Scratch3Jibo {
         });
         this.JiboASR_reseive();
 
-        // make sure connection goes through
-        if (this.connected) {
-            this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
-            console.log(this.runtime.constructor.PERIPHERAL_CONNECTED);
-
-            // send jibo welcome message
-            this.JiboTTS({TEXT: "Hello there. Welcome to AI Blocks"});
-        }
         return this.connected;
     
     }
