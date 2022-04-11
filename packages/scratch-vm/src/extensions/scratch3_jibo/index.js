@@ -30,13 +30,21 @@ const ROSLIB = require('roslib');
 
 class Scratch3Jibo {
     constructor (runtime) {
-        this.ros = null;
         this.runtime = runtime;
+        this.runtime.registerPeripheralExtension(EXTENSION_ID, this);
+        this.runtime.connectPeripheral(EXTENSION_ID, 0);
+
+        this.ros = null;
         this.connected = false;
         this.failed = false;
         this.rosbridgeIP = "ws://localhost:9090";  // rosbridgeIP option includes port
         this.jbVolume="60";
         this.asr_out="";
+
+        // OPTIONAL alert enter rosip
+
+        // call ros connect
+        this.RosConnect({rosIP: "localhost"});
     }
 
     getInfo () {
@@ -50,7 +58,7 @@ class Scratch3Jibo {
             }),
             showStatusButton: true,
             blocks: [
-                {
+                /*{
                     opcode: "RosConnect",
                     blockType: BlockType.COMMAND,
                     text: "Connect to ROS IP [rosIP]",
@@ -61,7 +69,7 @@ class Scratch3Jibo {
                         }
                     }
                 },
-                "---",
+                "---",*/
                 {
                     opcode: 'JiboTTS',
                     blockType: BlockType.COMMAND,
@@ -251,7 +259,6 @@ class Scratch3Jibo {
             // If connection is successful
             let connect_cb_factory = function(x) {return function(){
                 x.connected = true;
-                x.runtime.emit(x.runtime.constructor.PERIPHERAL_CONNECTED);
             };};
             let connect_cb = connect_cb_factory(this);
             this.ros.on('connection', function() {
@@ -286,7 +293,15 @@ class Scratch3Jibo {
         });
         this.JiboASR_reseive();
 
-        return true;
+        // make sure connection goes through
+        if (this.connected) {
+            this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
+            console.log(this.runtime.constructor.PERIPHERAL_CONNECTED);
+
+            // send jibo welcome message
+            this.JiboTTS({TEXT: "Hello there. Welcome to AI Blocks"});
+        }
+        return this.connected;
     
     }
 
