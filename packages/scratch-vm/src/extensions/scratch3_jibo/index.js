@@ -465,7 +465,7 @@ class Scratch3Jibo {
         if (count >= 2) {
             // Jibo comment
             if (!this.progress.compliments['Using two text classification blocks']) {
-                this.JiboTTS({TEXT: 'Nice code. You used a lot of text classification blocks'});
+                this.JiboTTS({TEXT: 'Nice coding. You used a lot of text classification blocks'});
             }
             // update compliments
             this.progress.compliments['Using two text classification blocks'] = true;
