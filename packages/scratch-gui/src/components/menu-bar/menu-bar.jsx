@@ -491,16 +491,16 @@ class MenuBar extends React.Component {
                             </MenuBarMenu>
                         </div>
                     </div>
-                    <Divider className={classNames(styles.divider)} />
-                    <img
-                                    className={styles.helpIcon}
-                                    src={helpIcon}
-                                />
+                    {/*<Divider className={classNames(styles.divider)} />
                     <a
                         className={classNames(styles.menuBarItem, styles.hoverable)}
                         href="https://docs.google.com/presentation/d/1JFvhBqcBlHy803c2had5akcUGfpO6ghnJl2eVX6TJyM/edit?usp=sharing"
                         target="_blank"
                     >
+                    <img
+                                    className={styles.helpIcon}
+                                    src={helpIcon}
+                                />
                         Text Classifier Tutorial
                     </a>
                     <Divider className={classNames(styles.divider)} />
@@ -510,10 +510,10 @@ class MenuBar extends React.Component {
                         target="_blank"
                     >
                         Progress Tab Doc
-                    </a>
-                    {this.props.showTutorials ? (
+                                            </a>*/}
+                    <Divider className={classNames(styles.divider)} />
+                    {true ? (
                         <div>
-                            <Divider className={classNames(styles.divider)} />
                             <div
                                 aria-label={this.props.intl.formatMessage(ariaMessages.tutorials)}
                                 className={classNames(styles.menuBarItem, styles.hoverable)}
