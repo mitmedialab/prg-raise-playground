@@ -47,6 +47,8 @@ class Scratch3Jibo {
 
         // prepare to comment on progress
         this.runtime.on("PROJECT_CHANGED", this.updateProgress.bind(this));
+        this.runtime.on("PROGRESS_TAB_ACCESS", this.progressReport.bind(this));
+        this.runtime.on("TUTORIAL_CHANGED", this.updateTutorial.bind(this));
         this.progress = {
             compliments: {
                 'At least five examples per text classifier class': false,
@@ -270,11 +272,34 @@ class Scratch3Jibo {
         this.calculatePercentage();
     }
 
+    progressReport(progressState) {
+        console.log(progressState);
+        // percentage
+        if (progressState.percentage == 100) {
+            this.JiboTTS({TEXT: 'Excellent work. You\'ve accomplished all of the items in checklist. Test out your classifier thoroughly to make sure it works for everyone who might use it.'});
+        } else if (progressState.percentage >= 75) {
+            this.JiboTTS({TEXT: 'You\'ve made solid progress on your text classifier. There are a few more things I might add.'});
+        } else if (progressState.percentage >= 50) {
+            this.JiboTTS({TEXT: 'Looking good so far. Let\'s add a few more things to make your classifier work even better.'});
+        } else if (progressState.percentage >= 25) {
+            this.JiboTTS({TEXT: 'You\'re off to a really good start. Let\'s look at ways we might improve this program.'});
+        } else {
+            this.JiboTTS({TEXT: 'I bet that making some of these improvements will help you make your project work really well.'});
+        }
+
+        // improvements
+        // compliments
+    }
+
+    updateTutorial(tutorial, step) {
+        // text-classifier-intro, ai-progress-tab
+        console.log("Tutorial: ", tutorial, step);
+    }
+
     calculatePercentage () {
         if (!this.runtime || !this.runtime.modelData || this.runtime.targets <= 0) {
             return ;
         }
-        console.log("Num targets: ", this.runtime.targets);
         let modelData = this.runtime.modelData.classifierData;
         let blocks_used = this.runtime.targets[1].blocks._blocks;
 
