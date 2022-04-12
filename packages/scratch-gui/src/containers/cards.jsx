@@ -31,6 +31,8 @@ class Cards extends React.Component {
         if (this.props.locale !== prevProps.locale) {
             loadImageData(this.props.locale);
         }
+        //console.log("Component update", this.props);
+        this.props.vm.runtime.emit("TUTORIAL_CHANGED", this.props.activeDeckId, this.props.step);
     }
     render () {
         return (

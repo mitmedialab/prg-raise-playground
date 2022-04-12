@@ -195,7 +195,9 @@ const GUIComponent = props => {
                     />
                 ) : null}
                 {cardsVisible ? (
-                    <Cards />
+                    <Cards
+                        vm={vm}
+                    />
                 ) : null}
                 {alertsVisible ? (
                     <Alerts className={styles.alertsContainer} />
