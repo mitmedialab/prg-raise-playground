@@ -27,10 +27,13 @@ class ProgressBarExample extends React.Component {
       };
 
       this.calculatePercentage = this.calculatePercentage.bind(this);
+
+      this.runtime = this.props.children[3];
     }
     
     componentDidMount() {
-        this.calculatePercentage();
+        this.calculatePercentage();    
+        this.runtime.emit('PROGRESS_TAB_ACCESS', this.state);
     }
 
     handleListUpdate(check) {
