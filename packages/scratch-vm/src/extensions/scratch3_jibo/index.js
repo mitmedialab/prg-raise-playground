@@ -26,6 +26,46 @@ const _colors = {
     "random": "random"
 }
 
+const _dances = {
+    "Disco": "Dances/dance_disco_00.keys",
+    "Slow Dance": "Dances/Prom_Night_01_01.keys",
+    "Happy Dance": "Dances/Happy_Lucky_01_01.keys",
+    "Robot": "Dances/Robotic_01_01.keys"
+}
+
+const _emotions = {
+    "Celebrate": "Dances/Celebrate_01.keys",
+    "Embarassed": "Misc/embarassed_01_02.keys",
+    "Frustrated": "Misc/Frustrated_01_04.keys",
+    "Laugh": "Misc/Laughter_01_03.keys",
+    "Sad": "Misc/Sad_03.keys",
+    "Thinking": "Misc/thinking_08.keys",
+    "Disco": "Dances/dance_disco_00.keys",
+    "Slow Dance": "Dances/Prom_Night_01_01.keys",
+    "Happy Dance": "Dances/Happy_Lucky_01_01.keys",
+    "Robot": "Dances/Robotic_01_01.keys"
+}
+
+const _emojis = {
+    "Airplane": "Emoji/Emoji_Airplane_01_01.keys",
+    "Apple": "Emoji/Emoji_AppleRed_01_01.keys",
+    "Art": "Emoji/Emoji_Art_01_01.keys",
+    "Bowling": "Emoji/Emoji_Bowling.keys",
+    "Correct": "Emoji/Emoji_Checkmark_01_01.keys",
+    "Exclamation": "Emoji/Emoji_ExclamationYellow.keys",
+    "Football": "Emoji/Emoji_Football_01_01.keys",
+    "Heart": "Emoji/Emoji_HeartArrow_01_01.keys",
+    "Magic": "Emoji/Emoji_Magic_01_02.keys",
+    "Ocean": "Emoji/Emoji_Ocean_01_01.keys",
+    "Penguin": "Emoji/Emoji_Penguin_01_01.keys",
+    "Rainbow" : "Emoji/Emoji_Rainbow_01_01.keys",
+    "Robot": "Emoji/Emoji_Robot_01_01.keys",
+    "Rocket": "Emoji/Emoji_Rocket_01_01.keys",
+    "Snowflake": "Emoji/Emoji_Snowflake_01_01.keys",
+    "Taco": "Emoji/Emoji_Taco_01_01.keys",
+    "Video Game": "Emoji/Emoji_VideoGame_01_01.keys"
+}
+
 const _tutorial_speech = [
     '',
     'First, let\'s look at the text classification blocks. This is the text matches block. You can put anything into the text box, then the dropdown let\'s you match the text to any of the classes in your classifier. Use this block in a yellow conditional block.',
@@ -144,7 +184,7 @@ class Scratch3Jibo {
                             "returns the speech Jibo hears from his ASR",
                     }),
                 },
-                {
+                /*{
                     opcode: "JiboVolume",
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
@@ -161,22 +201,54 @@ class Scratch3Jibo {
                     },
                 },
                 {
-                    opcode: "JiboAnim",
+                    opcode: "JiboDance",
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
-                        id: "jibo.setAnim",
-                        default: "set Jibo Animation to [AKEY]",
-                        description: "Set Jibo Volume",
+                        id: "jibo.setDance",
+                        default: "set Jibo Dance to [AKEY]",
+                        description: "Set Jibo Dance",
                     }),
                     arguments: {
                         AKEY: {
                             type: ArgumentType.STRING,
-                            menu: "AnimKeys",
-                            defaultValue: "spider.keys",
+                            menu: "DanceKeys",
+                            defaultValue: "Robot",
+                        },
+                    },
+                },*/
+                {
+                    opcode: "JiboEmoji",
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: "jibo.setEmoji",
+                        default: "set Jibo Emoji [AKEY]",
+                        description: "Set Jibo Emoji",
+                    }),
+                    arguments: {
+                        AKEY: {
+                            type: ArgumentType.STRING,
+                            menu: "EmojiKeys",
+                            defaultValue: "Penguin",
                         },
                     },
                 },
                 {
+                    opcode: "JiboEmote",
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: "jibo.setEmotion",
+                        default: "set Jibo Animation to [AKEY]",
+                        description: "Set Jibo Emotion Animation",
+                    }),
+                    arguments: {
+                        AKEY: {
+                            type: ArgumentType.STRING,
+                            menu: "EmoteKeys",
+                            defaultValue: "Celebrate",
+                        },
+                    },
+                },
+                /*{
                     opcode: "JiboAudio",
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
@@ -191,7 +263,7 @@ class Scratch3Jibo {
                             defaultValue: "instruments/Blocks.mp3",
                         },
                     },
-                },
+                },*/
                 {
                     opcode: "JiboLED",
                     blockType: BlockType.COMMAND,
@@ -260,9 +332,17 @@ class Scratch3Jibo {
                     acceptReporters: false,
                     items: ["10","20","30","40","50","60","70","80","90","100"],
                 },
-                AnimKeys: {
+                DanceKeys: {
                     acceptReporters: true,
-                    items: ["spider.keys","snail.keys"],
+                    items: Object.keys(_dances),
+                },
+                EmojiKeys: {
+                    acceptReporters: true,
+                    items: Object.keys(_emojis),
+                },
+                EmoteKeys: {
+                    acceptReporters: true,
+                    items: Object.keys(_emotions),
                 },
                 AudioKeys: {
                     acceptReporters: true,
@@ -673,6 +753,19 @@ class Scratch3Jibo {
         this.JiboPublish(jibo_msg);
     }
 
+    JiboEmoji(args) {
+        const animation_key = _emojis[args.AKEY];
+        return this.JiboAnim({AKEY: animation_key});}
+
+    JiboEmote(args) {
+        const animation_key = _emotions[args.AKEY];
+        return this.JiboAnim({AKEY: animation_key});
+    }
+
+    JiboDance(args) {
+        const animation_key = _dances[args.AKEY];
+        return this.JiboAnim({AKEY: animation_key});
+    }
 
 
     JiboAnim(args) {
@@ -689,6 +782,8 @@ class Scratch3Jibo {
 
 
         this.JiboPublish({"do_anim_transition":true,"anim_transition":0});
+
+        // TODO make sure this waits until the animation is finished
     }
 
 
