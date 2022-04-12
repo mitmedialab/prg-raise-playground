@@ -622,7 +622,7 @@ class Scratch3Jibo {
             let connect_cb_factory = function(x) {return function(){
                 x.connected = true;
                 // send jibo welcome message
-                //x.JiboTTS({TEXT: "Hello there. Welcome to A.I. Blocks. We're going to make a classifier that can tell the difference between positive and negative reviews."});
+                x.JiboTTS({TEXT: "Hello there. Welcome to A.I. Blocks. We're going to make a classifier that can tell the difference between positive and negative reviews."});
             };};
             let connect_cb = connect_cb_factory(this);
             this.ros.on('connection', function() {
