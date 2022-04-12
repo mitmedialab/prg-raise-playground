@@ -26,6 +26,25 @@ const _colors = {
     "random": "random"
 }
 
+const _tutorial_speech = [
+    '',
+    'First, let\'s look at the text classification blocks. This is the text matches block. You can put anything into the text box, then the dropdown let\'s you match the text to any of the classes in your classifier. Use this block in a yellow conditional block.',
+    'Here is the confidence block. It tells you how sure the classifier is that it has the right answer. I would recommend using this block in an embedded conditional block, like the picture.',
+    'Now let\'s see how we train our model. Scroll to the Text Classification category and look for the Edit Model button at the top',
+    'On the Edit text model screen you can add all of your classes and training examples. Press add label to add new classes. Type examples for each class into the text box and press add example to save them.',
+    'You\'ll want to add multiple examples to each label to make your classifier work well.',
+    'Let\'s give it a try. Go ahead and add training examples to your model and add more to the code too.'
+];
+
+const _progress_tab_speech = [
+    'The progress tab is here to help you level up your project. It shows you how can improve your work and what you have done well so far.',
+    'Try to have more than two text class labels. You get the most points for having at least three classes.',
+    'Also try to put at least five examples in each class',
+    'Then, make sure that your classes are balanced. You don\'t want one class label to have more examples than the others.',
+    'In your code, get creative with your use of text classification blocks. Use lots of matches blocks and confidence blocks.',
+    'Make your code more capable using embedded conditionals. You can use them to check the confidence of a match before you respond.'
+];
+
 const ROSLIB = require('roslib');
 
 class Scratch3Jibo {
@@ -294,6 +313,12 @@ class Scratch3Jibo {
     updateTutorial(tutorial, step) {
         // text-classifier-intro, ai-progress-tab
         console.log("Tutorial: ", tutorial, step);
+
+        if (tutorial == 'text-classifier-intro') {
+            this.JiboTTS({TEXT: _tutorial_speech[step]});
+        } else if (tutorial == 'ai-progress-tab') {
+            this.JiboTTS({TEXT: _progress_tab_speech[step]});
+        }
     }
 
     calculatePercentage () {
@@ -517,7 +542,7 @@ class Scratch3Jibo {
             let connect_cb_factory = function(x) {return function(){
                 x.connected = true;
                 // send jibo welcome message
-                x.JiboTTS({TEXT: "Hello there. Welcome to A.I. Blocks. We're going to make a classifier that can tell the difference between positive and negative reviews."});
+                //x.JiboTTS({TEXT: "Hello there. Welcome to A.I. Blocks. We're going to make a classifier that can tell the difference between positive and negative reviews."});
             };};
             let connect_cb = connect_cb_factory(this);
             this.ros.on('connection', function() {
