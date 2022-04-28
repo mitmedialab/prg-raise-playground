@@ -460,78 +460,6 @@ class Scratch3TextClassificationBlocks {
                     },
                 },
                 '---',
-                {
-                    opcode: 'speakText',
-                    text: formatMessage({
-                        id: 'textClassification.speakText',
-                        default: 'speak [TEXT]',
-                        description: 'Send text to the speech to text engine'
-                    }),
-                    blockType: BlockType.COMMAND,
-                    arguments: {
-                        TEXT: {
-                            type: ArgumentType.STRING,
-                            defaultValue: 'Hello'
-                        }
-                    },
-                },
-                {
-                    opcode: 'askSpeechRecognition',
-                    text: formatMessage({
-                        id: 'textClassification.askSpeechRecognition',
-                        default: 'ask [PROMPT] and wait',
-                        description: 'Get the class name that the input text matches'
-                    }),
-                    blockType: BlockType.COMMAND,
-                    arguments: {
-                        PROMPT: {
-                            type: ArgumentType.STRING,
-                            defaultValue: 'How are you?'
-                        }
-                    },
-                },
-                {
-                    opcode: 'getRecognizedSpeech',
-                    text: formatMessage({
-                        id: 'textClassification.getRecognizedSpeech',
-                        default: 'answer',
-                        description: 'Return the results of the speech recognition'
-                    }),
-                    blockType: BlockType.REPORTER,
-                },
-                {
-                    opcode: 'setVoice',
-                    text: formatMessage({
-                        id: 'text2speech.setVoiceBlock',
-                        default: 'set voice to [VOICE]',
-                        description: 'Set the voice for speech synthesis.'
-                    }),
-                    blockType: BlockType.COMMAND,
-                    arguments: {
-                        VOICE: {
-                            type: ArgumentType.STRING,
-                            menu: 'voices',
-                            defaultValue: SQUEAK_ID
-                        }
-                    }
-                },
-                '---',
-                {
-                    opcode: 'onHeardSound',
-                    text: formatMessage({
-                        id: 'textClassification.onHeardSound',
-                        default: 'when heard sound > [THRESHOLD]',
-                        description: 'Event that triggers when a sound is heard above a threshold'
-                    }),
-                    blockType: BlockType.HAT,
-                    arguments: {
-                        THRESHOLD: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 10
-                        }
-                    },
-                },
-                '---',
 
                 {
                     opcode: 'confidenceTrue',
@@ -584,6 +512,77 @@ class Scratch3TextClassificationBlocks {
                             defaultValue: 'TEXT'
                         }
                     }
+                },
+                '---',
+                {
+                    opcode: 'speakText',
+                    text: formatMessage({
+                        id: 'textClassification.speakText',
+                        default: 'speak [TEXT]',
+                        description: 'Send text to the speech to text engine'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        TEXT: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'Hello'
+                        }
+                    },
+                },
+                {
+                    opcode: 'askSpeechRecognition',
+                    text: formatMessage({
+                        id: 'textClassification.askSpeechRecognition',
+                        default: 'speak [PROMPT] then listen for response',
+                        description: 'Get the class name that the input text matches'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        PROMPT: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'How are you?'
+                        }
+                    },
+                },
+                {
+                    opcode: 'getRecognizedSpeech',
+                    text: formatMessage({
+                        id: 'textClassification.getRecognizedSpeech',
+                        default: 'response',
+                        description: 'Return the results of the speech recognition'
+                    }),
+                    blockType: BlockType.REPORTER,
+                },
+                {
+                    opcode: 'setVoice',
+                    text: formatMessage({
+                        id: 'text2speech.setVoiceBlock',
+                        default: 'set voice to [VOICE]',
+                        description: 'Set the voice for speech synthesis.'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        VOICE: {
+                            type: ArgumentType.STRING,
+                            menu: 'voices',
+                            defaultValue: SQUEAK_ID
+                        }
+                    }
+                },
+                {
+                    opcode: 'onHeardSound',
+                    text: formatMessage({
+                        id: 'textClassification.onHeardSound',
+                        default: 'when heard sound > [THRESHOLD]',
+                        description: 'Event that triggers when a sound is heard above a threshold'
+                    }),
+                    blockType: BlockType.HAT,
+                    arguments: {
+                        THRESHOLD: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 10
+                        }
+                    },
                 }
             ],
             menus: {
