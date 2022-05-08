@@ -105,6 +105,9 @@ dist
 
 .idea
 
+# MAC specific
+.DS_Store
+
 # Scratch specific
 */package-lock.json
 */package.json
