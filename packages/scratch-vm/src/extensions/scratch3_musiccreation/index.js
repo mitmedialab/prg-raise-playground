@@ -578,3 +578,5 @@ class Scratch3MusicCreation {
 }
 
 module.exports = Scratch3MusicCreation;
+
+
