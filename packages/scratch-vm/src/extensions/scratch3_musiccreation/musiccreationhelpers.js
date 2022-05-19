@@ -366,7 +366,7 @@ class MusicCreationHelpers {
             if (beats === 0) return;
 
             const durationSec = beats;
-
+            console.log('really about to play now!')
             this._playNote(util, note, durationSec);
 
             this._startStackTimer(util, durationSec);
@@ -375,6 +375,7 @@ class MusicCreationHelpers {
             const instrumentInfo = this.INSTRUMENT_INFO[inst]
             return [note, beats, instrumentInfo.name];
         } else {
+            console.log('else yo..');
             this._checkStackTimer(util);
             return [];
         }

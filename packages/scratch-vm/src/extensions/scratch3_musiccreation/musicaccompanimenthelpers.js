@@ -101,13 +101,15 @@ class MusicAccompanimentHelpers {
         .continueSequence(qns, rnn_steps, rnn_temperature)
         .then((sample) => {
             newNotes.push(sample);
-            rnnPlayer.start(sample)});
+            /*rnnPlayer.start(sample)*/});
         const magentaN = async () => {
             const a = await newNotes;
             magentaNotes = this.processed(a[0].notes);
             return magentaNotes;
             };
+        console.log('newNotes',newNotes);
         magentaNotes = await magentaN();
+        console.log('magenta notes', magentaNotes);
         return magentaNotes;
         var magentaNotes = newNotes[0].notes;
         return this.processed(magentaNotes);

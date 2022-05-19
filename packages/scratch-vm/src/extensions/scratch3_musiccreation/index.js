@@ -52,9 +52,9 @@ class Scratch3MusicCreation {
                     {text: "mystery 5", value: 5},
                     {text: "mystery 6", value: 6}];
         
-        this.displayOptions = [{text: "sheet music", value: 1},
-                               {text: "waveform", value: 2},
-                               {text: "frequencies", value: 3},
+        this.displayOptions = [{text: "sheet music", value: '1'},
+                               {text: "waveform", value: '2'},
+                               {text: "frequencies", value: '3'},
                                {text: "frequencies over time", value: 4}];
 
         this.textRenderer = new textRender(runtime);
@@ -500,8 +500,33 @@ class Scratch3MusicCreation {
         this.musicCreationHelper._setInstrument(args.INSTRUMENT, util, false);
     }
 
+    rawNoteToNoteArg (raw_note) {
+        if (raw_note.length < 2) {
+            console.log('shit');
+            return;
+        }
+        var note_num = String(raw_note[0]);
+        var secs = String(raw_note[1]);
+        return {mutation: undefined, NOTE: note_num, SECS: secs};
+    }
+
     async testMagentaRNN (args, utils) {
-        this.magentaNoteList = await this.musicAccompanimentHelper.testMagentaRNN(this.noteList, args, utils);
+        console.log('args testMRNN', args);
+        console.log('util testMRNN', utils);
+        var magenta_notes = await this.musicAccompanimentHelper.testMagentaRNN(this.noteList, args, utils);
+        console.log('inst',this.getInstrument());
+        var inst = this.getInstrument();
+        var l = magenta_notes.length;
+        console.log('l',l);
+        for (var i = 0; i < l; i++) {
+            magenta_notes[i][2] = inst;
+            console.log(i, magenta_notes[i]);
+            var new_args = this.rawNoteToNoteArg(magenta_notes[i]);
+            // this.playNote(new_args,utils);
+            console.log('about to play note...')
+            this.musicCreationHelper.playNote(new_args, utils);
+        }
+        this.magentaNoteList = magenta_notes;
     }
 
     async testMagentaMVAE (utils) {
@@ -537,6 +562,8 @@ class Scratch3MusicCreation {
     }
 
     playNote (args, util) {
+        //console.log('playNote args',args);
+        //console.log('playNote util',util);
         toAdd = this.musicCreationHelper.playNote(args, util);
         if (toAdd.length == 3) {
             this.noteList.push(toAdd);
