@@ -500,37 +500,59 @@ class Scratch3MusicCreation {
         this.musicCreationHelper._setInstrument(args.INSTRUMENT, util, false);
     }
 
+    /**
+     * 
+     * @param {array} raw_note - magenta note [freq,duration,inst,?] 
+     * @returns information about the note as an object, in a form 
+     *          consumable by this.musicCreationHelper
+     */
     rawNoteToNoteArg (raw_note) {
-        if (raw_note.length < 2) {
-            console.log('shit');
-            return;
-        }
+        if (raw_note.length < 2) return;
         var note_num = String(raw_note[0]);
         var secs = String(raw_note[1]);
         return {mutation: undefined, NOTE: note_num, SECS: secs};
     }
 
-    async testMagentaRNN (args, utils) {
-        console.log('args testMRNN', args);
-        console.log('util testMRNN', utils);
-        var magenta_notes = await this.musicAccompanimentHelper.testMagentaRNN(this.noteList, args, utils);
-        console.log('inst',this.getInstrument());
+    /**
+     * Prepares the magenta notes to be played
+     * @param {Array[]} magenta_notes 
+     * @returns an object with 'notes' and 'args' fields
+     */
+    _prepare (magenta_notes) {
         var inst = this.getInstrument();
-        var l = magenta_notes.length;
-        console.log('l',l);
-        for (var i = 0; i < l; i++) {
-            magenta_notes[i][2] = inst;
-            console.log(i, magenta_notes[i]);
-            var new_args = this.rawNoteToNoteArg(magenta_notes[i]);
-            // this.playNote(new_args,utils);
-            console.log('about to play note...')
-            this.musicCreationHelper.playNote(new_args, utils);
-        }
-        this.magentaNoteList = magenta_notes;
+        magenta_notes.forEach(x => {
+            x[2] = inst;
+        });
+        var args = magenta_notes.map(x => {
+            return this.rawNoteToNoteArg(x);
+        });
+        return {notes: magenta_notes, args: args};
+    }
+
+    /**
+     * Generates and plays a sequence of notes based off of the notes
+     * that have recently been player and the current instrument
+     * @param {array} args - array of magenta notes [freq,duration,inst,?] 
+     * @param utils 
+     */
+    async testMagentaRNN (args, utils) {
+        console.log(utils);
+        let magenta_notes = await this.musicAccompanimentHelper.testMagentaRNN(this.noteList, args, utils);
+        const prepared_notes = this._prepare(magenta_notes);
+        this.magentaNoteList = prepared_notes['notes'];
+        this.musicCreationHelper.playNotes(prepared_notes['args'],utils);
     }
 
     async testMagentaMVAE (utils) {
-        this.magentaNoteList = await this.musicAccompanimentHelper.testMagentaMVAE(utils);
+        // console.log(utils.stackFrame);
+        if (!utils.stackFrame) {
+            utils.stackFrame = {}
+        }
+        let magenta_notes = await this.musicAccompanimentHelper.testMagentaMVAE(utils);
+        const prepared_notes = this._prepare(magenta_notes);
+        this.magentaNoteList = prepared_notes['notes'];
+        console.log(utils);
+        this.musicCreationHelper.playNotes(prepared_notes['args'],utils);
     }
 
     getInstrument (util) {
@@ -562,8 +584,6 @@ class Scratch3MusicCreation {
     }
 
     playNote (args, util) {
-        //console.log('playNote args',args);
-        //console.log('playNote util',util);
         toAdd = this.musicCreationHelper.playNote(args, util);
         if (toAdd.length == 3) {
             this.noteList.push(toAdd);

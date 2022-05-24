@@ -4,6 +4,8 @@ const formatMessage = require('format-message');
 const MathUtil = require('../../util/math-util');
 const Timer = require('../../util/timer');
 const log = require('../../util/log');
+const { clamp } = require('../../util/math-util');
+const { p } = require('./letters');
 
 /**
  * The instrument and drum sounds, loaded as static assets.
@@ -354,6 +356,198 @@ class MusicCreationHelpers {
         return "mezzo-forte";
     }
 
+    /**
+     * 
+     * @param {object} noteInfo - contains 'NOTE' and 'SECS' fields
+     * @param {*} index - the index of this note in 
+     *                    the sequence of notes to be played
+     * @returns an object with 'note', 'duration', and 'index' fields
+     * @private 
+     */
+    _clamp(noteInfo, index) {
+        let note = Cast.toNumber(noteInfo.NOTE);
+        note = MathUtil.clamp(note,
+            MusicCreationHelpers.MIDI_NOTE_RANGE.min, MusicCreationHelpers.MIDI_NOTE_RANGE.max);
+        let beats = Cast.toNumber(noteInfo.SECS);
+        beats = this._clampBeats(beats);
+        return {note: note,duration: beats, index: index};
+    }
+
+    /**
+     * Creates a SoundPlayer for the given note and returns it,
+     * along with an object that contains data about the note
+     * (including @param dur)
+     * @param util 
+     * @param {number} note 
+     * @param {flot} dur - duration in secs
+     * @returns an object with 'player' and 'data' fields, or null on error
+     */
+    createPlayer (util, note, dur) {
+        // Determine which of the audio samples for this instrument to play
+        const musicState = this._getMusicState(util.target);
+        const inst = musicState.currentInstrument;
+        const instrumentInfo = this.INSTRUMENT_INFO[inst];
+        const sampleArray = instrumentInfo.samples;
+        const sampleIndex = this._selectSampleIndexForNote(note, sampleArray);
+        // If the audio sample has not loaded yet, bail out
+        if (typeof this._instrumentPlayerArrays[inst] === 'undefined' ||
+            typeof this._instrumentPlayerArrays[inst][sampleIndex] === 'undefined') {
+            console.log('uninitialized instruments');
+            return null;
+        }
+
+        if (!this._instrumentPlayerNoteArrays[inst][note]) {
+            this._instrumentPlayerNoteArrays[inst][note] = this._instrumentPlayerArrays[inst][sampleIndex].take();
+        }
+
+        const player = this._instrumentPlayerNoteArrays[inst][note];
+
+        if (player.isPlaying && !player.isStarting) {
+            // Take the internal player state and create a new player with it.
+            player.take();
+        }
+        return {player:player, 
+                data:
+                    {instInfo: instrumentInfo, 
+                     sampleArray: sampleArray, 
+                     sampleIndex: sampleIndex,
+                     note: note,
+                     duration: dur}};
+    }
+
+    /**
+     * 
+     * @param {object} noteInfo - element of @param seq containing
+     *                       'note', 'index', and 'beats' fields.
+     * @param {Array[]} seq - array of objects containing information about a note and its duration
+     * @param {object} util 
+     * @param {number} l - length of @param seq 
+     * @private
+     */
+    _playNoteFromSeq (noteInfo, seq, util,l) {
+        const i = noteInfo['index'];
+        if (i === l-1 || this._concurrencyCounter > this.CONCURRENCY_LIMIT) return;
+        const playerAndData = this.createPlayer(util,noteInfo['note'],noteInfo['duration']);
+        const player = playerAndData['player'];
+        player.once('stop', () => {
+            this._concurrencyCounter--;
+            console.log(`stopped note ${i+1}`);
+            this._playNoteFromSeq(seq[i+1],seq,util,l);  
+        });
+        console.log(`playing note ${i+1}`);
+        this.activatePlayer(util,playerAndData);
+    }
+
+    /**
+     * Plays the first note of the given @param seq
+     * @param {object} util 
+     * @param {Array[]} seq 
+     */
+    playFirstNote (util, seq) {
+        const l = seq.length
+        if (l === 0) return;
+        this._playNoteFromSeq(seq[0],seq,util,l);
+    }
+
+    /**
+     * Plays the sequence of notes given by @param args
+     * @param {array} args - args[i] has 'mutation', 'NOTE', and 'SECS' fields
+     * @param util 
+     */
+    playNotes (args, util) {
+        if (this._stackTimerNeedsInit(util)) {
+            const l = args.length;
+            let seq = [];
+            for (let i = 0; i < l; i++) {
+                const noteArg = args[i];
+                seq.push(this._clamp(noteArg,i));
+            }
+            
+            let durations = seq.map(x => x['duration']);
+            let duration = durations.reduce( (a,b) => a+b, 0);            
+            if (duration === 0 || l === 0) return;
+            
+            //begins the chain of events that plays the seq of notes
+            this.playFirstNote(util, seq);
+            this._startStackTimer(util, 10);
+            return [];
+        } else {
+            this._checkStackTimer(util);
+            return [];
+        }
+    }
+
+    //note, sampleIndex, util, engine and player, sampleArray //idx is temporary param
+    /**
+     * Activates the player in @param playerAndData to play its
+     * note, using the data in @param playerAndData to determine
+     * the instrument and duration
+     * @param {*} util 
+     * @param {*} playerAndData 
+     * @returns 
+     */
+    activatePlayer (util, playerAndData) {
+        // If we're playing too many sounds, do not play the note.
+        if (this._concurrencyCounter > MusicCreationHelpers.CONCURRENCY_LIMIT) {
+            console.log('concurrency limit reached');
+            return;
+        }
+
+        if (!playerAndData) {
+            console.log('null data');
+            return;
+        }
+
+        //get note and instrument data
+        let player = playerAndData['player'];
+        let data = playerAndData['data'];
+        let sampleArray = data['sampleArray'];
+        let sampleIndex = data['sampleIndex'];
+        let instInfo = data['instInfo'];
+        let note = data['note'];
+        let durationSec = data['duration'];
+        // Set its pitch.
+        const sampleNote = sampleArray[sampleIndex];
+        const notePitchInterval = this._ratioForPitchInterval(note - sampleNote);
+
+        // Fetch the sound player to play the note.
+        const engine = util.runtime.audioEngine;
+
+        // Create gain nodes for this note's volume and release, and chain them
+        // to the output.
+        const context = engine.audioContext;
+        const volumeGain = context.createGain();
+        volumeGain.gain.setValueAtTime(util.target.volume / 100, engine.currentTime);
+        const releaseGain = context.createGain();
+        volumeGain.connect(releaseGain);
+        releaseGain.connect(engine.getInputNode());
+
+        // Schedule the release of the note, ramping its gain down to zero,
+        // and then stopping the sound.
+        let releaseDuration = instInfo.releaseTime;
+        if (typeof releaseDuration === 'undefined') {
+            releaseDuration = 0.01;
+        }
+        const releaseStart = context.currentTime + durationSec;
+        const releaseEnd = releaseStart + releaseDuration;
+        console.log('duration',releaseEnd - context.currentTime,'currTime', context.currentTime, 'releaseStart', releaseStart, 'releaseEnd', releaseEnd);
+        releaseGain.gain.setValueAtTime(1, releaseStart);
+        releaseGain.gain.linearRampToValueAtTime(0.0001, releaseEnd);
+
+        this._concurrencyCounter++;
+
+        // Start playing the note
+        player.play();
+        // Connect the player to the gain node.
+        player.connect({getInputNode () {
+            return volumeGain;
+        }});
+        // Set playback now after play creates the outputNode.
+        player.outputNode.playbackRate.value = notePitchInterval;
+        // Schedule playback to stop.
+        player.outputNode.stop(releaseEnd);
+    }
+
     playNote (args, util) {
         if (this._stackTimerNeedsInit(util)) {
             let note = Cast.toNumber(args.NOTE);
@@ -366,7 +560,6 @@ class MusicCreationHelpers {
             if (beats === 0) return;
 
             const durationSec = beats;
-            console.log('really about to play now!')
             this._playNote(util, note, durationSec);
 
             this._startStackTimer(util, durationSec);
@@ -375,11 +568,9 @@ class MusicCreationHelpers {
             const instrumentInfo = this.INSTRUMENT_INFO[inst]
             return [note, beats, instrumentInfo.name];
         } else {
-            console.log('else yo..');
             this._checkStackTimer(util);
             return [];
         }
-
     }
 
     /**
@@ -406,7 +597,6 @@ class MusicCreationHelpers {
         const instrumentInfo = this.INSTRUMENT_INFO[inst];
         const sampleArray = instrumentInfo.samples;
         const sampleIndex = this._selectSampleIndexForNote(note, sampleArray);
-
         // If the audio sample has not loaded yet, bail out
         if (typeof this._instrumentPlayerArrays[inst] === 'undefined') return;
         if (typeof this._instrumentPlayerArrays[inst][sampleIndex] === 'undefined') return;
@@ -426,6 +616,7 @@ class MusicCreationHelpers {
             // stop.
             player.take();
         }
+
 
         // Set its pitch.
         const sampleNote = sampleArray[sampleIndex];
@@ -539,7 +730,7 @@ class MusicCreationHelpers {
      * @return {number} - the clamped duration.
      * @private
      */
-    _clampBeats (beats) {
+     _clampBeats (beats) {
         return MathUtil.clamp(beats, MusicCreationHelpers.BEAT_RANGE.min, MusicCreationHelpers.BEAT_RANGE.max);
     }
 
