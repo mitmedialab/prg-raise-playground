@@ -537,10 +537,13 @@ class Scratch3MusicCreation {
      */
     async testMagentaRNN (args, utils) {
         console.log(utils);
+        const musicState = this.musicCreationHelper._getMusicState(utils.target);
+        const inst = musicState.currentInstrument;
+        console.log('inst', inst);
         let magenta_notes = await this.musicAccompanimentHelper.testMagentaRNN(this.noteList, args, utils);
         const prepared_notes = this._prepare(magenta_notes);
         this.magentaNoteList = prepared_notes['notes'];
-        this.musicCreationHelper.playNotes(prepared_notes['args'],utils);
+        this.musicCreationHelper.playNotes(prepared_notes['args'],utils,inst);
     }
 
     async testMagentaMVAE (utils) {

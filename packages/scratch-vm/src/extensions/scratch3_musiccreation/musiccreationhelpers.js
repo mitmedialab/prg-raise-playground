@@ -382,10 +382,8 @@ class MusicCreationHelpers {
      * @param {flot} dur - duration in secs
      * @returns an object with 'player' and 'data' fields, or null on error
      */
-    createPlayer (util, note, dur) {
+    createPlayer (util, note, dur, inst) {
         // Determine which of the audio samples for this instrument to play
-        const musicState = this._getMusicState(util.target);
-        const inst = musicState.currentInstrument;
         const instrumentInfo = this.INSTRUMENT_INFO[inst];
         const sampleArray = instrumentInfo.samples;
         const sampleIndex = this._selectSampleIndexForNote(note, sampleArray);
@@ -424,15 +422,15 @@ class MusicCreationHelpers {
      * @param {number} l - length of @param seq 
      * @private
      */
-    _playNoteFromSeq (noteInfo, seq, util,l) {
+    _playNoteFromSeq (noteInfo, seq, util,l, inst) {
         const i = noteInfo['index'];
         if (i === l-1 || this._concurrencyCounter > this.CONCURRENCY_LIMIT) return;
-        const playerAndData = this.createPlayer(util,noteInfo['note'],noteInfo['duration']);
+        const playerAndData = this.createPlayer(util,noteInfo['note'],noteInfo['duration'], inst);
         const player = playerAndData['player'];
         player.once('stop', () => {
             this._concurrencyCounter--;
             console.log(`stopped note ${i+1}`);
-            this._playNoteFromSeq(seq[i+1],seq,util,l);  
+            this._playNoteFromSeq(seq[i+1],seq,util,l,inst);  
         });
         console.log(`playing note ${i+1}`);
         this.activatePlayer(util,playerAndData);
@@ -443,10 +441,10 @@ class MusicCreationHelpers {
      * @param {object} util 
      * @param {Array[]} seq 
      */
-    playFirstNote (util, seq) {
+    playFirstNote (util, seq, inst) {
         const l = seq.length
         if (l === 0) return;
-        this._playNoteFromSeq(seq[0],seq,util,l);
+        this._playNoteFromSeq(seq[0],seq,util,l, inst);
     }
 
     /**
@@ -454,7 +452,7 @@ class MusicCreationHelpers {
      * @param {array} args - args[i] has 'mutation', 'NOTE', and 'SECS' fields
      * @param util 
      */
-    playNotes (args, util) {
+    playNotes (args, util, inst) {
         if (this._stackTimerNeedsInit(util)) {
             const l = args.length;
             let seq = [];
@@ -468,7 +466,7 @@ class MusicCreationHelpers {
             if (duration === 0 || l === 0) return;
             
             //begins the chain of events that plays the seq of notes
-            this.playFirstNote(util, seq);
+            this.playFirstNote(util, seq, inst);
             this._startStackTimer(util, 10);
             return [];
         } else {
