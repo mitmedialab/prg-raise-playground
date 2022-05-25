@@ -532,12 +532,36 @@ class Scratch3MusicCreation {
 
     /**
      * 
-     * @param {BlockUtility} utils 
+     * @param {boolean} RNN - true if 'complete music', false if 'generate new music'
+     * @param {array} args - arguments to be given to the music helper
+     * @param {BlockUtility} utils
+     * @param {number} inst - instrument to play on, represented as a number
+     * @private 
      */
-    async setTimerDurationInAsyncFunc(utils) {
-        await Promise.resolve(); // nice little hack to make this function async, so the below code will run during the next 'event loop' 
-        const timeSec = 2;
-        utils.stackFrame.duration = timeSec * 1000;
+    async _getAndPlayMagentaNotes (RNN, args,utils,inst) {
+        let magenta_notes = null;
+        if (RNN) {
+            magenta_notes = await this.musicAccompanimentHelper.testMagentaRNN(this.noteList, args, utils);
+        } else {
+            magenta_notes = await this.musicAccompanimentHelper.testMagentaMVAE(utils);
+        }
+        const prepared_notes = this._prepare(magenta_notes);
+        this.magentaNoteList = prepared_notes['notes'];
+        this.musicCreationHelper.playNotes(prepared_notes['args'], utils, inst); 
+    }
+
+    getAndPlayMagentaNotes (RNN, args, utils) {
+        const musicState = this.musicCreationHelper._getMusicState(utils.target);
+        const inst = musicState.currentInstrument;
+        if (utils.stackTimerNeedsInit()) {
+            // get timer running for a large amount of time (will be handled)
+            utils.startStackTimer(Number.MAX_SAFE_INTEGER);
+            utils.yield();
+            this._getAndPlayMagentaNotes(RNN,args,utils,inst);
+        }
+        else if (!utils.stackTimerFinished()) {
+            utils.yield();
+        }
     }
 
     /**
@@ -547,46 +571,11 @@ class Scratch3MusicCreation {
      * @param {BlockUtility} utils 
      */
     testMagentaRNN(args, utils) {
-        const musicState = this.musicCreationHelper._getMusicState(utils.target);
-        const inst = musicState.currentInstrument;
-        if (utils.stackTimerNeedsInit()) {
-            const largeAmountOfSeconds = 120;
-
-            // get timer runing for a large amount of time (the duration will be 'correctly' set in async func later)
-            utils.startStackTimer(largeAmountOfSeconds * 1000);
-
-            // yield (important! this must tell scratch that this function is still running)
-            utils.yield();
-
-            // confirming that an async function can update the duration of the stack timer
-            this.setTimerDurationInAsyncFunc(utils);
-
-            // TODO
-            // Call into function that begins the process of playing all the notes and correctly sets the stack timer duration 
-            // (but shouldn't do anything else with the stack timer)
-            // NOTE: This function will be called ONLY once
-        }
-        else if (!utils.stackTimerFinished()) {
-            utils.yield();
-        }
-
-        /*
-        let magenta_notes = await this.musicAccompanimentHelper.testMagentaRNN(this.noteList, args, utils);
-        const prepared_notes = this._prepare(magenta_notes);
-        this.magentaNoteList = prepared_notes['notes'];
-        this.musicCreationHelper.playNotes(prepared_notes['args'], utils, inst);*/
+        this.getAndPlayMagentaNotes(true,args,utils);
     }
 
-    async testMagentaMVAE(utils) {
-        // console.log(utils.stackFrame);
-        if (!utils.stackFrame) {
-            utils.stackFrame = {}
-        }
-        let magenta_notes = await this.musicAccompanimentHelper.testMagentaMVAE(utils);
-        const prepared_notes = this._prepare(magenta_notes);
-        this.magentaNoteList = prepared_notes['notes'];
-        console.log(utils);
-        this.musicCreationHelper.playNotes(prepared_notes['args'], utils);
+    testMagentaMVAE(args, utils) {
+        this.getAndPlayMagentaNotes(false,args,utils);
     }
 
     getInstrument(util) {

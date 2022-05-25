@@ -46,8 +46,6 @@ class MusicAccompanimentHelpers {
           };
 
           this.noteList = [];
-          player = new core.SoundFontPlayer('https://storage.googleapis.com/magentadata/js/soundfonts/sgm_plus');
-          vaePlayer = new core.SoundFontPlayer('https://storage.googleapis.com/magentadata/js/soundfonts/sgm_plus');
 
           music_rnn = new rnn.MusicRNN('https://storage.googleapis.com/magentadata/js/checkpoints/music_rnn/basic_rnn');
           music_rnn.initialize();
@@ -107,16 +105,12 @@ class MusicAccompanimentHelpers {
     }
 
     async testMagentaMVAE (utils) {
-        if (vaePlayer.isPlaying()) {
-            vaePlayer.stop();
-            return;
-        }
         var vae_temperature = 3;
         var samples = [];
         await music_vae.sample(1, vae_temperature)
         .then((sample) => {
             samples.push(sample);
-        /*vaePlayer.start(sample[0])*/});
+        });
         const magentaN = async () => {
             const a = await samples;
             magentaNotes = this.processed(a[0][0].notes);

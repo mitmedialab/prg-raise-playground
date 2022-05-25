@@ -424,13 +424,18 @@ class MusicCreationHelpers {
      */
     _playNoteFromSeq (noteInfo, seq, util,l, inst) {
         const i = noteInfo['index'];
-        if (i === l-1 || this._concurrencyCounter > this.CONCURRENCY_LIMIT) return;
+        const last = i === l-1;
+        if (this._concurrencyCounter > this.CONCURRENCY_LIMIT) return;
         const playerAndData = this.createPlayer(util,noteInfo['note'],noteInfo['duration'], inst);
         const player = playerAndData['player'];
         player.once('stop', () => {
             this._concurrencyCounter--;
             console.log(`stopped note ${i+1}`);
-            this._playNoteFromSeq(seq[i+1],seq,util,l,inst);  
+            if (last) {
+                util.stackFrame.duration = 0;
+            } else {
+                this._playNoteFromSeq(seq[i+1],seq,util,l,inst);  
+            }
         });
         console.log(`playing note ${i+1}`);
         this.activatePlayer(util,playerAndData);
@@ -453,29 +458,22 @@ class MusicCreationHelpers {
      * @param util 
      */
     playNotes (args, util, inst) {
-        if (this._stackTimerNeedsInit(util)) {
+        // if (this._stackTimerNeedsInit(util)) {
             const l = args.length;
             let seq = [];
             for (let i = 0; i < l; i++) {
                 const noteArg = args[i];
                 seq.push(this._clamp(noteArg,i));
             }
-            
-            let durations = seq.map(x => x['duration']);
-            let duration = durations.reduce( (a,b) => a+b, 0);            
-            if (duration === 0 || l === 0) return;
-            
+            if (l === 0) return;
+
             //begins the chain of events that plays the seq of notes
             this.playFirstNote(util, seq, inst);
-            this._startStackTimer(util, 10);
-            return [];
-        } else {
-            this._checkStackTimer(util);
-            return [];
-        }
+
+            //set the duration to MAX. duration is cut off when the last note ends
+            util.stackFrame.duration = Number.MAX_SAFE_INTEGER;
     }
 
-    //note, sampleIndex, util, engine and player, sampleArray //idx is temporary param
     /**
      * Activates the player in @param playerAndData to play its
      * note, using the data in @param playerAndData to determine
@@ -528,7 +526,8 @@ class MusicCreationHelpers {
         }
         const releaseStart = context.currentTime + durationSec;
         const releaseEnd = releaseStart + releaseDuration;
-        console.log('duration',releaseEnd - context.currentTime,'currTime', context.currentTime, 'releaseStart', releaseStart, 'releaseEnd', releaseEnd);
+        const z = releaseEnd - context.currentTime;
+        console.log('duration',z,'currTime', context.currentTime, 'releaseStart', releaseStart, 'releaseEnd', releaseEnd);
         releaseGain.gain.setValueAtTime(1, releaseStart);
         releaseGain.gain.linearRampToValueAtTime(0.0001, releaseEnd);
 
