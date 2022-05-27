@@ -414,9 +414,9 @@ class DoodlebotBlocks {
                     opcode: "whenBumperPressed",
                     text: formatMessage({
                         id: "doodlebot.bumperStatusEvent",
-                        default: "when [BUMPER] bumper pressed",
+                        default: "when [BUMPER] bumper [STATE]",
                         description:
-                            "Trigger when bumpers on doodlebot are pressed",
+                            "Edge trigger event for doodlebot bumpers",
                     }),
                     blockType: BlockType.HAT,
                     arguments: {
@@ -424,14 +424,19 @@ class DoodlebotBlocks {
                             type: ArgumentType.String,
                             menu: "BUMPERS",
                             defaultValue: _bumpers[0],
-                        },
+                        }, 
+                        STATE: {
+                            type: ArgumentType.String,
+                            menu: "PRESSED_STATE",
+                            defaultValue: "pressed",
+                        }
                     },
                 },
                 {
                     opcode: "ifBumperPressed",
                     text: formatMessage({
                         id: "doodlebot.readBumperStatus",
-                        default: "[BUMPER] bumper pressed",
+                        default: "[BUMPER] bumper pressed?",
                         description:
                             "Conditional indicating when bumpers on doodlebot are pressed",
                     }),
@@ -535,6 +540,16 @@ class DoodlebotBlocks {
                 },
                 "---",
                 {
+                    opcode: "ifRobotConnected",
+                    blockType: BlockType.BOOLEAN,
+                    text: formatMessage({
+                        id: "doodlebot.isConnected",
+                        default: "robot connected?",
+                        description:
+                            "Boolean to chec if robot is connected to Scratch",
+                    }),
+                },
+                {
                     opcode: "sendCommand",
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
@@ -582,6 +597,10 @@ class DoodlebotBlocks {
                 PIXEL_ANIMS: {
                     acceptReporters: false,
                     items: _pixel_anims,
+                },
+                PRESSED_STATE: {
+                    acceptReporters: false,
+                    items: ["pressed", "released"],
                 },
                 SENSORS: {
                     acceptReports: false,
@@ -712,6 +731,8 @@ class DoodlebotBlocks {
         this.stopMotors();
         // turn off lights
         this.pixelsOff();
+        // stop blinking
+        this.stopBlink();
     }
 
     /**
@@ -1411,11 +1432,21 @@ class DoodlebotBlocks {
     }
 
     /**
+     * 
+     * Just for testing out, checks if robot is connected or not 
+     */
+    async ifRobotConnected(args) {
+        return this._robotStatus == 2;
+    }
+    /**
      * Just for testing out sending commands to robot via ble
      */
     async sendCommand(args) {
         let command = args.COMMAND;
         console.log("Sending uart command: ", command);
+
+        // stop blinking
+        this.stopBlink();
 
         await this.sendCommandToRobot(
             command, command_pause
