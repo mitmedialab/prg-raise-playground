@@ -6,6 +6,7 @@ const Timer = require('../../util/timer');
 const log = require('../../util/log');
 const { clamp } = require('../../util/math-util');
 const { p } = require('./letters');
+const BlockUtility = require('../../engine/block-utility');
 
 /**
  * The instrument and drum sounds, loaded as static assets.
@@ -364,7 +365,7 @@ class MusicCreationHelpers {
      * @returns an object with 'note', 'duration', and 'index' fields
      * @private 
      */
-    _clamp(noteInfo, index) {
+    _clamp (noteInfo, index) {
         let note = Cast.toNumber(noteInfo.NOTE);
         note = MathUtil.clamp(note,
             MusicCreationHelpers.MIDI_NOTE_RANGE.min, MusicCreationHelpers.MIDI_NOTE_RANGE.max);
@@ -378,7 +379,7 @@ class MusicCreationHelpers {
      * along with an object that contains data about the note
      * (including @param dur)
      * @param util 
-     * @param {number} note 
+     * @param {number} note - the frequency of the note to be played
      * @param {flot} dur - duration in secs
      * @returns an object with 'player' and 'data' fields, or null on error
      */
@@ -414,19 +415,26 @@ class MusicCreationHelpers {
     }
 
     /**
-     * 
+     * Plays the note given by @param noteInfo and recursively
+     * sets up an event chain to play the rest of the notes in @param seq
      * @param {object} noteInfo - element of @param seq containing
      *                       'note', 'index', and 'beats' fields.
      * @param {Array[]} seq - array of objects containing information about a note and its duration
-     * @param {object} util 
+     * @param {BlockUtility} util 
      * @param {number} l - length of @param seq 
      * @private
+     * @augments @param util's stackFrame.duration to be 0 once the last note in @param seq 
+     *           has stopped playing. 
      */
     _playNoteFromSeq (noteInfo, seq, util,l, inst) {
         const i = noteInfo['index'];
         const last = i === l-1;
         if (this._concurrencyCounter > this.CONCURRENCY_LIMIT) return;
         const playerAndData = this.createPlayer(util,noteInfo['note'],noteInfo['duration'], inst);
+        if (!playerAndData) {
+            console.log(`null data for note ${noteInfo}`);
+            return;
+        }
         const player = playerAndData['player'];
         player.once('stop', () => {
             this._concurrencyCounter--;
@@ -438,13 +446,17 @@ class MusicCreationHelpers {
             }
         });
         console.log(`playing note ${i+1}`);
-        this.activatePlayer(util,playerAndData);
+        this._activatePlayer(util,playerAndData);
     }
 
     /**
      * Plays the first note of the given @param seq
-     * @param {object} util 
+     * (note that this also sets off an event chain that plays
+     * the rest of the notes in @param seq)
+     * @param {BlockUtility} util 
      * @param {Array[]} seq 
+     * @requires - each elem in @param seq has 'note', 'duration' and
+     * 'index' fields
      */
     playFirstNote (util, seq, inst) {
         const l = seq.length
@@ -455,34 +467,33 @@ class MusicCreationHelpers {
     /**
      * Plays the sequence of notes given by @param args
      * @param {array} args - args[i] has 'mutation', 'NOTE', and 'SECS' fields
-     * @param util 
+     * @param {BlockUtility} util 
      */
     playNotes (args, util, inst) {
-        // if (this._stackTimerNeedsInit(util)) {
-            const l = args.length;
-            let seq = [];
-            for (let i = 0; i < l; i++) {
-                const noteArg = args[i];
-                seq.push(this._clamp(noteArg,i));
-            }
-            if (l === 0) return;
+        const l = args.length;
+        let seq = [];
+        for (let i = 0; i < l; i++) {
+            const noteArg = args[i];
+            seq.push(this._clamp(noteArg,i));
+        }
+        if (l === 0) return;
 
-            //begins the chain of events that plays the seq of notes
-            this.playFirstNote(util, seq, inst);
+        //begins the chain of events that plays the seq of notes
+        this.playFirstNote(util, seq, inst);
 
-            //set the duration to MAX. duration is cut off when the last note ends
-            util.stackFrame.duration = Number.MAX_SAFE_INTEGER;
+        //set the duration to MAX. duration is cut off when the last note ends
+        util.stackFrame.duration = Number.MAX_SAFE_INTEGER;
     }
 
     /**
      * Activates the player in @param playerAndData to play its
      * note, using the data in @param playerAndData to determine
      * the instrument and duration
-     * @param {*} util 
-     * @param {*} playerAndData 
-     * @returns 
+     * @param {BlockUtility} util 
+     * @param {object} playerAndData - contains 'player' and 'data' fields
+     * @private
      */
-    activatePlayer (util, playerAndData) {
+    _activatePlayer (util, playerAndData) {
         // If we're playing too many sounds, do not play the note.
         if (this._concurrencyCounter > MusicCreationHelpers.CONCURRENCY_LIMIT) {
             console.log('concurrency limit reached');

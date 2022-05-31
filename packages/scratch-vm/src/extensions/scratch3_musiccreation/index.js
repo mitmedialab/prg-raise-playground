@@ -531,7 +531,8 @@ class Scratch3MusicCreation {
     }
 
     /**
-     * 
+     * Asynchronous function that gets the created notes from Magenta and initializes
+     * playing the sequence.
      * @param {boolean} RNN - true if 'complete music', false if 'generate new music'
      * @param {array} args - arguments to be given to the music helper
      * @param {BlockUtility} utils
@@ -550,6 +551,13 @@ class Scratch3MusicCreation {
         this.musicCreationHelper.playNotes(prepared_notes['args'], utils, inst); 
     }
 
+    /**
+     * Used to get the generated sequence of notes from Magenta and 
+     * play it. 
+     * @param {boolean} RNN - true if 'complete music', false if 'generate new music'
+     * @param {array} args - arguments to be given to the music helper
+     * @param {BlockUtility} utils
+     */
     getAndPlayMagentaNotes (RNN, args, utils) {
         const musicState = this.musicCreationHelper._getMusicState(utils.target);
         const inst = musicState.currentInstrument;
@@ -566,7 +574,7 @@ class Scratch3MusicCreation {
 
     /**
      * Generates and plays a sequence of notes based off of the notes
-     * that have recently been player and the current instrument
+     * that have recently been played and the current instrument
      * @param {array} args - array of magenta notes [freq,duration,inst,?] 
      * @param {BlockUtility} utils 
      */
@@ -574,6 +582,12 @@ class Scratch3MusicCreation {
         this.getAndPlayMagentaNotes(true,args,utils);
     }
 
+    /**
+     * Generates and plays a sequence of notes, using the 
+     * current instrument. 
+     * @param {array} args - array of magenta notes [freq,duration,inst,?] 
+     * @param {BlockUtility} utils 
+     */
     testMagentaMVAE(args, utils) {
         this.getAndPlayMagentaNotes(false,args,utils);
     }
