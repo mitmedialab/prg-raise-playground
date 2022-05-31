@@ -345,16 +345,6 @@ class MusicCreationHelpers {
 
     getVolume (util) {
         return globalVolume;
-        const stage = this.runtime.getTargetForStage();
-        if (stage) {
-            /*
-            if (stage.volume == 100) {
-                stage.volume = "fortissimo";
-            }
-            */
-            return this.findVolumeForNumber(util.target.volume);
-        }
-        return "mezzo-forte";
     }
 
     /**
@@ -372,6 +362,26 @@ class MusicCreationHelpers {
         let beats = Cast.toNumber(noteInfo.SECS);
         beats = this._clampBeats(beats);
         return {note: note,duration: beats, index: index};
+    }
+
+    /**
+     * Gets the SoundPlayer for this note/instrument combo
+     * @param {number} inst 
+     * @param {number} note 
+     * @returns the SoundPlayer object
+     */
+    _getPlayer (inst, note) {
+        if (!this._instrumentPlayerNoteArrays[inst][note]) {
+            this._instrumentPlayerNoteArrays[inst][note] = this._instrumentPlayerArrays[inst][sampleIndex].take();
+        }
+
+        const player = this._instrumentPlayerNoteArrays[inst][note];
+
+        if (player.isPlaying && !player.isStarting) {
+            // Take the internal player state and create a new player with it.
+            player.take();
+        }
+        return player;
     }
 
     /**
@@ -399,12 +409,8 @@ class MusicCreationHelpers {
             this._instrumentPlayerNoteArrays[inst][note] = this._instrumentPlayerArrays[inst][sampleIndex].take();
         }
 
-        const player = this._instrumentPlayerNoteArrays[inst][note];
+        const player = this._getPlayer(inst,note);
 
-        if (player.isPlaying && !player.isStarting) {
-            // Take the internal player state and create a new player with it.
-            player.take();
-        }
         return {player:player, 
                 data:
                     {instInfo: instrumentInfo, 
@@ -437,7 +443,6 @@ class MusicCreationHelpers {
         }
         const player = playerAndData['player'];
         player.once('stop', () => {
-            this._concurrencyCounter--;
             console.log(`stopped note ${i+1}`);
             if (last) {
                 util.stackFrame.duration = 0;
@@ -486,6 +491,65 @@ class MusicCreationHelpers {
     }
 
     /**
+     * plays the given note
+     * @param {BlockUtility} util
+     * @param {Array[]} sampleArray - array of samples specific to the instrument
+     * @param {number} sampleIndex - an index into @param sampleArray
+     * @param {number} note - number corresponding to freq. of the note
+     * @param {SoundPlayer} player - sound player specific to this note/inst
+     * @param {object} instInfo - contains fields specific to the instrument
+     * @param {number} durationSec - duration, in seconds
+     * @private
+     */
+    _initNote (util, sampleArray, sampleIndex, note, player, instInfo,
+               durationSec) {
+        // Set its pitch.
+        const sampleNote = sampleArray[sampleIndex];
+        const notePitchInterval = this._ratioForPitchInterval(note - sampleNote);
+
+        // Fetch the sound player to play the note.
+        const engine = util.runtime.audioEngine;
+
+        // Create gain nodes for this note's volume and release, and chain them
+        // to the output.
+        const context = engine.audioContext;
+        const volumeGain = context.createGain();
+        volumeGain.gain.setValueAtTime(util.target.volume / 100, engine.currentTime);
+        const releaseGain = context.createGain();
+        volumeGain.connect(releaseGain);
+        releaseGain.connect(engine.getInputNode());
+
+        // Schedule the release of the note, ramping its gain down to zero,
+        // and then stopping the sound.
+        let releaseDuration = instInfo.releaseTime;
+        if (typeof releaseDuration === 'undefined') {
+            releaseDuration = 0.01;
+        }
+        const releaseStart = context.currentTime + durationSec;
+        const releaseEnd = releaseStart + releaseDuration;
+        const z = releaseEnd - context.currentTime;
+        console.log('duration',z,'currTime', context.currentTime);
+        releaseGain.gain.setValueAtTime(1, releaseStart);
+        releaseGain.gain.linearRampToValueAtTime(0.0001, releaseEnd);
+
+        this._concurrencyCounter++;
+        player.once('stop', () => {
+            this._concurrencyCounter--;
+        });
+
+        // Start playing the note
+        player.play();
+        // Connect the player to the gain node.
+        player.connect({getInputNode () {
+            return volumeGain;
+        }});
+        // Set playback now after play creates the outputNode.
+        player.outputNode.playbackRate.value = notePitchInterval;
+        // Schedule playback to stop.
+        player.outputNode.stop(releaseEnd);
+    }
+
+    /**
      * Activates the player in @param playerAndData to play its
      * note, using the data in @param playerAndData to determine
      * the instrument and duration
@@ -513,47 +577,9 @@ class MusicCreationHelpers {
         let instInfo = data['instInfo'];
         let note = data['note'];
         let durationSec = data['duration'];
-        // Set its pitch.
-        const sampleNote = sampleArray[sampleIndex];
-        const notePitchInterval = this._ratioForPitchInterval(note - sampleNote);
 
-        // Fetch the sound player to play the note.
-        const engine = util.runtime.audioEngine;
-
-        // Create gain nodes for this note's volume and release, and chain them
-        // to the output.
-        const context = engine.audioContext;
-        const volumeGain = context.createGain();
-        volumeGain.gain.setValueAtTime(util.target.volume / 100, engine.currentTime);
-        const releaseGain = context.createGain();
-        volumeGain.connect(releaseGain);
-        releaseGain.connect(engine.getInputNode());
-
-        // Schedule the release of the note, ramping its gain down to zero,
-        // and then stopping the sound.
-        let releaseDuration = instInfo.releaseTime;
-        if (typeof releaseDuration === 'undefined') {
-            releaseDuration = 0.01;
-        }
-        const releaseStart = context.currentTime + durationSec;
-        const releaseEnd = releaseStart + releaseDuration;
-        const z = releaseEnd - context.currentTime;
-        console.log('duration',z,'currTime', context.currentTime, 'releaseStart', releaseStart, 'releaseEnd', releaseEnd);
-        releaseGain.gain.setValueAtTime(1, releaseStart);
-        releaseGain.gain.linearRampToValueAtTime(0.0001, releaseEnd);
-
-        this._concurrencyCounter++;
-
-        // Start playing the note
-        player.play();
-        // Connect the player to the gain node.
-        player.connect({getInputNode () {
-            return volumeGain;
-        }});
-        // Set playback now after play creates the outputNode.
-        player.outputNode.playbackRate.value = notePitchInterval;
-        // Schedule playback to stop.
-        player.outputNode.stop(releaseEnd);
+        this._initNote(util, sampleArray, sampleIndex, note, player, instInfo,
+                   durationSec);
     }
 
     playNote (args, util) {
@@ -608,63 +634,15 @@ class MusicCreationHelpers {
         // If the audio sample has not loaded yet, bail out
         if (typeof this._instrumentPlayerArrays[inst] === 'undefined') return;
         if (typeof this._instrumentPlayerArrays[inst][sampleIndex] === 'undefined') return;
-
-        // Fetch the sound player to play the note.
-        const engine = util.runtime.audioEngine;
-
+        
         if (!this._instrumentPlayerNoteArrays[inst][note]) {
             this._instrumentPlayerNoteArrays[inst][note] = this._instrumentPlayerArrays[inst][sampleIndex].take();
         }
 
-        const player = this._instrumentPlayerNoteArrays[inst][note];
+        const player = this._getPlayer(inst,note);
 
-        if (player.isPlaying && !player.isStarting) {
-            // Take the internal player state and create a new player with it.
-            // `.play` does this internally but then instructs the sound to
-            // stop.
-            player.take();
-        }
-
-
-        // Set its pitch.
-        const sampleNote = sampleArray[sampleIndex];
-        const notePitchInterval = this._ratioForPitchInterval(note - sampleNote);
-
-        // Create gain nodes for this note's volume and release, and chain them
-        // to the output.
-        const context = engine.audioContext;
-        const volumeGain = context.createGain();
-        volumeGain.gain.setValueAtTime(util.target.volume / 100, engine.currentTime);
-        const releaseGain = context.createGain();
-        volumeGain.connect(releaseGain);
-        releaseGain.connect(engine.getInputNode());
-
-        // Schedule the release of the note, ramping its gain down to zero,
-        // and then stopping the sound.
-        let releaseDuration = this.INSTRUMENT_INFO[inst].releaseTime;
-        if (typeof releaseDuration === 'undefined') {
-            releaseDuration = 0.01;
-        }
-        const releaseStart = context.currentTime + durationSec;
-        const releaseEnd = releaseStart + releaseDuration;
-        releaseGain.gain.setValueAtTime(1, releaseStart);
-        releaseGain.gain.linearRampToValueAtTime(0.0001, releaseEnd);
-
-        this._concurrencyCounter++;
-        player.once('stop', () => {
-            this._concurrencyCounter--;
-        });
-
-        // Start playing the note
-        player.play();
-        // Connect the player to the gain node.
-        player.connect({getInputNode () {
-            return volumeGain;
-        }});
-        // Set playback now after play creates the outputNode.
-        player.outputNode.playbackRate.value = notePitchInterval;
-        // Schedule playback to stop.
-        player.outputNode.stop(releaseEnd);
+        this._initNote(util, sampleArray, sampleIndex, note, player, instrumentInfo,
+            durationSec);
     }
 
     /**
