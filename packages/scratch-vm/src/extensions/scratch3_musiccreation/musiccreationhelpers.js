@@ -7,6 +7,7 @@ const log = require('../../util/log');
 const { clamp } = require('../../util/math-util');
 const { p } = require('./letters');
 const BlockUtility = require('../../engine/block-utility');
+const VizHelpers = require('./vizhelpers');
 
 /**
  * The instrument and drum sounds, loaded as static assets.
@@ -428,13 +429,15 @@ class MusicCreationHelpers {
      * @param {Array[]} seq - array of objects containing information about a note and its duration
      * @param {BlockUtility} util 
      * @param {number} l - length of @param seq 
+     * @param {VizHelpers} vizHelper
      * @private
      * @augments @param util's stackFrame.duration to be 0 once the last note in @param seq 
      *           has stopped playing. 
      */
-    _playNoteFromSeq (noteInfo, seq, util,l, inst) {
+    _playNoteFromSeq (noteInfo, seq, util,l, inst, vizHelper, raw_notes) {
         const i = noteInfo['index'];
         const last = i === l-1;
+        const raw_note = raw_notes[i];
         if (this._concurrencyCounter > this.CONCURRENCY_LIMIT) return;
         const playerAndData = this.createPlayer(util,noteInfo['note'],noteInfo['duration'], inst);
         if (!playerAndData) {
@@ -447,10 +450,13 @@ class MusicCreationHelpers {
             if (last) {
                 util.stackFrame.duration = 0;
             } else {
-                this._playNoteFromSeq(seq[i+1],seq,util,l,inst);  
+                this._playNoteFromSeq(seq[i+1],seq,util,l,inst,vizHelper,raw_notes);  
             }
         });
         console.log(`playing note ${i+1}`);
+        console.log('fftviz',vizHelper.fftViz);
+        console.log(vizHelper);
+        vizHelper.requestViz(raw_note,util);
         this._activatePlayer(util,playerAndData);
     }
 
@@ -460,31 +466,38 @@ class MusicCreationHelpers {
      * the rest of the notes in @param seq)
      * @param {BlockUtility} util 
      * @param {Array[]} seq 
+     * @param {VizHelpers} vizHelper
      * @requires - each elem in @param seq has 'note', 'duration' and
      * 'index' fields
      */
-    playFirstNote (util, seq, inst) {
+    playFirstNote (util, seq, inst, vizHelper, raw_notes) {
         const l = seq.length
         if (l === 0) return;
-        this._playNoteFromSeq(seq[0],seq,util,l, inst);
+        this._playNoteFromSeq(seq[0],seq,util,l, inst, vizHelper, raw_notes);
     }
 
     /**
      * Plays the sequence of notes given by @param args
-     * @param {array} args - args[i] has 'mutation', 'NOTE', and 'SECS' fields
+     * @param {object} args - contains raw (magenta) notes and 
+     *                        cleaned notes with 'mutation', 'NOTE', and 'SECS' fields
+     *                        @param args: raw notes --> ['notes']
+     *                                     cleaned notes --> ['args']
      * @param {BlockUtility} util 
+     * @param {VizHelpers} vizHelper
      */
-    playNotes (args, util, inst) {
-        const l = args.length;
+    playNotes (args, util, inst, vizHelper) {
+        let clean_notes = args['args'];
+        let raw_notes = args['notes'];
+        const l = clean_notes.length;
         let seq = [];
         for (let i = 0; i < l; i++) {
-            const noteArg = args[i];
+            const noteArg = clean_notes[i];
             seq.push(this._clamp(noteArg,i));
         }
         if (l === 0) return;
 
         //begins the chain of events that plays the seq of notes
-        this.playFirstNote(util, seq, inst);
+        this.playFirstNote(util, seq, inst, vizHelper, raw_notes);
 
         //set the duration to MAX. duration is cut off when the last note ends
         util.stackFrame.duration = Number.MAX_SAFE_INTEGER;
