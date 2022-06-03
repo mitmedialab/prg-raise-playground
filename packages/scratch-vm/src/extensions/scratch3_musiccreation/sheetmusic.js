@@ -908,15 +908,12 @@ class SheetMusic {
                 acc = "flat";
             }
 
-            // this._staffLims = {lo_note:60,hi_note:85,lo_staff:-2,hi_staff:12};
-            // this._staffBaseLims = {lo_note:34,hi_note:34,lo_staff:-5, hi_staff:9};
-
             if (freq >= 60) {
                 if (freq > this._staffLims['hi_note']) {
                     console.log(`ADJUSTING ${freq}`);
                     freq = this._staffLims['hi_note'];
                 } 
-                var staff = pitchToStaff[freq]; //60 to 85
+                var staff = pitchToStaff[freq];
                 var dur = this.noteList[i][1]*4;
                 var amp = this.noteList[i][3];
                 var clef = "treble";
@@ -925,7 +922,7 @@ class SheetMusic {
                     console.log(`ADJUSTING BASE.f ${freq}`);
                     freq = this._staffBaseLims['lo_note'];
                 }
-                var staff = pitchToStaffBass[freq]; //34 to 59
+                var staff = pitchToStaffBass[freq];
                 var dur = this.noteList[i][1]*4;
                 var amp = this.noteList[i][3];
                 var clef = "bass";

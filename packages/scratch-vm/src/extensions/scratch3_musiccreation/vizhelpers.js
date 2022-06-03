@@ -19,7 +19,7 @@ class VizHelpers {
         this._visState = {status: false, mode: undefined};
         this._buf = {sheet: [], wave: [], freq: [], freqs: []};
         this._visNames = {1: 'sheet', 2: 'wave', 3: 'freq', 4: 'freqs'};
-        this._visLims = {'sheet': 8, 'wave': 5, 'freq': 1000, 'freqs': 1000};
+        this._visLims = {'sheet': 12, 'wave': 5, 'freq': 1000, 'freqs': 1000};
 
         /**
          * The ID of the renderer Skin corresponding to the pen layer.
@@ -190,28 +190,6 @@ class VizHelpers {
         let mode = Cast.toNumber(args.FORMAT);
         this._visState['mode'] = mode;
         this._visState['status'] = !!status;
-        console.log('status', status, 'mode', mode, 'stt', this._visState['status']);
-    }
-
-    initViz () {
-        console.log('in init vis');
-        const runtime = this.runtime;
-        if (!this.fftViz) {
-            console.log('hello');
-            this.fftViz = new FFTHelper(runtime);
-        }
-
-        if (!this.sheetMusicViz) {
-            this.sheetMusicViz = new SheetMusicHelper(runtime);
-        }
-
-        if (!this.waveformViz) {
-            this.waveformViz = new WaveformHelper(runtime);            
-        }
-
-        if (!this.spectrogramViz) {
-            this.spectrogramViz = new SpectrogramHelper(runtime);
-        }
     }
 
     /**
@@ -219,7 +197,6 @@ class VizHelpers {
      * @param {array} note - [freq, duration, instrument, volume]
      */
     requestViz (note, util) {
-        console.log('this',this);
         console.log('got request...', note);
         if (this._visState['status']) {
             this.processViz(note,util);
@@ -228,7 +205,6 @@ class VizHelpers {
 
 
     processViz (note,util) {
-        this.initViz();
         const mode = this._visState['mode'];
         const name = this._visNames[mode];
         const lim = this._visLims[name];

@@ -477,7 +477,7 @@ class Scratch3MusicCreation {
     }
 
     testWaveformViz(args, util) {
-        console.log(this.totalNoteList);
+        //console.log(this.totalNoteList);
         this.totalNoteList = this.noteList.concat(this.magentaNoteList);
         this.vizHelper.testWaveformViz(this.totalNoteList, args, util);
     }
@@ -660,7 +660,7 @@ class Scratch3MusicCreation {
                     toAdd.push(volumes[m].value);
                 }
             }
-            console.log(toAdd);
+            // console.log(toAdd);
             this.vizHelper.requestViz(toAdd,util); // can move to music creation helper if that is preferred
             this.wavenoteList.push(toAdd);
         }

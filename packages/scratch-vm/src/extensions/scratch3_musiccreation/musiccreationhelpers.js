@@ -454,8 +454,6 @@ class MusicCreationHelpers {
             }
         });
         console.log(`playing note ${i+1}`);
-        console.log('fftviz',vizHelper.fftViz);
-        console.log(vizHelper);
         vizHelper.requestViz(raw_note,util);
         this._activatePlayer(util,playerAndData);
     }
