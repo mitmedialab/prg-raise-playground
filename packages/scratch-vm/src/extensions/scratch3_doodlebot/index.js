@@ -945,7 +945,10 @@ class DoodlebotBlocks {
     async sendCommandToRobot(command, delayInMs) {
         return new Promise(resolve => {
             setTimeout(() => {
-                if (this._robotUart) this._robotUart.sendText(command);
+                if (this._robotUart) {
+                    console.log("Sending command:", command);
+                    this._robotUart.sendText(command);
+                }
                 else console.log("Robot not available");
                 resolve();
             }, delayInMs);
@@ -1031,10 +1034,10 @@ class DoodlebotBlocks {
      */
     updateSensors(event) {
         const dataLine = event.detail.split("(");
+        console.log("Received message: ", dataLine); // for debugging
 
         for (let i=0; i<dataLine.length; i++) {
             let data = dataLine[i];
-            //console.log("Sensor reading: ", data); // for sensor debugging
             if (data) {
                 if (data == "ms)") {
                     console.log("Stop the motor");
