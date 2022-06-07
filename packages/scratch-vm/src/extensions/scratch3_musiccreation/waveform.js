@@ -405,6 +405,16 @@ class Waveform {
         this.textRenderer.say('here', args, util);
     }
 
+    /**
+     * 
+     * @param {array} note - note[4] contains the ID of this note
+     * @returns the color associated with this note
+     */
+    getColorFromNote(note) {
+        colors = ['0xff0000', '0x0000ff', '0x00ff00', '0xffa500'];
+        return colors[note[4] % colors.length];
+    }
+
     drawSignal(args, util) {
         colors = ['0xff0000', '0x0000ff', '0x00ff00', '0xffa500']
         const color_count = colors.length;
@@ -428,8 +438,7 @@ class Waveform {
             dur = note[1];
             inst = note[2];
             vol = note[3];
-            id = note[4];
-            c = colors[id%color_count];
+            c = this.getColorFromNote(note);
             freqToColor[midi] = c;
             this.setPenColorToColor(c,util);
             freq = 2**((midi - 69)/12)*440;
