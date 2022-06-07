@@ -16,6 +16,7 @@ class VizHelpers {
     constructor (runtime) {
         this.runtime = runtime;
 
+        this._count = 0;
         this._visState = {status: false, mode: undefined};
         this._buf = {sheet: [], wave: [], freq: [], freqs: []};
         this._visNames = {1: 'sheet', 2: 'wave', 3: 'freq', 4: 'freqs'};
@@ -213,11 +214,14 @@ class VizHelpers {
         while (buf.length + 1 >= lim) {
             buf = buf.splice(1);
         }
+        note[4] = this._count++;
+        console.log('note',note);
         buf.push(note);
         this._buf[name] = buf;
         console.log('name', name);
         switch (name) {
             case 'wave':
+                //id for notes when they come in the buffer. Can use ID to track color. 
                 this.testWaveformViz(buf,null,util);
                 break;
             case 'freq':

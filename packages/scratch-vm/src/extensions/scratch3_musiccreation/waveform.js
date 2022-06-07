@@ -407,6 +407,7 @@ class Waveform {
 
     drawSignal(args, util) {
         colors = ['0xff0000', '0x0000ff', '0x00ff00', '0xffa500']
+        const color_count = colors.length;
         freqToColor = {};
         x = this.axisStartX;
         y = this.axisStartY+this.yAxisLength/2;
@@ -427,14 +428,10 @@ class Waveform {
             dur = note[1];
             inst = note[2];
             vol = note[3];
-            if (midi in freqToColor) {
-                c = freqToColor[midi];
-                this.setPenColorToColor(c, util);
-            } else {
-                c = colors[i%4];
-                this.setPenColorToColor(c, util);
-                freqToColor[midi] = c;
-            }
+            id = note[4];
+            c = colors[id%color_count];
+            freqToColor[midi] = c;
+            this.setPenColorToColor(c,util);
             freq = 2**((midi - 69)/12)*440;
             Omega = 2*Math.PI*freq/44140;
             var st = st*prevFreq/Omega;
