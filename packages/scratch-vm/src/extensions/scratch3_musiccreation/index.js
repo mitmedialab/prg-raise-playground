@@ -10,9 +10,8 @@ const MusicCreationHelpers = require('./musiccreationhelpers');
 const MusicAccompanimentHelpers = require('./musicaccompanimenthelpers');
 const AnalysisHelpers = require('./analysishelpers');
 const MusicPlayers = require('./musicplayer')
-const textRender = require('./textrender');
-const regeneratorRuntime = require("regenerator-runtime");
-
+const textRender = require('./textrender'); 
+const regeneratorRuntime = require("regenerator-runtime"); //do not delete
 
 
 class Scratch3MusicCreation {
@@ -30,26 +29,31 @@ class Scratch3MusicCreation {
         this.wavenoteList = [];
         this.magentaNoteList = [];
         
-        this.volumes = [{text: "pianissimo", value: 15}, 
-                    {text: "piano", value: 30}, 
-                    {text: "mezzo-piano", value: 45},
-                    {text: "mezzo-forte", value: 60},
-                    {text: "forte", value: 85},
-                    {text: "fortissimo", value: 100}];
+        this.volumes = [{text: "pianissimo", value: '15'}, 
+                    {text: "piano", value: '30'}, 
+                    {text: "mezzo-piano", value: '45'},
+                    {text: "mezzo-forte", value: '60'},
+                    {text: "forte", value: '85'},
+                    {text: "fortissimo", value: '100'}];
         
-        this.beats = [{text: "1/4", value: 0.0625}, 
-                    {text: "1/2", value: 0.125},
-                    {text: "1", value: 0.25},
-                    {text: "2", value: 0.5},
-                    {text: "3", value: 0.75},
-                    {text: "4", value: 1}];
+        this.beats = [{text: "1/4", value: '0.0625'}, 
+                    {text: "1/2", value: '0.125'},
+                    {text: "1", value: '0.25'},
+                    {text: "2", value: '0.5'},
+                    {text: "3", value: '0.75'},
+                    {text: "4", value: '1'}];
 
-        this.files = [{text: "mystery 1", value: 1}, 
-                    {text: "mystery 2", value: 2}, 
-                    {text: "mystery 3", value: 3},
-                    {text: "mystery 4", value: 4},
-                    {text: "mystery 5", value: 5},
-                    {text: "mystery 6", value: 6}];
+        this.files = [{text: "mystery 1", value: '1'}, 
+                    {text: "mystery 2", value: '2'}, 
+                    {text: "mystery 3", value: '3'},
+                    {text: "mystery 4", value: '4'},
+                    {text: "mystery 5", value: '5'},
+                    {text: "mystery 6", value: '6'}];
+        
+        this.displayOptions = [{text: "sheet music", value: '1'},
+                               {text: "waveform", value: '2'},
+                               {text: "frequencies", value: '3'},
+                               {text: "frequencies over time", value: '4'}];
 
         this.textRenderer = new textRender(runtime);
 
@@ -58,7 +62,6 @@ class Scratch3MusicCreation {
 
         this._onTargetCreated = this._onTargetCreated.bind(this);
         this.runtime.on('targetWasCreated', this._onTargetCreated);
-
     }
 
 
@@ -318,6 +321,18 @@ class Scratch3MusicCreation {
                     blockType: BlockType.COMMAND
                 },
                 {
+                    opcode: 'visualize',
+                    blockType: BlockType.COMMAND,
+                    text: 'display [FORMAT]',
+                    arguments: {
+                        FORMAT: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 1,
+                            menu: "FORMAT"
+                        }
+                    }
+                },
+                {
                     opcode: 'playMystery',
                     blockType: BlockType.COMMAND,
                     text: 'play [FILE]',
@@ -415,7 +430,12 @@ class Scratch3MusicCreation {
                 BEATS: {
                     acceptReporters: true,
                     items: this.beats
+                },
+                FORMAT: {
+                    acceptReporters: true,
+                    items: this.displayOptions
                 }
+            
             }
         };
     }
@@ -448,6 +468,24 @@ class Scratch3MusicCreation {
     testSpectViz (args, util) {
         this.totalNoteList = this.noteList.concat(this.magentaNoteList);
         this.vizHelper.testSpectViz(this.totalNoteList, args, util);
+    }
+    
+    visualize (args, util) {
+        var disp_type = Cast.toNumber(args.FORMAT);
+        switch (disp_type) {
+            case 2:
+                this.testWaveformViz(args,util)
+                break;
+            case 3:
+                this.testFreqViz(args,util)
+                break;
+            case 4:
+                this.testSpectViz(args,util)
+                break;
+            default:
+                this.testSheetMusicViz(args,util)
+                break;
+        }
     }
 
     /**
@@ -538,3 +576,5 @@ class Scratch3MusicCreation {
 }
 
 module.exports = Scratch3MusicCreation;
+
+
