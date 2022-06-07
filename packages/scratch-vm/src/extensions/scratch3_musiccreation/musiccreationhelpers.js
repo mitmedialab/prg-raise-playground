@@ -442,9 +442,14 @@ class MusicCreationHelpers {
             return;
         }
         const player = playerAndData['player'];
+        let stopped = false
+        util.sequencer.runtime.once('PROJECT_STOP_ALL', () => {
+            stopped = true;
+            console.log('STOP SIGN CLICKED');
+        });
         player.once('stop', () => {
             console.log(`stopped note ${i+1}`);
-            if (last) {
+            if (last || stopped) {
                 util.stackFrame.duration = 0;
             } else {
                 this._playNoteFromSeq(seq[i+1],seq,util,l,inst);  
