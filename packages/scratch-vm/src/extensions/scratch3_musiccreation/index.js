@@ -18,7 +18,6 @@ const regeneratorRuntime = require("regenerator-runtime"); //do not delete
 class Scratch3MusicCreation {
     constructor(runtime) {
         this.runtime = runtime;
-
         this.musicPlayer = new MusicPlayers(runtime);
         this.vizHelper = new VizHelpers(runtime);
         this.musicCreationHelper = new MusicCreationHelpers(runtime);

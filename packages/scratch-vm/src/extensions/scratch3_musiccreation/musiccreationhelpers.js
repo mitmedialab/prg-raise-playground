@@ -23,6 +23,7 @@ try {
 class MusicCreationHelpers {
     constructor (runtime) {
         this.runtime = runtime;
+        this._stopped = false;
 
         /**
          * An array of arrays of sound players. Each instrument has one or more audio players.
@@ -368,7 +369,9 @@ class MusicCreationHelpers {
      * Gets the SoundPlayer for this note/instrument combo
      * @param {number} inst 
      * @param {number} note 
-     * @returns the SoundPlayer object
+     * @returns {SoundPlayer} object for the player 
+     * 
+     * @see {SoundPlayer} is in the scratch audio node module
      */
     _getPlayer (inst, note) {
         if (!this._instrumentPlayerNoteArrays[inst][note]) {
@@ -442,21 +445,24 @@ class MusicCreationHelpers {
             return;
         }
         const player = playerAndData['player'];
-        let stopped = false
         util.sequencer.runtime.once('PROJECT_STOP_ALL', () => {
-            stopped = true;
-            console.log('STOP SIGN CLICKED');
+            this._stopped = true;
+            player.stopImmediately();
+            util.stackFrame.duration = 0;
+            return;
         });
         player.once('stop', () => {
             console.log(`stopped note ${i+1}`);
-            if (last || stopped) {
+            if (last || this._stopped) {
                 util.stackFrame.duration = 0;
             } else {
                 this._playNoteFromSeq(seq[i+1],seq,util,l,inst);  
             }
         });
-        console.log(`playing note ${i+1}`);
-        this._activatePlayer(util,playerAndData);
+        if (!this._stopped) {
+            console.log(`playing note ${i+1}`);
+            this._activatePlayer(util,playerAndData);
+        }
     }
 
     /**
@@ -471,6 +477,7 @@ class MusicCreationHelpers {
     playFirstNote (util, seq, inst) {
         const l = seq.length
         if (l === 0) return;
+        util.sequencer.runtime.setMaxListeners(Infinity);
         this._playNoteFromSeq(seq[0],seq,util,l, inst);
     }
 
@@ -487,7 +494,7 @@ class MusicCreationHelpers {
             seq.push(this._clamp(noteArg,i));
         }
         if (l === 0) return;
-
+        this._stopped = false;
         //begins the chain of events that plays the seq of notes
         this.playFirstNote(util, seq, inst);
 
