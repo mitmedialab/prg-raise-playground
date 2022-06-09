@@ -10,12 +10,14 @@ const MusicCreationHelpers = require('./musiccreationhelpers');
 const MusicAccompanimentHelpers = require('./musicaccompanimenthelpers');
 const AnalysisHelpers = require('./analysishelpers');
 const MusicPlayers = require('./musicplayer')
-const textRender = require('./textrender'); 
+const textRender = require('./textrender');
 const regeneratorRuntime = require("regenerator-runtime"); //do not delete
+const BlockUtility = require('../../engine/block-utility');
+const { getXMLForOpcode } = require('../../extension-support/xml-builder');
 
 
 class Scratch3MusicCreation {
-    constructor (runtime) {
+    constructor(runtime) {
         this.runtime = runtime;
 
         this.musicPlayer = new MusicPlayers(runtime);
@@ -28,32 +30,32 @@ class Scratch3MusicCreation {
         this.noteList = [];
         this.wavenoteList = [];
         this.magentaNoteList = [];
-        
-        this.volumes = [{text: "pianissimo", value: '15'}, 
-                    {text: "piano", value: '30'}, 
-                    {text: "mezzo-piano", value: '45'},
-                    {text: "mezzo-forte", value: '60'},
-                    {text: "forte", value: '85'},
-                    {text: "fortissimo", value: '100'}];
-        
-        this.beats = [{text: "1/4", value: '0.0625'}, 
-                    {text: "1/2", value: '0.125'},
-                    {text: "1", value: '0.25'},
-                    {text: "2", value: '0.5'},
-                    {text: "3", value: '0.75'},
-                    {text: "4", value: '1'}];
 
-        this.files = [{text: "mystery 1", value: '1'}, 
-                    {text: "mystery 2", value: '2'}, 
-                    {text: "mystery 3", value: '3'},
-                    {text: "mystery 4", value: '4'},
-                    {text: "mystery 5", value: '5'},
-                    {text: "mystery 6", value: '6'}];
-        
-        this.displayOptions = [{text: "sheet music", value: '1'},
-                               {text: "waveform", value: '2'},
-                               {text: "frequencies", value: '3'},
-                               {text: "frequencies over time", value: '4'}];
+        this.volumes = [{ text: "pianissimo", value: '15' },
+        { text: "piano", value: '30' },
+        { text: "mezzo-piano", value: '45' },
+        { text: "mezzo-forte", value: '60' },
+        { text: "forte", value: '85' },
+        { text: "fortissimo", value: '100' }];
+
+        this.beats = [{ text: "1/4", value: '0.0625' },
+        { text: "1/2", value: '0.125' },
+        { text: "1", value: '0.25' },
+        { text: "2", value: '0.5' },
+        { text: "3", value: '0.75' },
+        { text: "4", value: '1' }];
+
+        this.files = [{ text: "mystery 1", value: '1' },
+        { text: "mystery 2", value: '2' },
+        { text: "mystery 3", value: '3' },
+        { text: "mystery 4", value: '4' },
+        { text: "mystery 5", value: '5' },
+        { text: "mystery 6", value: '6' }];
+
+        this.displayOptions = [{ text: "sheet music", value: '1' },
+        { text: "waveform", value: '2' },
+        { text: "frequencies", value: '3' },
+        { text: "frequencies over time", value: '4' }];
 
         this.textRenderer = new textRender(runtime);
 
@@ -69,7 +71,7 @@ class Scratch3MusicCreation {
      * The key to load & store a target's music-related state.
      * @type {string}
      */
-    static get STATE_KEY () {
+    static get STATE_KEY() {
         return 'Scratch.musiccreation';
     }
 
@@ -80,7 +82,7 @@ class Scratch3MusicCreation {
      * @listens Runtime#event:targetWasCreated
      * @private
      */
-    _onTargetCreated (newTarget, sourceTarget) {
+    _onTargetCreated(newTarget, sourceTarget) {
         if (sourceTarget) {
             const musicState = sourceTarget.getCustomState(Scratch3MusicCreation.STATE_KEY);
             if (musicState) {
@@ -96,7 +98,7 @@ class Scratch3MusicCreation {
      * @return {array} - An array of objects with text and value properties.
      * @private
      */
-    _buildMenu (info) {
+    _buildMenu(info) {
         return info.map((entry, index) => {
             const obj = {};
             obj.text = entry.name;
@@ -115,7 +117,7 @@ class Scratch3MusicCreation {
      * @param {number[]} samples - an array of numbers representing the MIDI note number for each
      *                           sampled sound used to play this instrument.
      */
-    get INSTRUMENT_INFO () {
+    get INSTRUMENT_INFO() {
         return [
             {
                 name: formatMessage({
@@ -136,7 +138,7 @@ class Scratch3MusicCreation {
                 dirName: '4-guitar',
                 releaseTime: 0.5,
                 samples: [60]
-            },            {
+            }, {
                 name: formatMessage({
                     id: 'music.instrumentBass',
                     default: 'Bass',
@@ -188,7 +190,7 @@ class Scratch3MusicCreation {
     }
 
 
-    getInfo () {
+    getInfo() {
         return {
             id: 'musiccreation',
             name: 'Music Creation',
@@ -435,55 +437,55 @@ class Scratch3MusicCreation {
                     acceptReporters: true,
                     items: this.displayOptions
                 }
-            
+
             }
         };
     }
 
-    setText (args, util) {
+    setText(args, util) {
         this.textRenderer.say(args.TEXT, args, util);
     }
 
-    resetMusic (args, util) {
+    resetMusic(args, util) {
         this.noteList = [];
         this.wavenoteList = [];
         this.magentaNoteList = [];
     }
 
-    testWaveformViz (args, util) {
+    testWaveformViz(args, util) {
         this.totalNoteList = this.noteList.concat(this.magentaNoteList);
         this.vizHelper.testWaveformViz(this.totalNoteList, args, util);
     }
 
-    testSheetMusicViz (args, util) {
+    testSheetMusicViz(args, util) {
         this.totalNoteList = this.noteList.concat(this.magentaNoteList);
         this.vizHelper.testSheetMusicViz(this.totalNoteList, args, util);
     }
 
-    testFreqViz (args, util) {
+    testFreqViz(args, util) {
         this.totalNoteList = this.noteList.concat(this.magentaNoteList);
         this.vizHelper.testFreqViz(this.totalNoteList, args, util);
     }
 
-    testSpectViz (args, util) {
+    testSpectViz(args, util) {
         this.totalNoteList = this.noteList.concat(this.magentaNoteList);
         this.vizHelper.testSpectViz(this.totalNoteList, args, util);
     }
-    
-    visualize (args, util) {
+
+    visualize(args, util) {
         var disp_type = Cast.toNumber(args.FORMAT);
         switch (disp_type) {
             case 2:
-                this.testWaveformViz(args,util)
+                this.testWaveformViz(args, util)
                 break;
             case 3:
-                this.testFreqViz(args,util)
+                this.testFreqViz(args, util)
                 break;
             case 4:
-                this.testSpectViz(args,util)
+                this.testSpectViz(args, util)
                 break;
             default:
-                this.testSheetMusicViz(args,util)
+                this.testSheetMusicViz(args, util)
                 break;
         }
     }
@@ -494,24 +496,24 @@ class Scratch3MusicCreation {
      * @param {object} util - utility object provided by the runtime.
      * @property {int} INSTRUMENT - the number of the instrument to select.
      */
-    setInstrument (args, util) {
+    setInstrument(args, util) {
         this.musicCreationHelper._setInstrument(args.INSTRUMENT, util, false);
     }
 
-    async testMagentaRNN (args, utils) {
+    async testMagentaRNN(args, utils) {
         this.magentaNoteList = await this.musicAccompanimentHelper.testMagentaRNN(this.noteList, args, utils);
     }
 
-    async testMagentaMVAE (utils) {
+    async testMagentaMVAE(utils) {
         this.magentaNoteList = await this.musicAccompanimentHelper.testMagentaMVAE(utils);
     }
 
-    getInstrument (util) {
+    getInstrument(util) {
         return this.musicCreationHelper.getInstrument(util);
     }
 
 
-    _playNoteForPicker (noteNum, category) {
+    _playNoteForPicker(noteNum, category) {
         if (category !== this.getInfo().name) return;
         const util = {
             runtime: this.runtime,
@@ -524,17 +526,19 @@ class Scratch3MusicCreation {
      * Set the current tempo to a new value.
      * @param {object} args - the block arguments.
      * @property {number} TEMPO - the tempo, in beats per minute.
+     * @param {BlockUtility} util
      */
-    setVolume (args, util) {
+    setVolume(args, util) {
+        util.runtime.addBlocksToWorkspace(getXMLForOpcode(this, util.runtime, 'playNote'));
         const volume = Cast.toNumber(args.VOLUME);
         this.musicCreationHelper._updateVolume(volume, util);
     }
 
-    getVolume (util) {
+    getVolume(util) {
         return this.musicCreationHelper.getVolume(util);
     }
 
-    playNote (args, util) {
+    playNote(args, util) {
         toAdd = this.musicCreationHelper.playNote(args, util);
         if (toAdd.length == 3) {
             this.noteList.push(toAdd);
@@ -548,27 +552,27 @@ class Scratch3MusicCreation {
         }
     }
 
-    playMystery (args, util) {
+    playMystery(args, util) {
         this.analysisHelper.playFile(args, util);
     }
 
-    compareFiles (args, util) {
+    compareFiles(args, util) {
         this.analysisHelper.compareFiles(args, util);
     }
 
-    getLouder (util) {
+    getLouder(util) {
         return this.analysisHelper.getLouder(util);
     }
 
-    getHigher (util) {
+    getHigher(util) {
         return this.analysisHelper.getHigher(util);
     }
 
-    getInst1 (util) {
+    getInst1(util) {
         return this.analysisHelper.getInst1(util);
     }
 
-    getInst2 (util) {
+    getInst2(util) {
         return this.analysisHelper.getInst2(util);
     }
 
