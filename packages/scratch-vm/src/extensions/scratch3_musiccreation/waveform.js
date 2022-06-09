@@ -4,6 +4,7 @@ const Cast = require('../../util/cast');
 const Color = require('../../util/color');
 const RenderedTarget = require('../../sprites/rendered-target');
 const StageLayering = require('../../engine/stage-layering');
+const FreqToNote = require('./freqtonote');
 
 const letters = require('./letters');
 const textRender = require('./textrender');
@@ -381,7 +382,7 @@ class Waveform {
             }
             this.setPenColorToColor(this.black, util);
             this.penUp(args, util);
-            this.drawString(freqToName[i], colorX+25, colorY, 0.6, args, util);
+            this.drawString(FreqToNote.freqToNote(i), colorX+25, colorY, 0.6, args, util);
             colorY -= 15;
         }
         this.setPenColorToColor(this.black, util);
