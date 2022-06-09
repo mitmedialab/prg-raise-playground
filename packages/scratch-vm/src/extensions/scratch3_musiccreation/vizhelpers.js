@@ -198,7 +198,6 @@ class VizHelpers {
      * @param {array} note - [freq, duration, instrument, volume]
      */
     requestViz (note, util) {
-        console.log('got request...', note);
         if (this._visState['status']) {
             this.processViz(note,util);
         }
@@ -209,7 +208,6 @@ class VizHelpers {
         const mode = this._visState['mode'];
         const name = this._visNames[mode];
         const lim = this._visLims[name];
-        console.log(`mode ${mode}, lim ${lim}`);
         let buf = this._buf[name];
         while (buf.length + 1 >= lim) {
             buf = buf.splice(1);
@@ -218,7 +216,6 @@ class VizHelpers {
         console.log('note',note);
         buf.push(note);
         this._buf[name] = buf;
-        console.log('name', name);
         switch (name) {
             case 'wave':
                 //id for notes when they come in the buffer. Can use ID to track color. 
