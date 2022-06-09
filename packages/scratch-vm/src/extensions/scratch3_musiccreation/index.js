@@ -13,7 +13,7 @@ const MusicPlayers = require('./musicplayer')
 const textRender = require('./textrender');
 const regeneratorRuntime = require("regenerator-runtime"); //do not delete
 const BlockUtility = require('../../engine/block-utility');
-const { getXMLForOpcode } = require('../../extension-support/xml-builder');
+const { generateXMLForBlockChunk } = require('../../extension-support/xml-builder');
 
 
 class Scratch3MusicCreation {
@@ -529,7 +529,7 @@ class Scratch3MusicCreation {
      * @param {BlockUtility} util
      */
     setVolume(args, util) {
-        util.runtime.addBlocksToWorkspace(getXMLForOpcode(this, util.runtime, 'playNote'));
+        util.runtime.addBlocksToWorkspace(generateXMLForBlockChunk(this, util.runtime, ['playNote', 'playNote', 'playNote'], [{}, {}, {}]));
         const volume = Cast.toNumber(args.VOLUME);
         this.musicCreationHelper._updateVolume(volume, util);
     }
