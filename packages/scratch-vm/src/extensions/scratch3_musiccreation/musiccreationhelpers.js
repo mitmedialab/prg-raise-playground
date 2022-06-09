@@ -443,14 +443,12 @@ class MusicCreationHelpers {
         }
         const player = playerAndData['player'];
         player.once('stop', () => {
-            console.log(`stopped note ${i+1}`);
             if (last) {
                 util.stackFrame.duration = 0;
             } else {
                 this._playNoteFromSeq(seq[i+1],seq,util,l,inst);  
             }
         });
-        console.log(`playing note ${i+1}`);
         this._activatePlayer(util,playerAndData);
     }
 
@@ -527,8 +525,6 @@ class MusicCreationHelpers {
         }
         const releaseStart = context.currentTime + durationSec;
         const releaseEnd = releaseStart + releaseDuration;
-        const z = releaseEnd - context.currentTime;
-        console.log('duration',z,'currTime', context.currentTime);
         releaseGain.gain.setValueAtTime(1, releaseStart);
         releaseGain.gain.linearRampToValueAtTime(0.0001, releaseEnd);
 
