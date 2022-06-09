@@ -3,6 +3,7 @@ const BlockType = require('../../extension-support/block-type');
 const Clone = require('../../util/clone');
 const Cast = require('../../util/cast');
 const formatMessage = require('format-message');
+const BlockUtility = require('../../engine/block-utility');
 const log = require('../../util/log');
 
 const VizHelpers = require('./vizhelpers');
@@ -12,7 +13,6 @@ const AnalysisHelpers = require('./analysishelpers');
 const MusicPlayers = require('./musicplayer')
 const textRender = require('./textrender');
 const regeneratorRuntime = require("regenerator-runtime"); //do not delete
-const BlockUtility = require('../../engine/block-utility');
 const { generateXMLForBlockChunk } = require('../../extension-support/xml-builder');
 
 
@@ -38,12 +38,7 @@ class Scratch3MusicCreation {
         { text: "forte", value: '85' },
         { text: "fortissimo", value: '100' }];
 
-        this.beats = [{ text: "1/4", value: '0.0625' },
-        { text: "1/2", value: '0.125' },
-        { text: "1", value: '0.25' },
-        { text: "2", value: '0.5' },
-        { text: "3", value: '0.75' },
-        { text: "4", value: '1' }];
+        this.beats = [0.0625, 0.125, 0.25, 0.5, 0.75, 1].map(this.secsToBeats);
 
         this.files = [{ text: "mystery 1", value: '1' },
         { text: "mystery 2", value: '2' },
@@ -188,6 +183,29 @@ class Scratch3MusicCreation {
             }
         ];
     }
+
+    secsToBeats(secs) {
+        const beatPerSec = 4;
+
+        const gcd = function (a, b) {
+            if (b < 0.0000001) return a;// Since there is a limited precision we need to limit the value.
+            return gcd(b, Math.floor(a % b));
+        };
+
+        const beats = (typeof secs === 'number' ? secs : parseFloat(secs)) * beatPerSec;
+        const len = beats.toString().length - 2;
+
+        let denominator = Math.pow(10, len);
+        let numerator = beats * denominator;
+
+        const divisor = gcd(numerator, denominator);
+
+        numerator = Math.round(numerator / divisor);
+        denominator = Math.round(denominator / divisor);
+
+        const text = denominator === 1 ? `${numerator}` : `${numerator}/${denominator}`;
+        return { text, value: secs };
+    };
 
 
     getInfo() {
@@ -528,20 +546,117 @@ class Scratch3MusicCreation {
         this.musicCreationHelper._setInstrument(args.INSTRUMENT, util, false);
     }
 
-    async testMagentaRNN(args, utils) {
-        this.magentaNoteList = await this.musicAccompanimentHelper.testMagentaRNN(this.noteList, args, utils);
+    /**
+     * 
+     * @param {array} raw_note - magenta note [freq,duration,inst,?] 
+     * @returns information about the note as an object, in a form 
+     *          consumable by this.musicCreationHelper
+     */
+    rawNoteToNoteArg(raw_note) {
+        if (raw_note.length < 2) return;
+        var note_num = String(raw_note[0]);
+        var secs = String(raw_note[1]);
+        return { mutation: undefined, NOTE: note_num, SECS: secs };
     }
 
-    async testMagentaMVAE(utils) {
-        this.magentaNoteList = await this.musicAccompanimentHelper.testMagentaMVAE(utils);
+    /**
+     * Prepares the magenta notes to be played
+     * @param {Array[]} magenta_notes 
+     * @returns an object with 'notes' and 'args' fields
+     */
+    _prepare(magenta_notes) {
+        var inst = this.getInstrument();
+        magenta_notes.forEach(x => {
+            x[2] = inst;
+        });
+        var args = magenta_notes.map(x => {
+            return this.rawNoteToNoteArg(x);
+        });
+        return { notes: magenta_notes, args: args };
     }
 
-    async createNotesMVAE(utils) {
-        this.magentaNoteList = await this.musicAccompanimentHelper.testMagentaMVAE(utils);
-        const blockArgs = this.magentaNoteList.map(arr => ({ 'NOTE': arr[0], 'SECS': arr[1] }));
-        const opcodes = blockArgs.map(_ => 'playNote');
-        const xml = generateXMLForBlockChunk(this, util.runtime, opcodes, blockArgs);
-        util.runtime.addBlocksToWorkspace(xml);
+    /**
+     * Asynchronous function that gets the created notes from Magenta and initializes
+     * playing the sequence.
+     * @param {boolean} RNN - true if 'complete music', false if 'generate new music'
+     * @param {array} args - arguments to be given to the music helper
+     * @param {BlockUtility} utils
+     * @param {number} inst - instrument to play on, represented as a number
+     * @param {function({mutation: any; NOTE: string; SECS: string;}[]): void} processNotes
+     * @private 
+     */
+    async _getAndPlayMagentaNotes(RNN, args, utils, inst, processNotes) {
+        let magenta_notes = null;
+        if (RNN) {
+            magenta_notes = await this.musicAccompanimentHelper.testMagentaRNN(this.noteList, args, utils);
+        } else {
+            magenta_notes = await this.musicAccompanimentHelper.testMagentaMVAE(utils);
+        }
+        const prepared_notes = this._prepare(magenta_notes);
+        this.magentaNoteList = prepared_notes['notes'];
+        this.musicCreationHelper.playNotes(prepared_notes['args'], utils, inst);
+        if (processNotes) processNotes(prepared_notes.args);
+    }
+
+    /**
+     * Used to get the generated sequence of notes from Magenta and 
+     * play it. 
+     * @param {boolean} RNN - true if 'complete music', false if 'generate new music'
+     * @param {array} args - arguments to be given to the music helper
+     * @param {BlockUtility} utils
+     * @param {function(any[][]): void} processNotes
+     */
+    getAndPlayMagentaNotes(RNN, args, utils, processNotes) {
+        const musicState = this.musicCreationHelper._getMusicState(utils.target);
+        const inst = musicState.currentInstrument;
+        if (utils.stackTimerNeedsInit()) {
+            // get timer running for a large amount of time (will be handled)
+            utils.startStackTimer(Number.MAX_SAFE_INTEGER);
+            utils.yield();
+            this._getAndPlayMagentaNotes(RNN, args, utils, inst, processNotes);
+        }
+        else if (!utils.stackTimerFinished()) {
+            utils.yield();
+        }
+    }
+
+    /**
+     * Generates and plays a sequence of notes based off of the notes
+     * that have recently been played and the current instrument
+     * @param {array} args - array of magenta notes [freq,duration,inst,?] 
+     * @param {BlockUtility} utils 
+     */
+    testMagentaRNN(args, utils) {
+        this.getAndPlayMagentaNotes(true, args, utils);
+    }
+
+    /**
+     * Generates and plays a sequence of notes, using the 
+     * current instrument. 
+     * @param {array} args - array of magenta notes [freq,duration,inst,?] 
+     * @param {BlockUtility} utils 
+     */
+    testMagentaMVAE(args, utils) {
+        this.getAndPlayMagentaNotes(false, args, utils);
+    }
+
+    /**
+     *  
+     * current instrument. 
+     * @param {array} args - array of magenta notes [freq,duration,inst,?] 
+     * @param {BlockUtility} utils 
+     */
+    createNotesMVAE(args, utils) {
+        const { runtime } = utils
+        this.getAndPlayMagentaNotes(false, args, utils, (notes) => {
+            const blockArgs = notes.map(note => {
+                const { NOTE, SECS } = note;
+                return { NOTE, SECS };
+            });
+            const opcodes = blockArgs.map(_ => 'playNote');
+            const xml = generateXMLForBlockChunk(this, runtime, opcodes, blockArgs);
+            runtime.addBlocksToWorkspace(xml);
+        });
     }
 
     getInstrument(util) {
