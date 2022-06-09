@@ -20,7 +20,7 @@ class VizHelpers {
         this._visState = {status: false, mode: undefined};
         this._buf = {sheet: [], wave: [], freq: [], freqs: []};
         this._visNames = {1: 'sheet', 2: 'wave', 3: 'freq', 4: 'freqs'};
-        this._visLims = {'sheet': 12, 'wave': 5, 'freq': 1000, 'freqs': 1000};
+        this._visLims = {'sheet': 12, 'wave': 5, 'freq': 15, 'freqs': 15};
 
         /**
          * The ID of the renderer Skin corresponding to the pen layer.
