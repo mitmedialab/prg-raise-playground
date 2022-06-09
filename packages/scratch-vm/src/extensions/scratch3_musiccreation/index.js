@@ -278,11 +278,39 @@ class Scratch3MusicCreation {
                     },
                 },
                 {
+                    opcode: 'testMagentaRNN',
+                    text: formatMessage({
+                        id: 'musiccreation.testMagentaRNN',
+                        default: 'add music blocks with [STEPS] steps and [TEMP] temperature',
+                        description: 'test Magenta RNN'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        STEPS: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 20
+                        },
+                        TEMP: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 1.5
+                        },
+                    },
+                },
+                {
                     opcode: 'testMagentaMVAE',
                     text: formatMessage({
                         id: 'musiccreation.testMagentaMVAE',
                         default: 'generate new music',
                         description: 'test Magenta MVAE'
+                    }),
+                    blockType: BlockType.COMMAND
+                },
+                {
+                    opcode: 'createNotesMVAE',
+                    text: formatMessage({
+                        id: 'musiccreation.createNotesMVAE',
+                        default: 'add new music blocks',
+                        description: 'create notes Magenta MVAE'
                     }),
                     blockType: BlockType.COMMAND
                 },
@@ -508,6 +536,14 @@ class Scratch3MusicCreation {
         this.magentaNoteList = await this.musicAccompanimentHelper.testMagentaMVAE(utils);
     }
 
+    async createNotesMVAE(utils) {
+        this.magentaNoteList = await this.musicAccompanimentHelper.testMagentaMVAE(utils);
+        const blockArgs = this.magentaNoteList.map(arr => ({ 'NOTE': arr[0], 'SECS': arr[1] }));
+        const opcodes = blockArgs.map(_ => 'playNote');
+        const xml = generateXMLForBlockChunk(this, util.runtime, opcodes, blockArgs);
+        util.runtime.addBlocksToWorkspace(xml);
+    }
+
     getInstrument(util) {
         return this.musicCreationHelper.getInstrument(util);
     }
@@ -529,7 +565,6 @@ class Scratch3MusicCreation {
      * @param {BlockUtility} util
      */
     setVolume(args, util) {
-        util.runtime.addBlocksToWorkspace(generateXMLForBlockChunk(this, util.runtime, ['playNote', 'playNote', 'playNote'], [{}, {}, {}]));
         const volume = Cast.toNumber(args.VOLUME);
         this.musicCreationHelper._updateVolume(volume, util);
     }
