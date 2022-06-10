@@ -23,6 +23,7 @@ try {
 class MusicCreationHelpers {
     constructor (runtime) {
         this.runtime = runtime;
+        this._stopped = false;
 
         /**
          * An array of arrays of sound players. Each instrument has one or more audio players.
@@ -368,7 +369,9 @@ class MusicCreationHelpers {
      * Gets the SoundPlayer for this note/instrument combo
      * @param {number} inst 
      * @param {number} note 
-     * @returns the SoundPlayer object
+     * @returns {SoundPlayer} object for the player 
+     * 
+     * @see {SoundPlayer} is in the scratch audio node module
      */
     _getPlayer (inst, note) {
         if (!this._instrumentPlayerNoteArrays[inst][note]) {
@@ -442,14 +445,23 @@ class MusicCreationHelpers {
             return;
         }
         const player = playerAndData['player'];
+        util.sequencer.runtime.once('PROJECT_STOP_ALL', () => {
+            this._stopped = true;
+            player.stopImmediately();
+            if (util.thread.peekStackFrame()) util.stackFrame.duration = 0;
+            return;
+        });
         player.once('stop', () => {
-            if (last) {
+            if (last || this._stopped) {
                 util.stackFrame.duration = 0;
             } else {
                 this._playNoteFromSeq(seq[i+1],seq,util,l,inst);  
             }
         });
-        this._activatePlayer(util,playerAndData);
+        
+        if (!this._stopped) {
+            this._activatePlayer(util,playerAndData);
+        }
     }
 
     /**
@@ -464,6 +476,7 @@ class MusicCreationHelpers {
     playFirstNote (util, seq, inst) {
         const l = seq.length
         if (l === 0) return;
+        util.sequencer.runtime.setMaxListeners(Infinity);
         this._playNoteFromSeq(seq[0],seq,util,l, inst);
     }
 
@@ -480,7 +493,7 @@ class MusicCreationHelpers {
             seq.push(this._clamp(noteArg,i));
         }
         if (l === 0) return;
-
+        this._stopped = false;
         //begins the chain of events that plays the seq of notes
         this.playFirstNote(util, seq, inst);
 
