@@ -11,6 +11,7 @@ const RenderConstants = require('./RenderConstants');
 const ShaderManager = require('./ShaderManager');
 const SVGSkin = require('./SVGSkin');
 const TextBubbleSkin = require('./TextBubbleSkin');
+const TextBoxSkin = require('./TextBoxSkin');
 const EffectTransform = require('./EffectTransform');
 const log = require('./util/log');
 
@@ -344,7 +345,24 @@ class RenderWebGL extends EventEmitter {
     createTextSkin (type, text, pointsLeft) {
         const skinId = this._nextSkinId++;
         const newSkin = new TextBubbleSkin(skinId, this);
+        log.log("TO BUBBLE", text);
         newSkin.setTextBubble(type, text, pointsLeft);
+        this._allSkins[skinId] = newSkin;
+        return skinId;
+    }
+
+        /**
+     * Create a new SVG skin using the text bubble svg creator. The rotation center
+     * is always placed at the top left.
+     * @param {!string} type - either "say" or "think".
+     * @param {!string} text - the text for the bubble.
+     * @param {!boolean} pointsLeft - which side the bubble is pointing.
+     * @returns {!int} the ID for the new skin.
+     */
+    createTextBoxSkin (type, text, pointsLeft) {
+        const skinId = this._nextSkinId++;
+        const newSkin = new TextBoxSkin(skinId, this);
+        newSkin.setTextBox(type, text, pointsLeft);
         this._allSkins[skinId] = newSkin;
         return skinId;
     }
@@ -414,6 +432,24 @@ class RenderWebGL extends EventEmitter {
 
         const newSkin = new TextBubbleSkin(skinId, this);
         newSkin.setTextBubble(type, text, pointsLeft);
+        this._reskin(skinId, newSkin);
+    }
+
+    /**
+     * Update a skin using the text bubble svg creator.
+     * @param {!int} skinId the ID for the skin to change.
+     * @param {!string} type - either "say" or "think".
+     * @param {!string} text - the text for the bubble.
+     * @param {!boolean} pointsLeft - which side the bubble is pointing.
+     */
+    updateTextBoxSkin (skinId, type, text, pointsLeft) {
+        if (this._allSkins[skinId] instanceof TextBoxSkin) {
+            this._allSkins[skinId].setTextBox(type, text, pointsLeft);
+            return;
+        }
+
+        const newSkin = new TextBoxSkin(skinId, this);
+        newSkin.setTextBox(type, text, pointsLeft);
         this._reskin(skinId, newSkin);
     }
 
