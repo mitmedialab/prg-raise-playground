@@ -24,6 +24,7 @@ try {
 class MusicCreationHelpers {
     constructor (runtime) {
         this.runtime = runtime;
+        this._stopped = false;
 
         /**
          * An array of arrays of sound players. Each instrument has one or more audio players.
@@ -369,7 +370,9 @@ class MusicCreationHelpers {
      * Gets the SoundPlayer for this note/instrument combo
      * @param {number} inst 
      * @param {number} note 
-     * @returns the SoundPlayer object
+     * @returns {SoundPlayer} object for the player 
+     * 
+     * @see {SoundPlayer} is in the scratch audio node module
      */
     _getPlayer (inst, note) {
         if (!this._instrumentPlayerNoteArrays[inst][note]) {
@@ -445,17 +448,23 @@ class MusicCreationHelpers {
             return;
         }
         const player = playerAndData['player'];
+        util.sequencer.runtime.once('PROJECT_STOP_ALL', () => {
+            this._stopped = true;
+            player.stopImmediately();
+            if (util.thread.peekStackFrame()) util.stackFrame.duration = 0;
+            return;
+        });
         player.once('stop', () => {
-            console.log(`stopped note ${i+1}`);
-            if (last) {
+            if (last || this._stopped) {
                 util.stackFrame.duration = 0;
             } else {
                 this._playNoteFromSeq(seq[i+1],seq,util,l,inst,vizHelper,raw_notes);  
             }
-        });
-        console.log(`playing note ${i+1}`);
-        vizHelper.requestViz(raw_note,util);
-        this._activatePlayer(util,playerAndData);
+        });        
+        if (!this._stopped) {
+            vizHelper.requestViz(raw_note,util); //potentially incorrect...
+            this._activatePlayer(util,playerAndData);
+        }
     }
 
     /**
@@ -471,6 +480,7 @@ class MusicCreationHelpers {
     playFirstNote (util, seq, inst, vizHelper, raw_notes) {
         const l = seq.length
         if (l === 0) return;
+        util.sequencer.runtime.setMaxListeners(Infinity);
         this._playNoteFromSeq(seq[0],seq,util,l, inst, vizHelper, raw_notes);
     }
 
@@ -493,7 +503,7 @@ class MusicCreationHelpers {
             seq.push(this._clamp(noteArg,i));
         }
         if (l === 0) return;
-
+        this._stopped = false;
         //begins the chain of events that plays the seq of notes
         this.playFirstNote(util, seq, inst, vizHelper, raw_notes);
 
@@ -538,8 +548,6 @@ class MusicCreationHelpers {
         }
         const releaseStart = context.currentTime + durationSec;
         const releaseEnd = releaseStart + releaseDuration;
-        const z = releaseEnd - context.currentTime;
-        console.log('duration',z,'currTime', context.currentTime);
         releaseGain.gain.setValueAtTime(1, releaseStart);
         releaseGain.gain.linearRampToValueAtTime(0.0001, releaseEnd);
 
