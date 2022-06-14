@@ -220,6 +220,23 @@ class Blocks {
     }
 
     /**
+     * NOTE: Also returns true if baseID === aboveID
+     * @param {?string} baseID ID of block to check from.
+     * @param {?string} aboveID ID of block that may or may not be above the baseID block.
+     * @return {boolean} Whether or a block with id = aboveID is 'above' the baseID block
+     */
+     isBlockAbove (baseID, aboveID) {
+        if (baseID === aboveID) return true; 
+        let block = this._blocks[baseID];
+        if (typeof block === 'undefined') return null;
+        while (block.parent !== null) {
+            block = this._blocks[block.parent];
+            if (block.id === aboveID) return true;
+        }
+        return false;
+    }
+
+    /**
      * Get the procedure definition for a given name.
      * @param {?string} name Name of procedure to query.
      * @return {?string} ID of procedure definition.
