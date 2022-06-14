@@ -13,7 +13,9 @@ const AnalysisHelpers = require('./analysishelpers');
 const MusicPlayers = require('./musicplayer')
 const textRender = require('./textrender');
 const regeneratorRuntime = require("regenerator-runtime"); //do not delete
+const { internalIDKey, getTopBlockID } = require('../../extension-support/block-relationships');
 
+const instrumentKey = 'instrumentsPerChunk';
 
 class Scratch3MusicCreation {
     constructor(runtime) {
@@ -62,6 +64,7 @@ class Scratch3MusicCreation {
 
         this._onTargetCreated = this._onTargetCreated.bind(this);
         this.runtime.on('targetWasCreated', this._onTargetCreated);
+
     }
 
 
@@ -202,6 +205,18 @@ class Scratch3MusicCreation {
                     opcode: 'setInstrument',
                     blockType: BlockType.COMMAND,
                     text: 'set instrument to [INSTRUMENT]',
+                    arguments: {
+                        INSTRUMENT: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 1,
+                            menu: "INSTRUMENT"
+                        }
+                    }
+                },
+                {
+                    opcode: 'setInstrumentForBelow',
+                    blockType: BlockType.COMMAND,
+                    text: 'set instrument for below blocks to [INSTRUMENT]',
                     arguments: {
                         INSTRUMENT: {
                             type: ArgumentType.NUMBER,
@@ -499,6 +514,22 @@ class Scratch3MusicCreation {
     }
 
     /**
+     * Select an instrument for playing notes.
+     * @param {object} args - the block arguments.
+     * @param {BlockUtility} util - utility object provided by the runtime.
+     * @property {int} INSTRUMENT - the number of the instrument to select.
+     */
+    setInstrumentForBelow(args, util) {
+        const topID = getTopBlockID(args[internalIDKey], util);
+        if (topID) {
+            const instrument = this.musicCreationHelper.getInstrumentValue(args.INSTRUMENT);
+            util[instrumentKey]
+                ? util[instrumentKey][topID] = instrument
+                : util[instrumentKey] = { [topID]: instrument };
+        }
+    }
+
+    /**
      * 
      * @param {array} raw_note - magenta note [freq,duration,inst,?] 
      * @returns information about the note as an object, in a form 
@@ -606,6 +637,7 @@ class Scratch3MusicCreation {
     /**
      * Set the current tempo to a new value.
      * @param {object} args - the block arguments.
+     * @param {BlockUtility} util - the block utility.
      * @property {number} TEMPO - the tempo, in beats per minute.
      */
     setVolume(args, util) {
@@ -618,7 +650,9 @@ class Scratch3MusicCreation {
     }
 
     playNote(args, util) {
-        toAdd = this.musicCreationHelper.playNote(args, util);
+        const id = getTopBlockID(args[internalIDKey], util);
+        const inst = util[instrumentKey] && id ? util[instrumentKey][id] : undefined;
+        toAdd = this.musicCreationHelper.playNote(args, util, inst);
         if (toAdd.length == 3) {
             this.noteList.push(toAdd);
             vol = (this.getVolume(util));

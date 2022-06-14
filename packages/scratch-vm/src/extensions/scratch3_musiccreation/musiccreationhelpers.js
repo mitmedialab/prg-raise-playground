@@ -21,7 +21,7 @@ try {
 }
 
 class MusicCreationHelpers {
-    constructor (runtime) {
+    constructor(runtime) {
         this.runtime = runtime;
         this._stopped = false;
 
@@ -47,12 +47,12 @@ class MusicCreationHelpers {
         this._onTargetCreated = this._onTargetCreated.bind(this);
         this.runtime.on('targetWasCreated', this._onTargetCreated);
 
-        volumes = [{text: "pianissimo", value: 15}, 
-        {text: "piano", value: 30}, 
-        {text: "mezzo-piano", value: 45},
-        {text: "mezzo-forte", value: 60},
-        {text: "forte", value: 85},
-        {text: "fortissimo", value: 100}];
+        volumes = [{ text: "pianissimo", value: 15 },
+        { text: "piano", value: 30 },
+        { text: "mezzo-piano", value: 45 },
+        { text: "mezzo-forte", value: 60 },
+        { text: "forte", value: 85 },
+        { text: "fortissimo", value: 100 }];
 
         globalVolume = "mezzo-forte";
     }
@@ -61,7 +61,7 @@ class MusicCreationHelpers {
      * The key to load & store a target's music-related state.
      * @type {string}
      */
-    static get STATE_KEY () {
+    static get STATE_KEY() {
         return 'Scratch.musiccreation';
     }
 
@@ -69,7 +69,7 @@ class MusicCreationHelpers {
      * The default music-related state, to be used when a target has no existing music state.
      * @type {MusicState}
      */
-    static get DEFAULT_MUSIC_STATE () {
+    static get DEFAULT_MUSIC_STATE() {
         return {
             currentInstrument: 0
         };
@@ -79,8 +79,8 @@ class MusicCreationHelpers {
      * The minimum and maximum MIDI note numbers, for clamping the input to play note.
      * @type {{min: number, max: number}}
      */
-    static get MIDI_NOTE_RANGE () {
-        return {min: 0, max: 130};
+    static get MIDI_NOTE_RANGE() {
+        return { min: 0, max: 130 };
     }
 
     /**
@@ -88,15 +88,15 @@ class MusicCreationHelpers {
      * 100 beats at the default tempo of 60bpm is 100 seconds.
      * @type {{min: number, max: number}}
      */
-    static get BEAT_RANGE () {
-        return {min: 0, max: 100};
+    static get BEAT_RANGE() {
+        return { min: 0, max: 100 };
     }
 
     /**
      * The maximum number of sounds to allow to play simultaneously.
      * @type {number}
      */
-    static get CONCURRENCY_LIMIT () {
+    static get CONCURRENCY_LIMIT() {
         return 30;
     }
 
@@ -109,7 +109,7 @@ class MusicCreationHelpers {
      * @param {number[]} samples - an array of numbers representing the MIDI note number for each
      *                           sampled sound used to play this instrument.
      */
-    get INSTRUMENT_INFO () {
+    get INSTRUMENT_INFO() {
         return [
             {
                 name: formatMessage({
@@ -130,7 +130,7 @@ class MusicCreationHelpers {
                 dirName: '4-guitar',
                 releaseTime: 0.5,
                 samples: [60]
-            },            {
+            }, {
                 name: formatMessage({
                     id: 'musiccreation.instrumentBass',
                     default: 'Bass',
@@ -188,7 +188,7 @@ class MusicCreationHelpers {
      * @listens Runtime#event:targetWasCreated
      * @private
      */
-    _onTargetCreated (newTarget, sourceTarget) {
+    _onTargetCreated(newTarget, sourceTarget) {
         if (sourceTarget) {
             const musicState = sourceTarget.getCustomState(MusicCreationHelpers.STATE_KEY);
             if (musicState) {
@@ -200,7 +200,7 @@ class MusicCreationHelpers {
     /**
      * Decode the full set of drum and instrument sounds, and store the audio buffers in arrays.
      */
-    _loadAllSounds () {
+    _loadAllSounds() {
         const loadingPromises = [];
         this.INSTRUMENT_INFO.forEach((instrumentInfo, instrumentIndex) => {
             this._instrumentPlayerArrays[instrumentIndex] = [];
@@ -223,7 +223,7 @@ class MusicCreationHelpers {
      * @param {array} playerArray - the array of players in which to store it.
      * @return {Promise} - a promise which will resolve once the sound has been stored.
      */
-    _storeSound (filePath, index, playerArray) {
+    _storeSound(filePath, index, playerArray) {
         const fullPath = `${filePath}.mp3`;
 
         if (!assetData[fullPath]) return;
@@ -241,7 +241,7 @@ class MusicCreationHelpers {
      * @param  {ArrayBuffer} soundBuffer - a buffer containing the encoded audio.
      * @return {Promise} - a promise which will resolve once the sound has decoded.
      */
-    _decodeSound (soundBuffer) {
+    _decodeSound(soundBuffer) {
         const engine = this.runtime.audioEngine;
 
         if (!engine) {
@@ -249,9 +249,9 @@ class MusicCreationHelpers {
         }
 
         // Check for newer promise-based API
-        return engine.decodeSoundPlayer({data: {buffer: soundBuffer}});
+        return engine.decodeSoundPlayer({ data: { buffer: soundBuffer } });
     }
-    
+
     /**
      * Create data for a menu in scratch-blocks format, consisting of an array of objects with text and
      * value properties. The text is a translated string, and the value is one-indexed.
@@ -259,7 +259,7 @@ class MusicCreationHelpers {
      * @return {array} - An array of objects with text and value properties.
      * @private
      */
-    _buildMenu (info) {
+    _buildMenu(info) {
         return info.map((entry, index) => {
             const obj = {};
             obj.text = entry.name;
@@ -268,12 +268,12 @@ class MusicCreationHelpers {
         });
     }
 
-        /**
-     * @param {Target} target - collect music state for this target.
-     * @returns {MusicState} the mutable music state associated with that target. This will be created if necessary.
-     * @private
-     */
-    _getMusicState (target) {
+    /**
+ * @param {Target} target - collect music state for this target.
+ * @returns {MusicState} the mutable music state associated with that target. This will be created if necessary.
+ * @private
+ */
+    _getMusicState(target) {
         let musicState = target.getCustomState(MusicCreationHelpers.STATE_KEY);
         if (!musicState) {
             musicState = Clone.simple(MusicCreationHelpers.DEFAULT_MUSIC_STATE);
@@ -282,7 +282,7 @@ class MusicCreationHelpers {
         return musicState;
     }
 
-    getInstrument (util) {
+    getInstrument(util) {
         const stage = this.runtime.getTargetForStage();
         if (stage) {
             if (!stage.instrument) {
@@ -301,8 +301,12 @@ class MusicCreationHelpers {
      * @param {object} util - utility object provided by the runtime.
      * @param {boolean} mapMidi - whether or not instNum is a MIDI instrument number.
      */
-    _setInstrument (instNum, util, mapMidi) {
+    _setInstrument(instNum, util, mapMidi) {
         const musicState = this._getMusicState(util.target);
+        musicState.currentInstrument = this.getInstrumentValue(instNum);
+    }
+
+    getInstrumentValue(instNum) {
         instNum = Cast.toNumber(instNum);
         instNum = Math.round(instNum);
         const stage = this.runtime.getTargetForStage();
@@ -310,25 +314,24 @@ class MusicCreationHelpers {
             stage.instrument = this.findInstrumentForNumber(instNum);
         }
         instNum -= 1; // instruments are one-indexed
-        instNum = MathUtil.wrapClamp(instNum, 0, this.INSTRUMENT_INFO.length - 1);
-        musicState.currentInstrument = instNum;
+        return MathUtil.wrapClamp(instNum, 0, this.INSTRUMENT_INFO.length - 1);
     }
 
-    findInstrumentForNumber (number) {
+    findInstrumentForNumber(number) {
         for (var m in instrumentNames) {
             if (instrumentNames[m].value == number) {
                 return instrumentNames[m].text;
             }
-        } 
+        }
         return "Piano";
     }
 
-    findVolumeForNumber (number) {
+    findVolumeForNumber(number) {
         for (var m in volumes) {
             if (volumes[m].value == number) {
                 return volumes[m].text;
             }
-        } 
+        }
         return "mezzo-forte";
     }
 
@@ -337,14 +340,14 @@ class MusicCreationHelpers {
      * @param {number} tempo - the tempo to set, in beats per minute.
      * @private
      */
-    _updateVolume (volume, util) {
+    _updateVolume(volume, util) {
         volume = MathUtil.clamp(volume, 0, 100);
         util.target.volume = volume;
         const stage = this.runtime.getTargetForStage();
         globalVolume = this.findVolumeForNumber(volume);
     }
 
-    getVolume (util) {
+    getVolume(util) {
         return globalVolume;
     }
 
@@ -356,13 +359,13 @@ class MusicCreationHelpers {
      * @returns an object with 'note', 'duration', and 'index' fields
      * @private 
      */
-    _clamp (noteInfo, index) {
+    _clamp(noteInfo, index) {
         let note = Cast.toNumber(noteInfo.NOTE);
         note = MathUtil.clamp(note,
             MusicCreationHelpers.MIDI_NOTE_RANGE.min, MusicCreationHelpers.MIDI_NOTE_RANGE.max);
         let beats = Cast.toNumber(noteInfo.SECS);
         beats = this._clampBeats(beats);
-        return {note: note,duration: beats, index: index};
+        return { note: note, duration: beats, index: index };
     }
 
     /**
@@ -373,7 +376,7 @@ class MusicCreationHelpers {
      * 
      * @see {SoundPlayer} is in the scratch audio node module
      */
-    _getPlayer (inst, note) {
+    _getPlayer(inst, note) {
         if (!this._instrumentPlayerNoteArrays[inst][note]) {
             this._instrumentPlayerNoteArrays[inst][note] = this._instrumentPlayerArrays[inst][sampleIndex].take();
         }
@@ -396,7 +399,7 @@ class MusicCreationHelpers {
      * @param {flot} dur - duration in secs
      * @returns an object with 'player' and 'data' fields, or null on error
      */
-    createPlayer (util, note, dur, inst) {
+    createPlayer(util, note, dur, inst) {
         // Determine which of the audio samples for this instrument to play
         const instrumentInfo = this.INSTRUMENT_INFO[inst];
         const sampleArray = instrumentInfo.samples;
@@ -412,15 +415,19 @@ class MusicCreationHelpers {
             this._instrumentPlayerNoteArrays[inst][note] = this._instrumentPlayerArrays[inst][sampleIndex].take();
         }
 
-        const player = this._getPlayer(inst,note);
+        const player = this._getPlayer(inst, note);
 
-        return {player:player, 
-                data:
-                    {instInfo: instrumentInfo, 
-                     sampleArray: sampleArray, 
-                     sampleIndex: sampleIndex,
-                     note: note,
-                     duration: dur}};
+        return {
+            player: player,
+            data:
+            {
+                instInfo: instrumentInfo,
+                sampleArray: sampleArray,
+                sampleIndex: sampleIndex,
+                note: note,
+                duration: dur
+            }
+        };
     }
 
     /**
@@ -435,11 +442,11 @@ class MusicCreationHelpers {
      * @augments @param util's stackFrame.duration to be 0 once the last note in @param seq 
      *           has stopped playing. 
      */
-    _playNoteFromSeq (noteInfo, seq, util,l, inst) {
+    _playNoteFromSeq(noteInfo, seq, util, l, inst) {
         const i = noteInfo['index'];
-        const last = i === l-1;
+        const last = i === l - 1;
         if (this._concurrencyCounter > this.CONCURRENCY_LIMIT) return;
-        const playerAndData = this.createPlayer(util,noteInfo['note'],noteInfo['duration'], inst);
+        const playerAndData = this.createPlayer(util, noteInfo['note'], noteInfo['duration'], inst);
         if (!playerAndData) {
             console.log(`null data for note ${noteInfo}`);
             return;
@@ -455,12 +462,12 @@ class MusicCreationHelpers {
             if (last || this._stopped) {
                 util.stackFrame.duration = 0;
             } else {
-                this._playNoteFromSeq(seq[i+1],seq,util,l,inst);  
+                this._playNoteFromSeq(seq[i + 1], seq, util, l, inst);
             }
         });
-        
+
         if (!this._stopped) {
-            this._activatePlayer(util,playerAndData);
+            this._activatePlayer(util, playerAndData);
         }
     }
 
@@ -473,11 +480,11 @@ class MusicCreationHelpers {
      * @requires - each elem in @param seq has 'note', 'duration' and
      * 'index' fields
      */
-    playFirstNote (util, seq, inst) {
+    playFirstNote(util, seq, inst) {
         const l = seq.length
         if (l === 0) return;
         util.sequencer.runtime.setMaxListeners(Infinity);
-        this._playNoteFromSeq(seq[0],seq,util,l, inst);
+        this._playNoteFromSeq(seq[0], seq, util, l, inst);
     }
 
     /**
@@ -485,12 +492,12 @@ class MusicCreationHelpers {
      * @param {array} args - args[i] has 'mutation', 'NOTE', and 'SECS' fields
      * @param {BlockUtility} util 
      */
-    playNotes (args, util, inst) {
+    playNotes(args, util, inst) {
         const l = args.length;
         let seq = [];
         for (let i = 0; i < l; i++) {
             const noteArg = args[i];
-            seq.push(this._clamp(noteArg,i));
+            seq.push(this._clamp(noteArg, i));
         }
         if (l === 0) return;
         this._stopped = false;
@@ -512,8 +519,8 @@ class MusicCreationHelpers {
      * @param {number} durationSec - duration, in seconds
      * @private
      */
-    _initNote (util, sampleArray, sampleIndex, note, player, instInfo,
-               durationSec) {
+    _initNote(util, sampleArray, sampleIndex, note, player, instInfo,
+        durationSec) {
         // Set its pitch.
         const sampleNote = sampleArray[sampleIndex];
         const notePitchInterval = this._ratioForPitchInterval(note - sampleNote);
@@ -549,9 +556,11 @@ class MusicCreationHelpers {
         // Start playing the note
         player.play();
         // Connect the player to the gain node.
-        player.connect({getInputNode () {
-            return volumeGain;
-        }});
+        player.connect({
+            getInputNode() {
+                return volumeGain;
+            }
+        });
         // Set playback now after play creates the outputNode.
         player.outputNode.playbackRate.value = notePitchInterval;
         // Schedule playback to stop.
@@ -566,7 +575,7 @@ class MusicCreationHelpers {
      * @param {object} playerAndData - contains 'player' and 'data' fields
      * @private
      */
-    _activatePlayer (util, playerAndData) {
+    _activatePlayer(util, playerAndData) {
         // If we're playing too many sounds, do not play the note.
         if (this._concurrencyCounter > MusicCreationHelpers.CONCURRENCY_LIMIT) {
             console.log('concurrency limit reached');
@@ -588,10 +597,10 @@ class MusicCreationHelpers {
         let durationSec = data['duration'];
 
         this._initNote(util, sampleArray, sampleIndex, note, player, instInfo,
-                   durationSec);
+            durationSec);
     }
 
-    playNote (args, util) {
+    playNote(args, util, instrument) {
         if (this._stackTimerNeedsInit(util)) {
             let note = Cast.toNumber(args.NOTE);
             note = MathUtil.clamp(note,
@@ -603,7 +612,7 @@ class MusicCreationHelpers {
             if (beats === 0) return;
 
             const durationSec = beats;
-            this._playNote(util, note, durationSec);
+            this._playNote(util, note, durationSec, instrument);
 
             this._startStackTimer(util, durationSec);
             const musicState = this._getMusicState(util.target);
@@ -625,7 +634,7 @@ class MusicCreationHelpers {
      * @param {number} durationSec - the duration in seconds to play the note.
      * @private
      */
-    _playNote (util, note, durationSec) {
+    _playNote(util, note, durationSec, instrument) {
         if (util.runtime.audioEngine === null) return;
         if (util.target.sprite.soundBank === null) return;
 
@@ -636,19 +645,19 @@ class MusicCreationHelpers {
 
         // Determine which of the audio samples for this instrument to play
         const musicState = this._getMusicState(util.target);
-        const inst = musicState.currentInstrument;
+        const inst = instrument ? instrument : musicState.currentInstrument;
         const instrumentInfo = this.INSTRUMENT_INFO[inst];
         const sampleArray = instrumentInfo.samples;
         const sampleIndex = this._selectSampleIndexForNote(note, sampleArray);
         // If the audio sample has not loaded yet, bail out
         if (typeof this._instrumentPlayerArrays[inst] === 'undefined') return;
         if (typeof this._instrumentPlayerArrays[inst][sampleIndex] === 'undefined') return;
-        
+
         if (!this._instrumentPlayerNoteArrays[inst][note]) {
             this._instrumentPlayerNoteArrays[inst][note] = this._instrumentPlayerArrays[inst][sampleIndex].take();
         }
 
-        const player = this._getPlayer(inst,note);
+        const player = this._getPlayer(inst, note);
 
         this._initNote(util, sampleArray, sampleIndex, note, player, instrumentInfo,
             durationSec);
@@ -663,7 +672,7 @@ class MusicCreationHelpers {
      * @return {index} the index of the selected sample in the samples array.
      * @private
      */
-    _selectSampleIndexForNote (note, samples) {
+    _selectSampleIndexForNote(note, samples) {
         // Step backwards through the array of samples, i.e. in descending pitch, in order to find
         // the sample that is the closest one below (or matching) the pitch of the input note.
         for (let i = samples.length - 1; i >= 0; i--) {
@@ -680,17 +689,17 @@ class MusicCreationHelpers {
      * @return {number} a ratio corresponding to the input interval.
      * @private
      */
-    _ratioForPitchInterval (interval) {
+    _ratioForPitchInterval(interval) {
         return Math.pow(2, (interval / 12));
     }
 
-        /**
-     * Start the stack timer and the yield the thread if necessary.
-     * @param {object} util - utility object provided by the runtime.
-     * @param {number} duration - a duration in seconds to set the timer for.
-     * @private
-     */
-    _startStackTimer (util, duration) {
+    /**
+ * Start the stack timer and the yield the thread if necessary.
+ * @param {object} util - utility object provided by the runtime.
+ * @param {number} duration - a duration in seconds to set the timer for.
+ * @private
+ */
+    _startStackTimer(util, duration) {
         util.stackFrame.timer = new Timer();
         util.stackFrame.timer.start();
         util.stackFrame.duration = duration;
@@ -703,7 +712,7 @@ class MusicCreationHelpers {
      * @return {boolean} - true if the stack timer needs to be initialized.
      * @private
      */
-    _stackTimerNeedsInit (util) {
+    _stackTimerNeedsInit(util) {
         return !util.stackFrame.timer;
     }
 
@@ -712,7 +721,7 @@ class MusicCreationHelpers {
      * @param {object} util - utility object provided by the runtime.
      * @private
      */
-    _checkStackTimer (util) {
+    _checkStackTimer(util) {
         const timeElapsed = util.stackFrame.timer.timeElapsed();
         if (timeElapsed < util.stackFrame.duration * 1000) {
             util.yield();
@@ -725,7 +734,7 @@ class MusicCreationHelpers {
      * @return {number} - the clamped duration.
      * @private
      */
-     _clampBeats (beats) {
+    _clampBeats(beats) {
         return MathUtil.clamp(beats, MusicCreationHelpers.BEAT_RANGE.min, MusicCreationHelpers.BEAT_RANGE.max);
     }
 
