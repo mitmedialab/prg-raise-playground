@@ -13,9 +13,9 @@ const AnalysisHelpers = require('./analysishelpers');
 const MusicPlayers = require('./musicplayer')
 const textRender = require('./textrender');
 const regeneratorRuntime = require("regenerator-runtime"); //do not delete
-const { internalIDKey, getTopBlockID } = require('../../extension-support/block-relationships');
+const { internalIDKey, getTopBlockID, addTopBlockModifierToUtils, getTopBlockModifier } = require('../../extension-support/block-relationships');
 
-const instrumentKey = 'instrumentsPerChunk';
+const instrumentModifierKey = 'instrument';
 
 class Scratch3MusicCreation {
     constructor(runtime) {
@@ -521,12 +521,10 @@ class Scratch3MusicCreation {
      */
     setInstrumentForBelow(args, util) {
         const topID = getTopBlockID(args[internalIDKey], util);
-        if (topID) {
-            const instrument = this.musicCreationHelper.getInstrumentValue(args.INSTRUMENT);
-            util[instrumentKey]
-                ? util[instrumentKey][topID] = instrument
-                : util[instrumentKey] = { [topID]: instrument };
-        }
+        if (!topID) return;
+
+        const instrument = this.musicCreationHelper.getInstrumentValue(args.INSTRUMENT);
+        addTopBlockModifierToUtils(util, topID, instrumentModifierKey, instrument);
     }
 
     /**
@@ -651,7 +649,7 @@ class Scratch3MusicCreation {
 
     playNote(args, util) {
         const id = getTopBlockID(args[internalIDKey], util);
-        const inst = util[instrumentKey] && id ? util[instrumentKey][id] : undefined;
+        const inst = getTopBlockModifier(util, id, instrumentModifierKey);
         toAdd = this.musicCreationHelper.playNote(args, util, inst);
         if (toAdd.length == 3) {
             this.noteList.push(toAdd);
