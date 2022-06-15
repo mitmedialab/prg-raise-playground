@@ -569,7 +569,15 @@ class Scratch3MusicCreation {
     async _getAndPlayMagentaNotes(RNN, args, utils, inst) {
         let magenta_notes = null;
         if (RNN) {
-            magenta_notes = await this.musicAccompanimentHelper.testMagentaRNN(this.noteList, args, utils);
+            if (this.noteList.length > 0) {
+                const low = 48;
+                const hi = 83;
+                const filtered = this.noteList.filter(note => note[0] >= low && note[0] <= hi);
+                magenta_notes = await this.musicAccompanimentHelper.testMagentaRNN(filtered, args, utils);
+            } else {
+                utils.stackFrame.duration = 0;
+                return;
+            }
         } else {
             magenta_notes = await this.musicAccompanimentHelper.testMagentaMVAE(utils);
         }
