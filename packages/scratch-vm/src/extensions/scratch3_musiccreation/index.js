@@ -520,11 +520,12 @@ class Scratch3MusicCreation {
      * @property {int} INSTRUMENT - the number of the instrument to select.
      */
     setInstrumentForBelow(args, util) {
+        const selfID = args[internalIDKey];
         const topID = getTopBlockID(args[internalIDKey], util);
         if (!topID) return;
 
         const instrument = this.musicCreationHelper.getInstrumentValue(args.INSTRUMENT);
-        addTopBlockModifierToUtils(util, topID, instrumentModifierKey, instrument);
+        addTopBlockModifierToUtils(util, selfID, topID, instrumentModifierKey, instrument);
     }
 
     /**
@@ -577,24 +578,29 @@ class Scratch3MusicCreation {
         this.musicCreationHelper.playNotes(prepared_notes['args'], utils, inst);
     }
 
+    getInstrumentForBlock(id, util) {
+        const topID = getTopBlockID(id, util);
+        const modifierInst = getTopBlockModifier(util, id, topID, instrumentModifierKey);
+        return modifierInst ? modifierInst : this.musicCreationHelper._getMusicState(util.target).currentInstrument;
+    }
+
     /**
      * Used to get the generated sequence of notes from Magenta and 
      * play it. 
      * @param {boolean} RNN - true if 'complete music', false if 'generate new music'
      * @param {array} args - arguments to be given to the music helper
-     * @param {BlockUtility} utils
+     * @param {BlockUtility} util
      */
-    getAndPlayMagentaNotes(RNN, args, utils) {
-        const musicState = this.musicCreationHelper._getMusicState(utils.target);
-        const inst = musicState.currentInstrument;
-        if (utils.stackTimerNeedsInit()) {
+    getAndPlayMagentaNotes(RNN, args, util) {
+        const inst = this.getInstrumentForBlock(args[internalIDKey], util);
+        if (util.stackTimerNeedsInit()) {
             // get timer running for a large amount of time (will be handled)
-            utils.startStackTimer(Number.MAX_SAFE_INTEGER);
-            utils.yield();
-            this._getAndPlayMagentaNotes(RNN, args, utils, inst);
+            util.startStackTimer(Number.MAX_SAFE_INTEGER);
+            util.yield();
+            this._getAndPlayMagentaNotes(RNN, args, util, inst);
         }
-        else if (!utils.stackTimerFinished()) {
-            utils.yield();
+        else if (!util.stackTimerFinished()) {
+            util.yield();
         }
     }
 
@@ -648,8 +654,7 @@ class Scratch3MusicCreation {
     }
 
     playNote(args, util) {
-        const id = getTopBlockID(args[internalIDKey], util);
-        const inst = getTopBlockModifier(util, id, instrumentModifierKey);
+        const inst = this.getInstrumentForBlock(args[internalIDKey], util);
         toAdd = this.musicCreationHelper.playNote(args, util, inst);
         if (toAdd.length == 3) {
             this.noteList.push(toAdd);

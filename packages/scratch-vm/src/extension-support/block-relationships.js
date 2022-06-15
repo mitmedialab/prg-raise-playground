@@ -1,7 +1,16 @@
 import BlockUtility from '../engine/block-utility.js';
+import Blocks from '../engine/blocks.js';
 
 export const internalIDKey = "internal_blockID";
 const topBlockModifiers = 'topBlockModifiers';
+
+/**
+ * 
+ * @param {BlockUtilty} util 
+ * @returns {Blocks}
+ */
+const getBlockContainer = (util) => util.thread.blockContainer;
+
 
 /**
  * 
@@ -9,37 +18,43 @@ const topBlockModifiers = 'topBlockModifiers';
  * @param {BlockUtility} util 
  * @returns {string | null | undefined}
  */
-export const getTopBlockID = (blockID, util) => util.thread.blockContainer.isBlockAbove(blockID);
+export const getTopBlockID = (blockID, util) => getBlockContainer(util).getTopLevelScript(blockID);
 
 /**
  * 
  * @param {BlockUtility} util 
+ * @param {string} selfID 
  * @param {string} topBlockID 
  * @param {string | number | symbol} modifierKey 
  * @param {any} value 
  * @returns 
  */
-export const addTopBlockModifierToUtils = (util, topBlockID, modifierKey, value) => {
+export const addTopBlockModifierToUtils = (util, selfID, topBlockID, modifierKey, value) => {
     // should purge stall ids on utils
     if (!topBlockID) return;
+    const entry = {value, sourceID: selfID};
     util[topBlockModifiers]
                 ? util[topBlockModifiers][topBlockID] 
-                    ? util[topBlockModifiers][topBlockID][modifierKey] = value
-                    : util[topBlockModifiers][topBlockID] = { [modifierKey]: value }
-                : util[topBlockModifiers] = { [topBlockID]: {[modifierKey]: value} }
+                    ? util[topBlockModifiers][topBlockID][modifierKey] = entry
+                    : util[topBlockModifiers][topBlockID] = { [modifierKey]: entry }
+                : util[topBlockModifiers] = { [topBlockID]: {[modifierKey]: entry} }
 }
 
 /**
  * 
  * @param {BlockUtility} util 
+ * @param {string} selfID 
  * @param {string} topBlockID 
  * @param {string | number | symbol} modifierKey 
  * @returns 
  */
-export const getTopBlockModifier = (util, topBlockID, modifierKey) => {
+export const getTopBlockModifier = (util, selfID, topBlockID, modifierKey) => {
     if (!topBlockID) return undefined;
     if (!util[topBlockModifiers]) return undefined;
     if (!util[topBlockModifiers][topBlockID]) return undefined;
-    // must validate that the source of the modifier is still in the block chain
-    return util[topBlockModifiers][topBlockID][modifierKey];
+
+    const modifier = util[topBlockModifiers][topBlockID][modifierKey];
+    if (!modifier || !getBlockContainer(util).isBlockAbove(selfID, modifier.sourceID)) return;
+
+    return modifier.value;
 }
