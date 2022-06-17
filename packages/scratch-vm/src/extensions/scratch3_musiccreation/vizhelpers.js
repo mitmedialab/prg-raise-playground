@@ -191,16 +191,14 @@ class VizHelpers {
     toggleVisMode (args,util) {
         let status = Cast.toNumber(args.STATUS);
         let mode = Cast.toNumber(args.FORMAT);
-        this._visState['mode'] = mode;
-        this._visState['status'] = !!status;
+        const status_bool = !!status; // typeof(status) === string
+        this._visState = { mode:mode, status:status_bool };
     }
 
     clearNoteBuffers () {
-        console.log('before', this._noteBuf);
         for (let b in this._noteBuf) {
             this._noteBuf[b] = [];
         }
-        console.log('after', this._noteBuf);
     }
 
     /**
