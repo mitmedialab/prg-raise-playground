@@ -568,22 +568,24 @@ class Scratch3MusicCreation {
      */
     async _getAndPlayMagentaNotes(RNN, args, utils, inst) {
         let magenta_notes = null;
+        let valid = true;
         if (RNN) {
             if (this.noteList.length > 0) {
                 const low = 48;
                 const hi = 83;
                 const filtered = this.noteList.filter(note => note[0] >= low && note[0] <= hi);
-                magenta_notes = await this.musicAccompanimentHelper.testMagentaRNN(filtered, args, utils);
-            } else {
-                utils.stackFrame.duration = 0;
-                return;
-            }
+                if (filtered.length > 0) {
+                    magenta_notes = await this.musicAccompanimentHelper.testMagentaRNN(filtered, args, utils);
+                } else valid = false;
+            } else valid = false;
         } else {
             magenta_notes = await this.musicAccompanimentHelper.testMagentaMVAE(utils);
         }
-        const prepared_notes = this._prepare(magenta_notes);
-        this.magentaNoteList = prepared_notes['notes'];
-        this.musicCreationHelper.playNotes(prepared_notes, utils, inst,this.vizHelper); 
+        if (valid) {
+            const prepared_notes = this._prepare(magenta_notes);
+            this.magentaNoteList = prepared_notes['notes'];
+            this.musicCreationHelper.playNotes(prepared_notes, utils, inst,this.vizHelper); 
+        } else utils.stackFrame.duration = 0;
     }
 
     /**
