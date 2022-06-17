@@ -909,7 +909,7 @@ class SheetMusic {
 
             if (freq >= 60) {
                 if (freq > this._staffLims['hi_note']) {
-                    console.log(`ADJUSTING ${freq}`);
+                    console.log(`adjusting (treble) ${freq} to ${this._staffLims['hi_note']}`);
                     freq = this._staffLims['hi_note'];
                 } 
                 var staff = pitchToStaff[freq];
@@ -918,7 +918,7 @@ class SheetMusic {
                 var clef = "treble";
             } else {
                 if (freq === undefined || freq < this._staffBaseLims['lo_note']) {
-                    console.log(`ADJUSTING BASE.f ${freq}`);
+                    console.log(`adjusting (bass) ${freq} to ${this._staffBaseLims['lo_note']}`);
                     freq = this._staffBaseLims['lo_note'];
                 }
                 var staff = pitchToStaffBass[freq];
