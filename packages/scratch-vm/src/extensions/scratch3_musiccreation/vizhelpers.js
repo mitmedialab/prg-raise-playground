@@ -195,6 +195,14 @@ class VizHelpers {
         this._visState['status'] = !!status;
     }
 
+    clearNoteBuffers () {
+        console.log('before', this._buf);
+        for (let b in this._buf) {
+            this._buf[b] = [];
+        }
+        console.log('after', this._buf);
+    }
+
     /**
      * 
      * @param {array} note - [freq, duration, instrument, volume]
