@@ -19,10 +19,10 @@ class VizHelpers {
 
         this._count = 0;
         this._visState = {status: false, mode: undefined};
-        this._buf = {sheet: [], wave: [], freq: [], freqs: []};
+        this._noteBuf = {sheet: [], wave: [], freq: [], freqs: []};
         this._visNames = {1: 'sheet', 2: 'wave', 3: 'freq', 4: 'freqs'};
         this._visLims = {'sheet': 11, 'wave': 5, 'freq': 15, 'freqs': 15};
-        this._continuousScroll = {'sheet': false, 'wave': true, 'freq': false, 'freqs': true};
+        this._continuousScroll = {'sheet': true, 'wave': true, 'freq': false, 'freqs': true};
 
         /**
          * The ID of the renderer Skin corresponding to the pen layer.
@@ -196,11 +196,11 @@ class VizHelpers {
     }
 
     clearNoteBuffers () {
-        console.log('before', this._buf);
-        for (let b in this._buf) {
-            this._buf[b] = [];
+        console.log('before', this._noteBuf);
+        for (let b in this._noteBuf) {
+            this._noteBuf[b] = [];
         }
-        console.log('after', this._buf);
+        console.log('after', this._noteBuf);
     }
 
     /**
@@ -219,7 +219,7 @@ class VizHelpers {
         const name = this._visNames[mode];
         const lim = this._visLims[name];
         const cont = this._continuousScroll[name];
-        let buf = this._buf[name];
+        let buf = this._noteBuf[name];
         if (cont) {
             while (buf.length + 1 >= lim) {
                 buf = buf.splice(1);
@@ -230,7 +230,7 @@ class VizHelpers {
         
         note[4] = this._count++;
         buf.push(note);
-        this._buf[name] = buf;
+        this._noteBuf[name] = buf;
         switch (name) {
             case 'wave':
                 this.testWaveformViz(buf,null,util);
