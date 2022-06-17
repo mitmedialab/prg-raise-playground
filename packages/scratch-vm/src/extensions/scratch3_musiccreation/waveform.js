@@ -198,7 +198,7 @@ class Waveform {
             85: "cS6" 
         }
 
-        freqToColor = {};
+        colorToFreq = {};
     }
 
     /**
@@ -371,9 +371,8 @@ class Waveform {
         this.setPenColorToColor(this.black, util);
         this.drawString('legend',colorX, this.legendStartY + this.legendLengthY - 5, 0.7, args, util);
 
-        //draw Color mappings
-        for (var i in freqToColor) {
-            this.setPenColorToColor(freqToColor[i], util);
+        for (let color in colorToFreq) {
+            this.setPenColorToColor(color, util);
             for (var c = 0; c <= 10; c++) {
                 this.penUp(args, util);
                 util.target.setXY(colorX, colorY-c);
@@ -382,9 +381,10 @@ class Waveform {
             }
             this.setPenColorToColor(this.black, util);
             this.penUp(args, util);
-            this.drawString(FreqToNote.freqToNote(i), colorX+25, colorY, 0.6, args, util);
+            this.drawString(FreqToNote.freqToNote(colorToFreq[color]), colorX+25, colorY, 0.6, args, util);
             colorY -= 15;
         }
+
         this.setPenColorToColor(this.black, util);
         this.penUp(args, util);
 
@@ -419,7 +419,7 @@ class Waveform {
     drawSignal(args, util) {
         colors = ['0xff0000', '0x0000ff', '0x00ff00', '0xffa500']
         const color_count = colors.length;
-        freqToColor = {};
+        colorToFreq = {};
         x = this.axisStartX;
         y = this.axisStartY+this.yAxisLength/2;
         signal = this.noteList;
@@ -440,7 +440,7 @@ class Waveform {
             inst = note[2];
             vol = note[3];
             c = this.getColorFromNote(note);
-            freqToColor[midi] = c;
+            colorToFreq[c] = midi;
             this.setPenColorToColor(c,util);
             freq = 2**((midi - 69)/12)*440;
             Omega = 2*Math.PI*freq/44140;
