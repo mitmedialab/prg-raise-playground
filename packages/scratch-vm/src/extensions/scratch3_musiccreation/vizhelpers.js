@@ -11,6 +11,7 @@ const WaveformHelper = require('./waveform');
 const SpectrogramHelper = require('./spectrogram');
 const FFTHelper = require('./fft');
 const { updateVariableIdentifiers } = require('../../util/variable-util');
+const { e } = require('./letters');
 
 class VizHelpers {
     constructor (runtime) {
@@ -20,7 +21,8 @@ class VizHelpers {
         this._visState = {status: false, mode: undefined};
         this._buf = {sheet: [], wave: [], freq: [], freqs: []};
         this._visNames = {1: 'sheet', 2: 'wave', 3: 'freq', 4: 'freqs'};
-        this._visLims = {'sheet': 12, 'wave': 5, 'freq': 15, 'freqs': 15};
+        this._visLims = {'sheet': 11, 'wave': 5, 'freq': 15, 'freqs': 15};
+        this._continuousScroll = {'sheet': false, 'wave': true, 'freq': false, 'freqs': true};
 
         /**
          * The ID of the renderer Skin corresponding to the pen layer.
@@ -208,17 +210,22 @@ class VizHelpers {
         const mode = this._visState['mode'];
         const name = this._visNames[mode];
         const lim = this._visLims[name];
+        const cont = this._continuousScroll[name];
         let buf = this._buf[name];
-        while (buf.length + 1 >= lim) {
-            buf = buf.splice(1);
+        if (cont) {
+            while (buf.length + 1 >= lim) {
+                buf = buf.splice(1);
+            }
+        } else {
+            if (buf.length + 1 >= lim) buf = [];
         }
+        
         note[4] = this._count++;
         console.log('note',note);
         buf.push(note);
         this._buf[name] = buf;
         switch (name) {
             case 'wave':
-                //id for notes when they come in the buffer. Can use ID to track color. 
                 this.testWaveformViz(buf,null,util);
                 break;
             case 'freq':
