@@ -873,7 +873,6 @@ class SheetMusic {
         }
         if (duration < 1) { //add tails for < quarter notes
             if (duration === 0) {
-                console.log("DURATION IS ZERO");
                 return;
             }
             offset = 0;

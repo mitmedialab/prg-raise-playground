@@ -221,7 +221,6 @@ class VizHelpers {
         }
         
         note[4] = this._count++;
-        console.log('note',note);
         buf.push(note);
         this._buf[name] = buf;
         switch (name) {
