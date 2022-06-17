@@ -184,6 +184,11 @@ class Scratch3MusicCreation {
         ];
     }
 
+    /**
+     * Convert an amount of seconds into how many beats it is (assuming 4 beats per second)
+     * @param {number | string} secs 
+     * @returns {{text: string, value: number | string }} text represents the calculated number of beats, while value is still in seconds 
+     */
     secsToBeats(secs) {
         const beatPerSec = 4;
 
@@ -582,7 +587,7 @@ class Scratch3MusicCreation {
      * @param {array} args - arguments to be given to the music helper
      * @param {BlockUtility} utils
      * @param {number} inst - instrument to play on, represented as a number
-     * @param {function({mutation: any; NOTE: string; SECS: string;}[]): void} processNotes
+     * @param {function({mutation: any; NOTE: string; SECS: string;}[]): void} processNotes A callback function invoked with the generated notes as an argument
      * @private 
      */
     async _getAndPlayMagentaNotes(RNN, args, utils, inst, processNotes) {
@@ -649,6 +654,8 @@ class Scratch3MusicCreation {
     createNotesMVAE(args, utils) {
         const { runtime } = utils
         this.getAndPlayMagentaNotes(false, args, utils, (notes) => {
+            // convert the notes into arguments for the play note blocks
+            // TODO: Dolev, is this correct? Could this be leading to play duration errors?
             const blockArgs = notes.map(note => {
                 const { NOTE, SECS } = note;
                 return { NOTE, SECS };

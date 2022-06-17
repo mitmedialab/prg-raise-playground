@@ -5,8 +5,9 @@ const { XMLParser, XMLBuilder } = require('fast-xml-parser');
 
 /**
  * @param {Runtime} runtime
- * @param {{getInfo: () => ExtensionMetadata}} extension 
- * @param {string[]} opcode
+ * @param {{getInfo: () => ExtensionMetadata}} extension The extension from which the blocks to be created are from
+ * @param {string[]} opcodes The opcodes to generate new blocks for
+ * @param {any[]} args The arguments to pass to the generated blocks
  * @returns {string}
  */
 export const generateXMLForBlockChunk = (extension, runtime, opcodes, args) => {
@@ -110,6 +111,11 @@ const validateBlockMap = (blockMap) => {
   return true;
 }
 
+/**
+ * Add arguments in the appropriate fields of the XML-based js object
+ * @param {*} obj 
+ * @param {*} args 
+ */
 const applyArgs = (obj, args) => {
   console.log(obj);
   for (const key in args) {

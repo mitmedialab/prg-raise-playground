@@ -704,7 +704,7 @@ class Runtime extends EventEmitter {
     }
 
     /**
-     * Event name for reporting that a block was updated and needs to be rerendered.
+     * Event name for trigger the worskpace to update with a specified collection of new 'programatically added' blocks
      * @const {string}
      */
     static get ADD_BLOCKS_TO_WORKSPACE() {
