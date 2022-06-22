@@ -29,6 +29,8 @@ const MAX_PIEZO_NOTE = 72;
 
 const _drive = ['forward', 'backward', 'left', 'right'];
 
+const _turn = ['left','right'];
+
 const _button = ['A','B','A or B','A and B','neither A nor B'];
 const _line_states = ['right side', 'left side', 'neither side', 'both sides'];
 
@@ -88,7 +90,7 @@ class MicrobitRobot {
                     blockType: BlockType.BUTTON,
                     text: 'Connect Robot'
                 },
-                /*{
+                {
                     opcode: 'sendCommand',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
@@ -102,7 +104,46 @@ class MicrobitRobot {
                             defaultValue: "A#"
                         }
                     }
-                },*/
+                },
+                {
+                    opcode: 'setSpeed',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'microbitBot.setSpeed',
+                        default: 'set speed to [SPEED]',
+                        description: 'Send a particular speed to the robot'
+                    }),
+                    arguments: {
+                        SPEED: {
+                            type:ArgumentType.STRING,
+                            defaultValue: "70"
+                        }
+                    }
+                },
+
+
+                {
+                    opcode: 'turnTOangle',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'microbitBot.turnTOangle',
+                        default: 'turn [DIR] [ANGLE] degrees',
+                        description: 'Tell robot to turn to a certain angle'
+                    }),
+                    arguments: {
+                        DIR: {
+                            type:ArgumentType.STRING,
+                            menu: 'TURNS',
+                            defaultValue: _turn[0]
+                        },
+                        ANGLE: {
+                            type:ArgumentType.STRING,
+                            defaultValue: "90"
+                        }
+                    }
+                },
+
+
                 '---',
                 {
                     opcode: 'writeLedString',
@@ -308,6 +349,10 @@ class MicrobitRobot {
                     acceptReporters: false,
                     items: _drive
                 },
+                TURNS: {
+                    acceptReporters: false,
+                    items: _turn
+                },
                 BUTTON_STATES: {
                     acceptReporters: false,
                     items: _button
@@ -381,6 +426,30 @@ class MicrobitRobot {
     if (this._mServices) this._mServices.uartService.sendText(command);
     else console.log("No device");
   }
+
+  setSpeed (args) {
+    let speed = args.SPEED;
+    let command = 'S' + speed + '#';
+    console.log(command);
+    if (this._mServices) this._mServices.uartService.sendText(command);
+    else console.log("No device");
+  }
+
+  
+  turnTOangle (args) {
+    let angle = args.ANGLE;
+    let dir = args.DIR;
+    let command = 'R' + angle + '#';
+    if (dir == 'left'){
+        command = 'L' + angle + '#'
+    }
+
+    console.log(command);
+    if (this._mServices) this._mServices.uartService.sendText(command);
+    else console.log("No device");
+  }
+
+
   
   clearLedDisplay (args) {
     let ledMatrix = [[false, false, false, false, false],
