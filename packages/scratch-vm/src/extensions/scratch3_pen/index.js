@@ -15,7 +15,7 @@ const StageLayering = require('../../engine/stage-layering');
  */
 // eslint-disable-next-line max-len
 const blockIconURI = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48dGl0bGU+cGVuLWljb248L3RpdGxlPjxnIHN0cm9rZT0iIzU3NUU3NSIgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik04Ljc1MyAzNC42MDJsLTQuMjUgMS43OCAxLjc4My00LjIzN2MxLjIxOC0yLjg5MiAyLjkwNy01LjQyMyA1LjAzLTcuNTM4TDMxLjA2NiA0LjkzYy44NDYtLjg0MiAyLjY1LS40MSA0LjAzMi45NjcgMS4zOCAxLjM3NSAxLjgxNiAzLjE3My45NyA0LjAxNUwxNi4zMTggMjkuNTljLTIuMTIzIDIuMTE2LTQuNjY0IDMuOC03LjU2NSA1LjAxMiIgZmlsbD0iI0ZGRiIvPjxwYXRoIGQ9Ik0yOS40MSA2LjExcy00LjQ1LTIuMzc4LTguMjAyIDUuNzcyYy0xLjczNCAzLjc2Ni00LjM1IDEuNTQ2LTQuMzUgMS41NDYiLz48cGF0aCBkPSJNMzYuNDIgOC44MjVjMCAuNDYzLS4xNC44NzMtLjQzMiAxLjE2NGwtOS4zMzUgOS4zYy4yODItLjI5LjQxLS42NjguNDEtMS4xMiAwLS44NzQtLjUwNy0xLjk2My0xLjQwNi0yLjg2OC0xLjM2Mi0xLjM1OC0zLjE0Ny0xLjgtNC4wMDItLjk5TDMwLjk5IDUuMDFjLjg0NC0uODQgMi42NS0uNDEgNC4wMzUuOTYuODk4LjkwNCAxLjM5NiAxLjk4MiAxLjM5NiAyLjg1NU0xMC41MTUgMzMuNzc0Yy0uNTczLjMwMi0xLjE1Ny41Ny0xLjc2NC44M0w0LjUgMzYuMzgybDEuNzg2LTQuMjM1Yy4yNTgtLjYwNC41My0xLjE4Ni44MzMtMS43NTcuNjkuMTgzIDEuNDQ4LjYyNSAyLjEwOCAxLjI4Mi42Ni42NTggMS4xMDIgMS40MTIgMS4yODcgMi4xMDIiIGZpbGw9IiM0Qzk3RkYiLz48cGF0aCBkPSJNMzYuNDk4IDguNzQ4YzAgLjQ2NC0uMTQuODc0LS40MzMgMS4xNjVsLTE5Ljc0MiAxOS42OGMtMi4xMyAyLjExLTQuNjczIDMuNzkzLTcuNTcyIDUuMDFMNC41IDM2LjM4bC45NzQtMi4zMTYgMS45MjUtLjgwOGMyLjg5OC0xLjIxOCA1LjQ0LTIuOSA3LjU3LTUuMDFsMTkuNzQzLTE5LjY4Yy4yOTItLjI5Mi40MzItLjcwMi40MzItMS4xNjUgMC0uNjQ2LS4yNy0xLjQtLjc4LTIuMTIyLjI1LjE3Mi41LjM3Ny43MzcuNjE0Ljg5OC45MDUgMS4zOTYgMS45ODMgMS4zOTYgMi44NTYiIGZpbGw9IiM1NzVFNzUiIG9wYWNpdHk9Ii4xNSIvPjxwYXRoIGQ9Ik0xOC40NSAxMi44M2MwIC41LS40MDQuOTA1LS45MDQuOTA1cy0uOTA1LS40MDUtLjkwNS0uOTA0YzAtLjUuNDA3LS45MDMuOTA2LS45MDMuNSAwIC45MDQuNDA0LjkwNC45MDR6IiBmaWxsPSIjNTc1RTc1Ii8+PC9nPjwvc3ZnPg==';
-
+const _dirs = ["up","down","left","right"];
 /**
  * Enum for pen color parameter values.
  * @readonly
@@ -300,6 +300,117 @@ class Scratch3PenBlocks {
                     })
                 },
                 {
+                    opcode: 'drawMap',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'pen.drawMap',
+                        default: 'draw map with size [WIDTH]',
+                        description: 'draw a map with a specified tile width'
+                    }),
+                    arguments: {
+                        WIDTH: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 50
+                        }
+                    }
+                },
+                {
+                    opcode: 'goTo',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'pen.goTo',
+                        default: 'go to [X] [Y]',
+                        description: 'go to coordinate on map'
+                    }),
+                    arguments: {
+                        X: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 1
+                        },
+                        Y: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 1
+                        }
+                    }
+                },
+                {
+                    opcode: 'moveSteps',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'pen.moveSteps',
+                        default: 'move [DIR] [STEPS] steps',
+                        description: 'navigate in a direction on the map'
+                    }),
+                    arguments: {
+                        DIR: {
+                            type: ArgumentType.STRING, 
+                            menu: 'dirs',
+                            defaultValue: _dirs[0]
+                        },
+                        STEPS: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 1
+                        }
+                    }
+                }, // RANDI other blocks: get x/y coordinate of sprite, node by name
+                {
+                    opcode: 'checkDir',
+                    blockType: BlockType.BOOLEAN,
+                    text: formatMessage({
+                        id: 'pen.checkDir',
+                        default: 'can move [DIR]?',
+                        description: 'check if you can move one step in a direction on the map'
+                    }),
+                    arguments: {
+                        DIR: {
+                            type: ArgumentType.STRING, 
+                            menu: 'dirs',
+                            defaultValue: _dirs[0]
+                        }
+                    }
+                },
+                {
+                    opcode: 'addObstacle',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'pen.addObstacle',
+                        default: 'add obstacle at [X] [Y]',
+                        description: 'add obstacle at coordinate on map'
+                    }),
+                    arguments: {
+                        X: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 1
+                        },
+                        Y: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 1
+                        }
+                    }
+                },                {
+                    opcode: 'addGoal',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'pen.addGoal',
+                        default: 'add node [NAME] at [X] [Y]',
+                        description: 'add goal at coordinate on map'
+                    }),
+                    arguments: {
+                        NAME: {
+                            type: ArgumentType.STRING,
+                            defaultValue: "Goal"
+                        },
+                        X: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 1
+                        },
+                        Y: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 1
+                        }
+                    }
+                },
+                {
                     opcode: 'stamp',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
@@ -480,6 +591,10 @@ class Scratch3PenBlocks {
                 colorParam: {
                     acceptReporters: true,
                     items: this._initColorParam()
+                },
+                dirs: {
+                    acceptReporters: true,
+                    items: _dirs
                 }
             }
         };
@@ -493,6 +608,46 @@ class Scratch3PenBlocks {
         if (penSkinId >= 0) {
             this.runtime.renderer.penClear(penSkinId);
             this.runtime.requestRedraw();
+        }
+    }
+
+    
+    /**
+     * The draw map block stamps a square onto the pen layer.
+     * @param {object} args - the block arguments.
+     * @param {object} util - utility object provided by the runtime.
+     */
+    drawMap (args, util) {
+        const penSkinId = this._getPenLayerID();
+        if (penSkinId >= 0 && args.WIDTH > 0) {
+            // TODO only allow the map to be made with the square
+            const target = util.target;
+            let tileSize = Math.floor(args.WIDTH);
+            target.setSize(tileSize-1);
+
+            // calculate the max area that can be covered
+            let maxCols = Math.floor(480/tileSize);
+            let maxRows = Math.floor(360/tileSize);
+            console.log("columns: " + maxCols + ", rows: " + maxRows);
+
+            // calculate starting XY position
+            let xStart = -(480 - (480 % tileSize) - tileSize)/2;
+            let yStart = -(360 - (360 % tileSize) - tileSize)/2;
+            console.log("x start: " + xStart + ", y start: " + yStart);
+            target.setXY(xStart, yStart);
+
+            for (let y=yStart; y<(180); y+=tileSize) {
+                for (let x=xStart; x<(240+tileSize); x+=tileSize) {
+                    this.runtime.renderer.penStamp(penSkinId, target.drawableID);
+                    target.setXY(x,y);
+                }
+                target.setXY(xStart,y);
+            }                                
+            // redraw when done
+            this.runtime.requestRedraw();
+
+            // hide sprite when done
+            target.setVisible(false);
         }
     }
 
