@@ -26,7 +26,6 @@ class Scratch3MusicCreation {
         this.musicAccompanimentHelper = new MusicAccompanimentHelpers(runtime);
         this.analysisHelper = new AnalysisHelpers(runtime);
 
-
         this.noteList = [];
         this.wavenoteList = [];
         this.magentaNoteList = [];
@@ -56,6 +55,9 @@ class Scratch3MusicCreation {
         { text: "waveform", value: '2' },
         { text: "frequencies", value: '3' },
         { text: "frequencies over time", value: '4' }];
+
+        this._visStatus = [{text: "off", value: '0'}, 
+                          {text: "on", value: '1'}];
 
         this.textRenderer = new textRender(runtime);
 
@@ -348,6 +350,23 @@ class Scratch3MusicCreation {
                     }
                 },
                 {
+                    opcode: 'toggleVisMode',
+                    blockType: BlockType.COMMAND,
+                    text: 'set visualization mode to [STATUS] with [FORMAT]',
+                    arguments: {
+                        STATUS: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: '0',
+                            menu: "STATUS"
+                        },
+                        FORMAT: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: '1',
+                            menu: "FORMAT"
+                        }
+                    }
+                },
+                {
                     opcode: 'playMystery',
                     blockType: BlockType.COMMAND,
                     text: 'play [FILE]',
@@ -449,6 +468,10 @@ class Scratch3MusicCreation {
                 FORMAT: {
                     acceptReporters: true,
                     items: this.displayOptions
+                },
+                STATUS: {
+                    acceptReporters: true,
+                    items: this._visStatus
                 }
 
             }
@@ -463,11 +486,16 @@ class Scratch3MusicCreation {
         this.noteList = [];
         this.wavenoteList = [];
         this.magentaNoteList = [];
+        this.vizHelper.clearNoteBuffers();
     }
 
     testWaveformViz(args, util) {
         this.totalNoteList = this.noteList.concat(this.magentaNoteList);
         this.vizHelper.testWaveformViz(this.totalNoteList, args, util);
+    }
+
+    toggleVisMode (args, util) {
+        this.vizHelper.toggleVisMode(args,util);
     }
 
     testSheetMusicViz(args, util) {
@@ -526,7 +554,7 @@ class Scratch3MusicCreation {
 
     /**
      * 
-     * @param {array} raw_note - magenta note [freq,duration,inst,?] 
+     * @param {array} raw_note - magenta note [freq,duration,inst,volume] 
      * @returns information about the note as an object, in a form 
      *          consumable by this.musicCreationHelper
      */
@@ -571,7 +599,7 @@ class Scratch3MusicCreation {
         }
         const prepared_notes = this._prepare(magenta_notes);
         this.magentaNoteList = prepared_notes['notes'];
-        this.musicCreationHelper.playNotes(prepared_notes['args'], utils, inst);
+        this.musicCreationHelper.playNotes(prepared_notes, utils, inst,this.vizHelper); 
     }
 
     getInstrumentForBlock(id, util) {
@@ -659,6 +687,7 @@ class Scratch3MusicCreation {
                     toAdd.push(volumes[m].value);
                 }
             }
+            this.vizHelper.requestViz(toAdd,util);
             this.wavenoteList.push(toAdd);
         }
     }
