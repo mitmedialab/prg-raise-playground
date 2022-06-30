@@ -13,7 +13,9 @@ const AnalysisHelpers = require('./analysishelpers');
 const MusicPlayers = require('./musicplayer')
 const textRender = require('./textrender');
 const regeneratorRuntime = require("regenerator-runtime"); //do not delete
+const { internalIDKey, getTopBlockID, addTopBlockModifier, getTopBlockModifier } = require('../../extension-support/block-relationships');
 
+const instrumentModifierKey = 'instrument';
 
 class Scratch3MusicCreation {
     constructor(runtime) {
@@ -64,6 +66,7 @@ class Scratch3MusicCreation {
 
         this._onTargetCreated = this._onTargetCreated.bind(this);
         this.runtime.on('targetWasCreated', this._onTargetCreated);
+
     }
 
 
@@ -204,6 +207,18 @@ class Scratch3MusicCreation {
                     opcode: 'setInstrument',
                     blockType: BlockType.COMMAND,
                     text: 'set instrument to [INSTRUMENT]',
+                    arguments: {
+                        INSTRUMENT: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 1,
+                            menu: "INSTRUMENT"
+                        }
+                    }
+                },
+                {
+                    opcode: 'setInstrumentForBelow',
+                    blockType: BlockType.COMMAND,
+                    text: 'set instrument for below blocks to [INSTRUMENT]',
                     arguments: {
                         INSTRUMENT: {
                             type: ArgumentType.NUMBER,
@@ -527,6 +542,17 @@ class Scratch3MusicCreation {
     }
 
     /**
+     * Select an instrument for playing notes.
+     * @param {object} args - the block arguments.
+     * @param {BlockUtility} util - utility object provided by the runtime.
+     * @property {int} INSTRUMENT - the number of the instrument to select.
+     */
+    setInstrumentForBelow(args, util) {
+        const instrument = this.musicCreationHelper.getInstrumentValue(args.INSTRUMENT);
+        addTopBlockModifier(util, args[internalIDKey], instrumentModifierKey, instrument);
+    }
+
+    /**
      * 
      * @param {array} raw_note - magenta note [freq,duration,inst,volume] 
      * @returns information about the note as an object, in a form 
@@ -576,24 +602,28 @@ class Scratch3MusicCreation {
         this.musicCreationHelper.playNotes(prepared_notes, utils, inst,this.vizHelper); 
     }
 
+    getInstrumentForBlock(id, util) {
+        const modifierInst = getTopBlockModifier(util, id, instrumentModifierKey);
+        return modifierInst ? modifierInst : this.musicCreationHelper._getMusicState(util.target).currentInstrument;
+    }
+
     /**
      * Used to get the generated sequence of notes from Magenta and 
      * play it. 
      * @param {boolean} RNN - true if 'complete music', false if 'generate new music'
      * @param {array} args - arguments to be given to the music helper
-     * @param {BlockUtility} utils
+     * @param {BlockUtility} util
      */
-    getAndPlayMagentaNotes(RNN, args, utils) {
-        const musicState = this.musicCreationHelper._getMusicState(utils.target);
-        const inst = musicState.currentInstrument;
-        if (utils.stackTimerNeedsInit()) {
+    getAndPlayMagentaNotes(RNN, args, util) {
+        const inst = this.getInstrumentForBlock(args[internalIDKey], util);
+        if (util.stackTimerNeedsInit()) {
             // get timer running for a large amount of time (will be handled)
-            utils.startStackTimer(Number.MAX_SAFE_INTEGER);
-            utils.yield();
-            this._getAndPlayMagentaNotes(RNN, args, utils, inst);
+            util.startStackTimer(Number.MAX_SAFE_INTEGER);
+            util.yield();
+            this._getAndPlayMagentaNotes(RNN, args, util, inst);
         }
-        else if (!utils.stackTimerFinished()) {
-            utils.yield();
+        else if (!util.stackTimerFinished()) {
+            util.yield();
         }
     }
 
@@ -634,6 +664,7 @@ class Scratch3MusicCreation {
     /**
      * Set the current tempo to a new value.
      * @param {object} args - the block arguments.
+     * @param {BlockUtility} util - the block utility.
      * @property {number} TEMPO - the tempo, in beats per minute.
      */
     setVolume(args, util) {
@@ -646,7 +677,8 @@ class Scratch3MusicCreation {
     }
 
     playNote(args, util) {
-        toAdd = this.musicCreationHelper.playNote(args, util);
+        const inst = this.getInstrumentForBlock(args[internalIDKey], util);
+        toAdd = this.musicCreationHelper.playNote(args, util, inst);
         if (toAdd.length == 3) {
             this.noteList.push(toAdd);
             vol = (this.getVolume(util));
