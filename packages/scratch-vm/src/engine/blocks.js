@@ -224,8 +224,7 @@ class Blocks {
      * @returns {string[]} array of Top Block IDs
      */
     getTopBlockIDs() {
-        // TODO @dolev
-        // Figure this out by inspecting this._blocks
+        return Object.keys(this._blocks).filter(id => this._blocks[id].topLevel);
     }
 
     /**
@@ -233,8 +232,7 @@ class Blocks {
      * @param {string} ID 
      */
     isTopBlockID(ID) {
-        // TODO @dolev
-        return getTopBlockIDs().includes(ID); // something like this
+        return this.getTopBlockIDs().includes(ID);
     }
 
     /**
