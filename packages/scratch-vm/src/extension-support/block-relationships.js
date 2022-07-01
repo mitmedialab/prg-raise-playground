@@ -28,11 +28,6 @@ export const getTopBlockID = (blockID, util) => getBlockContainer(util).getTopLe
  * @returns 
  */
 export const addTopBlockModifier = (util, selfID, modifierKey, value) => {
-  // TODO: @Dolev it would be nice to 'purge' stale Top Block IDs
-  // You could do this by looping over the current keys of util[topBlockModifiers],
-  // and removing elements that have a stale key.
-  // NOTE: Use the (not yet implemented) function `getBlockContainer(util).isTopBlockID(...)`
-
   const topBlockID = getTopBlockID(selfID, util);
   if (!topBlockID) return;
   const entry = { value, sourceID: selfID };
@@ -41,6 +36,12 @@ export const addTopBlockModifier = (util, selfID, modifierKey, value) => {
       ? util[topBlockModifiers][topBlockID][modifierKey] = entry
       : util[topBlockModifiers][topBlockID] = { [modifierKey]: entry }
     : util[topBlockModifiers] = { [topBlockID]: { [modifierKey]: entry } }
+  let block_ids = Object.keys(getBlockContainer(util)._blocks);
+  for (const mod in util[topBlockModifiers]) {
+    if (!block_ids.includes(mod)) {
+      delete util[topBlockModifiers][mod];
+    }
+  }
 }
 
 /**
