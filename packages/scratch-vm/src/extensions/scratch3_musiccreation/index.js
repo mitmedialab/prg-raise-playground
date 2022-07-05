@@ -564,16 +564,18 @@ class Scratch3MusicCreation {
      * @param {array} notes - array of notes that will be adjusted in-place
      */
     adjustFreqsToRange(hi,low,notes) {
-        notes.map( (note) => {
-                        let freq = note[0];
-                        if (freq < low) {
-                            const diff = low - freq;
-                            note[0] += (Math.ceil(diff/12.0) * 12);
-                        } else if (freq > hi) {
-                            const diff = freq - hi;
-                            note[0] -= (Math.ceil(diff/12.0) * 12);
-                        }
-                    })
+        notes.map( 
+            (note) => {
+                let freq = note[0];
+                if (freq < low) {
+                    const diff = low - freq;
+                    note[0] += (Math.ceil(diff/12.0) * 12);
+                } else if (freq > hi) {
+                    const diff = freq - hi;
+                    note[0] -= (Math.ceil(diff/12.0) * 12);
+                }
+            });
+        return notes;
     }
 
     /**
@@ -592,8 +594,9 @@ class Scratch3MusicCreation {
             if (this.noteList.length > 0) {
                 const low = 48;
                 const hi = 83;
-                this.adjustFreqsToRange(hi,low,this.noteList);
-                magenta_notes = await this.musicAccompanimentHelper.testMagentaRNN(this.noteList, args, utils);
+                //copy the noteList so that it doesn't change
+                const adjusted_notes = this.adjustFreqsToRange(hi,low,JSON.parse(JSON.stringify(this.noteList)));
+                magenta_notes = await this.musicAccompanimentHelper.testMagentaRNN(adjusted_notes, args, utils);
                 
             } else valid = false;
         } else {
@@ -685,8 +688,7 @@ class Scratch3MusicCreation {
                     toAdd.push(volumes[m].value);
                 }
             }
-            // console.log(toAdd);
-            this.vizHelper.requestViz(toAdd,util); // can move to music creation helper if that is preferred
+            this.vizHelper.requestViz(toAdd,util);
             this.wavenoteList.push(toAdd);
         }
     }
