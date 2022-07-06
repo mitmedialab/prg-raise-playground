@@ -53,6 +53,9 @@ class SheetMusic {
 
         this._onTargetMoved = this._onTargetMoved.bind(this);
 
+
+        this._staffLims = {lo_note:60,hi_note:85,lo_staff:-2,hi_staff:12};
+        this._staffBaseLims = {lo_note:34,hi_note:34,lo_staff:-5, hi_staff:9};
         pitchToStaff = {
             60: -2,
             61: -2,
@@ -869,6 +872,9 @@ class SheetMusic {
             util.target.setXY(xmid+flip*xrad, ymid+flip*30);
         }
         if (duration < 1) { //add tails for < quarter notes
+            if (duration === 0) {
+                return;
+            }
             offset = 0;
             for (var i = 0; i < 1/(duration*2); i++) {
                 this.penUp(args, util);
@@ -900,12 +906,21 @@ class SheetMusic {
             if (flats.includes(freq)) {
                 acc = "flat";
             }
+
             if (freq >= 60) {
+                if (freq > this._staffLims['hi_note']) {
+                    console.log(`adjusting (treble) ${freq} to ${this._staffLims['hi_note']}`);
+                    freq = this._staffLims['hi_note'];
+                } 
                 var staff = pitchToStaff[freq];
                 var dur = this.noteList[i][1]*4;
                 var amp = this.noteList[i][3];
                 var clef = "treble";
             } else {
+                if (freq === undefined || freq < this._staffBaseLims['lo_note']) {
+                    console.log(`adjusting (bass) ${freq} to ${this._staffBaseLims['lo_note']}`);
+                    freq = this._staffBaseLims['lo_note'];
+                }
                 var staff = pitchToStaffBass[freq];
                 var dur = this.noteList[i][1]*4;
                 var amp = this.noteList[i][3];

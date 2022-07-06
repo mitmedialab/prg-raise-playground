@@ -14,18 +14,18 @@ const MusicPlayers = require('./musicplayer')
 const textRender = require('./textrender');
 const regeneratorRuntime = require("regenerator-runtime"); //do not delete
 const { generateXMLForBlockChunk } = require('../../extension-support/xml-builder');
+const { internalIDKey, getTopBlockID, addTopBlockModifier, getTopBlockModifier } = require('../../extension-support/block-relationships');
 
+const instrumentModifierKey = 'instrument';
 
 class Scratch3MusicCreation {
     constructor(runtime) {
         this.runtime = runtime;
-
         this.musicPlayer = new MusicPlayers(runtime);
         this.vizHelper = new VizHelpers(runtime);
         this.musicCreationHelper = new MusicCreationHelpers(runtime);
         this.musicAccompanimentHelper = new MusicAccompanimentHelpers(runtime);
         this.analysisHelper = new AnalysisHelpers(runtime);
-
 
         this.noteList = [];
         this.wavenoteList = [];
@@ -52,6 +52,9 @@ class Scratch3MusicCreation {
         { text: "frequencies", value: '3' },
         { text: "frequencies over time", value: '4' }];
 
+        this._visStatus = [{text: "off", value: '0'}, 
+                          {text: "on", value: '1'}];
+
         this.textRenderer = new textRender(runtime);
 
         this._playNoteForPicker = this._playNoteForPicker.bind(this);
@@ -59,6 +62,7 @@ class Scratch3MusicCreation {
 
         this._onTargetCreated = this._onTargetCreated.bind(this);
         this.runtime.on('targetWasCreated', this._onTargetCreated);
+
     }
 
 
@@ -236,6 +240,18 @@ class Scratch3MusicCreation {
                     }
                 },
                 {
+                    opcode: 'setInstrumentForBelow',
+                    blockType: BlockType.COMMAND,
+                    text: 'set instrument for below blocks to [INSTRUMENT]',
+                    arguments: {
+                        INSTRUMENT: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 1,
+                            menu: "INSTRUMENT"
+                        }
+                    }
+                },
+                {
                     opcode: 'setVolume',
                     blockType: BlockType.COMMAND,
                     text: 'set volume to [VOLUME]',
@@ -386,6 +402,23 @@ class Scratch3MusicCreation {
                     }
                 },
                 {
+                    opcode: 'toggleVisMode',
+                    blockType: BlockType.COMMAND,
+                    text: 'set visualization mode to [STATUS] with [FORMAT]',
+                    arguments: {
+                        STATUS: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: '0',
+                            menu: "STATUS"
+                        },
+                        FORMAT: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: '1',
+                            menu: "FORMAT"
+                        }
+                    }
+                },
+                {
                     opcode: 'playMystery',
                     blockType: BlockType.COMMAND,
                     text: 'play [FILE]',
@@ -487,6 +520,10 @@ class Scratch3MusicCreation {
                 FORMAT: {
                     acceptReporters: true,
                     items: this.displayOptions
+                },
+                STATUS: {
+                    acceptReporters: true,
+                    items: this._visStatus
                 }
 
             }
@@ -501,11 +538,16 @@ class Scratch3MusicCreation {
         this.noteList = [];
         this.wavenoteList = [];
         this.magentaNoteList = [];
+        this.vizHelper.clearNoteBuffers();
     }
 
     testWaveformViz(args, util) {
         this.totalNoteList = this.noteList.concat(this.magentaNoteList);
         this.vizHelper.testWaveformViz(this.totalNoteList, args, util);
+    }
+
+    toggleVisMode (args, util) {
+        this.vizHelper.toggleVisMode(args,util);
     }
 
     testSheetMusicViz(args, util) {
@@ -552,8 +594,19 @@ class Scratch3MusicCreation {
     }
 
     /**
+     * Select an instrument for playing notes.
+     * @param {object} args - the block arguments.
+     * @param {BlockUtility} util - utility object provided by the runtime.
+     * @property {int} INSTRUMENT - the number of the instrument to select.
+     */
+    setInstrumentForBelow(args, util) {
+        const instrument = this.musicCreationHelper.getInstrumentValue(args.INSTRUMENT);
+        addTopBlockModifier(util, args[internalIDKey], instrumentModifierKey, instrument);
+    }
+
+    /**
      * 
-     * @param {array} raw_note - magenta note [freq,duration,inst,?] 
+     * @param {array} raw_note - magenta note [freq,duration,inst,volume] 
      * @returns information about the note as an object, in a form 
      *          consumable by this.musicCreationHelper
      */
@@ -599,8 +652,13 @@ class Scratch3MusicCreation {
         }
         const prepared_notes = this._prepare(magenta_notes);
         this.magentaNoteList = prepared_notes['notes'];
-        this.musicCreationHelper.playNotes(prepared_notes['args'], utils, inst);
+        this.musicCreationHelper.playNotes(prepared_notes, utils, inst,this.vizHelper);
         if (processNotes) processNotes(prepared_notes.args);
+    }
+
+    getInstrumentForBlock(id, util) {
+        const modifierInst = getTopBlockModifier(util, id, instrumentModifierKey);
+        return modifierInst ? modifierInst : this.musicCreationHelper._getMusicState(util.target).currentInstrument;
     }
 
     /**
@@ -683,6 +741,7 @@ class Scratch3MusicCreation {
     /**
      * Set the current tempo to a new value.
      * @param {object} args - the block arguments.
+     * @param {BlockUtility} util - the block utility.
      * @property {number} TEMPO - the tempo, in beats per minute.
      * @param {BlockUtility} util
      */
@@ -696,7 +755,8 @@ class Scratch3MusicCreation {
     }
 
     playNote(args, util) {
-        toAdd = this.musicCreationHelper.playNote(args, util);
+        const inst = this.getInstrumentForBlock(args[internalIDKey], util);
+        toAdd = this.musicCreationHelper.playNote(args, util, inst);
         if (toAdd.length == 3) {
             this.noteList.push(toAdd);
             vol = (this.getVolume(util));
@@ -705,6 +765,7 @@ class Scratch3MusicCreation {
                     toAdd.push(volumes[m].value);
                 }
             }
+            this.vizHelper.requestViz(toAdd,util);
             this.wavenoteList.push(toAdd);
         }
     }

@@ -263,8 +263,6 @@ class FFT {
             midi = this.noteList[i][0];
             inst = this.noteList[i][2];
             harmonic = this.harmonics[inst];
-            log.log(inst);
-            log.log(this.harmonics[inst]);
             pitch = 2**((midi - 69)/12)*440;
             for (i in harmonic) {
                 k = harmonic[i][0];
@@ -293,7 +291,6 @@ class FFT {
             amp = amps[i];
             ratio = freq/maxFreq;
             ratioAmp = amp/maxAmp;
-            log.log(ratio, ratioAmp);
             this.penUp(args, util);
             util.target.setXY(this.axisStartX + ratio*this.xAxisLength, this.axisStartY);
             this.penDown(args, util);
