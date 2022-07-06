@@ -336,6 +336,21 @@ class MusicCreationHelpers {
     }
 
     /**
+     * Convert volume name to number
+     * @param {string} volume_name 
+     * @returns {number} the matching numerical volume [0,100] or 
+     *                          60 as default if no match is found
+     */
+    findNumberForVolume(volume_name) {
+        for (var m in volumes) {
+            if (volumes[m].text === volume_name) {
+                return volumes[m].value;
+            }
+        }
+        return 60;
+    }
+
+    /**
      * Update the current tempo, clamping it to the min and max allowable range.
      * @param {number} tempo - the tempo to set, in beats per minute.
      * @private
@@ -442,7 +457,7 @@ class MusicCreationHelpers {
      * @augments @param util's stackFrame.duration to be 0 once the last note in @param seq 
      *           has stopped playing. 
      */
-    _playNoteFromSeq(noteInfo, seq, util, l, inst) {
+    _playNoteFromSeq(noteInfo, seq, util, l, inst, vol) {
         const i = noteInfo['index'];
         const last = i === l - 1;
         if (this._concurrencyCounter > this.CONCURRENCY_LIMIT) return;
@@ -462,12 +477,12 @@ class MusicCreationHelpers {
             if (last || this._stopped) {
                 util.stackFrame.duration = 0;
             } else {
-                this._playNoteFromSeq(seq[i + 1], seq, util, l, inst);
+                this._playNoteFromSeq(seq[i + 1], seq, util, l, inst, vol);
             }
         });
 
         if (!this._stopped) {
-            this._activatePlayer(util, playerAndData);
+            this._activatePlayer(util, playerAndData, vol);
         }
     }
 
@@ -480,11 +495,11 @@ class MusicCreationHelpers {
      * @requires - each elem in @param seq has 'note', 'duration' and
      * 'index' fields
      */
-    playFirstNote(util, seq, inst) {
+    playFirstNote(util, seq, inst, vol) {
         const l = seq.length
         if (l === 0) return;
         util.sequencer.runtime.setMaxListeners(Infinity);
-        this._playNoteFromSeq(seq[0], seq, util, l, inst);
+        this._playNoteFromSeq(seq[0], seq, util, l, inst, vol);
     }
 
     /**
@@ -492,7 +507,7 @@ class MusicCreationHelpers {
      * @param {array} args - args[i] has 'mutation', 'NOTE', and 'SECS' fields
      * @param {BlockUtility} util 
      */
-    playNotes(args, util, inst) {
+    playNotes(args, util, inst, vol) {
         const l = args.length;
         let seq = [];
         for (let i = 0; i < l; i++) {
@@ -502,7 +517,7 @@ class MusicCreationHelpers {
         if (l === 0) return;
         this._stopped = false;
         //begins the chain of events that plays the seq of notes
-        this.playFirstNote(util, seq, inst);
+        this.playFirstNote(util, seq, inst, vol);
 
         //set the duration to MAX. duration is cut off when the last note ends
         util.stackFrame.duration = Number.MAX_SAFE_INTEGER;
@@ -520,7 +535,7 @@ class MusicCreationHelpers {
      * @private
      */
     _initNote(util, sampleArray, sampleIndex, note, player, instInfo,
-        durationSec) {
+        durationSec, vol) {
         // Set its pitch.
         const sampleNote = sampleArray[sampleIndex];
         const notePitchInterval = this._ratioForPitchInterval(note - sampleNote);
@@ -532,7 +547,7 @@ class MusicCreationHelpers {
         // to the output.
         const context = engine.audioContext;
         const volumeGain = context.createGain();
-        volumeGain.gain.setValueAtTime(util.target.volume / 100, engine.currentTime);
+        volumeGain.gain.setValueAtTime(vol / 100, engine.currentTime);
         const releaseGain = context.createGain();
         volumeGain.connect(releaseGain);
         releaseGain.connect(engine.getInputNode());
@@ -575,7 +590,7 @@ class MusicCreationHelpers {
      * @param {object} playerAndData - contains 'player' and 'data' fields
      * @private
      */
-    _activatePlayer(util, playerAndData) {
+    _activatePlayer(util, playerAndData, vol) {
         // If we're playing too many sounds, do not play the note.
         if (this._concurrencyCounter > MusicCreationHelpers.CONCURRENCY_LIMIT) {
             console.log('concurrency limit reached');
@@ -597,10 +612,10 @@ class MusicCreationHelpers {
         let durationSec = data['duration'];
 
         this._initNote(util, sampleArray, sampleIndex, note, player, instInfo,
-            durationSec);
+            durationSec, vol);
     }
 
-    playNote(args, util, instrument) {
+    playNote(args, util, instrument, vol) {
         if (this._stackTimerNeedsInit(util)) {
             let note = Cast.toNumber(args.NOTE);
             note = MathUtil.clamp(note,
@@ -612,7 +627,7 @@ class MusicCreationHelpers {
             if (beats === 0) return;
 
             const durationSec = beats;
-            this._playNote(util, note, durationSec, instrument);
+            this._playNote(util, note, durationSec, instrument, vol);
 
             this._startStackTimer(util, durationSec);
             const musicState = this._getMusicState(util.target);
@@ -634,7 +649,7 @@ class MusicCreationHelpers {
      * @param {number} durationSec - the duration in seconds to play the note.
      * @private
      */
-    _playNote(util, note, durationSec, instrument) {
+    _playNote(util, note, durationSec, instrument, vol) {
         if (util.runtime.audioEngine === null) return;
         if (util.target.sprite.soundBank === null) return;
 
@@ -660,7 +675,7 @@ class MusicCreationHelpers {
         const player = this._getPlayer(inst, note);
 
         this._initNote(util, sampleArray, sampleIndex, note, player, instrumentInfo,
-            durationSec);
+            durationSec, vol);
     }
 
     /**
