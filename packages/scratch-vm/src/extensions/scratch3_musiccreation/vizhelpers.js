@@ -11,10 +11,18 @@ const WaveformHelper = require('./waveform');
 const SpectrogramHelper = require('./spectrogram');
 const FFTHelper = require('./fft');
 const { updateVariableIdentifiers } = require('../../util/variable-util');
+const { e } = require('./letters');
 
 class VizHelpers {
     constructor (runtime) {
         this.runtime = runtime;
+
+        this._count = 0;
+        this._visState = {status: false, mode: undefined};
+        this._noteBuf = {sheet: [], wave: [], freq: [], freqs: []};
+        this._visNames = {1: 'sheet', 2: 'wave', 3: 'freq', 4: 'freqs'};
+        this._visLims = {'sheet': 11, 'wave': 5, 'freq': 15, 'freqs': 15};
+        this._continuousScroll = {'sheet': true, 'wave': true, 'freq': false, 'freqs': true};
 
         /**
          * The ID of the renderer Skin corresponding to the pen layer.
@@ -178,6 +186,62 @@ class VizHelpers {
             target.setCustomState(VizHelpers.VIZ_STATE_KEY, penState);
         }
         return penState;
+    }
+
+    toggleVisMode (args,util) {
+        let status = Cast.toNumber(args.STATUS);
+        let mode = Cast.toNumber(args.FORMAT);
+        const status_bool = !!status; // typeof(status) === string
+        this._visState = { mode:mode, status:status_bool };
+    }
+
+    clearNoteBuffers () {
+        for (let b in this._noteBuf) {
+            this._noteBuf[b] = [];
+        }
+    }
+
+    /**
+     * 
+     * @param {array} note - [freq, duration, instrument, volume]
+     */
+    requestViz (note, util) {
+        if (this._visState['status']) {
+            this.processViz(note,util);
+        }
+    }
+
+
+    processViz (note,util) {
+        const mode = this._visState['mode'];
+        const name = this._visNames[mode];
+        const lim = this._visLims[name];
+        const cont = this._continuousScroll[name];
+        let buf = this._noteBuf[name];
+        if (cont) {
+            while (buf.length + 1 >= lim) {
+                buf = buf.splice(1);
+            }
+        } else {
+            if (buf.length + 1 >= lim) buf = [];
+        }
+        
+        note[4] = this._count++;
+        buf.push(note);
+        this._noteBuf[name] = buf;
+        switch (name) {
+            case 'wave':
+                this.testWaveformViz(buf,null,util);
+                break;
+            case 'freq':
+                this.testFreqViz(buf,null,util);
+                break;
+            case 'freqs':
+                this.testSpectViz(buf,null,util);
+                break;
+            default:
+                this.testSheetMusicViz(buf,null,util);
+        }
     }
 
     testWaveformViz (noteList, args, util) {
