@@ -39,6 +39,8 @@ class Scratch3MusicCreation {
         { text: "fortissimo", value: '100' }];
 
         this.beats = [0.0625, 0.125, 0.25, 0.5, 0.75, 1].map(this.secsToBeats);
+        this.beats = ["1/4", "1/2", "1", "2", "3", "4", "8", "16"].map(this.beatsToSecs);
+
 
         this.files = [{ text: "mystery 1", value: '1' },
         { text: "mystery 2", value: '2' },
@@ -52,8 +54,8 @@ class Scratch3MusicCreation {
         { text: "frequencies", value: '3' },
         { text: "frequencies over time", value: '4' }];
 
-        this._visStatus = [{text: "off", value: '0'}, 
-                          {text: "on", value: '1'}];
+        this._visStatus = [{ text: "off", value: '0' },
+        { text: "on", value: '1' }];
 
         this.textRenderer = new textRender(runtime);
 
@@ -189,31 +191,67 @@ class Scratch3MusicCreation {
     }
 
     /**
-     * Convert an amount of seconds into how many beats it is (assuming 4 beats per second)
-     * @param {number | string} secs 
-     * @returns {{text: string, value: number | string }} text represents the calculated number of beats, while value is still in seconds 
+     * Converts a numeric decimal representation to its fractional form stored in a string
+     * @param {number} value 
+     * @returns {string}
      */
-    secsToBeats(secs) {
-        const beatPerSec = 4;
-
+    static convertDecimalToFraction(value) {
         const gcd = function (a, b) {
             if (b < 0.0000001) return a;// Since there is a limited precision we need to limit the value.
             return gcd(b, Math.floor(a % b));
         };
 
-        const beats = (typeof secs === 'number' ? secs : parseFloat(secs)) * beatPerSec;
-        const len = beats.toString().length - 2;
+        const len = value.toString().length - 2;
 
         let denominator = Math.pow(10, len);
-        let numerator = beats * denominator;
+        let numerator = value * denominator;
 
         const divisor = gcd(numerator, denominator);
 
         numerator = Math.round(numerator / divisor);
         denominator = Math.round(denominator / divisor);
 
-        const text = denominator === 1 ? `${numerator}` : `${numerator}/${denominator}`;
-        return { text, value: secs };
+
+        return denominator === 1 ? `${numerator}` : `${numerator}/${denominator}`;
+    }
+
+    /**
+     * Convert a fraction stored in a string to it's numeric decimal form
+     * @param {string} value 
+     * @returns {number}
+     */
+    static convertFractionToDecimal(value) {
+        const parts = value.split("/");
+        if (parts.length === 1) return parseInt(parts);
+        return parseInt(parts[0], 10) / parseInt(parts[1], 10);
+    }
+
+    static beatPerSec() {
+        return 2;
+    };
+
+    /**
+     * Convert an amount of seconds into how many beats it is (assuming 4 beats per second)
+     * @param {number | string} beats 
+     * @param {number} beatPerSec
+     * @returns {{text: string, value: number | string }} text represents the calculated number of beats, while value is still in seconds 
+     */
+    beatsToSecs(beats) {
+        const ratio = Scratch3MusicCreation.beatPerSec();
+        const secs = (typeof beats === 'number' ? beats : Scratch3MusicCreation.convertFractionToDecimal(beats)) / ratio;
+        return { text: `${beats}`, value: secs };
+    }
+
+    /**
+     * Convert an amount of seconds into how many beats it is (assuming 4 beats per second)
+     * @param {number | string} secs 
+     * @param {number} beatPerSec
+     * @returns {{text: string, value: number | string }} text represents the calculated number of beats, while value is still in seconds 
+     */
+    secsToBeats(secs) {
+        const ratio = Scratch3MusicCreation.beatPerSec();
+        const beats = (typeof secs === 'number' ? secs : parseFloat(secs)) * ratio;
+        return { text: Scratch3MusicCreation.convertDecimalToFraction(beats), value: secs };
     };
 
 
@@ -302,25 +340,6 @@ class Scratch3MusicCreation {
                     text: formatMessage({
                         id: 'musiccreation.testMagentaRNN',
                         default: 'complete music with [STEPS] steps and [TEMP] temperature',
-                        description: 'test Magenta RNN'
-                    }),
-                    blockType: BlockType.COMMAND,
-                    arguments: {
-                        STEPS: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 20
-                        },
-                        TEMP: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 1.5
-                        },
-                    },
-                },
-                {
-                    opcode: 'testMagentaRNN',
-                    text: formatMessage({
-                        id: 'musiccreation.testMagentaRNN',
-                        default: 'add music blocks with [STEPS] steps and [TEMP] temperature',
                         description: 'test Magenta RNN'
                     }),
                     blockType: BlockType.COMMAND,
@@ -546,8 +565,8 @@ class Scratch3MusicCreation {
         this.vizHelper.testWaveformViz(this.totalNoteList, args, util);
     }
 
-    toggleVisMode (args, util) {
-        this.vizHelper.toggleVisMode(args,util);
+    toggleVisMode(args, util) {
+        this.vizHelper.toggleVisMode(args, util);
     }
 
     testSheetMusicViz(args, util) {
@@ -652,7 +671,7 @@ class Scratch3MusicCreation {
         }
         const prepared_notes = this._prepare(magenta_notes);
         this.magentaNoteList = prepared_notes['notes'];
-        this.musicCreationHelper.playNotes(prepared_notes, utils, inst,this.vizHelper);
+        this.musicCreationHelper.playNotes(prepared_notes, utils, inst, this.vizHelper);
         if (processNotes) processNotes(prepared_notes.args);
     }
 
@@ -765,7 +784,7 @@ class Scratch3MusicCreation {
                     toAdd.push(volumes[m].value);
                 }
             }
-            this.vizHelper.requestViz(toAdd,util);
+            this.vizHelper.requestViz(toAdd, util);
             this.wavenoteList.push(toAdd);
         }
     }

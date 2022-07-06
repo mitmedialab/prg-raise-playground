@@ -444,9 +444,9 @@ class MusicCreationHelpers {
      * @augments @param util's stackFrame.duration to be 0 once the last note in @param seq 
      *           has stopped playing. 
      */
-    _playNoteFromSeq (noteInfo, seq, util,l, inst, vizHelper, raw_notes) {
+    _playNoteFromSeq(noteInfo, seq, util, l, inst, vizHelper, raw_notes) {
         const i = noteInfo['index'];
-        const last = i === l-1;
+        const last = i === l - 1;
         const raw_note = raw_notes[i];
         if (this._concurrencyCounter > this.CONCURRENCY_LIMIT) return;
         const playerAndData = this.createPlayer(util, noteInfo['note'], noteInfo['duration'], inst);
@@ -465,12 +465,12 @@ class MusicCreationHelpers {
             if (last || this._stopped) {
                 util.stackFrame.duration = 0;
             } else {
-                this._playNoteFromSeq(seq[i+1],seq,util,l,inst,vizHelper,raw_notes);  
+                this._playNoteFromSeq(seq[i + 1], seq, util, l, inst, vizHelper, raw_notes);
             }
-        });        
+        });
         if (!this._stopped) {
-            vizHelper.requestViz(raw_note,util); //potentially incorrect...
-            this._activatePlayer(util,playerAndData);
+            vizHelper.requestViz(raw_note, util); //potentially incorrect...
+            this._activatePlayer(util, playerAndData);
         }
     }
 
@@ -484,11 +484,11 @@ class MusicCreationHelpers {
      * @requires - each elem in @param seq has 'note', 'duration' and
      * 'index' fields
      */
-    playFirstNote (util, seq, inst, vizHelper, raw_notes) {
+    playFirstNote(util, seq, inst, vizHelper, raw_notes) {
         const l = seq.length
         if (l === 0) return;
         util.sequencer.runtime.setMaxListeners(Infinity);
-        this._playNoteFromSeq(seq[0],seq,util,l, inst, vizHelper, raw_notes);
+        this._playNoteFromSeq(seq[0], seq, util, l, inst, vizHelper, raw_notes);
     }
 
     /**
@@ -500,14 +500,14 @@ class MusicCreationHelpers {
      * @param {BlockUtility} util 
      * @param {VizHelpers} vizHelper
      */
-    playNotes (args, util, inst, vizHelper) {
+    playNotes(args, util, inst, vizHelper) {
         let clean_notes = args['args'];
         let raw_notes = args['notes'];
         const l = clean_notes.length;
         let seq = [];
         for (let i = 0; i < l; i++) {
             const noteArg = clean_notes[i];
-            seq.push(this._clamp(noteArg,i));
+            seq.push(this._clamp(noteArg, i));
         }
         if (l === 0) return;
         this._stopped = false;
@@ -549,11 +549,9 @@ class MusicCreationHelpers {
 
         // Schedule the release of the note, ramping its gain down to zero,
         // and then stopping the sound.
-        let releaseDuration = instInfo.releaseTime;
-        if (typeof releaseDuration === 'undefined') {
-            releaseDuration = 0.01;
-        }
-        const releaseStart = context.currentTime + durationSec;
+        const releaseRatio = instInfo.releaseTime ? instInfo.releaseTime : 0.1;
+        const releaseDuration = durationSec * releaseRatio;
+        const releaseStart = context.currentTime + durationSec * (1 - releaseRatio);
         const releaseEnd = releaseStart + releaseDuration;
         releaseGain.gain.setValueAtTime(1, releaseStart);
         releaseGain.gain.linearRampToValueAtTime(0.0001, releaseEnd);
