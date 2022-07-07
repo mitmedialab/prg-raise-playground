@@ -16,6 +16,7 @@ const regeneratorRuntime = require("regenerator-runtime"); //do not delete
 const { generateXMLForBlockChunk } = require('../../extension-support/xml-builder');
 const { internalIDKey, getTopBlockID, addTopBlockModifier, getTopBlockModifier } = require('../../extension-support/block-relationships');
 
+const givenBeatValues = ["1/4", "1/2", "1", "2", "3", "4", "8", "16"];
 const instrumentModifierKey = 'instrument';
 
 class Scratch3MusicCreation {
@@ -38,9 +39,7 @@ class Scratch3MusicCreation {
         { text: "forte", value: '85' },
         { text: "fortissimo", value: '100' }];
 
-        this.beats = [0.0625, 0.125, 0.25, 0.5, 0.75, 1].map(this.secsToBeats);
-        this.beats = ["1/4", "1/2", "1", "2", "3", "4", "8", "16"].map(this.beatsToSecs);
-
+        this.beats = givenBeatValues.map(this.beatsToSecs);
 
         this.files = [{ text: "mystery 1", value: '1' },
         { text: "mystery 2", value: '2' },
@@ -239,7 +238,7 @@ class Scratch3MusicCreation {
     beatsToSecs(beats) {
         const ratio = Scratch3MusicCreation.beatPerSec();
         const secs = (typeof beats === 'number' ? beats : Scratch3MusicCreation.convertFractionToDecimal(beats)) / ratio;
-        return { text: `${beats}`, value: secs };
+        return { text: `${beats}`, value: `${secs}` };
     }
 
     /**
@@ -735,7 +734,7 @@ class Scratch3MusicCreation {
             // TODO: Dolev, is this correct? Could this be leading to play duration errors?
             const blockArgs = notes.map(note => {
                 const { NOTE, SECS } = note;
-                return { NOTE, SECS };
+                return { NOTE, SECS: `${SECS}` };
             });
             const opcodes = blockArgs.map(_ => 'playNote');
             const xml = generateXMLForBlockChunk(this, runtime, opcodes, blockArgs);
