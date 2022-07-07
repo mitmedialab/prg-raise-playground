@@ -1,12 +1,12 @@
 import type Runtime from '../engine/runtime';
 import { ArgumentType, BlockType } from './enums';
-import type ExtensionBase from './ExtensionBase';
+import type Extension from './Extension';
+import type BlockUtility from '../engine/block-utility';
+
 
 export type Environment = {
   runtime: Runtime
 }
-
-export type Extension<T> = ExtensionBase<T> & { [k in keyof T]: T[k] };
 
 export type Operation = (...args: any) => any;
 
@@ -17,8 +17,8 @@ export type MenuItem<T> = T | {
 
 export type Argument<T> = {
   type: ArgumentType;
-  defaultValue?: T;
-  options?: MenuItem<T>[];
+  defaultValue?: T | undefined;
+  options?: MenuItem<T>[] | undefined;
 }
 
 export type ToArguments<T extends [...any[]]> =
@@ -26,13 +26,28 @@ export type ToArguments<T extends [...any[]]> =
   ? [Argument<Head>, ...ToArguments<Tail>]
   : [];
 
+type ParamsAndUtility<T extends Operation> = [...Parameters<T>, BlockUtility];
+
 export type BlockInfo<T extends Operation> = {
   type: BlockType;
-  operation: (...params: Parameters<T>) => ReturnType<T>;
+  operation: (...params: ParamsAndUtility<T>) => ReturnType<T>;
   arguments: ToArguments<Parameters<T>>;
   text: (...params: Parameters<T>) => string;
 }
 
-export type Block<T extends Operation> = (self: ExtensionBase<T>) => BlockInfo<T>;
+export type Block<T extends Operation> = (self: Extension<T>) => BlockInfo<T>;
 
-export type Output<T extends Operation> = ReturnType<T>;  
+export type Implementation<T extends Operation> = ReturnType<T>;
+export type Implements<T extends Block<any>> = T;
+
+type UnionToIntersection<U> = (
+  U extends never ? never : (arg: U) => never
+) extends (arg: infer I) => void
+  ? I
+  : never;
+
+export type UnionToTuple<T> = UnionToIntersection<
+  T extends never ? never : (t: T) => T
+> extends (_: never) => infer W
+  ? [...UnionToTuple<Exclude<T, W>>, W]
+  : [];

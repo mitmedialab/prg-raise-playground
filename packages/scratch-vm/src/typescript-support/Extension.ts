@@ -1,17 +1,21 @@
 import type Runtime from '../engine/runtime';
-import type { Block, Environment, Extension, Operation } from './types';
+import type { Block, Environment, Operation, UnionToTuple } from './types';
 
-export default abstract class ExtensionBase<T> {
+export default abstract class Extension<T> {
   runtime: Runtime;
 
   constructor(runtime: Runtime) {
     this.runtime = runtime;
     this.init({ runtime });
-    const blocks = this.definition();
+    const blocks = this.blockDefinitions();
     for (const key in blocks) {
       const block = blocks[key](this);
       const info = this.convertToInfo(block);
     }
+  }
+
+  getInfo() {
+
   }
 
   convertToInfo(block: Block<any>) {
@@ -19,7 +23,5 @@ export default abstract class ExtensionBase<T> {
   }
 
   abstract init(env: Environment);
-
-  abstract definition(): Record<keyof T, Operation> & { [k in keyof T]: T[k] }
+  abstract blockDefinitions(): Record<keyof T, Operation> & { [k in keyof T]: T[k] }
 };
-}
