@@ -563,6 +563,11 @@ class MusicCreationHelpers {
             this._concurrencyCounter--;
         });
 
+        util.sequencer.runtime.once('PROJECT_STOP_ALL', () => {
+            player.stopImmediately();
+            if (util.thread.peekStackFrame()) util.stackFrame.duration = 0;
+        });
+
         // Start playing the note
         player.play();
         // Connect the player to the gain node.
