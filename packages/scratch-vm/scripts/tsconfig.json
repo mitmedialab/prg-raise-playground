@@ -7,6 +7,6 @@
     "inlineSourceMap": true
   },
   "files": [
-    "./src/typescript-support/transpiler.ts"
+    "./transpile.ts"
   ]
 }

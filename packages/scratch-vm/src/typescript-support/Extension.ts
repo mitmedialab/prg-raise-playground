@@ -1,5 +1,5 @@
 import type Runtime from '../engine/runtime';
-import type { Block, Environment, Operation, UnionToTuple } from './types';
+import type { Block, Environment, Operation } from './types';
 
 export default abstract class Extension<T> {
   runtime: Runtime;
