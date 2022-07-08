@@ -1,7 +1,6 @@
 import { ArgumentType, BlockType } from "../../typescript-support/enums";
 import Extension from "../../typescript-support/Extension";
 import { Block, Implementation, Implements } from "../../typescript-support/types";
-import { iconURI } from "../scratch3_wedo2";
 
 interface MyBlocks {
   playNote: Block<(a: number) => void>;
@@ -12,7 +11,6 @@ interface MyBlocks {
 const add: Implements<MyBlocks['add']> = (self: MyExtension) => ({
   type: BlockType.Command,
   operation(left, right) {
-    const x = iconURI;
     return left + right;
   },
   arguments: [
