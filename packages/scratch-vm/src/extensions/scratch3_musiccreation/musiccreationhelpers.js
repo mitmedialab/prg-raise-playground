@@ -487,7 +487,6 @@ class MusicCreationHelpers {
     playFirstNote (util, seq, inst, vizHelper, raw_notes) {
         const l = seq.length
         if (l === 0) return;
-        util.sequencer.runtime.setMaxListeners(Infinity);
         this._playNoteFromSeq(seq[0],seq,util,l, inst, vizHelper, raw_notes);
     }
 
@@ -563,7 +562,6 @@ class MusicCreationHelpers {
             this._concurrencyCounter--;
         });
 
-        util.sequencer.runtime.setMaxListeners(Infinity);
         util.sequencer.runtime.once('PROJECT_STOP_ALL', () => {
             player.stopImmediately();
             if (util.thread.peekStackFrame()) util.stackFrame.duration = 0;
