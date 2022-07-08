@@ -1,5 +1,5 @@
 import React from 'react';
-import {FormattedMessage} from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 
 import musicIconURL from './music/music.png';
 import musicInsetIconURL from './music/music-small.svg';
@@ -85,6 +85,14 @@ export default [
                 id="gui.extension.pen.description"
             />
         ),
+        featured: true
+    },
+    {
+        name: "Typescript Example",
+        extensionId: 'typescript_example',
+        iconURL: penIconURL,
+        insetIconURL: penInsetIconURL,
+        description: "Example of how to use typescript",
         featured: true
     },
     {

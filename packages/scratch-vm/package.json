@@ -12,6 +12,7 @@
   "main": "./dist/node/scratch-vm.js",
   "browser": "./src/index.js",
   "scripts": {
+    "transpile:ts": "./node_modules/typescript/bin/tsc",
     "build": "npm run docs && webpack --progress --colors --bail",
     "coverage": "tap ./test/{unit,integration}/*.js --coverage --coverage-report=lcov",
     "deploy": "touch playground/.nojekyll && gh-pages -t -d playground -m \"Build for $(git log --pretty=format:%H -n1)\"",
@@ -47,11 +48,13 @@
     "scratch-translate-extension-languages": "0.0.20191118205314",
     "socket.io-client": "2.0.4",
     "text-encoding": "0.7.0",
+    "typescript": "^4.7.4",
     "worker-loader": "^1.1.1"
   },
   "devDependencies": {
     "@babel/core": "^7.1.2",
     "@babel/preset-env": "^7.1.0",
+    "@types/node": "^18.0.3",
     "adm-zip": "0.4.11",
     "babel-eslint": "^10.0.1",
     "babel-loader": "^8.0.4",

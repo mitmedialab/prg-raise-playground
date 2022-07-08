@@ -1,4 +1,3 @@
-import type BlockUtility from "../../engine/block-utility";
 import { ArgumentType, BlockType } from "../../typescript-support/enums";
 import Extension from "../../typescript-support/Extension";
 import { Block, Implementation, Implements } from "../../typescript-support/types";
