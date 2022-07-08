@@ -46,6 +46,9 @@ import gdxforInsetIconURL from './gdxfor/gdxfor-small.svg';
 import gdxforConnectionIconURL from './gdxfor/gdxfor-illustration.svg';
 import gdxforConnectionSmallIconURL from './gdxfor/gdxfor-small.svg';
 
+/* CODE GEN GUARD START: Icon Import -- Please do not edit code within guards */
+/* CODE GEN GUARD END: Icon Import -- Please do not edit code within guards */
+
 export default [
     {
         name: (
@@ -88,11 +91,19 @@ export default [
         featured: true
     },
     {
-        name: "Typescript Example",
-        extensionId: 'typescript_example',
+        name: "Typescript Realistic Example",
+        extensionId: 'typescript_framework_complex',
         iconURL: penIconURL,
         insetIconURL: penInsetIconURL,
         description: "Example of how to use typescript",
+        featured: true
+    },
+    {
+        name: "Typescript Barebones",
+        extensionId: 'typescript_barebones',
+        iconURL: penIconURL,
+        insetIconURL: penInsetIconURL,
+        description: "Test of the most simple typescript extension",
         featured: true
     },
     {
@@ -325,5 +336,7 @@ export default [
             />
         ),
         helpLink: 'https://scratch.mit.edu/vernier'
-    }
+    },
+    /* CODE GEN GUARD START: Extension Info -- Please do not edit code within guards */
+    /* CODE GEN GUARD END: Extension Info -- Please do not edit code within guards */
 ];

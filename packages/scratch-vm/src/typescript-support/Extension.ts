@@ -1,7 +1,12 @@
 import type Runtime from '../engine/runtime';
-import type { Block, Environment, Operation } from './types';
+import type { Block, Environment, ExtensionsBlocks, Operation } from './types';
 
-export abstract class Extension<T> {
+export abstract class Extension<
+  TTitle extends string,
+  TDescription extends string,
+  TIconURL extends string,
+  TInsetIconURL extends string,
+  TBlocks extends ExtensionsBlocks> {
   runtime: Runtime;
 
   constructor(runtime: Runtime) {
@@ -11,6 +16,7 @@ export abstract class Extension<T> {
     for (const key in blocks) {
       const block = blocks[key](this);
       const info = this.convertToInfo(block);
+
     }
   }
 

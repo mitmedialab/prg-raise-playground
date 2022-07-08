@@ -4,7 +4,17 @@ const maybeFormatMessage = require('../util/maybe-format-message');
 
 const BlockType = require('./block-type');
 
-const serveExtension = (extensionID) => require(`../extensions/${extensionID}`)
+const serveExtension = (extensionId) => require(`../extensions/${extensionId}`)
+
+const tryLoadAnonymousExtension = (extensionId) => {
+    try { return serveExtension(extensionId); }
+    catch { return undefined }
+}
+
+const tryRetrieveExtensionConstructor = (extensionId) =>
+    builtinExtensions.hasOwnProperty(extensionId) ?
+        builtinExtensions[extensionId]() :
+        tryLoadAnonymousExtension(extensionId);
 
 // These extensions are currently built into the VM repository but should not be loaded at startup.
 // TODO: move these out into a separate repository?
@@ -26,7 +36,7 @@ const builtinExtensions = {
     makeymakey: () => require('../extensions/scratch3_makeymakey'),
     boost: () => require('../extensions/scratch3_boost'),
     gdxfor: () => require('../extensions/scratch3_gdx_for'),
-    typescript_example: () => serveExtension('typescript_example')
+    typescript_barebones: () => serveExtension('typescript_barebones')
 };
 
 /**
@@ -119,10 +129,9 @@ class ExtensionManager {
      * @param {string} extensionId - the ID of an internal extension
      */
     loadExtensionIdSync(extensionId) {
-        if (!builtinExtensions.hasOwnProperty(extensionId)) {
-            log.warn(`Could not find extension ${extensionId} in the built in extensions.`);
-            return;
-        }
+        const extension = tryRetrieveExtensionConstructor(extensionId);
+
+        if (!extension) return log.warn(`Could not find extension ${extensionId} in the built in extensions.`);
 
         /** @TODO dupe handling for non-builtin extensions. See commit 670e51d33580e8a2e852b3b038bb3afc282f81b9 */
         if (this.isExtensionLoaded(extensionId)) {
@@ -131,7 +140,6 @@ class ExtensionManager {
             return;
         }
 
-        const extension = builtinExtensions[extensionId]();
         const extensionInstance = new extension(this.runtime);
         const serviceName = this._registerInternalExtension(extensionInstance);
         this._loadedExtensions.set(extensionId, serviceName);
@@ -143,7 +151,9 @@ class ExtensionManager {
      * @returns {Promise} resolved once the extension is loaded and initialized or rejected on failure
      */
     loadExtensionURL(extensionURL) {
-        if (builtinExtensions.hasOwnProperty(extensionURL)) {
+        const extension = tryRetrieveExtensionConstructor(extensionURL);
+
+        if (extension) {
             /** @TODO dupe handling for non-builtin extensions. See commit 670e51d33580e8a2e852b3b038bb3afc282f81b9 */
             if (this.isExtensionLoaded(extensionURL)) {
                 const message = `Rejecting attempt to load a second extension with ID ${extensionURL}`;
@@ -151,7 +161,6 @@ class ExtensionManager {
                 return Promise.resolve();
             }
 
-            const extension = builtinExtensions[extensionURL]();
             const extensionInstance = new extension(this.runtime);
             const serviceName = this._registerInternalExtension(extensionInstance);
             this._loadedExtensions.set(extensionURL, serviceName);

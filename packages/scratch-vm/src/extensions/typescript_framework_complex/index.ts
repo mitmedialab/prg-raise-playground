@@ -8,30 +8,40 @@ interface MyBlocks {
   add: Block<(left: number, right: number) => number>;
 }
 
+//BlockImplementation<(left: number, right: number) => number>
 const add: Implements<MyBlocks['add']> = (self: MyExtension) => ({
   type: BlockType.Command,
   operation(left, right) {
     return left + right;
   },
   arguments: [
-    { type: ArgumentType.Number, defaultValue: 3, options: [3, 4, 5] },
+    { type: ArgumentType.Number, defaultValue: 3, options: self.options },
     { type: ArgumentType.Angle }
   ],
   text: (left, right) => `Add ${left} to ${right}`,
 });
 
-class MyExtension extends Extension<{
+type Title = "Realistic Typescript-Based Extension";
+type Description = "Demonstrating how typescript can be used to write an extension";
+type IconURL = "Typescript_logo.png";
+type InsetIconURL = "typescript-logo.svg";
+
+class MyExtension extends Extension<Title, Description, IconURL, InsetIconURL, {
   playNote: Block<(a: number) => void>;
   report: Block<() => number>;
   add: Block<(left: number, right: number) => number>;
 }> {
-  init() { }
+  options = [3, 4, 5];
+
+  init() {
+  }
 
   blockDefinitions = () => ({
     'add': add,
     'report': this.report,
     'playNote': this.playNote,
   });
+
 
   report(): Implementation<MyBlocks['report']> {
 

@@ -1,0 +1,4 @@
+# Prevent all .js files in this folder from being 'seen' by git
+**/*.js
+# Ignore other supporting files
+ONLY_EDIT_TS_FILES.md
