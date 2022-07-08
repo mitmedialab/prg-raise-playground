@@ -133,8 +133,11 @@ function () {
             extension = _x[1];
 
         _this.workerId = id;
+        console.log(extension);
+        console.log("hii");
 
         try {
+          console.log(extension);
           importScripts(extension);
           var initialRegistrations = _this.initialRegistrations;
           _this.initialRegistrations = null;
