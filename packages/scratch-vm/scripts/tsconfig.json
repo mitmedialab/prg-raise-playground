@@ -1,12 +1,9 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "noImplicitAny": true,
+    "noImplicitAny": false,
     "removeComments": true,
     "preserveConstEnums": true,
     "inlineSourceMap": true
   },
-  "files": [
-    "./transpile.ts"
-  ]
 }

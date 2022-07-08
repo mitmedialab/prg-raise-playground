@@ -1,6 +1,6 @@
 import type Runtime from '../engine/runtime';
 import { ArgumentType, BlockType } from './enums';
-import type Extension from './Extension';
+import type { Extension } from './Extension';
 import type BlockUtility from '../engine/block-utility';
 
 

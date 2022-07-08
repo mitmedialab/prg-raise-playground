@@ -1,5 +1,5 @@
 import { ArgumentType, BlockType } from "../../typescript-support/enums";
-import Extension from "../../typescript-support/Extension";
+import { Extension } from "../../typescript-support/Extension";
 import { Block, Implementation, Implements } from "../../typescript-support/types";
 
 interface MyBlocks {
@@ -56,3 +56,5 @@ class MyExtension extends Extension<{
     }
   }
 }
+
+export = MyExtension;

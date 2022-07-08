@@ -1,7 +1,7 @@
 import type Runtime from '../engine/runtime';
 import type { Block, Environment, Operation } from './types';
 
-export default abstract class Extension<T> {
+export abstract class Extension<T> {
   runtime: Runtime;
 
   constructor(runtime: Runtime) {

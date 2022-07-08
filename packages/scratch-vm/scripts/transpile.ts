@@ -14,6 +14,31 @@ const printDiagnostics = (program: ts.Program, result: ts.EmitResult) => {
     });
 }
 
+type FileToWrite = {
+  name: string,
+  content: string
+}
+
+const supportingFiles: FileToWrite[] = [
+  {
+    name: "ONLY_EDIT_TS_FILES.md",
+    content: `# NOTE TO THE DEVELOPER:
+Only create and edit .ts files for this extension. 
+The .js files are generated and thus any changes will be lost the next time you build the project.`
+  },
+];
+
+supportingFiles.push({
+  name: ".gitignore",
+  content: [
+    "# Prevent all .js files in this folder from being 'seen' by git",
+    "**/*.js",
+    "# Ignore other supporting files",
+    ...supportingFiles.map(file => file.name)].join("\n")
+},)
+
+const addSuportingFiles = (dir: string) => supportingFiles.forEach(toAdd => fs.writeFileSync(path.join(dir, toAdd.name), toAdd.content));
+
 const transpileAllTsExtensions = () => {
   const srcDir = path.resolve(__dirname, "..", "src");
 
@@ -22,24 +47,24 @@ const transpileAllTsExtensions = () => {
     esModuleInterop: true,
     target: ts.ScriptTarget.ES5,
     module: ts.ModuleKind.CommonJS,
+    moduleResolution: ts.ModuleResolutionKind.NodeJs,
     rootDir: srcDir
   };
 
-  const queryDir = path.join(srcDir, "extensions");
+  const extensionsDir = path.join(srcDir, "extensions");
+  const supportDir = path.join(srcDir, "typescript-support");
 
-  glob(`${queryDir}/**/index.ts`, (err, files) => {
+  glob(`${extensionsDir}/**/index.ts`, (err, files) => {
 
     if (err) return console.error(err);
     if (!files) return console.error("No files found");
 
-    files.forEach(file => {
-      const dir = path.dirname(file);
-      fs.writeFileSync(path.join(dir, ".gitignore"), "**/*.js");
-    })
-
     const program = ts.createProgram(files, { ...baseOptions, outDir: srcDir, rootDir: srcDir });
     const result = program.emit();
     printDiagnostics(program, result);
+
+    files.forEach(file => addSuportingFiles(path.dirname(file)));
+    addSuportingFiles(supportDir);
   });
 }
 

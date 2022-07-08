@@ -4,6 +4,7 @@ const maybeFormatMessage = require('../util/maybe-format-message');
 
 const BlockType = require('./block-type');
 
+const serveExtension = (extensionID) => require(`../extensions/${extensionID}`)
 
 // These extensions are currently built into the VM repository but should not be loaded at startup.
 // TODO: move these out into a separate repository?
@@ -14,10 +15,7 @@ const builtinExtensions = {
     // but serves as a reference for loading core blocks as extensions.
     coreExample: () => require('../blocks/scratch3_core_example'),
     // These are the non-core built-in extensions.
-    pen: () => {
-        console.log('peneee');
-        return require('../extensions/scratch3_pen')
-    },
+    pen: () => require('../extensions/scratch3_pen'),
     wedo2: () => require('../extensions/scratch3_wedo2'),
     music: () => require('../extensions/scratch3_music'),
     microbit: () => require('../extensions/scratch3_microbit'),
@@ -28,10 +26,7 @@ const builtinExtensions = {
     makeymakey: () => require('../extensions/scratch3_makeymakey'),
     boost: () => require('../extensions/scratch3_boost'),
     gdxfor: () => require('../extensions/scratch3_gdx_for'),
-    typescript_example: () => {
-        console.log(require.resolve('../extensions/scratch3_gdx_for'));
-        return require('../extensions/typescript_example');
-    }
+    typescript_example: () => serveExtension('typescript_example')
 };
 
 /**
