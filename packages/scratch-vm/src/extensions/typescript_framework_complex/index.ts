@@ -1,49 +1,47 @@
 import { ArgumentType, BlockType } from "../../typescript-support/enums";
 import { Extension } from "../../typescript-support/Extension";
-import { Block, Implementation, Implements } from "../../typescript-support/types";
+import { Block } from "../../typescript-support/types";
+import addBuilder from "./addBuilder";
 
-interface MyBlocks {
-  playNote: Block<(a: number) => void>;
-  report: Block<() => number>;
-  add: Block<(left: number, right: number) => number>;
-}
-
-//BlockImplementation<(left: number, right: number) => number>
-const add: Implements<MyBlocks['add']> = (self: MyExtension) => ({
-  type: BlockType.Command,
-  operation(left, right) {
-    return left + right;
-  },
-  arguments: [
-    { type: ArgumentType.Number, defaultValue: 3, options: self.options },
-    { type: ArgumentType.Angle }
-  ],
-  text: (left, right) => `Add ${left} to ${right}`,
-});
-
-type Title = "Realistic Typescript-Based Extension";
-type Description = "Demonstrating how typescript can be used to write an extension";
-type IconURL = "Typescript_logo.png";
-type InsetIconURL = "typescript-logo.svg";
-
-class MyExtension extends Extension<Title, Description, IconURL, InsetIconURL, {
-  playNote: Block<(a: number) => void>;
-  report: Block<() => number>;
-  add: Block<(left: number, right: number) => number>;
-}> {
+type Title = "Hello"
+class MyExtension extends Extension
+  <
+    {
+      title: Title, //"Realistic Typescript-Based Extension",
+      description: "Demonstrating how typescript can be used to write a realistic extension",
+      iconURL: "Typescript_logo.png",
+      insetIconURL: "typescript-logo.svg"
+    },
+    {
+      playNote: (a: number) => void;
+      report: () => number;
+      add: (left: number, right: number) => number;
+    }>
+{
   options = [3, 4, 5];
 
-  init() {
-  }
+  init() { }
 
-  blockDefinitions = () => ({
-    'add': add,
-    'report': this.report,
-    'playNote': this.playNote,
+  blockBuilders = () => ({
+
+    // Example of an external 'builder' function
+    'add': addBuilder,
+
+    // Example of a method 'builder' function
+    'report': this.buildReport,
+
+    // Example of an arrow 'builder' function 
+    'playNote': (self: MyExtension): Block<(a: number) => void> => {
+      return {
+        type: BlockType.Command,
+        arguments: [{ type: ArgumentType.Number }],
+        text: () => "",
+        operation: (a,) => { },
+      }
+    },
   });
 
-
-  report(): Implementation<MyBlocks['report']> {
+  buildReport(): Block<() => number> {
 
     const getFive = () => 5;
 
@@ -54,15 +52,6 @@ class MyExtension extends Extension<Title, Description, IconURL, InsetIconURL, {
       arguments: [],
       text: () => "",
       operation: myOP,
-    }
-  }
-
-  playNote(): Implementation<MyBlocks['playNote']> {
-    return {
-      type: BlockType.Command,
-      arguments: [{ type: ArgumentType.Number }],
-      text: () => "",
-      operation: (a) => { },
     }
   }
 }

@@ -3,12 +3,11 @@ import { ArgumentType, BlockType } from './enums';
 import type { Extension } from './Extension';
 import type BlockUtility from '../engine/block-utility';
 
-
 export type Environment = {
   runtime: Runtime
 }
 
-export type Operation = (...args: any) => any;
+export type BlockOperation = (...args: any) => any;
 
 export type MenuItem<T> = T | {
   value: T;
@@ -21,26 +20,44 @@ export type Argument<T> = {
   options?: MenuItem<T>[] | undefined;
 }
 
-export type ToArguments<T extends [...any[]]> =
+type ToArguments<T extends [...any[]]> =
   T extends [infer Head, ...infer Tail]
   ? [Argument<Head>, ...ToArguments<Tail>]
   : [];
 
-type ParamsAndUtility<T extends Operation> = [...Parameters<T>, BlockUtility];
+type ParamsAndUtility<T extends BlockOperation> = [...Parameters<T>, BlockUtility];
 
-export type BlockInfo<T extends Operation> = {
+export type Block<T extends BlockOperation> = {
   type: BlockType;
   operation: (...params: ParamsAndUtility<T>) => ReturnType<T>;
   arguments: ToArguments<Parameters<T>>;
   text: (...params: Parameters<T>) => string;
 }
 
-export type Block<T extends Operation> = (self: Extension<any, any, T>) => BlockInfo<T>;
+export type ExtensionMenuDisplayInfo = {
+  title: string;
+  description: string;
+  iconURL: string;
+  insetIconURL: string;
+}
 
-export type ExtensionsBlocks = Record<string, Block<any>>;
+/**
+ * Description of type
+ * @property {string} title The ee
+ */
+export type ExtensionMenuDisplay<TTitle extends string,
+  TDescription extends string,
+  TIconURL extends string,
+  TInsetIconURL extends string> = {
+    title: TTitle;
+    description: TDescription;
+    iconURL: TIconURL;
+    insetIconURL: TInsetIconURL;
+  }
 
-export type Implementation<T extends Operation> = ReturnType<T>;
-export type Implements<T extends Block<any>> = T;
+export type BlockBuilder<T extends BlockOperation> = (extension: Extension<any, any>) => Block<T>;
+
+export type ExtensionBlocks = Record<string, BlockOperation>;
 
 type UnionToIntersection<U> = (
   U extends never ? never : (arg: U) => never
@@ -95,7 +112,7 @@ export interface ExtensionBlockMetadata {
   func?: string | undefined;
 
   /** The type of block (command, reporter, etc.) being described. */
-  blockType: ValueOf<Scratch.BlockType>;
+  blockType: BlockType;
 
   /** The text on the block, with [PLACEHOLDERS] for arguments. */
   text: string;
