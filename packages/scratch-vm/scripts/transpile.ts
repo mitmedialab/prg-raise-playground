@@ -2,53 +2,7 @@ import * as ts from "typescript";
 import * as glob from "glob";
 import * as path from "path";
 import * as fs from "fs";
-import { internalFindPath } from "./typeProbe";
-
-const isObject = (value) => {
-  return !!(value && typeof value === "object" && !Array.isArray(value));
-};
-
-const findPathToNestedValueInObject = (object: any, valueToMatch: string, keys: string[] = [], cache: any[] = []) => {
-  if (cache.includes(object)) return null;
-
-  if (isObject(object)) {
-
-    const entries = Object.entries(object);
-
-    for (let i = 0; i < entries.length; i += 1) {
-      const [key, objectValue] = entries[i];
-
-
-      if (objectValue === valueToMatch) {
-        return [...keys, key].join(".");
-      }
-
-      if (isObject(objectValue)) {
-        cache.push(object);
-        const child = findPathToNestedValueInObject(objectValue, valueToMatch, [...keys, key], cache);
-
-        if (child !== null) {
-          return child;
-        }
-      }
-
-      if (Array.isArray(objectValue)) {
-        cache.push(object);
-
-        let i = 0;
-        for (const item of objectValue) {
-          const child = findPathToNestedValueInObject(item, valueToMatch, [...keys, `${key}[${i}]`], cache);
-          i++;
-          if (child !== null) {
-            return child;
-          } 
-        }
-      }
-    }
-  }
-
-  return null;
-};
+import TypeProbe  from "./TypeProbe";
 
 const printDiagnostics = (program: ts.Program, result: ts.EmitResult) => {
   ts.getPreEmitDiagnostics(program)
@@ -65,46 +19,13 @@ const tryRetrieveIdentifier = (program: ts.Program): void => {
   const typeChecker = program.getTypeChecker();
   const sources = program.getSourceFiles();
   const roots = program.getRootFileNames();
-  const entries = sources.filter(source => roots.includes(source.fileName));
-  for (const entry of entries) {
-    ts.forEachChild(entry, node => {
-      //const nodeName = (node as any)?.name?.escapedText;
-      //if (nodeName !== "MyExtension") return;
-
-      // Typescript_logo.png
+  const rootSources = sources.filter(source => roots.includes(source.fileName));
+  for (const root of rootSources) {
+    ts.forEachChild(root, node => {
       const type = typeChecker.getTypeAtLocation(node);
-      const path = internalFindPath(type, "Extension");
-
-      if (path !== null) {
-        console.log(path);
-
-        const keys = (path as string).split(".");
-        let objects = [type];
-
-        for (const key of keys) {
-          const previous = objects[objects.length - 1];
-
-          if (key.includes("[")) {
-            const split = key.split("[");
-            const index = parseInt(split[1].replace("]", ""));
-            objects.push(previous[split[0]][index]);
-          }
-          else {
-            objects.push(previous[key]);
-          }
-        }
-
-        for (let index = objects.length - 1; index >= 0; index--) {
-          const element = objects[index];
-          const toExtension = findPathToNestedValueInObject(element, "Hello");
-
-          if (toExtension !== null) {
-            console.log(keys[index]);
-            console.log(toExtension);
-          }
-        }
-      }
-      
+      const probe = TypeProbe.ProbeTypeForValue(type, "Extension");
+      probe?.print();
+      probe?.findAllProbesForValue("Hello PArker").map(p => p.print());
     });
   }
 }

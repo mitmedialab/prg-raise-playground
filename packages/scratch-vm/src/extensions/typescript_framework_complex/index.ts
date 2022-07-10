@@ -3,7 +3,7 @@ import { Extension } from "../../typescript-support/Extension";
 import { Block } from "../../typescript-support/types";
 import addBuilder from "./addBuilder";
 
-type Title = "Hello"
+type Title = "Hello PArker"
 class MyExtension extends Extension
   <
     {
