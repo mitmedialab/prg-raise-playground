@@ -354,6 +354,25 @@ class Scratch3MusicCreation {
                     },
                 },
                 {
+                    opcode: 'createNotesRNN',
+                    text: formatMessage({
+                        id: 'musiccreation.createNotesRNN',
+                        default: '(complete) add new music blocks [STEPS] [TEMP]',
+                        description: 'create notes Magenta MVAE'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        STEPS: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 20
+                        },
+                        TEMP: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 1.5
+                        },
+                    }
+                },
+                {
                     opcode: 'testMagentaMVAE',
                     text: formatMessage({
                         id: 'musiccreation.testMagentaMVAE',
@@ -730,14 +749,28 @@ class Scratch3MusicCreation {
     createNotesMVAE(args, utils) {
         const { runtime } = utils
         this.getAndPlayMagentaNotes(false, args, utils, (notes) => {
-            // convert the notes into arguments for the play note blocks
-            // TODO: Dolev, is this correct? Could this be leading to play duration errors?
             const blockArgs = notes.map(note => {
                 const { NOTE, SECS } = note;
                 return { NOTE, SECS: `${SECS}` };
             });
             const opcodes = blockArgs.map(_ => 'playNote');
             const xml = generateXMLForBlockChunk(this, runtime, opcodes, blockArgs);
+            runtime.addBlocksToWorkspace(xml);
+        });
+    }
+
+    createNotesRNN(args,utils) {
+        const { runtime } = utils;
+        this.getAndPlayMagentaNotes(true, args, utils, (notes) => {
+            const blockArgs = notes.map(note => {
+                const { NOTE, SECS } = note;
+                return { NOTE, SECS: `${SECS}` };
+            });
+            
+            const oldNotes = this.noteList.map(note => { return {NOTE: Cast.toString(note[0]), SECS: Cast.toString(note[1])} });
+            const blockArgsWithOldNotes = oldNotes.concat(blockArgs);
+            const opcodes = blockArgsWithOldNotes.map(_ => 'playNote');
+            const xml = generateXMLForBlockChunk(this, runtime, opcodes, blockArgsWithOldNotes);
             runtime.addBlocksToWorkspace(xml);
         });
     }
