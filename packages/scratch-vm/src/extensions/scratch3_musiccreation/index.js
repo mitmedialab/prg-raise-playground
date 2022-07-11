@@ -715,7 +715,9 @@ class Scratch3MusicCreation {
             runtime: this.runtime,
             target: this.runtime.getEditingTarget()
         };
-        this.musicCreationHelper._playNote(util, noteNum, 0.25,0,60);
+        const inst = this.musicCreationHelper._getMusicState(util.target).currentInstrument;
+        const vol = this.musicCreationHelper.findNumberForVolume(this.musicCreationHelper.getVolume(util));
+        this.musicCreationHelper._playNote(util, noteNum, 0.25, inst, vol);
     }
 
     /**
