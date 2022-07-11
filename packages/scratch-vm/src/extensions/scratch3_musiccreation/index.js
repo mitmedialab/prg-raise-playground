@@ -67,6 +67,7 @@ class Scratch3MusicCreation {
 
         this._onTargetCreated = this._onTargetCreated.bind(this);
         this.runtime.on('targetWasCreated', this._onTargetCreated);
+        this.runtime.setMaxListeners(Infinity);
 
     }
 
