@@ -38,6 +38,8 @@ export const addTopBlockModifier = (util, selfID, modifierKey, value) => {
     : util[topBlockModifiers] = { [topBlockID]: { [modifierKey]: entry } }
   let block_ids = Object.keys(getBlockContainer(util)._blocks);
   for (const mod in util[topBlockModifiers]) {
+    // NOTE: The below check could likely use `getBlockContainer(util).isTopBlockID(mod)` instead. 
+    // Check this later...
     if (!block_ids.includes(mod)) {
       delete util[topBlockModifiers][mod];
     }
