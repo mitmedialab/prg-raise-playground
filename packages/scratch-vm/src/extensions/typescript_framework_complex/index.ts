@@ -3,20 +3,20 @@ import { Extension } from "../../typescript-support/Extension";
 import { Block } from "../../typescript-support/types";
 import addBuilder from "./addBuilder";
 
-type Title = "Hello PArker"
-class MyExtension extends Extension
-  <
-    {
-      title: Title, //"Realistic Typescript-Based Extension",
-      description: "Demonstrating how typescript can be used to write a realistic extension",
-      iconURL: "Typescript_logo.png",
-      insetIconURL: "typescript-logo.svg"
-    },
-    {
-      playNote: (a: number) => void;
-      report: () => number;
-      add: (left: number, right: number) => number;
-    }>
+type DisplayDetails = {
+  title: "Realistic Typescript-Based Extension",
+  description: "Demonstrating how typescript can be used to write a realistic extension",
+  iconURL: "Typescript_logo.png",
+  insetIconURL: "typescript-logo.svg"
+};
+
+type Blocks = {
+  playNote: (a: number) => void;
+  report: () => number;
+  add: (left: number, right: number) => number;
+}
+
+class MyExtension extends Extension<DisplayDetails, Blocks>
 {
   options = [3, 4, 5];
 

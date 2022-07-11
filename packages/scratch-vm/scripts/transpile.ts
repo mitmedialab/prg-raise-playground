@@ -23,9 +23,10 @@ const tryRetrieveIdentifier = (program: ts.Program): void => {
   for (const root of rootSources) {
     ts.forEachChild(root, node => {
       const type = typeChecker.getTypeAtLocation(node);
-      const probe = TypeProbe.ProbeTypeForValue(type, "Extension");
-      probe?.print();
-      probe?.findAllProbesForValue("Hello PArker").map(p => p.print());
+      const probes = TypeProbe.ProbeTypeForValue(type, "MyExtension");
+      probes.forEach(p => p.print());
+      //probe?.print();
+      //probe?.findAllProbesForValue("Hello PArker").map(p => p.print());
     });
   }
 }

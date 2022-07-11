@@ -1,14 +1,14 @@
 import type Runtime from '../engine/runtime';
-import type { BlockBuilder, ExtensionMenuDisplayInfo, Environment, ExtensionBlocks, BlockOperation, Block } from './types';
+import type { BlockBuilder, ExtensionMenuDisplayDetails, Environment, ExtensionBlocks, BlockOperation, Block } from './types';
 
 /**
  * 
- * @template TDisplayInfo How the extension should display in the extensions menu 
+ * @template TMenuDetails How the extension should display in the extensions menu 
  * @template TBlocks What kind of blocks this extension implements
  */
 export abstract class Extension
   <
-    TDisplayInfo extends ExtensionMenuDisplayInfo,
+    TMenuDetails extends ExtensionMenuDisplayDetails,
     TBlocks extends ExtensionBlocks
   > {
   runtime: Runtime;

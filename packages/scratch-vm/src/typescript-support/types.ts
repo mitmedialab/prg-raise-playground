@@ -34,7 +34,7 @@ export type Block<T extends BlockOperation> = {
   text: (...params: Parameters<T>) => string;
 }
 
-export type ExtensionMenuDisplayInfo = {
+export type ExtensionMenuDisplayDetails = {
   title: string;
   description: string;
   iconURL: string;

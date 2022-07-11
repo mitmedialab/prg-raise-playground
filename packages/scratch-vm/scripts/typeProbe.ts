@@ -32,15 +32,15 @@ export default class TypeProbe {
     return probes;
   }
 
-  static ProbeTypeForValue(type: ts.Type, valueToMatch: any): TypeProbe | undefined {
-    const path = TypeProbe.FindPath(type, valueToMatch);
-    return path !== null ? new TypeProbe(type, path) : undefined;
+  static ProbeTypeForValue(type: ts.Type, valueToMatch: any): TypeProbe[] {
+    const paths = [];
+    TypeProbe.FindPath(type, valueToMatch, paths);
+    return paths.map(path => new TypeProbe(type, path.split(TypeProbe.PathSeperator)));
   }
-
-  //#region Private
 
   private static ArrayKey = (key: string, index: number): string => `${key}[${index}]`;
   private static IsArray = (key: string) => key.includes("[");
+  private static PathSeperator = ".";
 
   private static GetArrayElement = (obj: any, key: string) => {
     const split = key.split("[");
@@ -56,18 +56,20 @@ export default class TypeProbe {
     return !!(TypeProbe.IsProbable(value) && !Array.isArray(value));
   };
   
-  private static FindPath = (object: any, valueToMatch: any, keys: string[] = [], cache: any[] = []): string[] => {
-    if (cache.includes(object)) return null;
+  private static FindPath = (object: any, valueToMatch: any, paths: string[], keys: string[] = [], cache: any[] = []): void => {
+    if (cache.includes(object)) return;
   
     if (TypeProbe.IsProbable(object)) {
       for (const [key, objectValue] of Object.entries(object)) {
   
-        if (objectValue === valueToMatch) return [...keys, key];
+        if (objectValue === valueToMatch) {
+          paths.push([...keys, key].join(TypeProbe.PathSeperator))
+          continue;
+        };
   
         if (TypeProbe.IsObject(objectValue)) {
           cache.push(object);
-          const child = TypeProbe.FindPath(objectValue, valueToMatch, [...keys, key], cache);
-          if (child !== null) return child;
+          TypeProbe.FindPath(objectValue, valueToMatch, paths, [...keys, key], cache);
         }
   
         if (Array.isArray(objectValue)) {
@@ -75,14 +77,10 @@ export default class TypeProbe {
           for (let index = 0; index < objectValue.length; index++) {
             const element = objectValue[index];
             const elementKey = TypeProbe.ArrayKey(key, index);
-            const child = TypeProbe.FindPath(element, valueToMatch, [...keys, elementKey], cache);
-            if (child !== null) return child;
+            TypeProbe.FindPath(element, valueToMatch, paths, [...keys, elementKey], cache);
           }
         }
       }
     }
-  
-    return null;
   };
-  //#endregion Private
 }
