@@ -19,9 +19,7 @@ It is structured as a monorepo, where the Scratch components you'll typically wa
 
 ## ⚡ Quick Setup️
 
-Requirements
-1. Your java version should be 8 or higher. Check `java -version`.
-2. Install node.js https://nodejs.org/en/ (tested with Linux version 6.13.4 and Mac)
+Requirements, your java version should be 8 or higher. Check `java -version`.
 
 ```shell script
 git clone git@github.com:mitmedialab/prg-extension-boilerplate.git

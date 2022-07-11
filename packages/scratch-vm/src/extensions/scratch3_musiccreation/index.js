@@ -18,6 +18,7 @@ const { internalIDKey, getTopBlockID, addTopBlockModifier, getTopBlockModifier }
 
 const givenBeatValues = ["1/4", "1/2", "1", "2", "3", "4", "8", "16"];
 const instrumentModifierKey = 'instrument';
+const volumeModifierKey = 'volume';
 
 class Scratch3MusicCreation {
     constructor(runtime) {
@@ -285,6 +286,18 @@ class Scratch3MusicCreation {
                             type: ArgumentType.NUMBER,
                             defaultValue: 1,
                             menu: "INSTRUMENT"
+                        }
+                    }
+                },
+                {
+                    opcode: 'setVolumeForBelow',
+                    blockType: BlockType.COMMAND,
+                    text: 'set volume for below blocks to [VOLUME]',
+                    arguments: {
+                        VOLUME: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 60,
+                            menu: "VOLUME"
                         }
                     }
                 },
@@ -622,6 +635,12 @@ class Scratch3MusicCreation {
         addTopBlockModifier(util, args[internalIDKey], instrumentModifierKey, instrument);
     }
 
+    setVolumeForBelow(args, util) {
+        let vol_n = Cast.toNumber(args.VOLUME);
+        addTopBlockModifier(util, args[internalIDKey], volumeModifierKey, vol_n);
+    }
+
+
     /**
      * 
      * @param {array} raw_note - magenta note [freq,duration,inst,volume] 
@@ -652,6 +671,27 @@ class Scratch3MusicCreation {
     }
 
     /**
+     * 
+     * @param {number} hi - highest freq. acceptable for Magenta RNN
+     * @param {number} low - lowest freq. acceptable for Magenta RNN
+     * @param {array} notes - array of notes that will be adjusted in-place
+     */
+    adjustFreqsToRange(hi,low,notes) {
+        notes.map( 
+            (note) => {
+                let freq = note[0];
+                if (freq < low) {
+                    const diff = low - freq;
+                    note[0] += (Math.ceil(diff/12.0) * 12);
+                } else if (freq > hi) {
+                    const diff = freq - hi;
+                    note[0] -= (Math.ceil(diff/12.0) * 12);
+                }
+            });
+        return notes;
+    }
+
+    /**
      * Asynchronous function that gets the created notes from Magenta and initializes
      * playing the sequence.
      * @param {boolean} RNN - true if 'complete music', false if 'generate new music'
@@ -661,22 +701,38 @@ class Scratch3MusicCreation {
      * @param {function({mutation: any; NOTE: string; SECS: string;}[]): void} processNotes A callback function invoked with the generated notes as an argument
      * @private 
      */
-    async _getAndPlayMagentaNotes(RNN, args, utils, inst, processNotes) {
+    async _getAndPlayMagentaNotes(RNN, args, utils, inst, vol, processNotes) {
         let magenta_notes = null;
+        let valid = true;
         if (RNN) {
-            magenta_notes = await this.musicAccompanimentHelper.testMagentaRNN(this.noteList, args, utils);
+            if (this.noteList.length > 0) {
+                const low = 48;
+                const hi = 83;
+                //copy the noteList so that it doesn't change
+                const adjusted_notes = this.adjustFreqsToRange(hi,low,JSON.parse(JSON.stringify(this.noteList)));
+                magenta_notes = await this.musicAccompanimentHelper.testMagentaRNN(adjusted_notes, args, utils);
+                
+            } else valid = false;
         } else {
             magenta_notes = await this.musicAccompanimentHelper.testMagentaMVAE(utils);
         }
-        const prepared_notes = this._prepare(magenta_notes);
-        this.magentaNoteList = prepared_notes['notes'];
-        this.musicCreationHelper.playNotes(prepared_notes, utils, inst, this.vizHelper);
-        if (processNotes) processNotes(prepared_notes.args);
+        if (valid) {
+            const prepared_notes = this._prepare(magenta_notes);
+            this.magentaNoteList = prepared_notes['notes'];
+            this.musicCreationHelper.playNotes(prepared_notes, utils, inst,vol,this.vizHelper); 
+            if (processNotes) processNotes(prepared_notes.args);
+        } else utils.stackFrame.duration = 0;
     }
+    
 
     getInstrumentForBlock(id, util) {
         const modifierInst = getTopBlockModifier(util, id, instrumentModifierKey);
         return modifierInst ? modifierInst : this.musicCreationHelper._getMusicState(util.target).currentInstrument;
+    }
+
+    getVolumeForBlock(id, util) {
+        const modifierVol = getTopBlockModifier(util, id, volumeModifierKey);
+        return modifierVol ? modifierVol : this.musicCreationHelper.findNumberForVolume(this.getVolume(util));
     }
 
     /**
@@ -687,17 +743,17 @@ class Scratch3MusicCreation {
      * @param {BlockUtility} utils
      * @param {function(any[][]): void} processNotes
      */
-    getAndPlayMagentaNotes(RNN, args, utils, processNotes) {
-        const musicState = this.musicCreationHelper._getMusicState(utils.target);
-        const inst = musicState.currentInstrument;
-        if (utils.stackTimerNeedsInit()) {
+    getAndPlayMagentaNotes(RNN, args, util, processNotes) {
+        const inst = this.getInstrumentForBlock(args[internalIDKey], util);
+        const vol = this.getVolumeForBlock(args[internalIDKey], util);
+        if (util.stackTimerNeedsInit()) {
             // get timer running for a large amount of time (will be handled)
-            utils.startStackTimer(Number.MAX_SAFE_INTEGER);
-            utils.yield();
-            this._getAndPlayMagentaNotes(RNN, args, utils, inst, processNotes);
+            util.startStackTimer(Number.MAX_SAFE_INTEGER);
+            util.yield();
+            this._getAndPlayMagentaNotes(RNN, args, util, inst, vol, processNotes);
         }
-        else if (!utils.stackTimerFinished()) {
-            utils.yield();
+        else if (!util.stackTimerFinished()) {
+            util.yield();
         }
     }
 
@@ -753,7 +809,7 @@ class Scratch3MusicCreation {
             runtime: this.runtime,
             target: this.runtime.getEditingTarget()
         };
-        this.musicCreationHelper._playNote(util, noteNum, 0.25);
+        this.musicCreationHelper._playNote(util, noteNum, 0.25,0,60);
     }
 
     /**
@@ -774,15 +830,11 @@ class Scratch3MusicCreation {
 
     playNote(args, util) {
         const inst = this.getInstrumentForBlock(args[internalIDKey], util);
-        toAdd = this.musicCreationHelper.playNote(args, util, inst);
+        const vol = this.getVolumeForBlock(args[internalIDKey], util);
+        toAdd = this.musicCreationHelper.playNote(args, util, inst, vol);
         if (toAdd.length == 3) {
             this.noteList.push(toAdd);
-            vol = (this.getVolume(util));
-            for (var m in volumes) {
-                if (volumes[m].text == vol) {
-                    toAdd.push(volumes[m].value);
-                }
-            }
+            toAdd.push(vol);
             this.vizHelper.requestViz(toAdd, util);
             this.wavenoteList.push(toAdd);
         }
