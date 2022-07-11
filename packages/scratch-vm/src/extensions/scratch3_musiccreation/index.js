@@ -18,6 +18,8 @@ const { internalIDKey, getTopBlockID, addTopBlockModifier, getTopBlockModifier }
 
 const givenBeatValues = ["1/4", "1/2", "1", "2", "3", "4", "8", "16"];
 const instrumentModifierKey = 'instrument';
+const maxNotesForCompleteGen = 20;
+
 
 class Scratch3MusicCreation {
     constructor(runtime) {
@@ -63,7 +65,6 @@ class Scratch3MusicCreation {
 
         this._onTargetCreated = this._onTargetCreated.bind(this);
         this.runtime.on('targetWasCreated', this._onTargetCreated);
-
     }
 
 
@@ -689,8 +690,8 @@ class Scratch3MusicCreation {
         }
         const prepared_notes = this._prepare(magenta_notes);
         this.magentaNoteList = prepared_notes['notes'];
-        this.musicCreationHelper.playNotes(prepared_notes, utils, inst, this.vizHelper);
         if (processNotes) processNotes(prepared_notes.args);
+        this.musicCreationHelper.playNotes(prepared_notes, utils, inst, this.vizHelper);
     }
 
     getInstrumentForBlock(id, util) {
@@ -766,8 +767,13 @@ class Scratch3MusicCreation {
                 const { NOTE, SECS } = note;
                 return { NOTE, SECS: `${SECS}` };
             });
-            
-            const oldNotes = this.noteList.map(note => { return {NOTE: Cast.toString(note[0]), SECS: Cast.toString(note[1])} });
+
+            const oldNotes = this.noteList
+                                        .map(note => { return {NOTE: Cast.toString(note[0]), SECS: Cast.toString(note[1])} })
+                                        .slice(-maxNotesForCompleteGen); //limit number of notes included in the generated chunk
+            if (this.noteList.length > maxNotesForCompleteGen) {
+                alert(`Only displaying the last ${maxNotesForCompleteGen} notes in the generated chunk of blocks. Press 'reset music' to clear note list.`);
+            }
             const blockArgsWithOldNotes = oldNotes.concat(blockArgs);
             const opcodes = blockArgsWithOldNotes.map(_ => 'playNote');
             const xml = generateXMLForBlockChunk(this, runtime, opcodes, blockArgsWithOldNotes);
