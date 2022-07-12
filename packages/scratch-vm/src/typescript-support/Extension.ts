@@ -1,6 +1,6 @@
 import type Runtime from '../engine/runtime';
 import { ArgumentType } from './enums';
-import type { BlockBuilder, ExtensionMenuDisplayDetails, Environment, ExtensionBlocks, BlockOperation, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument } from './types';
+import type { BlockBuilder, ExtensionMenuDisplayDetails, Environment, ExtensionBlocks, BlockOperation, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem } from './types';
 
 /**
  * 
@@ -15,31 +15,44 @@ export abstract class Extension
   runtime: Runtime;
 
   private blocks: ExtensionBlockMetadata[];
+  private menus: ExtensionMenuMetadata[];
 
   constructor(runtime: Runtime) {
     this.runtime = runtime;
     this.init({ runtime });
     this.blocks = [];
+    this.menus = [];
     const builders = this.blockBuilders();
+    const menuArrays: MenuItem<any>[] = [];
     for (const key in builders) {
       const block = builders[key](this);
-      const info = this.convertToInfo(key, block);
+      const info = this.convertToInfo(key, block, menuArrays);
       this.blocks.push(info);
     }
-    console.log(this.blocks);
+
+    for (let index = 0; index < menuArrays.length; index++) {
+      const items = menuArrays[index];
+      this.menus.push({
+        acceptReporters: false,
+        items: items.map(value => `${value}`)
+      });
+    }
   }
 
   getInternalKey = (key: string) => `internal_${key}`;
 
   getInfo(): ExtensionMetadata  {
     const id = this.constructor.name;
-    return {
-      id,
-      blocks: this.blocks
-    }
+    const {blocks, menus} = this; 
+    const info = {id, blocks};
+    if (menus) info['menus'] = Object.entries(this.menus).reduce((obj, [key, value]) => {
+      obj[key] = value; return obj
+    }, {});
+
+    return info;
   }
 
-  convertToInfo(key: string, block: Block<any>): ExtensionBlockMetadata {
+  convertToInfo(key: string, block: Block<any>, menusToAdd: MenuItem<any>[]): ExtensionBlockMetadata {
     const {type, text, operation} = block;
     const args: Argument<any>[] = block.args;
 
@@ -47,15 +60,11 @@ export abstract class Extension
     const opcode = this.getInternalKey(key);
 
     this[opcode] = (argsFromScratch, blockUtility) => {
-      const { mutation } = argsFromScratch;
-      // NOTE: Need to gurantee that the args order will be correct
-      const uncasted = Object.entries(argsFromScratch)
-      .filter(([key, _]) => key !== 'mutation')
-      .map(([_, value]) => value);
-      
-      console.log(uncasted);
+      const { mutation } = argsFromScratch; // if you need it!
+      // NOTE: Assumption is that args order will be correct since there keys are parsable as ints (i.e. '0', '1', ...)
+      const uncasted = Object.values(argsFromScratch).slice(0, -1);
       const casted = uncasted.map((value, index) => this.castToType(args[index].type, value));
-      operation(...casted, blockUtility);
+      return operation(...casted, blockUtility);
     }
 
     const argsInfo: Record<string, ExtensionArgumentMetadata> = args.map(element => {
@@ -65,15 +74,20 @@ export abstract class Extension
 
       if (defaultValue !== undefined) entry.defaultValue = defaultValue;
 
-      if (options !== undefined && options.length > 0) {
-        // convert options to menu
+      if (options !== undefined && Array.isArray(options) && options.length > 0) {
+        const alreadyAddedIndex = menusToAdd.indexOf(options);
+        const index = alreadyAddedIndex >= 0 ? alreadyAddedIndex : menusToAdd.push(options) - 1;
+        entry.menu = `${index}`;
       }
+      
       return entry;
     })
     .reduce((accumulation, value, index) => {
       accumulation[`${index}`] = value;
       return accumulation;
     }, {});
+
+    console.log(args);
 
     return {
       opcode,
@@ -84,12 +98,15 @@ export abstract class Extension
   }
 
   castToType = (argumentType: ArgumentType, value: any) => {
-    console.log(argumentType);
     switch(argumentType) {
       case ArgumentType.String:
         return `${value}`;
       case ArgumentType.Number:
         return parseFloat(value);
+      case ArgumentType.Boolean:
+        return !!value;
+      case ArgumentType.Note:
+        return parseInt(value);
       default:
         throw new Error("Method not implemented.");
     }

@@ -16,17 +16,13 @@ type Blocks = {
   add: (left: number, right: number) => number;
 }
 
-class MyExtension extends Extension<{
-  title: "Realistic Typescript-Based Extension",
-  description: "Demonstrating how typescript can be used to write a realistic extension",
-  iconURL: "Typescript_logo.png",
-  insetIconURL: "typescript-logo.svg"
-}, Blocks>
-{
-  options = [3, 4, 5];
+class MyExtension extends Extension<DisplayDetails, Blocks> {
+  options: number[];
   name = () => "My Extension";
 
-  init() { }
+  init() { 
+    this.options = [3, 4, 5];
+  }
 
   blockBuilders() {
     return ({

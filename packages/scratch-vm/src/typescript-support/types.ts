@@ -14,10 +14,15 @@ export type MenuItem<T> = T | {
   text: string;
 };
 
+export type MenuThatAcceptsReporters<T> = {
+  items: MenuItem<T>[],
+  handler: (reported: any) => T;
+};
+
 export type Argument<T> = {
   type: ArgumentType;
   defaultValue?: T | undefined;
-  options?: MenuItem<T>[] | undefined;
+  options?: MenuItem<T>[] | MenuThatAcceptsReporters<T> | undefined;
 }
 
 // Used to be <T extends [...any[]]> ... not sure if it needs to be?
@@ -162,7 +167,10 @@ export type ExtensionMenuMetadata = ExtensionDynamicMenu | ExtensionMenuItems;
 export type ExtensionDynamicMenu = string;
 
 /** Items in an extension menu. */
-export type ExtensionMenuItems = Array<ExtensionMenuItemSimple | ExtensionMenuItemComplex>;
+export type ExtensionMenuItems = {
+  items: Array<ExtensionMenuItemSimple | ExtensionMenuItemComplex>, 
+  acceptReporters: boolean 
+};
 
 /** A menu item for which the label and value are identical strings. */
 export type ExtensionMenuItemSimple = string;
