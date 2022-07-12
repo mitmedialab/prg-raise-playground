@@ -16,7 +16,12 @@ type Blocks = {
   add: (left: number, right: number) => number;
 }
 
-class MyExtension extends Extension<DisplayDetails, Blocks>
+class MyExtension extends Extension<{
+  title: "Realistic Typescript-Based Extension",
+  description: "Demonstrating how typescript can be used to write a realistic extension",
+  iconURL: "Typescript_logo.png",
+  insetIconURL: "typescript-logo.svg"
+}, Blocks>
 {
   options = [3, 4, 5];
 

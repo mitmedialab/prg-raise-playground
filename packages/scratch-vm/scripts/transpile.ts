@@ -1,8 +1,8 @@
-import * as ts from "typescript";
-import * as glob from "glob";
-import * as path from "path";
-import * as fs from "fs";
-import TypeProbe  from "./TypeProbe";
+import ts = require("typescript");
+import glob = require("glob");
+import path = require("path");
+import fs = require("fs");
+import { retrieveExtensionDetails } from "./typeProbing/common";
 
 const printDiagnostics = (program: ts.Program, result: ts.EmitResult) => {
   ts.getPreEmitDiagnostics(program)
@@ -13,22 +13,6 @@ const printDiagnostics = (program: ts.Program, result: ts.EmitResult) => {
       const { line, character } = ts.getLineAndCharacterOfPosition(diagnostic.file, diagnostic.start!);
       console.error(`${diagnostic.file.fileName} (${line + 1},${character + 1}): ${flattenedMessage}`);
     });
-}
-
-const tryRetrieveIdentifier = (program: ts.Program): void => {
-  const typeChecker = program.getTypeChecker();
-  const sources = program.getSourceFiles();
-  const roots = program.getRootFileNames();
-  const rootSources = sources.filter(source => roots.includes(source.fileName));
-  for (const root of rootSources) {
-    ts.forEachChild(root, node => {
-      const type = typeChecker.getTypeAtLocation(node);
-      const probes = TypeProbe.ProbeTypeForValue(type, "MyExtension");
-      probes.forEach(p => p.print());
-      //probe?.print();
-      //probe?.findAllProbesForValue("Hello PArker").map(p => p.print());
-    });
-  }
 }
 
 type FileToWrite = {
@@ -78,7 +62,12 @@ const transpileAllTsExtensions = () => {
 
     const program = ts.createProgram(files, { ...baseOptions, outDir: srcDir, rootDir: srcDir });
     const result = program.emit();
-    result.emitSkipped ? printDiagnostics(program, result) : tryRetrieveIdentifier(program);
+    if (result.emitSkipped) {
+      printDiagnostics(program, result);
+    }
+    else {
+      const menuDetails = retrieveExtensionDetails(program);
+    }
     files.forEach(file => addSuportingFiles(path.dirname(file)));
     addSuportingFiles(supportDir);
   });

@@ -1,16 +1,14 @@
 import { Extension } from "../../../src/typescript-support/Extension";
-import { notImplemented, Title, Description, IconURL, InsetIconURL } from "../common";
-
-type name = "SameFile";
+import { notImplemented } from "../common";
 
 type DisplayDetails = {
-  title: Title<name>;
-  description: Description<name>;
-  iconURL: IconURL<name>;
-  insetIconURL: InsetIconURL<name>;
+  title: "SameFile_title",
+  description: "SameFile_description",
+  iconURL: "SameFile_iconURL",
+  insetIconURL: "SameFile_insetIconURL",
 }
 
-class SameFile extends Extension<DisplayDetails, {}>{
+export class SameFile extends Extension<DisplayDetails, {}>{
   init = notImplemented;
   blockBuilders = notImplemented;
 }

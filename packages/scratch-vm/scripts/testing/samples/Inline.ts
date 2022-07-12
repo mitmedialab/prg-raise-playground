@@ -1,14 +1,12 @@
 import { Extension } from "../../../src/typescript-support/Extension";
 import { Description, IconURL, InsetIconURL, notImplemented, Title } from "../common";
 
-type name = "Inline";
-
-class Inline extends Extension<{
-  title: Title<name>,
-  description: Description<name>,
-  iconURL: IconURL<name>,
-  insetIconURL: InsetIconURL<name>,
-},{}>{
+export class Inline extends Extension<{
+  title: "Inline_title",
+  description: "Inline_description",
+  iconURL: "Inline_iconURL",
+  insetIconURL: "Inline_insetIconURL",
+}, {}>{
   init = notImplemented;
   blockBuilders = notImplemented;
 }
