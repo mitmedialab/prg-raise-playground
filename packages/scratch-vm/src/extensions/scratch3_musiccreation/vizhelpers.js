@@ -12,6 +12,7 @@ const SpectrogramHelper = require('./spectrogram');
 const FFTHelper = require('./fft');
 const { updateVariableIdentifiers } = require('../../util/variable-util');
 const { e } = require('./letters');
+const BlockUtility = require('../../engine/block-utility');
 
 class VizHelpers {
     constructor (runtime) {
@@ -191,7 +192,7 @@ class VizHelpers {
     toggleVisMode (args,util) {
         let status = Cast.toNumber(args.STATUS);
         let mode = Cast.toNumber(args.FORMAT);
-        const status_bool = !!status; // typeof(status) === string
+        const status_bool = !!status;
         this._visState = { mode:mode, status:status_bool };
     }
 
@@ -212,6 +213,12 @@ class VizHelpers {
     }
 
 
+    /**
+     * 
+     * @param {[number,number,string,number] | null} note - if null, this represents the case where we are clearing the canvas
+     *                                                      otherwise, [note,duration,instrument name, volume] 
+     * @param {BlockUtility} util 
+     */
     processViz (note,util) {
         const mode = this._visState['mode'];
         const name = this._visNames[mode];
@@ -226,8 +233,12 @@ class VizHelpers {
             if (buf.length + 1 >= lim) buf = [];
         }
         
-        note[4] = this._count++;
-        buf.push(note);
+        try {
+            note[4] = this._count++;
+            buf.push(note);
+        } catch (error) {
+            buf = [];
+        }
         this._noteBuf[name] = buf;
         switch (name) {
             case 'wave':
