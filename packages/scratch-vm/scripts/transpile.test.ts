@@ -4,23 +4,31 @@ import ts = require("typescript");
 import { retrieveExtensionDetails } from "./typeProbing/common";
 import TypeProbe from "./typeProbing/TypeProbe";
 
-describe("Typescript transpilation of extensions", () => {
-  test("Retrieval of extension menu details", () => {
-    const rootDir = path.resolve(__dirname, "..");
-    const samplesDir = path.resolve(__dirname, "testing", "samples");
+const generateTestProgram = () => {
+  const rootDir = path.resolve(__dirname, "..");
+  const samplesDir = path.resolve(__dirname, "testing", "samples");
 
-    const compileOptions: ts.CompilerOptions = {
-      noEmitOnError: false,
-      esModuleInterop: true,
-      target: ts.ScriptTarget.ES5,
-      module: ts.ModuleKind.CommonJS,
-      moduleResolution: ts.ModuleResolutionKind.NodeJs,
-      noEmit: true,
-      rootDir
-    };
-    
-    const syncGlob = new glob.GlobSync(`${samplesDir}/*.ts`);
-    const program = ts.createProgram(syncGlob.found, compileOptions);
+  const compileOptions: ts.CompilerOptions = {
+    noEmitOnError: false,
+    esModuleInterop: true,
+    target: ts.ScriptTarget.ES5,
+    module: ts.ModuleKind.CommonJS,
+    moduleResolution: ts.ModuleResolutionKind.NodeJs,
+    noEmit: true,
+    rootDir
+  };
+  
+  const { found } = new glob.GlobSync(`${samplesDir}/*.ts`);
+  return ts.createProgram(found, compileOptions);
+}
+
+describe("Typescript transpilation of extensions", () => {
+  test("Identify test path patterns", () => {
+    const program = generateTestProgram();
+  })
+
+  test("Retrieval of extension menu details", () => {
+    const program = generateTestProgram();
     const menuDetails = retrieveExtensionDetails(program);
     console.log(menuDetails);
   })

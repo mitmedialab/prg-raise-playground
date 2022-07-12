@@ -16,10 +16,10 @@ export const retrieveExtensionDetails = (program: ts.Program): Record<string, Ex
       const type = typeChecker.getTypeAtLocation(node);
       if (isExtension(type)) {
         console.log(type.symbol.name);
-        TypeProbe.ProbeTypeForValue(type, "SameFile_title").forEach(p => p.print());
-        TypeProbe.ProbeTypeForValue(type, "SameFile_description").forEach(p => p.print());
-        TypeProbe.ProbeTypeForValue(type, "SameFile_iconURL").forEach(p => p.print());
-        TypeProbe.ProbeTypeForValue(type, "SameFile_insetIconURL").forEach(p => p.print());
+        TypeProbe.ProbeTypeForValue(type, "title").forEach(p => p.print());
+        TypeProbe.ProbeTypeForValue(type, "description").forEach(p => p.print());
+        TypeProbe.ProbeTypeForValue(type, "iconURL").forEach(p => p.print());
+        TypeProbe.ProbeTypeForValue(type, "insetIconURL").forEach(p => p.print());
         const dirName = path.basename(path.dirname(root.fileName));
         details[dirName] = getMenuDisplayDetails(type);
         console.log(type.symbol.name);
