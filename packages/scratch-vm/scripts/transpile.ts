@@ -66,7 +66,7 @@ const transpileAllTsExtensions = () => {
       printDiagnostics(program, result);
     }
     else {
-      const menuDetails = retrieveExtensionDetails(program);
+      //const menuDetails = retrieveExtensionDetails(program);
     }
     files.forEach(file => addSuportingFiles(path.dirname(file)));
     addSuportingFiles(supportDir);

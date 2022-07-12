@@ -1,4 +1,4 @@
-import MyExtension from ".";
+import MyExtension = require(".");
 import { ArgumentType, BlockType } from "../../typescript-support/enums";
 import { BlockBuilder } from "../../typescript-support/types";
 
@@ -7,11 +7,13 @@ type AddBuilder = BlockBuilder<(left: number, right: number) => number>;
 const addBuilder: AddBuilder = (extension: MyExtension) => ({
   type: BlockType.Command,
   operation(left, right) {
-    return left + right;
+    const sum = left + right;
+    console.log(sum)
+    return sum;
   },
-  arguments: [
+  args: [
     { type: ArgumentType.Number, defaultValue: 3, options: extension.options },
-    { type: ArgumentType.Angle }
+    { type: ArgumentType.Number }
   ],
   text: (left, right) => `Add ${left} to ${right}`,
 });

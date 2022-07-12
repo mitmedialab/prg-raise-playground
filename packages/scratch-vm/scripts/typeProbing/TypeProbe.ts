@@ -95,6 +95,7 @@ export default class TypeProbe<TValue> {
           for (let index = 0; index < objectValue.length; index++) {
             const element = objectValue[index];
             const elementKey = TypeProbe.ArrayKey(key, index);
+            // actually should check if this element is our value first, since this could be a primitive
             TypeProbe.FindPath(element, valueToMatch, paths, [...keys, elementKey], cache);
           }
         }

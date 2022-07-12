@@ -20,7 +20,8 @@ export type Argument<T> = {
   options?: MenuItem<T>[] | undefined;
 }
 
-type ToArguments<T extends [...any[]]> =
+// Used to be <T extends [...any[]]> ... not sure if it needs to be?
+type ToArguments<T extends any[]> =
   T extends [infer Head, ...infer Tail]
   ? [Argument<Head>, ...ToArguments<Tail>]
   : [];
@@ -30,7 +31,7 @@ type ParamsAndUtility<T extends BlockOperation> = [...Parameters<T>, BlockUtilit
 export type Block<T extends BlockOperation> = {
   type: BlockType;
   operation: (...params: ParamsAndUtility<T>) => ReturnType<T>;
-  arguments: ToArguments<Parameters<T>>;
+  args: ToArguments<Parameters<T>>;
   text: (...params: Parameters<T>) => string;
 }
 

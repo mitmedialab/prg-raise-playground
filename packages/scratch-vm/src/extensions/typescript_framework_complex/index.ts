@@ -24,10 +24,12 @@ class MyExtension extends Extension<{
 }, Blocks>
 {
   options = [3, 4, 5];
+  name = () => "My Extension";
 
   init() { }
 
-  blockBuilders = () => ({
+  blockBuilders() {
+    return ({
 
     // Example of an external 'builder' function
     'add': addBuilder,
@@ -39,22 +41,22 @@ class MyExtension extends Extension<{
     'playNote': (self: MyExtension): Block<(a: number) => void> => {
       return {
         type: BlockType.Command,
-        arguments: [{ type: ArgumentType.Number }],
+        args: [{ type: ArgumentType.Number }],
         text: () => "",
         operation: (a,) => { },
       }
     },
-  });
+  })};
 
   buildReport(): Block<() => number> {
 
     const getFive = () => 5;
 
-    const myOP = () => getFive();
+    const myOP = (blockUtility) => getFive();
 
     return {
       type: BlockType.Command,
-      arguments: [],
+      args: [],
       text: () => "",
       operation: myOP,
     }

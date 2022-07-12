@@ -13,7 +13,7 @@ export class SameFileA extends Extension<DisplayDetails, {}>{
   blockBuilders = notImplemented;
 }
 
-type title = "title";
+type title = "test_title";
 type description = "description";
 type iconURL = "iconURL";
 type insetIconURL = "insetIconURL";
