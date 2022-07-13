@@ -656,7 +656,7 @@ class Scratch3MusicCreation {
 
     getInstrumentForBlock(id, util) {
         const modifierInst = getTopBlockModifier(util, id, instrumentModifierKey);
-        return modifierInst ? modifierInst : this.musicCreationHelper._getMusicState(util.target).currentInstrument;
+        return (modifierInst !== undefined && modifierInst !== null) ? modifierInst : this.musicCreationHelper._getMusicState(util.target).currentInstrument;
     }
 
     getVolumeForBlock(id, util) {

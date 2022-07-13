@@ -672,7 +672,7 @@ class MusicCreationHelpers {
 
         // Determine which of the audio samples for this instrument to play
         const musicState = this._getMusicState(util.target);
-        const inst = instrument ? instrument : musicState.currentInstrument;
+        const inst = (instrument !== undefined && instrument !== null) ? instrument : musicState.currentInstrument;
         const instrumentInfo = this.INSTRUMENT_INFO[inst];
         const sampleArray = instrumentInfo.samples;
         const sampleIndex = this._selectSampleIndexForNote(note, sampleArray);
