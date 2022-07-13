@@ -23,10 +23,15 @@ const volumeModifierKey = 'volume';
 class Scratch3MusicCreation {
     constructor(runtime) {
         this.runtime = runtime;
+        this.beats = givenBeatValues.map(this.beatsToSecs);
+
+
         this.musicPlayer = new MusicPlayers(runtime);
         this.vizHelper = new VizHelpers(runtime);
         this.musicCreationHelper = new MusicCreationHelpers(runtime);
-        this.musicAccompanimentHelper = new MusicAccompanimentHelpers(runtime);
+        const validNoteDurations = this.beats.map(item => parseFloat(item.value));
+        const beatsPerSec = Scratch3MusicCreation.beatPerSec();
+        this.musicAccompanimentHelper = new MusicAccompanimentHelpers(runtime, validNoteDurations, beatsPerSec);
         this.analysisHelper = new AnalysisHelpers(runtime);
 
         this.noteList = [];
@@ -39,8 +44,6 @@ class Scratch3MusicCreation {
         { text: "mezzo-forte", value: '60' },
         { text: "forte", value: '85' },
         { text: "fortissimo", value: '100' }];
-
-        this.beats = givenBeatValues.map(this.beatsToSecs);
 
         this.files = [{ text: "mystery 1", value: '1' },
         { text: "mystery 2", value: '2' },

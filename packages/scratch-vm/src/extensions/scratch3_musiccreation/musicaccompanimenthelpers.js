@@ -23,8 +23,10 @@ try {
 }
 
 class MusicAccompanimentHelpers {
-    constructor (runtime) {
+    constructor (runtime, validNoteDurations, beatsPerSec) {
         this.runtime = runtime;
+        this.validNoteDurations = validNoteDurations;
+        this.beatsPerSec = beatsPerSec;
         TWINKLE_TWINKLE = {
             notes: [
               {pitch: 60, startTime: 0.0, endTime: 0.5},
@@ -72,11 +74,25 @@ class MusicAccompanimentHelpers {
         return newNotes;
     }
 
+    constrainDuration(duration) {
+        const {length} = this.validNoteDurations;
+        console.log(duration);
+        let previous;
+        for (let index = 0; index < length; index++) {
+            const element = this.validNoteDurations[index];
+            if (duration <= element) return previous && (duration - previous < element - duration) ? `${previous}` : `${element}`;
+            previous = element;
+        }
+        const last = this.validNoteDurations[length - 1]
+        return `${last}`;
+    }
+
     processed(notes) {
         newNoteList = [];
         for (var i in notes) {
             note = notes[i];
-            newNoteList.push([note.pitch, (note.quantizedEndStep-note.quantizedStartStep)/4, "Piano", 60]);
+            const duration = (note.quantizedEndStep - note.quantizedStartStep) / this.beatsPerSec;
+            newNoteList.push([note.pitch, this.constrainDuration(duration), "Piano", 60]);
         }
         return newNoteList;
     }
@@ -88,7 +104,7 @@ class MusicAccompanimentHelpers {
         rnn_temperature = Cast.toNumber(args.TEMP);
               
         // The model expects a quantized sequence, and ours was unquantized:
-        const qns = core.sequences.quantizeNoteSequence(notes, 4);
+        const qns = core.sequences.quantizeNoteSequence(notes, this.beatsPerSec);
         var newNotes = [];
         await music_rnn
         .continueSequence(qns, rnn_steps, rnn_temperature)
@@ -119,7 +135,6 @@ class MusicAccompanimentHelpers {
         magentaNotes = await magentaN();
         return magentaNotes;
     }
-
 }
 
 module.exports = MusicAccompanimentHelpers;
