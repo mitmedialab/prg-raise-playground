@@ -343,14 +343,14 @@ class SheetMusic {
         return penState;
     }
 
-    testSheetMusicViz (noteList, args, util) {
+    testSheetMusicViz (noteList, args, util,vizhelper) {
         this.setPenColorToColor(this.black, util);
         this.noteList = noteList;
         log.log("SHEET MUSIC", this.noteList);
         this.clear();
         this.drawStaff(args, util);
         this.labelStaff(args, util);
-        this.drawMusic(args, util);
+        this.drawMusic(args, util,undefined,vizhelper);
     }
 
     labelStaff (args, util) {
@@ -548,14 +548,20 @@ class SheetMusic {
         this.penUp(args, util);
     }
 
-    drawMusic(args, util) {
+    drawMusic(args, util, sig, vizHelper) {
         var xinit = this.staffStartX+40;
         var x = xinit;
         var y = this.staffStartY;
         var xStep = 45;
-        var signal = this.convertSignalToMusicList(args, util);
         var pastVol = 0;
         var beats = 0;
+        var signal = null;
+        if (sig) {
+            signal = sig;
+        } else {
+            signal = this.convertSignalToMusicList(args, util);
+        }
+        let seen = 0;
         for (i in signal) {
             log.log(signal[i]);
             note = signal[i][0];
@@ -572,6 +578,17 @@ class SheetMusic {
             if (x > this.staffStartX + this.staffLength) {
                 x = xinit+xStep;
                 y = y - this.spaceBetween-11*this.staffWidth;
+            }
+            if (!(x > 180 && y < 0)) {
+                seen++;
+            } else {
+                signal = signal.slice(seen);
+                vizHelper.trimSheetMusicList(seen);
+                this.clear();
+                this.drawStaff(args, util);
+                this.labelStaff(args, util);
+                this.drawMusic(args,util,signal);
+                return;
             }
             if (beats%4 == 0 && beats != 0) {
                 this.drawMeasure(x, y, args, util);
