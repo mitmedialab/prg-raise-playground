@@ -289,7 +289,6 @@ class MusicCreationHelpers {
             if (!stage.instrument) {
                 stage.instrument = "Piano";
             }
-            log.log(stage.instrument);
             return stage.instrument;
         }
         return 0;

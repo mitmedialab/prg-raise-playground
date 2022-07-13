@@ -562,8 +562,7 @@ class Scratch3MusicCreation {
      * @property {int} INSTRUMENT - the number of the instrument to select.
      */
     setInstrumentForBelow(args, util) {
-        const instrument = this.musicCreationHelper.getInstrumentValue(args.INSTRUMENT);
-        addTopBlockModifier(util, args[internalIDKey], instrumentModifierKey, instrument);
+        addTopBlockModifier(util, args[internalIDKey], instrumentModifierKey, Cast.toNumber(args.INSTRUMENT));
     }
 
     setVolumeForBelow(args, util) {
