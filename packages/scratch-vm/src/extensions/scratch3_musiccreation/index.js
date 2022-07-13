@@ -505,7 +505,7 @@ class Scratch3MusicCreation {
 
     testWaveformViz(args, util) {
         this.totalNoteList = this.noteList.concat(this.magentaNoteList);
-        this.vizHelper.testWaveformViz(this.totalNoteList, args, util);
+        this.vizHelper.testWaveformViz(this.totalNoteList, args, util, true);
     }
 
     toggleVisMode(args, util) {

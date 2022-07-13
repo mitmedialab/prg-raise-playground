@@ -231,7 +231,7 @@ class VizHelpers {
         this._noteBuf[name] = buf;
         switch (name) {
             case 'wave':
-                this.testWaveformViz(buf,null,util);
+                this.testWaveformViz(buf,null,util,false);
                 break;
             case 'freq':
                 this.testFreqViz(buf,null,util);
@@ -244,11 +244,16 @@ class VizHelpers {
         }
     }
 
-    testWaveformViz (noteList, args, util) {
+    testWaveformViz (noteList, args, util, idify) {
         this.fftViz.clear();
         this.sheetMusicViz.clear();
         this.spectrogramViz.clear();
         this.waveformViz.clear();
+        if (idify) {
+            for (const note of noteList) {
+                note[4] = this._count++;
+            }
+        }
         this.waveformViz.testWaveformViz(noteList, args, util);
     }
 
