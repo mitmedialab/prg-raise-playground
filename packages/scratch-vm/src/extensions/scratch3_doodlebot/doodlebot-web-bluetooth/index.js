@@ -44,10 +44,11 @@ class Doodlebot {
         const device = await bluetooth.requestDevice({
             filters: [
                 {
-                    namePrefix: deviceName,
+                    //namePrefix: deviceName,
+                    services: [UartService.uuid]
                 },
             ],
-            optionalServices: [UartService.uuid],
+            //optionalServices: [UartService.uuid],
         });
 
         return device;

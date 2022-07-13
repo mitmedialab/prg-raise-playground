@@ -22,7 +22,7 @@ const _drive = ["forward", "backward", "left", "right"];
 const _turns = ["left", "right"];
 
 const _pen_dirs = ["up", "down"];
-const _pen_protocol = ["20", "45"];
+const _pen_protocol = ["20", "0"];
 
 const _bumpers = ["front", "back", "front or back", "front bumper and back", "neither"];
 
@@ -197,7 +197,7 @@ class DoodlebotBlocks {
                     }),
                     arguments: {},
                 },
-                "---",
+                /*"---",
                 {
                     opcode: "setPixels",
                     blockType: BlockType.COMMAND,
@@ -278,7 +278,7 @@ class DoodlebotBlocks {
                         description: "Turn off the LED",
                     }),
                     arguments: {},
-                },
+                },*/
                 "---",
                 {
                     opcode: "drive",
@@ -687,7 +687,7 @@ class DoodlebotBlocks {
         console.log("Getting BLE device");
 
         // for development
-        let deviceName = "Bluefruit52"; // "BBC micro:bit";
+        let deviceNamePrefix = "Bluefruit52"; // "Saira" "BBC micro:bit";
 
         // RANDI try bluetooth audio devices
         const robotName = "Q65"; // "DoodlebotBT"
@@ -700,7 +700,7 @@ class DoodlebotBlocks {
             try {
                 this._robotDevice = await Doodlebot.requestRobot(
                     window.navigator.bluetooth,
-                    deviceName
+                    deviceNamePrefix
                 );
                 const services = await Doodlebot.getServices(this._robotDevice);
 
@@ -1145,10 +1145,10 @@ class DoodlebotBlocks {
         if (args.ANIM == "happy") {
             const happy_pause = 250;
             // Bounce the pen twice to indicate joy
+            await this.sendCommandToRobot("(u,20)", happy_pause);
             await this.sendCommandToRobot("(u,0)", happy_pause);
-            await this.sendCommandToRobot("(u,45)", happy_pause);
+            await this.sendCommandToRobot("(u,20)", happy_pause);
             await this.sendCommandToRobot("(u,0)", happy_pause);
-            await this.sendCommandToRobot("(u,45)", happy_pause);
         }
 
         // start blinking
