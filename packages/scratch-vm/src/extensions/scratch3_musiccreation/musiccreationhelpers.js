@@ -472,7 +472,7 @@ class MusicCreationHelpers {
         util.sequencer.runtime.once('PROJECT_STOP_ALL', () => {
             this._stopped = true;
             player.stopImmediately();
-            if (util.thread.peekStackFrame()) util.stackFrame.duration = 0;
+            if (util.thread !== undefined && util.thread.peekStackFrame()) util.stackFrame.duration = 0;
             return;
         });
         player.once('stop', () => {
@@ -577,7 +577,7 @@ class MusicCreationHelpers {
         });
         util.runtime.once('PROJECT_STOP_ALL', () => {
             player.stopImmediately();
-            if (util.thread.peekStackFrame()) util.stackFrame.duration = 0;
+            if (util.thread !== undefined && util.thread.peekStackFrame()) util.stackFrame.duration = 0;
         });
 
         // Start playing the note
