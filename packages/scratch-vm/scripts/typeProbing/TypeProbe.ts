@@ -7,16 +7,11 @@ export default class TypeProbe<TValue> {
 
   constructor(type: ts.Type, keys: string[]) {
     this.keys = keys;
-
-    this.objects = [type];
-    for (const key of keys) {
-      const previous = this.objects[this.objects.length - 1];
-      const current = TypeProbe.IsArray(key) ? TypeProbe.GetArrayElement(previous, key) : previous[key];
-      this.objects.push(current);
-    }
-
-    this.value = this.objects[this.objects.length - 1];
+    this.objects = [];
+    this.value = TypeProbe.TryWalkKeysToValueAndCollectObjects(type, keys, this.objects);
   }
+
+  getPath = () => this.keys.join(TypeProbe.PathSeperator);
 
   print() {
     const spacing = "   ";
@@ -25,13 +20,6 @@ export default class TypeProbe<TValue> {
       const isLast = index === this.keys.length - 1;
       console.log(`${spacing.repeat(index)}${key}${isLast ? `: ${this.value}` : ""}`)
     }
-  }
-
-  getSerializedDeclaration = () => {
-    const typeName = (this as {}).constructor.name;
-    const func = "FromSerialization"; // can't seem to get this
-    const path = this.keys.join(TypeProbe.PathSeperator);
-    return `${typeName}.${func}<${typeof this.value}>(type, "${path}")`;
   }
 
   findAllProbesForValue<TMatch>(valueToMatch: TMatch): TypeProbe<TMatch>[]  {
@@ -54,11 +42,35 @@ export default class TypeProbe<TValue> {
     return paths.map(path => new TypeProbe(type, TypeProbe.PathToKeys(path)));
   }
 
+  static TryWalkKeysToValueAndCollectObjects = (type: ts.Type, keys: string[], objects: any[]): any => {
+    objects = [type];
+    for (const key of keys) {
+      const previous = objects[objects.length - 1];
+      if (TypeProbe.IsArrayKey(key)) {
+        const [arrKey, arrIndex] = TypeProbe.GetArrayKeyIndexPair(key);
+        const arr = previous[arrKey];
+        if (arr === undefined || !Array.isArray(arr) || arr.length <= arrIndex) return undefined;
+        objects.push(previous[arrKey][arrIndex]);
+      } 
+      else {
+        const current = previous[key];
+        if (current === undefined) return undefined;
+        objects.push(current);
+      }
+    }
+    return objects[objects.length - 1];
+  }
+
   private static PathToKeys = (path: string) => path.split(TypeProbe.PathSeperator);
 
-  private static ArrayKey = (key: string, index: number): string => `${key}[${index}]`;
-  private static IsArray = (key: string) => key.includes("[");
+  private static ArrayKey  = (key: string, index: number): string => `${key}[${index}]`;
+  private static IsArrayKey = (key: string) => key.includes("[");
   private static PathSeperator = ".";
+
+  private static GetArrayKeyIndexPair = (key: string): [key: string, index: number] => {
+    const split = key.split("[");
+    return [split[0], parseInt(split[1].replace("]", ""))];
+  }
 
   private static GetArrayElement = (obj: any, key: string) => {
     const split = key.split("[");
