@@ -2,6 +2,7 @@ import ts = require("typescript");
 import path = require("path");
 import { ExtensionMenuDisplayDetails } from "../../src/typescript-support/types";
 import TypeProbe from "./TypeProbe";
+import { cachedPathsToMenuDetails } from "./extensionArchetypes";
 
 export type DisplayDetailsRetrievalPaths = Record<keyof ExtensionMenuDisplayDetails, string[]>;
 
@@ -33,13 +34,13 @@ export const isExtension = (type: ts.Type) => {
 }
 
 const getMenuDisplayDetails = (type: ts.Type): ExtensionMenuDisplayDetails => {
-  // need to use multiple paths
-  const getPath = (index: number) => `symbol.declarations[0].nextContainer.members[${index}].type.literal.text`;
-  const getValue = (index: number) => TypeProbe.FromSerialization<string>(type, getPath(index)).value;
+  const baseExtensionType = type.getBaseTypes()?.find(t => t.symbol.name === "Extension");
+  const paths = cachedPathsToMenuDetails;
+
   return {
-    title: getValue(0),
-    description: getValue(1),
-    iconURL: getValue(2),
-    insetIconURL: getValue(3),
+    title: TypeProbe.FromSerialization<string>(baseExtensionType, paths.title[0]).value,
+    description: TypeProbe.FromSerialization<string>(baseExtensionType, paths.description[0]).value,
+    iconURL: TypeProbe.FromSerialization<string>(baseExtensionType, paths.iconURL[0]).value,
+    insetIconURL: TypeProbe.FromSerialization<string>(baseExtensionType, paths.insetIconURL[0]).value,
   }
 }

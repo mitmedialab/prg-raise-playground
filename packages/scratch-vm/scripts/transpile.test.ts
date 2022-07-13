@@ -3,7 +3,7 @@ import path = require("path");
 import ts = require("typescript");
 import { ExtensionMenuDisplayDetails } from "../src/typescript-support/types";
 import { DisplayDetailsRetrievalPaths, isExtension, retrieveExtensionDetails } from "./typeProbing/common";
-import { cachedPathsToMenuDetails, location } from "./typeProbing/extensionArchetypes";
+import { cachedPathsToMenuDetails, location, typeCount } from "./typeProbing/extensionArchetypes";
 import type { Description, IconURL, InsetIconURL, Title } from "./typeProbing/extensionArchetypes";
 
 import TypeProbe from "./typeProbing/TypeProbe";
@@ -60,14 +60,14 @@ const retrievePathsToMenuDetails = (program: ts.Program, details: DisplayDetails
           const identifier = identifiers[key];
           const pathsCollection = allPaths[identifier];
           const paths = TypeProbe.ProbeTypeForValue(baseExtensionType, identifier).map(getPath);
-          paths.forEach(path => pathsCollection[path] = pathsCollection[path] ? pathsCollection[path]++ : 1);
+          paths.forEach(path => pathsCollection[path] = (pathsCollection[path] !== undefined) ? ++pathsCollection[path] : 1);
         }
       }
     });
   }
 
   for (const key in allPaths) {
-    const viablePaths = Object.entries(allPaths[key]).filter(([path, count]) => count === 8 ).map(([path, _]) => path).sort(byLength);
+    const viablePaths = Object.entries(allPaths[key]).filter(([path, count]) => count === typeCount ).map(([path, _]) => path).sort(byLength);
     details[key] = viablePaths;
   }
 }
@@ -82,14 +82,15 @@ describe("Typescript transpilation of extensions", () => {
       insetIconURL: []
     }
     retrievePathsToMenuDetails(program, pathsToDetails);
-    const expected = pathsToDetails;
-    const actual = cachedPathsToMenuDetails;
-    expect(expected).toEqual(actual);
+    const expected = cachedPathsToMenuDetails;
+    const actual = pathsToDetails;
+    console.log(actual);
+    expect(actual).toEqual(expected);
   })
 
   test("Retrieval of extension menu details", () => {
     const program = generateTestProgram();
-    //const menuDetails = retrieveExtensionDetails(program);
-    //console.log(menuDetails);
+    const menuDetails = retrieveExtensionDetails(program);
+    console.log(menuDetails);
   })
 })

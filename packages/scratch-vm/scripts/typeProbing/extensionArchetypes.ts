@@ -44,8 +44,11 @@ class InlineB extends Extension<{
   blockBuilders = notImplemented;
 }
 
+type ti = "ti";
+type tle = "tle";
+
 class InlineC extends Extension<{
-  title: "title",
+  title: `${ti}${tle}`,
   description: "description",
   iconURL: "iconURL",
   insetIconURL: "insetIconURL",
@@ -85,20 +88,30 @@ class SameFileD extends Extension<DisplayDetailsAggregated, {}>{
 }
 
 export const cachedPathsToMenuDetails: DisplayDetailsRetrievalPaths = {
+  title: [
+    'resolvedTypeArguments[0].symbol.declarations[0].members[0].name.escapedText',
+    'resolvedTypeArguments[0].symbol.declarations[0].members[0].symbol.escapedName'
+  ],
   description: [
-    "symbol.declarations[0].nextContainer.members[1].name.escapedText",
-    "symbol.declarations[0].parent.statements[1].declarationList.declarations[0].initializer.nextContainer.nextContainer.type.literal.text",
+    'resolvedTypeArguments[0].symbol.declarations[0].members[1].name.escapedText',
+    'resolvedTypeArguments[0].symbol.declarations[0].members[1].symbol.escapedName'
   ],
   iconURL: [
-    "symbol.declarations[0].nextContainer.members[2].name.escapedText",
-    "symbol.declarations[0].parent.statements[1].declarationList.declarations[0].initializer.nextContainer.nextContainer.nextContainer.type.literal.text",
+    'resolvedTypeArguments[0].symbol.declarations[0].members[2].name.escapedText',
+    'resolvedTypeArguments[0].symbol.declarations[0].members[2].symbol.escapedName'
   ],
   insetIconURL: [
-    "symbol.declarations[0].nextContainer.members[3].name.escapedText",
-    "symbol.declarations[0].parent.statements[1].declarationList.declarations[0].initializer.nextContainer.nextContainer.nextContainer.nextContainer.type.literal.text",
-  ],
-  title: [
-    "symbol.declarations[0].nextContainer.members[0].name.escapedText",
-    "symbol.declarations[0].parent.statements[1].declarationList.declarations[0].initializer.nextContainer.type.literal.text",
-  ],
+    'resolvedTypeArguments[0].symbol.declarations[0].members[3].name.escapedText',
+    'resolvedTypeArguments[0].symbol.declarations[0].members[3].symbol.escapedName'
+  ]
 };
+
+export const typeCount = [
+  InlineA, 
+  InlineB, 
+  InlineC, 
+  InlineD, 
+  SameFileA, 
+  SameFileB, 
+  SameFileC, 
+  SameFileD].length;
