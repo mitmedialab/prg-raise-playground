@@ -64,6 +64,7 @@ class Scratch3MusicCreation {
 
         this._onTargetCreated = this._onTargetCreated.bind(this);
         this.runtime.on('targetWasCreated', this._onTargetCreated);
+        this.runtime.setMaxListeners(Infinity);
 
     }
 
@@ -631,8 +632,7 @@ class Scratch3MusicCreation {
      * @property {int} INSTRUMENT - the number of the instrument to select.
      */
     setInstrumentForBelow(args, util) {
-        const instrument = this.musicCreationHelper.getInstrumentValue(args.INSTRUMENT);
-        addTopBlockModifier(util, args[internalIDKey], instrumentModifierKey, instrument);
+        addTopBlockModifier(util, args[internalIDKey], instrumentModifierKey, Cast.toNumber(args.INSTRUMENT));
     }
 
     setVolumeForBelow(args, util) {
@@ -727,7 +727,7 @@ class Scratch3MusicCreation {
 
     getInstrumentForBlock(id, util) {
         const modifierInst = getTopBlockModifier(util, id, instrumentModifierKey);
-        return modifierInst ? modifierInst : this.musicCreationHelper._getMusicState(util.target).currentInstrument;
+        return (modifierInst !== undefined && modifierInst !== null) ? modifierInst : this.musicCreationHelper._getMusicState(util.target).currentInstrument;
     }
 
     getVolumeForBlock(id, util) {
@@ -809,7 +809,9 @@ class Scratch3MusicCreation {
             runtime: this.runtime,
             target: this.runtime.getEditingTarget()
         };
-        this.musicCreationHelper._playNote(util, noteNum, 0.25,0,60);
+        const inst = this.musicCreationHelper._getMusicState(util.target).currentInstrument;
+        const vol = this.musicCreationHelper.findNumberForVolume(this.musicCreationHelper.getVolume(util));
+        this.musicCreationHelper._playNote(util, noteNum, 0.25, inst, vol);
     }
 
     /**

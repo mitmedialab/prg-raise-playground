@@ -289,7 +289,6 @@ class MusicCreationHelpers {
             if (!stage.instrument) {
                 stage.instrument = "Piano";
             }
-            log.log(stage.instrument);
             return stage.instrument;
         }
         return 0;
@@ -473,7 +472,7 @@ class MusicCreationHelpers {
         util.sequencer.runtime.once('PROJECT_STOP_ALL', () => {
             this._stopped = true;
             player.stopImmediately();
-            if (util.thread.peekStackFrame()) util.stackFrame.duration = 0;
+            if (util.thread !== undefined && util.thread.peekStackFrame()) util.stackFrame.duration = 0;
             return;
         });
         player.once('stop', () => {
@@ -574,6 +573,10 @@ class MusicCreationHelpers {
         player.once('stop', () => {
             this._concurrencyCounter--;
         });
+        util.runtime.once('PROJECT_STOP_ALL', () => {
+            player.stopImmediately();
+            if (util.thread !== undefined && util.thread.peekStackFrame()) util.stackFrame.duration = 0;
+        });
 
         // Start playing the note
         player.play();
@@ -666,7 +669,7 @@ class MusicCreationHelpers {
 
         // Determine which of the audio samples for this instrument to play
         const musicState = this._getMusicState(util.target);
-        const inst = instrument ? instrument : musicState.currentInstrument;
+        const inst = (instrument !== undefined && instrument !== null) ? instrument : musicState.currentInstrument;
         const instrumentInfo = this.INSTRUMENT_INFO[inst];
         const sampleArray = instrumentInfo.samples;
         const sampleIndex = this._selectSampleIndexForNote(note, sampleArray);
