@@ -230,18 +230,6 @@ class Scratch3MusicCreation {
                     }
                 },
                 {
-                    opcode: 'setVolumeForBelow',
-                    blockType: BlockType.COMMAND,
-                    text: 'set volume for below blocks to [VOLUME]',
-                    arguments: {
-                        VOLUME: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 60,
-                            menu: "VOLUME"
-                        }
-                    }
-                },
-                {
                     opcode: 'setVolume',
                     blockType: BlockType.COMMAND,
                     text: 'set volume to [VOLUME]',
@@ -254,18 +242,14 @@ class Scratch3MusicCreation {
                     }
                 },
                 {
-                    opcode: 'playNote',
+                    opcode: 'setVolumeForBelow',
                     blockType: BlockType.COMMAND,
-                    text: 'play note [NOTE] for [SECS] beats',
+                    text: 'set volume for below blocks to [VOLUME]',
                     arguments: {
-                        NOTE: {
-                            type: ArgumentType.NOTE,
-                            defaultValue: 60
-                        },
-                        SECS: {
+                        VOLUME: {
                             type: ArgumentType.NUMBER,
-                            defaultValue: 0.25,
-                            menu: "BEATS"
+                            defaultValue: 60,
+                            menu: "VOLUME"
                         }
                     }
                 },
@@ -286,6 +270,22 @@ class Scratch3MusicCreation {
                         description: 'get the current instrument'
                     }),
                     blockType: BlockType.REPORTER
+                },
+                {
+                    opcode: 'playNote',
+                    blockType: BlockType.COMMAND,
+                    text: 'play note [NOTE] for [SECS] beats',
+                    arguments: {
+                        NOTE: {
+                            type: ArgumentType.NOTE,
+                            defaultValue: 60
+                        },
+                        SECS: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0.25,
+                            menu: "BEATS"
+                        }
+                    }
                 },
                 {
                     opcode: 'testMagentaRNN',
@@ -314,54 +314,6 @@ class Scratch3MusicCreation {
                         description: 'test Magenta MVAE'
                     }),
                     blockType: BlockType.COMMAND
-                },
-                {
-                    opcode: 'testSheetMusicViz',
-                    text: formatMessage({
-                        id: 'musiccreation.testSheetMusicViz',
-                        default: 'display sheet music',
-                        description: 'test sheet music viz'
-                    }),
-                    blockType: BlockType.COMMAND
-                },
-                {
-                    opcode: 'testWaveformViz',
-                    text: formatMessage({
-                        id: 'musiccreation.testWaveformViz',
-                        default: 'display waveform',
-                        description: 'test waveform viz'
-                    }),
-                    blockType: BlockType.COMMAND
-                },
-                {
-                    opcode: 'testFreqViz',
-                    text: formatMessage({
-                        id: 'musiccreation.testFreqViz',
-                        default: 'display frequencies',
-                        description: 'test frequency viz'
-                    }),
-                    blockType: BlockType.COMMAND
-                },
-                {
-                    opcode: 'testSpectViz',
-                    text: formatMessage({
-                        id: 'musiccreation.testSpectViz',
-                        default: 'display frequencies over time',
-                        description: 'test frequency over time viz'
-                    }),
-                    blockType: BlockType.COMMAND
-                },
-                {
-                    opcode: 'visualize',
-                    blockType: BlockType.COMMAND,
-                    text: 'display [FORMAT]',
-                    arguments: {
-                        FORMAT: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 1,
-                            menu: "FORMAT"
-                        }
-                    }
                 },
                 {
                     opcode: 'toggleVisMode',
@@ -504,46 +456,8 @@ class Scratch3MusicCreation {
         this.vizHelper.requestViz(null,util);
     }
 
-    testWaveformViz(args, util) {
-        this.totalNoteList = this.noteList.concat(this.magentaNoteList);
-        this.vizHelper.testWaveformViz(this.totalNoteList, args, util);
-    }
-
     toggleVisMode(args, util) {
         this.vizHelper.toggleVisMode(args, util);
-    }
-
-    testSheetMusicViz(args, util) {
-        this.totalNoteList = this.noteList.concat(this.magentaNoteList);
-        this.vizHelper.testSheetMusicViz(this.totalNoteList, args, util);
-    }
-
-    testFreqViz(args, util) {
-        this.totalNoteList = this.noteList.concat(this.magentaNoteList);
-        this.vizHelper.testFreqViz(this.totalNoteList, args, util);
-    }
-
-    testSpectViz(args, util) {
-        this.totalNoteList = this.noteList.concat(this.magentaNoteList);
-        this.vizHelper.testSpectViz(this.totalNoteList, args, util);
-    }
-
-    visualize(args, util) {
-        var disp_type = Cast.toNumber(args.FORMAT);
-        switch (disp_type) {
-            case 2:
-                this.testWaveformViz(args, util)
-                break;
-            case 3:
-                this.testFreqViz(args, util)
-                break;
-            case 4:
-                this.testSpectViz(args, util)
-                break;
-            default:
-                this.testSheetMusicViz(args, util)
-                break;
-        }
     }
 
     /**
