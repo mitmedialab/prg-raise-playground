@@ -61,7 +61,7 @@ class MusicAccompanimentHelpers {
         let elapsedTime = 0;
         const notes = noteList.map(([pitch, duration]) => {
             const startTime = elapsedTime;
-            elapsedTime = startTime + duration;
+            elapsedTime = startTime + parseFloat(duration);
             return {pitch, startTime, endTime: elapsedTime};
         });
         
