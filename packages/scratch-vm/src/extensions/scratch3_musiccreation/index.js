@@ -574,6 +574,7 @@ class Scratch3MusicCreation {
         this.wavenoteList = [];
         this.magentaNoteList = [];
         this.vizHelper.clearNoteBuffers();
+        this.vizHelper.requestViz(null,util);
     }
 
     testWaveformViz(args, util) {
