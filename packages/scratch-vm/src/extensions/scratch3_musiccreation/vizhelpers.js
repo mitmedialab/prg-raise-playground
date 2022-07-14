@@ -208,8 +208,7 @@ class VizHelpers {
      */
     requestViz (note, util) {
         if (this._visState['status']) {
-            const [freq, duration, instrument, volume] = note;
-            this.processViz([freq, parseFloat(duration), instrument, volume],util);
+            this.processViz(note, util);
         }
     }
 

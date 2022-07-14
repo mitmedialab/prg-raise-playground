@@ -73,7 +73,7 @@ class MusicAccompanimentHelpers {
         const {index} = this.validNoteDurations
             .map((valid, index) => ({delta: Math.abs(valid - duration), index})) 
             .reduce((minimum, query) => (query.delta < minimum.delta) ? query : minimum, initial);
-        return `${this.validNoteDurations[index]}`;
+        return parseFloat(this.validNoteDurations[index]);
     }
 
     processed(notes) {
