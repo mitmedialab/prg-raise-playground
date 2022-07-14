@@ -16,7 +16,7 @@ const regeneratorRuntime = require("regenerator-runtime"); //do not delete
 const { generateXMLForBlockChunk } = require('../../extension-support/xml-builder');
 const { internalIDKey, getTopBlockID, addTopBlockModifier, getTopBlockModifier } = require('../../extension-support/block-relationships');
 
-const givenBeatValues = ["1/4", "1/2", "1", "2", "3", "4", "8", "16"];
+const givenBeatValues = ["1/4", "1/2", "1", "2", "3", "4", "8"];
 const instrumentModifierKey = 'instrument';
 const volumeModifierKey = 'volume';
 

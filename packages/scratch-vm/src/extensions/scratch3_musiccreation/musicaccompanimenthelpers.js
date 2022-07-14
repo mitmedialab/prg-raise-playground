@@ -58,81 +58,48 @@ class MusicAccompanimentHelpers {
     }
 
     configure(noteList) {
-        newNotes = {
-            notes: [
-
-            ],
-            totalTime: 0
-        };
-        t = 0;
-        for (var i in noteList) {
-            note = noteList[i];
-            newNotes.notes.push({pitch: note[0], startTime: t, endTime: t + note[1]});
-            t = t + note[1];
-            newNotes.totalTime += note[1];
-        }
-        return newNotes;
+        let elapsedTime = 0;
+        const notes = noteList.map(([pitch, duration]) => {
+            const startTime = elapsedTime;
+            elapsedTime = startTime + duration;
+            return {pitch, startTime, endTime: elapsedTime};
+        });
+        
+        return {notes, totalTime: elapsedTime};;
     }
 
     constrainDuration(duration) {
-        const {length} = this.validNoteDurations;
-        console.log(duration);
-        let previous;
-        for (let index = 0; index < length; index++) {
-            const element = this.validNoteDurations[index];
-            if (duration <= element) return previous && (duration - previous < element - duration) ? `${previous}` : `${element}`;
-            previous = element;
-        }
-        const last = this.validNoteDurations[length - 1]
-        return `${last}`;
+        const initial = {delta: Number.MAX_VALUE, index: -1};
+        const {index} = this.validNoteDurations
+            .map((valid, index) => ({delta: Math.abs(valid - duration), index})) 
+            .reduce((minimum, query) => (query.delta < minimum.delta) ? query : minimum, initial);
+        return `${this.validNoteDurations[index]}`;
     }
 
     processed(notes) {
-        newNoteList = [];
-        for (var i in notes) {
-            note = notes[i];
-            const duration = (note.quantizedEndStep - note.quantizedStartStep) / this.beatsPerSec;
-            newNoteList.push([note.pitch, this.constrainDuration(duration), "Piano", 60]);
-        }
-        return newNoteList;
+        return notes.map(note => {
+            const {quantizedStartStep, quantizedEndStep, pitch} = note;
+            const duration = (quantizedEndStep - quantizedStartStep) / this.beatsPerSec;
+            return [pitch, this.constrainDuration(duration), "Piano", 60];
+        });
     }
 
     async testMagentaRNN (noteList, args, utils) {
         notes = this.configure(noteList);
-
         rnn_steps = Cast.toNumber(args.STEPS);
         rnn_temperature = Cast.toNumber(args.TEMP);
               
         // The model expects a quantized sequence, and ours was unquantized:
         const qns = core.sequences.quantizeNoteSequence(notes, this.beatsPerSec);
-        var newNotes = [];
-        await music_rnn
-        .continueSequence(qns, rnn_steps, rnn_temperature)
-        .then((sample) => {
-            newNotes.push(sample);
-        });
-        const magentaN = async () => {
-            const a = await newNotes;
-            magentaNotes = this.processed(a[0].notes);
-            return magentaNotes;
-            };
-        magentaNotes = await magentaN();
+        const generated = await music_rnn.continueSequence(qns, rnn_steps, rnn_temperature);
+        magentaNotes = this.processed(generated.notes);
         return magentaNotes;
     }
 
     async testMagentaMVAE (utils) {
-        var vae_temperature = 3;
-        var samples = [];
-        await music_vae.sample(1, vae_temperature)
-        .then((sample) => {
-            samples.push(sample);
-        });
-        const magentaN = async () => {
-            const a = await samples;
-            magentaNotes = this.processed(a[0][0].notes);
-            return magentaNotes;
-          };
-        magentaNotes = await magentaN();
+        const vae_temperature = 3;
+        const generated = await music_vae.sample(1, vae_temperature)
+        magentaNotes = this.processed(generated[0].notes);
         return magentaNotes;
     }
 }

@@ -42,7 +42,6 @@ export const generateXMLForBlockChunk = (extension, runtime, opcodes, args) => {
 
   const builder = new XMLBuilder({ ...options, format: true });
   const xmlContent = builder.build(root);
-  console.log(xmlContent);
   return xmlContent;
 }
 
@@ -117,7 +116,6 @@ const validateBlockMap = (blockMap) => {
  * @param {*} args 
  */
 const applyArgs = (obj, args) => {
-  console.log(obj);
   for (const key in args) {
     const value = obj.block.value.find(o => o['@_name'] === key);
     if (value) {
