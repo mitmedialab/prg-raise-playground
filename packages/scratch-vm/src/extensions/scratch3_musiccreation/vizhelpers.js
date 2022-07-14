@@ -205,6 +205,10 @@ class VizHelpers {
         this._noteBuf['sheet'] = this._noteBuf['sheet'].slice(i);
     }
 
+    clearSheetMusicList() {
+        this._noteBuf['sheet'].length = 0;
+    }
+
     /**
      * 
      * @param {array} note - [freq, duration, instrument, volume]

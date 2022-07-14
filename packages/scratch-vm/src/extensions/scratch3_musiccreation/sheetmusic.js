@@ -561,7 +561,6 @@ class SheetMusic {
         } else {
             signal = this.convertSignalToMusicList(args, util);
         }
-        let seen = 0;
         for (i in signal) {
             log.log(signal[i]);
             note = signal[i][0];
@@ -579,17 +578,7 @@ class SheetMusic {
                 x = xinit+xStep;
                 y = y - this.spaceBetween-11*this.staffWidth;
             }
-            if (!(x > 180 && y < 0)) {
-                seen++;
-            } else {
-                signal = signal.slice(seen);
-                vizHelper.trimSheetMusicList(seen);
-                this.clear();
-                this.drawStaff(args, util);
-                this.labelStaff(args, util);
-                this.drawMusic(args,util,signal);
-                return;
-            }
+            
             if (beats%4 == 0 && beats != 0) {
                 this.drawMeasure(x, y, args, util);
             }
@@ -637,7 +626,10 @@ class SheetMusic {
             pastVol = volume;
         }
         this.penUp(args, util);
-        
+
+        if (x > 120 && y < 0) {
+            vizHelper.clearSheetMusicList();
+        }
     }
 
     addMultiLineTie(xmid, ymid, up, xstep, args, util) {
