@@ -208,7 +208,7 @@ class VizHelpers {
      */
     requestViz (note, util) {
         if (this._visState['status']) {
-            this.processViz(note,util);
+            this.processViz(note, util);
         }
     }
 
@@ -219,7 +219,7 @@ class VizHelpers {
      *                                                      otherwise, [note,duration,instrument name, volume] 
      * @param {BlockUtility} util 
      */
-    processViz (note,util) {
+    processViz (note,util) { 
         const mode = this._visState['mode'];
         const name = this._visNames[mode];
         const lim = this._visLims[name];

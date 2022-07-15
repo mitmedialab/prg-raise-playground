@@ -377,6 +377,8 @@ class Blocks extends React.Component {
             if (error.message) {
                 error.message = `Workspace Update Error: ${error.message}`;
             }
+            console.log('The erroneous dom:',dom);
+            alert('Error encountered. Please save your project and reload the page.');
             log.error(error);
         }
         this.workspace.addChangeListener(this.props.vm.blockListener);

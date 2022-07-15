@@ -562,11 +562,9 @@ class MusicCreationHelpers {
 
         // Schedule the release of the note, ramping its gain down to zero,
         // and then stopping the sound.
-        let releaseDuration = instInfo.releaseTime;
-        if (typeof releaseDuration === 'undefined') {
-            releaseDuration = 0.01;
-        }
-        const releaseStart = context.currentTime + durationSec;
+        const releaseRatio = instInfo.releaseTime ? instInfo.releaseTime : 0.1;
+        const releaseDuration = durationSec * releaseRatio;
+        const releaseStart = context.currentTime + durationSec * (1 - releaseRatio);
         const releaseEnd = releaseStart + releaseDuration;
         releaseGain.gain.setValueAtTime(1, releaseStart);
         releaseGain.gain.linearRampToValueAtTime(0.0001, releaseEnd);

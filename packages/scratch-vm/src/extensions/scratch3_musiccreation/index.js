@@ -13,18 +13,25 @@ const AnalysisHelpers = require('./analysishelpers');
 const MusicPlayers = require('./musicplayer')
 const textRender = require('./textrender');
 const regeneratorRuntime = require("regenerator-runtime"); //do not delete
+const { generateXMLForBlockChunk } = require('../../extension-support/xml-builder');
 const { internalIDKey, getTopBlockID, addTopBlockModifier, getTopBlockModifier } = require('../../extension-support/block-relationships');
 
+const givenBeatValues = ["1/4", "1/2", "1", "2", "3", "4", "8"];
 const instrumentModifierKey = 'instrument';
 const volumeModifierKey = 'volume';
 
 class Scratch3MusicCreation {
     constructor(runtime) {
         this.runtime = runtime;
+        this.beats = givenBeatValues.map(this.beatsToSecs);
+
+
         this.musicPlayer = new MusicPlayers(runtime);
         this.vizHelper = new VizHelpers(runtime);
         this.musicCreationHelper = new MusicCreationHelpers(runtime);
-        this.musicAccompanimentHelper = new MusicAccompanimentHelpers(runtime);
+        const validNoteDurations = this.beats.map(item => parseFloat(item.value));
+        const beatsPerSec = Scratch3MusicCreation.beatPerSec();
+        this.musicAccompanimentHelper = new MusicAccompanimentHelpers(runtime, validNoteDurations, beatsPerSec);
         this.analysisHelper = new AnalysisHelpers(runtime);
 
         this.noteList = [];
@@ -37,13 +44,6 @@ class Scratch3MusicCreation {
         { text: "mezzo-forte", value: '60' },
         { text: "forte", value: '85' },
         { text: "fortissimo", value: '100' }];
-
-        this.beats = [{ text: "1/4", value: '0.0625' },
-        { text: "1/2", value: '0.125' },
-        { text: "1", value: '0.25' },
-        { text: "2", value: '0.5' },
-        { text: "3", value: '0.75' },
-        { text: "4", value: '1' }];
 
         this.files = [{ text: "mystery 1", value: '1' },
         { text: "mystery 2", value: '2' },
@@ -194,6 +194,70 @@ class Scratch3MusicCreation {
         ];
     }
 
+    /**
+     * Converts a numeric decimal representation to its fractional form stored in a string
+     * @param {number} value 
+     * @returns {string}
+     */
+    static convertDecimalToFraction(value) {
+        const gcd = function (a, b) {
+            if (b < 0.0000001) return a;// Since there is a limited precision we need to limit the value.
+            return gcd(b, Math.floor(a % b));
+        };
+
+        const len = value.toString().length - 2;
+
+        let denominator = Math.pow(10, len);
+        let numerator = value * denominator;
+
+        const divisor = gcd(numerator, denominator);
+
+        numerator = Math.round(numerator / divisor);
+        denominator = Math.round(denominator / divisor);
+
+
+        return denominator === 1 ? `${numerator}` : `${numerator}/${denominator}`;
+    }
+
+    /**
+     * Convert a fraction stored in a string to it's numeric decimal form
+     * @param {string} value 
+     * @returns {number}
+     */
+    static convertFractionToDecimal(value) {
+        const parts = value.split("/");
+        if (parts.length === 1) return parseInt(parts);
+        return parseInt(parts[0], 10) / parseInt(parts[1], 10);
+    }
+
+    static beatPerSec() {
+        return 2;
+    };
+
+    /**
+     * Convert an amount of seconds into how many beats it is (assuming 4 beats per second)
+     * @param {number | string} beats 
+     * @param {number} beatPerSec
+     * @returns {{text: string, value: number | string }} text represents the calculated number of beats, while value is still in seconds 
+     */
+    beatsToSecs(beats) {
+        const ratio = Scratch3MusicCreation.beatPerSec();
+        const secs = (typeof beats === 'number' ? beats : Scratch3MusicCreation.convertFractionToDecimal(beats)) / ratio;
+        return { text: `${beats}`, value: `${secs}` };
+    }
+
+    /**
+     * Convert an amount of seconds into how many beats it is (assuming 4 beats per second)
+     * @param {number | string} secs 
+     * @param {number} beatPerSec
+     * @returns {{text: string, value: number | string }} text represents the calculated number of beats, while value is still in seconds 
+     */
+    secsToBeats(secs) {
+        const ratio = Scratch3MusicCreation.beatPerSec();
+        const beats = (typeof secs === 'number' ? secs : parseFloat(secs)) * ratio;
+        return { text: Scratch3MusicCreation.convertDecimalToFraction(beats), value: secs };
+    };
+
 
     getInfo() {
         return {
@@ -312,6 +376,15 @@ class Scratch3MusicCreation {
                         id: 'musiccreation.testMagentaMVAE',
                         default: 'generate new music',
                         description: 'test Magenta MVAE'
+                    }),
+                    blockType: BlockType.COMMAND
+                },
+                {
+                    opcode: 'createNotesMVAE',
+                    text: formatMessage({
+                        id: 'musiccreation.createNotesMVAE',
+                        default: 'add new music blocks',
+                        description: 'create notes Magenta MVAE'
                     }),
                     blockType: BlockType.COMMAND
                 },
@@ -629,9 +702,10 @@ class Scratch3MusicCreation {
      * @param {array} args - arguments to be given to the music helper
      * @param {BlockUtility} utils
      * @param {number} inst - instrument to play on, represented as a number
+     * @param {function({mutation: any; NOTE: string; SECS: string;}[]): void} processNotes A callback function invoked with the generated notes as an argument
      * @private 
      */
-    async _getAndPlayMagentaNotes(RNN, args, utils, inst, vol) {
+    async _getAndPlayMagentaNotes(RNN, args, utils, inst, vol, processNotes) {
         let magenta_notes = null;
         let valid = true;
         if (RNN) {
@@ -650,6 +724,7 @@ class Scratch3MusicCreation {
             const prepared_notes = this._prepare(magenta_notes);
             this.magentaNoteList = prepared_notes['notes'];
             this.musicCreationHelper.playNotes(prepared_notes, utils, inst,vol,this.vizHelper); 
+            if (processNotes) processNotes(prepared_notes.args);
         } else utils.stackFrame.duration = 0;
     }
     
@@ -669,16 +744,17 @@ class Scratch3MusicCreation {
      * play it. 
      * @param {boolean} RNN - true if 'complete music', false if 'generate new music'
      * @param {array} args - arguments to be given to the music helper
-     * @param {BlockUtility} util
+     * @param {BlockUtility} utils
+     * @param {function(any[][]): void} processNotes
      */
-    getAndPlayMagentaNotes(RNN, args, util) {
+    getAndPlayMagentaNotes(RNN, args, util, processNotes) {
         const inst = this.getInstrumentForBlock(args[internalIDKey], util);
         const vol = this.getVolumeForBlock(args[internalIDKey], util);
         if (util.stackTimerNeedsInit()) {
             // get timer running for a large amount of time (will be handled)
             util.startStackTimer(Number.MAX_SAFE_INTEGER);
             util.yield();
-            this._getAndPlayMagentaNotes(RNN, args, util, inst, vol);
+            this._getAndPlayMagentaNotes(RNN, args, util, inst, vol, processNotes);
         }
         else if (!util.stackTimerFinished()) {
             util.yield();
@@ -705,6 +781,27 @@ class Scratch3MusicCreation {
         this.getAndPlayMagentaNotes(false, args, utils);
     }
 
+    /**
+     *  
+     * current instrument. 
+     * @param {array} args - array of magenta notes [freq,duration,inst,?] 
+     * @param {BlockUtility} utils 
+     */
+    createNotesMVAE(args, utils) {
+        const { runtime } = utils
+        this.getAndPlayMagentaNotes(false, args, utils, (notes) => {
+            // convert the notes into arguments for the play note blocks
+            // TODO: Dolev, is this correct? Could this be leading to play duration errors?
+            const blockArgs = notes.map(note => {
+                const { NOTE, SECS } = note;
+                return { NOTE, SECS: `${SECS}` };
+            });
+            const opcodes = blockArgs.map(_ => 'playNote');
+            const xml = generateXMLForBlockChunk(this, runtime, opcodes, blockArgs);
+            runtime.addBlocksToWorkspace(xml);
+        });
+    }
+
     getInstrument(util) {
         return this.musicCreationHelper.getInstrument(util);
     }
@@ -726,6 +823,7 @@ class Scratch3MusicCreation {
      * @param {object} args - the block arguments.
      * @param {BlockUtility} util - the block utility.
      * @property {number} TEMPO - the tempo, in beats per minute.
+     * @param {BlockUtility} util
      */
     setVolume(args, util) {
         const volume = Cast.toNumber(args.VOLUME);
