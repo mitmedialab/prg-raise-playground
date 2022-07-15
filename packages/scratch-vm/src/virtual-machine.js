@@ -1632,7 +1632,6 @@ class VirtualMachine extends EventEmitter {
         const workspaceXml = this.getWorkspaceXML().split(/\n/);
         workspaceXml.splice(workspaceXml.length - 1, 0, newBlocksXML.split(/\n/));
         const updated = workspaceXml.join('\r\n');
-        console.log(updated);
         this.emit('workspaceUpdate', { xml: updated });
     }
 
