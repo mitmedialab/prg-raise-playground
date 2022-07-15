@@ -201,9 +201,6 @@ class VizHelpers {
         }
     }
 
-    trimSheetMusicList(i) {
-        this._noteBuf['sheet'] = this._noteBuf['sheet'].slice(i);
-    }
 
     clearSheetMusicList() {
         this._noteBuf['sheet'].length = 0;
