@@ -350,7 +350,7 @@ class SheetMusic {
         this.clear();
         this.drawStaff(args, util);
         this.labelStaff(args, util);
-        this.drawMusic(args, util,undefined,vizhelper);
+        this.drawMusic(args, util, vizhelper);
     }
 
     labelStaff (args, util) {
@@ -548,19 +548,15 @@ class SheetMusic {
         this.penUp(args, util);
     }
 
-    drawMusic(args, util, sig, vizHelper) {
+    drawMusic(args, util, vizHelper) {
         var xinit = this.staffStartX+40;
         var x = xinit;
         var y = this.staffStartY;
         var xStep = 45;
         var pastVol = 0;
         var beats = 0;
-        var signal = null;
-        if (sig) {
-            signal = sig;
-        } else {
-            signal = this.convertSignalToMusicList(args, util);
-        }
+        var signal = this.convertSignalToMusicList(args, util);
+
         for (i in signal) {
             log.log(signal[i]);
             note = signal[i][0];
