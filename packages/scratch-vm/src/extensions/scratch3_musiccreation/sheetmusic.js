@@ -27,7 +27,15 @@ class SheetMusic {
          */
         this._penDrawableId = -1;
         this.black = '0x000000';
+        this.purple = '0x800080';
+        this.lightpurple = '0xCBC3E3';
+        this.lightblue = '0x99ccff';
 
+        /**
+         * @type {Array<[number,number,string,number,number]} 
+         * 
+         * noteList[i] is [note frequency, duration, instrument name, volume, id]
+         */
         this.noteList = [];
 
         this.axisStartX = -200;
@@ -351,6 +359,7 @@ class SheetMusic {
         this.drawStaff(args, util);
         this.labelStaff(args, util);
         this.drawMusic(args, util, vizhelper);
+        this.setPenColorToColor(this.black, util);
     }
 
     labelStaff (args, util) {
@@ -563,6 +572,7 @@ class SheetMusic {
             duration = signal[i][1];
             volume = signal[i][2];
             acc = signal[i][4];
+            adjusted = signal[i][6];
             beats += duration;
             if (note <= 3) {
                 up = true;
@@ -580,6 +590,13 @@ class SheetMusic {
             }
             ymidTreble = y+note*this.staffWidth/2;
             ymidBass = y+note*this.staffWidth/2 - this.spaceBetween;
+            
+            if (adjusted) {
+                this.setPenColorToColor(this.purple,util);
+            } else {
+                this.setPenColorToColor(this.black,util);
+            }
+
             if (signal[i][3] == 'treble') {
                 ymid = ymidTreble;
                 xmid = x - 8;
@@ -626,6 +643,7 @@ class SheetMusic {
         if (x > 120 && y < 0) {
             vizHelper.clearSheetMusicList();
         }
+        this.setPenColorToColor(this.black,util);
     }
 
     addMultiLineTie(xmid, ymid, up, xstep, args, util) {
@@ -912,8 +930,11 @@ class SheetMusic {
                 acc = "flat";
             }
 
+            let adjusted = false;
+
             if (freq >= 60) {
                 if (freq > this._staffLims['hi_note']) {
+                    adjusted = true;
                     console.log(`adjusting (treble) ${freq} to ${this._staffLims['hi_note']}`);
                     freq = this._staffLims['hi_note'];
                 } 
@@ -923,6 +944,7 @@ class SheetMusic {
                 var clef = "treble";
             } else {
                 if (freq === undefined || freq < this._staffBaseLims['lo_note']) {
+                    adjusted = true;
                     console.log(`adjusting (bass) ${freq} to ${this._staffBaseLims['lo_note']}`);
                     freq = this._staffBaseLims['lo_note'];
                 }
@@ -934,14 +956,14 @@ class SheetMusic {
             var newBeats = 0;
             if (beats + dur == 4) {
                 newBeats = 0;
-                signal.push([staff, dur, amp, clef, acc, ""]);
+                signal.push([staff, dur, amp, clef, acc, "",adjusted]);
             } else if (beats + dur > 4) {
-                signal.push([staff, 4-beats, amp, clef, acc, "tie"]);
-                signal.push([staff, dur-(4-beats), amp, clef, acc, ""]);
+                signal.push([staff, 4-beats, amp, clef, acc, "tie",adjusted]);
+                signal.push([staff, dur-(4-beats), amp, clef, acc, "",adjusted]);
                 newBeats = dur-(4-beats);
             } else {
                 newBeats = beats + dur;
-                signal.push([staff, dur, amp, clef, acc, ""]);
+                signal.push([staff, dur, amp, clef, acc, "",adjusted]);
             }
             beats = newBeats;
 
