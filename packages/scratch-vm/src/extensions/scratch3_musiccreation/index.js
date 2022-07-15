@@ -636,7 +636,7 @@ class Scratch3MusicCreation {
      * @property {int} INSTRUMENT - the number of the instrument to select.
      */
     setInstrumentForBelow(args, util) {
-        addTopBlockModifier(util, args[internalIDKey], instrumentModifierKey, Cast.toNumber(args.INSTRUMENT));
+        addTopBlockModifier(util, args[internalIDKey], instrumentModifierKey, Cast.toNumber(args.INSTRUMENT) - 1); // instruments are one-indexed
     }
 
     setVolumeForBelow(args, util) {
