@@ -22,7 +22,7 @@ const _drive = ["forward", "backward", "left", "right"];
 const _turns = ["left", "right"];
 
 const _pen_dirs = ["up", "down"];
-const _pen_protocol = ["20", "0"];
+const _pen_protocol = ["35", "10"];
 
 const _bumpers = ["front", "back", "front or back", "front bumper and back", "neither"];
 
@@ -1145,10 +1145,10 @@ class DoodlebotBlocks {
         if (args.ANIM == "happy") {
             const happy_pause = 250;
             // Bounce the pen twice to indicate joy
-            await this.sendCommandToRobot("(u,20)", happy_pause);
-            await this.sendCommandToRobot("(u,0)", happy_pause);
-            await this.sendCommandToRobot("(u,20)", happy_pause);
-            await this.sendCommandToRobot("(u,0)", happy_pause);
+            await this.sendCommandToRobot("(u,35)", happy_pause);
+            await this.sendCommandToRobot("(u,10)", happy_pause);
+            await this.sendCommandToRobot("(u,35)", happy_pause);
+            await this.sendCommandToRobot("(u,10)", happy_pause);
         }
 
         // start blinking
