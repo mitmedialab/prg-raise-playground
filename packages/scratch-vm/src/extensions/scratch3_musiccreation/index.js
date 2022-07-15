@@ -742,8 +742,8 @@ class Scratch3MusicCreation {
         if (valid) {
             const prepared_notes = this._prepare(magenta_notes);
             this.magentaNoteList = prepared_notes['notes'];
-            this.musicCreationHelper.playNotes(prepared_notes, utils, inst, vol, this.vizHelper); 
             if (processNotes) processNotes(prepared_notes.args);
+            this.musicCreationHelper.playNotes(prepared_notes, utils, inst, vol, this.vizHelper); 
         } else utils.stackFrame.duration = 0;
     }
     
