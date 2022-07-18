@@ -9,7 +9,6 @@ const log = require('../../util/log');
 const VizHelpers = require('./vizhelpers');
 const MusicCreationHelpers = require('./musiccreationhelpers');
 const MusicAccompanimentHelpers = require('./musicaccompanimenthelpers');
-const AnalysisHelpers = require('./analysishelpers');
 const MusicPlayers = require('./musicplayer')
 const textRender = require('./textrender');
 const regeneratorRuntime = require("regenerator-runtime"); //do not delete
@@ -25,7 +24,6 @@ class Scratch3MusicCreation {
         this.vizHelper = new VizHelpers(runtime);
         this.musicCreationHelper = new MusicCreationHelpers(runtime);
         this.musicAccompanimentHelper = new MusicAccompanimentHelpers(runtime);
-        this.analysisHelper = new AnalysisHelpers(runtime);
 
         this.noteList = [];
         this.wavenoteList = [];
@@ -331,88 +329,7 @@ class Scratch3MusicCreation {
                             menu: "FORMAT"
                         }
                     }
-                },
-                {
-                    opcode: 'playMystery',
-                    blockType: BlockType.COMMAND,
-                    text: 'play [FILE]',
-                    arguments: {
-                        FILE: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 1,
-                            menu: "FILES"
-                        }
-                    },
-                },
-                {
-                    opcode: 'compareFiles',
-                    blockType: BlockType.COMMAND,
-                    text: 'compare [FILE1] and [FILE2]',
-                    arguments: {
-                        FILE1: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 1,
-                            menu: "FILES"
-                        },
-                        FILE2: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 2,
-                            menu: "FILES"
-                        },
-                    },
-                },
-                {
-                    opcode: 'getLouder',
-                    text: formatMessage({
-                        id: 'musiccreation.getLouder',
-                        default: 'louder',
-                        description: 'get the current louder note'
-                    }),
-                    blockType: BlockType.REPORTER
-                },
-                {
-                    opcode: 'getHigher',
-                    text: formatMessage({
-                        id: 'musiccreation.getHigher',
-                        default: 'higher',
-                        description: 'get the current higher note'
-                    }),
-                    blockType: BlockType.REPORTER
-                },
-                {
-                    opcode: 'getInst1',
-                    text: formatMessage({
-                        id: 'musiccreation.getInst1',
-                        default: 'instrument 1',
-                        description: 'get the current instrument 1'
-                    }),
-                    blockType: BlockType.REPORTER
-                },
-                {
-                    opcode: 'getInst2',
-                    text: formatMessage({
-                        id: 'musiccreation.getInst2',
-                        default: 'instrument 2',
-                        description: 'get the current instrument 2'
-                    }),
-                    blockType: BlockType.REPORTER
-                },
-                {
-                    opcode: 'setText',
-                    text: formatMessage({
-                        id: 'musiccreation.setText',
-                        default: 'show text [TEXT]',
-                        description: ''
-                    }),
-                    blockType: BlockType.COMMAND,
-                    arguments: {
-                        TEXT: {
-                            type: ArgumentType.STRING,
-                            defaultValue: "DEFAULT"
-                        }
-                    }
                 }
-
             ],
             menus: {
                 VOLUME: {
@@ -442,10 +359,6 @@ class Scratch3MusicCreation {
 
             }
         };
-    }
-
-    setText(args, util) {
-        this.textRenderer.say(args.TEXT, args, util);
     }
 
     resetMusic(args, util) {
@@ -661,32 +574,6 @@ class Scratch3MusicCreation {
             this.wavenoteList.push(toAdd);
         }
     }
-
-    playMystery(args, util) {
-        this.analysisHelper.playFile(args, util);
-    }
-
-    compareFiles(args, util) {
-        this.analysisHelper.compareFiles(args, util);
-    }
-
-    getLouder(util) {
-        return this.analysisHelper.getLouder(util);
-    }
-
-    getHigher(util) {
-        return this.analysisHelper.getHigher(util);
-    }
-
-    getInst1(util) {
-        return this.analysisHelper.getInst1(util);
-    }
-
-    getInst2(util) {
-        return this.analysisHelper.getInst2(util);
-    }
-
-
 }
 
 module.exports = Scratch3MusicCreation;
