@@ -472,8 +472,7 @@ class MusicCreationHelpers {
         util.sequencer.runtime.once('PROJECT_STOP_ALL', () => {
             this._stopped = true;
             player.stopImmediately();
-            if ((last || this._stopped) && util.thread !== null
-            && util.thread.peekStackFrame()) util.stackFrame.duration = 0;
+            if (util.thread !== null && util.thread.peekStackFrame()) util.stackFrame.duration = 0;
             return;
         });
         player.once('stop', () => {
