@@ -9,7 +9,6 @@ const log = require('../../util/log');
 const VizHelpers = require('./vizhelpers');
 const MusicCreationHelpers = require('./musiccreationhelpers');
 const MusicAccompanimentHelpers = require('./musicaccompanimenthelpers');
-const AnalysisHelpers = require('./analysishelpers');
 const MusicPlayers = require('./musicplayer')
 const textRender = require('./textrender');
 const regeneratorRuntime = require("regenerator-runtime"); //do not delete
@@ -33,7 +32,6 @@ class Scratch3MusicCreation {
         const validNoteDurations = this.beats.map(item => parseFloat(item.value));
         const beatsPerSec = Scratch3MusicCreation.beatPerSec();
         this.musicAccompanimentHelper = new MusicAccompanimentHelpers(runtime, validNoteDurations, beatsPerSec);
-        this.analysisHelper = new AnalysisHelpers(runtime);
 
         this.noteList = [];
         this.wavenoteList = [];
@@ -294,18 +292,6 @@ class Scratch3MusicCreation {
                     }
                 },
                 {
-                    opcode: 'setVolumeForBelow',
-                    blockType: BlockType.COMMAND,
-                    text: 'set volume for below blocks to [VOLUME]',
-                    arguments: {
-                        VOLUME: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 60,
-                            menu: "VOLUME"
-                        }
-                    }
-                },
-                {
                     opcode: 'setVolume',
                     blockType: BlockType.COMMAND,
                     text: 'set volume to [VOLUME]',
@@ -318,18 +304,14 @@ class Scratch3MusicCreation {
                     }
                 },
                 {
-                    opcode: 'playNote',
+                    opcode: 'setVolumeForBelow',
                     blockType: BlockType.COMMAND,
-                    text: 'play note [NOTE] for [SECS] beats',
+                    text: 'set volume for below blocks to [VOLUME]',
                     arguments: {
-                        NOTE: {
-                            type: ArgumentType.NOTE,
-                            defaultValue: 60
-                        },
-                        SECS: {
+                        VOLUME: {
                             type: ArgumentType.NUMBER,
-                            defaultValue: 0.25,
-                            menu: "BEATS"
+                            defaultValue: 60,
+                            menu: "VOLUME"
                         }
                     }
                 },
@@ -350,6 +332,22 @@ class Scratch3MusicCreation {
                         description: 'get the current instrument'
                     }),
                     blockType: BlockType.REPORTER
+                },
+                {
+                    opcode: 'playNote',
+                    blockType: BlockType.COMMAND,
+                    text: 'play note [NOTE] for [SECS] beats',
+                    arguments: {
+                        NOTE: {
+                            type: ArgumentType.NOTE,
+                            defaultValue: 60
+                        },
+                        SECS: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0.25,
+                            menu: "BEATS"
+                        }
+                    }
                 },
                 {
                     opcode: 'testMagentaRNN',
@@ -408,54 +406,6 @@ class Scratch3MusicCreation {
                     blockType: BlockType.COMMAND
                 },
                 {
-                    opcode: 'testSheetMusicViz',
-                    text: formatMessage({
-                        id: 'musiccreation.testSheetMusicViz',
-                        default: 'display sheet music',
-                        description: 'test sheet music viz'
-                    }),
-                    blockType: BlockType.COMMAND
-                },
-                {
-                    opcode: 'testWaveformViz',
-                    text: formatMessage({
-                        id: 'musiccreation.testWaveformViz',
-                        default: 'display waveform',
-                        description: 'test waveform viz'
-                    }),
-                    blockType: BlockType.COMMAND
-                },
-                {
-                    opcode: 'testFreqViz',
-                    text: formatMessage({
-                        id: 'musiccreation.testFreqViz',
-                        default: 'display frequencies',
-                        description: 'test frequency viz'
-                    }),
-                    blockType: BlockType.COMMAND
-                },
-                {
-                    opcode: 'testSpectViz',
-                    text: formatMessage({
-                        id: 'musiccreation.testSpectViz',
-                        default: 'display frequencies over time',
-                        description: 'test frequency over time viz'
-                    }),
-                    blockType: BlockType.COMMAND
-                },
-                {
-                    opcode: 'visualize',
-                    blockType: BlockType.COMMAND,
-                    text: 'display [FORMAT]',
-                    arguments: {
-                        FORMAT: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 1,
-                            menu: "FORMAT"
-                        }
-                    }
-                },
-                {
                     opcode: 'toggleVisMode',
                     blockType: BlockType.COMMAND,
                     text: 'set visualization mode to [STATUS] with [FORMAT]',
@@ -471,88 +421,7 @@ class Scratch3MusicCreation {
                             menu: "FORMAT"
                         }
                     }
-                },
-                {
-                    opcode: 'playMystery',
-                    blockType: BlockType.COMMAND,
-                    text: 'play [FILE]',
-                    arguments: {
-                        FILE: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 1,
-                            menu: "FILES"
-                        }
-                    },
-                },
-                {
-                    opcode: 'compareFiles',
-                    blockType: BlockType.COMMAND,
-                    text: 'compare [FILE1] and [FILE2]',
-                    arguments: {
-                        FILE1: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 1,
-                            menu: "FILES"
-                        },
-                        FILE2: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 2,
-                            menu: "FILES"
-                        },
-                    },
-                },
-                {
-                    opcode: 'getLouder',
-                    text: formatMessage({
-                        id: 'musiccreation.getLouder',
-                        default: 'louder',
-                        description: 'get the current louder note'
-                    }),
-                    blockType: BlockType.REPORTER
-                },
-                {
-                    opcode: 'getHigher',
-                    text: formatMessage({
-                        id: 'musiccreation.getHigher',
-                        default: 'higher',
-                        description: 'get the current higher note'
-                    }),
-                    blockType: BlockType.REPORTER
-                },
-                {
-                    opcode: 'getInst1',
-                    text: formatMessage({
-                        id: 'musiccreation.getInst1',
-                        default: 'instrument 1',
-                        description: 'get the current instrument 1'
-                    }),
-                    blockType: BlockType.REPORTER
-                },
-                {
-                    opcode: 'getInst2',
-                    text: formatMessage({
-                        id: 'musiccreation.getInst2',
-                        default: 'instrument 2',
-                        description: 'get the current instrument 2'
-                    }),
-                    blockType: BlockType.REPORTER
-                },
-                {
-                    opcode: 'setText',
-                    text: formatMessage({
-                        id: 'musiccreation.setText',
-                        default: 'show text [TEXT]',
-                        description: ''
-                    }),
-                    blockType: BlockType.COMMAND,
-                    arguments: {
-                        TEXT: {
-                            type: ArgumentType.STRING,
-                            defaultValue: "DEFAULT"
-                        }
-                    }
                 }
-
             ],
             menus: {
                 VOLUME: {
@@ -584,10 +453,6 @@ class Scratch3MusicCreation {
         };
     }
 
-    setText(args, util) {
-        this.textRenderer.say(args.TEXT, args, util);
-    }
-
     resetMusic(args, util) {
         this.noteList = [];
         this.wavenoteList = [];
@@ -596,46 +461,8 @@ class Scratch3MusicCreation {
         this.vizHelper.requestViz(null,util);
     }
 
-    testWaveformViz(args, util) {
-        this.totalNoteList = this.noteList.concat(this.magentaNoteList);
-        this.vizHelper.testWaveformViz(this.totalNoteList, args, util);
-    }
-
     toggleVisMode(args, util) {
         this.vizHelper.toggleVisMode(args, util);
-    }
-
-    testSheetMusicViz(args, util) {
-        this.totalNoteList = this.noteList.concat(this.magentaNoteList);
-        this.vizHelper.testSheetMusicViz(this.totalNoteList, args, util);
-    }
-
-    testFreqViz(args, util) {
-        this.totalNoteList = this.noteList.concat(this.magentaNoteList);
-        this.vizHelper.testFreqViz(this.totalNoteList, args, util);
-    }
-
-    testSpectViz(args, util) {
-        this.totalNoteList = this.noteList.concat(this.magentaNoteList);
-        this.vizHelper.testSpectViz(this.totalNoteList, args, util);
-    }
-
-    visualize(args, util) {
-        var disp_type = Cast.toNumber(args.FORMAT);
-        switch (disp_type) {
-            case 2:
-                this.testWaveformViz(args, util)
-                break;
-            case 3:
-                this.testFreqViz(args, util)
-                break;
-            case 4:
-                this.testSpectViz(args, util)
-                break;
-            default:
-                this.testSheetMusicViz(args, util)
-                break;
-        }
     }
 
     /**
@@ -883,32 +710,6 @@ class Scratch3MusicCreation {
             this.wavenoteList.push(toAdd);
         }
     }
-
-    playMystery(args, util) {
-        this.analysisHelper.playFile(args, util);
-    }
-
-    compareFiles(args, util) {
-        this.analysisHelper.compareFiles(args, util);
-    }
-
-    getLouder(util) {
-        return this.analysisHelper.getLouder(util);
-    }
-
-    getHigher(util) {
-        return this.analysisHelper.getHigher(util);
-    }
-
-    getInst1(util) {
-        return this.analysisHelper.getInst1(util);
-    }
-
-    getInst2(util) {
-        return this.analysisHelper.getInst2(util);
-    }
-
-
 }
 
 module.exports = Scratch3MusicCreation;
