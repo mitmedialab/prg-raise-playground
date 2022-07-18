@@ -56,8 +56,8 @@ class Scratch3MusicCreation {
         { text: "frequencies", value: '3' },
         { text: "frequencies over time", value: '4' }];
 
-        this.createNotesRNNSettings = [{text: "include blocks for input notes", value: '1'},
-                                       {text: "exclude blocks for input notes", value: '0'}];
+        this.createNotesRNNSettings = [{text: "include", value: '1'},
+                                       {text: "exclude", value: '0'}];
 
         this._visStatus = [{ text: "off", value: '0' },
         { text: "on", value: '1' }];
@@ -375,7 +375,7 @@ class Scratch3MusicCreation {
                     opcode: 'createNotesRNN',
                     text: formatMessage({
                         id: 'musiccreation.createNotesRNN',
-                        default: 'complete & add new music blocks for [STEPS] [TEMP] [SETTING]',
+                        default: 'complete & add new music blocks for [STEPS] [TEMP] [SETTING] blocks for input notes',
                         description: 'create notes Magenta MVAE'
                     }),
                     blockType: BlockType.COMMAND,
