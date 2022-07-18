@@ -193,7 +193,16 @@ class VizHelpers {
         let status = Cast.toNumber(args.STATUS);
         let mode = Cast.toNumber(args.FORMAT);
         const status_bool = !!status;
+        if (!status_bool) this.clearAllViz();
         this._visState = { mode:mode, status:status_bool };
+    }
+
+    clearAllViz() {
+        this.fftViz.clear();
+        this.sheetMusicViz.clear();
+        this.spectrogramViz.clear();
+        this.waveformViz.clear();
+        this.clear();
     }
 
     clearNoteBuffers () {

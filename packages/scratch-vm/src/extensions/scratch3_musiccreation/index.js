@@ -463,6 +463,7 @@ class Scratch3MusicCreation {
 
     toggleVisMode(args, util) {
         this.vizHelper.toggleVisMode(args, util);
+        this.vizHelper.requestViz(null,util);
     }
 
     /**
