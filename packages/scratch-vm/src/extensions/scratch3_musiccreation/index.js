@@ -457,7 +457,7 @@ class Scratch3MusicCreation {
                     items: this._visStatus
                 },
                 SETTING: {
-                    acceptReporters: true,
+                    acceptReporters: false,
                     items: this.createNotesRNNSettings
                 }
 
