@@ -472,11 +472,13 @@ class MusicCreationHelpers {
         util.sequencer.runtime.once('PROJECT_STOP_ALL', () => {
             this._stopped = true;
             player.stopImmediately();
-            if (util.thread !== undefined && util.thread.peekStackFrame()) util.stackFrame.duration = 0;
+            if ((last || this._stopped) && util.thread !== null
+            && util.thread.peekStackFrame()) util.stackFrame.duration = 0;
             return;
         });
         player.once('stop', () => {
-            if (last || this._stopped) {
+            if (last || this._stopped && util.thread !== null
+                && util.thread.peekStackFrame()) {
                 util.stackFrame.duration = 0;
             } else {
                 this._playNoteFromSeq(seq[i + 1], seq, util, l, inst, vol, vizHelper, raw_notes);
