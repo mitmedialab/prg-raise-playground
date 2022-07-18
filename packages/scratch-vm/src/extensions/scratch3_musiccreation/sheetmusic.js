@@ -586,6 +586,7 @@ class SheetMusic {
             }
             
             if (beats%4 == 0 && beats != 0) {
+                this.setPenColorToColor(this.black,util);
                 this.drawMeasure(x, y, args, util);
             }
             ymidTreble = y+note*this.staffWidth/2;
@@ -643,7 +644,6 @@ class SheetMusic {
         if (x > 120 && y < 0) {
             vizHelper.clearSheetMusicList();
         }
-        this.setPenColorToColor(this.black,util);
     }
 
     addMultiLineTie(xmid, ymid, up, xstep, args, util) {
