@@ -476,8 +476,7 @@ class MusicCreationHelpers {
             return;
         });
         player.once('stop', () => {
-            if (last || this._stopped && util.thread !== null
-                && util.thread.peekStackFrame()) {
+            if ((last || this._stopped) && util.thread && util.thread.peekStackFrame()) {
                 util.stackFrame.duration = 0;
             } else {
                 this._playNoteFromSeq(seq[i + 1], seq, util, l, inst, vol, vizHelper, raw_notes);
