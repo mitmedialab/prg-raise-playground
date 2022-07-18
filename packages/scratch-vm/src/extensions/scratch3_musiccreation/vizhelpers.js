@@ -22,8 +22,8 @@ class VizHelpers {
         this._visState = {status: false, mode: undefined};
         this._noteBuf = {sheet: [], wave: [], freq: [], freqs: []};
         this._visNames = {1: 'sheet', 2: 'wave', 3: 'freq', 4: 'freqs'};
-        this._visLims = {'sheet': 11, 'wave': 5, 'freq': 15, 'freqs': 15};
-        this._continuousScroll = {'sheet': true, 'wave': true, 'freq': false, 'freqs': true};
+        this._visLims = {'sheet': 50, 'wave': 5, 'freq': 15, 'freqs': 15};
+        this._continuousScroll = {'sheet': false, 'wave': true, 'freq': false, 'freqs': true};
 
         /**
          * The ID of the renderer Skin corresponding to the pen layer.
@@ -202,13 +202,18 @@ class VizHelpers {
         }
     }
 
+
+    clearSheetMusicList() {
+        this._noteBuf['sheet'].length = 0;
+    }
+
     /**
      * 
      * @param {array} note - [freq, duration, instrument, volume]
      */
     requestViz (note, util) {
         if (this._visState['status']) {
-            this.processViz(note,util);
+            this.processViz(note, util);
         }
     }
 
@@ -219,7 +224,7 @@ class VizHelpers {
      *                                                      otherwise, [note,duration,instrument name, volume] 
      * @param {BlockUtility} util 
      */
-    processViz (note,util) {
+    processViz (note,util) { 
         const mode = this._visState['mode'];
         const name = this._visNames[mode];
         const lim = this._visLims[name];
@@ -270,7 +275,7 @@ class VizHelpers {
         this.spectrogramViz.clear();
         this.waveformViz.clear();
         log.log("VIZ", noteList);
-        this.sheetMusicViz.testSheetMusicViz(noteList, args, util);
+        this.sheetMusicViz.testSheetMusicViz(noteList, args, util, this);
     }
 
     testFreqViz (noteList, args, util) {
