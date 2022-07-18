@@ -375,7 +375,7 @@ class Scratch3MusicCreation {
                     opcode: 'createNotesRNN',
                     text: formatMessage({
                         id: 'musiccreation.createNotesRNN',
-                        default: 'complete & add new music blocks for [STEPS] [TEMP] [SETTING] blocks for input notes',
+                        default: 'complete & add blocks for [STEPS] steps, [TEMP] temp., and [SETTING] blocks for input notes',
                         description: 'create notes Magenta MVAE'
                     }),
                     blockType: BlockType.COMMAND,
