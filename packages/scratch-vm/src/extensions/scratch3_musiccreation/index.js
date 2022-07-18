@@ -56,6 +56,9 @@ class Scratch3MusicCreation {
         { text: "frequencies", value: '3' },
         { text: "frequencies over time", value: '4' }];
 
+        this.createNotesRNNSettings = [{text: "include blocks for input notes", value: '1'},
+                                       {text: "exclude blocks for input notes", value: '0'}];
+
         this._visStatus = [{ text: "off", value: '0' },
         { text: "on", value: '1' }];
 
@@ -372,7 +375,7 @@ class Scratch3MusicCreation {
                     opcode: 'createNotesRNN',
                     text: formatMessage({
                         id: 'musiccreation.createNotesRNN',
-                        default: '(complete) add new music blocks [STEPS] [TEMP]',
+                        default: 'complete & add new music blocks for [STEPS] [TEMP] [SETTING]',
                         description: 'create notes Magenta MVAE'
                     }),
                     blockType: BlockType.COMMAND,
@@ -385,6 +388,11 @@ class Scratch3MusicCreation {
                             type: ArgumentType.NUMBER,
                             defaultValue: 1.5
                         },
+                        SETTING: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0,
+                            menu: 'SETTING'
+                        }
                     }
                 },
                 {
@@ -447,6 +455,10 @@ class Scratch3MusicCreation {
                 STATUS: {
                     acceptReporters: true,
                     items: this._visStatus
+                },
+                SETTING: {
+                    acceptReporters: true,
+                    items: this.createNotesRNNSettings
                 }
 
             }
@@ -650,20 +662,25 @@ class Scratch3MusicCreation {
     createNotesRNN(args,utils) {
         const { runtime } = utils;
         this.getAndPlayMagentaNotes(true, args, utils, (notes) => {
-            const blockArgs = notes.map(note => {
+            let blockArgs = notes.map(note => {
                 const { NOTE, SECS } = note;
                 return { NOTE, SECS: `${SECS}` };
             });
 
-            const oldNotes = this.noteList
+            const includeOldNotes = Cast.toBoolean(args.SETTING);
+            if (includeOldNotes) {
+                const oldNotes = this.noteList
                                         .map(note => { return {NOTE: Cast.toString(note[0]), SECS: Cast.toString(note[1])} })
                                         .slice(-maxNotesForCompleteGen); //limit number of notes included in the generated chunk
-            if (this.noteList.length > maxNotesForCompleteGen) {
-                alert(`Only displaying the last ${maxNotesForCompleteGen} notes in the generated chunk of blocks. Press 'reset music' to clear note list.`);
+                if (this.noteList.length > maxNotesForCompleteGen) {
+                    alert(`Only displaying the last ${maxNotesForCompleteGen} notes in the generated chunk of blocks. Press 'reset music' to clear note list.`);
+                }
+                blockArgs = oldNotes.concat(blockArgs);
+                
             }
-            const blockArgsWithOldNotes = oldNotes.concat(blockArgs);
-            const opcodes = blockArgsWithOldNotes.map(_ => 'playNote');
-            const xml = generateXMLForBlockChunk(this, runtime, opcodes, blockArgsWithOldNotes);
+            
+            const opcodes = blockArgs.map(_ => 'playNote');
+            const xml = generateXMLForBlockChunk(this, runtime, opcodes, blockArgs);
             runtime.addBlocksToWorkspace(xml);
         });
     }
