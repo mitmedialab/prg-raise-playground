@@ -18,6 +18,7 @@ const { internalIDKey, getTopBlockID, addTopBlockModifier, getTopBlockModifier }
 
 const givenBeatValues = ["1/4", "1/2", "1", "2", "3", "4", "8"];
 const instrumentModifierKey = 'instrument';
+const maxNotesForCompleteGen = 20;
 const volumeModifierKey = 'volume';
 
 class Scratch3MusicCreation {
@@ -68,7 +69,6 @@ class Scratch3MusicCreation {
         this._onTargetCreated = this._onTargetCreated.bind(this);
         this.runtime.on('targetWasCreated', this._onTargetCreated);
         this.runtime.setMaxListeners(Infinity);
-
     }
 
 
@@ -369,6 +369,25 @@ class Scratch3MusicCreation {
                             defaultValue: 1.5
                         },
                     },
+                },
+                {
+                    opcode: 'createNotesRNN',
+                    text: formatMessage({
+                        id: 'musiccreation.createNotesRNN',
+                        default: '(complete) add new music blocks [STEPS] [TEMP]',
+                        description: 'create notes Magenta MVAE'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        STEPS: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 20
+                        },
+                        TEMP: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 1.5
+                        },
+                    }
                 },
                 {
                     opcode: 'testMagentaMVAE',
@@ -723,8 +742,8 @@ class Scratch3MusicCreation {
         if (valid) {
             const prepared_notes = this._prepare(magenta_notes);
             this.magentaNoteList = prepared_notes['notes'];
-            this.musicCreationHelper.playNotes(prepared_notes, utils, inst,vol,this.vizHelper); 
             if (processNotes) processNotes(prepared_notes.args);
+            this.musicCreationHelper.playNotes(prepared_notes, utils, inst, vol, this.vizHelper); 
         } else utils.stackFrame.duration = 0;
     }
     
@@ -790,14 +809,33 @@ class Scratch3MusicCreation {
     createNotesMVAE(args, utils) {
         const { runtime } = utils
         this.getAndPlayMagentaNotes(false, args, utils, (notes) => {
-            // convert the notes into arguments for the play note blocks
-            // TODO: Dolev, is this correct? Could this be leading to play duration errors?
             const blockArgs = notes.map(note => {
                 const { NOTE, SECS } = note;
                 return { NOTE, SECS: `${SECS}` };
             });
             const opcodes = blockArgs.map(_ => 'playNote');
             const xml = generateXMLForBlockChunk(this, runtime, opcodes, blockArgs);
+            runtime.addBlocksToWorkspace(xml);
+        });
+    }
+
+    createNotesRNN(args,utils) {
+        const { runtime } = utils;
+        this.getAndPlayMagentaNotes(true, args, utils, (notes) => {
+            const blockArgs = notes.map(note => {
+                const { NOTE, SECS } = note;
+                return { NOTE, SECS: `${SECS}` };
+            });
+
+            const oldNotes = this.noteList
+                                        .map(note => { return {NOTE: Cast.toString(note[0]), SECS: Cast.toString(note[1])} })
+                                        .slice(-maxNotesForCompleteGen); //limit number of notes included in the generated chunk
+            if (this.noteList.length > maxNotesForCompleteGen) {
+                alert(`Only displaying the last ${maxNotesForCompleteGen} notes in the generated chunk of blocks. Press 'reset music' to clear note list.`);
+            }
+            const blockArgsWithOldNotes = oldNotes.concat(blockArgs);
+            const opcodes = blockArgsWithOldNotes.map(_ => 'playNote');
+            const xml = generateXMLForBlockChunk(this, runtime, opcodes, blockArgsWithOldNotes);
             runtime.addBlocksToWorkspace(xml);
         });
     }
