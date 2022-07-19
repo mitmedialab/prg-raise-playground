@@ -190,11 +190,15 @@ class VizHelpers {
     }
 
     toggleVisMode (args,util) {
-        let status = Cast.toNumber(args.STATUS);
-        let mode = Cast.toNumber(args.FORMAT);
+        const status = Cast.toNumber(args.STATUS);
+        const mode = Cast.toNumber(args.FORMAT);
+        const prev_mode = this._visState.mode;
+        const prev_status = this._visState.status;
         const status_bool = !!status;
-        if (!status_bool) this.clearAllViz();
         this._visState = { mode:mode, status:status_bool };
+        if (!status_bool) {
+            this.clearAllViz();
+        } else if (mode !== prev_mode || !prev_status) this.requestViz(null,util);
     }
 
     clearAllViz() {
