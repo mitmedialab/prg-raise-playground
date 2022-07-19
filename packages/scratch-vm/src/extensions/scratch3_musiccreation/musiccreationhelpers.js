@@ -472,11 +472,11 @@ class MusicCreationHelpers {
         util.sequencer.runtime.once('PROJECT_STOP_ALL', () => {
             this._stopped = true;
             player.stopImmediately();
-            if (util.thread !== undefined && util.thread.peekStackFrame()) util.stackFrame.duration = 0;
+            if (util.thread && util.thread.peekStackFrame()) util.stackFrame.duration = 0;
             return;
         });
         player.once('stop', () => {
-            if (last || this._stopped) {
+            if ((last || this._stopped) && util.thread && util.thread.peekStackFrame()) {
                 util.stackFrame.duration = 0;
             } else {
                 this._playNoteFromSeq(seq[i + 1], seq, util, l, inst, vol, vizHelper, raw_notes);
@@ -575,7 +575,7 @@ class MusicCreationHelpers {
         });
         util.runtime.once('PROJECT_STOP_ALL', () => {
             player.stopImmediately();
-            if (util.thread !== undefined && util.thread.peekStackFrame()) util.stackFrame.duration = 0;
+            if (util.thread && util.thread.peekStackFrame()) util.stackFrame.duration = 0;
         });
 
         // Start playing the note
