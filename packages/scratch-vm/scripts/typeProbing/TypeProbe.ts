@@ -72,12 +72,6 @@ export default class TypeProbe<TValue> {
     return [split[0], parseInt(split[1].replace("]", ""))];
   }
 
-  private static GetArrayElement = (obj: any, key: string) => {
-    const split = key.split("[");
-    const index = parseInt(split[1].replace("]", ""));
-    return obj[split[0]][index];
-  }
-
   private static IsProbable = (value) => {
     return !!(value && typeof value === "object");
   };

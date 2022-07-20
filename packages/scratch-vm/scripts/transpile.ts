@@ -3,6 +3,7 @@ import glob = require("glob");
 import path = require("path");
 import fs = require("fs");
 import { retrieveExtensionDetails } from "./typeProbing/common";
+import { generateCodeForExtensions } from "./codeGeneration";
 
 const printDiagnostics = (program: ts.Program, result: ts.EmitResult) => {
   ts.getPreEmitDiagnostics(program)
@@ -66,10 +67,11 @@ const transpileAllTsExtensions = () => {
       printDiagnostics(program, result);
     }
     else {
-      //const menuDetails = retrieveExtensionDetails(program);
+      const menuDetails = retrieveExtensionDetails(program);
+      generateCodeForExtensions(menuDetails);
+      files.forEach(file => addSuportingFiles(path.dirname(file)));
+      addSuportingFiles(supportDir);
     }
-    files.forEach(file => addSuportingFiles(path.dirname(file)));
-    addSuportingFiles(supportDir);
   });
 }
 

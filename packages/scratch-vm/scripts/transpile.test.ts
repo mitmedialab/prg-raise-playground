@@ -84,7 +84,6 @@ describe("Typescript transpilation of extensions", () => {
     retrievePathsToMenuDetails(program, pathsToDetails);
     const expected = cachedPathsToMenuDetails;
     const actual = pathsToDetails;
-    console.log(actual);
     expect(actual).toEqual(expected);
   })
 
