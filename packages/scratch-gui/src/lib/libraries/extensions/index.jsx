@@ -47,6 +47,8 @@ import gdxforConnectionIconURL from './gdxfor/gdxfor-illustration.svg';
 import gdxforConnectionSmallIconURL from './gdxfor/gdxfor-small.svg';
 
 /* CODE GEN GUARD START: Icon Import -- Please do not edit code within guards */
+import typescript_framework_complexIconURL from '../../../extension-gallery-assets/typescript_framework_complex/Typescript_logo.png';
+import typescript_framework_complexInsetIconURL from '../../../extension-gallery-assets/typescript_framework_complex/typescript-logo.svg';
 /* CODE GEN GUARD END: Icon Import -- Please do not edit code within guards */
 
 export default [
@@ -338,5 +340,13 @@ export default [
         helpLink: 'https://scratch.mit.edu/vernier'
     },
     /* CODE GEN GUARD START: Extension Info -- Please do not edit code within guards */
+    {
+      name: 'Realistic Typescript-Based Extension',
+      extensionId: 'typescript_framework_complex',
+      iconURL: typescript_framework_complexIconURL,
+      insetIconURL: typescript_framework_complexInsetIconURL,
+      description: 'Demonstrating how typescript can be used to write a realistic extension',
+      featured: true
+    },
     /* CODE GEN GUARD END: Extension Info -- Please do not edit code within guards */
 ];

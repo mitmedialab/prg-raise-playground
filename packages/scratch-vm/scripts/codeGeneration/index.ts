@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, renameSync, mkdirSync, existsSync } from "fs";
+import { readFileSync, writeFileSync, renameSync, mkdirSync, existsSync, copyFileSync } from "fs";
 import path = require("path");
 import { ExtensionMenuDisplayDetails } from "../../src/typescript-support/types";
 
@@ -41,8 +41,8 @@ export const generateCodeForExtensions = (extensions: Record<string, ExtensionMe
   let currGuiFileContent = guiFileContent;
   const numExtensions = Object.keys(extensions).length;
   for (const str in extensions) {
-
     const ext = extensions[str];
+    console.log(str, ext);
     const iconURL = ext.iconURL;
     const insetIconURL = ext.insetIconURL;
     console.log(iconURL,insetIconURL);
@@ -57,13 +57,13 @@ export const generateCodeForExtensions = (extensions: Record<string, ExtensionMe
 
     if (!existsSync(newPathForIcons)) mkdirSync(newPathForIcons);
 
-    //move icons to new directory
-    renameSync(currPathToIconURL,newPathForIcons + iconURL);
-    renameSync(currPathToInsetIconURL,newPathForIcons + insetIconURL);
+    //copy icons to new directory
+    copyFileSync(currPathToIconURL,newPathForIcons + iconURL);
+    copyFileSync(currPathToInsetIconURL,newPathForIcons + insetIconURL);
 
     const iconURLName = extensionId + 'IconURL';
     const insetIconURLName = extensionId + 'InsetIconURL';
-    const pathFromIndexJSXToAssets = '../../../extension-gallery-assets/';
+    const pathFromIndexJSXToAssets = `../../../extension-gallery-assets/${str}/`;
     const iconImports = [`import ${iconURLName} from '${pathFromIndexJSXToAssets + iconURL}';`,
                          `import ${insetIconURLName} from '${pathFromIndexJSXToAssets + insetIconURL}';`];
 
