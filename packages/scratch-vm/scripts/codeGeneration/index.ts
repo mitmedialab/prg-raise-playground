@@ -32,15 +32,20 @@ export const generateCodeForExtensions = (extensions: Record<string, ExtensionMe
    * and slices[2] is the code from the last code guard (inclusive) to the end of the file
    */
   const lineArray : string[] = guiFileContent.split('\n');
-  const findString = (pat:string) => ((x:string) => { return x.includes(pat)});
+  const findString = (pat:string) => ((x:string) => { return x.includes(pat) });
   const guards = [...iconImportGuards,...extensionInfoGuards];
   const indices = guards.map(pat => lineArray.findIndex(findString(pat)));
   const slices = [lineArray.slice(0,indices[0]+1),lineArray.slice(indices[1],indices[2]+1),lineArray.slice(indices[3])];
 
+  let extensionsAdded = 0;
+  let currGuiFileContent = guiFileContent;
+  const numExtensions = Object.keys(extensions).length;
   for (const str in extensions) {
+
     const ext = extensions[str];
     const iconURL = ext.iconURL;
     const insetIconURL = ext.insetIconURL;
+    console.log(iconURL,insetIconURL);
     const extensionId : string = str;
 
     const relativePathToAssetsForExt = [...relativePathToAssetsFolder, extensionId];
@@ -71,9 +76,19 @@ export const generateCodeForExtensions = (extensions: Record<string, ExtensionMe
       featured: true
     },`;
 
-    const newGUIFileSlices = [...slices[0],...iconImports,...slices[1],menuItem,...slices[2]];
-    const newGUIFile = newGUIFileSlices.join('\n');
-    writeFileSync(guiIndexFile,newGUIFile,{encoding: "utf-8"});
+    if (extensionsAdded === 0) {
+      const newGUIFileSlices = [...slices[0],...iconImports,...slices[1],menuItem,...slices[2]];
+      currGuiFileContent = newGUIFileSlices.join('\n');
+    } else {
+      const lineArray : string[] = currGuiFileContent.split('\n');
+      const indices = [lineArray.findIndex(findString(guards[1])),lineArray.findIndex(findString(guards[3]))];
+      const slices = [lineArray.slice(0,indices[0]),lineArray.slice(indices[0],indices[1]),lineArray.slice(indices[1])];
+      const newGUIFileSlices = [...slices[0],...iconImports,...slices[1],menuItem,...slices[2]];
+      currGuiFileContent = newGUIFileSlices.join('\n');
+    }
+
+    if (extensionsAdded + 1 === numExtensions) writeFileSync(guiIndexFile,currGuiFileContent,{encoding: "utf-8"});
+    extensionsAdded++;
   }
  // 4. BONUS! Add suport for additional non-required properties in the ExtensionMenuDisplayDetails type (like 'collaborator', 'featured', 'bluetoothRequired') so that, if they are defined, they are incorporated into the code generation
 }
