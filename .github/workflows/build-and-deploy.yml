@@ -18,9 +18,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - name: npm install, build, and test
-      run: |
-        npm install json5
-        npm run build
+      run: npm run build
       env:
         CI: true
     - name: Extract branch name

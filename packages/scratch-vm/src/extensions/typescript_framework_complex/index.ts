@@ -38,22 +38,22 @@ class MyExtension extends Extension<DisplayDetails, Blocks> {
       return {
         type: BlockType.Command,
         args: [{ type: ArgumentType.Number }],
-        text: () => "",
-        operation: (a,) => { },
+        text: (a) => `Play note: ${a}`,
+        operation: (a) => { console.log(`Playing ${a}`)},
       }
     },
   })};
 
-  buildReport(): Block<() => number> {
+  buildReport(): Block<() => void> {
 
-    const getFive = () => 5;
+    const getFive = () => console.log(5);
 
     const myOP = (blockUtility) => getFive();
 
     return {
       type: BlockType.Command,
       args: [],
-      text: () => "",
+      text: () => "Hi Five!",
       operation: myOP,
     }
   }
