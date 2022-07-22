@@ -89,7 +89,7 @@ const _sensors = {
     "accelerometer": "x",
     "magnetometer": "o",
     "gyroscope": "g",
-    "color sensor": "l",
+    //"color sensor": "l",
     "temperature": "t",
     "humidity": "h",
     "pressure": "p",
@@ -488,6 +488,16 @@ class DoodlebotBlocks {
                     }),
                 },
                 {
+                    opcode: "readDistance",
+                    blockType: BlockType.REPORTER,
+                    text: formatMessage({
+                        id: "doodlebot.readDistance",
+                        default: "distance",
+                        description:
+                            "Get distance reading from robot",
+                    }),
+                },
+                {
                     opcode: "readAccelerometer",
                     blockType: BlockType.REPORTER,
                     text: formatMessage({
@@ -819,6 +829,23 @@ class DoodlebotBlocks {
             }
             
             return this.sensorValues['temperature'];
+        }
+        return -1; // should never get here
+    }
+
+    
+    /**
+     * For reading distance data back
+     */
+     async readDistance() {
+        if (this._robotUart) {
+            // enable the distance sensor if it is not already enabled
+            if (!this.sensorValues.hasOwnProperty('distance')) {
+                // wait for sensor to turn on
+                await this.enableSensor({SENSOR: "distance"});   
+            }
+            
+            return this.sensorValues['distance'];
         }
         return -1; // should never get here
     }
