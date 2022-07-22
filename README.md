@@ -37,12 +37,10 @@ npm run dev
 Now you can make changes, and they will auto-build from the scratch-gui watcher and live-reload!
 
 - render, gui, and vm will auto-build while `scratch-gui`'s `npm start` is running (as in steps above)
-- the blocks component currently requires manually building and re-starting the GUI build:
+- the blocks component currently requires fully building and re-starting the GUI build:
     ```shell script
     # Make your change to scratch-blocks, then:
-    cd packages/scratch-blocks
-    npm run prepublish
-    # And re-start scratch-gui's npm start
+    npm run rebuild:blocks
     ```
   
 Alternatively, use GitPod!
