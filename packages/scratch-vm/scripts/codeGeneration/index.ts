@@ -1,14 +1,17 @@
-import { readFileSync, writeFileSync, renameSync, mkdirSync, existsSync, copyFileSync } from "fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync, copyFileSync } from "fs";
 import path = require("path");
 import { ExtensionMenuDisplayDetails } from "../../src/typescript-support/types";
 
 const relativePathToExtensionDir = ["..", "..", "src", "extensions"];
-const baseExtensionsDir = path.resolve(__dirname, ...relativePathToExtensionDir);
 
 const relativePathToIndexFile = ["..", "..", "..", "scratch-gui", "src", "lib", "libraries", "extensions", "index.jsx"];
 const relativePathToAssetsFolder = ["..", "..", "..", "scratch-gui", "src", "extension-gallery-assets"];
 const guiIndexFile = path.resolve(__dirname, ...relativePathToIndexFile);
 
+/**
+ * has to match the code generation guards in the file specified by
+ * the path in {@link relativePathToIndexFile}
+ */
 const guardFlagStart = "/* CODE GEN GUARD START:";
 const guardFlagEnd = "/* CODE GEN GUARD END:";
 const codeGuardStringEnd = '-- Please do not edit code within guards */';
@@ -19,8 +22,11 @@ const iconImportGuards = getGuards("Icon Import");
 const extensionInfoGuards = getGuards("Extension Info");
 
 /**
- * TODO: complete...
- * @param extensions 
+ * @param extensions - a Record where the keys are strings representing the name of extensions to be added,
+ * and the values are @type {ExtensionMenuDisplayDetails}. 
+ * 
+ * Adds the necessary imports for the extensions' icons to {@link guiIndexFile} and adds an object containing 
+ * the extensions' info to the array of info exported by {@link guiIndexFile}.
  */
 export const generateCodeForExtensions = (extensions: Record<string, ExtensionMenuDisplayDetails>) => {
   const guiFileContent = readFileSync(guiIndexFile, {encoding: "utf-8"});
@@ -28,7 +34,7 @@ export const generateCodeForExtensions = (extensions: Record<string, ExtensionMe
   /**
    * Finds the indices of the code guards, splits the gui file into chunks such 
    * that slices[0] is the code up to and including the first code guard, slices[1]
-   * id the code between the second code guard and the third code guard (including both),
+   * is the code between the second code guard and the third code guard (including both),
    * and slices[2] is the code from the last code guard (inclusive) to the end of the file
    */
   const lineArray : string[] = guiFileContent.split('\n');
@@ -40,6 +46,7 @@ export const generateCodeForExtensions = (extensions: Record<string, ExtensionMe
   let extensionsAdded = 0;
   let currGuiFileContent = guiFileContent;
   const numExtensions = Object.keys(extensions).length;
+
   for (const str in extensions) {
     const ext = extensions[str];
     console.log(str, ext);
@@ -53,7 +60,6 @@ export const generateCodeForExtensions = (extensions: Record<string, ExtensionMe
     const currPathToIconURL = path.resolve(__dirname,...relativePathToExtension,iconURL);
     const currPathToInsetIconURL = path.resolve(__dirname,...relativePathToExtension,insetIconURL);
     const newPathForIcons = path.resolve(__dirname, ...relativePathToAssetsForExt) + '/';
-
 
     if (!existsSync(newPathForIcons)) mkdirSync(newPathForIcons);
 
@@ -76,11 +82,16 @@ export const generateCodeForExtensions = (extensions: Record<string, ExtensionMe
       featured: true
     },`;
 
+    /* first extension added: remove all code between code guards.
+     * All others: add to the code that's already been added between the
+     * code guards.
+     */
     if (extensionsAdded === 0) {
       const newGUIFileSlices = [...slices[0],...iconImports,...slices[1],menuItem,...slices[2]];
       currGuiFileContent = newGUIFileSlices.join('\n');
     } else {
       const lineArray : string[] = currGuiFileContent.split('\n');
+      //only care about the ends of the code guards, to insert at the end
       const indices = [lineArray.findIndex(findString(guards[1])),lineArray.findIndex(findString(guards[3]))];
       const slices = [lineArray.slice(0,indices[0]),lineArray.slice(indices[0],indices[1]),lineArray.slice(indices[1])];
       const newGUIFileSlices = [...slices[0],...iconImports,...slices[1],menuItem,...slices[2]];
