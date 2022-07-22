@@ -924,8 +924,8 @@ class DoodlebotBlocks {
                 await this.enableSensor({SENSOR: "bumpers"});   
             }
             
-            const front = this.sensorValues["bumper.front"] == 1;
-            const back = this.sensorValues["bumper.back"] == 1;
+            const front = this.sensorValues["bumper.front"] == 0;
+            const back = this.sensorValues["bumper.back"] == 0;
 
             if (bumperSel == "front") {
                 return front;
