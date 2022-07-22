@@ -64,6 +64,13 @@ class Scratch3PenBlocks {
          */
         this._penSkinId = -1;
 
+        /**
+         * The state of the map, whether it is on the stage or not
+         * @type {boolean}
+         * @private
+         */
+        this.mapDrawn = false;
+
         this._onTargetCreated = this._onTargetCreated.bind(this);
         this._onTargetMoved = this._onTargetMoved.bind(this);
 
@@ -305,7 +312,7 @@ class Scratch3PenBlocks {
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
                         id: 'pen.drawMap',
-                        default: 'draw map with size [WIDTH]',
+                        default: 'draw map with tile width [WIDTH]',
                         description: 'draw a map with a specified tile width'
                     }),
                     arguments: {
@@ -389,18 +396,14 @@ class Scratch3PenBlocks {
                         }
                     }
                 },                {
-                    opcode: 'addGoal',
+                    opcode: 'addPath',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
-                        id: 'pen.addGoal',
-                        default: 'add node [NAME] at [X] [Y]',
-                        description: 'add goal at coordinate on map'
+                        id: 'pen.addPath',
+                        default: 'add path at [X] [Y]',
+                        description: 'add path at coordinate on map'
                     }),
                     arguments: {
-                        NAME: {
-                            type: ArgumentType.STRING,
-                            defaultValue: "Goal"
-                        },
                         X: {
                             type: ArgumentType.NUMBER,
                             defaultValue: 1
@@ -610,6 +613,7 @@ class Scratch3PenBlocks {
             this.runtime.renderer.penClear(penSkinId);
             this.runtime.requestRedraw();
         }
+        this.mapDrawn = false;
     }
 
     moveSteps (args, util) {
@@ -640,20 +644,22 @@ class Scratch3PenBlocks {
     
     /**
      * The draw map block stamps a square onto the pen layer.
-     * @param {object} args - the block arguments.
+     * @param {object} args - the block arguments. WIDTH - size of the tiles to draw
      * @param {object} util - utility object provided by the runtime.
      */
     drawMap (args, util) {
         this.clear();
         const penSkinId = this._getPenLayerID();
         if (penSkinId >= 0 && args.WIDTH > 0) {
-            // Can't programmatically add squares
+            // Can't programmatically add squares to costumes
             // TODO make sure that new costumes are added before the square
             // make sure square costume can't be deleted
             const target = util.target;
             // change the costume to the square
             let originalCostume = target.currentCostume;
+            let originalBrightness = target.effects["brightness"];
             target.setCostume(target.getCostumes().length-1);
+            target.setEffect("brightness", 0);
             this.tileSize = Math.floor(args.WIDTH);
             target.setSize(this.tileSize-1);
 
@@ -679,11 +685,73 @@ class Scratch3PenBlocks {
             }                                
             // redraw when done
             this.runtime.requestRedraw();
+            this.mapDrawn = true;
 
-            // go back to original costume, and size it to the right amount
+            // go back to original costume, brightness, and size it to the right amount
             target.setCostume(originalCostume);
+            target.setEffect("brightness", originalBrightness);
             let maxDimension = Math.max(...target.getCurrentCostume().size);
             target.setSize(this.tileSize*100/maxDimension);
+        }
+    }
+
+    addObstacle (args, util) {
+        this.addNodeAtLocation(args, util, "obstacle");
+    }
+
+    addPath (args, util) {
+        this.addNodeAtLocation(args, util, "path");
+    }
+
+    /**
+     * The add obstacle/path block makes a square white/black depending on whether a robot can travel there
+     * @param {object} args - the block arguments. X - the column (1-indexed, 1 is left corner), Y - the column (1-indexed, 1 is top)
+     * @param {object} util - utility object provided by the runtime.
+     */
+    addNodeAtLocation (args, util, type) {
+        const penSkinId = this._getPenLayerID();
+        if (penSkinId >= 0 && this.mapDrawn) {
+            let xArg = Cast.toNumber(args.X);
+            let yArg = Cast.toNumber(args.Y);
+            if (xArg > 0 && xArg <= this.maxCols && yArg > 0 && yArg <= this.maxRows) {
+                const target = util.target;
+
+                // save all the original data about the target
+                let originalCostume = target.currentCostume;
+                let originalBrightness = target.effects["brightness"];
+                let originalX = target.x;
+                let originalY = target.y;
+                let originalSize = target.size;
+                
+                // change the costume to the square, make black
+                target.setCostume(target.getCostumes().length-1);
+                if (type == "path") {
+                    target.setEffect("brightness", -100);
+                } else if (type == "obstacle") {
+                    target.setEffect("brightness", 0);
+                }
+                // adjust the square to the right size
+                target.setSize(this.tileSize-1);
+
+                // calculate starting XY position
+                let xStart = -(480 - (480 % this.tileSize) - this.tileSize)/2;
+                let yStart = (360 - (360 % this.tileSize) - this.tileSize)/2;
+                // calculate and move to new XY position
+                let newX = xStart + (xArg - 1) * this.tileSize;
+                let newY = yStart - (yArg - 1) * this.tileSize ;
+                target.setXY(newX, newY);
+
+                // stamp square
+                this.runtime.renderer.penStamp(penSkinId, target.drawableID);
+                // redraw when done
+                this.runtime.requestRedraw();
+
+                // go back to original costume, brightness, position, and size
+                target.setCostume(originalCostume);
+                target.setEffect("brightness", originalBrightness);
+                target.setXY(originalX, originalY);
+                target.setSize(originalSize);
+            }
         }
     }
 
