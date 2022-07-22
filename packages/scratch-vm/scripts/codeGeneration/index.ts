@@ -37,11 +37,11 @@ export const generateCodeForExtensions = (extensions: Record<string, ExtensionMe
    * is the code between the second code guard and the third code guard (including both),
    * and slices[2] is the code from the last code guard (inclusive) to the end of the file
    */
-  const lineArray : string[] = guiFileContent.split('\n');
-  const findString = (pat:string) => ((x:string) => { return x.includes(pat) });
+  let lineArray : string[] = guiFileContent.split('\n');
+  const includesSubstr = (pat:string) => ((x:string) => { return x.includes(pat) });
   const guards = [...iconImportGuards,...extensionInfoGuards];
-  const indices = guards.map(pat => lineArray.findIndex(findString(pat)));
-  const slices = [lineArray.slice(0,indices[0]+1),lineArray.slice(indices[1],indices[2]+1),lineArray.slice(indices[3])];
+  const indices = guards.map(pat => lineArray.findIndex(includesSubstr(pat)));
+  let slices = [lineArray.slice(0,indices[0]+1),lineArray.slice(indices[1],indices[2]+1),lineArray.slice(indices[3])];
 
   let extensionsAdded = 0;
   let currGuiFileContent = guiFileContent;
@@ -49,10 +49,8 @@ export const generateCodeForExtensions = (extensions: Record<string, ExtensionMe
 
   for (const str in extensions) {
     const ext = extensions[str];
-    console.log(str, ext);
     const iconURL = ext.iconURL;
     const insetIconURL = ext.insetIconURL;
-    console.log(iconURL,insetIconURL);
     const extensionId : string = str;
 
     const relativePathToAssetsForExt = [...relativePathToAssetsFolder, extensionId];
@@ -82,21 +80,19 @@ export const generateCodeForExtensions = (extensions: Record<string, ExtensionMe
       featured: true
     },`;
 
-    /* first extension added: remove all code between code guards.
+    /* First extension added: remove all code between code guards.
      * All others: add to the code that's already been added between the
      * code guards.
      */
-    if (extensionsAdded === 0) {
-      const newGUIFileSlices = [...slices[0],...iconImports,...slices[1],menuItem,...slices[2]];
-      currGuiFileContent = newGUIFileSlices.join('\n');
-    } else {
-      const lineArray : string[] = currGuiFileContent.split('\n');
-      //only care about the ends of the code guards, to insert at the end
-      const indices = [lineArray.findIndex(findString(guards[1])),lineArray.findIndex(findString(guards[3]))];
-      const slices = [lineArray.slice(0,indices[0]),lineArray.slice(indices[0],indices[1]),lineArray.slice(indices[1])];
-      const newGUIFileSlices = [...slices[0],...iconImports,...slices[1],menuItem,...slices[2]];
-      currGuiFileContent = newGUIFileSlices.join('\n');
+    if (extensionsAdded !== 0) {
+      lineArray = currGuiFileContent.split('\n');
+      //only care about the ends of the code guards to add code before them
+      const indices = [lineArray.findIndex(includesSubstr(guards[1])),lineArray.findIndex(includesSubstr(guards[3]))];
+      slices = [lineArray.slice(0,indices[0]),lineArray.slice(indices[0],indices[1]),lineArray.slice(indices[1])];
     }
+
+    const newGUIFileSlices = [...slices[0],...iconImports,...slices[1],menuItem,...slices[2]];
+    currGuiFileContent = newGUIFileSlices.join('\n');
 
     if (extensionsAdded + 1 === numExtensions) writeFileSync(guiIndexFile,currGuiFileContent,{encoding: "utf-8"});
     extensionsAdded++;
