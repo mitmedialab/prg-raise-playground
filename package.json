@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "init": "npx lerna bootstrap --force-local",
-    "init:build": "npx lerna link --force-local && npx lerna exec -- npm install && npx lerna link --force-local",
+    "init:build": "npm install && npx lerna link --force-local && npx lerna exec -- npm install && npx lerna link --force-local",
     "clean:build": "rimraf ./build && mkdirp build",
     "move:build:to:root": "mv ./packages/scratch-gui/build ./build",
     "build": "npm run init:build && npm run clean:build && npm run build --prefix ./packages/scratch-gui/ && npm run move:build:to:root",
@@ -11,6 +11,7 @@
     "rebuild:blocks": "npm run prepublish --prefix ./packages/scratch-blocks && npm run dev"
   },
   "devDependencies": {
-    "lerna": "^3.20.2"
+    "lerna": "^3.20.2",
+    "rimraf": "^3.0.2"
   }
 }
