@@ -22,6 +22,28 @@ const iconImportGuards = getGuards("Icon Import");
 const extensionInfoGuards = getGuards("Extension Info");
 
 /**
+ * Adds the non-required propositions listed in @param additionalProps to the string @param basicMenuDetails
+ * 
+ * @param basicMenuDetails - string containing an unclosed JS object with info on the required fields in {@link ExtensionMenuDisplayDetails}
+ * @param additionalProps - array of the names of the additional properties of the extension described by @param extensionDetails
+ * @param {ExtensionMenuDisplayDetails} extensionDetails - contains the information necessary to add to {@link guiIndexFile}
+ * @returns a string representation of the object that can be added to the exported array of objects in {@link guiIndexFile}.
+ */
+function addAdditionalProps(basicMenuDetails: string, additionalProps: string[], extensionDetails : ExtensionMenuDisplayDetails) : string {
+  const namesAndVals = additionalProps.map(prop => ({name:prop, value:extensionDetails[prop], type: typeof(extensionDetails[prop])}));
+  const buildPropString = (propInfo) => {
+    //stringify to preserve array displays as [x,y,z] rather than x,y,z
+    return `      ${propInfo.name}: ${(propInfo.type === 'string') ? `'${propInfo.value}'` : JSON.stringify(propInfo.value)},\n`;
+  }
+  namesAndVals.forEach(propInfo => basicMenuDetails += buildPropString(propInfo));
+  if (!additionalProps.includes('featured')) {
+    basicMenuDetails += buildPropString({name:'featured',value:true,type:'boolean'});
+  }
+  basicMenuDetails += '    },';
+  return basicMenuDetails;
+}
+
+/**
  * @param extensions - a Record where the keys are strings representing the name of extensions to be added,
  * and the values are @type {ExtensionMenuDisplayDetails}. 
  * 
@@ -46,13 +68,18 @@ export const generateCodeForExtensions = (extensions: Record<string, ExtensionMe
   let extensionsAdded = 0;
   let currGuiFileContent = guiFileContent;
   const numExtensions = Object.keys(extensions).length;
+  const requiredProps = ['title','description','iconURL','insetIconURL'];
 
   for (const str in extensions) {
     const ext = extensions[str];
     const iconURL = ext.iconURL;
     const insetIconURL = ext.insetIconURL;
     const extensionId : string = str;
-
+    const additionalProps = [...Object.keys(ext)].filter(prop => !requiredProps.includes(prop));
+    additionalProps.forEach(p => {
+      console.log(p,typeof(ext[p]));
+    })
+    
     const relativePathToAssetsForExt = [...relativePathToAssetsFolder, extensionId];
     const relativePathToExtension = [...relativePathToExtensionDir,extensionId];
     const currPathToIconURL = path.resolve(__dirname,...relativePathToExtension,iconURL);
@@ -71,14 +98,14 @@ export const generateCodeForExtensions = (extensions: Record<string, ExtensionMe
     const iconImports = [`import ${iconURLName} from '${pathFromIndexJSXToAssets + iconURL}';`,
                          `import ${insetIconURLName} from '${pathFromIndexJSXToAssets + insetIconURL}';`];
 
-    const menuItem = `    {
+    let basicMenuDetails = `    {
       name: '${ext.title}',
       extensionId: '${extensionId}',
       iconURL: ${iconURLName},
       insetIconURL: ${insetIconURLName},
-      description: '${ext.description}',
-      featured: true
-    },`;
+      description: '${ext.description}',\n`;
+
+    const completeMenu = addAdditionalProps(basicMenuDetails,additionalProps,ext);
 
     /* First extension added: remove all code between code guards.
      * All others: add to the code that's already been added between the
@@ -91,11 +118,10 @@ export const generateCodeForExtensions = (extensions: Record<string, ExtensionMe
       slices = [lineArray.slice(0,indices[0]),lineArray.slice(indices[0],indices[1]),lineArray.slice(indices[1])];
     }
 
-    const newGUIFileSlices = [...slices[0],...iconImports,...slices[1],menuItem,...slices[2]];
+    const newGUIFileSlices = [...slices[0],...iconImports,...slices[1],completeMenu,...slices[2]];
     currGuiFileContent = newGUIFileSlices.join('\n');
 
     if (extensionsAdded + 1 === numExtensions) writeFileSync(guiIndexFile,currGuiFileContent,{encoding: "utf-8"});
     extensionsAdded++;
   }
- // 4. BONUS! Add suport for additional non-required properties in the ExtensionMenuDisplayDetails type (like 'collaborator', 'featured', 'bluetoothRequired') so that, if they are defined, they are incorporated into the code generation
 }

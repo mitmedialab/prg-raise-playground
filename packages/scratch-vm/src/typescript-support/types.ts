@@ -45,6 +45,7 @@ export type ExtensionMenuDisplayDetails = {
   description: string;
   iconURL: string;
   insetIconURL: string;
+  [key: string] : any
 }
 
 /**
