@@ -1,0 +1,29 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug transpilation",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/packages/scratch-vm/**",
+        "!**/node_modules/**"
+      ],
+      "runtimeArgs": [
+        "--nolazy",
+        "-r",
+        "ts-node/register/transpile-only"
+      ],
+      "args": [
+        "scripts/transpile.ts"
+      ],
+      "cwd": "${workspaceRoot}/packages/scratch-vm/",
+      "internalConsoleOptions": "openOnSessionStart",
+      "skipFiles": [
+        "<node_internals>/**",
+        "!/node_modules/**"
+      ]
+    }
+  ]
+}
