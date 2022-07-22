@@ -6,7 +6,7 @@
     "init:build": "npx lerna link --force-local && npx lerna exec -- npm install && npx lerna link --force-local",
     "clean:build": "rimraf ./build && mkdirp build",
     "move:build:to:root": "mv ./packages/scratch-gui/build ./build",
-    "build": "npm run init:build && npm run clean && npm run build --prefix ./packages/scratch-gui/ && npm run move:build:to:root",
+    "build": "npm run init:build && npm run clean:build && npm run build --prefix ./packages/scratch-gui/ && npm run move:build:to:root",
     "dev": "npm start --prefix ./packages/scratch-gui/",
     "rebuild:blocks": "npm run prepublish --prefix ./packages/scratch-blocks && npm run dev"
   },
