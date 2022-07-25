@@ -258,6 +258,7 @@ class VizHelpers {
             buf = [];
         }
         this._noteBuf[name] = buf;
+        const [x, y] = this.getXY(util);
         switch (name) {
             case 'wave':
                 this.testWaveformViz(buf,null,util);
@@ -270,6 +271,9 @@ class VizHelpers {
                 break;
             default:
                 this.testSheetMusicViz(buf,null,util);
+        }
+        if (util && util.target) {
+            util.target.setXY(x, y);
         }
     }
 
@@ -465,6 +469,16 @@ class VizHelpers {
         }
     }
 
+    /**
+     * 
+     * @param {BlockUtility} util 
+     */
+    getXY (util) {
+        if (!util) return [0, 0];
+        if (!util.target) return [0, 0];
+        const {x, y} = util.target;
+        return [x ? x : 0, y ? y: 0];
+    }
 }
 
 module.exports = VizHelpers;
