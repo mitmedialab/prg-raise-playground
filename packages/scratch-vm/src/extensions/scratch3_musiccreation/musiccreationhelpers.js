@@ -8,6 +8,7 @@ const { clamp } = require('../../util/math-util');
 const { p } = require('./letters');
 const BlockUtility = require('../../engine/block-utility');
 const VizHelpers = require('./vizhelpers');
+const regeneratorRuntime = require("regenerator-runtime");
 
 /**
  * The instrument and drum sounds, loaded as static assets.
@@ -237,20 +238,16 @@ class MusicCreationHelpers {
         });
     }
 
+
     /**
      * Decode a sound and return a promise with the audio buffer.
      * @param  {ArrayBuffer} soundBuffer - a buffer containing the encoded audio.
      * @return {Promise} - a promise which will resolve once the sound has decoded.
      */
-    _decodeSound(soundBuffer) {
-        const engine = this.runtime.audioEngine;
-
-        if (!engine) {
-            return Promise.reject(new Error('No Audio Context Detected'));
-        }
-
-        // Check for newer promise-based API
-        return engine.decodeSoundPlayer({ data: { buffer: soundBuffer } });
+    async _decodeSound(soundBuffer) {
+        return Promise.resolve(this.runtime.audioEngine).
+        then(e => e ? e : this.runtime.audioEngine).
+        then(e => e.decodeSoundPlayer({ data: { buffer: soundBuffer } }));
     }
 
     /**

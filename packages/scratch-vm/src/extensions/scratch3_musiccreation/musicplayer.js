@@ -246,14 +246,9 @@ class MusicPlayer {
      * @return {Promise} - a promise which will resolve once the sound has decoded.
      */
     _decodeSound (soundBuffer) {
-        const engine = this.runtime.audioEngine;
-
-        if (!engine) {
-            return Promise.reject(new Error('No Audio Context Detected'));
-        }
-
-        // Check for newer promise-based API
-        return engine.decodeSoundPlayer({data: {buffer: soundBuffer}});
+        return Promise.resolve(this.runtime.audioEngine).
+        then(e => e ? e : this.runtime.audioEngine).
+        then(e => e.decodeSoundPlayer({ data: { buffer: soundBuffer } }));
     }
     
     /**
