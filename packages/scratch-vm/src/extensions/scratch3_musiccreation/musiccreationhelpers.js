@@ -243,10 +243,8 @@ class MusicCreationHelpers {
      * @param  {ArrayBuffer} soundBuffer - a buffer containing the encoded audio.
      * @return {Promise} - a promise which will resolve once the sound has decoded.
      */
-    async _decodeSound(soundBuffer) {
-        return Promise.resolve(this.runtime.audioEngine).
-        then(e => e ? e : this.runtime.audioEngine).
-        then(e => e.decodeSoundPlayer({ data: { buffer: soundBuffer } }));
+    _decodeSound(soundBuffer) {
+        return this.runtime.awaitAudioEngine().then(e => e.decodeSoundPlayer({ data: { buffer: soundBuffer } }));
     }
 
     /**
