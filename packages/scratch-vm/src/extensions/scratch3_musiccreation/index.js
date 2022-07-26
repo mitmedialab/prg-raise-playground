@@ -353,6 +353,31 @@ class Scratch3MusicCreation {
                     }
                 },
                 {
+                    opcode: 'playNoteList',
+                    blockType: BlockType.COMMAND,
+                    text: 'play notes [A][B][C] for [SECS] beats',
+                    arguments: {
+                        A: {
+                            type: ArgumentType.NOTE,
+                            defaultValue: 0
+                        },
+                        B: {
+                            type: ArgumentType.NOTE,
+                            
+                            defaultValue: 0
+                        },
+                        C: {
+                            type: ArgumentType.NOTE,
+                            defaultValue: 0
+                        },
+                        SECS: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0.25,
+                            menu: "BEATS"
+                        }
+                    }
+                },
+                {
                     opcode: 'testMagentaRNN',
                     text: formatMessage({
                         id: 'musiccreation.testMagentaRNN',
@@ -726,6 +751,25 @@ class Scratch3MusicCreation {
             this.vizHelper.requestViz(toAdd, util);
             this.wavenoteList.push(toAdd);
         }
+    }
+
+    playNoteList(args,util) {
+        const notes = [Cast.toNumber(args.A),Cast.toNumber(args.B),Cast.toNumber(args.C)];
+        const inst = this.getInstrumentForBlock(args[internalIDKey], util);
+        const vol = this.getVolumeForBlock(args[internalIDKey], util);
+        let beats = Cast.toNumber(args.SECS);
+        beats = this.musicCreationHelper._clampBeats(beats);
+        const play = ((note,index) => {
+            if (note === 0) return;
+            this.musicCreationHelper._playNote(util, notes[index], beats, inst, vol);
+            toAdd = [note,beats,this.INSTRUMENT_INFO[inst][name]];
+            this.noteList.push(toAdd);
+            toAdd.push(vol);
+            this.vizHelper.requestViz(toAdd, util);
+            this.wavenoteList.push(toAdd);
+        })
+
+        notes.forEach((note,index) => {play(note,index)});
     }
 }
 
