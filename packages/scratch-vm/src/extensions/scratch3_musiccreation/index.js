@@ -754,45 +754,34 @@ class Scratch3MusicCreation {
     }
 
     playNoteList(args,util) {
-        const notes = [Cast.toNumber(args.A),Cast.toNumber(args.B),Cast.toNumber(args.C)]
-        const _args = [JSON.parse(JSON.stringify(args)),JSON.parse(JSON.stringify(args)),JSON.parse(JSON.stringify(args))];
+        const notes = [Cast.toNumber(args.A),Cast.toNumber(args.B),Cast.toNumber(args.C)].filter(note => note > 0);
+        if (notes.length === 0) return;
+        const _args = notes.map(_ => JSON.parse(JSON.stringify(args)));        
         const inst = this.getInstrumentForBlock(args[internalIDKey], util);
         const vol = this.getVolumeForBlock(args[internalIDKey], util);
         let beats = Cast.toNumber(args.SECS);
         beats = this.musicCreationHelper._clampBeats(beats);
-        let played_one = false;
-        
-        _args[0].NOTE = notes[0];
-        _args[1].NOTE = notes[1];
-        _args[2].NOTE = notes[2];
+        let instName = this.INSTRUMENT_INFO[inst].name;
 
-        if (this.musicCreationHelper._stackTimerNeedsInit(util)) {
-            this.musicCreationHelper.internalPlayNote(_args[0],util,inst,vol);
-            this.musicCreationHelper.internalPlayNote(_args[1],util,inst,vol);
+        const visualizeByIndex = (index) => {
+            let toAdd = [_args[index].NOTE,beats,instName];
+            this.noteList.push(toAdd);
+            toAdd.push(vol);
+            this.vizHelper.requestViz(toAdd, util);
+            this.wavenoteList.push(toAdd);
         }
-        this/*.musicCreationHelper*/.playNote(_args[2],util,inst,vol);
-
         
-        // const play = ((note,index) => {
-        //     if (note === 0) return;
-        //     let curr_args = _args[index];
-        //     curr_args.NOTE = notes[index];
-        //     if (!played_one) {
-        //         console.log('first',note);
-        //         this/*.musicCreationHelper*/.playNote(curr_args,util,inst,vol);
-        //     } else {
-        //         console.log(index,note);
-        //         this.musicCreationHelper.internalPlayNote(curr_args,util,inst,vol);
-        //     }
-        //     toAdd = [note,beats,this.INSTRUMENT_INFO[inst][name]];
-        //     this.noteList.push(toAdd);
-        //     toAdd.push(vol);
-        //     this.vizHelper.requestViz(toAdd, util);
-        //     this.wavenoteList.push(toAdd);
-        //     played_one = true;
-        // })
-
-        // notes.forEach((note,index) => {play(note,index)});
+        _args.forEach((arg,index) => arg.NOTE = notes[index]);
+        
+        for (let i = 1; i < notes.length; i++) {
+            if (this.musicCreationHelper.stackTimerNeedsInit(util)) {
+                this.musicCreationHelper.internalPlayNote(_args[i],util,inst,vol);
+                visualizeByIndex(i);
+            }
+            
+        }
+        
+        this.playNote(_args[0],util,inst,vol);
     }
 }
 

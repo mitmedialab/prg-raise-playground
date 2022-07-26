@@ -645,7 +645,7 @@ class MusicCreationHelpers {
     }
 
     playNote(args, util, instrument, vol) {
-        if (this._stackTimerNeedsInit(util)) {
+        if (this.stackTimerNeedsInit(util)) {
             let note = Cast.toNumber(args.NOTE);
             note = MathUtil.clamp(note,
                 MusicCreationHelpers.MIDI_NOTE_RANGE.min, MusicCreationHelpers.MIDI_NOTE_RANGE.max);
@@ -754,9 +754,9 @@ class MusicCreationHelpers {
      * Check if the stack timer needs initialization.
      * @param {object} util - utility object provided by the runtime.
      * @return {boolean} - true if the stack timer needs to be initialized.
-     * @private
+     * private
      */
-    _stackTimerNeedsInit(util) {
+    stackTimerNeedsInit(util) {
         return !util.stackFrame.timer;
     }
 
