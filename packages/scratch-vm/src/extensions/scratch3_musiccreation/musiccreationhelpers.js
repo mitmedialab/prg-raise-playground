@@ -8,7 +8,6 @@ const { clamp } = require('../../util/math-util');
 const { p } = require('./letters');
 const BlockUtility = require('../../engine/block-utility');
 const VizHelpers = require('./vizhelpers');
-const regeneratorRuntime = require("regenerator-runtime");
 
 /**
  * The instrument and drum sounds, loaded as static assets.
