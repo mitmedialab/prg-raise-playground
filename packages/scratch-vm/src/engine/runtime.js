@@ -1558,9 +1558,9 @@ class Runtime extends EventEmitter {
         const self = this;
         return new Promise(function(resolve, reject) {
             let attempts = 0;
-            const intervals = setInterval(() => {
+            const interval = setInterval(() => {
                 if (self.audioEngine) {
-                    clearInterval(intervals);
+                    clearInterval(interval);
                     resolve(self.audioEngine);
                 }
                 else if (++attempts > maxAttempts) {
