@@ -29,6 +29,7 @@ const Video = require('../io/video');
 
 const StringUtil = require('../util/string-util');
 const uid = require('../util/uid');
+const AudioEngine = require('scratch-audio/src/AudioEngine');
 
 const defaultBlockPackages = {
     scratch3_control: require('../blocks/scratch3_control'),
@@ -1547,6 +1548,29 @@ class Runtime extends EventEmitter {
             this._hats[opcode].edgeActivated;
     }
 
+    /**
+     * Try to retrieve the audio engine attached to this runtime
+     * @returns {Promise<AudioEngine>}
+     */
+    awaitAudioEngine() {
+        const maxAttempts = 5;
+        const attemptIntervalMs = 500;
+        const self = this;
+        return new Promise((resolve, reject) => {
+            let attempts = 0;
+            const interval = setInterval(() => {
+                const {audioEngine} = self;
+                if (audioEngine) {
+                    clearInterval(interval);
+                    resolve(audioEngine);
+                }
+                else if (++attempts > maxAttempts) {
+                    reject();
+                }
+            }, attemptIntervalMs); // (*)
+          })
+          .catch(new Error('No Audio Context Detected'));
+    }
 
     /**
      * Attach the audio engine

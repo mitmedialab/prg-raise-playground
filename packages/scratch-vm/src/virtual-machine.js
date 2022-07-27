@@ -40,6 +40,7 @@ const CORE_EXTENSIONS = [
     // 'operators',
     // 'variables',
     // 'myBlocks'
+    'musiccreation'
 ];
 
 class ScratchCanvasRecorder {

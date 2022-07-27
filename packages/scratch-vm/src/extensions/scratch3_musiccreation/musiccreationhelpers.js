@@ -237,20 +237,14 @@ class MusicCreationHelpers {
         });
     }
 
+
     /**
      * Decode a sound and return a promise with the audio buffer.
      * @param  {ArrayBuffer} soundBuffer - a buffer containing the encoded audio.
      * @return {Promise} - a promise which will resolve once the sound has decoded.
      */
     _decodeSound(soundBuffer) {
-        const engine = this.runtime.audioEngine;
-
-        if (!engine) {
-            return Promise.reject(new Error('No Audio Context Detected'));
-        }
-
-        // Check for newer promise-based API
-        return engine.decodeSoundPlayer({ data: { buffer: soundBuffer } });
+        return this.runtime.awaitAudioEngine().then(e => e.decodeSoundPlayer({ data: { buffer: soundBuffer } }));
     }
 
     /**
