@@ -31,6 +31,9 @@ class Scratch3MusicCreation {
         // whole, half, whole, whole, half, whole, whole
         this.minorScale = [0, 2, 3, 5, 7, 8, 10, 12];
 
+        // whole, whole, whole plus half, whole, whole plus half
+        this.pentatonicScale = [0, 2, 4, 7, 9, 12];
+
         this.musicPlayer = new MusicPlayers(runtime);
         this.vizHelper = new VizHelpers(runtime);
         this.musicCreationHelper = new MusicCreationHelpers(runtime);
@@ -533,7 +536,7 @@ class Scratch3MusicCreation {
                 },
                 SCALE_TYPES: {
                     acceptReporters: false,
-                    items: ["Major", "Minor"]
+                    items: ["Major", "Minor", "Pentatonic"]
                 },
             }
         };
@@ -810,7 +813,7 @@ class Scratch3MusicCreation {
         const octave = Math.floor(note / 12);
         let root = parseInt(SCALE) + octave * 12;
         root = root < note ? root : root - 12;
-        const offsets = TYPE === 'Major' ? this.majorScale : this.minorScale; 
+        const offsets = TYPE === 'Major' ? this.majorScale : TYPE === 'Pentatonic' ? this.pentatonicScale : this.minorScale; 
         const rounded = root + this.getClosestEntry(offsets, note - root);
         return rounded;
     }
