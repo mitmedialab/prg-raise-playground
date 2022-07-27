@@ -42,6 +42,14 @@ module.exports = {
     'instruments/17-music-box/60.mp3': require('!arraybuffer-loader!./assets/instruments/17-music-box/60.mp3'),
     'instruments/18-steel-drum/60.mp3': require('!arraybuffer-loader!./assets/instruments/18-steel-drum/60.mp3'),
     'instruments/19-marimba/60.mp3': require('!arraybuffer-loader!./assets/instruments/19-marimba/60.mp3'),
+    'instruments/20-synth-lead/24.mp3': require('!arraybuffer-loader!./assets/instruments/20-synth-lead/24.mp3'),
+    'instruments/20-synth-lead/36.mp3': require('!arraybuffer-loader!./assets/instruments/20-synth-lead/36.mp3'),
+    'instruments/20-synth-lead/48.mp3': require('!arraybuffer-loader!./assets/instruments/20-synth-lead/48.mp3'),
     'instruments/20-synth-lead/60.mp3': require('!arraybuffer-loader!./assets/instruments/20-synth-lead/60.mp3'),
+    'instruments/20-synth-lead/72.mp3': require('!arraybuffer-loader!./assets/instruments/20-synth-lead/72.mp3'),
+    'instruments/20-synth-lead/84.mp3': require('!arraybuffer-loader!./assets/instruments/20-synth-lead/84.mp3'),
+    'instruments/20-synth-lead/96.mp3': require('!arraybuffer-loader!./assets/instruments/20-synth-lead/96.mp3'),
+    'instruments/20-synth-lead/108.mp3': require('!arraybuffer-loader!./assets/instruments/20-synth-lead/108.mp3'),
+    'instruments/20-synth-lead/120.mp3': require('!arraybuffer-loader!./assets/instruments/20-synth-lead/120.mp3'),
     'instruments/21-synth-pad/60.mp3': require('!arraybuffer-loader!./assets/instruments/21-synth-pad/60.mp3')
 };

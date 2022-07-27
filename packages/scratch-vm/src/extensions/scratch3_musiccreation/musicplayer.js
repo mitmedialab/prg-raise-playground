@@ -180,7 +180,7 @@ class MusicPlayer {
                 }),
                 dirName: '20-synth-lead',
                 releaseTime: 0.1,
-                samples: [60]
+                samples: [24, 36, 48, 60, 72, 84, 96, 108, 120]
             }
         ];
     }
