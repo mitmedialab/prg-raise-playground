@@ -381,7 +381,7 @@ class Scratch3MusicCreation {
                     opcode: 'roundNoteToScale',
                     text: formatMessage({
                         id: 'musiccreation.toScaleNote',
-                        default: 'Scale [NOTE] to [SCALE] [TYPE]',
+                        default: 'Round [NOTE] to [SCALE] [TYPE] scale',
                         description: 'scale a note value to the closest note withing a given scale'
                     }),
                     blockType: BlockType.REPORTER,
