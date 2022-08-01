@@ -45,7 +45,19 @@ export type ExtensionMenuDisplayDetails = {
   description: string;
   iconURL: string;
   insetIconURL: string;
-  [key: string] : any
+  internetConnectionRequired?: boolean;
+  collaborator?: string;
+  bluetoothRequired?: boolean;
+  launchPeripheralConnectionFlow?: boolean;
+  useAutoScan?: boolean;
+  connectionIconURL?: string;
+  connectionSmallIconURL?: string;
+  connectionTipIconURL?: string;
+  connectingMessage?: string;
+  helpLink?: string;
+  featured?: boolean;
+  hidden?: boolean;
+  disabled?: boolean;
 }
 
 /**
@@ -77,6 +89,9 @@ export type UnionToTuple<T> = UnionToIntersection<
 > extends (_: never) => infer W
   ? [...UnionToTuple<Exclude<T, W>>, W]
   : [];
+
+export type KeysWithValsOfType<T,V> = keyof { [ P in keyof T as T[P] extends V ? P : never ] : P };
+
 
 // Type definitions for scratch-vm (extension environment) 3.0
 // Project: https://github.com/LLK/scratch-vm#readme
