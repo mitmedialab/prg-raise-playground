@@ -1,8 +1,6 @@
 import ts = require("typescript");
 import path = require("path");
-import { ExtensionMenuDisplayDetails } from "../../src/typescript-support/types";
-import TypeProbe from "./TypeProbe";
-import { cachedPathsToMenuDetails } from "./extensionArchetypes";
+import { ExtensionMenuDisplayDetails, KeysWithValsOfType } from "../../src/typescript-support/types";
 
 export type DisplayDetailsRetrievalPaths = Record<keyof ExtensionMenuDisplayDetails, string[]>;
 
@@ -34,13 +32,36 @@ export const isExtension = (type: ts.Type) => {
 }
 
 const getMenuDisplayDetails = (type: ts.Type): ExtensionMenuDisplayDetails => {
-  const baseExtensionType = type.getBaseTypes()?.find(t => t.symbol.name === "Extension");
-  const paths = cachedPathsToMenuDetails;
+  //@ts-ignore
+  const pathToMembers : any[] = type.getBaseTypes()[0].resolvedTypeArguments[0].symbol.declarations[0].members;
 
-  return {
-    title: TypeProbe.FromSerialization<string>(baseExtensionType, paths.title[0]).value,
-    description: TypeProbe.FromSerialization<string>(baseExtensionType, paths.description[0]).value,
-    iconURL: TypeProbe.FromSerialization<string>(baseExtensionType, paths.iconURL[0]).value,
-    insetIconURL: TypeProbe.FromSerialization<string>(baseExtensionType, paths.insetIconURL[0]).value,
-  }
+  let res = {};
+  // type string_keys = KeysWithValsOfType<ExtensionMenuDisplayDetails,string>;
+  // type boolean_keys = KeysWithValsOfType<ExtensionMenuDisplayDetails,boolean>;
+  
+  pathToMembers.forEach(member => {
+    const key : string = member.symbol.escapedName;
+    let val : string | boolean;
+    const kind : number = member.type.literal.kind;
+    
+    switch (kind) {
+      case 10:
+        val = member.type.literal.text;
+        break;
+      case 95:
+        val = false;
+        break;
+      case 110:
+        val = true;
+        break;
+      default:
+        throw new TypeError("unexpected value found");
+    }
+
+    res[key] = val;
+  })
+
+  const res_keys = Object.keys(res);
+  console.assert(res_keys.includes('title') && res_keys.includes('description') && res_keys.includes('iconURL') && res_keys.includes('insertIconURL'));
+  return res as ExtensionMenuDisplayDetails;
 }
