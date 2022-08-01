@@ -624,7 +624,7 @@ class MusicCreationHelpers {
         this._initNote(util, sampleArray, sampleIndex, note, player, instInfo, durationSec, vol);
     }
 
-    internalPlayNote(args,util,instrument, vol) {
+    internalPlayNote(args,util,instrument, vol,start_timer) {
         let note = Cast.toNumber(args.NOTE);
         note = MathUtil.clamp(note,
             MusicCreationHelpers.MIDI_NOTE_RANGE.min, MusicCreationHelpers.MIDI_NOTE_RANGE.max);
@@ -635,6 +635,7 @@ class MusicCreationHelpers {
         if (beats === 0) return;
 
         const durationSec = beats;
+        if (start_timer) this._startStackTimer(util, durationSec);
         this._playNote(util, note, durationSec, instrument, vol);
 
         // this._startStackTimer(util, durationSec);
@@ -646,23 +647,7 @@ class MusicCreationHelpers {
 
     playNote(args, util, instrument, vol) {
         if (this.stackTimerNeedsInit(util)) {
-            let note = Cast.toNumber(args.NOTE);
-            note = MathUtil.clamp(note,
-                MusicCreationHelpers.MIDI_NOTE_RANGE.min, MusicCreationHelpers.MIDI_NOTE_RANGE.max);
-            let beats = Cast.toNumber(args.SECS);
-            beats = this._clampBeats(beats);
-            // If the duration is 0, do not play the note. In Scratch 2.0, "play drum for 0 beats" plays the drum,
-            // but "play note for 0 beats" is silent.
-            if (beats === 0) return;
-
-            const durationSec = beats;
-            this._playNote(util, note, durationSec, instrument, vol);
-
-            this._startStackTimer(util, durationSec);
-            const musicState = this._getMusicState(util.target);
-            const inst = musicState.currentInstrument;
-            const instrumentInfo = this.INSTRUMENT_INFO[inst]
-            return [note, beats, instrumentInfo.name];
+            return this.internalPlayNote(args,util,instrument,vol,true);
         } else {
             this._checkStackTimer(util);
             return [];
@@ -754,7 +739,6 @@ class MusicCreationHelpers {
      * Check if the stack timer needs initialization.
      * @param {object} util - utility object provided by the runtime.
      * @return {boolean} - true if the stack timer needs to be initialized.
-     * private
      */
     stackTimerNeedsInit(util) {
         return !util.stackFrame.timer;

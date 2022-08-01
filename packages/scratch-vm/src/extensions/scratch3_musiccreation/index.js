@@ -775,7 +775,7 @@ class Scratch3MusicCreation {
         
         for (let i = 1; i < notes.length; i++) {
             if (this.musicCreationHelper.stackTimerNeedsInit(util)) {
-                this.musicCreationHelper.internalPlayNote(_args[i],util,inst,vol);
+                this.musicCreationHelper.internalPlayNote(_args[i],util,inst,vol,false);
                 visualizeByIndex(i);
             }
             
