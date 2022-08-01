@@ -353,6 +353,31 @@ class Scratch3MusicCreation {
                     }
                 },
                 {
+                    opcode: 'playNoteList',
+                    blockType: BlockType.COMMAND,
+                    text: 'play notes [A][B][C] for [SECS] beats',
+                    arguments: {
+                        A: {
+                            type: ArgumentType.NOTE,
+                            defaultValue: 0
+                        },
+                        B: {
+                            type: ArgumentType.NOTE,
+                            
+                            defaultValue: 0
+                        },
+                        C: {
+                            type: ArgumentType.NOTE,
+                            defaultValue: 0
+                        },
+                        SECS: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0.25,
+                            menu: "BEATS"
+                        }
+                    }
+                },
+                {
                     opcode: 'testMagentaRNN',
                     text: formatMessage({
                         id: 'musiccreation.testMagentaRNN',
@@ -726,6 +751,37 @@ class Scratch3MusicCreation {
             this.vizHelper.requestViz(toAdd, util);
             this.wavenoteList.push(toAdd);
         }
+    }
+
+    playNoteList(args,util) {
+        const notes = [Cast.toNumber(args.A),Cast.toNumber(args.B),Cast.toNumber(args.C)].filter(note => note > 0);
+        if (notes.length === 0) return;
+        const _args = notes.map(_ => JSON.parse(JSON.stringify(args)));        
+        const inst = this.getInstrumentForBlock(args[internalIDKey], util);
+        const vol = this.getVolumeForBlock(args[internalIDKey], util);
+        let beats = Cast.toNumber(args.SECS);
+        beats = this.musicCreationHelper._clampBeats(beats);
+        let instName = this.INSTRUMENT_INFO[inst].name;
+
+        const visualizeByIndex = (index) => {
+            let toAdd = [_args[index].NOTE,beats,instName];
+            this.noteList.push(toAdd);
+            toAdd.push(vol);
+            this.vizHelper.requestViz(toAdd, util);
+            this.wavenoteList.push(toAdd);
+        }
+        
+        _args.forEach((arg,index) => arg.NOTE = notes[index]);
+        
+        for (let i = 1; i < notes.length; i++) {
+            if (this.musicCreationHelper.stackTimerNeedsInit(util)) {
+                this.musicCreationHelper.internalPlayNote(_args[i],util,inst,vol,false);
+                visualizeByIndex(i);
+            }
+            
+        }
+        
+        this.playNote(_args[0],util,inst,vol);
     }
 }
 
