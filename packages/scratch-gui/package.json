@@ -144,6 +144,7 @@
     }
   },
   "dependencies": {
+    "aframe": "^1.0.4",
     "microbit-web-bluetooth": "^0.6.0"
   }
 }
