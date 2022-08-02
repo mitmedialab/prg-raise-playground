@@ -25,6 +25,14 @@ class Scratch3MusicCreation {
         this.runtime = runtime;
         this.beats = givenBeatValues.map(this.beatsToSecs);
 
+        // whole, whole, half, whole, whole, whole, half
+        this.majorScale = [0, 2, 4, 5, 7, 9, 11, 12];
+
+        // whole, half, whole, whole, half, whole, whole
+        this.minorScale = [0, 2, 3, 5, 7, 8, 10, 12];
+
+        // whole, whole, whole plus half, whole, whole plus half
+        this.pentatonicScale = [0, 2, 4, 7, 9, 12];
 
         this.musicPlayer = new MusicPlayers(runtime);
         this.vizHelper = new VizHelpers(runtime);
@@ -328,6 +336,31 @@ class Scratch3MusicCreation {
                     blockType: BlockType.REPORTER
                 },
                 {
+                    opcode: 'roundNoteToScale',
+                    text: formatMessage({
+                        id: 'musiccreation.toScaleNote',
+                        default: 'Round [NOTE] to [SCALE] [TYPE] scale',
+                        description: 'scale a note value to the closest note withing a given scale'
+                    }),
+                    blockType: BlockType.REPORTER,
+                    arguments: {
+                        NOTE: {
+                            type: ArgumentType.NOTE,
+                            defaultValue: 60
+                        },
+                        SCALE: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: "0",
+                            menu: "SCALE_NOTES"
+                        },
+                        TYPE: {
+                            type: ArgumentType.STRING,
+                            defaultValue: "Major",
+                            menu: "SCALE_TYPES"
+                        }
+                    }
+                },
+                {
                     opcode: 'getInstrument',
                     text: formatMessage({
                         id: 'musiccreation.getInstrument',
@@ -347,7 +380,7 @@ class Scratch3MusicCreation {
                         },
                         SECS: {
                             type: ArgumentType.NUMBER,
-                            defaultValue: 0.25,
+                            defaultValue: 0.5,
                             menu: "BEATS"
                         }
                     }
@@ -484,8 +517,27 @@ class Scratch3MusicCreation {
                 SETTING: {
                     acceptReporters: false,
                     items: this.createNotesRNNSettings
-                }
-
+                },
+                SCALE_NOTES: {
+                    acceptReporters: false,
+                    items: [
+                        {text: 'C', value: '0'}, 
+                        {text: 'C#', value: '1'}, 
+                        {text: 'D', value: '2'}, 
+                        {text: 'D#', value: '3'}, 
+                        {text: 'E', value: '4'}, 
+                        {text: 'F', value: '5'},
+                        {text: 'F#', value: '6'},
+                        {text: 'G', value: '7'},
+                        {text: 'G#', value: '8'},
+                        {text: 'A', value: '9'},
+                        {text: 'A#', value: '10'},
+                        {text: 'B', value: '11'}]
+                },
+                SCALE_TYPES: {
+                    acceptReporters: false,
+                    items: ["Major", "Minor", "Pentatonic"]
+                },
             }
         };
     }
@@ -735,6 +787,35 @@ class Scratch3MusicCreation {
     setVolume(args, util) {
         const volume = Cast.toNumber(args.VOLUME);
         this.musicCreationHelper._updateVolume(volume, util);
+    }
+
+    /**
+     * @param {number[]} arr 
+     * @param {number} query 
+     */
+    getClosestEntry(arr, query) {
+        const initial = {delta: Number.MAX_SAFE_INTEGER, index: -1};
+        const closestIndex = arr
+            .map((item, index) => ({delta: Math.abs(item - query), index}))
+            .reduce((previous, current) => current.delta < previous.delta ? current : previous, initial)
+            .index;
+        return arr[closestIndex];
+    }
+
+    /**
+     * Scales a note value to a given scale
+     * @param {{NOTE: number, SCALE: string}} args 
+     * @param {BlockUtility} util 
+     */
+     roundNoteToScale(args, util) {
+        const {NOTE, SCALE, TYPE} = args;
+        const note = parseFloat(NOTE);
+        const octave = Math.floor(note / 12);
+        let root = parseInt(SCALE) + octave * 12;
+        root = root < note ? root : root - 12;
+        const offsets = TYPE === 'Major' ? this.majorScale : TYPE === 'Pentatonic' ? this.pentatonicScale : this.minorScale; 
+        const rounded = root + this.getClosestEntry(offsets, note - root);
+        return rounded;
     }
 
     getVolume(util) {
