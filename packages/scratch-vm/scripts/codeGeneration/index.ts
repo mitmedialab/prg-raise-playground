@@ -67,6 +67,9 @@ export const generateCodeForExtensions = (extensions: Record<string, ExtensionMe
   let importInsertIndex = indices[0]+1;
   let menuItemInsertIndex = indices[2] - shift + 1;
 
+  const assetsFolder = path.resolve(__dirname,...relativePathToAssetsFolder);
+  if (!existsSync(assetsFolder)) mkdirSync(assetsFolder);
+
   for (const str in extensions) {
     const ext = extensions[str];
     const iconURL = ext.iconURL;
