@@ -11,10 +11,19 @@ const WaveformHelper = require('./waveform');
 const SpectrogramHelper = require('./spectrogram');
 const FFTHelper = require('./fft');
 const { updateVariableIdentifiers } = require('../../util/variable-util');
+const { e } = require('./letters');
+const BlockUtility = require('../../engine/block-utility');
 
 class VizHelpers {
     constructor (runtime) {
         this.runtime = runtime;
+
+        this._count = 0;
+        this._visState = {status: false, mode: undefined};
+        this._noteBuf = {sheet: [], wave: [], freq: [], freqs: []};
+        this._visNames = {1: 'sheet', 2: 'wave', 3: 'freq', 4: 'freqs'};
+        this._visLims = {'sheet': 50, 'wave': 5, 'freq': 15, 'freqs': 15};
+        this._continuousScroll = {'sheet': false, 'wave': true, 'freq': false, 'freqs': true};
 
         /**
          * The ID of the renderer Skin corresponding to the pen layer.
@@ -180,6 +189,94 @@ class VizHelpers {
         return penState;
     }
 
+    toggleVisMode (args,util) {
+        const status = Cast.toNumber(args.STATUS);
+        const mode = Cast.toNumber(args.FORMAT);
+        const prev_mode = this._visState.mode;
+        const prev_status = this._visState.status;
+        const status_bool = !!status;
+        this._visState = { mode:mode, status:status_bool };
+        if (!status_bool) {
+            this.clearAllViz();
+        } else if (mode !== prev_mode || !prev_status) this.requestViz(null,util);
+    }
+
+    clearAllViz() {
+        this.fftViz.clear();
+        this.sheetMusicViz.clear();
+        this.spectrogramViz.clear();
+        this.waveformViz.clear();
+        this.clear();
+    }
+
+    clearNoteBuffers () {
+        for (let b in this._noteBuf) {
+            this._noteBuf[b] = [];
+        }
+    }
+
+
+    clearSheetMusicList() {
+        this._noteBuf['sheet'].length = 0;
+    }
+
+    /**
+     * 
+     * @param {array} note - [freq, duration, instrument, volume]
+     */
+    requestViz (note, util) {
+        if (this._visState['status']) {
+            this.processViz(note, util);
+        }
+    }
+
+
+    /**
+     * 
+     * @param {[number,number,string,number] | null} note - if null, this represents the case where we are clearing the canvas
+     *                                                      otherwise, [note,duration,instrument name, volume] 
+     * @param {BlockUtility} util 
+     */
+    processViz (note,util) { 
+        const mode = this._visState['mode'];
+        const name = this._visNames[mode];
+        const lim = this._visLims[name];
+        const cont = this._continuousScroll[name];
+        let buf = this._noteBuf[name];
+        if (cont) {
+            while (buf.length + 1 >= lim) {
+                buf = buf.splice(1);
+            }
+        } else {
+            if (buf.length + 1 >= lim) buf = [];
+        }
+        
+        try {
+            note[4] = this._count++;
+            buf.push(note);
+        } catch (error) {
+            buf = [];
+        }
+        this._noteBuf[name] = buf;
+        const [x, y] = this.getXY(util);
+        switch (name) {
+            case 'wave':
+                this.testWaveformViz(buf,null,util);
+                break;
+            case 'freq':
+                this.testFreqViz(buf,null,util);
+                break;
+            case 'freqs':
+                this.testSpectViz(buf,null,util);
+                break;
+            default:
+                this.testSheetMusicViz(buf,null,util);
+        }
+        if (util && util.target) {
+            util.target.setXY(x, y);
+        }
+    }
+
     testWaveformViz (noteList, args, util) {
         this.fftViz.clear();
         this.sheetMusicViz.clear();
@@ -195,7 +292,7 @@ class VizHelpers {
         this.spectrogramViz.clear();
         this.waveformViz.clear();
         log.log("VIZ", noteList);
-        this.sheetMusicViz.testSheetMusicViz(noteList, args, util);
+        this.sheetMusicViz.testSheetMusicViz(noteList, args, util, this);
     }
 
     testFreqViz (noteList, args, util) {
@@ -372,6 +469,16 @@ class VizHelpers {
         }
     }
 
+    /**
+     * 
+     * @param {BlockUtility} util 
+     */
+    getXY (util) {
+        if (!util) return [0, 0];
+        if (!util.target) return [0, 0];
+        const {x, y} = util.target;
+        return [x ? x : 0, y ? y: 0];
+    }
 }
 
 module.exports = VizHelpers;

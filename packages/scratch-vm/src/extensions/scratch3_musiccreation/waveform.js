@@ -4,6 +4,7 @@ const Cast = require('../../util/cast');
 const Color = require('../../util/color');
 const RenderedTarget = require('../../sprites/rendered-target');
 const StageLayering = require('../../engine/stage-layering');
+const FreqToNote = require('./freqtonote');
 
 const letters = require('./letters');
 const textRender = require('./textrender');
@@ -144,60 +145,7 @@ class Waveform {
             "Synth":[[1,1], [2, 0], [3, 0], [4, 0]]  //DONE
         }
 
-        freqToName = {
-            36: "c2",
-            37: "cS2",
-            38: "d2",
-            39: "eF2",
-            40: "e2",
-            41: "f2",
-            42: "fS2",
-            43: "g2",
-            44: "gS2",
-            45: "a2",
-            46: "bF2",
-            47: "b2",
-            48: "c3",
-            49: "cS3",
-            50: "d3",
-            51: "eF3",
-            52: "e3",
-            53: "f3",
-            54: "fS3",
-            55: "g3",
-            56: "gS3",
-            57: "a3",
-            58: "bF3",
-            59: "b3",
-            60: "c4",
-            61: "cS4",
-            62: "d4",
-            63: "eF4",
-            64: "e4",
-            65: "f4",
-            66: "fS4",
-            67: "g4",
-            68: "gS4",
-            69: "a4",
-            70: "bF4",
-            71: "b4",
-            72: "c5",
-            73: "cS5",
-            74: "d5",
-            75: "eF5",
-            76: "e5",
-            77: "f5",
-            78: "fS5",
-            79: "g5",
-            80: "gS5",
-            81: "a5",
-            82: "bF5",
-            83: "b5",
-            84: "c6",
-            85: "cS6" 
-        }
-
-        freqToColor = {};
+        colorToFreq = {};
     }
 
     /**
@@ -370,9 +318,8 @@ class Waveform {
         this.setPenColorToColor(this.black, util);
         this.drawString('legend',colorX, this.legendStartY + this.legendLengthY - 5, 0.7, args, util);
 
-        //draw Color mappings
-        for (var i in freqToColor) {
-            this.setPenColorToColor(freqToColor[i], util);
+        for (let color in colorToFreq) {
+            this.setPenColorToColor(color, util);
             for (var c = 0; c <= 10; c++) {
                 this.penUp(args, util);
                 util.target.setXY(colorX, colorY-c);
@@ -381,9 +328,10 @@ class Waveform {
             }
             this.setPenColorToColor(this.black, util);
             this.penUp(args, util);
-            this.drawString(freqToName[i], colorX+25, colorY, 0.6, args, util);
+            this.drawString(FreqToNote.freqToNote(colorToFreq[color]), colorX+25, colorY, 0.6, args, util);
             colorY -= 15;
         }
+
         this.setPenColorToColor(this.black, util);
         this.penUp(args, util);
 
@@ -405,9 +353,20 @@ class Waveform {
         this.textRenderer.say('here', args, util);
     }
 
+    /**
+     * 
+     * @param {array} note - note[4] contains the ID of this note
+     * @returns the color associated with this note
+     */
+    getColorFromNote(note) {
+        colors = ['0xff0000', '0x0000ff', '0x00ff00', '0xffa500'];
+        return colors[note[4] % colors.length];
+    }
+
     drawSignal(args, util) {
         colors = ['0xff0000', '0x0000ff', '0x00ff00', '0xffa500']
-        freqToColor = {};
+        const color_count = colors.length;
+        colorToFreq = {};
         x = this.axisStartX;
         y = this.axisStartY+this.yAxisLength/2;
         signal = this.noteList;
@@ -427,14 +386,9 @@ class Waveform {
             dur = note[1];
             inst = note[2];
             vol = note[3];
-            if (midi in freqToColor) {
-                c = freqToColor[midi];
-                this.setPenColorToColor(c, util);
-            } else {
-                c = colors[i%4];
-                this.setPenColorToColor(c, util);
-                freqToColor[midi] = c;
-            }
+            c = this.getColorFromNote(note);
+            colorToFreq[c] = midi;
+            this.setPenColorToColor(c,util);
             freq = 2**((midi - 69)/12)*440;
             Omega = 2*Math.PI*freq/44140;
             var st = st*prevFreq/Omega;

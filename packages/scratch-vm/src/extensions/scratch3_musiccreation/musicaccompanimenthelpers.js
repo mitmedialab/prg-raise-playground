@@ -23,8 +23,10 @@ try {
 }
 
 class MusicAccompanimentHelpers {
-    constructor (runtime) {
+    constructor (runtime, validNoteDurations, beatsPerSec) {
         this.runtime = runtime;
+        this.validNoteDurations = validNoteDurations;
+        this.beatsPerSec = beatsPerSec;
         TWINKLE_TWINKLE = {
             notes: [
               {pitch: 60, startTime: 0.0, endTime: 0.5},
@@ -46,9 +48,6 @@ class MusicAccompanimentHelpers {
           };
 
           this.noteList = [];
-          player = new core.SoundFontPlayer('https://storage.googleapis.com/magentadata/js/soundfonts/sgm_plus');
-          rnnPlayer = new core.SoundFontPlayer('https://storage.googleapis.com/magentadata/js/soundfonts/sgm_plus');
-          vaePlayer = new core.SoundFontPlayer('https://storage.googleapis.com/magentadata/js/soundfonts/sgm_plus');
 
           music_rnn = new rnn.MusicRNN('https://storage.googleapis.com/magentadata/js/checkpoints/music_rnn/basic_rnn');
           music_rnn.initialize();
@@ -59,81 +58,50 @@ class MusicAccompanimentHelpers {
     }
 
     configure(noteList) {
-        newNotes = {
-            notes: [
+        let elapsedTime = 0;
+        const notes = noteList.map(([pitch, duration]) => {
+            const startTime = elapsedTime;
+            elapsedTime = startTime + parseFloat(duration);
+            return {pitch, startTime, endTime: elapsedTime};
+        });
+        
+        return {notes, totalTime: elapsedTime};;
+    }
 
-            ],
-            totalTime: 0
-        };
-        t = 0;
-        for (var i in noteList) {
-            note = noteList[i];
-            newNotes.notes.push({pitch: note[0], startTime: t, endTime: t + note[1]});
-            t = t + note[1];
-            newNotes.totalTime += note[1];
-        }
-        return newNotes;
+    constrainDuration(duration) {
+        const initial = {delta: Number.MAX_VALUE, index: -1};
+        const {index} = this.validNoteDurations
+            .map((valid, index) => ({delta: Math.abs(valid - duration), index})) 
+            .reduce((minimum, query) => (query.delta < minimum.delta) ? query : minimum, initial);
+        return parseFloat(this.validNoteDurations[index]);
     }
 
     processed(notes) {
-        newNoteList = [];
-        for (var i in notes) {
-            note = notes[i];
-            newNoteList.push([note.pitch, (note.quantizedEndStep-note.quantizedStartStep)/4, "Piano", 60]);
-        }
-        return newNoteList;
+        return notes.map(note => {
+            const {quantizedStartStep, quantizedEndStep, pitch} = note;
+            const duration = (quantizedEndStep - quantizedStartStep) / this.beatsPerSec;
+            return [pitch, this.constrainDuration(duration), "Piano", 60];
+        });
     }
 
     async testMagentaRNN (noteList, args, utils) {
-        if (rnnPlayer.isPlaying()) {
-            rnnPlayer.stop();
-            return;
-        }
         notes = this.configure(noteList);
-
         rnn_steps = Cast.toNumber(args.STEPS);
         rnn_temperature = Cast.toNumber(args.TEMP);
               
         // The model expects a quantized sequence, and ours was unquantized:
-        const qns = core.sequences.quantizeNoteSequence(notes, 4);
-        var newNotes = [];
-        await music_rnn
-        .continueSequence(qns, rnn_steps, rnn_temperature)
-        .then((sample) => {
-            newNotes.push(sample);
-            rnnPlayer.start(sample)});
-        const magentaN = async () => {
-            const a = await newNotes;
-            magentaNotes = this.processed(a[0].notes);
-            return magentaNotes;
-            };
-        magentaNotes = await magentaN();
+        const qns = core.sequences.quantizeNoteSequence(notes, this.beatsPerSec);
+        const generated = await music_rnn.continueSequence(qns, rnn_steps, rnn_temperature);
+        magentaNotes = this.processed(generated.notes);
         return magentaNotes;
-        var magentaNotes = newNotes[0].notes;
-        return this.processed(magentaNotes);
-        
     }
 
     async testMagentaMVAE (utils) {
-        if (vaePlayer.isPlaying()) {
-            vaePlayer.stop();
-            return;
-        }
-        var vae_temperature = 3;
-        var samples = [];
-        await music_vae.sample(1, vae_temperature)
-        .then((sample) => {
-            samples.push(sample);
-            vaePlayer.start(sample[0])});
-        const magentaN = async () => {
-            const a = await samples;
-            magentaNotes = this.processed(a[0][0].notes);
-            return magentaNotes;
-          };
-        magentaNotes = await magentaN();
+        const vae_temperature = 3;
+        const generated = await music_vae.sample(1, vae_temperature)
+        magentaNotes = this.processed(generated[0].notes);
         return magentaNotes;
     }
-
 }
 
 module.exports = MusicAccompanimentHelpers;

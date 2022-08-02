@@ -4,6 +4,7 @@ const formatMessage = require('format-message');
 const MathUtil = require('../../util/math-util');
 const Timer = require('../../util/timer');
 const log = require('../../util/log');
+const regeneratorRuntime = require("regenerator-runtime");
 
 /**
  * The instrument and drum sounds, loaded as static assets.
@@ -180,7 +181,7 @@ class MusicPlayer {
                 }),
                 dirName: '20-synth-lead',
                 releaseTime: 0.1,
-                samples: [60]
+                samples: [24, 36, 48, 60, 72, 84, 96, 108, 120]
             }
         ];
     }
@@ -246,14 +247,7 @@ class MusicPlayer {
      * @return {Promise} - a promise which will resolve once the sound has decoded.
      */
     _decodeSound (soundBuffer) {
-        const engine = this.runtime.audioEngine;
-
-        if (!engine) {
-            return Promise.reject(new Error('No Audio Context Detected'));
-        }
-
-        // Check for newer promise-based API
-        return engine.decodeSoundPlayer({data: {buffer: soundBuffer}});
+        return this.runtime.awaitAudioEngine().then(e => e.decodeSoundPlayer({ data: { buffer: soundBuffer } }));
     }
     
     /**

@@ -2,8 +2,9 @@ const BlockUtility = require('./block-utility');
 const BlocksExecuteCache = require('./blocks-execute-cache');
 const log = require('../util/log');
 const Thread = require('./thread');
-const {Map} = require('immutable');
+const { Map } = require('immutable');
 const cast = require('../util/cast');
+const { internalIDKey } = require('../extension-support/block-relationships');
 
 /**
  * Single BlockUtility instance reused by execute for every pritimive ran.
@@ -160,7 +161,7 @@ const handlePromise = (primitiveReportedValue, sequencer, thread, blockCached, l
  * @param {object} cached default set of cached values
  */
 class BlockCached {
-    constructor (blockContainer, cached) {
+    constructor(blockContainer, cached) {
         /**
          * Block id in its parent set of blocks.
          * @type {string}
@@ -284,9 +285,9 @@ class BlockCached {
          */
         this._ops = [];
 
-        const {runtime} = blockUtility.sequencer;
+        const { runtime } = blockUtility.sequencer;
 
-        const {opcode, fields, inputs} = this;
+        const { opcode, fields, inputs } = this;
 
         // Assign opcode isHat and blockFunction data to avoid dynamic lookups.
         this._isHat = runtime.getIsHat(opcode);
@@ -439,7 +440,7 @@ const execute = function (sequencer, thread) {
         const reported = currentStackFrame.reported;
         // Reinstate all the previous values.
         for (; i < reported.length; i++) {
-            const {opCached: oldOpCached, inputValue} = reported[i];
+            const { opCached: oldOpCached, inputValue } = reported[i];
 
             const opCached = ops.find(op => op.id === oldOpCached);
 
@@ -507,6 +508,7 @@ const execute = function (sequencer, thread) {
 
         // Update values for arguments (inputs).
         const argValues = opCached._argValues;
+        argValues[internalIDKey] = opCached.id;
 
         // Fields are set during opCached initialization.
 

@@ -27,7 +27,15 @@ class SheetMusic {
          */
         this._penDrawableId = -1;
         this.black = '0x000000';
+        this.purple = '0x800080';
+        this.lightpurple = '0xCBC3E3';
+        this.lightblue = '0x99ccff';
 
+        /**
+         * @type {Array<[number,number,string,number,number]} 
+         * 
+         * noteList[i] is [note frequency, duration, instrument name, volume, id]
+         */
         this.noteList = [];
 
         this.axisStartX = -200;
@@ -53,6 +61,9 @@ class SheetMusic {
 
         this._onTargetMoved = this._onTargetMoved.bind(this);
 
+
+        this._staffLims = {lo_note:60,hi_note:85,lo_staff:-2,hi_staff:12};
+        this._staffBaseLims = {lo_note:34,hi_note:34,lo_staff:-5, hi_staff:9};
         pitchToStaff = {
             60: -2,
             61: -2,
@@ -340,14 +351,15 @@ class SheetMusic {
         return penState;
     }
 
-    testSheetMusicViz (noteList, args, util) {
+    testSheetMusicViz (noteList, args, util,vizhelper) {
         this.setPenColorToColor(this.black, util);
         this.noteList = noteList;
         log.log("SHEET MUSIC", this.noteList);
         this.clear();
         this.drawStaff(args, util);
         this.labelStaff(args, util);
-        this.drawMusic(args, util);
+        this.drawMusic(args, util, vizhelper);
+        this.setPenColorToColor(this.black, util);
     }
 
     labelStaff (args, util) {
@@ -545,20 +557,22 @@ class SheetMusic {
         this.penUp(args, util);
     }
 
-    drawMusic(args, util) {
+    drawMusic(args, util, vizHelper) {
         var xinit = this.staffStartX+40;
         var x = xinit;
         var y = this.staffStartY;
         var xStep = 45;
-        var signal = this.convertSignalToMusicList(args, util);
         var pastVol = 0;
         var beats = 0;
+        var signal = this.convertSignalToMusicList(args, util);
+
         for (i in signal) {
             log.log(signal[i]);
             note = signal[i][0];
             duration = signal[i][1];
             volume = signal[i][2];
             acc = signal[i][4];
+            adjusted = signal[i][6];
             beats += duration;
             if (note <= 3) {
                 up = true;
@@ -570,11 +584,20 @@ class SheetMusic {
                 x = xinit+xStep;
                 y = y - this.spaceBetween-11*this.staffWidth;
             }
+            
             if (beats%4 == 0 && beats != 0) {
+                this.setPenColorToColor(this.black,util);
                 this.drawMeasure(x, y, args, util);
             }
             ymidTreble = y+note*this.staffWidth/2;
             ymidBass = y+note*this.staffWidth/2 - this.spaceBetween;
+            
+            if (adjusted) {
+                this.setPenColorToColor(this.purple,util);
+            } else {
+                this.setPenColorToColor(this.black,util);
+            }
+
             if (signal[i][3] == 'treble') {
                 ymid = ymidTreble;
                 xmid = x - 8;
@@ -617,7 +640,10 @@ class SheetMusic {
             pastVol = volume;
         }
         this.penUp(args, util);
-        
+
+        if (x > 120 && y < 0) {
+            vizHelper.clearSheetMusicList();
+        }
     }
 
     addMultiLineTie(xmid, ymid, up, xstep, args, util) {
@@ -869,6 +895,9 @@ class SheetMusic {
             util.target.setXY(xmid+flip*xrad, ymid+flip*30);
         }
         if (duration < 1) { //add tails for < quarter notes
+            if (duration === 0) {
+                return;
+            }
             offset = 0;
             for (var i = 0; i < 1/(duration*2); i++) {
                 this.penUp(args, util);
@@ -900,12 +929,25 @@ class SheetMusic {
             if (flats.includes(freq)) {
                 acc = "flat";
             }
+
+            let adjusted = false;
+
             if (freq >= 60) {
+                if (freq > this._staffLims['hi_note']) {
+                    adjusted = true;
+                    console.log(`adjusting (treble) ${freq} to ${this._staffLims['hi_note']}`);
+                    freq = this._staffLims['hi_note'];
+                } 
                 var staff = pitchToStaff[freq];
                 var dur = this.noteList[i][1]*4;
                 var amp = this.noteList[i][3];
                 var clef = "treble";
             } else {
+                if (freq === undefined || freq < this._staffBaseLims['lo_note']) {
+                    adjusted = true;
+                    console.log(`adjusting (bass) ${freq} to ${this._staffBaseLims['lo_note']}`);
+                    freq = this._staffBaseLims['lo_note'];
+                }
                 var staff = pitchToStaffBass[freq];
                 var dur = this.noteList[i][1]*4;
                 var amp = this.noteList[i][3];
@@ -914,14 +956,14 @@ class SheetMusic {
             var newBeats = 0;
             if (beats + dur == 4) {
                 newBeats = 0;
-                signal.push([staff, dur, amp, clef, acc, ""]);
+                signal.push([staff, dur, amp, clef, acc, "",adjusted]);
             } else if (beats + dur > 4) {
-                signal.push([staff, 4-beats, amp, clef, acc, "tie"]);
-                signal.push([staff, dur-(4-beats), amp, clef, acc, ""]);
+                signal.push([staff, 4-beats, amp, clef, acc, "tie",adjusted]);
+                signal.push([staff, dur-(4-beats), amp, clef, acc, "",adjusted]);
                 newBeats = dur-(4-beats);
             } else {
                 newBeats = beats + dur;
-                signal.push([staff, dur, amp, clef, acc, ""]);
+                signal.push([staff, dur, amp, clef, acc, "",adjusted]);
             }
             beats = newBeats;
 
