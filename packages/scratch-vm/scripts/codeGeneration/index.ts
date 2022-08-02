@@ -13,13 +13,21 @@ const guiIndexFile = path.resolve(__dirname, ...relativePathToIndexFile);
  */
 const guardFlagStart = "/* CODE GEN GUARD START:";
 const guardFlagEnd = "/* CODE GEN GUARD END:";
-const codeGuardStringEnd = '-- Please do not edit code within guards */';
 
-const getGuards = (identifier: string): [start:string,end:string] => [`${guardFlagStart} ${identifier} ${codeGuardStringEnd}`, `${guardFlagEnd} ${identifier} ${codeGuardStringEnd}`];
-
+const getGuards = (identifier: string): [start:string,end:string] => [`${guardFlagStart} ${identifier}`, `${guardFlagEnd} ${identifier}`];
 const iconImportGuards = getGuards("Icon Import");
 const extensionInfoGuards = getGuards("Extension Info");
 
+/**
+ * Copies the files from @param extensionId's extension folder with names 
+ * specified by @param iconURL and @param insetIconURL to a folder 
+ * specific to that extension in the 'extension-gallery-assets' folder.
+ * Creates said folder if it doesn't exist.
+ * 
+ * @param extensionId the name of the extension's folder 
+ * @param iconURL name of file containing the extensions' icon URL
+ * @param insetIconURL name of file containing the extensions' inset icon URL
+ */
 const copyIconsToAssetsDirectory = (extensionId : string, iconURL : string, insetIconURL : string) => {
   const relativePathToAssetsForExt = [...relativePathToAssetsFolder, extensionId];
   const relativePathToExtension = [...relativePathToExtensionDir,extensionId];
@@ -43,24 +51,21 @@ const copyIconsToAssetsDirectory = (extensionId : string, iconURL : string, inse
  */
 export const generateCodeForExtensions = (extensions: Record<string, ExtensionMenuDisplayDetails>) => {
   const guiFileContent = readFileSync(guiIndexFile, {encoding: "utf-8"});
-
-  /**
-   * Finds the indices of the code guards, splits the gui file into chunks such 
-   * that slices[0] is the code up to and including the first code guard, slices[1]
-   * is the code between the second code guard and the third code guard (including both),
-   * and slices[2] is the code from the last code guard (inclusive) to the end of the file
-   */
-  let lineArray : string[] = guiFileContent.split('\n');
+  const lineArray : string[] = guiFileContent.split('\n');
   const includesSubstr = (pat:string) => ((x:string) => { return x.includes(pat) });
   const guards = [...iconImportGuards,...extensionInfoGuards];
   const indices = guards.map(pat => lineArray.findIndex(includesSubstr(pat)));
+  /**
+   * slices[0] is the code up to and including the first code guard, slices[1]
+   * is the code between the second code guard and the third code guard (including both),
+   * and slices[2] is the code from the last code guard (inclusive) to the end of the file
+   */
   let slices = [lineArray.slice(0,indices[0]+1),lineArray.slice(indices[1],indices[2]+1),lineArray.slice(indices[3])];
 
-  let cleanedLineArray = [...slices[0],...slices[1],...slices[2]];
-  let newGUIFileLines = cleanedLineArray; //for clarity
-  const indices2 = guards.map(pat => cleanedLineArray.findIndex(includesSubstr(pat)));
-  let importInsertIndex = indices2[0]+1;
-  let menuItemInsertIndex = indices2[2]+1;
+  let newGUIFileLines = [...slices[0],...slices[1],...slices[2]];
+  const shift = indices[1]-indices[0]-1;
+  let importInsertIndex = indices[0]+1;
+  let menuItemInsertIndex = indices[2] - shift + 1;
 
   for (const str in extensions) {
     const ext = extensions[str];
@@ -84,9 +89,11 @@ export const generateCodeForExtensions = (extensions: Record<string, ExtensionMe
       description: '${ext.description}',
       featured: true
     },`;
-
     const menuItemLines = menuItem.split('\n');
 
+    /**
+     * add icon imports and extension menu to {@link newGUIFileLines}
+     */
     newGUIFileLines.splice(importInsertIndex,0,...iconImports);
     importInsertIndex += 2;
     menuItemInsertIndex += 2;
