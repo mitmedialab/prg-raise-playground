@@ -279,6 +279,39 @@ class Scratch3MusicCreation {
                     text: 'reset music'
                 },
                 {
+                    opcode: 'toggleVisMode',
+                    blockType: BlockType.COMMAND,
+                    text: 'set visualization mode to [STATUS] with [FORMAT]',
+                    arguments: {
+                        STATUS: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: '1',
+                            menu: "STATUS"
+                        },
+                        FORMAT: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: '1',
+                            menu: "FORMAT"
+                        }
+                    }
+                },
+                {
+                    opcode: 'playNote',
+                    blockType: BlockType.COMMAND,
+                    text: 'play note [NOTE] for [SECS] beats',
+                    arguments: {
+                        NOTE: {
+                            type: ArgumentType.NOTE,
+                            defaultValue: 60
+                        },
+                        SECS: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0.5,
+                            menu: "BEATS"
+                        }
+                    }
+                },
+                {
                     opcode: 'setInstrument',
                     blockType: BlockType.COMMAND,
                     text: 'set instrument to [INSTRUMENT]',
@@ -301,6 +334,15 @@ class Scratch3MusicCreation {
                             menu: "INSTRUMENT"
                         }
                     }
+                },
+                {
+                    opcode: 'getInstrument',
+                    text: formatMessage({
+                        id: 'musiccreation.getInstrument',
+                        default: 'instrument',
+                        description: 'get the current instrument'
+                    }),
+                    blockType: BlockType.REPORTER
                 },
                 {
                     opcode: 'setVolume',
@@ -361,31 +403,6 @@ class Scratch3MusicCreation {
                     }
                 },
                 {
-                    opcode: 'getInstrument',
-                    text: formatMessage({
-                        id: 'musiccreation.getInstrument',
-                        default: 'instrument',
-                        description: 'get the current instrument'
-                    }),
-                    blockType: BlockType.REPORTER
-                },
-                {
-                    opcode: 'playNote',
-                    blockType: BlockType.COMMAND,
-                    text: 'play note [NOTE] for [SECS] beats',
-                    arguments: {
-                        NOTE: {
-                            type: ArgumentType.NOTE,
-                            defaultValue: 60
-                        },
-                        SECS: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 0.5,
-                            menu: "BEATS"
-                        }
-                    }
-                },
-                {
                     opcode: 'playNoteList',
                     blockType: BlockType.COMMAND,
                     text: 'play notes [A][B][C] for [SECS] beats',
@@ -405,7 +422,7 @@ class Scratch3MusicCreation {
                         },
                         SECS: {
                             type: ArgumentType.NUMBER,
-                            defaultValue: 0.25,
+                            defaultValue: 0.5,
                             menu: "BEATS"
                         }
                     }
@@ -471,23 +488,6 @@ class Scratch3MusicCreation {
                     }),
                     blockType: BlockType.COMMAND
                 },
-                {
-                    opcode: 'toggleVisMode',
-                    blockType: BlockType.COMMAND,
-                    text: 'set visualization mode to [STATUS] with [FORMAT]',
-                    arguments: {
-                        STATUS: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: '0',
-                            menu: "STATUS"
-                        },
-                        FORMAT: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: '1',
-                            menu: "FORMAT"
-                        }
-                    }
-                }
             ],
             menus: {
                 VOLUME: {
