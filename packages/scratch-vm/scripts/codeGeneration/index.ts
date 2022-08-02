@@ -54,18 +54,17 @@ export const generateCodeForExtensions = (extensions: Record<string, ExtensionMe
   const lineArray : string[] = guiFileContent.split('\n');
   const includesSubstr = (pat:string) => ((x:string) => { return x.includes(pat) });
   const guards = [...iconImportGuards,...extensionInfoGuards];
-  const indices = guards.map(pat => lineArray.findIndex(includesSubstr(pat)));
+  const [iconStartIndex, iconEndIndex, extensionStartIndex, extensionEndIndex] = guards.map(pat => lineArray.findIndex(includesSubstr(pat)));
   /**
-   * slices[0] is the code up to and including the first code guard, slices[1]
-   * is the code between the second code guard and the third code guard (including both),
-   * and slices[2] is the code from the last code guard (inclusive) to the end of the file
+   * {@link throughToFirstGuard} includes {@link iconImportGuards[0]}
+   * {@link betweenSecondAndThirdGuard} includes {@link iconImportGuards[1]} and {@link iconImportGuards[2]}
+   * {@link fromFourthGuard} includes {@link iconImportGuards[3]}.
    */
-  let slices = [lineArray.slice(0,indices[0]+1),lineArray.slice(indices[1],indices[2]+1),lineArray.slice(indices[3])];
-
-  let newGUIFileLines = [...slices[0],...slices[1],...slices[2]];
-  const shift = indices[1]-indices[0]-1;
-  let importInsertIndex = indices[0]+1;
-  let menuItemInsertIndex = indices[2] - shift + 1;
+  let [throughToFirstGuard,betweenSecondAndThirdGuard,fromFourthGuard] = [lineArray.slice(0,iconStartIndex+1),lineArray.slice(iconEndIndex,extensionStartIndex+1),lineArray.slice(extensionEndIndex)];
+  let newGUIFileLines = [...throughToFirstGuard,...betweenSecondAndThirdGuard,...fromFourthGuard];
+  const shift = iconEndIndex-iconStartIndex-1;
+  let importInsertIndex = iconStartIndex+1;
+  let menuItemInsertIndex = extensionStartIndex - shift + 1;
 
   const assetsFolder = path.resolve(__dirname,...relativePathToAssetsFolder);
   if (!existsSync(assetsFolder)) mkdirSync(assetsFolder);
