@@ -29,8 +29,8 @@ require('canvas-toBlob');
 const RESERVED_NAMES = ['_mouse_', '_stage_', '_edge_', '_myself_', '_random_'];
 
 const CORE_EXTENSIONS = [
-    'teachableMachine',
-    'textClassification'
+    // 'teachableMachine',
+    // 'posenet',
     // 'motion',
     // 'looks',
     // 'sound',
@@ -44,23 +44,26 @@ const CORE_EXTENSIONS = [
 
 class ScratchCanvasRecorder {
     constructor(canvas) {
+        this.canvas = canvas;
+    }
+
+    startCapturing() {
         this.mediaSource = new MediaSource();
         this.mediaSource.addEventListener('sourceopen', this.handleSourceOpen.bind(this), false);
-        this.mediaRecorder = undefined;
+        this.browserMediaRecorder = undefined;
         this.recordedBlobs = undefined;
         this.sourceBuffer = undefined;
         this.recording = false;
-        this.canvas = canvas;
         this.video = document.createElement('video');
-        this.video.width=500;
-        this.video.height=500;
+        this.video.width = 500;
+        this.video.height = 500;
         this.video.style.pointerEvents = 'none';
         this.video.style.position = 'fixed';
         this.video.style.top = '0';
         this.video.style.left = '0';
         this.video.style.opacity = '0';
         document.body.appendChild(this.video);
-        this.stream = canvas.captureStream(); // frames per second
+        this.stream = this.canvas.captureStream(); // frames per second
         console.log('Started stream capture from canvas element: ', this.stream);
     }
 
@@ -82,34 +85,24 @@ class ScratchCanvasRecorder {
         this.video.src = window.URL.createObjectURL(superBuffer);
     }
 
-    toggleRecording() {
-        if (recordButton.textContent === 'Start Recording') {
-            startRecording();
-        } else {
-            stopRecording();
-            recordButton.textContent = 'Start Recording';
-            playButton.disabled = false;
-            downloadButton.disabled = false;
-        }
-    }
-
     // The nested try blocks will be simplified when Chrome 47 moves to Stable
     startRecording() {
+        this.startCapturing();
         this.recording = true;
         let options = {mimeType: 'video/webm'};
         this.recordedBlobs = [];
         try {
-            this.mediaRecorder = new MediaRecorder(this.stream, options);
+            this.browserMediaRecorder = new MediaRecorder(this.stream, options);
         } catch (e0) {
             console.log('Unable to create MediaRecorder with options Object: ', e0);
             try {
                 options = {mimeType: 'video/webm,codecs=vp9'};
-                this.mediaRecorder = new MediaRecorder(this.stream, options);
+                this.browserMediaRecorder = new MediaRecorder(this.stream, options);
             } catch (e1) {
                 console.log('Unable to create MediaRecorder with options Object: ', e1);
                 try {
                     options = 'video/vp8'; // Chrome 47
-                    this.mediaRecorder = new MediaRecorder(this.stream, options);
+                    this.browserMediaRecorder = new MediaRecorder(this.stream, options);
                 } catch (e2) {
                     alert('MediaRecorder is not supported by this browser.\n\n' +
                         'Try Firefox 29 or later, or Chrome 47 or later, ' +
@@ -119,22 +112,23 @@ class ScratchCanvasRecorder {
                 }
             }
         }
-        console.log('Created MediaRecorder', this.mediaRecorder, 'with options', options);
+        console.log('Created MediaRecorder', this.browserMediaRecorder, 'with options', options);
         // TODO: Toggle turn off state
         // recordButton.textContent = 'Stop Recording';
         // playButton.disabled = true;
         // downloadButton.disabled = true;
-        this.mediaRecorder.onstop = this.handleStop.bind(this);
-        this.mediaRecorder.ondataavailable = this.handleDataAvailable.bind(this);
-        this.mediaRecorder.start(100); // collect 100ms of data
-        console.log('MediaRecorder started', this.mediaRecorder);
+        this.browserMediaRecorder.onstop = this.handleStop.bind(this);
+        this.browserMediaRecorder.ondataavailable = this.handleDataAvailable.bind(this);
+        this.browserMediaRecorder.start(100); // collect 100ms of data
+        console.log('MediaRecorder started', this.browserMediaRecorder);
     }
 
     stopRecording() {
-        this.mediaRecorder.stop();
+        this.browserMediaRecorder.stop();
         console.log('Recorded Blobs: ', this.recordedBlobs);
         this.video.controls = true;
         this.recording = false;
+
     }
 
     play() {
@@ -604,7 +598,7 @@ class VirtualMachine extends EventEmitter {
         const delimiter = url.indexOf(";");
         const authToken = url.substr(delimiter+1);
         url = url.substr(0, delimiter);
-        
+
         this.saveProjectSb3().then(content => {
             nets({
                 url: url,
@@ -648,19 +642,21 @@ class VirtualMachine extends EventEmitter {
             const found = url.match(dropboxRegex);
             if (found.length > 0) url = 'https://dl.dropboxusercontent.com' + found[0];
         }
-
+        
         return new Promise((resolve, reject) => {
             nets({ url: url }, (err, resp, body) => {
+
                 if (err) {
                     console.log(err);
                     resolve();
+                    // hm, should there be an early return?
                 }
 
                 if (resp.statusCode !== 200) {
                     console.log(resp.statusCode);
                     resolve();
-                } else 
-                    resolve(this.loadProject(body));
+                } 
+                else resolve(this.loadProject(body));
             })
         })
     }
