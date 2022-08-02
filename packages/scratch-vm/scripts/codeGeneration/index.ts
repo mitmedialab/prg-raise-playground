@@ -5,7 +5,7 @@ import { ExtensionMenuDisplayDetails } from "../../src/typescript-support/types"
 const relativePathToExtensionDir = ["..", "..", "src", "extensions"];
 const relativePathToIndexFile = ["..", "..", "..", "scratch-gui", "src", "lib", "libraries", "extensions", "index.jsx"];
 const relativePathToAssetsFolder = ["..", "..", "..", "scratch-gui", "src", "extension-gallery-assets"];
-const guiIndexFile = path.resolve(__dirname, ...relativePathToIndexFile);
+const menuIndexFile = path.resolve(__dirname, ...relativePathToIndexFile);
 
 /**
  * has to match the code generation guards in the file specified by
@@ -46,12 +46,12 @@ const copyIconsToAssetsDirectory = (extensionId : string, iconURL : string, inse
  * @param extensions - a Record where the keys are strings representing the name of extensions to be added,
  * and the values are @type {ExtensionMenuDisplayDetails}. 
  * 
- * Adds the necessary imports for the extensions' icons to {@link guiIndexFile} and adds an object containing 
- * the extensions' info to the array of info exported by {@link guiIndexFile}.
+ * Adds the necessary imports for the extensions' icons to {@link menuIndexFile} and adds an object containing 
+ * the extensions' info to the array of info exported by {@link menuIndexFile}.
  */
 export const generateCodeForExtensions = (extensions: Record<string, ExtensionMenuDisplayDetails>) => {
-  const guiFileContent = readFileSync(guiIndexFile, {encoding: "utf-8"});
-  const lineArray : string[] = guiFileContent.split('\n');
+  const menuFileContent = readFileSync(menuIndexFile, {encoding: "utf-8"});
+  const lineArray : string[] = menuFileContent.split('\n');
   const includesSubstr = (pat:string) => ((x:string) => { return x.includes(pat) });
   const guards = [...iconImportGuards,...extensionInfoGuards];
   const [iconStartIndex, iconEndIndex, extensionStartIndex, extensionEndIndex] = guards.map(pat => lineArray.findIndex(includesSubstr(pat)));
@@ -61,7 +61,7 @@ export const generateCodeForExtensions = (extensions: Record<string, ExtensionMe
    * {@link fromFourthGuard} includes {@link iconImportGuards[3]}.
    */
   let [throughToFirstGuard,betweenSecondAndThirdGuard,fromFourthGuard] = [lineArray.slice(0,iconStartIndex+1),lineArray.slice(iconEndIndex,extensionStartIndex+1),lineArray.slice(extensionEndIndex)];
-  let newGUIFileLines = [...throughToFirstGuard,...betweenSecondAndThirdGuard,...fromFourthGuard];
+  let newMenuFileLines = [...throughToFirstGuard,...betweenSecondAndThirdGuard,...fromFourthGuard];
   const shift = iconEndIndex-iconStartIndex-1;
   let importInsertIndex = iconStartIndex+1;
   let menuItemInsertIndex = extensionStartIndex - shift + 1;
@@ -93,13 +93,13 @@ export const generateCodeForExtensions = (extensions: Record<string, ExtensionMe
     },`;
 
     /**
-     * add icon imports and extension menu to {@link newGUIFileLines}
+     * add icon imports and extension menu to {@link newMenuFileLines}
      */
-    newGUIFileLines.splice(importInsertIndex,0,...iconImports);
+    newMenuFileLines.splice(importInsertIndex,0,...iconImports);
     menuItemInsertIndex += 2;
-    newGUIFileLines.splice(menuItemInsertIndex,0,menuItem);
+    newMenuFileLines.splice(menuItemInsertIndex,0,menuItem);
   }
 
-  const newGUIFileContent = newGUIFileLines.join('\n');
-  writeFileSync(guiIndexFile,newGUIFileContent,{encoding: "utf-8"});
+  const newMenuFileContent = newMenuFileLines.join('\n');
+  writeFileSync(menuIndexFile,newMenuFileContent,{encoding: "utf-8"});
 }
