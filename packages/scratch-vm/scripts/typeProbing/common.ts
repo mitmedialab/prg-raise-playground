@@ -1,6 +1,6 @@
 import ts = require("typescript");
 import path = require("path");
-import { ExtensionMenuDisplayDetails, KeysWithValsOfType } from "../../src/typescript-support/types";
+import { ExtensionMenuDisplayDetails, KeysWithValsOfType, UnionToTuple } from "../../src/typescript-support/types";
 
 export type DisplayDetailsRetrievalPaths = Record<keyof ExtensionMenuDisplayDetails, string[]>;
 
@@ -36,32 +36,41 @@ const getMenuDisplayDetails = (type: ts.Type): ExtensionMenuDisplayDetails => {
   const pathToMembers : any[] = type.getBaseTypes()[0].resolvedTypeArguments[0].symbol.declarations[0].members;
 
   let res = {};
-  // type string_keys = KeysWithValsOfType<ExtensionMenuDisplayDetails,string>;
-  // type boolean_keys = KeysWithValsOfType<ExtensionMenuDisplayDetails,boolean>;
   
-  pathToMembers.forEach(member => {
-    const key : string = member.symbol.escapedName;
-    let val : string | boolean;
-    const kind : number = member.type.literal.kind;
+  type string_keys = UnionToTuple<KeysWithValsOfType<ExtensionMenuDisplayDetails,string>>;
+  type boolean_keys = UnionToTuple<KeysWithValsOfType<ExtensionMenuDisplayDetails,boolean>>;
+  const stringKeys : string_keys = ['title','description','iconURL','insetIconURL','collaborator',
+                                    'connectionIconURL','connectionSmallIconURL','connectionTipIconURL',
+                                    'connectingMessage','helpLink'];
+  const booleanKeys : boolean_keys = ['internetConnectionRequired','bluetoothRequired','launchPeripheralConnectionFlow',
+                                      'useAutoScan','featured','hidden','disabled'];
     
-    switch (kind) {
-      case 10:
-        val = member.type.literal.text;
-        break;
-      case 95:
-        val = false;
-        break;
-      case 110:
-        val = true;
-        break;
-      default:
-        throw new TypeError("unexpected value found");
+  pathToMembers.forEach(member => {
+    const key : keyof ExtensionMenuDisplayDetails = member.symbol.escapedName;
+    let val : string | boolean;   
+    if (stringKeys.some(strKey => strKey === key)) {
+      val = member.type.literal.text;
+    } else if (booleanKeys.some(boolKey => boolKey === key)) {
+        const kind : number = member.type.literal.kind;
+        switch (kind) {
+          case 95:
+            val = false;
+            break;
+          case 110:
+            val = true;
+            break;
+          default:
+            throw new TypeError("unexpected value found");
+          }
+    } else {
+      throw new TypeError(`unexpected key found: ${key}`);
     }
 
     res[key] = val;
   })
 
   const res_keys = Object.keys(res);
-  console.assert(res_keys.includes('title') && res_keys.includes('description') && res_keys.includes('iconURL') && res_keys.includes('insertIconURL'));
+  console.assert(res_keys.includes('title') && res_keys.includes('description') && 
+                 res_keys.includes('iconURL') && res_keys.includes('insetIconURL'));
   return res as ExtensionMenuDisplayDetails;
 }
