@@ -92,16 +92,13 @@ export const generateCodeForExtensions = (extensions: Record<string, ExtensionMe
       description: '${ext.description}',
       featured: true
     },`;
-    const menuItemLines = menuItem.split('\n');
 
     /**
      * add icon imports and extension menu to {@link newGUIFileLines}
      */
     newGUIFileLines.splice(importInsertIndex,0,...iconImports);
-    importInsertIndex += 2;
     menuItemInsertIndex += 2;
-    newGUIFileLines.splice(menuItemInsertIndex,0,...menuItemLines);
-    menuItemInsertIndex += menuItemLines.length;
+    newGUIFileLines.splice(menuItemInsertIndex,0,menuItem);
   }
 
   const newGUIFileContent = newGUIFileLines.join('\n');
