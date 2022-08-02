@@ -3,7 +3,6 @@ import path = require("path");
 import { ExtensionMenuDisplayDetails } from "../../src/typescript-support/types";
 
 const relativePathToExtensionDir = ["..", "..", "src", "extensions"];
-
 const relativePathToIndexFile = ["..", "..", "..", "scratch-gui", "src", "lib", "libraries", "extensions", "index.jsx"];
 const relativePathToAssetsFolder = ["..", "..", "..", "scratch-gui", "src", "extension-gallery-assets"];
 const guiIndexFile = path.resolve(__dirname, ...relativePathToIndexFile);
@@ -16,10 +15,24 @@ const guardFlagStart = "/* CODE GEN GUARD START:";
 const guardFlagEnd = "/* CODE GEN GUARD END:";
 const codeGuardStringEnd = '-- Please do not edit code within guards */';
 
-const getGuards = (identifier: string): [string,string] => [`${guardFlagStart} ${identifier} ${codeGuardStringEnd}`, `${guardFlagEnd} ${identifier} ${codeGuardStringEnd}`];
+const getGuards = (identifier: string): [start:string,end:string] => [`${guardFlagStart} ${identifier} ${codeGuardStringEnd}`, `${guardFlagEnd} ${identifier} ${codeGuardStringEnd}`];
 
 const iconImportGuards = getGuards("Icon Import");
 const extensionInfoGuards = getGuards("Extension Info");
+
+const copyIconsToAssetsDirectory = (extensionId : string, iconURL : string, insetIconURL : string) => {
+  const relativePathToAssetsForExt = [...relativePathToAssetsFolder, extensionId];
+  const relativePathToExtension = [...relativePathToExtensionDir,extensionId];
+  const currPathToIconURL = path.resolve(__dirname,...relativePathToExtension,iconURL);
+  const currPathToInsetIconURL = path.resolve(__dirname,...relativePathToExtension,insetIconURL);
+  const newPathForIcons = path.resolve(__dirname, ...relativePathToAssetsForExt) + '/';
+
+  if (!existsSync(newPathForIcons)) mkdirSync(newPathForIcons);
+
+  //copy icons to new directory
+  copyFileSync(currPathToIconURL,newPathForIcons + iconURL);
+  copyFileSync(currPathToInsetIconURL,newPathForIcons + insetIconURL);
+}
 
 /**
  * @param extensions - a Record where the keys are strings representing the name of extensions to be added,
@@ -43,9 +56,11 @@ export const generateCodeForExtensions = (extensions: Record<string, ExtensionMe
   const indices = guards.map(pat => lineArray.findIndex(includesSubstr(pat)));
   let slices = [lineArray.slice(0,indices[0]+1),lineArray.slice(indices[1],indices[2]+1),lineArray.slice(indices[3])];
 
-  let extensionsAdded = 0;
-  let currGuiFileContent = guiFileContent;
-  const numExtensions = Object.keys(extensions).length;
+  let cleanedLineArray = [...slices[0],...slices[1],...slices[2]];
+  let newGUIFileLines = cleanedLineArray; //for clarity
+  const indices2 = guards.map(pat => cleanedLineArray.findIndex(includesSubstr(pat)));
+  let importInsertIndex = indices2[0]+1;
+  let menuItemInsertIndex = indices2[2]+1;
 
   for (const str in extensions) {
     const ext = extensions[str];
@@ -53,17 +68,7 @@ export const generateCodeForExtensions = (extensions: Record<string, ExtensionMe
     const insetIconURL = ext.insetIconURL;
     const extensionId : string = str;
 
-    const relativePathToAssetsForExt = [...relativePathToAssetsFolder, extensionId];
-    const relativePathToExtension = [...relativePathToExtensionDir,extensionId];
-    const currPathToIconURL = path.resolve(__dirname,...relativePathToExtension,iconURL);
-    const currPathToInsetIconURL = path.resolve(__dirname,...relativePathToExtension,insetIconURL);
-    const newPathForIcons = path.resolve(__dirname, ...relativePathToAssetsForExt) + '/';
-
-    if (!existsSync(newPathForIcons)) mkdirSync(newPathForIcons);
-
-    //copy icons to new directory
-    copyFileSync(currPathToIconURL,newPathForIcons + iconURL);
-    copyFileSync(currPathToInsetIconURL,newPathForIcons + insetIconURL);
+    copyIconsToAssetsDirectory(extensionId,iconURL,insetIconURL);
 
     const iconURLName = extensionId + 'IconURL';
     const insetIconURLName = extensionId + 'InsetIconURL';
@@ -80,22 +85,15 @@ export const generateCodeForExtensions = (extensions: Record<string, ExtensionMe
       featured: true
     },`;
 
-    /* First extension added: remove all code between code guards.
-     * All others: add to the code that's already been added between the
-     * code guards.
-     */
-    if (extensionsAdded !== 0) {
-      lineArray = currGuiFileContent.split('\n');
-      //only care about the ends of the code guards to add code before them
-      const indices = [lineArray.findIndex(includesSubstr(guards[1])),lineArray.findIndex(includesSubstr(guards[3]))];
-      slices = [lineArray.slice(0,indices[0]),lineArray.slice(indices[0],indices[1]),lineArray.slice(indices[1])];
-    }
+    const menuItemLines = menuItem.split('\n');
 
-    const newGUIFileSlices = [...slices[0],...iconImports,...slices[1],menuItem,...slices[2]];
-    currGuiFileContent = newGUIFileSlices.join('\n');
-
-    if (extensionsAdded + 1 === numExtensions) writeFileSync(guiIndexFile,currGuiFileContent,{encoding: "utf-8"});
-    extensionsAdded++;
+    newGUIFileLines.splice(importInsertIndex,0,...iconImports);
+    importInsertIndex += 2;
+    menuItemInsertIndex += 2;
+    newGUIFileLines.splice(menuItemInsertIndex,0,...menuItemLines);
+    menuItemInsertIndex += menuItemLines.length;
   }
- // 4. BONUS! Add suport for additional non-required properties in the ExtensionMenuDisplayDetails type (like 'collaborator', 'featured', 'bluetoothRequired') so that, if they are defined, they are incorporated into the code generation
+
+  const newGUIFileContent = newGUIFileLines.join('\n');
+  writeFileSync(guiIndexFile,newGUIFileContent,{encoding: "utf-8"});
 }
