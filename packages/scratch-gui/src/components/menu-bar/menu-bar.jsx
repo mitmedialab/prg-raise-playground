@@ -89,7 +89,7 @@ const ariaMessages = defineMessages({
     },
     tutorials: {
         id: 'gui.menuBar.tutorialsLibrary',
-        defaultMessage: 'Tutorials',
+        defaultMessage: 'Scratch Tutorials',
         description: 'accessibility text for the tutorials button'
     }
 });
@@ -555,7 +555,7 @@ class MenuBar extends React.Component {
                                             )}
                                         </MenuSection>
                                     )}
-                                    <MenuSection>
+                                    {/* <MenuSection>
                                     <MenuItem
                                             onClick={this.handleClickLoadProjectLink}
                                         >
@@ -565,7 +565,7 @@ class MenuBar extends React.Component {
                                                 id="gui.menuBar.loadFromLink"
                                             />
                                         </MenuItem>
-                                    </MenuSection>
+                                    </MenuSection> */}
                                     <MenuSection>
                                         <SB3Downloader>{(className, downloadProjectCallback) => (
                                             <MenuItem
@@ -681,37 +681,24 @@ class MenuBar extends React.Component {
                     </div>
                     <Divider className={classNames(styles.divider)} />
                     <a
-                        className={classNames(styles.menuBarItem, styles.hoverable)}
-                        href="https://httyr.media.mit.edu/tutorials"
-                        target="_blank"
-                    >
-                        Curriculum  Tutorials
-                    </a>
-                    <Divider className={classNames(styles.divider)} />
-                    <a
                         className={classNames(styles.menuBarItem, styles.hoverable, styles.blankLink)}
                         href="https://teachablemachine.withgoogle.com/train"
                         target="_blank"
                     >
                         Teachable Machine
                     </a>
-                    {this.props.showTutorials ? (
-                        <div>
-                            <Divider className={classNames(styles.divider)} />
-                            <div
-                                aria-label={this.props.intl.formatMessage(ariaMessages.tutorials)}
-                                className={classNames(styles.menuBarItem, styles.hoverable)}
-                                onClick={this.props.onOpenTipLibrary}
-                            >
-                                <img
-                                    className={styles.helpIcon}
-                                    src={helpIcon}
-                                />
-                                <FormattedMessage {...ariaMessages.tutorials} />
-                            </div>
-                        </div>) :
-                        null
-                    }
+                    <Divider className={classNames(styles.divider)} />
+                    <div
+                        aria-label={this.props.intl.formatMessage(ariaMessages.tutorials)}
+                        className={classNames(styles.menuBarItem, styles.hoverable)}
+                        onClick={this.props.onOpenTipLibrary}
+                    >
+                        <img
+                            className={styles.helpIcon}
+                            src={helpIcon}
+                        />
+                        <FormattedMessage {...ariaMessages.tutorials} />
+                    </div>
                     <Divider className={classNames(styles.divider)} />
                     {this.props.canEditTitle ? (
                         <div className={classNames(styles.menuBarItem, styles.growable)}>
