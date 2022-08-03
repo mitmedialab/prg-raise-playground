@@ -104,7 +104,7 @@ export default [
     },
     {
         name: "Hand Sensing",
-        extensionId: 'poseHand',
+        extensionId: 'pose_hand',
         iconURL: poseHandBlocksIconURL,
         insetIconURL: poseHandInsetIconURL,
         description: (
@@ -118,7 +118,7 @@ export default [
     },
     {
         name: "Face Sensing",
-        extensionId: 'poseFace',
+        extensionId: 'pose_face',
         iconURL: poseFaceBlocksIconURL,
         insetIconURL: poseFaceInsetIconURL,
         description: (
@@ -132,7 +132,7 @@ export default [
     },
     {
         name: "Body Sensing",
-        extensionId: 'poseBody',
+        extensionId: 'pose_body',
         iconURL: poseBodyBlocksIconURL,
         insetIconURL: poseBodyInsetIconURL,
         description: (
