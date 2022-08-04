@@ -29,7 +29,9 @@ import SB3Downloader from '../../containers/sb3-downloader.jsx';
 import DeletionRestorer from '../../containers/deletion-restorer.jsx';
 import TurboMode from '../../containers/turbo-mode.jsx';
 import MenuBarHOC from '../../containers/menu-bar-hoc.jsx';
+import GooglePicker from 'react-google-picker';
 
+import {setProjectTitle} from '../../reducers/project-title';
 import {openTipsLibrary} from '../../reducers/modals';
 import {setPlayer} from '../../reducers/mode';
 import {
@@ -74,6 +76,11 @@ import scratchLogo from './prg-white.png';
 
 import sharedMessages from '../../lib/shared-messages';
 
+import loadScript from 'load-script';
+const GOOGLE_SDK_URL = 'https://apis.google.com/js/api.js';
+let scriptLoadingStarted = false;
+
+
 const ariaMessages = defineMessages({
     language: {
         id: 'gui.menuBar.LanguageSelector',
@@ -82,7 +89,7 @@ const ariaMessages = defineMessages({
     },
     tutorials: {
         id: 'gui.menuBar.tutorialsLibrary',
-        defaultMessage: 'Tutorials',
+        defaultMessage: 'Scratch Tutorials',
         description: 'accessibility text for the tutorials button'
     }
 });
@@ -134,6 +141,12 @@ const MenuItemTooltip = ({id, isRtl, children, className}) => (
     </ComingSoonTooltip>
 );
 
+const CLIENT_ID = '906634949042-5jbc7q594e69spg2i0bkt9a14iojvtsp.apps.googleusercontent.com';
+const DEVELOPER_KEY = 'AIzaSyDRoOjwaDXOxq4cda1nrCVLaVQvTCh5GYE';
+const DRIVE_SCOPE = ['https://www.googleapis.com/auth/drive.file',
+                     'https://www.googleapis.com/auth/drive.readonly'];
+
+
 MenuItemTooltip.propTypes = {
     children: PropTypes.node,
     className: PropTypes.string,
@@ -155,11 +168,29 @@ class MenuBar extends React.Component {
             'handleLanguageMouseUp',
             'handleRestoreOption',
             'getSaveToComputerHandler',
-            'restoreOptionMessage'
+            'restoreOptionMessage',
+            'handleDriveAuthenticate',
+            'handleDriveProjectSelect',
+            'handleClickLoadProjectLink',
+            'handleClickDriveSave',
+            'onApiLoad'
         ]);
+        this.state = {
+            authToken: "",
+            fileId: ""
+        };
     }
     componentDidMount () {
         document.addEventListener('keydown', this.handleKeyPress);
+        if(this.isGoogleReady()) {
+            // google api is already exists
+            // init immediately
+            this.onApiLoad();
+        } else if (!scriptLoadingStarted) {
+            // load google api and the init
+            scriptLoadingStarted = true;
+            loadScript(GOOGLE_SDK_URL, this.onApiLoad)
+        }
     }
     componentWillUnmount () {
         document.removeEventListener('keydown', this.handleKeyPress);
@@ -176,6 +207,10 @@ class MenuBar extends React.Component {
         this.props.onRequestCloseFile();
         if (readyToReplaceProject) {
             this.props.onClickNew(this.props.canSave && this.props.canCreateNew);
+            
+            this.setState({
+                fileId: null
+            });
         }
         this.props.onRequestCloseFile();
     }
@@ -269,6 +304,135 @@ class MenuBar extends React.Component {
         }
         }
     }
+    doAuth(callback) {
+        window.gapi.auth.authorize({
+            client_id: CLIENT_ID,
+            scope: DRIVE_SCOPE,
+            immediate: false
+            },
+            callback
+        );
+    }
+    handleClickLoadProjectLink() {
+        let templateLink = "https://www.dropbox.com/s/o8jegh940y7f7qc/SimpleProject.sb3";
+        let url = window.prompt("Enter project url (e.g. from Dropbox or Github)", templateLink);
+        if (url != null && url != "") {   
+            const readyToReplaceProject = this.props.confirmReadyToReplaceProject(
+                this.props.intl.formatMessage(sharedMessages.replaceProjectWarning)
+            );
+            if (readyToReplaceProject) {
+                this.props.vm.downloadProjectFromURLDirect(url);
+                
+                this.props.onReceivedProjectTitle(this.getProjectTitleFromFilename(url));
+                this.setState({
+                    fileId: null
+                });
+            }
+        }
+        this.props.onRequestCloseFile();
+    }
+    handleClickDriveSave() {
+        // make sure user has logged into Google Drive
+        if (!this.state.authToken) {
+            this.doAuth(response => {
+                if (response.access_token) {
+                    this.handleDriveAuthenticate(response.access_token);
+                    this.handleClickDriveSave();
+                }
+            });
+            this.props.onRequestCloseFile();
+            return;
+        }
+        // check if we have already created file
+        let fileId = this.state.fileId;
+        if (!fileId) {
+            if (this.isGoogleDriveReady()) {
+                let fileName = prompt("Name your project", this.props.projectTitle);
+                if (fileName != null && fileName != "") {
+                    window.gapi.client.drive.files.create({
+                        name: fileName + ".sb3",
+                        mimeType: "application/x-zip"
+                    }).then((response) => {
+                        if (response.status == 200) {
+                            this.setState({
+                                fileId: response.result.id
+                            });
+                            this.handleClickDriveSave();
+                        }
+                    });
+                }
+            }
+            this.props.onRequestCloseFile();
+            return;
+        }
+        const url = "https://www.googleapis.com/upload/drive/v3/files/" + fileId + "?uploadType=media;" + this.state.authToken;
+        this.props.vm.uploadProjectToURL(url);
+        
+        // show alert that we are saving project
+        window.alert("Project saved");
+        this.props.onRequestCloseFile();
+    }
+    handleDriveAuthenticate(token) {
+        this.setState({
+            authToken: token
+        });
+    }
+    getProjectTitleFromFilename (fileInputFilename) {
+        if (!fileInputFilename) return '';
+        // only parse title with valid scratch project extensions
+        // (.sb, .sb2, and .sb3)
+        //const matches = fileInputFilename.match(/^(.*)\.sb[23]?$/);
+        const matches = fileInputFilename.match(/\/?(.[^\/]*)\.sb[23]?/);
+        if (!matches) return '';
+        return matches[1].substring(0, 100); // truncate project title to max 100 chars
+    }
+    handleDriveProjectSelect(data) {
+        console.log(data);
+        if (data.docs) {
+            const fileId = data.docs[0].id;
+            const url = "https://www.googleapis.com/drive/v3/files/" + fileId + "/?alt=media;" + this.state.authToken;
+            
+            const readyToReplaceProject = this.props.confirmReadyToReplaceProject(
+                this.props.intl.formatMessage(sharedMessages.replaceProjectWarning)
+            );
+            if (readyToReplaceProject) {
+                this.props.vm.downloadProjectFromURLDirect(url);
+                
+                this.props.onReceivedProjectTitle(this.getProjectTitleFromFilename(data.docs[0].name));
+                
+                // if project does not have a parentId, it's a shared project and you cannot save
+                if (data.docs[0].parentId !== undefined) {
+                    this.setState({
+                        fileId: fileId
+                    });
+                } else {
+                    this.setState({
+                        fileId: null
+                    });
+                }
+            }
+        }
+        this.props.onRequestCloseFile();
+    }
+    isGoogleReady() {
+        return !!window.gapi;
+    }
+    
+    isGoogleAuthReady() {
+        return !!window.gapi.auth;
+    }
+    isGoogleDriveReady() {
+        return !!window.gapi.client.drive;
+    }
+    
+    onApiLoad() {
+        window.gapi.load('auth');
+        window.gapi.load('client', () => {
+            window.gapi.client.load('drive', 'v3');
+        });
+    }
+
+
     render () {
         const saveNowMessage = (
             <FormattedMessage
@@ -320,12 +484,17 @@ class MenuBar extends React.Component {
             >
                 <div className={styles.mainMenu}>
                     <div className={styles.fileGroup}>
-                        <a
-                            className={classNames(styles.menuBarItem, styles.hoverable)}
-                            href="https://dancingwithai.github.io/?"
-                        >
-                            ⬅ Back to Curriculum
-                        </a>
+                        <div className={classNames(styles.menuBarItem)}>
+                            <img
+                                alt="Scratch"
+                                className={classNames(styles.scratchLogo, {
+                                    [styles.clickable]: typeof this.props.onClickLogo !== 'undefined'
+                                })}
+                                draggable={false}
+                                src={this.props.logo}
+                                onClick={this.props.onClickLogo}
+                            />
+                        </div>
                         {(this.props.canChangeLanguage) && (<div
                             className={classNames(styles.menuBarItem, styles.hoverable, styles.languageMenu)}
                         >
@@ -367,24 +536,6 @@ class MenuBar extends React.Component {
                                             {newProjectMessage}
                                         </MenuItem>
                                     </MenuSection>
-                                    {/*<MenuSection>*/}
-                                    {/*    <MenuItem*/}
-                                    {/*        isRtl={this.props.isRtl}*/}
-                                    {/*        onClick={() => {*/}
-                                    {/*            this.props.vm.sendLastClipToGfy();*/}
-                                    {/*        }}*/}
-                                    {/*    >*/}
-                                    {/*        Upload Clip to Gfycat*/}
-                                    {/*    </MenuItem>*/}
-                                    {/*    <MenuItem*/}
-                                    {/*        isRtl={this.props.isRtl}*/}
-                                    {/*        onClick={() => {*/}
-                                    {/*            this.props.vm.loadLastClipOnGfy();*/}
-                                    {/*        }}*/}
-                                    {/*    >*/}
-                                    {/*        Load Last Uploaded Clip*/}
-                                    {/*    </MenuItem>*/}
-                                    {/*</MenuSection>*/}
                                     {(this.props.canSave || this.props.canCreateCopy || this.props.canRemix) && (
                                         <MenuSection>
                                             {this.props.canSave && (
@@ -404,7 +555,30 @@ class MenuBar extends React.Component {
                                             )}
                                         </MenuSection>
                                     )}
+                                    {/* <MenuSection>
+                                    <MenuItem
+                                            onClick={this.handleClickLoadProjectLink}
+                                        >
+                                            <FormattedMessage
+                                                defaultMessage="Load project from link"
+                                                description="Menu bar item for opening a project from a link" // eslint-disable-line max-len
+                                                id="gui.menuBar.loadFromLink"
+                                            />
+                                        </MenuItem>
+                                    </MenuSection> */}
                                     <MenuSection>
+                                        <SB3Downloader>{(className, downloadProjectCallback) => (
+                                            <MenuItem
+                                                className={className}
+                                                onClick={this.getSaveToComputerHandler(downloadProjectCallback)}
+                                            >
+                                                <FormattedMessage
+                                                    defaultMessage="Save to your computer"
+                                                    description="Menu bar item for downloading a project to your computer" // eslint-disable-line max-len
+                                                    id="gui.menuBar.downloadToComputer"
+                                                />
+                                            </MenuItem>
+                                        )}</SB3Downloader>
                                         <SBFileUploader
                                             canSave={this.props.canSave}
                                             userOwnsProject={this.props.userOwnsProject}
@@ -421,18 +595,37 @@ class MenuBar extends React.Component {
                                                 </MenuItem>
                                             )}
                                         </SBFileUploader>
-                                        <SB3Downloader>{(className, downloadProjectCallback) => (
-                                            <MenuItem
-                                                className={className}
-                                                onClick={this.getSaveToComputerHandler(downloadProjectCallback)}
+                                    </MenuSection>
+                                    <MenuSection>
+                                        <MenuItem
+                                            onClick={this.handleClickDriveSave}
+                                        >
+                                            <FormattedMessage
+                                                defaultMessage="Save project to Google Drive"
+                                                description="Menu bar item for saving a project to Google Drive" // eslint-disable-line max-len
+                                                id="gui.menuBar.saveToDrive"
+                                            />
+                                        </MenuItem>
+                                        <GooglePicker clientId={CLIENT_ID}
+                                            developerKey={DEVELOPER_KEY}
+                                            scope={DRIVE_SCOPE}
+                                            onAuthenticate={this.handleDriveAuthenticate}
+                                            onChange={this.handleDriveProjectSelect}
+                                            onAuthFailed={data => console.log('on auth failed:', data)}
+                                            multiselect={false}
+                                            navHidden={false}
+                                            authImmediate={false}
+                                            viewID={'DOCS'}
+                                            query={'.sb3'}
                                             >
+                                            <MenuItem classname="google">
                                                 <FormattedMessage
-                                                    defaultMessage="Save to your computer"
-                                                    description="Menu bar item for downloading a project to your computer" // eslint-disable-line max-len
-                                                    id="gui.menuBar.downloadToComputer"
+                                                    defaultMessage="Load project from Google Drive"
+                                                    description="Menu bar item for loading a project from Google Drive" // eslint-disable-line max-len
+                                                    id="gui.menuBar.loadFromDrive"
                                                 />
                                             </MenuItem>
-                                        )}</SB3Downloader>
+                                        </GooglePicker>
                                     </MenuSection>
                                 </MenuBarMenu>
                             </div>
@@ -489,28 +682,23 @@ class MenuBar extends React.Component {
                     <Divider className={classNames(styles.divider)} />
                     <a
                         className={classNames(styles.menuBarItem, styles.hoverable, styles.blankLink)}
-                        href="https://teachablemachine.withgoogle.com/train/"
+                        href="https://teachablemachine.withgoogle.com/train"
                         target="_blank"
                     >
                         Teachable Machine
                     </a>
                     <Divider className={classNames(styles.divider)} />
-                    {true ? (
-                        <div>
-                            <div
-                                aria-label={this.props.intl.formatMessage(ariaMessages.tutorials)}
-                                className={classNames(styles.menuBarItem, styles.hoverable)}
-                                onClick={this.props.onOpenTipLibrary}
-                            >
-                                <img
-                                    className={styles.helpIcon}
-                                    src={helpIcon}
-                                />
-                                Scratch Tutorials
-                            </div>
-                        </div>) :
-                        null
-                    }
+                    <div
+                        aria-label={this.props.intl.formatMessage(ariaMessages.tutorials)}
+                        className={classNames(styles.menuBarItem, styles.hoverable)}
+                        onClick={this.props.onOpenTipLibrary}
+                    >
+                        <img
+                            className={styles.helpIcon}
+                            src={helpIcon}
+                        />
+                        <FormattedMessage {...ariaMessages.tutorials} />
+                    </div>
                     <Divider className={classNames(styles.divider)} />
                     {this.props.canEditTitle ? (
                         <div className={classNames(styles.menuBarItem, styles.growable)}>
@@ -777,7 +965,8 @@ MenuBar.propTypes = {
     showComingSoon: PropTypes.bool,
     userOwnsProject: PropTypes.bool,
     username: PropTypes.string,
-    vm: PropTypes.instanceOf(VM).isRequired
+    vm: PropTypes.instanceOf(VM).isRequired,
+    onReceivedProjectTitle: PropTypes.func
 };
 
 MenuBar.defaultProps = {
@@ -824,7 +1013,8 @@ const mapDispatchToProps = dispatch => ({
     onClickRemix: () => dispatch(remixProject()),
     onClickSave: () => dispatch(manualUpdateProject()),
     onClickSaveAsCopy: () => dispatch(saveProjectAsCopy()),
-    onSeeCommunity: () => dispatch(setPlayer(true))
+    onSeeCommunity: () => dispatch(setPlayer(true)),
+    onReceivedProjectTitle: title => dispatch(setProjectTitle(title))
 });
 
 export default compose(
