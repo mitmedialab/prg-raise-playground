@@ -597,7 +597,7 @@ class MenuBar extends React.Component {
                                         </SBFileUploader>
                                     </MenuSection>
                                     <MenuSection>
-                                        <MenuItem
+                                        {/*<MenuItem
                                             onClick={this.handleClickDriveSave}
                                         >
                                             <FormattedMessage
@@ -605,7 +605,7 @@ class MenuBar extends React.Component {
                                                 description="Menu bar item for saving a project to Google Drive" // eslint-disable-line max-len
                                                 id="gui.menuBar.saveToDrive"
                                             />
-                                        </MenuItem>
+                                            </MenuItem>*/}
                                         <GooglePicker clientId={CLIENT_ID}
                                             developerKey={DEVELOPER_KEY}
                                             scope={DRIVE_SCOPE}
