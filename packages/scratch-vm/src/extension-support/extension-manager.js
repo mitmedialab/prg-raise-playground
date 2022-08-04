@@ -23,13 +23,12 @@ const builtinExtensions = {
     ev3: () => require('../extensions/scratch3_ev3'),
     makeymakey: () => require('../extensions/scratch3_makeymakey'),
     boost: () => require('../extensions/scratch3_boost'),
-    gdxfor: () => require('../extensions/scratch3_gdx_for'), 
-    signalanalysis: () => require('../extensions/scratch3_signalanalysis'),
-    signalviz: () => require('../extensions/scratch3_signalviz'),
-    signalcontrol: () => require('../extensions/scratch3_signalcontrol'),
     musiccreation: () => require('../extensions/scratch3_musiccreation'),
-    musicaccompaniment: () => require('../extensions/scratch3_musicaccompaniment')
-
+    gdxfor: () => require('../extensions/scratch3_gdx_for'),
+    teachableMachine: () => require('../extensions/scratch3_teachable_machine'),
+    pose_face: () => require('../extensions/scratch3_pose_face'),
+    pose_hand: () => require('../extensions/scratch3_pose_hand'),
+    pose_body: () => require('../extensions/scratch3_pose_body'),
 };
 
 /**

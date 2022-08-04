@@ -111,6 +111,14 @@ class Blocks extends React.Component {
         toolboxWorkspace.registerButtonCallback('MAKE_A_VARIABLE', varListButtonCallback(''));
         toolboxWorkspace.registerButtonCallback('MAKE_A_LIST', varListButtonCallback('list'));
         toolboxWorkspace.registerButtonCallback('MAKE_A_PROCEDURE', procButtonCallback);
+        toolboxWorkspace.registerButtonCallback('POSE_ENABLE_BODY', () => {
+            console.log("Enabling body pose tracking!");
+            // TODO: store in VM runtime
+        });
+        toolboxWorkspace.registerButtonCallback('POSE_ENABLE_HAND', () => {
+            console.log("Enabling hand pose tracking!");
+            // TODO: store in VM runtime
+        });
 
         // Store the xml of the toolbox that is actually rendered.
         // This is used in componentDidUpdate instead of prevProps, because
@@ -377,8 +385,6 @@ class Blocks extends React.Component {
             if (error.message) {
                 error.message = `Workspace Update Error: ${error.message}`;
             }
-            console.log('The erroneous dom:',dom);
-            alert('Error encountered. Please save your project and reload the page.');
             log.error(error);
         }
         this.workspace.addChangeListener(this.props.vm.blockListener);
@@ -425,9 +431,11 @@ class Blocks extends React.Component {
 
         // scratch-blocks implements a menu or custom field as a special kind of block ("shadow" block)
         // these actually define blocks and MUST run regardless of the UI state
-        defineBlocks(
-            Object.getOwnPropertyNames(categoryInfo.customFieldTypes)
-                .map(fieldTypeName => categoryInfo.customFieldTypes[fieldTypeName].scratchBlocksDefinition));
+        if (categoryInfo.customFieldTypes) {
+            defineBlocks(
+                Object.getOwnPropertyNames(categoryInfo.customFieldTypes)
+                    .map(fieldTypeName => categoryInfo.customFieldTypes[fieldTypeName].scratchBlocksDefinition));
+        }
         defineBlocks(categoryInfo.menus);
         defineBlocks(categoryInfo.blocks);
 
@@ -468,7 +476,10 @@ class Blocks extends React.Component {
         this.setState(p);
     }
     handleConnectionModalStart (extensionId) {
-        this.props.onOpenConnectionModal(extensionId);
+        let prgCustomExtensions = ['teachableMachine', 'poseHand', 'poseFace', 'poseBody'];
+        if (!prgCustomExtensions.includes(extensionId)) {
+            this.props.onOpenConnectionModal(extensionId);
+        }
     }
     handleStatusButtonUpdate () {
         this.ScratchBlocks.refreshStatusButtons(this.workspace);
