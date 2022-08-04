@@ -2,6 +2,7 @@ import type Runtime from '../engine/runtime';
 import { ArgumentType } from './enums';
 import type { BlockBuilder, ExtensionMenuDisplayDetails, Environment, ExtensionBlocks, BlockOperation, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem } from './types';
 import { strict as assert } from 'assert';
+import Cast  from '../util/cast';
 
 /**
  * 
@@ -137,6 +138,8 @@ export abstract class Extension
       case ArgumentType.Matrix:
         console.log(this.toMatrix(`${value}`))
         return this.toMatrix(`${value}`);
+      case ArgumentType.Color:
+        return Cast.toRgbColorObject(value);
       default:
         throw new Error("Method not implemented.");
     }
