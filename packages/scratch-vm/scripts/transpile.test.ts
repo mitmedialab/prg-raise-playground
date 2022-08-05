@@ -4,14 +4,14 @@ import ts = require("typescript");
 import { ExtensionMenuDisplayDetails } from "../src/typescript-support/types";
 import { DisplayDetailsRetrievalPaths, isExtension, retrieveExtensionDetails } from "./typeProbing/common";
 import { cachedPathsToMenuDetails, location, typeCount } from "./typeProbing/extensionArchetypes";
-import type { Description, IconURL, InsetIconURL, Title } from "./typeProbing/extensionArchetypes";
+import type { DisplayDetails } from "./typeProbing/extensionArchetypes";
 
 import TypeProbe from "./typeProbing/TypeProbe";
 
-const titleIdentifier: Title = "title";
-const descriptionIdentifier: Description = "description";
-const iconURLIdentifier: IconURL = "iconURL";
-const insetIconURLIdentifier: InsetIconURL = "insetIconURL";
+const titleIdentifier: DisplayDetails['title'] = "test_title";
+const descriptionIdentifier: DisplayDetails['description'] = "test_description";
+const iconURLIdentifier: DisplayDetails['iconURL'] = "test_iconURL";
+const insetIconURLIdentifier: DisplayDetails['insetIconURL'] = "test_insetIconURL";
 
 const identifiers: Record<keyof ExtensionMenuDisplayDetails, string> = {
   title: titleIdentifier,
@@ -41,9 +41,10 @@ const retrievePathsToMenuDetails = (program: ts.Program, details: DisplayDetails
   const roots = program.getRootFileNames();
   const rootSources = sources.filter(source => roots.includes(source.fileName));
   const getPath = (probe: TypeProbe<string>) => probe.getPath();
+  const byCount = (a: [_: string, arr: string[]], b: [_: string, count: string[]]) => b[1].length - a[1].length;
   const byLength = (a: string, b: string) => a.length - b.length || a.localeCompare(b);
 
-  const allPaths: Record<keyof DisplayDetailsRetrievalPaths, Record<string, number>> = {
+  const allPaths: Record<keyof DisplayDetailsRetrievalPaths, Record<string, string[]>> = {
     title: {},
     description: {},
     iconURL: {},
@@ -58,16 +59,16 @@ const retrievePathsToMenuDetails = (program: ts.Program, details: DisplayDetails
       if (baseExtensionType) {
         for (const key in identifiers) {
           const identifier = identifiers[key];
-          const pathsCollection = allPaths[identifier];
+          const pathsCollection = allPaths[key];
           const paths = TypeProbe.ProbeTypeForValue(baseExtensionType, identifier).map(getPath);
-          paths.forEach(path => pathsCollection[path] = (pathsCollection[path] !== undefined) ? ++pathsCollection[path] : 1);
+          paths.forEach(path => (pathsCollection[path] !== undefined) ? pathsCollection[path].push(type.symbol.name) : pathsCollection[path] = [type.symbol.name]);
         }
       }
     });
   }
 
   for (const key in allPaths) {
-    const viablePaths = Object.entries(allPaths[key]).filter(([path, count]) => count === typeCount ).map(([path, _]) => path).sort(byLength);
+    const viablePaths = Object.entries(allPaths[key]).filter(([_, types]) => (types as string[]).length == typeCount).map(([path, _]) => path).sort(byLength);
     details[key] = viablePaths;
   }
 }
@@ -82,6 +83,7 @@ describe("Typescript transpilation of extensions", () => {
       insetIconURL: []
     }
     retrievePathsToMenuDetails(program, pathsToDetails);
+    console.log("deeeetsa", pathsToDetails);
     const expected = cachedPathsToMenuDetails;
     const actual = pathsToDetails;
     expect(actual).toEqual(expected);

@@ -146,3 +146,78 @@ class BarebonesTs extends Extension<{
 
 export = BarebonesTs;
 ```
+
+## How to declare menu details
+
+### Allowed
+
+```ts
+class GoodInline extends Extension<{
+  title: "my_title",
+  description: "my_description",
+  iconURL: "my_iconURL",
+  insetIconURL: "my_insetIconURL",
+}, {}>{
+  ...
+}
+
+```
+
+### Allowed
+
+```ts
+type DisplayDetails = {
+  title: "my_title",
+  description: "my_description",
+  iconURL: "my_iconURL",
+  insetIconURL: "my_insetIconURL",
+}
+
+class GoodInSameFile extends Extension<DisplayDetails, {}>{
+  init = notImplemented;
+  blockBuilders = notImplemented;
+}
+```
+
+### NOT Allowed
+
+```ts
+type Title = "my_title";
+type Description = "my_description";
+type IconURL = "my_iconURL";
+type InsetIconURL = "my_insetIconURL";
+
+class BadInline extends Extension<{
+  title: Title,
+  description: Description,
+  iconURL: IconURL,
+  insetIconURL: InsetIconURL,
+}, {}>{
+  ...
+}
+```
+
+### NOT Allowed
+
+```ts
+type Title = "test_title";
+type Description = "test_description";
+type IconURL = "test_iconURL";
+type InsetIconURL = "test_insetIconURL";
+
+type DisplayDetails = {
+  title: Title,
+  description: Description,
+  iconURL: IconURL,
+  insetIconURL: InsetIconURL,
+}
+
+class BadSameFile extends Extension<DisplayDetails, {}>{
+  ...
+}
+```
+
+
+
+
+
