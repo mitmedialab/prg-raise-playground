@@ -1,4 +1,4 @@
-export abstract class variedOrderCollection<T> {
+export abstract class VariedOrderCollection<T> {
     protected storage : T[];
 
     constructor() {

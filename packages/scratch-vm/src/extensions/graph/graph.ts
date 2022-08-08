@@ -1,11 +1,28 @@
+import { Queue } from './queue';
 type vertex = string;
+
 type edge = [vertex,vertex];
+type Q = Queue<vertex>;
+const dummy : vertex = generate_random_string(10);
+
+function generate_random_string(length : number) : string {
+    let result           = '';
+    let characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+   }
+   return result;
+}
+
 
 //simple undirected graph: no loops, no multiedges
 export class Graph {
     private adjTable : Map<vertex,Set<vertex>>;
     readonly max_size : number;
     private verbose : boolean;
+    private marked : Set<vertex>;
+    private parents : Set<[vertex,vertex]>;
 
 
     constructor(max_size : number = 20, verbose : boolean = true) {
@@ -35,7 +52,7 @@ export class Graph {
     }
 
     addVertex(v : vertex) : boolean {
-        if (this.size() < this.max_size && !this.exists(v)) {
+        if (this.size() < this.max_size && !this.exists(v) && v !== dummy) {
             this.adjTable.set(v, new Set());
             if (this.verbose) console.log(`adding vertex ${v}`);
             return true;
@@ -90,7 +107,7 @@ export class Graph {
         }
     }
 
-    private neighbors(v1 : vertex) {
+    private neighbors(v1 : vertex) : Set<vertex> {
         if (!this.exists(v1)) return new Set();
         return this.adjTable.get(v1);
     }
@@ -107,5 +124,50 @@ export class Graph {
             if (this.verbose) console.log(`failed to remove [${[v1,v2]}]`);
             return false;
         }
+    }
+
+    bfs (src:vertex,dest:vertex) {
+        //set up
+        let visited = new Set();
+        let parents = new Map<vertex,vertex>();
+        const visit = (v : vertex) => visited.add(v);
+        const set_parent = (v,p) => parents.set(v,p);
+        let q : Q = new Queue();
+        q.add(src);
+        visited.add(src);
+        parents.set(src,dummy);
+        let found = false;
+
+        //traversal
+        while (q.size() > 0) {
+            let curr = q.remove();
+            if (curr === dest) {
+                found = true;
+                break;
+            }
+    
+            const neighbors = this.neighbors(curr);
+            neighbors.forEach(w => {
+                if (!visited.has(w)) {
+                    q.add(w);
+                    set_parent(w,curr);
+                    visit(w);
+                }
+            })
+        }
+
+        //path reconstruction
+        let path = [];
+        if (found) {
+            let curr_child = dest;
+            path.push(dest);
+            while (parents.get(curr_child) !== dummy) {
+                path.push(parents.get(curr_child));
+                curr_child = parents.get(curr_child);
+            }
+            path.reverse();
+        }
+
+        return path;
     }
 }

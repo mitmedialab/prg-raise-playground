@@ -1,7 +1,6 @@
 import { Graph } from './graph';
-const log = console.log;
 
-describe("Typescript code generation for extension details", () => {
+describe("Graph tests", () => {
   test("Test exists and add vertex", () => {
     let G = new Graph(4,false);
     G.addVertex('a');
@@ -120,4 +119,43 @@ describe("Typescript code generation for extension details", () => {
     expect(G.removeEdge(['a','b'])).toBe(false);
     expect(G.size()).toBe(1);
   })
+
+  test('bfs test simple graph', () => {
+    let G = new Graph(undefined,false);
+    G.addEdge(['a','b']);
+    G.addEdge(['b','c']);
+    G.addEdge(['c','d']);
+    G.addEdge(['a','e']);
+    G.addEdge(['e','d']);
+    G.bfs('a','d');
+    G.addVertex('z');
+    G.bfs('a','g');
+  })
+
+  test('bfs test more complicated graph', () => {
+    let G = new Graph(undefined,false);
+    G.addEdge(['a','b']);
+    G.addEdge(['b','d']);
+    G.addEdge(['b','e']);
+    G.addEdge(['g','e']);
+    G.addEdge(['g','f']);
+    G.addEdge(['d','e']);
+    G.addEdge(['d','f']);
+    G.addEdge(['h','f']);
+    G.addEdge(['i','f']);
+    G.addEdge(['c','d']);
+    G.addEdge(['b','l']);
+    G.addEdge(['m','l']);
+    G.addEdge(['m','n']);
+    G.addEdge(['o','n']);
+    G.addEdge(['g','o']);
+    G.addVertex('z');
+
+    expect(G.bfs('a','e')).toStrictEqual(['a','b','e']);
+    expect(G.bfs('m','e')).toStrictEqual(['m','l','b','e']);
+    expect(G.bfs('h','n')).toStrictEqual(['h','f','g','o','n']);
+    expect(G.bfs('n','h')).toStrictEqual(['n','o','g','f','h']);
+    expect(G.bfs('n','z')).toStrictEqual([]);
+  })
+
 })
