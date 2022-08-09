@@ -17,6 +17,10 @@ export class Draw {
     private yAxisLength;
     private letters;
     private spacing;
+    /**
+     * The key to load & store a target's music-related state.
+     * @type {string}
+     */
     static readonly VIZ_STATE_KEY = 'Scratch.musicviz';
     static readonly DEFAULT_PEN_STATE = {
         penDown: false,
@@ -30,6 +34,12 @@ export class Draw {
             diameter: 1.1
         }
     };
+    /**
+     * The minimum and maximum allowed pen size.
+     * The maximum is twice the diagonal of the stage, so that even an
+     * off-stage sprite can fill it.
+     * @type {{min: number, max: number}}
+     */
     static readonly PEN_SIZE_RANGE = {min: 1, max: 1200};
 
     constructor (runtime) {
@@ -144,40 +154,7 @@ export class Draw {
 
     }
 
-    // /**
-    //  * The key to load & store a target's music-related state.
-    //  * @type {string}
-    //  */
-    // static get VIZ_STATE_KEY () {
-    //     return 'Scratch.musicviz';
-    // }
-
-    // static get DEFAULT_PEN_STATE () {
-    //     return {
-    //         penDown: false,
-    //         color: 66.66,
-    //         saturation: 100,
-    //         brightness: 100,
-    //         transparency: 0,
-    //         _shade: 50, // Used only for legacy `change shade by` blocks
-    //         penAttributes: {
-    //             color4f: [0, 0, 1, 1],
-    //             diameter: 1.1
-    //         }
-    //     };
-    // }
-
-    // /**
-    //  * The minimum and maximum allowed pen size.
-    //  * The maximum is twice the diagonal of the stage, so that even an
-    //  * off-stage sprite can fill it.
-    //  * @type {{min: number, max: number}}
-    //  */
-    // static get PEN_SIZE_RANGE () {
-    //     return {min: 1, max: 1200};
-    // }
-
-        /**
+    /**
      * When a music-playing Target is cloned, clone the music state.
      * @param {Target} newTarget - the newly created target.
      * @param {Target} [sourceTarget] - the target used as a source for the new clone, if any.
@@ -217,15 +194,6 @@ export class Draw {
         return this._penSkinId;
     }
 
-    // _getWavePenLayerID () {
-    //     if (this.wavePen < 0 && this.runtime.renderer) {
-    //         this.wavePen = this.runtime.renderer.createPenSkin();
-    //         this.wavePenDrawableId = this.runtime.renderer.createDrawable(StageLayering.PEN_LAYER);
-    //         this.runtime.renderer.updateDrawableProperties(this.wavePenDrawableId, {skinId: this.wavePen});
-    //     }
-    //     return this.wavePen;
-    // }
-
     _getPenState (target) {
         let penState = target.getCustomState(Draw.VIZ_STATE_KEY);
         if (!penState) {
@@ -238,11 +206,7 @@ export class Draw {
 
     testWaveformViz (noteList, args, util) {
         this.setPenColorToColor(this.black, util);
-        // this.noteList = noteList;
         this.clear();
-        // this.drawAxes(args, util);
-        // this.drawSignal(args, util);
-        // this.drawLegend(args, util);
         this.labelAxes(args, util);
     }
 
@@ -261,25 +225,11 @@ export class Draw {
     }
 
     labelAxes (args, util) {
-        // this.drawString('time', this.axisStartX + this.xAxisLength-40, this.axisStartY+this.yAxisLength/2-5, 0.8, args, util);
-        let sx = -200;
-        let sy = -150;
-        // for (let i = 0; i < 10; i++) {
-        //     const [a,b] = this.drawLetter('o', sx+25*i,sy+25*i, 3, args, util);
-        //     this.drawLetter(String.fromCharCode(97+i), a, b, .5, args, util);
-        // }
-
-        // let coords = [[-201,-142],[-132,-106],[-153,-37],[-84,-79],[-20,-129],[23,-80],[76,-126],[100,-68],[84,-38],[51,2],[11,31],[-50,50],[-37,105],[100,90],[140,114],[178,60],[187,-60],[-62,107],[-144,115],[-206,145]]
-        // let coords = [[-201,-132],[-132,-106],[-153,-37],[-84,-79],[-20,-129],[23,-80],[76,-126],[85,-80],[84,-38],[51,2],[-11,-31],[-50,50],[-2,105],[100,90],[140,114],[178,60],[187,-60],[-62,107],[-144,115],[-206,145]];
-        // let coords = [[51,2],[-11,-31],[-50,50],[-2,105],[100,90],[140,114],[178,60],[187,-60],[-62,107],[-144,115],[-206,145],[-201,-132],[-132,-106],[-153,-37],[-84,-79],[-20,-129],[23,-80],[76,-126],[85,-80],[84,-38]];
-        // let coords = [[51,2],[-11,-31],[-50,50],[-2,105],[100,90],[140,114],[178,60],[187,-60],[-194,-66],[-144,115],[-206,145],[-201,-132],[-132,-106],[-90,0],[-84,-50],[-20,-129],[23,-80],[76,-126],[115,-80],[160,-19]];
         let coords = [[81,-8],[-11,-31],[-50,50],[-2,105],[100,60],[112,143],[178,60],[-183,27],[-194,-66],[-144,115],[-206,145],[-201,-132],[-132,-106],[-46,140],[-110,-30],[-20,-129],[23,-80],[76,-126],[189,-36],[117,-76]];
                         //0     1           2       3       4           5       6       7           8       9           10          11          12         13       14         15       16      17          18       19
         let foci = [];
         let i = 0;
         coords.forEach(([x,y]) => {
-            // if (i >= 2) return;
-            // const [a,b] = this.drawLetter('o', x,y, 3, args, util);
             const [a2,b2] = this.drawLetter('circle', x,y, 3, args, util);
             foci.push([a2,b2]);
             this.drawString(Cast.toString(i), a2-7, b2, .5, args, util);
@@ -296,46 +246,10 @@ export class Draw {
         this.penDown(args, util);    
         util.target.setXY(x_n2+x1, y_n2+y1);
         this.penUp(args, util);
-        //console.log(foci);
-        //y0-y1 / x0-x1
-        //console.log([(foci[0][1]-foci[1][1]),(foci[0][0]-foci[1][0])]);
-        //console.log(Math.atan2((foci[0][1]-foci[1][1]),(foci[0][0]-foci[1][0])))
-
-        const new_coords = ([x0,y0],[x1,y1]) => {
-            const dx = x0-x1;
-            const dy = y0-y1;
-            const clamped_angle = Math.abs(Math.atan2(dy,dx)) % 2;
-            const get_len = (radians) => { return 7*radians + 23; };
-            const radius = get_len(clamped_angle);
-            const x_new = radius * Math.cos(clamped_angle);
-            const y_new = radius * Math.sin(clamped_angle);
-            return [Math.floor(x_new+x0),Math.floor(y_new+y0)];
-        }
-
-        //console.log(new_coords([foci[0][0],foci[0][1]],[foci[1][0],foci[1][1]]));
-        //console.log(new_coords([foci[1][0],foci[1][1]],[foci[0][0],foci[0][1]]));
-
-
-
-
-        
-
-        // for ([x,y] in coords) {
-        //     console.log(x,y);
-        //     // const [a,b] = this.drawLetter('o', x,y, 3, args, util);
-        //     // this.drawString(Cast.toString(i), a, b, .5, args, util);
-        // }
-        
-
-        // this.drawString('DOLEV', this.axisStartX-30, this.axisStartY+this.yAxisLength + 20, 3, args, util);
-
-        // this.drawString('waveform', this.axisStartX + this.xAxisLength/2 -70, this.axisStartY+this.yAxisLength + 20, 1, args, util);
     }
 
 
     drawString (str, xstart, ystart, size, args, util) {
-        //console.log('yo');
-        //console.log(str);
         for (var i in str) {
             xstart += 5*size;
             if (Cast.toNumber(i) >= 1) {
@@ -343,24 +257,19 @@ export class Draw {
             }
             this.drawLetter(str[i], xstart, ystart, size, args, util);
         }
-            //change
     }     
 
     drawLetter(letter, xstart, ystart, size, args, util) {
-        //'dolev', xstart,ystart);
-        //console.log('letters',this.letters);
         letter = this.letters[letter];
         let xs = [];
         let ys = [];
         this.penUp(args, util);
-        //console.log('letter',letter);
         for (var i in letter) {
             let coord = letter[i];
             let x = coord[0]/5*size + xstart;
             xs.push(x);
             let y = -coord[1]/5*size + ystart;
             ys.push(y);
-            // console.log([x,y]);
             util.target.setXY(x, y);
             this.penDown(args, util);     
         }
@@ -380,17 +289,9 @@ export class Draw {
         let ymin = Math.min(...ys);
         let xmax = Math.max(...xs);
         let ymax = Math.max(...ys);
-        //console.log(xs,ys,'dddddd');
-        //console.log('rad',ymax-ymin,xmax-xmin);
-        // console.log([(xmax+xmin)/2, (ymin+ymax)/2]);
         return [(xmax+xmin)/2, (ymin+ymax)/2];
 
     }
-    // util.target.setXY(this.axisStartX, this.axisStartY + this.yAxisLength);
-
-
-    // colors = ['0xff0000', '0x0000ff', '0x00ff00', '0xffa500'];
-    
 
     penUp (args, util) {
         const penState = this._getPenState(util.target);
@@ -482,5 +383,3 @@ export class Draw {
     }
 
 }
-
-// module.exports = Draw;
