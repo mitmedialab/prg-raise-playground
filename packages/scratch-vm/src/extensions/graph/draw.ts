@@ -253,6 +253,7 @@ export class Draw {
      * @param {*} r 
      */
     scaledVector([x0,y0],[x1,y1], r) {
+        //transpilation check
         const dy = y1 - y0;
         const dx = x1 - x0;
         const magnitude = Math.sqrt(dx * dx + dy * dy);
@@ -295,10 +296,10 @@ export class Draw {
         this.penDown(args, util);    
         util.target.setXY(x_n2+x1, y_n2+y1);
         this.penUp(args, util);
-        console.log(foci);
+        //console.log(foci);
         //y0-y1 / x0-x1
-        console.log([(foci[0][1]-foci[1][1]),(foci[0][0]-foci[1][0])]);
-        console.log(Math.atan2((foci[0][1]-foci[1][1]),(foci[0][0]-foci[1][0])))
+        //console.log([(foci[0][1]-foci[1][1]),(foci[0][0]-foci[1][0])]);
+        //console.log(Math.atan2((foci[0][1]-foci[1][1]),(foci[0][0]-foci[1][0])))
 
         const new_coords = ([x0,y0],[x1,y1]) => {
             const dx = x0-x1;
@@ -311,8 +312,8 @@ export class Draw {
             return [Math.floor(x_new+x0),Math.floor(y_new+y0)];
         }
 
-        console.log(new_coords([foci[0][0],foci[0][1]],[foci[1][0],foci[1][1]]));
-        console.log(new_coords([foci[1][0],foci[1][1]],[foci[0][0],foci[0][1]]));
+        //console.log(new_coords([foci[0][0],foci[0][1]],[foci[1][0],foci[1][1]]));
+        //console.log(new_coords([foci[1][0],foci[1][1]],[foci[0][0],foci[0][1]]));
 
 
 
@@ -333,8 +334,8 @@ export class Draw {
 
 
     drawString (str, xstart, ystart, size, args, util) {
-        console.log('yo');
-        console.log(str);
+        //console.log('yo');
+        //console.log(str);
         for (var i in str) {
             xstart += 5*size;
             if (Cast.toNumber(i) >= 1) {
@@ -346,13 +347,13 @@ export class Draw {
     }     
 
     drawLetter(letter, xstart, ystart, size, args, util) {
-        console.log('dolev', xstart,ystart);
-        console.log('letters',this.letters);
+        //'dolev', xstart,ystart);
+        //console.log('letters',this.letters);
         letter = this.letters[letter];
         let xs = [];
         let ys = [];
         this.penUp(args, util);
-        console.log('letter',letter);
+        //console.log('letter',letter);
         for (var i in letter) {
             let coord = letter[i];
             let x = coord[0]/5*size + xstart;
@@ -379,8 +380,8 @@ export class Draw {
         let ymin = Math.min(...ys);
         let xmax = Math.max(...xs);
         let ymax = Math.max(...ys);
-        console.log(xs,ys,'dddddd');
-        console.log('rad',ymax-ymin,xmax-xmin);
+        //console.log(xs,ys,'dddddd');
+        //console.log('rad',ymax-ymin,xmax-xmin);
         // console.log([(xmax+xmin)/2, (ymin+ymax)/2]);
         return [(xmax+xmin)/2, (ymin+ymax)/2];
 

@@ -19,6 +19,13 @@ type Blocks = {
   // add: (left: number, right: number) => number;
 }
 
+type coordinatePair = [x:number,y:number];
+
+type VertexDisplayInfo = {
+  coordinates: coordinatePair;
+  focus: coordinatePair;
+}
+
 class GraphExtension extends Extension<DisplayDetails, Blocks> {
   options: number[];
   name = () => "ScratchGraph";
@@ -31,8 +38,8 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
     console.log('Get ready to graph it up.');
     this.d = new Draw(this.runtime);
     console.log(this.runtime);
-    this.runtime = runtime;
-    console.log(this.runtime);
+    // this.runtime = runtime;
+    // console.log(this.runtime);
     // this.blockUtility = this.blockUtility;
     // this.d.scaledVector
   }
@@ -56,7 +63,7 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
       }
     },
 
-    'report': this.buildDisplay.bind(this)
+    'report': this.buildDisplay//.bind(this)
 
     // 'display': (self: GraphExtension): Block< () => void> => {
     //   return {
@@ -106,22 +113,22 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
       G.addEdge(['4','5']);
       G.addEdge(['2','4']);
       G.addEdge(['2','3']);
-      console.log(slf.d);
-      console.log(slf.runtime);
-      console.log(blockUtility);
+      // console.log(slf.d);
+      // console.log(slf.runtime);
+      // console.log(blockUtility);
       const verts = [0,1,2,3,4,5,6];
       const curr = coords.filter((x:number[],i:number) => {
         return verts.indexOf(i) >= 0;
       })
       const curr_with_idx : [number[],number][] = curr.map((x,i) => [x,i]);
-      console.log(curr_with_idx);
+      // console.log(curr_with_idx);
       // slf.d.drawLetter('circle', 0,0, 3, [], blockUtility);
       
       curr_with_idx.forEach(([[x,y],i]) => {
         // if (i >= 2) return;
         // const [a,b] = this.drawLetter('o', x,y, 3, args, util);
-        const drawL = slf.d.drawLetter.bind(slf.d);
-        const drawS = slf.d.drawString.bind(slf.d);
+        // const drawL = slf.d.drawLetter.bind(slf.d);
+        // const drawS = slf.d.drawString.bind(slf.d);
         const [a2,b2] = slf.d.drawLetter('circle', x,y, 3, [], blockUtility);
         // foci.push([a2,b2]);
         slf.d.drawString(`${i}`, a2-7, b2, .5, [], blockUtility);
