@@ -40,12 +40,15 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
   private currEdges: Set<edge>;
   private G: Graph;
 
+
   init() { 
     console.log('Get ready to graph it up.');
     this.d = new Draw(this.runtime);
     this.vertexDisplay = new Map();
+
     this.currVertices = new Set();
     this.currEdges = new Set();
+
     const coords : coordinatePair[] = [[81,-8],[-11,-31],[-50,50],[-2,105],[100,60],[112,143],[178,60],[-183,27],[-194,-66],[-144,115],[-206,145],[-201,-132],[-132,-106],[-46,140],[-110,-30],[-20,-129],[23,-80],[76,-126],[189,-36],[117,-76]];
     const foci : coordinatePair[] = [[99.26,-26],[7.26,-49],[-31.74,32],[16.26,87],[118.26,42],[130.26,125],[196.26,42],[-164.73,9],[-175.74,-84],[-125.73,97],[-187.74,127],[-182.73,-150],[-113.73,-124],[-27.73,122],[-91.73,-48],[-1.74,-147],[41.26,-98],[94.26,-144],[207.26,-54],[135.26,-94]];
     coords.forEach((_:coordinatePair,i:number) => {
@@ -151,6 +154,7 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
     this.print();
 
     // const index = this.currVertices.indexOf()
+
   }
 
   buildDisplay(slf): Block<() => void> {
