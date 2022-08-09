@@ -1,7 +1,6 @@
 import { Queue } from './queue';
-type vertex = number;
-
-type edge = [vertex,vertex];
+export type vertex = number;
+export type edge = [vertex,vertex];
 type Q = Queue<vertex>;
 const dummy : vertex = -1;//generate_random_string(10);
 
