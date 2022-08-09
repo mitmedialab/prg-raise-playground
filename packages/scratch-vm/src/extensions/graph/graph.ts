@@ -25,7 +25,7 @@ export class Graph {
     private parents : Set<[vertex,vertex]>;
 
 
-    constructor(max_size : number = 20, verbose : boolean = true) {
+    constructor(max_size : number = 20, verbose : boolean = false) {
         this.adjTable = new Map<vertex,Set<vertex>>();
         this.max_size = max_size;
         this.verbose = verbose;
