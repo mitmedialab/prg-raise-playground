@@ -106,7 +106,7 @@ export class Graph {
         }
     }
 
-    private neighbors(v1 : vertex) : Set<vertex> {
+    neighbors(v1 : vertex) : Set<vertex> {
         if (!this.exists(v1)) return new Set();
         return this.adjTable.get(v1);
     }

@@ -15,6 +15,9 @@ type Blocks = {
   // playNote: (a: number) => void;
   report: () => number;
   addVertex: () => void;
+  addEdge: (v1:vertex,v2:vertex) => void;
+  removeVertex: (v:vertex) => void;
+  removeEdge: (v1:vertex,v2:vertex) => void;
 }
 
 type coordinatePair = [x:number,y:number];
@@ -33,14 +36,16 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
   // runtime;
   // private blockUtility;
   private vertexDisplay: Map<number,VertexDisplayInfo>;
-  private currVertices : vertex[];
-  private G : Graph;
+  private currVertices: Set<vertex>;
+  private currEdges: Set<edge>;
+  private G: Graph;
 
   init() { 
     console.log('Get ready to graph it up.');
     this.d = new Draw(this.runtime);
     this.vertexDisplay = new Map();
-    this.currVertices = [];
+    this.currVertices = new Set();
+    this.currEdges = new Set();
     const coords : coordinatePair[] = [[81,-8],[-11,-31],[-50,50],[-2,105],[100,60],[112,143],[178,60],[-183,27],[-194,-66],[-144,115],[-206,145],[-201,-132],[-132,-106],[-46,140],[-110,-30],[-20,-129],[23,-80],[76,-126],[189,-36],[117,-76]];
     const foci : coordinatePair[] = [[99.26,-26],[7.26,-49],[-31.74,32],[16.26,87],[118.26,42],[130.26,125],[196.26,42],[-164.73,9],[-175.74,-84],[-125.73,97],[-187.74,127],[-182.73,-150],[-113.73,-124],[-27.73,122],[-91.73,-48],[-1.74,-147],[41.26,-98],[94.26,-144],[207.26,-54],[135.26,-94]];
     coords.forEach((_:coordinatePair,i:number) => {
@@ -57,36 +62,95 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
 
   blockBuilders() {
     return ({
-    // 'playNote': (self: GraphExtension): Block<(a: number) => void> => {
-    //   return {
-    //     type: BlockType.Command,
-    //     args: [{ type: ArgumentType.Number }],
-    //     text: (a) => `Play note: ${a}`,
-    //     operation: (a) => { console.log(`Playing ${a}`); /*let foo = new Graph(); foo.addVertex('a'); foo.addVertex('b'); foo.removeVertex('a')*/},
-    //   }
-    // },
     'addVertex': (self: GraphExtension): Block<() => void> => {
       return {
         type: BlockType.Command,
         args: [],
-        text: () => 'addVertex',
+        text: () => 'add new vertex',
         operation: this.addVertex.bind(self)
       }
     },
 
-    'report': this.buildDisplay
+    'addEdge': (self: GraphExtension): Block<(v1:number,v2:number) => void> => {
+      return {
+        type: BlockType.Command,
+        args: [ { type: ArgumentType.Number, defaultValue: 0 }, { type: ArgumentType.Number, defaultValue: 1 }],
+        text: (v1:vertex,v2:vertex) => `add edge (${v1},${v2})`,
+        operation: this.addEdge.bind(self)
+      }
+    },
+
+    'report': this.buildDisplay,
+
+    'removeVertex': (self: GraphExtension): Block<(v:vertex) => void> => {
+      return {
+        type: BlockType.Command,
+        args: [{ type: ArgumentType.Number }],
+        text: (v:vertex) => `remove vertex ${v}`,
+        operation: this.removeVertex.bind(self)
+      }
+    },
+
+    'removeEdge': (self: GraphExtension): Block<(v1:vertex,v2:vertex) => void> => {
+      return {
+        type: BlockType.Command,
+        args: [{ type: ArgumentType.Number, defaultValue: 0 }, { type: ArgumentType.Number, defaultValue: 1 }],
+        text: (v1:vertex,v2:vertex) => `remove edge (${v1},${v2})`,
+        operation: this.removeEdge.bind(self)
+      }
+    },
 
   })};
 
   addVertex() {
-    const len = this.currVertices.length;
+    const len = this.currVertices.size;
     if (len < this.G.max_size) {
       this.G.addVertex(len);
-      this.currVertices.push(len);
+      this.currVertices.add(len);
     } else {
       alert(`Max graph size is ${this.G.max_size}`);
     }
-    console.log(this.G);
+    this.print();
+
+  }
+
+  addEdge(v1:vertex,v2:vertex) {
+    if (this.G.addEdge([v1,v2])) {
+      this.currEdges.add([v1,v2]);
+      this.currVertices.add(v1);
+      this.currVertices.add(v2);
+    }
+    this.print();
+
+  }
+
+  removeEdge(v1:vertex,v2:vertex) {
+    if (this.G.removeEdge([v1,v2])) {
+      if (!this.currEdges.delete([v1,v2])) {
+        this.currEdges.delete([v2,v1]);
+      }
+    }
+    this.print();
+
+  }
+
+  print() {
+    console.log('graph',this.G);
+    console.log('verts',this.currVertices);
+    console.log('edges',this.currEdges);
+  }
+
+  removeVertex(v : vertex) {
+    if (this.G.removeVertex(v)) {
+      this.currVertices.delete(v);
+      const newEdges = Array.from(this.currEdges.values()).filter(([v1,v2]) => v !== v1 && v !== v2);
+      this.currEdges = new Set();
+      newEdges.forEach(e => this.currEdges.add(e));
+      // let foo = Array.from(this.currVertices.values());
+    }
+    this.print();
+
+    // const index = this.currVertices.indexOf()
   }
 
   buildDisplay(slf): Block<() => void> {
