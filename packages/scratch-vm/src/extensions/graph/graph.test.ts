@@ -3,159 +3,159 @@ import { Graph } from './graph';
 describe("Graph tests", () => {
   test("Test exists and add vertex", () => {
     let G = new Graph(4,false);
-    G.addVertex('a');
-    G.addVertex('b');
-    G.addVertex('c');
-    G.addVertex('d');
-    expect(G.exists('c')).toBe(true);
-    expect(G.exists('e')).toBe(false);
+    G.addVertex(1);
+    G.addVertex(2);
+    G.addVertex(3);
+    G.addVertex(4);
+    expect(G.exists(4)).toBe(true);
+    expect(G.exists(5)).toBe(false);
   })
 
   test("Test max size addV", () => {
     let G = new Graph(3,false);
-    G.addVertex('a');
-    G.addVertex('b');
-    G.addVertex('c');
+    G.addVertex(1);
+    G.addVertex(2);
+    G.addVertex(3);
     expect(G.size()).toBe(3);
-    G.addVertex('d');
+    G.addVertex(4);
     expect(G.size()).toBe(3);
   })
 
   test("Test basic add edge functionality", () => {
     let G = new Graph(3,false);
-    G.addEdge(['a','b']);
+    G.addEdge([1,2]);
     expect(G.size()).toBe(2);
-    G.addEdge(['a','c']);
+    G.addEdge([1,3]);
     expect(G.size()).toBe(3);
-    G.addEdge(['a','c']);
+    G.addEdge([1,3]);
     expect(G.size()).toBe(3); //adding the same edge again should not affect size
   })
 
   test("Test basic add edge functionality with both/only 1 vertex present", () => {
     let G = new Graph(undefined,false);
-    G.addVertex('a');
-    G.addVertex('b');
-    G.addEdge(['a','b']);
-    expect(G.existsEdge(['a','b'])).toBe(true);
+    G.addVertex(1);
+    G.addVertex(2);
+    G.addEdge([1,2]);
+    expect(G.existsEdge([1,2])).toBe(true);
 
     let G1 = new Graph(undefined,false);
-    G1.addVertex('a');
-    G1.addEdge(['b','a']);
-    expect(G1.existsEdge(['a','b'])).toBe(true);
+    G1.addVertex(1);
+    G1.addEdge([2,1]);
+    expect(G1.existsEdge([1,2])).toBe(true);
 
   })
 
   test("Test max size addE where neither exists", () => {
     let G = new Graph(3,false);
-    G.addEdge(['a','b']);
-    G.addEdge(['a','c']);
-    G.addEdge(['d','e']);
+    G.addEdge([1,2]);
+    G.addEdge([1,3]);
+    G.addEdge([4,5]);
     expect(G.size()).toBe(3);
   })
 
   test("Test max size addE where one exists and we're already at the limit", () => {
     let G = new Graph(3,false);
-    G.addEdge(['a','b']);
-    G.addEdge(['a','c']);
-    G.addEdge(['a','d']);
+    G.addEdge([1,2]);
+    G.addEdge([1,3]);
+    G.addEdge([1,4]);
     expect(G.size()).toBe(3);
   })
 
   test("Test max size addE where one exists and we're not at the limit", () => {
     let G = new Graph(3,false);
-    G.addEdge(['a','b']);
-    G.addEdge(['a','c']);
-    G.addEdge(['a','e']);
+    G.addEdge([1,2]);
+    G.addEdge([1,3]);
+    G.addEdge([1,5]);
     expect(G.size()).toBe(3);
   })
 
   test("Test that neither vertex is added in addEdge if there's room for one more", () => {
     let G = new Graph(4,false);
-    G.addEdge(['a','b']);
-    G.addEdge(['a','c']);
-    G.addEdge(['e','d']);
+    G.addEdge([1,2]);
+    G.addEdge([1,3]);
+    G.addEdge([5,4]);
     expect(G.size()).toBe(3);
   })
 
   test("Test existsEdge", () => {
     let G = new Graph(undefined,false);
-    G.addEdge(['a','a']);
+    G.addEdge([1,1]);
     expect(G.size()).toBe(0);
-    G.addEdge(['a','b']);
+    G.addEdge([1,2]);
     expect(G.size()).toBe(2);
-    expect(G.existsEdge(['a','b'])).toBe(true);
-    expect(G.existsEdge(['b','a'])).toBe(true); // E(v1,v2) === E(v2,v1)
-    expect(G.existsEdge(['a','c'])).toBe(false);
-    G.addVertex('c');
-    expect(G.existsEdge(['a','c'])).toBe(false);
+    expect(G.existsEdge([1,2])).toBe(true);
+    expect(G.existsEdge([2,1])).toBe(true); // E(v1,v2) === E(v2,v1)
+    expect(G.existsEdge([1,3])).toBe(false);
+    G.addVertex(3);
+    expect(G.existsEdge([1,3])).toBe(false);
   })
 
   test("Test remove vertex", () => {
     let G = new Graph(undefined,false);
-    G.addVertex('a');
-    G.addVertex('b');
-    G.removeVertex('a');
+    G.addVertex(1);
+    G.addVertex(2);
+    G.removeVertex(1);
     expect(G.size()).toBe(1);
 
     let G1 = new Graph(undefined,false);
-    G1.addEdge(['a','b']);
-    G1.removeVertex('a');
+    G1.addEdge([1,2]);
+    G1.removeVertex(1);
     expect(G1.size()).toBe(1);
   })
 
   test("Test basic removal", () => {
     let G = new Graph(undefined,false);
-    G.addEdge(['a','b']);
-    G.addEdge(['c','d']);
-    expect(G.removeEdge(['a','b'])).toBe(true);
-    expect(G.removeVertex('c')).toBe(true);
+    G.addEdge([1,2]);
+    G.addEdge([3,4]);
+    expect(G.removeEdge([1,2])).toBe(true);
+    expect(G.removeVertex(3)).toBe(true);
     expect(G.size()).toBe(3);
   })
 
   test("Test vertex/edge removal on stuff that isn't there", () => {
     let G = new Graph(undefined,false);
-    G.addVertex('a');
-    expect(G.removeVertex('b')).toBe(false);
-    expect(G.removeEdge(['a','b'])).toBe(false);
+    G.addVertex(1);
+    expect(G.removeVertex(2)).toBe(false);
+    expect(G.removeEdge([1,2])).toBe(false);
     expect(G.size()).toBe(1);
   })
 
   test('bfs test simple graph', () => {
     let G = new Graph(undefined,false);
-    G.addEdge(['a','b']);
-    G.addEdge(['b','c']);
-    G.addEdge(['c','d']);
-    G.addEdge(['a','e']);
-    G.addEdge(['e','d']);
-    G.bfs('a','d');
-    G.addVertex('z');
-    G.bfs('a','g');
+    G.addEdge([1,2]);
+    G.addEdge([2,3]);
+    G.addEdge([3,4]);
+    G.addEdge([1,5]);
+    G.addEdge([5,4]);
+    G.bfs(1,4);
+    G.addVertex(26);
+    G.bfs(1,7);
   })
 
   test('bfs test more complicated graph', () => {
     let G = new Graph(undefined,false);
-    G.addEdge(['a','b']);
-    G.addEdge(['b','d']);
-    G.addEdge(['b','e']);
-    G.addEdge(['g','e']);
-    G.addEdge(['g','f']);
-    G.addEdge(['d','e']);
-    G.addEdge(['d','f']);
-    G.addEdge(['h','f']);
-    G.addEdge(['i','f']);
-    G.addEdge(['c','d']);
-    G.addEdge(['b','l']);
-    G.addEdge(['m','l']);
-    G.addEdge(['m','n']);
-    G.addEdge(['o','n']);
-    G.addEdge(['g','o']);
-    G.addVertex('z');
+    G.addEdge([1,2]);
+    G.addEdge([2,4]);
+    G.addEdge([2,5]);
+    G.addEdge([7,5]);
+    G.addEdge([7,6]);
+    G.addEdge([4,5]);
+    G.addEdge([4,6]);
+    G.addEdge([8,6]);
+    G.addEdge([9,6]);
+    G.addEdge([3,4]);
+    G.addEdge([2,12]);
+    G.addEdge([13,12]);
+    G.addEdge([13,14]);
+    G.addEdge([15,14]);
+    G.addEdge([7,15]);
+    G.addVertex(26);
 
-    expect(G.bfs('a','e')).toStrictEqual(['a','b','e']);
-    expect(G.bfs('m','e')).toStrictEqual(['m','l','b','e']);
-    expect(G.bfs('h','n')).toStrictEqual(['h','f','g','o','n']);
-    expect(G.bfs('n','h')).toStrictEqual(['n','o','g','f','h']);
-    expect(G.bfs('n','z')).toStrictEqual([]);
+    expect(G.bfs(1,5)).toStrictEqual([1,2,5]);
+    expect(G.bfs(13,5)).toStrictEqual([13,12,2,5]);
+    expect(G.bfs(8,14)).toStrictEqual([8,6,7,15,14]);
+    expect(G.bfs(14,8)).toStrictEqual([14,15,7,6,8]);
+    expect(G.bfs(14,26)).toStrictEqual([]);
   })
 
 })

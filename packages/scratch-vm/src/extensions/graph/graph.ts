@@ -1,9 +1,9 @@
 import { Queue } from './queue';
-type vertex = string;
+type vertex = number;
 
 type edge = [vertex,vertex];
 type Q = Queue<vertex>;
-const dummy : vertex = generate_random_string(10);
+const dummy : vertex = -1;//generate_random_string(10);
 
 function generate_random_string(length : number) : string {
     let result           = '';
