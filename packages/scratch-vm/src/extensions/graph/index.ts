@@ -4,6 +4,7 @@ import { Block } from "../../typescript-support/types";
 import { Graph, vertex, edge } from './graph';
 import { Draw } from './draw';
 import { NumTupSet } from './numtuple';
+import type BlockUtility from '../../engine/block-utility';
 
 type DisplayDetails = {
   title: "Basic Graph Theory",
@@ -73,6 +74,7 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
     this.remove = NumTupSet.delete_(this.currEdges);
     this.values = () => NumTupSet.values(this.currEdges);
     this.forEach = NumTupSet.forEach(this.currEdges);
+    console.log(this.vertexDisplay);
   }
 
   blockBuilders() {
@@ -121,9 +123,39 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
     return v >= this.range.min && v <= this.range.max;
   }
 
+  private drawEdge([v1,v2]:edge,util) {
+    const vertexDispInfo1 = this.vertexDisplay.get(v1);
+    const vertexDispInfo2 = this.vertexDisplay.get(v2);
+    const focus1 = vertexDispInfo1.focus;
+    const focus2 = vertexDispInfo2.focus;
+
+    this.d.drawLineBetweenCircles(focus1,focus2,23.868,util);
+  }
+
+  private drawVertex(v:vertex,util:BlockUtility) {
+      console.log('in draw ');
+      const vertexDispInfo = this.vertexDisplay.get(v);
+      const [x,y] = vertexDispInfo.coordinates;
+      const [focus_x,focus_y] = vertexDispInfo.focus;
+      this.d.drawLetter('circle', x,y, 3, [], util);
+      this.d.drawString(`${v}`,focus_x-7,focus_y,.5,[],util);
+
+      //23.868
+      
+      // foci.push([a2,b2]);
+      // slf.d.drawString(`${i}`, a2-7, b2, .5, [], blockUtility);
+      // i++;
+  }
+
+  private updateDisplay(util : BlockUtility) {
+    this.d.clear();
+    this.currVertices.forEach(v => this.drawVertex(v,util));
+    this.forEach(e => this.drawEdge(e,util));
+  }
 
 
-  addVertex(v: vertex) {
+  addVertex(v: vertex,util : BlockUtility) {
+    console.log('DOLEV1', util);
     if (!(this.inRange(v))) {
       alert(`vertex values in the range ${this.range.min}-${this.range.max}, inclusive, are accepted`);
     } else {
@@ -136,10 +168,11 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
       }
     }
     this.print();
-
+    this.updateDisplay(util);
   }
 
-  addEdge(v1:vertex,v2:vertex) {
+  addEdge(v1:vertex,v2:vertex,util:BlockUtility) {
+    console.log('DOLEV3', util);
     if (!(this.inRange(v1) && this.inRange(v2))) {
       alert(`vertex values in the range ${this.range.min}-${this.range.max}, inclusive, are accepted`);
     } else if (this.G.addEdge([v1,v2]) && !this.has([v2,v1])) {
@@ -149,10 +182,11 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
       this.currVertices.add(v2);
     }
     this.print();
-
+    this.updateDisplay(util);
   }
 
-  removeEdge(v1:vertex,v2:vertex) {
+  removeEdge(v1:vertex,v2:vertex,util:BlockUtility) {
+    console.log('DOLEV2', util);
     if (this.G.removeEdge([v1,v2])) {
       console.log('a');
       if (!this.remove([v1,v2])) {
@@ -161,7 +195,7 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
       }
     }
     this.print();
-
+    this.updateDisplay(util);
   }
 
   print() {
@@ -170,8 +204,8 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
     console.log('edges',this.currEdges);
   }
 
-  removeVertex(v : vertex,x) {
-    console.log('DOLEV', x);
+  removeVertex(v : vertex,util:BlockUtility) {
+    console.log('DOLEV4', util);
     if (this.G.removeVertex(v)) {
       this.currVertices.delete(v);
       const newEdges = Array.from(this.values()).filter(([v1,v2]) => {console.log([v1,v2],v); return v !== v1 && v !== v2});
@@ -179,6 +213,7 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
       newEdges.forEach(e => this.add(e));
     }
     this.print();
+    this.updateDisplay(util);
   }
 
   buildDisplay(slf): Block<() => void> {
