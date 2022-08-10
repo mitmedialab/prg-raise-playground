@@ -47,7 +47,7 @@ export class Draw {
         _shade: 50, // Used only for legacy `change shade by` blocks
         penAttributes: {
             color4f: [0, 0, 1, 1],
-            diameter: 1.0
+            diameter: 2.2
         }
     };
     /**
@@ -219,13 +219,6 @@ export class Draw {
         return penState;
     }
 
-
-    testWaveformViz (noteList, args, util) {
-        this.setPenColorToColor(this.black, util);
-        this.clear();
-        this.labelAxes(args, util);
-    }
-
     /**
      * get a vector from (x0,y0) to (x1,y1) of length r
      * @param {} param0 
@@ -258,31 +251,6 @@ export class Draw {
         //this.setPenDiameter(prevDiameter,util);
     }
 
-    labelAxes (args, util) {
-        let coords = [[81,-8],[-11,-31],[-50,50],[-2,105],[100,60],[112,143],[178,60],[-183,27],[-194,-66],[-144,115],[-206,145],[-201,-132],[-132,-106],[-46,140],[-110,-30],[-20,-129],[23,-80],[76,-126],[189,-36],[117,-76]];
-                        //0     1           2       3       4           5       6       7           8       9           10          11          12         13       14         15       16      17          18       19
-        let foci = [];
-        let i = 0;
-        coords.forEach(([x,y]) => {
-            const [a2,b2] = this.drawLetter('circle', x,y, 3, args, util);
-            foci.push([a2,b2]);
-            this.drawString(Cast.toString(i), a2-7, b2, .5, args, util);
-            i++;
-        })
-
-        const [x0,y0] = [foci[0][0], foci[0][1]];
-        const [x1,y1] = [foci[1][0], foci[1][1]];
-        const [x_n1,y_n1] = this.scaledVector([x0,y0],[x1,y1],23.868);
-        const [x_n2,y_n2] = this.scaledVector([x1,y1],[x0,y0],23.868);
-
-
-        util.target.setXY(x_n1+x0, y_n1+y0);
-        this.penDown(args, util);    
-        util.target.setXY(x_n2+x1, y_n2+y1);
-        this.penUp(args, util);
-    }
-
-
     drawString (str, xstart, ystart, size, args, util) {
         this.setPenColorToColor(this.black, util);
         for (var i in str) {
@@ -295,7 +263,7 @@ export class Draw {
     }     
 
     drawLetter(letter, xstart, ystart, size, args, util) {
-        console.log('-->',util,util.target);
+        // console.log('-->',util,util.target);
         letter = this.letters[letter];
         let xs = [];
         let ys = [];
@@ -320,13 +288,6 @@ export class Draw {
             this.penDown(args, util);     
         }
         this.penUp(args, util);
-
-        let xmin = Math.min(...xs);
-        let ymin = Math.min(...ys);
-        let xmax = Math.max(...xs);
-        let ymax = Math.max(...ys);
-        return [(xmax+xmin)/2, (ymin+ymax)/2];
-
     }
 
     penUp (args, util) {
@@ -380,6 +341,7 @@ export class Draw {
     setPenDiameter (d:number, util) {
         const penState : penState = this._getPenState(util.target);
         penState.penAttributes.diameter = d;
+        console.log('new State',this._getPenState(util.target));
     }
 
     getCurrentDiameter (util) : number {
