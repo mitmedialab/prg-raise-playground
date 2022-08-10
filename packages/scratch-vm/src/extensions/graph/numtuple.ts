@@ -44,4 +44,3 @@ export class NumTupSet {
         vals.forEach(tup => f(tup));
     }
 }
-
