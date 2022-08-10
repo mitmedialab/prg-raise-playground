@@ -14,7 +14,6 @@ type DisplayDetails = {
 };
 
 type Blocks = {
-  report: () => number;
   addVertex: (v:vertex) => void;
   addEdge: (v1:vertex,v2:vertex) => void;
   removeVertex: (v:vertex) => void;
@@ -63,7 +62,6 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
         focus: foci[i]
       })
     })
-    // console.log(this.runtime);
 
     this.G = new Graph(20,false);
 
@@ -74,7 +72,6 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
     this.remove = NumTupSet.delete_(this.currEdges);
     this.values = () => NumTupSet.values(this.currEdges);
     this.forEach = NumTupSet.forEach(this.currEdges);
-    // console.log(this.vertexDisplay);
   }
 
   blockBuilders() {
@@ -96,8 +93,6 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
         operation: this.addEdge.bind(self)
       }
     },
-
-    'report': this.buildDisplay,
 
     'removeVertex': (self: GraphExtension): Block<(v:vertex) => void> => {
       return {
@@ -124,7 +119,6 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
   }
 
   private drawEdge([v1,v2]:edge,util) {
-    // this.d.setPenDiameter(5,util);
     const vertexDispInfo1 = this.vertexDisplay.get(v1);
     const vertexDispInfo2 = this.vertexDisplay.get(v2);
     const focus1 = vertexDispInfo1.focus;
@@ -133,13 +127,11 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
   }
 
   private drawVertex(v:vertex,util:BlockUtility) {
-      // console.log('in draw ');
       const vertexDispInfo = this.vertexDisplay.get(v);
       const [x,y] = vertexDispInfo.coordinates;
       const [focus_x,focus_y] = vertexDispInfo.focus;
       this.d.drawLetter('circle', x,y, 3, [], util);
       const prevDiameter = this.d.getCurrentDiameter(util);
-      // console.log('prev diameter',prevDiameter);
       this.d.setPenDiameter(1.0,util);
       this.d.drawString(`${v}`,focus_x-7,focus_y,.5,[],util);
       this.d.setPenDiameter(prevDiameter,util);
@@ -153,7 +145,6 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
 
 
   addVertex(v: vertex,util : BlockUtility) {
-    // console.log('DOLEV1', util);
     if (!(this.inRange(v))) {
       alert(`vertex values in the range ${this.range.min}-${this.range.max}, inclusive, are accepted`);
     } else {
@@ -170,11 +161,9 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
   }
 
   addEdge(v1:vertex,v2:vertex,util:BlockUtility) {
-  // console.log('DOLEV3', util);
     if (!(this.inRange(v1) && this.inRange(v2))) {
       alert(`vertex values in the range ${this.range.min}-${this.range.max}, inclusive, are accepted`);
     } else if (this.G.addEdge([v1,v2]) && !this.has([v2,v1])) {
-    // console.log('here');
       this.add([v1,v2]);
       this.currVertices.add(v1);
       this.currVertices.add(v2);
@@ -184,11 +173,8 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
   }
 
   removeEdge(v1:vertex,v2:vertex,util:BlockUtility) {
-  // console.log('DOLEV2', util);
     if (this.G.removeEdge([v1,v2])) {
-    // console.log('a');
       if (!this.remove([v1,v2])) {
-      // console.log('b');
         this.remove([v2,v1]);
       }
     }
@@ -203,7 +189,6 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
   }
 
   removeVertex(v : vertex,util:BlockUtility) {
-  // console.log('DOLEV4', util);
     if (this.G.removeVertex(v)) {
       this.currVertices.delete(v);
       const newEdges = Array.from(this.values()).filter(([v1,v2]) => {console.log([v1,v2],v); return v !== v1 && v !== v2});
@@ -212,46 +197,6 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
     }
     this.print();
     this.updateDisplay(util);
-  }
-
-  buildDisplay(slf): Block<() => void> {
-
-    const getFive = () => console.log(5);
-
-    const display = (blockUtility) => {
-    // console.log(blockUtility);
-    // console.log(slf.runtime)
-    // console.log(this.d,slf.d);
-
-      const coords = [[81,-8],[-11,-31],[-50,50],[-2,105],[100,60],[112,143],[178,60],[-183,27],[-194,-66],[-144,115],[-206,145],[-201,-132],[-132,-106],[-46,140],[-110,-30],[-20,-129],[23,-80],[76,-126],[189,-36],[117,-76]];
-      let _G = new Graph();
-      _G.addEdge([0,1]);
-      _G.addEdge([0,6]);
-      _G.addEdge([0,4]);
-      _G.addEdge([4,5]);
-      _G.addEdge([2,4]);
-      _G.addEdge([2,3]);
-      const verts = [0,1,2,3,4,5,6];
-      const curr = coords.filter((x:number[],i:number) => {
-        return verts.indexOf(i) >= 0;
-      })
-      let foci = [];
-
-      coords.forEach(([x,y],i) => {
-        const [a2,b2] = slf.d.drawLetter('circle', x,y, 3, [], blockUtility);
-        foci.push([a2,b2]);
-        slf.d.drawString(`${i}`, a2-7, b2, .5, [], blockUtility);
-        // i++;
-      })
-    };
-
-
-    return {
-      type: BlockType.Command,
-      args: [],
-      text: () => "display graph",
-      operation: display,
-    }
   }
 }
 
