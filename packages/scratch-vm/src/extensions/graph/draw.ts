@@ -5,6 +5,21 @@ import RenderedTarget = require('../../sprites/rendered-target');
 import StageLayering = require('../../engine/stage-layering');
 import letters = require('./letters');
 
+type penState = {
+    penDown: boolean,
+    color: number,
+    saturation: number,
+    brightness: number,
+    transparency: number,
+    _shade: number,
+    penAttributes: {
+        color4f: number[],
+        diameter: number
+    }
+}
+
+type coordinatePair = [x:number,y:number];
+
 export class Draw {
     private runtime;
     private _penSkinId;
@@ -21,8 +36,9 @@ export class Draw {
      * The key to load & store a target's music-related state.
      * @type {string}
      */
-    static readonly VIZ_STATE_KEY = 'Scratch.musicviz';
-    static readonly DEFAULT_PEN_STATE = {
+    static readonly VIZ_STATE_KEY = 'Scratch.draw__';
+
+    static readonly DEFAULT_PEN_STATE : penState = {
         penDown: false,
         color: 66.66,
         saturation: 100,
@@ -31,7 +47,7 @@ export class Draw {
         _shade: 50, // Used only for legacy `change shade by` blocks
         penAttributes: {
             color4f: [0, 0, 1, 1],
-            diameter: 1.1
+            diameter: 1.0
         }
     };
     /**
@@ -217,11 +233,29 @@ export class Draw {
      * @param {*} r 
      */
     scaledVector([x0,y0],[x1,y1], r) {
-        //transpilation check
         const dy = y1 - y0;
         const dx = x1 - x0;
         const magnitude = Math.sqrt(dx * dx + dy * dy);
         return [(dx/magnitude)*r,(dy/magnitude)*r];
+    }
+
+    /**
+     * 
+     * @param focus0 - the coordinates of the center of the first circle
+     * @param focus1 - the coordinates of the center of the second circles
+     * @param radius - the radius of the circles
+     * @param util 
+     */
+    drawLineBetweenCircles([x0,y0]:coordinatePair,[x1,y1]:coordinatePair,radius:number,util/*,diameter?:number*/) {
+        const [x_n1,y_n1] = this.scaledVector([x0,y0],[x1,y1],radius);
+        const [x_n2,y_n2] = this.scaledVector([x1,y1],[x0,y0],radius);
+        //const prevDiameter = this.getCurrentDiameter(util);
+        //if (diameter) this.setPenDiameter(diameter,util);
+        util.target.setXY(x_n1+x0, y_n1+y0);
+        this.penDown([], util);    
+        util.target.setXY(x_n2+x1, y_n2+y1);
+        this.penUp([], util);
+        //this.setPenDiameter(prevDiameter,util);
     }
 
     labelAxes (args, util) {
@@ -250,6 +284,7 @@ export class Draw {
 
 
     drawString (str, xstart, ystart, size, args, util) {
+        this.setPenColorToColor(this.black, util);
         for (var i in str) {
             xstart += 5*size;
             if (Cast.toNumber(i) >= 1) {
@@ -260,6 +295,7 @@ export class Draw {
     }     
 
     drawLetter(letter, xstart, ystart, size, args, util) {
+        console.log('-->',util,util.target);
         letter = this.letters[letter];
         let xs = [];
         let ys = [];
@@ -341,6 +377,16 @@ export class Draw {
         this._updatePenColor(penState);
     }
 
+    setPenDiameter (d:number, util) {
+        const penState : penState = this._getPenState(util.target);
+        penState.penAttributes.diameter = d;
+    }
+
+    getCurrentDiameter (util) : number {
+        const penState : penState = this._getPenState(util.target);
+        return penState.penAttributes.diameter;
+    }
+
     /**
      * Update the cached color from the color, saturation, brightness and transparency values
      * in the provided PenState object.
@@ -348,6 +394,7 @@ export class Draw {
      * @private
      */
     _updatePenColor (penState) {
+        console.log('pen state',penState);
         const rgb = Color.hsvToRgb({
             h: penState.color * 360 / 100,
             s: penState.saturation / 100,
