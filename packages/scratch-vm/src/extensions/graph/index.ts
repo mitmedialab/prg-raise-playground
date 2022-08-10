@@ -13,13 +13,11 @@ type DisplayDetails = {
 };
 
 type Blocks = {
-  // playNote: (a: number) => void;
   report: () => number;
   addVertex: (v:vertex) => void;
   addEdge: (v1:vertex,v2:vertex) => void;
   removeVertex: (v:vertex) => void;
   removeEdge: (v1:vertex,v2:vertex) => void;
-  // report2: (v:number)=>void;
 }
 
 type coordinatePair = [x:number,y:number];
@@ -75,11 +73,6 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
     this.remove = NumTupSet.delete_(this.currEdges);
     this.values = () => NumTupSet.values(this.currEdges);
     this.forEach = NumTupSet.forEach(this.currEdges);
-
-    // this.blockUtility = this.blockUtility;
-    // console.log();
-    // console.log('about to build stash util');
-    // this.buildStashUtil(this);
   }
 
   blockBuilders() {
@@ -103,10 +96,6 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
     },
 
     'report': this.buildDisplay,
-
-    // 'report2': this.buildDisplay2,
-
-    // 'stash util': this.buildStashUtil.bind(this),
 
     'removeVertex': (self: GraphExtension): Block<(v:vertex) => void> => {
       return {
@@ -188,100 +177,9 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
       const newEdges = Array.from(this.values()).filter(([v1,v2]) => {console.log([v1,v2],v); return v !== v1 && v !== v2});
       this.currEdges.clear();
       newEdges.forEach(e => this.add(e));
-      // let foo = Array.from(this.currVertices.values());
     }
     this.print();
-
-    // const index = this.currVertices.indexOf()
-
   }
-
-  // buildStashUtil(slf,blockUtility): Block<() => void> {
-  //   console.log('hi');
-  //   console.log('hi',blockUtility);
-  //   const stash = (blockUtility) => {
-  //     console.log('hi dolev');
-  //     console.log(blockUtility);
-  //     // this.blockUtility = blockUtility;
-  //   }
-
-  //   return {
-  //     type: BlockType.Command,
-  //     args: [],
-  //     text: () => "stash util",
-  //     operation: stash,
-  //   }
-  // }
-
-  // buildDisplay2(slf): Block<(n:number) => void> {
-
-  //   const getFive = () => console.log(5);
-
-  //   const display2 = (a,blockUtility) => {
-
-  //     console.log(blockUtility);
-  //     console.log(slf.runtime)
-  //     console.log(this.d,slf.d);
-
-  //     const coords = [[81,-8],[-11,-31],[-50,50],[-2,105],[100,60],[112,143],[178,60],[-183,27],[-194,-66],[-144,115],[-206,145],[-201,-132],[-132,-106],[-46,140],[-110,-30],[-20,-129],[23,-80],[76,-126],[189,-36],[117,-76]];
-  //     let _G = new Graph();
-  //     _G.addEdge([0,1]);
-  //     _G.addEdge([0,6]);
-  //     _G.addEdge([0,4]);
-  //     _G.addEdge([4,5]);
-  //     _G.addEdge([2,4]);
-  //     _G.addEdge([2,3]);
-  //     const verts = [0,1,2,3,4,5,6];
-  //     const curr = coords.filter((x:number[],i:number) => {
-  //       return verts.indexOf(i) >= 0;
-  //     })
-  //     const curr_with_idx : [number[],number][] = curr.map((x,i) => [x,i]);
-      
-  //     // curr_with_idx.forEach(([[x,y],i]) => {
-  //     //   const [a2,b2] = slf.d.drawLetter('circle', x,y, 3, [], blockUtility);
-  //     //   // foci.push([a2,b2]);
-  //     //   slf.d.drawString(`${i}`, a2-7, b2, .5, [], blockUtility);
-  //     //   // i++;
-  //     // })
-  //     let foci = [];
-
-  //     coords.forEach(([x,y],i) => {
-  //       const [a2,b2] = slf.d.drawLetter('circle', x,y, 3, [], blockUtility);
-  //       foci.push([a2,b2]);
-  //       slf.d.drawString(`${i}`, a2-7, b2, .5, [], blockUtility);
-  //       // i++;
-  //     })
-  //     // console.log('foci',foci,foci.length);
-
-
-
-  //     // for (let i = 0; i < foo.length; i++) {
-  //     //   blockUtility.target.setXY(foo[i][0],foo[i][1]);
-  //     //   setTimeout(() => {},1500);
-  //     // }
-
-
-      
-  //     // const timer = ms => new Promise(res => setTimeout(res, ms))
-
-  //     // async function load () { // We need to wrap the loop into an async function for this to work
-  //     //   // const foo = [[99.26,-26],[7.26,-49],[-31.74,32],[16.26,87],[118.26,42],[130.26,125],[196.26,42],[-164.73,9],[-175.74,-84],[-125.73,97],[-187.74,127],[-182.73,-150],[-113.73,-124],[-27.73,122],[-91.73,-48],[-1.74,-147],[41.26,-98],[94.26,-144],[207.26,-54],[135.26,-94]];
-  //     //   for (var i = 0; i < 20; i++) {
-  //     //     blockUtility.target.setXY(foo[i][0],foo[i][1]);
-  //     //     await timer(1500); // then the created Promise can be awaited
-  //     //   }
-  //     // }
-  //     // load();
-  //   };
-
-
-  //   return {
-  //     type: BlockType.Command,
-  //     args: [{type: ArgumentType.Number}],
-  //     text: (a) => `display graph ${a}`,
-  //     operation: display2,
-  //   }
-  // }
 
   buildDisplay(slf): Block<() => void> {
 
@@ -304,14 +202,6 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
       const curr = coords.filter((x:number[],i:number) => {
         return verts.indexOf(i) >= 0;
       })
-      const curr_with_idx : [number[],number][] = curr.map((x,i) => [x,i]);
-      
-      // curr_with_idx.forEach(([[x,y],i]) => {
-      //   const [a2,b2] = slf.d.drawLetter('circle', x,y, 3, [], blockUtility);
-      //   // foci.push([a2,b2]);
-      //   slf.d.drawString(`${i}`, a2-7, b2, .5, [], blockUtility);
-      //   // i++;
-      // })
       let foci = [];
 
       coords.forEach(([x,y],i) => {
@@ -320,27 +210,6 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
         slf.d.drawString(`${i}`, a2-7, b2, .5, [], blockUtility);
         // i++;
       })
-      // console.log('foci',foci,foci.length);
-
-
-
-      // for (let i = 0; i < foo.length; i++) {
-      //   blockUtility.target.setXY(foo[i][0],foo[i][1]);
-      //   setTimeout(() => {},1500);
-      // }
-
-
-      
-      // const timer = ms => new Promise(res => setTimeout(res, ms))
-
-      // async function load () { // We need to wrap the loop into an async function for this to work
-      //   // const foo = [[99.26,-26],[7.26,-49],[-31.74,32],[16.26,87],[118.26,42],[130.26,125],[196.26,42],[-164.73,9],[-175.74,-84],[-125.73,97],[-187.74,127],[-182.73,-150],[-113.73,-124],[-27.73,122],[-91.73,-48],[-1.74,-147],[41.26,-98],[94.26,-144],[207.26,-54],[135.26,-94]];
-      //   for (var i = 0; i < 20; i++) {
-      //     blockUtility.target.setXY(foo[i][0],foo[i][1]);
-      //     await timer(1500); // then the created Promise can be awaited
-      //   }
-      // }
-      // load();
     };
 
 
