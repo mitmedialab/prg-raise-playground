@@ -144,8 +144,21 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
 
   })};
 
-  shortestPath(v1:vertex,v2:vertex,util:BlockUtility) {
-    
+  shortestPath(src:vertex,dest:vertex,util:BlockUtility) {
+    this.updateDisplay(util);
+    const [path,found] = this.G.bfs(src,dest);
+    if (found && path.length > 1) {
+      let edgePath : edge[] = [];
+      for (let i = 0; i < path.length - 1; i++) {
+        edgePath.push([path[i],path[i+1]]);
+      }
+      this.d.setPenColorToColor('0xff0000',util);
+      edgePath.forEach(e => this.drawEdge(e,util));
+      this.d.setPenColorToColor('0x0000ff',util);
+
+    } else {
+      this.updateDisplay(util);
+    }
   }
 
   clear(util:BlockUtility) {
@@ -183,6 +196,7 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
   }
 
   private updateDisplay(util : BlockUtility) {
+    console.log('update d');
     this.d.clear();
     this.currVertices.forEach(v => this.drawVertex(v,util));
     this.forEach(e => this.drawEdge(e,util));
