@@ -1,6 +1,8 @@
 import type Runtime from '../engine/runtime';
 import { ArgumentType } from './enums';
 import type { BlockBuilder, ExtensionMenuDisplayDetails, Environment, ExtensionBlocks, BlockOperation, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem } from './types';
+import { strict as assert } from 'assert';
+import Cast  from '../util/cast';
 
 /**
  * 
@@ -97,6 +99,30 @@ export abstract class Extension
     }
   }
 
+  binToBool = (n : number) : boolean => {
+    assert(n === 0 || n === 1);
+    return n === 1;
+  }
+
+  /**
+   * @param str_matrix binary string of length 25
+   * @returns 2D 5x5 array of booleans (1==>true, 0==>false)
+   */
+  toMatrix = (str_matrix : string) : boolean[][] => {
+    let matrix = [];
+    assert(str_matrix.length === 25);
+    const binary_array = str_matrix.split('');
+    while (binary_array.length != 0) {
+      matrix.push(binary_array.splice(0,5).map(x => this.binToBool(parseInt(x))));
+    }
+    const assertLen5 = (arr : any[]) => { assert(arr.length === 5); };
+    for (const row of matrix) {
+      assertLen5(row);
+    }
+    assertLen5(matrix);
+    return matrix;
+  }
+
   castToType = (argumentType: ArgumentType, value: any) => {
     switch(argumentType) {
       case ArgumentType.String:
@@ -107,6 +133,13 @@ export abstract class Extension
         return !!value;
       case ArgumentType.Note:
         return parseInt(value);
+      case ArgumentType.Angle:
+        return parseInt(value);
+      case ArgumentType.Matrix:
+        console.log(this.toMatrix(`${value}`))
+        return this.toMatrix(`${value}`);
+      case ArgumentType.Color:
+        return Cast.toRgbColorObject(value);
       default:
         throw new Error("Method not implemented.");
     }

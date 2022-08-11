@@ -20,10 +20,15 @@ export type MenuThatAcceptsReporters<T> = {
 };
 
 export type Argument<T> = {
-  type: ArgumentType;
+  type: TSToScratchArg<T>;
   defaultValue?: T | undefined;
   options?: MenuItem<T>[] | MenuThatAcceptsReporters<T> | undefined;
 }
+
+export type TSToScratchArg<T> =
+  T extends number ? (ArgumentType.Number | ArgumentType.Angle | ArgumentType.Note | ArgumentType.Color) :
+  T extends string ? (ArgumentType.String | ArgumentType.Matrix | ArgumentType.Color) :
+  T extends boolean ? (ArgumentType.Boolean) : never;
 
 // Used to be <T extends [...any[]]> ... not sure if it needs to be?
 type ToArguments<T extends any[]> =
@@ -34,7 +39,9 @@ type ToArguments<T extends any[]> =
 type ParamsAndUtility<T extends BlockOperation> = [...Parameters<T>, BlockUtility];
 
 export type Block<T extends BlockOperation> = {
-  type: BlockType;
+  type: ReturnType<T> extends void ? BlockType.Command : 
+        ReturnType<T> extends boolean ? (BlockType.Reporter | BlockType.Boolean | BlockType.Hat) :
+        BlockType.Reporter;
   operation: (...params: ParamsAndUtility<T>) => ReturnType<T>;
   args: ToArguments<Parameters<T>>;
   text: (...params: Parameters<T>) => string;

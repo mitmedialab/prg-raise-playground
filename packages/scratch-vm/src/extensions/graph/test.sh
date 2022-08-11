@@ -1,0 +1,1 @@
+cd ../../.. && npm run test:scripts
