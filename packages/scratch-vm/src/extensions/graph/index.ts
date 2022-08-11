@@ -41,11 +41,11 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
   private currVertices: Set<vertex>;
   private currEdges: Set<string>; //do not reassign currEdges
   private G: Graph;
-  private add: (e:edge) => void;
-  private has: (e:edge) => boolean;
-  private remove: (e:edge) => boolean;
-  private values: () => Set<edge>;
-  private forEach: (f:((e:edge) => any)) => void;
+  private addCurrEdge: (e:edge) => void;
+  private hasCurrEdge: (e:edge) => boolean;
+  private removeCurrEdge: (e:edge) => boolean;
+  private valuesCurrEdges: () => Set<edge>;
+  private forEachCurrEdge: (f:((e:edge) => any)) => void;
   private range = {min:0,max:19};
   private lastWasComplete : boolean;
   private prev_k_n_size : number;
@@ -75,11 +75,11 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
     this.G = new Graph(20,false);
     this.lastWasComplete = false;
 
-    this.add = NumTupSet.add(this.currEdges);
-    this.has = NumTupSet.has(this.currEdges);
-    this.remove = NumTupSet.delete_(this.currEdges);
-    this.values = () => NumTupSet.values(this.currEdges);
-    this.forEach = NumTupSet.forEach(this.currEdges);
+    this.addCurrEdge = NumTupSet.add(this.currEdges);
+    this.hasCurrEdge = NumTupSet.has(this.currEdges);
+    this.removeCurrEdge = NumTupSet.delete_(this.currEdges);
+    this.valuesCurrEdges = () => NumTupSet.values(this.currEdges);
+    this.forEachCurrEdge = NumTupSet.forEach(this.currEdges);
   }
 
   blockBuilders() {
@@ -258,12 +258,12 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
     this.lastWasComplete = false;
     this.vertexDisplay = this.originialVertexDisplay; //revert to original vertex display settings
     this.currVertices = new Set();
-    this.forEach(([v1,v2]) => this.removeEdge(v1,v2,util,true));
+    this.forEachCurrEdge(([v1,v2]) => this.removeEdge(v1,v2,util,true));
     this.updateDisplay(util);
   }
 
   clearEdges(util:BlockUtility) {
-    this.forEach(([v1,v2]) => this.removeEdge(v1,v2,util,true));
+    this.forEachCurrEdge(([v1,v2]) => this.removeEdge(v1,v2,util,true));
     this.updateDisplay(util);
   }
 
@@ -312,7 +312,7 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
     console.log('in update.....');
     console.log('vertices in update:', this.currVertices);
     console.log('edges in update:', this.currEdges);
-    this.forEach(e => this.drawEdge(e,util));
+    this.forEachCurrEdge(e => this.drawEdge(e,util));
   }
 
 
@@ -340,8 +340,8 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
       alert(`vertex values in the range ${this.range.min}-${this.range.max}, inclusive, are accepted`);
     } else if (this.lastWasComplete && !(this.currVertices.has(v1) && this.currVertices.has(v2))) {
       alert('you can only add edges between existing vertices in (previously) complete graphs. Reset graph to continue');
-    } else if (this.G.addEdge([v1,v2]) && !this.has([v2,v1])) {
-      this.add([v1,v2]);
+    } else if (this.G.addEdge([v1,v2]) && !this.hasCurrEdge([v2,v1])) {
+      this.addCurrEdge([v1,v2]);
       this.currVertices.add(v1);
       this.currVertices.add(v2);
     }
@@ -351,8 +351,8 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
 
   removeEdge(v1:vertex,v2:vertex,util:BlockUtility,dontupdate?:boolean) {
     if (this.G.removeEdge([v1,v2])) {
-      if (!this.remove([v1,v2])) {
-        this.remove([v2,v1]);
+      if (!this.removeCurrEdge([v1,v2])) {
+        this.removeCurrEdge([v2,v1]);
       }
     }
     this.print();
@@ -368,9 +368,9 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
   removeVertex(v : vertex,util:BlockUtility,dontupdate?:boolean) {
     if (this.G.removeVertex(v)) {
       this.currVertices.delete(v);
-      const newEdges = Array.from(this.values()).filter(([v1,v2]) => {console.log([v1,v2],v); return v !== v1 && v !== v2});
+      const newEdges = Array.from(this.valuesCurrEdges()).filter(([v1,v2]) => {console.log([v1,v2],v); return v !== v1 && v !== v2});
       this.currEdges.clear();
-      newEdges.forEach(e => this.add(e));
+      newEdges.forEach(e => this.addCurrEdge(e));
     }
     this.print();
     if (!dontupdate) this.updateDisplay(util);
