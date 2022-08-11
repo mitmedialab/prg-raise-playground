@@ -384,12 +384,8 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
   }
 
   private updateDisplay(util : BlockUtility,calculateFocus?:boolean) {
-    console.log('update d');
     this.d.clear();
     this.currVertices.forEach(v => this.drawVertex(v,util,calculateFocus));
-    console.log('in update.....');
-    console.log('vertices in update:', this.currVertices);
-    console.log('edges in update:', this.currEdges);
     this.forEachCurrEdge(e => this.drawEdge(e,util));
   }
 
@@ -397,10 +393,8 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
   addVertex(v: vertex,util : BlockUtility,dontupdate?:boolean) {
     if (!(this.inRange(v))) {
       alert(`vertex values in the range ${this.range.min}-${this.range.max}, inclusive, are accepted`);
-    } else if (this.checkLastWasComplete()) {
-      console.log('ARTZI',v);
-    } else {
-      console.log("DOLEV",v);
+    } else if (this.checkLastWasComplete()) {} 
+      else {
       const len = this.currVertices.size;
       if (len < this.G.max_size) {
         this.G.addVertex(v);
