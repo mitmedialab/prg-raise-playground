@@ -239,20 +239,16 @@ export class Draw {
      * @param radius - the radius of the circles
      * @param util 
      */
-    drawLineBetweenCircles([x0,y0]:coordinatePair,[x1,y1]:coordinatePair,radius:number,util/*,diameter?:number*/) {
+    drawLineBetweenCircles([x0,y0]:coordinatePair,[x1,y1]:coordinatePair,radius:number,util) {
         const [x_n1,y_n1] = this.scaledVector([x0,y0],[x1,y1],radius);
         const [x_n2,y_n2] = this.scaledVector([x1,y1],[x0,y0],radius);
-        //const prevDiameter = this.getCurrentDiameter(util);
-        //if (diameter) this.setPenDiameter(diameter,util);
         util.target.setXY(x_n1+x0, y_n1+y0);
         this.penDown([], util);    
         util.target.setXY(x_n2+x1, y_n2+y1);
         this.penUp([], util);
-        //this.setPenDiameter(prevDiameter,util);
     }
 
     drawString (str, xstart, ystart, size, args, util) {
-        this.setPenColorToColor(this.black, util);
         for (var i in str) {
             xstart += 5*size;
             if (Cast.toNumber(i) >= 1) {

@@ -18,6 +18,9 @@ type Blocks = {
   addEdge: (v1:vertex,v2:vertex) => void;
   removeVertex: (v:vertex) => void;
   removeEdge: (v1:vertex,v2:vertex) => void;
+  clear: () => void;
+  clearEdges: () => void;
+  shortestPath: (v1:vertex,v2:vertex) => void;
 }
 
 type coordinatePair = [x:number,y:number];
@@ -36,8 +39,8 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
   private currVertices: Set<vertex>;
   private currEdges: Set<string>; //do not reassign currEdges
   private G: Graph;
-  private toStr : (e:edge) => string;
-  private fromStr : (str:string) => edge;
+  // private toStr : (e:edge) => string;
+  // private fromStr : (str:string) => edge;
   private add: (e:edge) => void;
   private has: (e:edge) => boolean;
   private remove: (e:edge) => boolean;
@@ -65,8 +68,8 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
 
     this.G = new Graph(20,false);
 
-    this.toStr = NumTupSet.toStr;
-    this.fromStr = NumTupSet.fromStr;
+    // this.toStr = NumTupSet.toStr;
+    // this.fromStr = NumTupSet.fromStr;
     this.add = NumTupSet.add(this.currEdges);
     this.has = NumTupSet.has(this.currEdges);
     this.remove = NumTupSet.delete_(this.currEdges);
@@ -103,7 +106,7 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
       }
     },
 
-    'removeEdge': (self: GraphExtension): Block<(v1:vertex,v2:vertex) => void> => {
+    'removeEdge': (self: GraphExtension): Block<(v1:vertex,v2:vertex,dontupdate?:boolean) => void> => {
       return {
         type: BlockType.Command,
         args: [{ type: ArgumentType.Number, defaultValue: 0 }, { type: ArgumentType.Number, defaultValue: 1 }],
@@ -112,7 +115,49 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
       }
     },
 
+    'clear': (self: GraphExtension): Block<() => void> => {
+      return {
+        type: BlockType.Command,
+        args: [],
+        text: () => 'reset graph',
+        operation: this.clear.bind(this)
+      }
+    },
+
+    'clearEdges': (self: GraphExtension): Block<() => void> => {
+      return {
+        type: BlockType.Command,
+        args: [],
+        text: () => 'reset edges',
+        operation: this.clearEdges.bind(this)
+      }
+    },
+
+    'shortestPath': (self: GraphExtension): Block<(v1:vertex,v2:vertex) => void> => {
+      return {
+        type: BlockType.Command,
+        args: [ { type: ArgumentType.Number, defaultValue: 0 }, { type: ArgumentType.Number, defaultValue: 1 } ],
+        text: (v1,v2) => `find shortest path from ${v1} to ${v2}`,
+        operation: this.shortestPath.bind(this)
+      }
+    }
+
   })};
+
+  shortestPath(v1:vertex,v2:vertex,util:BlockUtility) {
+    
+  }
+
+  clear(util:BlockUtility) {
+    this.currVertices = new Set();
+    this.forEach(e => this.removeEdge(e[0],e[1],util,true));
+    this.updateDisplay(util);
+  }
+
+  clearEdges(util:BlockUtility) {
+    this.forEach(e => this.removeEdge(e[0],e[1],util,true));
+    this.updateDisplay(util);
+  }
 
   private inRange(v:vertex) : boolean {
     return v >= this.range.min && v <= this.range.max;
@@ -172,14 +217,14 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
     this.updateDisplay(util);
   }
 
-  removeEdge(v1:vertex,v2:vertex,util:BlockUtility) {
+  removeEdge(v1:vertex,v2:vertex,util:BlockUtility,dontupdate?:boolean) {
     if (this.G.removeEdge([v1,v2])) {
       if (!this.remove([v1,v2])) {
         this.remove([v2,v1]);
       }
     }
     this.print();
-    this.updateDisplay(util);
+    if (!dontupdate) this.updateDisplay(util);
   }
 
   print() {
