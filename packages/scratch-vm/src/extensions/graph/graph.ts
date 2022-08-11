@@ -125,6 +125,65 @@ export class Graph {
         }
     }
 
+
+    /**
+     * 
+     *  Let S = {v0} be a set of nodes initially containing v0
+        Mark v0
+        Parent[v0] = -1
+        While S is not empty
+        Remove a vertex v from S
+        For all edges (v,u)
+            If u is unmarked
+            Mark it and add it to S
+            Parent[u] = v
+     */
+
+    bfsAll() {
+        if (this.size() === 0) {
+            return [];
+        }
+
+        //set up
+        let visited = new Set();
+        let parents = new Map<vertex,vertex>();
+        const visit = (v : vertex) => visited.add(v);
+        const set_parent = (v,p) => parents.set(v,p);
+        let q : Q = new Queue();
+        const vertices = Array.from(this.adjTable.keys());
+
+        const bfsInner = (src:vertex) => {
+            let ccEdges : edge[] = [];
+            q.add(src);
+            visited.add(src);
+            parents.set(src,dummy);
+    
+            //traversal
+            while (q.size() > 0) {
+                let curr = q.remove();
+                const neighbors = this.neighbors(curr);
+                neighbors.forEach(w => {
+                    if (!visited.has(w)) {
+                        q.add(w);
+                        set_parent(w,curr);
+                        ccEdges.push([curr,w]);
+                        visit(w);
+                    }
+                })
+            }
+            return ccEdges;
+        }
+
+        let edges : edge[][] = [];
+        for (let i = 0; i < vertices.length; i++) {
+            if (!visited.has(vertices[i])) {
+                const edgesToAdd = bfsInner(vertices[i]);
+                if (edgesToAdd.length > 0) edges.push(edgesToAdd);
+            }
+        }
+        return edges;
+    }
+
     bfs (src:vertex,dest:vertex) : [number[],boolean] {
         //set up
         let visited = new Set();

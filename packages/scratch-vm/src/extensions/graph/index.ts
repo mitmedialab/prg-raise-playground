@@ -23,6 +23,7 @@ type Blocks = {
   shortestPath: (v1:vertex,v2:vertex) => void;
   Kn: (n:number) => void;
   randomGraph: (vertexProb:number, edgeProb:number) => void;
+  spanningForest: () => void;
 }
 
 type coordinatePair = [x:number,y:number];
@@ -148,6 +149,15 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
       }
     },
 
+    'spanningForest': (self: GraphExtension): Block<() => void> => {
+      return {
+        type: BlockType.Command,
+        args: [],
+        text: () => `find a spanning forest`,
+        operation: this.spanningForest.bind(this)
+      }
+    },
+
     'clear': (self: GraphExtension): Block<() => void> => {
       return {
         type: BlockType.Command,
@@ -172,6 +182,15 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
   private includeFromProbability(p, random_outcome) {
     return p - random_outcome > 0;
   }
+
+  spanningForest(util:BlockUtility) {
+    this.updateDisplay(util);
+    const edgesToHighlight : edge[] = this.G.bfsAll().flat();
+    this.d.setPenColorToColor('0xff0000',util);
+    edgesToHighlight.forEach(e => this.drawEdge(e,util));
+    this.d.setPenColorToColor('0x0000ff',util);
+
+  } 
 
   randomGraph(vertex_probability:number, edge_probability:number, util:BlockUtility) {
     const max_vertices = 13;
@@ -209,7 +228,6 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
       const indexInCurrV = currVerticesArray.indexOf(v);
       for (let i = indexInCurrV + 1; i < currVerticesArray.length; i++) {
         if (this.includeFromProbability(adjusted_edge_prob, Math.random())) {
-          // console.log(v,indexInCurrV[i]);
           this.addEdge(v,currVerticesArray[i],util,true);
         }
       }
