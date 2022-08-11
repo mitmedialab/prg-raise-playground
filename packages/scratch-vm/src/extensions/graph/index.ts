@@ -403,7 +403,6 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
         alert(`Max graph size is ${this.G.max_size}`);
       }
     }
-    this.print();
     if (!dontupdate) this.updateDisplay(util);
   }
 
@@ -418,7 +417,6 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
       this.currVertices.add(v1);
       this.currVertices.add(v2);
     }
-    this.print();
     if (!dontupdate) this.updateDisplay(util);
   }
 
@@ -428,15 +426,9 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
         this.removeCurrEdge([v2,v1]);
       }
     }
-    this.print();
     if (!dontupdate) this.updateDisplay(util);
   }
 
-  print() {
-    console.log('graph',this.G);
-    console.log('verts',this.currVertices);
-    console.log('edges',this.currEdges);
-  }
 
   removeVertex(v : vertex,util:BlockUtility,dontupdate?:boolean) {
     if (this.G.removeVertex(v)) {
@@ -445,7 +437,6 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
       this.currEdges.clear();
       newEdges.forEach(e => this.addCurrEdge(e));
     }
-    this.print();
     if (!dontupdate) this.updateDisplay(util);
   }
 }
