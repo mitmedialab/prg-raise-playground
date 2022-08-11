@@ -22,6 +22,7 @@ type Blocks = {
   clearEdges: () => void;
   shortestPath: (v1:vertex,v2:vertex) => void;
   Kn: (n:number) => void;
+  randomGraph: (vertexProb:number, edgeProb:number) => void;
 }
 
 type coordinatePair = [x:number,y:number];
@@ -124,8 +125,17 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
       return {
         type: BlockType.Command,
         args: [ { type: ArgumentType.Number, defaultValue: 8 }],
-        text: (n) => `generate the complete graph on ${n} vertices`,
+        text: (n) => `get the complete graph on ${n} vertices`,
         operation: this.Kn.bind(this)
+      }
+    },
+
+    'randomGraph': (self: GraphExtension): Block<(vertexProb:number,edgeProb:number) => void> => {
+      return {
+        type: BlockType.Command, 
+        args: [ { type: ArgumentType.Number, defaultValue: 50 }, { type: ArgumentType.Number, defaultValue: 50 } ], 
+        text: (p1,p2) => `get random graph with ${p1}% vertex probability, ${p2}% edge prob.`,
+        operation: this.randomGraph.bind(this)
       }
     },
 
@@ -158,6 +168,56 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
 
 
   })};
+
+  private includeFromProbability(p, random_outcome) {
+    return p - random_outcome > 0;
+  }
+
+  randomGraph(vertex_probability:number, edge_probability:number, util:BlockUtility) {
+    const max_vertices = 13;
+    this.clear(util);
+    this.lastWasComplete = false;
+    const coords = this.pointsAroundCircle(max_vertices);
+    this.vertexDisplay = new Map();
+    this.currVertices = new Set();
+    for (let i = 0; i < this.G.size(); i++) {
+      this.G.removeVertex(i); //will also remove all edges in this.G
+    }
+
+    coords.forEach((_:coordinatePair,i:number) => {
+      this.vertexDisplay.set(i,{
+        label: i,
+        coordinates: coords[i],
+        focus: [0,0] //temporary, will be calculated in drawVertex
+      });
+    });
+
+    const adjusted_vertex_prob = vertex_probability/100;
+    const adjusted_edge_prob = edge_probability/100;
+    
+    for (let i = 0; i < max_vertices; i++) {
+      if (this.includeFromProbability(adjusted_vertex_prob,Math.random())) {
+        this.currVertices.add(i);
+        this.drawVertex(i,util,true); //third param will cause focus to be calculated and stored
+        this.G.addVertex(i);
+      }
+    }
+
+    const currVerticesArray = Array.from(this.currVertices.values());
+
+    this.currVertices.forEach(v => {
+      const indexInCurrV = currVerticesArray.indexOf(v);
+      for (let i = indexInCurrV + 1; i < currVerticesArray.length; i++) {
+        if (this.includeFromProbability(adjusted_edge_prob, Math.random())) {
+          // console.log(v,indexInCurrV[i]);
+          this.addEdge(v,currVerticesArray[i],util,true);
+        }
+      }
+    })
+
+    this.lastWasComplete = true;
+    this.updateDisplay(util);
+  }
 
   /**
    * Gets @param num_points coordinates evenly spaced around a circle
@@ -213,7 +273,7 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
         });
 
         this.currVertices.add(i);
-        this.drawVertex(i,util,true);
+        this.drawVertex(i,util,true); //third param will cause focus to be calculated and stored
         this.G.addVertex(i);
         
       });
@@ -231,7 +291,7 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
 
   private checkLastWasComplete() {
     if (this.lastWasComplete) {
-      alert("You can't add to complete graphs. Reset graph to continue");
+      alert("You can't add to complete/random graphs. Reset graph to continue");
     }
     return this.lastWasComplete;
   }
@@ -337,9 +397,10 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
 
   addEdge(v1:vertex,v2:vertex,util:BlockUtility,dontupdate?:boolean) {
     if (!(this.inRange(v1) && this.inRange(v2))) {
+      console.log(v1,v2, ':(');
       alert(`vertex values in the range ${this.range.min}-${this.range.max}, inclusive, are accepted`);
     } else if (this.lastWasComplete && !(this.currVertices.has(v1) && this.currVertices.has(v2))) {
-      alert('you can only add edges between existing vertices in (previously) complete graphs. Reset graph to continue');
+      alert('you can only add edges between existing vertices in (previously) complete/random graphs. Reset graph to continue');
     } else if (this.G.addEdge([v1,v2]) && !this.hasCurrEdge([v2,v1])) {
       this.addCurrEdge([v1,v2]);
       this.currVertices.add(v1);

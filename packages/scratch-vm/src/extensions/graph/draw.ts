@@ -346,7 +346,7 @@ export class Draw {
     setPenDiameter (d:number, util) {
         const penState : penState = this._getPenState(util.target);
         penState.penAttributes.diameter = d;
-        console.log('new State',this._getPenState(util.target));
+        // console.log('new State',this._getPenState(util.target));
     }
 
     getCurrentDiameter (util) : number {
@@ -361,7 +361,7 @@ export class Draw {
      * @private
      */
     _updatePenColor (penState) {
-        console.log('pen state',penState);
+        // console.log('pen state',penState);
         const rgb = Color.hsvToRgb({
             h: penState.color * 360 / 100,
             s: penState.saturation / 100,
