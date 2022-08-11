@@ -1,3 +1,17 @@
+/**
+ * Graph Theory Extension
+ * 
+ * This file and its imports contain the code for a basic graph theory extension
+ * for Scratch3. The types of graphs are simple graphs (no loops, no multiedges, undirected, unweighted) 
+ * The included features are: adding and removing vertices/edges, generating complete graphs (Kn), 
+ * randomly generating graphs (given a probability for the presence of vertices and edges), 
+ * finding shortest paths between vertices, and finding spanning forests (not minimum since its an unweighted graph,
+ * forests not trees since it works across multiple connected components).
+ * 
+ * Author: Dolev Artzi (dartzi@andrew.cmu.edu), MIT Media Lab Personal Robots Group
+ * Date: August 2022
+ */
+
 import { ArgumentType, BlockType } from "../../typescript-support/enums";
 import { Extension } from "../../typescript-support/Extension";
 import { Block } from "../../typescript-support/types";
@@ -34,10 +48,10 @@ type VertexDisplayInfo = {
   focus: coordinatePair;
 }
 
-class GraphExtension extends Extension<DisplayDetails, Blocks> {
+class ScratchGraph extends Extension<DisplayDetails, Blocks> {
   options: number[];
   name = () => "ScratchGraph";
-  d : Draw;
+  draw : Draw;
   private vertexDisplay: Map<number,VertexDisplayInfo>;
   private originialVertexDisplay: Map<number,VertexDisplayInfo>;
   private currVertices: Set<vertex>;
@@ -53,8 +67,7 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
   private prev_k_n_size : number;
 
   init() { 
-    console.log('Get ready to graph it up.');
-    this.d = new Draw(this.runtime);
+    this.draw = new Draw(this.runtime);
     this.vertexDisplay = new Map();
     this.originialVertexDisplay = new Map();
 
@@ -77,6 +90,11 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
     this.G = new Graph(20,false);
     this.lastWasComplete = false;
 
+    /**
+     * These functions allow for deep equality between numeric tuples
+     * and are specific to the particular memory address of {@link this.currEdges},
+     * which is why it should not be reassigned, only altered.
+     */
     this.addCurrEdge = NumTupSet.add(this.currEdges);
     this.hasCurrEdge = NumTupSet.has(this.currEdges);
     this.removeCurrEdge = NumTupSet.delete_(this.currEdges);
@@ -86,7 +104,7 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
 
   blockBuilders() {
     return ({
-    'addVertex': (self: GraphExtension): Block<(v:vertex) => void> => {
+    'addVertex': (self: ScratchGraph): Block<(v:vertex) => void> => {
       return {
         type: BlockType.Command,
         args: [ {type: ArgumentType.Number, defaultValue: 0} ],
@@ -95,7 +113,7 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
       }
     },
 
-    'addEdge': (self: GraphExtension): Block<(v1:number,v2:number) => void> => {
+    'addEdge': (self: ScratchGraph): Block<(v1:number,v2:number) => void> => {
       return {
         type: BlockType.Command,
         args: [ { type: ArgumentType.Number, defaultValue: 0 }, { type: ArgumentType.Number, defaultValue: 1 }],
@@ -104,7 +122,7 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
       }
     },
 
-    'removeVertex': (self: GraphExtension): Block<(v:vertex) => void> => {
+    'removeVertex': (self: ScratchGraph): Block<(v:vertex) => void> => {
       return {
         type: BlockType.Command,
         args: [{ type: ArgumentType.Number }],
@@ -113,7 +131,7 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
       }
     },
 
-    'removeEdge': (self: GraphExtension): Block<(v1:vertex,v2:vertex,dontupdate?:boolean) => void> => {
+    'removeEdge': (self: ScratchGraph): Block<(v1:vertex,v2:vertex,dontupdate?:boolean) => void> => {
       return {
         type: BlockType.Command,
         args: [{ type: ArgumentType.Number, defaultValue: 0 }, { type: ArgumentType.Number, defaultValue: 1 }],
@@ -122,7 +140,7 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
       }
     },
 
-    'Kn': (self: GraphExtension): Block<(n:number) => void> => {
+    'Kn': (self: ScratchGraph): Block<(n:number) => void> => {
       return {
         type: BlockType.Command,
         args: [ { type: ArgumentType.Number, defaultValue: 8 }],
@@ -131,7 +149,7 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
       }
     },
 
-    'randomGraph': (self: GraphExtension): Block<(vertexProb:number,edgeProb:number) => void> => {
+    'randomGraph': (self: ScratchGraph): Block<(vertexProb:number,edgeProb:number) => void> => {
       return {
         type: BlockType.Command, 
         args: [ { type: ArgumentType.Number, defaultValue: 50 }, { type: ArgumentType.Number, defaultValue: 50 } ], 
@@ -140,7 +158,7 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
       }
     },
 
-    'shortestPath': (self: GraphExtension): Block<(v1:vertex,v2:vertex) => void> => {
+    'shortestPath': (self: ScratchGraph): Block<(v1:vertex,v2:vertex) => void> => {
       return {
         type: BlockType.Command,
         args: [ { type: ArgumentType.Number, defaultValue: 0 }, { type: ArgumentType.Number, defaultValue: 1 } ],
@@ -149,7 +167,7 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
       }
     },
 
-    'spanningForest': (self: GraphExtension): Block<() => void> => {
+    'spanningForest': (self: ScratchGraph): Block<() => void> => {
       return {
         type: BlockType.Command,
         args: [],
@@ -158,7 +176,7 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
       }
     },
 
-    'clear': (self: GraphExtension): Block<() => void> => {
+    'clear': (self: ScratchGraph): Block<() => void> => {
       return {
         type: BlockType.Command,
         args: [],
@@ -167,7 +185,7 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
       }
     },
 
-    'clearEdges': (self: GraphExtension): Block<() => void> => {
+    'clearEdges': (self: ScratchGraph): Block<() => void> => {
       return {
         type: BlockType.Command,
         args: [],
@@ -186,9 +204,9 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
   spanningForest(util:BlockUtility) {
     this.updateDisplay(util);
     const edgesToHighlight : edge[] = this.G.bfsAll().flat();
-    this.d.setPenColorToColor('0xff0000',util);
+    this.draw.setPenColorToColor('0xff0000',util);
     edgesToHighlight.forEach(e => this.drawEdge(e,util));
-    this.d.setPenColorToColor('0x0000ff',util);
+    this.draw.setPenColorToColor('0x0000ff',util);
 
   } 
 
@@ -322,9 +340,9 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
       for (let i = 0; i < path.length - 1; i++) {
         edgePath.push([path[i],path[i+1]]);
       }
-      this.d.setPenColorToColor('0xff0000',util);
+      this.draw.setPenColorToColor('0xff0000',util);
       edgePath.forEach(e => this.drawEdge(e,util));
-      this.d.setPenColorToColor('0x0000ff',util);
+      this.draw.setPenColorToColor('0x0000ff',util);
 
     } else {
       this.updateDisplay(util);
@@ -354,14 +372,14 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
     const vertexDispInfo2 = this.vertexDisplay.get(v2);
     const focus1 = vertexDispInfo1.focus;
     const focus2 = vertexDispInfo2.focus;
-    this.d.drawLineBetweenCircles(focus1,focus2,23.868,util);
+    this.draw.drawLineBetweenCircles(focus1,focus2,23.868,util);
   }
 
   /**
    * 
    * @param v vertex to draw
    * @param util 
-   * @param calculateFocus optional boolean. If set to true, {@link this.d.drawLetter} 
+   * @param calculateFocus optional boolean. If set to true, {@link this.draw.drawLetter} 
    * will calculate the foci for each circle and return it, and this will be set as the focus 
    * in {@link this.vertexDisplay}.
    */
@@ -372,19 +390,19 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
       let focus_y: number;
       if (!calculateFocus) {
         [focus_x,focus_y] = vertexDispInfo.focus;
-        this.d.drawLetter('circle', x,y, 3, [], util);
+        this.draw.drawLetter('circle', x,y, 3, [], util);
       } else {
-        [focus_x,focus_y] = this.d.drawLetter('circle', x,y, 3, [], util,true);
+        [focus_x,focus_y] = this.draw.drawLetter('circle', x,y, 3, [], util,true);
         vertexDispInfo.focus = [focus_x,focus_y];
       }
-      const prevDiameter = this.d.getCurrentDiameter(util);
-      this.d.setPenDiameter(1.0,util);
-      this.d.drawString(`${v}`,focus_x-7,focus_y,.5,[],util);
-      this.d.setPenDiameter(prevDiameter,util);
+      const prevDiameter = this.draw.getCurrentDiameter(util);
+      this.draw.setPenDiameter(1.0,util);
+      this.draw.drawString(`${v}`,focus_x-7,focus_y,.5,[],util);
+      this.draw.setPenDiameter(prevDiameter,util);
   }
 
   private updateDisplay(util : BlockUtility,calculateFocus?:boolean) {
-    this.d.clear();
+    this.draw.clear();
     this.currVertices.forEach(v => this.drawVertex(v,util,calculateFocus));
     this.forEachCurrEdge(e => this.drawEdge(e,util));
   }
@@ -408,7 +426,6 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
 
   addEdge(v1:vertex,v2:vertex,util:BlockUtility,dontupdate?:boolean) {
     if (!(this.inRange(v1) && this.inRange(v2))) {
-      console.log(v1,v2, ':(');
       alert(`vertex values in the range ${this.range.min}-${this.range.max}, inclusive, are accepted`);
     } else if (this.lastWasComplete && !(this.currVertices.has(v1) && this.currVertices.has(v2))) {
       alert('you can only add edges between existing vertices in (previously) complete/random graphs. Reset graph to continue');
@@ -433,7 +450,7 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
   removeVertex(v : vertex,util:BlockUtility,dontupdate?:boolean) {
     if (this.G.removeVertex(v)) {
       this.currVertices.delete(v);
-      const newEdges = Array.from(this.valuesCurrEdges()).filter(([v1,v2]) => {console.log([v1,v2],v); return v !== v1 && v !== v2});
+      const newEdges = Array.from(this.valuesCurrEdges()).filter(([v1,v2]) => { return v !== v1 && v !== v2 });
       this.currEdges.clear();
       newEdges.forEach(e => this.addCurrEdge(e));
     }
@@ -441,4 +458,4 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
   }
 }
 
-export = GraphExtension;
+export = ScratchGraph;

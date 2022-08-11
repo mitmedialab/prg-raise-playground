@@ -2,20 +2,11 @@ import { Queue } from './queue';
 export type vertex = number;
 export type edge = [vertex,vertex];
 type Q = Queue<vertex>;
-const dummy : vertex = -1;//generate_random_string(10);
-
-function generate_random_string(length : number) : string {
-    let result           = '';
-    let characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let charactersLength = characters.length;
-    for (let i = 0; i < length; i++) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-   }
-   return result;
-}
-
+const dummy : vertex = -1;
 
 //simple undirected graph: no loops, no multiedges
+//uses an adjacency table to represent the graph.
+//Author: Dolev Artzi
 export class Graph {
     private adjTable : Map<vertex,Set<vertex>>;
     readonly max_size : number;
@@ -124,20 +115,6 @@ export class Graph {
             return false;
         }
     }
-
-
-    /**
-     * 
-     *  Let S = {v0} be a set of nodes initially containing v0
-        Mark v0
-        Parent[v0] = -1
-        While S is not empty
-        Remove a vertex v from S
-        For all edges (v,u)
-            If u is unmarked
-            Mark it and add it to S
-            Parent[u] = v
-     */
 
     bfsAll() {
         if (this.size() === 0) {

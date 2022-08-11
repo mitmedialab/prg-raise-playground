@@ -3,6 +3,7 @@ type numTup = [number,number];
 /**
  * Set operations for {@link numTup} that treat different
  * {@link numTup} objects with the same values as equal.
+ * Author: Dolev Artzi
  */
 export class NumTupSet {
 
