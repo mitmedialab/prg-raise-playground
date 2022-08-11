@@ -258,7 +258,7 @@ export class Draw {
         }
     }     
 
-    drawLetter(letter, xstart, ystart, size, args, util) {
+    drawLetter(letter, xstart, ystart, size, args, util, return_midpoint?:boolean) : coordinatePair {
         // console.log('-->',util,util.target);
         letter = this.letters[letter];
         let xs = [];
@@ -284,6 +284,15 @@ export class Draw {
             this.penDown(args, util);     
         }
         this.penUp(args, util);
+
+        if (return_midpoint) {
+            let xmin = Math.min(...xs);
+            let ymin = Math.min(...ys);
+            let xmax = Math.max(...xs);
+            let ymax = Math.max(...ys);
+            return [(xmax+xmin)/2, (ymin+ymax)/2];
+        }
+        return [-1,-1];
     }
 
     penUp (args, util) {
