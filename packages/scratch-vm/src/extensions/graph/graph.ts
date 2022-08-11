@@ -125,7 +125,7 @@ export class Graph {
         }
     }
 
-    bfs (src:vertex,dest:vertex) {
+    bfs (src:vertex,dest:vertex) : [number[],boolean] {
         //set up
         let visited = new Set();
         let parents = new Map<vertex,vertex>();
@@ -167,6 +167,6 @@ export class Graph {
             path.reverse();
         }
 
-        return path;
+        return [path,found];
     }
 }

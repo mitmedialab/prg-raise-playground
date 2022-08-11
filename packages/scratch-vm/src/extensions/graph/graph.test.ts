@@ -127,9 +127,9 @@ describe("Graph tests", () => {
     G.addEdge([3,4]);
     G.addEdge([1,5]);
     G.addEdge([5,4]);
-    G.bfs(1,4);
+    expect(G.bfs(1,4)).toStrictEqual([[1,5,4],true]);
     G.addVertex(26);
-    G.bfs(1,7);
+    expect(G.bfs(1,7)).toStrictEqual([[],false]);
   })
 
   test('bfs test more complicated graph', () => {
@@ -151,11 +151,12 @@ describe("Graph tests", () => {
     G.addEdge([7,15]);
     G.addVertex(26);
 
-    expect(G.bfs(1,5)).toStrictEqual([1,2,5]);
-    expect(G.bfs(13,5)).toStrictEqual([13,12,2,5]);
-    expect(G.bfs(8,14)).toStrictEqual([8,6,7,15,14]);
-    expect(G.bfs(14,8)).toStrictEqual([14,15,7,6,8]);
-    expect(G.bfs(14,26)).toStrictEqual([]);
+    expect(G.bfs(1,5)).toStrictEqual([[1,2,5],true]);
+    expect(G.bfs(13,5)).toStrictEqual([[13,12,2,5],true]);
+    expect(G.bfs(8,14)).toStrictEqual([[8,6,7,15,14],true]);
+    expect(G.bfs(14,8)).toStrictEqual([[14,15,7,6,8],true]);
+    expect(G.bfs(14,26)).toStrictEqual([[],false]);
+    expect(G.bfs(1,1)).toStrictEqual([[1],true]);
   })
 
 })
