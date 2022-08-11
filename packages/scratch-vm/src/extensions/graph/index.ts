@@ -41,8 +41,6 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
   private currVertices: Set<vertex>;
   private currEdges: Set<string>; //do not reassign currEdges
   private G: Graph;
-  // private toStr : (e:edge) => string;
-  // private fromStr : (str:string) => edge;
   private add: (e:edge) => void;
   private has: (e:edge) => boolean;
   private remove: (e:edge) => boolean;
@@ -77,8 +75,6 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
     this.G = new Graph(20,false);
     this.lastWasComplete = false;
 
-    // this.toStr = NumTupSet.toStr;
-    // this.fromStr = NumTupSet.fromStr;
     this.add = NumTupSet.add(this.currEdges);
     this.has = NumTupSet.has(this.currEdges);
     this.remove = NumTupSet.delete_(this.currEdges);
@@ -163,6 +159,12 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
 
   })};
 
+  /**
+   * Gets @param num_points coordinates evenly spaced around a circle
+   * of radius 130 and center (0,20).
+   * @param num_points 
+   * @returns the array of coordinates
+   */
   private pointsAroundCircle(num_points:number) : coordinatePair[] {
     if (num_points <= 0) return [];
     const x0 = 0;
@@ -178,6 +180,11 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
     return res;
   }
 
+  /**
+   * Generates the complete graph on @param n vertices.
+   * @param n - number of vertices
+   * @param util 
+   */
   Kn(n:number,util:BlockUtility) {
     if (this.prev_k_n_size === n) return;
     this.prev_k_n_size = n;
@@ -192,11 +199,10 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
       }
 
       const coords = this.pointsAroundCircle(n);
-      console.log('coords',coords);
       this.vertexDisplay = new Map();
       this.currVertices = new Set();
       for (let i = 0; i < this.G.size(); i++) {
-        this.G.removeVertex(i);
+        this.G.removeVertex(i); //will also remove all edges in this.G
       }
 
       coords.forEach((_:coordinatePair,i:number) => {
@@ -211,7 +217,8 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
         this.G.addVertex(i);
         
       });
-      // coords.forEach((_:coordinatePair,i:number) => this.addVertex(i,util/*,true*/));
+
+      //add edges
       for (let i = 0; i < coords.length; i++) {
         for (let j = 0; j < coords.length; j++) {
           this.addEdge(i,j,util,true);
@@ -249,7 +256,7 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
   clear(util:BlockUtility) {
     this.prev_k_n_size = -1;
     this.lastWasComplete = false;
-    this.vertexDisplay = this.originialVertexDisplay;
+    this.vertexDisplay = this.originialVertexDisplay; //revert to original vertex display settings
     this.currVertices = new Set();
     this.forEach(([v1,v2]) => this.removeEdge(v1,v2,util,true));
     this.updateDisplay(util);
@@ -272,6 +279,14 @@ class GraphExtension extends Extension<DisplayDetails, Blocks> {
     this.d.drawLineBetweenCircles(focus1,focus2,23.868,util);
   }
 
+  /**
+   * 
+   * @param v vertex to draw
+   * @param util 
+   * @param calculateFocus optional boolean. If set to true, {@link this.d.drawLetter} 
+   * will calculate the foci for each circle and return it, and this will be set as the focus 
+   * in {@link this.vertexDisplay}.
+   */
   private drawVertex(v:vertex,util:BlockUtility,calculateFocus?:boolean) {
       const vertexDispInfo = this.vertexDisplay.get(v);
       const [x,y] = vertexDispInfo.coordinates;
