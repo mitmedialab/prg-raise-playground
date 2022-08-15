@@ -31,7 +31,7 @@ class InlineA extends Extension<{
   insetIconURL: "insetIconURL",
 }, {}>{
   init = notImplemented;
-  blockBuilders = notImplemented;
+  defineBlocks = notImplemented;
 }
 
 class InlineB extends Extension<{
@@ -41,7 +41,7 @@ class InlineB extends Extension<{
   insetIconURL: InsetIconURL,
 }, {}>{
   init = notImplemented;
-  blockBuilders = notImplemented;
+  defineBlocks = notImplemented;
 }
 
 type ti = "ti";
@@ -54,7 +54,7 @@ class InlineC extends Extension<{
   insetIconURL: "insetIconURL",
 }, {}>{
   init = notImplemented;
-  blockBuilders = notImplemented;
+  defineBlocks = notImplemented;
 }
 
 class InlineD extends Extension<{
@@ -64,27 +64,27 @@ class InlineD extends Extension<{
   insetIconURL: InsetIconURL,
 }, {}>{
   init = notImplemented;
-  blockBuilders = notImplemented;
+  defineBlocks = notImplemented;
 }
 
 class SameFileA extends Extension<DisplayDetails, {}>{
   init = notImplemented;
-  blockBuilders = notImplemented;
+  defineBlocks = notImplemented;
 }
 
 class SameFileB extends Extension<DisplayDetailsAggregated, {}>{
   init = notImplemented;
-  blockBuilders = notImplemented;
+  defineBlocks = notImplemented;
 }
 
 class SameFileC extends Extension<DisplayDetails, {}>{
   init = notImplemented;
-  blockBuilders = notImplemented;
+  defineBlocks = notImplemented;
 }
 
 class SameFileD extends Extension<DisplayDetailsAggregated, {}>{
   init = notImplemented;
-  blockBuilders = notImplemented;
+  defineBlocks = notImplemented;
 }
 
 export const cachedPathsToMenuDetails: DisplayDetailsRetrievalPaths = {

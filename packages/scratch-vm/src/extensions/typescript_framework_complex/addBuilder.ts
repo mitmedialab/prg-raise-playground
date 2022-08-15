@@ -1,10 +1,10 @@
 import MyExtension = require(".");
 import { ArgumentType, BlockType } from "../../typescript-support/enums";
-import { BlockBuilder } from "../../typescript-support/types";
+import { DefineBlock } from "../../typescript-support/types";
 
-type AddBuilder = BlockBuilder<(left: number, right: number) => number>;
+type AddDefinition = DefineBlock<(left: number, right: number) => number>;
 
-const addBuilder: AddBuilder = (extension: MyExtension) => ({
+const addDefinition: AddDefinition = (extension: MyExtension) => ({
   type: BlockType.Reporter,
   operation(left, right) {
     const sum = left + right;
@@ -17,4 +17,4 @@ const addBuilder: AddBuilder = (extension: MyExtension) => ({
   text: (left, right) => `Add ${left} to ${right}`,
 });
 
-export default addBuilder;
+export default addDefinition;

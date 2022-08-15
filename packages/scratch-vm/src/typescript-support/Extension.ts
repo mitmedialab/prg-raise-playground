@@ -1,8 +1,7 @@
 import type Runtime from '../engine/runtime';
 import { ArgumentType } from './enums';
-import type { BlockBuilder, ExtensionMenuDisplayDetails, Environment, ExtensionBlocks, BlockOperation, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem } from './types';
-import { strict as assert } from 'assert';
-import Cast  from '../util/cast';
+import type { ExtensionMenuDisplayDetails, Environment, ExtensionBlocks, BlockOperation, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, DefineBlock } from './types';
+import Cast from '../util/cast';
 
 /**
  * 
@@ -24,10 +23,10 @@ export abstract class Extension
     this.init({ runtime });
     this.blocks = [];
     this.menus = [];
-    const builders = this.blockBuilders();
+    const definitions = this.defineBlocks();
     const menuArrays: MenuItem<any>[] = [];
-    for (const key in builders) {
-      const block = builders[key](this);
+    for (const key in definitions) {
+      const block = definitions[key](this);
       const info = this.convertToInfo(key, block, menuArrays);
       this.blocks.push(info);
     }
@@ -36,12 +35,13 @@ export abstract class Extension
       const items = menuArrays[index];
       this.menus.push({
         acceptReporters: false,
-        items: items.map(value => `${value}`)
+        items: items.map(item => Extension.IsPrimitive(item) ? `${item}` : {...item, value: `${item.value}`})
       });
     }
   }
 
-  getInternalKey = (key: string) => `internal_${key}`;
+  abstract init(env: Environment);
+  abstract defineBlocks(): BlockDefinitions<TBlocks>;
 
   getInfo(): ExtensionMetadata  {
     const id = this.constructor.name;
@@ -59,14 +59,14 @@ export abstract class Extension
     const args: Argument<any>[] = block.args;
 
     const displayText = text(...args.map((_, index) => `[${index}]`));
-    const opcode = this.getInternalKey(key);
+    const opcode = Extension.GetInternalKey(key);
 
     this[opcode] = (argsFromScratch, blockUtility) => {
       const { mutation } = argsFromScratch; // if you need it!
       // NOTE: Assumption is that args order will be correct since there keys are parsable as ints (i.e. '0', '1', ...)
       const uncasted = Object.values(argsFromScratch).slice(0, -1);
-      const casted = uncasted.map((value, index) => this.castToType(args[index].type, value));
-      return operation(...casted, blockUtility);
+      const casted = uncasted.map((value, index) => Extension.CastToType(args[index].type, value));
+      return operation(...casted, blockUtility); // can add more util params as necessary
     }
 
     const argsInfo: Record<string, ExtensionArgumentMetadata> = args.map(element => {
@@ -89,8 +89,6 @@ export abstract class Extension
       return accumulation;
     }, {});
 
-    console.log(args);
-
     return {
       opcode,
       text: displayText,
@@ -99,31 +97,29 @@ export abstract class Extension
     }
   }
 
-  binToBool = (n : number) : boolean => {
-    assert(n === 0 || n === 1);
-    return n === 1;
+  private static GetInternalKey = (key: string) => `internal_${key}`;
+
+  private static ToFlag = (value: string) : boolean => {
+    const numeric = parseInt(value);
+    console.assert(numeric === 0 || numeric === 1);
+    return numeric === 1;
   }
 
-  /**
-   * @param str_matrix binary string of length 25
-   * @returns 2D 5x5 array of booleans (1==>true, 0==>false)
-   */
-  toMatrix = (str_matrix : string) : boolean[][] => {
-    let matrix = [];
-    assert(str_matrix.length === 25);
-    const binary_array = str_matrix.split('');
-    while (binary_array.length != 0) {
-      matrix.push(binary_array.splice(0,5).map(x => this.binToBool(parseInt(x))));
-    }
-    const assertLen5 = (arr : any[]) => { assert(arr.length === 5); };
-    for (const row of matrix) {
-      assertLen5(row);
-    }
-    assertLen5(matrix);
+  private static ToMatrix = (matrixString : string) : boolean[][] => {
+    if (matrixString.length !== 25) return new Array(5).fill(new Array(5).fill(false));
+
+    const entries = matrixString.split('');
+    const matrix = entries.map(Extension.ToFlag).reduce((matrix, flag, index) => {
+      const row = Math.floor(index / 5);
+      const column = index % 5;
+      (column === 0) ? matrix[row] = [flag]: matrix[row].push(flag);
+      return matrix;
+    }, new Array<boolean[]>(5));
+
     return matrix;
   }
 
-  castToType = (argumentType: ArgumentType, value: any) => {
+  private static CastToType = (argumentType: ArgumentType, value: any) => {
     switch(argumentType) {
       case ArgumentType.String:
         return `${value}`;
@@ -136,15 +132,13 @@ export abstract class Extension
       case ArgumentType.Angle:
         return parseInt(value);
       case ArgumentType.Matrix:
-        console.log(this.toMatrix(`${value}`))
-        return this.toMatrix(`${value}`);
+        return Extension.ToMatrix(value);
       case ArgumentType.Color:
-        return Cast.toRgbColorObject(value);
+        return Cast.toRgbColorObject(value) as RGBObject;
       default:
         throw new Error("Method not implemented.");
     }
   }
 
-  abstract init(env: Environment);
-  abstract blockBuilders(): Record<keyof TBlocks, BlockBuilder<BlockOperation>> & { [k in keyof TBlocks]: BlockBuilder<TBlocks[k]> }
+  private static IsPrimitive = (query) => query !== Object(query);
 };
