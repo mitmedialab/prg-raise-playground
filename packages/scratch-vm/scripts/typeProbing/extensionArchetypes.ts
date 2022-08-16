@@ -30,8 +30,9 @@ class InlineA extends Extension<{
   iconURL: "iconURL",
   insetIconURL: "insetIconURL",
 }, {}>{
+  id: "CODE GEN GUARD: Extension ID";
   init = notImplemented;
-  blockBuilders = notImplemented;
+  defineBlocks = notImplemented;
 }
 
 class InlineB extends Extension<{
@@ -40,8 +41,9 @@ class InlineB extends Extension<{
   iconURL: IconURL,
   insetIconURL: InsetIconURL,
 }, {}>{
+  id: "CODE GEN GUARD: Extension ID";
   init = notImplemented;
-  blockBuilders = notImplemented;
+  defineBlocks = notImplemented;
 }
 
 type ti = "ti";
@@ -53,8 +55,9 @@ class InlineC extends Extension<{
   iconURL: "iconURL",
   insetIconURL: "insetIconURL",
 }, {}>{
+  id: "CODE GEN GUARD: Extension ID";
   init = notImplemented;
-  blockBuilders = notImplemented;
+  defineBlocks = notImplemented;
 }
 
 class InlineD extends Extension<{
@@ -63,28 +66,33 @@ class InlineD extends Extension<{
   iconURL: IconURL,
   insetIconURL: InsetIconURL,
 }, {}>{
+  id: "CODE GEN GUARD: Extension ID";
   init = notImplemented;
-  blockBuilders = notImplemented;
+  defineBlocks = notImplemented;
 }
 
 class SameFileA extends Extension<DisplayDetails, {}>{
+  id: "CODE GEN GUARD: Extension ID";
   init = notImplemented;
-  blockBuilders = notImplemented;
+  defineBlocks = notImplemented;
 }
 
 class SameFileB extends Extension<DisplayDetailsAggregated, {}>{
+  id: "CODE GEN GUARD: Extension ID";
   init = notImplemented;
-  blockBuilders = notImplemented;
+  defineBlocks = notImplemented;
 }
 
 class SameFileC extends Extension<DisplayDetails, {}>{
+  id: "CODE GEN GUARD: Extension ID";
   init = notImplemented;
-  blockBuilders = notImplemented;
+  defineBlocks = notImplemented;
 }
 
 class SameFileD extends Extension<DisplayDetailsAggregated, {}>{
+  id: "CODE GEN GUARD: Extension ID";
   init = notImplemented;
-  blockBuilders = notImplemented;
+  defineBlocks = notImplemented;
 }
 
 export const cachedPathsToMenuDetails: DisplayDetailsRetrievalPaths = {
