@@ -61,12 +61,13 @@ export abstract class Extension
     const displayText = text(...args.map((_, index) => `[${index}]`));
     const opcode = Extension.GetInternalKey(key);
 
+    const bound = operation.bind(this);
     this[opcode] = (argsFromScratch, blockUtility) => {
       const { mutation } = argsFromScratch; // if you need it!
       // NOTE: Assumption is that args order will be correct since there keys are parsable as ints (i.e. '0', '1', ...)
       const uncasted = Object.values(argsFromScratch).slice(0, -1);
       const casted = uncasted.map((value, index) => Extension.CastToType(args[index].type, value));
-      return operation(...casted, blockUtility); // can add more util params as necessary
+      return bound(...casted, blockUtility); // can add more util params as necessary
     }
 
     const argsInfo: Record<string, ExtensionArgumentMetadata> = args.map(element => {

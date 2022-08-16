@@ -1,8 +1,7 @@
-import { count } from "console";
 import { ArgumentType, BlockType } from "../../typescript-support/enums";
 import { Extension } from "../../typescript-support/Extension";
-import { Block, DefineBlock, BlockOperation, BlockDefinitions, RGBObject } from "../../typescript-support/types";
-import addDefinition from "./addBuilder";
+import { Block, BlockDefinitions, RGBObject, MenuItem } from "../../typescript-support/types";
+import addDefinition from "./addDefinition";
 
 type DisplayDetails = {
   title: "Realistic Typescript-Based Extension",
@@ -17,26 +16,48 @@ const enum MatrixDimension {
   Both
 }
 
+const enum Animal {
+  Leopard,
+  Tiger,
+  Gorilla,
+  Monkey,
+  Pig
+}
+
 type Blocks = {
-  reportChannel: (color: RGBObject, channel: string) => number;
+  reportColorChannel: (color: RGBObject, channel: string) => number;
   sumMatrix: (matrix: boolean[][], dimension: MatrixDimension) => string;
-  playNote: (a: number) => void;
-  report: () => string;
+  incrementStateViaThis: () => number;
+  incrementStateViaSelf: () => number;
+  selectNote: (note: number) => number;
+  selectAngle: (angle: number) => number;
+  useAnimalMenu1: (animal: Animal) => string;
+  useAnimalMenu2: (animal: Animal) => string;
+  multiplyUsingSelf: (left: number, right: number) => number;
+  multiplyUsingThis: (left: number, right: number) => number;
   add: (left: number, right: number) => number;
 }
 
-class MyExtension extends Extension<DisplayDetails, Blocks> {
-  options: number[];
-  name = () => "My Extension";
+class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
+  lhsOptions: number[];
+  animals: MenuItem<Animal>[];
+  state: number = 0;
+  name = () => "Example of Typescript Extension";
 
   init() { 
-    this.options = [3, 4, 5];
+    this.lhsOptions = [3, 4, 5];
+    this.animals = [
+      {text: '🐆', value: Animal.Leopard},
+      {text: '🐅', value: Animal.Tiger},
+      {text: '🦍', value: Animal.Gorilla},
+      {text: '🐒', value: Animal.Monkey},
+      {text: '🐖', value: Animal.Pig},
+    ];
   }
 
   defineBlocks(): BlockDefinitions<Blocks> {
     return {
-      
-      'reportChannel': () => ({
+      'reportColorChannel': () => ({
         type: BlockType.Reporter,
         args: [
           { type: ArgumentType.Color }, 
@@ -78,35 +99,110 @@ class MyExtension extends Extension<DisplayDetails, Blocks> {
         }
       }),
 
-      // Example of an external 'builder' function
-      'add': addDefinition,
-
-      // Example of a method 'builder' function
-      'report': this.defineReport,
-
-      // Example of an arrow 'builder' function 
-      'playNote': (self: MyExtension) => ({
-          type: BlockType.Command,
-          args: [{ type: ArgumentType.Number }],
-          text: (a: number) => `Play note: ${a}`,
-          operation: (a: number) => { console.log(`Playing ${a}`)},
+      'incrementStateViaThis': () => ({
+        type: BlockType.Reporter,
+        args: [],
+        text: () => 'Increment (via \'this\')',
+        operation: () => ++this.state
       }),
+
+      'incrementStateViaSelf': (self: TypeScriptFrameworkExample) => ({
+        type: BlockType.Reporter,
+        args: [],
+        text: () => 'Increment (via \'self\')',
+        operation: () => ++self.state
+      }),
+
+      'selectNote': () => ({
+        type: BlockType.Reporter,
+        args: [{ type: ArgumentType.Note }],
+        text: (note) => `Pick note ${note}`,
+        operation: (note) => note
+      }),
+
+      'selectAngle': () => ({
+        type: BlockType.Reporter,
+        args: [{ type: ArgumentType.Angle }],
+        text: (angle) => `Pick angle ${angle}`,
+        operation: (angle) => angle
+      }),
+
+      'useAnimalMenu1': () => ({
+        type: BlockType.Reporter,
+        args: [{ type: ArgumentType.Number, options: this.animals}],
+        text: (animal) => `This is a ${animal}`,
+        operation: (animal) => {
+          switch (animal) {
+            case Animal.Leopard:
+              return 'leopard';
+            case Animal.Tiger:
+              return 'tiger';
+            case Animal.Gorilla:
+              return 'gorilla';
+            case Animal.Monkey:
+              return 'monkey';
+            case Animal.Pig:
+              return 'pig';
+          }
+        },
+      }),
+
+      'useAnimalMenu2': (self: TypeScriptFrameworkExample) => ({
+        type: BlockType.Reporter,
+        args: [{ type: ArgumentType.Number, options: self.animals}],
+        text: (animal) => `Where does the ${animal} live?`,
+        operation: (animal) => {
+          switch (animal) {
+            case Animal.Leopard:
+              return 'Africa and Asia';
+            case Animal.Tiger:
+              return 'Asia';
+            case Animal.Gorilla:
+              return 'Africa';
+            case Animal.Monkey:
+              return 'Africa, Asia, and South America';
+            case Animal.Pig:
+              return 'Almost everywhere (except Antartica)';
+          }
+        },
+      }),
+
+      // Example of class methods implementing a 'definition'
+      'multiplyUsingSelf': this.multiplyUsingSelf,
+      'multiplyUsingThis': this.multiplyUsingThis.bind(this), // NOTE: We must bind 'this' since it is used by our method
+
+      // Example of an external 'definition'
+      'add': addDefinition,
     }
   };
 
-  defineReport(): Block<() => void> {
+  private multiplyUsingSelf(self: TypeScriptFrameworkExample): Block<Blocks['multiplyUsingSelf']> {
+    return ({
+      type: BlockType.Reporter,
+      args: [
+        { type: ArgumentType.Number, defaultValue: 3, options: self.lhsOptions },
+        { type: ArgumentType.Number }
+      ],
+      text: (left, right) => `${left} X ${right}`,
+      operation: (left, right) => {
+        return left * right;
+      }
+    })
+  }
 
-    const getFive = () => console.log(5);
-
-    const myOP = (blockUtility) => getFive();
-
-    return {
-      type: BlockType.Command,
-      args: [],
-      text: () => "Hi Five!",
-      operation: myOP,
-    }
+  private multiplyUsingThis(): Block<Blocks['multiplyUsingThis']> {
+    return ({
+      type: BlockType.Reporter,
+      args: [
+        { type: ArgumentType.Number, defaultValue: 3, options: this.lhsOptions },
+        { type: ArgumentType.Number }
+      ],
+      text: (left, right) => `${left} X ${right}`,
+      operation: (left, right) => {
+        return left * right;
+      }
+    })
   }
 }
 
-export = MyExtension;
+export = TypeScriptFrameworkExample;
