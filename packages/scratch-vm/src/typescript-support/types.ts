@@ -47,6 +47,7 @@ type ParamsAndUtility<T extends BlockOperation> = [...params: Parameters<T>, uti
 export type Block<T extends BlockOperation> = {
   type: ReturnType<T> extends void ? BlockType.Command : 
         ReturnType<T> extends boolean ? (BlockType.Reporter | BlockType.Boolean | BlockType.Hat) :
+        ReturnType<T> extends Promise<any> ? never :
         BlockType.Reporter;
   operation: (...params: ParamsAndUtility<T>) => ReturnType<T>;
   args: ToArguments<Parameters<T>>;
