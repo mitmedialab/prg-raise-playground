@@ -3,6 +3,8 @@ import { ArgumentType } from './enums';
 import type { ExtensionMenuDisplayDetails, Environment, ExtensionBlocks, BlockOperation, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, DefineBlock } from './types';
 import Cast from '../util/cast';
 
+export type CodeGenID = "CODE GEN GUARD: Extension ID";
+
 /**
  * 
  * @template TMenuDetails How the extension should display in the extensions menu 
@@ -40,12 +42,12 @@ export abstract class Extension
     }
   }
 
+  abstract readonly id: CodeGenID;
   abstract init(env: Environment);
   abstract defineBlocks(): BlockDefinitions<TBlocks>;
 
   getInfo(): ExtensionMetadata  {
-    const id = this.constructor.name;
-    const {blocks, menus} = this; 
+    const {id, blocks, menus} = this; 
     const info = {id, blocks};
     if (menus) info['menus'] = Object.entries(this.menus).reduce((obj, [key, value]) => {
       obj[key] = value; return obj

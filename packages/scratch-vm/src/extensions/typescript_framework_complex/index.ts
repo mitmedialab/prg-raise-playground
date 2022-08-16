@@ -1,5 +1,5 @@
 import { ArgumentType, BlockType } from "../../typescript-support/enums";
-import { Extension } from "../../typescript-support/Extension";
+import { CodeGenID, Extension } from "../../typescript-support/Extension";
 import { Block, BlockDefinitions, RGBObject, MenuItem } from "../../typescript-support/types";
 import addDefinition from "./addDefinition";
 
@@ -39,10 +39,11 @@ type Blocks = {
 }
 
 class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
+  id: CodeGenID = "CODE GEN GUARD: Extension ID";
+
   lhsOptions: number[];
   animals: MenuItem<Animal>[];
   state: number = 0;
-  name = () => "Example of Typescript Extension";
 
   init() { 
     this.lhsOptions = [3, 4, 5];
@@ -174,7 +175,7 @@ class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
       // Example of an external 'definition'
       'add': addDefinition,
     }
-  };
+  }
 
   private multiplyUsingSelf(self: TypeScriptFrameworkExample): Block<Blocks['multiplyUsingSelf']> {
     return ({

@@ -30,6 +30,7 @@ class InlineA extends Extension<{
   iconURL: "iconURL",
   insetIconURL: "insetIconURL",
 }, {}>{
+  id: "CODE GEN GUARD: Extension ID";
   init = notImplemented;
   defineBlocks = notImplemented;
 }
@@ -40,6 +41,7 @@ class InlineB extends Extension<{
   iconURL: IconURL,
   insetIconURL: InsetIconURL,
 }, {}>{
+  id: "CODE GEN GUARD: Extension ID";
   init = notImplemented;
   defineBlocks = notImplemented;
 }
@@ -53,6 +55,7 @@ class InlineC extends Extension<{
   iconURL: "iconURL",
   insetIconURL: "insetIconURL",
 }, {}>{
+  id: "CODE GEN GUARD: Extension ID";
   init = notImplemented;
   defineBlocks = notImplemented;
 }
@@ -63,26 +66,31 @@ class InlineD extends Extension<{
   iconURL: IconURL,
   insetIconURL: InsetIconURL,
 }, {}>{
+  id: "CODE GEN GUARD: Extension ID";
   init = notImplemented;
   defineBlocks = notImplemented;
 }
 
 class SameFileA extends Extension<DisplayDetails, {}>{
+  id: "CODE GEN GUARD: Extension ID";
   init = notImplemented;
   defineBlocks = notImplemented;
 }
 
 class SameFileB extends Extension<DisplayDetailsAggregated, {}>{
+  id: "CODE GEN GUARD: Extension ID";
   init = notImplemented;
   defineBlocks = notImplemented;
 }
 
 class SameFileC extends Extension<DisplayDetails, {}>{
+  id: "CODE GEN GUARD: Extension ID";
   init = notImplemented;
   defineBlocks = notImplemented;
 }
 
 class SameFileD extends Extension<DisplayDetailsAggregated, {}>{
+  id: "CODE GEN GUARD: Extension ID";
   init = notImplemented;
   defineBlocks = notImplemented;
 }
