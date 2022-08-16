@@ -16,7 +16,7 @@ class ExtensionWorker {
                 const [id, extension] = x;
                 this.workerId = id;
                 try {
-                    importScripts(`../extensions/${extension}`);
+                    importScripts(extension);
 
                     const initialRegistrations = this.initialRegistrations;
                     this.initialRegistrations = null;
