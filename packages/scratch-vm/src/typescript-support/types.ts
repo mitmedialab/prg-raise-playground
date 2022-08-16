@@ -20,10 +20,21 @@ export type MenuThatAcceptsReporters<T> = {
 };
 
 export type Argument<T> = {
-  type: ArgumentType;
+  type: ScratchArgument<T>;
   defaultValue?: T | undefined;
   options?: MenuItem<T>[] | MenuThatAcceptsReporters<T> | undefined;
 }
+
+export type RGBObject = { r: number, g: number, b: number };
+export type Matrix = boolean[][];
+
+export type ScratchArgument<T> =
+  T extends RGBObject ? ArgumentType.Color :
+  T extends boolean[][] ? ArgumentType.Matrix :
+  T extends number ? (ArgumentType.Number | ArgumentType.Angle | ArgumentType.Note) :
+  T extends string ? ArgumentType.String  :
+  T extends boolean ? (ArgumentType.Boolean) : 
+  never;
 
 // Used to be <T extends [...any[]]> ... not sure if it needs to be?
 type ToArguments<T extends any[]> =
@@ -31,10 +42,13 @@ type ToArguments<T extends any[]> =
   ? [Argument<Head>, ...ToArguments<Tail>]
   : [];
 
-type ParamsAndUtility<T extends BlockOperation> = [...Parameters<T>, BlockUtility];
+type ParamsAndUtility<T extends BlockOperation> = [...params: Parameters<T>, util: BlockUtility];
 
 export type Block<T extends BlockOperation> = {
-  type: BlockType;
+  type: ReturnType<T> extends void ? BlockType.Command : 
+        ReturnType<T> extends boolean ? (BlockType.Reporter | BlockType.Boolean | BlockType.Hat) :
+        ReturnType<T> extends Promise<any> ? never :
+        BlockType.Reporter;
   operation: (...params: ParamsAndUtility<T>) => ReturnType<T>;
   args: ToArguments<Parameters<T>>;
   text: (...params: Parameters<T>) => string;
@@ -61,9 +75,17 @@ export type ExtensionMenuDisplay<TTitle extends string,
     insetIconURL: TInsetIconURL;
   }
 
-export type BlockBuilder<T extends BlockOperation> = (extension: Extension<any, any>) => Block<T>;
+export type DefineBlock<T extends BlockOperation> = (extension: Extension<any, any>) => Block<T>;
 
 export type ExtensionBlocks = Record<string, BlockOperation>;
+
+export type BlockDefinitions<TBlocks extends ExtensionBlocks> = 
+{ 
+  [k in keyof TBlocks]: TBlocks[k] extends 
+    (...args: infer A) => infer R 
+      ? DefineBlock<(...args: A) => R> 
+      : never 
+};
 
 type UnionToIntersection<U> = (
   U extends never ? never : (arg: U) => never

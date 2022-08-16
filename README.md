@@ -24,24 +24,23 @@ Requirements, your java version should be 8 or higher. Check `java -version`.
 ```shell script
 git clone git@github.com:mitmedialab/prg-extension-boilerplate.git
 # Cloning the full history (300mb) takes about 20 seconds on fast internet. Include -–depth 1 for a 4 second checkout
-npx lerna bootstrap --force-local
-# This will symlink the packages together to allow for seamless local development, and installs dependencies for each package
-# Takes about 1.5 minutes
-cd packages/scratch-gui
-npm start
 
+npm run init
+# This will symlink the packages together to allow for seamless local development, and installs dependencies for each package. This should only need to be ran once (unless you checkout a branch that adds new package dependencies).
+# Takes about 1.5 minutes
+
+npm run dev
+# This starts up a development server
 # Open http://localhost:8601/ in your browser
 ```
 
 Now you can make changes, and they will auto-build from the scratch-gui watcher and live-reload!
 
 - render, gui, and vm will auto-build while `scratch-gui`'s `npm start` is running (as in steps above)
-- the blocks component currently requires manually building and re-starting the GUI build:
+- the blocks component currently requires fully building and re-starting the GUI build:
     ```shell script
     # Make your change to scratch-blocks, then:
-    cd packages/scratch-blocks
-    npm run prepublish
-    # And re-start scratch-gui's npm start
+    npm run rebuild:blocks
     ```
   
 Alternatively, use GitPod!

@@ -8,7 +8,7 @@ const serveExtension = (extensionId) => require(`../extensions/${extensionId}`)
 
 const tryLoadAnonymousExtension = (extensionId) => {
     try { return serveExtension(extensionId); }
-    catch { return undefined }
+    catch(e) { return console.error(e) }
 }
 
 const tryRetrieveExtensionConstructor = (extensionId) =>
@@ -152,7 +152,6 @@ class ExtensionManager {
      */
     loadExtensionURL(extensionURL) {
         const extension = tryRetrieveExtensionConstructor(extensionURL);
-
         if (extension) {
             /** @TODO dupe handling for non-builtin extensions. See commit 670e51d33580e8a2e852b3b038bb3afc282f81b9 */
             if (this.isExtensionLoaded(extensionURL)) {

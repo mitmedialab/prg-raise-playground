@@ -1,4 +1,4 @@
-import { Extension } from "../../src/typescript-support/Extension";
+import { CodeGenID, Extension } from "../../src/typescript-support/Extension";
 import { DisplayDetailsRetrievalPaths } from "./common";
 
 export const location = () => __filename;
@@ -12,8 +12,9 @@ class Inline extends Extension<{
   iconURL: "test_iconURL",
   insetIconURL: "test_insetIconURL",
 }, {}>{
+  id: CodeGenID;
   init = notImplemented;
-  blockBuilders = notImplemented;
+  defineBlocks = notImplemented;
 }
 
 export type DisplayDetails = {
@@ -24,8 +25,9 @@ export type DisplayDetails = {
 }
 
 class SameFile extends Extension<DisplayDetails, {}>{
+  id: CodeGenID;
   init = notImplemented;
-  blockBuilders = notImplemented;
+  defineBlocks = notImplemented;
 }
 
 export const cachedPathsToMenuDetails: DisplayDetailsRetrievalPaths = {
