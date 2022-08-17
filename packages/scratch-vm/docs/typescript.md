@@ -231,8 +231,3 @@ class BadInterpolatedStringLiterals extends Extension<DisplayDetails, {}>{
   ...
 }
 ```
-
-
-
-
-

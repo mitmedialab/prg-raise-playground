@@ -9,7 +9,7 @@ const serveExtension = (extensionId) => require(`../extensions/${decode(extensio
 
 const tryLoadAnonymousExtension = (extensionId) => {
     try { return serveExtension(extensionId); }
-    catch(e) { return console.error(e) }
+    catch(e) { return log.error(e) }
 }
 
 const tryRetrieveExtensionConstructor = (extensionId) =>
@@ -144,7 +144,6 @@ class ExtensionManager {
         const extensionInstance = new extension(this.runtime);
         const serviceName = this._registerInternalExtension(extensionInstance);
         this._loadedExtensions.set(extensionId, serviceName);
-        console.log(this._loadedExtensions);
     }
 
     /**
@@ -161,8 +160,6 @@ class ExtensionManager {
                 log.warn(message);
                 return Promise.resolve();
             }
-
-            console.log(this._loadedExtensions);
 
             const extensionInstance = new extension(this.runtime);
             const serviceName = this._registerInternalExtension(extensionInstance);
