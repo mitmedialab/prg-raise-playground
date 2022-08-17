@@ -14,8 +14,19 @@ const guards = [guard, guard.split("").reverse().join("")];
 
 const guardsRegEx = new RegExp(`${guards[0]}([0-9]+)${guards[1]}`, 'g');
 
+/**
+ * 
+ * @param {string} str 
+ * @returns {string}
+ */
 const wrap = (str) => `${guards[0]}${str}${guards[1]}`;
 
+/**
+ * 
+ * @param {RegEx} regEx 
+ * @param {string} str 
+ * @returns {RegExpExecArray[]} 
+ */
 const matchAll = (regEx, str) => {
   const clone = new RegExp(regEx);
   const matches = [];
