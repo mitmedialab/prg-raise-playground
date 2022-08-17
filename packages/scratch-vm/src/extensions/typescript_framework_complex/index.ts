@@ -4,7 +4,7 @@ import { Block, BlockDefinitions, RGBObject, MenuItem } from "../../typescript-s
 import addDefinition from "./addDefinition";
 
 type DisplayDetails = {
-  title: "Realistic Typescript-Based Extension",
+  name: "Realistic Typescript-Based Extension",
   description: "Demonstrating how typescript can be used to write a realistic extension",
   iconURL: "Typescript_logo.png",
   insetIconURL: "typescript-logo.svg"

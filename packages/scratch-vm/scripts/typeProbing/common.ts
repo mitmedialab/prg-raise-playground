@@ -36,9 +36,9 @@ type AllMenuText = UnionToTuple<MenuText>;
 type MenuFlag = KeysWithValuesOfType<ExtensionMenuDisplayDetails, boolean>;
 type AllMenuFlags = UnionToTuple<MenuFlag>;
 
-const menuDetailTextKeys: AllMenuText = ["title", "description", "iconURL", "insetIconURL", "collaborator", "connectionIconURL", "connectionSmallIconURL", "connectionTipIconURL", "connectingMessage", "helpLink"];
+const menuDetailTextKeys: AllMenuText = ["name", "description", "iconURL", "insetIconURL", "collaborator", "connectionIconURL", "connectionSmallIconURL", "connectionTipIconURL", "connectingMessage", "helpLink"];
 const menuDetailFlagKeys: AllMenuFlags = ["internetConnectionRequired", "bluetoothRequired", "launchPeripheralConnectionFlow", "useAutoScan", "featured", "hidden", "disabled"];
-const requiredKeys: (MenuText | MenuFlag)[] = ["title", "description", "iconURL", "insetIconURL"];
+const requiredKeys: (MenuText | MenuFlag)[] = ["name", "description", "iconURL", "insetIconURL"];
 
 const getMenuDisplayDetails = (type: ts.Type): ExtensionMenuDisplayDetails => {
   //@ts-ignore

@@ -25,8 +25,7 @@ export default class MenuItem {
   serialize(indent: number) {
     const spacing = tab.repeat(indent);
     const entries = Object.entries(this.entries).map(([key, value]) => `${spacing}${tab}${key}: ${value},`).join(newline);
-    return `
-${spacing}{
+    return `${spacing}{
 ${entries}
 ${spacing}},`
   }

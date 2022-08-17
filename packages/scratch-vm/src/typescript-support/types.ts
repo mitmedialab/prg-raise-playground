@@ -55,7 +55,7 @@ export type Block<T extends BlockOperation> = {
 }
 
 export type ExtensionMenuDisplayDetails = {
-  title: string;
+  name: string;
   description: string;
   iconURL: string;
   insetIconURL: string;

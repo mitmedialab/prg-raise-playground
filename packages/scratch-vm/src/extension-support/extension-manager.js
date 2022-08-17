@@ -9,7 +9,7 @@ const serveExtension = (extensionId) => require(`../extensions/${decode(extensio
 
 const tryLoadAnonymousExtension = (extensionId) => {
     try { return serveExtension(extensionId); }
-    catch(e) { return log.error(e) }
+    catch(e) { return console.error(e) }
 }
 
 const tryRetrieveExtensionConstructor = (extensionId) =>
@@ -166,6 +166,8 @@ class ExtensionManager {
             this._loadedExtensions.set(extensionURL, serviceName);
             return Promise.resolve();
         }
+
+        console.warn(extensionURL);
 
         return new Promise((resolve, reject) => {
             // If we `require` this at the global level it breaks non-webpack targets, including tests
