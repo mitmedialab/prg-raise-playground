@@ -39,6 +39,7 @@ type Blocks = {
 }
 
 class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
+  name = "Typescript Extension";
   id: CodeGenID = "CODE GEN GUARD: Extension ID";
 
   lhsOptions: number[];

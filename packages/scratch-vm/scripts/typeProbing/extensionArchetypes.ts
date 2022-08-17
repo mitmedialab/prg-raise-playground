@@ -12,7 +12,7 @@ class Inline extends Extension<{
   iconURL: "test_iconURL",
   insetIconURL: "test_insetIconURL",
 }, {}>{
-  id: CodeGenID;
+  name; id;
   init = notImplemented;
   defineBlocks = notImplemented;
 }
@@ -25,7 +25,7 @@ export type DisplayDetails = {
 }
 
 class SameFile extends Extension<DisplayDetails, {}>{
-  id: CodeGenID;
+  name; id;
   init = notImplemented;
   defineBlocks = notImplemented;
 }
