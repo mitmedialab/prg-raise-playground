@@ -217,6 +217,21 @@ class BadSameFile extends Extension<DisplayDetails, {}>{
 }
 ```
 
+```ts
+type Prefix = "my"
+
+type DisplayDetails = {
+  title: `${Prefix}_title`,
+  description: `${Prefix}_description`,
+  iconURL: `${Prefix}_iconURL`,
+  insetIconURL: `${Prefix}_insetIconURL`,
+}
+
+class BadInterpolatedStringLiterals extends Extension<DisplayDetails, {}>{
+  ...
+}
+```
+
 
 
 
