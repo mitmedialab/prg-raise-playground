@@ -22,7 +22,7 @@ const guardsRegEx = new RegExp(`${guards[0]}([0-9]+)${guards[1]}`, 'g');
 const wrap = (str) => `${guards[0]}${str}${guards[1]}`;
 
 /**
- * 
+ * (TODO: Use String.prototype.matchAll once possible)
  * @param {RegEx} regEx 
  * @param {string} str 
  * @returns {RegExpExecArray[]} 
@@ -37,6 +37,22 @@ const matchAll = (regEx, str) => {
 
 /**
  * 
+ * @param {string} text 
+ * @returns {string}
+ */
+const escapeRegExp = (text) => text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+
+/**
+ * (TODO: Use String.prototype.replaceAll once possible)
+ * @param {string} query 
+ * @param {string} current 
+ * @param {string} desired 
+ * @returns {string}
+ */
+const replaceAll = (query, current, desired) => query.replace(new RegExp(escapeRegExp(current), 'g'), desired);
+
+/**
+ * 
  * @param {String} query 
  * @returns {String}
  */
@@ -47,7 +63,7 @@ const encode = (query) => {
     return set;
   }, new Set());
   const replacements = [...invalidCharacters].map(char => ({ char, code: char.charCodeAt() }));
-  return replacements.reduce((modified, {char, code}) => modified.replaceAll(char, wrap(code)), `${query}`);
+  return replacements.reduce((modified, {char, code}) => replaceAll(modified, char, wrap(code)), `${query}`);
 }
 exports.encode = encode;
 
@@ -62,6 +78,6 @@ const decode = (query) => {
   	const [key, code] = match;
     return replacements.set(key, String.fromCharCode(code));
   }, new Map());
-  return [...replacements].reduce((modified, [current, desired]) => modified.replaceAll(current, desired), `${query}`);
+  return [...replacements].reduce((modified, [current, desired]) => replaceAll(modified, current, desired), `${query}`);
 }
 exports.decode = decode;
