@@ -1,125 +1,48 @@
-import { Extension } from "../../src/typescript-support/Extension";
+import { CodeGenID, Extension } from "../../src/typescript-support/Extension";
 import { DisplayDetailsRetrievalPaths } from "./common";
 
 export const location = () => __filename;
 
-export type Title = "title";
-export type Description = "description";
-export type IconURL = "iconURL";
-export type InsetIconURL = "insetIconURL";
 
 const notImplemented = () => { throw new Error("Method not implemented."); }
 
-type DisplayDetails = {
-  title: "title",
-  description: "description",
-  iconURL: "iconURL",
-  insetIconURL: "insetIconURL",
-}
-
-type DisplayDetailsAggregated = {
-  title: Title,
-  description: Description,
-  iconURL: IconURL,
-  insetIconURL: InsetIconURL,
-}
-
-class InlineA extends Extension<{
-  title: "title",
-  description: "description",
-  iconURL: "iconURL",
-  insetIconURL: "insetIconURL",
+class Inline extends Extension<{
+  title: "test_title",
+  description: "test_description",
+  iconURL: "test_iconURL",
+  insetIconURL: "test_insetIconURL",
 }, {}>{
-  id: "CODE GEN GUARD: Extension ID";
+  name; id;
   init = notImplemented;
   defineBlocks = notImplemented;
 }
 
-class InlineB extends Extension<{
-  title: Title,
-  description: Description,
-  iconURL: IconURL,
-  insetIconURL: InsetIconURL,
-}, {}>{
-  id: "CODE GEN GUARD: Extension ID";
-  init = notImplemented;
-  defineBlocks = notImplemented;
+export type DisplayDetails = {
+  title: "test_title",
+  description: "test_description",
+  iconURL: "test_iconURL",
+  insetIconURL: "test_insetIconURL",
 }
 
-type ti = "ti";
-type tle = "tle";
-
-class InlineC extends Extension<{
-  title: `${ti}${tle}`,
-  description: "description",
-  iconURL: "iconURL",
-  insetIconURL: "insetIconURL",
-}, {}>{
-  id: "CODE GEN GUARD: Extension ID";
-  init = notImplemented;
-  defineBlocks = notImplemented;
-}
-
-class InlineD extends Extension<{
-  title: Title,
-  description: Description,
-  iconURL: IconURL,
-  insetIconURL: InsetIconURL,
-}, {}>{
-  id: "CODE GEN GUARD: Extension ID";
-  init = notImplemented;
-  defineBlocks = notImplemented;
-}
-
-class SameFileA extends Extension<DisplayDetails, {}>{
-  id: "CODE GEN GUARD: Extension ID";
-  init = notImplemented;
-  defineBlocks = notImplemented;
-}
-
-class SameFileB extends Extension<DisplayDetailsAggregated, {}>{
-  id: "CODE GEN GUARD: Extension ID";
-  init = notImplemented;
-  defineBlocks = notImplemented;
-}
-
-class SameFileC extends Extension<DisplayDetails, {}>{
-  id: "CODE GEN GUARD: Extension ID";
-  init = notImplemented;
-  defineBlocks = notImplemented;
-}
-
-class SameFileD extends Extension<DisplayDetailsAggregated, {}>{
-  id: "CODE GEN GUARD: Extension ID";
+class SameFile extends Extension<DisplayDetails, {}>{
+  name; id;
   init = notImplemented;
   defineBlocks = notImplemented;
 }
 
 export const cachedPathsToMenuDetails: DisplayDetailsRetrievalPaths = {
   title: [
-    'resolvedTypeArguments[0].symbol.declarations[0].members[0].name.escapedText',
-    'resolvedTypeArguments[0].symbol.declarations[0].members[0].symbol.escapedName'
+    'resolvedTypeArguments[0].symbol.declarations[0].members[0].type.literal.text',
   ],
   description: [
-    'resolvedTypeArguments[0].symbol.declarations[0].members[1].name.escapedText',
-    'resolvedTypeArguments[0].symbol.declarations[0].members[1].symbol.escapedName'
+    'resolvedTypeArguments[0].symbol.declarations[0].members[1].type.literal.text',
   ],
   iconURL: [
-    'resolvedTypeArguments[0].symbol.declarations[0].members[2].name.escapedText',
-    'resolvedTypeArguments[0].symbol.declarations[0].members[2].symbol.escapedName'
+    'resolvedTypeArguments[0].symbol.declarations[0].members[2].type.literal.text',
   ],
   insetIconURL: [
-    'resolvedTypeArguments[0].symbol.declarations[0].members[3].name.escapedText',
-    'resolvedTypeArguments[0].symbol.declarations[0].members[3].symbol.escapedName'
+    'resolvedTypeArguments[0].symbol.declarations[0].members[3].type.literal.text',
   ]
 };
 
-export const typeCount = [
-  InlineA, 
-  InlineB, 
-  InlineC, 
-  InlineD, 
-  SameFileA, 
-  SameFileB, 
-  SameFileC, 
-  SameFileD].length;
+export const typeCount = [Inline, SameFile].length;

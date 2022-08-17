@@ -1,3 +1,7 @@
+/* CODE GEN GUARD START: Please do not edit code within guards */
+import generatedExtensionDetails from './generatedExtensionDetails';
+/* CODE GEN GUARD END: Please do not edit code within guards */
+
 import React from 'react';
 import { FormattedMessage } from 'react-intl';
 
@@ -46,10 +50,10 @@ import gdxforInsetIconURL from './gdxfor/gdxfor-small.svg';
 import gdxforConnectionIconURL from './gdxfor/gdxfor-illustration.svg';
 import gdxforConnectionSmallIconURL from './gdxfor/gdxfor-small.svg';
 
-/* CODE GEN GUARD START: Icon Import -- Please do not edit code within guards */
-/* CODE GEN GUARD END: Icon Import -- Please do not edit code within guards */
-
 export default [
+    /* CODE GEN GUARD START: Please do not edit code within guards */
+    ...generatedExtensionDetails,
+    /* CODE GEN GUARD END: Please do not edit code within guards */
     {
         name: (
             <FormattedMessage
@@ -88,14 +92,6 @@ export default [
                 id="gui.extension.pen.description"
             />
         ),
-        featured: true
-    },
-    {
-        name: "Typescript Realistic Example",
-        extensionId: 'typescript_framework_complex',
-        iconURL: penIconURL,
-        insetIconURL: penInsetIconURL,
-        description: "Example of how to use typescript",
         featured: true
     },
     {
@@ -337,6 +333,4 @@ export default [
         ),
         helpLink: 'https://scratch.mit.edu/vernier'
     },
-    /* CODE GEN GUARD START: Extension Info -- Please do not edit code within guards */
-    /* CODE GEN GUARD END: Extension Info -- Please do not edit code within guards */
 ];

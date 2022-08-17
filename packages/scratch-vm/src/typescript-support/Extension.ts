@@ -43,12 +43,13 @@ export abstract class Extension
   }
 
   abstract readonly id: CodeGenID;
+  abstract readonly name: string;
   abstract init(env: Environment);
   abstract defineBlocks(): BlockDefinitions<TBlocks>;
 
   getInfo(): ExtensionMetadata  {
-    const {id, blocks, menus} = this; 
-    const info = {id, blocks};
+    const {id, blocks, menus, name} = this; 
+    const info = {id, blocks, name};
     if (menus) info['menus'] = Object.entries(this.menus).reduce((obj, [key, value]) => {
       obj[key] = value; return obj
     }, {});
