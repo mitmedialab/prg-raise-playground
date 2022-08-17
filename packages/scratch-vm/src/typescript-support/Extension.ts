@@ -3,7 +3,9 @@ import { ArgumentType } from './enums';
 import type { ExtensionMenuDisplayDetails, Environment, ExtensionBlocks, BlockOperation, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, DefineBlock } from './types';
 import Cast from '../util/cast';
 
-export type CodeGenID = "CODE GEN GUARD: Extension ID";
+export type CodeGenGuard = "CODE GEN GUARD:"
+export type CodeGenID = `${CodeGenGuard} Extension ID`;
+export type CodeGenName = `${CodeGenGuard} Extension Name`;
 
 /**
  * 
@@ -43,7 +45,7 @@ export abstract class Extension
   }
 
   abstract readonly id: CodeGenID;
-  abstract readonly name: string;
+  abstract readonly name: CodeGenName;
   abstract init(env: Environment);
   abstract defineBlocks(): BlockDefinitions<TBlocks>;
 

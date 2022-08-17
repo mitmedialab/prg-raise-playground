@@ -42,7 +42,7 @@ const copyIconsToAssetsDirectory = (extensionId: string, iconURL: string, insetI
 }
 
 export const generateCodeForExtensions = (extensions: Record<string, ExtensionMenuDisplayDetails>) => {
-  fillInIDsForExtensions(Object.keys(extensions), getExtensionLocation);
+  fillInIDsForExtensions(extensions, getExtensionLocation);
 
   const assetsFolder = path.resolve(__dirname, ...relativePathToAssetsFolder);
   if (!existsSync(assetsFolder)) mkdirSync(assetsFolder);

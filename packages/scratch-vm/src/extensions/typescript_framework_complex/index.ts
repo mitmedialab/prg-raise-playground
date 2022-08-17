@@ -1,5 +1,5 @@
 import { ArgumentType, BlockType } from "../../typescript-support/enums";
-import { CodeGenID, Extension } from "../../typescript-support/Extension";
+import { CodeGenID, CodeGenName, Extension } from "../../typescript-support/Extension";
 import { Block, BlockDefinitions, RGBObject, MenuItem } from "../../typescript-support/types";
 import addDefinition from "./addDefinition";
 
@@ -39,7 +39,7 @@ type Blocks = {
 }
 
 class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
-  name = "Typescript Extension";
+  name: CodeGenName = "CODE GEN GUARD: Extension Name";
   id: CodeGenID = "CODE GEN GUARD: Extension ID";
 
   lhsOptions: number[];
