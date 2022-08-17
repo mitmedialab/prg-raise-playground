@@ -15,10 +15,7 @@ class ExtensionWorker {
             dispatch.call('extensions', 'allocateWorker').then(x => {
                 const [id, extension] = x;
                 this.workerId = id;
-                console.log(extension);
-                console.log("hii");
                 try {
-                    console.log(extension);
                     importScripts(extension);
 
                     const initialRegistrations = this.initialRegistrations;

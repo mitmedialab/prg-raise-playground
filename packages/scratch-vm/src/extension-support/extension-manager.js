@@ -3,12 +3,13 @@ const log = require('../util/log');
 const maybeFormatMessage = require('../util/maybe-format-message');
 
 const BlockType = require('./block-type');
+const { isValidID, decode } = require('./extension-id-factory');
 
-const serveExtension = (extensionId) => require(`../extensions/${extensionId}`)
+const serveExtension = (extensionId) => require(`../extensions/${decode(extensionId)}`)
 
 const tryLoadAnonymousExtension = (extensionId) => {
     try { return serveExtension(extensionId); }
-    catch { return undefined }
+    catch(e) { return log.error(e) }
 }
 
 const tryRetrieveExtensionConstructor = (extensionId) =>
@@ -152,7 +153,6 @@ class ExtensionManager {
      */
     loadExtensionURL(extensionURL) {
         const extension = tryRetrieveExtensionConstructor(extensionURL);
-
         if (extension) {
             /** @TODO dupe handling for non-builtin extensions. See commit 670e51d33580e8a2e852b3b038bb3afc282f81b9 */
             if (this.isExtensionLoaded(extensionURL)) {
@@ -282,7 +282,7 @@ class ExtensionManager {
      */
     _prepareExtensionInfo(serviceName, extensionInfo) {
         extensionInfo = Object.assign({}, extensionInfo);
-        if (!/^[a-z0-9]+$/i.test(extensionInfo.id)) {
+        if (!isValidID(extensionInfo.id)) {
             throw new Error('Invalid extension id');
         }
         extensionInfo.name = extensionInfo.name || extensionInfo.id;

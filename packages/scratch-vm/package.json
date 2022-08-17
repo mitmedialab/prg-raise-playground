@@ -12,7 +12,7 @@
   "main": "./dist/node/scratch-vm.js",
   "browser": "./src/index.js",
   "scripts": {
-    "test:scripts": "node_modules/.bin/jest",
+    "test:jest": "node_modules/.bin/jest",
     "compile:ts": "ts-node ./scripts/transpile.ts",
     "watch:ts": "./node_modules/nodemon/bin/nodemon.js --watch ./src/ -e ts --exec \"npm run compile:ts\"",
     "build": "npm run docs && webpack --progress --colors --bail",

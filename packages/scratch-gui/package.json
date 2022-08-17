@@ -37,6 +37,7 @@
     "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
     "@babel/plugin-syntax-dynamic-import": "^7.0.0",
     "@babel/plugin-transform-async-to-generator": "^7.1.0",
+    "@babel/plugin-transform-spread": "^7.18.9",
     "@babel/preset-env": "^7.1.0",
     "@babel/preset-react": "^7.0.0",
     "arraybuffer-loader": "^1.0.6",
