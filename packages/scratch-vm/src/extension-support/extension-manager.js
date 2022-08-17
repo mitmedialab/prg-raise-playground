@@ -3,9 +3,9 @@ const log = require('../util/log');
 const maybeFormatMessage = require('../util/maybe-format-message');
 
 const BlockType = require('./block-type');
-const { isValidID } = require('./extension-id-factory');
+const { isValidID, decode } = require('./extension-id-factory');
 
-const serveExtension = (extensionId) => require(`../extensions/${extensionId}`)
+const serveExtension = (extensionId) => require(`../extensions/${decode(extensionId)}`)
 
 const tryLoadAnonymousExtension = (extensionId) => {
     try { return serveExtension(extensionId); }
@@ -144,6 +144,7 @@ class ExtensionManager {
         const extensionInstance = new extension(this.runtime);
         const serviceName = this._registerInternalExtension(extensionInstance);
         this._loadedExtensions.set(extensionId, serviceName);
+        console.log(this._loadedExtensions);
     }
 
     /**
@@ -160,6 +161,8 @@ class ExtensionManager {
                 log.warn(message);
                 return Promise.resolve();
             }
+
+            console.log(this._loadedExtensions);
 
             const extensionInstance = new extension(this.runtime);
             const serviceName = this._registerInternalExtension(extensionInstance);

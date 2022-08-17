@@ -2,6 +2,7 @@ import { writeFileSync, mkdirSync, existsSync, copyFileSync } from "fs";
 import path = require("path");
 import { ExtensionMenuDisplayDetails } from "../../src/typescript-support/types";
 import { fillInIDsForExtensions } from "./extensionID";
+import { encode } from "../../src/extension-support/extension-id-factory";
 
 const relativePathToExtensionDir = ["..", "..", "src", "extensions"];
 const relativePathToGeneratedFile = ["..", "..", "..", "scratch-gui", "src", "lib", "libraries", "extensions", "generatedExtensionDetails.js"];
@@ -81,7 +82,7 @@ export const generateCodeForExtensions = (extensions: Record<string, ExtensionMe
     const menuItem = 
 `{
   name: '${details.title}',
-  extensionId: '${id}',
+  extensionId: '${encode(id)}',
   iconURL: ${iconURLName},
   insetIconURL: ${insetIconURLName},
   description: '${details.description}',
