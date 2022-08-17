@@ -3,6 +3,7 @@ const log = require('../util/log');
 const maybeFormatMessage = require('../util/maybe-format-message');
 
 const BlockType = require('./block-type');
+const { isValidID } = require('./extension-id-factory');
 
 const serveExtension = (extensionId) => require(`../extensions/${extensionId}`)
 
@@ -281,7 +282,7 @@ class ExtensionManager {
      */
     _prepareExtensionInfo(serviceName, extensionInfo) {
         extensionInfo = Object.assign({}, extensionInfo);
-        if (!/^[a-z0-9]+$/i.test(extensionInfo.id)) {
+        if (!isValidID(extensionInfo.id)) {
             throw new Error('Invalid extension id');
         }
         extensionInfo.name = extensionInfo.name || extensionInfo.id;
