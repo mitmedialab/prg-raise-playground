@@ -16,13 +16,21 @@ const guardsRegEx = new RegExp(`${guards[0]}([0-9]+)${guards[1]}`, 'g');
 
 const wrap = (str) => `${guards[0]}${str}${guards[1]}`;
 
+const matchAll = (regEx, str) => {
+  const clone = new RegExp(regEx);
+  const matches = [];
+  let capture = [];
+  while ((capture = clone.exec(str)) !== null) matches.push(capture);
+  return matches; 
+};
+
 /**
  * 
  * @param {String} query 
  * @returns {String}
  */
 const encode = (query) => {
-  const matches = [...query.matchAll(invalidRegEx)];
+  const matches = [...matchAll(invalidRegEx, query)];
   const invalidCharacters = matches.reduce((set, current) => {
     current[0].split("").forEach(char => set.add(char));
     return set;
@@ -38,7 +46,7 @@ exports.encode = encode;
  * @returns {String}
  */
 const decode = (query) => {
-  const matches = [...query.matchAll(guardsRegEx)];
+  const matches = [...matchAll(guardsRegEx, query)];
   const replacements = matches.reduce((replacements, match) => {
   	const [key, code] = match;
     return replacements.set(key, String.fromCharCode(code));
