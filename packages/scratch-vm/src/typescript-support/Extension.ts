@@ -3,8 +3,6 @@ import { ArgumentType } from './enums';
 import type { ExtensionMenuDisplayDetails, Environment, ExtensionBlocks, BlockOperation, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, DefineBlock } from './types';
 import Cast from '../util/cast';
 
-export type CodeGenID = "CODE GEN GUARD: Extension ID";
-
 /**
  * 
  * @template TMenuDetails How the extension should display in the extensions menu 
@@ -42,8 +40,16 @@ export abstract class Extension
     }
   }
 
-  abstract readonly id: CodeGenID;
-  abstract readonly name: string;
+  /**
+   * Prevent users from defining their own extension ID (which will be filled in through code generation)
+   */
+  readonly id: never;
+
+  /**
+   * Prevent users from re-defining an extension Name (which is already defined through ExtensionMenuDisplayDetails)
+   */
+  readonly name: never;
+
   abstract init(env: Environment);
   abstract defineBlocks(): BlockDefinitions<TBlocks>;
 

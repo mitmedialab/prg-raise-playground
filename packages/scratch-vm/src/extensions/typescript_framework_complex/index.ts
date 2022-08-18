@@ -1,10 +1,10 @@
 import { ArgumentType, BlockType } from "../../typescript-support/enums";
-import { CodeGenID, Extension } from "../../typescript-support/Extension";
+import { Extension } from "../../typescript-support/Extension";
 import { Block, BlockDefinitions, RGBObject, MenuItem } from "../../typescript-support/types";
 import addDefinition from "./addDefinition";
 
 type DisplayDetails = {
-  title: "Realistic Typescript-Based Extension",
+  name: "Realistic Typescript-Based Extension",
   description: "Demonstrating how typescript can be used to write a realistic extension",
   iconURL: "Typescript_logo.png",
   insetIconURL: "typescript-logo.svg"
@@ -39,9 +39,6 @@ type Blocks = {
 }
 
 class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
-  name = "Typescript Extension";
-  id: CodeGenID = "CODE GEN GUARD: Extension ID";
-
   lhsOptions: number[];
   animals: MenuItem<Animal>[];
   state: number = 0;

@@ -9,7 +9,7 @@ const serveExtension = (extensionId) => require(`../extensions/${decode(extensio
 
 const tryLoadAnonymousExtension = (extensionId) => {
     try { return serveExtension(extensionId); }
-    catch(e) { return log.error(e) }
+    catch(e) { return console.error(e) }
 }
 
 const tryRetrieveExtensionConstructor = (extensionId) =>

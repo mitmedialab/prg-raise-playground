@@ -1,20 +1,22 @@
 import glob = require("glob");
 import path = require("path");
 import ts = require("typescript");
-import { ExtensionMenuDisplayDetails } from "../src/typescript-support/types";
-import { DisplayDetailsRetrievalPaths, isExtension, retrieveExtensionDetails } from "./typeProbing/common";
-import { cachedPathsToMenuDetails, location, typeCount } from "./typeProbing/extensionArchetypes";
+import { ExtensionMenuDisplayDetails, RequiredKeys } from "../src/typescript-support/types";
+import { retrieveExtensionDetails } from "./typeProbing";
+import { location, typeCount } from "./typeProbing/extensionArchetypes";
 import type { DisplayDetails } from "./typeProbing/extensionArchetypes";
 
 import TypeProbe from "./typeProbing/TypeProbe";
 
-const titleIdentifier: DisplayDetails['title'] = "test_title";
+export type DisplayDetailsRetrievalPaths = Record<RequiredKeys<ExtensionMenuDisplayDetails>, string[]>;
+
+const titleIdentifier: DisplayDetails['name'] = "test_title";
 const descriptionIdentifier: DisplayDetails['description'] = "test_description";
 const iconURLIdentifier: DisplayDetails['iconURL'] = "test_iconURL";
 const insetIconURLIdentifier: DisplayDetails['insetIconURL'] = "test_insetIconURL";
 
-const identifiers: Record<keyof ExtensionMenuDisplayDetails, string> = {
-  title: titleIdentifier,
+const identifiers: Record<RequiredKeys<ExtensionMenuDisplayDetails>, string> = {
+  name: titleIdentifier,
   description: descriptionIdentifier,
   iconURL: iconURLIdentifier,
   insetIconURL: insetIconURLIdentifier
@@ -44,8 +46,8 @@ const retrievePathsToMenuDetails = (program: ts.Program, details: DisplayDetails
   const byCount = (a: [_: string, arr: string[]], b: [_: string, count: string[]]) => b[1].length - a[1].length;
   const byLength = (a: string, b: string) => a.length - b.length || a.localeCompare(b);
 
-  const allPaths: Record<keyof DisplayDetailsRetrievalPaths, Record<string, string[]>> = {
-    title: {},
+  const allPaths: Record<RequiredKeys<DisplayDetailsRetrievalPaths>, Record<string, string[]>> = {
+    name: {},
     description: {},
     iconURL: {},
     insetIconURL: {}
@@ -77,21 +79,18 @@ describe("Typescript transpilation of extensions", () => {
   test("Identify test path patterns", () => {
     const program = generateTestProgram();
     const pathsToDetails: DisplayDetailsRetrievalPaths = {
-      title: [],
+      name: [],
       description: [],
       iconURL: [],
       insetIconURL: []
     }
     retrievePathsToMenuDetails(program, pathsToDetails);
-    console.log("deeeetsa", pathsToDetails);
-    const expected = cachedPathsToMenuDetails;
-    const actual = pathsToDetails;
-    expect(actual).toEqual(expected);
+    console.log(pathsToDetails);
   })
 
   test("Retrieval of extension menu details", () => {
     const program = generateTestProgram();
-    const menuDetails = retrieveExtensionDetails(program);
+    const menuDetails = retrieveExtensionDetails(program, true);
     console.log(menuDetails);
   })
 })
