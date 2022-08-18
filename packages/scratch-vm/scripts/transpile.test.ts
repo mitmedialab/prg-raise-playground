@@ -2,7 +2,7 @@ import glob = require("glob");
 import path = require("path");
 import ts = require("typescript");
 import { ExtensionMenuDisplayDetails, RequiredKeys } from "../src/typescript-support/types";
-import { retrieveExtensionDetails } from "./typeProbing/common";
+import { retrieveExtensionDetails } from "./typeProbing";
 import { location, typeCount } from "./typeProbing/extensionArchetypes";
 import type { DisplayDetails } from "./typeProbing/extensionArchetypes";
 
@@ -10,13 +10,13 @@ import TypeProbe from "./typeProbing/TypeProbe";
 
 export type DisplayDetailsRetrievalPaths = Record<RequiredKeys<ExtensionMenuDisplayDetails>, string[]>;
 
-const titleIdentifier: DisplayDetails['title'] = "test_title";
+const titleIdentifier: DisplayDetails['name'] = "test_title";
 const descriptionIdentifier: DisplayDetails['description'] = "test_description";
 const iconURLIdentifier: DisplayDetails['iconURL'] = "test_iconURL";
 const insetIconURLIdentifier: DisplayDetails['insetIconURL'] = "test_insetIconURL";
 
 const identifiers: Record<RequiredKeys<ExtensionMenuDisplayDetails>, string> = {
-  title: titleIdentifier,
+  name: titleIdentifier,
   description: descriptionIdentifier,
   iconURL: iconURLIdentifier,
   insetIconURL: insetIconURLIdentifier
@@ -47,7 +47,7 @@ const retrievePathsToMenuDetails = (program: ts.Program, details: DisplayDetails
   const byLength = (a: string, b: string) => a.length - b.length || a.localeCompare(b);
 
   const allPaths: Record<RequiredKeys<DisplayDetailsRetrievalPaths>, Record<string, string[]>> = {
-    title: {},
+    name: {},
     description: {},
     iconURL: {},
     insetIconURL: {}
@@ -79,7 +79,7 @@ describe("Typescript transpilation of extensions", () => {
   test("Identify test path patterns", () => {
     const program = generateTestProgram();
     const pathsToDetails: DisplayDetailsRetrievalPaths = {
-      title: [],
+      name: [],
       description: [],
       iconURL: [],
       insetIconURL: []

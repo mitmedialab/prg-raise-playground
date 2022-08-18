@@ -2,7 +2,7 @@ import ts = require("typescript");
 import glob = require("glob");
 import path = require("path");
 import fs = require("fs");
-import { retrieveExtensionDetails } from "./typeProbing/common";
+import { retrieveExtensionDetails } from "./typeProbing";
 import { generateCodeForExtensions } from "./codeGeneration";
 
 const printDiagnostics = (program: ts.Program, result: ts.EmitResult) => {
@@ -67,8 +67,8 @@ const transpileAllTsExtensions = () => {
       printDiagnostics(program, result);
     }
     else {
-      const menuDetails = retrieveExtensionDetails(program);
-      generateCodeForExtensions(menuDetails);
+      const extensions = retrieveExtensionDetails(program);
+      generateCodeForExtensions(extensions);
       files.forEach(file => addSuportingFiles(path.dirname(file)));
       addSuportingFiles(supportDir);
     }
