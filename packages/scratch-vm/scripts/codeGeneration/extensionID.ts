@@ -1,12 +1,15 @@
 import assert = require("assert");
 import { readFileSync, writeFileSync } from "fs";
 import path = require("path");
-import { CodeGenID, CodeGenName } from "../../src/typescript-support/Extension";
 import { encode } from "../../src/extension-support/extension-id-factory";
 import { ExtensionMenuDisplayDetails } from "../../src/typescript-support/types";
 
-const idGuard: CodeGenID = "CODE GEN GUARD: Extension ID";
-const nameGuard: CodeGenName = "CODE GEN GUARD: Extension Name";
+const constructorIdentifier = 'var _this = _super !== null && _super.apply(this, arguments) || this;';
+const declareProperty = (name: string, value: string) => `_this.${name} = '${value}';`;
+const addToConstructor = (content: string, ...toAdd: string[]): string => {
+  assert(content.includes(constructorIdentifier), `Uh oh! File content did not include expected constructor code: \n ${content}`);
+  return content.replace(constructorIdentifier, [constructorIdentifier, ...toAdd].join(" "));
+}
 
 export const fillInIDsForExtensions = (extensions: Record<string, ExtensionMenuDisplayDetails>, getExtensionLocation: (id: string) => string) => {
   const encoding = "utf-8";
@@ -14,10 +17,12 @@ export const fillInIDsForExtensions = (extensions: Record<string, ExtensionMenuD
     const dir = getExtensionLocation(id);
     const index = path.join(dir, "index.js");
     const content = readFileSync(index, { encoding });
-    assert(content.includes(idGuard), `Uh oh! The index file for the ${id} extension did not include the code gen ID. TO DO... more info...`);
-    const encodedID = encode(id);
+    
     const { name } = extensions[id];
-    const generated = content.replace(idGuard, encodedID).replace(nameGuard, name);
-    writeFileSync(index, generated, encoding);
+    const nameDeclaration = declareProperty('name', name);
+    const idDeclaration = declareProperty('id', encode(id));
+
+    const updated = addToConstructor(content, nameDeclaration, idDeclaration);
+    writeFileSync(index, updated, encoding);
   }
 };
