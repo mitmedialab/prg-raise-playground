@@ -109,11 +109,7 @@ export abstract class Extension
 
   private static GetInternalKey = (key: string) => `internal_${key}`;
 
-  private static ToFlag = (value: string) : boolean => {
-    const numeric = parseInt(value);
-    console.assert(numeric === 0 || numeric === 1);
-    return numeric === 1;
-  }
+  private static ToFlag = (value: string) : boolean => parseInt(value) === 1;
 
   private static ToMatrix = (matrixString : string) : boolean[][] => {
     if (matrixString.length !== 25) return new Array(5).fill(new Array(5).fill(false));

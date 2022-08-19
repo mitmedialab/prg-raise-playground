@@ -5,9 +5,9 @@ import { ExtensionCodeGenerator } from ".";
 import { ExtensionMenuDisplayDetails } from "../../src/typescript-support/types";
 import MenuItem from "./MenuItem";
 
-const relativePathToGuiSrc = ["..", "..", "..", "scratch-gui", "src"];
-const relativePathToGeneratedFile = [...relativePathToGuiSrc, "lib", "libraries", "extensions", "generatedExtensionDetails.js"];
-const relativePathToAssetsFolder = [...relativePathToGuiSrc, "extension-gallery-assets"];
+const pathToGuiSrc = path.resolve(__dirname, "..", "..", "..", "scratch-gui", "src");
+const generatedFile = path.join(pathToGuiSrc, "lib", "libraries", "extensions", "generatedExtensionDetails.js");
+const assetsFolder = path.join(pathToGuiSrc, "extension-gallery-assets");
 
 const generatedFileWarning = `/* 
 --- DEVELOPER WARNING ---
@@ -17,8 +17,6 @@ Any changes you make to this file will not be saved nor git tracked.
 `;
 
 export const populateMenuForExtensions: ExtensionCodeGenerator = (extensions, getExtensionLocation) => {
-  const generatedFile = path.resolve(__dirname, ...relativePathToGeneratedFile);
-  const assetsFolder = path.resolve(__dirname, ...relativePathToAssetsFolder);
   if (!existsSync(assetsFolder)) mkdirSync(assetsFolder);
 
   const importStatements = new Array<string>();
@@ -46,7 +44,7 @@ export const populateMenuForExtensions: ExtensionCodeGenerator = (extensions, ge
 }
 
 const copyIconsToAssetsDirectory = (extensionId: string, extensionLocation: string, {iconURL, insetIconURL}: ExtensionMenuDisplayDetails) => {
-  const assetsLocation = path.resolve(__dirname, ...relativePathToAssetsFolder, extensionId);
+  const assetsLocation = path.join(assetsFolder, extensionId);
   if (!existsSync(assetsLocation)) mkdirSync(assetsLocation);
 
   [iconURL, insetIconURL].forEach(fileName => {

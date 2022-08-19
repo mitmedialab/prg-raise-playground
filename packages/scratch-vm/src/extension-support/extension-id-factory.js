@@ -7,7 +7,6 @@ const invalidRegEx = new RegExp('[^a-z0-9]+', 'gi');
  * @returns {boolean}
  */
 const isValidID = (id) => validRegEx.test(id);
-exports.isValidID = isValidID;
 
 const guard = 'prg';
 const guards = [guard, guard.split("").reverse().join("")];
@@ -57,7 +56,7 @@ const replaceAll = (query, current, desired) => query.replace(new RegExp(escapeR
  * @returns {String}
  */
 const encode = (query) => {
-  const matches = [...matchAll(invalidRegEx, query)];
+  const matches = [...query.matchAll(invalidRegEx)];
   const invalidCharacters = matches.reduce((set, current) => {
     current[0].split("").forEach(char => set.add(char));
     return set;
@@ -65,7 +64,6 @@ const encode = (query) => {
   const replacements = [...invalidCharacters].map(char => ({ char, code: char.charCodeAt() }));
   return replacements.reduce((modified, {char, code}) => replaceAll(modified, char, wrap(code)), `${query}`);
 }
-exports.encode = encode;
 
 /**
  * 
@@ -73,11 +71,12 @@ exports.encode = encode;
  * @returns {String}
  */
 const decode = (query) => {
-  const matches = [...matchAll(guardsRegEx, query)];
+  const matches = [...query.matchAll(guardsRegEx)];
   const replacements = matches.reduce((replacements, match) => {
   	const [key, code] = match;
     return replacements.set(key, String.fromCharCode(code));
   }, new Map());
   return [...replacements].reduce((modified, [current, desired]) => replaceAll(modified, current, desired), `${query}`);
 }
-exports.decode = decode;
+
+module.exports = {isValidID, encode, decode};

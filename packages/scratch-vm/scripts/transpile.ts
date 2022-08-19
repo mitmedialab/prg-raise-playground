@@ -68,9 +68,9 @@ const transpileAllTsExtensions = () => {
     }
     else {
       const extensions = retrieveExtensionDetails(program);
-      generateCodeForExtensions(extensions);
-      files.forEach(file => addSuportingFiles(path.dirname(file)));
-      addSuportingFiles(supportDir);
+      generateCodeForExtensions(extensions, program);
+      //files.forEach(file => addSuportingFiles(path.dirname(file)));
+      //addSuportingFiles(supportDir);
     }
   });
 }
