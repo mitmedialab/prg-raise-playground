@@ -1,6 +1,6 @@
 import type Runtime from '../engine/runtime';
 import { ArgumentType } from './enums';
-import type { ExtensionMenuDisplayDetails, Environment, ExtensionBlocks, BlockOperation, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, DefineBlock } from './types';
+import type { ExtensionMenuDisplayDetails, Environment, ExtensionBlocks, BlockOperation, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, DefineBlock, ScratchArgument, VerboseArgument } from './types';
 import Cast from '../util/cast';
 
 /**
@@ -75,14 +75,20 @@ export abstract class Extension
       const { mutation } = argsFromScratch; // if you need it!
       // NOTE: Assumption is that args order will be correct since there keys are parsable as ints (i.e. '0', '1', ...)
       const uncasted = Object.values(argsFromScratch).slice(0, -1);
-      const casted = uncasted.map((value, index) => Extension.CastToType(args[index].type, value));
+      const casted = uncasted.map((value, index) => {
+        const type = Extension.GetArgumentType(args[index]);
+        return Extension.CastToType(type, value)
+      });
       return bound(...casted, blockUtility); // can add more util params as necessary
     }
 
     const argsInfo: Record<string, ExtensionArgumentMetadata> = args.map(element => {
       const entry = {} as ExtensionArgumentMetadata;
-      const {type, defaultValue, options} = element;
-      entry.type = type;
+      entry.type = Extension.GetArgumentType(element);
+
+      if (Extension.IsPrimitive(element)) return entry;
+
+      const {defaultValue, options} = element as VerboseArgument<any>;
 
       if (defaultValue !== undefined) entry.defaultValue = defaultValue;
 
@@ -108,6 +114,9 @@ export abstract class Extension
   }
 
   private static GetInternalKey = (key: string) => `internal_${key}`;
+
+  private static GetArgumentType = <T>(arg: Argument<T>): ArgumentType => 
+    Extension.IsPrimitive(arg) ? arg as ArgumentType : (arg as VerboseArgument<T>).type;
 
   private static ToFlag = (value: string) : boolean => parseInt(value) === 1;
 

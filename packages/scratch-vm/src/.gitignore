@@ -2,8 +2,8 @@
 
 # CODE GEN GUARD: Please do not edit any code below this line
 typescript-support/enums.js
-typescript-support/Extension.js
 typescript-support/types.js
-extensions/typescript_barebones/index.js
+typescript-support/Extension.js
 extensions/typescript_framework_complex/addDefinition.js
 extensions/typescript_framework_complex/index.js
+extensions/typescript_framework_simple/index.js

@@ -19,11 +19,13 @@ export type MenuThatAcceptsReporters<T> = {
   handler: (reported: any) => T;
 };
 
-export type Argument<T> = {
+export type VerboseArgument<T> = {
   type: ScratchArgument<T>;
   defaultValue?: T | undefined;
   options?: MenuItem<T>[] | MenuThatAcceptsReporters<T> | undefined;
-}
+};
+
+export type Argument<T> = VerboseArgument<T> | ScratchArgument<T>;
 
 export type RGBObject = { r: number, g: number, b: number };
 export type Matrix = boolean[][];

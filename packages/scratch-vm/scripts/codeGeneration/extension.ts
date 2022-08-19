@@ -4,13 +4,23 @@ import path = require("path");
 import { ExtensionCodeGenerator } from ".";
 import { encode } from "../../src/extension-support/extension-id-factory";
 
-const constructorIdentifier = 'var _this = _super !== null && _super.apply(this, arguments) || this;';
+const populatedConstructorIdentifier = 'var _this = _super !== null && _super.apply(this, arguments) || this;';
+const emptyConstructorIdentifier = 'return _super !== null && _super.apply(this, arguments) || this;';
 
 const declareProperty = (name: string, value: string) => `_this.${name} = '${value}';`;
 
 const addToConstructor = (content: string, ...toAdd: string[]): string => {
-  assert(content.includes(constructorIdentifier), `Uh oh! File content did not include expected constructor code: \n ${content}`);
-  return content.replace(constructorIdentifier, [constructorIdentifier, ...toAdd].join(" "));
+  if (content.includes(populatedConstructorIdentifier)) {
+    const withToAdd = [populatedConstructorIdentifier, ...toAdd].join(" ");
+    return content.replace(populatedConstructorIdentifier, withToAdd);
+  }
+
+  if (content.includes(emptyConstructorIdentifier)) {
+    const withToAddAndReturnStatement = `${[populatedConstructorIdentifier, ...toAdd].join(" ")} return _this;`;
+    return content.replace(emptyConstructorIdentifier, withToAddAndReturnStatement);
+  }
+  
+  throw new Error(`Uh oh! File content did not include expected constructor code: \n ${content}`);
 }
 
 export const fillInContentForExtensions: ExtensionCodeGenerator = (extensions, getExtensionLocation) => {

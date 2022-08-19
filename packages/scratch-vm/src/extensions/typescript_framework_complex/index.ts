@@ -56,10 +56,10 @@ class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
 
   defineBlocks(): BlockDefinitions<Blocks> {
     return {
-      'reportColorChannel': () => ({
+      reportColorChannel: () => ({
         type: BlockType.Reporter,
-        args: [
-          { type: ArgumentType.Color }, 
+        args: [ 
+          ArgumentType.Color, 
           { type: ArgumentType.String, options: [
             { value: 'r', text: 'red' },
             { value: 'g', text: 'green' },
@@ -72,7 +72,7 @@ class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
       'sumMatrix': () => ({
         type: BlockType.Reporter,
         args: [ 
-          { type: ArgumentType.Matrix }, 
+          ArgumentType.Matrix, 
           { type: ArgumentType.Number, options: [
             { value: MatrixDimension.Row, text: 'rows' },
             { value: MatrixDimension.Column, text: 'columns' },
@@ -114,14 +114,14 @@ class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
 
       'selectNote': () => ({
         type: BlockType.Reporter,
-        args: [{ type: ArgumentType.Note }],
+        args: [ ArgumentType.Note ],
         text: (note) => `Pick note ${note}`,
         operation: (note) => note
       }),
 
       'selectAngle': () => ({
         type: BlockType.Reporter,
-        args: [{ type: ArgumentType.Angle }],
+        args: [ ArgumentType.Angle ],
         text: (angle) => `Pick angle ${angle}`,
         operation: (angle) => angle
       }),
@@ -180,7 +180,7 @@ class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
       type: BlockType.Reporter,
       args: [
         { type: ArgumentType.Number, defaultValue: 3, options: self.lhsOptions },
-        { type: ArgumentType.Number }
+        ArgumentType.Number
       ],
       text: (left, right) => `${left} X ${right}`,
       operation: (left, right) => {
@@ -194,7 +194,7 @@ class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
       type: BlockType.Reporter,
       args: [
         { type: ArgumentType.Number, defaultValue: 3, options: this.lhsOptions },
-        { type: ArgumentType.Number }
+        ArgumentType.Number
       ],
       text: (left, right) => `${left} X ${right}`,
       operation: (left, right) => {

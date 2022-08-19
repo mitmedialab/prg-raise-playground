@@ -21,20 +21,6 @@ const guardsRegEx = new RegExp(`${guards[0]}([0-9]+)${guards[1]}`, 'g');
 const wrap = (str) => `${guards[0]}${str}${guards[1]}`;
 
 /**
- * (TODO: Use String.prototype.matchAll once possible)
- * @param {RegEx} regEx 
- * @param {string} str 
- * @returns {RegExpExecArray[]} 
- */
-const matchAll = (regEx, str) => {
-  const clone = new RegExp(regEx);
-  const matches = [];
-  let capture = [];
-  while ((capture = clone.exec(str)) !== null) matches.push(capture);
-  return matches; 
-};
-
-/**
  * 
  * @param {string} text 
  * @returns {string}
@@ -42,7 +28,7 @@ const matchAll = (regEx, str) => {
 const escapeRegExp = (text) => text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 
 /**
- * (TODO: Use String.prototype.replaceAll once possible)
+ * (TODO: Use String.prototype.replaceAll once possible -- requires github action to use node version >= 15)
  * @param {string} query 
  * @param {string} current 
  * @param {string} desired 

@@ -1,7 +1,6 @@
 import ts = require("typescript");
 import glob = require("glob");
 import path = require("path");
-import fs = require("fs");
 import { retrieveExtensionDetails } from "./typeProbing";
 import { generateCodeForExtensions } from "./codeGeneration";
 
@@ -16,31 +15,6 @@ const printDiagnostics = (program: ts.Program, result: ts.EmitResult) => {
     });
 }
 
-type FileToWrite = {
-  name: string,
-  content: string
-}
-
-const supportingFiles: FileToWrite[] = [
-  {
-    name: "ONLY_EDIT_TS_FILES.md",
-    content: `# NOTE TO THE DEVELOPER:
-Only create and edit .ts files for this extension. 
-The .js files are generated and thus any changes will be lost the next time you build the project.`
-  },
-];
-
-supportingFiles.push({
-  name: ".gitignore",
-  content: [
-    "# Prevent all .js files in this folder from being 'seen' by git",
-    "**/*.js",
-    "# Ignore other supporting files",
-    ...supportingFiles.map(file => file.name)].join("\n")
-},)
-
-const addSuportingFiles = (dir: string) => supportingFiles.forEach(toAdd => fs.writeFileSync(path.join(dir, toAdd.name), toAdd.content));
-
 const transpileAllTsExtensions = () => {
   const srcDir = path.resolve(__dirname, "..", "src");
 
@@ -54,7 +28,6 @@ const transpileAllTsExtensions = () => {
   };
 
   const extensionsDir = path.join(srcDir, "extensions");
-  const supportDir = path.join(srcDir, "typescript-support");
 
   glob(`${extensionsDir}/**/index.ts`, (err, files) => {
 
@@ -69,8 +42,6 @@ const transpileAllTsExtensions = () => {
     else {
       const extensions = retrieveExtensionDetails(program);
       generateCodeForExtensions(extensions, program);
-      //files.forEach(file => addSuportingFiles(path.dirname(file)));
-      //addSuportingFiles(supportDir);
     }
   });
 }
