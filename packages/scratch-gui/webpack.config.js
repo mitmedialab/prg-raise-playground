@@ -23,7 +23,10 @@ const base = {
         port: process.env.PORT || 8601,
         // sockPort and disableHostCheck fix viewing over ssh tunneled ports, e.g. with gitpod.io
         sockPort: 'location',
-        disableHostCheck: true
+        disableHostCheck: true,
+        watchOptions: {
+            ignored: ['**/*.ts']
+        }
     },
     output: {
         library: 'GUI',

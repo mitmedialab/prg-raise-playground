@@ -17,6 +17,7 @@ Any changes you make to this file will not be saved nor git tracked.
 `;
 
 export const populateMenuForExtensions: ExtensionCodeGenerator = (extensions, getExtensionLocation) => {
+  console.time('make menu');
   if (!existsSync(assetsFolder)) mkdirSync(assetsFolder);
 
   const importStatements = new Array<string>();
@@ -41,6 +42,7 @@ export const populateMenuForExtensions: ExtensionCodeGenerator = (extensions, ge
 
   const content = [generatedFileWarning, ...importStatements, MenuItem.ConvertToExport(items)].join("\n");
   writeFileSync(generatedFile, content, {encoding: "utf-8"});
+  console.timeEnd('make menu');
 }
 
 const copyIconsToAssetsDirectory = (extensionId: string, extensionLocation: string, {iconURL, insetIconURL}: ExtensionMenuDisplayDetails) => {

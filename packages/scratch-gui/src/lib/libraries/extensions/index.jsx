@@ -95,14 +95,6 @@ export default [
         featured: true
     },
     {
-        name: "Typescript Barebones",
-        extensionId: 'typescript_barebones',
-        iconURL: penIconURL,
-        insetIconURL: penInsetIconURL,
-        description: "Test of the most simple typescript extension",
-        featured: true
-    },
-    {
         name: (
             <FormattedMessage
                 defaultMessage="Video Sensing"

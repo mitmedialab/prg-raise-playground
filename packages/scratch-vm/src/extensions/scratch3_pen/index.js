@@ -281,9 +281,6 @@ class Scratch3PenBlocks {
      * @returns {object} metadata for this extension and its blocks.
      */
     getInfo() {
-        console.log('infooooo');
-        console.log('infooooo');
-        console.log('infooooo');
         return {
             id: 'pen',
             name: formatMessage({

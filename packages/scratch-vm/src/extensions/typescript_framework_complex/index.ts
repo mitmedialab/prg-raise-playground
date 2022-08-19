@@ -190,9 +190,7 @@ class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
         ArgumentType.Number
       ],
       text: (left, right) => `${left} X ${right}`,
-      operation: (left, right) => {
-        return left * right;
-      }
+      operation: (left, right) => left * right,
     })
   }
 

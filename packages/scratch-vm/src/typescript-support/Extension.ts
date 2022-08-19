@@ -50,12 +50,17 @@ export abstract class Extension
    */
   readonly name: never;
 
+  /**
+   * Prevent users from re-defining the blockIconURI (the insetIconURI from ExtensionMenuDisplayDetails will be encoded and used)
+   */
+  readonly blockIconURI: never;
+
   abstract init(env: Environment);
   abstract defineBlocks(): BlockDefinitions<TBlocks>;
 
   getInfo(): ExtensionMetadata  {
-    const {id, blocks, menus, name} = this; 
-    const info = {id, blocks, name};
+    const {id, blocks, menus, name, blockIconURI} = this; 
+    const info = {id, blocks, name, blockIconURI};
     if (menus) info['menus'] = Object.entries(this.menus).reduce((obj, [key, value]) => {
       obj[key] = value; return obj
     }, {});
