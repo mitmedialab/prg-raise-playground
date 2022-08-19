@@ -25,6 +25,7 @@ const enum Animal {
 }
 
 type Blocks = {
+  reportId: () => string;
   reportColorChannel: (color: RGBObject, channel: string) => number;
   sumMatrix: (matrix: boolean[][], dimension: MatrixDimension) => string;
   incrementStateViaThis: () => number;
@@ -56,6 +57,12 @@ class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
 
   defineBlocks(): BlockDefinitions<Blocks> {
     return {
+      reportId: () => ({
+        type: BlockType.Reporter,
+        args: [],
+        text: () => 'My Extension ID is',
+        operation: () => this.id
+      }),
       reportColorChannel: () => ({
         type: BlockType.Reporter,
         args: [ 
