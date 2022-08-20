@@ -15,18 +15,27 @@ const printDiagnostics = (program: ts.Program, result: ts.EmitResult) => {
     });
 }
 
+const srcDir = path.resolve(__dirname, "..", "src");
+
+const baseCompilerOptions: ts.CompilerOptions = {
+  noEmitOnError: false,
+  esModuleInterop: true,
+  target: ts.ScriptTarget.ES5,
+  module: ts.ModuleKind.CommonJS,
+  moduleResolution: ts.ModuleResolutionKind.NodeJs,
+  rootDir: srcDir
+};
+
+const transpile = (...files: string[]) => {
+  const program = ts.createProgram(files, { ...baseCompilerOptions, outDir: srcDir, rootDir: srcDir });
+  const result = program.emit();
+  if (result.emitSkipped) return printDiagnostics(program, result);
+
+  const extensions = retrieveExtensionDetails(program);
+  generateCodeForExtensions(extensions, program, true);
+}
+
 const transpileAllTsExtensions = () => {
-  const srcDir = path.resolve(__dirname, "..", "src");
-
-  const baseOptions: ts.CompilerOptions = {
-    noEmitOnError: false,
-    esModuleInterop: true,
-    target: ts.ScriptTarget.ES5,
-    module: ts.ModuleKind.CommonJS,
-    moduleResolution: ts.ModuleResolutionKind.NodeJs,
-    rootDir: srcDir
-  };
-
   const extensionsDir = path.join(srcDir, "extensions");
 
   glob(`${extensionsDir}/**/index.ts`, (err, files) => {
@@ -34,15 +43,9 @@ const transpileAllTsExtensions = () => {
     if (err) return console.error(err);
     if (!files) return console.error("No files found");
 
-    const program = ts.createProgram(files, { ...baseOptions, outDir: srcDir, rootDir: srcDir });
-    const result = program.emit();
-    if (result.emitSkipped) {
-      printDiagnostics(program, result);
-    }
-    else {
-      const extensions = retrieveExtensionDetails(program);
-      generateCodeForExtensions(extensions, program);
-    }
+    transpile(...files);
+
+    // files.forEach watch directory, if change, re-run transpile
   });
 }
 
