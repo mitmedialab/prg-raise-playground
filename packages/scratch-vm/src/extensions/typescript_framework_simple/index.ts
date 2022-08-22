@@ -12,7 +12,7 @@ type Details = {
 class SimpleTypescript extends Extension<Details, {
   log: (msg: string) => void;
 }> {
-  init(env: Environment) {}
+  init(env: Environment) { }
   defineBlocks(): BlockDefinitions<{ log: (msg: string) => void; }> {
     return {
       log: () => ({

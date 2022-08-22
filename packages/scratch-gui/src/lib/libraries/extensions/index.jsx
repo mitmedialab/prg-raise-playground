@@ -1,5 +1,5 @@
 /* CODE GEN GUARD START: Please do not edit code within guards */
-import generatedExtensionDetails from './generatedExtensionDetails';
+import generatedDetails from './generated/details';
 /* CODE GEN GUARD END: Please do not edit code within guards */
 
 import React from 'react';
@@ -52,7 +52,7 @@ import gdxforConnectionSmallIconURL from './gdxfor/gdxfor-small.svg';
 
 export default [
     /* CODE GEN GUARD START: Please do not edit code within guards */
-    ...generatedExtensionDetails,
+    ...generatedDetails,
     /* CODE GEN GUARD END: Please do not edit code within guards */
     {
         name: (

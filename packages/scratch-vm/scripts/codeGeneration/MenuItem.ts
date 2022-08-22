@@ -27,14 +27,17 @@ export default class MenuItem {
     const entries = Object.entries(this.entries).map(([key, value]) => `${spacing}${tab}${key}: ${value},`).join(newline);
     return `${spacing}{
 ${entries}
-${spacing}},`
+${spacing}}`
   }
 
-  static ConvertToExport(items: MenuItem[]): string {
+  static ConvertToArrayExport(...items: MenuItem[]): string {
     return `
 export default [
-${items.map(item => item.serialize(1)).join(newline)}
+${items.map(item => item.serialize(1)).join("," + newline)}
 ];`
   }
-
+  
+  static ConvertToSingleExport(item: MenuItem): string {
+    return `export default ${item.serialize(0)}`
+  }
 }

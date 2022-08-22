@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from "fs";
 import mime = require('mime-types')
 import path = require("path");
-import { ExtensionCodeGenerator } from ".";
+import { ExtensionCodeGenerator, GenerationDetails } from ".";
 import { encode } from "../../src/extension-support/extension-id-factory";
 import { Extension } from "../../src/typescript-support/Extension";
 import { ExtensionMenuDisplayDetails } from "../../src/typescript-support/types";
@@ -11,9 +11,11 @@ const emptyConstructorIdentifier = 'return _super !== null && _super.apply(this,
 
 const declareProperty = (name: keyof Extension<any, any>, value: string) => `_this.${name} = '${value}';`;
 
-const getBlockIconURI = (details: ExtensionMenuDisplayDetails, location: string) => {
+const getBlockIconURI = ({ details, cached, implementationDirectory }: GenerationDetails) => {
   const { insetIconURL } = details;
-  const insetIconPath = path.join(location, insetIconURL);
+  if (cached?.insetIconURL === insetIconURL && cached?.blockIconURI) return cached.blockIconURI;
+
+  const insetIconPath = path.join(implementationDirectory, insetIconURL);
   const encoding = "base64";
   const insetSVG = readFileSync(insetIconPath).toString(encoding);
   const mediaType = mime.lookup(insetIconPath);
@@ -34,24 +36,23 @@ const addToConstructor = (content: string, ...toAdd: string[]): string => {
   throw new Error(`Uh oh! File content did not include expected constructor code: \n ${content}`);
 }
 
-export const fillInContentForExtensions: ExtensionCodeGenerator = (extensions, getExtensionLocation) => {
+export const fillInContentForExtensions: ExtensionCodeGenerator = (extensions) => {
   const encoding = "utf-8";
 
   for (const id in extensions) {
-
-    const dir = getExtensionLocation(id);
-    const index = path.join(dir, "index.js");
+    const { implementationDirectory, details, cacheUpdates: updates, cached} = extensions[id];
+    const index = path.join(implementationDirectory, "index.js");
     const content = readFileSync(index, { encoding });
     
-    const details = extensions[id];
     const nameDeclaration = declareProperty('name', details.name);
     const idDeclaration = declareProperty('id', encode(id));
-    const uri = getBlockIconURI(details, dir);
+    const blockIconURI = getBlockIconURI(extensions[id]);
 
-    const blockIconDeclaration = declareProperty('blockIconURI', uri);
+    const blockIconDeclaration = declareProperty('blockIconURI', blockIconURI);
 
     const updated = addToConstructor(content, nameDeclaration, idDeclaration, blockIconDeclaration);
-
     writeFileSync(index, updated, encoding);
+
+    if (blockIconURI !== cached?.blockIconURI) extensions[id].cacheUpdates = { ...updates, blockIconURI };
   }
 };

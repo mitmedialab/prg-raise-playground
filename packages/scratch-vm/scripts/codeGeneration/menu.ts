@@ -1,57 +1,54 @@
-import { copyFileSync, existsSync, mkdirSync, writeFileSync } from "fs";
+import { copyFileSync, writeFileSync } from "fs";
 import path = require("path");
 import { encode } from "../../src/extension-support/extension-id-factory";
-import { ExtensionCodeGenerator } from ".";
+import { ExtensionCodeGenerator, GenerationDetails } from ".";
 import { ExtensionMenuDisplayDetails } from "../../src/typescript-support/types";
 import MenuItem from "./MenuItem";
 
-const pathToGuiSrc = path.resolve(__dirname, "..", "..", "..", "scratch-gui", "src");
-const generatedFile = path.join(pathToGuiSrc, "lib", "libraries", "extensions", "generatedExtensionDetails.js");
-const assetsFolder = path.join(pathToGuiSrc, "extension-gallery-assets");
+export const detailFileName = "details";
 
-const generatedFileWarning = `/* 
+export const generatedFileWarning = `/* 
 --- DEVELOPER WARNING ---
 This is a generated file.
 Any changes you make to this file will not be saved nor git tracked. 
 */
 `;
 
-export const populateMenuForExtensions: ExtensionCodeGenerator = (extensions, getExtensionLocation) => {
-  console.time('make menu');
-  if (!existsSync(assetsFolder)) mkdirSync(assetsFolder);
-
-  const importStatements = new Array<string>();
-  const items = new Array<MenuItem>();
-
+export const populateMenuForExtensions: ExtensionCodeGenerator = (extensions) => {
   for (const id in extensions) {
-    const details = extensions[id];
-    const location = getExtensionLocation(id);
+    const { details, cached, assetsDirectory, cacheUpdates: updates } = extensions[id];
+    const cacheMismatch = Object.entries(details)
+      .filter(([key, value]) => cached === undefined || value !== cached[key])
+      .map(([key, _]) => key as keyof ExtensionMenuDisplayDetails);
 
-    copyIconsToAssetsDirectory(id, location, details);
+    if (cacheMismatch.length === 0) continue;
+
+    copyIconsToAssetsDirectory(extensions[id], details, cacheMismatch);
 
     const imports = generateImports(id, details);
     const statements = Object.values(imports).map(({statement}) => statement);
-    importStatements.push(...statements);
 
     const menuItem = new MenuItem(details);
     menuItem.push('extensionId', encode(id));
     Object.entries(imports).map(([key, {variable}]) => menuItem.push(key, variable, true));
 
-    items.push(menuItem);
-  }
+    const menuContent = [generatedFileWarning, ...statements, MenuItem.ConvertToSingleExport(menuItem)].join("\n");
+    const file = path.join(assetsDirectory, `${detailFileName}.js`);
+    writeFileSync(file, menuContent, {encoding: "utf-8"});
 
-  const content = [generatedFileWarning, ...importStatements, MenuItem.ConvertToExport(items)].join("\n");
-  writeFileSync(generatedFile, content, {encoding: "utf-8"});
-  console.timeEnd('make menu');
+    extensions[id].cacheUpdates = {...updates, ...details};
+  }
 }
 
-const copyIconsToAssetsDirectory = (extensionId: string, extensionLocation: string, {iconURL, insetIconURL}: ExtensionMenuDisplayDetails) => {
-  const assetsLocation = path.join(assetsFolder, extensionId);
-  if (!existsSync(assetsLocation)) mkdirSync(assetsLocation);
-
-  [iconURL, insetIconURL].forEach(fileName => {
-    const currentLocation = path.join(extensionLocation, fileName);
-    const destination = path.join(assetsLocation, fileName);
+const copyIconsToAssetsDirectory = (
+  {implementationDirectory, assetsDirectory}: GenerationDetails,
+  {iconURL, insetIconURL}: ExtensionMenuDisplayDetails, 
+  mismatchKeys: (keyof ExtensionMenuDisplayDetails)[]
+) => {
+  Object.entries({iconURL, insetIconURL}).forEach(([key, file]) => {
+    if (!mismatchKeys.includes(key as keyof ExtensionMenuDisplayDetails)) return;
+    const currentLocation = path.join(implementationDirectory, file);
+    const destination = path.join(assetsDirectory, file);
     copyFileSync(currentLocation, destination);
   });
 }
@@ -62,11 +59,10 @@ type Import = { variable: string, statement: string };
 type MenuImports = { [k in keyof Partial<ExtensionMenuDisplayDetails>]: Import };
 
 const generateImports = (id: string, {iconURL, insetIconURL}: ExtensionMenuDisplayDetails): MenuImports => {
-  const pathFromIndexJSXToAssets = `../../../extension-gallery-assets/${id}/`;
   const iconURLName = `${id}_IconURL`;
   const insetIconURLName = `${id}_InsetIconURL`;
   return {
-    iconURL: {variable: iconURLName, statement: importStatement(iconURLName, pathFromIndexJSXToAssets + iconURL)},
-    insetIconURL: {variable: insetIconURLName, statement: importStatement(insetIconURLName, pathFromIndexJSXToAssets + insetIconURL)}
+    iconURL: {variable: iconURLName, statement: importStatement(iconURLName, `./${iconURL}`)},
+    insetIconURL: {variable: insetIconURLName, statement: importStatement(insetIconURLName, `./${insetIconURL}`)}
   };
 }

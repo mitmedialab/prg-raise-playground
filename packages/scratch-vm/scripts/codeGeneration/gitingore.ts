@@ -1,23 +1,21 @@
-import { readFileSync, writeFileSync } from "fs";
+import { writeFileSync } from "fs";
 import path = require("path");
-import ts = require("typescript");
+import { cacheFile, ExtensionCodeGenerator } from ".";
 
-const codeGenGuard = "CODE GEN GUARD";
 const newLine = "\n";
 const encoding = "utf-8";
 
-export const generateGitIgnore = (program: ts.Program, pathToVmSrc: string) => {
-  const gitIgnoreFile = path.join(pathToVmSrc, ".gitignore");
+export const generateGitIgnoresForExtensions: ExtensionCodeGenerator = (extensions) => {
+  for (const id in extensions) {
+    const { tsProgramFiles, cached, cacheUpdates, implementationDirectory } = extensions[id];
+    const stringified = JSON.stringify(tsProgramFiles);
+    if (stringified === cached?.tsProgramFiles) continue;
 
-  const ignoreFiles = program.getSourceFiles()
-    .filter(({fileName}) => !fileName.includes("node_modules"))
-    .map(({fileName}) => path.relative(pathToVmSrc, fileName))
-    .map(path => path.replace(".ts", ".js"));
-
-  const content = readFileSync(gitIgnoreFile, encoding).split(newLine);
-  const codeGenIndex = content.findIndex(line => line.includes(codeGenGuard));
-  content.splice(codeGenIndex + 1);
-  
-  content.push(...ignoreFiles);
-  writeFileSync(gitIgnoreFile, content.join(newLine), encoding)
+    const ignoreFiles = tsProgramFiles.map(file => file.replace(".ts", ".js"));
+    
+    const gitIgnoreFile = path.join(implementationDirectory, ".gitignore");
+    writeFileSync(gitIgnoreFile, [...ignoreFiles, cacheFile].join(newLine), encoding);
+    
+    cacheUpdates.tsProgramFiles = stringified;
+  }
 }

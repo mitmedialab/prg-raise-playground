@@ -26,13 +26,13 @@ const baseCompilerOptions: ts.CompilerOptions = {
   rootDir: srcDir
 };
 
-const transpile = (...files: string[]) => {
+const transpile = (isStartUp: boolean, ...files: string[]) => {
   const program = ts.createProgram(files, { ...baseCompilerOptions, outDir: srcDir, rootDir: srcDir });
   const result = program.emit();
   if (result.emitSkipped) return printDiagnostics(program, result);
 
   const extensions = retrieveExtensionDetails(program);
-  generateCodeForExtensions(extensions, program, true);
+  generateCodeForExtensions(extensions, program, isStartUp);
 }
 
 const transpileAllTsExtensions = () => {
@@ -43,7 +43,7 @@ const transpileAllTsExtensions = () => {
     if (err) return console.error(err);
     if (!files) return console.error("No files found");
 
-    transpile(...files);
+    transpile(true, ...files);
 
     // files.forEach watch directory, if change, re-run transpile
   });
