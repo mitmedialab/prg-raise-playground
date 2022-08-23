@@ -23,7 +23,7 @@ export type GenerationDetails = {
 
 export type ExtensionCodeGenerator = (extensions: Record<string, GenerationDetails>) => void;
 
-export const cacheFile = "cache.json";
+export const cacheFile = "cache.generated.json";
 
 const pathToSrc = path.resolve(__dirname, "..", "..", "src");
 const pathToExtensionsDir = path.join(pathToSrc, "extensions");
@@ -59,9 +59,10 @@ const getFilesByExtension = (program: ts.Program): Record<string, string[]> =>
   .filter(parsed => !parsed.dir.startsWith(".."))
   .reduce((filesByExtension, parsed) => {
     const { dir, base } = parsed;
-    const extensionBase = dir.split("/")[0];
+    const parts = dir.split("/");
+    const extensionBase = parts[0];
     const files = filesByExtension[extensionBase];
-    const fullPath = path.join(dir, base);
+    const fullPath = path.join(...[...parts.slice(1), base]);
     files ? files.push(fullPath) : filesByExtension[extensionBase] = [fullPath];
     return filesByExtension;
   }, {});

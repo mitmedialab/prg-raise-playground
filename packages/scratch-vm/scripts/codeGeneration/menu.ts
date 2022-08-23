@@ -5,7 +5,7 @@ import { ExtensionCodeGenerator, GenerationDetails } from ".";
 import { ExtensionMenuDisplayDetails } from "../../src/typescript-support/types";
 import MenuItem from "./MenuItem";
 
-export const detailFileName = "details";
+export const detailFileName = "details.generated";
 
 export const generatedFileWarning = `/* 
 --- DEVELOPER WARNING ---

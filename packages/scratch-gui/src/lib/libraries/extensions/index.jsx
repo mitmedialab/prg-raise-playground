@@ -1,5 +1,5 @@
 /* CODE GEN GUARD START: Please do not edit code within guards */
-import generatedDetails from './generated/details';
+import generatedDetails from './generated/details.generated';
 /* CODE GEN GUARD END: Please do not edit code within guards */
 
 import React from 'react';
