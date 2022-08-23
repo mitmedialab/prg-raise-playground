@@ -3,6 +3,10 @@ import glob = require("glob");
 import path = require("path");
 import { retrieveExtensionDetails } from "./typeProbing";
 import { generateCodeForExtensions } from "./codeGeneration";
+import { processArgs } from "./utility/processArgs";
+import { watchExtensionEntry } from "./utility/watch";
+import { profile } from "./utility/profile";
+import { writeFileSync } from "fs";
 
 const printDiagnostics = (program: ts.Program, result: ts.EmitResult) => {
   ts.getPreEmitDiagnostics(program)
@@ -20,33 +24,82 @@ const srcDir = path.resolve(__dirname, "..", "src");
 const baseCompilerOptions: ts.CompilerOptions = {
   noEmitOnError: false,
   esModuleInterop: true,
-  target: ts.ScriptTarget.ES5,
-  module: ts.ModuleKind.CommonJS,
-  moduleResolution: ts.ModuleResolutionKind.NodeJs,
-  rootDir: srcDir
+  target: "ES5" as any as ts.ScriptTarget,
+  module: "CommonJS" as any as ts.ModuleKind,
+  moduleResolution: "Node" as any as ts.ModuleResolutionKind,
+  rootDir: srcDir,  
+  outDir: srcDir,
 };
 
-const transpile = (isStartUp: boolean, ...files: string[]) => {
-  const program = ts.createProgram(files, { ...baseCompilerOptions, outDir: srcDir, rootDir: srcDir });
-  const result = program.emit();
-  if (result.emitSkipped) return printDiagnostics(program, result);
+const tsconfig = path.join(__dirname, "tsconfig.json");
 
-  const extensions = retrieveExtensionDetails(program);
-  generateCodeForExtensions(extensions, program, isStartUp);
+function reportDiagnostic(diagnostic: ts.Diagnostic) {
+  console.error("Error", diagnostic.code, ":", ts.flattenDiagnosticMessageText( diagnostic.messageText, formatHost.getNewLine()));
 }
 
-const transpileAllTsExtensions = () => {
+const formatHost: ts.FormatDiagnosticsHost = {
+  getCanonicalFileName: path => path,
+  getCurrentDirectory: ts.sys.getCurrentDirectory,
+  getNewLine: () => ts.sys.newLine
+};
+
+/**
+ * Prints a diagnostic every time the watch status changes.
+ * This is mainly for messages like "Starting compilation" or "Compilation completed".
+ */
+function reportWatchStatusChanged(diagnostic: ts.Diagnostic) {
+  console.info(ts.formatDiagnostic(diagnostic, formatHost));
+}
+
+const getWatchHost = (): ts.WatchCompilerHostOfConfigFile<ts.EmitAndSemanticDiagnosticsBuilderProgram> => 
+  ts.createWatchCompilerHost(
+    tsconfig, 
+    {}, 
+    ts.sys, 
+    ts.createEmitAndSemanticDiagnosticsBuilderProgram,
+    reportDiagnostic,
+    reportWatchStatusChanged
+  ); 
+
+const transpile = (isStartUp: boolean, useCaches: boolean, ...files: string[]) => {    
+  writeFileSync(tsconfig, `{
+    "compilerOptions" : ${JSON.stringify(baseCompilerOptions)},
+    "files": ${JSON.stringify(files)}
+  }`);
+  const host = profile(getWatchHost, "Retrived watch host in:");
+  const watcher = profile(() => ts.createWatchProgram(host), "Created watcher in:");
+  const semanticProgram = profile(watcher.getProgram, "Got semantic program in:");
+  const program = profile(semanticProgram.getProgram, "Got program in:");
+
+  //const result = profile(() => program.emit(), "Emit program completed in:");
+  //if (result.emitSkipped) return printDiagnostics(program, result);
+
+  const extensions = retrieveExtensionDetails(program);
+  generateCodeForExtensions(extensions, program, isStartUp, useCaches);
+};
+
+const initialTranspile = (useCaches: boolean, files: string[]) => 
+  profile(() => transpile(true, useCaches, ...files), "Completed initial transpile in:");
+
+export const transpileOnChange = (entry: string) =>
+  profile(() => transpile(false, true, entry), "Completed re-transpile on change in:");
+
+export type TranspileOptions = { doWatch: boolean; useCaches: boolean; };
+const transpileAllTsExtensions = ({doWatch, useCaches}: TranspileOptions) => {
   const extensionsDir = path.join(srcDir, "extensions");
 
   glob(`${extensionsDir}/**/index.ts`, (err, files) => {
-
     if (err) return console.error(err);
     if (!files) return console.error("No files found");
 
-    transpile(true, ...files);
+    initialTranspile(useCaches, files);
 
-    // files.forEach watch directory, if change, re-run transpile
+    if (!doWatch) return;
+
+    files.forEach(watchExtensionEntry);
   });
 }
 
-transpileAllTsExtensions();
+const options = processArgs();
+console.log(options);
+transpileAllTsExtensions(options);

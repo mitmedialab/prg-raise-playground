@@ -1,0 +1,3 @@
+{
+  "compilerOptions" : {"noEmitOnError":false,"esModuleInterop":true,"target":"ES5","module":"CommonJS","moduleResolution":"Node","rootDir":"/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src","outDir":"/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src"}
+}

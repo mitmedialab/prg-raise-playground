@@ -14,7 +14,7 @@
   "scripts": {
     "test:jest": "node_modules/.bin/jest",
     "compile:ts": "ts-node ./scripts/transpile.ts",
-    "watch:ts": "./node_modules/nodemon/bin/nodemon.js --watch ./src/ -e ts --exec \"npm run compile:ts\"",
+    "watch:ts": "ts-node ./scripts/transpile.ts cache=true watch=true",
     "build": "npm run docs && webpack --progress --colors --bail",
     "coverage": "tap ./test/{unit,integration}/*.js --coverage --coverage-report=lcov",
     "deploy": "touch playground/.nojekyll && gh-pages -t -d playground -m \"Build for $(git log --pretty=format:%H -n1)\"",
@@ -62,6 +62,7 @@
     "adm-zip": "0.4.11",
     "babel-eslint": "^10.0.1",
     "babel-loader": "^8.0.4",
+    "chokidar": "^3.5.3",
     "copy-webpack-plugin": "^4.5.4",
     "docdash": "^1.0.0",
     "eslint": "^5.3.0",

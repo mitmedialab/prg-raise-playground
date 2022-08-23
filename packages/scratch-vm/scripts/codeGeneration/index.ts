@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import path = require("path");
 import ts = require("typescript");
 import { ExtensionMenuDisplayDetails } from "../../src/typescript-support/types";
+import { profile } from "../utility/profile";
 import { fillInContentForExtensions } from "./extension";
 import { generateGitIgnoresForExtensions } from "./gitingore";
 import { detailFileName, populateMenuForExtensions, generatedFileWarning } from "./menu";
@@ -73,7 +74,12 @@ const extensionCodeGenerators: ExtensionCodeGenerator[] = [
   generateGitIgnoresForExtensions
 ];
 
-export const generateCodeForExtensions = (extensions: Record<string, ExtensionMenuDisplayDetails>, program: ts.Program, isStartUp: boolean = false) => {
+export const generateCodeForExtensions = (
+  extensions: Record<string, ExtensionMenuDisplayDetails>, 
+  program: ts.Program, 
+  isStartUp: boolean,
+  useCaches: boolean
+) => {
   const extensionsForGeneration = {} as Record<string, GenerationDetails>;
   const filesByExtension = getFilesByExtension(program);
 
@@ -81,7 +87,7 @@ export const generateCodeForExtensions = (extensions: Record<string, ExtensionMe
     const assetsDirectory = path.join(generatedDirectory, extensionId);
     if (!existsSync(assetsDirectory)) mkdirSync(assetsDirectory);
     const implementationDirectory = path.join(pathToExtensionsDir, extensionId);
-    const cached = isStartUp ? undefined : getCached(implementationDirectory);
+    const cached = useCaches ? getCached(implementationDirectory) : undefined;
     extensionsForGeneration[extensionId] = {
       details: extensions[extensionId], 
       assetsDirectory,
@@ -94,7 +100,9 @@ export const generateCodeForExtensions = (extensions: Record<string, ExtensionMe
 
   if (isStartUp) writeOutGeneratedFile(extensions);
 
-  extensionCodeGenerators.forEach(generate => generate(extensionsForGeneration));
+  extensionCodeGenerators.forEach((generate, index) => {
+    profile(() => generate(extensionsForGeneration), `Step ${index} of generation (${generate.name}) took:`)
+  });
 
   for (const extensionId in extensionsForGeneration) {
     const { implementationDirectory, cached, cacheUpdates } = extensionsForGeneration[extensionId];
