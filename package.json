@@ -10,7 +10,7 @@
     "dev:vm": "npm run watch:ts --prefix ./packages/scratch-vm & WATCH_TS_PID=$! && npm run wait:for:ts --prefix ./packages/scratch-vm",
     "build:gui": "npm run build --prefix ./packages/scratch-gui/",
     "dev:gui": "npm start --prefix ./packages/scratch-gui/",
-    "build": "npm run init:build && npm run clean:build &&  && npm run build:vm && npm run build:gui && npm run move:build:to:root",
+    "build": "npm run init:build && npm run clean:build && npm run build:vm && npm run build:gui && npm run move:build:to:root",
     "dev": "npm run dev:vm && npm run dev:gui && kill $WATCH_TS_PID",
     "rebuild:blocks": "npm run prepublish --prefix ./packages/scratch-blocks && npm run dev"
   },
