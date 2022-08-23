@@ -9,3 +9,6 @@ export const profile = <TFunc extends (...args: any) => any>(toProfile: TFunc, i
   console.timeEnd(identifier);
   return result;
 }
+
+export const start = (identifier: string) => { if (profiling) console.time(identifier) };
+export const stop = (identifier: string) => { if (profiling) console.timeEnd(identifier) };

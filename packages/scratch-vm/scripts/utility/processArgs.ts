@@ -1,15 +1,17 @@
 import { UnionToTuple } from "../../src/typescript-support/types";
 import { TranspileOptions } from "../transpile";
 
-type CommandLineFlags = { watch: string; cache: string};
+type CommandLineFlags = { watch: string; cache: string };
 
-const options: UnionToTuple<keyof TranspileOptions> = ['doWatch', 'useCaches'];
+// @ts-ignore
+const options: UnionToTuple<keyof TranspileOptions> = [ "doWatch", "useCaches"];
+// @ts-ignore
 const flags: UnionToTuple<keyof CommandLineFlags> = ['watch', 'cache'];
 
 const optionByFlag: Record<keyof CommandLineFlags, keyof TranspileOptions> = {
   watch: 'doWatch', 
   cache: 'useCaches',
-};
+};  
 
 const validateFlag = (flag: string) => {
   if (flags.includes(flag as keyof CommandLineFlags)) return;
@@ -36,6 +38,6 @@ export const processArgs = () => {
     return input;
   }, { 
     doWatch: false, 
-    useCaches: false 
+    useCaches: false,
   });
 }

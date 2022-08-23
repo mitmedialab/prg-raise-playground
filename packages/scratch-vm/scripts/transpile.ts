@@ -4,9 +4,15 @@ import path = require("path");
 import { retrieveExtensionDetails } from "./typeProbing";
 import { generateCodeForExtensions } from "./codeGeneration";
 import { processArgs } from "./utility/processArgs";
-import { watchExtensionEntry } from "./utility/watch";
-import { profile } from "./utility/profile";
-import { writeFileSync } from "fs";
+import { profile, start, stop } from "./utility/profile";
+import { existsSync, unlinkSync, writeFileSync } from "fs";
+import { reset, setTsIsReady } from "./utility/waitForTs";
+
+export type TranspileOptions = { doWatch: boolean; useCaches: boolean; };
+
+const srcDir = path.resolve(__dirname, "..", "src");
+const utilityDir = path.join(__dirname, "utility");
+const tsconfig = path.join(utilityDir, "tsconfig.json");
 
 const printDiagnostics = (program: ts.Program, result: ts.EmitResult) => {
   ts.getPreEmitDiagnostics(program)
@@ -19,22 +25,18 @@ const printDiagnostics = (program: ts.Program, result: ts.EmitResult) => {
     });
 }
 
-const srcDir = path.resolve(__dirname, "..", "src");
-
-const baseCompilerOptions: ts.CompilerOptions = {
-  noEmitOnError: false,
-  esModuleInterop: true,
-  target: "ES5" as any as ts.ScriptTarget,
-  module: "CommonJS" as any as ts.ModuleKind,
-  moduleResolution: "Node" as any as ts.ModuleResolutionKind,
-  rootDir: srcDir,  
-  outDir: srcDir,
-};
-
-const tsconfig = path.join(__dirname, "tsconfig.json");
-
-function reportDiagnostic(diagnostic: ts.Diagnostic) {
-  console.error("Error", diagnostic.code, ":", ts.flattenDiagnosticMessageText( diagnostic.messageText, formatHost.getNewLine()));
+const writeOutTsConfig = (files: string[]) => {
+  const compilerOptions: ts.CompilerOptions = {
+    noEmitOnError: true,
+    esModuleInterop: true,
+    target: "ES5" as any as ts.ScriptTarget,
+    module: "CommonJS" as any as ts.ModuleKind,
+    moduleResolution: "Node" as any as ts.ModuleResolutionKind,
+    rootDir: srcDir,  
+    outDir: srcDir,
+  };
+  const config = { compilerOptions, files };
+  writeFileSync(tsconfig, JSON.stringify(config));
 }
 
 const formatHost: ts.FormatDiagnosticsHost = {
@@ -43,13 +45,8 @@ const formatHost: ts.FormatDiagnosticsHost = {
   getNewLine: () => ts.sys.newLine
 };
 
-/**
- * Prints a diagnostic every time the watch status changes.
- * This is mainly for messages like "Starting compilation" or "Compilation completed".
- */
-function reportWatchStatusChanged(diagnostic: ts.Diagnostic) {
-  console.info(ts.formatDiagnostic(diagnostic, formatHost));
-}
+const reportWatchStatusChanged = (diagnostic: ts.Diagnostic) => console.info(ts.formatDiagnostic(diagnostic, formatHost));
+const reportDiagnostic = (diagnostic: ts.Diagnostic) => console.error("Error", diagnostic.code, ":", ts.flattenDiagnosticMessageText( diagnostic.messageText, formatHost.getNewLine()));
 
 const getWatchHost = (): ts.WatchCompilerHostOfConfigFile<ts.EmitAndSemanticDiagnosticsBuilderProgram> => 
   ts.createWatchCompilerHost(
@@ -61,45 +58,58 @@ const getWatchHost = (): ts.WatchCompilerHostOfConfigFile<ts.EmitAndSemanticDiag
     reportWatchStatusChanged
   ); 
 
-const transpile = (isStartUp: boolean, useCaches: boolean, ...files: string[]) => {    
-  writeFileSync(tsconfig, `{
-    "compilerOptions" : ${JSON.stringify(baseCompilerOptions)},
-    "files": ${JSON.stringify(files)}
-  }`);
-  const host = profile(getWatchHost, "Retrived watch host in:");
-  const watcher = profile(() => ts.createWatchProgram(host), "Created watcher in:");
-  const semanticProgram = profile(watcher.getProgram, "Got semantic program in:");
-  const program = profile(semanticProgram.getProgram, "Got program in:");
+let transpileCount = 0;
+const getProgramMsg = () => `Total time to create program (#${transpileCount})`;
 
-  //const result = profile(() => program.emit(), "Emit program completed in:");
-  //if (result.emitSkipped) return printDiagnostics(program, result);
+const transpile = (
+  {useCaches}: TranspileOptions, 
+  ...files: string[]
+): ts.WatchOfConfigFile<ts.EmitAndSemanticDiagnosticsBuilderProgram> => {    
+  writeOutTsConfig(files);
+  const host = profile(getWatchHost, "Retrived watch host in");
 
-  const extensions = retrieveExtensionDetails(program);
-  generateCodeForExtensions(extensions, program, isStartUp, useCaches);
+  const { createProgram, afterProgramCreate } = host;
+  host.createProgram = (rootNames: ReadonlyArray<string>, options, host, oldProgram) => {
+    start(getProgramMsg());
+
+    const builder = createProgram(rootNames, options, host, oldProgram);
+    const program = builder.getProgram();
+    const result = profile(builder.emit, "Emitted program in");
+
+    if (result.emitSkipped) {
+      printDiagnostics(program, result);
+      return builder;
+    }
+
+    const extensions = retrieveExtensionDetails(program);
+    const firstRun = transpileCount === 0;
+    generateCodeForExtensions(extensions, program, firstRun, !firstRun && useCaches);
+    if (firstRun) setTsIsReady();
+    return builder;
+  };
+
+  host.afterProgramCreate = (program) => {
+    stop(getProgramMsg());
+    transpileCount++;
+    return afterProgramCreate(program);
+  }
+
+  return profile(() => ts.createWatchProgram(host), "Created watcher in");
 };
 
-const initialTranspile = (useCaches: boolean, files: string[]) => 
-  profile(() => transpile(true, useCaches, ...files), "Completed initial transpile in:");
-
-export const transpileOnChange = (entry: string) =>
-  profile(() => transpile(false, true, entry), "Completed re-transpile on change in:");
-
-export type TranspileOptions = { doWatch: boolean; useCaches: boolean; };
-const transpileAllTsExtensions = ({doWatch, useCaches}: TranspileOptions) => {
+const transpileAllTsExtensions = (options: TranspileOptions) => {
   const extensionsDir = path.join(srcDir, "extensions");
 
   glob(`${extensionsDir}/**/index.ts`, (err, files) => {
     if (err) return console.error(err);
     if (!files) return console.error("No files found");
 
-    initialTranspile(useCaches, files);
-
-    if (!doWatch) return;
-
-    files.forEach(watchExtensionEntry);
+    const watcher = profile(() => transpile(options, ...files), "Completed initial transpile in");
+    const { doWatch } = options;
+    if (!doWatch) watcher.close();
   });
 }
 
+reset();
 const options = processArgs();
-console.log(options);
 transpileAllTsExtensions(options);

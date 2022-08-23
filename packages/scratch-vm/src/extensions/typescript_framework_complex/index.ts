@@ -61,7 +61,7 @@ class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
         type: BlockType.Reporter,
         args: [],
         text: () => 'My Extension ID is',
-        operation: () => 'owdy' + this.id
+        operation: () => this.id
       }),
       reportColorChannel: () => ({
         type: BlockType.Reporter,

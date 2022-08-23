@@ -101,7 +101,7 @@ export const generateCodeForExtensions = (
   if (isStartUp) writeOutGeneratedFile(extensions);
 
   extensionCodeGenerators.forEach((generate, index) => {
-    profile(() => generate(extensionsForGeneration), `Step ${index} of generation (${generate.name}) took:`)
+    profile(() => generate(extensionsForGeneration), `Step ${index} of generation (${generate.name}) took`)
   });
 
   for (const extensionId in extensionsForGeneration) {
