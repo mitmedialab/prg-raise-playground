@@ -1,8 +1,8 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import path = require("path");
 import ts = require("typescript");
-import { ExtensionMenuDisplayDetails } from "../../src/typescript-support/types";
-import { profile } from "../utility/profile";
+import { ExtensionMenuDisplayDetails } from "../../../src/typescript-support/types";
+import { profile } from "../../utility/profile";
 import { fillInContentForExtensions } from "./extension";
 import { generateGitIgnoresForExtensions } from "./gitingore";
 import { detailFileName, populateMenuForExtensions, generatedFileWarning } from "./menu";
@@ -26,9 +26,11 @@ export type ExtensionCodeGenerator = (extensions: Record<string, GenerationDetai
 
 export const cacheFile = "cache.generated.json";
 
-const pathToSrc = path.resolve(__dirname, "..", "..", "src");
+const downLevels = (n: number) => Array<string>(n).fill("..");
+
+const pathToSrc = path.resolve(__dirname, ...downLevels(3), "src");
 const pathToExtensionsDir = path.join(pathToSrc, "extensions");
-const guiLib = ["..", "..", "..", "scratch-gui", "src", "lib", "libraries", "extensions", "generated"]
+const guiLib = [...downLevels(4), "scratch-gui", "src", "lib", "libraries", "extensions", "generated"]
 const generatedDirectory = path.resolve(__dirname, ...guiLib);
 const generatedFile = path.join(generatedDirectory, `${detailFileName}.js`);
 const newline = "\n";

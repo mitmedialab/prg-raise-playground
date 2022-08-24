@@ -1,5 +1,5 @@
 import { UnionToTuple } from "../../src/typescript-support/types";
-import { TranspileOptions } from "../transpile";
+import { TranspileOptions } from "./transpile";
 
 type CommandLineFlags = { watch: string; cache: string };
 

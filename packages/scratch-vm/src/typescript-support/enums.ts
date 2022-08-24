@@ -1,3 +1,6 @@
+/**
+ * The different kind of blocks that an extension can define
+ */
 export const enum BlockType {
   /**
    * Boolean reporter with hexagonal shape
@@ -67,4 +70,16 @@ export const enum ArgumentType {
 
   /** Inline image on block (as part of the label). */
   Image = "image"
+}
+
+export const enum Branch {
+  Exit = 0,
+  Enter = 1,
+  First = 1,
+  Second,
+  Third, 
+  Fourth, 
+  Fifth, 
+  Sixth, 
+  Seventh
 }

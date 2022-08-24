@@ -1,42 +1,37 @@
-# ✨ PRG Scratch Extension Development Environment
+# ✨ Drag-and-Drop Coding Environment Boilerplate
 
-This repository is your one-stop-shop for developing scratch extensions for PRG curricula.
+This is intended to be a repository that makes it simple to play with and deploy a GUI based on Scratch-3.0 components! It may be handy for:
 
-It's a fullblown [fork](https://en.wikipedia.org/wiki/Fork_(software_development)) of the official Scratch codebase, which the [Personal Robotics Group](https://robots.media.mit.edu/) (PRG) manages and extends to meet its needs. 
+- Developing prototype Scratch 3.0 extensions that don't fit within the current extension limitations
+- Experimenting with tweaks to the Scratch 3.0 GUI
+- Quickly deploying a fork of the Scratch 3.0 GUI
 
-## ⚡ Quick Start
+It is not so great for:
 
+- Pushing small changes back to upstream Scratch components often (it's possible, and this project retains the git history of the constituent sub-projects, but there's an extra messy step to get your work together for a pull request)
 
-### Project setup
+It is structured as a monorepo, where the Scratch components you'll typically want to modify live within the repository so you can edit them all at once, manage their versions all in one place, and perform a simple static site deploy of the GUI with the synced dependencies.
 
-Assuming:
-- Node 16 is installed (if not, jump to: ...)
+- [packages/scratch-gui](packages/scratch-gui)
+- [packages/scratch-vm](packages/scratch-vm)
+- [packages/scratch-render](packages/scratch-render)
+- [packages/scratch-blocks](packages/scratch-blocks)
 
-Run the following from the command line (NOTE: Check on windows git-bash):
+## ⚡ Quick Setup️
+
+Requirements, your java version should be 8 or higher. Check `java -version`.
 
 ```shell script
 git clone git@github.com:mitmedialab/prg-extension-boilerplate.git
 # Cloning the full history (300mb) takes about 20 seconds on fast internet. Include -–depth 1 for a 4 second checkout
-
-cd prg-extension-boilerplate/
-# change directory (cd) to the repository
 
 npm run init
 # This will symlink the packages together to allow for seamless local development, and installs dependencies for each package. This should only need to be ran once (unless you checkout a branch that adds new package dependencies).
 # Takes about 1.5 minutes
 
 npm run dev
-# This starts up a development server, serving all the currently implemented extensions
+# This starts up a development server
 # Open http://localhost:8601/ in your browser
-```
-
-### Making your extension
-
-```shell script
-npm run new:extension <folder>
-# for example: npm run new:extension my_awesome_extension
-
-npm run dev
 ```
 
 Now you can make changes, and they will auto-build from the scratch-gui watcher and live-reload!

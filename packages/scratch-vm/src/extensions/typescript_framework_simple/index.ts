@@ -1,4 +1,4 @@
-import { ArgumentType, BlockType } from "../../typescript-support/enums";
+import { ArgumentType, BlockType, Branch } from "../../typescript-support/enums";
 import { Extension } from "../../typescript-support/Extension";
 import { Environment, BlockDefinitions } from "../../typescript-support/types";
 
@@ -11,15 +11,25 @@ type Details = {
 
 class SimpleTypescript extends Extension<Details, {
   log: (msg: string) => void;
+  dummy: () => void;
 }> {
   init(env: Environment) { }
-  defineBlocks(): BlockDefinitions<{ log: (msg: string) => void; }> {
+
+  defineBlocks(): SimpleTypescript["BlockDefinitions"] {
     return {
       log: () => ({
         type: BlockType.Command,
         args: [ArgumentType.String],
         text: (msg) => `Log ${msg} to the console`,
         operation: (msg) => console.log(msg)
+      }),
+      dummy: () => ({
+        type: BlockType.Loop,
+        args: [],
+        text: () => `Dummy loop`,
+        operation: (util) => {
+          util.startBranch(Branch.First, true);
+        }
       })
     }
   }

@@ -1,7 +1,7 @@
 import type Runtime from '../engine/runtime';
-import { ArgumentType, BlockType } from './enums';
+import BlockUtility = require('./BlockUtility');
+import { ArgumentType, BlockType, Branch } from './enums';
 import type { Extension } from './Extension';
-import type BlockUtility from '../engine/block-utility';
 
 export type Environment = {
   runtime: Runtime
@@ -47,10 +47,38 @@ type ToArguments<T extends any[]> =
 type ParamsAndUtility<T extends BlockOperation> = [...params: Parameters<T>, util: BlockUtility];
 
 export type Block<T extends BlockOperation> = {
-  type: ReturnType<T> extends void ? BlockType.Command : 
+  /**
+   * @description
+   * The kind of block we're defining, from a predefined list 
+   * (shown below, roughly in order from most-to-least common).
+   * * BlockType.Command - A block that accepts 0 or more arguments and likely does something to the sprite / environment (but does not return a value). E.g. 
+   *    * move ___ steps
+   *    * say ____
+   *    * next backdrop
+   * * BlockType.Reporter - Accepts 0 or more arguments and returns a value. E.g.
+   *    * x position
+   *    * direction
+   *    * costume [name or number]
+   * * BlockType.Boolean - same as 'Reporter' but specifically returns a Boolean value
+   * * BlockType.Hat - Starts a stack if its value changes from falsy to truthy
+   * 
+   * NOTE: Scratch warns us that the below blocks are still 'in development' and therefore might contain bugs.
+   * * BlockType.Conditional - control flow, like "if {}" or "if {} else {}"
+   *     * A 'Conditional' block may return the one-based index of a branch to
+   *     run, or it may return zero/falsy to run no branch.
+   * * BlockType.Loop - control flow, like "repeat {} {}" or "forever {}"
+   *     * A LOOP block is like a CONDITIONAL block with two differences:
+   *        * the block is assumed to have exactly one child branch, and
+   *        * each time a child branch finishes, the loop block is called again.
+   * BlockType.Event - Starts a stack in response to an event (full spec TBD)
+   */
+  type: ReturnType<T> extends void ? BlockType.Command | BlockType.Conditional | BlockType.Loop : 
         ReturnType<T> extends boolean ? (BlockType.Reporter | BlockType.Boolean | BlockType.Hat) :
         ReturnType<T> extends Promise<any> ? never :
         BlockType.Reporter;
+  /**
+   * 
+   */
   operation: (...params: ParamsAndUtility<T>) => ReturnType<T>;
   args: ToArguments<Parameters<T>>;
   text: (...params: Parameters<T>) => string;

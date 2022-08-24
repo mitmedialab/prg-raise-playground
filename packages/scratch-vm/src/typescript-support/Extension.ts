@@ -5,35 +5,37 @@ import Cast from '../util/cast';
 
 /**
  * 
- * @template TMenuDetails How the extension should display in the extensions menu 
- * @template TBlocks What kind of blocks this extension implements
+ * @template MenuDetails How the extension should display in the extensions menu 
+ * @template Blocks What kind of blocks this extension implements
  */
 export abstract class Extension
   <
-    TMenuDetails extends ExtensionMenuDisplayDetails,
-    TBlocks extends ExtensionBlocks
+    MenuDetails extends ExtensionMenuDisplayDetails,
+    Blocks extends ExtensionBlocks
   > {
   runtime: Runtime;
 
-  private blocks: ExtensionBlockMetadata[];
-  private menus: ExtensionMenuMetadata[];
+  private readonly BlockDefinitions: BlockDefinitions<Blocks>;
+
+  private internal_blocks: ExtensionBlockMetadata[];
+  private internal_menus: ExtensionMenuMetadata[];
 
   constructor(runtime: Runtime) {
     this.runtime = runtime;
     this.init({ runtime });
-    this.blocks = [];
-    this.menus = [];
+    this.internal_blocks = [];
+    this.internal_menus = [];
     const definitions = this.defineBlocks();
     const menuArrays: MenuItem<any>[] = [];
     for (const key in definitions) {
       const block = definitions[key](this);
       const info = this.convertToInfo(key, block, menuArrays);
-      this.blocks.push(info);
+      this.internal_blocks.push(info);
     }
 
     for (let index = 0; index < menuArrays.length; index++) {
       const items = menuArrays[index];
-      this.menus.push({
+      this.internal_menus.push({
         acceptReporters: false,
         items: items.map(item => Extension.IsPrimitive(item) ? `${item}` : {...item, value: `${item.value}`})
       });
@@ -56,12 +58,12 @@ export abstract class Extension
   readonly blockIconURI: never;
 
   abstract init(env: Environment);
-  abstract defineBlocks(): BlockDefinitions<TBlocks>;
+  abstract defineBlocks(): BlockDefinitions<Blocks>;
 
   getInfo(): ExtensionMetadata  {
-    const {id, blocks, menus, name, blockIconURI} = this; 
+    const {id, internal_blocks: blocks, internal_menus: menus, name, blockIconURI} = this; 
     const info = {id, blocks, name, blockIconURI};
-    if (menus) info['menus'] = Object.entries(this.menus).reduce((obj, [key, value]) => {
+    if (menus) info['menus'] = Object.entries(this.internal_menus).reduce((obj, [key, value]) => {
       obj[key] = value; return obj
     }, {});
 

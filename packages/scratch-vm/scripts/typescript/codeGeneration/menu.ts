@@ -1,8 +1,8 @@
 import { copyFileSync, writeFileSync } from "fs";
 import path = require("path");
-import { encode } from "../../src/extension-support/extension-id-factory";
+import { encode } from "../../../src/extension-support/extension-id-factory";
 import { ExtensionCodeGenerator, GenerationDetails } from ".";
-import { ExtensionMenuDisplayDetails } from "../../src/typescript-support/types";
+import { ExtensionMenuDisplayDetails } from "../../../src/typescript-support/types";
 import MenuItem from "./MenuItem";
 
 export const detailFileName = "details.generated";

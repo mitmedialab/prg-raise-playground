@@ -1,4 +1,4 @@
-import { Extension } from "../../src/typescript-support/Extension";
+import { Extension } from "../../../src/typescript-support/Extension";
 
 export const location = () => __filename;
 

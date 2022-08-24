@@ -1,27 +1,28 @@
 import ts = require("typescript");
 import glob = require("glob");
+import chalk = require("chalk");
 import path = require("path");
 import { retrieveExtensionDetails } from "./typeProbing";
 import { generateCodeForExtensions } from "./codeGeneration";
-import { processArgs } from "./utility/processArgs";
-import { profile, start, stop } from "./utility/profile";
-import { existsSync, unlinkSync, writeFileSync } from "fs";
-import { reset, setTsIsReady } from "./utility/waitForTs";
+import { processArgs } from "./processArgs";
+import { profile, start, stop } from "../utility/profile";
+import { writeFileSync } from "fs";
+import { raiseError, setTsIsReady } from "./interprocessCoordination";
 
 export type TranspileOptions = { doWatch: boolean; useCaches: boolean; };
 
-const srcDir = path.resolve(__dirname, "..", "src");
-const utilityDir = path.join(__dirname, "utility");
-const tsconfig = path.join(utilityDir, "tsconfig.json");
+const srcDir = path.resolve(__dirname, "..", "..", "src");
+const tsconfig = path.join(__dirname, "tsconfig.json");
 
-const printDiagnostics = (program: ts.Program, result: ts.EmitResult) => {
+const printDiagnostics = (program: ts.Program, diagnostics: readonly ts.Diagnostic[]) => {
   ts.getPreEmitDiagnostics(program)
-    .concat(result.diagnostics)
+    .concat(diagnostics)
     .forEach(diagnostic => {
       const flattenedMessage = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n") + "\n";
-      if (!diagnostic.file) return console.error(flattenedMessage);
+      if (!diagnostic.file) return console.error(chalk.red(flattenedMessage));
       const { line, character } = ts.getLineAndCharacterOfPosition(diagnostic.file, diagnostic.start!);
-      console.error(`${diagnostic.file.fileName} (${line + 1},${character + 1}): ${flattenedMessage}`);
+      const msg = `${diagnostic.file.fileName} (${line + 1},${character + 1}): ${flattenedMessage}`;
+      console.error(chalk.red(msg));
     });
 }
 
@@ -45,13 +46,22 @@ const formatHost: ts.FormatDiagnosticsHost = {
   getNewLine: () => ts.sys.newLine
 };
 
-const reportWatchStatusChanged = (diagnostic: ts.Diagnostic) => console.info(ts.formatDiagnostic(diagnostic, formatHost));
-const reportDiagnostic = (diagnostic: ts.Diagnostic) => console.error("Error", diagnostic.code, ":", ts.flattenDiagnosticMessageText( diagnostic.messageText, formatHost.getNewLine()));
+const reportWatchStatusChanged = (diagnostic: ts.Diagnostic) => {
+  const msg = ts.formatDiagnostic(diagnostic, formatHost);
+  const stylized = chalk.greenBright(msg);
+  console.info(stylized)
+};
+
+const reportDiagnostic = (diagnostic: ts.Diagnostic) => {
+  const msg = `Error ${diagnostic.code}: ${ts.flattenDiagnosticMessageText( diagnostic.messageText, formatHost.getNewLine())}`;
+  const stylized = chalk.redBright(msg);
+  console.error(stylized);
+};
 
 const getWatchHost = (): ts.WatchCompilerHostOfConfigFile<ts.EmitAndSemanticDiagnosticsBuilderProgram> => 
   ts.createWatchCompilerHost(
     tsconfig, 
-    {}, 
+    { noEmitOnError: true }, 
     ts.sys, 
     ts.createEmitAndSemanticDiagnosticsBuilderProgram,
     reportDiagnostic,
@@ -59,6 +69,7 @@ const getWatchHost = (): ts.WatchCompilerHostOfConfigFile<ts.EmitAndSemanticDiag
   ); 
 
 let transpileCount = 0;
+let error = false;
 const getProgramMsg = () => `Total time to create program (#${transpileCount})`;
 
 const transpile = (
@@ -77,21 +88,28 @@ const transpile = (
     const result = profile(builder.emit, "Emitted program in");
 
     if (result.emitSkipped) {
-      printDiagnostics(program, result);
+      error = true;
       return builder;
     }
 
     const extensions = retrieveExtensionDetails(program);
     const firstRun = transpileCount === 0;
     generateCodeForExtensions(extensions, program, firstRun, !firstRun && useCaches);
-    if (firstRun) setTsIsReady();
     return builder;
   };
 
-  host.afterProgramCreate = (program) => {
+  host.afterProgramCreate = (semanticProgram) => {
+    const firstRun = transpileCount === 0;
     stop(getProgramMsg());
     transpileCount++;
-    return afterProgramCreate(program);
+    firstRun && !error ? setTsIsReady() : {};
+    if (error) {
+      raiseError();
+      const program = semanticProgram.getProgram();
+      const diagnostics = semanticProgram.getSemanticDiagnostics();
+      printDiagnostics(program, diagnostics);
+    }
+    return afterProgramCreate(semanticProgram);
   }
 
   return profile(() => ts.createWatchProgram(host), "Created watcher in");
@@ -106,10 +124,9 @@ const transpileAllTsExtensions = (options: TranspileOptions) => {
 
     const watcher = profile(() => transpile(options, ...files), "Completed initial transpile in");
     const { doWatch } = options;
-    if (!doWatch) watcher.close();
+    if (!doWatch || error) watcher.close();
   });
 }
 
-reset();
 const options = processArgs();
 transpileAllTsExtensions(options);
