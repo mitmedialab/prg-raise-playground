@@ -1,11 +1,13 @@
+import chalk = require("chalk");
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import path = require("path");
 import ts = require("typescript");
-import { ExtensionMenuDisplayDetails } from "../../../src/typescript-support/types";
-import { profile } from "../../utility/profile";
+import { ExtensionMenuDisplayDetails } from "../../src/typescript-support/types";
+import { profile } from "../../../../scripts/profile";
 import { fillInContentForExtensions } from "./extension";
 import { generateGitIgnoresForExtensions } from "./gitingore";
 import { detailFileName, populateMenuForExtensions, generatedFileWarning } from "./menu";
+import { packages, extensionsFolder } from "../../../../scripts/paths";
 
 export type GenerationCache = ExtensionMenuDisplayDetails & {
   extensionId: string,
@@ -26,12 +28,9 @@ export type ExtensionCodeGenerator = (extensions: Record<string, GenerationDetai
 
 export const cacheFile = "cache.generated.json";
 
-const downLevels = (n: number) => Array<string>(n).fill("..");
+const { gui } = packages;
 
-const pathToSrc = path.resolve(__dirname, ...downLevels(3), "src");
-const pathToExtensionsDir = path.join(pathToSrc, "extensions");
-const guiLib = [...downLevels(4), "scratch-gui", "src", "lib", "libraries", "extensions", "generated"]
-const generatedDirectory = path.resolve(__dirname, ...guiLib);
+const generatedDirectory = path.join(gui, "src", "lib", "libraries", "extensions", "generated");
 const generatedFile = path.join(generatedDirectory, `${detailFileName}.js`);
 const newline = "\n";
 const tab = "\t";
@@ -57,7 +56,7 @@ export default [
 const getFilesByExtension = (program: ts.Program): Record<string, string[]> => 
  program.getSourceFiles()
   .filter(({fileName}) => path.extname(fileName) === ".ts")
-  .map(({fileName}) => path.relative(pathToExtensionsDir, fileName))
+  .map(({fileName}) => path.relative(extensionsFolder, fileName))
   .map(pathToFile => path.parse(pathToFile))
   .filter(parsed => !parsed.dir.startsWith(".."))
   .reduce((filesByExtension, parsed) => {
@@ -88,7 +87,7 @@ export const generateCodeForExtensions = (
   for (const extensionId in extensions) {
     const assetsDirectory = path.join(generatedDirectory, extensionId);
     if (!existsSync(assetsDirectory)) mkdirSync(assetsDirectory);
-    const implementationDirectory = path.join(pathToExtensionsDir, extensionId);
+    const implementationDirectory = path.join(extensionsFolder, extensionId);
     const cached = useCaches ? getCached(implementationDirectory) : undefined;
     extensionsForGeneration[extensionId] = {
       details: extensions[extensionId], 
@@ -103,7 +102,7 @@ export const generateCodeForExtensions = (
   if (isStartUp) writeOutGeneratedFile(extensions);
 
   extensionCodeGenerators.forEach((generate, index) => {
-    profile(() => generate(extensionsForGeneration), `Step ${index} of generation (${generate.name}) took`)
+    profile(() => generate(extensionsForGeneration), chalk.cyan(`Step ${index} of generation (${generate.name}) took`))
   });
 
   for (const extensionId in extensionsForGeneration) {

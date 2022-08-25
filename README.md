@@ -6,13 +6,13 @@ It's a fullblown [fork](https://en.wikipedia.org/wiki/Fork_(software_development
 
 ## ⚡ Quick Start
 
+### 🚧 Project setup
 
-### Project setup
-
-Assuming:
+**Assuming you have:**
 - Node 16 is installed (if not, jump to: ...)
+- VS Code installed with Typescript Extension added (if not, jump to: ...)
 
-Run the following from the command line (NOTE: Check on windows git-bash):
+Run the following from the command line (NOTE for @parker: Check on windows git-bash):
 
 ```shell script
 git clone git@github.com:mitmedialab/prg-extension-boilerplate.git
@@ -26,31 +26,45 @@ npm run init
 # Takes about 1.5 minutes
 
 npm run dev
-# This starts up a development server, serving all the currently implemented extensions
-# Open http://localhost:8601/ in your browser
+# This starts up a development server, serving all the currently implemented extensions.
+# It takes about ~20s to initially startup and serve everything.
+# Open http://localhost:8601/ in your browser (keep refreshing if nothing's coming up)
 ```
 
-### Making your extension
+### 🛠️ Making an extension
+
+To make a new extension, run the following commands
 
 ```shell script
+cd prg-extension-boilerplate/
+# change directory (cd) to the repository (if not already there)
+
 npm run new:extension <folder>
 # for example: npm run new:extension my_awesome_extension
-
-npm run dev
 ```
 
-Now you can make changes, and they will auto-build from the scratch-gui watcher and live-reload!
+The output of the last command should direct you where to find your new extension file (which is an *index.ts* file that lives inside of the `<folder>` you passed to the `new:extension` command).
 
-- render, gui, and vm will auto-build while `scratch-gui`'s `npm start` is running (as in steps above)
-- the blocks component currently requires fully building and re-starting the GUI build:
-    ```shell script
-    # Make your change to scratch-blocks, then:
-    npm run rebuild:blocks
-    ```
-  
-Alternatively, use GitPod!
+Now that we have an *index.ts* file (no worries about editing it yet, it has all valid placeholders), we can start up our development server with the following command:
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/mitmedialab/prg-extension-boilerplate)
+```shell script
+# NOTE: If another development server is already running, make sure to stop it first
+
+npm run dev
+# This command will take ~20s to startup and serve everything to http://localhost:8601/
+```
+
+In your browser, navigate to: http://localhost:8601/ (refresh a couple times if nothings coming up -- likely the [bundling](https://www.freecodecamp.org/news/javascript-modules-part-2-module-bundling-5020383cf306/#:~:text=What%20is%20module%20bundling) process has not completed yet).
+
+Once the scratch environment loads, click on the ![Add extension / open extensions menu button](resources/ExtensionMenu.png "Add extension / open extensions menu button") button in the bottom left corner to open up the extensions menu.
+
+You should find an extension called "Replace me with name of your extension" -- that's yours! Now you just need to edit it to make it your own. 
+
+Open (using [vs code]()) the *index.ts* file that the `new:extension` command generated for you. The documentation of the file should help you get started! 
+
+As long as the development server is still running (meaning the `npm run dev` command is still executing), every change you make will trigger the page to refresh and your changes will be reflected automagically 🪄. 
+
+If your changes cause an error, look at the output of the `npm run dev` command, address the issues, and re-run the `npm run dev` command.
 
 ### 🤔 Troubleshooting
 

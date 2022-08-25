@@ -2,8 +2,8 @@ import { readFileSync, writeFileSync } from "fs";
 import mime = require('mime-types')
 import path = require("path");
 import { ExtensionCodeGenerator, GenerationDetails } from ".";
-import { encode } from "../../../src/extension-support/extension-id-factory";
-import { Extension } from "../../../src/typescript-support/Extension";
+import { encode } from "../../src/extension-support/extension-id-factory";
+import { Extension } from "../../src/typescript-support/Extension";
 
 const populatedConstructorIdentifier = 'var _this = _super !== null && _super.apply(this, arguments) || this;';
 const emptyConstructorIdentifier = 'return _super !== null && _super.apply(this, arguments) || this;';

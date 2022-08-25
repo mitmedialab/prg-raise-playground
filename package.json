@@ -7,14 +7,13 @@
     "clean:build": "rm -rf ./build",
     "move:build:to:root": "mv ./packages/scratch-gui/build ./build",
     "build:vm": "npm run compile:ts --prefix ./packages/scratch-vm",
-    "dev:vm": "npm run reset:ts --prefix ./packages/scratch-vm && npm run watch:ts --prefix ./packages/scratch-vm & WATCH_TS_PID=$! && npm run wait:for:ts --prefix ./packages/scratch-vm",
     "build:gui": "npm run build --prefix ./packages/scratch-gui/",
-    "dev:gui": "npm start --prefix ./packages/scratch-gui/",
     "build": "npm run init:build && npm run clean:build && npm run build:vm && npm run build:gui && npm run move:build:to:root",
-    "dev": "npm run dev:vm && npm run dev:gui && kill $WATCH_TS_PID",
+    "dev": "ts-node ./scripts/dev.ts",
     "rebuild:blocks": "npm run prepublish --prefix ./packages/scratch-blocks && npm run dev"
   },
   "devDependencies": {
-    "lerna": "^3.20.2"
+    "lerna": "^3.20.2",
+    "ts-node": "^10.9.1"
   }
 }

@@ -51,10 +51,14 @@ export type Block<T extends BlockOperation> = {
    * @description
    * The kind of block we're defining, from a predefined list 
    * (shown below, roughly in order from most-to-least common).
-   * * BlockType.Command - A block that accepts 0 or more arguments and likely does something to the sprite / environment (but does not return a value). E.g. 
-   *    * move ___ steps
-   *    * say ____
-   *    * next backdrop
+   * * BlockType.Command - A block that accepts 0 or more arguments and likely does something to the sprite / environment (but does not return a value). 
+   *    * A function that represents a BlockType.Command block might look like:
+   *      * `example_command: (text: string, value: number) => void`
+   *      * Note the `void` return type
+   *    * For reference, below are built-in blocks that are 'commands'
+   *      * move ___ steps
+   *      * say ____
+   *      * next backdrop
    * * BlockType.Reporter - Accepts 0 or more arguments and returns a value. E.g.
    *    * x position
    *    * direction

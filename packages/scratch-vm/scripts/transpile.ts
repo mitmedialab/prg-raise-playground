@@ -4,26 +4,31 @@ import chalk = require("chalk");
 import path = require("path");
 import { retrieveExtensionDetails } from "./typeProbing";
 import { generateCodeForExtensions } from "./codeGeneration";
-import { processArgs } from "./processArgs";
-import { profile, start, stop } from "../utility/profile";
+import { profile, start, stop } from "../../../scripts/profile";
 import { writeFileSync } from "fs";
-import { raiseError, setTsIsReady } from "./interprocessCoordination";
+import { Flag, sendToParent } from "../../../scripts/devComms";
+import { processArgs } from "../../../scripts/processArgs";
+import { extensionsFolder, packages } from "../../../scripts/paths";
 
 export type TranspileOptions = { doWatch: boolean; useCaches: boolean; };
 
-const srcDir = path.resolve(__dirname, "..", "..", "src");
+const srcDir = path.resolve(packages.vm, "src");
 const tsconfig = path.join(__dirname, "tsconfig.json");
 
 const printDiagnostics = (program: ts.Program, diagnostics: readonly ts.Diagnostic[]) => {
+  const unique = <T>(value: T, index: number, self: T[]) => self.indexOf(value) === index;
+
   ts.getPreEmitDiagnostics(program)
     .concat(diagnostics)
-    .forEach(diagnostic => {
+    .map(diagnostic => {
       const flattenedMessage = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n") + "\n";
-      if (!diagnostic.file) return console.error(chalk.red(flattenedMessage));
+      if (!diagnostic.file) return chalk.red(flattenedMessage);
       const { line, character } = ts.getLineAndCharacterOfPosition(diagnostic.file, diagnostic.start!);
       const msg = `${diagnostic.file.fileName} (${line + 1},${character + 1}): ${flattenedMessage}`;
-      console.error(chalk.red(msg));
-    });
+      return chalk.red(msg);
+    })
+    .filter(unique)
+    .forEach(msg => console.error(msg));
 }
 
 const writeOutTsConfig = (files: string[]) => {
@@ -70,14 +75,14 @@ const getWatchHost = (): ts.WatchCompilerHostOfConfigFile<ts.EmitAndSemanticDiag
 
 let transpileCount = 0;
 let error = false;
-const getProgramMsg = () => `Total time to create program (#${transpileCount})`;
+const getProgramMsg = () => chalk.magenta(`Total time to create program (#${transpileCount})`);
 
 const transpile = (
   {useCaches}: TranspileOptions, 
   ...files: string[]
 ): ts.WatchOfConfigFile<ts.EmitAndSemanticDiagnosticsBuilderProgram> => {    
   writeOutTsConfig(files);
-  const host = profile(getWatchHost, "Retrived watch host in");
+  const host = profile(getWatchHost, chalk.green("Retrived watch host in"));
 
   const { createProgram, afterProgramCreate } = host;
   host.createProgram = (rootNames: ReadonlyArray<string>, options, host, oldProgram) => {
@@ -85,7 +90,7 @@ const transpile = (
 
     const builder = createProgram(rootNames, options, host, oldProgram);
     const program = builder.getProgram();
-    const result = profile(builder.emit, "Emitted program in");
+    const result = profile(builder.emit, chalk.yellow("Emitted program in"));
 
     if (result.emitSkipped) {
       error = true;
@@ -102,12 +107,13 @@ const transpile = (
     const firstRun = transpileCount === 0;
     stop(getProgramMsg());
     transpileCount++;
-    firstRun && !error ? setTsIsReady() : {};
     if (error) {
-      raiseError();
       const program = semanticProgram.getProgram();
       const diagnostics = semanticProgram.getSemanticDiagnostics();
       printDiagnostics(program, diagnostics);
+      sendToParent(process, { flag: Flag.TsError });
+    } else if (firstRun) {
+      sendToParent(process, { flag: Flag.InitialTranspileComplete });
     }
     return afterProgramCreate(semanticProgram);
   }
@@ -116,9 +122,7 @@ const transpile = (
 };
 
 const transpileAllTsExtensions = (options: TranspileOptions) => {
-  const extensionsDir = path.join(srcDir, "extensions");
-
-  glob(`${extensionsDir}/**/index.ts`, (err, files) => {
+  glob(`${extensionsFolder}/**/index.ts`, (err, files) => {
     if (err) return console.error(err);
     if (!files) return console.error("No files found");
 
@@ -128,5 +132,15 @@ const transpileAllTsExtensions = (options: TranspileOptions) => {
   });
 }
 
-const options = processArgs();
+const defaults: TranspileOptions = { 
+  doWatch: false, 
+  useCaches: false,
+};
+
+const flagByOption = {
+  doWatch: "watch", 
+  useCaches: "cache"
+};
+
+const options = processArgs<TranspileOptions>(flagByOption, defaults);
 transpileAllTsExtensions(options);

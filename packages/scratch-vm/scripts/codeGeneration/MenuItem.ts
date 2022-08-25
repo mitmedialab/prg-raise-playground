@@ -1,4 +1,4 @@
-import { ExtensionMenuDisplayDetails } from "../../../src/typescript-support/types";
+import { ExtensionMenuDisplayDetails } from "../../src/typescript-support/types";
 
 const tab = "\t";
 const newline = "\n";
