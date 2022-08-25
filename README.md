@@ -12,7 +12,8 @@ It's a fullblown [fork](https://en.wikipedia.org/wiki/Fork_(software_development
 - Node 16 is installed (if not, jump to: ...)
 - VS Code installed with Typescript Extension added (if not, jump to: ...)
 
-Run the following from the command line (NOTE for @parker: Check on windows git-bash):
+Run the following from the command line:
+(NOTE for @parker: Check on windows git-bash)
 
 ```shell script
 git clone git@github.com:mitmedialab/prg-extension-boilerplate.git
@@ -43,9 +44,13 @@ npm run new:extension <folder>
 # for example: npm run new:extension my_awesome_extension
 ```
 
-The output of the last command should direct you where to find your new extension file (which is an *index.ts* file that lives inside of the `<folder>` you passed to the `new:extension` command).
+If succesful, the output of the last command will tell you where to find your new extension file. 
 
-Now that we have an *index.ts* file (no worries about editing it yet, it has all valid placeholders), we can start up our development server with the following command:
+It will be an an *index.ts* file that lives inside of the `<folder>` argument you passed to the `new:extension` command.
+
+Let's not edit the *index.ts* file just yet. 
+
+Instead, let's start up our development server with the following command:
 
 ```shell script
 # NOTE: If another development server is already running, make sure to stop it first
