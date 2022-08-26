@@ -1,6 +1,6 @@
 import type Runtime from '../engine/runtime';
 import { ArgumentType } from './enums';
-import type { ExtensionMenuDisplayDetails, ExtensionBlocks, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, VerboseArgument, Environment } from './types';
+import type { ExtensionMenuDisplayDetails, ExtensionBlocks, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, VerboseArgument, Environment, Menu, DynamicMenu, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters } from './types';
 import Cast from '../util/cast';
 
 /**
@@ -16,29 +16,51 @@ export abstract class Extension
   runtime: Runtime;
 
   private readonly BlockDefinitions: BlockDefinitions<Blocks>;
-
-  private internal_blocks: ExtensionBlockMetadata[];
-  private internal_menus: ExtensionMenuMetadata[];
+  
+  private readonly internal_blocks: ExtensionBlockMetadata[] = [];
+  private readonly internal_menus: ExtensionMenuMetadata[] = [];
 
   constructor(runtime: Runtime) {
     this.runtime = runtime;
     this.init({ runtime });
-    this.internal_blocks = [];
-    this.internal_menus = [];
     const definitions = this.defineBlocks();
-    const menuArrays: MenuItem<any>[] = [];
+    const menus: Menu<any>[] = [];
     for (const key in definitions) {
       const block = definitions[key](this);
-      const info = this.convertToInfo(key, block, menuArrays);
+      const info = this.convertToInfo(key, block, menus);
       this.internal_blocks.push(info);
     }
 
-    for (let index = 0; index < menuArrays.length; index++) {
-      const items = menuArrays[index];
-      this.internal_menus.push({
-        acceptReporters: false,
-        items: items.map(item => Extension.IsPrimitive(item) ? `${item}` : {...item, value: `${item.value}`})
-      });
+    const reporterItemsKey: keyof MenuThatAcceptsReporters<any> = "items";
+    const reporterItemsGetterKey: keyof DynamicMenuThatAcceptsReporters<any> = "getItems";
+    for (const menu of menus) {
+      let acceptReporters = false;
+
+      if (Array.isArray(menu)) {
+        const items: any[] | MenuItem<any>[] = menu;
+        this.addStaticMenu(items, acceptReporters);
+        continue;
+      }
+
+      if (Extension.IsFunction(menu)) {
+        const getItems = menu as DynamicMenu<any>;
+        this.addDynamicMenu(getItems, acceptReporters);
+        continue;
+      }
+
+      acceptReporters = true;
+
+      if (reporterItemsKey in menu) {
+        const nonDynamic = menu as MenuThatAcceptsReporters<any>;
+        this.internal_menus.push({ acceptReporters, items: nonDynamic.items.map(Extension.ConvertMenuItemsToString) });
+        continue;
+      }
+      
+      if (reporterItemsGetterKey in menu) {
+        const dynamicMenu = menu as DynamicMenuThatAcceptsReporters<any>;
+        this.addDynamicMenu(dynamicMenu.getItems, acceptReporters);
+        continue;
+      }
     }
   }
 
@@ -64,32 +86,43 @@ export abstract class Extension
     const {id, internal_blocks: blocks, internal_menus: menus, name, blockIconURI} = this; 
     const info = {id, blocks, name, blockIconURI};
     if (menus) info['menus'] = Object.entries(this.internal_menus).reduce((obj, [key, value]) => {
-      obj[key] = value; return obj
+      obj[key] = value; 
+      return obj;
     }, {});
 
     return info;
+  }
+
+  addStaticMenu(items: MenuItem<any>[], acceptReporters: boolean) {
+    this.internal_menus.push({ 
+      acceptReporters, 
+      items: items.map(Extension.ConvertMenuItemsToString) 
+    });
+  }
+
+  addDynamicMenu(getItems: DynamicMenu<any>, acceptReporters: boolean) {
+    const key = `internal_dynamic_${this.internal_menus.length}`;
+    this[key] = () => {
+      const items = getItems();
+       console.log(items);
+      return items.map(Extension.ConvertMenuItemsToString);
+    };
+    this.internal_menus.push({acceptReporters, items: key});
   }
 
   convertToInfo(key: string, block: Block<any>, menusToAdd: MenuItem<any>[]): ExtensionBlockMetadata {
     const {type, text, operation} = block;
     const args: Argument<any>[] = block.args;
 
-    const displayText = text(...args.map((_, index) => `[${index}]`));
-    const opcode = Extension.GetInternalKey(key);
+    const displayText = Extension.IsFunction(text) 
+      ? (text as unknown as Function)(...args.map((_, index) => `[${index}]`)) 
+      : text;
 
-    const bound = operation.bind(this);
-    this[opcode] = (argsFromScratch, blockUtility) => {
-      const { mutation } = argsFromScratch; // if you need it!
-      // NOTE: Assumption is that args order will be correct since there keys are parsable as ints (i.e. '0', '1', ...)
-      const uncasted = Object.values(argsFromScratch).slice(0, -1);
-      const casted = uncasted.map((value, index) => {
-        const type = Extension.GetArgumentType(args[index]);
-        return Extension.CastToType(type, value)
-      });
-      return bound(...casted, blockUtility); // can add more util params as necessary
-    }
+    type Handler = MenuThatAcceptsReporters<any>['handler'];
+    const handlerKey: keyof MenuThatAcceptsReporters<any> = 'handler';
+    const handlers = args ? new Array<Handler>(args.length).fill(undefined) : undefined;
 
-    const argsInfo: Record<string, ExtensionArgumentMetadata> = args.map(element => {
+    const argsInfo: Record<string, ExtensionArgumentMetadata> = args?.map((element, index) => {
       const entry = {} as ExtensionArgumentMetadata;
       entry.type = Extension.GetArgumentType(element);
 
@@ -98,11 +131,15 @@ export abstract class Extension
       const {defaultValue, options} = element as VerboseArgument<any>;
 
       if (defaultValue !== undefined) entry.defaultValue = defaultValue;
+      if (!options) return entry;
 
-      if (options !== undefined && Array.isArray(options) && options.length > 0) {
-        const alreadyAddedIndex = menusToAdd.indexOf(options);
-        const index = alreadyAddedIndex >= 0 ? alreadyAddedIndex : menusToAdd.push(options) - 1;
-        entry.menu = `${index}`;
+      const alreadyAddedIndex = menusToAdd.indexOf(options);
+      const menuIndex = alreadyAddedIndex >= 0 ? alreadyAddedIndex : menusToAdd.push(options) - 1;
+      entry.menu = `${menuIndex}`;
+      
+      if (handlerKey in options) {
+        const { handler } = options as MenuThatAcceptsReporters<any> | DynamicMenuThatAcceptsReporters<any>;
+        handlers[index] = handler;
       }
       
       return entry;
@@ -111,6 +148,20 @@ export abstract class Extension
       accumulation[`${index}`] = value;
       return accumulation;
     }, {});
+
+    const opcode = Extension.GetInternalKey(key);
+    const bound = operation.bind(this);
+    this[opcode] = (argsFromScratch, blockUtility) => {
+      const { mutation } = argsFromScratch; // if we need it...
+      // NOTE: Assumption is that args order will be correct since their keys are parsable as ints (i.e. '0', '1', ...)
+      const uncasted = Object.values(argsFromScratch).slice(0, -1);
+      const casted = uncasted.map((value, index) => {
+        const handled = handlers[index] ? handlers[index](value) : value;
+        const type = Extension.GetArgumentType(args[index]);
+        return Extension.CastToType(type, handled)
+      });
+      return bound(...casted, blockUtility); // can add more util params as necessary
+    }
 
     return {
       opcode,
@@ -162,5 +213,13 @@ export abstract class Extension
     }
   }
 
+  private static ConvertMenuItemsToString = (item: any | MenuItem<any>) => 
+    Extension.IsPrimitive(item) ? `${item}` : {...item, value: `${item.value}`};
+
   private static IsPrimitive = (query) => query !== Object(query);
+  private static IsFunction = (query) =>
+    Object.prototype.toString.call(query) === "[object Function]" 
+    || "function" === typeof query 
+    || query instanceof Function;
+
 };

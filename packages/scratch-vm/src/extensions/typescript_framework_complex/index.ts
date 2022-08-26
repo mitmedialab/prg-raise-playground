@@ -24,6 +24,22 @@ const enum Animal {
   Pig
 }
 
+const nameByAnimal: Record<Animal, string> = {
+  [Animal.Leopard]: 'leopard',
+  [Animal.Tiger]: 'tiger',
+  [Animal.Gorilla]: 'gorilla',
+  [Animal.Monkey]: 'monkey',
+  [Animal.Pig]: 'pig',
+}
+
+const emojiByAnimal: Record<Animal, string> = {
+  [Animal.Leopard]: '🐆',
+  [Animal.Tiger]: '🐅',
+  [Animal.Gorilla]: '🦍',
+  [Animal.Monkey]: '🐒',
+  [Animal.Pig]: '🐖',
+}
+
 type Blocks = {
   reportId: () => string;
   reportColorChannel: (color: RGBObject, channel: string) => number;
@@ -34,6 +50,8 @@ type Blocks = {
   selectAngle: (angle: number) => number;
   useAnimalMenu1: (animal: Animal) => string;
   useAnimalMenu2: (animal: Animal) => string;
+  addAnimalToCollection: (animal: Animal) => void;
+  chooseBetweenAnimals: (animal: Animal) => string;
   multiplyUsingSelf: (left: number, right: number) => number;
   multiplyUsingThis: (left: number, right: number) => number;
   add: (left: number, right: number) => number;
@@ -42,27 +60,43 @@ type Blocks = {
 class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
   lhsOptions: number[];
   animals: MenuItem<Animal>[];
+  collection: Animal[] = [ Animal.Gorilla ];
+  getAnimalCollection: () => MenuItem<Animal>[];
   state: number = 0;
 
   init() { 
     this.lhsOptions = [3, 4, 5];
-    this.animals = [
-      {text: '🐆', value: Animal.Leopard},
-      {text: '🐅', value: Animal.Tiger},
-      {text: '🦍', value: Animal.Gorilla},
-      {text: '🐒', value: Animal.Monkey},
-      {text: '🐖', value: Animal.Pig},
-    ];
+    this.animals = Object.entries(emojiByAnimal).map(([animal, emoji]) => ({
+      value: parseInt(animal), text: emoji
+    }));
+
+    function getRandomInt(max: number, exclude?: number) {
+      const get = () => Math.floor(Math.random() * max);
+      if (exclude === undefined) return get();
+      let random = exclude;
+      while (random === exclude) {
+        random = get();
+      }
+      return random;
+    }
+
+    this.getAnimalCollection = () => this.collection.map(
+      animal => ({ 
+        text: emojiByAnimal[animal], 
+        value: animal 
+      })
+    );
   }
 
   defineBlocks(): BlockDefinitions<Blocks> {
     return {
+
       reportId: () => ({
         type: BlockType.Reporter,
-        args: [],
-        text: () => 'My Extension ID is',
+        text: 'My Extension ID is',
         operation: () => this.id
       }),
+
       reportColorChannel: () => ({
         type: BlockType.Reporter,
         args: [ 
@@ -105,17 +139,15 @@ class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
         }
       }),
 
-      'incrementStateViaThis': () => ({
+      incrementStateViaThis: () => ({
         type: BlockType.Reporter,
-        args: [],
-        text: () => 'Increment (via \'this\')',
+        text: 'Increment (via \'this\')',
         operation: () => ++this.state
       }),
 
       'incrementStateViaSelf': (self: TypeScriptFrameworkExample) => ({
         type: BlockType.Reporter,
-        args: [],
-        text: () => 'Increment (via \'self\')',
+        text: 'Increment (via \'self\')',
         operation: () => ++self.state
       }),
 
@@ -135,22 +167,29 @@ class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
 
       'useAnimalMenu1': () => ({
         type: BlockType.Reporter,
-        args: [{ type: ArgumentType.Number, options: this.animals}],
-        text: (animal) => `This is a ${animal}`,
-        operation: (animal) => {
-          switch (animal) {
-            case Animal.Leopard:
-              return 'leopard';
-            case Animal.Tiger:
-              return 'tiger';
-            case Animal.Gorilla:
-              return 'gorilla';
-            case Animal.Monkey:
-              return 'monkey';
-            case Animal.Pig:
-              return 'pig';
+        args: [
+          { 
+            type: ArgumentType.Number, 
+            options: {
+              items: this.animals,
+              handler: (input: any) => {
+                switch (input) {
+                  case `${Animal.Leopard}`:
+                  case `${Animal.Tiger}`:
+                  case `${Animal.Gorilla}`:
+                  case `${Animal.Monkey}`:
+                  case `${Animal.Pig}`:
+                    return input as Animal;
+                  default:
+                    alert(`You silly goose! ${input} is not an animal.`);
+                    return Animal.Leopard;
+                }
+              }
+            }
           }
-        },
+        ],
+        text: (animal) => `This is a ${animal}`,
+        operation: (animal) => nameByAnimal[animal],
       }),
 
       'useAnimalMenu2': (self: TypeScriptFrameworkExample) => ({
@@ -173,12 +212,27 @@ class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
         },
       }),
 
+      addAnimalToCollection: (self: TypeScriptFrameworkExample) => ({
+        type: BlockType.Command,
+        args: [{ type: ArgumentType.Number, options: self.animals }],
+        text: (animal) => `Add ${animal} to collection`,
+        operation: (animal) => this.collection.push(animal),
+      }),
+
+
+      chooseBetweenAnimals: (self: TypeScriptFrameworkExample) => ({
+        type: BlockType.Reporter,
+        args: [{ type: ArgumentType.Number, options: self.getAnimalCollection }],
+        text: (animal) => `Animals in collection: ${animal}`,
+        operation: (animal) => nameByAnimal[animal],
+      }),
+
       // Example of class methods implementing a 'definition'
-      'multiplyUsingSelf': this.multiplyUsingSelf,
-      'multiplyUsingThis': this.multiplyUsingThis.bind(this), // NOTE: We must bind 'this' since it is used by our method
+      multiplyUsingSelf: this.multiplyUsingSelf,
+      multiplyUsingThis: this.multiplyUsingThis.bind(this), // NOTE: We must bind 'this' since it is used by our method
 
       // Example of an external 'definition'
-      'add': addDefinition,
+      add: addDefinition,
     }
   }
 

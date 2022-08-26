@@ -19,17 +19,24 @@ class SimpleTypescript extends Extension<Details, {
     return {
       log: () => ({
         type: BlockType.Command,
-        args: [ArgumentType.String],
+        args: [
+          {
+            type: ArgumentType.String, 
+            options: {
+              items: ['1', '2', '3'],
+              handler: (x: any) => {
+                if (typeof x === 'string' || x instanceof String) return x as string;
+                return `Unsopported input: ${x}`
+              }
+            }
+          }],
         text: (msg) => `Log ${msg} to the console`,
         operation: (msg) => console.log(msg)
       }),
       dummy: () => ({
         type: BlockType.Loop,
-        args: [],
-        text: () => `Dummy loop`,
-        operation: (util) => {
-          util.startBranch(Branch.First, true);
-        }
+        text: "Dummy loop",
+        operation: util => util.startBranch(Branch.First, true)
       })
     }
   }

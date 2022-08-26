@@ -14,15 +14,24 @@ export type MenuItem<T> = T | {
   text: string;
 };
 
+export type DynamicMenu<T> = () =>  MenuItem<T>[];
+
+export type DynamicMenuThatAcceptsReporters<T> = {
+  getItems: DynamicMenu<T>
+  handler: (reported: any) => T;
+};
+
 export type MenuThatAcceptsReporters<T> = {
   items: MenuItem<T>[],
   handler: (reported: any) => T;
 };
 
+export type Menu<T> = MenuItem<T>[] | MenuThatAcceptsReporters<T> | DynamicMenu<T> | DynamicMenuThatAcceptsReporters<T>;
+
 export type VerboseArgument<T> = {
   type: ScratchArgument<T>;
   defaultValue?: T | undefined;
-  options?: MenuItem<T>[] | MenuThatAcceptsReporters<T> | undefined;
+  options?: Menu<T>;
 };
 
 export type Argument<T> = VerboseArgument<T> | ScratchArgument<T>;
@@ -45,6 +54,8 @@ type ToArguments<T extends any[]> =
   : [];
 
 type ParamsAndUtility<T extends BlockOperation> = [...params: Parameters<T>, util: BlockUtility];
+
+type NonEmptyArray<T> = [T, ...T[]];
 
 export type Block<T extends BlockOperation> = {
   /**
@@ -84,9 +95,18 @@ export type Block<T extends BlockOperation> = {
    * 
    */
   operation: (...params: ParamsAndUtility<T>) => ReturnType<T>;
-  args: ToArguments<Parameters<T>>;
-  text: (...params: Parameters<T>) => string;
-}
+  text: Parameters<T> extends NonEmptyArray<any> ? (...params: Parameters<T>) => string : string;
+} & (Parameters<T> extends NonEmptyArray<any> ? { 
+  /**
+   * @description The args
+   */
+  args: ToArguments<Parameters<T>> 
+} : {
+  /**
+   * @description The args field should not be defined for blocks that take no arguments
+   */
+  args?: never
+});
 
 export type ExtensionMenuDisplayDetails = {
   name: string;
@@ -242,7 +262,7 @@ export type ExtensionDynamicMenu = string;
 
 /** Items in an extension menu. */
 export type ExtensionMenuItems = {
-  items: Array<ExtensionMenuItemSimple | ExtensionMenuItemComplex>, 
+  items: Array<ExtensionMenuItemSimple | ExtensionMenuItemComplex> | ExtensionDynamicMenu, 
   acceptReporters: boolean 
 };
 
