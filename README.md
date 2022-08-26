@@ -22,8 +22,9 @@ cd prg-extension-boilerplate/
 # change directory (cd) to the repository
 
 npm run init
-# This will symlink the packages together to allow for seamless local development, and installs dependencies for each package. This should only need to be ran once (unless you checkout a branch that adds new package dependencies).
-# Takes about 1.5 minutes
+# This will symlink the packages together to allow for seamless local development, and installs dependencies for each package. 
+# This should only need to be ran once (unless you checkout a branch that adds new package dependencies).
+# Takes ~1.5 minutes
 
 npm run dev
 # This starts up a development server, serving all the currently implemented extensions.
@@ -38,7 +39,7 @@ npm run dev
 To make a new extension, run the following command
 
 ```shell script
-# First, change directory (cd) to prg-extension-boilerplate/ (if not already there)
+# First, change directory (cd) to prg-extension-boilerplate/ if not already there
 
 npm run new:extension <folder to contain extension>
 # for example: npm run new:extension my_awesome_extension
@@ -90,8 +91,6 @@ npm run dev
 
 
 In your browser, navigate to: http://localhost:8601/ (refresh a couple times if nothings coming up -- likely the [bundling](https://www.freecodecamp.org/news/javascript-modules-part-2-module-bundling-5020383cf306/#:~:text=What%20is%20module%20bundling) process has not completed yet).
-
-Once the scratch environment loads, click on the ![Add extension / open extensions menu button](resources/ExtensionMenu.png "Add extension / open extensions menu button") button in the bottom left corner to open up the extensions menu.
 
 You should find an extension called "Replace me with name of your extension" -- that's yours! Now you just need to edit it to make it your own. 
 
