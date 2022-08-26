@@ -10,6 +10,7 @@
     "build:gui": "npm run build --prefix ./packages/scratch-gui/",
     "build": "npm run init:build && npm run clean:build && npm run build:vm && npm run build:gui && npm run move:build:to:root",
     "dev": "ts-node ./scripts/dev.ts",
+    "new:extension": "ts-node ./packages/scratch-vm/scripts/factory.ts",
     "rebuild:blocks": "npm run prepublish --prefix ./packages/scratch-blocks && npm run dev"
   },
   "devDependencies": {

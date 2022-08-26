@@ -1,6 +1,6 @@
 # ✨ PRG Scratch Extension Development Environment
 
-This repository is your one-stop-shop for developing scratch extensions for PRG curricula.
+This repository is your one-stop-shop for developing [scratch extensions](https://en.scratch-wiki.info/wiki/Extension) for PRG curricula.
 
 It's a fullblown [fork](https://en.wikipedia.org/wiki/Fork_(software_development)) of the official Scratch codebase, which the [Personal Robotics Group](https://robots.media.mit.edu/) (PRG) manages and extends to meet its needs. 
 
@@ -8,12 +8,11 @@ It's a fullblown [fork](https://en.wikipedia.org/wiki/Fork_(software_development
 
 ### 🚧 Project setup
 
-**Assuming you have:**
-- Node 16 is installed (if not, jump to: ...)
+Assuming you have...
+- Node <=16 is installed (if not, jump to: ...)
 - VS Code installed with Typescript Extension added (if not, jump to: ...)
 
 Run the following from the command line:
-(NOTE for @parker: Check on windows git-bash)
 
 ```shell script
 git clone git@github.com:mitmedialab/prg-extension-boilerplate.git
@@ -32,21 +31,51 @@ npm run dev
 # Open http://localhost:8601/ in your browser (keep refreshing if nothing's coming up)
 ```
 
+(NOTE for @parker: Check above^^^ on Windows)
+
 ### 🛠️ Making an extension
 
-To make a new extension, run the following commands
+To make a new extension, run the following command
 
 ```shell script
-cd prg-extension-boilerplate/
-# change directory (cd) to the repository (if not already there)
+# First, change directory (cd) to prg-extension-boilerplate/ (if not already there)
 
-npm run new:extension <folder>
+npm run new:extension <folder to contain extension>
 # for example: npm run new:extension my_awesome_extension
 ```
 
 If succesful, the output of the last command will tell you where to find your new extension file. 
 
-It will be an an *index.ts* file that lives inside of the `<folder>` argument you passed to the `new:extension` command.
+The documentation in this file (*index.ts*) should help you get started, or hop down to our full tutorial: [From 0 to Extension](#from-0-to-extension)
+
+Once you're ready to test out your extension, run the following commands:
+
+```shell script
+# NOTE: If another development server is already running, make sure to stop it first
+
+npm run dev
+# This command will take ~20s to startup and serve everything to http://localhost:8601/
+```
+
+Then, open http://localhost:8601/ in your browser (refresh a couple times if nothings coming up -- likely the [bundling](https://www.freecodecamp.org/news/javascript-modules-part-2-module-bundling-5020383cf306/#:~:text=What%20is%20module%20bundling) process has not completed yet).
+
+Last, ollow the 'Adding Extensions' guidance in the [official extension documentation](https://en.scratch-wiki.info/wiki/Extension) to locate your extension and add it to the environment. 
+
+As long as the development server is running (meaning the `npm run dev` command is still executing), every change you make will trigger the page to refresh and your changes will be reflected automagically 🪄. 
+
+#### 🥋 Advanced
+
+If you're a pro, use the following command to make a new extension that contains no documentation. 
+
+```shell script
+# First, change directory (cd) to prg-extension-boilerplate/ (if not already there)
+
+npm run new:extension <folder to contain extension> barebones # Note the 'barenones' at the end
+```
+
+### Delete 
+
+It will be an an *index.ts* file that lives inside of the `<folder>` argument you passed to the `new:extension` command, but a few leve.
 
 Let's not edit the *index.ts* file just yet. 
 
@@ -59,6 +88,7 @@ npm run dev
 # This command will take ~20s to startup and serve everything to http://localhost:8601/
 ```
 
+
 In your browser, navigate to: http://localhost:8601/ (refresh a couple times if nothings coming up -- likely the [bundling](https://www.freecodecamp.org/news/javascript-modules-part-2-module-bundling-5020383cf306/#:~:text=What%20is%20module%20bundling) process has not completed yet).
 
 Once the scratch environment loads, click on the ![Add extension / open extensions menu button](resources/ExtensionMenu.png "Add extension / open extensions menu button") button in the bottom left corner to open up the extensions menu.
@@ -70,6 +100,8 @@ Open (using [vs code]()) the *index.ts* file that the `new:extension` command ge
 As long as the development server is still running (meaning the `npm run dev` command is still executing), every change you make will trigger the page to refresh and your changes will be reflected automagically 🪄. 
 
 If your changes cause an error, look at the output of the `npm run dev` command, address the issues, and re-run the `npm run dev` command.
+
+## From 0 To Extension
 
 ### 🤔 Troubleshooting
 

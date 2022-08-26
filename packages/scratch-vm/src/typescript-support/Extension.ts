@@ -1,6 +1,6 @@
 import type Runtime from '../engine/runtime';
 import { ArgumentType } from './enums';
-import type { ExtensionMenuDisplayDetails, ExtensionBlocks, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, VerboseArgument } from './types';
+import type { ExtensionMenuDisplayDetails, ExtensionBlocks, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, VerboseArgument, Environment } from './types';
 import Cast from '../util/cast';
 
 /**
@@ -57,7 +57,7 @@ export abstract class Extension
    */
   readonly blockIconURI: never;
 
-  abstract init(runtime: Runtime);
+  abstract init(env: Environment);
   abstract defineBlocks(): BlockDefinitions<Blocks>;
 
   getInfo(): ExtensionMetadata  {

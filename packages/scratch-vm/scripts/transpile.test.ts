@@ -1,7 +1,7 @@
 import glob = require("glob");
 import path = require("path");
 import ts = require("typescript");
-import { ExtensionMenuDisplayDetails, RequiredKeys } from "../../src/typescript-support/types";
+import { ExtensionMenuDisplayDetails, RequiredKeys } from "../src/typescript-support/types";
 import { retrieveExtensionDetails } from "./typeProbing";
 import { location, typeCount } from "./typeProbing/extensionArchetypes";
 import type { DisplayDetails } from "./typeProbing/extensionArchetypes";

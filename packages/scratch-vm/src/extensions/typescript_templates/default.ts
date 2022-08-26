@@ -33,7 +33,6 @@ class ExtensionNameGoesHere extends Extension<Details, {
           // Replace with what the block should do! 
         }
       }),
-
      }
   }
 }

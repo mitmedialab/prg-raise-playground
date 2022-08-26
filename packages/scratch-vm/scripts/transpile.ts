@@ -13,7 +13,7 @@ import { extensionsFolder, packages } from "../../../scripts/paths";
 export type TranspileOptions = { doWatch: boolean; useCaches: boolean; };
 
 const srcDir = path.resolve(packages.vm, "src");
-const tsconfig = path.join(__dirname, "tsconfig.json");
+const tsconfig = path.join(__dirname, "tsconfig.generated.json");
 
 const printDiagnostics = (program: ts.Program, diagnostics: readonly ts.Diagnostic[]) => {
   const unique = <T>(value: T, index: number, self: T[]) => self.indexOf(value) === index;

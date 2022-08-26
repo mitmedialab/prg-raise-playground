@@ -1,7 +1,7 @@
 import ts = require("typescript");
 import path = require("path");
-import { ExtensionMenuDisplayDetails, KeysWithValuesOfType, UnionToTuple } from "../../src/typescript-support/types";
 import assert = require("assert");
+import { ExtensionMenuDisplayDetails, KeysWithValuesOfType, UnionToTuple } from "../../src/typescript-support/types";
 
 export const retrieveExtensionDetails = (program: ts.Program, testOverride: boolean = false): Record<string, ExtensionMenuDisplayDetails> => {
   const details: Record<string, ExtensionMenuDisplayDetails> = {}; 
