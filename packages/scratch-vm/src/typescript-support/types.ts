@@ -17,12 +17,14 @@ export type MenuItem<T> = T | {
 export type DynamicMenu<T> = () =>  MenuItem<T>[];
 
 export type DynamicMenuThatAcceptsReporters<T> = {
-  getItems: DynamicMenu<T>
+  getItems: DynamicMenu<T>,
+  acceptsReporters: true,
   handler: (reported: any) => T;
 };
 
 export type MenuThatAcceptsReporters<T> = {
   items: MenuItem<T>[],
+  acceptsReporters: true,
   handler: (reported: any) => T;
 };
 
@@ -38,6 +40,17 @@ export type Argument<T> = VerboseArgument<T> | ScratchArgument<T>;
 
 export type RGBObject = { r: number, g: number, b: number };
 export type Matrix = boolean[][];
+
+export type TypeByArgumentType = {
+  [ArgumentType.Color]: RGBObject,
+  [ArgumentType.Matrix]: boolean[][],
+  [ArgumentType.Number]: number,
+  [ArgumentType.Angle]: number,
+  [ArgumentType.Note]: number,
+  [ArgumentType.String]: string,
+  [ArgumentType.Boolean]: boolean,
+  [ArgumentType.Image]: string, // TODO
+}
 
 export type ScratchArgument<T> =
   T extends RGBObject ? ArgumentType.Color :

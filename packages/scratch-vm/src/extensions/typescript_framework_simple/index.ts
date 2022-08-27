@@ -24,10 +24,11 @@ class SimpleTypescript extends Extension<Details, {
             type: ArgumentType.String, 
             options: {
               items: ['1', '2', '3'],
-              handler: (x: any) => {
-                if (typeof x === 'string' || x instanceof String) return x as string;
-                return `Unsopported input: ${x}`
-              }
+              acceptsReporters: true,
+              handler: (x: any) => Extension.TryCastToArgumentType(ArgumentType.String, x, () => {
+                alert(`Unsopported input: ${x}`);
+                return "";
+              })
             }
           }],
         text: (msg) => `Log ${msg} to the console`,

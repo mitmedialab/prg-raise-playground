@@ -70,16 +70,6 @@ class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
       value: parseInt(animal), text: emoji
     }));
 
-    function getRandomInt(max: number, exclude?: number) {
-      const get = () => Math.floor(Math.random() * max);
-      if (exclude === undefined) return get();
-      let random = exclude;
-      while (random === exclude) {
-        random = get();
-      }
-      return random;
-    }
-
     this.getAnimalCollection = () => this.collection.map(
       animal => ({ 
         text: emojiByAnimal[animal], 
@@ -172,6 +162,7 @@ class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
             type: ArgumentType.Number, 
             options: {
               items: this.animals,
+              acceptsReporters: true,
               handler: (input: any) => {
                 switch (input) {
                   case `${Animal.Leopard}`:

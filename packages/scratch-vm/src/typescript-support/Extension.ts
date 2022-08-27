@@ -1,6 +1,6 @@
 import type Runtime from '../engine/runtime';
 import { ArgumentType } from './enums';
-import type { ExtensionMenuDisplayDetails, ExtensionBlocks, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, VerboseArgument, Environment, Menu, DynamicMenu, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters } from './types';
+import type { ExtensionMenuDisplayDetails, ExtensionBlocks, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, VerboseArgument, Environment, Menu, DynamicMenu, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters, TypeByArgumentType } from './types';
 import Cast from '../util/cast';
 
 /**
@@ -104,7 +104,6 @@ export abstract class Extension
     const key = `internal_dynamic_${this.internal_menus.length}`;
     this[key] = () => {
       const items = getItems();
-       console.log(items);
       return items.map(Extension.ConvertMenuItemsToString);
     };
     this.internal_menus.push({acceptReporters, items: key});
@@ -171,6 +170,20 @@ export abstract class Extension
     }
   }
 
+  static TryCastToArgumentType = <T extends ArgumentType>(
+    argumentType: T, 
+    value: any, 
+    onFailure: (value: any) => TypeByArgumentType[T]
+  ): TypeByArgumentType[T] => {
+    try {
+      const casted = Extension.CastToType(argumentType, value);
+      return casted as TypeByArgumentType[T];
+    }
+    catch {
+      return onFailure(value);
+    }
+  }
+
   private static GetInternalKey = (key: string) => `internal_${key}`;
 
   private static GetArgumentType = <T>(arg: Argument<T>): ArgumentType => 
@@ -221,5 +234,6 @@ export abstract class Extension
     Object.prototype.toString.call(query) === "[object Function]" 
     || "function" === typeof query 
     || query instanceof Function;
-
+  
+  private static IsString = (query) => typeof query === 'string' || query instanceof String;
 };
