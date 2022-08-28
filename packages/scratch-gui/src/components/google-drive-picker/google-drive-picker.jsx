@@ -1,7 +1,12 @@
-/*
-Inspiration code:
-- Primary: https://github.com/sdoomz/react-google-picker/blob/master/src/react-google-picker.js
-- Updating to new Google Sign in flow: https://github.com/Jose-cd/React-google-drive-picker/blob/master/src/index.tsx
+/**
+* This file was added to overcome issues with existing npm packages that:
+*   (a) https://github.com/sdoomz/react-google-picker/blob/master/src/react-google-picker.js
+*       don't ask for an app id making it impossible to pick files "shared with me" (throws a 404 error.)
+*       We copied most of this code and adapted it to the reactjs file of the code in this repo.
+*
+*   (b) https://github.com/Jose-cd/React-google-drive-picker/blob/master/src/index.tsx
+*       insists on using the "drive.readonly" scope which is sensitive. This scope is unecessary and would require app verification.
+*       We copied bits of this code to start using the new Google sign in flow
 */
 
 import React from 'react';
@@ -35,18 +40,6 @@ class GoogleChooser extends React.Component {
     }
   }
 
-  isGoogleReady() {
-    return !!window.gapi;
-  }
-
-  isGoogleAuthReady() {
-    return !!google.accounts;
-  }
-
-  isGooglePickerReady() {
-    return !!window.google.picker;
-  }
-
   onClientLoad() {
     window.gapi.client.init({
         apiKey: this.props.developerKey,
@@ -61,6 +54,18 @@ class GoogleChooser extends React.Component {
     window.gapi.load('picker');
   }
 
+  isGoogleReady() {
+    return !!window.gapi;
+  }
+
+  isGoogleAuthReady() {
+    return !!google.accounts;
+  }
+
+  isGooglePickerReady() {
+    return !!window.google.picker;
+  }
+
   doAuth(callback) {
     const client = google.accounts.oauth2.initTokenClient({
         client_id: this.props.clientId,
@@ -73,7 +78,16 @@ class GoogleChooser extends React.Component {
 
   onChoose() {
     if (!this.isGoogleReady() || !this.isGoogleAuthReady() || !this.isGooglePickerReady() || this.props.disabled) {
-        console.log("Some api is missing:", this.isGoogleReady(), this.isGoogleAuthReady(), this.isGooglePickerReady());
+        console.error("Some api is missing:");
+        if (!this.isGoogleReady()) {
+          console.log("\tGoogle API");
+        }
+        if (!this.isGoogleAuthReady()) {
+          console.log("\tGoogle Auth");
+        }
+        if (!this.isGoogleReady()) {
+          console.log("\tGoogle Picker");
+        }
       return null;
     }
 
