@@ -29,7 +29,7 @@ import SB3Downloader from '../../containers/sb3-downloader.jsx';
 import DeletionRestorer from '../../containers/deletion-restorer.jsx';
 import TurboMode from '../../containers/turbo-mode.jsx';
 import MenuBarHOC from '../../containers/menu-bar-hoc.jsx';
-import GooglePicker from 'react-google-picker';
+import GoogleChooser from '../google-drive-picker/google-drive-picker.jsx';
 
 import {setProjectTitle} from '../../reducers/project-title';
 import {openTipsLibrary} from '../../reducers/modals';
@@ -141,10 +141,10 @@ const MenuItemTooltip = ({id, isRtl, children, className}) => (
     </ComingSoonTooltip>
 );
 
+const APP_ID = '906634949042'; // first part of client ID
 const CLIENT_ID = '906634949042-5jbc7q594e69spg2i0bkt9a14iojvtsp.apps.googleusercontent.com';
 const DEVELOPER_KEY = 'AIzaSyDRoOjwaDXOxq4cda1nrCVLaVQvTCh5GYE';
-const DRIVE_SCOPE = ['https://www.googleapis.com/auth/drive.file',
-                     'https://www.googleapis.com/auth/drive.readonly'];
+const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
 
 
 MenuItemTooltip.propTypes = {
@@ -606,7 +606,9 @@ class MenuBar extends React.Component {
                                                 id="gui.menuBar.saveToDrive"
                                             />
                                         </MenuItem>
-                                        <GooglePicker clientId={CLIENT_ID}
+                                        <GoogleChooser 
+                                            appId={APP_ID}
+                                            clientId={CLIENT_ID}
                                             developerKey={DEVELOPER_KEY}
                                             scope={DRIVE_SCOPE}
                                             onAuthenticate={this.handleDriveAuthenticate}
@@ -625,7 +627,7 @@ class MenuBar extends React.Component {
                                                     id="gui.menuBar.loadFromDrive"
                                                 />
                                             </MenuItem>
-                                        </GooglePicker>
+                                        </GoogleChooser>
                                     </MenuSection>
                                 </MenuBarMenu>
                             </div>
