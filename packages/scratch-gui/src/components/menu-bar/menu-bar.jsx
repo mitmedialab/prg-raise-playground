@@ -30,7 +30,8 @@ import SB3Downloader from '../../containers/sb3-downloader.jsx';
 import DeletionRestorer from '../../containers/deletion-restorer.jsx';
 import TurboMode from '../../containers/turbo-mode.jsx';
 import MenuBarHOC from '../../containers/menu-bar-hoc.jsx';
-import GooglePicker from 'react-google-picker';
+//import GooglePicker from 'react-google-picker';
+import GoogleChooser from '../google-drive-picker/google-drive-picker.jsx'
 
 import {showAlertWithTimeout} from '../../reducers/alerts';
 import {openTipsLibrary} from '../../reducers/modals';
@@ -81,8 +82,11 @@ import sharedMessages from '../../lib/shared-messages';
 
 import loadScript from 'load-script';
 
-const GOOGLE_SDK_URL = 'https://apis.google.com/js/api.js';
-let scriptLoadingStarted = false;
+const GOOGLE_API_URL = 'https://apis.google.com/js/api.js';
+const GIS_URL = "https://accounts.google.com/gsi/client";
+let gAPIScriptLoadingStarted = false;
+let gisScriptLoadingStarted = false;
+let gisTokenClient;
 
 const ariaMessages = defineMessages({
     language: {
@@ -151,10 +155,10 @@ MenuItemTooltip.propTypes = {
     isRtl: PropTypes.bool
 };
 
-const CLIENT_ID = '906634949042-5jbc7q594e69spg2i0bkt9a14iojvtsp.apps.googleusercontent.com';
-const DEVELOPER_KEY = 'AIzaSyDRoOjwaDXOxq4cda1nrCVLaVQvTCh5GYE';
-const DRIVE_SCOPE = ['https://www.googleapis.com/auth/drive.file'];
-                    // 'https://www.googleapis.com/auth/drive.readonly'];
+const CLIENT_ID = '348030700986-2tim2ccngkgqpqrjg1jcad4h45p3407o.apps.googleusercontent.com';
+const APP_ID = '348030700986';
+const DEVELOPER_KEY = 'AIzaSyDmUDX7J8tdsz3G-agX-7uAQ_kBVNWm9js';
+const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
 
 class MenuBar extends React.Component {
     constructor (props) {
@@ -187,11 +191,11 @@ class MenuBar extends React.Component {
         if(this.isGoogleReady()) {
             // google api is already exists
             // init immediately
-            this.onApiLoad();
-        } else if (!scriptLoadingStarted) {
-            // load google api and the init
-            scriptLoadingStarted = true;
-            loadScript(GOOGLE_SDK_URL, this.onApiLoad)
+            this.onGapiLoad();
+        } else if (!gAPIScriptLoadingStarted) {
+            // load google api then init
+            gAPIScriptLoadingStarted = true;
+            loadScript(GOOGLE_API_URL, this.onGapiLoad);
         }
     }
     componentWillUnmount () {
@@ -306,20 +310,11 @@ class MenuBar extends React.Component {
         }
     }
 
-    doAuth(callback) {
-        window.gapi.auth.authorize({
-            client_id: CLIENT_ID,
-            scope: DRIVE_SCOPE,
-            immediate: false
-            },
-            callback
-        );
-    }
     handleClickLoadProjectLink() {
         // TODO make Google drive and One Drive links work
         // https://drive.google.com/uc?export=download&id=1Xrgcz-0hQZyzYq8KDIoBPY2GSuxIaIZQ
         // https://mitprod-my.sharepoint.com/:u:/g/personal/randiw12_mit_edu/EbyH2DBw2X5Mr45Ri1gBuz4BHmklUEuHd7atP1oUvIODSQ?e=pR6T84&download=1
-        // gets 302 error
+        // gets 302, unauthorized error
         let templateLink = "https://www.dropbox.com/s/o8jegh940y7f7qc/SimpleProject.sb3";
         let url = window.prompt("Enter project url (e.g. from Dropbox or Github)", templateLink);
 
@@ -328,110 +323,68 @@ class MenuBar extends React.Component {
                 this.props.intl.formatMessage(sharedMessages.replaceProjectWarning)
             );
             if (readyToReplaceProject) {
-                if (url.includes("drive.google.com")) {
-                    this.handleLoadGDriveProject(url);
-                } else {
-                    // Link is not related to Google Drive
-                    this.props.onReceivedProjectTitle(this.getProjectTitleFromFilename(url));
-                    this.setState({
-                        fileId: null
-                    });
-                    this.props.vm.downloadProjectFromURLDirect(url);
-                }
-            }
-        }
-        this.props.onRequestCloseFile();
-    }
-    handleLoadGDriveProject(url) {
-        // make sure user has logged into Google Drive
-        if (!this.state.authToken) {
-            this.doAuth(response => {
-                if (response.access_token) {
-                    this.handleDriveAuthenticate(response.access_token);
-                    this.handleLoadGDriveProject(url);
-                }
-            });
-            this.props.onRequestCloseFile();
-            return;
-        }
-
-        // get file id
-        const gDriveRegex = /\/d\/[A-Za-z0-9_-]+\//;                    
-        const found = url.match(gDriveRegex);
-        let fileId = "";
-        if (found.length > 0) 
-            fileId = found[0].substring(3, found[0].length-1);
-
-        // make a copy of the file for this user
-        window.gapi.client.drive.files.copy({
-            fileId: fileId
-        }).then((response) => {
-            if (response.status == 200) {
-                this.setState({
-                    fileId: response.result.id
+                this.props.vm.downloadProjectFromURLDirect(url);	
+                	
+                this.props.onReceivedProjectTitle(this.getProjectTitleFromFilename(url));	
+                this.setState({	
+                    fileId: null	
                 });
-                
-                url = "https://www.googleapis.com/drive/v3/files/" + response.result.id + "/?alt=media;" + this.state.authToken;
-                this.props.onReceivedProjectTitle(this.getProjectTitleFromFilename(response.result.name));
-                
-                this.props.vm.downloadProjectFromURLDirect(url);
             }
-        }).catch((error) => {
-            if (error.status == 404) {
-                alert("Error: Either the link is invalid or you do not have access to this file.");
-            } else {
-                console.log("Got response error:");
-                console.log(response);
-            }
-        });
-    }
-    handleClickDriveSave() {
-        // make sure user has logged into Google Drive
-        if (!this.state.authToken) {
-            this.doAuth(response => {
-                if (response.access_token) {
-                    this.handleDriveAuthenticate(response.access_token);
-                    this.handleClickDriveSave();
-                }
-            });
-            this.props.onRequestCloseFile();
-            return;
         }
-
-        // check if we have already created file
-        let fileId = this.state.fileId;
-        if (!fileId) {
-            if (this.isGoogleDriveReady()) {
-                let fileName = prompt("Name your project", this.props.projectTitle);
-
-                if (fileName != null && fileName != "") {
-                    window.gapi.client.drive.files.create({
-                        name: fileName + ".sb3",
-                        mimeType: "application/x-zip"
-                    }).then((response) => {
-                        if (response.status == 200) {
-                            this.setState({
-                                fileId: response.result.id
-                            });
-                            this.handleClickDriveSave();
-                        }
-                    });
-                }
-            }
-
-            this.props.onRequestCloseFile();
-            return;
-        }
-
-        const url = "https://www.googleapis.com/upload/drive/v3/files/" + fileId + "?uploadType=media;" + this.state.authToken;
-        this.props.vm.uploadProjectToURL(url);
-        
-        // this one doesn't seem to work
-        this.props.onShowSaveSuccessAlert();
-
-        // show alert that we are saving project
-        window.alert("Project saved");
         this.props.onRequestCloseFile();
+    }
+    
+    handleClickDriveSave() {
+        gisTokenClient.callback = (resp) => {
+            if (resp.error !== undefined) {
+                console.log("Authentication error: " + resp.error);
+            }
+
+            // got user access token
+            console.log("Client access token: " + window.gapi.client.getToken());
+
+            // check if we have already created file
+            let fileId = this.state.fileId;
+            if (!fileId) {
+                if (this.isGoogleDriveReady()) {
+                    let fileName = prompt("Name your project", this.props.projectTitle);
+
+                    if (fileName != null && fileName != "") {
+                        window.gapi.client.drive.files.create({
+                            name: fileName + ".sb3",
+                            mimeType: "application/x-zip"
+                        }).then((response) => {
+                            if (response.status == 200) {
+                                this.setState({
+                                    fileId: response.result.id
+                                });
+                                // Randi TODO rework this whole thing
+                                this.handleClickDriveSave();
+                            }
+                        });
+                    }
+                }
+
+                this.props.onRequestCloseFile();
+                return;
+            }
+
+            const url = "https://www.googleapis.com/upload/drive/v3/files/" + fileId + "?uploadType=media;" + this.state.authToken;
+            this.props.vm.uploadProjectToURL(url);
+            
+            // this one doesn't seem to work
+            // this.props.onShowSaveSuccessAlert();
+
+            // show alert that we are saving project
+            window.alert("Project saved");
+            this.props.onRequestCloseFile();
+        }
+
+        // make sure user has logged into Google Drive
+        if (window.gapi.client.getToken() === null) {
+            gisTokenClient.requestAccessToken({prompt: 'consent'});
+            this.props.onRequestCloseFile();
+        }
     }
     handleDriveAuthenticate(token) {
         this.setState({
@@ -681,7 +634,8 @@ class MenuBar extends React.Component {
                                                 id="gui.menuBar.saveToDrive"
                                             />
                                         </MenuItem>
-                                        <GooglePicker clientId={CLIENT_ID}
+                                        <GoogleChooser appId={APP_ID}
+                                            clientId={CLIENT_ID}
                                             developerKey={DEVELOPER_KEY}
                                             scope={DRIVE_SCOPE}
                                             onAuthenticate={this.handleDriveAuthenticate}
@@ -700,7 +654,7 @@ class MenuBar extends React.Component {
                                                     id="gui.menuBar.loadFromDrive"
                                                 />
                                             </MenuItem>
-                                        </GooglePicker>
+                                        </GoogleChooser>
                                     </MenuSection>
                                 </MenuBarMenu>
                             </div>
