@@ -1,3 +1,9 @@
+/*
+Inspiration code:
+- Primary: https://github.com/sdoomz/react-google-picker/blob/master/src/react-google-picker.js
+- Updating to new Google Sign in flow: https://github.com/Jose-cd/React-google-drive-picker/blob/master/src/index.tsx
+*/
+
 import React from 'react';
 import PropTypes from 'prop-types';
 import loadScript from 'load-script';
@@ -167,7 +173,7 @@ GoogleChooser.defaultProps = {
     onChange: () => {},
     onAuthenticate: () => {},
     onAuthFailed: () => {},
-    scope:['https://www.googleapis.com/auth/drive.file'],
+    scope:'https://www.googleapis.com/auth/drive.file',
     viewId: 'DOCS',
     authImmediate: false,
     multiselect: false,
