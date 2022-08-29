@@ -60,19 +60,29 @@ npm run dev
 
 Then, open http://localhost:8601/ in your browser (refresh a couple times if nothings coming up -- likely the [bundling](https://www.freecodecamp.org/news/javascript-modules-part-2-module-bundling-5020383cf306/#:~:text=What%20is%20module%20bundling) process has not completed yet).
 
-Last, ollow the 'Adding Extensions' guidance in the [official extension documentation](https://en.scratch-wiki.info/wiki/Extension) to locate your extension and add it to the environment. 
+Last, follow the 'Adding Extensions' guidance in the [official extension documentation](https://en.scratch-wiki.info/wiki/Extension) to locate your extension and add it to the environment. 
 
 As long as the development server is running (meaning the `npm run dev` command is still executing), every change you make will trigger the page to refresh and your changes will be reflected automagically 🪄. 
 
+##### Need more help? 
+
+Check out this [video walkthrough]() of creating a new extension.
+
 #### 🥋 Advanced
 
-If you're a pro, use the following command to make a new extension that contains no documentation. 
+If you're a pro, use the following command to make a new extension that contains no documentation and/or filler text. 
 
 ```shell script
 # First, change directory (cd) to prg-extension-boilerplate/ (if not already there)
 
 npm run new:extension <folder to contain extension> barebones # Note the 'barenones' at the end
 ```
+
+#### Porting an existing extension
+
+Want to move your vanilla-JS extension to our Typescript framework and reap the benefits of type safety and code generation? Great! We're excited to have you!
+
+The process should be pretty straightforwarded, made only a little challenging depending on how many cases of type
 
 ### Delete 
 
