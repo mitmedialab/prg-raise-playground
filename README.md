@@ -19,7 +19,7 @@ git clone git@github.com:mitmedialab/prg-extension-boilerplate.git
 # Cloning the full history (300mb) takes about 20 seconds on fast internet. Include -–depth 1 for a 4 second checkout
 
 cd prg-extension-boilerplate/
-# change directory (cd) to the repository
+# Change directory (cd) to the repository
 
 npm run init
 # This will symlink the packages together to allow for seamless local development, and installs dependencies for each package. 
@@ -39,24 +39,21 @@ npm run dev
 To make a new extension, run the following command
 
 ```shell script
-# First, change directory (cd) to prg-extension-boilerplate/ if not already there
+cd prg-extension-boilerplate/ # if not already there
+# Change directory (cd) to prg-extension-boilerplate/ 
 
 npm run new:extension <folder to contain extension>
-# for example: npm run new:extension my_awesome_extension
+# For example: npm run new:extension my_awesome_extension
+# If succesful, the output of this command will tell you where to find your new extension file.
+
+npm run dev
+# Start a development server to view your extension
+# This command will take ~20s to startup and serve everything to http://localhost:8601/
 ```
 
 If succesful, the output of the last command will tell you where to find your new extension file. 
 
 The documentation in this file (*index.ts*) should help you get started, or hop down to our full tutorial: [From 0 to Extension](#from-0-to-extension)
-
-Once you're ready to test out your extension, run the following commands:
-
-```shell script
-# NOTE: If another development server is already running, make sure to stop it first
-
-npm run dev
-# This command will take ~20s to startup and serve everything to http://localhost:8601/
-```
 
 Then, open http://localhost:8601/ in your browser (refresh a couple times if nothings coming up -- likely the [bundling](https://www.freecodecamp.org/news/javascript-modules-part-2-module-bundling-5020383cf306/#:~:text=What%20is%20module%20bundling) process has not completed yet).
 
@@ -73,9 +70,8 @@ Check out this [video walkthrough]() of creating a new extension.
 If you're a pro, use the following command to make a new extension that contains no documentation and/or filler text. 
 
 ```shell script
-# First, change directory (cd) to prg-extension-boilerplate/ (if not already there)
-
-npm run new:extension <folder to contain extension> barebones # Note the 'barenones' at the end
+npm run new:extension <folder to contain extension> barebones 
+# Note the 'barenones' at the end
 ```
 
 #### Porting an existing extension

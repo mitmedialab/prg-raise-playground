@@ -13,9 +13,9 @@ const parse = (value: any) => {
  * @description
  * Process arguments passed to node process.
  * It differs from typical command line parsing in that it assumes args either come in:
- *  * one after the other, for example: `node script.ts arg1 arg2 arg3`
+ *  * one after the other, for example: `node script.js arg1 arg2 arg3`
  *  * Or as key value pairs seperated by an '=', for example: `node script.ts arg1=true arg5=hello`
- * @todo Handle string inputs w/ spaces (should enforce using quotes, eg. stringArg="Hello world")
+ * @todo Handle string inputs w/ spaces (should enforce using quotes, eg. node script.js stringArg="Hello world")
  * @param flagForOptions Order matters!
  * @param defaults 
  * @returns 
