@@ -4,7 +4,25 @@ This repository is your one-stop-shop for developing [scratch extensions](https:
 
 It's a fullblown [fork](https://en.wikipedia.org/wiki/Fork_(software_development)) of the official Scratch codebase, which the [Personal Robotics Group](https://robots.media.mit.edu/) (PRG) manages and extends to meet its needs. 
 
+Looking for the old documentation (<= Aug. 2022)? Head [here](./BACKGROUND.md).
+
+## 📖 Table of Contents
+1. [⚡ Quick Start](#⚡-quick-start)
+    - [🚧 Project setup](#🚧-project-setup)
+    - [🛠️ Making an extension](#🛠️-making-an-extension)
+        - [🥋 Advanced](#🥋-advanced)
+    - [🔀 Porting an Extension to Typescript](#🔀-porting-an-extension-to-typescript)
+2. [🪜 From 0 To Extension](#🪜-from-0-to-extension)
+
 ## ⚡ Quick Start
+
+This section contains concise explanations on how to accomplish something (often just a couple of commands to run). If you need more info please check out one of the other sections. 
+
+Contents:
+1. [🚧 Project setup](#🚧-project-setup)
+2. [🛠️ Making an extension](#🛠️-making-an-extension)
+    - [🥋 Advanced](#🥋-advanced)
+3. [🔀 Porting an Extension to Typescript](#🔀-porting-an-extension-to-typescript)
 
 ### 🚧 Project setup
 
@@ -32,8 +50,6 @@ npm run dev
 # Open http://localhost:8601/ in your browser (keep refreshing if nothing's coming up)
 ```
 
-(NOTE for @parker: Check above^^^ on Windows)
-
 ### 🛠️ Making an extension
 
 To make a new extension, run the following commands:
@@ -50,59 +66,28 @@ npm run dev
 # Start a development server to view your extension and reload it as you make changes
 # This command will take ~20s to startup and serve everything to http://localhost:8601/
 ```
+The documentation in the file the `npm run new:extension` generates for you (*index.ts*) should help you get started building your extension. You can also hop down to our full tutorial: [From 0 to Extension](#from-0-to-extension)
 
 After navigationg to http://localhost:8601/, follow the 'Adding Extensions' guidance in the [official extension documentation](https://en.scratch-wiki.info/wiki/Extension) to locate your extension and add it to the workspace. 
 
-The documentation in the file the `npm run new:extension` generates for you (*index.ts*) should help you get started building your extension. You can also hop down to our full tutorial: [From 0 to Extension](#from-0-to-extension)
-
 As long as the development server is running (meaning the `npm run dev` command is still executing), every change you make to the extension file will trigger the page to refresh and your changes will be reflected automagically 🪄. 
-
-##### Need more help? 
-
-Check out this [video walkthrough]() of creating a new extension.
 
 #### 🥋 Advanced
 
-If you're a pro, use the following command to make a new extension that contains no documentation and/or filler text. 
+If you're a pro extension-maker, use the following command to make a new extension that contains no documentation and/or filler text. 
 
 ```shell script
 npm run new:extension <folder to contain extension> barebones 
 # Note the 'barenones' at the end
 ```
 
-#### Porting an existing extension
+### 🔀 Porting an Extension to Typescript
 
-Want to move your vanilla-JS extension to our Typescript framework and reap the benefits of type safety and code generation? Great! We're excited to have you!
+Want to move your vanilla-JS extension to our Typescript framework and reap the benefits of type safety and code generation? ***Great!***
 
 The process should be pretty straightforwarded, made only a little challenging depending on how many cases of type
 
-### Delete 
-
-It will be an an *index.ts* file that lives inside of the `<folder>` argument you passed to the `new:extension` command, but a few leve.
-
-Let's not edit the *index.ts* file just yet. 
-
-Instead, let's start up our development server with the following command:
-
-```shell script
-# NOTE: If another development server is already running, make sure to stop it first
-
-npm run dev
-# This command will take ~20s to startup and serve everything to http://localhost:8601/
-```
-
-
-In your browser, navigate to: http://localhost:8601/ (refresh a couple times if nothings coming up -- likely the [bundling](https://www.freecodecamp.org/news/javascript-modules-part-2-module-bundling-5020383cf306/#:~:text=What%20is%20module%20bundling) process has not completed yet).
-
-You should find an extension called "Replace me with name of your extension" -- that's yours! Now you just need to edit it to make it your own. 
-
-Open (using [vs code]()) the *index.ts* file that the `new:extension` command generated for you. The documentation of the file should help you get started! 
-
-As long as the development server is still running (meaning the `npm run dev` command is still executing), every change you make will trigger the page to refresh and your changes will be reflected automagically 🪄. 
-
-If your changes cause an error, look at the output of the `npm run dev` command, address the issues, and re-run the `npm run dev` command.
-
-## From 0 To Extension
+## 🪜 From 0 To Extension
 
 ### 🤔 Troubleshooting
 
