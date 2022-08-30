@@ -12,17 +12,11 @@ Looking for the old documentation (<= Aug. 2022)? Head [here](./BACKGROUND.md).
     - [🛠️ Making an extension](#🛠️-making-an-extension)
         - [🥋 Advanced](#🥋-advanced)
     - [🔀 Porting an Extension to Typescript](#🔀-porting-an-extension-to-typescript)
-2. [🪜 From 0 To Extension](#🪜-from-0-to-extension)
+2. [🪜 From 0 To Extension](#from-0-to-extension)
 
 ## ⚡ Quick Start
 
 This section contains concise explanations on how to accomplish something (often just a couple of commands to run). If you need more info please check out one of the other sections. 
-
-Contents:
-1. [🚧 Project setup](#🚧-project-setup)
-2. [🛠️ Making an extension](#🛠️-making-an-extension)
-    - [🥋 Advanced](#🥋-advanced)
-3. [🔀 Porting an Extension to Typescript](#🔀-porting-an-extension-to-typescript)
 
 ### 🚧 Project setup
 
@@ -87,7 +81,7 @@ Want to move your vanilla-JS extension to our Typescript framework and reap the 
 
 The process should be pretty straightforwarded, made only a little challenging depending on how many cases of type
 
-## 🪜 From 0 To Extension
+## From 0 To Extension
 
 ### 🤔 Troubleshooting
 
