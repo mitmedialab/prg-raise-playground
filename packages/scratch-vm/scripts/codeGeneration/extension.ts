@@ -3,12 +3,19 @@ import mime = require('mime-types')
 import path = require("path");
 import { ExtensionCodeGenerator, GenerationDetails } from ".";
 import { encode } from "../../src/extension-support/extension-id-factory";
-import { Extension } from "../../src/typescript-support/Extension";
+import { CodeGenArgs } from "../../src/typescript-support/Extension";
 
+const newline = "\n";
 const populatedConstructorIdentifier = 'var _this = _super !== null && _super.apply(this, arguments) || this;';
 const emptyConstructorIdentifier = 'return _super !== null && _super.apply(this, arguments) || this;';
 
-const declareProperty = (name: keyof Extension<any, any>, value: string) => `_this.${name} = '${value}';`;
+const codeGenVariableName = `_codeGenArgs`;
+const codeGenVariableDeclaration = `const ${codeGenVariableName}`;
+
+const generateCodeGenArgs = (args: Record<keyof CodeGenArgs, string>) => {
+  const contents = Object.entries(args).map(([key, value]) => `${key}: '${value}'`).join(', ');
+  return `${codeGenVariableDeclaration} = { ${contents} };`;
+}
 
 const getBlockIconURI = ({ details, cached, implementationDirectory }: GenerationDetails) => {
   const { insetIconURL } = details;
@@ -21,18 +28,45 @@ const getBlockIconURI = ({ details, cached, implementationDirectory }: Generatio
   return `data:${mediaType};${encoding},${insetSVG}`;
 }
 
-const addToConstructor = (content: string, ...toAdd: string[]): string => {
-  if (content.includes(populatedConstructorIdentifier)) {
-    const withToAdd = [populatedConstructorIdentifier, ...toAdd].join(" ");
-    return content.replace(populatedConstructorIdentifier, withToAdd);
+const addConstructorArguments = (constructor: string) => {
+  return constructor.replace("arguments", `[...arguments, ${codeGenVariableName}]`)
+}
+
+const addToConstructor = (content: string, args: Record<keyof CodeGenArgs, string>): string => {
+  const lines = content.split(newline);
+  
+  const getWhiteSpace = (line: string, match: string) => line.substring(0, line.indexOf(match[0]));
+
+  const declarationIndex = lines.findIndex(line => line.includes(codeGenVariableDeclaration));
+  if (declarationIndex >= 0) {
+    const line = lines[declarationIndex];
+    const whiteSpace = getWhiteSpace(line, codeGenVariableDeclaration);
+    lines[declarationIndex] = [whiteSpace, generateCodeGenArgs(args)].join("");
+    return lines.join(newline);
   }
 
-  if (content.includes(emptyConstructorIdentifier)) {
-    const withToAddAndReturnStatement = `${[populatedConstructorIdentifier, ...toAdd].join(" ")} return _this;`;
-    return content.replace(emptyConstructorIdentifier, withToAddAndReturnStatement);
+  try {
+    const { index, match } = lines
+      .map((line, index) => {
+        if (line.includes(populatedConstructorIdentifier)) return {match: populatedConstructorIdentifier, index };
+        if (line.includes(emptyConstructorIdentifier)) return {match: emptyConstructorIdentifier, index };
+        return { match: undefined, index };
+      })
+      .find(({ match }) => match !== undefined);
+
+    const line = lines[index];
+
+    const whiteSpace = getWhiteSpace(line, match);
+    const argsDeclaration = generateCodeGenArgs(args);
+    const updatedConstructor = addConstructorArguments(line);
+    lines[index] = [whiteSpace, argsDeclaration, newline, updatedConstructor].join("");
+
+    return lines.join(newline);
   }
-  
-  throw new Error(`Uh oh! File content did not include expected constructor code: \n ${content}`);
+  catch {
+    throw new Error(`Uh oh! File content did not include expected constructor code: \n ${content}`);
+  }
+
 }
 
 export const fillInContentForExtensions: ExtensionCodeGenerator = (extensions) => {
@@ -43,13 +77,11 @@ export const fillInContentForExtensions: ExtensionCodeGenerator = (extensions) =
     const index = path.join(implementationDirectory, "index.js");
     const content = readFileSync(index, { encoding });
     
-    const nameDeclaration = declareProperty('name', details.name);
-    const idDeclaration = declareProperty('id', encode(id));
+    const { name } = details;
     const blockIconURI = getBlockIconURI(extensions[id]);
 
-    const blockIconDeclaration = declareProperty('blockIconURI', blockIconURI);
-
-    const updated = addToConstructor(content, nameDeclaration, idDeclaration, blockIconDeclaration);
+    const args = { name, id: encode(id), blockIconURI };
+    const updated = addToConstructor(content, args);
     writeFileSync(index, updated, encoding);
 
     if (blockIconURI !== cached?.blockIconURI) extensions[id].cacheUpdates = { ...updates, blockIconURI };

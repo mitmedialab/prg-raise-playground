@@ -1,6 +1,6 @@
 import type Runtime from '../engine/runtime';
 import BlockUtility = require('./BlockUtility');
-import { ArgumentType, BlockType, Branch } from './enums';
+import { ArgumentType, BlockType, Branch, Language } from './enums';
 import type { Extension } from './Extension';
 
 export type Environment = {
@@ -168,6 +168,12 @@ export type BlockDefinitions<TBlocks extends ExtensionBlocks> =
       ? DefineBlock<(...args: A) => R> 
       : never 
 };
+
+type AllText<T extends Extension<any, any>> = { 
+  [k in keyof T["BlockDefinitions"]]: ReturnType<T["BlockDefinitions"][k]>["text"] 
+};
+
+export type Translations<T extends Extension<any, any>> = Partial<{ [k in Language]: AllText<T> | undefined }>;
 
 type UnionToIntersection<U> = (
   U extends never ? never : (arg: U) => never

@@ -66,7 +66,7 @@ function customCreateProgram(status: ProgramStatus, ...params: Parameters<Progra
   }
 
   const extensions = retrieveExtensionDetails(program);
-  generateCodeForExtensions(extensions, program, isStartUp, isStartUp && useCaches);
+  generateCodeForExtensions(extensions, program, isStartUp, !isStartUp && useCaches);
   return builder;
 }
 

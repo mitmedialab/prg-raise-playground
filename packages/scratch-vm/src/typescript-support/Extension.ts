@@ -4,6 +4,12 @@ import type { ExtensionMenuDisplayDetails, ExtensionBlocks, Block, ExtensionArgu
 import Cast from '../util/cast';
 import formatMessage = require('format-message');
 
+export type CodeGenArgs = {
+  name: never, 
+  id: never,
+  blockIconURI: never,
+}
+
 /**
  * 
  * @template MenuDetails How the extension should display in the extensions menu 
@@ -16,16 +22,20 @@ export abstract class Extension
   > {
   runtime: Runtime;
 
-  private readonly BlockDefinitions: BlockDefinitions<Blocks>;
+  readonly BlockDefinitions: BlockDefinitions<Blocks>;
   
   private readonly internal_blocks: ExtensionBlockMetadata[] = [];
   private readonly internal_menus: ExtensionMenuMetadata[] = [];
 
-  constructor(runtime: Runtime) {
+  constructor(runtime: Runtime, codeGenArgs: CodeGenArgs) {
+    const { name, id, blockIconURI } = codeGenArgs;
+    this.name = name;
+    this.id = id;
+    this.blockIconURI = blockIconURI;
+
     this.runtime = runtime;
     this.init({ runtime });
     const definitions = this.defineBlocks();
-    console.log(this.name);
     const menus: Menu<any>[] = [];
     for (const key in definitions) {
       const block = definitions[key](this);
@@ -69,12 +79,12 @@ export abstract class Extension
   /**
    * Prevent users from defining their own extension ID (which will be filled in through code generation)
    */
-  readonly id: never = "CodeGenGuard:id" as never;
+  readonly id: never;
 
   /**
    * Prevent users from re-defining an extension Name (which is already defined through ExtensionMenuDisplayDetails)
    */
-  readonly name: never = "CodeGenGuard:name" as never;
+  readonly name: never;
 
   /**
    * Prevent users from re-defining the blockIconURI (the insetIconURI from ExtensionMenuDisplayDetails will be encoded and used)
@@ -117,7 +127,7 @@ export abstract class Extension
 
 
     const displayText = formatMessage({
-      id: `${extensionName}.${key}`,
+      id: `${this.id}.${key}`,
       default: Extension.IsFunction(text) 
       ? (text as unknown as (...params: any[]) => string)(...args.map((_, index) => `[${index}]`)) 
       : text,

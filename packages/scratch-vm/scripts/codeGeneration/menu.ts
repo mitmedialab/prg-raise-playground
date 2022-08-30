@@ -27,9 +27,12 @@ export const populateMenuForExtensions: ExtensionCodeGenerator = (extensions) =>
 
     const imports = generateImports(id, details);
     const statements = Object.values(imports).map(({statement}) => statement);
+    statements.push(importStatement("React", 'react'));
+    statements.push(importStatement("{ FormattedMessage }", 'react-intl'));
 
-    const menuItem = new MenuItem(details);
-    menuItem.push('extensionId', encode(id));
+    const encodedId = encode(id);
+    const menuItem = new MenuItem(details, encodedId);
+    menuItem.push('extensionId', encodedId, false, true);
     Object.entries(imports).map(([key, {variable}]) => menuItem.push(key, variable, true));
 
     const menuContent = [generatedFileWarning, ...statements, MenuItem.ConvertToSingleExport(menuItem)].join("\n");
