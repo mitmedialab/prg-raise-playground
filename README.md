@@ -36,7 +36,7 @@ npm run dev
 
 ### 🛠️ Making an extension
 
-To make a new extension, run the following command
+To make a new extension, run the following commands:
 
 ```shell script
 cd prg-extension-boilerplate/ # if not already there
@@ -47,19 +47,15 @@ npm run new:extension <folder to contain extension>
 # If succesful, the output of this command will tell you where to find your new extension file.
 
 npm run dev
-# Start a development server to view your extension
+# Start a development server to view your extension and reload it as you make changes
 # This command will take ~20s to startup and serve everything to http://localhost:8601/
 ```
 
-If succesful, the output of the last command will tell you where to find your new extension file. 
+After navigationg to http://localhost:8601/, follow the 'Adding Extensions' guidance in the [official extension documentation](https://en.scratch-wiki.info/wiki/Extension) to locate your extension and add it to the workspace. 
 
-The documentation in this file (*index.ts*) should help you get started, or hop down to our full tutorial: [From 0 to Extension](#from-0-to-extension)
+The documentation in the file the `npm run new:extension` generates for you (*index.ts*) should help you get started building your extension. You can also hop down to our full tutorial: [From 0 to Extension](#from-0-to-extension)
 
-Then, open http://localhost:8601/ in your browser (refresh a couple times if nothings coming up -- likely the [bundling](https://www.freecodecamp.org/news/javascript-modules-part-2-module-bundling-5020383cf306/#:~:text=What%20is%20module%20bundling) process has not completed yet).
-
-Last, follow the 'Adding Extensions' guidance in the [official extension documentation](https://en.scratch-wiki.info/wiki/Extension) to locate your extension and add it to the environment. 
-
-As long as the development server is running (meaning the `npm run dev` command is still executing), every change you make will trigger the page to refresh and your changes will be reflected automagically 🪄. 
+As long as the development server is running (meaning the `npm run dev` command is still executing), every change you make to the extension file will trigger the page to refresh and your changes will be reflected automagically 🪄. 
 
 ##### Need more help? 
 
