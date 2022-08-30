@@ -7,14 +7,15 @@ It's a fullblown [fork](https://en.wikipedia.org/wiki/Fork_(software_development
 Looking for the old documentation (<= Aug. 2022)? Head [here](./BACKGROUND.md).
 
 ## 📖 Table of Contents
-1. [Quick Start](#-quick-start)
+- [Quick Start](#-quick-start)
     - [Project setup](#-project-setup)
     - [Making an extension](#-making-an-extension)
         - [Advanced](#-advanced)
     - [Porting an Extension to Typescript](#-porting-an-extension-to-typescript)
-2. [From 0 To Extension](#-from-0-to-extension)
-3. [Deploying](#-Deploying)
-4. [Troubleshooting](#-Troubleshooting)
+- [From 0 to Extension](#-from-0-to-extension)
+- [Project Dependencies](#project-dependencies)
+- [Deploying](#-Deploying)
+- [Troubleshooting](#-Troubleshooting)
     - [webpack: command not found](#webpack-command-not-found)
 
 ## ⚡ Quick Start
@@ -58,14 +59,14 @@ cd prg-extension-boilerplate/ # if not already there
 npm run new:extension <folder to contain extension>
 # For example: npm run new:extension my_awesome_extension
 # If succesful, the output of this command will tell you where to find your new extension file.
+# It will be an index.ts file, and its documentation should help you get started
 
 npm run dev
 # Start a development server to view your extension and reload it as you make changes
 # This command will take ~20s to startup and serve everything to http://localhost:8601/
 ```
-The documentation in the file the `npm run new:extension` generates for you (*index.ts*) should help you get started building your extension. You can also hop down to our full tutorial: [From 0 to Extension](#from-0-to-extension)
 
-After navigationg to http://localhost:8601/, follow the 'Adding Extensions' guidance in the [official extension documentation](https://en.scratch-wiki.info/wiki/Extension) to locate your extension and add it to the workspace. 
+After navigating to http://localhost:8601/, follow the 'Adding Extensions' guidance in the [official extension documentation](https://en.scratch-wiki.info/wiki/Extension) to add your extension to the workspace. 
 
 As long as the development server is running (meaning the `npm run dev` command is still executing), every change you make to the extension file will trigger the page to refresh and your changes will be reflected automagically 🪄. 
 
@@ -84,7 +85,13 @@ Want to move your vanilla-JS extension to our Typescript framework and reap the 
 
 #### Example
 
-## 🪜 From 0 To Extension
+##### Vanilla JS
+
+##### Typescript
+
+##### Step by step
+
+## 🪜 From 0 to Extension
 
 ... Coming soon ... 
 
@@ -95,13 +102,19 @@ Likely will have:
 - Video tutorial 
 - FAQ?
 
-### 📦 Deploying
+### Dependencies
+
+### Node
+
+### VS Code
+
+## 📦 Deploying
 
 We use GitHub Actions to build the combined scratch-gui using `npm`, and [actions-gh-pages](https://github.com/peaceiris/actions-gh-pages) to deploy to GitHub Pages.
 
 Note that there is a step of adding an access token to the repository due to a bug with GitHub Actions. [Follow the steps here](https://github.com/marketplace/actions/deploy-to-github-pages#configuration-) to add an access token to your repository.
 
-### 🤔 Troubleshooting
+## 🤔 Troubleshooting
 
 #### webpack: command not found
 If you see the following:

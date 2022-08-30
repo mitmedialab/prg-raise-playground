@@ -12,6 +12,7 @@ export type BlockOperation = (...args: any) => any;
 export type MenuItem<T> = T | {
   value: T;
   text: string;
+  description?: string;
 };
 
 export type DynamicMenu<T> = () =>  MenuItem<T>[];
@@ -71,6 +72,7 @@ type ParamsAndUtility<T extends BlockOperation> = [...params: Parameters<T>, uti
 type NonEmptyArray<T> = [T, ...T[]];
 
 export type Block<T extends BlockOperation> = {
+  description?: string,
   /**
    * @description
    * The kind of block we're defining, from a predefined list 

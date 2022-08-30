@@ -19,8 +19,9 @@ const transpileAllTsExtensions = (options: TranspileOptions) => {
       srcDir, 
       files, 
       () => {
-        console.error(chalk.red("Closing watcher due to error."));
+        if (!watcher) return console.error(chalk.gray("(No watcher to close)"));
         watcher.close();
+        console.error(chalk.red("Closing watcher due to error."));
       }
     ), "Completed initial transpile in");
 

@@ -2,6 +2,7 @@ import type Runtime from '../engine/runtime';
 import { ArgumentType } from './enums';
 import type { ExtensionMenuDisplayDetails, ExtensionBlocks, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, VerboseArgument, Environment, Menu, DynamicMenu, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters, TypeByArgumentType } from './types';
 import Cast from '../util/cast';
+import formatMessage = require('format-message');
 
 /**
  * 
@@ -24,10 +25,11 @@ export abstract class Extension
     this.runtime = runtime;
     this.init({ runtime });
     const definitions = this.defineBlocks();
+    console.log(this.name);
     const menus: Menu<any>[] = [];
     for (const key in definitions) {
       const block = definitions[key](this);
-      const info = this.convertToInfo(key, block, menus);
+      const info = this.convertToInfo(this.name, key, block, menus);
       this.internal_blocks.push(info);
     }
 
@@ -67,12 +69,12 @@ export abstract class Extension
   /**
    * Prevent users from defining their own extension ID (which will be filled in through code generation)
    */
-  readonly id: never;
+  readonly id: never = "CodeGenGuard:id" as never;
 
   /**
    * Prevent users from re-defining an extension Name (which is already defined through ExtensionMenuDisplayDetails)
    */
-  readonly name: never;
+  readonly name: never = "CodeGenGuard:name" as never;
 
   /**
    * Prevent users from re-defining the blockIconURI (the insetIconURI from ExtensionMenuDisplayDetails will be encoded and used)
@@ -109,13 +111,18 @@ export abstract class Extension
     this.internal_menus.push({acceptReporters, items: key});
   }
 
-  convertToInfo(key: string, block: Block<any>, menusToAdd: MenuItem<any>[]): ExtensionBlockMetadata {
-    const {type, text, operation} = block;
+  convertToInfo(extensionName: string, key: string, block: Block<any>, menusToAdd: MenuItem<any>[]): ExtensionBlockMetadata {
+    const {type, text, operation, description} = block;
     const args: Argument<any>[] = block.args;
 
-    const displayText = Extension.IsFunction(text) 
-      ? (text as unknown as Function)(...args.map((_, index) => `[${index}]`)) 
-      : text;
+
+    const displayText = formatMessage({
+      id: `${extensionName}.${key}`,
+      default: Extension.IsFunction(text) 
+      ? (text as unknown as (...params: any[]) => string)(...args.map((_, index) => `[${index}]`)) 
+      : text,
+      description: description ?? `Description for '${key}' block (of '${extensionName}' extension)`,
+    });
 
     type Handler = MenuThatAcceptsReporters<any>['handler'];
     const handlerKey: keyof MenuThatAcceptsReporters<any> = 'handler';
