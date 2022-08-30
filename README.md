@@ -12,7 +12,7 @@ Looking for the old documentation (<= Aug. 2022)? Head [here](./BACKGROUND.md).
     - [🛠️ Making an extension](#🛠️-making-an-extension)
         - [🥋 Advanced](#🥋-advanced)
     - [🔀 Porting an Extension to Typescript](#🔀-porting-an-extension-to-typescript)
-2. [🪜 From 0 To Extension](#:christmastree:-from-0-to-extension)
+2. [💿 From 0 To Extension](#💿-from-0-to-extension)
 
 ## ⚡ Quick Start
 
@@ -81,7 +81,7 @@ Want to move your vanilla-JS extension to our Typescript framework and reap the 
 
 The process should be pretty straightforwarded, made only a little challenging depending on how many cases of type
 
-## :christmastree: From 0 To Extension
+## 💿 From 0 To Extension
 
 ### 🤔 Troubleshooting
 
