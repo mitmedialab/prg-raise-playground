@@ -1,6 +1,6 @@
 import type Runtime from '../engine/runtime';
-import { ArgumentType } from './enums';
-import type { ExtensionMenuDisplayDetails, ExtensionBlocks, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, VerboseArgument, Environment, Menu, DynamicMenu, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters, TypeByArgumentType } from './types';
+import { ArgumentType, Language } from './enums';
+import type { ExtensionMenuDisplayDetails, ExtensionBlocks, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, VerboseArgument, Environment, Menu, DynamicMenu, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters, TypeByArgumentType, AllText, Translations } from './types';
 import Cast from '../util/cast';
 import formatMessage = require('format-message');
 
@@ -22,7 +22,9 @@ export abstract class Extension
   > {
   runtime: Runtime;
 
+  readonly BlockFunctions: Blocks;
   readonly BlockDefinitions: BlockDefinitions<Blocks>;
+  readonly Translations: Translations<Extension<MenuDetails, Blocks>>;
   
   private readonly internal_blocks: ExtensionBlockMetadata[] = [];
   private readonly internal_menus: ExtensionMenuMetadata[] = [];
@@ -93,6 +95,7 @@ export abstract class Extension
 
   abstract init(env: Environment);
   abstract defineBlocks(): BlockDefinitions<Blocks>;
+  abstract getTranslations(): Translations<Extension<MenuDetails, Blocks>>;
 
   getInfo(): ExtensionMetadata  {
     const {id, internal_blocks: blocks, internal_menus: menus, name, blockIconURI} = this; 
@@ -184,6 +187,23 @@ export abstract class Extension
       text: displayText,
       blockType: type,
       arguments: argsInfo
+    }
+  }
+
+  addTranslations(map: Record<Language, string>) {
+    const translations = this.getTranslations();
+    if (!translations) return;
+
+    for (const key in map) {
+      if (!(key in translations)) continue;
+
+      const forLocale = translations[key as Language];
+      if (!forLocale) continue;
+
+      for (const translationID in forLocale) {
+        forLocale.
+        map[translationID] = forLocale[translationID];
+      }
     }
   }
 

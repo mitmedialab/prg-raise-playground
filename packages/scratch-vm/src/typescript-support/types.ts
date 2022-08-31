@@ -169,8 +169,34 @@ export type BlockDefinitions<TBlocks extends ExtensionBlocks> =
       : never 
 };
 
-type AllText<T extends Extension<any, any>> = { 
-  [k in keyof T["BlockDefinitions"]]: ReturnType<T["BlockDefinitions"][k]>["text"] 
+type ArgsTextCommon = {
+  options?: (string)[]
+}
+
+type ArgsText<T> = T extends ScratchArgument<string> | VerboseArgument<string> 
+? ({
+  defaultValue?: string,
+} & ArgsTextCommon)
+: ArgsTextCommon;
+
+type ToArgumentsText<T extends any[]> =
+  T extends [infer Head, ...infer Tail]
+  ? [ArgsText<Head>, ...ToArgumentsText<Tail>]
+  : [];
+
+type ExtractTextFromBlock<TOp extends BlockOperation, TBlock extends Block<TOp>> = TBlock["args"] extends never 
+  ? string | {
+    blockText: TBlock["text"]
+  } 
+  : TBlock["text"] extends (...args: any) => any 
+    ? {
+      blockText: TBlock["text"],
+      argsText: ToArgumentsText<TBlock["args"]>,
+    }
+    : never // shouldn't happen
+
+export type AllText<T extends Extension<any, any>> = { 
+  [k in keyof T["BlockFunctions"]]: ExtractTextFromBlock<T["BlockFunctions"][k], Block<T["BlockFunctions"][k]>>
 };
 
 export type Translations<T extends Extension<any, any>> = Partial<{ [k in Language]: AllText<T> | undefined }>;

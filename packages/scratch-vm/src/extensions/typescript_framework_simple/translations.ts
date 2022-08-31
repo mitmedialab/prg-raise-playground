@@ -1,9 +1,15 @@
-import extension = require(".")
+import Extension = require(".")
 import { Language } from "../../typescript-support/enums";
-import { Translations } from "../../typescript-support/types";
 
-const overrides: Translations<extension> = {
-  [Language.English]: undefined
-}
+const getTranslations = (): Extension["Translations"] => ({
+  [Language.English]: undefined,
+  [Language.Español]: {
+    log: {
+      blockText: (msg) => `Imprime ${msg}`,
+      argsText: [{options: ['uno', 'dos', 'tres'], defaultValue: 'uno'}, {}]
+    },
+    dummy: "nada"
+  }
+});
 
-export default overrides;
+export default getTranslations;
