@@ -12,7 +12,6 @@ export type BlockOperation = (...args: any) => any;
 export type MenuItem<T> = T | {
   value: T;
   text: string;
-  description?: string;
 };
 
 export type DynamicMenu<T> = () =>  MenuItem<T>[];
@@ -72,7 +71,6 @@ type ParamsAndUtility<T extends BlockOperation> = [...params: Parameters<T>, uti
 type NonEmptyArray<T> = [T, ...T[]];
 
 export type Block<T extends BlockOperation> = {
-  description?: string,
   /**
    * @description
    * The kind of block we're defining, from a predefined list 
@@ -125,9 +123,11 @@ export type Block<T extends BlockOperation> = {
 
 export type ExtensionMenuDisplayDetails = {
   name: string;
-  description: string;
+  description: string;  
   iconURL: string;
   insetIconURL: string;
+  nameTranslations?: Partial<Record<Language, string>>;
+  descriptionTranslations?: Partial<Record<Language, string>>;
   internetConnectionRequired?: boolean;
   collaborator?: string;
   bluetoothRequired?: boolean;
@@ -142,20 +142,6 @@ export type ExtensionMenuDisplayDetails = {
   hidden?: boolean;
   disabled?: boolean;
 }
-
-/**
- * Description of type
- * @property {string} title The ee
- */
-export type ExtensionMenuDisplay<TTitle extends string,
-  TDescription extends string,
-  TIconURL extends string,
-  TInsetIconURL extends string> = {
-    title: TTitle;
-    description: TDescription;
-    iconURL: TIconURL;
-    insetIconURL: TInsetIconURL;
-  }
 
 export type DefineBlock<T extends BlockOperation> = (extension: Extension<any, any>) => Block<T>;
 

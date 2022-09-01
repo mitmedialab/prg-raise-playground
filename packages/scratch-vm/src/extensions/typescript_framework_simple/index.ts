@@ -1,4 +1,4 @@
-import { ArgumentType, BlockType, Branch } from "../../typescript-support/enums";
+import { ArgumentType, BlockType, Branch, Language } from "../../typescript-support/enums";
 import { Extension } from "../../typescript-support/Extension";
 import { Environment } from "../../typescript-support/types";
 import getTranslations from "./translations";
@@ -7,7 +7,13 @@ type Details = {
   name: "Super Simple Typescript Extension",
   description: "Skeleton for a typescript extension",
   iconURL: "Typescript_logo.png",
-  insetIconURL: "typescript-logo.svg"
+  insetIconURL: "typescript-logo.svg",
+  nameTranslations: {
+    [Language.Español]: "Extensión simple Typescript",
+  },
+  descriptionTranslations: {
+    [Language.Español]: "Ejemplo de una extensión simple usando Typescript",
+  },
 };
 
 class SimpleTypescript extends Extension<Details, {

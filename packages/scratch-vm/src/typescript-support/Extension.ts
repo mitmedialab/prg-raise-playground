@@ -125,7 +125,7 @@ export abstract class Extension
   }
 
   convertToInfo(extensionName: string, key: string, block: Block<any>, menusToAdd: MenuItem<any>[]): ExtensionBlockMetadata {
-    const {type, text, operation, description} = block;
+    const {type, text, operation} = block;
     const args: Argument<any>[] = block.args;
 
 
@@ -134,7 +134,7 @@ export abstract class Extension
       default: Extension.IsFunction(text) 
       ? (text as unknown as (...params: any[]) => string)(...args.map((_, index) => `[${index}]`)) 
       : text,
-      description: description ?? `Description for '${key}' block (of '${extensionName}' extension)`,
+      description: `Block text for '${key}' block (of '${extensionName}' extension)`,
     });
 
     type Handler = MenuThatAcceptsReporters<any>['handler'];
@@ -201,7 +201,6 @@ export abstract class Extension
       if (!forLocale) continue;
 
       for (const translationID in forLocale) {
-        forLocale.
         map[translationID] = forLocale[translationID];
       }
     }
