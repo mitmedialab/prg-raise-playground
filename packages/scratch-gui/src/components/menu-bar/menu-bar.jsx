@@ -143,9 +143,9 @@ const MenuItemTooltip = ({id, isRtl, children, className}) => (
     </ComingSoonTooltip>
 );
 
-const APP_ID = '189018308147';
-const CLIENT_ID = '189018308147-fnqroe2ts7mo6vgdv1a7oiavp22g7gta.apps.googleusercontent.com';
-const DEVELOPER_KEY = 'AIzaSyCSOZiu_GF9HlalPT6WBFEFaz7W-tHt6bo'; //'AIzaSyDRoOjwaDXOxq4cda1nrCVLaVQvTCh5GYE';
+const APP_ID = '906634949042'; // first part of client ID
+const CLIENT_ID = '906634949042-5jbc7q594e69spg2i0bkt9a14iojvtsp.apps.googleusercontent.com';
+const DEVELOPER_KEY = 'AIzaSyDRoOjwaDXOxq4cda1nrCVLaVQvTCh5GYE';
 const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
 
 MenuItemTooltip.propTypes = {
