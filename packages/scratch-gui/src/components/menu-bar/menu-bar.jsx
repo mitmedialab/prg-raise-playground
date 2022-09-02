@@ -336,13 +336,13 @@ class MenuBar extends React.Component {
         }
 
         const { permissionId } = this.state;
-        console.log(permissionId);
         return await new Promise((resolve, reject) => {
             window.gapi.client.drive.permissions.list({fileId})
                 .execute((resp) => {
-                    const {id} = resp.permissions.find(p => p.role === 'owner');
-                    console.log(id);
-                    resolve(id === permissionId);
+                    if (!resp.permissions) resolve(false);
+                    const owner = resp.permissions.find(p => p.role === 'owner');
+                    if (!owner) resolve(false);
+                    resolve(owner.id === permissionId);
                 });
         })
     }
@@ -371,9 +371,9 @@ class MenuBar extends React.Component {
 
         const message = this.state.currentFileName === ""
             ? "First, name your project.\n\nThen, after clicking 'OK', you'll be prompted to select the folder to save to."
-            : `Choose a name for your project.\n\n
-If you use the same name as the currently loaded cloud project ('${currentFileName}') we'll update/overwrite the corresponding drive file (as long as your are the 'owner' of that file).\n\n
-If not, you'll be prompted to pick a folder to save the new file to.`;
+            : `Choose a name for your project.\n
+If you use the same name as the currently loaded cloud project ('${currentFileName}') we'll update the corresponding drive file (as long as your are the 'owner' of that file).\n
+If you use a different name, you'll be prompted to pick a folder to save the new file to.`;
         
         const fileName = prompt(message, this.props.projectTitle);
 
@@ -386,11 +386,12 @@ If not, you'll be prompted to pick a folder to save the new file to.`;
             const isAllowedToEdit = await this.hasPermissionToEdit(currentFileId);
 
             if (!isAllowedToEdit) {
-                alert("You are not the owner of this cloud file, and therefore you cannot overwrite. Try to save again, but change the project name first.");
+                alert("You are not the owner of this cloud file, and therefore you cannot overwrite it. Try to save again, but change the project name first.");
             } 
             else {
                 this.uploadFile(currentFileId);
                 this.props.onReceivedProjectTitle(fileName);
+                alert(`Project succesfully updated.`)
             }
 
             return false;
@@ -700,10 +701,9 @@ If not, you'll be prompted to pick a folder to save the new file to.`;
                                             viewID={'FOLDERS'}
                                         >
                                             <MenuItem
-                                                /* onClick={this.handleClickDriveSave}*/
                                             >
                                                 <FormattedMessage
-                                                    defaultMessage="Save project to Google Drive"
+                                                    defaultMessage="Save project to Google Drive folder"
                                                     description="Menu bar item for saving a project to Google Drive" // eslint-disable-line max-len
                                                     id="gui.menuBar.saveToDrive"
                                                 />
