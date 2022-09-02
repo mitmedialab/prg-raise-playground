@@ -8,6 +8,7 @@
 *       insists on using the "drive.readonly" scope which is sensitive. This scope is unecessary and would require app verification.
 *       We copied bits of this code to start using the new Google sign in flow
 */
+import 'regenerator-runtime/runtime'
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -44,6 +45,10 @@ class GoogleChooser extends React.Component {
     window.gapi.client.init({
         apiKey: this.props.developerKey,
     });
+    window.gapi.auth2.init({
+      clientId: this.props.clientId,
+      scope: this.props.scope,
+  });
   }
 
   onApiLoad() {
@@ -76,7 +81,12 @@ class GoogleChooser extends React.Component {
     client.requestAccessToken();
   }
 
-  onChoose() {
+  async onChoose() {
+    if (this.props.showPicker) {
+      const doShow = await this.props.showPicker();
+      if (!doShow) return;
+    };
+
     if (!this.isGoogleReady() || !this.isGoogleAuthReady() || !this.isGooglePickerReady() || this.props.disabled) {
         console.error("Some api is missing:");
         if (!this.isGoogleReady()) {
@@ -98,8 +108,9 @@ class GoogleChooser extends React.Component {
       this.createPicker(oauthToken);
     } else {
       this.doAuth(response => {
-        if (response.access_token) {
-          this.createPicker(response.access_token)
+        const { access_token } = response;
+        if (access_token) {
+          this.createPicker(response.access_token);
         } else {
           this.props.onAuthFailed(response);
         }
@@ -116,7 +127,7 @@ class GoogleChooser extends React.Component {
     }
 
     const googleViewId = google.picker.ViewId[this.props.viewId];
-    const view = new window.google.picker.View(googleViewId);
+    const view = new window.google.picker.DocsView(googleViewId);
 
     if (this.props.mimeTypes) {
       view.setMimeTypes(this.props.mimeTypes.join(','))
@@ -124,6 +135,9 @@ class GoogleChooser extends React.Component {
     if (this.props.query) {
       view.setQuery(this.props.query)
     }
+
+    view.setIncludeFolders(true);
+    view.setSelectFolderEnabled(true);
 
     if (!view) {
       throw new Error('Can\'t find view by viewId');
@@ -148,8 +162,7 @@ class GoogleChooser extends React.Component {
       picker.enableFeature(window.google.picker.Feature.MULTISELECT_ENABLED)
     }
 
-    picker.build()
-          .setVisible(true);
+    picker.build().setVisible(true);
   }
 
   render() {
@@ -180,7 +193,8 @@ GoogleChooser.propTypes = {
     createPicker: PropTypes.func,
     multiselect: PropTypes.bool,
     navHidden: PropTypes.bool,
-    disabled: PropTypes.bool
+    disabled: PropTypes.bool,
+    showPicker: PropTypes.func
 };
 
 GoogleChooser.defaultProps = {

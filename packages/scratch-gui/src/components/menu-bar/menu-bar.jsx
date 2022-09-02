@@ -1,3 +1,5 @@
+import 'regenerator-runtime/runtime'
+
 import classNames from 'classnames';
 import {connect} from 'react-redux';
 import {compose} from 'redux';
@@ -141,11 +143,10 @@ const MenuItemTooltip = ({id, isRtl, children, className}) => (
     </ComingSoonTooltip>
 );
 
-const APP_ID = '906634949042'; // first part of client ID
-const CLIENT_ID = '906634949042-5jbc7q594e69spg2i0bkt9a14iojvtsp.apps.googleusercontent.com';
-const DEVELOPER_KEY = 'AIzaSyDRoOjwaDXOxq4cda1nrCVLaVQvTCh5GYE';
+const APP_ID = '189018308147';
+const CLIENT_ID = '189018308147-fnqroe2ts7mo6vgdv1a7oiavp22g7gta.apps.googleusercontent.com';
+const DEVELOPER_KEY = 'AIzaSyCSOZiu_GF9HlalPT6WBFEFaz7W-tHt6bo'; //'AIzaSyDRoOjwaDXOxq4cda1nrCVLaVQvTCh5GYE';
 const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
-
 
 MenuItemTooltip.propTypes = {
     children: PropTypes.node,
@@ -163,21 +164,28 @@ class MenuBar extends React.Component {
             'handleClickSave',
             'handleClickSaveAsCopy',
             'handleClickSeeCommunity',
+            'handleSavePickerClicked',
             'handleClickShare',
             'handleKeyPress',
+            'uploadFile',
             'handleLanguageMouseUp',
             'handleRestoreOption',
             'getSaveToComputerHandler',
             'restoreOptionMessage',
             'handleDriveAuthenticate',
+            'hasPermissionToEdit',
             'handleDriveProjectSelect',
+            'handleFolderSelect',
             'handleClickLoadProjectLink',
             'handleClickDriveSave',
             'onApiLoad'
         ]);
         this.state = {
             authToken: "",
-            fileId: ""
+            fileId: "",
+            currentFileId: "",
+            currentFileName: "",
+            permissionId: null,
         };
     }
     componentDidMount () {
@@ -313,6 +321,32 @@ class MenuBar extends React.Component {
             callback
         );
     }
+
+    async hasPermissionToEdit(fileId) {
+        if (!this.state.permissionId) {
+            this.state.permissionId = await new Promise((resolve, reject) => {
+                gapi.client.request({
+                    'method': 'GET',
+                    'path': '/drive/v3/about',
+                    'params': {'fields': 'user'}
+                }).execute((response) => {
+                    resolve(response.user.permissionId);
+                });
+            });
+        }
+
+        const { permissionId } = this.state;
+        console.log(permissionId);
+        return await new Promise((resolve, reject) => {
+            window.gapi.client.drive.permissions.list({fileId})
+                .execute((resp) => {
+                    const {id} = resp.permissions.find(p => p.role === 'owner');
+                    console.log(id);
+                    resolve(id === permissionId);
+                });
+        })
+    }
+
     handleClickLoadProjectLink() {
         let templateLink = "https://www.dropbox.com/s/o8jegh940y7f7qc/SimpleProject.sb3";
         let url = window.prompt("Enter project url (e.g. from Dropbox or Github)", templateLink);
@@ -331,6 +365,46 @@ class MenuBar extends React.Component {
         }
         this.props.onRequestCloseFile();
     }
+
+    async handleSavePickerClicked() {
+        const { currentFileName, currentFileId } = this.state;
+
+        const message = this.state.currentFileName === ""
+            ? "First, name your project.\n\nThen, after clicking 'OK', you'll be prompted to select the folder to save to."
+            : `Choose a name for your project.\n\n
+If you use the same name as the currently loaded cloud project ('${currentFileName}') we'll update/overwrite the corresponding drive file (as long as your are the 'owner' of that file).\n\n
+If not, you'll be prompted to pick a folder to save the new file to.`;
+        
+        const fileName = prompt(message, this.props.projectTitle);
+
+        if (fileName === null || fileName === "") {
+            alert("You did not enter a project name!");
+            return false;
+        }
+
+        if (fileName === this.state.currentFileName) {
+            const isAllowedToEdit = await this.hasPermissionToEdit(currentFileId);
+
+            if (!isAllowedToEdit) {
+                alert("You are not the owner of this cloud file, and therefore you cannot overwrite. Try to save again, but change the project name first.");
+            } 
+            else {
+                this.uploadFile(currentFileId);
+                this.props.onReceivedProjectTitle(fileName);
+            }
+
+            return false;
+        }
+
+        this.setState({ ...this.state, currentFileName: fileName, currentFileId: "" });
+        return true;
+    }
+
+    uploadFile(id) {
+        const url = "https://www.googleapis.com/upload/drive/v3/files/" + id + "?uploadType=media;" + this.state.authToken;
+        this.props.vm.uploadProjectToURL(url);
+    }
+
     handleClickDriveSave() {
         // make sure user has logged into Google Drive
         if (!this.state.authToken) {
@@ -386,32 +460,46 @@ class MenuBar extends React.Component {
         if (!matches) return '';
         return matches[1].substring(0, 100); // truncate project title to max 100 chars
     }
+
+    handleFolderSelect(data) {
+        const fileName = this.state.currentFileName;
+        if (!data.docs || !fileName) return this.props.onRequestCloseFile();
+        const parentId = data.docs[0].id;
+        const parentName = data.docs[0].name;
+        window.gapi.client.drive.files.create({
+            parents: [parentId],
+            name: fileName + ".sb3",
+            mimeType: "application/x-zip"
+        }).then((response) => {
+            if (response.status !== 200) return;
+            const {id} = response.result;
+            this.uploadFile(id);      
+            this.setState({...this.state, currentFileId: id});
+            this.props.onReceivedProjectTitle(fileName);
+            alert(`Project succesfully saved to: ${parentName}/${fileName}.sb3`)
+        });
+        this.props.onRequestCloseFile();
+    }
+
     handleDriveProjectSelect(data) {
-        console.log(data);
-        if (data.docs) {
-            const fileId = data.docs[0].id;
-            const url = "https://www.googleapis.com/drive/v3/files/" + fileId + "/?alt=media;" + this.state.authToken;
-            
-            const readyToReplaceProject = this.props.confirmReadyToReplaceProject(
-                this.props.intl.formatMessage(sharedMessages.replaceProjectWarning)
-            );
-            if (readyToReplaceProject) {
-                this.props.vm.downloadProjectFromURLDirect(url);
-                
-                this.props.onReceivedProjectTitle(this.getProjectTitleFromFilename(data.docs[0].name));
-                
-                // if project does not have a parentId, it's a shared project and you cannot save
-                if (data.docs[0].parentId !== undefined) {
-                    this.setState({
-                        fileId: fileId
-                    });
-                } else {
-                    this.setState({
-                        fileId: null
-                    });
-                }
-            }
+        if (!data.docs) return this.props.onRequestCloseFile();
+
+        const { id, name, parentId } = data.docs[0];
+        const url = "https://www.googleapis.com/drive/v3/files/" + id + "/?alt=media;" + this.state.authToken;
+        
+        const readyToReplaceProject = this.props.confirmReadyToReplaceProject(
+            this.props.intl.formatMessage(sharedMessages.replaceProjectWarning)
+        );
+        
+        if (readyToReplaceProject) {
+            this.props.vm.downloadProjectFromURLDirect(url);
+            this.props.onReceivedProjectTitle(this.getProjectTitleFromFilename(name));
+            this.setState({...this.state, 
+                currentFileName: name.replace(".sb3", ""), 
+                currentFileId: id
+            });
         }
+
         this.props.onRequestCloseFile();
     }
     isGoogleReady() {
@@ -597,15 +685,30 @@ class MenuBar extends React.Component {
                                         </SBFileUploader>
                                     </MenuSection>
                                     <MenuSection>
-                                        {/*<MenuItem
-                                            onClick={this.handleClickDriveSave}
+                                        <GoogleChooser 
+                                            appId={APP_ID}
+                                            clientId={CLIENT_ID}                                            developerKey={DEVELOPER_KEY}
+                                            scope={DRIVE_SCOPE}
+                                            showPicker={this.handleSavePickerClicked}
+                                            onAuthenticate={this.handleDriveAuthenticate}
+                                            onChange={this.handleFolderSelect}
+                                            onAuthFailed={data => console.log('on auth failed:', data)}
+                                            multiselect={false}
+                                            navHidden={false}
+                                            authImmediate={false}
+                                            mimeTypes={['application/vnd.google-apps.folder']}
+                                            viewID={'FOLDERS'}
                                         >
-                                            <FormattedMessage
-                                                defaultMessage="Save project to Google Drive"
-                                                description="Menu bar item for saving a project to Google Drive" // eslint-disable-line max-len
-                                                id="gui.menuBar.saveToDrive"
-                                            />
-                                            </MenuItem>*/}
+                                            <MenuItem
+                                                /* onClick={this.handleClickDriveSave}*/
+                                            >
+                                                <FormattedMessage
+                                                    defaultMessage="Save project to Google Drive"
+                                                    description="Menu bar item for saving a project to Google Drive" // eslint-disable-line max-len
+                                                    id="gui.menuBar.saveToDrive"
+                                                />
+                                            </MenuItem>
+                                        </GoogleChooser>
                                         <GoogleChooser 
                                             appId={APP_ID}
                                             clientId={CLIENT_ID}                                            developerKey={DEVELOPER_KEY}
@@ -617,7 +720,6 @@ class MenuBar extends React.Component {
                                             navHidden={false}
                                             authImmediate={false}
                                             viewID={'DOCS'}
-                                            query={'.sb3'}
                                             >
                                             <MenuItem classname="google">
                                                 <FormattedMessage
@@ -626,7 +728,7 @@ class MenuBar extends React.Component {
                                                     id="gui.menuBar.loadFromDrive"
                                                 />
                                             </MenuItem>
-                                            </GoogleChooser>
+                                        </GoogleChooser>
                                     </MenuSection>
                                 </MenuBarMenu>
                             </div>
