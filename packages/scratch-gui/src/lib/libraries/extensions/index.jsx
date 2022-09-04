@@ -10,6 +10,9 @@ import poseFaceBlocksIconURL from './posenet/pose-face.png';
 import teachableMachineBlocksIconURL from './teachable-machine-blocks/teachable-machine-blocks.png';
 import teachableMachineBlocksInsetIconURL from './teachable-machine-blocks/teachable-machine-blocks-small.svg';
 
+import jiboRobotIconURL from './jibo_ext/jibo_ext.png';
+import jiboRobotInsetIconURL from './jibo_ext/jibo_small.png';
+
 import arduinoRobotIconURL from './arduino_extension/arduino_extension.png';
 import arduinoRobotInsetIconURL from './arduino_extension/arduino_small.svg';
 
@@ -105,6 +108,26 @@ export default [
                 defaultMessage="Create a text classification model for use in a Scratch project!"
                 description="Text Classification Description"
                 id="gui.extension.text-classification.description"
+            />
+        ),
+        featured: true
+    },
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="Jibo"
+                    description="Jibo Connection to ROS docker"
+                    id="gui.extension.jibo.name"
+                />
+        ),
+        extensionId: 'jibo',
+        iconURL: jiboRobotIconURL,
+        insetIconURL: jiboRobotInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="jibo"
+                description="Jibo Connection to ROS docker"
+                id="gui.extension.jibo.description"
             />
         ),
         featured: true

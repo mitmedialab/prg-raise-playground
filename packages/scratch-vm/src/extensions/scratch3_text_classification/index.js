@@ -1276,6 +1276,10 @@ class Scratch3TextClassificationBlocks {
             this.lastSentenceClassified = text;
         }
 
+        if (this.custom_NLP_model.layers.length === 0){
+            await this.buildCustomDeepModel();
+        }
+        
         // TODO: early stopping  
         // var test_ex = ['great','nope','yes','no']
         //var test_ex = ["sorry , that is not true","yes sir","i am uncertain","please say it again"]
