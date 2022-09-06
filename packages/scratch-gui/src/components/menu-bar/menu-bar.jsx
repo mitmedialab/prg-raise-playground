@@ -175,9 +175,8 @@ class MenuBar extends React.Component {
             'handleDriveAuthenticate',
             'hasPermissionToEdit',
             'handleDriveProjectSelect',
-            'handleFolderSelect',
+            'handleOnFolderSelect',
             'handleClickLoadProjectLink',
-            'handleClickDriveSave',
             'onApiLoad'
         ]);
         this.state = {
@@ -185,6 +184,7 @@ class MenuBar extends React.Component {
             fileId: "",
             currentFileId: "",
             currentFileName: "",
+            isOwnerOfCurrentFile: false,
             permissionId: null,
         };
     }
@@ -367,37 +367,39 @@ class MenuBar extends React.Component {
     }
 
     async handleSavePickerClicked() {
-        const { currentFileName, currentFileId } = this.state;
+        const { currentFileName, currentFileId, isOwnerOfCurrentFile } = this.state;
+        const newLine = "\n";
 
-        const message = this.state.currentFileName === ""
-            ? "First, name your project.\n\nThen, after clicking 'OK', you'll be prompted to select the folder to save to."
-            : `Choose a name for your project.\n
-If you use the same name as the currently loaded cloud project ('${currentFileName}') we'll update the corresponding drive file (as long as your are the 'owner' of that file).\n
-If you use a different name, you'll be prompted to pick a folder to save the new file to.`;
+        let message = `First, name your project. ${newLine}
+Then, after clicking 'OK', you'll be prompted to select the folder to save to.`;
+        let placeholder = this.props.projectTitle;
+
+        if (currentFileName) {
+            message = isOwnerOfCurrentFile
+            ? `Choose a name for your project. ${newLine}
+If you use the same name as the currently loaded cloud project ('${currentFileName}') we'll update the corresponding drive file. ${newLine}
+If you use a different name, you'll be prompted to pick a folder to save the new file to.`
+            : `Choose a name for your project. ${newLine}
+Since you are not the owner of the current Google Drive project, you must name it something different than '${currentFileName}'. ${newLine}
+Then, after clicking 'OK', you'll be prompted to select the folder to save to.`;
+            placeholder = isOwnerOfCurrentFile ? this.props.projectTitle : `${this.props.projectTitle} Remix`;
+        }
         
-        const fileName = prompt(message, this.props.projectTitle);
+        const fileName = prompt(message, placeholder);
 
         if (fileName === null || fileName === "") {
             alert("You did not enter a project name!");
             return false;
         }
 
-        if (fileName === this.state.currentFileName) {
-            const isAllowedToEdit = await this.hasPermissionToEdit(currentFileId);
-
-            if (!isAllowedToEdit) {
-                alert("You are not the owner of this cloud file, and therefore you cannot overwrite it. Try to save again, but change the project name first.");
-            } 
-            else {
-                this.uploadFile(currentFileId);
-                this.props.onReceivedProjectTitle(fileName);
-                alert(`Project succesfully updated.`)
-            }
-
+        if (isOwnerOfCurrentFile && fileName === this.state.currentFileName) {
+            this.uploadFile(currentFileId);
+            this.props.onReceivedProjectTitle(fileName);
+            alert(`Project successfully updated.`);
             return false;
         }
 
-        this.setState({ ...this.state, currentFileName: fileName, currentFileId: "" });
+        this.setState({ ...this.state, currentFileName: fileName, currentFileId: "", isOwnerOfCurrentFile: false });
         return true;
     }
 
@@ -406,47 +408,6 @@ If you use a different name, you'll be prompted to pick a folder to save the new
         this.props.vm.uploadProjectToURL(url);
     }
 
-    handleClickDriveSave() {
-        // make sure user has logged into Google Drive
-        if (!this.state.authToken) {
-            this.doAuth(response => {
-                if (response.access_token) {
-                    this.handleDriveAuthenticate(response.access_token);
-                    this.handleClickDriveSave();
-                }
-            });
-            this.props.onRequestCloseFile();
-            return;
-        }
-        // check if we have already created file
-        let fileId = this.state.fileId;
-        if (!fileId) {
-            if (this.isGoogleDriveReady()) {
-                let fileName = prompt("Name your project", this.props.projectTitle);
-                if (fileName != null && fileName != "") {
-                    window.gapi.client.drive.files.create({
-                        name: fileName + ".sb3",
-                        mimeType: "application/x-zip"
-                    }).then((response) => {
-                        if (response.status == 200) {
-                            this.setState({
-                                fileId: response.result.id
-                            });
-                            this.handleClickDriveSave();
-                        }
-                    });
-                }
-            }
-            this.props.onRequestCloseFile();
-            return;
-        }
-        const url = "https://www.googleapis.com/upload/drive/v3/files/" + fileId + "?uploadType=media;" + this.state.authToken;
-        this.props.vm.uploadProjectToURL(url);
-        
-        // show alert that we are saving project
-        window.alert("Project saved");
-        this.props.onRequestCloseFile();
-    }
     handleDriveAuthenticate(token) {
         this.setState({
             authToken: token
@@ -462,7 +423,7 @@ If you use a different name, you'll be prompted to pick a folder to save the new
         return matches[1].substring(0, 100); // truncate project title to max 100 chars
     }
 
-    handleFolderSelect(data) {
+    handleOnFolderSelect(data) {
         const fileName = this.state.currentFileName;
         if (!data.docs || !fileName) return this.props.onRequestCloseFile();
         const parentId = data.docs[0].id;
@@ -476,32 +437,41 @@ If you use a different name, you'll be prompted to pick a folder to save the new
             const {id} = response.result;
             this.uploadFile(id);      
             this.setState({...this.state, currentFileId: id});
+            return id;
+        }).then((id) => {
+            return this.hasPermissionToEdit(id);
+        }).then((isOwnerOfCurrentFile) => {
+            this.setState({...this.state, isOwnerOfCurrentFile});
             this.props.onReceivedProjectTitle(fileName);
-            alert(`Project succesfully saved to: ${parentName}/${fileName}.sb3`)
+            alert(`Project succesfully saved to: ${parentName}/${fileName}.sb3`);
         });
         this.props.onRequestCloseFile();
     }
 
     handleDriveProjectSelect(data) {
         if (!data.docs) return this.props.onRequestCloseFile();
-
-        const { id, name, parentId } = data.docs[0];
+        
+        console.log(data.docs[0]);
+        const { id, name } = data.docs[0];
         const url = "https://www.googleapis.com/drive/v3/files/" + id + "/?alt=media;" + this.state.authToken;
         
         const readyToReplaceProject = this.props.confirmReadyToReplaceProject(
             this.props.intl.formatMessage(sharedMessages.replaceProjectWarning)
         );
-        
-        if (readyToReplaceProject) {
+
+        if (!readyToReplaceProject) return this.props.onRequestCloseFile();
+
+        this.hasPermissionToEdit(id).then((isOwnerOfCurrentFile) => {
             this.props.vm.downloadProjectFromURLDirect(url);
             this.props.onReceivedProjectTitle(this.getProjectTitleFromFilename(name));
             this.setState({...this.state, 
                 currentFileName: name.replace(".sb3", ""), 
+                isOwnerOfCurrentFile,
                 currentFileId: id
             });
-        }
 
-        this.props.onRequestCloseFile();
+            this.props.onRequestCloseFile();
+        });
     }
     isGoogleReady() {
         return !!window.gapi;
@@ -675,7 +645,10 @@ If you use a different name, you'll be prompted to pick a folder to save the new
                                             {(className, renderFileInput, handleLoadProject) => (
                                                 <MenuItem
                                                     className={className}
-                                                    onClick={handleLoadProject}
+                                                    onClick={() => {
+                                                        this.setState({...this.state, currentFileName: ""});
+                                                        handleLoadProject();
+                                                    }}
                                                 >
                                                     {/* eslint-disable max-len */}
                                                     {this.props.intl.formatMessage(sharedMessages.loadFromComputerTitle)}
@@ -692,11 +665,12 @@ If you use a different name, you'll be prompted to pick a folder to save the new
                                             scope={DRIVE_SCOPE}
                                             showPicker={this.handleSavePickerClicked}
                                             onAuthenticate={this.handleDriveAuthenticate}
-                                            onChange={this.handleFolderSelect}
+                                            onChange={this.handleOnFolderSelect}
                                             onAuthFailed={data => console.log('on auth failed:', data)}
                                             multiselect={false}
                                             navHidden={false}
                                             authImmediate={false}
+                                            selectFolders={true}
                                             mimeTypes={['application/vnd.google-apps.folder']}
                                             viewID={'FOLDERS'}
                                         >
@@ -719,6 +693,7 @@ If you use a different name, you'll be prompted to pick a folder to save the new
                                             multiselect={false}
                                             navHidden={false}
                                             authImmediate={false}
+                                            mimeTypes={['application/x.scratch.sb3']}
                                             viewID={'DOCS'}
                                             >
                                             <MenuItem classname="google">

@@ -45,10 +45,6 @@ class GoogleChooser extends React.Component {
     window.gapi.client.init({
         apiKey: this.props.developerKey,
     });
-    window.gapi.auth2.init({
-      clientId: this.props.clientId,
-      scope: this.props.scope,
-  });
   }
 
   onApiLoad() {
@@ -136,8 +132,11 @@ class GoogleChooser extends React.Component {
       view.setQuery(this.props.query)
     }
 
+    if (this.props.selectFolders) {
+      view.setSelectFolderEnabled(true);
+    }
+
     view.setIncludeFolders(true);
-    view.setSelectFolderEnabled(true);
 
     if (!view) {
       throw new Error('Can\'t find view by viewId');
@@ -185,6 +184,7 @@ GoogleChooser.propTypes = {
     developerKey: PropTypes.string,
     scope: PropTypes.array,
     viewId: PropTypes.string,
+    selectFolders: PropTypes.bool,
     authImmediate: PropTypes.bool,
     origin: PropTypes.string,
     onChange: PropTypes.func,
