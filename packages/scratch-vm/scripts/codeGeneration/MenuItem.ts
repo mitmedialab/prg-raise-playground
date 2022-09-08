@@ -52,7 +52,7 @@ ${items.map(item => item.serialize(1)).join("," + newline)}
     <FormattedMessage
         defaultMessage="${value}"
         description="${key} for the ${item.name} extension"
-        id="gui.extension.${item.extensionId}.${key}"
+        id="extension.${item.extensionId}.${key}"
     />
   )`
   }

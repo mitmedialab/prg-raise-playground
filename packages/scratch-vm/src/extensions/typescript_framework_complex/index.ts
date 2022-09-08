@@ -1,6 +1,6 @@
 import { ArgumentType, BlockType } from "../../typescript-support/enums";
 import { Extension } from "../../typescript-support/Extension";
-import { Block, BlockDefinitions, RGBObject, MenuItem } from "../../typescript-support/types";
+import { Block, BlockDefinitions, RGBObject, MenuItem, AllText } from "../../typescript-support/types";
 import addDefinition from "./addDefinition";
 
 type DisplayDetails = {
@@ -63,6 +63,8 @@ class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
   collection: Animal[] = [ Animal.Gorilla ];
   getAnimalCollection: () => MenuItem<Animal>[];
   state: number = 0;
+
+  defineTranslations() {return undefined};
 
   init() { 
     this.lhsOptions = [3, 4, 5];

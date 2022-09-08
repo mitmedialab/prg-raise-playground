@@ -126,8 +126,6 @@ export type ExtensionMenuDisplayDetails = {
   description: string;  
   iconURL: string;
   insetIconURL: string;
-  nameTranslations?: Partial<Record<Language, string>>;
-  descriptionTranslations?: Partial<Record<Language, string>>;
   internetConnectionRequired?: boolean;
   collaborator?: string;
   bluetoothRequired?: boolean;
@@ -141,7 +139,8 @@ export type ExtensionMenuDisplayDetails = {
   featured?: boolean;
   hidden?: boolean;
   disabled?: boolean;
-}
+  implementationLanguage?: Language;
+} & Partial<Record<Language, {name: string, description: string}>>
 
 export type DefineBlock<T extends BlockOperation> = (extension: Extension<any, any>) => Block<T>;
 

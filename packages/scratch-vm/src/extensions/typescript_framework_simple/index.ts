@@ -1,28 +1,28 @@
 import { ArgumentType, BlockType, Branch, Language } from "../../typescript-support/enums";
 import { Extension } from "../../typescript-support/Extension";
 import { Environment } from "../../typescript-support/types";
-import getTranslations from "./translations";
+import defineTranslations from "./translations";
 
 type Details = {
   name: "Super Simple Typescript Extension",
   description: "Skeleton for a typescript extension",
   iconURL: "Typescript_logo.png",
   insetIconURL: "typescript-logo.svg",
-  nameTranslations: {
-    [Language.Español]: "Extensión simple Typescript",
-  },
-  descriptionTranslations: {
-    [Language.Español]: "Ejemplo de una extensión simple usando Typescript",
-  },
+  implementationLanguage: Language.English,
+  [Language.Español]: {
+    name: "Extensión simple Typescript",
+    description: "Ejemplo de una extensión simple usando Typescript"
+  }
 };
 
 class SimpleTypescript extends Extension<Details, {
   log: (msg: string, a: string) => void;
   dummy: () => void;
 }> {
-  init(env: Environment) { }
+  init(env: Environment) { 
+  }
 
-  getTranslations = getTranslations;
+  defineTranslations = defineTranslations;
 
   defineBlocks(): SimpleTypescript["BlockDefinitions"] {
     return {

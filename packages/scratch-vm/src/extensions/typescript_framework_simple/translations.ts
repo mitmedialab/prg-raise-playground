@@ -1,8 +1,7 @@
 import Extension = require(".")
 import { Language } from "../../typescript-support/enums";
 
-const getTranslations = (): Extension["Translations"] => ({
-  [Language.English]: undefined,
+const defineTranslations = (): Extension["Translations"] => ({
   [Language.Español]: {
     log: {
       blockText: (msg) => `Imprime ${msg}`,
@@ -12,4 +11,4 @@ const getTranslations = (): Extension["Translations"] => ({
   }
 });
 
-export default getTranslations;
+export default defineTranslations;

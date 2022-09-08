@@ -1,11 +1,11 @@
-import Thread = require('../engine/thread');
 import { Branch } from './enums';
+import Thread = require("./Thread");
+import StackFrame = require('./StackFrame');
 const Timer = require('../util/timer');
 
-type Sequencer = any; // TODO
-//type Thread = any; // TODO
-type Target = any; // TODO
-type StackFrame = any; // TODO
+// TODO: #161 Convert engine classes to Typescript 
+import Sequencer = require("../engine/sequencer");
+import Target = require("../engine/target");
 
 type NowObj = { now: () => number };
 
@@ -28,8 +28,8 @@ class BlockUtility {
     thread: Thread;
 
     private _nowObj: NowObj;
-    
-    constructor (sequencer = null, thread = null) {
+
+    constructor(sequencer = null, thread = null) {
         this.sequencer = sequencer;
         this.thread = thread;
         this._nowObj = { now: () => this.sequencer.runtime.currentMSecs };
@@ -38,14 +38,14 @@ class BlockUtility {
     /**
      * The target the primitive is working on.
      */
-    get target (): Target {
+    get target(): Target {
         return this.thread.target;
     }
 
     /**
      * The runtime the block primitive is running in.
      */
-    get runtime () {
+    get runtime() {
         return this.sequencer.runtime;
     }
 
@@ -61,7 +61,7 @@ class BlockUtility {
      * The stack frame used by loop and other blocks to track internal state.
      * @type {object}
      */
-    get stackFrame (): StackFrame {
+    get stackFrame(): StackFrame {
         const frame = this.thread.peekStackFrame();
         if (frame.executionContext === null) {
             frame.executionContext = {};
@@ -73,7 +73,7 @@ class BlockUtility {
      * Check the stack timer and return a boolean based on whether it has finished or not.
      * @return {boolean} - true if the stack timer has finished.
      */
-    stackTimerFinished (): boolean {
+    stackTimerFinished(): boolean {
         const timeElapsed = this.stackFrame.timer.timeElapsed();
         if (timeElapsed < this.stackFrame.duration) {
             return false;
@@ -85,7 +85,7 @@ class BlockUtility {
      * Check if the stack timer needs initialization.
      * @return {boolean} - true if the stack timer needs to be initialized.
      */
-    stackTimerNeedsInit (): boolean {
+    stackTimerNeedsInit(): boolean {
         return !this.stackFrame.timer;
     }
 
@@ -93,7 +93,7 @@ class BlockUtility {
      * Create and start a stack timer
      * @param {number} duration - a duration in milliseconds to set the timer for.
      */
-    startStackTimer (duration: number) {
+    startStackTimer(duration: number) {
         if (this.nowObj) {
             this.stackFrame.timer = new Timer(this.nowObj);
         } else {
@@ -106,14 +106,14 @@ class BlockUtility {
     /**
      * Set the thread to yield.
      */
-    yield () {
+    yield() {
         this.thread.status = Thread.STATUS_YIELD;
     }
 
     /**
      * Set the thread to yield until the next tick of the runtime.
      */
-    yieldTick () {
+    yieldTick() {
         this.thread.status = Thread.STATUS_YIELD_TICK;
     }
 
@@ -122,14 +122,14 @@ class BlockUtility {
      * @param {number} branch Which branch to step to (i.e., 1, 2).
      * @param {boolean} isLoop Whether this block is a loop.
      */
-    startBranch (branch: Branch, isLoop: boolean) {
+    startBranch(branch: Branch, isLoop: boolean) {
         this.sequencer.stepToBranch(this.thread, branch, isLoop);
     }
 
     /**
      * Stop all threads.
      */
-    stopAll () {
+    stopAll() {
         this.sequencer.runtime.stopAll();
     }
 
@@ -137,14 +137,14 @@ class BlockUtility {
      * Stop threads other on this target other than the thread holding the
      * executed block.
      */
-    stopOtherTargetThreads () {
+    stopOtherTargetThreads() {
         this.sequencer.runtime.stopForTarget(this.thread.target, this.thread);
     }
 
     /**
      * Stop this thread.
      */
-    stopThisScript () {
+    stopThisScript() {
         this.thread.stopThisScript();
     }
 
@@ -152,7 +152,7 @@ class BlockUtility {
      * Start a specified procedure on this thread.
      * @param {string} procedureCode Procedure code for procedure to start.
      */
-    startProcedure (procedureCode: string) {
+    startProcedure(procedureCode: string) {
         this.sequencer.stepToProcedure(this.thread, procedureCode);
     }
 
@@ -161,7 +161,7 @@ class BlockUtility {
      * @param {string} procedureCode Procedure code for procedure to query.
      * @return {Array.<string>} List of param names for a procedure.
      */
-    getProcedureParamNamesAndIds (procedureCode: string): string[] {
+    getProcedureParamNamesAndIds(procedureCode: string): string[] {
         return this.thread.target.blocks.getProcedureParamNamesAndIds(procedureCode);
     }
 
@@ -170,14 +170,14 @@ class BlockUtility {
      * @param {string} procedureCode Procedure code for procedure to query.
      * @return {Array.<string>} List of param names for a procedure.
      */
-    getProcedureParamNamesIdsAndDefaults (procedureCode: string): string[] {
+    getProcedureParamNamesIdsAndDefaults(procedureCode: string): string[] {
         return this.thread.target.blocks.getProcedureParamNamesIdsAndDefaults(procedureCode);
     }
 
     /**
      * Initialize procedure parameters in the thread before pushing parameters.
      */
-    initParams () {
+    initParams() {
         this.thread.initParams();
     }
 
@@ -206,7 +206,7 @@ class BlockUtility {
      * @param {Target=} optTarget Optionally, a target to restrict to.
      * @return {Array.<Thread>} List of threads started by this function.
      */
-    startHats (requestedHat: string, optMatchFields: any, optTarget: Target): Thread[] {
+    startHats(requestedHat: string, optMatchFields: any, optTarget: Target): typeof Thread[] {
         // Store thread and sequencer to ensure we can return to the calling block's context.
         // startHats may execute further blocks and dirty the BlockUtility's execution context
         // and confuse the calling block when we return to it.
@@ -228,7 +228,7 @@ class BlockUtility {
      * @param {Array.<*>} args Arguments to pass to the device's function.
      * @return {*} The expected output for the device's function.
      */
-    ioQuery<TArgs, TReturn> (device: string, func: string, args: TArgs): TReturn {
+    ioQuery<TArgs, TReturn>(device: string, func: string, args: TArgs): TReturn {
         // Find the I/O device and execute the query/function call.
         if (
             this.sequencer.runtime.ioDevices[device] &&

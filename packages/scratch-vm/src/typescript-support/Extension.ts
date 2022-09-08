@@ -41,7 +41,7 @@ export abstract class Extension
     const menus: Menu<any>[] = [];
     for (const key in definitions) {
       const block = definitions[key](this);
-      const info = this.convertToInfo(this.name, key, block, menus);
+      const info = this.convertToInfo(key, block, menus);
       this.internal_blocks.push(info);
     }
 
@@ -66,7 +66,7 @@ export abstract class Extension
 
       if (reporterItemsKey in menu) {
         const nonDynamic = menu as MenuThatAcceptsReporters<any>;
-        this.internal_menus.push({ acceptReporters, items: nonDynamic.items.map(Extension.ConvertMenuItemsToString) });
+        this.addStaticMenu(nonDynamic.items, acceptReporters);
         continue;
       }
       
@@ -95,7 +95,7 @@ export abstract class Extension
 
   abstract init(env: Environment);
   abstract defineBlocks(): BlockDefinitions<Blocks>;
-  abstract getTranslations(): Translations<Extension<MenuDetails, Blocks>>;
+  abstract defineTranslations(): Translations<Extension<MenuDetails, Blocks>>;
 
   getInfo(): ExtensionMetadata  {
     const {id, internal_blocks: blocks, internal_menus: menus, name, blockIconURI} = this; 
@@ -108,34 +108,31 @@ export abstract class Extension
     return info;
   }
 
-  addStaticMenu(items: MenuItem<any>[], acceptReporters: boolean) {
+  private addStaticMenu(items: MenuItem<any>[], acceptReporters: boolean) {
     this.internal_menus.push({ 
       acceptReporters, 
-      items: items.map(Extension.ConvertMenuItemsToString) 
+      items: items.map(item => item /**TODO figure out how to format */).map(Extension.ConvertMenuItemsToString) 
     });
   }
 
-  addDynamicMenu(getItems: DynamicMenu<any>, acceptReporters: boolean) {
+  private addDynamicMenu(getItems: DynamicMenu<any>, acceptReporters: boolean) {
     const key = `internal_dynamic_${this.internal_menus.length}`;
     this[key] = () => {
       const items = getItems();
-      return items.map(Extension.ConvertMenuItemsToString);
+      return items.map(item => item).map(Extension.ConvertMenuItemsToString);
     };
     this.internal_menus.push({acceptReporters, items: key});
   }
 
-  convertToInfo(extensionName: string, key: string, block: Block<any>, menusToAdd: MenuItem<any>[]): ExtensionBlockMetadata {
+  private convertToInfo(key: string, block: Block<any>, menusToAdd: MenuItem<any>[]): ExtensionBlockMetadata {
     const {type, text, operation} = block;
     const args: Argument<any>[] = block.args;
 
+    const defaultText = Extension.IsFunction(text) 
+    ? (text as unknown as (...params: any[]) => string)(...args.map((_, index) => `[${index}]`)) 
+    : text;
 
-    const displayText = formatMessage({
-      id: `${this.id}.${key}`,
-      default: Extension.IsFunction(text) 
-      ? (text as unknown as (...params: any[]) => string)(...args.map((_, index) => `[${index}]`)) 
-      : text,
-      description: `Block text for '${key}' block (of '${extensionName}' extension)`,
-    });
+    const displayText = this.format(defaultText, key, `Block text for '${key}'`);
 
     type Handler = MenuThatAcceptsReporters<any>['handler'];
     const handlerKey: keyof MenuThatAcceptsReporters<any> = 'handler';
@@ -149,7 +146,11 @@ export abstract class Extension
 
       const {defaultValue, options} = element as VerboseArgument<any>;
 
-      if (defaultValue !== undefined) entry.defaultValue = defaultValue;
+      if (defaultValue !== undefined) entry.defaultValue = 
+        Extension.IsString(entry) 
+          ? this.format(defaultValue, Extension.GetArgTranslationID(key, index), `Default value for arg ${index + 1} of ${key} block`)
+          : defaultValue;
+
       if (!options) return entry;
 
       const alreadyAddedIndex = menusToAdd.indexOf(options);
@@ -190,6 +191,15 @@ export abstract class Extension
     }
   }
 
+  private format(text: string, identifier: string, description: string): string {
+    return formatMessage({
+      id: `extension.${this.id}.${identifier}`,
+      default: text,
+      description: `${description} (of '${this.name}' extension)`,
+    });
+  }
+
+/*
   addTranslations(map: Record<Language, string>) {
     const translations = this.getTranslations();
     if (!translations) return;
@@ -205,6 +215,7 @@ export abstract class Extension
       }
     }
   }
+*/
 
   static TryCastToArgumentType = <T extends ArgumentType>(
     argumentType: T, 
@@ -218,6 +229,10 @@ export abstract class Extension
     catch {
       return onFailure(value);
     }
+  }
+
+  private static GetArgTranslationID = (blockname: string, index: number) => {
+    return `${blockname}-arg${index}-default`;
   }
 
   private static GetInternalKey = (key: string) => `internal_${key}`;

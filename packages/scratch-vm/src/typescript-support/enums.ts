@@ -84,7 +84,7 @@ export const enum Branch {
   Seventh
 }
 
-export const enum Language {
+export enum Language {
   Аҧсшәа = 'ab',
   العربية = 'ar',
   አማርኛ = 'am',
@@ -147,3 +147,5 @@ export const enum Language {
   简体中文 = 'zh-cn',
   繁體中文 = 'zh-tw'
 }
+
+export const LanguageKeys = Object.keys(Language);
