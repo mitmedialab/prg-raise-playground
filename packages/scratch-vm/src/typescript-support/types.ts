@@ -14,7 +14,7 @@ export type MenuItem<T> = T | {
   text: string;
 };
 
-export type DynamicMenu<T> = () =>  MenuItem<T>[];
+export type DynamicMenu<T> = () => MenuItem<T>[];
 
 export type DynamicMenuThatAcceptsReporters<T> = {
   getItems: DynamicMenu<T>,
@@ -56,8 +56,8 @@ export type ScratchArgument<T> =
   T extends RGBObject ? ArgumentType.Color :
   T extends boolean[][] ? ArgumentType.Matrix :
   T extends number ? (ArgumentType.Number | ArgumentType.Angle | ArgumentType.Note) :
-  T extends string ? ArgumentType.String  :
-  T extends boolean ? (ArgumentType.Boolean) : 
+  T extends string ? ArgumentType.String :
+  T extends boolean ? (ArgumentType.Boolean) :
   never;
 
 // Used to be <T extends [...any[]]> ... not sure if it needs to be?
@@ -100,20 +100,20 @@ export type Block<T extends BlockOperation> = {
    *        * each time a child branch finishes, the loop block is called again.
    * BlockType.Event - Starts a stack in response to an event (full spec TBD)
    */
-  type: ReturnType<T> extends void ? BlockType.Command | BlockType.Conditional | BlockType.Loop : 
-        ReturnType<T> extends boolean ? (BlockType.Reporter | BlockType.Boolean | BlockType.Hat) :
-        ReturnType<T> extends Promise<any> ? never :
-        BlockType.Reporter;
+  type: ReturnType<T> extends void ? BlockType.Command | BlockType.Conditional | BlockType.Loop :
+  ReturnType<T> extends boolean ? (BlockType.Reporter | BlockType.Boolean | BlockType.Hat) :
+  ReturnType<T> extends Promise<any> ? never :
+  BlockType.Reporter;
   /**
    * 
    */
   operation: (...params: ParamsAndUtility<T>) => ReturnType<T>;
   text: Parameters<T> extends NonEmptyArray<any> ? (...params: Parameters<T>) => string : string;
-} & (Parameters<T> extends NonEmptyArray<any> ? { 
+} & (Parameters<T> extends NonEmptyArray<any> ? {
   /**
    * @description The args
    */
-  args: ToArguments<Parameters<T>> 
+  args: ToArguments<Parameters<T>>
 } : {
   /**
    * @description The args field should not be defined for blocks that take no arguments
@@ -123,7 +123,7 @@ export type Block<T extends BlockOperation> = {
 
 export type ExtensionMenuDisplayDetails = {
   name: string;
-  description: string;  
+  description: string;
   iconURL: string;
   insetIconURL: string;
   internetConnectionRequired?: boolean;
@@ -140,47 +140,47 @@ export type ExtensionMenuDisplayDetails = {
   hidden?: boolean;
   disabled?: boolean;
   implementationLanguage?: Language;
-} & Partial<Record<Language, {name: string, description: string}>>
+} & Partial<Record<Language, { name: string, description: string }>>
 
 export type DefineBlock<T extends BlockOperation> = (extension: Extension<any, any>) => Block<T>;
 
 export type ExtensionBlocks = Record<string, BlockOperation>;
 
-export type BlockDefinitions<TBlocks extends ExtensionBlocks> = 
-{ 
-  [k in keyof TBlocks]: TBlocks[k] extends 
-    (...args: infer A) => infer R 
-      ? DefineBlock<(...args: A) => R> 
-      : never 
-};
+export type BlockDefinitions<TBlocks extends ExtensionBlocks> =
+  {
+    [k in keyof TBlocks]: TBlocks[k] extends
+    (...args: infer A) => infer R
+    ? DefineBlock<(...args: A) => R>
+    : never
+  };
 
 type ArgsTextCommon = {
   options?: (string)[]
 }
 
-type ArgsText<T> = T extends ScratchArgument<string> | VerboseArgument<string> 
-? ({
-  defaultValue?: string,
-} & ArgsTextCommon)
-: ArgsTextCommon;
+type ArgsText<T> = T extends ScratchArgument<string> | VerboseArgument<string>
+  ? ({
+    defaultValue?: string,
+  } & ArgsTextCommon)
+  : ArgsTextCommon;
 
 type ToArgumentsText<T extends any[]> =
   T extends [infer Head, ...infer Tail]
   ? [ArgsText<Head>, ...ToArgumentsText<Tail>]
   : [];
 
-type ExtractTextFromBlock<TOp extends BlockOperation, TBlock extends Block<TOp>> = TBlock["args"] extends never 
+type ExtractTextFromBlock<TOp extends BlockOperation, TBlock extends Block<TOp>> = TBlock["args"] extends never
   ? string | {
     blockText: TBlock["text"]
-  } 
-  : TBlock["text"] extends (...args: any) => any 
-    ? {
-      blockText: TBlock["text"],
-      argsText: ToArgumentsText<TBlock["args"]>,
-    }
-    : never // shouldn't happen
+  }
+  : TBlock["text"] extends (...args: any) => any
+  ? {
+    blockText: TBlock["text"],
+    argsText: ToArgumentsText<TBlock["args"]>,
+  }
+  : never // shouldn't happen
 
-export type AllText<T extends Extension<any, any>> = { 
+export type AllText<T extends Extension<any, any>> = {
   [k in keyof T["BlockFunctions"]]: ExtractTextFromBlock<T["BlockFunctions"][k], Block<T["BlockFunctions"][k]>>
 };
 
@@ -198,7 +198,7 @@ export type UnionToTuple<T> = UnionToIntersection<
   ? [...UnionToTuple<Exclude<T, W>>, W]
   : [];
 
-export type KeysWithValuesOfType<T,V> = keyof { [ P in keyof T as T[P] extends V ? P : never ] : P };
+export type KeysWithValuesOfType<T, V> = keyof { [P in keyof T as T[P] extends V ? P : never]: P };
 
 export type RequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];
 export type OptionalKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? K : never }[keyof T];
@@ -210,6 +210,65 @@ export type OptionalKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? K : ne
 // TypeScript Version: 2.9
 
 export type ValueOf<ObjectType> = ObjectType[keyof ObjectType];
+
+/**
+ * Raw extension block data paired with processed data ready for scratch-blocks
+ */
+export type ConvertedBlockInfo = {
+  /**
+   * the raw block info
+   */
+  info: ExtensionBlockMetadata;
+  /**
+   * the scratch-blocks JSON definition for this block
+   */
+  json: Object;
+  /**
+   * the scratch-blocks XML definition for this block
+   */
+  xml: string;
+}
+
+/**
+ * Information about a block category
+ */
+export type CategoryInfo = {
+  /**
+   * the unique ID of this category
+   */
+  id: string;
+  /**
+   * the human-readable name of this category
+   */
+  name: string;
+  /**
+   * optional URI for the block icon image
+   */
+  blockIconURI?: string;
+  /**
+   * the primary color for this category, in '#rrggbb' format
+   */
+  color1: string;
+  /**
+   * the secondary color for this category, in '#rrggbb' format
+   */
+  color2: string;
+  /**
+   * the tertiary color for this category, in '#rrggbb' format
+   */
+  color3: string;
+  /**
+   * the blocks, separators, etc. in this category
+   */
+  blocks: ConvertedBlockInfo[];
+  /**
+   * the menus provided by this category
+   */
+  menus: Object[];
+  customFieldTypes?: any;
+  showStatusButton?: boolean;
+  menuIconURI?: string;
+}
 
 /** All the metadata needed to register an extension. */
 export interface ExtensionMetadata {
@@ -294,8 +353,8 @@ export type ExtensionDynamicMenu = string;
 
 /** Items in an extension menu. */
 export type ExtensionMenuItems = {
-  items: Array<ExtensionMenuItemSimple | ExtensionMenuItemComplex> | ExtensionDynamicMenu, 
-  acceptReporters: boolean 
+  items: Array<ExtensionMenuItemSimple | ExtensionMenuItemComplex> | ExtensionDynamicMenu,
+  acceptReporters: boolean
 };
 
 /** A menu item for which the label and value are identical strings. */

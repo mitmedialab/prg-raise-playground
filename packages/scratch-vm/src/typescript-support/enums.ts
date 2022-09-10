@@ -1,3 +1,5 @@
+import { UnionToTuple } from "./types";
+
 /**
  * The different kind of blocks that an extension can define
  */
@@ -72,15 +74,86 @@ export const enum ArgumentType {
   Image = "image"
 }
 
+/**
+ * Default types of Target supported by the VM
+ * @enum {string}
+ */
+export const enum TargetType {
+  /**
+   * Rendered target which can move, change costumes, etc.
+   */
+  Sprite = 'sprite',
+
+  /**
+   * Rendered target which cannot move but can change backdrops
+   */
+  Stage = 'stage'
+};
+
+/**
+ * These constants are copied from scratch-blocks/core/constants.js
+ * @TODO find a way to require() these straight from scratch-blocks... maybe make a scratch-blocks/dist/constants.js?
+ * @readonly
+ * @enum {int}
+ */
+export const enum ScratchBlocksConstants {
+  /**
+   * ENUM for output shape: hexagonal (booleans/predicates).
+   * @const
+   */
+  OutputShapeHexagonal = 1,
+
+  /**
+   * ENUM for output shape: rounded (numbers).
+   * @const
+   */
+  OutputShapeRound = 2,
+
+  /**
+   * ENUM for output shape: squared (any/all values; strings).
+   * @const
+   */
+  OutputShapeSquare = 3
+};
+
+export const enum StageLayering {
+  BackgroundLayer = 'background',
+  VideoLayer = 'video',
+  PenLayer = 'pen',
+  SpriteLayer = 'sprite',
+}
+
+export const LayerGroups: UnionToTuple<StageLayering> = [
+  StageLayering.BackgroundLayer,
+  StageLayering.VideoLayer,
+  StageLayering.PenLayer,
+  StageLayering.SpriteLayer
+];
+
+export const enum VariableType {
+  /**
+   * Type representation for scalar variables.
+   * This is currently represented as ''
+   * for compatibility with blockly.
+   */
+  Scalar = '',
+  /**
+   * Type representation for list variables.
+   */
+  List = 'list',
+
+  BrooadcastMessage = 'broadcast_msg'
+}
+
 export const enum Branch {
   Exit = 0,
   Enter = 1,
   First = 1,
   Second,
-  Third, 
-  Fourth, 
-  Fifth, 
-  Sixth, 
+  Third,
+  Fourth,
+  Fifth,
+  Sixth,
   Seventh
 }
 

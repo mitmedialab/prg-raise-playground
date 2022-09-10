@@ -9,12 +9,13 @@ import Target = require("../engine/target");
 
 type NowObj = { now: () => number };
 
+export = BlockUtility;
+
 /**
  * @fileoverview
  * Interface provided to block primitive functions for interacting with the
  * runtime, thread, target, and convenient methods.
  */
-
 class BlockUtility {
     /**
      * A sequencer block primitives use to branch or start procedures with
@@ -238,5 +239,3 @@ class BlockUtility {
         }
     }
 }
-
-export = BlockUtility;

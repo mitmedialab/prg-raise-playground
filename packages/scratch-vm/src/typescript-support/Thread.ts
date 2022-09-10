@@ -39,6 +39,16 @@ const enum Status {
  */
 class Thread {
   /**
+   * Not sure -- utilized by runtime
+   */
+  stackClick: boolean;
+
+  /**
+   * Not sure -- utilized by runtime
+   */
+  updateMonitor: boolean;
+
+  /**
    * ID of top block of the thread
    */
   topBlock: BlockID;
