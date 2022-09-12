@@ -16,10 +16,10 @@ type Details = {
 };
 
 class SimpleTypescript extends Extension<Details, {
-  log: (msg: string, a: string) => void;
+  log: (msg: string) => void;
   dummy: () => void;
 }> {
-  init(env: Environment) { 
+  init(env: Environment) {
   }
 
   defineTranslations = defineTranslations;
@@ -30,7 +30,7 @@ class SimpleTypescript extends Extension<Details, {
         type: BlockType.Command,
         args: [
           {
-            type: ArgumentType.String, 
+            type: ArgumentType.String,
             options: {
               items: ['one', 'two', 'three'],
               acceptsReporters: true,
@@ -39,7 +39,7 @@ class SimpleTypescript extends Extension<Details, {
                 return "";
               })
             }
-          }, ArgumentType.String],
+          }],
         text: (msg) => `Log ${msg} to the console`,
         operation: (msg) => console.log(msg)
       }),

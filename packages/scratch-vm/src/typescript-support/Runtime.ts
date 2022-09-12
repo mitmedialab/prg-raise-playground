@@ -32,8 +32,6 @@ import RuntimeEvent from "./RuntimeEvent";
 import { BlockType, LayerGroups, ScratchBlocksConstants, TargetType, VariableType } from "./enums";
 import ArgumentTypeMap from "./ArgumentTypeMap";
 
-export = Runtime;
-
 type RenderWebGL = any; // TODO: #161 
 type SvgRenderer = any; // TODO: #161 
 type ScratchStorage = any; // TODO: #161 
@@ -57,6 +55,8 @@ let stepThreadsProfilerId = -1;
  * @type {number}
  */
 let rendererDrawProfilerId = -1;
+
+export = Runtime;
 
 class Runtime extends EventEmitter {
   currentMSecs: number;

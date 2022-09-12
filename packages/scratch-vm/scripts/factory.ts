@@ -19,8 +19,10 @@ const operations: UnionToTuple<Operation> = [Operation.Default, Operation.Minima
 
 const templateByOperation: Record<Operation, string> = {
   [Operation.Default]: "default",
-  [Operation.Minimal]: "base"
+  [Operation.Minimal]: "index"
 };
+
+const translationsFile = getPathToTemplate("translations");
 
 Object.values(templateByOperation)
   .map(getPathToTemplate)
@@ -32,7 +34,7 @@ type CommandLineArgs = {
 }
 
 const { directory, operation } = processArgs<CommandLineArgs>(
-  { directory: "dir", operation: "op" }, 
+  { directory: "dir", operation: "op" },
   { directory: undefined, operation: Operation.Default }
 );
 
@@ -48,6 +50,7 @@ const destination = path.join(folder, "index.ts");
 
 fs.mkdirSync(folder);
 fs.copyFileSync(template, destination);
+fs.copyFileSync(translationsFile, destination);
 
 const msg = [
   chalk.greenBright("Success! Your extension has been created at:"),

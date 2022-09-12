@@ -1,5 +1,5 @@
-import type Runtime from '../engine/runtime';
-import BlockUtility = require('./BlockUtility');
+import type Runtime from './Runtime';
+import type BlockUtility from "./BlockUtility";
 import { ArgumentType, BlockType, Branch, Language } from './enums';
 import type { Extension } from './Extension';
 
@@ -90,7 +90,7 @@ export type Block<T extends BlockOperation> = {
    * * BlockType.Boolean - same as 'Reporter' but specifically returns a Boolean value
    * * BlockType.Hat - Starts a stack if its value changes from falsy to truthy
    * 
-   * NOTE: Scratch warns us that the below blocks are still 'in development' and therefore might contain bugs.
+   * NOTE: Scratch warns us that the below blocks are still 'in development' and therefore might not work (or at least not work as expected).
    * * BlockType.Conditional - control flow, like "if {}" or "if {} else {}"
    *     * A 'Conditional' block may return the one-based index of a branch to
    *     run, or it may return zero/falsy to run no branch.
@@ -108,6 +108,9 @@ export type Block<T extends BlockOperation> = {
    * 
    */
   operation: (...params: ParamsAndUtility<T>) => ReturnType<T>;
+  /**
+   * 
+   */
   text: Parameters<T> extends NonEmptyArray<any> ? (...params: Parameters<T>) => string : string;
 } & (Parameters<T> extends NonEmptyArray<any> ? {
   /**

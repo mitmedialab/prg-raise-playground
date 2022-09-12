@@ -1,11 +1,11 @@
-import type Runtime from '../engine/runtime';
 import { ArgumentType, Language } from './enums';
 import type { ExtensionMenuDisplayDetails, ExtensionBlocks, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, VerboseArgument, Environment, Menu, DynamicMenu, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters, TypeByArgumentType, AllText, Translations } from './types';
 import Cast from '../util/cast';
 import formatMessage = require('format-message');
+import Runtime from "./Runtime";
 
 export type CodeGenArgs = {
-  name: never, 
+  name: never,
   id: never,
   blockIconURI: never,
 }
@@ -25,7 +25,7 @@ export abstract class Extension
   readonly BlockFunctions: Blocks;
   readonly BlockDefinitions: BlockDefinitions<Blocks>;
   readonly Translations: Translations<Extension<MenuDetails, Blocks>>;
-  
+
   private readonly internal_blocks: ExtensionBlockMetadata[] = [];
   private readonly internal_menus: ExtensionMenuMetadata[] = [];
 
@@ -69,7 +69,7 @@ export abstract class Extension
         this.addStaticMenu(nonDynamic.items, acceptReporters);
         continue;
       }
-      
+
       if (reporterItemsGetterKey in menu) {
         const dynamicMenu = menu as DynamicMenuThatAcceptsReporters<any>;
         this.addDynamicMenu(dynamicMenu.getItems, acceptReporters);
@@ -97,11 +97,11 @@ export abstract class Extension
   abstract defineBlocks(): BlockDefinitions<Blocks>;
   abstract defineTranslations(): Translations<Extension<MenuDetails, Blocks>>;
 
-  getInfo(): ExtensionMetadata  {
-    const {id, internal_blocks: blocks, internal_menus: menus, name, blockIconURI} = this; 
-    const info = {id, blocks, name, blockIconURI};
+  getInfo(): ExtensionMetadata {
+    const { id, internal_blocks: blocks, internal_menus: menus, name, blockIconURI } = this;
+    const info = { id, blocks, name, blockIconURI };
     if (menus) info['menus'] = Object.entries(this.internal_menus).reduce((obj, [key, value]) => {
-      obj[key] = value; 
+      obj[key] = value;
       return obj;
     }, {});
 
@@ -109,9 +109,9 @@ export abstract class Extension
   }
 
   private addStaticMenu(items: MenuItem<any>[], acceptReporters: boolean) {
-    this.internal_menus.push({ 
-      acceptReporters, 
-      items: items.map(item => item /**TODO figure out how to format */).map(Extension.ConvertMenuItemsToString) 
+    this.internal_menus.push({
+      acceptReporters,
+      items: items.map(item => item /**TODO figure out how to format */).map(Extension.ConvertMenuItemsToString)
     });
   }
 
@@ -121,16 +121,16 @@ export abstract class Extension
       const items = getItems();
       return items.map(item => item).map(Extension.ConvertMenuItemsToString);
     };
-    this.internal_menus.push({acceptReporters, items: key});
+    this.internal_menus.push({ acceptReporters, items: key });
   }
 
   private convertToInfo(key: string, block: Block<any>, menusToAdd: MenuItem<any>[]): ExtensionBlockMetadata {
-    const {type, text, operation} = block;
+    const { type, text, operation } = block;
     const args: Argument<any>[] = block.args;
 
-    const defaultText = Extension.IsFunction(text) 
-    ? (text as unknown as (...params: any[]) => string)(...args.map((_, index) => `[${index}]`)) 
-    : text;
+    const defaultText = Extension.IsFunction(text)
+      ? (text as unknown as (...params: any[]) => string)(...args.map((_, index) => `[${index}]`))
+      : text;
 
     const displayText = this.format(defaultText, key, `Block text for '${key}'`);
 
@@ -144,10 +144,10 @@ export abstract class Extension
 
       if (Extension.IsPrimitive(element)) return entry;
 
-      const {defaultValue, options} = element as VerboseArgument<any>;
+      const { defaultValue, options } = element as VerboseArgument<any>;
 
-      if (defaultValue !== undefined) entry.defaultValue = 
-        Extension.IsString(entry) 
+      if (defaultValue !== undefined) entry.defaultValue =
+        Extension.IsString(entry)
           ? this.format(defaultValue, Extension.GetArgTranslationID(key, index), `Default value for arg ${index + 1} of ${key} block`)
           : defaultValue;
 
@@ -156,18 +156,18 @@ export abstract class Extension
       const alreadyAddedIndex = menusToAdd.indexOf(options);
       const menuIndex = alreadyAddedIndex >= 0 ? alreadyAddedIndex : menusToAdd.push(options) - 1;
       entry.menu = `${menuIndex}`;
-      
+
       if (handlerKey in options) {
         const { handler } = options as MenuThatAcceptsReporters<any> | DynamicMenuThatAcceptsReporters<any>;
         handlers[index] = handler;
       }
-      
+
       return entry;
     })
-    .reduce((accumulation, value, index) => {
-      accumulation[`${index}`] = value;
-      return accumulation;
-    }, {});
+      .reduce((accumulation, value, index) => {
+        accumulation[`${index}`] = value;
+        return accumulation;
+      }, {});
 
     const opcode = Extension.GetInternalKey(key);
     const bound = operation.bind(this);
@@ -199,27 +199,27 @@ export abstract class Extension
     });
   }
 
-/*
-  addTranslations(map: Record<Language, string>) {
-    const translations = this.getTranslations();
-    if (!translations) return;
-
-    for (const key in map) {
-      if (!(key in translations)) continue;
-
-      const forLocale = translations[key as Language];
-      if (!forLocale) continue;
-
-      for (const translationID in forLocale) {
-        map[translationID] = forLocale[translationID];
+  /*
+    addTranslations(map: Record<Language, string>) {
+      const translations = this.getTranslations();
+      if (!translations) return;
+  
+      for (const key in map) {
+        if (!(key in translations)) continue;
+  
+        const forLocale = translations[key as Language];
+        if (!forLocale) continue;
+  
+        for (const translationID in forLocale) {
+          map[translationID] = forLocale[translationID];
+        }
       }
     }
-  }
-*/
+  */
 
   static TryCastToArgumentType = <T extends ArgumentType>(
-    argumentType: T, 
-    value: any, 
+    argumentType: T,
+    value: any,
     onFailure: (value: any) => TypeByArgumentType[T]
   ): TypeByArgumentType[T] => {
     try {
@@ -237,19 +237,19 @@ export abstract class Extension
 
   private static GetInternalKey = (key: string) => `internal_${key}`;
 
-  private static GetArgumentType = <T>(arg: Argument<T>): ArgumentType => 
+  private static GetArgumentType = <T>(arg: Argument<T>): ArgumentType =>
     Extension.IsPrimitive(arg) ? arg as ArgumentType : (arg as VerboseArgument<T>).type;
 
-  private static ToFlag = (value: string) : boolean => parseInt(value) === 1;
+  private static ToFlag = (value: string): boolean => parseInt(value) === 1;
 
-  private static ToMatrix = (matrixString : string) : boolean[][] => {
+  private static ToMatrix = (matrixString: string): boolean[][] => {
     if (matrixString.length !== 25) return new Array(5).fill(new Array(5).fill(false));
 
     const entries = matrixString.split('');
     const matrix = entries.map(Extension.ToFlag).reduce((matrix, flag, index) => {
       const row = Math.floor(index / 5);
       const column = index % 5;
-      (column === 0) ? matrix[row] = [flag]: matrix[row].push(flag);
+      (column === 0) ? matrix[row] = [flag] : matrix[row].push(flag);
       return matrix;
     }, new Array<boolean[]>(5));
 
@@ -257,7 +257,7 @@ export abstract class Extension
   }
 
   private static CastToType = (argumentType: ArgumentType, value: any) => {
-    switch(argumentType) {
+    switch (argumentType) {
       case ArgumentType.String:
         return `${value}`;
       case ArgumentType.Number:
@@ -277,14 +277,14 @@ export abstract class Extension
     }
   }
 
-  private static ConvertMenuItemsToString = (item: any | MenuItem<any>) => 
-    Extension.IsPrimitive(item) ? `${item}` : {...item, value: `${item.value}`};
+  private static ConvertMenuItemsToString = (item: any | MenuItem<any>) =>
+    Extension.IsPrimitive(item) ? `${item}` : { ...item, value: `${item.value}` };
 
   private static IsPrimitive = (query) => query !== Object(query);
   private static IsFunction = (query) =>
-    Object.prototype.toString.call(query) === "[object Function]" 
-    || "function" === typeof query 
+    Object.prototype.toString.call(query) === "[object Function]"
+    || "function" === typeof query
     || query instanceof Function;
-  
+
   private static IsString = (query) => typeof query === 'string' || query instanceof String;
 };

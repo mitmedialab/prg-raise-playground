@@ -1,14 +1,11 @@
 import Extension = require(".")
 import { Language } from "../../typescript-support/enums";
 
+// Ignore this file for now! 
+// Translations are still a work in progress, but will be supported (woohoo!)
+
 const defineTranslations = (): Extension["Translations"] => ({
-  [Language.Español]: {
-    log: {
-      blockText: (msg) => `Imprime ${msg}`,
-      argsText: [{ options: ['uno', 'dos', 'tres'], defaultValue: 'uno' }]
-    },
-    dummy: "nada"
-  }
+  [Language.Español]: {}
 });
 
 export default defineTranslations;
