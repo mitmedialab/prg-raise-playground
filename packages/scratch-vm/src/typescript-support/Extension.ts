@@ -36,7 +36,7 @@ export abstract class Extension
     this.blockIconURI = blockIconURI;
 
     this.runtime = runtime;
-    this.init({ runtime });
+    this.init({ runtime, videoFeed: runtime.ioDevices?.video });
     const definitions = this.defineBlocks();
     const menus: Menu<any>[] = [];
     for (const key in definitions) {

@@ -3,8 +3,25 @@ import type BlockUtility from "./BlockUtility";
 import { ArgumentType, BlockType, Branch, Language } from './enums';
 import type { Extension } from './Extension';
 
+/**
+ * @summary An object passed to extensions on initialization. 
+ * @description The Environment object should contain anything necessary for an extension to interact with the Scratch/Blockly environment
+ * (and can therefore grow and evolve overtime).
+ * 
+ * A good rule of thumb is: If you have to access a nested object on the Runtime more than once, consider adding it to the 'Environment'
+ */
 export type Environment = {
-  runtime: Runtime
+  /**
+   * The scratch runtime 
+   */
+  runtime: Runtime,
+  /**
+   * An example of a convenient property to have on the Environment.
+   * Prior to the Extension Framework, video (and other io) was available via the runtime and thus required overly intimate knowledge of that class. 
+   * NOTE: This will have type-safety soon, but currently has none.
+   * @todo #161 
+   */
+  videoFeed: undefined | any
 }
 
 export type BlockOperation = (...args: any) => any;

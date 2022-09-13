@@ -31,7 +31,7 @@ export type CloudDataManager = {
  * @return {CloudDataManager} The functions to be used when adding or removing a
  * cloud variable.
  */
-export const cloudDataManager: () => CloudDataManager = () => {
+export const getCloudDataManager: () => CloudDataManager = () => {
   const limit = 10;
   let count = 0;
 

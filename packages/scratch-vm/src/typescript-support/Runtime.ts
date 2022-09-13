@@ -27,7 +27,7 @@ import Mouse = require('../io/mouse');
 import MouseWheel = require('../io/mouseWheel');
 import UserData = require('../io/userData');
 import Video = require('../io/video');
-import { cloudDataManager } from "./CloudDataManager";
+import { getCloudDataManager } from "./CloudDataManager";
 import RuntimeEvent from "./RuntimeEvent";
 import { BlockType, LayerGroups, ScratchBlocksConstants, TargetType, VariableType } from "./enums";
 import ArgumentTypeMap from "./ArgumentTypeMap";
@@ -257,7 +257,7 @@ class Runtime extends EventEmitter {
     // Register all given block packages.
     this._registerBlockPackages();
 
-    const newCloudDataManager = cloudDataManager();
+    const newCloudDataManager = getCloudDataManager();
     this.hasCloudData = newCloudDataManager.hasCloudVariables;
     this.canAddCloudVariable = newCloudDataManager.canAddCloudVariable;
     this.addCloudVariable = this._initializeAddCloudVariable(newCloudDataManager);
@@ -1478,7 +1478,7 @@ class Runtime extends EventEmitter {
     this.ioDevices.cloud.clear();
 
     // Reset runtime cloud data info
-    const newCloudDataManager = cloudDataManager();
+    const newCloudDataManager = getCloudDataManager();
     this.hasCloudData = newCloudDataManager.hasCloudVariables;
     this.canAddCloudVariable = newCloudDataManager.canAddCloudVariable;
     this.addCloudVariable = this._initializeAddCloudVariable(newCloudDataManager);
