@@ -10,14 +10,14 @@ export type TranspileOptions = { doWatch: boolean; useCaches: boolean; };
 const srcDir = path.resolve(packages.vm, "src");
 
 const transpileAllTsExtensions = (options: TranspileOptions) => {
-  glob(`${extensionsFolder}/**/index.ts`, (err, files) => {
+  glob(`${extensionsFolder}/!(typescript_templates)/**/index.ts`, (err, files) => {
     if (err) return console.error(chalk.red(err));
     if (!files) return console.error(chalk.red("No files found"));
-    
+
     const watcher = profile(() => transpileAndWatch(
-      options.useCaches, 
-      srcDir, 
-      files, 
+      options.useCaches,
+      srcDir,
+      files,
       () => {
         if (!watcher) return console.error(chalk.gray("(No watcher to close)"));
         watcher.close();
@@ -30,13 +30,13 @@ const transpileAllTsExtensions = (options: TranspileOptions) => {
   });
 }
 
-const defaults: TranspileOptions = { 
-  doWatch: false, 
+const defaults: TranspileOptions = {
+  doWatch: false,
   useCaches: false,
 };
 
 const flagByOption = {
-  doWatch: "watch", 
+  doWatch: "watch",
   useCaches: "cache"
 };
 
