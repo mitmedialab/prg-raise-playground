@@ -1,5 +1,5 @@
-import type Runtime from './Runtime';
-import type BlockUtility from "./BlockUtility";
+import type Runtime from '../engine/runtime';
+import BlockUtility from '../engine/block-utility';
 import { ArgumentType, BlockType, Branch, Language } from './enums';
 import type { Extension } from './Extension';
 
@@ -24,9 +24,7 @@ export type Environment = {
   videoFeed: undefined | any
 }
 
-export type AcceptableArgumentTypes = (RGBObject | string | number | boolean | boolean[][])[];
-
-export type BlockOperation = (...args: AcceptableArgumentTypes) => any;
+export type BlockOperation = (...args: any) => any;
 
 export type MenuItem<T> = T | {
   value: T;
@@ -371,7 +369,7 @@ export type ExtensionBlocks = Record<string, BlockOperation>;
 export type BlockDefinitions<TBlocks extends ExtensionBlocks> =
   {
     [k in keyof TBlocks]: TBlocks[k] extends
-    (...args: infer A extends AcceptableArgumentTypes) => infer R
+    (...args: infer A) => infer R
     ? DefineBlock<(...args: A) => R>
     : never
   };

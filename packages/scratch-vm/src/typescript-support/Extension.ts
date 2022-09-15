@@ -2,7 +2,7 @@ import { ArgumentType, Language } from './enums';
 import type { ExtensionMenuDisplayDetails, ExtensionBlocks, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, VerboseArgument, Environment, Menu, DynamicMenu, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters, TypeByArgumentType, AllText, Translations, BlockOperation } from './types';
 import Cast from '../util/cast';
 import formatMessage = require('format-message');
-import Runtime from "./Runtime";
+import Runtime from "../engine/Runtime";
 
 export type CodeGenArgs = {
   name: never,
@@ -195,9 +195,9 @@ export abstract class Extension
     const { type, text, operation } = block;
     const args: Argument<any>[] = block.arg ? [block.arg] : block.args;
 
-    const defaultText = Extension.IsFunction(text)
+    const defaultText: string = Extension.IsFunction(text)
       ? (text as unknown as (...params: any[]) => string)(...args.map((_, index) => `[${index}]`))
-      : text;
+      : text as string;
 
     const displayText = this.format(defaultText, key, `Block text for '${key}'`);
 
