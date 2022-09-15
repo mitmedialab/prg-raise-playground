@@ -49,37 +49,37 @@ class Blocks {
         this._cache = {
             /**
              * Cache block inputs by block id
-             * @type {object.<string, !Array.<object>>}
+             * @type {Object.<string, !Array.<object>>}
              */
             inputs: {},
             /**
              * Cache procedure Param Names by block id
-             * @type {object.<string, ?Array.<string>>}
+             * @type {Object.<string, ?Array.<string>>}
              */
             procedureParamNames: {},
             /**
              * Cache procedure definitions by block id
-             * @type {object.<string, ?string>}
+             * @type {Object.<string, ?string>}
              */
             procedureDefinitions: {},
 
             /**
              * A cache for execute to use and store on. Only available to
              * execute.
-             * @type {object.<string, object>}
+             * @type {Object.<string, object>}
              */
             _executeCached: {},
 
             /**
              * A cache of block IDs and targets to start threads on as they are
              * actively monitored.
-             * @type {Array<{blockId: string, target: Target}>}
+             * @type {Array<{blockId: string, target: import("./target")}>}
              */
             _monitored: null,
 
             /**
              * A cache of hat opcodes to collection of theads to execute.
-             * @type {object.<string, object>}
+             * @type {Object.<string, object>}
              */
             scripts: {}
         };

@@ -28,7 +28,7 @@ class _StackFrame {
 
         /**
          * Reported value from just executed block.
-         * @type {Any}
+         * @type {any}
          */
         this.justReported = null;
 
@@ -157,13 +157,13 @@ class Thread {
 
         /**
          * Target of this thread.
-         * @type {?Target}
+         * @type {?import("./target")}
          */
         this.target = null;
 
         /**
          * The Blocks this thread will execute.
-         * @type {Blocks}
+         * @type {import("./blocks")}
          */
         this.blockContainer = null;
 
@@ -182,7 +182,7 @@ class Thread {
         /**
          * A timer for when the thread enters warp mode.
          * Substitutes the sequencer's count toward WORK_TIME on a per-thread basis.
-         * @type {?Timer}
+         * @type {?import("../util/timer")}
          */
         this.warpTimer = null;
 
