@@ -6,6 +6,7 @@ import { generateCodeForExtensions } from "./codeGeneration";
 import { profile, start, stop } from "../../../scripts/profile";
 import { writeFileSync } from "fs";
 import { Flag, sendToParent } from "../../../scripts/devComms";
+import { extensionsFolder } from "../../../scripts/paths";
 
 const tsconfig = path.join(__dirname, "tsconfig.generated.json");
 
@@ -21,11 +22,12 @@ type ProgramStatus = {
 }
 
 export const transpileAndWatch = (
-  useCaches: boolean, 
+  useCaches: boolean,
   root: string,
   files: string[],
   onError: () => void
-): ts.WatchOfConfigFile<ts.EmitAndSemanticDiagnosticsBuilderProgram> => {    
+): ts.WatchOfConfigFile<ts.EmitAndSemanticDiagnosticsBuilderProgram> => {
+  compileJavascriptDeclarations(root, files);
   writeOutTsConfig(root, files);
   const host = profile(getWatchHost, chalk.green("Retrived watch host in"));
   const { createProgram, afterProgramCreate } = host;
@@ -34,11 +36,11 @@ export const transpileAndWatch = (
     isStartUp: true,
     compileCount: 0,
     error: false,
-    increment: function() { 
+    increment: function () {
       this.compileCount++;
       this.isStartUp = false;
     },
-    raiseError: function() {
+    raiseError: function () {
       this.error = true;
       onError();
     },
@@ -80,25 +82,48 @@ function customAfterProgramCreate(status: ProgramStatus, ...params: Parameters<P
     const diagnostics = semanticProgram.getSemanticDiagnostics();
     printDiagnostics(program, diagnostics);
     sendToParent(process, { flag: Flag.TsError });
-  } 
+  }
   else if (isStartUp) {
     sendToParent(process, { flag: Flag.InitialTranspileComplete });
   }
-  
+
   status.increment(); // don't destructure to avoid issues with 'this'
   return afterProgramCreate(semanticProgram);
 }
 
-const writeOutTsConfig = (root: string, files: string[]) => {
-  const compilerOptions: ts.CompilerOptions = {
-    noEmitOnError: true,
-    esModuleInterop: true,
-    target: "ES5" as any as ts.ScriptTarget,
-    module: "CommonJS" as any as ts.ModuleKind,
-    moduleResolution: "Node" as any as ts.ModuleResolutionKind,
-    rootDir: root,  
-    outDir: root,
+const baseTsCompilerOptions = (root: string, forFile: boolean): ts.CompilerOptions => ({
+  noEmitOnError: true,
+  esModuleInterop: true,
+  target: forFile ? "ES5" as any as ts.ScriptTarget : ts.ScriptTarget.ES5,
+  module: forFile ? "CommonJS" as any as ts.ModuleKind : ts.ModuleKind.CommonJS,
+  moduleResolution: forFile ? "Node" as any as ts.ModuleResolutionKind : ts.ModuleResolutionKind.NodeJs,
+  rootDir: root,
+  outDir: root,
+});
+
+const compileJavascriptDeclarations = (root: string, files: string[]): void => {
+  const options: ts.CompilerOptions = {
+    ...baseTsCompilerOptions(root, false),
+    allowJs: true,
+    declaration: true,
+    emitDeclarationOnly: true,
   };
+
+  const host = ts.createCompilerHost(options);
+
+  host.writeFile = (fileName: string, contents: string) => {
+    if (fileName.includes(extensionsFolder)) return;
+    if (fileName.includes("typescript-support")) return;
+    if (fileName.includes(".d.ts")) writeFileSync(fileName, contents);
+  };
+
+  // Prepare and emit the d.ts files
+  const program = ts.createProgram(files, options, host);
+  program.emit();
+}
+
+const writeOutTsConfig = (root: string, files: string[]) => {
+  const compilerOptions = baseTsCompilerOptions(root, true);
   const config = { compilerOptions, files };
   writeFileSync(tsconfig, JSON.stringify(config));
 }
@@ -116,20 +141,20 @@ const reportWatchStatusChanged = (diagnostic: ts.Diagnostic) => {
 };
 
 const reportDiagnostic = (diagnostic: ts.Diagnostic) => {
-  const msg = `Error ${diagnostic.code}: ${ts.flattenDiagnosticMessageText( diagnostic.messageText, formatHost.getNewLine())}`;
+  const msg = `Error ${diagnostic.code}: ${ts.flattenDiagnosticMessageText(diagnostic.messageText, formatHost.getNewLine())}`;
   const stylized = chalk.redBright(msg);
   console.error(stylized);
 };
 
-const getWatchHost = (): ts.WatchCompilerHostOfConfigFile<ts.EmitAndSemanticDiagnosticsBuilderProgram> => 
+const getWatchHost = (): ts.WatchCompilerHostOfConfigFile<ts.EmitAndSemanticDiagnosticsBuilderProgram> =>
   ts.createWatchCompilerHost(
-    tsconfig, 
-    { noEmitOnError: true }, 
-    ts.sys, 
+    tsconfig,
+    { noEmitOnError: true },
+    ts.sys,
     ts.createEmitAndSemanticDiagnosticsBuilderProgram,
     reportDiagnostic,
     reportWatchStatusChanged
-  ); 
+  );
 
 const printDiagnostics = (program: ts.Program, diagnostics: readonly ts.Diagnostic[]) => {
   const unique = <T>(value: T, index: number, self: T[]) => self.indexOf(value) === index;

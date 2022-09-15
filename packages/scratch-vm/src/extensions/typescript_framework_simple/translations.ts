@@ -5,7 +5,7 @@ const defineTranslations = (): Extension["Translations"] => ({
   [Language.Español]: {
     log: {
       blockText: (msg) => `Imprime ${msg}`,
-      argsText: [{ options: ['uno', 'dos', 'tres'], defaultValue: 'uno' }]
+      argsText: { options: ['uno', 'dos', 'tres'], defaultValue: 'uno' }
     },
     dummy: "nada"
   }

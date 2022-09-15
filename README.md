@@ -108,7 +108,7 @@ Likely will have:
 
 Like many web development projects, this project requires you to have [node](https://nodejs.org/en/) installed.
 
-Also, [due to a Webpack 4 issue](), we require a node version <=16.
+Also, [due to a Webpack 4 issue](https://github.com/webpack/webpack/issues/14532), we require a node version <=16.
 
 Please follow [these instructions](https://nodejs.org/en/download/) to install a suitable version of Node on your machine.
 
@@ -121,7 +121,7 @@ Before then, we either need to upgrade webpack to be able to use node 18, or rev
 
 We encourage you to use VS Code since it has great Typescript support. Also, it's easier to offer tips and tricks if most of us use the same text editor.
 
-Here's how to install VS Code.
+Here's how to [install VS Code]().
 
 Of course, if you prefer a different editor, go ahead and use it (but do so at your own 'risk').  
 
