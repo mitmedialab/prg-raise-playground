@@ -1,5 +1,5 @@
 import { ArgumentType, Language } from './enums';
-import type { ExtensionMenuDisplayDetails, ExtensionBlocks, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, VerboseArgument, Environment, Menu, DynamicMenu, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters, TypeByArgumentType, AllText, Translations } from './types';
+import type { ExtensionMenuDisplayDetails, ExtensionBlocks, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, VerboseArgument, Environment, Menu, DynamicMenu, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters, TypeByArgumentType, AllText, Translations, BlockOperation } from './types';
 import Cast from '../util/cast';
 import formatMessage = require('format-message');
 import Runtime from "./Runtime";
@@ -191,9 +191,9 @@ export abstract class Extension
     this.internal_menus.push({ acceptReporters, items: key });
   }
 
-  private convertToInfo(key: string, block: Block<any>, menusToAdd: MenuItem<any>[]): ExtensionBlockMetadata {
+  private convertToInfo(key: string, block: Block<BlockOperation>, menusToAdd: MenuItem<any>[]): ExtensionBlockMetadata {
     const { type, text, operation } = block;
-    const args: Argument<any>[] = block.args;
+    const args: Argument<any>[] = block.arg ? [block.arg] : block.args;
 
     const defaultText = Extension.IsFunction(text)
       ? (text as unknown as (...params: any[]) => string)(...args.map((_, index) => `[${index}]`))

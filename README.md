@@ -106,7 +106,28 @@ Likely will have:
 
 ### Node
 
-### VS Code
+Like many web development projects, this project requires you to have [node](https://nodejs.org/en/) installed.
+
+Also, [due to a Webpack 4 issue](), we require a node version <=16.
+
+Please follow [these instructions](https://nodejs.org/en/download/) to install a suitable version of Node on your machine.
+
+#### Maintainer Note (9/15/22)
+
+In October 2022, node 18 LTS will be released, making it slightly harder to get node 16 LTS. 
+Before then, we either need to upgrade webpack to be able to use node 18, or revise the above instructions to help users locate node 16.
+
+### VS Code (Recommended)
+
+We encourage you to use VS Code since it has great Typescript support. Also, it's easier to offer tips and tricks if most of us use the same text editor.
+
+Here's how to install VS Code.
+
+Of course, if you prefer a different editor, go ahead and use it (but do so at your own 'risk').  
+
+#### Extensions
+
+We recommend adding the following extensions (which you can do [like so]()):
 
 ## 📦 Deploying
 

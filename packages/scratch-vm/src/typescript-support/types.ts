@@ -24,7 +24,9 @@ export type Environment = {
   videoFeed: undefined | any
 }
 
-export type BlockOperation = (...args: any) => any;
+export type AcceptableArgumentTypes = (RGBObject | string | number | boolean | boolean[][])[];
+
+export type BlockOperation = (...args: AcceptableArgumentTypes) => any;
 
 export type MenuItem<T> = T | {
   value: T;
@@ -34,14 +36,36 @@ export type MenuItem<T> = T | {
 export type DynamicMenu<T> = () => MenuItem<T>[];
 
 export type DynamicMenuThatAcceptsReporters<T> = {
+  /**
+   * A function that dynamically retrieves the options for this argument 
+   * whenever the associated block is interacted with.
+   */
   getItems: DynamicMenu<T>,
+  /**
+   * Indicates that this argument is allowed to accept a reporter block for input. 
+   */
   acceptsReporters: true,
+  /**
+   * A function responsible for taking in arbitrary input 
+   * and converting it to a form that it will not break your block when passed to it as an argument.
+   * 
+   * This function is required because this argument acceptsReporters (i.e.` acceptReporters = true`) and therefore it might receive a value it is not prepared to handle. 
+   */
   handler: (reported: any) => T;
 };
 
 export type MenuThatAcceptsReporters<T> = {
   items: MenuItem<T>[],
+  /**
+   * Indicates that this argument is allowed to accept a reporter block for input. 
+   */
   acceptsReporters: true,
+  /**
+   * A function responsible for taking in arbitrary input 
+   * and converting it to a form that it will not break your block when passed to it as an argument.
+   * 
+   * This function is required because this argument acceptsReporters (i.e. `acceptReporters = true`) and therefore the argument might take on a value your block is not prepared to handle. 
+   */
   handler: (reported: any) => T;
 };
 
@@ -89,6 +113,12 @@ type ToArguments<T extends any[]> =
 type ParamsAndUtility<T extends BlockOperation> = [...params: Parameters<T>, util: BlockUtility];
 
 type NonEmptyArray<T> = [T, ...T[]];
+
+const enum ArgField {
+  Arg = 'arg',
+  Args = 'args'
+}
+type ArgsFieldName<T> = T extends [any] ? ArgField.Arg : ArgField.Args;
 
 export type Block<T extends BlockOperation> = {
   /**
@@ -139,7 +169,7 @@ export type Block<T extends BlockOperation> = {
    * @summary A function that encapsulates the code that runs when a block is executed
    * @description This is where you implement what your block actually does.
    * 
-   * It can/should act on the arguments you specified for this blockt.
+   * It can/should act on the arguments you specified for this block.
    * 
    * @param {BlockUtility} util The final argument passed to this function will always be a BlockUtility object, 
    * which can help you accomplish more advanced block behavior. If you don't need to use it, feel free to omit it.
@@ -151,39 +181,38 @@ export type Block<T extends BlockOperation> = {
    */
   text: Parameters<T> extends NonEmptyArray<any> ? (...params: Parameters<T>) => string : string;
 } & (Parameters<T> extends NonEmptyArray<any>
+  ? Parameters<T> extends [any]
+  // NOTE: The above check shouldn't be necessary, and instead a mapped type should be used, but JS Doc comments currently don't work with mapped types:
+  // For example: [K in Parameters<T> extends [any] ? "arg" : "args"]: Parameters<T> extends [any] ? ToArguments<Parameters<T>>[0] : ToArguments<Parameters<T>>
   ? {
     /**
-     * @summary The Argument(s) that your blocks take.
+    * @description The args field should not be defined for blocks that take only one argument
+    */
+    args?: never
+    /**
+     * @summary The Argument your block takes.
      * 
      * Because there's a couple different pieces to a Scratch Argument 
      * (including it's acceptable values, its UI representation, if it uses a menu, if it can take reporters, etc.),
-     * this field is can be more involved than just simply defining the plain argument types for a function, say. 
+     * this field can be more involved than just simply defining the plain argument type for a function, say. 
      * @example 
-     * // Single argument, only (implicitly) specifying type
-     * args: ArgumentType.String
-     * @example 
-     * // Multiple arguments, all only (implicitly) specifying type
-     * // NOTE: The use of an array
-     * args: [ArgumentType.Number, ArgumentType.Angle, ArgumentType.String]
-     * @example 
-     * // Single argument, specified more verbosely with default value
-     * args: { type: ArgumentType.String, defaultValue: 'hello world'}
-     * @example 
-     * // Multiple arguments, both specified more verbosely with default value.
-     * // This demonstrates how multiple arguments are specified the same as a single argument, but are simply placed in an array.
-     * // Subsequent examples will only be described in terms of a single argument, but they similiarly apply to any entry in the args array.
-     * args: [
-     *  { type: ArgumentType.String, defaultValue: 'hello world'},
-     *  { type: ArgumentType.Number, defaultValue: 42 }
-     * ]
+     * // Only (implicitly) specifying type
+     * arg: ArgumentType.Angle
      * @example
-     * // Single argument, with options (values only)
-     * args: { type: ArgumentType.Number, options: [1, 2, 3, 5, 7, 11, 13]}
+     * // Only (explicitly) specifying type
+     * arg: { type: ArgumentType. Angle }
+     * @example 
+     * // More verbose specification, with type and default value
+     * arg: { type: ArgumentType.String, defaultValue: 'hello world'}
      * @example
-     * // Single argument, with options (verbose, with text and value)
-     * args: { 
-     *  type: ArgumentType.Number, 
-     *  options: [{ text: 'one', value: 1 }, { text: 'two', value: 2 }]
+     * // More verbose specification with type and options (values only)
+     * arg: { type: ArgumentType.Number, options: [1, 2, 3, 5, 7, 11, 13]}
+     * // Note: we could've also included a defaultValue
+     * @example
+     * // Specifying options more verbosely with text and value
+     * arg: { 
+     *  type: ArgumentType.Angle, 
+     *  options: [{ text: 'right', value: 90 }, { text: 'left', value: -90 }]
      * }
      * 
      * // Advanced examples available below description (include dynamic options aka menus, accepting reporters...)
@@ -194,7 +223,7 @@ export type Block<T extends BlockOperation> = {
      * @example 
      * // ADVANCED
      * // With options that accepts reporters
-     * args: { 
+     * arg: { 
      *  type: ArgumentType.Number, 
      *  options: {
      *    acceptsReporter: true,
@@ -226,13 +255,86 @@ export type Block<T extends BlockOperation> = {
      *  }
      * }
      */
-    args: Parameters<T> extends [any] ? ToArguments<Parameters<T>>[0] : ToArguments<Parameters<T>>
+    arg: ToArguments<Parameters<T>>[0]
+  }
+  : {
+    /**
+    * @description The arg field should not be defined for blocks that take more than one argument
+    */
+    arg?: never
+    /**
+     * @summary The Arguments that your block takes.
+     * 
+     * Because there's a couple different pieces to a Scratch Argument 
+     * (including it's acceptable values, its UI representation, if it uses a menu, if it can take reporters, etc.),
+     * this field can be more involved than just simply defining the plain argument types for a function, say. 
+     * @example 
+     * // Below is an args array that shows the different ways to specify arguments.
+     * args: [
+     *  ArgumentType.String, // Only (implicitly) specifying type
+     *  { // Only (explicitly) specifying type
+     *    type: ArgumentType.Angle 
+     *  },  
+     *  { // Specifying type and default value
+     *    type: ArgumentType.String, 
+     *    defaultValue: 'hello world'
+     *  }, 
+     *  { // Specifying type and options (with values only)
+     *    type: ArgumentType.Number, 
+     *    options: [1, 2, 3, 5, 7, 11, 13]
+     *  }, 
+     *  { // Specifying type, default value, and options (with values and text)
+     *    type: ArgumentType.Angle, 
+     *    defaultValue: -90, 
+     *    options: [{ text: 'right', value: 90 }, { text: 'two', value: -90 }]
+     *  } 
+     * ]
+     * 
+     * // Advanced examples are available below description (include dynamic options aka menus, accepting reporters...)
+     * 
+     * @description This is where you define the arguments that your block should take. 
+     * 
+     * Because this field can take on a few different values depending on how you want your block arguments to behave, 
+     * it is likely best to learn from the examples above (and below).
+     * @example 
+     * // ADVANCED
+     * args: [
+     *  { // Dynamic options
+     *    type: ArgumentType.Number,
+     *    options: () => [Math.random(), Math.random()]
+     *  }, 
+     *  { // With options that accepts reporters
+     *    type: ArgumentType.Number, 
+     *    options: {
+     *      acceptsReporter: true,
+     *      items: [1, 2, 3],
+     *      handler: (x: any) => {
+     *        const parsed = parseInt(x);
+     *        return isNan(parsed) ? 1 : Math.min(Math.max(parsed, 1), 3)
+     *      } 
+     *    }
+     *  }, 
+     *  { // With dynamic options that accepts reporters
+     *    type: ArgumentType.Number,
+     *    options: {
+     *      acceptsReporter: true,
+     *      getItems: () => [Math.random(), Math.random()],
+     *      handler: (x: any) => {
+     *        const parsed = parseInt(x);
+     *        return isNan(parsed) ? -1 : parsed;
+     *      }
+     *    }
+     *  } 
+     * ]
+     */
+    args: ToArguments<Parameters<T>>
   }
   : {
     /**
      * @description The args field should not be defined for blocks that take no arguments
      */
     args?: never
+    arg?: never
   });
 
 /**
@@ -269,7 +371,7 @@ export type ExtensionBlocks = Record<string, BlockOperation>;
 export type BlockDefinitions<TBlocks extends ExtensionBlocks> =
   {
     [k in keyof TBlocks]: TBlocks[k] extends
-    (...args: infer A) => infer R
+    (...args: infer A extends AcceptableArgumentTypes) => infer R
     ? DefineBlock<(...args: A) => R>
     : never
   };
@@ -289,11 +391,16 @@ type ToArgumentsText<T extends any[]> =
   ? [ArgsText<Head>, ...ToArgumentsText<Tail>]
   : [];
 
-type ExtractTextFromBlock<TOp extends BlockOperation, TBlock extends Block<TOp>> = TBlock["args"] extends never
-  ? string | {
-    blockText: TBlock["text"]
+
+type ExtractTextFromBlock<TOp extends BlockOperation, TBlock extends Block<TOp>> =
+  TBlock["args"] extends never
+  ? TBlock["arg"] extends never
+  ? string | { blockText: TBlock["text"] }
+  : {
+    blockText: TBlock["text"],
+    argsText: ArgsText<TBlock["arg"]>,
   }
-  : TBlock["text"] extends (...args: any) => any
+  : TBlock["text"] extends (...args: [any]) => any
   ? {
     blockText: TBlock["text"],
     argsText: ToArgumentsText<TBlock["args"]>,

@@ -60,22 +60,22 @@ type Blocks = {
 class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
   lhsOptions: number[];
   animals: MenuItem<Animal>[];
-  collection: Animal[] = [ Animal.Gorilla ];
+  collection: Animal[] = [Animal.Gorilla];
   getAnimalCollection: () => MenuItem<Animal>[];
   state: number = 0;
 
-  defineTranslations() {return undefined};
+  defineTranslations() { return undefined };
 
-  init() { 
+  init() {
     this.lhsOptions = [3, 4, 5];
     this.animals = Object.entries(emojiByAnimal).map(([animal, emoji]) => ({
       value: parseInt(animal), text: emoji
     }));
 
     this.getAnimalCollection = () => this.collection.map(
-      animal => ({ 
-        text: emojiByAnimal[animal], 
-        value: animal 
+      animal => ({
+        text: emojiByAnimal[animal],
+        value: animal
       })
     );
   }
@@ -91,30 +91,34 @@ class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
 
       reportColorChannel: () => ({
         type: BlockType.Reporter,
-        args: [ 
-          ArgumentType.Color, 
-          { type: ArgumentType.String, options: [
-            { value: 'r', text: 'red' },
-            { value: 'g', text: 'green' },
-            { value: 'b', text: 'blue' }
-          ]}],
+        args: [
+          ArgumentType.Color,
+          {
+            type: ArgumentType.String, options: [
+              { value: 'r', text: 'red' },
+              { value: 'g', text: 'green' },
+              { value: 'b', text: 'blue' }
+            ]
+          }],
         text: (color, channel) => `Report ${channel} of ${color}`,
         operation: (color, channel) => color[channel]
       }),
 
       'sumMatrix': () => ({
         type: BlockType.Reporter,
-        args: [ 
-          ArgumentType.Matrix, 
-          { type: ArgumentType.Number, options: [
-            { value: MatrixDimension.Row, text: 'rows' },
-            { value: MatrixDimension.Column, text: 'columns' },
-            { value: MatrixDimension.Both, text: 'rows and columns'}
-        ]}],
+        args: [
+          ArgumentType.Matrix,
+          {
+            type: ArgumentType.Number, options: [
+              { value: MatrixDimension.Row, text: 'rows' },
+              { value: MatrixDimension.Column, text: 'columns' },
+              { value: MatrixDimension.Both, text: 'rows and columns' }
+            ]
+          }],
         text: (matrix, dimension) => `Sum ${dimension} of ${matrix}`,
         operation: (matrix, dimension) => {
           switch (dimension) {
-            case MatrixDimension.Row: 
+            case MatrixDimension.Row:
               return matrix.map(row => row.reduce((count, current) => count + Number(current), 0)).join("\n");
             case MatrixDimension.Column:
               const columnSums = [0, 0, 0, 0, 0];
@@ -124,9 +128,9 @@ class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
               return columnSums.join(" ");
             case MatrixDimension.Both:
               return matrix
-              .map(row => row.reduce((count, current) => count + Number(current), 0))
-              .reduce((count, current) => count + current, 0)
-              .toString();
+                .map(row => row.reduce((count, current) => count + Number(current), 0))
+                .reduce((count, current) => count + current, 0)
+                .toString();
           }
         }
       }),
@@ -145,49 +149,49 @@ class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
 
       'selectNote': () => ({
         type: BlockType.Reporter,
-        args: [ ArgumentType.Note ],
+        arg: ArgumentType.Note,
         text: (note) => `Pick note ${note}`,
         operation: (note) => note
       }),
 
       'selectAngle': () => ({
         type: BlockType.Reporter,
-        args: [ ArgumentType.Angle ],
+        arg: ArgumentType.Angle,
         text: (angle) => `Pick angle ${angle}`,
         operation: (angle) => angle
       }),
 
       'useAnimalMenu1': () => ({
         type: BlockType.Reporter,
-        args: [
-          { 
-            type: ArgumentType.Number, 
-            options: {
-              items: this.animals,
-              acceptsReporters: true,
-              handler: (input: any) => {
-                switch (input) {
-                  case `${Animal.Leopard}`:
-                  case `${Animal.Tiger}`:
-                  case `${Animal.Gorilla}`:
-                  case `${Animal.Monkey}`:
-                  case `${Animal.Pig}`:
-                    return input as Animal;
-                  default:
-                    alert(`You silly goose! ${input} is not an animal.`);
-                    return Animal.Leopard;
-                }
+        arg:
+        {
+          type: ArgumentType.Number,
+          options: {
+            items: this.animals,
+            acceptsReporters: true,
+            handler: (input: any) => {
+              switch (input) {
+                case `${Animal.Leopard}`:
+                case `${Animal.Tiger}`:
+                case `${Animal.Gorilla}`:
+                case `${Animal.Monkey}`:
+                case `${Animal.Pig}`:
+                  return input as Animal;
+                default:
+                  alert(`You silly goose! ${input} is not an animal.`);
+                  return Animal.Leopard;
               }
             }
           }
-        ],
+        }
+        ,
         text: (animal) => `This is a ${animal}`,
         operation: (animal) => nameByAnimal[animal],
       }),
 
       'useAnimalMenu2': (self: TypeScriptFrameworkExample) => ({
         type: BlockType.Reporter,
-        args: [{ type: ArgumentType.Number, options: self.animals}],
+        arg: { type: ArgumentType.Number, options: self.animals },
         text: (animal) => `Where does the ${animal} live?`,
         operation: (animal) => {
           switch (animal) {
@@ -207,7 +211,7 @@ class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
 
       addAnimalToCollection: (self: TypeScriptFrameworkExample) => ({
         type: BlockType.Command,
-        args: [{ type: ArgumentType.Number, options: self.animals }],
+        arg: { type: ArgumentType.Number, options: self.animals },
         text: (animal) => `Add ${animal} to collection`,
         operation: (animal) => this.collection.push(animal),
       }),
@@ -215,7 +219,7 @@ class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
 
       chooseBetweenAnimals: (self: TypeScriptFrameworkExample) => ({
         type: BlockType.Reporter,
-        args: [{ type: ArgumentType.Number, options: self.getAnimalCollection }],
+        arg: { type: ArgumentType.Number, options: self.getAnimalCollection },
         text: (animal) => `Animals in collection: ${animal}`,
         operation: (animal) => nameByAnimal[animal],
       }),

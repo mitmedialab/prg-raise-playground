@@ -90,7 +90,7 @@ class ExtensionNameGoesHere extends Extension<Details, Blocks> {
 
     const exampleCommand_OneArgument: DefineExampleCommand = () => ({
       type: BlockType.Command,
-      args: ArgumentType.String,
+      arg: ArgumentType.String,
       text: (argument) => `This is where the blocks display text goes. Here's where the argument goes --> ${argument}`,
       operation: (argument, util) => {
         alert(`This is a command! Here's the argument I was given ${argument}`); // Replace with what the block should do! 
@@ -139,7 +139,7 @@ type WithOptionsBlock = Blocks["exampleReporter_ArgumentWithOptions"];
 
 const pickFromOptions = (): Block<WithOptionsBlock> => ({
   type: BlockType.Reporter,
-  args: { type: ArgumentType.String, options: ['😊', '❤️', '✨'] },
+  arg: { type: ArgumentType.String, options: ['😊', '❤️', '✨'] },
   text: (argument1) => `Pick one: ${argument1}`,
   operation: function (argument1) {
     alert(`You chose ${argument1}`);

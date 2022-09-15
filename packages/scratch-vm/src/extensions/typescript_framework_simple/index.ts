@@ -28,18 +28,17 @@ class SimpleTypescript extends Extension<Details, {
     return {
       log: () => ({
         type: BlockType.Command,
-        args: [
-          {
-            type: ArgumentType.String,
-            options: {
-              items: ['one', 'two', 'three'],
-              acceptsReporters: true,
-              handler: (x: any) => Extension.TryCastToArgumentType(ArgumentType.String, x, () => {
-                alert(`Unsopported input: ${x}`);
-                return "";
-              })
-            }
-          }],
+        arg: {
+          type: ArgumentType.String,
+          options: {
+            items: ['one', 'two', 'three'],
+            acceptsReporters: true,
+            handler: (x: any) => Extension.TryCastToArgumentType(ArgumentType.String, x, () => {
+              alert(`Unsopported input: ${x}`);
+              return "";
+            })
+          }
+        },
         text: (msg) => `Log ${msg} to the console`,
         operation: (msg) => console.log(msg)
       }),
