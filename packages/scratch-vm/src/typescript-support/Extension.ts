@@ -11,7 +11,7 @@ export type CodeGenArgs = {
 }
 
 /**
- * 
+ * Base class for all extensions implemented via the Typescript Extension Framework.
  * @template MenuDetails How the extension should display in the extensions menu 
  * @template Blocks What kind of blocks this extension implements
  */
@@ -93,8 +93,75 @@ export abstract class Extension
    */
   readonly blockIconURI: never;
 
-  abstract init(env: Environment);
+  /**
+   * @summary This function will be called when a user adds your extension via the Extensions Menu (i.e. when your extension is instantiated)
+   * @example
+   * // Initialize class field(s)
+   * private count: number;
+   * 
+   * init() {
+   *  count = 0;
+   * }
+   * @example 
+   * // Interact with environment's runtime 
+   * init(env: Environment) {
+   *  env.runtime.emit(RuntimeEvent.ProjectStart);
+   * }
+   * @example 
+   * // Nothing to initialize
+   * init() {}
+   * @description This function is intended to behave exactly like a constructor, used to initialize the state of your extension.
+   * 
+   * The reason we use this function INSTEAD of a constructor is so that the base Extension class can manage the construction of this class.
+   * @param {Environment} env An object that allows your Extension to interact with the Scratch Environment. Currently is a little bare, but will be expanded soon.
+   * Can be ommitted if not needed.
+   * 
+   * For Scratch developers: The `runtime` property on env is the same as the runtime passed to Extension constructors
+   */
+  abstract init(env: Environment): void;
+
+  /**
+   * @example
+   * // Returning an object with single block definition function for 'someBlock'
+   * defineBlocks(): MyExtension["BlockDefinitions"] {
+   *  return {
+   *    // Using arrow function syntax
+   *    someBlock: (self: MyExtension) => ({
+   *      type: BlockType.Reporter,
+   *      args: ArgumentType.String,
+   *      text: (argument) => `Some text about ${argument}`,
+   *      operation: (argument) => {
+   *        // do something
+   *      }
+   *    })
+   *  }
+   * }
+   * @example
+   * // Returning an object with single block definition function for 'someBlock'
+   * defineBlocks(): MyExtension["BlockDefinitions"] {
+   *  return {
+   *    // Using arrow function syntax
+   *    someBlock: (self: MyExtension) => ({
+   *      type: BlockType.Reporter,
+   *      args: ArgumentType.String,
+   *      text: (argument) => `Some text about ${argument}`,
+   *      operation: (argument) => {
+   *        // do something
+   *      }
+   *    })
+   *  }
+   * }
+   * @see BlockDefinitions
+   * @returns {BlockDefinitions<Blocks>} An object defining 'block definition' functions for each block associated with this Extension.
+   */
   abstract defineBlocks(): BlockDefinitions<Blocks>;
+  /**
+   * Define the translations for this extension.
+   * 
+   * Ignore this for now (but don't delete it)! 
+   * 
+   * Translations are still a work in progress, but will be supported.
+   */
   abstract defineTranslations(): Translations<Extension<MenuDetails, Blocks>>;
 
   getInfo(): ExtensionMetadata {

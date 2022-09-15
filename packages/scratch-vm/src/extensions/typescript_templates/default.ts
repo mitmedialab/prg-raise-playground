@@ -1,6 +1,6 @@
 import { ArgumentType, BlockType } from "../../typescript-support/enums";
 import { Extension } from "../../typescript-support/Extension";
-import { BlockDefinitions, Environment, ExtensionMenuDisplayDetails } from "../../typescript-support/types";
+import { Block, BlockDefinitions, DefineBlock, Environment, ExtensionMenuDisplayDetails } from "../../typescript-support/types";
 import defineTranslations from "./translations";
 
 /**
@@ -18,12 +18,12 @@ type Details = {
   /**
    * IMPORTANT! Place your icon image (typically a png) in the same directory as this index.ts file
    */
-  iconURL: "Replace with the name of your icon image file",
+  iconURL: "Replace with the name of your icon image file (which should be placed in the same directory as this file)",
   /**
    * IMPORTANT! Place your inset icon image (typically an svg) in the same directory as this index.ts file
    * NOTE: This icon will also appear on all of your extension's blocks
    */
-  insetIconURL: "Replace with the name of your inset icon image file"
+  insetIconURL: "Replace with the name of your inset icon image file (which should be placed in the same directory as this file)"
 };
 
 /**
@@ -47,8 +47,10 @@ type Details = {
  * @link https://www.typescriptlang.org/docs/handbook/2/generics.html Learn more about generics! 
  */
 type Blocks = {
-  exampleCommand(argument: string): void;
+  exampleCommand_OneArgument(argument: string): void;
+  exampleCommand_MultipleArguments(argument1: string, argument2: number): void;
   exampleReporter: () => number;
+  exampleReporter_ArgumentWithOptions: (valueFromMenu: string) => string;
 }
 
 /**
@@ -69,62 +71,80 @@ type Blocks = {
  */
 class ExtensionNameGoesHere extends Extension<Details, Blocks> {
   /**
-   * @summary
-   * @description
+   * @summary A field to demonstrate how Typescript Class fields work
+   * @link https://www.typescriptlang.org/docs/handbook/2/classes.html#fields
    */
   exampleField: number;
 
-  /**
-   * This function will be called when a user adds your extension via the Extensions Menu
-   * @param {Environment} env 
-   */
   init(env: Environment) {
     this.exampleField = 0;
   }
 
-  /**
-   * 
-   * @returns {BlockDefinitions<Blocks>}
-   */
+  // All examples below are syntactically equivalent, 
+  // and which you use is just a matter of preference
   defineBlocks(): ExtensionNameGoesHere["BlockDefinitions"] {
-    return {
-      /**
-       * Hover over each of the below fields ('type', 'args', 'text', 'operation') to see what it means and what values it can take on.
-       * @returns 
-       */
-      exampleCommand: () => ({
-        type: BlockType.Command,
-        args: [ArgumentType.String],
-        text: (argument) => `This is where the blocks display text goes. Here's where the argument goes --> ${argument}`,
-        operation: (argument, util) => {
-          // Replace with what the block should do! 
-          alert(`This is a command! Here's the argument I was given ${argument}`);
-          console.log(util.stackFrame); // just an example of using the BlockUtility
-        }
-      }),
 
-      /**
-       * Hover over each of the below fields ('type', 'text', 'operation') to see what that field means and what values it can take on.
-       * NOTE: There's no args field below since this block represents a function that takes no arguments.
-       * @param self 
-       * @returns 
-       */
-      exampleReporter: (self: ExtensionNameGoesHere) => ({
+    /* ---- Example definition #1 (using local variable) ---- */
+
+    type DefineExampleCommand = DefineBlock<Blocks["exampleCommand_OneArgument"]>;
+
+    const exampleCommand_OneArgument: DefineExampleCommand = () => ({
+      type: BlockType.Command,
+      args: ArgumentType.String,
+      text: (argument) => `This is where the blocks display text goes. Here's where the argument goes --> ${argument}`,
+      operation: (argument, util) => {
+        alert(`This is a command! Here's the argument I was given ${argument}`); // Replace with what the block should do! 
+        console.log(util.stackFrame); // just an example of using the BlockUtility
+      }
+    });
+
+    /* ---- Example definition #2 (using local variable) ---- */
+
+    type ExampleReporterDefinition = Block<Blocks["exampleReporter"]>;
+
+    const exampleReporter = function (self: ExtensionNameGoesHere): ExampleReporterDefinition {
+      return {
         type: BlockType.Reporter,
         text: "This is where the blocks display text goes",
         operation: () => {
-          // Replace with what the block should do! 
           return ++self.exampleField;
         }
-      })
+      }
+    };
+
+    return {
+      exampleCommand_OneArgument,
+      exampleReporter,
+
+      /* ---- Example definition #3 (using property on returned object) ---- */
+      exampleCommand_MultipleArguments: () => ({
+        type: BlockType.Command,
+        args: [{ type: ArgumentType.String, defaultValue: '🤷' }, ArgumentType.Angle],
+        text: (argument1, argument2) => `First argument: ${argument1}. Second argument: ${argument2}`,
+        operation: (argument1, argument2) => { // NOTE: The last 'util' parameter is optionally omitted
+          alert(`This is a command! Here's the first argument I was given ${argument1}`);
+          alert(`This is a command! Here's the second argument I was given ${argument2}`);
+        }
+      }),
+
+      /* ---- Example definition #4 (using function defined elsewhere) ---- */
+      exampleReporter_ArgumentWithOptions: pickFromOptions
     }
   }
 
-  /**
-   * Ignore (but don't delete)! 
-   * Translations are still a work in progress (but will be supported)
-   */
   defineTranslations = defineTranslations as typeof this.defineTranslations;
 }
+
+type WithOptionsBlock = Blocks["exampleReporter_ArgumentWithOptions"];
+
+const pickFromOptions = (): Block<WithOptionsBlock> => ({
+  type: BlockType.Reporter,
+  args: { type: ArgumentType.String, options: ['😊', '❤️', '✨'] },
+  text: (argument1) => `Pick one: ${argument1}`,
+  operation: function (argument1) {
+    alert(`You chose ${argument1}`);
+    return argument1;
+  }
+});
 
 export = ExtensionNameGoesHere;

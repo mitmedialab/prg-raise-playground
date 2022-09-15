@@ -66,7 +66,10 @@ export type TypeByArgumentType = {
   [ArgumentType.Note]: number,
   [ArgumentType.String]: string,
   [ArgumentType.Boolean]: boolean,
-  [ArgumentType.Image]: string, // TODO
+  /**
+   * TODO
+   */
+  [ArgumentType.Image]: string,
 }
 
 export type ScratchArgument<T> =
@@ -89,10 +92,13 @@ type NonEmptyArray<T> = [T, ...T[]];
 
 export type Block<T extends BlockOperation> = {
   /**
+   * @type {BlockType}
+   * @example type: BlockType.Command
+   * @example type: BlockType.Reporter
    * @description
    * The kind of block we're defining, from a predefined list 
    * (shown below, roughly in order from most-to-least common).
-   * * BlockType.Command - A block that accepts 0 or more arguments and likely does something to the sprite / environment (but does not return a value). 
+   * * `BlockType.Command` - A block that accepts 0 or more arguments and likely does something to the sprite / environment (but does not return a value). 
    *    * A function that represents a BlockType.Command block might look like:
    *      * `example_command: (text: string, value: number) => void`
    *      * Note the `void` return type
@@ -100,47 +106,141 @@ export type Block<T extends BlockOperation> = {
    *      * move ___ steps
    *      * say ____
    *      * next backdrop
-   * * BlockType.Reporter - Accepts 0 or more arguments and returns a value. E.g.
-   *    * x position
-   *    * direction
-   *    * costume [name or number]
-   * * BlockType.Boolean - same as 'Reporter' but specifically returns a Boolean value
-   * * BlockType.Hat - Starts a stack if its value changes from falsy to truthy
+   * * `BlockType.Reporter` - Accepts 0 or more arguments and returns a value. E.g.
+   *    * A function that represents a BlockType.Command block might look like:
+   *      * `example_reporter: (value: number) => number`
+   *      * Note the non-`void` return type
+   *    * For reference, below are built-in blocks that are 'reporters'
+   *      * x position
+   *      * direction
+   *      * costume [name or number]
+   * * `BlockType.Boolean` - same as 'Reporter' but specifically returns a Boolean value
+   * * `BlockType.Hat` - Starts a stack if its value changes from falsy to truthy
    * 
    * NOTE: Scratch warns us that the below blocks are still 'in development' and therefore might not work (or at least not work as expected).
-   * * BlockType.Conditional - control flow, like "if {}" or "if {} else {}"
+   * * `BlockType.Conditional` - control flow, like "if {}" or "if {} else {}"
    *     * A 'Conditional' block may return the one-based index of a branch to
    *     run, or it may return zero/falsy to run no branch.
-   * * BlockType.Loop - control flow, like "repeat {} {}" or "forever {}"
+   * * `BlockType.Loop` - control flow, like "repeat {} {}" or "forever {}"
    *     * A LOOP block is like a CONDITIONAL block with two differences:
    *        * the block is assumed to have exactly one child branch, and
    *        * each time a child branch finishes, the loop block is called again.
-   * BlockType.Event - Starts a stack in response to an event (full spec TBD)
+   * * `BlockType.Event` - Starts a stack in response to an event (full spec TBD)
    */
-  type: ReturnType<T> extends void ? BlockType.Command | BlockType.Conditional | BlockType.Loop :
-  ReturnType<T> extends boolean ? (BlockType.Reporter | BlockType.Boolean | BlockType.Hat) :
-  ReturnType<T> extends Promise<any> ? never :
-  BlockType.Reporter;
+  type: ReturnType<T> extends void
+  ? BlockType.Command | BlockType.Conditional | BlockType.Loop
+  : ReturnType<T> extends boolean
+  ? (BlockType.Reporter | BlockType.Boolean | BlockType.Hat)
+  : ReturnType<T> extends Promise<any>
+  ? never
+  : BlockType.Reporter;
+
   /**
+   * @summary A function that encapsulates the code that runs when a block is executed
+   * @description This is where you implement what your block actually does.
    * 
+   * It can/should act on the arguments you specified for this blockt.
+   * 
+   * @param {BlockUtility} util The final argument passed to this function will always be a BlockUtility object, 
+   * which can help you accomplish more advanced block behavior. If you don't need to use it, feel free to omit it.
+   * @see {BlockUtility} type for more information on the final argument passed to this function.
    */
   operation: (...params: ParamsAndUtility<T>) => ReturnType<T>;
   /**
    * 
    */
   text: Parameters<T> extends NonEmptyArray<any> ? (...params: Parameters<T>) => string : string;
-} & (Parameters<T> extends NonEmptyArray<any> ? {
-  /**
-   * @description The args
-   */
-  args: ToArguments<Parameters<T>>
-} : {
-  /**
-   * @description The args field should not be defined for blocks that take no arguments
-   */
-  args?: never
-});
+} & (Parameters<T> extends NonEmptyArray<any>
+  ? {
+    /**
+     * @summary The Argument(s) that your blocks take.
+     * 
+     * Because there's a couple different pieces to a Scratch Argument 
+     * (including it's acceptable values, its UI representation, if it uses a menu, if it can take reporters, etc.),
+     * this field is can be more involved than just simply defining the plain argument types for a function, say. 
+     * @example 
+     * // Single argument, only (implicitly) specifying type
+     * args: ArgumentType.String
+     * @example 
+     * // Multiple arguments, all only (implicitly) specifying type
+     * // NOTE: The use of an array
+     * args: [ArgumentType.Number, ArgumentType.Angle, ArgumentType.String]
+     * @example 
+     * // Single argument, specified more verbosely with default value
+     * args: { type: ArgumentType.String, defaultValue: 'hello world'}
+     * @example 
+     * // Multiple arguments, both specified more verbosely with default value.
+     * // This demonstrates how multiple arguments are specified the same as a single argument, but are simply placed in an array.
+     * // Subsequent examples will only be described in terms of a single argument, but they similiarly apply to any entry in the args array.
+     * args: [
+     *  { type: ArgumentType.String, defaultValue: 'hello world'},
+     *  { type: ArgumentType.Number, defaultValue: 42 }
+     * ]
+     * @example
+     * // Single argument, with options (values only)
+     * args: { type: ArgumentType.Number, options: [1, 2, 3, 5, 7, 11, 13]}
+     * @example
+     * // Single argument, with options (verbose, with text and value)
+     * args: { 
+     *  type: ArgumentType.Number, 
+     *  options: [{ text: 'one', value: 1 }, { text: 'two', value: 2 }]
+     * }
+     * 
+     * // Advanced examples available below description (include dynamic options aka menus, accepting reporters...)
+     * @description This is where you define the arguments that your block should take. 
+     * 
+     * Because this field can take on a few different values depending on how you want your block arguments to behave, 
+     * it is like best to learn from the examples above (and below).
+     * @example 
+     * // ADVANCED
+     * // With options that accepts reporters
+     * args: { 
+     *  type: ArgumentType.Number, 
+     *  options: {
+     *    acceptsReporter: true,
+     *    items: [1, 2, 3],
+     *    handler: (x: any) => {
+     *       const parsed = parseInt(x);
+     *       return isNan(parsed) ? 1 : Math.min(Math.max(parsed, 1), 3)
+     *  }
+     * }
+     * @example 
+     * // ADVANCED
+     * // Dynamic options
+     * args: {
+     *  type: ArgumentType.Number,
+     *  options: () => [Math.random(), Math.random()]
+     * }
+     * @example 
+     * // ADVANCED
+     * // With dynamic options that accepts reporters
+     * args: {
+     *  type: ArgumentType.Number,
+     *  options: {
+     *    acceptsReporter: true,
+     *    getItems: () => [Math.random(), Math.random()],
+     *    handler: (x: any) => {
+     *       const parsed = parseInt(x);
+     *       return isNan(parsed) ? -1 : parsed;
+     *    }
+     *  }
+     * }
+     */
+    args: Parameters<T> extends [any] ? ToArguments<Parameters<T>>[0] : ToArguments<Parameters<T>>
+  }
+  : {
+    /**
+     * @description The args field should not be defined for blocks that take no arguments
+     */
+    args?: never
+  });
 
+/**
+ * How an extension should display in the extensions menu.
+ * 
+ * IMPORTANT! You can NOT use template literal types. 
+ * @link https://www.typescriptlang.org/docs/handbook/2/template-literal-types.html (Not allowed!)
+ */
 export type ExtensionMenuDisplayDetails = {
   name: string;
   description: string;
