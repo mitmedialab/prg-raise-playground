@@ -4,12 +4,12 @@
   "scripts": {
     "init": "npm install && npx lerna bootstrap --force-local",
     "init:build": "npm install && npx lerna link --force-local && npx lerna exec -- npm install && npx lerna link --force-local",
-    "clean:build": "rm -rf ./build",
+    "clean:build": "rm -rf ./build && npm run clean:type:declarations",
     "move:build:to:root": "mv ./packages/scratch-gui/build ./build",
     "build:vm": "npm run compile:ts --prefix ./packages/scratch-vm",
     "build:gui": "npm run build --prefix ./packages/scratch-gui/",
     "build": "npm run init:build && npm run clean:build && npm run build:vm && npm run build:gui && npm run move:build:to:root",
-    "dev": "ts-node ./scripts/dev.ts",
+    "dev": "npm run clean:type:declarations && ts-node ./scripts/dev.ts",
     "new:extension": "ts-node ./packages/scratch-vm/scripts/factory.ts",
     "rebuild:blocks": "npm run prepublish --prefix ./packages/scratch-blocks && npm run dev",
     "clean:type:declarations": "rm -r packages/scratch-vm/src/**/*.d.ts"
