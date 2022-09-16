@@ -126,7 +126,9 @@ const compileJavascriptDeclarations = (root: string, files: string[]): void => {
 
   // Prepare and emit the d.ts files
   const program = ts.createProgram(files, options, host);
-  program.emit();
+  const result = program.emit();
+
+  console.log("Emmitted files\n\n\n", result.emittedFiles);
 
   const readout = Object
     .entries(Object.fromEntries(emittedFiles))
