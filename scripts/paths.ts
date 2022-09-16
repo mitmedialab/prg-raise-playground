@@ -13,7 +13,9 @@ export const packages = {
   render: getPackage("render"),
 }
 
-export const extensionsFolder = path.join(packages.vm, "src", "extensions");
+export const vmSrc = path.join(packages.vm, "src");
+export const extensionsFolder = path.join(vmSrc, "extensions");
+
 
 assert(fs.existsSync(root));
 Object.values(packages).forEach(location => fs.existsSync(location));

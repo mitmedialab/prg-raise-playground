@@ -6,7 +6,7 @@ import { generateCodeForExtensions } from "./codeGeneration";
 import { profile, start, stop } from "../../../scripts/profile";
 import { writeFileSync } from "fs";
 import { Flag, sendToParent } from "../../../scripts/devComms";
-import { extensionsFolder } from "../../../scripts/paths";
+import { extensionsFolder, vmSrc } from "../../../scripts/paths";
 
 const tsconfig = path.join(__dirname, "tsconfig.generated.json");
 
@@ -111,15 +111,29 @@ const compileJavascriptDeclarations = (root: string, files: string[]): void => {
 
   const host = ts.createCompilerHost(options);
 
+  const emittedFiles: Map<string, string[]> = new Map();
+
   host.writeFile = (fileName: string, contents: string) => {
     if (fileName.includes(extensionsFolder)) return;
     if (fileName.includes("typescript-support")) return;
-    if (fileName.includes(".d.ts")) writeFileSync(fileName, contents);
+    if (!fileName.includes(".d.ts")) return;
+    writeFileSync(fileName, contents);
+    const relativeToSrc = path.relative(vmSrc, fileName);
+    const dir = path.dirname(relativeToSrc);
+    const base = path.basename(relativeToSrc);
+    emittedFiles.has(dir) ? emittedFiles.get(dir).push(base) : emittedFiles.set(dir, [base]);
   };
 
   // Prepare and emit the d.ts files
   const program = ts.createProgram(files, options, host);
   program.emit();
+
+  const readout = Object
+    .entries(Object.fromEntries(emittedFiles))
+    .map(([dir, files]) => ({ dir, files: files }));
+
+  console.table(chalk.whiteBright(`Emitted declarations for javascript files:`));
+  console.table(readout);
 }
 
 const writeOutTsConfig = (root: string, files: string[]) => {
