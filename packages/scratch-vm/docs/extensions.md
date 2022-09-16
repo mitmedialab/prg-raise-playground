@@ -3,17 +3,12 @@
 This document describes technical topics related to Scratch 3.0 extension development, including the Scratch 3.0
 extension specification.
 
-For documentation regarding other aspects of Scratch 3.0 extensions see [this Extensions page on the
-wiki](https://github.com/LLK/docs/wiki/Extensions).
-
 ## Types of Extensions
 
 There are four types of extensions that can define everything from the Scratch's core library (such as the "Looks" and
 "Operators" categories) to unofficial extensions that can be loaded from a remote URL.
 
 **Scratch 3.0 does not yet support unofficial extensions.**
-
-For more details, see [this Extensions page on the wiki](https://github.com/LLK/docs/wiki/Extensions).
 
 |                                | Core | Team | Official | Unofficial |
 | ------------------------------ | ---- | ---- | -------- | ---------- |
@@ -146,7 +141,7 @@ return {
     blocks: [
         {
             //...
-            arguments {
+            arguments: {
                 MY_IMAGE: {
                     type: ArgumentType.IMAGE,
                     dataURI: 'myImageData',
@@ -310,6 +305,7 @@ class SomeBlocks {
         return {
             // Required: the machine-readable name of this extension.
             // Will be used as the extension's namespace.
+            // Allowed characters are those matching the regular expression [\w-]: A-Z, a-z, 0-9, and hyphen ("-").
             id: 'someBlocks',
 
             // Core extensions only: override the default extension block colors.
