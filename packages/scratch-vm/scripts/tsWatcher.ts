@@ -110,10 +110,10 @@ const compileJavascriptDeclarations = (root: string, files: string[]): void => {
   };
 
   const host = ts.createCompilerHost(options);
-
   const emittedFiles: Map<string, string[]> = new Map();
 
   host.writeFile = (fileName: string, contents: string) => {
+    console.log("try write: ", fileName);
     if (fileName.includes(extensionsFolder)) return;
     if (fileName.includes("typescript-support")) return;
     if (!fileName.includes(".d.ts")) return;
