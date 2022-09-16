@@ -568,7 +568,7 @@ const serialize = function (runtime, targetId) {
     obj.extensions = Array.from(extensions);
     
     // Save training data for the text classifier model
-    obj.textModel = runtime.modelData.classifierData;
+    obj.textModel = runtime.modelData?.classifierData;
 
     // Assemble metadata
     const meta = Object.create(null);

@@ -29,8 +29,8 @@ require('canvas-toBlob');
 const RESERVED_NAMES = ['_mouse_', '_stage_', '_edge_', '_myself_', '_random_'];
 
 const CORE_EXTENSIONS = [
-    'teachableMachine',
-    'textClassification'
+    // 'teachableMachine',
+    // 'textClassification'
     // 'motion',
     // 'looks',
     // 'sound',
@@ -60,7 +60,7 @@ class ScratchCanvasRecorder {
         this.video.style.left = '0';
         this.video.style.opacity = '0';
         document.body.appendChild(this.video);
-        this.stream = canvas.captureStream(); // frames per second
+        this.stream = canvas?.captureStream(); // frames per second
         console.log('Started stream capture from canvas element: ', this.stream);
     }
 

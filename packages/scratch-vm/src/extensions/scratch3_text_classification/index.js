@@ -269,7 +269,8 @@ class Scratch3TextClassificationBlocks {
             ],
             acceptReporters: true
         };
-
+        
+        this.resetModelData();
         // load the toxicity model
         this._toxicitymodel = null;
         this._loadToxicity();
@@ -744,6 +745,10 @@ class Scratch3TextClassificationBlocks {
         this.labelListEmpty = true;
     }
 
+    resetModelData() {
+        this.scratch_vm.modelData = {textData: {}, classifierData: {}, nextLabelNumber: 1};
+    }
+
     /**
      * TODO Clear local label list, but also clear all data stored in the runtime
      */
@@ -752,8 +757,7 @@ class Scratch3TextClassificationBlocks {
         this.clearLocal();
         // Clear runtime's model data
         
-        this.scratch_vm.modelData = {textData: {}, classifierData: {}, nextLabelNumber: 1};
-        
+        this.resetModelData();
     }
 
     /**
