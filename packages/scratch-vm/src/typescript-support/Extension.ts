@@ -2,7 +2,7 @@ import { ArgumentType, Language } from './enums';
 import type { ExtensionMenuDisplayDetails, ExtensionBlocks, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, VerboseArgument, Environment, Menu, DynamicMenu, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters, TypeByArgumentType, AllText, Translations, BlockOperation } from './types';
 import Cast from '../util/cast';
 import formatMessage = require('format-message');
-import Runtime from "../engine/Runtime";
+import Runtime from "../engine/runtime";
 
 export type CodeGenArgs = {
   name: never,
