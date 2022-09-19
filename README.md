@@ -24,9 +24,10 @@ git merge upstream/develop
 
 # Deal with any merge conflicts. There likely won't be any code conflicts, except for:
 # - This README.md
+# - Both moving/renaming a file (or we moved, and Scratch renamed)
 
 # Ensure that all content remains in packages/scratch-vm
-
+ls -a
 ```
 
 ### Update [prg-extension-boilerplate]
