@@ -60,7 +60,7 @@ class ScratchCanvasRecorder {
         this.video.style.left = '0';
         this.video.style.opacity = '0';
         document.body.appendChild(this.video);
-        this.stream = canvas?.captureStream(); // frames per second
+        this.stream = canvas ? canvas.captureStream() : undefined; // frames per second
         console.log('Started stream capture from canvas element: ', this.stream);
     }
 
