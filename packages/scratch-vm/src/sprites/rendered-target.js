@@ -709,11 +709,7 @@ class RenderedTarget extends Target {
             this.renderer.updateDrawableVisible(this.drawableID, this.visible);
 
             const costume = this.getCostumes()[this.currentCostume];
-            const bitmapResolution = costume.bitmapResolution || 2;
-            this.renderer.updateDrawableSkinIdRotationCenter(this.drawableID, costume.skinId, [
-                costume.rotationCenterX / bitmapResolution,
-                costume.rotationCenterY / bitmapResolution
-            ]);
+            this.renderer.updateDrawableSkinId(this.drawableID, costume.skinId);
 
             for (const effectName in this.effects) {
                 if (!this.effects.hasOwnProperty(effectName)) continue;

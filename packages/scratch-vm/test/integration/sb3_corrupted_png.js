@@ -44,15 +44,6 @@ global.Image = function () {
     return image;
 };
 
-global.document = {
-    createElement: () => ({
-        // Create mock canvas
-        getContext: () => ({
-            drawImage: () => ({})
-        })
-    })
-};
-
 let vm;
 let defaultBitmapAssetId;
 
