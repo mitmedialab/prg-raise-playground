@@ -16,7 +16,7 @@ class ShaderManager {
          */
         this._shaderCache = {};
         for (const modeName in ShaderManager.DRAW_MODE) {
-            if (ShaderManager.DRAW_MODE.hasOwnProperty(modeName)) {
+            if (Object.prototype.hasOwnProperty.call(ShaderManager.DRAW_MODE, modeName)) {
                 this._shaderCache[modeName] = [];
             }
         }
@@ -154,9 +154,14 @@ ShaderManager.EFFECTS = Object.keys(ShaderManager.EFFECT_INFO);
  */
 ShaderManager.DRAW_MODE = {
     /**
-     * Draw normally.
+     * Draw normally. Its output will use premultiplied alpha.
      */
     default: 'default',
+
+    /**
+     * Draw with non-premultiplied alpha. Useful for reading pixels from GL into an ImageData object.
+     */
+    straightAlpha: 'straightAlpha',
 
     /**
      * Draw a silhouette using a solid color.
@@ -169,14 +174,14 @@ ShaderManager.DRAW_MODE = {
     colorMask: 'colorMask',
 
     /**
-     * Sample a "texture" to draw a line with caps.
+     * Draw a line with caps.
      */
-    lineSample: 'lineSample',
+    line: 'line',
 
     /**
-     * Draw normally except for pre-multiplied alpha
+     * Draw the background in a certain color. Must sometimes be used instead of gl.clear.
      */
-    stamp: 'stamp'
+    background: 'background'
 };
 
 module.exports = ShaderManager;

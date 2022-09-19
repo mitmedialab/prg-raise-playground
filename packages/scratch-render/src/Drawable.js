@@ -5,6 +5,7 @@ const RenderConstants = require('./RenderConstants');
 const ShaderManager = require('./ShaderManager');
 const Skin = require('./Skin');
 const EffectTransform = require('./EffectTransform');
+const log = require('./util/log');
 
 /**
  * An internal workspace for calculating texture locations from world vectors
@@ -12,6 +13,7 @@ const EffectTransform = require('./EffectTransform');
  * @type {twgl.v3}
  */
 const __isTouchingPosition = twgl.v3.create();
+const FLOATING_POINT_ERROR_ALLOWANCE = 1e-6;
 
 /**
  * Convert a scratch space location into a texture space float.  Uses the
@@ -36,6 +38,11 @@ const getLocalPosition = (drawable, vec) => {
     // localPosition matches that transformation.
     localPosition[0] = 0.5 - (((v0 * m[0]) + (v1 * m[4]) + m[12]) / d);
     localPosition[1] = (((v0 * m[1]) + (v1 * m[5]) + m[13]) / d) + 0.5;
+    // Fix floating point issues near 0. Filed https://github.com/LLK/scratch-render/issues/688 that
+    // they're happening in the first place.
+    // TODO: Check if this can be removed after render pull 479 is merged
+    if (Math.abs(localPosition[0]) < FLOATING_POINT_ERROR_ALLOWANCE) localPosition[0] = 0;
+    if (Math.abs(localPosition[1]) < FLOATING_POINT_ERROR_ALLOWANCE) localPosition[1] = 0;
     // Apply texture effect transform if the localPosition is within the drawable's space,
     // and any effects are currently active.
     if (drawable.enabledEffects !== 0 &&
@@ -110,7 +117,15 @@ class Drawable {
         this._convexHullPoints = null;
         this._convexHullDirty = true;
 
+        // The precise bounding box will be from the transformed convex hull points,
+        // so initialize the array of transformed hull points in setConvexHullPoints.
+        // Initializing it once per convex hull recalculation avoids unnecessary creation of twgl.v3 objects.
+        this._transformedHullPoints = null;
+        this._transformedHullDirty = true;
+
         this._skinWasAltered = this._skinWasAltered.bind(this);
+
+        this.isTouching = this._isTouchingNever;
     }
 
     /**
@@ -128,6 +143,7 @@ class Drawable {
     setTransformDirty () {
         this._transformDirty = true;
         this._inverseTransformDirty = true;
+        this._transformedHullDirty = true;
     }
 
     /**
@@ -448,60 +464,44 @@ class Drawable {
     setConvexHullPoints (points) {
         this._convexHullPoints = points;
         this._convexHullDirty = false;
+
+        // Re-create the "transformed hull points" array.
+        // We only do this when the hull points change to avoid unnecessary allocations and GC.
+        this._transformedHullPoints = [];
+        for (let i = 0; i < points.length; i++) {
+            this._transformedHullPoints.push(twgl.v3.create());
+        }
+        this._transformedHullDirty = true;
     }
 
     /**
+     * @function
+     * @name isTouching
      * Check if the world position touches the skin.
+     * The caller is responsible for ensuring this drawable's inverse matrix & its skin's silhouette are up-to-date.
+     * @see updateCPURenderAttributes
      * @param {twgl.v3} vec World coordinate vector.
      * @return {boolean} True if the world position touches the skin.
      */
-    isTouching (vec) {
-        if (!this.skin) {
-            return false;
-        }
 
-        const localPosition = getLocalPosition(this, vec);
+    // `updateCPURenderAttributes` sets this Drawable instance's `isTouching` method
+    // to one of the following three functions:
+    // If this drawable has no skin, set it to `_isTouchingNever`.
+    // Otherwise, if this drawable uses nearest-neighbor scaling at its current scale, set it to `_isTouchingNearest`.
+    // Otherwise, set it to `_isTouchingLinear`.
+    // This allows several checks to be moved from the `isTouching` function to `updateCPURenderAttributes`.
 
-        // We're not passing in a scale to useNearest, but that's okay because "touching" queries
-        // happen at the "native" size anyway.
-        if (this.useNearest()) {
-            return this.skin.isTouchingNearest(localPosition);
-        }
-        return this.skin.isTouchingLinear(localPosition);
+    // eslint-disable-next-line no-unused-vars
+    _isTouchingNever (vec) {
+        return false;
     }
 
-    /**
-     * Should the drawable use NEAREST NEIGHBOR or LINEAR INTERPOLATION mode
-     * @param {?Array<Number>} scale Optionally, the screen-space scale of the drawable.
-     * @return {boolean} True if the drawable should use nearest-neighbor interpolation.
-     */
-    useNearest (scale = this.scale) {
-        // Raster skins (bitmaps) should always prefer nearest neighbor
-        if (this.skin.isRaster) {
-            return true;
-        }
+    _isTouchingNearest (vec) {
+        return this.skin.isTouchingNearest(getLocalPosition(this, vec));
+    }
 
-        // If the effect bits for mosaic, pixelate, whirl, or fisheye are set, use linear
-        if ((this.enabledEffects & (
-            ShaderManager.EFFECT_INFO.fisheye.mask |
-            ShaderManager.EFFECT_INFO.whirl.mask |
-            ShaderManager.EFFECT_INFO.pixelate.mask |
-            ShaderManager.EFFECT_INFO.mosaic.mask
-        )) !== 0) {
-            return false;
-        }
-
-        // We can't use nearest neighbor unless we are a multiple of 90 rotation
-        if (this._direction % 90 !== 0) {
-            return false;
-        }
-
-        // If the scale of the skin is very close to 100 (0.99999 variance is okay I guess)
-        if (Math.abs(scale[0]) > 99 && Math.abs(scale[0]) < 101 &&
-            Math.abs(scale[1]) > 99 && Math.abs(scale[1]) < 101) {
-            return true;
-        }
-        return false;
+    _isTouchingLinear (vec) {
+        return this.skin.isTouchingLinear(getLocalPosition(this, vec));
     }
 
     /**
@@ -592,23 +592,27 @@ class Drawable {
      * @private
      */
     _getTransformedHullPoints () {
+        if (!this._transformedHullDirty) {
+            return this._transformedHullPoints;
+        }
+
         const projection = twgl.m4.ortho(-1, 1, -1, 1, -1, 1);
         const skinSize = this.skin.size;
         const halfXPixel = 1 / skinSize[0] / 2;
         const halfYPixel = 1 / skinSize[1] / 2;
         const tm = twgl.m4.multiply(this._uniforms.u_modelMatrix, projection);
-        const transformedHullPoints = [];
         for (let i = 0; i < this._convexHullPoints.length; i++) {
             const point = this._convexHullPoints[i];
-            const glPoint = twgl.v3.create(
-                0.5 + (-point[0] / skinSize[0]) - halfXPixel,
-                (point[1] / skinSize[1]) - 0.5 + halfYPixel,
-                0
-            );
-            twgl.m4.transformPoint(tm, glPoint, glPoint);
-            transformedHullPoints.push(glPoint);
+            const dstPoint = this._transformedHullPoints[i];
+
+            dstPoint[0] = 0.5 + (-point[0] / skinSize[0]) - halfXPixel;
+            dstPoint[1] = (point[1] / skinSize[1]) - 0.5 + halfYPixel;
+            twgl.m4.transformPoint(tm, dstPoint, dstPoint);
         }
-        return transformedHullPoints;
+
+        this._transformedHullDirty = false;
+
+        return this._transformedHullPoints;
     }
 
     /**
@@ -629,6 +633,27 @@ class Drawable {
             inverse[10] = 1;
             twgl.m4.inverse(inverse, inverse);
             this._inverseTransformDirty = false;
+        }
+    }
+
+    /**
+     * Update everything necessary to render this drawable on the CPU.
+     */
+    updateCPURenderAttributes () {
+        this.updateMatrix();
+        // CPU rendering always occurs at the "native" size, so no need to scale up this._scale
+        if (this.skin) {
+            this.skin.updateSilhouette(this._scale);
+
+            if (this.skin.useNearest(this._scale, this)) {
+                this.isTouching = this._isTouchingNearest;
+            } else {
+                this.isTouching = this._isTouchingLinear;
+            }
+        } else {
+            log.warn(`Could not find skin for drawable with id: ${this._id}`);
+
+            this.isTouching = this._isTouchingNever;
         }
     }
 
@@ -676,26 +701,33 @@ class Drawable {
 
     /**
      * Sample a color from a drawable's texture.
+     * The caller is responsible for ensuring this drawable's inverse matrix & its skin's silhouette are up-to-date.
+     * @see updateCPURenderAttributes
      * @param {twgl.v3} vec The scratch space [x,y] vector
      * @param {Drawable} drawable The drawable to sample the texture from
      * @param {Uint8ClampedArray} dst The "color4b" representation of the texture at point.
+     * @param {number} [effectMask] A bitmask for which effects to use. Optional.
      * @returns {Uint8ClampedArray} The dst object filled with the color4b
      */
-    static sampleColor4b (vec, drawable, dst) {
+    static sampleColor4b (vec, drawable, dst, effectMask) {
         const localPosition = getLocalPosition(drawable, vec);
         if (localPosition[0] < 0 || localPosition[1] < 0 ||
             localPosition[0] > 1 || localPosition[1] > 1) {
+            dst[0] = 0;
+            dst[1] = 0;
+            dst[2] = 0;
             dst[3] = 0;
             return dst;
         }
+
         const textColor =
         // commenting out to only use nearest for now
-        // drawable.useNearest() ?
+        // drawable.skin.useNearest(drawable._scale, drawable) ?
              drawable.skin._silhouette.colorAtNearest(localPosition, dst);
         // : drawable.skin._silhouette.colorAtLinear(localPosition, dst);
 
         if (drawable.enabledEffects === 0) return textColor;
-        return EffectTransform.transformColor(drawable, textColor);
+        return EffectTransform.transformColor(drawable, textColor, effectMask);
     }
 }
 

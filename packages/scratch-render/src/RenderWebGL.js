@@ -44,6 +44,12 @@ const MAX_TOUCH_SIZE = [3, 3];
 const MASK_TOUCHING_COLOR_TOLERANCE = 2;
 
 /**
+ * Maximum number of pixels in either dimension of "extracted drawable" data
+ * @type {int}
+ */
+const MAX_EXTRACTED_DRAWABLE_DIMENSION = 2048;
+
+/**
  * Determines if the mask color is "close enough" (only test the 6 top bits for
  * each color).  These bit masks are what scratch 2 used to use, so we do the same.
  * @param {Uint8Array} a A color3b or color4b value.
@@ -105,7 +111,12 @@ class RenderWebGL extends EventEmitter {
      * @private
      */
     static _getContext (canvas) {
-        return twgl.getWebGLContext(canvas, {alpha: false, stencil: true, antialias: false});
+        const contextAttribs = {alpha: false, stencil: true, antialias: false};
+        // getWebGLContext = try WebGL 1.0 only
+        // getContext = try WebGL 2.0 and if that doesn't work, try WebGL 1.0
+        // getWebGLContext || getContext = try WebGL 1.0 and if that doesn't work, try WebGL 2.0
+        return twgl.getWebGLContext(canvas, contextAttribs) ||
+            twgl.getContext(canvas, contextAttribs);
     }
 
     /**
@@ -182,8 +193,22 @@ class RenderWebGL extends EventEmitter {
         /** @type {function} */
         this._exitRegion = null;
 
+        /** @type {object} */
+        this._backgroundDrawRegionId = {
+            enter: () => this._enterDrawBackground(),
+            exit: () => this._exitDrawBackground()
+        };
+
         /** @type {Array.<snapshotCallback>} */
         this._snapshotCallbacks = [];
+
+        /** @type {Array<number>} */
+        // Don't set this directly-- use setBackgroundColor so it stays in sync with _backgroundColor3b
+        this._backgroundColor4f = [0, 0, 0, 1];
+
+        /** @type {Uint8ClampedArray} */
+        // Don't set this directly-- use setBackgroundColor so it stays in sync with _backgroundColor4f
+        this._backgroundColor3b = new Uint8ClampedArray(3);
 
         this._createGeometry();
 
@@ -196,7 +221,7 @@ class RenderWebGL extends EventEmitter {
         gl.disable(gl.DEPTH_TEST);
         /** @todo disable when no partial transparency? */
         gl.enable(gl.BLEND);
-        gl.blendFuncSeparate(gl.ONE, gl.ONE_MINUS_SRC_ALPHA, gl.ZERO, gl.ONE);
+        gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     }
 
     /**
@@ -220,9 +245,20 @@ class RenderWebGL extends EventEmitter {
      * @param {int} pixelsTall The desired height in device-independent pixels.
      */
     resize (pixelsWide, pixelsTall) {
+        const {canvas} = this._gl;
         const pixelRatio = window.devicePixelRatio || 1;
-        this._gl.canvas.width = pixelsWide * pixelRatio;
-        this._gl.canvas.height = pixelsTall * pixelRatio;
+        const newWidth = pixelsWide * pixelRatio;
+        const newHeight = pixelsTall * pixelRatio;
+
+        // Certain operations, such as moving the color picker, call `resize` once per frame, even though the canvas
+        // size doesn't change. To avoid unnecessary canvas updates, check that we *really* need to resize the canvas.
+        if (canvas.width !== newWidth || canvas.height !== newHeight) {
+            canvas.width = newWidth;
+            canvas.height = newHeight;
+            // Resizing the canvas causes it to be cleared, so redraw it.
+            this.draw();
+        }
+
     }
 
     /**
@@ -233,7 +269,14 @@ class RenderWebGL extends EventEmitter {
      * @param {number} blue The blue component for the background.
      */
     setBackgroundColor (red, green, blue) {
-        this._backgroundColor = [red, green, blue, 1];
+        this._backgroundColor4f[0] = red;
+        this._backgroundColor4f[1] = green;
+        this._backgroundColor4f[2] = blue;
+
+        this._backgroundColor3b[0] = red * 255;
+        this._backgroundColor3b[1] = green * 255;
+        this._backgroundColor3b[2] = blue * 255;
+
     }
 
     /**
@@ -434,7 +477,7 @@ class RenderWebGL extends EventEmitter {
      * @returns {int} The ID of the new Drawable.
      */
     createDrawable (group) {
-        if (!group || !this._layerGroups.hasOwnProperty(group)) {
+        if (!group || !Object.prototype.hasOwnProperty.call(this._layerGroups, group)) {
             log.warn('Cannot create a drawable without a known layer group');
             return;
         }
@@ -504,7 +547,7 @@ class RenderWebGL extends EventEmitter {
      * @param {string} group Group name that the drawable belongs to
      */
     destroyDrawable (drawableID, group) {
-        if (!group || !this._layerGroups.hasOwnProperty(group)) {
+        if (!group || !Object.prototype.hasOwnProperty.call(this._layerGroups, group)) {
             log.warn('Cannot destroy drawable without known layer group.');
             return;
         }
@@ -558,7 +601,7 @@ class RenderWebGL extends EventEmitter {
      * @return {?number} New order if changed, or null.
      */
     setDrawableOrder (drawableID, order, group, optIsRelative, optMin) {
-        if (!group || !this._layerGroups.hasOwnProperty(group)) {
+        if (!group || !Object.prototype.hasOwnProperty.call(this._layerGroups, group)) {
             log.warn('Cannot set the order of a drawable without a known layer group.');
             return;
         }
@@ -612,10 +655,13 @@ class RenderWebGL extends EventEmitter {
 
         twgl.bindFramebufferInfo(gl, null);
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-        gl.clearColor.apply(gl, this._backgroundColor);
+        gl.clearColor(...this._backgroundColor4f);
         gl.clear(gl.COLOR_BUFFER_BIT);
 
-        this._drawThese(this._drawList, ShaderManager.DRAW_MODE.default, this._projection);
+        this._drawThese(this._drawList, ShaderManager.DRAW_MODE.default, this._projection, {
+            framebufferWidth: gl.canvas.width,
+            framebufferHeight: gl.canvas.height
+        });
         if (this._snapshotCallbacks.length > 0) {
             const snapshot = gl.canvas.toDataURL();
             this._snapshotCallbacks.forEach(cb => cb(snapshot));
@@ -728,11 +774,21 @@ class RenderWebGL extends EventEmitter {
      */
     isTouchingColor (drawableID, color3b, mask3b) {
         const candidates = this._candidatesTouching(drawableID, this._visibleDrawList);
-        if (candidates.length === 0) {
-            return false;
-        }
 
-        const bounds = this._candidatesBounds(candidates);
+        let bounds;
+        if (colorMatches(color3b, this._backgroundColor3b, 0)) {
+            // If the color we're checking for is the background color, don't confine the check to
+            // candidate drawables' bounds--since the background spans the entire stage, we must check
+            // everything that lies inside the drawable.
+            bounds = this._touchingBounds(drawableID);
+            // e.g. empty costume, or off the stage
+            if (bounds === null) return false;
+        } else if (candidates.length === 0) {
+            // If not checking for the background color, we can return early if there are no candidate drawables.
+            return false;
+        } else {
+            bounds = this._candidatesBounds(candidates);
+        }
 
         const maxPixelsForCPU = this._getMaxPixelsForCPU();
 
@@ -752,6 +808,11 @@ class RenderWebGL extends EventEmitter {
         const color = __touchingColor;
         const hasMask = Boolean(mask3b);
 
+        drawable.updateCPURenderAttributes();
+
+        // Masked drawable ignores ghost effect
+        const effectMask = ~ShaderManager.EFFECT_INFO.ghost.mask;
+
         // Scratch Space - +y is top
         for (let y = bounds.bottom; y <= bounds.top; y++) {
             if (bounds.width * (y - bounds.bottom) * (candidates.length + 1) >= maxPixelsForCPU) {
@@ -762,7 +823,7 @@ class RenderWebGL extends EventEmitter {
                 point[0] = x;
                 // if we use a mask, check our sample color...
                 if (hasMask ?
-                    maskMatches(Drawable.sampleColor4b(point, drawable, color), mask3b) :
+                    maskMatches(Drawable.sampleColor4b(point, drawable, color, effectMask), mask3b) :
                     drawable.isTouching(point)) {
                     RenderWebGL.sampleColor3b(point, candidates, color);
                     if (debugCanvasContext) {
@@ -791,6 +852,19 @@ class RenderWebGL extends EventEmitter {
         }
     }
 
+    _enterDrawBackground () {
+        const gl = this.gl;
+        const currentShader = this._shaderManager.getShader(ShaderManager.DRAW_MODE.background, 0);
+        gl.disable(gl.BLEND);
+        gl.useProgram(currentShader.program);
+        twgl.setBuffersAndAttributes(gl, currentShader, this._bufferInfo);
+    }
+
+    _exitDrawBackground () {
+        const gl = this.gl;
+        gl.enable(gl.BLEND);
+    }
+
     _isTouchingColorGpuStart (drawableID, candidateIDs, bounds, color3b, mask3b) {
         this._doExitDrawRegion();
 
@@ -802,15 +876,8 @@ class RenderWebGL extends EventEmitter {
         gl.viewport(0, 0, bounds.width, bounds.height);
         const projection = twgl.m4.ortho(bounds.left, bounds.right, bounds.top, bounds.bottom, -1, 1);
 
-        let fillBackgroundColor = this._backgroundColor;
-
-        // When using masking such that the background fill color will showing through, ensure we don't
-        // fill using the same color that we are trying to detect!
-        if (color3b[0] > 196 && color3b[1] > 196 && color3b[2] > 196) {
-            fillBackgroundColor = [0, 0, 0, 255];
-        }
-
-        gl.clearColor.apply(gl, fillBackgroundColor);
+        // Clear the query buffer to fully transparent. This will be the color of pixels that fail the stencil test.
+        gl.clearColor(0, 0, 0, 0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
 
         let extraUniforms;
@@ -822,6 +889,9 @@ class RenderWebGL extends EventEmitter {
         }
 
         try {
+            // Using the stencil buffer, mask out the drawing to either the drawable's alpha channel
+            // or pixels of the drawable which match the mask color, depending on whether a mask color is given.
+            // Masked-out pixels will not be checked.
             gl.enable(gl.STENCIL_TEST);
             gl.stencilFunc(gl.ALWAYS, 1, 1);
             gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
@@ -834,19 +904,33 @@ class RenderWebGL extends EventEmitter {
                 projection,
                 {
                     extraUniforms,
-                    ignoreVisibility: true // Touching color ignores sprite visibility
+                    ignoreVisibility: true, // Touching color ignores sprite visibility,
+                    effectMask: ~ShaderManager.EFFECT_INFO.ghost.mask
                 });
 
             gl.stencilFunc(gl.EQUAL, 1, 1);
             gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
             gl.colorMask(true, true, true, true);
 
+            // Draw the background as a quad. Drawing a background with gl.clear will not mask to the stenciled area.
+            this.enterDrawRegion(this._backgroundDrawRegionId);
+
+            const uniforms = {
+                u_backgroundColor: this._backgroundColor4f
+            };
+
+            const currentShader = this._shaderManager.getShader(ShaderManager.DRAW_MODE.background, 0);
+            twgl.setUniforms(currentShader, uniforms);
+            twgl.drawBufferInfo(gl, this._bufferInfo, gl.TRIANGLES);
+
+            // Draw the candidate drawables on top of the background.
             this._drawThese(candidateIDs, ShaderManager.DRAW_MODE.default, projection,
                 {idFilterFunc: testID => testID !== drawableID}
             );
         } finally {
             gl.colorMask(true, true, true, true);
             gl.disable(gl.STENCIL_TEST);
+            this._doExitDrawRegion();
         }
     }
 
@@ -865,7 +949,8 @@ class RenderWebGL extends EventEmitter {
         }
 
         for (let pixelBase = 0; pixelBase < pixels.length; pixelBase += 4) {
-            if (colorMatches(color3b, pixels, pixelBase)) {
+            // Transparent pixels are masked (either by the drawable's alpha channel or color mask).
+            if (pixels[pixelBase + 3] !== 0 && colorMatches(color3b, pixels, pixelBase)) {
                 return true;
             }
         }
@@ -893,6 +978,8 @@ class RenderWebGL extends EventEmitter {
 
         const drawable = this._allDrawables[drawableID];
         const point = __isTouchingDrawablesPoint;
+
+        drawable.updateCPURenderAttributes();
 
         // This is an EXTREMELY brute force collision detector, but it is
         // still faster than asking the GPU to give us the pixels.
@@ -970,12 +1057,7 @@ class RenderWebGL extends EventEmitter {
         const bounds = this.clientSpaceToScratchBounds(centerX, centerY, touchWidth, touchHeight);
         const worldPos = twgl.v3.create();
 
-        drawable.updateMatrix();
-        if (drawable.skin) {
-            drawable.skin.updateSilhouette();
-        } else {
-            log.warn(`Could not find skin for drawable with id: ${drawableID}`);
-        }
+        drawable.updateCPURenderAttributes();
 
         for (worldPos[1] = bounds.bottom; worldPos[1] <= bounds.top; worldPos[1]++) {
             for (worldPos[0] = bounds.left; worldPos[0] <= bounds.right; worldPos[0]++) {
@@ -1002,26 +1084,25 @@ class RenderWebGL extends EventEmitter {
      * RenderConstants.ID_NONE if there is no Drawable at that location.
      */
     pick (centerX, centerY, touchWidth, touchHeight, candidateIDs) {
+        const bounds = this.clientSpaceToScratchBounds(centerX, centerY, touchWidth, touchHeight);
+        if (bounds.left === -Infinity || bounds.bottom === -Infinity) {
+            return false;
+        }
+
         candidateIDs = (candidateIDs || this._drawList).filter(id => {
             const drawable = this._allDrawables[id];
             // default pick list ignores visible and ghosted sprites.
             if (drawable.getVisible() && drawable.getUniforms().u_ghost !== 0) {
-                drawable.updateMatrix();
-                if (drawable.skin) {
-                    drawable.skin.updateSilhouette();
-                } else {
-                    log.warn(`Could not find skin for drawable with id: ${id}`);
-                }
+                const drawableBounds = drawable.getFastBounds();
+                const inRange = bounds.intersects(drawableBounds);
+                if (!inRange) return false;
+
+                drawable.updateCPURenderAttributes();
                 return true;
             }
             return false;
         });
         if (candidateIDs.length === 0) {
-            return false;
-        }
-
-        const bounds = this.clientSpaceToScratchBounds(centerX, centerY, touchWidth, touchHeight);
-        if (bounds.left === -Infinity || bounds.bottom === -Infinity) {
             return false;
         }
 
@@ -1051,7 +1132,7 @@ class RenderWebGL extends EventEmitter {
 
         let hit = RenderConstants.ID_NONE;
         for (const hitID in hits) {
-            if (hits.hasOwnProperty(hitID) && (hits[hitID] > hits[hit])) {
+            if (Object.prototype.hasOwnProperty.call(hits, hitID) && (hits[hitID] > hits[hit])) {
                 hit = hitID;
             }
         }
@@ -1061,104 +1142,114 @@ class RenderWebGL extends EventEmitter {
 
     /**
      * @typedef DrawableExtraction
-     * @property {Uint8Array} data Raw pixel data for the drawable
-     * @property {int} width Drawable bounding box width
-     * @property {int} height Drawable bounding box height
-     * @property {Array<number>} scratchOffset [x, y] offset in Scratch coordinates
-     * from the drawable position to the client x, y coordinate
-     * @property {int} x The x coordinate relative to drawable bounding box
-     * @property {int} y The y coordinate relative to drawable bounding box
+     * @property {ImageData} data Raw pixel data for the drawable
+     * @property {number} x The x coordinate of the drawable's bounding box's top-left corner, in 'CSS pixels'
+     * @property {number} y The y coordinate of the drawable's bounding box's top-left corner, in 'CSS pixels'
+     * @property {number} width The drawable's bounding box width, in 'CSS pixels'
+     * @property {number} height The drawable's bounding box height, in 'CSS pixels'
      */
 
     /**
-     * Return drawable pixel data and picking coordinates relative to the drawable bounds
+     * Return a drawable's pixel data and bounds in screen space.
      * @param {int} drawableID The ID of the drawable to get pixel data for
-     * @param {int} x The client x coordinate of the picking location.
-     * @param {int} y The client y coordinate of the picking location.
-     * @return {?DrawableExtraction} Data about the picked drawable
+     * @return {DrawableExtraction} Data about the picked drawable
      */
-    extractDrawable (drawableID, x, y) {
+    extractDrawableScreenSpace (drawableID) {
+        const drawable = this._allDrawables[drawableID];
+        if (!drawable) throw new Error(`Could not extract drawable with ID ${drawableID}; it does not exist`);
+
         this._doExitDrawRegion();
 
-        const drawable = this._allDrawables[drawableID];
-        if (!drawable) return null;
+        const nativeCenterX = this._nativeSize[0] * 0.5;
+        const nativeCenterY = this._nativeSize[1] * 0.5;
 
-        // Convert client coordinates into absolute scratch units
-        const scratchX = this._nativeSize[0] * ((x / this._gl.canvas.clientWidth) - 0.5);
-        const scratchY = this._nativeSize[1] * ((y / this._gl.canvas.clientHeight) - 0.5);
+        const scratchBounds = drawable.getFastBounds();
+
+        const canvas = this.canvas;
+        // Ratio of the screen-space scale of the stage's canvas to the "native size" of the stage
+        const scaleFactor = canvas.width / this._nativeSize[0];
+
+        // Bounds of the extracted drawable, in "canvas pixel space"
+        // (origin is 0, 0, destination is the canvas width, height).
+        const canvasSpaceBounds = new Rectangle();
+        canvasSpaceBounds.initFromBounds(
+            (scratchBounds.left + nativeCenterX) * scaleFactor,
+            (scratchBounds.right + nativeCenterX) * scaleFactor,
+            // in "canvas space", +y is down, but Rectangle methods assume bottom < top, so swap them
+            (nativeCenterY - scratchBounds.top) * scaleFactor,
+            (nativeCenterY - scratchBounds.bottom) * scaleFactor
+        );
+        canvasSpaceBounds.snapToInt();
+
+        // undo the transformation to transform the bounds, snapped to "canvas-pixel space", back to "Scratch space"
+        // We have to transform -> snap -> invert transform so that the "Scratch-space" bounds are snapped in
+        // "canvas-pixel space".
+        scratchBounds.initFromBounds(
+            (canvasSpaceBounds.left / scaleFactor) - nativeCenterX,
+            (canvasSpaceBounds.right / scaleFactor) - nativeCenterX,
+            nativeCenterY - (canvasSpaceBounds.top / scaleFactor),
+            nativeCenterY - (canvasSpaceBounds.bottom / scaleFactor)
+        );
 
         const gl = this._gl;
 
-        const bounds = drawable.getFastBounds();
-        bounds.snapToInt();
-
         // Set a reasonable max limit width and height for the bufferInfo bounds
         const maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-        const clampedWidth = Math.min(2048, bounds.width, maxTextureSize);
-        const clampedHeight = Math.min(2048, bounds.height, maxTextureSize);
+        const clampedWidth = Math.min(MAX_EXTRACTED_DRAWABLE_DIMENSION, canvasSpaceBounds.width, maxTextureSize);
+        const clampedHeight = Math.min(MAX_EXTRACTED_DRAWABLE_DIMENSION, canvasSpaceBounds.height, maxTextureSize);
 
         // Make a new bufferInfo since this._queryBufferInfo is limited to 480x360
-        const attachments = [
-            {format: gl.RGBA},
-            {format: gl.DEPTH_STENCIL}
-        ];
-        const bufferInfo = twgl.createFramebufferInfo(gl, attachments, clampedWidth, clampedHeight);
+        const bufferInfo = twgl.createFramebufferInfo(gl, [{format: gl.RGBA}], clampedWidth, clampedHeight);
 
-        // If the new bufferInfo is invalid, fall back to using the smaller _queryBufferInfo
-        twgl.bindFramebufferInfo(gl, bufferInfo);
-        if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
-            twgl.bindFramebufferInfo(gl, this._queryBufferInfo);
-        }
-
-        // Translate to scratch units relative to the drawable
-        const pickX = scratchX - bounds.left;
-        const pickY = scratchY + bounds.top;
-
-        // Limit size of viewport to the bounds around the target Drawable,
-        // and create the projection matrix for the draw.
-        gl.viewport(0, 0, bounds.width, bounds.height);
-        const projection = twgl.m4.ortho(bounds.left, bounds.right, bounds.top, bounds.bottom, -1, 1);
-
-        gl.clearColor(0, 0, 0, 0);
-        gl.clear(gl.COLOR_BUFFER_BIT);
         try {
-            gl.disable(gl.BLEND);
-            this._drawThese([drawableID], ShaderManager.DRAW_MODE.default, projection,
-                {effectMask: ~ShaderManager.EFFECT_INFO.ghost.mask});
+            twgl.bindFramebufferInfo(gl, bufferInfo);
+
+            // Limit size of viewport to the bounds around the target Drawable,
+            // and create the projection matrix for the draw.
+            gl.viewport(0, 0, clampedWidth, clampedHeight);
+            const projection = twgl.m4.ortho(
+                scratchBounds.left,
+                scratchBounds.right,
+                scratchBounds.top,
+                scratchBounds.bottom,
+                -1, 1
+            );
+
+            gl.clearColor(0, 0, 0, 0);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+            this._drawThese([drawableID], ShaderManager.DRAW_MODE.straightAlpha, projection,
+                {
+                    // Don't apply the ghost effect. TODO: is this an intentional design decision?
+                    effectMask: ~ShaderManager.EFFECT_INFO.ghost.mask,
+                    // We're doing this in screen-space, so the framebuffer dimensions should be those of the canvas in
+                    // screen-space. This is used to ensure SVG skins are rendered at the proper resolution.
+                    framebufferWidth: canvas.width,
+                    framebufferHeight: canvas.height
+                });
+
+            const data = new Uint8Array(Math.floor(clampedWidth * clampedHeight * 4));
+            gl.readPixels(0, 0, clampedWidth, clampedHeight, gl.RGBA, gl.UNSIGNED_BYTE, data);
+            // readPixels can only read into a Uint8Array, but ImageData has to take a Uint8ClampedArray.
+            // We can share the same underlying buffer between them to avoid having to copy any data.
+            const imageData = new ImageData(new Uint8ClampedArray(data.buffer), clampedWidth, clampedHeight);
+
+            // On high-DPI devices, the canvas' width (in canvas pixels) will be larger than its width in CSS pixels.
+            // We want to return the CSS-space bounds,
+            // so take into account the ratio between the canvas' pixel dimensions and its layout dimensions.
+            // This is usually the same as 1 / window.devicePixelRatio, but if e.g. you zoom your browser window without
+            // the canvas resizing, then it'll differ.
+            const ratio = canvas.getBoundingClientRect().width / canvas.width;
+
+            return {
+                imageData,
+                x: canvasSpaceBounds.left * ratio,
+                y: canvasSpaceBounds.bottom * ratio,
+                width: canvasSpaceBounds.width * ratio,
+                height: canvasSpaceBounds.height * ratio
+            };
         } finally {
-            gl.enable(gl.BLEND);
+            gl.deleteFramebuffer(bufferInfo.framebuffer);
         }
-
-        const data = new Uint8Array(Math.floor(bounds.width * bounds.height * 4));
-        gl.readPixels(0, 0, bounds.width, bounds.height, gl.RGBA, gl.UNSIGNED_BYTE, data);
-
-        if (this._debugCanvas) {
-            this._debugCanvas.width = bounds.width;
-            this._debugCanvas.height = bounds.height;
-            const ctx = this._debugCanvas.getContext('2d');
-            const imageData = ctx.createImageData(bounds.width, bounds.height);
-            imageData.data.set(data);
-            ctx.putImageData(imageData, 0, 0);
-            ctx.beginPath();
-            ctx.arc(pickX, pickY, 3, 0, 2 * Math.PI, false);
-            ctx.fillStyle = 'white';
-            ctx.fill();
-            ctx.lineWidth = 1;
-            ctx.strokeStyle = 'black';
-            ctx.stroke();
-        }
-
-        return {
-            data: data,
-            width: bounds.width,
-            height: bounds.height,
-            scratchOffset: [
-                -scratchX + drawable._position[0],
-                -scratchY - drawable._position[1]
-            ],
-            x: pickX,
-            y: pickY
-        };
     }
 
     /**
@@ -1194,7 +1285,7 @@ class RenderWebGL extends EventEmitter {
         gl.viewport(0, 0, bounds.width, bounds.height);
         const projection = twgl.m4.ortho(bounds.left, bounds.right, bounds.top, bounds.bottom, -1, 1);
 
-        gl.clearColor.apply(gl, this._backgroundColor);
+        gl.clearColor(...this._backgroundColor4f);
         gl.clear(gl.COLOR_BUFFER_BIT);
         this._drawThese(this._drawList, ShaderManager.DRAW_MODE.default, projection);
 
@@ -1242,8 +1333,6 @@ class RenderWebGL extends EventEmitter {
         /** @todo remove this once URL-based skin setting is removed. */
         if (!drawable.skin || !drawable.skin.getTexture([100, 100])) return null;
 
-        drawable.updateMatrix();
-        drawable.skin.updateSilhouette();
         const bounds = drawable.getFastBounds();
 
         // Limit queries to the stage size.
@@ -1278,11 +1367,19 @@ class RenderWebGL extends EventEmitter {
             const id = candidateIDs[index];
             if (id !== drawableID) {
                 const drawable = this._allDrawables[id];
+                // Text bubbles aren't considered in "touching" queries
+                if (drawable.skin instanceof TextBubbleSkin) continue;
                 if (drawable.skin && drawable._visible) {
                     // Update the CPU position data
-                    drawable.updateMatrix();
-                    drawable.skin.updateSilhouette();
+                    drawable.updateCPURenderAttributes();
                     const candidateBounds = drawable.getFastBounds();
+
+                    // Push bounds out to integers. If a drawable extends out into half a pixel, that half-pixel still
+                    // needs to be tested. Plus, in some areas we construct another rectangle from the union of these,
+                    // and iterate over its pixels (width * height). Turns out that doesn't work so well when the
+                    // width/height aren't integers.
+                    candidateBounds.snapToInt();
+
                     if (bounds.intersects(candidateBounds)) {
                         result.push({
                             id,
@@ -1322,32 +1419,6 @@ class RenderWebGL extends EventEmitter {
         // TODO: https://github.com/LLK/scratch-vm/issues/2288
         if (!drawable) return;
         drawable.skin = this._allSkins[skinId];
-    }
-
-    /**
-     * Update a drawable's skin rotation center.
-     * @param {number} drawableID The drawable's id.
-     * @param {Array.<number>} rotationCenter The rotation center for the skin.
-     */
-    updateDrawableRotationCenter (drawableID, rotationCenter) {
-        const drawable = this._allDrawables[drawableID];
-        // TODO: https://github.com/LLK/scratch-vm/issues/2288
-        if (!drawable) return;
-        drawable.skin.setRotationCenter(rotationCenter[0], rotationCenter[1]);
-    }
-
-    /**
-     * Update a drawable's skin and rotation center together.
-     * @param {number} drawableID The drawable's id.
-     * @param {number} skinId The skin to update to.
-     * @param {Array.<number>} rotationCenter The rotation center for the skin.
-     */
-    updateDrawableSkinIdRotationCenter (drawableID, skinId, rotationCenter) {
-        const drawable = this._allDrawables[drawableID];
-        // TODO: https://github.com/LLK/scratch-vm/issues/2288
-        if (!drawable) return;
-        drawable.skin = this._allSkins[skinId];
-        drawable.skin.setRotationCenter(rotationCenter[0], rotationCenter[1]);
     }
 
     /**
@@ -1442,9 +1513,6 @@ class RenderWebGL extends EventEmitter {
         }
         if ('skinId' in properties) {
             this.updateDrawableSkinId(drawableID, properties.skinId);
-        }
-        if ('rotationCenter' in properties) {
-            this.updateDrawableRotationCenter(drawableID, properties.rotationCenter);
         }
         drawable.updateProperties(properties);
     }
@@ -1554,7 +1622,7 @@ class RenderWebGL extends EventEmitter {
         const projection = twgl.m4.ortho(bounds.left, bounds.right, bounds.top, bounds.bottom, -1, 1);
 
         // Draw the stamped sprite onto the PenSkin's framebuffer.
-        this._drawThese([stampID], ShaderManager.DRAW_MODE.stamp, projection, {ignoreVisibility: true});
+        this._drawThese([stampID], ShaderManager.DRAW_MODE.default, projection, {ignoreVisibility: true});
         skin._silhouetteDirty = true;
     }
 
@@ -1669,12 +1737,19 @@ class RenderWebGL extends EventEmitter {
      * @param {object.<string,*>} opts.extraUniforms Extra uniforms for the shaders.
      * @param {int} opts.effectMask Bitmask for effects to allow
      * @param {boolean} opts.ignoreVisibility Draw all, despite visibility (e.g. stamping, touching color)
+     * @param {int} opts.framebufferWidth The width of the framebuffer being drawn onto. Defaults to "native" width
+     * @param {int} opts.framebufferHeight The height of the framebuffer being drawn onto. Defaults to "native" height
      * @private
      */
     _drawThese (drawables, drawMode, projection, opts = {}) {
 
         const gl = this._gl;
         let currentShader = null;
+
+        const framebufferSpaceScaleDiffers = (
+            'framebufferWidth' in opts && 'framebufferHeight' in opts &&
+            opts.framebufferWidth !== this._nativeSize[0] && opts.framebufferHeight !== this._nativeSize[1]
+        );
 
         const numDrawables = drawables.length;
         for (let drawableIndex = 0; drawableIndex < numDrawables; ++drawableIndex) {
@@ -1690,11 +1765,13 @@ class RenderWebGL extends EventEmitter {
             // the ignoreVisibility flag is used (e.g. for stamping or touchingColor).
             if (!drawable.getVisible() && !opts.ignoreVisibility) continue;
 
-            // Combine drawable scale with the native vs. backing pixel ratio
-            const drawableScale = [
-                drawable.scale[0] * this._gl.canvas.width / this._nativeSize[0],
-                drawable.scale[1] * this._gl.canvas.height / this._nativeSize[1]
-            ];
+            // drawableScale is the "framebuffer-pixel-space" scale of the drawable, as percentages of the drawable's
+            // "native size" (so 100 = same as skin's "native size", 200 = twice "native size").
+            // If the framebuffer dimensions are the same as the stage's "native" size, there's no need to calculate it.
+            const drawableScale = framebufferSpaceScaleDiffers ? [
+                drawable.scale[0] * opts.framebufferWidth / this._nativeSize[0],
+                drawable.scale[1] * opts.framebufferHeight / this._nativeSize[1]
+            ] : drawable.scale;
 
             // If the skin or texture isn't ready yet, skip it.
             if (!drawable.skin || !drawable.skin.getTexture(drawableScale)) continue;
@@ -1702,7 +1779,7 @@ class RenderWebGL extends EventEmitter {
             const uniforms = {};
 
             let effectBits = drawable.enabledEffects;
-            effectBits &= opts.hasOwnProperty('effectMask') ? opts.effectMask : effectBits;
+            effectBits &= Object.prototype.hasOwnProperty.call(opts, 'effectMask') ? opts.effectMask : effectBits;
             const newShader = this._shaderManager.getShader(drawMode, effectBits);
 
             // Manually perform region check. Do not create functions inside a
@@ -1730,19 +1807,13 @@ class RenderWebGL extends EventEmitter {
 
             if (uniforms.u_skin) {
                 twgl.setTextureParameters(
-                    gl, uniforms.u_skin, {minMag: drawable.useNearest(drawableScale) ? gl.NEAREST : gl.LINEAR}
+                    gl, uniforms.u_skin, {
+                        minMag: drawable.skin.useNearest(drawableScale, drawable) ? gl.NEAREST : gl.LINEAR
+                    }
                 );
             }
 
             twgl.setUniforms(currentShader, uniforms);
-
-            /* adjust blend function for this skin */
-            if (drawable.skin.hasPremultipliedAlpha){
-                gl.blendFuncSeparate(gl.ONE, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-            } else {
-                gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-            }
-
             twgl.drawBufferInfo(gl, this._bufferInfo, gl.TRIANGLES);
         }
 
@@ -1751,125 +1822,136 @@ class RenderWebGL extends EventEmitter {
 
     /**
      * Get the convex hull points for a particular Drawable.
-     * To do this, draw the Drawable unrotated, unscaled, and untranslated.
-     * Read back the pixels and find all boundary points.
-     * Finally, apply a convex hull algorithm to simplify the set.
+     * To do this, calculate it based on the drawable's Silhouette.
      * @param {int} drawableID The Drawable IDs calculate convex hull for.
      * @return {Array<Array<number>>} points Convex hull points, as [[x, y], ...]
      */
     _getConvexHullPointsForDrawable (drawableID) {
         const drawable = this._allDrawables[drawableID];
+
         const [width, height] = drawable.skin.size;
         // No points in the hull if invisible or size is 0.
         if (!drawable.getVisible() || width === 0 || height === 0) {
             return [];
         }
 
+        drawable.updateCPURenderAttributes();
+
         /**
-         * Return the determinant of two vectors, the vector from A to B and
-         * the vector from A to C.
+         * Return the determinant of two vectors, the vector from A to B and the vector from A to C.
          *
-         * The determinant is useful in this case to know if AC is counter
-         * clockwise from AB. A positive value means the AC is counter
-         * clockwise from AC. A negative value menas AC is clockwise from AB.
+         * The determinant is useful in this case to know if AC is counter-clockwise from AB.
+         * A positive value means that AC is counter-clockwise from AB. A negative value means AC is clockwise from AB.
          *
          * @param {Float32Array} A A 2d vector in space.
          * @param {Float32Array} B A 2d vector in space.
          * @param {Float32Array} C A 2d vector in space.
-         * @return {number} Greater than 0 if counter clockwise, less than if
-         * clockwise, 0 if all points are on a line.
+         * @return {number} Greater than 0 if counter clockwise, less than if clockwise, 0 if all points are on a line.
          */
-        const CCW = function (A, B, C) {
+        const determinant = function (A, B, C) {
             // AB = B - A
             // AC = C - A
             // det (AB BC) = AB0 * AC1 - AB1 * AC0
             return (((B[0] - A[0]) * (C[1] - A[1])) - ((B[1] - A[1]) * (C[0] - A[0])));
         };
 
-        // https://github.com/LLK/scratch-flash/blob/dcbeeb59d44c3be911545dfe54d
-        // 46a32404f8e69/src/scratch/ScratchCostume.as#L369-L413 Following
-        // RasterHull creation, compare and store left and right values that
-        // maintain a convex shape until that data can be passed to `hull` for
-        // further work.
-        const L = [];
-        const R = [];
+        // This algorithm for calculating the convex hull somewhat resembles the monotone chain algorithm.
+        // The main difference is that instead of sorting the points by x-coordinate, and y-coordinate in case of ties,
+        // it goes through them by y-coordinate in the outer loop and x-coordinate in the inner loop.
+        // This gives us "left" and "right" hulls, whereas the monotone chain algorithm gives "top" and "bottom" hulls.
+        // Adapted from https://github.com/LLK/scratch-flash/blob/dcbeeb59d44c3be911545dfe54d46a32404f8e69/src/scratch/ScratchCostume.as#L369-L413
+
+        const leftHull = [];
+        const rightHull = [];
+
+        // While convex hull algorithms usually push and pop values from the list of hull points,
+        // here, we keep indices for the "last" point in each array. Any points past these indices are ignored.
+        // This is functionally equivalent to pushing and popping from a "stack" of hull points.
+        let leftEndPointIndex = -1;
+        let rightEndPointIndex = -1;
+
         const _pixelPos = twgl.v3.create();
         const _effectPos = twgl.v3.create();
-        let ll = -1;
-        let rr = -1;
-        let Q;
+
+        let currentPoint;
+
+        // *Not* Scratch Space-- +y is bottom
+        // Loop over all rows of pixels, starting at the top
         for (let y = 0; y < height; y++) {
             _pixelPos[1] = y / height;
-            // Scan from left to right, looking for a touchable spot in the
-            // skin.
+
+            // We start at the leftmost point, then go rightwards until we hit an opaque pixel
             let x = 0;
             for (; x < width; x++) {
                 _pixelPos[0] = x / width;
                 EffectTransform.transformPoint(drawable, _pixelPos, _effectPos);
                 if (drawable.skin.isTouchingLinear(_effectPos)) {
-                    Q = [x, y];
+                    currentPoint = [x, y];
                     break;
                 }
             }
-            // If x is equal to the width there are no touchable points in the
-            // skin. Nothing we can add to L. And looping for R would find the
-            // same thing.
+
+            // If we managed to loop all the way through, there are no opaque pixels on this row. Go to the next one
             if (x >= width) {
                 continue;
             }
-            // Decrement ll until Q is clockwise (CCW returns negative) from the
-            // last two points in L.
-            while (ll > 0) {
-                if (CCW(L[ll - 1], L[ll], Q) < 0) {
+
+            // Because leftEndPointIndex is initialized to -1, this is skipped for the first two rows.
+            // It runs only when there are enough points in the left hull to make at least one line.
+            // If appending the current point to the left hull makes a counter-clockwise turn,
+            // we want to append the current point. Otherwise, we decrement the index of the "last" hull point until the
+            // current point makes a counter-clockwise turn.
+            // This decrementing has the same effect as popping from the point list, but is hopefully faster.
+            while (leftEndPointIndex > 0) {
+                if (determinant(leftHull[leftEndPointIndex], leftHull[leftEndPointIndex - 1], currentPoint) > 0) {
                     break;
                 } else {
-                    --ll;
+                    // leftHull.pop();
+                    --leftEndPointIndex;
                 }
             }
-            // Increment ll and then set L[ll] to Q. If ll was -1 before this
-            // line, this will set L[0] to Q. If ll was 0 before this line, this
-            // will set L[1] to Q.
-            L[++ll] = Q;
 
-            // Scan from right to left, looking for a touchable spot in the
-            // skin.
+            // This has the same effect as pushing to the point list.
+            // This "list head pointer" coding style leaves excess points dangling at the end of the list,
+            // but that doesn't matter; we simply won't copy them over to the final hull.
+
+            // leftHull.push(currentPoint);
+            leftHull[++leftEndPointIndex] = currentPoint;
+
+            // Now we repeat the process for the right side, looking leftwards for a pixel.
             for (x = width - 1; x >= 0; x--) {
                 _pixelPos[0] = x / width;
                 EffectTransform.transformPoint(drawable, _pixelPos, _effectPos);
                 if (drawable.skin.isTouchingLinear(_effectPos)) {
-                    Q = [x, y];
+                    currentPoint = [x, y];
                     break;
                 }
             }
-            // Decrement rr until Q is counter clockwise (CCW returns positive)
-            // from the last two points in L. L takes clockwise points and R
-            // takes counter clockwise points. if y was decremented instead of
-            // incremented R would take clockwise points. We are going in the
-            // right direction for L and the wrong direction for R, so we
-            // compare the opposite value for R from L.
-            while (rr > 0) {
-                if (CCW(R[rr - 1], R[rr], Q) > 0) {
+
+            // Because we're coming at this from the right, it goes clockwise this time.
+            while (rightEndPointIndex > 0) {
+                if (determinant(rightHull[rightEndPointIndex], rightHull[rightEndPointIndex - 1], currentPoint) < 0) {
                     break;
                 } else {
-                    --rr;
+                    --rightEndPointIndex;
                 }
             }
-            // Increment rr and then set R[rr] to Q.
-            R[++rr] = Q;
+
+            rightHull[++rightEndPointIndex] = currentPoint;
         }
 
-        // Known boundary points on left/right edges of pixels.
-        const boundaryPoints = L;
-        // Truncate boundaryPoints to the index of the last added Q to L. L may
-        // have more entries than the index for the last Q.
-        boundaryPoints.length = ll + 1;
-        // Add points in R to boundaryPoints in reverse so all points in
-        // boundaryPoints are clockwise from each other.
-        for (let j = rr; j >= 0; --j) {
-            boundaryPoints.push(R[j]);
+        // Start off "hullPoints" with the left hull points.
+        const hullPoints = leftHull;
+        // This is where we get rid of those dangling extra points.
+        hullPoints.length = leftEndPointIndex + 1;
+        // Add points from the right side in reverse order so all points are ordered clockwise.
+        for (let j = rightEndPointIndex; j >= 0; --j) {
+            hullPoints.push(rightHull[j]);
         }
-        // Simplify boundary points using convex hull.
-        return hull(boundaryPoints, Infinity);
+
+        // Simplify boundary points using hull.js.
+        // TODO: Remove this; this algorithm already generates convex hulls.
+        return hull(hullPoints, Infinity);
     }
 
     /**
@@ -1893,13 +1975,11 @@ class RenderWebGL extends EventEmitter {
             }
             */
             Drawable.sampleColor4b(vec, drawables[index].drawable, __blendColor);
-            // if we are fully transparent, go to the next one "down"
-            const sampleAlpha = __blendColor[3] / 255;
-            // premultiply alpha
-            dst[0] += __blendColor[0] * blendAlpha * sampleAlpha;
-            dst[1] += __blendColor[1] * blendAlpha * sampleAlpha;
-            dst[2] += __blendColor[2] * blendAlpha * sampleAlpha;
-            blendAlpha *= (1 - sampleAlpha);
+            // Equivalent to gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
+            dst[0] += __blendColor[0] * blendAlpha;
+            dst[1] += __blendColor[1] * blendAlpha;
+            dst[2] += __blendColor[2] * blendAlpha;
+            blendAlpha *= (1 - (__blendColor[3] / 255));
         }
         // Backdrop could be transparent, so we need to go to the "clear color" of the
         // draw scene (white) as a fallback if everything was alpha
@@ -1923,7 +2003,7 @@ class RenderWebGL extends EventEmitter {
 }
 
 // :3
-RenderWebGL.prototype.canHazPixels = RenderWebGL.prototype.extractDrawable;
+RenderWebGL.prototype.canHazPixels = RenderWebGL.prototype.extractDrawableScreenSpace;
 
 /**
  * Values for setUseGPU()

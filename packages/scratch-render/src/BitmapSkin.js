@@ -18,9 +18,6 @@ class BitmapSkin extends Skin {
         /** @type {!RenderWebGL} */
         this._renderer = renderer;
 
-        /** @type {WebGLTexture} */
-        this._texture = null;
-
         /** @type {Array<int>} */
         this._textureSize = [0, 0];
     }
@@ -37,13 +34,6 @@ class BitmapSkin extends Skin {
     }
 
     /**
-     * @returns {boolean} true for a raster-style skin (like a BitmapSkin), false for vector-style (like SVGSkin).
-     */
-    get isRaster () {
-        return true;
-    }
-
-    /**
      * @return {Array<number>} the "native" size, in texels, of this skin.
      */
     get size () {
@@ -57,16 +47,6 @@ class BitmapSkin extends Skin {
     // eslint-disable-next-line no-unused-vars
     getTexture (scale) {
         return this._texture || super.getTexture();
-    }
-
-    /**
-     * Get the bounds of the drawable for determining its fenced position.
-     * @param {Array<number>} drawable - The Drawable instance this skin is using.
-     * @param {?Rectangle} result - Optional destination for bounds calculation.
-     * @return {!Rectangle} The drawable's bounds. For compatibility with Scratch 2, we always use getAABB for bitmaps.
-     */
-    getFenceBounds (drawable, result) {
-        return drawable.getAABB(result);
     }
 
     /**
@@ -95,28 +75,24 @@ class BitmapSkin extends Skin {
             textureData = context.getImageData(0, 0, bitmapData.width, bitmapData.height);
         }
 
-        if (this._texture) {
-            gl.bindTexture(gl.TEXTURE_2D, this._texture);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, textureData);
-            this._silhouette.update(textureData);
-        } else {
-            // TODO: mipmaps?
+        if (this._texture === null) {
             const textureOptions = {
-                auto: true,
-                wrap: gl.CLAMP_TO_EDGE,
-                src: textureData
+                auto: false,
+                wrap: gl.CLAMP_TO_EDGE
             };
 
             this._texture = twgl.createTexture(gl, textureOptions);
-            this._silhouette.update(textureData);
         }
+
+        this._setTexture(textureData);
 
         // Do these last in case any of the above throws an exception
         this._costumeResolution = costumeResolution || 2;
         this._textureSize = BitmapSkin._getBitmapSize(bitmapData);
 
         if (typeof rotationCenter === 'undefined') rotationCenter = this.calculateRotationCenter();
-        this.setRotationCenter.apply(this, rotationCenter);
+        this._rotationCenter[0] = rotationCenter[0];
+        this._rotationCenter[1] = rotationCenter[1];
 
         this.emit(Skin.Events.WasAltered);
     }
