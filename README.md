@@ -22,6 +22,11 @@ git remote add upstream git@github.com:LLK/scratch-vm.git
 git pull upstream
 git merge upstream/develop
 
+# Deal with any merge conflicts. There likely won't be any code conflicts, except for:
+# - This README.md
+
+# Ensure that all content remains in packages/scratch-vm
+
 ```
 
 ### Update [prg-extension-boilerplate]
