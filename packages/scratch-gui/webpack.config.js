@@ -58,6 +58,7 @@ const base = {
                     '@babel/plugin-syntax-dynamic-import',
                     '@babel/plugin-transform-async-to-generator',
                     '@babel/plugin-proposal-object-rest-spread',
+                    '@babel/plugin-proposal-optional-chaining',
                     ['react-intl', {
                         messagesDir: './translations/messages/'
                     }]],
