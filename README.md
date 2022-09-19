@@ -6,7 +6,7 @@ This repository assists in keeping the [PRG Extension Boilerplate repo](https://
 
 ### Update with Scratch
 
-```
+```bash
 cd prg-export-scratch-vm/
 
 # Check to see if you've already add remote
