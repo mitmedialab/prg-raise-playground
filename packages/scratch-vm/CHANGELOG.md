@@ -3,6 +3,48 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.10](https://github.com/LLK/scratch-vm/compare/v1.2.9...v1.2.10) (2022-09-20)
+
+
+### Bug Fixes
+
+* **deps:** update dependency scratch-blocks to v0.1.0-prerelease.20220920113425 ([5634e22](https://github.com/LLK/scratch-vm/commit/5634e226a1c4446449675090a3aba3c4eea19be2))
+
+## [1.2.9](https://github.com/LLK/scratch-vm/compare/v1.2.8...v1.2.9) (2022-09-20)
+
+
+### Bug Fixes
+
+* **deps:** update dependency scratch-l10n to v3.15.20220920031622 ([7b3214a](https://github.com/LLK/scratch-vm/commit/7b3214aaaf39086cdb8c03defc77ff3c88c56716))
+
+## [1.2.8](https://github.com/LLK/scratch-vm/compare/v1.2.7...v1.2.8) (2022-09-19)
+
+
+### Bug Fixes
+
+* **deps:** update dependency scratch-blocks to v0.1.0-prerelease.20220919063121 ([1cc3d13](https://github.com/LLK/scratch-vm/commit/1cc3d13b0b27b472328b250769b01f9977286ecd))
+
+## [1.2.7](https://github.com/LLK/scratch-vm/compare/v1.2.6...v1.2.7) (2022-09-19)
+
+
+### Bug Fixes
+
+* **deps:** update dependency scratch-l10n to v3.15.20220919031702 ([ead1bff](https://github.com/LLK/scratch-vm/commit/ead1bff18cf1de5ef9a3598f75ac040323844b4c))
+
+## [1.2.6](https://github.com/LLK/scratch-vm/compare/v1.2.5...v1.2.6) (2022-09-18)
+
+
+### Bug Fixes
+
+* **deps:** update dependency scratch-blocks to v0.1.0-prerelease.20220918092429 ([e0bec63](https://github.com/LLK/scratch-vm/commit/e0bec63bf0fdc4abb79644792b823159a767a190))
+
+## [1.2.5](https://github.com/LLK/scratch-vm/compare/v1.2.4...v1.2.5) (2022-09-18)
+
+
+### Bug Fixes
+
+* **deps:** update dependency scratch-l10n to v3.15.20220918031615 ([5581819](https://github.com/LLK/scratch-vm/commit/55818195671935da0c82ddec8a134e0482a2b1d6))
+
 ## [1.2.4](https://github.com/LLK/scratch-vm/compare/v1.2.3...v1.2.4) (2022-09-14)
 
 
