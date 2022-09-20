@@ -41,7 +41,7 @@ git remote -v
 # scratch-vm	git@github.com:pmalacho-mit/prg-export-scratch-vm.git (push)
 
 # Step 1: Add this repo as remote
-git remote add scratch-vm git@github.com/pmalacho-mit/prg-export-scratch-vm
+git remote add scratch-vm git@github.com:pmalacho-mit/prg-export-scratch-vm
 
 # Step 2. Get latest from scratch-vm remote and apply changes
 git pull scratch-vm
