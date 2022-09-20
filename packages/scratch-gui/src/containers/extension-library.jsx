@@ -2,12 +2,13 @@ import bindAll from 'lodash.bindall';
 import PropTypes from 'prop-types';
 import React from 'react';
 import VM from 'scratch-vm';
-import {defineMessages, injectIntl, intlShape} from 'react-intl';
+import {addLocaleData, defineMessages, injectIntl, intlShape} from 'react-intl';
 
 import extensionLibraryContent from '../lib/libraries/extensions/index.jsx';
 
 import LibraryComponent from '../components/library/library.jsx';
 import extensionIcon from '../components/action-menu/icon--sprite.svg';
+import { allLocales, addToLocale } from '../reducers/locales.js';
 
 const messages = defineMessages({
     extensionTitle: {
@@ -28,6 +29,15 @@ class ExtensionLibrary extends React.PureComponent {
         bindAll(this, [
             'handleItemSelect'
         ]);
+        extensionLibraryContent.forEach(extension => {
+            allLocales.forEach(locale => {
+                if (!(locale in extension)) return;
+                const { extensionId } = extension;
+                const { name, description } = extension[locale];
+                addToLocale(locale, `extension.${extensionId}.name`, name);
+                addToLocale(locale, `extension.${extensionId}.description`, description);
+            });
+        });
     }
     handleItemSelect (item) {
         const id = item.extensionId;

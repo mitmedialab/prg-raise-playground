@@ -1,56 +1,146 @@
-# ✨ Drag-and-Drop Coding Environment Boilerplate
+# ✨ PRG Scratch Extension Development Environment
 
-This is intended to be a repository that makes it simple to play with and deploy a GUI based on Scratch-3.0 components! It may be handy for:
+This repository is your one-stop-shop for developing [scratch extensions](https://en.scratch-wiki.info/wiki/Extension) for PRG curricula.
 
-- Developing prototype Scratch 3.0 extensions that don't fit within the current extension limitations
-- Experimenting with tweaks to the Scratch 3.0 GUI
-- Quickly deploying a fork of the Scratch 3.0 GUI
+It's a fullblown [fork](https://en.wikipedia.org/wiki/Fork_(software_development)) of the official Scratch codebase, which the [Personal Robotics Group](https://robots.media.mit.edu/) (PRG) manages and extends to meet its needs. 
 
-It is not so great for:
+Looking for the old documentation (<= Aug. 2022)? Head [here](./BACKGROUND.md).
 
-- Pushing small changes back to upstream Scratch components often (it's possible, and this project retains the git history of the constituent sub-projects, but there's an extra messy step to get your work together for a pull request)
+## 📖 Table of Contents
+- [Quick Start](#-quick-start)
+    - [Project setup](#-project-setup)
+    - [Making an extension](#-making-an-extension)
+        - [Advanced](#-advanced)
+    - [Porting an Extension to Typescript](#-porting-an-extension-to-typescript)
+- [From 0 to Extension](#-from-0-to-extension)
+- [Project Dependencies](#project-dependencies)
+- [Deploying](#-Deploying)
+- [Troubleshooting](#-Troubleshooting)
+    - [webpack: command not found](#webpack-command-not-found)
 
-It is structured as a monorepo, where the Scratch components you'll typically want to modify live within the repository so you can edit them all at once, manage their versions all in one place, and perform a simple static site deploy of the GUI with the synced dependencies.
+## ⚡ Quick Start
 
-- [packages/scratch-gui](packages/scratch-gui)
-- [packages/scratch-vm](packages/scratch-vm)
-- [packages/scratch-render](packages/scratch-render)
-- [packages/scratch-blocks](packages/scratch-blocks)
+This section contains concise explanations on how to accomplish something (often just a couple of commands to run). If you need more info please check out one of the lower sections. 
 
-## ⚡ Quick Setup️
+### 🚧 Project setup
 
-Requirements, your java version should be 8 or higher. Check `java -version`.
+Assuming you have...
+- Node <=16 is installed (if not, jump to: ...)
+- VS Code installed with Typescript Extension added (if not, jump to: ...)
+
+Run the following from the command line:
 
 ```shell script
 git clone git@github.com:mitmedialab/prg-extension-boilerplate.git
 # Cloning the full history (300mb) takes about 20 seconds on fast internet. Include -–depth 1 for a 4 second checkout
-npx lerna bootstrap --force-local
-# This will symlink the packages together to allow for seamless local development, and installs dependencies for each package
-# Takes about 1.5 minutes
-cd packages/scratch-gui
-npm start
 
-# Open http://localhost:8601/ in your browser
+cd prg-extension-boilerplate/
+# Change directory (cd) to the repository
+
+npm run init
+# This will symlink the packages together to allow for seamless local development, and installs dependencies for each package. 
+# This should only need to be ran once (unless you checkout a branch that adds new package dependencies).
+# Takes ~1.5 minutes
+
+npm run dev
+# This starts up a development server, serving all the currently implemented extensions.
+# It takes about ~20s to initially startup and serve everything.
+# Open http://localhost:8601/ in your browser (keep refreshing if nothing's coming up)
 ```
 
-Now you can make changes, and they will auto-build from the scratch-gui watcher and live-reload!
+### 🔨 Making an extension
 
-- render, gui, and vm will auto-build while `scratch-gui`'s `npm start` is running (as in steps above)
-- the blocks component currently requires manually building and re-starting the GUI build:
-    ```shell script
-    # Make your change to scratch-blocks, then:
-    cd packages/scratch-blocks
-    npm run prepublish
-    # And re-start scratch-gui's npm start
-    ```
-  
-Alternatively, use GitPod!
+To make a new extension, run the following commands:
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/mitmedialab/prg-extension-boilerplate)
+```shell script
+cd prg-extension-boilerplate/ # if not already there
+# Change directory (cd) to prg-extension-boilerplate/ 
 
-### 🤔 Troubleshooting
+npm run new:extension <folder to contain extension>
+# For example: npm run new:extension my_awesome_extension
+# If succesful, the output of this command will tell you where to find your new extension file.
+# It will be an index.ts file, and its documentation should help you get started
 
-#### If you see `sh: webpack: command not found`:
+npm run dev
+# Start a development server to view your extension and reload it as you make changes
+# This command will take ~20s to startup and serve everything to http://localhost:8601/
+```
+
+After navigating to http://localhost:8601/, follow the 'Adding Extensions' guidance in the [official extension documentation](https://en.scratch-wiki.info/wiki/Extension) to add your extension to the workspace. 
+
+As long as the development server is running (meaning the `npm run dev` command is still executing), every change you make to the extension file will trigger the page to refresh and your changes will be reflected automagically 🪄. 
+
+As mentioned above, the generated `index.ts` file will have to documentation to assist you in getting started. Also, if you want to know more about a field or variable, hover over it. Like so: 
+
+#### 🥋 Advanced
+
+If you're a pro extension-maker, use the following command to make a new extension that contains no documentation and/or filler text. 
+
+```shell script
+npm run new:extension <folder to contain extension> barebones 
+# Note the 'barenones' at the end
+```
+
+### 🔀 Porting an Extension to Typescript
+
+Want to move your vanilla-JS extension to our Typescript framework and reap the benefits of type safety and code generation? ***Great!***
+
+#### Example
+
+##### Vanilla JS
+
+##### Typescript
+
+##### Step by step
+
+## 🪜 From 0 to Extension
+
+... Coming soon ... 
+
+Likely will have:
+- Full step-by-step guide on:
+    - What is an extension?
+    - How do you make one using the typescript framework
+- Video tutorial 
+- FAQ?
+
+### Dependencies
+
+### Node
+
+Like many web development projects, this project requires you to have [node](https://nodejs.org/en/) installed.
+
+Also, [due to a Webpack 4 issue](https://github.com/webpack/webpack/issues/14532), we require a node version <=16.
+
+Please follow [these instructions](https://nodejs.org/en/download/) to install a suitable version of Node on your machine.
+
+#### Maintainer Note (9/15/22)
+
+In October 2022, node 18 LTS will be released, making it slightly harder to get node 16 LTS. 
+Before then, we either need to upgrade webpack to be able to use node 18, or revise the above instructions to help users locate node 16.
+
+### VS Code (Recommended)
+
+We encourage you to use VS Code since it has great Typescript support. Also, it's easier to offer tips and tricks if most of us use the same text editor.
+
+Here's how to [install VS Code]().
+
+Of course, if you prefer a different editor, go ahead and use it (but do so at your own 'risk').  
+
+#### Extensions
+
+We recommend adding the following extensions (which you can do [like so]()):
+
+## 📦 Deploying
+
+We use GitHub Actions to build the combined scratch-gui using `npm`, and [actions-gh-pages](https://github.com/peaceiris/actions-gh-pages) to deploy to GitHub Pages.
+
+Note that there is a step of adding an access token to the repository due to a bug with GitHub Actions. [Follow the steps here](https://github.com/marketplace/actions/deploy-to-github-pages#configuration-) to add an access token to your repository.
+
+## 🤔 Troubleshooting
+
+#### webpack: command not found
+If you see the following:
 
 ```shell script
 > scratch-render@0.1.0 build /Users/brian/code/aied/test/test2/packages/scratch-render
@@ -58,36 +148,4 @@ Alternatively, use GitPod!
 sh: webpack: command not found
 ```
 
-**Solution**: This may mean you have a half-installed node_modules version of webpack. Try starting fresh!
-
-## 💡 How this was made:
-
-### Sub-packages
-
-This project uses [`lerna`](https://github.com/lerna/lerna) as a utility to import npm packages with their git history (relatively) intact. That way stuff like `git log` and `git blame` will continue to provide a bit of insight into why code in the repository is the way it is! 
-
-```shell script
-npx lerna init
-cd .. && mkdir scratch-fresh && cd scratch-latest
-git clone https://github.com/LLK/scratch-vm.git
-git clone https://github.com/LLK/scratch-gui.git
-git clone https://github.com/LLK/scratch-render.git
-git clone https://github.com/LLK/scratch-blocks.git
-cd prg-extension-boilerplate
-npx lerna import ../scratch-latest/scratch-vm --preserve-commit --flatten 
-npx lerna import ../scratch-latest/scratch-gui --preserve-commit --flatten 
-npx lerna import ../scratch-latest/scratch-render --preserve-commit --flatten 
-npx lerna import ../scratch-latest/scratch-blocks --preserve-commit --flatten 
-```
-
-### Deployment
-
-We use GitHub Actions to build the combined scratch-gui using `npm`, and [actions-gh-pages](https://github.com/peaceiris/actions-gh-pages) to deploy to GitHub Pages.
-
-Note that there is a step of adding an access token to the repository due to a bug with GitHub Actions. [Follow the steps here](https://github.com/marketplace/actions/deploy-to-github-pages#configuration-) to add an access token to your repository.
-
-## 😸 Caveats
-
-Eventually, work on Scratch Extensions may supersede this project's utility! This repo is most convenient for projects that can't accomplish what they need to within the Extensions framework.
-
-Note the [`LICENSE`](packages/scratch-gui/LICENSE)s and especially [`TRADEMARK`](packages/scratch-gui/TRADEMARK)s for each Scratch component project carefully — e.g., you may not use the Scratch name, logo, cat, etc. in derivative projects without permission.  
+This may mean you have a half-installed node_modules version of webpack. Try starting [fresh](#-project-setup)!

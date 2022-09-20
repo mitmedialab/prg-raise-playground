@@ -11,14 +11,14 @@ class BlockUtility {
     constructor (sequencer = null, thread = null) {
         /**
          * A sequencer block primitives use to branch or start procedures with
-         * @type {?Sequencer}
+         * @type {?import("./sequencer")}
          */
         this.sequencer = sequencer;
 
         /**
          * The block primitives thread with the block's target, stackFrame and
          * modifiable status.
-         * @type {?Thread}
+         * @type {?import("./thread")}
          */
         this.thread = thread;
 
@@ -29,7 +29,7 @@ class BlockUtility {
 
     /**
      * The target the primitive is working on.
-     * @type {Target}
+     * @type {import("./target")}
      */
     get target () {
         return this.thread.target;
@@ -37,7 +37,7 @@ class BlockUtility {
 
     /**
      * The runtime the block primitive is running in.
-     * @type {Runtime}
+     * @type {import("./runtime")}
      */
     get runtime () {
         return this.sequencer.runtime;
@@ -201,8 +201,8 @@ class BlockUtility {
      * Start all relevant hats.
      * @param {!string} requestedHat Opcode of hats to start.
      * @param {object=} optMatchFields Optionally, fields to match on the hat.
-     * @param {Target=} optTarget Optionally, a target to restrict to.
-     * @return {Array.<Thread>} List of threads started by this function.
+     * @param {import("./target")=} optTarget Optionally, a target to restrict to.
+     * @return {Array.<import("./thread")>} List of threads started by this function.
      */
     startHats (requestedHat, optMatchFields, optTarget) {
         // Store thread and sequencer to ensure we can return to the calling block's context.
