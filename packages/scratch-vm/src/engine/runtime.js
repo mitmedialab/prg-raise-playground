@@ -1390,7 +1390,7 @@ class Runtime extends EventEmitter {
 
     /**
      * @returns {Array.<object>} scratch-blocks XML for each category of extension blocks, in category order.
-     * @param {?Target} [target] - the active editing target (optional)
+     * @param {?import("./target")} [target] - the active editing target (optional)
      * @property {string} id - the category / extension ID
      * @property {string} xml - the XML text for this category, starting with `<category>` and ending with `</category>`
      */

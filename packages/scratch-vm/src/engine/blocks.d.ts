@@ -240,6 +240,14 @@ declare class Blocks {
      */
     updateAssetName(oldName: string, newName: string, assetType: string): void;
     /**
+     * Update sensing_of blocks after a variable gets renamed.
+     * @param {string} oldName The old name of the variable that was renamed.
+     * @param {string} newName The new name of the variable that was renamed.
+     * @param {string} targetName The name of the target the variable belongs to.
+     * @return {boolean} Returns true if any of the blocks were updated.
+     */
+    updateSensingOfReference(oldName: string, newName: string, targetName: string): boolean;
+    /**
      * Helper function to retrieve a costume menu field from a block given its id.
      * @param {string} blockId A unique identifier for a block
      * @return {?object} The costume menu field of the block with the given block id.

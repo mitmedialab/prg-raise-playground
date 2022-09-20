@@ -2,7 +2,7 @@ export = Scratch3DataBlocks;
 declare class Scratch3DataBlocks {
     /**
      * Type representation for list variables.
-     * @const {string}
+     * @const {number}
      */
     static get LIST_ITEM_LIMIT(): number;
     constructor(runtime: any);

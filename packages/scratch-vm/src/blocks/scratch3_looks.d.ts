@@ -20,6 +20,11 @@ declare class Scratch3LooksBlocks {
      */
     static get STATE_KEY(): string;
     /**
+     * Event name for a text bubble being created or updated.
+     * @const {string}
+     */
+    static get SAY_OR_THINK(): string;
+    /**
      * Limit for say bubble string.
      * @const {string}
      */
@@ -93,6 +98,13 @@ declare class Scratch3LooksBlocks {
      * @private
      */
     private _renderBubble;
+    /**
+     * Properly format text for a text bubble.
+     * @param {string} text The text to be formatted
+     * @return {string} The formatted text
+     * @private
+     */
+    private _formatBubbleText;
     /**
      * Retrieve the block primitives implemented by this package.
      * @return {object.<string, Function>} Mapping of opcode to Function.

@@ -389,6 +389,12 @@ declare class Runtime extends EventEmitter {
      * @type {function}
      */
     removeCloudVariable: Function;
+    /**
+     * A string representing the origin of the current project from outside of the
+     * Scratch community, such as CSFirst.
+     * @type {?string}
+     */
+    origin: string | null;
     _initializeAddCloudVariable(newCloudDataManager: any): () => void;
     _initializeRemoveCloudVariable(newCloudDataManager: any): () => void;
     /**
@@ -525,14 +531,19 @@ declare class Runtime extends EventEmitter {
     private _convertPlaceholders;
     /**
      * @returns {Array.<object>} scratch-blocks XML for each category of extension blocks, in category order.
+     * @param {?import("./target")} [target] - the active editing target (optional)
      * @property {string} id - the category / extension ID
      * @property {string} xml - the XML text for this category, starting with `<category>` and ending with `</category>`
      */
-    getBlocksXML(): Array<object>;
+    getBlocksXML(target?: import("./target") | null): Array<object>;
     /**
      * @returns {Array.<string>} - an array containing the scratch-blocks JSON information for each dynamic block.
      */
     getBlocksJSON(): Array<string>;
+    /**
+     * One-time initialization for Scratch Link support.
+     */
+    _initScratchLink(): void;
     /**
      * Get a scratch link socket.
      * @param {string} type Either BLE or BT
@@ -976,6 +987,11 @@ declare class Runtime extends EventEmitter {
      * Set up timers to repeatedly step in a browser.
      */
     start(): void;
+    /**
+     * Quit the Runtime, clearing any handles which might keep the process alive.
+     * Do not use the runtime after calling this method. This method is meant for test shutdown.
+     */
+    quit(): void;
     /**
      * Turn on profiling.
      * @param {Profiler/FrameCallback} onFrame A callback handle passed a

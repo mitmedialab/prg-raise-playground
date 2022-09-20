@@ -19,7 +19,7 @@ declare class ScratchLinkWebSocket {
     _onClose: any;
     _onError: any;
     _handleMessage: any;
-    _ws: WebSocket;
+    _ws: any;
     open(): void;
     close(): void;
     sendMessage(message: any): void;
