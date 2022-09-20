@@ -213,7 +213,7 @@ export type Block<T extends BlockOperation> = {
      *  options: [{ text: 'right', value: 90 }, { text: 'left', value: -90 }]
      * }
      * 
-     * // Advanced examples available below description (include dynamic options aka menus, accepting reporters...)
+     * // Advanced examples available below description (including dynamic options aka menus, accepting reporters...)
      * @description This is where you define the arguments that your block should take. 
      * 
      * Because this field can take on a few different values depending on how you want your block arguments to behave, 

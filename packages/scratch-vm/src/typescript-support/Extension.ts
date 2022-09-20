@@ -10,10 +10,42 @@ export type CodeGenArgs = {
   blockIconURI: never,
 }
 
+
 /**
- * Base class for all extensions implemented via the Typescript Extension Framework.
+ * @summary Base class for all extensions implemented via the Typescript Extension Framework.
+ * @example 
+ * class MyExtension extends Extension<
+ *  { // Display details
+ *    name: "My Extension",
+ *    description: "This is my extension",
+ *    iconURL: "example.png",
+ *    insetIconURL: "example.svg"
+ *  },
+ *  { // Blocks
+ *    myBlock: (someArg: number) => void;
+ *  }
+ * > {
+ *  init(env: Environment): { ... };
+ *  defineBlocks(): MyExtension["BlockDefinitions"] { return ... }
+ *  defineTranslations(): MyExtension["Translations"] { return ... }
+ * }
+ * @description Extension developers will create Typescript classes that `extend` (or 'inherit', or 'implement') this `Extension` class.
+ * 
+ * In order to `extend` this class, you must first specify 2 generic type arguments, which effectively tell us (and Typescript + the Extension Framework) what kind of Extension you're implementing.
+ * 
+ * More specifically, the 2 generic type arguments describe how this extension is presented to the user (by specifyng the details displayed in the Extensions Menu),
+ * and what this Extension actually does (by specifying the blocks it will define).
+ * 
+ * By declaring that we're extending an `Extension` with our specific generic type arguments,
+ * Typescript holds us accountable to implement exactly what we said we would (all in order to make a working extension).
+ *  
+ * This includes:
+ * * Defining an `init` method, which is used INSTEAD of a constructor
+ * * Defining a `defineBlocks` method that does just that: defines this extension's blocks 
+ * * Defining a `defineTranslations` method for international support -- ignore this for now, coming soon!
  * @template MenuDetails How the extension should display in the extensions menu 
  * @template Blocks What kind of blocks this extension implements
+ * @link https://www.typescriptlang.org/docs/handbook/2/generics.html Learn more about generics! 
  */
 export abstract class Extension
   <

@@ -70,6 +70,8 @@ After navigating to http://localhost:8601/, follow the 'Adding Extensions' guida
 
 As long as the development server is running (meaning the `npm run dev` command is still executing), every change you make to the extension file will trigger the page to refresh and your changes will be reflected automagically 🪄. 
 
+As mentioned above, the generated `index.ts` file will have to documentation to assist you in getting started. Also, if you want to know more about a field or variable, hover over it. Like so: 
+
 #### 🥋 Advanced
 
 If you're a pro extension-maker, use the following command to make a new extension that contains no documentation and/or filler text. 

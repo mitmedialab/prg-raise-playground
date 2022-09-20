@@ -28,12 +28,10 @@ type Details = {
 
 /**
  * @summary This type describes all of the blocks your extension will/does implement. 
- * @description As you can see in the below example, each block is represented as a function.
+ * @description As you can see, each block is represented as a function.
  * The specific format is either:
- * 
- * - `nameOfFunction: (argument1Name: argument1Type, argument2Name: argument2Type, ...etc...) => returnType`
- * - `nameOfFunction(argument1Name: argument1Type, argument2Name: argument2Type, ...etc...): returnType`
- * - NOTE: The above are equivalent and which you use depends on your preference (the first uses 'arrow' syntax, and the second uses 'method' syntax)
+ * - Arrow syntax: `nameOfFunction: (argument1Name: argument1Type, argument2Name: argument2Type, ...etc...) => returnType`
+ * - 'Method' syntax: `nameOfFunction(argument1Name: argument1Type, argument2Name: argument2Type, ...etc...): returnType`
  * 
  * The two included functions below show the two most common types of blocks: commands and reporters.
  * - Command functions/blocks take 0 or more arguments, and return nothing (indicated by the use of a `void` return type). 
@@ -47,27 +45,19 @@ type Details = {
  * @link https://www.typescriptlang.org/docs/handbook/2/generics.html Learn more about generics! 
  */
 type Blocks = {
-  exampleCommand_OneArgument(argument: string): void;
-  exampleCommand_MultipleArguments(argument1: string, argument2: number): void;
+  exampleCommand(exampleString: string, exampleNumber: number): void;
   exampleReporter: () => number;
+  exampleHat: (condition: boolean) => boolean;
+
+  exampleCommand_MultipleArguments(argument1: string, argument2: number): void;
   exampleReporter_ArgumentWithOptions: (valueFromMenu: string) => string;
 }
 
 /**
  * @summary This is the class responsible for implementing the functionality of your blocks.
- * @description You'll notice that this class `extends` (or 'inherits') from a base `Extension` class.
+ * @description You'll notice that this class `extends` (or 'inherits') from the base `Extension` class.
  * 
- * As mentioned above, this `Extension` class takes 2 generic type arguments, which tell us (and Typescript + the Extension Framework) what this extension is all about.
- * The first generic argument tells us how this extension should be displayed in the Extensions Menu;
- * and the second tells us what blocks this Extension will add to the Scratch environment.
- * 
- * By declaring that we're extending an `Extension` with our specific generic type arguments,
- * Typescript holds us accountable to implement exactly what we said we would (all in order to make a working extension).
- *  
- * This includes:
- * * Defining an `init` method (see below) which is used INSTEAD of a constructor
- * * Defining a `defineBlocks` method that does jsut that, defines this extension's blocks 
- * * Defining a `defineTranslations` method for internal support, ignore this for now, coming soon!
+ * Hover over `Extension` to get a more in depth explanation of the base class, and what it means to `extend it`.
  */
 class ExtensionNameGoesHere extends Extension<Details, Blocks> {
   /**
@@ -86,7 +76,7 @@ class ExtensionNameGoesHere extends Extension<Details, Blocks> {
 
     /* ---- Example definition #1 (using local variable) ---- */
 
-    type DefineExampleCommand = DefineBlock<Blocks["exampleCommand_OneArgument"]>;
+    type DefineExampleCommand = DefineBlock<Blocks["exampleCommand"]>;
 
     const exampleCommand_OneArgument: DefineExampleCommand = () => ({
       type: BlockType.Command,
@@ -113,7 +103,7 @@ class ExtensionNameGoesHere extends Extension<Details, Blocks> {
     };
 
     return {
-      exampleCommand_OneArgument,
+      exampleCommand: exampleCommand_OneArgument,
       exampleReporter,
 
       /* ---- Example definition #3 (using property on returned object) ---- */
