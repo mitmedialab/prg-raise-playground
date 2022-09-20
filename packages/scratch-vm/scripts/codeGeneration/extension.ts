@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from "fs";
+import { readFileSync, writeFileSync, existsSync } from "fs";
 import mime = require('mime-types')
 import path = require("path");
 import { ExtensionCodeGenerator, GenerationDetails } from ".";
@@ -22,6 +22,10 @@ const getBlockIconURI = ({ details, cached, implementationDirectory }: Generatio
   if (cached?.insetIconURL === insetIconURL && cached?.blockIconURI) return cached.blockIconURI;
 
   const insetIconPath = path.join(implementationDirectory, insetIconURL);
+  if (insetIconURL === "" || !insetIconURL || !existsSync(insetIconPath)) return "";
+
+  console.error(insetIconPath);
+
   const encoding = "base64";
   const insetSVG = readFileSync(insetIconPath).toString(encoding);
   const mediaType = mime.lookup(insetIconPath);
@@ -34,7 +38,7 @@ const addConstructorArguments = (constructor: string) => {
 
 const addToConstructor = (content: string, args: Record<keyof CodeGenArgs, string>): string => {
   const lines = content.split(newline);
-  
+
   const getWhiteSpace = (line: string, match: string) => line.substring(0, line.indexOf(match[0]));
 
   const declarationIndex = lines.findIndex(line => line.includes(codeGenVariableDeclaration));
@@ -48,8 +52,8 @@ const addToConstructor = (content: string, args: Record<keyof CodeGenArgs, strin
   try {
     const { index, match } = lines
       .map((line, index) => {
-        if (line.includes(populatedConstructorIdentifier)) return {match: populatedConstructorIdentifier, index };
-        if (line.includes(emptyConstructorIdentifier)) return {match: emptyConstructorIdentifier, index };
+        if (line.includes(populatedConstructorIdentifier)) return { match: populatedConstructorIdentifier, index };
+        if (line.includes(emptyConstructorIdentifier)) return { match: emptyConstructorIdentifier, index };
         return { match: undefined, index };
       })
       .find(({ match }) => match !== undefined);
@@ -73,10 +77,10 @@ export const fillInContentForExtensions: ExtensionCodeGenerator = (extensions) =
   const encoding = "utf-8";
 
   for (const id in extensions) {
-    const { implementationDirectory, details, cacheUpdates: updates, cached} = extensions[id];
+    const { implementationDirectory, details, cacheUpdates: updates, cached } = extensions[id];
     const index = path.join(implementationDirectory, "index.js");
     const content = readFileSync(index, { encoding });
-    
+
     const { name } = details;
     const blockIconURI = getBlockIconURI(extensions[id]);
 

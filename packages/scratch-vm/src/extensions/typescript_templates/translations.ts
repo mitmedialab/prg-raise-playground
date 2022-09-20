@@ -5,7 +5,7 @@ import { Language } from "../../typescript-support/enums";
 // Translations are still a work in progress, but will be supported (woohoo!)
 
 const defineTranslations = (): Extension["Translations"] => ({
-  [Language.Español]: {}
+  [Language.Español]: undefined,
 });
 
 export default defineTranslations;

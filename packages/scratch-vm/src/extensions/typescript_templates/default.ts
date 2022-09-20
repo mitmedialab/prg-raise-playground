@@ -1,12 +1,12 @@
 import { ArgumentType, BlockType } from "../../typescript-support/enums";
 import { Extension } from "../../typescript-support/Extension";
-import { Block, BlockDefinitions, DefineBlock, Environment, ExtensionMenuDisplayDetails } from "../../typescript-support/types";
+import { Block, DefineBlock, Environment, ExtensionMenuDisplayDetails } from "../../typescript-support/types";
 import defineTranslations from "./translations";
 
 /**
  * @summary This type describes how your extension will display in the extensions menu. 
  * @description Like all Typescript type declarations, it looks and acts a lot like a javascript object. 
- * It will be passed as the first generic argument to the Extension class that your specific extension 'extends'
+ * It will be passed as the first generic argument to the Extension class that your specific extension `extends`
  * (see the class defintion below for more information on extending the Extension base class). 
  * @see ExtensionMenuDisplayDetails for all possible display menu properties.
  * @link https://www.typescriptlang.org/docs/handbook/2/objects.html Learn more about object types! (This is specifically a 'type alias')
@@ -29,13 +29,15 @@ type Details = {
 /**
  * @summary This type describes all of the blocks your extension will/does implement. 
  * @description As you can see, each block is represented as a function.
- * The specific format is either:
- * - Arrow syntax: `nameOfFunction: (argument1Name: argument1Type, argument2Name: argument2Type, ...etc...) => returnType`
- * - 'Method' syntax: `nameOfFunction(argument1Name: argument1Type, argument2Name: argument2Type, ...etc...): returnType`
+ * In typescript, you can specify a function in either of the following ways (and which you choose is a matter of preference):
+ * - Arrow syntax: `nameOfFunction: (argument1Name: argument1Type, argument2Name: argument2Type, ...etc...) => returnType;`
+ * - 'Method' syntax: `nameOfFunction(argument1Name: argument1Type, argument2Name: argument2Type, ...etc...): returnType;`
  * 
- * The two included functions below show the two most common types of blocks: commands and reporters.
+ * The three included functions demonstrate some of the most common types of blocks: commands, reporters, and hats.
  * - Command functions/blocks take 0 or more arguments, and return nothing (indicated by the use of a `void` return type). 
  * - Reporter functions/blocks also take 0 or more arguments, but they must return a value (likely a `string` or `number`).
+ * - Hat functions/blocks also take 0 or more arguments, but they must return a boolean value.
+ * 
  * Feel free to delete these once you're ready to implement your own blocks.
  * 
  * This type will be passed as the second generic argument to the Extension class that your specific extension 'extends'
@@ -47,10 +49,7 @@ type Details = {
 type Blocks = {
   exampleCommand(exampleString: string, exampleNumber: number): void;
   exampleReporter: () => number;
-  exampleHat: (condition: boolean) => boolean;
-
-  exampleCommand_MultipleArguments(argument1: string, argument2: number): void;
-  exampleReporter_ArgumentWithOptions: (valueFromMenu: string) => string;
+  exampleHat(condition: boolean): boolean;
 }
 
 /**
@@ -70,69 +69,48 @@ class ExtensionNameGoesHere extends Extension<Details, Blocks> {
     this.exampleField = 0;
   }
 
-  // All examples below are syntactically equivalent, 
-  // and which you use is just a matter of preference
+  // Ignore! Translations coming soon...
+  defineTranslations = defineTranslations as typeof this.defineTranslations;
+
+  // All example definitions below are syntactically equivalent, 
+  // and which you use is just a matter of preference.
   defineBlocks(): ExtensionNameGoesHere["BlockDefinitions"] {
 
-    /* ---- Example definition #1 (using local variable) ---- */
-
     type DefineExampleCommand = DefineBlock<Blocks["exampleCommand"]>;
-
-    const exampleCommand_OneArgument: DefineExampleCommand = () => ({
+    const exampleCommand: DefineExampleCommand = () => ({
       type: BlockType.Command,
-      arg: ArgumentType.String,
-      text: (argument) => `This is where the blocks display text goes. Here's where the argument goes --> ${argument}`,
-      operation: (argument, util) => {
-        alert(`This is a command! Here's the argument I was given ${argument}`); // Replace with what the block should do! 
+      args: [ArgumentType.String, { type: ArgumentType.Number, defaultValue: 789 }],
+      text: (exampleString, exampleNumber) => `This is where the blocks display text goes, with arguments --> ${exampleString} and ${exampleNumber}`,
+      operation: (exampleString, exampleNumber, util) => {
+        alert(`This is a command! Here's what it received: ${exampleString} and ${exampleNumber}`); // Replace with what the block should do! 
         console.log(util.stackFrame); // just an example of using the BlockUtility
       }
     });
 
-    /* ---- Example definition #2 (using local variable) ---- */
-
-    type ExampleReporterDefinition = Block<Blocks["exampleReporter"]>;
-
-    const exampleReporter = function (self: ExtensionNameGoesHere): ExampleReporterDefinition {
-      return {
-        type: BlockType.Reporter,
-        text: "This is where the blocks display text goes",
-        operation: () => {
-          return ++self.exampleField;
-        }
-      }
-    };
-
     return {
-      exampleCommand: exampleCommand_OneArgument,
-      exampleReporter,
+      exampleCommand,
 
-      /* ---- Example definition #3 (using property on returned object) ---- */
-      exampleCommand_MultipleArguments: () => ({
-        type: BlockType.Command,
-        args: [{ type: ArgumentType.String, defaultValue: '🤷' }, ArgumentType.Angle],
-        text: (argument1, argument2) => `First argument: ${argument1}. Second argument: ${argument2}`,
-        operation: (argument1, argument2) => { // NOTE: The last 'util' parameter is optionally omitted
-          alert(`This is a command! Here's the first argument I was given ${argument1}`);
-          alert(`This is a command! Here's the second argument I was given ${argument2}`);
+      exampleReporter: function (self: ExtensionNameGoesHere): Block<Blocks["exampleReporter"]> {
+        return {
+          type: BlockType.Reporter,
+          text: "This increments an internal field and then reports it's value",
+          operation: () => {
+            return ++self.exampleField;
+          }
         }
-      }),
+      },
 
-      /* ---- Example definition #4 (using function defined elsewhere) ---- */
-      exampleReporter_ArgumentWithOptions: pickFromOptions
+      exampleHat: pickFromOptions
     }
   }
-
-  defineTranslations = defineTranslations as typeof this.defineTranslations;
 }
 
-type WithOptionsBlock = Blocks["exampleReporter_ArgumentWithOptions"];
-
+type WithOptionsBlock = Blocks["exampleHat"];
 const pickFromOptions = (): Block<WithOptionsBlock> => ({
   type: BlockType.Reporter,
-  arg: { type: ArgumentType.String, options: ['😊', '❤️', '✨'] },
-  text: (argument1) => `Pick one: ${argument1}`,
+  arg: { type: ArgumentType.Boolean, options: [{ text: 'Yes', value: true }, { text: 'No', value: false }] },
+  text: (argument1) => `Should the below block execute? ${argument1}`,
   operation: function (argument1) {
-    alert(`You chose ${argument1}`);
     return argument1;
   }
 });

@@ -113,7 +113,6 @@ const compileJavascriptDeclarations = (root: string, files: string[]): void => {
   const emittedFiles: Map<string, string[]> = new Map();
 
   host.writeFile = (fileName: string, contents: string) => {
-    console.log("try write: ", fileName);
     if (fileName.includes(extensionsFolder)) return;
     if (fileName.includes("typescript-support")) return;
     if (!fileName.includes(".d.ts")) return;
@@ -128,7 +127,9 @@ const compileJavascriptDeclarations = (root: string, files: string[]): void => {
   const program = ts.createProgram(files, options, host);
   const result = program.emit();
 
-  console.log("Emmitted files\n\n\n", result.emittedFiles);
+  if (result.emitSkipped) {
+    result.diagnostics.forEach(reportDiagnostic);
+  }
 
   const readout = Object
     .entries(Object.fromEntries(emittedFiles))

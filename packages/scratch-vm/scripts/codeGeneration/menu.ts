@@ -1,4 +1,4 @@
-import { copyFileSync, writeFileSync } from "fs";
+import { copyFileSync, existsSync, writeFileSync } from "fs";
 import path = require("path");
 import { encode } from "../../src/extension-support/extension-id-factory";
 import { ExtensionCodeGenerator, GenerationDetails } from ".";
@@ -23,37 +23,42 @@ export const populateMenuForExtensions: ExtensionCodeGenerator = (extensions) =>
 
     if (cacheMismatch.length === 0) continue;
 
-    copyIconsToAssetsDirectory(extensions[id], details, cacheMismatch);
+    const succesfullyCopied = copyIconsToAssetsDirectory(extensions[id], details, cacheMismatch);
 
-    const imports = generateImports(id, details);
-    const statements = Object.values(imports).map(({statement}) => statement);
+    const imports = generateImports(id, details, succesfullyCopied);
+    const statements = Object.values(imports).map(({ statement }) => statement);
     statements.push(importStatement("React", 'react'));
     statements.push(importStatement("{ FormattedMessage }", 'react-intl'));
 
     const encodedId = encode(id);
     const menuItem = new MenuItem(details, encodedId);
     menuItem.push('extensionId', encodedId, false, true);
-    Object.entries(imports).map(([key, {variable}]) => menuItem.push(key, variable, true));
+    Object.entries(imports).map(([key, { variable }]) => menuItem.push(key, variable, true));
 
     const menuContent = [generatedFileWarning, ...statements, MenuItem.ConvertToSingleExport(menuItem)].join("\n");
     const file = path.join(assetsDirectory, `${detailFileName}.js`);
-    writeFileSync(file, menuContent, {encoding: "utf-8"});
+    writeFileSync(file, menuContent, { encoding: "utf-8" });
 
-    extensions[id].cacheUpdates = {...updates, ...details};
+    extensions[id].cacheUpdates = { ...updates, ...details };
   }
 }
 
 const copyIconsToAssetsDirectory = (
-  {implementationDirectory, assetsDirectory}: GenerationDetails,
-  {iconURL, insetIconURL}: ExtensionMenuDisplayDetails, 
+  { implementationDirectory, assetsDirectory }: GenerationDetails,
+  { iconURL, insetIconURL }: ExtensionMenuDisplayDetails,
   mismatchKeys: (keyof ExtensionMenuDisplayDetails)[]
-) => {
-  Object.entries({iconURL, insetIconURL}).forEach(([key, file]) => {
-    if (!mismatchKeys.includes(key as keyof ExtensionMenuDisplayDetails)) return;
+): string[] => {
+  const successes = [];
+  Object.entries({ iconURL, insetIconURL }).forEach(([key, file]) => {
+    if (file === "" || !file) return;
+    if (!mismatchKeys.includes(key as keyof ExtensionMenuDisplayDetails)) return successes.push(file);
     const currentLocation = path.join(implementationDirectory, file);
     const destination = path.join(assetsDirectory, file);
+    if (!existsSync(currentLocation)) return;
     copyFileSync(currentLocation, destination);
+    successes.push(file);
   });
+  return successes;
 }
 
 const importStatement = (what: string, where: string) => `import ${what} from '${where}';`;
@@ -61,11 +66,12 @@ const importStatement = (what: string, where: string) => `import ${what} from '$
 type Import = { variable: string, statement: string };
 type MenuImports = { [k in keyof Partial<ExtensionMenuDisplayDetails>]: Import };
 
-const generateImports = (id: string, {iconURL, insetIconURL}: ExtensionMenuDisplayDetails): MenuImports => {
+const generateImports = (id: string, { iconURL, insetIconURL }: ExtensionMenuDisplayDetails, validURLs: string[]): MenuImports => {
   const iconURLName = `${id}_IconURL`;
   const insetIconURLName = `${id}_InsetIconURL`;
+  const doesntExist = { variable: "\"none\"", statement: "" };
   return {
-    iconURL: {variable: iconURLName, statement: importStatement(iconURLName, `./${iconURL}`)},
-    insetIconURL: {variable: insetIconURLName, statement: importStatement(insetIconURLName, `./${insetIconURL}`)}
+    iconURL: validURLs.includes(iconURL) ? { variable: iconURLName, statement: importStatement(iconURLName, `./${iconURL}`) } : doesntExist,
+    insetIconURL: validURLs.includes(insetIconURL) ? { variable: insetIconURLName, statement: importStatement(insetIconURLName, `./${insetIconURL}`) } : doesntExist
   };
 }

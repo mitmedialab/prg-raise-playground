@@ -50,7 +50,7 @@ const destination = path.join(folder, "index.ts");
 
 fs.mkdirSync(folder);
 fs.copyFileSync(template, destination);
-fs.copyFileSync(translationsFile, destination);
+fs.copyFileSync(translationsFile, path.join(folder, "translations.ts"));
 
 const msg = [
   chalk.greenBright("Success! Your extension has been created at:"),

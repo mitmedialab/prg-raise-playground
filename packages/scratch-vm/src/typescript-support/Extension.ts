@@ -31,7 +31,7 @@ export type CodeGenArgs = {
  * }
  * @description Extension developers will create Typescript classes that `extend` (or 'inherit', or 'implement') this `Extension` class.
  * 
- * In order to `extend` this class, you must first specify 2 generic type arguments, which effectively tell us (and Typescript + the Extension Framework) what kind of Extension you're implementing.
+ * In order to `extend` this class, you must first specify 2 generic type arguments, which effectively describe what kind of Extension you're implementing.
  * 
  * More specifically, the 2 generic type arguments describe how this extension is presented to the user (by specifyng the details displayed in the Extensions Menu),
  * and what this Extension actually does (by specifying the blocks it will define).
@@ -126,7 +126,7 @@ export abstract class Extension
   readonly blockIconURI: never;
 
   /**
-   * @summary This function will be called when a user adds your extension via the Extensions Menu (i.e. when your extension is instantiated)
+   * @summary This member function (or 'method') will be called when a user adds your extension via the Extensions Menu (i.e. when your extension is instantiated)
    * @example
    * // Initialize class field(s)
    * private count: number;
@@ -148,49 +148,48 @@ export abstract class Extension
    * @param {Environment} env An object that allows your Extension to interact with the Scratch Environment. Currently is a little bare, but will be expanded soon.
    * Can be ommitted if not needed.
    * 
-   * For Scratch developers: The `runtime` property on env is the same as the runtime passed to Extension constructors
+   * For Scratch developers: The `runtime` property on env is the same as the runtime passed to non-Typescript-Framework Extension constructors
    */
   abstract init(env: Environment): void;
 
   /**
+   * @summary This member function (or 'method') will be called to 
    * @example
-   * // Returning an object with single block definition function for 'someBlock'
-   * defineBlocks(): MyExtension["BlockDefinitions"] {
+   * // Returning an object with two block definition function for 'someBlock'
+   * defineBlocks(): ExampleExtension["BlockDefinitions"] {
    *  return {
    *    // Using arrow function syntax
    *    someBlock: (self: MyExtension) => ({
    *      type: BlockType.Reporter,
-   *      args: ArgumentType.String,
+   *      arg: ArgumentType.String,
    *      text: (argument) => `Some text about ${argument}`,
    *      operation: (argument) => {
    *        // do something
    *      }
-   *    })
-   *  }
-   * }
-   * @example
-   * // Returning an object with single block definition function for 'someBlock'
-   * defineBlocks(): MyExtension["BlockDefinitions"] {
-   *  return {
-   *    // Using arrow function syntax
-   *    someBlock: (self: MyExtension) => ({
-   *      type: BlockType.Reporter,
-   *      args: ArgumentType.String,
-   *      text: (argument) => `Some text about ${argument}`,
-   *      operation: (argument) => {
-   *        // do something
+   *    }),
+   *    // Using method function syntax
+   *    someOtherBlock(self: MyExtension) {
+   *      const type = BlockType.Reporter;
+   *      const arg = ArgumentType.String;
+   *      return {
+   *        arg, type,
+   *        text: (argument) => `Some text about ${argument}`,
+   *        operation: (argument) => {
+   *          // do something
+   *        }
    *      }
-   *    })
+   *    }
    *  }
    * }
    * @see BlockDefinitions
    * @returns {BlockDefinitions<Blocks>} An object defining 'block definition' functions for each block associated with this Extension.
    */
   abstract defineBlocks(): BlockDefinitions<Blocks>;
+
   /**
-   * Define the translations for this extension.
+   * @summary Define the translations for this extension.
    * 
-   * Ignore this for now (but don't delete it)! 
+   * @description Ignore this for now (but don't delete it)! 
    * 
    * Translations are still a work in progress, but will be supported.
    */
@@ -362,7 +361,7 @@ export abstract class Extension
       case ArgumentType.Number:
         return parseFloat(value);
       case ArgumentType.Boolean:
-        return !!value;
+        return JSON.parse(value);
       case ArgumentType.Note:
         return parseInt(value);
       case ArgumentType.Angle:
