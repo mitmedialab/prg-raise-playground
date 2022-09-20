@@ -53,8 +53,13 @@ npm run dev
 To make a new extension, run the following commands:
 
 ```shell script
-cd prg-extension-boilerplate/ # if not already there
+cd prg-extension-boilerplate/ # If not already there
 # Change directory (cd) to prg-extension-boilerplate/ 
+
+git checkout dev # Checkout dev branch
+git pull # Update dev branch with any remote changes
+git checkout -b <my branch> # Checkout your 'feature' branch, e.g. git checkout -b my_awesome_extension
+# For example: git checkout -b new_rad_extension
 
 npm run new:extension <folder to contain extension>
 # For example: npm run new:extension my_awesome_extension
@@ -71,6 +76,9 @@ After navigating to http://localhost:8601/, follow the 'Adding Extensions' guida
 As long as the development server is running (meaning the `npm run dev` command is still executing), every change you make to the extension file will trigger the page to refresh and your changes will be reflected automagically 🪄. 
 
 As mentioned above, the generated `index.ts` file will have to documentation to assist you in getting started. Also, if you want to know more about a field or variable, hover over it. Like so: 
+
+
+#### 📁 Saving / deploying your changes 
 
 #### 🥋 Advanced
 
