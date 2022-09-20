@@ -40,8 +40,15 @@ git remote -v
 # scratch-vm	git@github.com:pmalacho-mit/prg-export-scratch-vm.git (fetch)
 # scratch-vm	git@github.com:pmalacho-mit/prg-export-scratch-vm.git (push)
 
-# Step 1: Add and sync with scratch-vm remote
+# Step 1: Add this repo as remote
+git remote add scratch-vm git@github.com/pmalacho-mit/prg-export-scratch-vm
 
+# Step 2. Get latest from scratch-vm remote and apply changes
+git pull scratch-vm
+git merge scratch-vm/develop
+
+# Deal with any merge conflicts. Hopefully there won't be any, as the branches should have shared history.
+# Let @pmalacho-mit know of any conflicts.
 ```
 
 ## How was it made? 
