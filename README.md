@@ -259,6 +259,9 @@ Things to note:
 - All Block text is automatically formatted for translation
     - How to actually specify these translations is coming soon! 
     - Translations for extensions are not actually supported via Scratch, so enabling this is a win for the Typescript Extension Framework!
+- Fields not yet supported (but will be for official release):
+    - [filter](https://github.com/mitmedialab/prg-extension-boilerplate/issues/163)
+    - [branchCount](https://github.com/mitmedialab/prg-extension-boilerplate/issues/168)
 
 ```ts
 import Runtime from "../../engine/runtime";
