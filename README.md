@@ -66,15 +66,33 @@ npm run new:extension <folder to contain extension>
 # For example: npm run new:extension my_awesome_extension
 # If succesful, the output of this command will tell you where to find your new extension file.
 # It will be an index.ts file, and its documentation should help you get started
+```
+
+#### 🥋 Advanced
+
+If you're a pro extension-maker, use the following command to make a new extension that contains no documentation and/or filler text. 
+
+```shell script
+npm run new:extension <folder to contain extension> barebones 
+# Note the 'barenones' at the end
+```
+
+### 🏃‍♂️ Running an extension
+
+After you've made your extension, run the following commands to serve it locally and view it in your browser. 
+
+```shell script
+cd prg-extension-boilerplate/ # If not already there
+# Change directory (cd) to prg-extension-boilerplate/ 
 
 npm run dev
 # Start a development server to view your extension and reload it as you make changes
 # This command will take ~20s to startup and serve everything to http://localhost:8601/
 ```
 
-After navigating to http://localhost:8601/, follow the 'Adding Extensions' guidance in the [official extension documentation](https://en.scratch-wiki.info/wiki/Extension) to add your extension to the workspace. 
+Then, after navigating to http://localhost:8601/, follow the 'Adding Extensions' guidance in the [official extension documentation](https://en.scratch-wiki.info/wiki/Extension) to add your extension to the workspace. 
 
-As long as the development server is running (meaning the `npm run dev` command is still executing), every change you make to the extension file will trigger the page to refresh and your changes will be reflected automagically 🪄. 
+As long as the development server is running (meaning the `npm run dev` command is still executing), every change you make to the extension file(s) will trigger the page to refresh and your changes will be reflected automagically 🪄. 
 
 #### 🤔 What do I do with all this code? 
 
@@ -89,15 +107,6 @@ Also, try hovering over fields to view their documentation (typically a [summary
 Still stuck? Check out our [From 0 to Extension guide](#-from-0-to-extension) and/or contact more experienced Scratch developers, like [Parker](https://github.com/pmalacho-mit) or [Randi](https://github.com/randi-c-dubs)
 
 #### 📁 Saving / deploying your changes 
-
-#### 🥋 Advanced
-
-If you're a pro extension-maker, use the following command to make a new extension that contains no documentation and/or filler text. 
-
-```shell script
-npm run new:extension <folder to contain extension> barebones 
-# Note the 'barenones' at the end
-```
 
 ### 🔀 Porting an Extension to Typescript
 
