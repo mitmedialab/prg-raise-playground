@@ -324,8 +324,6 @@ class SomeBlocks extends Extension<Details, {
 export = SomeBlocks;
 ```
 
-##### Step by step
-
 ## ⛓️ Dependencies
 
 ### Git
