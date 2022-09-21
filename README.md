@@ -12,7 +12,7 @@ Looking for the old documentation (<= Aug. 2022)? Head [here](./BACKGROUND.md).
     - [Making an extension](#-making-an-extension)
         - [Advanced](#-advanced)
     - [Running an extension](#-running-an-extension)
-    - [Committing, pushing, and deploying an extension](#-committing-pushing-and-deploying-your-changes)
+    - [Committing, pushing, and deploying an extension](#-committing-pushing-and-deploying-an-extension)
 - [How to program an extension](#-how-to-program-an-extension)
     - [*"I have an `index.ts` file.. now what?"*](#i-have-an-indexts-file-now-what)
     - [From 0 to Extension](#-from-0-to-extension)
@@ -83,7 +83,7 @@ npm run new:extension <folder to contain extension> barebones
 # Note the 'barenones' at the end
 ```
 
-### 🏃‍♂️ Running an extension
+### 🏃 Running an extension
 
 After you've [made your extension](#-making-an-extension), run the following commands to serve it locally and view it in your browser. 
 
