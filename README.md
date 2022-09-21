@@ -79,7 +79,7 @@ npm run new:extension <folder to contain extension> barebones
 
 ### 🏃‍♂️ Running an extension
 
-After you've made your extension, run the following commands to serve it locally and view it in your browser. 
+After you've [made your extension](#-making-an-extension), run the following commands to serve it locally and view it in your browser. 
 
 ```shell script
 cd prg-extension-boilerplate/ # If not already there
@@ -94,11 +94,17 @@ Then, after navigating to http://localhost:8601/, follow the 'Adding Extensions'
 
 As long as the development server is running (meaning the `npm run dev` command is still executing), every change you make to the extension file(s) will trigger the page to refresh and your changes will be reflected automagically 🪄. 
 
-#### 🤔 What do I do with all this code? 
+#### 📁 Committing, Pushing, and Deploying your changes 
 
-Once you've created your extension and opened the corresponding `index.ts` file in VS Code, you might be wondering where to start. 
+... Coming soon ... shouldn't be necessary for the beta test.
 
-First, read through the documentation of the `index.ts` (written inside of [code comments](https://www.w3schools.com/js/js_comments.asp)). 
+## How to program an extension
+
+### *"I have an `index.ts` file.. now what?"*
+
+Once you've [created your extension](#-making-an-extension) and opened the corresponding `index.ts` file in VS Code, you might be wondering where to start. 
+
+First, read through the documentation of the `index.ts` file (written inside of [code comments](https://www.w3schools.com/js/js_comments.asp)). 
 
 Also, try hovering over fields to view their documentation (typically a [summary](https://jsdoc.app/tags-summary.html), [examples](https://jsdoc.app/tags-example.html), and a [longer desrciption](https://jsdoc.app/tags-description.html)), like so:
 
@@ -106,7 +112,22 @@ Also, try hovering over fields to view their documentation (typically a [summary
 
 Still stuck? Check out our [From 0 to Extension guide](#-from-0-to-extension) and/or contact more experienced Scratch developers, like [Parker](https://github.com/pmalacho-mit) or [Randi](https://github.com/randi-c-dubs)
 
-#### 📁 Saving / deploying your changes 
+### 🪜 From 0 to Extension
+
+... Coming soon ... (will incorporate feedback from beta test)
+
+Currently, depending on what's new to you, here are some recommendations:
+- *New to Javascript and Typescript?* Follow this [javascript tutorial](https://www.w3schools.com/js/) and then check out the [Typescript handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
+- *Know javascript but new to Typescript?* Check out the [Typescript handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
+- *Know javascript/typescript but never made an extension before?* Nice! The documentation of the template `index.ts` should be enough to get you started (and if not, please give that feedback)
+- *New to the extension framework (but had developed extensions in the past)?* The [Porting an extension to Typescript guide](#-porting-an-extension-to-typescript) is likely for you!
+
+Probably will have:
+- Full step-by-step guide on:
+    - What is an extension?
+    - How do you make one using the typescript framework
+- Video tutorial 
+- FAQ?
 
 ### 🔀 Porting an Extension to Typescript
 
@@ -119,23 +140,6 @@ Want to move your vanilla-JS extension to our Typescript framework and reap the 
 ##### Typescript
 
 ##### Step by step
-
-## 🪜 From 0 to Extension
-
-... Coming soon ... (based on feedback from beta test)
-
-Currently, depending on what's new to you, here are some recommendations:
-- New to Javascript and Typescript? Follow this [javascript tutorial](https://www.w3schools.com/js/) and then check out the [Typescript handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
-- New to Typescript? Check out the [Typescript handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
-- Never made an extension before? Nice! The documentation of the template `index.ts` should be enough to get you started (and if not, please give that feedback)
-- New to the extension framework (but had developed extensions in the past)? The [Porting an extension to Typescript guide](#-porting-an-extension-to-typescript) is for you!
-
-Likely will have:
-- Full step-by-step guide on:
-    - What is an extension?
-    - How do you make one using the typescript framework
-- Video tutorial 
-- FAQ?
 
 ## ⛓️ Dependencies
 
@@ -160,13 +164,15 @@ Before then, we either need to upgrade webpack to be able to use node 18, or rev
 
 We encourage you to use VS Code since it has great Typescript support. Also, it's easier to offer tips and tricks if most of us use the same text editor.
 
-Here's how to [install VS Code]().
+Here's how to [install VS Code](https://code.visualstudio.com/download).
 
 Of course, if you prefer a different editor, go ahead and use it (but do so at your own 'risk').  
 
 #### Extensions
 
-We recommend adding the following extensions (which you can do [like so]()):
+We recommend adding the following extensions (which you can do [like so](https://code.visualstudio.com/docs/editor/extension-marketplace#_install-an-extension)):
+
+- [Typescript](https://marketplace.visualstudio.com/items?itemName=ms-vscode.vscode-typescript-next)
 
 ## 📦 Deploying
 
