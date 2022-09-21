@@ -13,7 +13,7 @@ Looking for the old documentation (<= Aug. 2022)? Head [here](./BACKGROUND.md).
         - [Advanced](#-advanced)
     - [Running an extension](#-running-an-extension)
     - [Committing, pushing, and deploying an extension](#-committing-pushing-and-deploying-your-changes)
-- [How to program an extension](https://github.com/mitmedialab/prg-extension-boilerplate/blob/beta/README.md#how-to-program-an-extension)
+- [How to program an extension](#-how-to-program-an-extension)
     - [*"I have an `index.ts` file.. now what?"*](#i-have-an-indexts-file-now-what)
     - [From 0 to Extension](#-from-0-to-extension)
     - [Porting an Extension to Typescript](#-porting-an-extension-to-typescript)
