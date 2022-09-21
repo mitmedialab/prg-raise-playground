@@ -80,12 +80,11 @@ As long as the development server is running (meaning the `npm run dev` command 
 
 Once you've created your extension and opened the corresponding `index.ts` file in VS Code, you might be wondering where to start. 
 
-First, read through the documentation of the `index.ts` (written inside of [code comments](https://www.w3schools.com/js/js_comments.asp)). Also, try hovering over fields to view their documentation, like so:
+First, read through the documentation of the `index.ts` (written inside of [code comments](https://www.w3schools.com/js/js_comments.asp)). Also, try hovering over fields to view their documentation (typically a [summary](https://jsdoc.app/tags-summary.html), [examples](https://jsdoc.app/tags-example.html), and a [longer desrciption](https://jsdoc.app/tags-description.html)), like so:
 
 ![Gif of video hovering over fields to peak documentation](/DocumentationAssets/hover.gif)
 
 Still stuck? Check out our [From 0 to Extension guide](#-from-0-to-extension) and/or contact more experienced Scratch developers, like [Parker](https://github.com/pmalacho-mit) or [Randi](https://github.com/randi-c-dubs)
-
 
 #### 📁 Saving / deploying your changes 
 
