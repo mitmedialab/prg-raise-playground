@@ -76,14 +76,13 @@ After navigating to http://localhost:8601/, follow the 'Adding Extensions' guida
 
 As long as the development server is running (meaning the `npm run dev` command is still executing), every change you make to the extension file will trigger the page to refresh and your changes will be reflected automagically 🪄. 
 
-#### 🤔 What then? 
+#### 🤔 What do I do with all this code? 
 
 Once you've created your extension and opened the corresponding `index.ts` file in VS Code, you might be wondering where to start. 
 
 First, read through the documentation of the `index.ts` (written inside of [code comments](https://www.w3schools.com/js/js_comments.asp)). Also, try hovering over fields to view their documentation, like so:
 
 ![Gif of video hovering over fields to peak documentation](/DocumentationAssets/hover.gif)
-
 
 Still stuck? Check out our [From 0 to Extension guide](#-from-0-to-extension) and/or contact more experienced Scratch developers, like [Parker](https://github.com/pmalacho-mit) or [Randi](https://github.com/randi-c-dubs)
 
@@ -114,6 +113,12 @@ Want to move your vanilla-JS extension to our Typescript framework and reap the 
 ## 🪜 From 0 to Extension
 
 ... Coming soon ... (based on feedback from beta test)
+
+Currently, depending on what's new to you, here are some recommendations:
+- New to Javascript and Typescript? Follow this [javascript tutorial](https://www.w3schools.com/js/) and then check out the [Typescript handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
+- New to Typescript? Check out the [Typescript handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
+- Never made an extension before? Nice! The documentation of the template `index.ts` should be enough to get you started (and if not, please give that feedback)
+- New to the extension framework (but had developed extensions in the past)? The [Porting an extension to Typescript guide](#-porting-an-extension-to-typescript) is for you!
 
 Likely will have:
 - Full step-by-step guide on:
