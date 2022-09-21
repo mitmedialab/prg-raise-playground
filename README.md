@@ -248,7 +248,16 @@ class SomeBlocks {
 }
 ```
 
-#### Typescript
+#### Typescript Extension Framework
+
+Things to note:
+- The `Details` type object encodes how the extension will be displayed in the extensions menu
+    - No more editing [any jsx](https://github.com/mitmedialab/prg-extension-boilerplate/blob/5ec7cca7e1827da49c2faaf173706fc19874a3a1/packages/scratch-gui/src/lib/libraries/extensions/index.jsx#L71) to specify how your extension should display in the Extensions Menu
+    - Now your image assets related to your extension should reside in the same place as your implementation (i.e. the `index.ts` file)
+- Any index.ts file within the extensions folder will be assumed to implement an extension
+    - This means there's no need to specify your extension in the [extension-manager](https://github.com/mitmedialab/prg-extension-boilerplate/blob/5ec7cca7e1827da49c2faaf173706fc19874a3a1/packages/scratch-vm/src/extension-support/extension-manager.js#L11)
+- All Block text is automatically formatted for translation
+    - How to actually specify these translations is coming soon! (NOTE: Translations for extensions are not actually supported via Scratch, so this a win for the Typescript Extension Framework!)
 
 ```ts
 import Runtime from "../../engine/runtime";
@@ -261,8 +270,8 @@ import formatMessage = require('format-message');
 type Details = {
   name: "Some Blocks",
   description: "A demonstration of some blocks",
-  iconURL: "example.png", // Relative path to image file -- Used for extensions menu, but NOT 'menuIconURI'
-  insetIconURL: "inset.png" // Relative path to image file -- Will automatically be used as the blockIconURI
+  iconURL: "example.png", // Relative path to image file (which you need to add, likely at the same level as the index.ts file) -- Used for extensions menu, but NOT 'menuIconURI'
+  insetIconURL: "inset.png" // Relative path to image file (which you need to add, likely at the same level as the index.ts file) -- Will automatically be used as the blockIconURI
 };
 
 class SomeBlocks extends Extension<Details, {
