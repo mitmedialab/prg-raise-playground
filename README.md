@@ -11,10 +11,16 @@ Looking for the old documentation (<= Aug. 2022)? Head [here](./BACKGROUND.md).
     - [Project setup](#-project-setup)
     - [Making an extension](#-making-an-extension)
         - [Advanced](#-advanced)
+    - [Running an extension](#-running-an-extension)
+    - [Committing, pushing, and deploying an extension](#-committing-pushing-and-deploying-your-changes)
+- [How to program an extension](https://github.com/mitmedialab/prg-extension-boilerplate/blob/beta/README.md#how-to-program-an-extension)
+    - [*"I have an `index.ts` file.. now what?"*](#i-have-an-indexts-file-now-what)
+    - [From 0 to Extension](#-from-0-to-extension)
     - [Porting an Extension to Typescript](#-porting-an-extension-to-typescript)
-- [From 0 to Extension](#-from-0-to-extension)
 - [Project Dependencies](#project-dependencies)
-- [Deploying](#-Deploying)
+    - [Git](#git)
+    - [Node](#node)
+    - [VS Code](#vs-code-recommended) 
 - [Troubleshooting](#-Troubleshooting)
     - [webpack: command not found](#webpack-command-not-found)
 
@@ -94,11 +100,11 @@ Then, after navigating to http://localhost:8601/, follow the 'Adding Extensions'
 
 As long as the development server is running (meaning the `npm run dev` command is still executing), every change you make to the extension file(s) will trigger the page to refresh and your changes will be reflected automagically 🪄. 
 
-### 📦 Committing, pushing, and deploying your changes 
+### 📦 Committing, pushing, and deploying an extension 
 
 ... Coming soon ... shouldn't be necessary for the beta test.
 
-## How to program an extension
+## 🔎 How to program an extension
 
 ### *"I have an `index.ts` file.. now what?"*
 
