@@ -141,7 +141,7 @@ Want to move your vanilla-JS extension to our Typescript framework and reap the 
 
 Please check out the below example to get a good idea of what this would look like:
 
-##### Vanilla JS
+#### Vanilla JS
 
 Below is a sample, vanilla JS extension based on the final example provided in the [Scratch Extensions document](https://github.com/LLK/scratch-vm/blob/develop/docs/extensions.md). 
 
@@ -248,7 +248,62 @@ class SomeBlocks {
 }
 ```
 
-##### Typescript
+#### Typescript
+
+```ts
+import Runtime from "../../engine/runtime";
+import { ArgumentType, BlockType } from "../../typescript-support/enums";
+import { Extension } from "../../typescript-support/Extension";
+import { Environment } from "../../typescript-support/types";
+import defineTranslations from "./translations";
+import formatMessage = require('format-message');
+
+type Details = {
+  name: "Some Blocks",
+  description: "A demonstration of some blocks",
+  iconURL: "example.png", // Relative path to image file -- Used for extensions menu, but NOT 'menuIconURI'
+  insetIconURL: "inset.png" // Relative path to image file -- Will automatically be used as the blockIconURI
+};
+
+class SomeBlocks extends Extension<Details, {
+  myReporter: (text: string, letterNum: number) => string;
+}> {
+
+  runtime: Runtime;
+
+  init(env: Environment) {
+    this.runtime = env.runtime;
+  }
+
+  defineBlocks(): SomeBlocks["BlockDefinitions"] {
+    return {
+      myReporter: (self: SomeBlocks) => ({
+        type: BlockType.Reporter,
+        args: [
+          { type: ArgumentType.String, defaultValue: 'text', options: [{ text: 'Item One', value: 'itemId1' }, 'itemId2'] },
+          { type: ArgumentType.Number, defaultValue: 1 }
+        ],
+        text: (text, letterNum) => `letter ${letterNum} of ${text}'`,
+        operation: (text, letterNum, util) => {
+
+          const message = formatMessage({
+            id: 'myReporter.result',
+            default: 'Letter {letterNum} of {text} is {result}.',
+            description: 'The text template for the "myReporter" block result'
+          });
+
+          const result = text.charAt(letterNum);
+          return message.format({ text, letterNum, result });
+        }
+      })
+    }
+  }
+
+  defineTranslations = defineTranslations;
+}
+
+export = SomeBlocks;
+```
 
 ##### Step by step
 
