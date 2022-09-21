@@ -303,6 +303,8 @@ class SomeBlocks extends Extension<Details, {
           });
 
           const result = text.charAt(letterNum);
+          
+          // This doesn't actually work/compile -- perhaps the formatMessage API changed since the Scratch example was made
           return message.format({ text, letterNum, result });
         }
       })
