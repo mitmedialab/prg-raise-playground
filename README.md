@@ -123,10 +123,10 @@ Still stuck? Check out our [From 0 to Extension guide](#-from-0-to-extension) an
 ... Coming soon ... (will incorporate feedback from beta test)
 
 Currently, depending on what's new to you, here are some recommendations:
-- *New to Javascript and Typescript?* Follow this [javascript tutorial](https://www.w3schools.com/js/) and then check out the [Typescript handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
-- *Know javascript but new to Typescript?* Check out the [Typescript handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
-- *Know javascript/typescript but never made an extension before?* Nice! The documentation of the template `index.ts` should be enough to get you started (and if not, please give that feedback)
-- *New to the extension framework (but had developed extensions in the past)?* The [Porting an extension to Typescript guide](#-porting-an-extension-to-typescript) is likely for you!
+- ***New to Javascript and Typescript?*** Follow this [javascript tutorial](https://www.w3schools.com/js/) and then check out the [Typescript handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
+- ***Know javascript but new to Typescript?*** Check out the [Typescript handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
+- ***Know javascript/typescript but never made an extension before?*** Nice! The documentation of the template `index.ts` should be enough to get you started (and if not, please give that feedback)
+- ***New to the extension framework (but had developed extensions in the past)?*** The [Porting an extension to Typescript guide](#-porting-an-extension-to-typescript) is likely for you!
 
 Probably will have:
 - Full step-by-step guide on:
@@ -139,9 +139,127 @@ Probably will have:
 
 Want to move your vanilla-JS extension to our Typescript framework and reap the benefits of type safety and code generation? ***Great!***
 
-#### Example
+Please check out the below example to get a good idea of what this would look like:
 
 ##### Vanilla JS
+
+Below is a sample, vanilla JS extension based on the final example provided in the [Scratch Extensions document](https://github.com/LLK/scratch-vm/blob/develop/docs/extensions.md). 
+
+What's not captured in the below example is all the additional work necessary to get the extension to show up, which includes:
+- updating extension library jsx
+- updating extension manager to support this extension 
+
+Every step of this process is not typesafe, and thus very error prone.
+
+```js
+const ArgumentType = require('../../extension-support/argument-type');
+const BlockType = require('../../extension-support/block-type');
+const TargetType = require('../../extension-support/target-type');
+const formatMessage = require('format-message');
+
+class SomeBlocks {
+    constructor (runtime) {
+        this.runtime = runtime;
+    }
+
+    /**
+     * @return {object} This extension's metadata.
+     */
+    getInfo () {
+        return {
+            id: 'someBlocks',
+
+            // Core extensions only: override the default extension block colors.
+            color1: '#FF8C1A',
+            color2: '#DB6E00',
+            
+            name: formatMessage({
+                id: 'extensionName',
+                defaultMessage: 'Some Blocks',
+                description: 'The name of the "Some Blocks" extension'
+            }),
+
+            blockIconURI: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAFCAAAAACyOJm3AAAAFklEQVQYV2P4DwMMEMgAI/+DEUIMBgAEWB7i7uidhAAAAABJRU5ErkJggg==',
+            menuIconURI: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAFCAAAAACyOJm3AAAAFklEQVQYV2P4DwMMEMgAI/+DEUIMBgAEWB7i7uidhAAAAABJRU5ErkJggg==',
+
+            blocks: [
+                {
+                    opcode: 'myReporter', 
+                    blockType: BlockType.REPORTER,
+                    branchCount: 0,
+                    terminal: true,
+                    blockAllThreads: false,
+                    text: formatMessage({
+                        id: 'myReporter',
+                        defaultMessage: 'letter [LETTER_NUM] of [TEXT]',
+                        description: 'Label on the "myReporter" block'
+                    }),
+                    arguments: {
+                        LETTER_NUM: {
+                            type: ArgumentType.NUMBER,
+                            default: 1
+                        },
+                        TEXT: {
+                            type: ArgumentType.STRING,
+                            default: formatMessage({
+                                id: 'myReporter.TEXT_default',
+                                defaultMessage: 'text',
+                                description: 'Default for "TEXT" argument of "someBlocks.myReporter"'
+                            }),
+                            menu: 'menuA'
+                        }
+                    },
+
+                    func: 'myReporter',
+                    filter: [TargetType.SPRITE]
+                }
+            ],
+
+            // Optional: define extension-specific menus here.
+            menus: {
+                // Required: an identifier for this menu, unique within this extension.
+                menuA: [
+                    // Static menu: list items which should appear in the menu.
+                    {
+                        // Required: the value of the menu item when it is chosen.
+                        value: 'itemId1',
+
+                        // Optional: the human-readable label for this item.
+                        // Use `value` as the text if this is absent.
+                        text: formatMessage({
+                            id: 'menuA_item1',
+                            defaultMessage: 'Item One',
+                            description: 'Label for item 1 of menu A in "Some Blocks" extension'
+                        })
+                    },
+
+                    // The simplest form of a list item is a string which will be used as
+                    // both value and text.
+                    'itemId2'
+                ]
+            },
+        };
+    };
+    
+    myReporter (args) {
+        // This message contains ICU placeholders, not Scratch placeholders
+        const message = formatMessage({
+            id: 'myReporter.result',
+            defaultMessage: 'Letter {LETTER_NUM} of {TEXT} is {LETTER}.',
+            description: 'The text template for the "myReporter" block result'
+        });
+
+        // Note: this implementation is not Unicode-clean; it's just here as an example.
+        const result = args.TEXT.charAt(args.LETTER_NUM);
+
+        return message.format({
+            LETTER_NUM: args.LETTER_NUM,
+            TEXT: args.TEXT,
+            LETTER: result
+        });
+    };
+}
+```
 
 ##### Typescript
 
