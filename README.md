@@ -94,7 +94,7 @@ Then, after navigating to http://localhost:8601/, follow the 'Adding Extensions'
 
 As long as the development server is running (meaning the `npm run dev` command is still executing), every change you make to the extension file(s) will trigger the page to refresh and your changes will be reflected automagically 🪄. 
 
-#### 📁 Committing, Pushing, and Deploying your changes 
+### 📦 Committing, pushing, and deploying your changes 
 
 ... Coming soon ... shouldn't be necessary for the beta test.
 
