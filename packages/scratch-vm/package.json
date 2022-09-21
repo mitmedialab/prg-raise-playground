@@ -78,9 +78,6 @@
     "text-encoding": "0.7.0",
     "worker-loader": "^1.1.1"
   },
-  "peerDependencies": {
-    "scratch-svg-renderer": "^0.2.0-prerelease"
-  },
   "devDependencies": {
     "@babel/core": "7.13.10",
     "@babel/plugin-proposal-object-rest-spread": "^7.8.3",
