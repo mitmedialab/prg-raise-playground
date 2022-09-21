@@ -76,7 +76,16 @@ After navigating to http://localhost:8601/, follow the 'Adding Extensions' guida
 
 As long as the development server is running (meaning the `npm run dev` command is still executing), every change you make to the extension file will trigger the page to refresh and your changes will be reflected automagically 🪄. 
 
-As mentioned above, the generated `index.ts` file will have to documentation to assist you in getting started. Also, if you want to know more about a field or variable, hover over it. Like so: 
+#### 🤔 What then? 
+
+Once you've created your extension and opened the corresponding `index.ts` file in VS Code, you might be wondering where to start. 
+
+First, read through the documentation of the `index.ts` (written inside of [code comments](https://www.w3schools.com/js/js_comments.asp)). Also, try hovering over fields to view their documentation, like so:
+
+![Gif of video hovering over fields to peak documentation](/DocumentationAssets/hover.gif)
+
+
+Still stuck? Check out our [From 0 to Extension guide](#-from-0-to-extension) and/or contact more experienced Scratch developers, like [Parker](https://github.com/pmalacho-mit) or [Randi](https://github.com/randi-c-dubs)
 
 
 #### 📁 Saving / deploying your changes 
@@ -104,7 +113,7 @@ Want to move your vanilla-JS extension to our Typescript framework and reap the 
 
 ## 🪜 From 0 to Extension
 
-... Coming soon ... 
+... Coming soon ... (based on feedback from beta test)
 
 Likely will have:
 - Full step-by-step guide on:
