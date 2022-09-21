@@ -290,7 +290,14 @@ class SomeBlocks extends Extension<Details, {
       myReporter: (self: SomeBlocks) => ({
         type: BlockType.Reporter,
         args: [
-          { type: ArgumentType.String, defaultValue: 'text', options: [{ text: 'Item One', value: 'itemId1' }, 'itemId2'] },
+          { 
+            type: ArgumentType.String, 
+            defaultValue: 'text', 
+            options: [
+                { text: 'Item One', value: 'itemId1' }, 
+                'itemId2'
+            ] 
+          },
           { type: ArgumentType.Number, defaultValue: 1 }
         ],
         text: (text, letterNum) => `letter ${letterNum} of ${text}'`,
