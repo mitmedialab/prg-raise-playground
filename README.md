@@ -58,7 +58,7 @@ cd prg-extension-boilerplate/ # If not already there
 # Change directory (cd) to prg-extension-boilerplate/ 
 
 git checkout beta # Checkout beta branch -- NOTE: in the future, you'll actually checkout the dev branch, but we're using the beta branch for this trial
-git pull # Update dev branch with any remote changes
+git pull # Update branch with any remote changes
 git checkout -b <my branch> # Checkout your 'feature' branch, e.g. git checkout -b my_awesome_extension
 # For example: git checkout -b new_rad_extension
 
