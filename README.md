@@ -214,27 +214,16 @@ class SomeBlocks {
                     filter: [TargetType.SPRITE]
                 }
             ],
-
-            // Optional: define extension-specific menus here.
             menus: {
-                // Required: an identifier for this menu, unique within this extension.
                 menuA: [
-                    // Static menu: list items which should appear in the menu.
                     {
-                        // Required: the value of the menu item when it is chosen.
                         value: 'itemId1',
-
-                        // Optional: the human-readable label for this item.
-                        // Use `value` as the text if this is absent.
                         text: formatMessage({
                             id: 'menuA_item1',
                             defaultMessage: 'Item One',
                             description: 'Label for item 1 of menu A in "Some Blocks" extension'
                         })
                     },
-
-                    // The simplest form of a list item is a string which will be used as
-                    // both value and text.
                     'itemId2'
                 ]
             },
@@ -242,14 +231,12 @@ class SomeBlocks {
     };
     
     myReporter (args) {
-        // This message contains ICU placeholders, not Scratch placeholders
         const message = formatMessage({
             id: 'myReporter.result',
             defaultMessage: 'Letter {LETTER_NUM} of {TEXT} is {LETTER}.',
             description: 'The text template for the "myReporter" block result'
         });
 
-        // Note: this implementation is not Unicode-clean; it's just here as an example.
         const result = args.TEXT.charAt(args.LETTER_NUM);
 
         return message.format({
