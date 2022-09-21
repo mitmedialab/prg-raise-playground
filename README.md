@@ -146,8 +146,8 @@ Please check out the below example to get a good idea of what this would look li
 Below is a sample, vanilla JS extension based on the final example provided in the [Scratch Extensions document](https://github.com/LLK/scratch-vm/blob/develop/docs/extensions.md). 
 
 What's not captured in the below example is all the additional work necessary to get the extension to show up, which includes:
-- updating extension library jsx
-- updating extension manager to support this extension 
+- updating [extension library jsx](https://github.com/mitmedialab/prg-extension-boilerplate/blob/5ec7cca7e1827da49c2faaf173706fc19874a3a1/packages/scratch-gui/src/lib/libraries/extensions/index.jsx#L71)
+- updating [extension manager](https://github.com/mitmedialab/prg-extension-boilerplate/blob/5ec7cca7e1827da49c2faaf173706fc19874a3a1/packages/scratch-vm/src/extension-support/extension-manager.js#L11) to support this extension 
 
 Every step of this process is not typesafe, and thus very error prone.
 
@@ -257,7 +257,8 @@ Things to note:
 - Any index.ts file within the extensions folder will be assumed to implement an extension
     - This means there's no need to specify your extension in the [extension-manager](https://github.com/mitmedialab/prg-extension-boilerplate/blob/5ec7cca7e1827da49c2faaf173706fc19874a3a1/packages/scratch-vm/src/extension-support/extension-manager.js#L11)
 - All Block text is automatically formatted for translation
-    - How to actually specify these translations is coming soon! (NOTE: Translations for extensions are not actually supported via Scratch, so this a win for the Typescript Extension Framework!)
+    - How to actually specify these translations is coming soon! 
+    - Translations for extensions are not actually supported via Scratch, so this a win for the Typescript Extension Framework!
 
 ```ts
 import Runtime from "../../engine/runtime";
