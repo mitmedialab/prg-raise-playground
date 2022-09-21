@@ -169,13 +169,45 @@ export type Block<T extends BlockOperation> = {
    * 
    * It can/should act on the arguments you specified for this block.
    * 
+   * @example
+   * // An operation that could satisfy a one-liner reporter boock
+   * // (specified with arrow syntax)
+   * operation: (text: string, index: number) => text[index];
+   * 
+   * @example
+   * // An operation that could satisfy a  reporter boock
+   * // (specified with arrow syntax)
+   * operation: (dividend: number, divisor: number) => {
+   *  return dividend / divisor;
+   * }
+   * 
+   * @example
+   * // An operation that could satisfy a command block
+   * // (specified with method syntax, and leveraging optional final BlockUtility parameter)
+   * operation: function(msg: string, util: BlockUtility) {
+   *  alert(`${msg} ${util.stackFrame.isLoop}`);
+   * }
+   * 
    * @param {BlockUtility} util The final argument passed to this function will always be a BlockUtility object, 
    * which can help you accomplish more advanced block behavior. If you don't need to use it, feel free to omit it.
    * @see {BlockUtility} type for more information on the final argument passed to this function.
    */
   operation: (...params: ParamsAndUtility<T>) => ReturnType<T>;
   /**
+   * @summary The display text of your block.
+   * @description This is where you describe what your block should say. 
    * 
+   * The value that this field takes on depends on if your block takes any arguments or not.
+   * - If your block takes NO arguments, then this field should be a simple string. 
+   * - If your block takes one or more arguments, then this field should be a function that takes the same arguments as your block, 
+   * and returns a templated string (see below examples for more details). 
+   * @example
+   * // Text for a block that takes NO arguments
+   * text: "Click me! I'm a button!"
+   * @example
+   * // Text for a block that takes 2 arguments 
+   * text: (name: string, age: number) => `My name is ${name} and I'm ${age} years old`
+   * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals for more info on Template Strings (aka Template Literals)
    */
   text: Parameters<T> extends NonEmptyArray<any> ? (...params: Parameters<T>) => string : string;
 } & (Parameters<T> extends NonEmptyArray<any>

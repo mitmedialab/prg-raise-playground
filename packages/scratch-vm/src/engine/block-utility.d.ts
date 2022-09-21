@@ -38,9 +38,9 @@ declare class BlockUtility {
     get nowObj(): Function;
     /**
      * The stack frame used by loop and other blocks to track internal state.
-     * @type {object}
+     * @type {import("./stackFrame")}
      */
-    get stackFrame(): any;
+    get stackFrame(): import("./stackFrame");
     /**
      * Check the stack timer and return a boolean based on whether it has finished or not.
      * @return {boolean} - true if the stack timer has finished.

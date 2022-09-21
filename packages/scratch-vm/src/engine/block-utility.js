@@ -57,7 +57,7 @@ class BlockUtility {
 
     /**
      * The stack frame used by loop and other blocks to track internal state.
-     * @type {object}
+     * @type {import("./stackFrame")}
      */
     get stackFrame () {
         const frame = this.thread.peekStackFrame();

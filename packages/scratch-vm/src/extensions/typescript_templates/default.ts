@@ -83,7 +83,7 @@ class ExtensionNameGoesHere extends Extension<Details, Blocks> {
       text: (exampleString, exampleNumber) => `This is where the blocks display text goes, with arguments --> ${exampleString} and ${exampleNumber}`,
       operation: (exampleString, exampleNumber, util) => {
         alert(`This is a command! Here's what it received: ${exampleString} and ${exampleNumber}`); // Replace with what the block should do! 
-        console.log(util.stackFrame); // just an example of using the BlockUtility
+        console.log(util.stackFrame.isLoop); // just an example of using the BlockUtility
       }
     });
 

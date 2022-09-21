@@ -1,5 +1,8 @@
 export = Thread;
 /**
+ * @typedef {import("./stackFrame")} TStackFrame
+ */
+/**
  * A thread is a running stack context and all the metadata needed.
  * @param {?string} firstBlock First block to execute in the thread.
  * @constructor
@@ -49,9 +52,9 @@ declare class Thread {
     stack: Array<string>;
     /**
      * Stack frames for the thread. Store metadata for the executing blocks.
-     * @type {Array.<_StackFrame>}
+     * @type {Array<TStackFrame>}
      */
-    stackFrames: Array<_StackFrame>;
+    stackFrames: Array<TStackFrame>;
     /**
      * Status of the thread, one of three states (below)
      * @type {number}
@@ -116,14 +119,14 @@ declare class Thread {
     peekStack(): string | null;
     /**
      * Get top stack frame.
-     * @return {?object} Last stack frame stored on this thread.
+     * @return {?TStackFrame} Last stack frame stored on this thread.
      */
-    peekStackFrame(): object | null;
+    peekStackFrame(): TStackFrame | null;
     /**
      * Get stack frame above the current top.
-     * @return {?object} Second to last stack frame stored on this thread.
+     * @return {?TStackFrame} Second to last stack frame stored on this thread.
      */
-    peekParentStackFrame(): object | null;
+    peekParentStackFrame(): TStackFrame | null;
     /**
      * Push a reported value to the parent of the current stack frame.
      * @param {*} value Reported value to push.
@@ -165,77 +168,7 @@ declare class Thread {
      */
     isRecursiveCall(procedureCode: string): boolean;
 }
-/**
- * A frame used for each level of the stack. A general purpose
- * place to store a bunch of execution context and parameters
- * @param {boolean} warpMode Whether this level of the stack is warping
- * @constructor
- * @private
- */
-declare class _StackFrame {
-    /**
-     * Create or recycle a stack frame object.
-     * @param {boolean} warpMode Enable warpMode on this frame.
-     * @returns {_StackFrame} The clean stack frame with correct warpMode setting.
-     */
-    static create(warpMode: boolean): _StackFrame;
-    /**
-     * Put a stack frame object into the recycle bin for reuse.
-     * @param {_StackFrame} stackFrame The frame to reset and recycle.
-     */
-    static release(stackFrame: _StackFrame): void;
-    constructor(warpMode: any);
-    /**
-     * Whether this level of the stack is a loop.
-     * @type {boolean}
-     */
-    isLoop: boolean;
-    /**
-     * Whether this level is in warp mode.  Is set by some legacy blocks and
-     * "turbo mode"
-     * @type {boolean}
-     */
-    warpMode: boolean;
-    /**
-     * Reported value from just executed block.
-     * @type {any}
-     */
-    justReported: any;
-    /**
-     * The active block that is waiting on a promise.
-     * @type {string}
-     */
-    reporting: string;
-    /**
-     * Persists reported inputs during async block.
-     * @type {Object}
-     */
-    reported: any;
-    /**
-     * Name of waiting reporter.
-     * @type {string}
-     */
-    waitingReporter: string;
-    /**
-     * Procedure parameters.
-     * @type {Object}
-     */
-    params: any;
-    /**
-     * A context passed to block implementations.
-     * @type {Object}
-     */
-    executionContext: any;
-    /**
-     * Reset all properties of the frame to pristine null and false states.
-     * Used to recycle.
-     * @return {_StackFrame} this
-     */
-    reset(): _StackFrame;
-    /**
-     * Reuse an active stack frame in the stack.
-     * @param {?boolean} warpMode defaults to current warpMode
-     * @returns {_StackFrame} this
-     */
-    reuse(warpMode?: boolean | null): _StackFrame;
+declare namespace Thread {
+    export { TStackFrame };
 }
+type TStackFrame = import("./stackFrame");

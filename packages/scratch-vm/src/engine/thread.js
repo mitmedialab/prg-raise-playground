@@ -1,121 +1,8 @@
-/**
- * Recycle bin for empty stackFrame objects
- * @type Array<_StackFrame>
- */
-const _stackFrameFreeList = [];
+const StackFrame = require("./stackFrame");
 
 /**
- * A frame used for each level of the stack. A general purpose
- * place to store a bunch of execution context and parameters
- * @param {boolean} warpMode Whether this level of the stack is warping
- * @constructor
- * @private
+ * @typedef {import("./stackFrame")} TStackFrame
  */
-class _StackFrame {
-    constructor (warpMode) {
-        /**
-         * Whether this level of the stack is a loop.
-         * @type {boolean}
-         */
-        this.isLoop = false;
-
-        /**
-         * Whether this level is in warp mode.  Is set by some legacy blocks and
-         * "turbo mode"
-         * @type {boolean}
-         */
-        this.warpMode = warpMode;
-
-        /**
-         * Reported value from just executed block.
-         * @type {any}
-         */
-        this.justReported = null;
-
-        /**
-         * The active block that is waiting on a promise.
-         * @type {string}
-         */
-        this.reporting = '';
-
-        /**
-         * Persists reported inputs during async block.
-         * @type {Object}
-         */
-        this.reported = null;
-
-        /**
-         * Name of waiting reporter.
-         * @type {string}
-         */
-        this.waitingReporter = null;
-
-        /**
-         * Procedure parameters.
-         * @type {Object}
-         */
-        this.params = null;
-
-        /**
-         * A context passed to block implementations.
-         * @type {Object}
-         */
-        this.executionContext = null;
-    }
-
-    /**
-     * Reset all properties of the frame to pristine null and false states.
-     * Used to recycle.
-     * @return {_StackFrame} this
-     */
-    reset () {
-
-        this.isLoop = false;
-        this.warpMode = false;
-        this.justReported = null;
-        this.reported = null;
-        this.waitingReporter = null;
-        this.params = null;
-        this.executionContext = null;
-
-        return this;
-    }
-
-    /**
-     * Reuse an active stack frame in the stack.
-     * @param {?boolean} warpMode defaults to current warpMode
-     * @returns {_StackFrame} this
-     */
-    reuse (warpMode = this.warpMode) {
-        this.reset();
-        this.warpMode = Boolean(warpMode);
-        return this;
-    }
-
-    /**
-     * Create or recycle a stack frame object.
-     * @param {boolean} warpMode Enable warpMode on this frame.
-     * @returns {_StackFrame} The clean stack frame with correct warpMode setting.
-     */
-    static create (warpMode) {
-        const stackFrame = _stackFrameFreeList.pop();
-        if (typeof stackFrame !== 'undefined') {
-            stackFrame.warpMode = Boolean(warpMode);
-            return stackFrame;
-        }
-        return new _StackFrame(warpMode);
-    }
-
-    /**
-     * Put a stack frame object into the recycle bin for reuse.
-     * @param {_StackFrame} stackFrame The frame to reset and recycle.
-     */
-    static release (stackFrame) {
-        if (typeof stackFrame !== 'undefined') {
-            _stackFrameFreeList.push(stackFrame.reset());
-        }
-    }
-}
 
 /**
  * A thread is a running stack context and all the metadata needed.
@@ -139,7 +26,7 @@ class Thread {
 
         /**
          * Stack frames for the thread. Store metadata for the executing blocks.
-         * @type {Array.<_StackFrame>}
+         * @type {Array<TStackFrame>}
          */
         this.stackFrames = [];
 
@@ -244,7 +131,7 @@ class Thread {
         // Might not, if we just popped the stack.
         if (this.stack.length > this.stackFrames.length) {
             const parent = this.stackFrames[this.stackFrames.length - 1];
-            this.stackFrames.push(_StackFrame.create(typeof parent !== 'undefined' && parent.warpMode));
+            this.stackFrames.push(StackFrame.create(typeof parent !== 'undefined' && parent.warpMode));
         }
     }
 
@@ -263,7 +150,7 @@ class Thread {
      * @return {string} Block ID popped from the stack.
      */
     popStack () {
-        _StackFrame.release(this.stackFrames.pop());
+        StackFrame.release(this.stackFrames.pop());
         return this.stack.pop();
     }
 
@@ -299,7 +186,7 @@ class Thread {
 
     /**
      * Get top stack frame.
-     * @return {?object} Last stack frame stored on this thread.
+     * @return {?TStackFrame} Last stack frame stored on this thread.
      */
     peekStackFrame () {
         return this.stackFrames.length > 0 ? this.stackFrames[this.stackFrames.length - 1] : null;
@@ -307,7 +194,7 @@ class Thread {
 
     /**
      * Get stack frame above the current top.
-     * @return {?object} Second to last stack frame stored on this thread.
+     * @return {?TStackFrame} Second to last stack frame stored on this thread.
      */
     peekParentStackFrame () {
         return this.stackFrames.length > 1 ? this.stackFrames[this.stackFrames.length - 2] : null;
