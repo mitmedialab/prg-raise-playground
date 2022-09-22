@@ -31,7 +31,7 @@ This section contains concise explanations on how to accomplish something (often
 ### 🚧 Project setup
 
 Assuming you have...
-- Git installed ((if not, jump to: [Git](#Git))
+- Git installed (if not, jump to: [Git](#Git))
 - Node <=16 is installed (if not, jump to: [Node](#Node))
 - VS Code installed with Typescript Extension added (if not, jump to: [Vs Code](#VS-Code-(Recommended)))
 
