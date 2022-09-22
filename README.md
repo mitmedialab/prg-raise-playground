@@ -254,7 +254,7 @@ Things to note:
 - The `Details` type object encodes how the extension will be displayed in the extensions menu
     - No more editing [any jsx](https://github.com/mitmedialab/prg-extension-boilerplate/blob/5ec7cca7e1827da49c2faaf173706fc19874a3a1/packages/scratch-gui/src/lib/libraries/extensions/index.jsx#L71) to specify how your extension should display in the Extensions Menu
     - Now your image assets related to your extension should reside in the same place as your implementation (i.e. in the same directory as the `index.ts` file)
-- Any index.ts file within the extensions folder will be assumed to implement an extension
+- Any index.ts file within a subfolder of the [extensions directory](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/packages/scratch-vm/src/extensions) will be assumed to implement an extension
     - This means there's no need to specify your extension in the [extension-manager](https://github.com/mitmedialab/prg-extension-boilerplate/blob/5ec7cca7e1827da49c2faaf173706fc19874a3a1/packages/scratch-vm/src/extension-support/extension-manager.js#L11)
 - All Block text is automatically formatted for translation
     - How to actually specify these translations is coming soon! 
