@@ -137,7 +137,7 @@ Probably will have:
 
 ### 🔀 Porting an Extension to Typescript
 
-Want to move your vanilla-JS extension to our Typescript framework and reap the benefits of type safety and code generation? ***Great!***
+*Want to move your vanilla-JS extension to our Typescript framework and reap the benefits of type safety and code generation?* **Great!**
 
 Please check out the below example to get a good idea of what this would look like:
 
