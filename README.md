@@ -39,7 +39,7 @@ Run the following from the command line:
 
 ```shell script
 git clone git@github.com:mitmedialab/prg-extension-boilerplate.git
-# Clone the repository onto your computer. This could take a while... grab a beverage!
+# Clone the repository onto your computer. This could take a while (~5m), grab a beverage!
 
 cd prg-extension-boilerplate/
 # Change directory (cd) to the repository
