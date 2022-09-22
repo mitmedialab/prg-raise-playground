@@ -4,7 +4,7 @@ This repository is your one-stop-shop for developing [scratch extensions](https:
 
 It's a fullblown [fork](https://en.wikipedia.org/wiki/Fork_(software_development)) of the official Scratch codebase, which the [Personal Robotics Group](https://robots.media.mit.edu/) (PRG) manages and extends to meet its needs. 
 
-Looking for the old documentation (<= Aug. 2022)? Head [here](./BACKGROUND.md).
+Looking for the old documentation (<= Sept. 2022)? Head [here](./BACKGROUND.md).
 
 ## 📖 Table of Contents
 - [Quick Start](#-quick-start)
@@ -112,7 +112,7 @@ Once you've [created your extension](#-making-an-extension) and opened the corre
 
 First, read through the documentation of the `index.ts` file (written inside of [code comments](https://www.w3schools.com/js/js_comments.asp)). 
 
-Also, try hovering over fields to view their documentation (typically a [summary](https://jsdoc.app/tags-summary.html), [examples](https://jsdoc.app/tags-example.html), and a [longer desrciption](https://jsdoc.app/tags-description.html)), like so:
+Also, try hovering over fields to view their documentation (typically a [summary](https://jsdoc.app/tags-summary.html), [examples](https://jsdoc.app/tags-example.html), and a [longer desrciption](https://jsdoc.app/tags-description.html)).
 
 ![Gif of video hovering over fields to peak documentation](/DocumentationAssets/hover.gif)
 
@@ -331,11 +331,11 @@ export = SomeBlocks;
 
 ### Git
 
-Please [install git](https://git-scm.com/downloads), which helps us with [source contro](https://git-scm.com/book/en/v2/Getting-Started-About-Version-Control) -- basically, how we preserve and share changes to the code. 
+Please [install git](https://git-scm.com/downloads), which helps us with [source control](https://git-scm.com/book/en/v2/Getting-Started-About-Version-Control) -- basically, how we preserve and share (changes to) the code. 
 
 ### Node
 
-Like many web development projects, this project requires you to have [node](https://nodejs.org/en/) installed.
+Like many web development projects, this project requires [node](https://nodejs.org/en/).
 
 Also, [due to a Webpack 4 issue](https://github.com/webpack/webpack/issues/14532), we require a node version <=16.
 
@@ -356,15 +356,9 @@ Of course, if you prefer a different editor, go ahead and use it (but do so at y
 
 #### Extensions
 
-We recommend adding the following extensions (which you can do [like so](https://code.visualstudio.com/docs/editor/extension-marketplace#_install-an-extension)):
+We recommend adding the following VS Code extensions (which you can do [like so](https://code.visualstudio.com/docs/editor/extension-marketplace#_install-an-extension)):
 
 - [Typescript](https://marketplace.visualstudio.com/items?itemName=ms-vscode.vscode-typescript-next)
-
-## 📦 Deploying
-
-We use GitHub Actions to build the combined scratch-gui using `npm`, and [actions-gh-pages](https://github.com/peaceiris/actions-gh-pages) to deploy to GitHub Pages.
-
-Note that there is a step of adding an access token to the repository due to a bug with GitHub Actions. [Follow the steps here](https://github.com/marketplace/actions/deploy-to-github-pages#configuration-) to add an access token to your repository.
 
 ## 🤔 Troubleshooting
 
