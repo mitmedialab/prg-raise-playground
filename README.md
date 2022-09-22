@@ -39,7 +39,7 @@ Run the following from the command line:
 
 ```shell script
 git clone git@github.com:mitmedialab/prg-extension-boilerplate.git
-# Cloning the full history (300mb) takes about 20 seconds on fast internet. Include -–depth 1 for a 4 second checkout
+# This could take a while... grab a beverage!
 
 cd prg-extension-boilerplate/
 # Change directory (cd) to the repository
