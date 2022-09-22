@@ -46,8 +46,6 @@ cd prg-extension-boilerplate/
 
 git checkout beta 
 # Checkout beta branch -- NOTE: in the future, you'll actually checkout the dev or main branches, but we're using the beta branch for this trial
-git pull 
-# Update branch with any remote changes
 
 npm run init
 # This will symlink the packages together to allow for seamless local development, and installs dependencies for each package. 
