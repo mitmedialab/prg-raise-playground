@@ -24,8 +24,6 @@ const getBlockIconURI = ({ details, cached, implementationDirectory }: Generatio
   const insetIconPath = path.join(implementationDirectory, insetIconURL);
   if (insetIconURL === "" || !insetIconURL || !existsSync(insetIconPath)) return "";
 
-  console.error(insetIconPath);
-
   const encoding = "base64";
   const insetSVG = readFileSync(insetIconPath).toString(encoding);
   const mediaType = mime.lookup(insetIconPath);
