@@ -39,10 +39,13 @@ Run the following from the command line:
 
 ```shell script
 git clone git@github.com:mitmedialab/prg-extension-boilerplate.git
-# Cloning the full history (300mb) takes about 20 seconds on fast internet. Include -–depth 1 for a 4 second checkout
+# Clone the repository onto your computer. This could take a while (~5m), grab a beverage!
 
 cd prg-extension-boilerplate/
 # Change directory (cd) to the repository
+
+git checkout beta 
+# Checkout beta branch -- NOTE: in the future, you'll actually checkout the dev or main branches, but we're using the beta branch for this trial
 
 npm run init
 # This will symlink the packages together to allow for seamless local development, and installs dependencies for each package. 
