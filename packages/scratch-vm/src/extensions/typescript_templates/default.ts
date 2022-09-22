@@ -107,7 +107,7 @@ class ExtensionNameGoesHere extends Extension<Details, Blocks> {
 
 type WithOptionsBlock = Blocks["exampleHat"];
 const pickFromOptions = (): Block<WithOptionsBlock> => ({
-  type: BlockType.Reporter,
+  type: BlockType.Hat,
   arg: { type: ArgumentType.Boolean, options: [{ text: 'Yes', value: true }, { text: 'No', value: false }] },
   text: (argument1) => `Should the below block execute? ${argument1}`,
   operation: function (argument1) {

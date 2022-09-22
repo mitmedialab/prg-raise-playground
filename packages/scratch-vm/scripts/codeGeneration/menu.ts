@@ -48,17 +48,17 @@ const copyIconsToAssetsDirectory = (
   { iconURL, insetIconURL }: ExtensionMenuDisplayDetails,
   mismatchKeys: (keyof ExtensionMenuDisplayDetails)[]
 ): string[] => {
-  const successes = [];
+  const valid = [];
   Object.entries({ iconURL, insetIconURL }).forEach(([key, file]) => {
     if (file === "" || !file) return;
-    if (!mismatchKeys.includes(key as keyof ExtensionMenuDisplayDetails)) return successes.push(file);
     const currentLocation = path.join(implementationDirectory, file);
-    const destination = path.join(assetsDirectory, file);
     if (!existsSync(currentLocation)) return;
+    if (!mismatchKeys.includes(key as keyof ExtensionMenuDisplayDetails)) return valid.push(file);
+    const destination = path.join(assetsDirectory, file);
     copyFileSync(currentLocation, destination);
-    successes.push(file);
+    valid.push(file);
   });
-  return successes;
+  return valid;
 }
 
 const importStatement = (what: string, where: string) => `import ${what} from '${where}';`;
