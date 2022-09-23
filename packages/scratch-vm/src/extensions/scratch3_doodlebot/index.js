@@ -89,10 +89,11 @@ const _sensors = {
     "accelerometer": "x",
     "magnetometer": "o",
     "gyroscope": "g",
-    //"color sensor": "l",
+    "color sensor": "l",
     "temperature": "t",
     "humidity": "h",
     "pressure": "p",
+    "all sensors": "a",
 };
 
 // Core, Team, and Official extension classes should be registered statically with the Extension Manager.
@@ -172,6 +173,45 @@ class DoodlebotBlocks {
                         },
                     },
                 },
+                {
+                    opcode: 'speakText',
+                    text: formatMessage({
+                        id: 'doodlebot.speakText',
+                        default: 'say [TEXT]',
+                        description: 'Send text to the speech to text engine'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        TEXT: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'Hello'
+                        }
+                    }
+                },
+                /*{
+                    opcode: 'askSpeechRecognition',
+                    text: formatMessage({
+                        id: 'doodlebot.speakAndListen',
+                        default: 'ask [PROMPT] and wait',
+                        description: 'Send text to STT engine then listen via TTS'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        PROMPT: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'How are you?'
+                        }
+                    }
+                },
+                {
+                    opcode: 'getRecognizedSpeech',
+                    text: formatMessage({
+                        id: 'doodlebot.getRecognizedSpeech',
+                        default: 'answer',
+                        description: 'Return the results of the speech recognition'
+                    }),
+                    blockType: BlockType.REPORTER
+                },*/
                 {
                     opcode: "displayText",
                     blockType: BlockType.COMMAND,
@@ -556,8 +596,43 @@ class DoodlebotBlocks {
                         id: "doodlebot.isConnected",
                         default: "robot connected?",
                         description:
-                            "Boolean to chec if robot is connected to Scratch",
+                            "Boolean to check if robot is connected to Scratch",
                     }),
+                },
+                {
+                    opcode: "connectToWifi",
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: "doodlebot.setWifi",
+                        default: "connect to [SSID] pw [PASSWORD]",
+                        description: "Command to connect to Wifi network"
+                    }),
+                    arguments: {
+                        SSID: {
+                            type: ArgumentType.STRING,
+                            defaultValue: "ssid"
+                        },
+                        PASSWORD: {
+                            type: ArgumentType.STRING,
+                            defaultValue: "pw"
+                        }
+                    }
+                },
+                {
+                    opcode: "quietSystems",
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: "doodlebot.quietSystems",
+                        default: "quiet [SYSTEM]",
+                        description: "Put systems in low power mode",
+                    }),
+                    arguments: {
+                        SYSTEM: {
+                            type: ArgumentType.STRING,
+                            menu: "SYSTEMS",
+                            defaultValue: "all",
+                        },
+                    },
                 },
                 {
                     opcode: "sendCommand",
@@ -574,6 +649,21 @@ class DoodlebotBlocks {
                         },
                     },
                 },
+                {
+                    opcode: "sendCommandAndWait",
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: "doodlebot.sendCommandAndWait",
+                        default: "send comand [COMMAND] and wait",
+                        description: "Send a particular command to the robot and wait for response from robot",
+                    }),
+                    arguments: {
+                        COMMAND: {
+                            type: ArgumentType.STRING,
+                            defaultValue: "(m,100,100,50,50)",
+                        },
+                    },
+                },
             ],
             menus: {
                 ACC_GYRO_DIRS: {
@@ -581,7 +671,7 @@ class DoodlebotBlocks {
                     items: ['x', 'y', 'z'],
                 },
                 ANIMS: {
-                    acceptReporters: false,
+                    acceptReporters: true,
                     items: Object.keys(_anims),
                 },
                 BUMPERS: {
@@ -613,8 +703,12 @@ class DoodlebotBlocks {
                     items: ["pressed", "released"],
                 },
                 SENSORS: {
-                    acceptReports: false,
+                    acceptReporters: false,
                     items: Object.keys(_sensors),
+                },
+                SYSTEMS: {
+                    acceptReporters: false,
+                    items: ['all','motors','camera'],
                 },
                 TURNS: {
                     acceptReports: false,
@@ -1002,12 +1096,23 @@ class DoodlebotBlocks {
         // send message
         let sensor_cmd = _sensors[args.SENSOR];
         console.log("Enable " + args.SENSOR + " sensor: " + sensor_cmd);
-        await this.sendCommandToRobot(
-            "(e," + sensor_cmd + ")", command_pause
-        );
+
+        if (args.SENSOR == "all sensors") {
+            let sensor_cmds = Object.values(_sensors);
+            // subtract 1 to exclude the "all sensors" entry
+            for (let i=0; i<sensor_cmds.length-1; i++) {
+                await this.sendCommandToRobot(
+                    "(e," + _sensor_cmds[i] + ")", command_pause
+                );
+            }
+        } else {
+            await this.sendCommandToRobot(
+                "(e," + sensor_cmd + ")", command_pause
+            );
+        }
 
         let sensorName = args.SENSOR;
-        if (args.SENSOR == "accelerometer") {
+        if (args.SENSOR == "all sensors" || args.SENSOR == "accelerometer") {
             sensorName = "accelerometer.x";
         } else if (args.SENSOR == "bumpers") {
             sensorName = "bumper.front";
@@ -1031,7 +1136,18 @@ class DoodlebotBlocks {
         let sensor_cmd = _sensors[args.SENSOR];
 
         console.log("Disable sensor " + sensor_cmd);
-        if (args.SENSOR == "accelerometer") {
+        if (args.SENSOR == "all sensors") {
+            console.log("Disable everything");        
+            // empty the sensor value array
+            this.sensorValues = {};
+
+            let sensor_cmds = Object.values(_sensors);
+            for (let i=0; i<sensor_cmds.length-1; i++) {
+                await this.sendCommandToRobot(
+                    "(x," + sensor_cmds[i] + ")", command_pause
+                );
+            }
+        } else if (args.SENSOR == "accelerometer") {
             delete this.sensorValues["accelerometer.x"];
             delete this.sensorValues["accelerometer.y"];
             delete this.sensorValues["accelerometer.z"];
@@ -1210,6 +1326,15 @@ class DoodlebotBlocks {
             clearInterval(this._blinkInterval);
             this._blinkInterval = null;
         }
+    }
+
+    /**
+     * For speaking via text-to-speech system
+     */
+     async speakText(args) {
+        console.log("say: " + args.TEXT);
+
+        // TODO TTS
     }
 
     /**
@@ -1462,11 +1587,45 @@ class DoodlebotBlocks {
     }
 
     /**
-     * 
-     * Just for testing out, checks if robot is connected or not 
+     * Just for testing, checks if robot is connected or not 
      */
-    async ifRobotConnected(args) {
+    ifRobotConnected(args) {
         return this._robotStatus == 2;
+    }
+    /**
+     * Block for connecting to Wifi network TODO return or store ip address
+     */
+    async connectToWifi(args) {
+        let ssid = args.SSID;
+        let pw = args.PASSWORD;
+
+        console.log("connecting to Wifi");
+        //send message
+        await this.sendCommandToRobot("(k," + ssid + "," + pw + ")", command_pause);
+
+       // wait to receive ip address in response
+       /*return new Promise((resolve) => {
+        this.robotEvent.once('ip', () =>{ 
+            resolve(ipAddress);
+        });*/
+    }
+    /**
+     * Block for putting items in low power mode
+     */
+    async quietSystems(args) {
+        let system = args.SYSTEM;
+
+        console.log("put " + system + " into low power mode");
+        
+        let system_cmd = "a";
+        if (system == "motors") {
+            system_cmd = "m"
+        } else if (system == "camera") {
+            system_cmd = "c"
+        }
+
+        //send message
+        await this.sendCommandToRobot("(q," + system_cmd + ")", command_pause);
     }
     /**
      * Just for testing out sending commands to robot via ble
@@ -1481,6 +1640,28 @@ class DoodlebotBlocks {
         await this.sendCommandToRobot(
             command, command_pause
         );
+    }
+    /**
+     * Just for testing out sending commands to robot via ble
+     */
+    async sendCommandAndWait(args) {
+        let command = args.COMMAND;
+        console.log("Sending a blocking uart command: ", command);
+
+        // stop blinking
+        this.stopBlink();
+
+        // send message
+        await this.sendCommandToRobot(
+            command, command_pause
+        );
+
+        // wait for the motor command to finish executing
+        return new Promise((resolve) => {
+            this.motorEvent.once('stop', () =>{ 
+                resolve();
+            });
+        });
     }
 }
 module.exports = DoodlebotBlocks;
