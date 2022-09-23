@@ -109,6 +109,8 @@ class Scratch3VideoSensingBlocks {
          */
         this._lastUpdate = null;
 
+        this.lastFrameEstimate = null;
+
         /**
          * A flag to determine if this extension has been installed in a project.
          * It is set to false the first time getInfo is run.
@@ -224,6 +226,23 @@ class Scratch3VideoSensingBlocks {
         });
     }
 
+    async estimateFrameTime () {
+        const time = Date.now();
+        const estimateInterval = 100;
+        const offset = time - this.lastFrameEstimate;
+        if (offset > estimateInterval) {
+            this.lastFrameEstimate = time;
+            let startTime = Date.now();
+            setTimeout(() => {
+                let endTime = Date.now();
+                const delta = endTime - startTime;
+                if (delta > 4000) {
+                    console.error(`Slow loop: ${delta / 1000}s`);
+                }
+            });
+        }
+    }   
+
     /**
      * Occasionally step a loop to sample the video, stamp it to the preview
      * skin, and add a TypedArray copy of the canvas's pixel data.
@@ -231,6 +250,8 @@ class Scratch3VideoSensingBlocks {
      */
     _loop () {
         setTimeout(this._loop.bind(this), Math.max(this.runtime.currentStepTime, Scratch3VideoSensingBlocks.INTERVAL));
+        
+        this.estimateFrameTime();
 
         // Add frame to detector
         const time = Date.now();
