@@ -352,7 +352,7 @@ Before then, we either need to upgrade webpack to be able to use node 18, or rev
 
 ### NPM
 
-NPM (Node Package Manager) is a technology that is *usually* automatically installed with [Node](#Node). 
+[NPM](https://www.npmjs.com/) (Node Package Manager) is a [package manager](https://en.wikipedia.org/wiki/Package_manager) that is *usually* automatically installed with [Node](#Node). 
 
 This project requires you to have NPM version ***8.3.0*** or later (in order to leverage [overrides](https://docs.npmjs.com/cli/v8/configuring-npm/package-json#overrides)).
 
