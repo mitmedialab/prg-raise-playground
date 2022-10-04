@@ -33,6 +33,7 @@ This section contains concise explanations on how to accomplish something (often
 Assuming you have...
 - Git installed (if not, jump to: [Git](#Git))
 - Node <=16 is installed (if not, jump to: [Node](#Node))
+- NPM >= 8.3.0 installed (if not, jump to: [NPM](#NPM))
 - VS Code installed with Typescript Extension added (if not, jump to: [Vs Code](#VS-Code-(Recommended)))
 
 Run the following from the command line:
@@ -348,6 +349,14 @@ Please follow [these instructions](https://nodejs.org/en/download/) to install a
 
 > In October 2022, node 18 LTS will be released, making it slightly harder to get node 16 LTS. 
 Before then, we either need to upgrade webpack to be able to use node 18, or revise the above instructions to help users locate node 16.
+
+### NPM
+
+NPM (Node Package Manager) is a technology that is *usually* automatically installed with [Node](#Node). 
+
+This project requires you to have NPM version 8.3.0 or later (in order to leverage [overrides](https://docs.npmjs.com/cli/v8/configuring-npm/package-json#overrides)).
+
+Please follow [these instructions](https://docs.npmjs.com/try-the-latest-stable-version-of-npm) to check which version of NPM you have and upgrade it if it's older than 8.3.0.
 
 ### VS Code (Recommended)
 
