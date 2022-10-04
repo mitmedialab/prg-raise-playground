@@ -20,6 +20,7 @@ Looking for the old documentation (<= Sept. 2022)? Head [here](./BACKGROUND.md).
 - [Project Dependencies](#project-dependencies)
     - [Git](#git)
     - [Node](#node)
+    - [NPM](#NPM)
     - [VS Code](#vs-code-recommended) 
 - [Troubleshooting](#-Troubleshooting)
     - [webpack: command not found](#webpack-command-not-found)
