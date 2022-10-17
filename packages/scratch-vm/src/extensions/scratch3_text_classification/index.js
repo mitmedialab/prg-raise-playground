@@ -274,6 +274,10 @@ class Scratch3TextClassificationBlocks {
         this._toxicitymodel = null;
         this._loadToxicity();
 
+        // load the universal sentence encoder model
+        this._useModel = null;
+        this._loadUseModel();
+
         this.sentiment = new Sentiment();
 
     }
@@ -408,7 +412,6 @@ class Scratch3TextClassificationBlocks {
                     blockType: BlockType.BUTTON,
                     text: 'Load / Save Model'
                 },
-                
                 {
                     opcode: 'ifTextMatchesClass',
                     text: formatMessage({
@@ -460,7 +463,25 @@ class Scratch3TextClassificationBlocks {
                     },
                 },
                 '---',
-
+                {
+                    opcode: 'getSimilarity',
+                    text: formatMessage({
+                        id: 'textClassification.getSimilarity',
+                        default: 'similarity between [TEXT_ONE] and [TEXT_TWO]',
+                        description: 'get the similarity between two words/sentences'
+                    }),
+                    blockType: BlockType.REPORTER,
+                    arguments: {
+                        TEXT_ONE: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'text one'
+                        },
+                        TEXT_TWO: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'text two'
+                        }
+                    }
+                },
                 {
                     opcode: 'confidenceTrue',
                     text: formatMessage({
@@ -773,6 +794,29 @@ class Scratch3TextClassificationBlocks {
                 this.labelListEmpty = true;
                 this.labelList.push('');
             }
+        }
+    }
+
+    /**
+     * Stub function for determining the similarity between two words
+     * @param args - TEXT_ONE and TEXT_TWO are the items to compare one another
+     * @returns {float} value 0 (not at all similar) to 100 (very similar)
+     */
+    async getSimilarity (args) {        
+        if (this._useModel) {
+            const firstText = args.TEXT_ONE;
+            const secondText = args.TEXT_TWO;
+
+            // translates text from any language to english
+            let newFirstText = await this.getTranslate(firstText, 'en');
+            let newSecondText = await this.getTranslate(secondText, 'en');
+
+            let firstEmbedding = await this._useModel.embed(newFirstText);
+            let secondEmbedding = await this._useModel.embed(newSecondText);    
+                
+            const distance = tf.losses.cosineDistance(firstEmbedding, secondEmbedding, 1).dataSync();
+            this.similarity = 1 - distance[0];
+            return this.similarity.toFixed(2) * 100;
         }
     }
     
@@ -1442,6 +1486,20 @@ class Scratch3TextClassificationBlocks {
                 .catch((err) => {
                     console.log('Failed to load toxicity model', err);
                 });
+        }
+    }
+
+    _loadUseModel() {
+        if (this._useModel) {
+            console.log('Universal sentence encoder model already loaded');
+        } else {
+            console.log('Loading Universal Sentence Encoder model');        
+            use.load().then((model) => {
+                console.log('Loaded Universal sentence encoder model');
+                this._useModel = model;
+            }).catch((err) => {
+                console.log('Failed to load universal sentence encoder model');
+            });
         }
     }
 
