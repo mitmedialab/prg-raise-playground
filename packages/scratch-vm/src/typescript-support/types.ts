@@ -156,9 +156,11 @@ export type Block<T extends BlockOperation> = {
    * * `BlockType.Event` - Starts a stack in response to an event (full spec TBD)
    */
   type: ReturnType<T> extends void
-  ? BlockType.Command | BlockType.Conditional | BlockType.Loop
+  ? BlockType.Command | BlockType.Button | BlockType.Loop
   : ReturnType<T> extends boolean
   ? (BlockType.Reporter | BlockType.Boolean | BlockType.Hat)
+  : ReturnType<T> extends number
+  ? (BlockType.Reporter | BlockType.Conditional)
   : ReturnType<T> extends Promise<any>
   ? never
   : BlockType.Reporter;
