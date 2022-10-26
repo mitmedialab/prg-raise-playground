@@ -158,10 +158,10 @@ export type Block<T extends BlockOperation> = {
    *        * each time a child branch finishes, the loop block is called again.
    * * `BlockType.Event` - Starts a stack in response to an event (full spec TBD)
    */
-  type: ReturnType<T> extends void
-  ? BlockType.Command | BlockType.Button | BlockType.Loop
-  : T extends ButtonBlock
+  type: ReturnType<T> extends ReturnType<ButtonBlock>
   ? BlockType.Button
+  : ReturnType<T> extends void
+  ? BlockType.Command | BlockType.Button | BlockType.Loop
   : ReturnType<T> extends boolean
   ? (BlockType.Reporter | BlockType.Boolean | BlockType.Hat)
   : ReturnType<T> extends number
@@ -199,7 +199,7 @@ export type Block<T extends BlockOperation> = {
    * which can help you accomplish more advanced block behavior. If you don't need to use it, feel free to omit it.
    * @see {BlockUtility} type for more information on the final argument passed to this function.
    */
-  operation: (...params: T extends ButtonBlock ? [] : ParamsAndUtility<T>) => T extends ButtonBlock ? void : ReturnType<T>;
+  operation: (...params: T extends ButtonBlock ? Parameters<T> : ParamsAndUtility<T>) => T extends ButtonBlock ? void : ReturnType<T>;
   /**
    * @summary The display text of your block.
    * @description This is where you describe what your block should say. 
