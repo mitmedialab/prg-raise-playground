@@ -3,6 +3,9 @@ import BlockUtility from '../engine/block-utility';
 import { ArgumentType, BlockType, Branch, Language } from './enums';
 import type { Extension } from './Extension';
 
+type InternalButtonKey = "__button__";
+export type ButtonBlock = () => InternalButtonKey;
+
 /**
  * @summary An object passed to extensions on initialization. 
  * @description The Environment object should contain anything necessary for an extension to interact with the Scratch/Blockly environment
@@ -157,6 +160,8 @@ export type Block<T extends BlockOperation> = {
    */
   type: ReturnType<T> extends void
   ? BlockType.Command | BlockType.Button | BlockType.Loop
+  : T extends ButtonBlock
+  ? BlockType.Button
   : ReturnType<T> extends boolean
   ? (BlockType.Reporter | BlockType.Boolean | BlockType.Hat)
   : ReturnType<T> extends number
@@ -190,11 +195,11 @@ export type Block<T extends BlockOperation> = {
    *  alert(`${msg} ${util.stackFrame.isLoop}`);
    * }
    * 
-   * @param {BlockUtility} util The final argument passed to this function will always be a BlockUtility object, 
+   * @param {BlockUtility} util Unless this block is a `Button`, the final argument passed to this function will always be a BlockUtility object, 
    * which can help you accomplish more advanced block behavior. If you don't need to use it, feel free to omit it.
    * @see {BlockUtility} type for more information on the final argument passed to this function.
    */
-  operation: (...params: ParamsAndUtility<T>) => ReturnType<T>;
+  operation: (...params: T extends ButtonBlock ? [] : ParamsAndUtility<T>) => T extends ButtonBlock ? void : ReturnType<T>;
   /**
    * @summary The display text of your block.
    * @description This is where you describe what your block should say. 

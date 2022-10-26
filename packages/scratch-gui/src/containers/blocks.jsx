@@ -123,7 +123,12 @@ class Blocks extends React.Component {
         toolboxWorkspace.registerButtonCallback('EDIT_TEXT_MODEL', textModelEditButtonCallback);
         toolboxWorkspace.registerButtonCallback('EDIT_TEXT_CLASSIFIER', classifierModelEditButtonCallback);
         toolboxWorkspace.registerButtonCallback('CONNECT_MICROBIT_ROBOT', connectMicrobitRobotCallback);
-
+        
+        this.props.vm.runtime.on('REGISTER_BUTTON_CALLBACK_FROM_EXTENSION', (event) => {
+            toolboxWorkspace.registerButtonCallback(event, () => {
+                this.props.vm.runtime.emit(event);
+            });
+        });
 
         // Store the xml of the toolbox that is actually rendered.
         // This is used in componentDidUpdate instead of prevProps, because
