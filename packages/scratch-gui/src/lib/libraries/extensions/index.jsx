@@ -1,5 +1,9 @@
+/* CODE GEN GUARD START: Please do not edit code within guards */
+import generatedDetails from './generated/details.generated';
+/* CODE GEN GUARD END: Please do not edit code within guards */
+
 import React from 'react';
-import {FormattedMessage} from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 
 import textClassificationBlocksIconURL from './text_classification/text-classification-blocks.png';
 import textClassificationBlocksInsetIconURL from './text_classification/text-classification-blocks-small.svg';
@@ -72,6 +76,9 @@ import gdxforConnectionIconURL from './gdxfor/gdxfor-illustration.svg';
 import gdxforConnectionSmallIconURL from './gdxfor/gdxfor-small.svg';
 
 export default [
+    /* CODE GEN GUARD START: Please do not edit code within guards */
+    ...generatedDetails,
+    /* CODE GEN GUARD END: Please do not edit code within guards */
     {
         name: (
             <FormattedMessage
@@ -503,5 +510,5 @@ export default [
             />
         ),
         helpLink: 'https://scratch.mit.edu/vernier'
-    }//*/
+    },
 ];
