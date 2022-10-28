@@ -12,7 +12,7 @@ var autoprefixer = require('autoprefixer');
 var postcssVars = require('postcss-simple-vars');
 var postcssImport = require('postcss-import');
 
-const sveltePreprocess = require("svelte-preprocess");
+const { createSveltePreprocessor } = require("./svelte.config.js");
 
 const STATIC_PATH = process.env.STATIC_PATH || '/static';
 
@@ -31,7 +31,7 @@ const base = {
         disableHostCheck: true,
         watchOptions: {
             ignored: ['**/*.ts']
-        }
+        },
     },
     output: {
         library: 'GUI',
@@ -76,7 +76,7 @@ const base = {
             use: {
                 loader: 'svelte-loader',
                 options: {
-                    preprocess: sveltePreprocess({}),
+                    preprocess: createSveltePreprocessor(),
                 }
             },
         },

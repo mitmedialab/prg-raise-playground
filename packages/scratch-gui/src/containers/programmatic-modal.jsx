@@ -12,7 +12,7 @@ class ProgrammaticModal extends Component {
     constructor (props) {
         super(props);
         this.divRef = null;
-        bindAll(this, 'setRef', 'componentWillUnmount', 'getCurrentExtension');
+        bindAll(this, 'setRef', 'componentWillUnmount');
     }
 
     componentWillUnmount() {
@@ -21,10 +21,11 @@ class ProgrammaticModal extends Component {
 
     setRef(node) {
         if (this.divRef !== null) return;
+        const {id, name, component} = this.props;
         this.divRef = node;
         this.component = new SvelteComponent({
             target: this.divRef,
-            props: this.props
+            props: {id, name, component}
         });
     }
     

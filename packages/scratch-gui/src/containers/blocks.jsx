@@ -703,8 +703,8 @@ const mapDispatchToProps = dispatch => ({
         dispatch(activateTab(SOUNDS_TAB_INDEX));
         dispatch(openSoundRecorder());
     },
-    onOpenProgrammaticModal: () => {
-        dispatch(openProgrammaticModal())
+    onOpenProgrammaticModal: (details) => {
+        dispatch(openProgrammaticModal(details))
     },
     onRequestCloseExtensionLibrary: () => {
         dispatch(closeExtensionLibrary());
