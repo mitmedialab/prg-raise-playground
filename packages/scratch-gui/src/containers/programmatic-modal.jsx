@@ -2,10 +2,10 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import VM from 'scratch-vm';
 import {connect} from 'react-redux';
-import {closeProgrammaticModal, closeTextModelModal} from '../reducers/modals';
-import Box from '../components/box/box';
-import SvelteComponent from "../svelte/Modal";
-import Modal from './modal';
+import {closeProgrammaticModal} from '../reducers/modals';
+import Box from '../components/box/box.jsx';
+import SvelteComponent from "../svelte/Modal.svelte";
+import Modal from './modal.jsx';
 
 class ProgrammaticModal extends React.Component {
     divRef;
@@ -38,7 +38,7 @@ class ProgrammaticModal extends React.Component {
     }
 }
 
-TextModelModal.propTypes = {
+ProgrammaticModal.propTypes = {
     vm: PropTypes.instanceOf(VM).isRequired
 };
 

@@ -22,7 +22,7 @@ import defineDynamicBlock from '../lib/define-dynamic-block';
 import {connect} from 'react-redux';
 import {updateToolbox} from '../reducers/toolbox';
 import {activateColorPicker} from '../reducers/color-picker';
-import {closeExtensionLibrary, openSoundRecorder, openConnectionModal, openTextModelModal,openClassifierModelModal} from '../reducers/modals';
+import {closeExtensionLibrary, openSoundRecorder, openConnectionModal, openTextModelModal,openClassifierModelModal, openProgrammaticModal} from '../reducers/modals';
 import {activateCustomProcedures, deactivateCustomProcedures} from '../reducers/custom-procedures';
 import {setConnectionModalExtensionId} from '../reducers/connection-modal';
 
@@ -128,6 +128,10 @@ class Blocks extends React.Component {
             toolboxWorkspace.registerButtonCallback(event, () => {
                 this.props.vm.runtime.emit(event);
             });
+        });
+
+        this.props.vm.runtime.on('OPEN_UI_FROM_EXTENSION', () => {
+            this.props.onOpenProgrammaticModal();
         });
 
         // Store the xml of the toolbox that is actually rendered.
@@ -698,6 +702,9 @@ const mapDispatchToProps = dispatch => ({
     onOpenSoundRecorder: () => {
         dispatch(activateTab(SOUNDS_TAB_INDEX));
         dispatch(openSoundRecorder());
+    },
+    onOpenProgrammaticModal: () => {
+        dispatch(openProgrammaticModal())
     },
     onRequestCloseExtensionLibrary: () => {
         dispatch(closeExtensionLibrary());

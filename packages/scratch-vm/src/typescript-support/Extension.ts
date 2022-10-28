@@ -62,7 +62,7 @@ export abstract class Extension
   private readonly internal_menus: ExtensionMenuMetadata[] = [];
 
   openUI(svelteComponent: string) {
-
+    this.runtime.emit("OPEN_UI_FROM_EXTENSION");
   }
 
   constructor(runtime: Runtime, codeGenArgs: CodeGenArgs) {
