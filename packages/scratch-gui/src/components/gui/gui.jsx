@@ -118,7 +118,7 @@ const GUIComponent = props => {
         telemetryModalVisible,
         tipsLibraryVisible,
         textModelModalVisible,
-        programmaticModalVisible,
+        programmaticModalDetails,
         classifierModelModalVisible,
         vm,
         ...componentProps
@@ -187,8 +187,8 @@ const GUIComponent = props => {
                         vm={vm}
                     />
                 ) : null}
-                {programmaticModalVisible ? (
-                    <ProgrammaticModal/>
+                {programmaticModalDetails ? (
+                    <ProgrammaticModal vm={vm} {...programmaticModalDetails}/>
                 ) : null}
                 {classifierModelModalVisible ? (
                     <ClassifierModelModal

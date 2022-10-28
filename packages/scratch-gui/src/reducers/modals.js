@@ -1,5 +1,6 @@
 const OPEN_MODAL = 'scratch-gui/modals/OPEN_MODAL';
 const CLOSE_MODAL = 'scratch-gui/modals/CLOSE_MODAL';
+const OPEN_MODAL_WITH_ID = 'scratch-gui/modals/OPEN_MODAL_WITH_ID';
 
 const MODAL_BACKDROP_LIBRARY = 'backdropLibrary';
 const MODAL_CAMERA_CAPTURE = 'cameraCapture';
@@ -30,19 +31,24 @@ const initialState = {
     [MODAL_TIPS_LIBRARY]: false,
     [MODAL_TEXT_MODEL]: false,
     [MODAL_CLASSIFIER_MODEL]: false,
-    [MODAL_PROGRAMMATIC]: false
+    [MODAL_PROGRAMMATIC]: undefined
 };
 
 const reducer = function (state, action) {
     if (typeof state === 'undefined') state = initialState;
-    switch (action.type) {
+    const {type, modal, id} = action;
+    switch (type) {
     case OPEN_MODAL:
         return Object.assign({}, state, {
-            [action.modal]: true
+            [modal]: true
         });
     case CLOSE_MODAL:
         return Object.assign({}, state, {
-            [action.modal]: false
+            [modal]: false
+        });
+    case OPEN_MODAL_WITH_ID:
+        return Object.assign({}, state, {
+            [modal]: id
         });
     default:
         return state;
@@ -96,11 +102,15 @@ const openTipsLibrary = function () {
 const openTextModelModal = function () {
     return openModal(MODAL_TEXT_MODEL);
 };
-const openClassifierModelModal = function () {
+const openClassifierModelModal = function (id) {
     return openModal(MODAL_CLASSIFIER_MODEL);
 }
-const openProgrammaticModal = function() {
-    return openModal(MODAL_PROGRAMMATIC);
+const openProgrammaticModal = function(id) {
+    return {
+        type: OPEN_MODAL_WITH_ID,
+        modal: MODAL_PROGRAMMATIC,
+        id
+    };;
 }
 const closeBackdropLibrary = function () {
     return closeModal(MODAL_BACKDROP_LIBRARY);

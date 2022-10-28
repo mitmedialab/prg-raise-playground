@@ -130,8 +130,8 @@ class Blocks extends React.Component {
             });
         });
 
-        this.props.vm.runtime.on('OPEN_UI_FROM_EXTENSION', () => {
-            this.props.onOpenProgrammaticModal();
+        this.props.vm.runtime.on('OPEN_UI_FROM_EXTENSION', (details) => {
+            this.props.onOpenProgrammaticModal(details);
         });
 
         // Store the xml of the toolbox that is actually rendered.

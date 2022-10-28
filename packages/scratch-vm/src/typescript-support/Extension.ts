@@ -61,8 +61,9 @@ export abstract class Extension
   private readonly internal_blocks: ExtensionBlockMetadata[] = [];
   private readonly internal_menus: ExtensionMenuMetadata[] = [];
 
-  openUI(svelteComponent: string) {
-    this.runtime.emit("OPEN_UI_FROM_EXTENSION");
+  openUI(component: string) {
+    const { id, name } = this;
+    this.runtime.emit("OPEN_UI_FROM_EXTENSION", { id, name, component });
   }
 
   constructor(runtime: Runtime, codeGenArgs: CodeGenArgs) {
@@ -274,7 +275,9 @@ export abstract class Extension
     const opcode = Extension.GetInternalKey(key);
     const bound = operation.bind(this);
 
-    if (type === BlockType.Button) {
+    const isButton = type === BlockType.Button;
+
+    if (isButton) {
       this.runtime.emit('REGISTER_BUTTON_CALLBACK_FROM_EXTENSION', opcode);
       this.runtime.on(opcode, bound);
     }
@@ -297,6 +300,7 @@ export abstract class Extension
       text: displayText,
       blockType: type,
       arguments: argsInfo,
+      func: isButton ? opcode : undefined,
     }
   }
 

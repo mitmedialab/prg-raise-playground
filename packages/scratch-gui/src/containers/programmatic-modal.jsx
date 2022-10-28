@@ -1,37 +1,39 @@
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { Component } from 'react';
 import VM from 'scratch-vm';
 import {connect} from 'react-redux';
 import {closeProgrammaticModal} from '../reducers/modals';
 import Box from '../components/box/box.jsx';
 import SvelteComponent from "../svelte/Modal.svelte";
 import Modal from './modal.jsx';
+import bindAll from 'lodash.bindall';
 
-class ProgrammaticModal extends React.Component {
-    divRef;
-    component;
-  
+class ProgrammaticModal extends Component {  
     constructor (props) {
         super(props);
-    }
-
-    componentDidMount() {
-        console.log(this.divRef);
-        console.log(this.props.vm);
-        this.component = new SvelteComponent({
-            target: this.divRef
-        });
+        this.divRef = null;
+        bindAll(this, 'setRef', 'componentWillUnmount', 'getCurrentExtension');
     }
 
     componentWillUnmount() {
-        this.component.$destroy();
+        this.component?.$destroy();
+    }
+
+    setRef(node) {
+        if (this.divRef !== null) return;
+        this.divRef = node;
+        this.component = new SvelteComponent({
+            target: this.divRef,
+            props: this.props
+        });
     }
     
     render () {
+        const {name, onCancel, id, component} = this.props;
         return (
-            <Modal>
+            <Modal id={`${id}-${component}`} onRequestClose={onCancel} contentLabel={name}>
                 <Box>
-                    <div ref={this.divRef}></div>
+                    <div ref={this.setRef}></div>
                 </Box>
             </Modal>
         );
@@ -39,7 +41,7 @@ class ProgrammaticModal extends React.Component {
 }
 
 ProgrammaticModal.propTypes = {
-    vm: PropTypes.instanceOf(VM).isRequired
+    vm: PropTypes.instanceOf(VM).isRequired,
 };
 
 const mapStateToProps = state => ({

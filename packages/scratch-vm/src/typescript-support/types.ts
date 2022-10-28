@@ -3,7 +3,7 @@ import BlockUtility from '../engine/block-utility';
 import { ArgumentType, BlockType, Branch, Language } from './enums';
 import type { Extension } from './Extension';
 
-type InternalButtonKey = "__button__";
+export type InternalButtonKey = "__button__";
 export type ButtonBlock = () => InternalButtonKey;
 
 /**
@@ -119,7 +119,6 @@ const enum ArgField {
   Arg = 'arg',
   Args = 'args'
 }
-type ArgsFieldName<T> = T extends [any] ? ArgField.Arg : ArgField.Args;
 
 export type Block<T extends BlockOperation> = {
   /**
@@ -435,12 +434,12 @@ type ExtractTextFromBlock<TOp extends BlockOperation, TBlock extends Block<TOp>>
   ? string | { blockText: TBlock["text"] }
   : {
     blockText: TBlock["text"],
-    argsText: ArgsText<TBlock["arg"]>,
+    argsText?: ArgsText<TBlock["arg"]>,
   }
   : TBlock["text"] extends (...args: [any]) => any
   ? {
     blockText: TBlock["text"],
-    argsText: ToArgumentsText<TBlock["args"]>,
+    argsText?: ToArgumentsText<TBlock["args"]>,
   }
   : never // shouldn't happen
 
