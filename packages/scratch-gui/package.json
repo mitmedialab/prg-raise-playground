@@ -150,6 +150,8 @@
     "canvas": "^2.10.1",
     "face-api.js": "^0.22.2",
     "load-script": "^2.0.0",
-    "microbit-web-bluetooth": "^0.6.0"
+    "microbit-web-bluetooth": "^0.6.0",
+    "svelte": "^3.52.0",
+    "svelte-loader": "^3.1.3"
   }
 }

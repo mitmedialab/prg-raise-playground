@@ -61,6 +61,10 @@ export abstract class Extension
   private readonly internal_blocks: ExtensionBlockMetadata[] = [];
   private readonly internal_menus: ExtensionMenuMetadata[] = [];
 
+  openUI(svelteComponent: string) {
+
+  }
+
   constructor(runtime: Runtime, codeGenArgs: CodeGenArgs) {
     const { name, id, blockIconURI } = codeGenArgs;
     this.name = name;
@@ -195,7 +199,7 @@ export abstract class Extension
    */
   abstract defineTranslations(): Translations<Extension<MenuDetails, Blocks>>;
 
-  getInfo(): ExtensionMetadata {
+  private getInfo(): ExtensionMetadata {
     const { id, internal_blocks: blocks, internal_menus: menus, name, blockIconURI } = this;
     const info = { id, blocks, name, blockIconURI };
     if (menus) info['menus'] = Object.entries(this.internal_menus).reduce((obj, [key, value]) => {

@@ -70,6 +70,10 @@ const base = {
             }
         },
         {
+            test: /\.svelte$/,
+            use: require.resolve('svelte-loader')
+        },
+        {
             test: /\.css$/,
             use: [{
                 loader: 'style-loader'

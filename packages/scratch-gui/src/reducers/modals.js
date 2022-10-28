@@ -14,6 +14,7 @@ const MODAL_CONNECTION = 'connectionModal';
 const MODAL_TIPS_LIBRARY = 'tipsLibrary';
 const MODAL_TEXT_MODEL = 'textModelModal';
 const MODAL_CLASSIFIER_MODEL = 'classifierModelModal';
+const MODAL_PROGRAMMATIC = 'programmaticModal';
 
 const initialState = {
     [MODAL_BACKDROP_LIBRARY]: false,
@@ -28,7 +29,8 @@ const initialState = {
     [MODAL_CONNECTION]: false,
     [MODAL_TIPS_LIBRARY]: false,
     [MODAL_TEXT_MODEL]: false,
-    [MODAL_CLASSIFIER_MODEL]: false
+    [MODAL_CLASSIFIER_MODEL]: false,
+    [MODAL_PROGRAMMATIC]: false
 };
 
 const reducer = function (state, action) {
@@ -97,6 +99,9 @@ const openTextModelModal = function () {
 const openClassifierModelModal = function () {
     return openModal(MODAL_CLASSIFIER_MODEL);
 }
+const openProgrammaticModal = function() {
+    return openModal(MODAL_PROGRAMMATIC);
+}
 const closeBackdropLibrary = function () {
     return closeModal(MODAL_BACKDROP_LIBRARY);
 };
@@ -136,6 +141,9 @@ const closeTextModelModal = function () {
 const closeClassifierModelModal = function () {
     return closeModal(MODAL_CLASSIFIER_MODEL);
 }
+const closeProgrammaticModal = function () {
+    return closeModal(MODAL_PROGRAMMATIC);
+}
 export {
     reducer as default,
     initialState as modalsInitialState,
@@ -152,6 +160,7 @@ export {
     openConnectionModal,
     openTextModelModal,
     openClassifierModelModal,
+    openProgrammaticModal,
     closeBackdropLibrary,
     closeCameraCapture,
     closeCostumeLibrary,
@@ -164,5 +173,6 @@ export {
     closeTipsLibrary,
     closeConnectionModal,
     closeTextModelModal,
-    closeClassifierModelModal
+    closeClassifierModelModal,
+    closeProgrammaticModal
 };
