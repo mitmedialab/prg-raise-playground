@@ -2,7 +2,7 @@ const sveltePreprocess = require("svelte-preprocess");
 
 const createSveltePreprocessor = () => {
   return sveltePreprocess({
-    tsconfigFile: "tsconfig.json",
+    tsconfigFile: "tsconfig.svelte.json",
   });
 };
 

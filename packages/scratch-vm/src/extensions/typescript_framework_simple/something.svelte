@@ -4,5 +4,5 @@
 </script>
 
 <div>
-  {extension.name}
+  Yayyyyy
 </div>

@@ -2,6 +2,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const defaultsDeep = require('lodash.defaultsdeep');
 const path = require('path');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const { createSveltePreprocessor } = require("./svelte.config.js");
 
 const base = {
     node: {
@@ -41,6 +42,15 @@ const base = {
             query: {
                 presets: [['@babel/preset-env', {targets: {browsers: ['last 3 versions', 'Safari >= 8', 'iOS >= 8']}}]]
             }
+        },
+        {
+            test: /\.svelte$/,
+            use: {
+                loader: 'svelte-loader',
+                options: {
+                    preprocess: createSveltePreprocessor(),
+                }
+            },
         },
         {
             test: /\.mp3$/,
