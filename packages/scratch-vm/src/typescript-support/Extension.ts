@@ -225,6 +225,7 @@ export abstract class Extension
   private convertToInfo(key: string, block: Block<BlockOperation>, menusToAdd: MenuItem<any>[]): ExtensionBlockMetadata {
     const { type, text, operation } = block;
     const args: Argument<any>[] = block.arg ? [block.arg] : block.args;
+    const func: string = block.func ? block.func : null;
 
     const defaultText: string = Extension.IsFunction(text)
       ? (text as unknown as (...params: any[]) => string)(...args.map((_, index) => `[${index}]`))
@@ -273,6 +274,14 @@ export abstract class Extension
     if (type === BlockType.Button) {
       this.runtime.emit('REGISTER_BUTTON_CALLBACK_FROM_EXTENSION', opcode);
       this.runtime.on(opcode, bound);
+
+      return {
+        func,
+        opcode,
+        text: displayText,
+        blockType: type,
+        arguments: {},
+      }
     }
     else {
       this[opcode] = (argsFromScratch, blockUtility) => {
