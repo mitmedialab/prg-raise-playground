@@ -43,7 +43,7 @@ const base = {
         ReactDOM: 'react-dom'
     },
     resolve: {
-        symlinks: false
+        symlinks: false,
     },
     module: {
         rules: [{
