@@ -1,11 +1,11 @@
 <script lang="ts">
   import Extension from ".";
-  import type { InvokeFromUI } from "../../typescript-support/ui";
+  import { invokeFromUI, type InvokeFromUI } from "../../typescript-support/ui";
   export let extension: Extension;
 
   const invoke: InvokeFromUI<Extension> = (funcName, ...args) => {
     extension = extension;
-    return (extension[funcName] as Function)(...args as []);
+    return invokeFromUI(extension, funcName, args);
   }
 
 </script>

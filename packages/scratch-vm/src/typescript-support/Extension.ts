@@ -3,6 +3,7 @@ import type { ExtensionMenuDisplayDetails, ExtensionBlocks, Block, ExtensionArgu
 import Cast from '../util/cast';
 import formatMessage = require('format-message');
 import Runtime from "../engine/runtime";
+import { openUI, registerButtonCallback } from './ui';
 
 export type CodeGenArgs = {
   name: never,
@@ -61,8 +62,8 @@ export abstract class Extension
   private readonly internal_menus: ExtensionMenuMetadata[] = [];
 
   openUI(component: string) {
-    const { id, name } = this;
-    this.runtime.emit("OPEN_UI_FROM_EXTENSION", { id, name, component });
+    const { id, name, runtime } = this;
+    openUI(runtime, { id, name, component });
   }
 
   constructor(runtime: Runtime, codeGenArgs: CodeGenArgs) {
@@ -279,8 +280,7 @@ export abstract class Extension
     const isButton = type === BlockType.Button;
 
     if (isButton) {
-      this.runtime.emit('REGISTER_BUTTON_CALLBACK_FROM_EXTENSION', opcode);
-      this.runtime.on(opcode, bound);
+      registerButtonCallback(this.runtime, opcode, bound)
     }
     else {
       this[opcode] = (argsFromScratch, blockUtility) => {
