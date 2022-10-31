@@ -81,7 +81,7 @@ const base = {
             },
             include: [
                 path.resolve(__dirname, 'src'),
-                /node_modules[\\/]scratch-vm[\\/]src/,
+                path.resolve(__dirname, 'node_modules', 'scratch-vm', 'src'),
                 path.resolve(__dirname, '..', 'scratch-vm', 'src'),
             ]
         },
