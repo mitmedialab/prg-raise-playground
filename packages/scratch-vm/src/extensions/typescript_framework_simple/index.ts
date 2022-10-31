@@ -19,7 +19,18 @@ class SimpleTypescript extends Extension<Details, {
   log: (msg: string) => void;
   dummy: ButtonBlock;
 }> {
+
+  count: number = 0;
+
   init(env: Environment) {
+  }
+
+  increment() {
+    this.count++;
+  }
+
+  incrementBy(amount: number) {
+    this.count += amount;
   }
 
   defineTranslations = defineTranslations;

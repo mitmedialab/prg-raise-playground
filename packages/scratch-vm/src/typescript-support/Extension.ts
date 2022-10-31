@@ -10,7 +10,6 @@ export type CodeGenArgs = {
   blockIconURI: never,
 }
 
-
 /**
  * @summary Base class for all extensions implemented via the Typescript Extension Framework.
  * @example 
@@ -113,6 +112,8 @@ export abstract class Extension
         continue;
       }
     }
+
+    Extension.ExtensionsByID.set(id, this);
   }
 
   /**
@@ -330,6 +331,12 @@ export abstract class Extension
     }
   */
 
+  static GetExtensionByID = <T extends Extension<any, any>>(id: string): T => {
+    if (Extension.ExtensionsByID.has(id)) return Extension.ExtensionsByID.get(id) as T;
+    console.error(`Could not find extension with id '${id}'`);
+    return undefined;
+  }
+
   static TryCastToArgumentType = <T extends ArgumentType>(
     argumentType: T,
     value: any,
@@ -400,4 +407,6 @@ export abstract class Extension
     || query instanceof Function;
 
   private static IsString = (query) => typeof query === 'string' || query instanceof String;
+
+  private static ExtensionsByID = new Map<string, Extension<any, any>>();
 };

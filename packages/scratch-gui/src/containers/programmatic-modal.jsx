@@ -21,11 +21,11 @@ class ProgrammaticModal extends Component {
 
     setRef(node) {
         if (this.divRef !== null) return;
-        const {id, name, component} = this.props;
+        const {id, name, component, vm} = this.props;
         this.divRef = node;
         this.component = new SvelteComponent({
             target: this.divRef,
-            props: {id, name, component}
+            props: {id, name, component, vm}
         });
     }
     
