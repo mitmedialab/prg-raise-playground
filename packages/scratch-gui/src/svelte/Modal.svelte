@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { Extension } from "../../../scratch-vm/src/typescript-support/Extension";
-  import Something from "../../../scratch-vm/src/extensions/typescript_framework_simple/something.svelte";
+  import type { Extension } from "scratch-vm/src/typescript-support/Extension";
+  import Something from "scratch-vm/src/extensions/typescript_framework_simple/something.svelte";
 
   export let id: string;
   export let component: string;

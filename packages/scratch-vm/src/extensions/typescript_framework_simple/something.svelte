@@ -1,6 +1,6 @@
 <script lang="ts">
-  //import SimpleTypescript from ".";
-  //export let extension: SimpleTypescript;
+  import SimpleTypescript from ".";
+  export let extension: SimpleTypescript;
 </script>
 
 <div>

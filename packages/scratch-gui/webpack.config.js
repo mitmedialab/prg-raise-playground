@@ -79,6 +79,11 @@ const base = {
                     preprocess: createSveltePreprocessor(),
                 }
             },
+            include: [
+                path.resolve(__dirname, 'src'),
+                /node_modules[\\/]scratch-vm[\\/]src/,
+                path.resolve(__dirname, '..', 'scratch-vm', 'src'),
+            ]
         },
         {
             test: /\.css$/,

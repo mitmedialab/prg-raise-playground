@@ -1,4 +1,4 @@
 { 
   "extends": "@tsconfig/svelte/tsconfig.json",
-  "include": ["src", "node_modules/scratch-vm/src"]
+  "include": ["./src/**/*", "./node_modules/scratch-vm/src/**/*", "../scratch-vm/src/**/*"]
 }
