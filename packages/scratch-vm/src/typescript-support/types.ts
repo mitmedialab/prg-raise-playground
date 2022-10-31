@@ -6,6 +6,7 @@ import type { Extension } from './Extension';
 export type InternalButtonKey = "__button__";
 export type ButtonBlock = () => InternalButtonKey;
 
+
 /**
  * @summary An object passed to extensions on initialization. 
  * @description The Environment object should contain anything necessary for an extension to interact with the Scratch/Blockly environment
