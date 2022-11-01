@@ -12,7 +12,6 @@
     color: black;
   }
 
-
 </style>
 
 <button on:click>

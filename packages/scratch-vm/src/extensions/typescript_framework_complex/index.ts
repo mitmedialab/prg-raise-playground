@@ -1,6 +1,6 @@
 import { ArgumentType, BlockType } from "../../typescript-support/enums";
 import { Extension } from "../../typescript-support/Extension";
-import { Block, BlockDefinitions, RGBObject, MenuItem, AllText } from "../../typescript-support/types";
+import { Block, BlockDefinitions, RGBObject, MenuItem, AllText, ButtonBlock } from "../../typescript-support/types";
 import addDefinition from "./addDefinition";
 
 type DisplayDetails = {
@@ -55,6 +55,7 @@ type Blocks = {
   multiplyUsingSelf: (left: number, right: number) => number;
   multiplyUsingThis: (left: number, right: number) => number;
   add: (left: number, right: number) => number;
+  showAnimalCollectionUI: ButtonBlock;
 }
 
 class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
@@ -62,6 +63,11 @@ class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
   animals: MenuItem<Animal>[];
   collection: Animal[] = [Animal.Gorilla];
   getAnimalCollection: () => MenuItem<Animal>[];
+
+  getAnimalCollectionEmojis() { return this.collection.map(animal => emojiByAnimal[animal]) }
+
+  addAnimalToCollection(animal: Animal) { return this.collection.push(animal) }
+
   state: number = 0;
 
   defineTranslations() { return undefined };
@@ -213,7 +219,7 @@ class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
         type: BlockType.Command,
         arg: { type: ArgumentType.Number, options: self.animals },
         text: (animal) => `Add ${animal} to collection`,
-        operation: (animal) => this.collection.push(animal),
+        operation: (animal) => this.addAnimalToCollection(animal),
       }),
 
 
@@ -230,6 +236,14 @@ class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
 
       // Example of an external 'definition'
       add: addDefinition,
+
+      showAnimalCollectionUI: () => ({
+        type: BlockType.Button,
+        text: "Show Animal Collection",
+        operation: () => {
+          this.openUI("animals", "Here's your animal collection");
+        }
+      })
     }
   }
 
