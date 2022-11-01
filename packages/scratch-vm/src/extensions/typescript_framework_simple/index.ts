@@ -56,7 +56,7 @@ class SimpleTypescript extends Extension<Details, {
       dummy: () => ({
         type: BlockType.Button,
         text: `Dummy Block`,
-        operation: () => this.openUI("something")
+        operation: () => this.openUI("something", "Howdy")
       })
     }
   }

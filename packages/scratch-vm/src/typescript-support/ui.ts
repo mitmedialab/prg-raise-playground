@@ -13,7 +13,7 @@ export const invokeFromUI = <Extension, T extends keyof Methods<Extension>>(exte
   return (extension[funcName] as Function)(...args as []);
 }
 
-export const openUI = (runtime: Runtime, details: { id: string, name: string, component: string }) => runtime.emit(openUIEvent, details);
+export const openUI = (runtime: Runtime, details: { id: string, name: string, component: string, label?: string }) => runtime.emit(openUIEvent, details);
 
 export const registerButtonCallback = (runtime: Runtime, buttonID: string, callback: (...args: any[]) => void) => {
   runtime.emit(registerButtonCallbackEvent, buttonID);

@@ -61,9 +61,9 @@ export abstract class Extension
   private readonly internal_blocks: ExtensionBlockMetadata[] = [];
   private readonly internal_menus: ExtensionMenuMetadata[] = [];
 
-  openUI(component: string) {
+  openUI(component: string, label?: string) {
     const { id, name, runtime } = this;
-    openUI(runtime, { id, name, component });
+    openUI(runtime, { id, name, component, label });
   }
 
   constructor(runtime: Runtime, codeGenArgs: CodeGenArgs) {

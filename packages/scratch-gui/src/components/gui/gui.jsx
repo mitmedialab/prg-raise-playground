@@ -41,7 +41,7 @@ import addExtensionIcon from './icon--extensions.svg';
 import codeIcon from './icon--code.svg';
 import costumesIcon from './icon--costumes.svg';
 import soundsIcon from './icon--sounds.svg';
-import ProgrammaticModal from '../../containers/programmatic-modal.jsx';
+import ProgrammaticModal from '../programmatic-modal/programmatic-modal.jsx';
 
 const messages = defineMessages({
     addExtension: {
