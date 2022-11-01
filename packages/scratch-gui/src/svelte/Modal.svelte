@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { onMount, onDestroy } from 'svelte';
+
   import { Extension } from "scratch-vm/src/typescript-support/Extension";
 
   /** CODE GEN GUARDS: Begin Component Import Statements*/
@@ -15,13 +17,31 @@
   export let vm: any;
   export let close: () => void;
 
+  let ready = false;
+
+  let el: HTMLDivElement;
+
+  onMount(() => {
+    new Typescriptprg95grpframeworkprg95grpcomplex_animals(
+      {target: el, 
+        props: {
+          close, 
+          extension: Extension.GetExtensionByID("typescriptprg95grpframeworkprg95grpcomplex")
+        }
+      });
+  })
+
 </script>
 
+<div bind:this={el} />
+
+{#if ready}
 <!-- CODE GEN GUARDS: Begin Component Markup -->
 {#if id === "typescriptprg95grpframeworkprg95grpcomplex" && component === "animals"}
-<Typescriptprg95grpframeworkprg95grpcomplex_animals extension={Extension.GetExtensionByID("typescriptprg95grpframeworkprg95grpcomplex")} {close}/>
+<svelte:component this={Typescriptprg95grpframeworkprg95grpcomplex_animals} extension={Extension.GetExtensionByID("typescriptprg95grpframeworkprg95grpcomplex")} {close} />
 {/if}
 {#if id === "typescriptprg95grpframeworkprg95grpsimple" && component === "dummy"}
-<Typescriptprg95grpframeworkprg95grpsimple_dummy extension={Extension.GetExtensionByID("typescriptprg95grpframeworkprg95grpsimple")} {close}/>
+<svelte:component this={Typescriptprg95grpframeworkprg95grpsimple_dummy} extension={Extension.GetExtensionByID("typescriptprg95grpframeworkprg95grpsimple")} {close} />
 {/if}
 <!-- CODE GEN GUARDS: End Component Markup -->
+{/if}

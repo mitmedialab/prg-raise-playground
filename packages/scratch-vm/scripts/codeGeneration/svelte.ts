@@ -17,7 +17,7 @@ const typeImport = (location: string, name: string) => `\timport type ${name} fr
 const valueImport = (location: string, name: string) => `\timport ${name} from "${location}";`;
 const svelteCode = (variable: string, id: string, component: string) =>
   `{#if id === "${id}" && component === "${component}"}
-<${variable} extension={Extension.GetExtensionByID("${id}")} {close}/>
+<svelte:component this={${variable}} extension={Extension.GetExtensionByID("${id}")} {close} />
 {/if}`;
 
 const svelteParentComponent = path.join(guiSrc, "svelte", "Modal.svelte");
