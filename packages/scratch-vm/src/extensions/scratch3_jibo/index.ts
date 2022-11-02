@@ -1,10 +1,3 @@
-require("regenerator-runtime/runtime"); // required to use async/await
-// const Runtime = require("../../engine/runtime");
-// const ArgumentType = require('../../extension-support/argument-type');
-// const BlockType = require('../../extension-support/block-type');
-// const Cast = require('../../util/cast');
-// const log = require('../../util/log');
-
 import Runtime from "../../engine/runtime";
 import Cast from "../../util/cast";
 import log from "../../util/log";
@@ -782,4 +775,4 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
     }
 }
 
-module.exports = Scratch3Jibo;
+export = Scratch3Jibo;

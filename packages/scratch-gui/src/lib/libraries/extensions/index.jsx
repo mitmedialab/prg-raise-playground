@@ -119,26 +119,26 @@ export default [
         ),
         featured: true
     },
-    {
-        name: (
-            <FormattedMessage
-                defaultMessage="Jibo"
-                    description="Jibo Connection to ROS docker"
-                    id="gui.extension.jibo.name"
-                />
-        ),
-        extensionId: 'jibo',
-        iconURL: jiboRobotIconURL,
-        insetIconURL: jiboRobotInsetIconURL,
-        description: (
-            <FormattedMessage
-                defaultMessage="jibo"
-                description="Jibo Connection to ROS docker"
-                id="gui.extension.jibo.description"
-            />
-        ),
-        featured: true
-    },
+    // {
+    //     name: (
+    //         <FormattedMessage
+    //             defaultMessage="Jibo"
+    //                 description="Jibo Connection to ROS docker"
+    //                 id="gui.extension.jibo.name"
+    //             />
+    //     ),
+    //     extensionId: 'jibo',
+    //     iconURL: jiboRobotIconURL,
+    //     insetIconURL: jiboRobotInsetIconURL,
+    //     description: (
+    //         <FormattedMessage
+    //             defaultMessage="jibo"
+    //             description="Jibo Connection to ROS docker"
+    //             id="gui.extension.jibo.description"
+    //         />
+    //     ),
+    //     featured: true
+    // },
     {
         name: "Hand Sensing",
         extensionId: 'poseHand',
