@@ -3,13 +3,13 @@ import type { ExtensionMenuDisplayDetails, ExtensionBlocks, Block, ExtensionArgu
 import Cast from '../util/cast';
 import formatMessage = require('format-message');
 import Runtime from "../engine/runtime";
+import { openUI, registerButtonCallback } from './ui';
 
 export type CodeGenArgs = {
   name: never,
   id: never,
   blockIconURI: never,
 }
-
 
 /**
  * @summary Base class for all extensions implemented via the Typescript Extension Framework.
@@ -61,6 +61,11 @@ export abstract class Extension
   private readonly internal_blocks: ExtensionBlockMetadata[] = [];
   private readonly internal_menus: ExtensionMenuMetadata[] = [];
 
+  openUI(component: string, label?: string) {
+    const { id, name, runtime } = this;
+    openUI(runtime, { id, name, component, label });
+  }
+
   constructor(runtime: Runtime, codeGenArgs: CodeGenArgs) {
     const { name, id, blockIconURI } = codeGenArgs;
     this.name = name;
@@ -108,6 +113,8 @@ export abstract class Extension
         continue;
       }
     }
+
+    Extension.ExtensionsByID.set(id, this);
   }
 
   /**
@@ -195,7 +202,7 @@ export abstract class Extension
    */
   abstract defineTranslations(): Translations<Extension<MenuDetails, Blocks>>;
 
-  getInfo(): ExtensionMetadata {
+  private getInfo(): ExtensionMetadata {
     const { id, internal_blocks: blocks, internal_menus: menus, name, blockIconURI } = this;
     const info = { id, blocks, name, blockIconURI };
     if (menus) info['menus'] = Object.entries(this.internal_menus).reduce((obj, [key, value]) => {
@@ -270,9 +277,11 @@ export abstract class Extension
     const opcode = Extension.GetInternalKey(key);
     const bound = operation.bind(this);
 
-    if (type === BlockType.Button) {
-      this.runtime.emit('REGISTER_BUTTON_CALLBACK_FROM_EXTENSION', opcode);
-      this.runtime.on(opcode, bound);
+    const isButton = type === BlockType.Button;
+    const buttonID = isButton ? Extension.GetButtonID(this.id, opcode) : undefined;
+
+    if (isButton) {
+      registerButtonCallback(this.runtime, buttonID, bound)
     }
     else {
       this[opcode] = (argsFromScratch, blockUtility) => {
@@ -293,6 +302,7 @@ export abstract class Extension
       text: displayText,
       blockType: type,
       arguments: argsInfo,
+      func: buttonID,
     }
   }
 
@@ -322,6 +332,12 @@ export abstract class Extension
     }
   */
 
+  static GetExtensionByID = <T extends Extension<any, any>>(id: string): T => {
+    if (Extension.ExtensionsByID.has(id)) return Extension.ExtensionsByID.get(id) as T;
+    console.error(`Could not find extension with id '${id}'`);
+    return undefined;
+  }
+
   static TryCastToArgumentType = <T extends ArgumentType>(
     argumentType: T,
     value: any,
@@ -341,6 +357,7 @@ export abstract class Extension
   }
 
   private static GetInternalKey = (key: string) => `internal_${key}`;
+  private static GetButtonID = (id: string, opcode: string) => `${id}_${opcode}`;
 
   private static GetArgumentType = <T>(arg: Argument<T>): ArgumentType =>
     Extension.IsPrimitive(arg) ? arg as ArgumentType : (arg as VerboseArgument<T>).type;
@@ -392,4 +409,6 @@ export abstract class Extension
     || query instanceof Function;
 
   private static IsString = (query) => typeof query === 'string' || query instanceof String;
+
+  private static ExtensionsByID = new Map<string, Extension<any, any>>();
 };

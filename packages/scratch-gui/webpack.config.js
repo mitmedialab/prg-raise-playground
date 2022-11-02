@@ -12,6 +12,8 @@ var autoprefixer = require('autoprefixer');
 var postcssVars = require('postcss-simple-vars');
 var postcssImport = require('postcss-import');
 
+const { createSveltePreprocessor } = require("./svelte.config.js");
+
 const STATIC_PATH = process.env.STATIC_PATH || '/static';
 
 const base = {
@@ -29,7 +31,7 @@ const base = {
         disableHostCheck: true,
         watchOptions: {
             ignored: ['**/*.ts']
-        }
+        },
     },
     output: {
         library: 'GUI',
@@ -41,7 +43,7 @@ const base = {
         ReactDOM: 'react-dom'
     },
     resolve: {
-        symlinks: false
+        symlinks: false,
     },
     module: {
         rules: [{
@@ -68,6 +70,20 @@ const base = {
                     }]],
                 presets: ['@babel/preset-env', '@babel/preset-react']
             }
+        },
+        {
+            test: /\.svelte$/,
+            use: {
+                loader: 'svelte-loader',
+                options: {
+                    preprocess: createSveltePreprocessor(),
+                }
+            },
+            include: [
+                path.resolve(__dirname, 'src'),
+                path.resolve(__dirname, 'node_modules', 'scratch-vm', 'src'),
+                path.resolve(__dirname, '..', 'scratch-vm', 'src'),
+            ]
         },
         {
             test: /\.css$/,

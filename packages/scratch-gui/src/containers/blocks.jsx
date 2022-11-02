@@ -22,9 +22,10 @@ import defineDynamicBlock from '../lib/define-dynamic-block';
 import {connect} from 'react-redux';
 import {updateToolbox} from '../reducers/toolbox';
 import {activateColorPicker} from '../reducers/color-picker';
-import {closeExtensionLibrary, openSoundRecorder, openConnectionModal, openTextModelModal,openClassifierModelModal} from '../reducers/modals';
+import {closeExtensionLibrary, openSoundRecorder, openConnectionModal, openTextModelModal,openClassifierModelModal, openProgrammaticModal} from '../reducers/modals';
 import {activateCustomProcedures, deactivateCustomProcedures} from '../reducers/custom-procedures';
 import {setConnectionModalExtensionId} from '../reducers/connection-modal';
+import {openUIEvent, registerButtonCallbackEvent} from "scratch-vm/src/typescript-support/ui";
 
 import {
     activateTab,
@@ -124,11 +125,11 @@ class Blocks extends React.Component {
         toolboxWorkspace.registerButtonCallback('EDIT_TEXT_CLASSIFIER', classifierModelEditButtonCallback);
         toolboxWorkspace.registerButtonCallback('CONNECT_MICROBIT_ROBOT', connectMicrobitRobotCallback);
         
-        this.props.vm.runtime.on('REGISTER_BUTTON_CALLBACK_FROM_EXTENSION', (event) => {
-            toolboxWorkspace.registerButtonCallback(event, () => {
-                this.props.vm.runtime.emit(event);
-            });
+        this.props.vm.runtime.on(registerButtonCallbackEvent, (event) => {
+            toolboxWorkspace.registerButtonCallback(event, () => this.props.vm.runtime.emit(event));
         });
+
+        this.props.vm.runtime.on(openUIEvent, (details) => this.props.onOpenProgrammaticModal(details));
 
         // Store the xml of the toolbox that is actually rendered.
         // This is used in componentDidUpdate instead of prevProps, because
@@ -698,6 +699,9 @@ const mapDispatchToProps = dispatch => ({
     onOpenSoundRecorder: () => {
         dispatch(activateTab(SOUNDS_TAB_INDEX));
         dispatch(openSoundRecorder());
+    },
+    onOpenProgrammaticModal: (details) => {
+        dispatch(openProgrammaticModal(details))
     },
     onRequestCloseExtensionLibrary: () => {
         dispatch(closeExtensionLibrary());

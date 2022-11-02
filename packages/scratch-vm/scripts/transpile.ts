@@ -5,6 +5,7 @@ import { profile } from "../../../scripts/profile";
 import { processArgs } from "../../../scripts/processArgs";
 import { extensionsFolder, packages } from "../../../scripts/paths";
 import { transpileAndWatch } from "./tsWatcher";
+import { getAllWatchers } from "./watchers";
 
 export type TranspileOptions = { doWatch: boolean; useCaches: boolean; };
 const srcDir = path.resolve(packages.vm, "src");
@@ -26,7 +27,9 @@ const transpileAllTsExtensions = (options: TranspileOptions) => {
     ), "Completed initial transpile in");
 
     const { doWatch } = options;
-    if (!doWatch) watcher.close();
+    if (!doWatch) return watcher.close();
+
+    getAllWatchers();
   });
 }
 
