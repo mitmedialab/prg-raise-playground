@@ -1,6 +1,6 @@
 import { ArgumentType, BlockType, Branch, Language } from "../../typescript-support/enums";
 import { Extension } from "../../typescript-support/Extension";
-import { Environment } from "../../typescript-support/types";
+import { ButtonBlock, Environment } from "../../typescript-support/types";
 import defineTranslations from "./translations";
 
 type Details = {
@@ -17,7 +17,7 @@ type Details = {
 
 class SimpleTypescript extends Extension<Details, {
   log: (msg: string) => void;
-  dummy: () => void;
+  dummy: ButtonBlock;
 }> {
   init(env: Environment) {
   }
@@ -43,9 +43,9 @@ class SimpleTypescript extends Extension<Details, {
         operation: (msg) => console.log(msg)
       }),
       dummy: () => ({
-        type: BlockType.Loop,
-        text: "Dummy loop",
-        operation: util => util.startBranch(Branch.First, true)
+        type: BlockType.Button,
+        text: "Dummy Block",
+        operation: () => console.log("hi")
       })
     }
   }

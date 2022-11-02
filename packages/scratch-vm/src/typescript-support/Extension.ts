@@ -1,4 +1,4 @@
-import { ArgumentType, Language } from './enums';
+import { ArgumentType, BlockType, Language } from './enums';
 import type { ExtensionMenuDisplayDetails, ExtensionBlocks, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, VerboseArgument, Environment, Menu, DynamicMenu, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters, TypeByArgumentType, AllText, Translations, BlockOperation } from './types';
 import Cast from '../util/cast';
 import formatMessage = require('format-message');
@@ -225,6 +225,7 @@ export abstract class Extension
   private convertToInfo(key: string, block: Block<BlockOperation>, menusToAdd: MenuItem<any>[]): ExtensionBlockMetadata {
     const { type, text, operation } = block;
     const args: Argument<any>[] = block.arg ? [block.arg] : block.args;
+    const func: string = block.func ? block.func : null;
 
     const defaultText: string = Extension.IsFunction(text)
       ? (text as unknown as (...params: any[]) => string)(...args.map((_, index) => `[${index}]`))
@@ -269,23 +270,38 @@ export abstract class Extension
 
     const opcode = Extension.GetInternalKey(key);
     const bound = operation.bind(this);
-    this[opcode] = (argsFromScratch, blockUtility) => {
-      const { mutation } = argsFromScratch; // if we need it...
-      // NOTE: Assumption is that args order will be correct since their keys are parsable as ints (i.e. '0', '1', ...)
-      const uncasted = Object.values(argsFromScratch).slice(0, -1);
-      const casted = uncasted.map((value, index) => {
-        const handled = handlers[index] ? handlers[index](value) : value;
-        const type = Extension.GetArgumentType(args[index]);
-        return Extension.CastToType(type, handled)
-      });
-      return bound(...casted, blockUtility); // can add more util params as necessary
+
+    if (type === BlockType.Button) {
+      this.runtime.emit('REGISTER_BUTTON_CALLBACK_FROM_EXTENSION', opcode);
+      this.runtime.on(opcode, bound);
+
+      return {
+        func,
+        opcode,
+        text: displayText,
+        blockType: type,
+        arguments: {},
+      }
+    }
+    else {
+      this[opcode] = (argsFromScratch, blockUtility) => {
+        const { mutation } = argsFromScratch; // if we need it...
+        // NOTE: Assumption is that args order will be correct since their keys are parsable as ints (i.e. '0', '1', ...)
+        const uncasted = Object.values(argsFromScratch).slice(0, -1);
+        const casted = uncasted.map((value, index) => {
+          const handled = handlers[index] ? handlers[index](value) : value;
+          const type = Extension.GetArgumentType(args[index]);
+          return Extension.CastToType(type, handled)
+        });
+        return bound(...casted, blockUtility); // can add more util params as necessary
+      }
     }
 
     return {
       opcode,
       text: displayText,
       blockType: type,
-      arguments: argsInfo
+      arguments: argsInfo,
     }
   }
 

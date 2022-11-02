@@ -14,6 +14,8 @@ const MODAL_CONNECTION = 'connectionModal';
 const MODAL_TIPS_LIBRARY = 'tipsLibrary';
 const MODAL_TEXT_MODEL = 'textModelModal';
 const MODAL_CLASSIFIER_MODEL = 'classifierModelModal';
+const MODAL_TABLE = 'tableName';
+const MODAL_TABLE_VIEWER = 'tableViewerModal';
 
 const initialState = {
     [MODAL_BACKDROP_LIBRARY]: false,
@@ -28,7 +30,9 @@ const initialState = {
     [MODAL_CONNECTION]: false,
     [MODAL_TIPS_LIBRARY]: false,
     [MODAL_TEXT_MODEL]: false,
-    [MODAL_CLASSIFIER_MODEL]: false
+    [MODAL_CLASSIFIER_MODEL]: false,
+    [MODAL_TABLE]: false,
+    [MODAL_TABLE_VIEWER]: false
 };
 
 const reducer = function (state, action) {
@@ -96,7 +100,13 @@ const openTextModelModal = function () {
 };
 const openClassifierModelModal = function () {
     return openModal(MODAL_CLASSIFIER_MODEL);
-}
+};
+const openTableModal = function () {
+    return openModal(MODAL_TABLE);
+};
+const openTableViewerModal = function () {
+    return openModal(MODAL_TABLE_VIEWER);
+};
 const closeBackdropLibrary = function () {
     return closeModal(MODAL_BACKDROP_LIBRARY);
 };
@@ -135,7 +145,13 @@ const closeTextModelModal = function () {
 };
 const closeClassifierModelModal = function () {
     return closeModal(MODAL_CLASSIFIER_MODEL);
-}
+};
+const closeTableModal = function () {
+    return closeModal(MODAL_TABLE);
+};
+const closeTableViewerModal = function () {
+    return closeModal(MODAL_TABLE_VIEWER);
+};
 export {
     reducer as default,
     initialState as modalsInitialState,
@@ -152,6 +168,8 @@ export {
     openConnectionModal,
     openTextModelModal,
     openClassifierModelModal,
+    openTableModal,
+    openTableViewerModal,
     closeBackdropLibrary,
     closeCameraCapture,
     closeCostumeLibrary,
@@ -164,5 +182,7 @@ export {
     closeTipsLibrary,
     closeConnectionModal,
     closeTextModelModal,
-    closeClassifierModelModal
+    closeClassifierModelModal,
+    closeTableModal,
+    closeTableViewerModal
 };
