@@ -26,6 +26,7 @@
 <style>
   .container {
     width: 360px;
+    padding: 10px;
   }
   button {
     border-radius: 10px;
@@ -36,12 +37,14 @@
 <div class:container style:background-color={color.ui.white}>
   <ul>
     {#each [...animalMap] as [animal, count]}
-      <li>{animal} {count}</li>
+      <li>{count} {animal}{count > 1 ? "s" : ""}</li>
     {/each}
   </ul>
   <center>
     {#each get("animals") as animalMenuItem}
-      <button on:click={() => invoke("addAnimalToCollection", animalMenuItem["value"])}>{animalMenuItem["text"]}</button>
+      <button on:click={() => invoke("addAnimalToCollection", animalMenuItem["value"])}>
+        <span style:font-size={"20px"}>+</span>{animalMenuItem["text"]}
+      </button>
     {/each}
   </center>
 </div>

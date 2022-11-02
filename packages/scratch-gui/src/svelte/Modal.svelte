@@ -22,8 +22,8 @@
     const options = {target, props};
     
     /** CODE GEN GUARDS: Begin Component Construction */
-	if (id === "typescriptprg95grpframeworkprg95grpcomplex" && component === "animals") new Typescriptprg95grpframeworkprg95grpcomplex_animals(options);
-	if (id === "typescriptprg95grpframeworkprg95grpsimple" && component === "dummy") new Typescriptprg95grpframeworkprg95grpsimple_dummy(options);
+		if (id === "typescriptprg95grpframeworkprg95grpcomplex" && component === "animals") new Typescriptprg95grpframeworkprg95grpcomplex_animals(options);
+		if (id === "typescriptprg95grpframeworkprg95grpsimple" && component === "dummy") new Typescriptprg95grpframeworkprg95grpsimple_dummy(options);
     /** CODE GEN GUARDS: End Component Construction */
   })
 

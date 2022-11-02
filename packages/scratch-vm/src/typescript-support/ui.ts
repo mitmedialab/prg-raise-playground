@@ -3,6 +3,10 @@ import { Extension as BaseExtension } from "./Extension";
 
 export type ReactivityDependency = any | any[];
 
+export const activeClass = true;
+
+export const pixels = (numberOf: number) => `${numberOf}px`;
+
 export const openUIEvent = "OPEN_UI_FROM_EXTENSION";
 export const registerButtonCallbackEvent = "REGISTER_BUTTON_CALLBACK_FROM_EXTENSION";
 
@@ -46,6 +50,9 @@ const enum Color {
   drop = "drop"
 }
 
+/**
+ * Makes it easier to reference the css color variables defined in prg-extension-boilerplate/packages/scratch-gui/src/components/programmatic-modal/programmatic-modal.jsx
+ */
 class CssVar {
   root: Color;
 
@@ -71,6 +78,9 @@ const error = new CssVar(Color.error);
 const extensions = new CssVar(Color.extensions);
 const drop = new CssVar(Color.extensions);
 
+/**
+ * Color variable references corresponding to the css variables defined in prg-extension-boilerplate/packages/scratch-gui/src/components/programmatic-modal/programmatic-modal.jsx
+ */
 export const color = {
   "ui": {
     primary: ui.primary(),
