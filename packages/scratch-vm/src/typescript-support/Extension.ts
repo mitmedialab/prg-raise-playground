@@ -278,9 +278,10 @@ export abstract class Extension
     const bound = operation.bind(this);
 
     const isButton = type === BlockType.Button;
+    const buttonID = isButton ? Extension.GetButtonID(this.id, opcode) : undefined;
 
     if (isButton) {
-      registerButtonCallback(this.runtime, opcode, bound)
+      registerButtonCallback(this.runtime, buttonID, bound)
     }
     else {
       this[opcode] = (argsFromScratch, blockUtility) => {
@@ -301,7 +302,7 @@ export abstract class Extension
       text: displayText,
       blockType: type,
       arguments: argsInfo,
-      func: isButton ? opcode : undefined,
+      func: buttonID,
     }
   }
 
@@ -356,6 +357,7 @@ export abstract class Extension
   }
 
   private static GetInternalKey = (key: string) => `internal_${key}`;
+  private static GetButtonID = (id: string, opcode: string) => `${id}_${opcode}`;
 
   private static GetArgumentType = <T>(arg: Argument<T>): ArgumentType =>
     Extension.IsPrimitive(arg) ? arg as ArgumentType : (arg as VerboseArgument<T>).type;

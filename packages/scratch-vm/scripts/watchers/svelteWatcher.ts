@@ -13,7 +13,7 @@ export default function (triggerRefresh: Parameters<MakeWatcher>[0]): Watcher {
   watcher.on("add", (path) => {
     if (initialComponents.includes(path)) return;
     console.log(chalk.green(`New svelte file: ${path}`));
-    console.log(chalk.green(`Trigger re-transpile`));
+    console.log(chalk.green(`Triggering re-transpile...`));
     initialComponents.push(path);
     triggerRefresh();
   });

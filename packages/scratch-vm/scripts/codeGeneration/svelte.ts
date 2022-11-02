@@ -5,10 +5,6 @@ import { ExtensionCodeGenerator } from ".";
 import { guiSrc } from "../../../../scripts/paths";
 import { encode } from "../../src/extension-support/extension-id-factory";
 
-// TODO
-// [] Watch for additons / renames of svelte files (currently, if you add a ui, you'll need to re-run `dev` script)
-// [] Interact with cache?
-
 const getCodeGenGuards = (name: string) => ({ begin: `CODE GEN GUARDS: Begin ${name}`, end: `CODE GEN GUARDS: End ${name}` });
 const getGuardsStartEnd = (content: string[], { begin, end }: { begin: string, end: string }): [start: number, end: number] => [content.findIndex(l => l.includes(begin)) + 1, content.findIndex(l => l.includes(end))];
 const importGuards = getCodeGenGuards("Component Import Statements");
@@ -26,9 +22,10 @@ export const collectSvelteComponentsForExtensions: ExtensionCodeGenerator = (ext
   let constructs: Array<string> = [];
 
   for (const id in extensions) {
-    const { implementationDirectory, cacheUpdates: updates, cached } = extensions[id];
-    const matches = glob.sync(path.join(implementationDirectory, "*.svelte"));
+    // NOTE: Cache (& cache updates) are not utilized, since there's not much to gain for the added complexity
+    const { implementationDirectory } = extensions[id];
 
+    const matches = glob.sync(path.join(implementationDirectory, "*.svelte"));
     if (!matches || matches.length === 0) continue;
 
     const encoded = encode(id);
@@ -39,9 +36,6 @@ export const collectSvelteComponentsForExtensions: ExtensionCodeGenerator = (ext
       imports.push(valueImport(match, variableName));
       constructs.push(svelteCode(variableName, encoded, fileName));
     }
-
-    // TODO use below example for cache interaction?
-    //if (blockIconURI !== cached?.blockIconURI) extensions[id].cacheUpdates = { ...updates, blockIconURI };
   }
 
   const content = readFileSync(svelteParentComponent, 'utf8').split("\n");

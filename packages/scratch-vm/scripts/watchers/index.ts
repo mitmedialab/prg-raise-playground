@@ -2,7 +2,6 @@ import { writeFileSync } from "fs";
 import path = require("path");
 import { vmSrc } from "../../../../scripts/paths";
 import svelteWatcher from "./svelteWatcher";
-import chalk = require("chalk");
 
 export type Watcher = {
   close: () => void;

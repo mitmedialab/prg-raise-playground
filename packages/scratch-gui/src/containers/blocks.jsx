@@ -25,6 +25,7 @@ import {activateColorPicker} from '../reducers/color-picker';
 import {closeExtensionLibrary, openSoundRecorder, openConnectionModal, openTextModelModal,openClassifierModelModal, openProgrammaticModal} from '../reducers/modals';
 import {activateCustomProcedures, deactivateCustomProcedures} from '../reducers/custom-procedures';
 import {setConnectionModalExtensionId} from '../reducers/connection-modal';
+import {openUIEvent, registerButtonCallbackEvent} from "scratch-vm/src/typescript-support/ui";
 
 import {
     activateTab,
@@ -124,15 +125,11 @@ class Blocks extends React.Component {
         toolboxWorkspace.registerButtonCallback('EDIT_TEXT_CLASSIFIER', classifierModelEditButtonCallback);
         toolboxWorkspace.registerButtonCallback('CONNECT_MICROBIT_ROBOT', connectMicrobitRobotCallback);
         
-        this.props.vm.runtime.on('REGISTER_BUTTON_CALLBACK_FROM_EXTENSION', (event) => {
-            toolboxWorkspace.registerButtonCallback(event, () => {
-                this.props.vm.runtime.emit(event);
-            });
+        this.props.vm.runtime.on(registerButtonCallbackEvent, (event) => {
+            toolboxWorkspace.registerButtonCallback(event, () => this.props.vm.runtime.emit(event));
         });
 
-        this.props.vm.runtime.on('OPEN_UI_FROM_EXTENSION', (details) => {
-            this.props.onOpenProgrammaticModal(details);
-        });
+        this.props.vm.runtime.on(openUIEvent, (details) => this.props.onOpenProgrammaticModal(details));
 
         // Store the xml of the toolbox that is actually rendered.
         // This is used in componentDidUpdate instead of prevProps, because
