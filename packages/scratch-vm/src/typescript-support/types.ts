@@ -2,6 +2,7 @@ import type Runtime from '../engine/runtime';
 import BlockUtility from '../engine/block-utility';
 import { ArgumentType, BlockType, Branch, Language } from './enums';
 import type { Extension } from './Extension';
+import type { EnsureInclusionInTypescriptProgram } from './flag';
 
 export type InternalButtonKey = "__button__";
 export type ButtonBlock = () => InternalButtonKey;

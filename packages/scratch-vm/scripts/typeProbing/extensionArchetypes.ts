@@ -1,4 +1,4 @@
-import { Extension } from "../../../src/typescript-support/Extension";
+import { Extension } from "../../src/typescript-support/Extension";
 
 export const location = () => __filename;
 
@@ -13,6 +13,7 @@ class Inline extends Extension<{
 }, {}>{
   init = notImplemented;
   defineBlocks = notImplemented;
+  defineTranslations = notImplemented;
 }
 
 export type DisplayDetails = {
@@ -25,6 +26,7 @@ export type DisplayDetails = {
 class SameFile extends Extension<DisplayDetails, {}>{
   init = notImplemented;
   defineBlocks = notImplemented;
+  defineTranslations = notImplemented;
 }
 
 export const typeCount = [Inline, SameFile].length;

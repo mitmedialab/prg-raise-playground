@@ -5,7 +5,7 @@ export type ReactivityDependency = any | any[];
 
 export const activeClass = true;
 
-export const pixels = (numberOf: number) => `${numberOf}px`;
+export const px = (numberOf: number) => `${numberOf}px`;
 
 export const openUIEvent = "OPEN_UI_FROM_EXTENSION";
 export const registerButtonCallbackEvent = "REGISTER_BUTTON_CALLBACK_FROM_EXTENSION";
@@ -16,16 +16,19 @@ type Properties<Extension> = { [K in UniqueKeys<Extension>]-?: Extension[K] exte
 type MethodParams<Extension> = { [Key in UniqueKeys<Extension>]: Extension[Key] extends (...args: any) => any ? Parameters<Extension[Key]> : never };
 type MethodReturns<Extension> = { [Key in UniqueKeys<Extension>]: Extension[Key] extends (...args: any) => any ? ReturnType<Extension[Key]> : never };
 
-export type InvokeFromUI<Extension> = <T extends keyof Methods<Extension>>(funcName: T, ...args: MethodParams<Extension>[T]) => MethodReturns<Extension>[T];
+export type ReactiveInvoke<Extension> = <T extends keyof Methods<Extension>>(funcName: Methods<Extension>[T] extends never ? never : T, ...args: MethodParams<Extension>[T]) => MethodReturns<Extension>[T];
+export type ReactiveSet<Extension> = <T extends keyof Properties<Extension>>(propertyName: Properties<Extension>[T] extends never ? never : T, value: Extension[T]) => void;
 
-export type GetFromUI<Extension> = <T extends keyof Properties<Extension>>(propertyName: T) => Extension[T];
-export type SetFromUI<Extension> = <T extends keyof Properties<Extension>>(propertyName: T, value: Extension[T]) => void;
+export type ReactiveMethods<Extension> = {
+  invoke: ReactiveInvoke<Extension>;
+  set: ReactiveSet<Extension>;
+}
 
-export const invokeFromUI = <Extension, T extends keyof Methods<Extension>>(extensionAssignment: Extension, funcName: T, args: MethodParams<Extension>[T]): MethodReturns<Extension>[T] => {
+export const reactiveInvoke = <Extension, T extends keyof Methods<Extension>>(extensionAssignment: Extension, funcName: T, args: MethodParams<Extension>[T]): MethodReturns<Extension>[T] => {
   return (extensionAssignment[funcName] as Function)(...args as []);
 }
 
-export const setFromUI = <Extension, T extends keyof Properties<Extension>>(extensionAssignment: Extension, propertyName: T, value: Extension[T]): void => {
+export const reactiveSet = <Extension, T extends keyof Properties<Extension>>(extensionAssignment: Extension, propertyName: T, value: Extension[T]): void => {
   extensionAssignment[propertyName] = value;
 }
 

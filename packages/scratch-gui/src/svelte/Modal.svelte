@@ -4,7 +4,9 @@
   import { Extension } from "scratch-vm/src/typescript-support/Extension";
 
   /** CODE GEN GUARDS: Begin Component Import Statements*/
+	import Typescriptprg95grpframeworkprg95grpcomplex_alert from "/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_complex/alert.svelte";
 	import Typescriptprg95grpframeworkprg95grpcomplex_animals from "/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_complex/animals.svelte";
+	import Typescriptprg95grpframeworkprg95grpsimple_counter from "/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_simple/counter.svelte";
 	import Typescriptprg95grpframeworkprg95grpsimple_dummy from "/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_simple/dummy.svelte";
   /** CODE GEN GUARDS: End Component Import Statements*/
 
@@ -22,7 +24,9 @@
     const options = {target, props};
     
     /** CODE GEN GUARDS: Begin Component Construction */
+		if (id === "typescriptprg95grpframeworkprg95grpcomplex" && component === "alert") new Typescriptprg95grpframeworkprg95grpcomplex_alert(options);
 		if (id === "typescriptprg95grpframeworkprg95grpcomplex" && component === "animals") new Typescriptprg95grpframeworkprg95grpcomplex_animals(options);
+		if (id === "typescriptprg95grpframeworkprg95grpsimple" && component === "counter") new Typescriptprg95grpframeworkprg95grpsimple_counter(options);
 		if (id === "typescriptprg95grpframeworkprg95grpsimple" && component === "dummy") new Typescriptprg95grpframeworkprg95grpsimple_dummy(options);
     /** CODE GEN GUARDS: End Component Construction */
   })

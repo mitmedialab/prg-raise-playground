@@ -1,11 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES6",
-    "module": "commonjs",
+    "module": "CommonJS",
     "esModuleInterop": true,
     "noImplicitAny": false,
     "removeComments": true,
     "preserveConstEnums": true,
-    "inlineSourceMap": true
+    "inlineSourceMap": true,
   },
 }

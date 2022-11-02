@@ -17,7 +17,8 @@ type Details = {
 
 class SimpleTypescript extends Extension<Details, {
   log: (msg: string) => void;
-  dummy: ButtonBlock;
+  dummyUI: ButtonBlock;
+  counterUI: ButtonBlock;
 }> {
 
   count: number = 0;
@@ -53,10 +54,15 @@ class SimpleTypescript extends Extension<Details, {
         text: (msg) => `Log ${msg} to the console`,
         operation: (msg) => console.log(msg)
       }),
-      dummy: () => ({
+      dummyUI: () => ({
         type: BlockType.Button,
         text: `Dummy UI`,
         operation: () => this.openUI("dummy", "Howdy")
+      }),
+      counterUI: () => ({
+        type: BlockType.Button,
+        text: "Open Counter",
+        operation: () => this.openUI("counter", "Pretty cool, right?")
       })
     }
   }

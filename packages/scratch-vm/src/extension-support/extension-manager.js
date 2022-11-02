@@ -133,19 +133,6 @@ class ExtensionManager {
     }
 
     /**
-     * Retreive an extension (assuming it has been loaded)
-     * @param {*} extensionID 
-     */
-    getLoadedExtension(extensionID) {
-        if (!this.isExtensionLoaded(extensionID)) {
-            console.error(`The extension with ID '${extensionID}' has not yet been loaded. Returning undefined`);
-            return undefined;
-        }
-
-        return this._loadedExtensions[extensionID];
-    }
-
-    /**
      * Synchronously load an internal extension (core or non-core) by ID. This call will
      * fail if the provided id is not does not match an internal extension.
      * @param {string} extensionId - the ID of an internal extension

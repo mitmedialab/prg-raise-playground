@@ -219,7 +219,10 @@ class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
         type: BlockType.Command,
         arg: { type: ArgumentType.Number, options: self.animals },
         text: (animal) => `Add ${animal} to collection`,
-        operation: (animal) => this.addAnimalToCollection(animal),
+        operation: (animal) => {
+          this.addAnimalToCollection(animal);
+          this.openUI("alert");
+        },
       }),
 
 
