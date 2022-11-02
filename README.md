@@ -140,6 +140,13 @@ Probably will have:
 - Video tutorial 
 - FAQ?
 
+### 🎨 Adding UI
+
+```bash
+npm run add:ui <extension folder>
+# For example: npm run add:ui myExtension
+```
+
 ### 🔀 Porting an Extension to Typescript
 
 *Want to move your vanilla-JS extension to our Typescript framework and reap the benefits of type safety and code generation?* **Great!**
