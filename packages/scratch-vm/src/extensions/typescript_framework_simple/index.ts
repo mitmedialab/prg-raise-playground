@@ -19,6 +19,7 @@ class SimpleTypescript extends Extension<Details, {
   log: (msg: string) => void;
   dummyUI: ButtonBlock;
   counterUI: ButtonBlock;
+  colorUI: ButtonBlock;
 }> {
 
   count: number = 0;
@@ -63,6 +64,11 @@ class SimpleTypescript extends Extension<Details, {
         type: BlockType.Button,
         text: "Open Counter",
         operation: () => this.openUI("counter", "Pretty cool, right?")
+      }),
+      colorUI: () => ({
+        type: BlockType.Button,
+        text: "Show colors",
+        operation: () => this.openUI("palette")
       })
     }
   }
