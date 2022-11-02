@@ -1,6 +1,6 @@
 <script lang="ts">
   import type Extension from ".";
-  import { invokeFromUI, white, type InvokeFromUI } from "../../typescript-support/ui";
+  import { invokeFromUI, color, type InvokeFromUI } from "../../typescript-support/ui";
 
   export let extension: Extension;
   export let close: () => void;
@@ -21,6 +21,6 @@
   }
 </style>
 
-<div class:container style:background-color={white}>
+<div class:container style:background-color={color.ui.white}>
   Hello, World!
 </div>

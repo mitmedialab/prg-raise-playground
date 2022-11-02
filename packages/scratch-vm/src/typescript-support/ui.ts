@@ -32,4 +32,97 @@ export const registerButtonCallback = (runtime: Runtime, buttonID: string, callb
   runtime.on(buttonID, callback);
 }
 
-export const white = "var(--ui-white)";
+const enum Color {
+  ui = "ui",
+  text = "text",
+  motion = "motion",
+  red = "red",
+  sound = "sound",
+  control = "control",
+  data = "data",
+  pen = "pen",
+  error = "error",
+  extensions = "extensions",
+  drop = "drop"
+}
+
+class CssVar {
+  root: Color;
+
+  constructor(root: Color) { this.root = root }
+
+  get(...parts: string[]) { return `var(--${this.root}-${parts.join("-")})` }
+  primary(...parts: string[]) { return this.get("primary", ...parts) }
+  secondary(...parts: string[]) { return this.get("secondary", ...parts) }
+  tertiary(...parts: string[]) { return this.get("tertiary", ...parts) }
+  transparent(...parts: string[]) { return this.get("transparent", ...parts) }
+  light(...parts: string[]) { return this.get("light", ...parts) }
+}
+
+const ui = new CssVar(Color.ui);
+const text = new CssVar(Color.text);
+const motion = new CssVar(Color.motion);
+const red = new CssVar(Color.red);
+const sound = new CssVar(Color.sound);
+const control = new CssVar(Color.control);
+const data = new CssVar(Color.data);
+const pen = new CssVar(Color.pen);
+const error = new CssVar(Color.error);
+const extensions = new CssVar(Color.extensions);
+const drop = new CssVar(Color.extensions);
+
+export const color = {
+  "ui": {
+    primary: ui.primary(),
+    secondary: ui.secondary(),
+    tertiary: ui.tertiary(),
+    modalOverlay: ui.get("modal", "overlay"),
+    white: ui.get("white"),
+    whiteDim: ui.get("white", "dim"),
+    whiteTransparent: ui.get("white", "transparent"),
+    transparent: ui.transparent(),
+    blackTransparent: ui.get("black", "transparent"),
+  },
+  "text": {
+    primary: text.primary(),
+    primaryTransparent: text.transparent(),
+  },
+  "motion": {
+    primary: motion.primary(),
+    tertiary: motion.tertiary(),
+    transparent: motion.get("transparent"),
+    lightTansparent: motion.light("transparent"),
+  },
+  "red": {
+    primary: red.primary(),
+    tertiary: red.tertiary(),
+  },
+  "sound": {
+    primary: sound.primary(),
+    tertiary: sound.tertiary(),
+  },
+  "control": {
+    primary: control.primary(),
+  },
+  "data": {
+    primary: data.primary(),
+  },
+  "pen": {
+    primary: pen.primary(),
+    transparent: pen.transparent(),
+  },
+  "error": {
+    primary: error.primary(),
+    light: error.light(),
+    transparent: error.transparent(),
+  },
+  "extensions": {
+    primary: extensions.primary(),
+    tertiary: extensions.tertiary(),
+    light: extensions.light(),
+    transparent: extensions.transparent(),
+  },
+  "drop": {
+    highlight: drop.get("highlight")
+  }
+}

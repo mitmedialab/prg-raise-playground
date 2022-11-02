@@ -1,13 +1,13 @@
 <script lang="ts">
   import type Extension from ".";
-  import { invokeFromUI, type InvokeFromUI, type GetFromUI, type SetFromUI, setFromUI, ReactivityDependency } from "../../typescript-support/ui";
+  import { invokeFromUI, type InvokeFromUI, type GetFromUI, type SetFromUI, setFromUI, type ReactivityDependency, color } from "../../typescript-support/ui";
 
   export let extension: Extension;
   export let close: () => void;
 
   const invoke: InvokeFromUI<Extension> = (funcName, ...args) => invokeFromUI((extension = extension), funcName, args);
   const set: SetFromUI<Extension> = (propertyName, value) => setFromUI((extension = extension), propertyName, value);
-  const get: GetFromUI<Extension> = (propertyName) => extension[propertyName];
+  const get: GetFromUI<Extension> = (propertyName) => (extension = extension)[propertyName];
   
   let animalMap: Map<string, number>;
 
@@ -33,7 +33,7 @@
   }
 </style>
 
-<div class:container style:background-color="red">
+<div class:container style:background-color={color.ui.white}>
   <ul>
     {#each [...animalMap] as [animal, count]}
       <li>{animal} {count}</li>

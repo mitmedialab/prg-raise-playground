@@ -1,5 +1,9 @@
 <script lang="ts">
+  import { color } from "../ui";
   export let disabled: boolean;
+
+  const text = color.ui.white;
+  const solid = color.motion.primary;
 </script>
 
 <style>
@@ -11,16 +15,14 @@
   button {
     padding: 0.75rem 1rem;
     border-radius: 0.25rem;
-    border: 1px solid var(--ui-black-transparent);
+    border-width: 1px;
+    border-style: solid;
     font-weight: 600;
     font-size: 0.85rem;
-    background: var(--motion-primary);
-    border: var(--motion-primary);
-    color: white;
     transition: background-color 0.25s, border-color 0.25s;
   }
 </style>
 
-<button on:click {disabled}>
+<button on:click {disabled} style:border-color={solid} style:background-color={solid} style:color={text}>
   OK
 </button>
