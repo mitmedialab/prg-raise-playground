@@ -105,11 +105,13 @@ const compileJavascriptDeclarations = (root: string, files: string[]): void => {
   const options: ts.CompilerOptions = {
     ...baseTsCompilerOptions(root, false),
     allowJs: true,
+    checkJs: false,
     declaration: true,
     emitDeclarationOnly: true,
   };
 
   const host = ts.createCompilerHost(options);
+
   const emittedFiles: Map<string, string[]> = new Map();
 
   host.writeFile = (fileName: string, contents: string) => {
@@ -158,7 +160,9 @@ const reportWatchStatusChanged = (diagnostic: ts.Diagnostic) => {
 };
 
 const reportDiagnostic = (diagnostic: ts.Diagnostic) => {
-  const msg = `Error ${diagnostic.code}: ${ts.flattenDiagnosticMessageText(diagnostic.messageText, formatHost.getNewLine())}`;
+  if (!diagnostic.file) return console.error(chalk.redBright(ts.flattenDiagnosticMessageText(diagnostic.messageText, formatHost.getNewLine())));
+  let { line, character } = ts.getLineAndCharacterOfPosition(diagnostic.file, diagnostic.start!);
+  const msg = `Error ${diagnostic.code} [${diagnostic.file.fileName} (${line + 1},${character + 1})]: ${ts.flattenDiagnosticMessageText(diagnostic.messageText, formatHost.getNewLine())}`;
   const stylized = chalk.redBright(msg);
   console.error(stylized);
 };

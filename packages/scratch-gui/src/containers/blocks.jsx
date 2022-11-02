@@ -22,9 +22,10 @@ import defineDynamicBlock from '../lib/define-dynamic-block';
 import {connect} from 'react-redux';
 import {updateToolbox} from '../reducers/toolbox';
 import {activateColorPicker} from '../reducers/color-picker';
-import {closeExtensionLibrary, openSoundRecorder, openConnectionModal, openTextModelModal,openClassifierModelModal,openTableModal,openTableViewerModal} from '../reducers/modals';
+import {closeExtensionLibrary, openSoundRecorder, openConnectionModal, openTextModelModal,openClassifierModelModal, openProgrammaticModal} from '../reducers/modals';
 import {activateCustomProcedures, deactivateCustomProcedures} from '../reducers/custom-procedures';
 import {setConnectionModalExtensionId} from '../reducers/connection-modal';
+import {openUIEvent, registerButtonCallbackEvent} from "scratch-vm/src/typescript-support/ui";
 
 import {
     activateTab,
@@ -113,12 +114,6 @@ class Blocks extends React.Component {
         const classifierModelEditButtonCallback = () => {
             this.props.onOpenClassifierModelModal();
         }
-        const tableButtonCallback = () => {
-            this.props.onOpenTableModal();
-        }
-        const tableViewerCallback = () => {
-            this.props.onOpenTableViewerModal();
-        };
         const connectMicrobitRobotCallback = () => {
             this.props.vm.runtime.emit('CONNECT_MICROBIT_ROBOT');
         }
@@ -128,15 +123,13 @@ class Blocks extends React.Component {
         toolboxWorkspace.registerButtonCallback('MAKE_A_PROCEDURE', procButtonCallback);
         toolboxWorkspace.registerButtonCallback('EDIT_TEXT_MODEL', textModelEditButtonCallback);
         toolboxWorkspace.registerButtonCallback('EDIT_TEXT_CLASSIFIER', classifierModelEditButtonCallback);
-        toolboxWorkspace.registerButtonCallback('MAKE_A_TABLE', tableButtonCallback);
-        toolboxWorkspace.registerButtonCallback('VIEW_TABLES', tableViewerCallback);
         toolboxWorkspace.registerButtonCallback('CONNECT_MICROBIT_ROBOT', connectMicrobitRobotCallback);
-
-        this.props.vm.runtime.on('REGISTER_BUTTON_CALLBACK_FROM_EXTENSION', (event) => {
-            toolboxWorkspace.registerButtonCallback(event, () => {
-                this.props.vm.runtime.emit(event);
-            });
+        
+        this.props.vm.runtime.on(registerButtonCallbackEvent, (event) => {
+            toolboxWorkspace.registerButtonCallback(event, () => this.props.vm.runtime.emit(event));
         });
+
+        this.props.vm.runtime.on(openUIEvent, (details) => this.props.onOpenProgrammaticModal(details));
 
         // Store the xml of the toolbox that is actually rendered.
         // This is used in componentDidUpdate instead of prevProps, because
@@ -555,8 +548,6 @@ class Blocks extends React.Component {
             onRequestCloseCustomProcedures,
             onOpenTextModelModal,
             onOpenClassifierModelModal,
-            onOpenTableModal,
-            onOpenTableViewerModal,
             toolboxXML,
             ...props
         } = this.props;
@@ -615,8 +606,6 @@ Blocks.propTypes = {
     onOpenConnectionModal: PropTypes.func,
     onOpenTextModelModal: PropTypes.func,
     onOpenClassifierModelModal: PropTypes.func,
-    onOpenTableModal: PropTypes.func,
-    onOpenTableViewerModal: PropTypes.func,
     onOpenSoundRecorder: PropTypes.func,
     onRequestCloseCustomProcedures: PropTypes.func,
     onRequestCloseExtensionLibrary: PropTypes.func,
@@ -707,15 +696,12 @@ const mapDispatchToProps = dispatch => ({
     onOpenClassifierModelModal: () => {
         dispatch(openClassifierModelModal());
     },
-    onOpenTableModal: () => {
-        dispatch(openTableModal());
-    },
-    onOpenTableViewerModal: () => {
-        dispatch(openTableViewerModal());
-    },
     onOpenSoundRecorder: () => {
         dispatch(activateTab(SOUNDS_TAB_INDEX));
         dispatch(openSoundRecorder());
+    },
+    onOpenProgrammaticModal: (details) => {
+        dispatch(openProgrammaticModal(details))
     },
     onRequestCloseExtensionLibrary: () => {
         dispatch(closeExtensionLibrary());

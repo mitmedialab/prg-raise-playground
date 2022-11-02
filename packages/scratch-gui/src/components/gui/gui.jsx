@@ -43,6 +43,7 @@ import addExtensionIcon from './icon--extensions.svg';
 import codeIcon from './icon--code.svg';
 import costumesIcon from './icon--costumes.svg';
 import soundsIcon from './icon--sounds.svg';
+import ProgrammaticModal from '../programmatic-modal/programmatic-modal.jsx';
 
 const messages = defineMessages({
     addExtension: {
@@ -119,6 +120,7 @@ const GUIComponent = props => {
         telemetryModalVisible,
         tipsLibraryVisible,
         textModelModalVisible,
+        programmaticModalDetails,
         classifierModelModalVisible,
         tableModalVisible,
         tableViewerModalVisible,
@@ -188,6 +190,9 @@ const GUIComponent = props => {
                     <TextModelModal
                         vm={vm}
                     />
+                ) : null}
+                {programmaticModalDetails ? (
+                    <ProgrammaticModal vm={vm} {...programmaticModalDetails}/>
                 ) : null}
                 {classifierModelModalVisible ? (
                     <ClassifierModelModal
@@ -440,6 +445,7 @@ GUIComponent.propTypes = {
     telemetryModalVisible: PropTypes.bool,
     tipsLibraryVisible: PropTypes.bool,
     textModelModalVisible: PropTypes.bool,
+    programmaticModalVisible: PropTypes.bool,
     classifierModelModalVisible: PropTypes.bool,
     tableModalVisible: PropTypes.bool,
     tableViewerModalVisible: PropTypes.bool,
