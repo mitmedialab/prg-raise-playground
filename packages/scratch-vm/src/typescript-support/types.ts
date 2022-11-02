@@ -2,6 +2,10 @@ import type Runtime from '../engine/runtime';
 import BlockUtility from '../engine/block-utility';
 import { ArgumentType, BlockType, Branch, Language } from './enums';
 import type { Extension } from './Extension';
+import type { EnsureInclusionInTypescriptProgram } from './flag';
+
+export type InternalButtonKey = "__button__";
+export type ButtonBlock = () => InternalButtonKey;
 
 /**
  * @summary An object passed to extensions on initialization. 
@@ -116,7 +120,6 @@ const enum ArgField {
   Arg = 'arg',
   Args = 'args'
 }
-type ArgsFieldName<T> = T extends [any] ? ArgField.Arg : ArgField.Args;
 
 export type Block<T extends BlockOperation> = {
   /**
@@ -155,7 +158,9 @@ export type Block<T extends BlockOperation> = {
    *        * each time a child branch finishes, the loop block is called again.
    * * `BlockType.Event` - Starts a stack in response to an event (full spec TBD)
    */
-  type: ReturnType<T> extends void
+  type: ReturnType<T> extends ReturnType<ButtonBlock>
+  ? BlockType.Button
+  : ReturnType<T> extends void
   ? BlockType.Command | BlockType.Button | BlockType.Loop
   : ReturnType<T> extends boolean
   ? (BlockType.Reporter | BlockType.Boolean | BlockType.Hat)
@@ -190,11 +195,11 @@ export type Block<T extends BlockOperation> = {
    *  alert(`${msg} ${util.stackFrame.isLoop}`);
    * }
    * 
-   * @param {BlockUtility} util The final argument passed to this function will always be a BlockUtility object, 
+   * @param {BlockUtility} util Unless this block is a `Button`, the final argument passed to this function will always be a BlockUtility object, 
    * which can help you accomplish more advanced block behavior. If you don't need to use it, feel free to omit it.
    * @see {BlockUtility} type for more information on the final argument passed to this function.
    */
-  operation: (...params: ParamsAndUtility<T>) => ReturnType<T>;
+  operation: (...params: T extends ButtonBlock ? Parameters<T> : ParamsAndUtility<T>) => T extends ButtonBlock ? void : ReturnType<T>;
   /**
    * @summary The display text of your block.
    * @description This is where you describe what your block should say. 
@@ -430,12 +435,12 @@ type ExtractTextFromBlock<TOp extends BlockOperation, TBlock extends Block<TOp>>
   ? string | { blockText: TBlock["text"] }
   : {
     blockText: TBlock["text"],
-    argsText: ArgsText<TBlock["arg"]>,
+    argsText?: ArgsText<TBlock["arg"]>,
   }
   : TBlock["text"] extends (...args: [any]) => any
   ? {
     blockText: TBlock["text"],
-    argsText: ToArgumentsText<TBlock["args"]>,
+    argsText?: ToArgumentsText<TBlock["args"]>,
   }
   : never // shouldn't happen
 
@@ -644,3 +649,4 @@ declare enum ReporterScope {
    */
   TARGET = "target"
 }
+
