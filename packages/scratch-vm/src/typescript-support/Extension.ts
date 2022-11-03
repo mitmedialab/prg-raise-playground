@@ -232,7 +232,6 @@ export abstract class Extension
   private convertToInfo(key: string, block: Block<BlockOperation>, menusToAdd: MenuItem<any>[]): ExtensionBlockMetadata {
     const { type, text, operation } = block;
     const args: Argument<any>[] = block.arg ? [block.arg] : block.args;
-    const func: string = block.func ? block.func : null;
 
     const defaultText: string = Extension.IsFunction(text)
       ? (text as unknown as (...params: any[]) => string)(...args.map((_, index) => `[${index}]`))
