@@ -115,8 +115,6 @@ GUI.propTypes = {
     textModelModalVisible: PropTypes.bool,
     classifierModelModalVisible: PropTypes.bool,
     classifierModelModalVisible: PropTypes.bool,
-    tableModalVisible: PropTypes.bool,
-    tableViewerModalVisible: PropTypes.bool,
     vm: PropTypes.instanceOf(VM).isRequired
 };
 
@@ -160,8 +158,6 @@ const mapStateToProps = state => {
         vm: state.scratchGui.vm,
         textModelModalVisible: state.scratchGui.modals.textModelModal,
         classifierModelModalVisible: state.scratchGui.modals.classifierModelModal,
-        tableModalVisible: state.scratchGui.modals.tableName,
-        tableViewerModalVisible: state.scratchGui.modals.tableViewerModal
     };
 };
 

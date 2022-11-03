@@ -32,8 +32,6 @@ import ConnectionModal from '../../containers/connection-modal.jsx';
 import TelemetryModal from '../telemetry-modal/telemetry-modal.jsx';
 import TextModelModal from '../../containers/model-modal.jsx';
 import ClassifierModelModal from '../../containers/classifier-model-modal.jsx'
-import TableName from '../../containers/table-modal.jsx'
-import TableViewerModal from '../../containers/table-viewer-modal.jsx'
 
 import layout, {STAGE_SIZE_MODES} from '../../lib/layout-constants';
 import {resolveStageSize} from '../../lib/screen-utils';
@@ -122,8 +120,6 @@ const GUIComponent = props => {
         textModelModalVisible,
         programmaticModalDetails,
         classifierModelModalVisible,
-        tableModalVisible,
-        tableViewerModalVisible,
         vm,
         ...componentProps
     } = omit(props, 'dispatch');
@@ -196,16 +192,6 @@ const GUIComponent = props => {
                 ) : null}
                 {classifierModelModalVisible ? (
                     <ClassifierModelModal
-                        vm={vm}
-                    />
-                ) : null}
-                {tableModalVisible ? (
-                    <TableName
-                        vm={vm}
-                    />
-                ) : null}
-                {tableViewerModalVisible ? (
-                    <TableViewerModal
                         vm={vm}
                     />
                 ) : null}
@@ -447,8 +433,6 @@ GUIComponent.propTypes = {
     textModelModalVisible: PropTypes.bool,
     programmaticModalVisible: PropTypes.bool,
     classifierModelModalVisible: PropTypes.bool,
-    tableModalVisible: PropTypes.bool,
-    tableViewerModalVisible: PropTypes.bool,
     vm: PropTypes.instanceOf(VM).isRequired
 };
 GUIComponent.defaultProps = {
