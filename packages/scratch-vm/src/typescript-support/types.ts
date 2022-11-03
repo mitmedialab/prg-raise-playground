@@ -217,7 +217,6 @@ export type Block<T extends BlockOperation> = {
    * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals for more info on Template Strings (aka Template Literals)
    */
   text: Parameters<T> extends NonEmptyArray<any> ? (...params: Parameters<T>) => string : string;
-  func?: string;
 } & (Parameters<T> extends NonEmptyArray<any>
   ? Parameters<T> extends [any]
   // NOTE: The above check shouldn't be necessary, and instead a mapped type should be used, but JS Doc comments currently don't work with mapped types:
