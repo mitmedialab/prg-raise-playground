@@ -35,5 +35,5 @@
   --extensions-tertiary: $extensions-tertiary; 
   --extensions-transparent: $extensions-transparent;
   --extensions-light: $extensions-light; 
-  --drop-highlight: $motion-transparent
+  --drop-highlight: $drop-highlight;
 }

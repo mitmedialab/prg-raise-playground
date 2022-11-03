@@ -1,6 +1,6 @@
 <script lang="ts">
   import { color } from "../ui";
-  export let disabled: boolean;
+  export let disabled: boolean = false;
 
   const text = color.ui.white;
   const solid = color.motion.primary;
@@ -8,8 +8,8 @@
 
 <style>
   button:disabled {
-    background: var(--drop-highlight);
-    border: var(--drop-highlight);
+    background-color: var(--drop-highlight) !important;
+    border-color: var(--drop-highlight) !important;
   }
 
   button {

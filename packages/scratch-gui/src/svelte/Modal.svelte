@@ -4,6 +4,8 @@
   import { Extension } from "scratch-vm/src/typescript-support/Extension";
 
   /** CODE GEN GUARDS: Begin Component Import Statements*/
+	import Scratchprg95grptable_make from "/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src/extensions/scratch_table/make.svelte";
+	import Scratchprg95grptable_view from "/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src/extensions/scratch_table/view.svelte";
 	import Typescriptprg95grpframeworkprg95grpcomplex_alert from "/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_complex/alert.svelte";
 	import Typescriptprg95grpframeworkprg95grpcomplex_animals from "/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_complex/animals.svelte";
 	import Typescriptprg95grpframeworkprg95grpsimple_counter from "/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_simple/counter.svelte";
@@ -25,6 +27,8 @@
     const options = {target, props};
     
     /** CODE GEN GUARDS: Begin Component Construction */
+		if (id === "scratchprg95grptable" && component === "make") new Scratchprg95grptable_make(options);
+		if (id === "scratchprg95grptable" && component === "view") new Scratchprg95grptable_view(options);
 		if (id === "typescriptprg95grpframeworkprg95grpcomplex" && component === "alert") new Typescriptprg95grpframeworkprg95grpcomplex_alert(options);
 		if (id === "typescriptprg95grpframeworkprg95grpcomplex" && component === "animals") new Typescriptprg95grpframeworkprg95grpcomplex_animals(options);
 		if (id === "typescriptprg95grpframeworkprg95grpsimple" && component === "counter") new Typescriptprg95grpframeworkprg95grpsimple_counter(options);

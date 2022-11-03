@@ -16,6 +16,6 @@
 
 </style>
 
-<button on:click style:border-color={black} style:background-color={black} style:color={black}>
+<button on:click style:border-color={black} style:background-color={black} style:color="black">
   Cancel
 </button>
