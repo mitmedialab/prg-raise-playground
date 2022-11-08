@@ -54,6 +54,8 @@ type Blocks = {
   numberOfColumns: (table: string) => number;
   highestValueOfColumn: (table: string, column: number) => number;
   highestValueOfRow: (table: string, row: number) => number;
+  indexOfHighestColumnValue: (table: string, column: number) => number;
+  indexOfHighestRowValue: (table: string, row: number) => number;
   showTable: ButtonBlock;
 }
 
@@ -208,6 +210,30 @@ class Tables extends Extension<Details, Blocks> {
         args: [self.tableNamesArg, self.defaultNumberArg],
         text: (table, row) => `highest value of row ${row} in ${table}`,
         operation: (table, row) => Math.max(...this.tables[table][row - 1])
+      }),
+      indexOfHighestColumnValue: (self: Tables) => ({
+        type: BlockType.Reporter,
+        args: [self.tableNamesArg, self.defaultNumberArg],
+        text: (table, column) => `row # of highest value in column ${column} of ${table}`,
+        operation: (table, column) => {
+          let max = this.tables[table].reduce((curMax, current, index) => {
+            if (curMax[1] >= current[column - 1]) {
+              return curMax;
+            } else {
+              return [index, current[column - 1]];
+            }
+          }, [-1,-Infinity]);
+          return (max[0] + 1);
+        }
+      }),
+      indexOfHighestRowValue: (self: Tables) => ({
+        type: BlockType.Reporter,
+        args: [self.tableNamesArg, self.defaultNumberArg],
+        text: (table, row) => `column # of highest value in row ${row} of ${table}`,
+        operation: (table, row) => {
+          let max = Math.max(...this.tables[table][row - 1]);
+          return (this.tables[table][row - 1].indexOf(max) + 1);
+        }
       }),
       showTable: () => ({
         type: BlockType.Button,
