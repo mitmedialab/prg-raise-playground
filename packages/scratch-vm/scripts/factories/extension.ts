@@ -23,7 +23,7 @@ const templateByOperation: Record<Operation, string> = {
 const translationsFile = getPathToTemplate("translations");
 
 Object.values(templateByOperation)
-  .map(getPathToTemplate)
+  .map(template => getPathToTemplate(template))
   .forEach(filepath => assert(fs.existsSync(filepath)));
 
 type CommandLineArgs = {
