@@ -45,6 +45,7 @@ type Details = {
  */
 type Blocks = {
   createTable: ButtonBlock;
+  addTable: (name: string, rows: number, columns: number) => void;
   removeTable: (table: string) => void;
   insertColumn: (table: string) => void;
   insertRow: (table: string) => void;
@@ -82,7 +83,7 @@ class Tables extends Extension<Details, Blocks> {
     this.tables.myTable.push([0]);
     this.tableNamesArg = {
       type: ArgumentType.String,
-      options: this.getTableNames.bind(this),
+      defaultValue: 'myTable'
     };
     this.defaultNumberArg = {
       type: ArgumentType.Number,
@@ -126,6 +127,23 @@ class Tables extends Extension<Details, Blocks> {
         type: BlockType.Button,
         text: 'new table',
         operation: () => this.openUI("make", "Add a table"),
+      }),
+      addTable: (self: Tables) => ({
+        type: BlockType.Command,
+        args: [self.tableNamesArg, self.defaultNumberArg, self.defaultNumberArg],
+        text: (name, rows, columns) => `add table called ${name} with ${rows} rows and ${columns} columns`,
+        operation: (name, rows, columns) => {
+          if (name in self.tables) {
+            alert(`that table already exists`);
+            return;
+          }
+          const info = {
+            name: name,
+            rows: rows,
+            columns: columns
+          };
+          self.newTable(info);
+        }
       }),
       removeTable: (self: Tables) => ({
         type: BlockType.Command,
