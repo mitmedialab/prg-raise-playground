@@ -86,7 +86,7 @@ class Spotify extends Extension<Details, Blocks> {
      */
     // Example field 1
     //exampleField: number;
-
+    prevQuery: string;
     currentArtistName: string;
     currentTrackName: string;
     currentAlbumName: string;
@@ -113,10 +113,13 @@ class Spotify extends Extension<Details, Blocks> {
     barFlag: boolean;
     currentTrackDuration: number;
     trackTempo: number;
+    numBeats: number;
 
     async init(env: Environment) {
         if (typeof Tone !== "undefined") {
             console.log("Tone library is already loaded");
+
+            this.prevQuery = "";
             this.currentArtistName = "no artist";
             this.currentTrackName = "no track";
             this.currentAlbumName = "no album";
@@ -127,9 +130,9 @@ class Spotify extends Extension<Details, Blocks> {
             // beat players for playing individual beat at a time
             this.beatPlayers = [];
             this.releaseDur = 0.01;
-            for (var i = 0; i < 4; i++) {
-                var beatPlayer = new Tone.Player();
-                var ampEnv = new Tone.AmplitudeEnvelope({
+            for (let i = 0; i < 4; i++) {
+                let beatPlayer = new Tone.Player();
+                let ampEnv = new Tone.AmplitudeEnvelope({
                     attack: 0.01,
                     decay: 0,
                     sustain: 1.0,
@@ -155,19 +158,169 @@ class Spotify extends Extension<Details, Blocks> {
             this.barTimeouts = [];
             //this.trackTimeout;
             //this.trackStartTime;
+            this.numBeats = 0;
 
             this.currentTrackDuration = 0;
             this.trackTempo = 0;
 
             // Get Spotify token
             this.spotifyToken = await getAccessToken();
-            console.log("Got access token: ");
-            console.log(this.spotifyToken);
         }
     }
 
     // Ignore! Translations coming soon...
     defineTranslations = defineTranslations as typeof this.defineTranslations;
+
+    playTrack() {
+        console.log("play track");
+        if (
+            !this.player.buffer ||
+            !this.player.buffer.loaded ||
+            !this.trackTimingData
+        ) {
+            return;
+        }
+        this.player.start(Tone.now(), 0, this.currentTrackDuration);
+        this.trackStartTime = Tone.now();
+        this.setupTimeouts();
+    }
+
+    clearTimeouts() {
+        clearTimeout(this.trackTimeout);
+        for (let i = 0; i < this.beatTimeouts.length; i++) {
+            clearTimeout(this.beatTimeouts[i]);
+        }
+        for (let i = 0; i < this.barTimeouts.length; i++) {
+            clearTimeout(this.barTimeouts[i]);
+        }
+    }
+
+    requestSearch(query: string) {
+        return new Promise((resolve, reject) => {
+            if (this.player) {
+                this.player.stop();
+                this.clearTimeouts();
+            }
+
+            if (query == "") {
+                reject();
+            }
+
+            this.currentBeatNum = 0;
+
+            // if we are making the exact same query again, abort
+            // keeping the same metadata, no need to reload
+            if (query == this.prevQuery) {
+                reject();
+            }
+
+            nets(
+                {
+                    url: "https://api.spotify.com/v1/search?q=" + query + "&type=track",
+                    headers: {
+                        Authorization: "Bearer " + this.spotifyToken.value,
+                    },
+                    timeout: SERVER_TIMEOUT,
+                },
+                (err, res, body) => {
+                    if (err) {
+                        console.log("Error with Spotify API query");
+                        console.log(err);
+                        console.log(res);
+                        return reject();
+                    }
+
+                    if (res.statusCode !== 200) {
+                        console.log("Error with Spotify API query");
+                        console.log(res);
+                        console.log(JSON.parse(body));
+
+                        // if the error is a 401 (unauthorized), the token probably has expired, so request a new one.
+                        // TODO make sure I'm doing this right
+                        if (res.statusCode == 401) {
+                            // TODO figure out why this isn't calling refresh access token
+                            console.log("401 error");
+                            getAccessToken().then((token) => {
+                                this.spotifyToken = token;
+                                return reject();
+                            });
+                        } else {
+                            console.error(
+                                "Spotify token error: " + res.statusCode
+                            );
+                            return reject();
+                        }
+                    }
+
+                    // success
+                    this.prevQuery = query;
+
+                    let trackObjects = JSON.parse(body).tracks.items;
+                    console.log("Spotify request search results: ");
+                    console.log(trackObjects);
+
+                    // fail if there are no tracks
+                    if (!trackObjects || trackObjects.length === 0) {
+                        // TODO make put this back this.resetTrackData();
+                        reject();
+                        // TODO make sure this should be removed return;
+                    }
+
+                    /*
+                    // find the first result without explicit lyrics
+                    let notExplicit = false;
+                    for (let i=0; i<trackObjects.length; i++) {
+                        if (!trackObjects[i].explicit) {
+                            trackObjects = trackObjects.slice(i);
+                            notExplicit = true;
+                            break;
+                        }
+                    }
+
+                    // fail if there were none without explicit lyrics
+                    if (!notExplicit) {
+                        resetTrackData();
+                        console.log('no results without explicit lyrics');
+                        reject();
+                        return;
+                    }
+
+                    keepTryingToGetTimingData(trackObjects, resolve, reject);
+                    */
+                }
+            );
+        });
+    }
+
+    setupTimeouts() {
+        // events on each beat
+        this.beatTimeouts = [];
+        for (let i = 0; i < this.numBeats; i++) {
+            let t = window.setTimeout(
+                function (i) {
+                    this.beatFlag = true;
+                    this.currentBeatNum = i;
+                },
+                (this.trackTimingData.beats[i] - 0.1) * 1000,
+                i
+            );
+            this.beatTimeouts.push(t);
+        }
+
+        // events on each bar
+        this.barTimeouts = [];
+        for (let i = 0; i < this.trackTimingData.downbeats.length; i++) {
+            if (
+                this.trackTimingData.downbeats[i] <
+                this.trackTimingData.beats[this.numBeats - 1]
+            ) {
+                let t = window.setTimeout(() => {
+                    this.barFlag = true;
+                }, (this.trackTimingData.downbeats[i] - 0.1) * 1000);
+                this.barTimeouts.push(t);
+            }
+        }
+    }
 
     // All example definitions below are syntactically equivalent,
     // and which you use is just a matter of preference.
@@ -249,12 +402,13 @@ const getAccessToken = (): Promise<AccessToken> => {
             },
             (err, res, body) => {
                 if (err) {
-                    console.warn("Spotify token error: " + err);
+                    console.error("Spotify token error: " + err);
+                    // TODO make sure I did this right (changed from "return reject()")
                     return reject();
                 }
 
                 if (res.statusCode !== 200) {
-                    console.warn("Spotify token error: " + res.statusCode);
+                    console.error("Spotify token error: " + res.statusCode);
                     return reject();
                 }
 
@@ -269,7 +423,9 @@ const getAccessToken = (): Promise<AccessToken> => {
     });
 };
 
-const refreshAccessTokenIfNeeded = (token): Promise<AccessToken> => {
+const refreshAccessTokenIfNeeded = (
+    token: AccessToken
+): Promise<AccessToken> => {
     return new Promise((resolve, reject) => {
         if (currentTimeSec() > token.expirationTime) {
             getAccessToken().then((newToken) => {
@@ -284,12 +440,21 @@ const refreshAccessTokenIfNeeded = (token): Promise<AccessToken> => {
 };
 
 type SearchBlock = Blocks["searchAndPlay"];
-const searchAndPlay = (): Block<SearchBlock> => ({
+const searchAndPlay = (Spotify): Block<SearchBlock> => ({
     type: BlockType.Command,
     arg: { type: ArgumentType.String, defaultValue: "tacos" },
     text: (searchQuery) => `play music like ${searchQuery}`,
     operation: function (searchQuery) {
         console.log("play music like " + searchQuery);
+
+        // FEEDBACK how do I pass variables from the Spotify class to this function
+        refreshAccessTokenIfNeeded(Spotify.spotifyToken).then((token) => {
+            Spotify.spotifyToken = token;
+            Spotify.requestSearch(searchQuery).then(() => {
+                console.log("finished request search");
+                Spotify.playTrack();
+            });
+        });
     },
 });
 
