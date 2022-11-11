@@ -7,6 +7,7 @@ import {
     ExtensionMenuDisplayDetails,
 } from "../../typescript-support/types";
 import defineTranslations from "./translations";
+// FEEDBACK could not use external js file
 import Tone from "./tone.js";
 
 // FEEDBACK is it ok to still use require like this?
@@ -117,8 +118,6 @@ class Spotify extends Extension<Details, Blocks> {
 
     async init(env: Environment) {
         if (typeof Tone !== "undefined") {
-            console.log("Tone library is already loaded");
-
             this.prevQuery = "";
             this.currentArtistName = "no artist";
             this.currentTrackName = "no track";
@@ -172,7 +171,6 @@ class Spotify extends Extension<Details, Blocks> {
     defineTranslations = defineTranslations as typeof this.defineTranslations;
 
     playTrack() {
-        console.log("play track");
         if (
             !this.player.buffer ||
             !this.player.buffer.loaded ||
@@ -193,6 +191,14 @@ class Spotify extends Extension<Details, Blocks> {
         for (let i = 0; i < this.barTimeouts.length; i++) {
             clearTimeout(this.barTimeouts[i]);
         }
+    }
+
+    resetTrackData() {
+        this.player = new Tone.Player().toMaster();
+        this.currentArtistName = "no artist";
+        this.currentTrackName = "no track";
+        this.currentAlbumName = "no album";
+        this.trackTempo = 0;
     }
 
     requestSearch(query: string) {
@@ -216,7 +222,10 @@ class Spotify extends Extension<Details, Blocks> {
 
             nets(
                 {
-                    url: "https://api.spotify.com/v1/search?q=" + query + "&type=track",
+                    url:
+                        "https://api.spotify.com/v1/search?q=" +
+                        query +
+                        "&type=track",
                     headers: {
                         Authorization: "Bearer " + this.spotifyToken.value,
                     },
@@ -254,10 +263,7 @@ class Spotify extends Extension<Details, Blocks> {
 
                     // success
                     this.prevQuery = query;
-
                     let trackObjects = JSON.parse(body).tracks.items;
-                    console.log("Spotify request search results: ");
-                    console.log(trackObjects);
 
                     // fail if there are no tracks
                     if (!trackObjects || trackObjects.length === 0) {
@@ -266,10 +272,9 @@ class Spotify extends Extension<Details, Blocks> {
                         // TODO make sure this should be removed return;
                     }
 
-                    /*
                     // find the first result without explicit lyrics
                     let notExplicit = false;
-                    for (let i=0; i<trackObjects.length; i++) {
+                    for (let i = 0; i < trackObjects.length; i++) {
                         if (!trackObjects[i].explicit) {
                             trackObjects = trackObjects.slice(i);
                             notExplicit = true;
@@ -279,16 +284,198 @@ class Spotify extends Extension<Details, Blocks> {
 
                     // fail if there were none without explicit lyrics
                     if (!notExplicit) {
-                        resetTrackData();
-                        console.log('no results without explicit lyrics');
+                        this.resetTrackData();
+                        console.log("no results without explicit lyrics");
                         reject();
                         return;
                     }
 
-                    keepTryingToGetTimingData(trackObjects, resolve, reject);
-                    */
+                    this.keepTryingToGetTimingData(
+                        trackObjects,
+                        resolve,
+                        reject
+                    );
                 }
             );
+        });
+    }
+
+    keepTryingToGetTimingData(trackObjects, resolve, reject) {
+        this.getTrackTimingData(trackObjects[0].preview_url).then(
+            () => {
+                // store track name, artist, album
+                this.currentArtistName = trackObjects[0].artists[0].name;
+                this.currentTrackName = trackObjects[0].name;
+                this.currentAlbumName = trackObjects[0].album.name;
+                resolve();
+            },
+            () => {
+                console.log(
+                    "no timing data for " +
+                        trackObjects[0].name +
+                        ", trying next track"
+                );
+                if (trackObjects.length > 1) {
+                    trackObjects = trackObjects.slice(1);
+                    this.keepTryingToGetTimingData(
+                        trackObjects,
+                        resolve,
+                        reject
+                    );
+                } else {
+                    console.log("no more results");
+                    this.resetTrackData();
+                    reject();
+                }
+            }
+        );
+    }
+
+    // code adapted from spotify
+    getTrackTimingData(url: string) {
+        return new Promise((resolve, reject) => {
+            if (!url) {
+                reject();
+                return;
+            }
+
+            const findString = (buffer, string) => {
+                for (let i = 0; i < buffer.length - string.length; i++) {
+                    let match = true;
+                    for (let j = 0; j < string.length; j++) {
+                        var c = String.fromCharCode(buffer[i + j]);
+                        if (c !== string[j]) {
+                            match = false;
+                            break;
+                        }
+                    }
+                    if (match) {
+                        return i;
+                    }
+                }
+                return -1;
+            };
+
+            const getSection = (buffer, start, which) => {
+                let sectionCount = 0;
+                let i;
+                for (i = start; i < buffer.length; i++) {
+                    if (buffer[i] == 0) {
+                        sectionCount++;
+                    }
+                    if (sectionCount >= which) {
+                        break;
+                    }
+                }
+                i++;
+                let content = "";
+                while (i < buffer.length) {
+                    if (buffer[i] == 0) {
+                        break;
+                    }
+                    var c = String.fromCharCode(buffer[i]);
+                    content += c;
+                    i++;
+                }
+                let js = "";
+                try {
+                    js = eval("(" + content + ")");
+                } catch (e) {
+                    js = "";
+                }
+                return js;
+            };
+
+            const makeRequest = (url, resolve, reject) => {
+                if (!url) {
+                    reject();
+                    return;
+                }
+
+                nets(
+                    {
+                        url: url,
+                        /*headers: {
+                            "Content-Type": "application/octet-stream",
+                        },*/
+                        // request.responseType = 'arraybuffer';
+                    },
+                    (err, res, body) => {
+                        if (err) {
+                            console.error("Spotify token error: " + err);
+                            // TODO make sure I did this right (changed from "return reject()")
+                            return reject();
+                        }
+
+                        if (res.statusCode !== 200) {
+                            console.error(
+                                "Spotify token error: " + res.statusCode
+                            );
+                            return reject();
+                        }
+
+                        // success
+                        let buffer = new Uint8Array(body);
+                        let idx = findString(buffer, "GEOB");
+
+                        this.trackTimingData = getSection(buffer, idx + 1, 8);
+
+                        if (!this.trackTimingData) {
+                            reject();
+                            return;
+                        }
+
+                        // estimate the tempo using the average time interval between beats
+                        let sum = 0;
+                        for (
+                            let i = 0;
+                            i < this.trackTimingData.beats.length - 1;
+                            i++
+                        ) {
+                            sum +=
+                                this.trackTimingData.beats[i + 1] -
+                                this.trackTimingData.beats[i];
+                        }
+                        let beatLength =
+                            sum / (this.trackTimingData.beats.length - 1);
+                        this.trackTempo = 60 / beatLength;
+
+                        // use the loop duration to set the number of beats
+                        for (
+                            let i = 0;
+                            i < this.trackTimingData.beats.length;
+                            i++
+                        ) {
+                            if (
+                                this.trackTimingData.loop_duration <
+                                this.trackTimingData.beats[i]
+                            ) {
+                                this.numBeats = i;
+                                break;
+                            }
+                        }
+
+                        // decode the audio
+                        this.audioContext.decodeAudioData(
+                            buffer.buffer,
+                            (audioBuffer) => {
+                                this.player.buffer.set(audioBuffer);
+                                this.currentTrackDuration =
+                                    this.trackTimingData.loop_duration;
+                                for (
+                                    let i = 0;
+                                    i < this.beatPlayers.length;
+                                    i++
+                                ) {
+                                    this.beatPlayers[i].buffer.set(audioBuffer);
+                                }
+                                resolve();
+                            }
+                        );
+                    }
+                );
+            };
+            makeRequest(url, resolve, reject);
         });
     }
 
@@ -370,7 +557,6 @@ class Spotify extends Extension<Details, Blocks> {
     }
 }
 
-// FEEDBACK is it redundant to have to define all of these blocks then make the function for them?
 // Example 4
 //type WithOptionsBlock = Blocks["exampleHat"];
 /*const pickFromOptions = (): Block<WithOptionsBlock> => ({
@@ -445,13 +631,9 @@ const searchAndPlay = (Spotify): Block<SearchBlock> => ({
     arg: { type: ArgumentType.String, defaultValue: "tacos" },
     text: (searchQuery) => `play music like ${searchQuery}`,
     operation: function (searchQuery) {
-        console.log("play music like " + searchQuery);
-
-        // FEEDBACK how do I pass variables from the Spotify class to this function
         refreshAccessTokenIfNeeded(Spotify.spotifyToken).then((token) => {
             Spotify.spotifyToken = token;
             Spotify.requestSearch(searchQuery).then(() => {
-                console.log("finished request search");
                 Spotify.playTrack();
             });
         });
