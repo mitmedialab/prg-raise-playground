@@ -62,16 +62,16 @@ type Blocks = {
   exampleReporter: () => number;
   exampleHat(condition: boolean): boolean;*/
     searchAndPlay(query: string): void;
-    // TODO uncomment when blocks are implemented
-    /*searchAndPlayWait(query: string): void;
-  playNextBeat(): void;
-  playBeat(beatNum: number): void;
-  playBeatAndWait(beatNum: number): void;*/
+    searchAndPlayWait(query: string): void;
     trackData(trackAttr: string): string;
-    /*currentBeat(): number;
-  everyBeat(): boolean;
-  everyBar(): boolean;
-  stopMusic(): void; */
+    stopMusic(): void;
+    // TODO uncomment when blocks are implemented
+    /* playNextBeat(): void;
+    playBeat(beatNum: number): void;
+    playBeatAndWait(beatNum: number): void;
+    currentBeat(): number;
+    everyBeat(): boolean;
+    everyBar(): boolean; */
 };
 
 /**
@@ -202,14 +202,14 @@ class Spotify extends Extension<Details, Blocks> {
     }
 
     requestSearch(query: string) {
-        return new Promise((resolve, reject) => {
+        return new Promise<void> ((resolve, reject) => {
             if (this.player) {
                 this.player.stop();
                 this.clearTimeouts();
             }
 
             if (query == "") {
-                reject();
+                return reject();
             }
 
             this.currentBeatNum = 0;
@@ -217,7 +217,7 @@ class Spotify extends Extension<Details, Blocks> {
             // if we are making the exact same query again, abort
             // keeping the same metadata, no need to reload
             if (query == this.prevQuery) {
-                reject();
+                return resolve();
             }
 
             nets(
@@ -267,9 +267,8 @@ class Spotify extends Extension<Details, Blocks> {
 
                     // fail if there are no tracks
                     if (!trackObjects || trackObjects.length === 0) {
-                        // TODO make put this back this.resetTrackData();
-                        reject();
-                        // TODO make sure this should be removed return;
+                        this.resetTrackData();
+                        return reject();
                     }
 
                     // find the first result without explicit lyrics
@@ -286,8 +285,7 @@ class Spotify extends Extension<Details, Blocks> {
                     if (!notExplicit) {
                         this.resetTrackData();
                         console.log("no results without explicit lyrics");
-                        reject();
-                        return;
+                        return reject();
                     }
 
                     this.keepTryingToGetTimingData(
@@ -395,10 +393,6 @@ class Spotify extends Extension<Details, Blocks> {
                 nets(
                     {
                         url: url,
-                        /*headers: {
-                            "Content-Type": "application/octet-stream",
-                        },*/
-                        // request.responseType = 'arraybuffer';
                     },
                     (err, res, body) => {
                         if (err) {
@@ -544,15 +538,16 @@ class Spotify extends Extension<Details, Blocks> {
             // Example 4
             // exampleHat: pickFromOptions,
             searchAndPlay: searchAndPlay,
-            /*searchAndPlayWait: searchAndPlayWait,
-      playNextBeat: playNextBeat,
-      playBeat: playBeat,
-      playBeatAndWait: playBeatAndWait,*/
+            searchAndPlayWait: searchAndPlayWait,
             trackData: getTrackData,
-            /*currentBeat: getCurrentBeat,
-      everyBeat: everyBeat,
-      everyBar:everyBar,
-      stopMusic: stopMusic*/
+            stopMusic: stopMusic,
+            // leaving out fancy blocks that allow mixing for now
+            /*playNextBeat: playNextBeat,
+            playBeat: playBeat,
+            playBeatAndWait: playBeatAndWait,
+            currentBeat: getCurrentBeat,
+            everyBeat: everyBeat,
+            everyBar: everyBar,*/
         };
     }
 }
@@ -625,18 +620,45 @@ const refreshAccessTokenIfNeeded = (
     });
 };
 
-type SearchBlock = Blocks["searchAndPlay"];
-const searchAndPlay = (Spotify): Block<SearchBlock> => ({
+type SearchAndPlayBlock = Blocks["searchAndPlay"];
+const searchAndPlay = (Spotify): Block<SearchAndPlayBlock> => ({
     type: BlockType.Command,
     arg: { type: ArgumentType.String, defaultValue: "tacos" },
     text: (searchQuery) => `play music like ${searchQuery}`,
-    operation: function (searchQuery) {
-        refreshAccessTokenIfNeeded(Spotify.spotifyToken).then((token) => {
-            Spotify.spotifyToken = token;
-            Spotify.requestSearch(searchQuery).then(() => {
-                Spotify.playTrack();
-            });
+    operation: async function (searchQuery) {
+        let token = await refreshAccessTokenIfNeeded(Spotify.spotifyToken);
+        Spotify.spotifyToken = token;
+        await Spotify.requestSearch(searchQuery);
+        await Spotify.playTrack();
+    },
+});
+
+type SearchAndPlayWaitBlock = Blocks["searchAndPlayWait"];
+const searchAndPlayWait = (Spotify): Block<SearchAndPlayWaitBlock> => ({
+    type: BlockType.Command,
+    arg: { type: ArgumentType.String, defaultValue: "lauryn hill" },
+    text: (searchQuery) => `play music like ${searchQuery} until done`,
+    operation: async function (searchQuery) {
+        let token = await refreshAccessTokenIfNeeded(Spotify.spotifyToken);
+        Spotify.spotifyToken = token;
+        await Spotify.requestSearch(searchQuery);
+        await Spotify.playTrack();
+        
+        return new Promise<void> (resolve => {
+            setTimeout(() => {
+                resolve();
+            }, Spotify.currentTrackDuration*1000);
         });
+    },
+});
+
+type StopMusicBlock = Blocks["stopMusic"];
+const stopMusic = (Spotify): Block<StopMusicBlock> => ({
+    type: BlockType.Command,
+    text: `stop the music`,
+    operation: function () {
+        Spotify.player.stop();
+        Spotify.clearTimeouts();
     },
 });
 
