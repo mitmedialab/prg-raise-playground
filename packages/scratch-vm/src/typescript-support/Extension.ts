@@ -71,9 +71,12 @@ export abstract class Extension
     this.name = name;
     this.id = id;
     this.blockIconURI = blockIconURI;
-
     this.runtime = runtime;
-    this.init({ runtime, videoFeed: runtime.ioDevices?.video });
+    Extension.ExtensionsByID.set(id, this);
+  }
+
+  private internal_init() {
+    this.init({ runtime: this.runtime, videoFeed: this.runtime.ioDevices?.video });
     const definitions = this.defineBlocks();
     const menus: Menu<any>[] = [];
     for (const key in definitions) {
@@ -113,8 +116,6 @@ export abstract class Extension
         continue;
       }
     }
-
-    Extension.ExtensionsByID.set(id, this);
   }
 
   /**
