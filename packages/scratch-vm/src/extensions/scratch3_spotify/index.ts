@@ -7,10 +7,10 @@ import {
     ExtensionMenuDisplayDetails,
 } from "../../typescript-support/types";
 import defineTranslations from "./translations";
-// FEEDBACK could not use external js file
+// TODO figure out if ER used his own implementation of tone.js for a reason
 import Tone from "./tone.js";
 
-// FEEDBACK is it ok to still use require like this?
+// TODO use fetch instead of nets
 const nets = require("nets");
 const SERVER_TIMEOUT = 10000; // 10 seconds
 
@@ -58,20 +58,18 @@ type Details = {
  * @link https://www.typescriptlang.org/docs/handbook/2/generics.html Learn more about generics!
  */
 type Blocks = {
-    /*exampleCommand(exampleString: string, exampleNumber: number): void;
-  exampleReporter: () => number;
-  exampleHat(condition: boolean): boolean;*/
     searchAndPlay(query: string): void;
     searchAndPlayWait(query: string): void;
     trackData(trackAttr: string): string;
     stopMusic(): void;
-    // TODO uncomment when blocks are implemented
+    musicStopped(): boolean;
+    everyBeat(): boolean;
+    everyBar(): boolean;
+    // leaving out fancy blocks that allow mixing for now
     /* playNextBeat(): void;
     playBeat(beatNum: number): void;
     playBeatAndWait(beatNum: number): void;
-    currentBeat(): number;
-    everyBeat(): boolean;
-    everyBar(): boolean; */
+    currentBeat(): number; */
 };
 
 /**
@@ -85,8 +83,6 @@ class Spotify extends Extension<Details, Blocks> {
      * @summary A field to demonstrate how Typescript Class fields work
      * @link https://www.typescriptlang.org/docs/handbook/2/classes.html#fields
      */
-    // Example field 1
-    //exampleField: number;
     prevQuery: string;
     currentArtistName: string;
     currentTrackName: string;
@@ -94,7 +90,6 @@ class Spotify extends Extension<Details, Blocks> {
 
     spotifyToken: AccessToken;
 
-    // FEEDBACK using JS library, not sure what type to put
     player: any;
     gain: any;
     audioContext: any;
@@ -112,6 +107,7 @@ class Spotify extends Extension<Details, Blocks> {
     currentBeatNum: number;
     beatFlag: boolean;
     barFlag: boolean;
+    songFlag: boolean;
     currentTrackDuration: number;
     trackTempo: number;
     numBeats: number;
@@ -149,14 +145,12 @@ class Spotify extends Extension<Details, Blocks> {
 
             this.audioContext = Tone.context;
 
-            //this.trackTimingData;
             this.currentBeatNum = 0;
             this.beatFlag = false;
             this.barFlag = false;
+            this.songFlag = false;
             this.beatTimeouts = [];
             this.barTimeouts = [];
-            //this.trackTimeout;
-            //this.trackStartTime;
             this.numBeats = 0;
 
             this.currentTrackDuration = 0;
@@ -164,6 +158,11 @@ class Spotify extends Extension<Details, Blocks> {
 
             // Get Spotify token
             this.spotifyToken = await getAccessToken();
+
+            // Stop the music when you hit the stop button
+            env.runtime.on("PROJECT_STOP_ALL", () => {
+                this.stopMusic();
+            });
         }
     }
 
@@ -180,6 +179,7 @@ class Spotify extends Extension<Details, Blocks> {
         }
         this.player.start(Tone.now(), 0, this.currentTrackDuration);
         this.trackStartTime = Tone.now();
+        this.songFlag = true;
         this.setupTimeouts();
     }
 
@@ -202,7 +202,7 @@ class Spotify extends Extension<Details, Blocks> {
     }
 
     requestSearch(query: string) {
-        return new Promise<void> ((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             if (this.player) {
                 this.player.stop();
                 this.clearTimeouts();
@@ -244,10 +244,9 @@ class Spotify extends Extension<Details, Blocks> {
                         console.log(res);
                         console.log(JSON.parse(body));
 
-                        // if the error is a 401 (unauthorized), the token probably has expired, so request a new one.
-                        // TODO make sure I'm doing this right
+                        // if the error is a 401 (unauthorized), the token probably has expired, so request a new one
                         if (res.statusCode == 401) {
-                            // TODO figure out why this isn't calling refresh access token
+                            // TODO figure out why this code doesn't call refresh access token
                             console.log("401 error");
                             getAccessToken().then((token) => {
                                 this.spotifyToken = token;
@@ -397,7 +396,6 @@ class Spotify extends Extension<Details, Blocks> {
                     (err, res, body) => {
                         if (err) {
                             console.error("Spotify token error: " + err);
-                            // TODO make sure I did this right (changed from "return reject()")
                             return reject();
                         }
 
@@ -477,8 +475,8 @@ class Spotify extends Extension<Details, Blocks> {
         // events on each beat
         this.beatTimeouts = [];
         for (let i = 0; i < this.numBeats; i++) {
-            let t = window.setTimeout(
-                function (i) {
+            let t = setTimeout(
+                (i) => {
                     this.beatFlag = true;
                     this.currentBeatNum = i;
                 },
@@ -503,75 +501,38 @@ class Spotify extends Extension<Details, Blocks> {
         }
     }
 
-    // All example definitions below are syntactically equivalent,
-    // and which you use is just a matter of preference.
+    stopMusic() {
+        this.player.stop();
+        this.clearTimeouts();
+        this.songFlag = false;
+    }
+
     defineBlocks(): Spotify["BlockDefinitions"] {
-        // Example 1
-        //type DefineExampleCommand = DefineBlock<Blocks["exampleCommand"]>;
-
-        // Example 2
-        /*const exampleCommand: DefineExampleCommand = () => ({
-      type: BlockType.Command,
-      args: [ArgumentType.String, { type: ArgumentType.Number, defaultValue: 789 }],
-      text: (exampleString, exampleNumber) => `This is where the blocks display text goes, with arguments --> ${exampleString} and ${exampleNumber}`,
-      operation: (exampleString, exampleNumber, util) => {
-        alert(`This is a command! Here's what it received: ${exampleString} and ${exampleNumber}`); // Replace with what the block should do! 
-        console.log(util.stackFrame.isLoop); // just an example of using the BlockUtility
-      }
-    });*/
-
         return {
-            // Example 1?
-            //exampleCommand,
-
-            // Example 3
-            /*exampleReporter: function (self: Spotify): Block<Blocks["exampleReporter"]> {
-        return {
-          type: BlockType.Reporter,
-          text: "This increments an internal field and then reports it's value",
-          operation: () => {
-            return ++self.exampleField;
-          }
-        }
-      },*/
-
-            // Example 4
-            // exampleHat: pickFromOptions,
             searchAndPlay: searchAndPlay,
             searchAndPlayWait: searchAndPlayWait,
-            trackData: getTrackData,
             stopMusic: stopMusic,
+            musicStopped: musicStopped,
+            everyBeat: everyBeat,
+            everyBar: everyBar,
+            trackData: getTrackData,
             // leaving out fancy blocks that allow mixing for now
             /*playNextBeat: playNextBeat,
             playBeat: playBeat,
             playBeatAndWait: playBeatAndWait,
-            currentBeat: getCurrentBeat,
-            everyBeat: everyBeat,
-            everyBar: everyBar,*/
+            currentBeat: getCurrentBeat, */
         };
     }
 }
-
-// Example 4
-//type WithOptionsBlock = Blocks["exampleHat"];
-/*const pickFromOptions = (): Block<WithOptionsBlock> => ({
-  type: BlockType.Hat,
-  arg: { type: ArgumentType.Boolean, options: [{ text: 'Yes', value: true }, { text: 'No', value: false }] },
-  text: (argument1) => `Should the below block execute? ${argument1}`,
-  operation: function (argument1) {
-    return argument1;
-  }
-});*/
-
-type AccessToken = {
-    expirationTime: number;
-    value: string;
-};
 
 const currentTimeSec = (): number => {
     return new Date().getTime() / 1000;
 };
 
+type AccessToken = {
+    expirationTime: number;
+    value: string;
+};
 const getAccessToken = (): Promise<AccessToken> => {
     return new Promise((resolve, reject) => {
         nets(
@@ -630,6 +591,10 @@ const searchAndPlay = (Spotify): Block<SearchAndPlayBlock> => ({
         Spotify.spotifyToken = token;
         await Spotify.requestSearch(searchQuery);
         await Spotify.playTrack();
+
+        setTimeout(() => {
+            Spotify.songFlag = false;
+        }, Spotify.currentTrackDuration * 1000);
     },
 });
 
@@ -643,11 +608,11 @@ const searchAndPlayWait = (Spotify): Block<SearchAndPlayWaitBlock> => ({
         Spotify.spotifyToken = token;
         await Spotify.requestSearch(searchQuery);
         await Spotify.playTrack();
-        
-        return new Promise<void> (resolve => {
+
+        return new Promise<void>((resolve) => {
             setTimeout(() => {
                 resolve();
-            }, Spotify.currentTrackDuration*1000);
+            }, Spotify.currentTrackDuration * 1000);
         });
     },
 });
@@ -657,8 +622,7 @@ const stopMusic = (Spotify): Block<StopMusicBlock> => ({
     type: BlockType.Command,
     text: `stop the music`,
     operation: function () {
-        Spotify.player.stop();
-        Spotify.clearTimeouts();
+        Spotify.stopMusic();
     },
 });
 
@@ -680,16 +644,50 @@ const getTrackData = (): Block<TrackData> => ({
             case "album":
                 return this.currentAlbumName;
             case "full":
-                return (
-                    this.currentTrackName +
-                    " by " +
-                    this.currentArtistName +
-                    " from " +
-                    this.currentAlbumName
-                );
+                return `${this.currentTrackName} by ${this.currentArtistName} from ${this.currentAlbumName}`;
             default:
                 return "";
         }
+    },
+});
+
+type EveryBeat = Blocks["everyBeat"];
+const everyBeat = (Spotify): Block<EveryBeat> => ({
+    type: BlockType.Hat,
+    text: `every beat`,
+    operation: function () {
+        console.log("Every beat");
+        if (Spotify.beatFlag) {
+            setTimeout(() => {
+                Spotify.beatFlag = false;
+            }, 60);
+            return true;
+        }
+        return false;
+    },
+});
+
+type EveryBar = Blocks["everyBar"];
+const everyBar = (Spotify): Block<EveryBar> => ({
+    type: BlockType.Hat,
+    text: `every 4 beats`,
+    operation: function () {
+        if (Spotify.barFlag) {
+            setTimeout(() => {
+                Spotify.barFlag = false;
+            }, 60);
+            return true;
+        }
+        return false;
+    },
+});
+
+type MusicStopped = Blocks["musicStopped"];
+const musicStopped = (Spotify): Block<MusicStopped> => ({
+    type: BlockType.Boolean,
+    text: `music stopped?`,
+    operation: function () {
+        return !Spotify.songFlag;
     },
 });
 
