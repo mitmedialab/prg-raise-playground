@@ -17,6 +17,11 @@ const tryRetrieveExtensionConstructor = (extensionId) =>
         builtinExtensions[extensionId]() :
         tryLoadAnonymousExtension(extensionId);
 
+const tryInitExtension = (extension) => {
+    const extensionInit = "internal_init";
+    if (extensionInit in extension) extension[extensionInit]();
+}
+
 // These extensions are currently built into the VM repository but should not be loaded at startup.
 // TODO: move these out into a separate repository?
 // TODO: change extension spec so that library info, including extension ID, can be collected through static methods
@@ -150,6 +155,7 @@ class ExtensionManager {
         }
 
         const extensionInstance = new extension(this.runtime);
+        tryInitExtension(extensionInstance);
         const serviceName = this._registerInternalExtension(extensionInstance);
         this._loadedExtensions.set(extensionId, serviceName);
     }
@@ -169,6 +175,7 @@ class ExtensionManager {
                 return Promise.resolve();
             }
             const extensionInstance = new extension(this.runtime);
+            tryInitExtension(extensionInstance);
             const serviceName = this._registerInternalExtension(extensionInstance);
             this._loadedExtensions.set(extensionURL, serviceName);
             return Promise.resolve();
