@@ -183,11 +183,7 @@ class ExampleExtension extends Extension<Details, Blocks> {
 
 Next, implement the `ButtonBlock` definition inside of the object returned by the `defineBlocks` function. As usual, the defintion of the `ButtonBlock` is a function that returns an object containing all of the details needed to define the block. 
 
-Most importantly, within the `operation` function of the block's definition, the function `openUI` should be invoked (which is implemented on the base `Extension` class).
-
-The first argument is the name of the `.svelte` file in which your UI is implemented -- this name must match your filename exactly (but you can omit the `.svelte` extension).
-
-The second argument is the title that will display at the top of the modal window. If omitted, this will default to the name of your extension.
+Most importantly, within the `operation` function of the block's definition, the function `openUI` should be invoked (which is implemented on the base `Extension` class, and can therefore be invoked using the reference to the Extension passed as the only argument to the block definition function, called `self` below).
 
 For example:
 ```ts
@@ -196,16 +192,20 @@ class ExampleExtension extends Extension<Details, Blocks> {
     defineBlocks(): ExampleExtension["BlockDefinitions"] {
         return {
             ...,
-            someButton: () => ({
+            someButton: (self: ExampleExtension) => ({
                 type: BlockType.Button,
                 text: `Button Text Goes Here`,
-                operation: () => this.openUI("SvelteFileName", "Title of Window")
+                operation: () => self.openUI("SvelteFileName", "Title of Window")
             })
         }
     }
 }
 
 ```
+
+The first argument is the name of the `.svelte` file in which your UI is implemented -- this name must match your filename exactly (but you can omit the `.svelte` extension).
+
+The second argument is the title that will display at the top of the modal window. If omitted, this will default to the name of your extension.
 
 ### 🔀 Porting an Extension to Typescript
 
