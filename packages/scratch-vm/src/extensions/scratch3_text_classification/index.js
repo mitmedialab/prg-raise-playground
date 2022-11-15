@@ -730,6 +730,7 @@ class Scratch3TextClassificationBlocks {
         let words = new pos.Lexer().lex(args.TEXT);
         let tagger = new pos.Tagger();
         let taggedWords = tagger.tag(words);
+        console.log(taggedWords);
         for (let i=0; i<taggedWords.length; i++) {
             let taggedWord = taggedWords[i];
             if (taggedWord[1].startsWith(_partsOfSpeech[args.POS])) {
