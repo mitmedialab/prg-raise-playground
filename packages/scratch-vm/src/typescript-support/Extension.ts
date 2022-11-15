@@ -119,19 +119,21 @@ export abstract class Extension
   }
 
   /**
-   * Prevent users from defining their own extension ID (which will be filled in through code generation)
+   * The ID of this extension.
+   * NOTE: The `never` type is used to prevent users from defining their own extension ID (which will be filled in through code generation).
    */
-  readonly id: never;
+  readonly id: string & never;
 
   /**
-   * Prevent users from re-defining an extension Name (which is already defined through ExtensionMenuDisplayDetails)
+   * The name of this extension.
+   * NOTE: The `never` type is used to prevent users from re-defining an extension Name (which is already defined through ExtensionMenuDisplayDetails)
    */
-  readonly name: never;
+  readonly name: string & never;
 
   /**
-   * Prevent users from re-defining the blockIconURI (the insetIconURI from ExtensionMenuDisplayDetails will be encoded and used)
+   * NOTE: The `never` type is used to prevent users from re-defining the blockIconURI (the insetIconURI from ExtensionMenuDisplayDetails will be encoded and used)
    */
-  readonly blockIconURI: never;
+  private readonly blockIconURI: never;
 
   /**
    * @summary This member function (or 'method') will be called when a user adds your extension via the Extensions Menu (i.e. when your extension is instantiated)

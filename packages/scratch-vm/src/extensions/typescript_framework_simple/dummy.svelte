@@ -1,12 +1,11 @@
 <script lang="ts">
   import type Extension from ".";
-  import { ReactiveSet, ReactiveInvoke, reactiveInvoke, reactiveSet, activeClass, px, color } from "../../typescript-support/ui";
+  import { ReactiveInvoke, reactiveInvoke, activeClass, px, color } from "../../typescript-support/ui";
 
   export let extension: Extension;
   export let close: () => void;
 
   const invoke: ReactiveInvoke<Extension> = (functionName, ...args) => reactiveInvoke((extension = extension), functionName, args);
-  const set: ReactiveSet<Extension> = (propertyName, value) => reactiveSet((extension = extension), propertyName, value);
 
   const container = activeClass;
 </script>

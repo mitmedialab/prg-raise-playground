@@ -1,8 +1,7 @@
 <script lang="ts">
   import type Extension from ".";
-  import { reactiveInvoke, reactiveSet, activeClass, px, color, ReactiveInvoke, ReactiveSet } from "../../typescript-support/ui";
+  import { activeClass, px, color } from "../../typescript-support/ui";
 
-    /* svelte-ignore missing-declaration */
   export let extension: Extension;
   export let close: () => void;
 
