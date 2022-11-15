@@ -52,5 +52,6 @@
 </style>
 
 <div class:container style:width="360px" style:background-color={color.ui.white} style:color={color.text.primary}>
-  Hello, world! I am {extension.name}.
+  <h1>Hello, world!</h1>
+  <h2>I am {extension.name}.</h2>
 </div>

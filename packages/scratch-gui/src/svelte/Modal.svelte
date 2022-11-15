@@ -4,12 +4,11 @@
   import { Extension } from "scratch-vm/src/typescript-support/Extension";
 
   /** CODE GEN GUARDS: Begin Component Import Statements*/
-	import Test_dummy from "/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src/extensions/test/dummy.svelte";
-	import Typescriptprg95grpframeworkprg95grpcomplex_alert from "/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_complex/alert.svelte";
-	import Typescriptprg95grpframeworkprg95grpcomplex_animals from "/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_complex/animals.svelte";
-	import Typescriptprg95grpframeworkprg95grpsimple_counter from "/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_simple/counter.svelte";
-	import Typescriptprg95grpframeworkprg95grpsimple_dummy from "/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_simple/dummy.svelte";
-	import Typescriptprg95grpframeworkprg95grpsimple_palette from "/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_simple/palette.svelte";
+	import Typescriptprg95grpframeworkprg95grpcomplex_Alert from "/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_complex/Alert.svelte";
+	import Typescriptprg95grpframeworkprg95grpcomplex_Animals from "/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_complex/Animals.svelte";
+	import Typescriptprg95grpframeworkprg95grpsimple_Counter from "/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_simple/Counter.svelte";
+	import Typescriptprg95grpframeworkprg95grpsimple_Dummy from "/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_simple/Dummy.svelte";
+	import Typescriptprg95grpframeworkprg95grpsimple_Palette from "/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_simple/Palette.svelte";
   /** CODE GEN GUARDS: End Component Import Statements*/
 
   export let id: string;
@@ -26,12 +25,11 @@
     const options = {target, props};
     
     /** CODE GEN GUARDS: Begin Component Construction */
-		if (id === "test" && component === "dummy") new Test_dummy(options);
-		if (id === "typescriptprg95grpframeworkprg95grpcomplex" && component === "alert") new Typescriptprg95grpframeworkprg95grpcomplex_alert(options);
-		if (id === "typescriptprg95grpframeworkprg95grpcomplex" && component === "animals") new Typescriptprg95grpframeworkprg95grpcomplex_animals(options);
-		if (id === "typescriptprg95grpframeworkprg95grpsimple" && component === "counter") new Typescriptprg95grpframeworkprg95grpsimple_counter(options);
-		if (id === "typescriptprg95grpframeworkprg95grpsimple" && component === "dummy") new Typescriptprg95grpframeworkprg95grpsimple_dummy(options);
-		if (id === "typescriptprg95grpframeworkprg95grpsimple" && component === "palette") new Typescriptprg95grpframeworkprg95grpsimple_palette(options);
+		if (id === "typescriptprg95grpframeworkprg95grpcomplex" && component === "Alert") new Typescriptprg95grpframeworkprg95grpcomplex_Alert(options);
+		if (id === "typescriptprg95grpframeworkprg95grpcomplex" && component === "Animals") new Typescriptprg95grpframeworkprg95grpcomplex_Animals(options);
+		if (id === "typescriptprg95grpframeworkprg95grpsimple" && component === "Counter") new Typescriptprg95grpframeworkprg95grpsimple_Counter(options);
+		if (id === "typescriptprg95grpframeworkprg95grpsimple" && component === "Dummy") new Typescriptprg95grpframeworkprg95grpsimple_Dummy(options);
+		if (id === "typescriptprg95grpframeworkprg95grpsimple" && component === "Palette") new Typescriptprg95grpframeworkprg95grpsimple_Palette(options);
     /** CODE GEN GUARDS: End Component Construction */
   })
 

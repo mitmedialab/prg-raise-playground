@@ -63,7 +63,7 @@ export abstract class Extension
 
   openUI(component: string, label?: string) {
     const { id, name, runtime } = this;
-    openUI(runtime, { id, name, component, label });
+    openUI(runtime, { id, name, component: component.replace(".svelte", ""), label });
   }
 
   constructor(runtime: Runtime, codeGenArgs: CodeGenArgs) {
