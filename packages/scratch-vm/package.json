@@ -55,6 +55,7 @@
     "@tensorflow/tfjs": "^1.5.1",
     "@tensorflow/tfjs-layers": "^1.5.1",
     "@tensorflow/tfjs-node": "^1.5.1",
+    "@types/spotify-api": "^0.0.19",
     "@vernier/godirect": "1.5.0",
     "arraybuffer-loader": "^1.0.6",
     "atob": "2.1.2",
