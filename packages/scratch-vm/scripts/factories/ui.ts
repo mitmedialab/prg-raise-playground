@@ -20,7 +20,7 @@ if (!directory) error("An extension directory must be provided in order to add a
 const extensionDirectory = getPathToExtension(directory);
 if (!fs.existsSync(extensionDirectory)) error(`The provided extension directory (${directory}) does not exist!`);
 
-const uiTemplate = "ui";
+const uiTemplate = "UI";
 const extension = ".svelte";
 const filename = (modifier: string = "") => `${uiTemplate}${modifier}${extension}`;
 const template = getPathToTemplate(uiTemplate, extension);

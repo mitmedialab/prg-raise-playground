@@ -6,7 +6,6 @@
   export let close: () => void;
 
   const invoke: ReactiveInvoke<Extension> = (functionName, ...args) => reactiveInvoke((extension = extension), functionName, args);
-  const set: ReactiveSet<Extension> = (propertyName, value) => reactiveSet((extension = extension), propertyName, value);
 
   let animalMap: Map<string, number>;
 
