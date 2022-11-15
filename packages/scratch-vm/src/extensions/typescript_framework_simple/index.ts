@@ -58,17 +58,17 @@ class SimpleTypescript extends Extension<Details, {
       dummyUI: () => ({
         type: BlockType.Button,
         text: `Dummy UI`,
-        operation: () => this.openUI("dummy", "Howdy")
+        operation: () => this.openUI("Dummy", "Howdy")
       }),
       counterUI: () => ({
         type: BlockType.Button,
         text: "Open Counter",
-        operation: () => this.openUI("counter", "Pretty cool, right?")
+        operation: () => this.openUI("Counter", "Pretty cool, right?")
       }),
       colorUI: () => ({
         type: BlockType.Button,
         text: "Show colors",
-        operation: () => this.openUI("palette")
+        operation: () => this.openUI("Palette")
       })
     }
   }

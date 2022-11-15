@@ -221,7 +221,7 @@ class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
         text: (animal) => `Add ${animal} to collection`,
         operation: (animal) => {
           this.addAnimalToCollection(animal);
-          this.openUI("alert");
+          this.openUI("Alert");
         },
       }),
 
@@ -244,7 +244,7 @@ class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
         type: BlockType.Button,
         text: "Show Animal Collection",
         operation: () => {
-          this.openUI("animals", "Here's your animal collection");
+          this.openUI("Animals", "Here's your animal collection");
         }
       })
     }

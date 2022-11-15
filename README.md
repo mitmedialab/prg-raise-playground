@@ -142,9 +142,50 @@ Probably will have:
 
 ### 🎨 Adding UI
 
+To develop UI for your extension, we ask that you implement an interface that will be rendered in a [modal](https://blog.hubspot.com/website/modal-web-design#:~:text=A%20modal%20(also%20called%20a,action%20or%20by%20closing%20it.) / pop-up.
+
+We currently require you to implement this interface in the [Svelte front-end framework](https://svelte.dev/). Hop down to the [Svelte dependency]() to configure your development environment and understand why we chose svelte.
+
+To generate a new svelte file, run the following command:
+
 ```bash
 npm run add:ui <extension folder>
 # For example: npm run add:ui myExtension
+```
+
+If succesful, the above command will point you to a generated file with the `.svelte` file-extension that lives inside of your extension's directory.
+
+Feel free to change the name of this file to match it's intended usage, e.g. `Editor.svelte` or `AddItem.svelte` (**NOTE:** The convention is to use [Pascal Case](https://www.theserverside.com/definition/Pascal-case) to name svelte files, so they often start with a capital letter (unlike `.js` or `.ts` files)).
+
+```ts
+import { ButtonBlock } from "../../typescript-support/types";
+
+type Blocks = {
+    otherBlock: () => void;
+    someButton: ButtonBlock;
+}
+
+class ExampleExtension extends Extension<Details, Blocks> {
+    ...
+}
+
+```
+
+```ts
+class ExampleExtension extends Extension<Details, Blocks> {
+    ...
+    defineBlocks(): ExampleExtension["BlockDefinitions"] {
+        return {
+            ...,
+            someButton: () => ({
+                type: BlockType.Button,
+                text: `Button Text Goes Here`,
+                operation: () => this.openUI("SvelteFileName", "Title of Window")
+            })
+        }
+    }
+}
+
 ```
 
 ### 🔀 Porting an Extension to Typescript
@@ -379,6 +420,22 @@ Of course, if you prefer a different editor, go ahead and use it (but do so at y
 We recommend adding the following VS Code extensions (which you can do [like so](https://code.visualstudio.com/docs/editor/extension-marketplace#_install-an-extension)):
 
 - [Typescript](https://marketplace.visualstudio.com/items?itemName=ms-vscode.vscode-typescript-next)
+- [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode) (Only if you are developing custom UI for your extensions)
+
+### Svelte (Only if you are developing UI)
+
+If you will be implementing [custom UI windows]() for your extension, you'll need to work with [Svelte](). 
+
+As noted above, you should install the [Svelte Vs Code Extension](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+
+If you're wondering why we chose Svelte, it's because:
+- It offers a great typescript-developer expererience 
+- It allows you to use a **single file** to define the css/html/javascript (or in our case, typescript) that makes up an interface
+- *Just works* more often than other frameworks
+- It is (debatebly) more beginner friendly than other frameworks, since there aren't as many advanced concepts to understand
+    - But the tradeoff is you have to learn some svelte-specific concepts that you likely haven't seen anywhere else, like: [Reactive Assignments](https://svelte.dev/tutorial/reactive-assignments), [Reactive Statements](https://svelte.dev/tutorial/reactive-statements), [Bindings](https://svelte.dev/tutorial/text-inputs), etc. But these are all innovative concepts intended to make your life easier.
+
+The best way to learn how to write Svelte is through following their [interactive tutorial](https://svelte.dev/tutorial/) (which takes ~2hrs total, but spending just 30 minutes on it would get you a long way).
 
 ## 🤔 Troubleshooting
 
