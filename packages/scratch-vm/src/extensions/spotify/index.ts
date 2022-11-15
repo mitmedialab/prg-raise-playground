@@ -8,7 +8,7 @@ import {
 } from "../../typescript-support/types";
 import defineTranslations from "./translations";
 // TODO figure out if ER used his own implementation of tone.js for a reason
-import Tone from "./tone.js";
+import * as Tone from "tone";
 
 // TODO use fetch instead of nets
 const nets = require("nets");
@@ -309,8 +309,8 @@ class Spotify extends Extension<Details, Blocks> {
             () => {
                 console.log(
                     "no timing data for " +
-                        trackObjects[0].name +
-                        ", trying next track"
+                    trackObjects[0].name +
+                    ", trying next track"
                 );
                 if (trackObjects.length > 1) {
                     trackObjects = trackObjects.slice(1);
