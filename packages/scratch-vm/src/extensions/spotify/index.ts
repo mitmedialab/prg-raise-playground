@@ -90,17 +90,16 @@ class Spotify extends Extension<Details, Blocks> {
 
     spotifyToken: AccessToken;
 
-    player: any;
-    gain: any;
-    audioContext: any;
+    player: Tone.Player;
+    gain: Tone.Gain;
+    audioContext: Tone.BaseContext;
 
-    // TODO update all the "any"s with more descriptive types
-    beatPlayers: any[];
-    trackTimingData: any;
-    beatTimeouts: any[];
-    barTimeouts: any[];
-    trackTimeout: any;
-    trackStartTime: any;
+    beatPlayers: Tone.Player[];
+    trackTimingData: any; // this one seems complicated, will do next
+    beatTimeouts: NodeJS.Timeout[];
+    barTimeouts: number[];
+    trackTimeout: NodeJS.Timeout;
+    trackStartTime: number;
 
     releaseDur: number;
     currentBeatPlayerIndex: number;
@@ -120,7 +119,7 @@ class Spotify extends Extension<Details, Blocks> {
             this.currentAlbumName = "no album";
 
             // player for playing entire track
-            this.player = new Tone.Player().toMaster();
+            this.player = new Tone.Player().toDestination();
 
             // beat players for playing individual beat at a time
             this.beatPlayers = [];
@@ -132,9 +131,8 @@ class Spotify extends Extension<Details, Blocks> {
                     decay: 0,
                     sustain: 1.0,
                     release: this.releaseDur,
-                }).toMaster();
+                }).toDestination();
                 beatPlayer.connect(ampEnv);
-                beatPlayer.ampEnv = ampEnv;
                 this.beatPlayers.push(beatPlayer);
             }
             this.currentBeatPlayerIndex = 0;
@@ -448,7 +446,7 @@ class Spotify extends Extension<Details, Blocks> {
                         }
 
                         // decode the audio
-                        this.audioContext.decodeAudioData(
+                        this.audioContext.rawContext.decodeAudioData(
                             buffer.buffer,
                             (audioBuffer) => {
                                 this.player.buffer.set(audioBuffer);
