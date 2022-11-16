@@ -1,6 +1,6 @@
 import { ArgumentType, BlockType, Branch, Language } from "../../typescript-support/enums";
 import { Extension } from "../../typescript-support/Extension";
-import { Environment } from "../../typescript-support/types";
+import { ButtonBlock, Environment } from "../../typescript-support/types";
 import defineTranslations from "./translations";
 
 type Details = {
@@ -17,9 +17,22 @@ type Details = {
 
 class SimpleTypescript extends Extension<Details, {
   log: (msg: string) => void;
-  dummy: () => void;
+  dummyUI: ButtonBlock;
+  counterUI: ButtonBlock;
+  colorUI: ButtonBlock;
 }> {
+
+  count: number = 0;
+
   init(env: Environment) {
+  }
+
+  increment() {
+    this.count++;
+  }
+
+  incrementBy(amount: number) {
+    this.count += amount;
   }
 
   defineTranslations = defineTranslations;
@@ -42,10 +55,20 @@ class SimpleTypescript extends Extension<Details, {
         text: (msg) => `Log ${msg} to the console`,
         operation: (msg) => console.log(msg)
       }),
-      dummy: () => ({
-        type: BlockType.Loop,
-        text: "Dummy loop",
-        operation: util => util.startBranch(Branch.First, true)
+      dummyUI: () => ({
+        type: BlockType.Button,
+        text: `Dummy UI`,
+        operation: () => this.openUI("Dummy", "Howdy")
+      }),
+      counterUI: () => ({
+        type: BlockType.Button,
+        text: "Open Counter",
+        operation: () => this.openUI("Counter", "Pretty cool, right?")
+      }),
+      colorUI: () => ({
+        type: BlockType.Button,
+        text: "Show colors",
+        operation: () => this.openUI("Palette")
       })
     }
   }

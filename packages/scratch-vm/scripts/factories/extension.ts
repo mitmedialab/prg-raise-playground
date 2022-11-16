@@ -2,13 +2,11 @@ import path = require("path");
 import assert = require("assert");
 import fs = require("fs");
 import chalk = require("chalk");
-import { extensionsFolder } from "../../../scripts/paths";
-import { processArgs } from "../../../scripts/processArgs";
-import { UnionToTuple } from "../src/typescript-support/types";
+import { processArgs } from "../../../../scripts/processArgs";
+import { UnionToTuple } from "../../src/typescript-support/types";
+import { getPathToExtension, getPathToTemplate } from ".";
 
-const getPathToTemplate = (name: string) => path.join(extensionsFolder, "typescript_templates", `${name}.ts`);
-const getPathToDirectory = (directory: string) => path.join(extensionsFolder, directory);
-const alreadyExists = (directory: string) => fs.existsSync(getPathToDirectory(directory));
+const alreadyExists = (directory: string) => fs.existsSync(getPathToExtension(directory));
 
 const enum Operation {
   Default = "default",
@@ -25,7 +23,7 @@ const templateByOperation: Record<Operation, string> = {
 const translationsFile = getPathToTemplate("translations");
 
 Object.values(templateByOperation)
-  .map(getPathToTemplate)
+  .map(template => getPathToTemplate(template))
   .forEach(filepath => assert(fs.existsSync(filepath)));
 
 type CommandLineArgs = {
@@ -45,7 +43,7 @@ if (alreadyExists(directory)) error(`An extension has already been created under
 if (!operations.includes(operation)) error(`The provided operation (${operation}) is not supported. The supported operations are: ${operations.join(", ")}`);
 
 const template = getPathToTemplate(templateByOperation[operation]);
-const folder = getPathToDirectory(directory);
+const folder = getPathToExtension(directory);
 const destination = path.join(folder, "index.ts");
 
 fs.mkdirSync(folder);

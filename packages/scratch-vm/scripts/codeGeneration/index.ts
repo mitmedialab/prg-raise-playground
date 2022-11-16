@@ -6,6 +6,7 @@ import { ExtensionMenuDisplayDetails } from "../../src/typescript-support/types"
 import { profile } from "../../../../scripts/profile";
 import { fillInContentForExtensions } from "./extension";
 import { generateGitIgnoresForExtensions } from "./gitingore";
+import { collectSvelteComponentsForExtensions } from "./svelte";
 import { detailFileName, populateMenuForExtensions, generatedFileWarning } from "./menu";
 import { packages, extensionsFolder } from "../../../../scripts/paths";
 
@@ -15,9 +16,9 @@ export type GenerationCache = ExtensionMenuDisplayDetails & {
   blockIconURI: string,
 };
 
-export type GenerationDetails = { 
+export type GenerationDetails = {
   details: ExtensionMenuDisplayDetails,
-  implementationDirectory: string, 
+  implementationDirectory: string,
   tsProgramFiles: string[],
   assetsDirectory: string,
   cached?: GenerationCache,
@@ -35,7 +36,7 @@ const generatedFile = path.join(generatedDirectory, `${detailFileName}.js`);
 const newline = "\n";
 const tab = "\t";
 
-const getCached = (location: string): GenerationCache | undefined  => {
+const getCached = (location: string): GenerationCache | undefined => {
   const pathToCache = path.join(location, cacheFile);
   if (!existsSync(pathToCache)) return undefined;
   const cacheContent = readFileSync(pathToCache, 'utf-8');
@@ -53,31 +54,32 @@ export default [
   writeFileSync(generatedFile, [generatedFileWarning, imports, exports].join(newline));
 }
 
-const getFilesByExtension = (program: ts.Program): Record<string, string[]> => 
- program.getSourceFiles()
-  .filter(({fileName}) => path.extname(fileName) === ".ts")
-  .map(({fileName}) => path.relative(extensionsFolder, fileName))
-  .map(pathToFile => path.parse(pathToFile))
-  .filter(parsed => !parsed.dir.startsWith(".."))
-  .reduce((filesByExtension, parsed) => {
-    const { dir, base } = parsed;
-    const parts = dir.split("/");
-    const extensionBase = parts[0];
-    const files = filesByExtension[extensionBase];
-    const fullPath = path.join(...[...parts.slice(1), base]);
-    files ? files.push(fullPath) : filesByExtension[extensionBase] = [fullPath];
-    return filesByExtension;
-  }, {});
+const getFilesByExtension = (program: ts.Program): Record<string, string[]> =>
+  program.getSourceFiles()
+    .filter(({ fileName }) => path.extname(fileName) === ".ts")
+    .map(({ fileName }) => path.relative(extensionsFolder, fileName))
+    .map(pathToFile => path.parse(pathToFile))
+    .filter(parsed => !parsed.dir.startsWith(".."))
+    .reduce((filesByExtension, parsed) => {
+      const { dir, base } = parsed;
+      const parts = dir.split("/");
+      const extensionBase = parts[0];
+      const files = filesByExtension[extensionBase];
+      const fullPath = path.join(...[...parts.slice(1), base]);
+      files ? files.push(fullPath) : filesByExtension[extensionBase] = [fullPath];
+      return filesByExtension;
+    }, {});
 
 const extensionCodeGenerators: ExtensionCodeGenerator[] = [
-  fillInContentForExtensions, 
+  fillInContentForExtensions,
   populateMenuForExtensions,
-  generateGitIgnoresForExtensions
+  generateGitIgnoresForExtensions,
+  collectSvelteComponentsForExtensions
 ];
 
 export const generateCodeForExtensions = (
-  extensions: Record<string, ExtensionMenuDisplayDetails>, 
-  program: ts.Program, 
+  extensions: Record<string, ExtensionMenuDisplayDetails>,
+  program: ts.Program,
   isStartUp: boolean,
   useCaches: boolean
 ) => {
@@ -90,9 +92,9 @@ export const generateCodeForExtensions = (
     const implementationDirectory = path.join(extensionsFolder, extensionId);
     const cached = useCaches ? getCached(implementationDirectory) : undefined;
     extensionsForGeneration[extensionId] = {
-      details: extensions[extensionId], 
+      details: extensions[extensionId],
       assetsDirectory,
-      implementationDirectory, 
+      implementationDirectory,
       cached,
       tsProgramFiles: filesByExtension[extensionId].sort(),
       cacheUpdates: cached?.extensionId === extensionId ? {} : { extensionId }
@@ -110,6 +112,6 @@ export const generateCodeForExtensions = (
     if (Object.keys(cacheUpdates).length === 0) continue;
 
     const pathToCache = path.join(implementationDirectory, cacheFile);
-    writeFileSync(pathToCache, JSON.stringify({...cached, ...cacheUpdates, extensionId}));
+    writeFileSync(pathToCache, JSON.stringify({ ...cached, ...cacheUpdates, extensionId }));
   }
 }

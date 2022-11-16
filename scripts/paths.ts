@@ -14,6 +14,7 @@ export const packages = {
 }
 
 export const vmSrc = path.join(packages.vm, "src");
+export const guiSrc = path.join(packages.gui, "src");
 export const extensionsFolder = path.join(vmSrc, "extensions");
 
 
