@@ -1,3 +1,5 @@
+/// <reference types="spotify-api" />
+
 import { ArgumentType, BlockType } from "../../typescript-support/enums";
 import { Extension } from "../../typescript-support/Extension";
 import {
@@ -9,9 +11,10 @@ import {
 import defineTranslations from "./translations";
 // TODO figure out if ER used his own implementation of tone.js for a reason
 import * as Tone from "tone";
+import { asyncSome, fetchWithTimeout } from "../../typescript-support/utils";
+import { getTimingDataFromResponse, TimingData } from "./helper";
 
 // TODO use fetch instead of nets
-const nets = require("nets");
 const SERVER_TIMEOUT = 10000; // 10 seconds
 
 /**
@@ -95,7 +98,7 @@ class Spotify extends Extension<Details, Blocks> {
     audioContext: Tone.BaseContext;
 
     beatPlayers: Tone.Player[];
-    trackTimingData: any; // this one seems complicated, will do next
+    trackTimingData: TimingData; // this one seems complicated, will do next
     beatTimeouts: NodeJS.Timeout[];
     barTimeouts: number[];
     trackTimeout: NodeJS.Timeout;
@@ -139,7 +142,7 @@ class Spotify extends Extension<Details, Blocks> {
 
             // gain node
             this.gain = new Tone.Gain();
-            Tone.Master.chain(this.gain);
+            Tone.Destination.chain(this.gain);
 
             this.audioContext = Tone.context;
 
@@ -168,15 +171,11 @@ class Spotify extends Extension<Details, Blocks> {
     defineTranslations = defineTranslations as typeof this.defineTranslations;
 
     playTrack() {
-        if (
-            !this.player.buffer ||
-            !this.player.buffer.loaded ||
-            !this.trackTimingData
-        ) {
-            return;
-        }
-        this.player.start(Tone.now(), 0, this.currentTrackDuration);
-        this.trackStartTime = Tone.now();
+        const { player, trackTimingData, currentTrackDuration } = this;
+        if (!player.buffer || !player.buffer.loaded || !trackTimingData) return;
+        const now = Tone.now();
+        player.start(now, 0, currentTrackDuration);
+        this.trackStartTime = now;
         this.songFlag = true;
         this.setupTimeouts();
     }
@@ -192,281 +191,122 @@ class Spotify extends Extension<Details, Blocks> {
     }
 
     resetTrackData() {
-        this.player = new Tone.Player().toMaster();
+        this.player = new Tone.Player().toDestination();
         this.currentArtistName = "no artist";
         this.currentTrackName = "no track";
         this.currentAlbumName = "no album";
         this.trackTempo = 0;
     }
 
-    requestSearch(query: string) {
-        return new Promise<void>((resolve, reject) => {
-            if (this.player) {
-                this.player.stop();
-                this.clearTimeouts();
-            }
+    async requestSearch(query: string) {
+        if (this.player) {
+            this.player.stop();
+            this.clearTimeouts();
+        }
 
-            if (query == "") {
-                return reject();
-            }
+        if (query == "") return;
+        this.currentBeatNum = 0;
 
-            this.currentBeatNum = 0;
+        const sameQuery = query === this.prevQuery;
+        if (sameQuery) return;
 
-            // if we are making the exact same query again, abort
-            // keeping the same metadata, no need to reload
-            if (query == this.prevQuery) {
-                return resolve();
-            }
+        const url = `https://api.spotify.com/v1/search?q=${query}&type=track`;
+        const headers = { Authorization: "Bearer " + this.spotifyToken.value };
 
-            nets(
-                {
-                    url:
-                        "https://api.spotify.com/v1/search?q=" +
-                        query +
-                        "&type=track",
-                    headers: {
-                        Authorization: "Bearer " + this.spotifyToken.value,
-                    },
-                    timeout: SERVER_TIMEOUT,
-                },
-                (err, res, body) => {
-                    if (err) {
-                        console.log("Error with Spotify API query");
-                        console.log(err);
-                        console.log(res);
-                        return reject();
-                    }
+        const response = await fetchWithTimeout(url, { headers, timeout: SERVER_TIMEOUT });
 
-                    if (res.statusCode !== 200) {
-                        console.log("Error with Spotify API query");
-                        console.log(res);
-                        console.log(JSON.parse(body));
+        if (!response.ok) console.log(`Error with Spotify API query: ${response}`);
 
-                        // if the error is a 401 (unauthorized), the token probably has expired, so request a new one
-                        if (res.statusCode == 401) {
-                            // TODO figure out why this code doesn't call refresh access token
-                            console.log("401 error");
-                            getAccessToken().then((token) => {
-                                this.spotifyToken = token;
-                                return reject();
-                            });
-                        } else {
-                            console.error(
-                                "Spotify token error: " + res.statusCode
-                            );
-                            return reject();
-                        }
-                    }
+        const { status } = response;
+        const json: SpotifyApi.TrackSearchResponse = await response.json();
 
-                    // success
-                    this.prevQuery = query;
-                    let trackObjects = JSON.parse(body).tracks.items;
+        const success = status === 200
 
-                    // fail if there are no tracks
-                    if (!trackObjects || trackObjects.length === 0) {
-                        this.resetTrackData();
-                        return reject();
-                    }
+        if (!success) {
+            console.log("Error with Spotify API query");
+            console.log(response);
+            console.log(json);
 
-                    // find the first result without explicit lyrics
-                    let notExplicit = false;
-                    for (let i = 0; i < trackObjects.length; i++) {
-                        if (!trackObjects[i].explicit) {
-                            trackObjects = trackObjects.slice(i);
-                            notExplicit = true;
-                            break;
-                        }
-                    }
+            const tokenExpired = status === 401;
 
-                    // fail if there were none without explicit lyrics
-                    if (!notExplicit) {
-                        this.resetTrackData();
-                        console.log("no results without explicit lyrics");
-                        return reject();
-                    }
+            if (!tokenExpired) return console.error(`Spotify token error: ${status}`);
 
-                    this.keepTryingToGetTimingData(
-                        trackObjects,
-                        resolve,
-                        reject
-                    );
-                }
-            );
-        });
+            console.log("401 error");
+            const newToken = await getAccessToken();
+            this.spotifyToken = newToken;
+            return;
+        }
+
+        this.prevQuery = query;
+        const trackObjects = json.tracks.items;
+
+        const noTracksFound = !trackObjects || trackObjects.length === 0;
+        if (noTracksFound) return this.resetTrackData();
+
+        const nonExplicitSongs = trackObjects.filter(track => !track.explicit);
+
+        if (nonExplicitSongs.length === 0) {
+            this.resetTrackData();
+            return console.log("no results without explicit lyrics");
+        }
+
+        const timingFound = await asyncSome(nonExplicitSongs, this.tryGetTimingData.bind(this));
+
+        if (!timingFound) {
+            console.log("no more results");
+            this.resetTrackData();
+        }
+    };
+
+    async tryGetTimingData({ artists, name, album, preview_url }: SpotifyApi.TrackObjectFull) {
+        const success = await this.tryGetTrackTimingData(preview_url);
+
+        if (!success) {
+            console.log(`No timing data for ${name}.`);
+            return false;
+        }
+
+        this.currentArtistName = artists[0].name;
+        this.currentTrackName = name;
+        this.currentAlbumName = album.name;
+        return true;
     }
 
-    keepTryingToGetTimingData(trackObjects, resolve, reject) {
-        this.getTrackTimingData(trackObjects[0].preview_url).then(
-            () => {
-                // store track name, artist, album
-                this.currentArtistName = trackObjects[0].artists[0].name;
-                this.currentTrackName = trackObjects[0].name;
-                this.currentAlbumName = trackObjects[0].album.name;
-                resolve();
-            },
-            () => {
-                console.log(
-                    "no timing data for " +
-                    trackObjects[0].name +
-                    ", trying next track"
-                );
-                if (trackObjects.length > 1) {
-                    trackObjects = trackObjects.slice(1);
-                    this.keepTryingToGetTimingData(
-                        trackObjects,
-                        resolve,
-                        reject
-                    );
-                } else {
-                    console.log("no more results");
-                    this.resetTrackData();
-                    reject();
-                }
+    async tryGetTrackTimingData(url: string) {
+        if (!url) return false;
+        const response = await fetch(url);
+
+        this.trackTimingData = await getTimingDataFromResponse(response);
+
+        if (!this.trackTimingData) return false;
+
+        const { beats, loop_duration, buffer } = this.trackTimingData;
+
+        let sum = 0;
+        for (let i = 0; i < beats.length - 1; i++) {
+            sum += beats[i + 1] - beats[i];
+        }
+
+        const averageBeatLength = sum / (beats.length - 1);
+        const tempoEstimate = 60 / averageBeatLength;
+        this.trackTempo = tempoEstimate;
+
+        // use the loop duration to set the number of beats
+        const { index } = beats.map((beat, index) => ({ beat, index })).find(({ beat }) => loop_duration < beat);
+        this.numBeats = index;
+
+        // decode the audio
+        await this.audioContext.rawContext.decodeAudioData(
+            buffer.buffer,
+            (audioBuffer) => {
+                const { player, beatPlayers } = this;
+                player.buffer.set(audioBuffer);
+                this.currentTrackDuration = loop_duration;
+                beatPlayers.forEach(({ buffer }) => buffer.set(audioBuffer));
             }
         );
-    }
 
-    // code adapted from spotify
-    getTrackTimingData(url: string) {
-        return new Promise((resolve, reject) => {
-            if (!url) {
-                reject();
-                return;
-            }
-
-            const findString = (buffer, string) => {
-                for (let i = 0; i < buffer.length - string.length; i++) {
-                    let match = true;
-                    for (let j = 0; j < string.length; j++) {
-                        var c = String.fromCharCode(buffer[i + j]);
-                        if (c !== string[j]) {
-                            match = false;
-                            break;
-                        }
-                    }
-                    if (match) {
-                        return i;
-                    }
-                }
-                return -1;
-            };
-
-            const getSection = (buffer, start, which) => {
-                let sectionCount = 0;
-                let i;
-                for (i = start; i < buffer.length; i++) {
-                    if (buffer[i] == 0) {
-                        sectionCount++;
-                    }
-                    if (sectionCount >= which) {
-                        break;
-                    }
-                }
-                i++;
-                let content = "";
-                while (i < buffer.length) {
-                    if (buffer[i] == 0) {
-                        break;
-                    }
-                    var c = String.fromCharCode(buffer[i]);
-                    content += c;
-                    i++;
-                }
-                let js = "";
-                try {
-                    js = eval("(" + content + ")");
-                } catch (e) {
-                    js = "";
-                }
-                return js;
-            };
-
-            const makeRequest = (url, resolve, reject) => {
-                if (!url) {
-                    reject();
-                    return;
-                }
-
-                nets(
-                    {
-                        url: url,
-                    },
-                    (err, res, body) => {
-                        if (err) {
-                            console.error("Spotify token error: " + err);
-                            return reject();
-                        }
-
-                        if (res.statusCode !== 200) {
-                            console.error(
-                                "Spotify token error: " + res.statusCode
-                            );
-                            return reject();
-                        }
-
-                        // success
-                        let buffer = new Uint8Array(body);
-                        let idx = findString(buffer, "GEOB");
-
-                        this.trackTimingData = getSection(buffer, idx + 1, 8);
-
-                        if (!this.trackTimingData) {
-                            reject();
-                            return;
-                        }
-
-                        // estimate the tempo using the average time interval between beats
-                        let sum = 0;
-                        for (
-                            let i = 0;
-                            i < this.trackTimingData.beats.length - 1;
-                            i++
-                        ) {
-                            sum +=
-                                this.trackTimingData.beats[i + 1] -
-                                this.trackTimingData.beats[i];
-                        }
-                        let beatLength =
-                            sum / (this.trackTimingData.beats.length - 1);
-                        this.trackTempo = 60 / beatLength;
-
-                        // use the loop duration to set the number of beats
-                        for (
-                            let i = 0;
-                            i < this.trackTimingData.beats.length;
-                            i++
-                        ) {
-                            if (
-                                this.trackTimingData.loop_duration <
-                                this.trackTimingData.beats[i]
-                            ) {
-                                this.numBeats = i;
-                                break;
-                            }
-                        }
-
-                        // decode the audio
-                        this.audioContext.rawContext.decodeAudioData(
-                            buffer.buffer,
-                            (audioBuffer) => {
-                                this.player.buffer.set(audioBuffer);
-                                this.currentTrackDuration =
-                                    this.trackTimingData.loop_duration;
-                                for (
-                                    let i = 0;
-                                    i < this.beatPlayers.length;
-                                    i++
-                                ) {
-                                    this.beatPlayers[i].buffer.set(audioBuffer);
-                                }
-                                resolve();
-                            }
-                        );
-                    }
-                );
-            };
-            makeRequest(url, resolve, reject);
-        });
+        return true;
     }
 
     setupTimeouts() {
@@ -531,36 +371,27 @@ type AccessToken = {
     expirationTime: number;
     value: string;
 };
-const getAccessToken = (): Promise<AccessToken> => {
-    return new Promise((resolve, reject) => {
-        nets(
-            {
-                // We're piggybacking off of Eric's (?) account and that's bad
-                // TODO make our own way to get a spotify token
-                url: "https://u61j2fb017.execute-api.us-east-1.amazonaws.com/prod/get-spotify-token",
-                timeout: SERVER_TIMEOUT,
-            },
-            (err, res, body) => {
-                if (err) {
-                    console.error("Spotify token error: " + err);
-                    // TODO make sure I did this right (changed from "return reject()")
-                    return reject();
-                }
 
-                if (res.statusCode !== 200) {
-                    console.error("Spotify token error: " + res.statusCode);
-                    return reject();
-                }
+const getAccessToken = async (): Promise<AccessToken> => {
+    const url = "https://u61j2fb017.execute-api.us-east-1.amazonaws.com/prod/get-spotify-token";
+    const response = await fetchWithTimeout(url, { timeout: SERVER_TIMEOUT });
 
-                // success
-                let token: AccessToken = {
-                    expirationTime: currentTimeSec() + 3600,
-                    value: JSON.parse(body).token,
-                };
-                resolve(token);
-            }
-        );
-    });
+    if (!response.ok) {
+        console.error(`Spotify token error: ${response}`);
+        return undefined;
+    }
+
+    const { status } = response;
+    const success = status === 200;
+
+    if (!success) {
+        console.error(`Spotify token error ${status}: ${response.statusText}`);
+        return undefined;
+    }
+
+    const { token }: { token: string } = await response.json();
+
+    return { expirationTime: currentTimeSec() + 3600, value: token };
 };
 
 const refreshAccessTokenIfNeeded = (
@@ -597,20 +428,20 @@ const searchAndPlay = (Spotify): Block<SearchAndPlayBlock> => ({
 });
 
 type SearchAndPlayWaitBlock = Blocks["searchAndPlayWait"];
-const searchAndPlayWait = (Spotify): Block<SearchAndPlayWaitBlock> => ({
+const searchAndPlayWait = (extension: Spotify): Block<SearchAndPlayWaitBlock> => ({
     type: BlockType.Command,
     arg: { type: ArgumentType.String, defaultValue: "lauryn hill" },
     text: (searchQuery) => `play music like ${searchQuery} until done`,
     operation: async function (searchQuery) {
-        let token = await refreshAccessTokenIfNeeded(Spotify.spotifyToken);
-        Spotify.spotifyToken = token;
-        await Spotify.requestSearch(searchQuery);
-        await Spotify.playTrack();
+        let token = await refreshAccessTokenIfNeeded(extension.spotifyToken);
+        extension.spotifyToken = token;
+        await extension.requestSearch(searchQuery);
+        await extension.playTrack();
 
         return new Promise<void>((resolve) => {
             setTimeout(() => {
                 resolve();
-            }, Spotify.currentTrackDuration * 1000);
+            }, extension.currentTrackDuration * 1000);
         });
     },
 });
