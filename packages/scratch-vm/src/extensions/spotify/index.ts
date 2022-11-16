@@ -107,7 +107,7 @@ class Spotify extends Extension<Details, Blocks> {
     beatPlayers: Tone.Player[] = [];
     trackTimingData: TimingData;
     beatTimeouts: NodeJS.Timeout[] = [];
-    barTimeouts: number[] = [];
+    barTimeouts: NodeJS.Timeout[] = [];
     trackTimeout: NodeJS.Timeout;
     trackStartTime: number;
 
@@ -119,6 +119,8 @@ class Spotify extends Extension<Details, Blocks> {
     currentTrackDuration: number = 0;
     trackTempo: number = 0;
     numBeats: number = 0;
+
+    resolvePlayUntil: (value: void | PromiseLike<void>) => void;
 
     async init(env: Environment) {
         const options = { attack: 0.1, decay: 0, sustain: 1.0, release: 0.01 };
@@ -151,12 +153,8 @@ class Spotify extends Extension<Details, Blocks> {
 
     clearTimeouts() {
         clearTimeout(this.trackTimeout);
-        for (let i = 0; i < this.beatTimeouts.length; i++) {
-            clearTimeout(this.beatTimeouts[i]);
-        }
-        for (let i = 0; i < this.barTimeouts.length; i++) {
-            clearTimeout(this.barTimeouts[i]);
-        }
+        this.beatTimeouts.forEach(clearTimeout);
+        this.barTimeouts.forEach(clearTimeout);
     }
 
     resetTrackData() {
@@ -168,10 +166,8 @@ class Spotify extends Extension<Details, Blocks> {
     }
 
     async requestSearch(query: string) {
-        if (this.player) {
-            this.player.stop();
-            this.clearTimeouts();
-        }
+        this.player.stop();
+        this.clearTimeouts();
 
         if (query == "") return;
         this.currentBeatNum = 0;
@@ -192,10 +188,7 @@ class Spotify extends Extension<Details, Blocks> {
         const success = status === 200
 
         if (!success) {
-            console.log("Error with Spotify API query");
-            console.log(response);
-            console.log(json);
-
+            console.log(`Error with Spotify API query: ${json}`);
             const tokenExpired = status === 401;
 
             if (!tokenExpired) return console.error(`Spotify token error: ${status}`);
@@ -261,10 +254,10 @@ class Spotify extends Extension<Details, Blocks> {
         this.trackTempo = tempoEstimate;
 
         // use the loop duration to set the number of beats
-        const { index } = beats.map((beat, index) => ({ beat, index })).find(({ beat }) => loop_duration < beat);
+        const durationLessThanBeat = () => ({ beat }: { beat: number }) => loop_duration < beat;
+        const { index } = beats.map((beat, index) => ({ beat, index })).find(durationLessThanBeat);
         this.numBeats = index;
 
-        // decode the audio
         await this.audioContext.rawContext.decodeAudioData(
             buffer.buffer,
             (audioBuffer) => {
@@ -279,31 +272,28 @@ class Spotify extends Extension<Details, Blocks> {
     }
 
     setupTimeouts() {
+        const { numBeats, trackTimingData } = this;
+        const { beats, downbeats } = trackTimingData;
+
         // events on each beat
         this.beatTimeouts = [];
-        for (let i = 0; i < this.numBeats; i++) {
-            let t = setTimeout(
-                (i) => {
-                    this.beatFlag = true;
-                    this.currentBeatNum = i;
-                },
-                (this.trackTimingData.beats[i] - 0.1) * 1000,
-                i
-            );
-            this.beatTimeouts.push(t);
+        for (let i = 0; i < numBeats; i++) {
+            const callback = (value: number) => {
+                this.beatFlag = true;
+                this.currentBeatNum = value;
+            }
+            const duration = (beats[i] - 0.1) * 1000;
+            const timeout = setTimeout(callback.bind(this), duration, i);
+            this.beatTimeouts.push(timeout);
         }
 
         // events on each bar
         this.barTimeouts = [];
-        for (let i = 0; i < this.trackTimingData.downbeats.length; i++) {
-            if (
-                this.trackTimingData.downbeats[i] <
-                this.trackTimingData.beats[this.numBeats - 1]
-            ) {
-                let t = window.setTimeout(() => {
-                    this.barFlag = true;
-                }, (this.trackTimingData.downbeats[i] - 0.1) * 1000);
-                this.barTimeouts.push(t);
+        for (let i = 0; i < downbeats.length; i++) {
+            if (downbeats[i] < beats[numBeats - 1]) {
+                const duration = (downbeats[i] - 0.1) * 1000;
+                const timeout = setTimeout(() => this.barFlag = true, duration);
+                this.barTimeouts.push(timeout);
             }
         }
     }
@@ -312,6 +302,7 @@ class Spotify extends Extension<Details, Blocks> {
         this.player.stop();
         this.clearTimeouts();
         this.songFlag = false;
+        if (this.resolvePlayUntil) this.resolvePlayUntil();
     }
 
     defineBlocks(): Spotify["BlockDefinitions"] {
@@ -380,19 +371,19 @@ const refreshAccessTokenIfNeeded = (
 };
 
 type SearchAndPlayBlock = Blocks["searchAndPlay"];
-const searchAndPlay = (Spotify): Block<SearchAndPlayBlock> => ({
+const searchAndPlay = (extension: Spotify): Block<SearchAndPlayBlock> => ({
     type: BlockType.Command,
     arg: { type: ArgumentType.String, defaultValue: "tacos" },
     text: (searchQuery) => `play music like ${searchQuery}`,
     operation: async function (searchQuery) {
-        let token = await refreshAccessTokenIfNeeded(Spotify.spotifyToken);
-        Spotify.spotifyToken = token;
-        await Spotify.requestSearch(searchQuery);
-        await Spotify.playTrack();
+        let token = await refreshAccessTokenIfNeeded(extension.spotifyToken);
+        extension.spotifyToken = token;
+        await extension.requestSearch(searchQuery);
+        await extension.playTrack();
 
         setTimeout(() => {
-            Spotify.songFlag = false;
-        }, Spotify.currentTrackDuration * 1000);
+            extension.songFlag = false;
+        }, extension.currentTrackDuration * 1000);
     },
 });
 
@@ -407,21 +398,19 @@ const searchAndPlayWait = (extension: Spotify): Block<SearchAndPlayWaitBlock> =>
         await extension.requestSearch(searchQuery);
         await extension.playTrack();
 
+
         return new Promise<void>((resolve) => {
-            setTimeout(() => {
-                resolve();
-            }, extension.currentTrackDuration * 1000);
+            extension.resolvePlayUntil = resolve;
+            setTimeout(extension.resolvePlayUntil, extension.currentTrackDuration * 1000);
         });
     },
 });
 
 type StopMusicBlock = Blocks["stopMusic"];
-const stopMusic = (Spotify): Block<StopMusicBlock> => ({
+const stopMusic = (extension: Spotify): Block<StopMusicBlock> => ({
     type: BlockType.Command,
     text: `stop the music`,
-    operation: function () {
-        Spotify.stopMusic();
-    },
+    operation: extension.stopMusic,
 });
 
 type TrackData = Blocks["trackData"];
@@ -450,43 +439,31 @@ const getTrackData = (): Block<TrackData> => ({
 });
 
 type EveryBeat = Blocks["everyBeat"];
-const everyBeat = (Spotify): Block<EveryBeat> => ({
+const everyBeat = (extension: Spotify): Block<EveryBeat> => ({
     type: BlockType.Hat,
     text: `every beat`,
     operation: function () {
         console.log("Every beat");
-        if (Spotify.beatFlag) {
-            setTimeout(() => {
-                Spotify.beatFlag = false;
-            }, 60);
-            return true;
-        }
-        return false;
+        if (extension.beatFlag) setTimeout(() => extension.beatFlag = false, 60);
+        return extension.beatFlag;
     },
 });
 
 type EveryBar = Blocks["everyBar"];
-const everyBar = (Spotify): Block<EveryBar> => ({
+const everyBar = (extension: Spotify): Block<EveryBar> => ({
     type: BlockType.Hat,
     text: `every 4 beats`,
     operation: function () {
-        if (Spotify.barFlag) {
-            setTimeout(() => {
-                Spotify.barFlag = false;
-            }, 60);
-            return true;
-        }
-        return false;
+        if (extension.barFlag) setTimeout(() => extension.barFlag = false, 60);
+        return extension.barFlag;
     },
 });
 
 type MusicStopped = Blocks["musicStopped"];
-const musicStopped = (Spotify): Block<MusicStopped> => ({
+const musicStopped = (extension: Spotify): Block<MusicStopped> => ({
     type: BlockType.Boolean,
     text: `music stopped?`,
-    operation: function () {
-        return !Spotify.songFlag;
-    },
+    operation: () => !extension.songFlag,
 });
 
 export = Spotify;
