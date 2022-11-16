@@ -86,85 +86,54 @@ class Spotify extends Extension<Details, Blocks> {
      * @summary A field to demonstrate how Typescript Class fields work
      * @link https://www.typescriptlang.org/docs/handbook/2/classes.html#fields
      */
-    prevQuery: string;
-    currentArtistName: string;
-    currentTrackName: string;
-    currentAlbumName: string;
+    prevQuery: string = "";
+    currentArtistName: string = "no artist";
+    currentTrackName: string = "no track";
+    currentAlbumName: string = "no album";
 
     spotifyToken: AccessToken;
 
-    player: Tone.Player;
-    gain: Tone.Gain;
-    audioContext: Tone.BaseContext;
+    /**
+     *  player for playing entire track
+     */
+    player: Tone.Player = new Tone.Player().toDestination();
 
-    beatPlayers: Tone.Player[];
-    trackTimingData: TimingData; // this one seems complicated, will do next
-    beatTimeouts: NodeJS.Timeout[];
-    barTimeouts: number[];
+    gain: Tone.Gain = new Tone.Gain();
+    audioContext: Tone.BaseContext = Tone.context;
+
+    /**
+     *  beat players for playing individual beat at a time
+     */
+    beatPlayers: Tone.Player[] = [];
+    trackTimingData: TimingData;
+    beatTimeouts: NodeJS.Timeout[] = [];
+    barTimeouts: number[] = [];
     trackTimeout: NodeJS.Timeout;
     trackStartTime: number;
 
-    releaseDur: number;
-    currentBeatPlayerIndex: number;
-    currentBeatNum: number;
-    beatFlag: boolean;
-    barFlag: boolean;
-    songFlag: boolean;
-    currentTrackDuration: number;
-    trackTempo: number;
-    numBeats: number;
+    currentBeatPlayerIndex: number = 0;
+    currentBeatNum: number = 0;
+    beatFlag: boolean = false;
+    barFlag: boolean = false;
+    songFlag: boolean = false;
+    currentTrackDuration: number = 0;
+    trackTempo: number = 0;
+    numBeats: number = 0;
 
     async init(env: Environment) {
-        if (typeof Tone !== "undefined") {
-            this.prevQuery = "";
-            this.currentArtistName = "no artist";
-            this.currentTrackName = "no track";
-            this.currentAlbumName = "no album";
-
-            // player for playing entire track
-            this.player = new Tone.Player().toDestination();
-
-            // beat players for playing individual beat at a time
-            this.beatPlayers = [];
-            this.releaseDur = 0.01;
-            for (let i = 0; i < 4; i++) {
-                let beatPlayer = new Tone.Player();
-                let ampEnv = new Tone.AmplitudeEnvelope({
-                    attack: 0.01,
-                    decay: 0,
-                    sustain: 1.0,
-                    release: this.releaseDur,
-                }).toDestination();
-                beatPlayer.connect(ampEnv);
-                this.beatPlayers.push(beatPlayer);
-            }
-            this.currentBeatPlayerIndex = 0;
-
-            // gain node
-            this.gain = new Tone.Gain();
-            Tone.Destination.chain(this.gain);
-
-            this.audioContext = Tone.context;
-
-            this.currentBeatNum = 0;
-            this.beatFlag = false;
-            this.barFlag = false;
-            this.songFlag = false;
-            this.beatTimeouts = [];
-            this.barTimeouts = [];
-            this.numBeats = 0;
-
-            this.currentTrackDuration = 0;
-            this.trackTempo = 0;
-
-            // Get Spotify token
-            this.spotifyToken = await getAccessToken();
-
-            // Stop the music when you hit the stop button
-            env.runtime.on("PROJECT_STOP_ALL", () => {
-                this.stopMusic();
-            });
+        const options = { attack: 0.1, decay: 0, sustain: 1.0, release: 0.01 };
+        for (let i = 0; i < 4; i++) {
+            const beatPlayer = new Tone.Player();
+            const ampEnv = new Tone.AmplitudeEnvelope(options).toDestination();
+            beatPlayer.connect(ampEnv);
+            this.beatPlayers.push(beatPlayer);
         }
+
+        Tone.Destination.chain(this.gain);
+
+        this.spotifyToken = await getAccessToken();
+
+        env.onStopSign(this.stopMusic);
     }
 
     // Ignore! Translations coming soon...

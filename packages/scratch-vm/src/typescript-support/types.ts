@@ -25,7 +25,8 @@ export type Environment = {
    * NOTE: This will have type-safety soon, but currently has none.
    * @todo #161 
    */
-  videoFeed: undefined | any
+  videoFeed: undefined | any,
+  onStopSign: (callback: () => void) => void;
 }
 
 export type BlockOperation = (...args: any) => any;

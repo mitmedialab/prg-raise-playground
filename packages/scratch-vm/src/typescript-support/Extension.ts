@@ -76,7 +76,11 @@ export abstract class Extension
   }
 
   private internal_init() {
-    this.init({ runtime: this.runtime, videoFeed: this.runtime.ioDevices?.video });
+    this.init({
+      runtime: this.runtime,
+      videoFeed: this.runtime.ioDevices?.video,
+      onStopSign: (callback) => this.runtime.on("PROJECT_STOP_ALL", callback)
+    });
     const definitions = this.defineBlocks();
     const menus: Menu<any>[] = [];
     for (const key in definitions) {
