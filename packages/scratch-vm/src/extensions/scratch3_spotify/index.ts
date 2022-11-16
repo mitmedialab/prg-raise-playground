@@ -398,7 +398,6 @@ const searchAndPlayWait = (extension: Spotify): Block<SearchAndPlayWaitBlock> =>
         await extension.requestSearch(searchQuery);
         await extension.playTrack();
 
-
         return new Promise<void>((resolve) => {
             extension.resolvePlayUntil = resolve;
             setTimeout(extension.resolvePlayUntil, extension.currentTrackDuration * 1000);
