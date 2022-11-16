@@ -26,7 +26,18 @@ export type Environment = {
    * @todo #161 
    */
   videoFeed: undefined | any,
-  onStopSign: (callback: () => void) => void;
+  /**
+   * @summary Convenience function to make it easier to setup behavior to occur when the user clicks the stops signs.
+   * @description For the best user experience, extensions should ensure certain behaviors (like motion and sound) stop
+   * when the user clicks the red Stop Sign button. This function makes it easy to enque these stopping behaviors.
+   * @param callback What to do when the Stop Sign is clicked
+   * @param automaticallyBind Whether or not the extension class should be automatically binded / bound (as `this`) within your callback function. 
+   * Defaults to true, as this is typically the behavior you want (unless your callback function is NOT a method / member function of your extension)
+   * @returns 
+   * @link Binding `this` https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_objects/Function/bind
+   * @link Class methods / member functions https://www.typescriptlang.org/docs/handbook/2/classes.html#methods
+   */
+  onStopSign: (callback: () => void, automaticallyBind?: boolean) => void;
 }
 
 export type BlockOperation = (...args: any) => any;

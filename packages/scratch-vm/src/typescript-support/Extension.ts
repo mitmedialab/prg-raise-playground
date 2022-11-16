@@ -79,7 +79,8 @@ export abstract class Extension
     this.init({
       runtime: this.runtime,
       videoFeed: this.runtime.ioDevices?.video,
-      onStopSign: (callback) => this.runtime.on("PROJECT_STOP_ALL", callback)
+      onStopSign: (callback, automaticallyBind: boolean = true) =>
+        this.runtime.on("PROJECT_STOP_ALL", automaticallyBind ? callback.bind(this) : callback)
     });
     const definitions = this.defineBlocks();
     const menus: Menu<any>[] = [];
