@@ -115,7 +115,8 @@ type Blocks = {
     JiboLED: (color: string) => void, 
     JiboLEDOff: () => void, 
     JiboLook: (x_angle: string, y_angle: string, z_angle: string) => void, 
-    JiboMultitask: () => void
+    JiboMultitask: () => void, 
+    // emojiUI: ButtonBlock
 }
 
 class Scratch3Jibo extends Extension<Details, Blocks> {
@@ -254,7 +255,12 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
                 type: BlockType.Loop, 
                 text: `multitask`, 
                 operation: () => this.JiboMultitask()
-            })
+            }), 
+            // emojiUI: () => {
+            //     type: BlockType.Button, 
+            //     text: `Select Emoji`, 
+            //     operation: () => this.openUI("Emoji")
+            // }
         }
     }
 
