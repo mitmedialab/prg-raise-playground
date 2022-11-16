@@ -9,20 +9,6 @@ import { Environment, BlockDefinitions } from "../../typescript-support/types";
 
 import ROSLIB from 'roslib';
 
-/**
- * Icon svg to be displayed in the blocks category menu, encoded as a data URI.
- * @type {string}
- */
-// eslint-disable-next-line max-len
-const menuIconURI = 'INSERT HERE'
-
-/**
- * Icon svg to be displayed at the left edge of each extension block, encoded as a data URI.
- * @type {string}
- */
-// eslint-disable-next-line max-len
-const blockIconURI = 'INSERT HERE'
-
 const EXTENSION_ID = "jibo";
 
 const _colors = {
@@ -38,12 +24,26 @@ const _colors = {
     "random": "random"
 }
 
-const _dances = {
-    "Disco": "Dances/dance_disco_00.keys",
-    "Slow Dance": "Dances/Prom_Night_01_01.keys",
-    "Happy Dance": "Dances/Happy_Lucky_01_01.keys",
-    "Robot": "Dances/Robotic_01_01.keys"
+const enum Dance {
+    Disco, 
+    SlowDance, 
+    HappyDance, 
+    Robot
 }
+
+const fileByDance: Record<Dance, string> = {
+    [Dance.Disco]: "Dances/dance_disco_00.keys",
+    [Dance.SlowDance]: "Dances/Prom_Night_01_01.keys",
+    [Dance.HappyDance]: "Dances/Happy_Lucky_01_01.keys",
+    [Dance.Robot]: "Dances/Robotic_01_01.keys"
+}
+
+// const _dances = {
+//     "Disco": "Dances/dance_disco_00.keys",
+//     "Slow Dance": "Dances/Prom_Night_01_01.keys",
+//     "Happy Dance": "Dances/Happy_Lucky_01_01.keys",
+//     "Robot": "Dances/Robotic_01_01.keys"
+// }
 
 const _emotions = {
     "Celebrate": "Dances/Celebrate_01.keys",
@@ -100,10 +100,10 @@ const _progress_tab_speech = [
 // add const enums
 
 type Details = {
-    name: "Jibo Blocks", 
-    description: "jibo", 
-    iconURL: "", 
-    insetIconURL: ""
+    name: "Jibo", 
+    description: "jibo blocks", 
+    iconURL: "jibo_icon.png", 
+    insetIconURL: "jibo_inset_icon.png"
 }
 
 type Blocks = {
@@ -115,6 +115,7 @@ type Blocks = {
     JiboLED: (color: string) => void, 
     JiboLEDOff: () => void, 
     JiboLook: (x_angle: string, y_angle: string, z_angle: string) => void, 
+    JiboMultitask: () => void
 }
 
 class Scratch3Jibo extends Extension<Details, Blocks> {
@@ -248,6 +249,11 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
                 ], 
                 text: (x_angle: string, y_angle: string, z_angle: string) => `set Jibo Look at ${x_angle}, ${y_angle}, ${z_angle}`,
                 operation: (x_angle: string, y_angle: string, z_angle: string) => this.JiboLook(x_angle, y_angle, z_angle)
+            }), 
+            JiboMultitask: (self: Scratch3Jibo) => ({
+                type: BlockType.Loop, 
+                text: `multitask`, 
+                operation: () => this.JiboMultitask()
             })
         }
     }
@@ -264,7 +270,7 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
     }
 
     updateProgress() {
-        // this.calculatePercentage();
+        this.calculatePercentage();
     }
 
     progressReport(progressState: { percentage: number; }) {
@@ -297,22 +303,22 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
         }
     }
 
-    // calculatePercentage () {
-    //     if (!this.runtime || !this.runtime.modelData || this.runtime.targets <= 0) {
-    //         return ;
-    //     }
-    //     let modelData = this.runtime.modelData.classifierData;
-    //     let blocks_used = this.runtime.targets[1].blocks._blocks;
+    calculatePercentage () {
+        if (!this.runtime || !this.runtime.modelData || this.runtime.targets <= 0) {
+            return ;
+        }
+        let modelData = this.runtime.modelData.classifierData;
+        let blocks_used = this.runtime.targets[1].blocks._blocks;
 
-    //     this.numberOfClasses(modelData);
-    //     this.atLeastFive(modelData);
-    //     this.balancedClasses(modelData);
-    //     this.analyzeBlocks(blocks_used);
+        this.numberOfClasses(modelData);
+        this.atLeastFive(modelData);
+        this.balancedClasses(modelData);
+        this.analyzeBlocks(blocks_used);
 
-    //     console.log(this.progress);
+        console.log(this.progress);
         
-    //     return this.progress.percentage;
-    // }
+        return this.progress.percentage;
+    }
 
     numberOfClasses (textModel: any) {
         const textModelClasses = Object.keys(textModel);
@@ -575,6 +581,7 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
 
         // listen for answer
         this.JiboASR_request();
+        
         // wait for sensor to return
         this.asr_out = await this.JiboASR_reseive();
     }
@@ -695,6 +702,24 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
     //         };
     //     await this.JiboPublish(jibo_msg);
     // }
+
+    async JiboMultitask() {
+        var jibo_msg ={
+            "do_led":true,
+            "led_color": {x:0, y:255, z:255}, 
+            "do_motion": true, 
+            "motion": "Emoji/Emoji_HeartArrow_01_01.keys", // "Misc/Laughter_01_03.keys", //"Dances/dance_disco_00.keys", 
+            // "do_tts": true, 
+            // "tts_text": "Hello, I am Jibo.", 
+            "do_lookat": true, 
+            "lookat": {
+                x: 100,
+                y: 100,
+                z: 100
+            }
+            };
+        await this.JiboPublish(jibo_msg);
+    }
 
 
     async JiboPublish(msg: any){
