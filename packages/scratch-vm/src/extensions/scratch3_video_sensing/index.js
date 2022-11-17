@@ -52,7 +52,6 @@ const SensingSubject = {
 /**
  * States the video sensing activity can be set to.
  * @readonly
- * @enum {string}
  */
 const VideoState = {
     /** Video turned off. */
@@ -231,7 +230,8 @@ class Scratch3VideoSensingBlocks {
      * @private
      */
     _loop () {
-        setTimeout(this._loop.bind(this), Math.max(this.runtime.currentStepTime, Scratch3VideoSensingBlocks.INTERVAL));
+        const loopTime = Math.max(this.runtime.currentStepTime, Scratch3VideoSensingBlocks.INTERVAL);
+        this._loopInterval = setTimeout(this._loop.bind(this), loopTime);
 
         // Add frame to detector
         const time = Date.now();
@@ -249,6 +249,13 @@ class Scratch3VideoSensingBlocks {
                 this.detect.addFrame(frame.data);
             }
         }
+    }
+
+    /**
+     * Stop the video sampling loop. Only used for testing.
+     */
+    _stopLoop () {
+        clearTimeout(this._loopInterval);
     }
 
     /**

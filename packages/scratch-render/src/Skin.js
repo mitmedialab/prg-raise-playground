@@ -5,19 +5,6 @@ const twgl = require('twgl.js');
 const RenderConstants = require('./RenderConstants');
 const Silhouette = require('./Silhouette');
 
-/**
- * Truncate a number into what could be stored in a 32 bit floating point value.
- * @param {number} num Number to truncate.
- * @return {number} Truncated value.
- */
-const toFloat32 = (function () {
-    const memory = new Float32Array(1);
-    return function (num) {
-        memory[0] = num;
-        return memory[0];
-    };
-}());
-
 class Skin extends EventEmitter {
     /**
      * Create a Skin, which stores and/or generates textures for use in rendering.
@@ -32,6 +19,9 @@ class Skin extends EventEmitter {
 
         /** @type {Vec3} */
         this._rotationCenter = twgl.v3.create(0, 0);
+
+        /** @type {WebGLTexture} */
+        this._texture = null;
 
         /**
          * The uniforms to be used by the vertex and pixel shaders.
@@ -70,20 +60,6 @@ class Skin extends EventEmitter {
     }
 
     /**
-     * @returns {boolean} true for a raster-style skin (like a BitmapSkin), false for vector-style (like SVGSkin).
-     */
-    get isRaster () {
-        return false;
-    }
-
-    /**
-     * @returns {boolean} true if alpha is premultiplied, false otherwise
-     */
-    get hasPremultipliedAlpha () {
-        return false;
-    }
-
-    /**
      * @return {int} the unique ID for this Skin.
      */
     get id () {
@@ -106,23 +82,16 @@ class Skin extends EventEmitter {
     }
 
     /**
-     * Set the origin, in object space, about which this Skin should rotate.
-     * @param {number} x - The x coordinate of the new rotation center.
-     * @param {number} y - The y coordinate of the new rotation center.
-     * @fires Skin.event:WasAltered
+     * Should this skin's texture be filtered with nearest-neighbor or linear interpolation at the given scale?
+     * @param {?Array<Number>} scale The screen-space X and Y scaling factors at which this skin's texture will be
+     * displayed, as percentages (100 means 1 "native size" unit is 1 screen pixel; 200 means 2 screen pixels, etc).
+     * @param {Drawable} drawable The drawable that this skin's texture will be applied to.
+     * @return {boolean} True if this skin's texture, as returned by {@link getTexture}, should be filtered with
+     * nearest-neighbor interpolation.
      */
-    setRotationCenter (x, y) {
-        const emptySkin = this.size[0] === 0 && this.size[1] === 0;
-        // Compare a 32 bit x and y value against the stored 32 bit center
-        // values.
-        const changed = (
-            toFloat32(x) !== this._rotationCenter[0] ||
-            toFloat32(y) !== this._rotationCenter[1]);
-        if (!emptySkin && changed) {
-            this._rotationCenter[0] = x;
-            this._rotationCenter[1] = y;
-            this.emit(Skin.Events.WasAltered);
-        }
+    // eslint-disable-next-line no-unused-vars
+    useNearest (scale, drawable) {
+        return true;
     }
 
     /**
@@ -147,10 +116,10 @@ class Skin extends EventEmitter {
      * Get the bounds of the drawable for determining its fenced position.
      * @param {Array<number>} drawable - The Drawable instance this skin is using.
      * @param {?Rectangle} result - Optional destination for bounds calculation.
-     * @return {!Rectangle} The drawable's bounds.
+     * @return {!Rectangle} The drawable's bounds. For compatibility with Scratch 2, we always use getAABB.
      */
     getFenceBounds (drawable, result) {
-        return drawable.getFastBounds(result);
+        return drawable.getAABB(result);
     }
 
     /**
@@ -170,6 +139,23 @@ class Skin extends EventEmitter {
      * @abstract
      */
     updateSilhouette () {}
+
+    /**
+     * Set this skin's texture to the given image.
+     * @param {ImageData|HTMLCanvasElement} textureData - The canvas or image data to set the texture to.
+     */
+    _setTexture (textureData) {
+        const gl = this._renderer.gl;
+
+        gl.bindTexture(gl.TEXTURE_2D, this._texture);
+        // Premultiplied alpha is necessary for proper blending.
+        // See http://www.realtimerendering.com/blog/gpus-prefer-premultiplication/
+        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, textureData);
+        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+
+        this._silhouette.update(textureData);
+    }
 
     /**
      * Set the contents of this skin to an empty skin.
@@ -199,6 +185,9 @@ class Skin extends EventEmitter {
             this._emptyImageTexture = twgl.createTexture(gl, textureOptions);
         }
 
+        this._rotationCenter[0] = 0;
+        this._rotationCenter[1] = 0;
+
         this._silhouette.update(this._emptyImageData);
         this.emit(Skin.Events.WasAltered);
     }
@@ -206,6 +195,9 @@ class Skin extends EventEmitter {
     /**
      * Does this point touch an opaque or translucent point on this skin?
      * Nearest Neighbor version
+     * The caller is responsible for ensuring this skin's silhouette is up-to-date.
+     * @see updateSilhouette
+     * @see Drawable.updateCPURenderAttributes
      * @param {twgl.v3} vec A texture coordinate.
      * @return {boolean} Did it touch?
      */
@@ -216,6 +208,9 @@ class Skin extends EventEmitter {
     /**
      * Does this point touch an opaque or translucent point on this skin?
      * Linear Interpolation version
+     * The caller is responsible for ensuring this skin's silhouette is up-to-date.
+     * @see updateSilhouette
+     * @see Drawable.updateCPURenderAttributes
      * @param {twgl.v3} vec A texture coordinate.
      * @return {boolean} Did it touch?
      */

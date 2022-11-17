@@ -33,15 +33,25 @@ uniform float u_mosaic;
 uniform float u_ghost;
 #endif // ENABLE_ghost
 
-#ifdef DRAW_MODE_lineSample
+#ifdef DRAW_MODE_line
 uniform vec4 u_lineColor;
-uniform float u_capScale;
-uniform float u_aliasAmount;
-#endif // DRAW_MODE_lineSample
+uniform float u_lineThickness;
+uniform float u_lineLength;
+#endif // DRAW_MODE_line
+
+#ifdef DRAW_MODE_background
+uniform vec4 u_backgroundColor;
+#endif // DRAW_MODE_background
 
 uniform sampler2D u_skin;
 
+#ifndef DRAW_MODE_background
 varying vec2 v_texCoord;
+#endif
+
+// Add this to divisors to prevent division by 0, which results in NaNs propagating through calculations.
+// Smaller values can cause problems on some mobile devices.
+const float epsilon = 1e-3;
 
 #if !defined(DRAW_MODE_silhouette) && (defined(ENABLE_color))
 // Branchless color conversions based on code from:
@@ -49,8 +59,6 @@ varying vec2 v_texCoord;
 // Based in part on work by Sam Hocevar and Emil Persson
 // See also: https://en.wikipedia.org/wiki/HSL_and_HSV#Formal_derivation
 
-// Smaller values can cause problems on some mobile devices
-const float epsilon = 1e-3;
 
 // Convert an RGB color to Hue, Saturation, and Value.
 // All components of input and output are expected to be in the [0,1] range.
@@ -107,7 +115,7 @@ const vec2 kCenter = vec2(0.5, 0.5);
 
 void main()
 {
-	#ifndef DRAW_MODE_lineSample
+	#if !(defined(DRAW_MODE_line) || defined(DRAW_MODE_background))
 	vec2 texcoord0 = v_texCoord;
 
 	#ifdef ENABLE_mosaic
@@ -153,16 +161,12 @@ void main()
 
 	gl_FragColor = texture2D(u_skin, texcoord0);
 
-    #ifdef ENABLE_ghost
-    gl_FragColor.a *= u_ghost;
-    #endif // ENABLE_ghost
+	#if defined(ENABLE_color) || defined(ENABLE_brightness)
+	// Divide premultiplied alpha values for proper color processing
+	// Add epsilon to avoid dividing by 0 for fully transparent pixels
+	gl_FragColor.rgb = clamp(gl_FragColor.rgb / (gl_FragColor.a + epsilon), 0.0, 1.0);
 
-	#ifdef DRAW_MODE_silhouette
-	// switch to u_silhouetteColor only AFTER the alpha test
-	gl_FragColor = u_silhouetteColor;
-	#else // DRAW_MODE_silhouette
-
-	#if defined(ENABLE_color)
+	#ifdef ENABLE_color
 	{
 		vec3 hsv = convertRGB2HSV(gl_FragColor.xyz);
 
@@ -178,11 +182,29 @@ void main()
 
 		gl_FragColor.rgb = convertHSV2RGB(hsv);
 	}
-	#endif // defined(ENABLE_color)
+	#endif // ENABLE_color
 
-	#if defined(ENABLE_brightness)
+	#ifdef ENABLE_brightness
 	gl_FragColor.rgb = clamp(gl_FragColor.rgb + vec3(u_brightness), vec3(0), vec3(1));
-	#endif // defined(ENABLE_brightness)
+	#endif // ENABLE_brightness
+
+	// Re-multiply color values
+	gl_FragColor.rgb *= gl_FragColor.a + epsilon;
+
+	#endif // defined(ENABLE_color) || defined(ENABLE_brightness)
+
+	#ifdef ENABLE_ghost
+	gl_FragColor *= u_ghost;
+	#endif // ENABLE_ghost
+
+	#ifdef DRAW_MODE_silhouette
+	// Discard fully transparent pixels for stencil test
+	if (gl_FragColor.a == 0.0) {
+		discard;
+	}
+	// switch to u_silhouetteColor only AFTER the alpha test
+	gl_FragColor = u_silhouetteColor;
+	#else // DRAW_MODE_silhouette
 
 	#ifdef DRAW_MODE_colorMask
 	vec3 maskDistance = abs(gl_FragColor.rgb - u_colorMask);
@@ -194,15 +216,34 @@ void main()
 	#endif // DRAW_MODE_colorMask
 	#endif // DRAW_MODE_silhouette
 
-	#else // DRAW_MODE_lineSample
-	gl_FragColor = u_lineColor;
-	gl_FragColor.a *= clamp(
-		// Scale the capScale a little to have an aliased region.
-		(u_capScale + u_aliasAmount -
-			u_capScale * 2.0 * distance(v_texCoord, vec2(0.5, 0.5))
-		) / (u_aliasAmount + 1.0),
-		0.0,
-		1.0
-	);
-	#endif // DRAW_MODE_lineSample
+	#ifdef DRAW_MODE_straightAlpha
+	// Un-premultiply alpha.
+	gl_FragColor.rgb /= gl_FragColor.a + epsilon;
+	#endif
+
+	#endif // !(defined(DRAW_MODE_line) || defined(DRAW_MODE_background))
+
+	#ifdef DRAW_MODE_line
+	// Maaaaagic antialiased-line-with-round-caps shader.
+
+	// "along-the-lineness". This increases parallel to the line.
+	// It goes from negative before the start point, to 0.5 through the start to the end, then ramps up again
+	// past the end point.
+	float d = ((v_texCoord.x - clamp(v_texCoord.x, 0.0, u_lineLength)) * 0.5) + 0.5;
+
+	// Distance from (0.5, 0.5) to (d, the perpendicular coordinate). When we're in the middle of the line,
+	// d will be 0.5, so the distance will be 0 at points close to the line and will grow at points further from it.
+	// For the "caps", d will ramp down/up, giving us rounding.
+	// See https://www.youtube.com/watch?v=PMltMdi1Wzg for a rough outline of the technique used to round the lines.
+	float line = distance(vec2(0.5), vec2(d, v_texCoord.y)) * 2.0;
+	// Expand out the line by its thickness.
+	line -= ((u_lineThickness - 1.0) * 0.5);
+	// Because "distance to the center of the line" decreases the closer we get to the line, but we want more opacity
+	// the closer we are to the line, invert it.
+	gl_FragColor = u_lineColor * clamp(1.0 - line, 0.0, 1.0);
+	#endif // DRAW_MODE_line
+
+	#ifdef DRAW_MODE_background
+	gl_FragColor = u_backgroundColor;
+	#endif
 }
