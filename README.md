@@ -20,7 +20,7 @@ Looking for the old documentation (<= Sept. 2022)? Head [here](./BACKGROUND.md).
     - [From 0 to Extension](#-from-0-to-extension)
     - [Adding UI](#-adding-ui)
     - [Porting an Extension to Typescript](#-porting-an-extension-to-typescript)
-- [Project Dependencies](#project-dependencies)
+- [Project Dependencies](#%EF%B8%8F-dependencies)
     - [Git](#git)
     - [Node](#node)
     - [NPM](#NPM)
@@ -403,7 +403,8 @@ export = SomeBlocks;
 
 ## ⛓️ Dependencies
 
-Not interested in setting up your local environemnt? [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/mitmedialab/prg-extension-boilerplate/tree/beta)
+Not interested in setting up your local environemnt? 
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/mitmedialab/prg-extension-boilerplate/tree/beta)
 
 ### Git
 
