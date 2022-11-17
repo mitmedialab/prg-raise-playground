@@ -1,5 +1,7 @@
 # ✨ PRG Scratch Extension Development Environment
 
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#<your-repository-url>)
+
 This repository is your one-stop-shop for developing [scratch extensions](https://en.scratch-wiki.info/wiki/Extension) for PRG curricula.
 
 It's a fullblown [fork](https://en.wikipedia.org/wiki/Fork_(software_development)) of the official Scratch codebase, which the [Personal Robotics Group](https://robots.media.mit.edu/) (PRG) manages and extends to meet its needs. 
@@ -400,6 +402,8 @@ export = SomeBlocks;
 ```
 
 ## ⛓️ Dependencies
+
+Not interested in setting up your local environemnt? [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#<your-repository-url>)
 
 ### Git
 
