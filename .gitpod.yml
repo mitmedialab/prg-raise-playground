@@ -2,10 +2,7 @@ ports:
   - port: 8601
     onOpen: open-preview
 tasks:
-  - init: >
-      nvm install &&
-      nvm use &&
-      npx lerna bootstrap --force-local &&
-      cd packages/scratch-gui
-    command: >
-      npm start
+  - init: |
+      npm run init
+  - command: |
+      npm run dev
