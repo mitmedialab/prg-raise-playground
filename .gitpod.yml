@@ -1,7 +1,8 @@
 tasks:
-  - init: |
+  - name: Init and Run
+    init: |
       npm run init
-  - command: |
+    command: |
       npm run dev
 ports:
   - port: 8601
