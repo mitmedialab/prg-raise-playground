@@ -2,7 +2,7 @@ import glob = require("glob");
 import { readFileSync, writeFileSync } from "fs";
 import path = require("path");
 import { ExtensionCodeGenerator } from ".";
-import { guiSrc } from "../../../../scripts/paths";
+import { guiSrc, packages } from "../../../../scripts/paths";
 import { encode } from "../../src/extension-support/extension-id-factory";
 
 const getCodeGenGuards = (name: string) => ({ begin: `CODE GEN GUARDS: Begin ${name}`, end: `CODE GEN GUARDS: End ${name}` });
@@ -28,12 +28,15 @@ export const collectSvelteComponentsForExtensions: ExtensionCodeGenerator = (ext
     const matches = glob.sync(path.join(implementationDirectory, "*.svelte"));
     if (!matches || matches.length === 0) continue;
 
+    const { vm } = packages;
+
     const encoded = encode(id);
     for (const match of matches) {
+      const relativeToVM = path.join(path.basename(vm), path.relative(vm, match));
       components.push(match);
       const fileName = path.basename(match).replace(path.extname(match), "");
       const variableName = `${capitalize(encoded)}_${fileName}`;
-      imports.push(valueImport(match, variableName));
+      imports.push(valueImport(relativeToVM, variableName));
       constructs.push(svelteCode(variableName, encoded, fileName));
     }
   }
