@@ -1,6 +1,8 @@
 import React from 'react';
 import {FormattedMessage} from 'react-intl';
 
+import textProcessingBlocksIconURL from './text_processing/nlp_icon.png';
+
 import textClassificationBlocksIconURL from './text_classification/text-classification-blocks.png';
 import textClassificationBlocksInsetIconURL from './text_classification/text-classification-blocks-small.svg';
 
@@ -108,6 +110,25 @@ export default [
                 defaultMessage="Create a text classification model for use in a Scratch project!"
                 description="Text Classification Description"
                 id="gui.extension.text-classification.description"
+            />
+        ),
+        featured: true
+    },
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="Text Processing"
+                description="Text Processing name"
+                id="gui.extension.text-processing.name"
+            />
+        ),
+        extensionId: 'textProcessing',
+        iconURL: textProcessingBlocksIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Blocks for processing strings in a Scratch project!"
+                description="Text Processing Description"
+                id="gui.extension.text-processing.description"
             />
         ),
         featured: true

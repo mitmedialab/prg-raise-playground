@@ -31,6 +31,7 @@ const builtinExtensions = {
     microbitRobot: () => require('../extensions/scratch3_microbot'),
     teachableMachine: () => require('../extensions/scratch3_teachable_machine'),
     textClassification: () => require('../extensions/scratch3_text_classification'),
+    textProcessing: () => require('../extensions/scratch3_text_processing'),
     poseFace: () => require('../extensions/scratch3_pose_face'),
     poseHand: () => require('../extensions/scratch3_pose_hand'),
     poseBody: () => require('../extensions/scratch3_pose_body')
