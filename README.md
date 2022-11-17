@@ -50,8 +50,7 @@ git clone git@github.com:mitmedialab/prg-extension-boilerplate.git
 cd prg-extension-boilerplate/
 # Change directory (cd) to the repository
 
-git checkout beta 
-# Checkout beta branch -- NOTE: in the future, you'll actually checkout the dev or main branches, but we're using the beta branch for this trial
+git checkout dev 
 
 npm run init
 # This will symlink the packages together to allow for seamless local development, and installs dependencies for each package. 
@@ -72,7 +71,7 @@ To make a new extension, run the following commands:
 cd prg-extension-boilerplate/ # If not already there
 # Change directory (cd) to prg-extension-boilerplate/ 
 
-git checkout beta # Checkout beta branch -- NOTE: in the future, you'll actually checkout the dev branch, but we're using the beta branch for this trial
+git checkout dev
 git pull # Update branch with any remote changes
 git checkout -b <my branch> # Checkout your 'feature' branch, e.g. git checkout -b my_awesome_extension
 # For example: git checkout -b new_rad_extension
@@ -111,7 +110,7 @@ As long as the development server is running (meaning the `npm run dev` command 
 
 ### 📦 Committing, pushing, and deploying an extension 
 
-... Coming soon ... shouldn't be necessary for the beta test.
+... Coming soon ...
 
 ## 🔎 How to program an extension
 
@@ -129,7 +128,7 @@ Still stuck? Check out our [From 0 to Extension guide](#-from-0-to-extension) an
 
 ### 🪜 From 0 to Extension
 
-... Coming soon ... (will incorporate feedback from beta test)
+... Coming soon ...
 
 Currently, depending on what's new to you, here are some recommendations:
 - ***New to Javascript and Typescript?*** Follow this [javascript tutorial](https://www.w3schools.com/js/) and then check out the [Typescript handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
