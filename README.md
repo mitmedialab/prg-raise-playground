@@ -404,6 +404,7 @@ export = SomeBlocks;
 ## ⛓️ Dependencies
 
 Not interested in setting up your local environemnt? 
+
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/mitmedialab/prg-extension-boilerplate/tree/beta)
 
 ### Git
