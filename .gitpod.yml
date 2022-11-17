@@ -1,8 +1,11 @@
-ports:
-  - port: 8601
-    onOpen: open-preview
 tasks:
   - init: |
       npm run init
   - command: |
       npm run dev
+ports:
+  - port: 8601
+    onOpen: open-preview
+vscode:
+  extensions:
+    - svelte.svelte-vscode
