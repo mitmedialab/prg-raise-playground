@@ -2,7 +2,6 @@
  * Resources:
  *  - Text to speech extension written by Scratch Team 2019
  *  - Speech to text extension written by Sayamindu Dasgupta <sayamindu@media.mit.edu>, April 2014
- *  - Knn Classifier model written by Katya3141 https://katya3141.github.io/scratch-gui/teachable-classifier/ August 2019
  */
 
 require("regenerator-runtime/runtime");
@@ -15,17 +14,13 @@ const BlockType = require("../../extension-support/block-type");
 const Clone = require("../../util/clone");
 const Cast = require("../../util/cast");
 const formatMessage = require("format-message");
-const Video = require("../../io/video");
 const Timer = require("../../util/timer");
 const tf = require("@tensorflow/tfjs");
-const knnClassifier = require("@tensorflow-models/knn-classifier");
 const use = require("@tensorflow-models/universal-sentence-encoder");
 const toxicity = require("@tensorflow-models/toxicity");
 var Sentiment = require("sentiment");
 //const node = require('@tensorflow/tfjs-node');
 //const layers = require('@tensorflow/tfjs-layers');
-
-const pos = require("pos");
 
 /**
  * Icon svg to be displayed in the blocks category menu, encoded as a data URI.
@@ -102,17 +97,8 @@ const FEMALE_TENOR_RATE = 0.89; // -2 semitones
  * Playback rate for the giant voice, for cases where we have only a female gender voice.
  */
 const FEMALE_GIANT_RATE = 0.79; // -4 semitones
-
-// TODO make this an object with the pos tags
-const _partsOfSpeech = {
-    "noun":"NN",
-    "proper noun":"NNP",
-    "verb":"VB",
-    "adjective":"JJ",
-    "number":"CD"};
-
 /**
- * Class for the motion-related blocks in Scratch 3.0
+ * Class for the text classification-related blocks in Scratch 3.0
  * @param {Runtime} runtime - the runtime instantiating this block package.
  * @constructor
  */
@@ -437,27 +423,6 @@ class Scratch3TextClassificationBlocks {
                     text: "Load / Save Model",
                 },
                 {
-                    opcode: "getPartOfSpeech",
-                    text: formatMessage({
-                        id: "textClassification.getPartOfSpeech",
-                        default: "get [POS] from [TEXT]",
-                        description:
-                            "Reporter block that returns the 1st match for for a requested part of speech",
-                    }),
-                    blockType: BlockType.REPORTER,
-                    arguments: {
-                        POS: {
-                            type: ArgumentType.STRING,
-                            menu: "parts_of_speech",
-                            defaultValue: "noun",
-                        },
-                        TEXT: {
-                            type: ArgumentType.STRING,
-                            defaultValue: "Here comes the robot",
-                        },
-                    },
-                },
-                {
                     opcode: "ifTextMatchesClass",
                     text: formatMessage({
                         id: "textClassification.ifTextMatchesClass",
@@ -663,10 +628,6 @@ class Scratch3TextClassificationBlocks {
                     acceptReporters: true,
                     items: this.getVoiceMenu(),
                 },
-                parts_of_speech: {
-                    acceptReporters: true,
-                    items: Object.keys(_partsOfSpeech),
-                },
                 model_classes: {
                     acceptReporters: false,
                     items: "getLabels",
@@ -724,22 +685,6 @@ class Scratch3TextClassificationBlocks {
         if (frame) {
             this.newExamples([text], args.LABEL);
         }
-    }
-
-    getPartOfSpeech(args) {
-        let words = new pos.Lexer().lex(args.TEXT);
-        let tagger = new pos.Tagger();
-        let taggedWords = tagger.tag(words);
-        console.log(taggedWords);
-        for (let i=0; i<taggedWords.length; i++) {
-            let taggedWord = taggedWords[i];
-            if (taggedWord[1].startsWith(_partsOfSpeech[args.POS])) {
-                return taggedWord[0];
-            }
-        }
-
-        // no matches
-        return "";
     }
 
     /**
