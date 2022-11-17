@@ -1,8 +1,5 @@
 # ✨ PRG Scratch Extension Development Environment
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#<your-repository-url>)
-
-
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/mitmedialab/prg-extension-boilerplate/tree/beta)
 
 This repository is your one-stop-shop for developing [scratch extensions](https://en.scratch-wiki.info/wiki/Extension) for PRG curricula.
@@ -406,7 +403,7 @@ export = SomeBlocks;
 
 ## ⛓️ Dependencies
 
-Not interested in setting up your local environemnt? [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#<your-repository-url>)
+Not interested in setting up your local environemnt? [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/mitmedialab/prg-extension-boilerplate/tree/beta)
 
 ### Git
 
