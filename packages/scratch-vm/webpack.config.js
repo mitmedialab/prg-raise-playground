@@ -11,7 +11,10 @@ const base = {
     devServer: {
         contentBase: false,
         host: '0.0.0.0',
-        port: process.env.PORT || 8073
+        port: process.env.PORT || 8073,
+        watchOptions: {
+            ignored: ['**/*.ts']
+        }
     },
     devtool: 'cheap-module-source-map',
     output: {
@@ -42,7 +45,9 @@ const base = {
         {
             test: /\.mp3$/,
             loader: 'file-loader'
-        }]
+        },
+        { test: /\.ts$/, loader: 'ignore-loader' }
+    ]
     },
     optimization: {
         minimizer: [

@@ -190,7 +190,7 @@ class Scratch3TextClassificationBlocks {
             this.editModel.bind(this, modelInfo);
         });
         
-        this.labelList = [];
+        this.labelList = [''];
         this.labelListEmpty = true;
         
         // When a project is loaded, reset all the model data

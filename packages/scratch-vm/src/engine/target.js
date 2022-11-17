@@ -18,7 +18,7 @@ const VariableUtil = require('../util/variable-util');
 class Target extends EventEmitter {
 
     /**
-     * @param {Runtime} runtime Reference to the runtime.
+     * @param {import("./runtime")} runtime Reference to the runtime.
      * @param {?Blocks} blocks Blocks instance for the blocks owned by this target.
      * @constructor
      */
@@ -31,7 +31,7 @@ class Target extends EventEmitter {
 
         /**
          * Reference to the runtime.
-         * @type {Runtime}
+         * @type {import("./runtime")}
          */
         this.runtime = runtime;
         /**
@@ -204,7 +204,7 @@ class Target extends EventEmitter {
      * was not found.
      * @param {string} name Name of the variable.
      * @param {string} type Type of the variable. Defaults to Variable.SCALAR_TYPE.
-     * @param {?bool} skipStage Optional flag to skip checking the stage
+     * @param {?boolean} skipStage Optional flag to skip checking the stage
      * @return {?Variable} Variable object if found, or null if not.
      */
     lookupVariableByNameAndType (name, type, skipStage) {
@@ -239,7 +239,7 @@ class Target extends EventEmitter {
     * Search begins for local lists; then look for globals.
     * @param {!string} id Id of the list.
     * @param {!string} name Name of the list.
-    * @return {!Varible} Variable object representing the found/created list.
+    * @return {!Variable} Variable object representing the found/created list.
      */
     lookupOrCreateList (id, name) {
         let list = this.lookupVariableById(id);
@@ -497,7 +497,7 @@ class Target extends EventEmitter {
      * variables as well as any stage variables unless the skipStage flag is true.
      * For the stage, this is all stage variables.
      * @param {string} type The variable type to search for; defaults to Variable.SCALAR_TYPE
-     * @param {?bool} skipStage Optional flag to skip the stage.
+     * @param {?boolean} skipStage Optional flag to skip the stage.
      * @return {Array<string>} A list of variable names
      */
     getAllVariableNamesInScopeByType (type, skipStage) {
