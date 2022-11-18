@@ -41,7 +41,8 @@ Assuming you have...
 - NPM >= 8.3.0 installed (if not, jump to: [NPM](#NPM))
 - VS Code installed with Typescript Extension added (if not, jump to: [Vs Code](#VS-Code-(Recommended)))
 
-Run the following from the command line (**NOTE:** if using gitpod, this all will be done for you on startup):
+Run the following from the command line:
+(**NOTE:** If using gitpod, this all will be done for you on startup)
 
 ```shell script
 git clone git@github.com:mitmedialab/prg-extension-boilerplate.git
