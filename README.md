@@ -42,6 +42,7 @@ Assuming you have...
 - VS Code installed with Typescript Extension added (if not, jump to: [Vs Code](#VS-Code-(Recommended)))
 
 Run the following from the command line:
+
 (**NOTE:** If using gitpod, this all will be done for you on startup)
 
 ```shell script
