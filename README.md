@@ -472,4 +472,7 @@ If you see the following:
 sh: webpack: command not found
 ```
 
+
 This may mean you have a half-installed node_modules version of webpack. Try starting [fresh](#-project-setup)!
+
+Note the [`LICENSE`](packages/scratch-gui/LICENSE)s and especially [`TRADEMARK`](packages/scratch-gui/TRADEMARK)s for each Scratch component project carefully — e.g., you may not use the Scratch name, logo, cat, etc. in derivative projects without permission.
