@@ -5,8 +5,7 @@ const VirtualMachine = require('../../src/virtual-machine');
 const Runtime = require('../../src/engine/runtime');
 const MonitorRecord = require('../../src/engine/monitor-record');
 const {Map} = require('immutable');
-
-tap.tearDown(() => process.nextTick(process.exit));
+require("../helper/defineWindowGlobals");
 
 const test = tap.test;
 
@@ -193,6 +192,7 @@ test('Starting the runtime emits an event', t => {
     });
     rt.start();
     t.equal(started, true);
+    rt.quit();
     t.end();
 });
 
@@ -209,6 +209,7 @@ test('Runtime cannot be started while already running', t => {
     // Starting again should not emit another event
     rt.start();
     t.equal(started, false);
+    rt.quit();
     t.end();
 });
 
@@ -224,6 +225,7 @@ test('setCompatibilityMode restarts if it was already running', t => {
 
     rt.setCompatibilityMode(true);
     t.equal(started, true);
+    rt.quit();
     t.end();
 });
 
@@ -248,5 +250,26 @@ test('Disposing the runtime emits an event', t => {
     });
     rt.dispose();
     t.equal(disposed, true);
+    t.end();
+});
+
+test('Clock is reset on runtime dispose', t => {
+    const rt = new Runtime();
+    const c = rt.ioDevices.clock;
+    let simulatedTime = 0;
+
+    c._projectTimer = {
+        timeElapsed: () => simulatedTime,
+        start: () => {
+            simulatedTime = 0;
+        }
+    };
+
+    t.ok(c.projectTimer() === 0);
+    simulatedTime += 1000;
+    t.ok(c.projectTimer() === 1);
+    rt.dispose();
+    // When the runtime is disposed, the clock should be reset
+    t.ok(c.projectTimer() === 0);
     t.end();
 });

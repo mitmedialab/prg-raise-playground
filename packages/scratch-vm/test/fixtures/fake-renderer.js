@@ -4,6 +4,23 @@ const FakeRenderer = function () {
     this.y = 0;
     this.order = 0;
     this.spriteCount = 5;
+    this._nextSkinId = -1;
+};
+
+FakeRenderer.prototype.createSVGSkin = function () {
+    return this._nextSkinId++;
+};
+
+FakeRenderer.prototype.createBitmapSkin = function () {
+    return this._nextSkinId++;
+};
+
+FakeRenderer.prototype.getSkinSize = function (d) { // eslint-disable-line no-unused-vars
+    return [0, 0];
+};
+
+FakeRenderer.prototype.getSkinRotationCenter = function (d) { // eslint-disable-line no-unused-vars
+    return [0, 0];
 };
 
 FakeRenderer.prototype.createDrawable = function () {
@@ -17,9 +34,6 @@ FakeRenderer.prototype.getFencedPositionOfDrawable = function (d, p) { // eslint
 FakeRenderer.prototype.updateDrawableSkinId = function (d, skinId) { // eslint-disable-line no-unused-vars
 };
 
-FakeRenderer.prototype.updateDrawableSkinIdRotationCenter =
-    function (d, skinId, rotationCenter) {}; // eslint-disable-line no-unused-vars
-
 FakeRenderer.prototype.updateDrawablePosition = function (d, position) { // eslint-disable-line no-unused-vars
     this.x = position[0];
     this.y = position[1];
@@ -32,10 +46,6 @@ FakeRenderer.prototype.updateDrawableVisible = function (d, visible) { // eslint
 };
 
 FakeRenderer.prototype.updateDrawableEffect = function (d, effectName, value) { // eslint-disable-line no-unused-vars
-};
-
-FakeRenderer.prototype.updateDrawableProperties = function (d, p) { // eslint-disable-line no-unused-vars
-    throw new Error('updateDrawableProperties is deprecated');
 };
 
 FakeRenderer.prototype.getCurrentSkinSize = function (d) { // eslint-disable-line no-unused-vars

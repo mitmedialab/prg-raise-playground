@@ -180,13 +180,13 @@ class Runtime extends EventEmitter {
 
         /**
          * Target management and storage.
-         * @type {Array.<!Target>}
+         * @type {Array.<!import("./target")>}
          */
         this.targets = [];
 
         /**
          * Targets in reverse order of execution. Shares its order with drawables.
-         * @type {Array.<!Target>}
+         * @type {Array.<!import("./target")>}
          */
         this.executableTargets = [];
 
@@ -216,7 +216,7 @@ class Runtime extends EventEmitter {
 
         /**
          * Currently known editing target for the VM.
-         * @type {?Target}
+         * @type {?import("./target")}
          */
         this._editingTarget = null;
 
@@ -392,6 +392,15 @@ class Runtime extends EventEmitter {
          * @type {function}
          */
         this.removeCloudVariable = this._initializeRemoveCloudVariable(newCloudDataManager);
+
+        /**
+         * A string representing the origin of the current project from outside of the
+         * Scratch community, such as CSFirst.
+         * @type {?string}
+         */
+        this.origin = null;
+
+        this._initScratchLink();
     }
 
     /**
@@ -805,7 +814,7 @@ class Runtime extends EventEmitter {
 
     /**
      * Create a context ("args") object for use with `formatMessage` on messages which might be target-specific.
-     * @param {Target} [target] - the target to use as context. If a target is not provided, default to the current
+     * @param {import("./target")} [target] - the target to use as context. If a target is not provided, default to the current
      * editing target or the stage.
      */
     makeMessageContextForTarget (target) {
@@ -1381,13 +1390,28 @@ class Runtime extends EventEmitter {
 
     /**
      * @returns {Array.<object>} scratch-blocks XML for each category of extension blocks, in category order.
+     * @param {?import("./target")} [target] - the active editing target (optional)
      * @property {string} id - the category / extension ID
      * @property {string} xml - the XML text for this category, starting with `<category>` and ending with `</category>`
      */
-    getBlocksXML () {
+    getBlocksXML (target) {
         return this._blockInfo.map(categoryInfo => {
             const {name, color1, color2} = categoryInfo;
-            const paletteBlocks = categoryInfo.blocks.filter(block => !block.info.hideFromPalette);
+            // Filter out blocks that aren't supposed to be shown on this target, as determined by the block info's
+            // `hideFromPalette` and `filter` properties.
+            const paletteBlocks = categoryInfo.blocks.filter(block => {
+                let blockFilterIncludesTarget = true;
+                // If an editing target is not passed, include all blocks
+                // If the block info doesn't include a `filter` property, always include it
+                if (target && block.info.filter) {
+                    blockFilterIncludesTarget = block.info.filter.includes(
+                        target.isStage ? TargetType.STAGE : TargetType.SPRITE
+                    );
+                }
+                // If the block info's `hideFromPalette` is true, then filter out this block
+                return blockFilterIncludesTarget && !block.info.hideFromPalette;
+            });
+
             const colorXML = `colour="${color1}" secondaryColour="${color2}"`;
 
             // Use a menu icon if there is one. Otherwise, use the block icon. If there's no icon,
@@ -1423,9 +1447,39 @@ class Runtime extends EventEmitter {
     }
 
     /**
+     * One-time initialization for Scratch Link support.
+     */
+    _initScratchLink () {
+        /* global globalThis */
+        // Check that we're actually in a real browser, not Node.js or JSDOM, and we have a valid-looking origin.
+        if (globalThis.document &&
+            globalThis.document.getElementById &&
+            globalThis.origin &&
+            globalThis.origin !== 'null' &&
+            globalThis.navigator &&
+            globalThis.navigator.userAgent &&
+            globalThis.navigator.userAgent.includes &&
+            !globalThis.navigator.userAgent.includes('Node.js') &&
+            !globalThis.navigator.userAgent.includes('jsdom')
+        ) {
+            // Create a script tag for the Scratch Link browser extension, unless one already exists
+            const scriptElement = document.getElementById('scratch-link-extension-script');
+            if (!scriptElement) {
+                const script = document.createElement('script');
+                script.id = 'scratch-link-extension-script';
+                document.body.appendChild(script);
+
+                // Tell the browser extension to inject its script.
+                // If the extension isn't present or isn't active, this will do nothing.
+                globalThis.postMessage('inject-scratch-link-script', globalThis.origin);
+            }
+        }
+    }
+
+    /**
      * Get a scratch link socket.
      * @param {string} type Either BLE or BT
-     * @returns {ScratchLinkSocket} The scratch link socket.
+     * @returns {import("../util/scratch-link-websocket")} The scratch link socket.
      */
     getScratchLinkSocket (type) {
         const factory = this._linkSocketFactory || this._defaultScratchLinkSocketFactory;
@@ -1444,10 +1498,14 @@ class Runtime extends EventEmitter {
     /**
      * The default scratch link socket creator, using websockets to the installed device manager.
      * @param {string} type Either BLE or BT
-     * @returns {ScratchLinkSocket} The new scratch link socket (a WebSocket object)
+     * @returns {import("../util/scratch-link-websocket")} The new scratch link socket (a WebSocket object)
      */
     _defaultScratchLinkSocketFactory (type) {
-        return new ScratchLinkWebSocket(type);
+        const Scratch = self.Scratch;
+        const ScratchLinkSafariSocket = Scratch && Scratch.ScratchLinkSafariSocket;
+        // detect this every time in case the user turns on the extension after loading the page
+        const useSafariSocket = ScratchLinkSafariSocket && ScratchLinkSafariSocket.isSafariHelperCompatible();
+        return useSafariSocket ? new ScratchLinkSafariSocket(type) : new ScratchLinkWebSocket(type);
     }
 
     /**
@@ -1543,7 +1601,7 @@ class Runtime extends EventEmitter {
 
     /**
      * Attach the audio engine
-     * @param {!AudioEngine} audioEngine The audio engine to attach
+     * @param {!import("scratch-audio")} audioEngine The audio engine to attach
      */
     attachAudioEngine (audioEngine) {
         this.audioEngine = audioEngine;
@@ -1551,7 +1609,7 @@ class Runtime extends EventEmitter {
 
     /**
      * Attach the renderer
-     * @param {!RenderWebGL} renderer The renderer to attach
+     * @param {!import("scratch-render")} renderer The renderer to attach (TODO: get typings for: ../scratch-render/src/index.js)
      */
     attachRenderer (renderer) {
         this.renderer = renderer;
@@ -1560,7 +1618,7 @@ class Runtime extends EventEmitter {
 
     /**
      * Set the svg adapter, which converts scratch 2 svgs to scratch 3 svgs
-     * @param {!SvgRenderer} svgAdapter The adapter to attach
+     * @param {!import('scratch-svg-renderer').SVGRenderer} svgAdapter The adapter to attach
      */
     attachV2SVGAdapter (svgAdapter) {
         this.v2SvgAdapter = svgAdapter;
@@ -1577,7 +1635,7 @@ class Runtime extends EventEmitter {
 
     /**
      * Attach the storage module
-     * @param {!ScratchStorage} storage The storage module to attach
+     * @param {!import("scratch-storage")} storage The storage module to attach
      */
     attachStorage (storage) {
         this.storage = storage;
@@ -1589,7 +1647,7 @@ class Runtime extends EventEmitter {
     /**
      * Create a thread and push it to the list of threads.
      * @param {!string} id ID of block that starts the stack.
-     * @param {!Target} target Target to run thread on.
+     * @param {!import("./target")} target Target to run thread on.
      * @param {?object} opts optional arguments
      * @param {?boolean} opts.stackClick true if the script was activated by clicking on the stack
      * @param {?boolean} opts.updateMonitor true if the script should update a monitor value
@@ -1705,7 +1763,7 @@ class Runtime extends EventEmitter {
     /**
      * Enqueue a script that when finished will update the monitor for the block.
      * @param {!string} topBlockId ID of block that starts the script.
-     * @param {?Target} optTarget target Target to run script on. If not supplied, uses editing target.
+     * @param {?import("./target")} optTarget target Target to run script on. If not supplied, uses editing target.
      */
     addMonitorScript (topBlockId, optTarget) {
         if (!optTarget) optTarget = this._editingTarget;
@@ -1726,7 +1784,7 @@ class Runtime extends EventEmitter {
      *  - the top block ID of the script.
      *  - the target that owns the script.
      * @param {!Function} f Function to call for each script.
-     * @param {Target=} optTarget Optionally, a target to restrict to.
+     * @param {import("./target")=} optTarget Optionally, a target to restrict to.
      */
     allScriptsDo (f, optTarget) {
         let targets = this.executableTargets;
@@ -1761,7 +1819,7 @@ class Runtime extends EventEmitter {
      * Start all relevant hats.
      * @param {!string} requestedHatOpcode Opcode of hats to start.
      * @param {object=} optMatchFields Optionally, fields to match on the hat.
-     * @param {Target=} optTarget Optionally, a target to restrict to.
+     * @param {import("./target")=} optTarget Optionally, a target to restrict to.
      * @return {Array.<Thread>} List of threads started by this function.
      */
     startHats (requestedHatOpcode,
@@ -1851,6 +1909,7 @@ class Runtime extends EventEmitter {
         this.targets.map(this.disposeTarget, this);
         this._monitorState = OrderedMap({});
         this.emit(Runtime.RUNTIME_DISPOSED);
+        this.ioDevices.clock.resetProjectTimer();
         // @todo clear out extensions? turboMode? etc.
 
         // *********** Cloud *******************
@@ -1876,7 +1935,7 @@ class Runtime extends EventEmitter {
      * Add a target to the runtime. This tracks the sprite pane
      * ordering of the target. The target still needs to be put
      * into the correct execution order after calling this function.
-     * @param {Target} target target to add
+     * @param {import("./target")} target target to add
      */
     addTarget (target) {
         this.targets.push(target);
@@ -1889,7 +1948,7 @@ class Runtime extends EventEmitter {
      * A positve number will make the target execute earlier. A negative number
      * will make the target execute later in the order.
      *
-     * @param {Target} executableTarget target to move
+     * @param {import("./target")} executableTarget target to move
      * @param {number} delta number of positions to move target by
      * @returns {number} new position in execution order
      */
@@ -1917,7 +1976,7 @@ class Runtime extends EventEmitter {
      * Infinity will set the target to execute first. 0 will set the target to
      * execute last (before the stage).
      *
-     * @param {Target} executableTarget target to move
+     * @param {import("./target")} executableTarget target to move
      * @param {number} newIndex position in execution order to place the target
      * @returns {number} new position in the execution order
      */
@@ -1928,7 +1987,7 @@ class Runtime extends EventEmitter {
 
     /**
      * Remove a target from the execution set.
-     * @param {Target} executableTarget target to remove
+     * @param {import("./target")} executableTarget target to remove
      */
     removeExecutable (executableTarget) {
         const oldIndex = this.executableTargets.indexOf(executableTarget);
@@ -1939,7 +1998,7 @@ class Runtime extends EventEmitter {
 
     /**
      * Dispose of a target.
-     * @param {!Target} disposingTarget Target to dispose of.
+     * @param {!import("./target")} disposingTarget Target to dispose of.
      */
     disposeTarget (disposingTarget) {
         this.targets = this.targets.filter(target => {
@@ -1953,7 +2012,7 @@ class Runtime extends EventEmitter {
 
     /**
      * Stop any threads acting on the target.
-     * @param {!Target} target Target to stop threads for.
+     * @param {!import("./target")} target Target to stop threads for.
      * @param {Thread=} optThreadException Optional thread to skip.
      */
     stopForTarget (target, optThreadException) {
@@ -2110,7 +2169,7 @@ class Runtime extends EventEmitter {
 
     /**
      * Set the current editing target known by the runtime.
-     * @param {!Target} editingTarget New editing target.
+     * @param {!import("./target")} editingTarget New editing target.
      */
     setEditingTarget (editingTarget) {
         const oldEditingTarget = this._editingTarget;
@@ -2278,7 +2337,7 @@ class Runtime extends EventEmitter {
     /**
      * Add a monitor to the state. If the monitor already exists in the state,
      * updates those properties that are defined in the given monitor record.
-     * @param {!MonitorRecord} monitor Monitor to add.
+     * @param {!import("./monitor-record")} monitor Monitor to add.
      */
     requestAddMonitor (monitor) {
         const id = monitor.get('id');
@@ -2357,7 +2416,7 @@ class Runtime extends EventEmitter {
     /**
      * Get a target by its id.
      * @param {string} targetId Id of target to find.
-     * @return {?Target} The target, if found.
+     * @return {?import("./target")} The target, if found.
      */
     getTargetById (targetId) {
         for (let i = 0; i < this.targets.length; i++) {
@@ -2371,7 +2430,7 @@ class Runtime extends EventEmitter {
     /**
      * Get the first original (non-clone-block-created) sprite given a name.
      * @param {string} spriteName Name of sprite to look for.
-     * @return {?Target} Target representing a sprite of the given name.
+     * @return {?import("./target")} Target representing a sprite of the given name.
      */
     getSpriteTargetByName (spriteName) {
         for (let i = 0; i < this.targets.length; i++) {
@@ -2388,7 +2447,7 @@ class Runtime extends EventEmitter {
     /**
      * Get a target by its drawable id.
      * @param {number} drawableID drawable id of target to find
-     * @return {?Target} The target, if found
+     * @return {?import("./target")} The target, if found
      */
     getTargetByDrawableId (drawableID) {
         for (let i = 0; i < this.targets.length; i++) {
@@ -2429,8 +2488,8 @@ class Runtime extends EventEmitter {
 
     /**
      * Report that a new target has been created, possibly by cloning an existing target.
-     * @param {Target} newTarget - the newly created target.
-     * @param {Target} [sourceTarget] - the target used as a source for the new clone, if any.
+     * @param {import("./target")} newTarget - the newly created target.
+     * @param {import("./target")} [sourceTarget] - the target used as a source for the new clone, if any.
      * @fires Runtime#targetWasCreated
      */
     fireTargetWasCreated (newTarget, sourceTarget) {
@@ -2439,7 +2498,7 @@ class Runtime extends EventEmitter {
 
     /**
      * Report that a clone target is being removed.
-     * @param {Target} target - the target being removed
+     * @param {import("./target")} target - the target being removed
      * @fires Runtime#targetWasRemoved
      */
     fireTargetWasRemoved (target) {
@@ -2448,7 +2507,7 @@ class Runtime extends EventEmitter {
 
     /**
      * Get a target representing the Scratch stage, if one exists.
-     * @return {?Target} The target, if found.
+     * @return {?import("./target")} The target, if found.
      */
     getTargetForStage () {
         for (let i = 0; i < this.targets.length; i++) {
@@ -2461,7 +2520,7 @@ class Runtime extends EventEmitter {
 
     /**
      * Get the editing target.
-     * @return {?Target} The editing target.
+     * @return {?import("./target")} The editing target.
      */
     getEditingTarget () {
         return this._editingTarget;
@@ -2531,7 +2590,7 @@ class Runtime extends EventEmitter {
     /**
      * Emit a targets update at the end of the step if the provided target is
      * the original sprite
-     * @param {!Target} target Target requesting the targets update
+     * @param {!import("./target")} target Target requesting the targets update
      */
     requestTargetsUpdate (target) {
         if (!target.isOriginal) return;
@@ -2571,6 +2630,15 @@ class Runtime extends EventEmitter {
     }
 
     /**
+     * Quit the Runtime, clearing any handles which might keep the process alive.
+     * Do not use the runtime after calling this method. This method is meant for test shutdown.
+     */
+    quit () {
+        clearInterval(this._steppingInterval);
+        this._steppingInterval = null;
+    }
+
+    /**
      * Turn on profiling.
      * @param {Profiler/FrameCallback} onFrame A callback handle passed a
      * profiling frame when the profiler reports its collected data.
@@ -2602,8 +2670,8 @@ class Runtime extends EventEmitter {
  * Event fired after a new target has been created, possibly by cloning an existing target.
  *
  * @event Runtime#targetWasCreated
- * @param {Target} newTarget - the newly created target.
- * @param {Target} [sourceTarget] - the target used as a source for the new clone, if any.
+ * @param {import("./target")} newTarget - the newly created target.
+ * @param {import("./target")} [sourceTarget] - the target used as a source for the new clone, if any.
  */
 
 module.exports = Runtime;

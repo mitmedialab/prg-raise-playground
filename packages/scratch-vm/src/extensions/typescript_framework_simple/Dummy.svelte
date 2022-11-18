@@ -1,0 +1,22 @@
+<script lang="ts">
+  import type Extension from ".";
+  import { ReactiveInvoke, reactiveInvoke, activeClass, px, color } from "../../typescript-support/ui";
+
+  export let extension: Extension;
+  export let close: () => void;
+
+  const invoke: ReactiveInvoke<Extension> = (functionName, ...args) => reactiveInvoke((extension = extension), functionName, args);
+
+  const container = activeClass;
+</script>
+
+<style>
+  .container {
+    text-align: center;
+    padding: 30px;
+  }
+</style>
+
+<div class:container style:width={px(360)} style:background-color={color.ui.white} style:color={color.text.primary}>
+  Hello, world!
+</div>

@@ -13,7 +13,7 @@ const VirtualMachine = require('../../src/index');
 
 const projectUri = path.resolve(__dirname, '../fixtures/offline-custom-assets.sb2');
 const projectZip = AdmZip(projectUri);
-const project = new Buffer(fs.readFileSync(projectUri));
+const project = Buffer.from(fs.readFileSync(projectUri));
 // Custom costume from sb2 file (which was downloaded from offline editor)
 // This sound should not be available on our servers
 const costume = projectZip.readFile('1.svg');
@@ -33,8 +33,8 @@ test('offline-custom-assets', t => {
     vm.on('playgroundData', e => {
         const threads = JSON.parse(e.threads);
         t.ok(threads.length === 0);
+        vm.quit();
         t.end();
-        process.nextTick(process.exit);
     });
 
     // Start VM, load project, and run

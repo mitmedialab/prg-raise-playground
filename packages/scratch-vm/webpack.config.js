@@ -11,7 +11,10 @@ const base = {
     devServer: {
         contentBase: false,
         host: '0.0.0.0',
-        port: process.env.PORT || 8073
+        port: process.env.PORT || 8073,
+        watchOptions: {
+            ignored: ['**/*.ts']
+        }
     },
     devtool: 'cheap-module-source-map',
     output: {
@@ -30,15 +33,21 @@ const base = {
                 plugins: [
                     '@babel/plugin-syntax-dynamic-import',
                     '@babel/plugin-transform-async-to-generator',
-                    '@babel/plugin-proposal-object-rest-spread'
+                    '@babel/plugin-proposal-object-rest-spread',
+                    '@babel/plugin-proposal-optional-chaining'
                 ],
                 presets: ['@babel/preset-env']
+            },
+            query: {
+                presets: [['@babel/preset-env', {targets: {browsers: ['last 3 versions', 'Safari >= 8', 'iOS >= 8']}}]]
             }
         },
         {
             test: /\.mp3$/,
             loader: 'file-loader'
-        }]
+        },
+        { test: /\.ts$/, loader: 'ignore-loader' }
+    ]
     },
     optimization: {
         minimizer: [

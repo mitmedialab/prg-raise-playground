@@ -3,6 +3,7 @@ const path = require('path');
 const readFileToBuffer = require('../fixtures/readProjectFile').readFileToBuffer;
 const makeTestStorage = require('../fixtures/make-test-storage');
 const VirtualMachine = require('../../src/virtual-machine');
+require("../helper/defineWindowGlobals");
 
 let vm;
 let projectChanged;
@@ -26,8 +27,6 @@ tap.beforeEach(() => {
         projectChanged = false;
     });
 });
-
-tap.tearDown(() => process.nextTick(process.exit));
 
 const test = tap.test;
 

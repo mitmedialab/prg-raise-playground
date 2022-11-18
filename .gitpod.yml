@@ -1,11 +1,12 @@
+tasks:
+  - name: Init and Run
+    init: |
+      npm run init
+    command: |
+      npm run dev
 ports:
   - port: 8601
     onOpen: open-preview
-tasks:
-  - init: >
-      nvm install &&
-      nvm use &&
-      npx lerna bootstrap --force-local &&
-      cd packages/scratch-gui
-    command: >
-      npm start
+vscode:
+  extensions:
+    - svelte.svelte-vscode

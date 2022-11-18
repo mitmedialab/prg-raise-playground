@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "CommonJS",
+    "noImplicitAny": false,
+    "esModuleInterop": true,
+    "watch": false
+  },
+  "include": ["./**/*.ts"]
+}
