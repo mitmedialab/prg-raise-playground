@@ -3,7 +3,7 @@ var GUI =
 
 /***/ "./node_modules/css-loader/index.js?!./node_modules/postcss-loader/src/index.js?!./src/playground/player.css":
 /*!******************************************************************************************************************!*\
-  !*** ./node_modules/css-loader??ref--5-1!./node_modules/postcss-loader/src??postcss!./src/playground/player.css ***!
+  !*** ./node_modules/css-loader??ref--6-1!./node_modules/postcss-loader/src??postcss!./src/playground/player.css ***!
   \******************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -32,7 +32,7 @@ exports.locals = {
 /***/ (function(module, exports, __webpack_require__) {
 
 
-var content = __webpack_require__(/*! !../../node_modules/css-loader??ref--5-1!../../node_modules/postcss-loader/src??postcss!./player.css */ "./node_modules/css-loader/index.js?!./node_modules/postcss-loader/src/index.js?!./src/playground/player.css");
+var content = __webpack_require__(/*! !../../node_modules/css-loader??ref--6-1!../../node_modules/postcss-loader/src??postcss!./player.css */ "./node_modules/css-loader/index.js?!./node_modules/postcss-loader/src/index.js?!./src/playground/player.css");
 
 if(typeof content === 'string') content = [[module.i, content, '']];
 
@@ -80,9 +80,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _reducers_mode__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../reducers/mode */ "./src/reducers/mode.js");
 /* harmony import */ var _player_css__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./player.css */ "./src/playground/player.css");
 /* harmony import */ var _player_css__WEBPACK_IMPORTED_MODULE_11___default = /*#__PURE__*/__webpack_require__.n(_player_css__WEBPACK_IMPORTED_MODULE_11__);
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 
 
 
@@ -96,17 +94,15 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
 
 if (false) {}
 
-
-
 var Player = function Player(_ref) {
   var isPlayerOnly = _ref.isPlayerOnly,
-      onSeeInside = _ref.onSeeInside,
-      projectId = _ref.projectId;
-  return react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_components_box_box_jsx__WEBPACK_IMPORTED_MODULE_6__["default"], {
+    onSeeInside = _ref.onSeeInside,
+    projectId = _ref.projectId;
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_components_box_box_jsx__WEBPACK_IMPORTED_MODULE_6__["default"], {
     className: classnames__WEBPACK_IMPORTED_MODULE_0___default()(isPlayerOnly ? _player_css__WEBPACK_IMPORTED_MODULE_11___default.a.stageOnly : _player_css__WEBPACK_IMPORTED_MODULE_11___default.a.editor)
-  }, isPlayerOnly && react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("button", {
+  }, isPlayerOnly && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("button", {
     onClick: onSeeInside
-  }, 'See inside'), react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_containers_gui_jsx__WEBPACK_IMPORTED_MODULE_7__["default"], {
+  }, 'See inside'), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_containers_gui_jsx__WEBPACK_IMPORTED_MODULE_7__["default"], {
     canEditTitle: true,
     enableCommunity: true,
     canShare: false,
@@ -114,19 +110,16 @@ var Player = function Player(_ref) {
     projectId: projectId
   }));
 };
-
 Player.propTypes = {
   isPlayerOnly: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.bool,
   onSeeInside: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.func,
   projectId: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.string
 };
-
 var mapStateToProps = function mapStateToProps(state) {
   return {
     isPlayerOnly: state.scratchGui.mode.isPlayerOnly
   };
 };
-
 var mapDispatchToProps = function mapDispatchToProps(dispatch) {
   return {
     onSeeInside: function onSeeInside() {
@@ -134,15 +127,15 @@ var mapDispatchToProps = function mapDispatchToProps(dispatch) {
     }
   };
 };
+var ConnectedPlayer = Object(react_redux__WEBPACK_IMPORTED_MODULE_4__["connect"])(mapStateToProps, mapDispatchToProps)(Player);
 
-var ConnectedPlayer = Object(react_redux__WEBPACK_IMPORTED_MODULE_4__["connect"])(mapStateToProps, mapDispatchToProps)(Player); // note that redux's 'compose' function is just being used as a general utility to make
+// note that redux's 'compose' function is just being used as a general utility to make
 // the hierarchy of HOC constructor calls clearer here; it has nothing to do with redux's
 // ability to compose reducers.
-
 var WrappedPlayer = Object(redux__WEBPACK_IMPORTED_MODULE_5__["compose"])(_lib_app_state_hoc_jsx__WEBPACK_IMPORTED_MODULE_9__["default"], _lib_hash_parser_hoc_jsx__WEBPACK_IMPORTED_MODULE_8__["default"])(ConnectedPlayer);
 var appTarget = document.createElement('div');
 document.body.appendChild(appTarget);
-react_dom__WEBPACK_IMPORTED_MODULE_3___default.a.render(react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(WrappedPlayer, {
+react_dom__WEBPACK_IMPORTED_MODULE_3___default.a.render( /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(WrappedPlayer, {
   isPlayerOnly: true
 }), appTarget);
 
