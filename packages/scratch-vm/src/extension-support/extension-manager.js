@@ -33,7 +33,6 @@ const builtinExtensions = {
     poseFace: () => require('../extensions/scratch3_pose_face'),
     poseHand: () => require('../extensions/scratch3_pose_hand'),
     poseBody: () => require('../extensions/scratch3_pose_body'),
-    avatar: () => require('../extensions/scratch3_avatar'),
 };
 
 /**
