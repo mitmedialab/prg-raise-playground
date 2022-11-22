@@ -4,11 +4,13 @@
   import { Extension } from "scratch-vm/src/typescript-support/Extension";
 
   /** CODE GEN GUARDS: Begin Component Import Statements*/
-	import Typescriptprg95grpframeworkprg95grpcomplex_Alert from "/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_complex/Alert.svelte";
-	import Typescriptprg95grpframeworkprg95grpcomplex_Animals from "/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_complex/Animals.svelte";
-	import Typescriptprg95grpframeworkprg95grpsimple_Counter from "/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_simple/Counter.svelte";
-	import Typescriptprg95grpframeworkprg95grpsimple_Dummy from "/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_simple/Dummy.svelte";
-	import Typescriptprg95grpframeworkprg95grpsimple_Palette from "/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_simple/Palette.svelte";
+	import Scratch3prg95grpjibo_CustomAnim from "/Users/saniya/Documents/programming/prg-urop/prg-extension-boilerplate/packages/scratch-vm/src/extensions/scratch3_jibo/CustomAnim.svelte";
+	import Scratch3prg95grpjibo_Emoji from "/Users/saniya/Documents/programming/prg-urop/prg-extension-boilerplate/packages/scratch-vm/src/extensions/scratch3_jibo/Emoji.svelte";
+	import Typescriptprg95grpframeworkprg95grpcomplex_Alert from "/Users/saniya/Documents/programming/prg-urop/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_complex/Alert.svelte";
+	import Typescriptprg95grpframeworkprg95grpcomplex_Animals from "/Users/saniya/Documents/programming/prg-urop/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_complex/Animals.svelte";
+	import Typescriptprg95grpframeworkprg95grpsimple_Counter from "/Users/saniya/Documents/programming/prg-urop/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_simple/Counter.svelte";
+	import Typescriptprg95grpframeworkprg95grpsimple_Dummy from "/Users/saniya/Documents/programming/prg-urop/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_simple/Dummy.svelte";
+	import Typescriptprg95grpframeworkprg95grpsimple_Palette from "/Users/saniya/Documents/programming/prg-urop/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_simple/Palette.svelte";
   /** CODE GEN GUARDS: End Component Import Statements*/
 
   export let id: string;
@@ -25,6 +27,8 @@
     const options = {target, props};
     
     /** CODE GEN GUARDS: Begin Component Construction */
+		if (id === "scratch3prg95grpjibo" && component === "CustomAnim") new Scratch3prg95grpjibo_CustomAnim(options);
+		if (id === "scratch3prg95grpjibo" && component === "Emoji") new Scratch3prg95grpjibo_Emoji(options);
 		if (id === "typescriptprg95grpframeworkprg95grpcomplex" && component === "Alert") new Typescriptprg95grpframeworkprg95grpcomplex_Alert(options);
 		if (id === "typescriptprg95grpframeworkprg95grpcomplex" && component === "Animals") new Typescriptprg95grpframeworkprg95grpcomplex_Animals(options);
 		if (id === "typescriptprg95grpframeworkprg95grpsimple" && component === "Counter") new Typescriptprg95grpframeworkprg95grpsimple_Counter(options);

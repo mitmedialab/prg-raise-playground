@@ -139,6 +139,9 @@ var Scratch3Jibo = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, [...arguments, _codeGenArgs]) || this;
     }
     Scratch3Jibo.prototype.init = function (env) {
+        this.text = "Hello! I'm Jibo!";
+        this.animName = "My Animation";
+        this.animEmoji = "Penguin";
         this.runtime = env.runtime;
         this.runtime.registerPeripheralExtension(EXTENSION_ID, this);
         this.runtime.connectPeripheral(EXTENSION_ID, 0);
@@ -205,21 +208,68 @@ var Scratch3Jibo = /** @class */ (function (_super) {
                 type: "command" /* BlockType.Command */,
                 arg: {
                     type: "string" /* ArgumentType.String */,
-                    defaultValue: "Penguin",
-                    options: Object.keys(_emojis)
+                    defaultValue: self.emoji,
+                    options: {
+                        acceptsReporters: true,
+                        items: Object.keys(_emojis),
+                        handler: function (input) {
+                            if (input in Object.keys(_emojis)) {
+                                return input;
+                            }
+                            return 'Penguin';
+                        }
+                    }
                 },
                 text: function (akey) { return "set Jibo Emoji ".concat(akey); },
                 operation: function (akey) { return _this.JiboEmoji(akey); }
+            }); },
+            Emoji: function (self) { return ({
+                type: "reporter" /* BlockType.Reporter */,
+                text: "emoji",
+                operation: function () { return _this.setEmoji(); }
+            }); },
+            emojiUI: function (self) { return ({
+                type: "button" /* BlockType.Button */,
+                text: "Set Emoji",
+                operation: function () { _this.openUI("Emoji"); }
             }); },
             JiboEmote: function (self) { return ({
                 type: "command" /* BlockType.Command */,
                 arg: {
                     type: "string" /* ArgumentType.String */,
                     defaultValue: "Celebrate",
-                    options: Object.keys(_emotions)
+                    options: {
+                        acceptsReporters: true,
+                        items: Object.keys(_emotions),
+                        handler: function (input) {
+                            if (input in Object.keys(_emotions)) {
+                                return input;
+                            }
+                            else {
+                                return "custom";
+                            }
+                        }
+                    }
                 },
                 text: function (akey) { return "set Jibo Animation to ".concat(akey); },
-                operation: function (akey) { return _this.JiboEmote(akey); }
+                operation: function (akey) {
+                    if (akey in Object.keys(_emotions)) {
+                        _this.JiboEmote(akey);
+                    }
+                    else {
+                        _this.customAnim();
+                    }
+                }
+            }); },
+            Anim: function (self) { return ({
+                type: "reporter" /* BlockType.Reporter */,
+                text: "My Animation",
+                operation: function () { return _this.animName; }
+            }); },
+            customAnim: function (self) { return ({
+                type: "button" /* BlockType.Button */,
+                text: "Create Animation",
+                operation: function () { _this.openUI("CustomAnim"); }
             }); },
             JiboLED: function (self) { return ({
                 type: "command" /* BlockType.Command */,
@@ -259,7 +309,7 @@ var Scratch3Jibo = /** @class */ (function (_super) {
                 type: "loop" /* BlockType.Loop */,
                 text: "multitask",
                 operation: function () { return _this.JiboMultitask(); }
-            }); }
+            }); },
         };
     };
     /* The following 4 functions have to exist for the peripherial indicator */
@@ -676,6 +726,12 @@ var Scratch3Jibo = /** @class */ (function (_super) {
             });
         });
     };
+    Scratch3Jibo.prototype.setEmoji = function () {
+        return this.emoji;
+    };
+    Scratch3Jibo.prototype.setAnim = function () {
+        return [this.animEmoji, this.text];
+    };
     Scratch3Jibo.prototype.JiboEmote = function (akey) {
         return __awaiter(this, void 0, void 0, function () {
             var animation_key;
@@ -706,6 +762,30 @@ var Scratch3Jibo = /** @class */ (function (_super) {
                             "do_motion": true,
                             "do_tts": false,
                             "do_lookat": false,
+                            "motion": animation_key
+                        };
+                        return [4 /*yield*/, this.JiboPublish(jibo_msg)];
+                    case 1:
+                        _a.sent();
+                        return [4 /*yield*/, this.JiboPublish({ "do_anim_transition": true, "anim_transition": 0 })];
+                    case 2:
+                        _a.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    Scratch3Jibo.prototype.customAnim = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var animation_key, jibo_msg;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        animation_key = _emojis[this.animEmoji];
+                        jibo_msg = {
+                            "do_motion": true,
+                            "do_tts": true,
+                            "tts_text": this.text,
                             "motion": animation_key
                         };
                         return [4 /*yield*/, this.JiboPublish(jibo_msg)];

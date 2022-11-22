@@ -5,7 +5,7 @@ import EventEmitter from 'events';
 
 import { ArgumentType, BlockType } from "../../typescript-support/enums";
 import { Extension } from "../../typescript-support/Extension";
-import { Environment, BlockDefinitions } from "../../typescript-support/types";
+import { Environment, BlockDefinitions, ButtonBlock } from "../../typescript-support/types";
 
 import ROSLIB from 'roslib';
 
@@ -116,7 +116,10 @@ type Blocks = {
     JiboLEDOff: () => void, 
     JiboLook: (x_angle: string, y_angle: string, z_angle: string) => void, 
     JiboMultitask: () => void, 
-    // emojiUI: ButtonBlock
+    Emoji: () => string,
+    Anim: () => any,
+    emojiUI: ButtonBlock,
+    customAnim: ButtonBlock
 }
 
 class Scratch3Jibo extends Extension<Details, Blocks> {
@@ -129,8 +132,15 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
     asr_out: any; 
     jiboEvent: EventEmitter;
     progress: any; // is this right??
+    emoji: string;
+    text: string;
+    animEmoji: string;
+    animName: string; 
 
     init(env: Environment) {
+        this.text = "Hello! I'm Jibo!"
+        this.animName = "My Animation"
+        this.animEmoji = "Penguin"
         this.runtime = env.runtime;
         this.runtime.registerPeripheralExtension(EXTENSION_ID, this);
         this.runtime.connectPeripheral(EXTENSION_ID, 0); 
@@ -201,22 +211,67 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
                 type: BlockType.Command, 
                 arg: {
                         type: ArgumentType.String, 
-                        defaultValue: "Penguin", 
-                        options: Object.keys(_emojis)
+                        defaultValue: self.emoji, 
+                        options: {
+                            acceptsReporters: true, 
+                            items: Object.keys(_emojis),
+                            handler: (input: any) => {
+                                if (input in Object.keys(_emojis)) {
+                                    return input; 
+                                }
+                                return 'Penguin'
+                            }
+                        }
                     }, 
                 text: (akey: string) => `set Jibo Emoji ${akey}`, 
                 operation: (akey: string) => this.JiboEmoji(akey)
             }), 
+            Emoji: (self: Scratch3Jibo) => ({
+                type: BlockType.Reporter, 
+                text: `emoji`, 
+                operation: () => {return this.setEmoji()}
+            }),
+            emojiUI: (self: Scratch3Jibo) => ({
+                type: BlockType.Button, 
+                text: `Set Emoji`, 
+                operation: () => {this.openUI("Emoji")}
+            }),
             JiboEmote: (self: Scratch3Jibo) => ({
                 type: BlockType.Command, 
                 arg: {
                         type: ArgumentType.String, 
                         defaultValue: "Celebrate", 
-                        options: Object.keys(_emotions)
+                        options: {
+                            acceptsReporters: true,
+                            items: Object.keys(_emotions),
+                            handler: (input: any) => {
+                                if (input in Object.keys(_emotions)) {
+                                    return input;
+                                } else {
+                                    return "custom";
+                                }
+                            }
+                        }
                     }, 
                 text: (akey: string) => `set Jibo Animation to ${akey}`, 
-                operation: (akey: string) => this.JiboEmote(akey)
+                operation: (akey: string) => {
+                    if (akey in Object.keys(_emotions)) {
+                        this.JiboEmote(akey)
+                    } else {
+                        this.customAnim(); 
+                    }
+                }
             }), 
+            Anim: (self: Scratch3Jibo) => ({
+                type: BlockType.Reporter, 
+                text: `My Animation`, 
+                operation: () => {return this.animName}
+            }),
+            customAnim: (self: Scratch3Jibo) => ({
+                type: BlockType.Button,
+                text: `Create Animation`, 
+                operation: () => {this.openUI("CustomAnim")}
+            }),
             JiboLED: (self: Scratch3Jibo) => ({
                 type: BlockType.Command, 
                 arg: {
@@ -256,11 +311,8 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
                 text: `multitask`, 
                 operation: () => this.JiboMultitask()
             }), 
-            // emojiUI: () => {
-            //     type: BlockType.Button, 
-            //     text: `Select Emoji`, 
-            //     operation: () => this.openUI("Emoji")
-            // }
+
+
         }
     }
 
@@ -663,6 +715,14 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
         await this.JiboAnim(animation_key);
     }
 
+    setEmoji() {
+        return this.emoji; 
+    }
+
+    setAnim() {
+        return [this.animEmoji, this.text]
+    }
+
     async JiboEmote(akey: string) {
         const animation_key = _emotions[akey];
         await this.JiboAnim(animation_key);
@@ -693,6 +753,20 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
                 resolve();
             });
         });*/
+    }
+
+    async customAnim() {
+        const animation_key = _emojis[this.animEmoji]
+        var jibo_msg = {
+            "do_motion": true, 
+            "do_tts": true, 
+            "tts_text": this.text, 
+            "motion": animation_key
+        }
+
+        await this.JiboPublish(jibo_msg);
+
+        await this.JiboPublish({"do_anim_transition":true,"anim_transition":0});
     }
 
     // async JiboAudio(args) {

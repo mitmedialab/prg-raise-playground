@@ -43,6 +43,9 @@
 
   const container = activeClass;
 
+  let text: string; 
+  let name: string; 
+
   const emojiIcons = {
     "Airplane": "https://cdn.emojidex.com/emoji/seal/airplane.png?1499688727",
     "Apple": "https://images.emojiterra.com/google/noto-emoji/v2.034/512px/1f34e.png",
@@ -100,13 +103,19 @@
 
 <div class:container style:width=auto style:background-color={color.ui.white} style:color={color.text.primary}>
   <div style:padding='10px'>
-    Current Emoji: {extension.animEmoji}
+    Custom Animation Name: <input bind:value={name} on:input={() => {extension.animName=name}}/>
+  </div>
+  <div style:padding='10px'>
+    Your Animation: {extension.text} + <img class='emoji' src={emojiIcons[extension.emoji]} alt={extension.emoji}/>
+  </div>
+  <div style:padding='10px'>
+    Say: <input bind:value={text} on:input={() => {extension.text=text}}/>
   </div>
   <div id="grid">
     {#each emojis as e}
     <div class="cell">
       <button style:cursor=pointer on:click={() => {
-        extension.animEmoji = e; 
+        extension.emoji = e; 
       }}>
         <img class="emoji" src={emojiIcons[e]} alt={e}/>
       </button>
@@ -114,4 +123,3 @@
     {/each}
   </div>
 </div>
-
