@@ -29,8 +29,13 @@ require('canvas-toBlob');
 const RESERVED_NAMES = ['_mouse_', '_stage_', '_edge_', '_myself_', '_random_'];
 
 const CORE_EXTENSIONS = [
+<<<<<<< HEAD
     'textClassification'//,
     //'teachableMachine' 
+=======
+    // 'teachableMachine',
+    // 'posenet',
+>>>>>>> ProjectSTEM
     // 'motion',
     // 'looks',
     // 'sound',
@@ -44,6 +49,7 @@ const CORE_EXTENSIONS = [
 
 class ScratchCanvasRecorder {
     constructor(canvas) {
+<<<<<<< HEAD
         this.mediaSource = new MediaSource();
         this.mediaSource.addEventListener('sourceopen', this.handleSourceOpen.bind(this), false);
         this.mediaRecorder = undefined;
@@ -54,13 +60,32 @@ class ScratchCanvasRecorder {
         this.video = document.createElement('video');
         this.video.width=500;
         this.video.height=500;
+=======
+        this.canvas = canvas;
+    }
+
+    startCapturing() {
+        this.mediaSource = new MediaSource();
+        this.mediaSource.addEventListener('sourceopen', this.handleSourceOpen.bind(this), false);
+        this.browserMediaRecorder = undefined;
+        this.recordedBlobs = undefined;
+        this.sourceBuffer = undefined;
+        this.recording = false;
+        this.video = document.createElement('video');
+        this.video.width = 500;
+        this.video.height = 500;
+>>>>>>> ProjectSTEM
         this.video.style.pointerEvents = 'none';
         this.video.style.position = 'fixed';
         this.video.style.top = '0';
         this.video.style.left = '0';
         this.video.style.opacity = '0';
         document.body.appendChild(this.video);
+<<<<<<< HEAD
         this.stream = canvas.captureStream(); // frames per second
+=======
+        this.stream = this.canvas.captureStream(); // frames per second
+>>>>>>> ProjectSTEM
         console.log('Started stream capture from canvas element: ', this.stream);
     }
 
@@ -82,6 +107,7 @@ class ScratchCanvasRecorder {
         this.video.src = window.URL.createObjectURL(superBuffer);
     }
 
+<<<<<<< HEAD
     toggleRecording() {
         if (recordButton.textContent === 'Start Recording') {
             startRecording();
@@ -95,21 +121,38 @@ class ScratchCanvasRecorder {
 
     // The nested try blocks will be simplified when Chrome 47 moves to Stable
     startRecording() {
+=======
+    // The nested try blocks will be simplified when Chrome 47 moves to Stable
+    startRecording() {
+        this.startCapturing();
+>>>>>>> ProjectSTEM
         this.recording = true;
         let options = {mimeType: 'video/webm'};
         this.recordedBlobs = [];
         try {
+<<<<<<< HEAD
             this.mediaRecorder = new MediaRecorder(this.stream, options);
+=======
+            this.browserMediaRecorder = new MediaRecorder(this.stream, options);
+>>>>>>> ProjectSTEM
         } catch (e0) {
             console.log('Unable to create MediaRecorder with options Object: ', e0);
             try {
                 options = {mimeType: 'video/webm,codecs=vp9'};
+<<<<<<< HEAD
                 this.mediaRecorder = new MediaRecorder(this.stream, options);
+=======
+                this.browserMediaRecorder = new MediaRecorder(this.stream, options);
+>>>>>>> ProjectSTEM
             } catch (e1) {
                 console.log('Unable to create MediaRecorder with options Object: ', e1);
                 try {
                     options = 'video/vp8'; // Chrome 47
+<<<<<<< HEAD
                     this.mediaRecorder = new MediaRecorder(this.stream, options);
+=======
+                    this.browserMediaRecorder = new MediaRecorder(this.stream, options);
+>>>>>>> ProjectSTEM
                 } catch (e2) {
                     alert('MediaRecorder is not supported by this browser.\n\n' +
                         'Try Firefox 29 or later, or Chrome 47 or later, ' +
@@ -119,11 +162,16 @@ class ScratchCanvasRecorder {
                 }
             }
         }
+<<<<<<< HEAD
         console.log('Created MediaRecorder', this.mediaRecorder, 'with options', options);
+=======
+        console.log('Created MediaRecorder', this.browserMediaRecorder, 'with options', options);
+>>>>>>> ProjectSTEM
         // TODO: Toggle turn off state
         // recordButton.textContent = 'Stop Recording';
         // playButton.disabled = true;
         // downloadButton.disabled = true;
+<<<<<<< HEAD
         this.mediaRecorder.onstop = this.handleStop.bind(this);
         this.mediaRecorder.ondataavailable = this.handleDataAvailable.bind(this);
         this.mediaRecorder.start(100); // collect 100ms of data
@@ -135,6 +183,20 @@ class ScratchCanvasRecorder {
         console.log('Recorded Blobs: ', this.recordedBlobs);
         this.video.controls = true;
         this.recording = false;
+=======
+        this.browserMediaRecorder.onstop = this.handleStop.bind(this);
+        this.browserMediaRecorder.ondataavailable = this.handleDataAvailable.bind(this);
+        this.browserMediaRecorder.start(100); // collect 100ms of data
+        console.log('MediaRecorder started', this.browserMediaRecorder);
+    }
+
+    stopRecording() {
+        this.browserMediaRecorder.stop();
+        console.log('Recorded Blobs: ', this.recordedBlobs);
+        this.video.controls = true;
+        this.recording = false;
+
+>>>>>>> ProjectSTEM
     }
 
     play() {
@@ -599,16 +661,82 @@ class VirtualMachine extends EventEmitter {
         });
     }
 
+<<<<<<< HEAD
     downloadProjectFromURLDirect(url) {
          // Handle loading dropbox links
          if (url.includes("dropbox.com")) {
+=======
+    uploadProjectToURL(url) {
+        // get authToken using regex
+        const delimiter = url.indexOf(";");
+        const authToken = url.substr(delimiter+1);
+        url = url.substr(0, delimiter);
+
+        this.saveProjectSb3().then(content => {
+            nets({
+                url: url,
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': content.type,
+                    'Authorization': 'Bearer ' + authToken,
+                },
+                encoding: undefined,
+                body: content
+            },(err, resp, body) => {
+                if (err) {
+                    console.log(err);
+                    return;
+                }
+                // resp.statusCode
+            })
+        });
+    }
+
+    downloadProjectFromURLDirect(url) {
+        // Handle loading google drive files
+        if (url.includes("googleapis.com")) {
+            // get authToken using regex
+            const delimiter = url.indexOf(";");
+            const authToken = url.substr(delimiter+1);
+            url = url.substr(0, delimiter);
+            return new Promise((resolve, reject) => {
+                nets({
+                    url: url,
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken,
+                    },
+                }, (err, resp, body) => {
+                    resolve(this.loadProject(body));
+                })
+            })
+        } else if (url.includes("dropbox.com")) {        
+            // Handle loading dropbox links
+>>>>>>> ProjectSTEM
             const dropboxRegex = /\/s\/[A-Za-z0-9]+\/.*.sb3/;
             const found = url.match(dropboxRegex);
             if (found.length > 0) url = 'https://dl.dropboxusercontent.com' + found[0];
         }
+<<<<<<< HEAD
         return new Promise((resolve, reject) => {
             nets({ url: url }, (err, resp, body) => {
                 resolve(this.loadProject(body));
+=======
+        
+        return new Promise((resolve, reject) => {
+            nets({ url: url }, (err, resp, body) => {
+
+                if (err) {
+                    console.log(err);
+                    resolve();
+                    // hm, should there be an early return?
+                }
+
+                if (resp.statusCode !== 200) {
+                    console.log(resp.statusCode);
+                    resolve();
+                } 
+                else resolve(this.loadProject(body));
+>>>>>>> ProjectSTEM
             })
         })
     }

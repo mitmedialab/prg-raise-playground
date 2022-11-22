@@ -1,3 +1,5 @@
+import 'regenerator-runtime/runtime'
+
 import classNames from 'classnames';
 import {connect} from 'react-redux';
 import {compose} from 'redux';
@@ -29,7 +31,9 @@ import SB3Downloader from '../../containers/sb3-downloader.jsx';
 import DeletionRestorer from '../../containers/deletion-restorer.jsx';
 import TurboMode from '../../containers/turbo-mode.jsx';
 import MenuBarHOC from '../../containers/menu-bar-hoc.jsx';
+import GoogleChooser from '../google-drive-picker/google-drive-picker.jsx';
 
+import {setProjectTitle} from '../../reducers/project-title';
 import {openTipsLibrary} from '../../reducers/modals';
 import {setPlayer} from '../../reducers/mode';
 import {
@@ -74,6 +78,11 @@ import scratchLogo from './prg-white.png';
 
 import sharedMessages from '../../lib/shared-messages';
 
+import loadScript from 'load-script';
+const GOOGLE_SDK_URL = 'https://apis.google.com/js/api.js';
+let scriptLoadingStarted = false;
+
+
 const ariaMessages = defineMessages({
     language: {
         id: 'gui.menuBar.LanguageSelector',
@@ -82,7 +91,7 @@ const ariaMessages = defineMessages({
     },
     tutorials: {
         id: 'gui.menuBar.tutorialsLibrary',
-        defaultMessage: 'Tutorials',
+        defaultMessage: 'Scratch Tutorials',
         description: 'accessibility text for the tutorials button'
     }
 });
@@ -134,6 +143,11 @@ const MenuItemTooltip = ({id, isRtl, children, className}) => (
     </ComingSoonTooltip>
 );
 
+const APP_ID = '906634949042'; // first part of client ID
+const CLIENT_ID = '906634949042-5jbc7q594e69spg2i0bkt9a14iojvtsp.apps.googleusercontent.com';
+const DEVELOPER_KEY = 'AIzaSyDRoOjwaDXOxq4cda1nrCVLaVQvTCh5GYE';
+const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
+
 MenuItemTooltip.propTypes = {
     children: PropTypes.node,
     className: PropTypes.string,
@@ -150,16 +164,41 @@ class MenuBar extends React.Component {
             'handleClickSave',
             'handleClickSaveAsCopy',
             'handleClickSeeCommunity',
+            'handleSavePickerClicked',
             'handleClickShare',
             'handleKeyPress',
+            'uploadFile',
             'handleLanguageMouseUp',
             'handleRestoreOption',
             'getSaveToComputerHandler',
-            'restoreOptionMessage'
+            'restoreOptionMessage',
+            'handleDriveAuthenticate',
+            'hasPermissionToEdit',
+            'handleDriveProjectSelect',
+            'handleOnFolderSelect',
+            'handleClickLoadProjectLink',
+            'onApiLoad'
         ]);
+        this.state = {
+            authToken: "",
+            fileId: "",
+            currentFileId: "",
+            currentFileName: "",
+            isOwnerOfCurrentFile: false,
+            permissionId: null,
+        };
     }
     componentDidMount () {
         document.addEventListener('keydown', this.handleKeyPress);
+        if(this.isGoogleReady()) {
+            // google api is already exists
+            // init immediately
+            this.onApiLoad();
+        } else if (!scriptLoadingStarted) {
+            // load google api and the init
+            scriptLoadingStarted = true;
+            loadScript(GOOGLE_SDK_URL, this.onApiLoad)
+        }
     }
     componentWillUnmount () {
         document.removeEventListener('keydown', this.handleKeyPress);
@@ -176,6 +215,10 @@ class MenuBar extends React.Component {
         this.props.onRequestCloseFile();
         if (readyToReplaceProject) {
             this.props.onClickNew(this.props.canSave && this.props.canCreateNew);
+            
+            this.setState({
+                fileId: null
+            });
         }
         this.props.onRequestCloseFile();
     }
@@ -269,6 +312,186 @@ class MenuBar extends React.Component {
         }
         }
     }
+    doAuth(callback) {
+        window.gapi.auth.authorize({
+            client_id: CLIENT_ID,
+            scope: DRIVE_SCOPE,
+            immediate: false
+            },
+            callback
+        );
+    }
+
+    async hasPermissionToEdit(fileId) {
+        if (!this.state.permissionId) {
+            this.state.permissionId = await new Promise((resolve, reject) => {
+                gapi.client.request({
+                    'method': 'GET',
+                    'path': '/drive/v3/about',
+                    'params': {'fields': 'user'}
+                }).execute((response) => {
+                    resolve(response.user.permissionId);
+                });
+            });
+        }
+
+        const { permissionId } = this.state;
+        return await new Promise((resolve, reject) => {
+            window.gapi.client.drive.permissions.list({fileId})
+                .execute((resp) => {
+                    if (!resp.permissions) resolve(false);
+                    const owner = resp.permissions.find(p => p.role === 'owner');
+                    if (!owner) resolve(false);
+                    resolve(owner.id === permissionId);
+                });
+        })
+    }
+
+    handleClickLoadProjectLink() {
+        let templateLink = "https://www.dropbox.com/s/o8jegh940y7f7qc/SimpleProject.sb3";
+        let url = window.prompt("Enter project url (e.g. from Dropbox or Github)", templateLink);
+        if (url != null && url != "") {   
+            const readyToReplaceProject = this.props.confirmReadyToReplaceProject(
+                this.props.intl.formatMessage(sharedMessages.replaceProjectWarning)
+            );
+            if (readyToReplaceProject) {
+                this.props.vm.downloadProjectFromURLDirect(url);
+                
+                this.props.onReceivedProjectTitle(this.getProjectTitleFromFilename(url));
+                this.setState({
+                    fileId: null
+                });
+            }
+        }
+        this.props.onRequestCloseFile();
+    }
+
+    async handleSavePickerClicked() {
+        const { currentFileName, currentFileId, isOwnerOfCurrentFile } = this.state;
+        const newLine = "\n";
+
+        let message = `First, name your project. ${newLine}
+Then, after clicking 'OK', you'll be prompted to select the folder to save to.`;
+        let placeholder = this.props.projectTitle;
+
+        if (currentFileName) {
+            message = isOwnerOfCurrentFile
+            ? `Choose a name for your project. ${newLine}
+If you use the same name as the currently loaded cloud project ('${currentFileName}') we'll update the corresponding drive file. ${newLine}
+If you use a different name, you'll be prompted to pick a folder to save the new file to.`
+            : `Choose a name for your project. ${newLine}
+Since you are not the owner of the current Google Drive project, you must name it something different than '${currentFileName}'. ${newLine}
+Then, after clicking 'OK', you'll be prompted to select the folder to save to.`;
+            placeholder = isOwnerOfCurrentFile ? this.props.projectTitle : `${this.props.projectTitle} Remix`;
+        }
+        
+        const fileName = prompt(message, placeholder);
+
+        if (fileName === null || fileName === "") {
+            alert("You did not enter a project name!");
+            return false;
+        }
+
+        if (isOwnerOfCurrentFile && fileName === this.state.currentFileName) {
+            this.uploadFile(currentFileId);
+            this.props.onReceivedProjectTitle(fileName);
+            alert(`Project successfully updated.`);
+            return false;
+        }
+
+        this.setState({ ...this.state, currentFileName: fileName, currentFileId: "", isOwnerOfCurrentFile: false });
+        return true;
+    }
+
+    uploadFile(id) {
+        const url = "https://www.googleapis.com/upload/drive/v3/files/" + id + "?uploadType=media;" + this.state.authToken;
+        this.props.vm.uploadProjectToURL(url);
+    }
+
+    handleDriveAuthenticate(token) {
+        this.setState({
+            authToken: token
+        });
+    }
+    getProjectTitleFromFilename (fileInputFilename) {
+        if (!fileInputFilename) return '';
+        // only parse title with valid scratch project extensions
+        // (.sb, .sb2, and .sb3)
+        //const matches = fileInputFilename.match(/^(.*)\.sb[23]?$/);
+        const matches = fileInputFilename.match(/\/?(.[^\/]*)\.sb[23]?/);
+        if (!matches) return '';
+        return matches[1].substring(0, 100); // truncate project title to max 100 chars
+    }
+
+    handleOnFolderSelect(data) {
+        const fileName = this.state.currentFileName;
+        if (!data.docs || !fileName) return this.props.onRequestCloseFile();
+        const parentId = data.docs[0].id;
+        const parentName = data.docs[0].name;
+        window.gapi.client.drive.files.create({
+            parents: [parentId],
+            name: fileName + ".sb3",
+            mimeType: "application/x-zip"
+        }).then((response) => {
+            if (response.status !== 200) return;
+            const {id} = response.result;
+            this.uploadFile(id);      
+            this.setState({...this.state, currentFileId: id});
+            return id;
+        }).then((id) => {
+            return this.hasPermissionToEdit(id);
+        }).then((isOwnerOfCurrentFile) => {
+            this.setState({...this.state, isOwnerOfCurrentFile});
+            this.props.onReceivedProjectTitle(fileName);
+            alert(`Project succesfully saved to: ${parentName}/${fileName}.sb3`);
+        });
+        this.props.onRequestCloseFile();
+    }
+
+    handleDriveProjectSelect(data) {
+        if (!data.docs) return this.props.onRequestCloseFile();
+        
+        console.log(data.docs[0]);
+        const { id, name } = data.docs[0];
+        const url = "https://www.googleapis.com/drive/v3/files/" + id + "/?alt=media;" + this.state.authToken;
+        
+        const readyToReplaceProject = this.props.confirmReadyToReplaceProject(
+            this.props.intl.formatMessage(sharedMessages.replaceProjectWarning)
+        );
+
+        if (!readyToReplaceProject) return this.props.onRequestCloseFile();
+
+        this.hasPermissionToEdit(id).then((isOwnerOfCurrentFile) => {
+            this.props.vm.downloadProjectFromURLDirect(url);
+            this.props.onReceivedProjectTitle(this.getProjectTitleFromFilename(name));
+            this.setState({...this.state, 
+                currentFileName: name.replace(".sb3", ""), 
+                isOwnerOfCurrentFile,
+                currentFileId: id
+            });
+
+            this.props.onRequestCloseFile();
+        });
+    }
+    isGoogleReady() {
+        return !!window.gapi;
+    }
+    
+    isGoogleAuthReady() {
+        return !!window.gapi.auth;
+    }
+    isGoogleDriveReady() {
+        return !!window.gapi.client.drive;
+    }
+    
+    onApiLoad() {
+        window.gapi.load('auth');
+        window.gapi.load('client', () => {
+            window.gapi.client.load('drive', 'v3');
+        });
+    }
+
+
     render () {
         const saveNowMessage = (
             <FormattedMessage
@@ -409,23 +632,18 @@ class MenuBar extends React.Component {
                                             )}
                                         </MenuSection>
                                     )}
-                                    <MenuSection>
-                                        <SBFileUploader
-                                            canSave={this.props.canSave}
-                                            userOwnsProject={this.props.userOwnsProject}
+                                    {/* <MenuSection>
+                                    <MenuItem
+                                            onClick={this.handleClickLoadProjectLink}
                                         >
-                                            {(className, renderFileInput, handleLoadProject) => (
-                                                <MenuItem
-                                                    className={className}
-                                                    onClick={handleLoadProject}
-                                                >
-                                                    {/* eslint-disable max-len */}
-                                                    {this.props.intl.formatMessage(sharedMessages.loadFromComputerTitle)}
-                                                    {/* eslint-enable max-len */}
-                                                    {renderFileInput()}
-                                                </MenuItem>
-                                            )}
-                                        </SBFileUploader>
+                                            <FormattedMessage
+                                                defaultMessage="Load project from link"
+                                                description="Menu bar item for opening a project from a link" // eslint-disable-line max-len
+                                                id="gui.menuBar.loadFromLink"
+                                            />
+                                        </MenuItem>
+                                    </MenuSection> */}
+                                    <MenuSection>
                                         <SB3Downloader>{(className, downloadProjectCallback) => (
                                             <MenuItem
                                                 className={className}
@@ -438,6 +656,72 @@ class MenuBar extends React.Component {
                                                 />
                                             </MenuItem>
                                         )}</SB3Downloader>
+                                        <SBFileUploader
+                                            canSave={this.props.canSave}
+                                            userOwnsProject={this.props.userOwnsProject}
+                                        >
+                                            {(className, renderFileInput, handleLoadProject) => (
+                                                <MenuItem
+                                                    className={className}
+                                                    onClick={() => {
+                                                        this.setState({...this.state, currentFileName: ""});
+                                                        handleLoadProject();
+                                                    }}
+                                                >
+                                                    {/* eslint-disable max-len */}
+                                                    {this.props.intl.formatMessage(sharedMessages.loadFromComputerTitle)}
+                                                    {/* eslint-enable max-len */}
+                                                    {renderFileInput()}
+                                                </MenuItem>
+                                            )}
+                                        </SBFileUploader>
+                                    </MenuSection>
+                                    <MenuSection>
+                                        <GoogleChooser 
+                                            appId={APP_ID}
+                                            clientId={CLIENT_ID}                                            developerKey={DEVELOPER_KEY}
+                                            scope={DRIVE_SCOPE}
+                                            showPicker={this.handleSavePickerClicked}
+                                            onAuthenticate={this.handleDriveAuthenticate}
+                                            onChange={this.handleOnFolderSelect}
+                                            onAuthFailed={data => console.log('on auth failed:', data)}
+                                            multiselect={false}
+                                            navHidden={false}
+                                            authImmediate={false}
+                                            selectFolders={true}
+                                            mimeTypes={['application/vnd.google-apps.folder']}
+                                            viewID={'FOLDERS'}
+                                        >
+                                            <MenuItem
+                                            >
+                                                <FormattedMessage
+                                                    defaultMessage="Save project to Google Drive folder"
+                                                    description="Menu bar item for saving a project to Google Drive" // eslint-disable-line max-len
+                                                    id="gui.menuBar.saveToDrive"
+                                                />
+                                            </MenuItem>
+                                        </GoogleChooser>
+                                        <GoogleChooser 
+                                            appId={APP_ID}
+                                            clientId={CLIENT_ID}                                            developerKey={DEVELOPER_KEY}
+                                            scope={DRIVE_SCOPE}
+                                            onAuthenticate={this.handleDriveAuthenticate}
+                                            onChange={this.handleDriveProjectSelect}
+                                            onAuthFailed={data => console.log('on auth failed:', data)}
+                                            multiselect={false}
+                                            navHidden={false}
+                                            authImmediate={false}
+                                            mimeTypes={['application/x.scratch.sb3']}
+                                            viewID={'DOCS'}
+                                            >
+                                            <MenuItem classname="google">
+                                                <FormattedMessage
+                                                    defaultMessage="Load project from Google Drive"
+                                                    description="Menu bar item for loading a project from Google Drive" // eslint-disable-line max-len
+                                                    id="gui.menuBar.loadFromDrive"
+                                                />
+                                            </MenuItem>
+                                        </GoogleChooser>
                                     </MenuSection>
                                 </MenuBarMenu>
                             </div>
@@ -528,6 +812,25 @@ class MenuBar extends React.Component {
                         </div>) :
                         null
                     }
+                    <a
+                        className={classNames(styles.menuBarItem, styles.hoverable, styles.blankLink)}
+                        href="https://teachablemachine.withgoogle.com/train"
+                        target="_blank"
+                    >
+                        Teachable Machine
+                    </a>
+                    <Divider className={classNames(styles.divider)} />
+                    <div
+                        aria-label={this.props.intl.formatMessage(ariaMessages.tutorials)}
+                        className={classNames(styles.menuBarItem, styles.hoverable)}
+                        onClick={this.props.onOpenTipLibrary}
+                    >
+                        <img
+                            className={styles.helpIcon}
+                            src={helpIcon}
+                        />
+                        <FormattedMessage {...ariaMessages.tutorials} />
+                    </div>
                     <Divider className={classNames(styles.divider)} />
                     {this.props.canEditTitle ? (
                         <div className={classNames(styles.menuBarItem, styles.growable)}>
@@ -794,7 +1097,8 @@ MenuBar.propTypes = {
     showComingSoon: PropTypes.bool,
     userOwnsProject: PropTypes.bool,
     username: PropTypes.string,
-    vm: PropTypes.instanceOf(VM).isRequired
+    vm: PropTypes.instanceOf(VM).isRequired,
+    onReceivedProjectTitle: PropTypes.func
 };
 
 MenuBar.defaultProps = {
@@ -841,7 +1145,8 @@ const mapDispatchToProps = dispatch => ({
     onClickRemix: () => dispatch(remixProject()),
     onClickSave: () => dispatch(manualUpdateProject()),
     onClickSaveAsCopy: () => dispatch(saveProjectAsCopy()),
-    onSeeCommunity: () => dispatch(setPlayer(true))
+    onSeeCommunity: () => dispatch(setPlayer(true)),
+    onReceivedProjectTitle: title => dispatch(setProjectTitle(title))
 });
 
 export default compose(
