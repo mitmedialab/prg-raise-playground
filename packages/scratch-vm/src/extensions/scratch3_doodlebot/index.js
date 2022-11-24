@@ -7,14 +7,14 @@ const formatMessage = require("format-message");
 const Color = require("../../util/color");
 
 const Doodlebot = require("./doodlebot-web-bluetooth/index.js");
-const EventEmitter = require('events');
+const EventEmitter = require("events");
 const { addAbortSignal } = require("stream");
 
 /* imports for speech synthesis */
-const nets = require('nets');
-const Clone = require('../../util/clone');
-const Cast = require('../../util/cast');
-const Timer = require('../../util/timer');
+const nets = require("nets");
+const Clone = require("../../util/clone");
+const Cast = require("../../util/cast");
+const Timer = require("../../util/timer");
 
 // eslint-disable-next-line max-len
 const blockIconURI =
@@ -26,24 +26,24 @@ const EXTENSION_ID = "doodlebot";
  * The url of the synthesis server.
  * @type {string}
  */
- const SERVER_HOST = 'https://synthesis-service.scratch.mit.edu';
+const SERVER_HOST = "https://synthesis-service.scratch.mit.edu";
 
- /**
+/**
  * How long to wait in ms before timing out requests to synthesis server.
  * @type {int}
  */
- const SERVER_TIMEOUT = 10000; // 10 seconds
+const SERVER_TIMEOUT = 10000; // 10 seconds
 
- /**
-  * Volume for playback of speech sounds, as a percentage.
-  * @type {number}
-  */
- const SPEECH_VOLUME = 250;
+/**
+ * Volume for playback of speech sounds, as a percentage.
+ * @type {number}
+ */
+const SPEECH_VOLUME = 250;
 
 /**
  * An id for one of the voices.
  */
- const SQUEAK_ID = 'SQUEAK';
+const SQUEAK_ID = "SQUEAK";
 
 const command_pause = 100;
 
@@ -53,7 +53,13 @@ const _turns = ["left", "right"];
 const _pen_dirs = ["up", "down"];
 const _pen_protocol = ["35", "10"];
 
-const _bumpers = ["front", "back", "front or back", "front bumper and back", "neither"];
+const _bumpers = [
+    "front",
+    "back",
+    "front or back",
+    "front bumper and back",
+    "neither",
+];
 
 const _pixel_anims = ["blink", "chase", "solid"];
 const _pixels = [
@@ -65,63 +71,56 @@ const _pixels = [
     "light 6",
     "light 7",
     "light 8",
-    "all lights"
+    "all lights",
 ];
 
-const _no_blinks = [
-    "confused",
-    "disgust",
-    "happy",
-    "love",
-    "sleeping",
-    "wink"
-];
+const _no_blinks = ["confused", "disgust", "happy", "love", "sleeping", "wink"];
 const _anims = {
-    "angry": "a",
-    "annoyed": "y",
-    "confused": "m",
-    "disgust": "d",
-    "engaged": "e",
-    "fear": "f",
-    "happy": "h",
-    "love": "o",
-    "neutral": "n",
-    "sad": "s",
-    "sleeping": "l",
-    "surprise": "p",
-    "wink": "i",
-    "worried": "r",
-    "wrong": "w"
-}
+    angry: "a",
+    annoyed: "y",
+    confused: "m",
+    disgust: "d",
+    engaged: "e",
+    fear: "f",
+    happy: "h",
+    love: "o",
+    neutral: "n",
+    sad: "s",
+    sleeping: "l",
+    surprise: "p",
+    wink: "i",
+    worried: "r",
+    wrong: "w",
+};
 const _anim_sounds = {
-    "angry": "4",
-    "annoyed": "",
-    "confused": "63",
-    "disgust": "29",
-    "engaged": "72",
-    "fear": "150",
-    "happy": "88",
-    "love": "",
-    "neutral": "",
-    "sad": "",
-    "sleeping": "53",
-    "surprise": "",
-    "wink": "",
-    "worried": "",
-    "wrong": "136"
+    angry: "4",
+    annoyed: "",
+    confused: "63",
+    disgust: "29",
+    engaged: "72",
+    fear: "150",
+    happy: "88",
+    love: "",
+    neutral: "",
+    sad: "",
+    sleeping: "53",
+    surprise: "",
+    wink: "",
+    worried: "",
+    wrong: "136",
 };
 
 const _sensors = {
-    "bumpers": "b",
-    "distance": "d",
-    "altimeter": "u",
-    "accelerometer": "x",
-    "magnetometer": "o",
-    "gyroscope": "g",
+    bumpers: "b",
+    distance: "d",
+    altimeter: "u",
+    accelerometer: "x",
+    magnetometer: "o",
+    gyroscope: "g",
     "color sensor": "l",
-    "temperature": "t",
-    "humidity": "h",
-    "pressure": "p",
+    temperature: "t",
+    humidity: "h",
+    pressure: "p",
     "all sensors": "a",
 };
 
@@ -144,7 +143,7 @@ class DoodlebotBlocks {
         this._robotDevice = null;
         this._robotUart = null;
 
-        this._colorArr = [0,0,0,0,0,0,0,0];
+        this._colorArr = [0, 0, 0, 0, 0, 0, 0, 0];
         this._pixelStatus = 0;
         this._pixelSpeed = 500;
         this._currentFace = null;
@@ -162,7 +161,7 @@ class DoodlebotBlocks {
          * @type {Timer}
          */
         this._timer = new Timer();
-            
+
         /**
          * Map of soundPlayers by sound id.
          * @type {Map<string, SoundPlayer>}
@@ -172,8 +171,9 @@ class DoodlebotBlocks {
             this.resetRobot.bind(this);
             this._stopAllSpeech.bind(this);
         });
-        this.scratch_vm.on('targetWasCreated', this._onTargetCreated);
+        this.scratch_vm.on("targetWasCreated", this._onTargetCreated);
         this.scratch_vm.on("CONNECT_DOODLEBOT", this.connectToBLE.bind(this));
+        this.scratch_vm.on("TEST_DOODLEBOT", this.testDoodlebot.bind(this));
 
         console.log("Version: trying Jan. firmware updates");
     }
@@ -195,6 +195,11 @@ class DoodlebotBlocks {
             menuIconURI: blockIconURI,
 
             blocks: [
+                {
+                    func: "TEST_DOODLEBOT",
+                    blockType: BlockType.BUTTON,
+                    text: "Test Robot",
+                },
                 {
                     func: "CONNECT_DOODLEBOT",
                     blockType: BlockType.BUTTON,
@@ -218,19 +223,19 @@ class DoodlebotBlocks {
                     },
                 },
                 {
-                    opcode: 'speakText',
+                    opcode: "speakText",
                     text: formatMessage({
-                        id: 'doodlebot.speakText',
-                        default: 'say [TEXT]',
-                        description: 'Send text to the speech to text engine'
+                        id: "doodlebot.speakText",
+                        default: "say [TEXT]",
+                        description: "Send text to the speech to text engine",
                     }),
                     blockType: BlockType.COMMAND,
                     arguments: {
                         TEXT: {
                             type: ArgumentType.STRING,
-                            defaultValue: 'Hi, I am Doodlebot'
-                        }
-                    }
+                            defaultValue: "Hi, I am Doodlebot",
+                        },
+                    },
                 },
                 /*{
                     opcode: 'askSpeechRecognition',
@@ -267,7 +272,7 @@ class DoodlebotBlocks {
                     arguments: {
                         TEXT: {
                             type: ArgumentType.STRING,
-                            defaultValue: "Hello!"
+                            defaultValue: "Hello!",
                         },
                     },
                 },
@@ -411,7 +416,8 @@ class DoodlebotBlocks {
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
                         id: "doodlebot.turnArc",
-                        default: "arc [DIR] with radius [RAD] for [NUM] degrees",
+                        default:
+                            "arc [DIR] with radius [RAD] for [NUM] degrees",
                         description:
                             "Send command to robot to turn in an arc to a certain angle",
                     }),
@@ -466,8 +472,7 @@ class DoodlebotBlocks {
                     text: formatMessage({
                         id: "doodlebot.enableSensor",
                         default: "enable [SENSOR]",
-                        description:
-                            "Send command to enable a sensor",
+                        description: "Send command to enable a sensor",
                     }),
                     arguments: {
                         SENSOR: {
@@ -483,8 +488,7 @@ class DoodlebotBlocks {
                     text: formatMessage({
                         id: "doodlebot.disableSensor",
                         default: "disable [SENSOR]",
-                        description:
-                            "Send command to disable a sensor",
+                        description: "Send command to disable a sensor",
                     }),
                     arguments: {
                         SENSOR: {
@@ -499,8 +503,7 @@ class DoodlebotBlocks {
                     text: formatMessage({
                         id: "doodlebot.bumperStatusEvent",
                         default: "when [BUMPER] bumper [STATE]",
-                        description:
-                            "Edge trigger event for doodlebot bumpers",
+                        description: "Edge trigger event for doodlebot bumpers",
                     }),
                     blockType: BlockType.HAT,
                     arguments: {
@@ -508,12 +511,12 @@ class DoodlebotBlocks {
                             type: ArgumentType.String,
                             menu: "BUMPERS",
                             defaultValue: _bumpers[0],
-                        }, 
+                        },
                         STATE: {
                             type: ArgumentType.String,
                             menu: "PRESSED_STATE",
                             defaultValue: "pressed",
-                        }
+                        },
                     },
                 },
                 {
@@ -539,8 +542,7 @@ class DoodlebotBlocks {
                     text: formatMessage({
                         id: "doodlebot.readBattery",
                         default: "battery level",
-                        description:
-                            "Get battery reading from robot",
+                        description: "Get battery reading from robot",
                     }),
                 },
                 {
@@ -549,26 +551,25 @@ class DoodlebotBlocks {
                     text: formatMessage({
                         id: "doodlebot.readTemperature",
                         default: "temperature",
-                        description:
-                            "Get temperature reading from robot",
+                        description: "Get temperature reading from robot",
                     }),
-                },                {
+                },
+                {
                     opcode: "readHumidity",
                     blockType: BlockType.REPORTER,
                     text: formatMessage({
                         id: "doodlebot.readHumidity",
                         default: "humidity",
-                        description:
-                            "Get humidity reading from robot",
+                        description: "Get humidity reading from robot",
                     }),
-                },                {
+                },
+                {
                     opcode: "readPressure",
                     blockType: BlockType.REPORTER,
                     text: formatMessage({
                         id: "doodlebot.readPressure",
                         default: "pressure",
-                        description:
-                            "Get pressure reading from robot",
+                        description: "Get pressure reading from robot",
                     }),
                 },
                 {
@@ -577,8 +578,7 @@ class DoodlebotBlocks {
                     text: formatMessage({
                         id: "doodlebot.readDistance",
                         default: "distance",
-                        description:
-                            "Get distance reading from robot",
+                        description: "Get distance reading from robot",
                     }),
                 },
                 {
@@ -587,14 +587,13 @@ class DoodlebotBlocks {
                     text: formatMessage({
                         id: "doodlebot.readAccelerometer",
                         default: "accelerometer [DIR]",
-                        description:
-                            "Get accelerometer reading from robot",
+                        description: "Get accelerometer reading from robot",
                     }),
                     arguments: {
                         DIR: {
                             type: ArgumentType.String,
                             menu: "ACC_GYRO_DIRS",
-                            defaultValue: 'x',
+                            defaultValue: "x",
                         },
                     },
                 },
@@ -604,14 +603,13 @@ class DoodlebotBlocks {
                     text: formatMessage({
                         id: "doodlebot.readMagnetometer",
                         default: "magnetometer [DIR]",
-                        description:
-                            "Get magnetometer reading from robot",
+                        description: "Get magnetometer reading from robot",
                     }),
                     arguments: {
                         DIR: {
                             type: ArgumentType.String,
                             menu: "MAG_DIRS",
-                            defaultValue: 'roll',
+                            defaultValue: "roll",
                         },
                     },
                 },
@@ -621,14 +619,13 @@ class DoodlebotBlocks {
                     text: formatMessage({
                         id: "doodlebot.readGyroscope",
                         default: "gyroscope [DIR]",
-                        description:
-                            "Get gyroscope reading from robot",
+                        description: "Get gyroscope reading from robot",
                     }),
                     arguments: {
                         DIR: {
                             type: ArgumentType.String,
                             menu: "ACC_GYRO_DIRS",
-                            defaultValue: 'x',
+                            defaultValue: "x",
                         },
                     },
                 },
@@ -649,18 +646,18 @@ class DoodlebotBlocks {
                     text: formatMessage({
                         id: "doodlebot.setWifi",
                         default: "connect to [SSID] pw [PASSWORD]",
-                        description: "Command to connect to Wifi network"
+                        description: "Command to connect to Wifi network",
                     }),
                     arguments: {
                         SSID: {
                             type: ArgumentType.STRING,
-                            defaultValue: "ssid"
+                            defaultValue: "ssid",
                         },
                         PASSWORD: {
                             type: ArgumentType.STRING,
-                            defaultValue: "pw"
-                        }
-                    }
+                            defaultValue: "pw",
+                        },
+                    },
                 },
                 {
                     opcode: "quietSystems",
@@ -699,7 +696,8 @@ class DoodlebotBlocks {
                     text: formatMessage({
                         id: "doodlebot.sendCommandAndWait",
                         default: "send comand [COMMAND] and wait",
-                        description: "Send a particular command to the robot and wait for response from robot",
+                        description:
+                            "Send a particular command to the robot and wait for response from robot",
                     }),
                     arguments: {
                         COMMAND: {
@@ -712,7 +710,7 @@ class DoodlebotBlocks {
             menus: {
                 ACC_GYRO_DIRS: {
                     acceptReporters: false,
-                    items: ['x', 'y', 'z'],
+                    items: ["x", "y", "z"],
                 },
                 ANIMS: {
                     acceptReporters: true,
@@ -728,7 +726,7 @@ class DoodlebotBlocks {
                 },
                 MAG_DIRS: {
                     acceptReporters: false,
-                    items: ['roll', 'pitch', 'yaw'],
+                    items: ["roll", "pitch", "yaw"],
                 },
                 PEN_DIRS: {
                     acceptReporters: false,
@@ -752,7 +750,7 @@ class DoodlebotBlocks {
                 },
                 SYSTEMS: {
                     acceptReporters: false,
-                    items: ['all','motors','camera'],
+                    items: ["all", "motors", "camera"],
                 },
                 TURNS: {
                     acceptReports: false,
@@ -762,38 +760,38 @@ class DoodlebotBlocks {
         };
     }
 
-     /**
+    /**
      * An object with info for each voice.
      */
-      get VOICE_INFO () {
+    get VOICE_INFO() {
         return {
             [SQUEAK_ID]: {
                 name: formatMessage({
-                    id: 'text2speech.squeak',
-                    default: 'squeak',
-                    description: 'Name for a funny voice with a high pitch.'
+                    id: "text2speech.squeak",
+                    default: "squeak",
+                    description: "Name for a funny voice with a high pitch.",
                 }),
-                gender: 'female',
-                playbackRate: 1.19 // +3 semitones
-            }
+                gender: "female",
+                playbackRate: 1.19, // +3 semitones
+            },
         };
-    }
-    
-    /**
-    * The key to load & store a target's text2speech state.
-    * @return {string} The key.
-    */
-    static get STATE_KEY () {
-        return 'Scratch.text2speech';
     }
 
     /**
-    * The default state, to be used when a target has no existing state.
-    * @type {Text2SpeechState}
-    */
-    static get DEFAULT_TEXT2SPEECH_STATE () {
+     * The key to load & store a target's text2speech state.
+     * @return {string} The key.
+     */
+    static get STATE_KEY() {
+        return "Scratch.text2speech";
+    }
+
+    /**
+     * The default state, to be used when a target has no existing state.
+     * @type {Text2SpeechState}
+     */
+    static get DEFAULT_TEXT2SPEECH_STATE() {
         return {
-            voiceId: SQUEAK_ID
+            voiceId: SQUEAK_ID,
         };
     }
 
@@ -802,7 +800,7 @@ class DoodlebotBlocks {
      * @returns {Text2SpeechState} the mutable state associated with that target. This will be created if necessary.
      * @private
      */
-     _getState (target) {
+    _getState(target) {
         let state = target.getCustomState(DoodlebotBlocks.STATE_KEY);
         if (!state) {
             state = Clone.simple(DoodlebotBlocks.DEFAULT_TEXT2SPEECH_STATE);
@@ -818,11 +816,16 @@ class DoodlebotBlocks {
      * @listens Runtime#event:targetWasCreated
      * @private
      */
-    _onTargetCreated (newTarget, sourceTarget) {
+    _onTargetCreated(newTarget, sourceTarget) {
         if (sourceTarget) {
-            const state = sourceTarget.getCustomState(DoodlebotBlocks.STATE_KEY);
+            const state = sourceTarget.getCustomState(
+                DoodlebotBlocks.STATE_KEY
+            );
             if (state) {
-                newTarget.setCustomState(DoodlebotBlocks.STATE_KEY, Clone.simple(state));
+                newTarget.setCustomState(
+                    DoodlebotBlocks.STATE_KEY,
+                    Clone.simple(state)
+                );
             }
         }
     }
@@ -858,17 +861,15 @@ class DoodlebotBlocks {
                 this.updateSensors.bind(this)
             );
         }
-         
+
         // set up the text
-        await this.sendCommandToRobot(
-            "(d,x,2,1,65535)", command_pause
-        );
+        await this.sendCommandToRobot("(d,x,2,1,65535)", command_pause);
         // start with face neutral
         this.playAnimation({ ANIM: "neutral" });
     }
     onDeviceDisconnected() {
         console.log("Lost connection to robot");
-        
+
         // stop blinking
         this.stopBlink();
 
@@ -905,9 +906,12 @@ class DoodlebotBlocks {
         // RANDI try bluetooth audio devices
         const robotName = "Q65"; // "DoodlebotBT"
         let devices = await window.navigator.mediaDevices.enumerateDevices();
-        let speakers = devices.filter(device => {
-                            return device.kind === "audiooutput" && device.label.indexOf(robotName) >= 0;
-                        });
+        let speakers = devices.filter((device) => {
+            return (
+                device.kind === "audiooutput" &&
+                device.label.indexOf(robotName) >= 0
+            );
+        });
 
         if (window.navigator.bluetooth) {
             try {
@@ -926,7 +930,10 @@ class DoodlebotBlocks {
                 console.log(err);
                 if (err.message == "Bluetooth adapter not available.") {
                     alert("Your device does not support BLE connections.");
-                } else if (err.message !== "User cancelled the requestDevice() chooser.") {
+                } else if (
+                    err.message !==
+                    "User cancelled the requestDevice() chooser."
+                ) {
                     alert(
                         "There was a problem connecting your device, please try again or request assistance."
                     );
@@ -935,23 +942,135 @@ class DoodlebotBlocks {
         }
     }
 
+    async testDoodlebot() {
+        let robotTestOutput = "";
+        console.log("Testing Doodlebot");
+        robotTestOutput += "========== Testing Doodlebot ==========\n";
+        // connect to doodlebot if not already connected
+        if (!this.ifRobotConnected()) {
+            await this.connectToBLE();
+        }
+
+        if (this.ifRobotConnected()) {
+            robotTestOutput += "n.n Robot BT connection: pass\n";
+
+            // 1. check battery
+            console.log("Testing battery");
+            let batteryLevel = await this.readBattery();
+            await this.displayText({ TEXT: `Battery level: ${batteryLevel}` });
+            if (batteryLevel > 3.2 && batteryLevel < 4.0)
+                robotTestOutput += "n.n Sufficient battery level: pass\n";
+            else
+                robotTestOutput += `n.n Sufficient battery level: fail, ${batteryLevel}`;
+
+            // 2. run through faces --> wait for user to say go
+            let facesReady = prompt("Ready to test face display? [y|n]");
+            if (facesReady.toLowerCase() == "y") {
+                for (let i = 0; i < Object.keys(_anims).length; i++) {
+                    await this.playAnimation({
+                        ANIM: `${Object.keys(_anims)[i]}`,
+                    });
+                    await this.sendCommandToRobot("", 500); // delay so the faces are slow enough
+                }
+                await this.playAnimation({ ANIM: `neutral` });
+
+                let facesCorrect = prompt(
+                    "Did all faces display correctly? [y|n]"
+                );
+                if (facesCorrect.toLowerCase() == "y") {
+                    robotTestOutput += `n.n Face animations: pass\n`;
+                } else {
+                    robotTestOutput += `n.n Face animations: fail, user indicated error\n`;
+                }
+            } else {
+                robotTestOutput += `n.n Face animations: N/A`;
+            }
+
+            // 3. display text
+            await this.displayText({ TEXT: "pw: prg" });
+            let displayCorrect = prompt(
+                "Please enter the password displayed on the robot's face:"
+            );
+            if (displayCorrect.toLowerCase() == "prg") {
+                robotTestOutput += `n.n Display text: pass\n`;
+            } else {
+                robotTestOutput += `n.n Face animations: fail, user indicated error\n`;
+            }
+
+            // 4. draw square 1 (straight line, turn in place)
+            let drivingReady = prompt(
+                "Drawing colocated squares, ready? [y|n]"
+            );
+            if (drivingReady.toLowerCase() == "y") {
+                await this.movePen({DIR: "down"});
+                for (let i = 0; i < 2; i++) {
+                    await this.displayText({ TEXT: `Square ${i + 1}` });
+                    for (let j = 0; j < 4; j++) {
+                        await this.drive({ DIR: "forward", NUM: "50" });
+                        await this.turn({ DIR: "left", NUM: "90" });
+                    }
+                }
+                await this.movePen({DIR: "up"});
+
+                let drivingCorrect = prompt(
+                    "Did squares draw correctly? [y|n]"
+                );
+                if (drivingCorrect.toLowerCase() == "y") {
+                    robotTestOutput += `n.n Square drawing: pass\n`;
+                } else {
+                    robotTestOutput += `n.n Square drawing: fail, user indicated error\n`;
+                }
+            }
+
+            // 6. draw small circle (small radius)
+            drivingReady = prompt("Drawing two small circles, ready? [y|n]");
+            if (drivingReady.toLowerCase() == "y") {
+                await this.movePen({DIR: "down"});                
+                for (let i = 0; i < 2; i++) {
+                    await this.displayText({ TEXT: `Small circle ${i+1}` });
+                    await this.turnArc({ DIR: "right", RAD: `${1 + 0.5*i}`, NUM: "360" });
+                }
+                await this.movePen({DIR: "up"});
+
+                let drivingCorrect = prompt(
+                    "Did small circle draw correctly? [y|n]"
+                );
+                if (drivingCorrect.toLowerCase() == "y") {
+                    robotTestOutput += `n.n Small circle drawing: pass\n`;
+                } else {
+                    robotTestOutput += `n.n Small circle drawing: fail, user indicated error\n`;
+                }
+            }
+            // TODO test everything beyond this point
+
+            // 7. draw flower (large radius)
+            // 8. run through sensors --> reasonable ranges
+            // 9. connect to WiFi --> wait for user to input SSID and PW
+        } else {
+            robotTestOutput +=
+                "n.n Robot BT connection: fail, aborting tests\n";
+        }
+        // 10. report results
+        console.log(robotTestOutput);
+    }
+
     /**
      * Get the menu of voices for the "set voice" block.
      * @return {array} the text and value for each menu item.
      */
-     getVoiceMenu () {
-        return Object.keys(this.VOICE_INFO).map(voiceId => ({
+    getVoiceMenu() {
+        return Object.keys(this.VOICE_INFO).map((voiceId) => ({
             text: this.VOICE_INFO[voiceId].name,
-            value: voiceId
+            value: voiceId,
         }));
     }
-    
+
     /**
      * Set the voice for speech synthesis for this sprite.
      * @param  {object} args Block arguments
      * @param {object} util Utility object provided by the runtime.
      */
-    setVoice (args, util) {
+    setVoice(args, util) {
         const state = this._getState(util.target);
 
         let voice = args.VOICE;
@@ -960,7 +1079,11 @@ class DoodlebotBlocks {
         let voiceNum = parseInt(voice, 10);
         if (!isNaN(voiceNum)) {
             voiceNum -= 1; // Treat dropped args as one-indexed
-            voiceNum = MathUtil.wrapClamp(voiceNum, 0, Object.keys(this.VOICE_INFO).length - 1);
+            voiceNum = MathUtil.wrapClamp(
+                voiceNum,
+                0,
+                Object.keys(this.VOICE_INFO).length - 1
+            );
             voice = Object.keys(this.VOICE_INFO)[voiceNum];
         }
 
@@ -969,12 +1092,12 @@ class DoodlebotBlocks {
             state.voiceId = voice;
         }
     }
-    
+
     /**
      * Stop all currently playing speech sounds.
      */
-    _stopAllSpeech () {
-        this._soundPlayers.forEach(player => {
+    _stopAllSpeech() {
+        this._soundPlayers.forEach((player) => {
             player.stop();
         });
     }
@@ -988,58 +1111,63 @@ class DoodlebotBlocks {
     async speakText(args, util) {
         // Cast input to string
         const words = Cast.toString(args.TEXT);
-        const locale = 'cmn-CN';
+        const locale = "cmn-CN";
 
         const state = this._getState(util.target);
 
         const gender = this.VOICE_INFO[state.voiceId].gender;
         const playbackRate = this.VOICE_INFO[state.voiceId].playbackRate;
-        
+
         // Build up URL
         let path = `${SERVER_HOST}/synth`;
         path += `?locale=${locale}`;
         path += `&gender=${gender}`;
         path += `&text=${encodeURIComponent(words.substring(0, 128))}`;
         // Perform HTTP request to get audio file
-        return new Promise(resolve => {
-            nets({
-                url: path,
-                timeout: SERVER_TIMEOUT
-            }, (err, res, body) => {
-                if (err) {
-                    console.warn(err);
-                    return resolve();
-                }
-
-                if (res.statusCode !== 200) {
-                    console.warn(res.statusCode);
-                    return resolve();
-                }
-
-                // Play the sound
-                const sound = {
-                    data: {
-                        buffer: body.buffer
+        return new Promise((resolve) => {
+            nets(
+                {
+                    url: path,
+                    timeout: SERVER_TIMEOUT,
+                },
+                (err, res, body) => {
+                    if (err) {
+                        console.warn(err);
+                        return resolve();
                     }
-                };
-                this.scratch_vm.audioEngine.decodeSoundPlayer(sound).then(soundPlayer => {
-                    this._soundPlayers.set(soundPlayer.id, soundPlayer);
 
-                    soundPlayer.setPlaybackRate(playbackRate);
+                    if (res.statusCode !== 200) {
+                        console.warn(res.statusCode);
+                        return resolve();
+                    }
 
-                    // Increase the volume
-                    const engine = this.scratch_vm.audioEngine;
-                    const chain = engine.createEffectChain();
-                    chain.set('volume', SPEECH_VOLUME);
-                    soundPlayer.connect(chain);
+                    // Play the sound
+                    const sound = {
+                        data: {
+                            buffer: body.buffer,
+                        },
+                    };
+                    this.scratch_vm.audioEngine
+                        .decodeSoundPlayer(sound)
+                        .then((soundPlayer) => {
+                            this._soundPlayers.set(soundPlayer.id, soundPlayer);
 
-                    soundPlayer.play();
-                    soundPlayer.on('stop', () => {
-                        this._soundPlayers.delete(soundPlayer.id);
-                        resolve();
-                    });
-                });
-            });
+                            soundPlayer.setPlaybackRate(playbackRate);
+
+                            // Increase the volume
+                            const engine = this.scratch_vm.audioEngine;
+                            const chain = engine.createEffectChain();
+                            chain.set("volume", SPEECH_VOLUME);
+                            soundPlayer.connect(chain);
+
+                            soundPlayer.play();
+                            soundPlayer.on("stop", () => {
+                                this._soundPlayers.delete(soundPlayer.id);
+                                resolve();
+                            });
+                        });
+                }
+            );
         });
     }
 
@@ -1070,12 +1198,16 @@ class DoodlebotBlocks {
             // enable the accelerometer if it is not already enabled
             if (!this.sensorValues.hasOwnProperty(accDir)) {
                 // wait for sensor to turn on
-                await this.enableSensor({SENSOR: "accelerometer"});
+                await this.enableSensor({ SENSOR: "accelerometer" });
             }
-            console.log(this.sensorValues["accelerometer.x"] + 
-                ", " + this.sensorValues["accelerometer.y"] +
-                ", " + this.sensorValues["accelerometer.z"]);
-                return this.sensorValues[accDir];
+            console.log(
+                this.sensorValues["accelerometer.x"] +
+                    ", " +
+                    this.sensorValues["accelerometer.y"] +
+                    ", " +
+                    this.sensorValues["accelerometer.z"]
+            );
+            return this.sensorValues[accDir];
         }
         return -1;
     }
@@ -1094,11 +1226,15 @@ class DoodlebotBlocks {
             // enable the magnetometer if it is not already enabled
             if (!this.sensorValues.hasOwnProperty(magDir)) {
                 // wait for sensor to turn on
-                await this.enableSensor({SENSOR: "magnetometer"});   
+                await this.enableSensor({ SENSOR: "magnetometer" });
             }
-            console.log(this.sensorValues["magnetometer.roll"] + 
-                ", " + this.sensorValues["magnetometer.pitch"] +
-                ", " + this.sensorValues["magnetometer.yaw"]);
+            console.log(
+                this.sensorValues["magnetometer.roll"] +
+                    ", " +
+                    this.sensorValues["magnetometer.pitch"] +
+                    ", " +
+                    this.sensorValues["magnetometer.yaw"]
+            );
             return this.sensorValues[magDir];
         }
         return -1;
@@ -1118,11 +1254,15 @@ class DoodlebotBlocks {
             // enable the gyroscope if it is not already enabled
             if (!this.sensorValues.hasOwnProperty(gyroDir)) {
                 // wait for sensor to turn on
-                await this.enableSensor({SENSOR: "gyroscope"});   
+                await this.enableSensor({ SENSOR: "gyroscope" });
             }
-            console.log(this.sensorValues["gyroscope.x"] + 
-                ", " + this.sensorValues["gyroscope.y"] +
-                ", " + this.sensorValues["gyroscope.z"]);
+            console.log(
+                this.sensorValues["gyroscope.x"] +
+                    ", " +
+                    this.sensorValues["gyroscope.y"] +
+                    ", " +
+                    this.sensorValues["gyroscope.z"]
+            );
             return this.sensorValues[gyroDir];
         }
         return -1;
@@ -1134,29 +1274,28 @@ class DoodlebotBlocks {
     async readTemperature() {
         if (this._robotUart) {
             // enable the thermometer if it is not already enabled
-            if (!this.sensorValues.hasOwnProperty('temperature')) {
+            if (!this.sensorValues.hasOwnProperty("temperature")) {
                 // wait for sensor to turn on
-                await this.enableSensor({SENSOR: "temperature"});   
+                await this.enableSensor({ SENSOR: "temperature" });
             }
-            
-            return this.sensorValues['temperature'];
+
+            return this.sensorValues["temperature"];
         }
         return -1; // should never get here
     }
 
-    
     /**
      * For reading distance data back
      */
-     async readDistance() {
+    async readDistance() {
         if (this._robotUart) {
             // enable the distance sensor if it is not already enabled
-            if (!this.sensorValues.hasOwnProperty('distance')) {
+            if (!this.sensorValues.hasOwnProperty("distance")) {
                 // wait for sensor to turn on
-                await this.enableSensor({SENSOR: "distance"});   
+                await this.enableSensor({ SENSOR: "distance" });
             }
-            
-            return this.sensorValues['distance'];
+
+            return this.sensorValues["distance"];
         }
         return -1; // should never get here
     }
@@ -1167,12 +1306,12 @@ class DoodlebotBlocks {
     async readPressure() {
         if (this._robotUart) {
             // enable the pressure sensor if it is not already enabled
-            if (!this.sensorValues.hasOwnProperty('pressure')) {
+            if (!this.sensorValues.hasOwnProperty("pressure")) {
                 // wait for sensor to turn on
-                await this.enableSensor({SENSOR: "pressure"});  
-            } 
+                await this.enableSensor({ SENSOR: "pressure" });
+            }
 
-            return this.sensorValues['pressure'];
+            return this.sensorValues["pressure"];
         }
         return -1; // should never get here
     }
@@ -1183,12 +1322,12 @@ class DoodlebotBlocks {
     async readHumidity() {
         if (this._robotUart) {
             // enable the thermometer if it is not already enabled
-            if (!this.sensorValues.hasOwnProperty('humidity')) {   
+            if (!this.sensorValues.hasOwnProperty("humidity")) {
                 // wait for sensor to turn on
-                await this.enableSensor({SENSOR: "humidity"});   
+                await this.enableSensor({ SENSOR: "humidity" });
             }
 
-            return this.sensorValues['humidity'];
+            return this.sensorValues["humidity"];
         }
         return -1; // should never get here
     }
@@ -1200,19 +1339,15 @@ class DoodlebotBlocks {
         // enable battery
         if (this._robotUart) {
             // enable the battery if it is not already enabled
-            console.log("enable battery");    
-            await this.sendCommandToRobot(
-                "(e,f)", command_pause
-            );
+            console.log("enable battery");
+            await this.sendCommandToRobot("(e,f)", command_pause);
 
             // wait for sensor to return
             return new Promise((resolve) => {
                 this.sensorEvent.once("battery", async (value) => {
                     // disable the battery
                     console.log("disable battery");
-                    await this.sendCommandToRobot(
-                        "(x,f)", command_pause
-                    );
+                    await this.sendCommandToRobot("(x,f)", command_pause);
                     resolve(value);
                 });
             });
@@ -1230,18 +1365,21 @@ class DoodlebotBlocks {
         // enable bumpers
         if (this._robotUart) {
             // enable the bumpers if they are not already enabled
-            if (!this.sensorValues.hasOwnProperty('bumper.front') || !this.sensorValues.hasOwnProperty('bumper.back')) {
+            if (
+                !this.sensorValues.hasOwnProperty("bumper.front") ||
+                !this.sensorValues.hasOwnProperty("bumper.back")
+            ) {
                 // wait for sensor to turn on
-                await this.enableSensor({SENSOR: "bumpers"});   
+                await this.enableSensor({ SENSOR: "bumpers" });
             }
-            
+
             const front = this.sensorValues["bumper.front"] == 0;
             const back = this.sensorValues["bumper.back"] == 0;
 
             if (bumperSel == "front") {
                 return front;
             } else if (bumperSel == "back") {
-                return back
+                return back;
             } else if (bumperSel == "front or back") {
                 return front || back;
             } else if (bumperSel == "front bumper and back") {
@@ -1258,17 +1396,20 @@ class DoodlebotBlocks {
      */
     whenBumperPressed(args) {
         let bumperSel = args.BUMPER;
-        
+
         if (this._robotUart) {
             // make sure the bumpers are on
-            if (this.sensorValues.hasOwnProperty('bumper.front') && this.sensorValues.hasOwnProperty('bumper.back')) {
+            if (
+                this.sensorValues.hasOwnProperty("bumper.front") &&
+                this.sensorValues.hasOwnProperty("bumper.back")
+            ) {
                 const front = this.sensorValues["bumper.front"] == 1;
                 const back = this.sensorValues["bumper.back"] == 1;
 
                 if (bumperSel == "front") {
                     return front;
                 } else if (bumperSel == "back") {
-                    return back
+                    return back;
                 } else if (bumperSel == "front or back") {
                     return front || back;
                 } else if (bumperSel == "front bumper and back") {
@@ -1281,13 +1422,12 @@ class DoodlebotBlocks {
     }
 
     async sendCommandToRobot(command, delayInMs) {
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
             setTimeout(() => {
                 if (this._robotUart) {
                     console.log("Sending command:", command);
                     this._robotUart.sendText(command);
-                }
-                else console.log("Robot not available");
+                } else console.log("Robot not available");
                 resolve();
             }, delayInMs);
         });
@@ -1301,7 +1441,8 @@ class DoodlebotBlocks {
 
         for (const [sensor, sensor_cmd] of Object.entries(_sensors)) {
             await this.sendCommandToRobot(
-                "(" + cmd + "," + sensor_cmd + ")", sensor_pause
+                "(" + cmd + "," + sensor_cmd + ")",
+                sensor_pause
             );
         }
     }
@@ -1317,14 +1458,16 @@ class DoodlebotBlocks {
         if (args.SENSOR == "all sensors") {
             let sensor_cmds = Object.values(_sensors);
             // subtract 1 to exclude the "all sensors" entry
-            for (let i=0; i<sensor_cmds.length-1; i++) {
+            for (let i = 0; i < sensor_cmds.length - 1; i++) {
                 await this.sendCommandToRobot(
-                    "(e," + _sensor_cmds[i] + ")", command_pause
+                    "(e," + _sensor_cmds[i] + ")",
+                    command_pause
                 );
             }
         } else {
             await this.sendCommandToRobot(
-                "(e," + sensor_cmd + ")", command_pause
+                "(e," + sensor_cmd + ")",
+                command_pause
             );
         }
 
@@ -1354,14 +1497,15 @@ class DoodlebotBlocks {
 
         console.log("Disable sensor " + sensor_cmd);
         if (args.SENSOR == "all sensors") {
-            console.log("Disable everything");        
+            console.log("Disable everything");
             // empty the sensor value array
             this.sensorValues = {};
 
             let sensor_cmds = Object.values(_sensors);
-            for (let i=0; i<sensor_cmds.length-1; i++) {
+            for (let i = 0; i < sensor_cmds.length - 1; i++) {
                 await this.sendCommandToRobot(
-                    "(x," + sensor_cmds[i] + ")", command_pause
+                    "(x," + sensor_cmds[i] + ")",
+                    command_pause
                 );
             }
         } else if (args.SENSOR == "accelerometer") {
@@ -1382,9 +1526,7 @@ class DoodlebotBlocks {
         } else {
             delete this.sensorValues[args.SENSOR];
         }
-        await this.sendCommandToRobot(
-            "(x," + sensor_cmd + ")", command_pause
-        );
+        await this.sendCommandToRobot("(x," + sensor_cmd + ")", command_pause);
 
         console.log("Enabled sensors: " + Object.keys(this.sensorValues));
     }
@@ -1396,77 +1538,166 @@ class DoodlebotBlocks {
         const dataLine = event.detail.split("(");
         console.log("Received message: ", dataLine); // for debugging
 
-        for (let i=0; i<dataLine.length; i++) {
+        for (let i = 0; i < dataLine.length; i++) {
             let data = dataLine[i];
             if (data) {
                 if (data == "ms)") {
                     console.log("Stop the motor");
-                    this.motorEvent.emit('stop');
+                    this.motorEvent.emit("stop");
                 } else if (data != "") {
                     let ds = data.split(",");
                     const sensor = ds[0];
-                    switch(sensor) {
+                    switch (sensor) {
                         case "b":
-                            this.sensorEvent.emit('bumper.front', Number.parseInt(ds[1]));
-                            this.sensorEvent.emit('bumper.back', Number.parseInt(ds[2]));
-                            this.sensorValues['bumper.front'] = Number.parseInt(ds[1]);
-                            this.sensorValues['bumper.back'] = Number.parseInt(ds[2]);
+                            this.sensorEvent.emit(
+                                "bumper.front",
+                                Number.parseInt(ds[1])
+                            );
+                            this.sensorEvent.emit(
+                                "bumper.back",
+                                Number.parseInt(ds[2])
+                            );
+                            this.sensorValues["bumper.front"] = Number.parseInt(
+                                ds[1]
+                            );
+                            this.sensorValues["bumper.back"] = Number.parseInt(
+                                ds[2]
+                            );
                             break;
                         case "l":
-                            this.sensorEvent.emit('color.red', Number.parseFloat(ds[1]));
-                            this.sensorEvent.emit('color.green', Number.parseFloat(ds[2]));
-                            this.sensorEvent.emit('color.blue', Number.parseFloat(ds[3]));
-                            this.sensorValues['color.red'] = Number.parseFloat(ds[1]);
-                            this.sensorValues['color.green'] = Number.parseFloat(ds[2]);
-                            this.sensorValues['color.blue'] = Number.parseFloat(ds[3]);
+                            this.sensorEvent.emit(
+                                "color.red",
+                                Number.parseFloat(ds[1])
+                            );
+                            this.sensorEvent.emit(
+                                "color.green",
+                                Number.parseFloat(ds[2])
+                            );
+                            this.sensorEvent.emit(
+                                "color.blue",
+                                Number.parseFloat(ds[3])
+                            );
+                            this.sensorValues["color.red"] = Number.parseFloat(
+                                ds[1]
+                            );
+                            this.sensorValues["color.green"] =
+                                Number.parseFloat(ds[2]);
+                            this.sensorValues["color.blue"] = Number.parseFloat(
+                                ds[3]
+                            );
                             break;
                         case "d":
-                            this.sensorEvent.emit('distance', Number.parseInt(ds[1]));
-                            this.sensorValues['distance'] = Number.parseInt(ds[1]);
+                            this.sensorEvent.emit(
+                                "distance",
+                                Number.parseInt(ds[1])
+                            );
+                            this.sensorValues["distance"] = Number.parseInt(
+                                ds[1]
+                            );
                             break;
                         case "h":
-                            this.sensorEvent.emit('humidity', Number.parseFloat(ds[1]));
-                            this.sensorValues['humidity'] = Number.parseFloat(ds[1]);
+                            this.sensorEvent.emit(
+                                "humidity",
+                                Number.parseFloat(ds[1])
+                            );
+                            this.sensorValues["humidity"] = Number.parseFloat(
+                                ds[1]
+                            );
                             break;
                         case "t":
-                            this.sensorEvent.emit('temperature', Number.parseFloat(ds[1]));
-                            this.sensorValues['temperature'] = Number.parseFloat(ds[1]);
+                            this.sensorEvent.emit(
+                                "temperature",
+                                Number.parseFloat(ds[1])
+                            );
+                            this.sensorValues["temperature"] =
+                                Number.parseFloat(ds[1]);
                             break;
                         case "p":
-                            this.sensorEvent.emit('pressure', Number.parseFloat(ds[1]));
-                            this.sensorValues['pressure'] = Number.parseFloat(ds[1]);
+                            this.sensorEvent.emit(
+                                "pressure",
+                                Number.parseFloat(ds[1])
+                            );
+                            this.sensorValues["pressure"] = Number.parseFloat(
+                                ds[1]
+                            );
                             break;
                         case "o":
-                            this.sensorEvent.emit('magnetometer.roll', Number.parseFloat(ds[1]));
-                            this.sensorEvent.emit('magnetometer.pitch', Number.parseFloat(ds[2]));
-                            this.sensorEvent.emit('magnetometer.yaw', Number.parseFloat(ds[3]));
-                            this.sensorValues['magnetometer.roll'] = Number.parseFloat(ds[1]);
-                            this.sensorValues['magnetometer.pitch'] = Number.parseFloat(ds[2]);
-                            this.sensorValues['magnetometer.yaw'] = Number.parseFloat(ds[3]);
+                            this.sensorEvent.emit(
+                                "magnetometer.roll",
+                                Number.parseFloat(ds[1])
+                            );
+                            this.sensorEvent.emit(
+                                "magnetometer.pitch",
+                                Number.parseFloat(ds[2])
+                            );
+                            this.sensorEvent.emit(
+                                "magnetometer.yaw",
+                                Number.parseFloat(ds[3])
+                            );
+                            this.sensorValues["magnetometer.roll"] =
+                                Number.parseFloat(ds[1]);
+                            this.sensorValues["magnetometer.pitch"] =
+                                Number.parseFloat(ds[2]);
+                            this.sensorValues["magnetometer.yaw"] =
+                                Number.parseFloat(ds[3]);
                             break;
                         case "g":
-                            this.sensorEvent.emit('gyroscope.x', Number.parseFloat(ds[1]));
-                            this.sensorEvent.emit('gyroscope.y', Number.parseFloat(ds[2]));
-                            this.sensorEvent.emit('gyroscope.z', Number.parseFloat(ds[3]));
-                            this.sensorValues['gyroscope.x'] = Number.parseFloat(ds[1]);
-                            this.sensorValues['gyroscope.y'] = Number.parseFloat(ds[2]);
-                            this.sensorValues['gyroscope.z'] = Number.parseFloat(ds[3]);
+                            this.sensorEvent.emit(
+                                "gyroscope.x",
+                                Number.parseFloat(ds[1])
+                            );
+                            this.sensorEvent.emit(
+                                "gyroscope.y",
+                                Number.parseFloat(ds[2])
+                            );
+                            this.sensorEvent.emit(
+                                "gyroscope.z",
+                                Number.parseFloat(ds[3])
+                            );
+                            this.sensorValues["gyroscope.x"] =
+                                Number.parseFloat(ds[1]);
+                            this.sensorValues["gyroscope.y"] =
+                                Number.parseFloat(ds[2]);
+                            this.sensorValues["gyroscope.z"] =
+                                Number.parseFloat(ds[3]);
                             break;
                         case "u":
-                            this.sensorEvent.emit('altitude', Number.parseFloat(ds[1]));
-                            this.sensorValues['altitude'] = Number.parseFloat(ds[1]);
+                            this.sensorEvent.emit(
+                                "altitude",
+                                Number.parseFloat(ds[1])
+                            );
+                            this.sensorValues["altitude"] = Number.parseFloat(
+                                ds[1]
+                            );
                             break;
                         case "x":
-                            this.sensorEvent.emit('accelerometer.x', Number.parseFloat(ds[1]));
-                            this.sensorEvent.emit('accelerometer.y', Number.parseFloat(ds[2]));
-                            this.sensorEvent.emit('accelerometer.z', Number.parseFloat(ds[3]));
-                            this.sensorValues['accelerometer.x'] = Number.parseFloat(ds[1]);
-                            this.sensorValues['accelerometer.y'] = Number.parseFloat(ds[2]);
-                            this.sensorValues['accelerometer.z'] = Number.parseFloat(ds[3]);
+                            this.sensorEvent.emit(
+                                "accelerometer.x",
+                                Number.parseFloat(ds[1])
+                            );
+                            this.sensorEvent.emit(
+                                "accelerometer.y",
+                                Number.parseFloat(ds[2])
+                            );
+                            this.sensorEvent.emit(
+                                "accelerometer.z",
+                                Number.parseFloat(ds[3])
+                            );
+                            this.sensorValues["accelerometer.x"] =
+                                Number.parseFloat(ds[1]);
+                            this.sensorValues["accelerometer.y"] =
+                                Number.parseFloat(ds[2]);
+                            this.sensorValues["accelerometer.z"] =
+                                Number.parseFloat(ds[3]);
                             break;
                         case "f":
-                            this.sensorEvent.emit('battery', Number.parseFloat(ds[1]));
-                            this.sensorValues['battery'] = Number.parseFloat(ds[1]); // TODO constantly monitor battery
+                            this.sensorEvent.emit(
+                                "battery",
+                                Number.parseFloat(ds[1])
+                            );
+                            this.sensorValues["battery"] = Number.parseFloat(
+                                ds[1]
+                            ); // TODO constantly monitor battery
                             break;
                         default:
                             console.log("Received unrecognized data:", data);
@@ -1491,16 +1722,15 @@ class DoodlebotBlocks {
 
         // blink to transition faces
         await this.sendCommandToRobot("(d,b)", command_pause);
-        await this.sendCommandToRobot(
-            "(d," + animFace + ")", command_pause
-        );
+        await this.sendCommandToRobot("(d," + animFace + ")", command_pause);
         // play sound associated with animation
         if (animSound != "") {
             await this.sendCommandToRobot(
-                "(s," + animSound + ")", command_pause
+                "(s," + animSound + ")",
+                command_pause
             );
         }
-        
+
         // send message
         if (args.ANIM == "happy") {
             const happy_pause = 250;
@@ -1528,10 +1758,8 @@ class DoodlebotBlocks {
 
         // send message
         await this.sendCommandToRobot("(d,b)", command_pause);
-        await this.sendCommandToRobot(
-            "(d," + animFace + ")", blink_pause
-        );
-    }   
+        await this.sendCommandToRobot("(d," + animFace + ")", blink_pause);
+    }
     /**
      * For stopping the blinking animation
      */
@@ -1558,7 +1786,6 @@ class DoodlebotBlocks {
         await this.sendCommandToRobot("(d,t," + args.TEXT + ")", command_pause);
     }
 
-
     /**
      * For clearing the display
      */
@@ -1576,7 +1803,7 @@ class DoodlebotBlocks {
         let rgbColor = Color.hexToRgb(inputColor);
         let hsvColor = Color.rgbToHsv(rgbColor);
 
-        hsvColor.s = hsvColor.s > 0 ? 1 - ((1 - hsvColor.s) / 4) : hsvColor.s;
+        hsvColor.s = hsvColor.s > 0 ? 1 - (1 - hsvColor.s) / 4 : hsvColor.s;
         hsvColor.v = hsvColor.v / 4;
 
         rgbColor = Color.hsvToRgb(hsvColor);
@@ -1593,14 +1820,17 @@ class DoodlebotBlocks {
             }
         } else {
             // calculate the index of the pixel, note light 1 is on top, light 8 is on bottom
-            const idx = (this._colorArr.length-1) - _pixels.indexOf(args.PIXEL);
+            const idx = this._colorArr.length - 1 - _pixels.indexOf(args.PIXEL);
             this._colorArr[idx] = this.pixelHexToDecimal(args.COLOR);
         }
 
         console.log("set pixels: " + this._colorArr.join(","));
 
         // send message
-        await this.sendCommandToRobot("(p," + this._colorArr.join(",") + ")", command_pause);
+        await this.sendCommandToRobot(
+            "(p," + this._colorArr.join(",") + ")",
+            command_pause
+        );
     }
     /**
      * For setting individual neopixel colors
@@ -1619,13 +1849,16 @@ class DoodlebotBlocks {
                 // Translate hex color to binary
                 color = this.pixelHexToDecimal(colorArgs[i]);
             }
-            this._colorArr[(this._colorArr.length - 1) - i] = color;
+            this._colorArr[this._colorArr.length - 1 - i] = color;
         }
 
         console.log("set color: " + this._colorArr.join(","));
 
-        // send message      
-        await this.sendCommandToRobot("(p," + this._colorArr.join(",") + ")", command_pause);
+        // send message
+        await this.sendCommandToRobot(
+            "(p," + this._colorArr.join(",") + ")",
+            command_pause
+        );
     }
     /**
      * For shifting the colors of the lights in the neopixel array
@@ -1634,22 +1867,28 @@ class DoodlebotBlocks {
         let tmp = null;
         for (let i = 1; i < this._colorArr.length; i++) {
             tmp = this._colorArr[i];
-            this._colorArr[i] = this._colorArr[i-1];
-            this._colorArr[i-1] = tmp;
+            this._colorArr[i] = this._colorArr[i - 1];
+            this._colorArr[i - 1] = tmp;
         }
 
         console.log("shift pixels: " + this._colorArr.join(","));
 
         // send message
-        await this.sendCommandToRobot("(p," + this._colorArr.join(",") + ")", command_pause);
+        await this.sendCommandToRobot(
+            "(p," + this._colorArr.join(",") + ")",
+            command_pause
+        );
     }
     /**
      * For blinking the lights in the neopixel array
      */
     async togglePixels() {
         if (this._pixelStatus == 0) {
-            // send message        
-            await this.sendCommandToRobot("(p," + this._colorArr.join(",") + ")", command_pause);
+            // send message
+            await this.sendCommandToRobot(
+                "(p," + this._colorArr.join(",") + ")",
+                command_pause
+            );
             this._pixelStatus = 1;
         } else {
             // lights off
@@ -1672,10 +1911,16 @@ class DoodlebotBlocks {
 
         if (args.ANIM == "blink") {
             console.log("starting neopixel blink interval");
-            this._pixelInterval = setInterval(this.togglePixels.bind(this), this._pixelSpeed);
+            this._pixelInterval = setInterval(
+                this.togglePixels.bind(this),
+                this._pixelSpeed
+            );
         } else if (args.ANIM == "chase") {
             console.log("starting pixel chase interval");
-            this._pixelInterval = setInterval(this.shiftPixels.bind(this), this._pixelSpeed);
+            this._pixelInterval = setInterval(
+                this.shiftPixels.bind(this),
+                this._pixelSpeed
+            );
         }
     }
     /**
@@ -1699,51 +1944,44 @@ class DoodlebotBlocks {
      * For activating the motors
      */
     async drive(args) {
-        console.log(
-            "drive command: " +
-                args.DIR +
-                " " +
-                args.NUM +
-                " steps"
-        );
+        console.log("drive command: " + args.DIR + " " + args.NUM + " steps");
         // determine the number of steps
         let leftSteps = args.NUM;
         let rightSteps = args.NUM;
         if (args.DIR == "left" || args.DIR == "backward")
             leftSteps = -leftSteps;
-        if (args.DIR == "right" | args.DIR == "backward")
-            rightSteps = - rightSteps;
+        if ((args.DIR == "right") | (args.DIR == "backward"))
+            rightSteps = -rightSteps;
 
         // send message
-        await this.sendCommandToRobot("(m,100,100,"  + leftSteps + "," + rightSteps + ")", command_pause);
-        
+        await this.sendCommandToRobot(
+            "(m,100,100," + leftSteps + "," + rightSteps + ")",
+            command_pause
+        );
+
         // wait for the motor command to finish executing
         return new Promise((resolve) => {
-            this.motorEvent.once('stop', () =>{ 
+            this.motorEvent.once("stop", () => {
                 resolve();
             });
         });
     }
     async turn(args) {
-        console.log(
-            "turn command: " +
-                args.DIR +
-                " " +
-                args.NUM +
-                " degrees"
-        );
-        
+        console.log("turn command: " + args.DIR + " " + args.NUM + " degrees");
+
         // determine the number of degrees
         let numDegrees = args.NUM;
-        if (args.DIR == "right")
-            numDegrees = -numDegrees;
+        if (args.DIR == "right") numDegrees = -numDegrees;
 
         // send message
-        await this.sendCommandToRobot("(t,0," + numDegrees + ")", command_pause);
+        await this.sendCommandToRobot(
+            "(t,0," + numDegrees + ")",
+            command_pause
+        );
 
         // wait for the motor command to finish executing
         return new Promise((resolve) => {
-            this.motorEvent.once('stop', () =>{ 
+            this.motorEvent.once("stop", () => {
                 resolve();
             });
         });
@@ -1753,23 +1991,25 @@ class DoodlebotBlocks {
             "arc command: " +
                 args.DIR +
                 " " +
-                args.RAD + 
+                args.RAD +
                 " radius " +
                 args.NUM +
                 " degrees"
         );
-        
+
         // determine the number of degrees
         let numDegrees = args.NUM;
-        if (args.DIR == "right")
-            numDegrees = -numDegrees;
+        if (args.DIR == "right") numDegrees = -numDegrees;
 
         // send message
-        await this.sendCommandToRobot("(t," + args.RAD + "," + numDegrees + ")", command_pause);
+        await this.sendCommandToRobot(
+            "(t," + args.RAD + "," + numDegrees + ")",
+            command_pause
+        );
 
         // wait for the motor command to finish executing
         return new Promise((resolve) => {
-            this.motorEvent.once('stop', () =>{ 
+            this.motorEvent.once("stop", () => {
                 resolve();
             });
         });
@@ -1795,7 +2035,7 @@ class DoodlebotBlocks {
     }
 
     /**
-     * Just for testing, checks if robot is connected or not 
+     * Just for testing, checks if robot is connected or not
      */
     ifRobotConnected(args) {
         return this._robotStatus == 2;
@@ -1809,10 +2049,13 @@ class DoodlebotBlocks {
 
         console.log("connecting to Wifi");
         //send message
-        await this.sendCommandToRobot("(k," + ssid + "," + pw + ")", command_pause);
+        await this.sendCommandToRobot(
+            "(k," + ssid + "," + pw + ")",
+            command_pause
+        );
 
-       // wait to receive ip address in response
-       /*return new Promise((resolve) => {
+        // wait to receive ip address in response
+        /*return new Promise((resolve) => {
         this.robotEvent.once('ip', () =>{ 
             resolve(ipAddress);
         });*/
@@ -1824,12 +2067,12 @@ class DoodlebotBlocks {
         let system = args.SYSTEM;
 
         console.log("put " + system + " into low power mode");
-        
+
         let system_cmd = "a";
         if (system == "motors") {
-            system_cmd = "m"
+            system_cmd = "m";
         } else if (system == "camera") {
-            system_cmd = "c"
+            system_cmd = "c";
         }
 
         //send message
@@ -1845,9 +2088,7 @@ class DoodlebotBlocks {
         // stop blinking
         this.stopBlink();
 
-        await this.sendCommandToRobot(
-            command, command_pause
-        );
+        await this.sendCommandToRobot(command, command_pause);
     }
     /**
      * Just for testing out sending commands to robot via ble
@@ -1860,13 +2101,11 @@ class DoodlebotBlocks {
         this.stopBlink();
 
         // send message
-        await this.sendCommandToRobot(
-            command, command_pause
-        );
+        await this.sendCommandToRobot(command, command_pause);
 
         // wait for the motor command to finish executing
         return new Promise((resolve) => {
-            this.motorEvent.once('stop', () =>{ 
+            this.motorEvent.once("stop", () => {
                 resolve();
             });
         });
