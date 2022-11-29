@@ -3,9 +3,8 @@ const Runtime = require("../../engine/runtime");
 
 const ArgumentType = require("../../extension-support/argument-type");
 const BlockType = require("../../extension-support/block-type");
-const Variable = require("../../engine/variable");
 const formatMessage = require("format-message");
-const pos = require("pos");
+const Tag = require("en-pos").Tag;
 
 /**
  * Icon svg to be displayed in the blocks category menu, encoded as a data URI.
@@ -200,14 +199,21 @@ class Scratch3TextProcessingBlocks {
     }
 
     getPartOfSpeech(args) {
-        let words = new pos.Lexer().lex(args.TEXT);
-        let tagger = new pos.Tagger();
-        let taggedWords = tagger.tag(words);
+        let words = args.TEXT
+            .replace(/[^\w\s\']|_/g, "")
+            .replace(/\s+/g, " ")
+            .split(" ");
+        var tags = new Tag(words)
+        .initial() // initial dictionary and pattern based tagging
+        .smooth() // further context based smoothing
+        .tags;
+        console.log(words);
+        console.log(tags);
 
-        for (let i = 0; i < taggedWords.length; i++) {
-            let taggedWord = taggedWords[i];
-            if (taggedWord[1].startsWith(_partsOfSpeech[args.POS])) {
-                return taggedWord[0];
+        for (let i = 0; i < tags.length; i++) {
+            let taggedWord = tags[i];
+            if (taggedWord.startsWith(_partsOfSpeech[args.POS])) {
+                return words[i];
             }
         }
 
@@ -216,19 +222,26 @@ class Scratch3TextProcessingBlocks {
     }
 
     getPartOfSpeechAll(args) {
-        let words = new pos.Lexer().lex(args.TEXT);
-        let tagger = new pos.Tagger();
-        let taggedWords = tagger.tag(words);
+        let words = args.TEXT
+            .replace(/[^\w\s\']|_/g, "")
+            .replace(/\s+/g, " ")
+            .split(" ");
+        var tags = new Tag(words)
+        .initial() // initial dictionary and pattern based tagging
+        .smooth() // further context based smoothing
+        .tags;
+        console.log(words);
+        console.log(tags);
 
         // collect matches
         let matches = [];
 
         //
         let partOfSpeech = args.POS.slice(0, -1);
-        for (let i = 0; i < taggedWords.length; i++) {
-            let taggedWord = taggedWords[i];
-            if (taggedWord[1].startsWith(_partsOfSpeech[partOfSpeech])) {
-                matches.push(taggedWord[0]);
+        for (let i = 0; i < tags.length; i++) {
+            let taggedWord = tags[i];
+            if (taggedWord.startsWith(_partsOfSpeech[partOfSpeech])) {
+                matches.push(words[i]);
             }
         }
 
