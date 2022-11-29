@@ -390,15 +390,15 @@ class Scratch3Jibo {
         console.log(progressState);
         // percentage
         if (progressState.percentage == 100) {
-            this.JiboTTS({TEXT: 'Excellent work. You\'ve accomplished all of the items in checklist.'});
+            //this.JiboTTS({TEXT: 'Excellent work. You\'ve accomplished all of the items in checklist.'});
         } else if (progressState.percentage >= 75) {
-            this.JiboTTS({TEXT: 'You\'ve made solid progress on your text classifier. There are a few more things I might add.'});
+            //this.JiboTTS({TEXT: 'You\'ve made solid progress on your text classifier. There are a few more things I might add.'});
         } else if (progressState.percentage >= 50) {
-            this.JiboTTS({TEXT: 'Looking good so far. Let\'s add a few more things to make your classifier work even better.'});
+            //this.JiboTTS({TEXT: 'Looking good so far. Let\'s add a few more things to make your classifier work even better.'});
         } else if (progressState.percentage >= 25) {
-            this.JiboTTS({TEXT: 'You\'re off to a really good start. Let\'s look at ways we might improve this program.'});
+            //this.JiboTTS({TEXT: 'You\'re off to a really good start. Let\'s look at ways we might improve this program.'});
         } else {
-            this.JiboTTS({TEXT: 'I bet that making some of these improvements will help you make your project work really well.'});
+            //this.JiboTTS({TEXT: 'I bet that making some of these improvements will help you make your project work really well.'});
         }
 
         // improvements
@@ -439,7 +439,7 @@ class Scratch3Jibo {
         if (textModelClasses.length === 2) {
             // Jibo comment
             if (!this.progress.compliments['Two text classifier classes']) {
-                this.JiboTTS({TEXT: 'It\'s great that you have two text classifier classes. Try to keep adding more'});
+                //this.JiboTTS({TEXT: 'It\'s great that you have two text classifier classes. Try to keep adding more'});
             }
             // update compliments
             this.progress.compliments['Two text classifier classes'] = true;
@@ -450,7 +450,7 @@ class Scratch3Jibo {
         } else if (textModelClasses.length > 2) {
             // Jibo comment
             if(!this.progress.compliments['Three or more text classifier classes']) {
-                this.JiboTTS({TEXT: 'Great job adding additional classes to your classifier'});
+                //this.JiboTTS({TEXT: 'Great job adding additional classes to your classifier'});
             }
             // update compliments
             this.progress.compliments['Two text classifier classes'] = true;
@@ -481,7 +481,7 @@ class Scratch3Jibo {
         if (minimum === true) {
             // Jibo comment
             if (this.progress.compliments['At least five examples per text classifier class']) {
-                this.JiboTTS({TEXT: 'Don\'t forget to have at least five examples in each class'});
+                //this.JiboTTS({TEXT: 'Don\'t forget to have at least five examples in each class'});
             }
             // update compliments
             this.progress.compliments['At least five examples per text classifier class'] = false;
@@ -490,7 +490,7 @@ class Scratch3Jibo {
         } else if (Object.keys(textModel).length > 0) {
             // Jibo comment
             if (!this.progress.compliments['At least five examples per text classifier class']) {
-                this.JiboTTS({TEXT: 'Nice! You added at least five examples to every class label'});
+                //this.JiboTTS({TEXT: 'Nice! You added at least five examples to every class label'});
             }
             // update compliments
             this.progress.compliments['At least five examples per text classifier class'] = true;
@@ -518,7 +518,7 @@ class Scratch3Jibo {
             if (classNumbers[classNumbers.length - 1] - classNumbers[0] > 3) {
                 // Jibo comment
                 if (this.progress.compliments['Text classifier classes are well balanced']) {
-                    this.JiboTTS({TEXT: 'Don\'t forget to balance those classes again'});
+                    //this.JiboTTS({TEXT: 'Don\'t forget to balance those classes again'});
                 }
                 // update compliments
                 this.progress.compliments['Text classifier classes are well balanced'] = false;
@@ -527,7 +527,7 @@ class Scratch3Jibo {
             } else if (minimum === false) {
                 // Jibo comment
                 if (!this.progress.compliments['Text classifier classes are well balanced']) {
-                    this.JiboTTS({TEXT: 'Look at that, your classes are all well balanced'});
+                    //this.JiboTTS({TEXT: 'Look at that, your classes are all well balanced'});
                 }
                 // update compliments
                 this.progress.compliments['Text classifier classes are well balanced'] = true;
@@ -598,7 +598,7 @@ class Scratch3Jibo {
         } else {
             // Jibo comment
             if (!this.progress.compliments['Using embedded conditionals']) {
-                this.JiboTTS({TEXT: 'Good use of embedded conditionals'});
+                //this.JiboTTS({TEXT: 'Good use of embedded conditionals'});
             }
             // update compliments
             this.progress.compliments['Using embedded conditionals'] = true;
@@ -610,7 +610,7 @@ class Scratch3Jibo {
         if (count >= 2) {
             // Jibo comment
             if (!this.progress.compliments['Using two text classification blocks']) {
-                this.JiboTTS({TEXT: 'Nice coding. You used a lot of text classification blocks'});
+                //this.JiboTTS({TEXT: 'Nice coding. You used a lot of text classification blocks'});
             }
             // update compliments
             this.progress.compliments['Using two text classification blocks'] = true;
