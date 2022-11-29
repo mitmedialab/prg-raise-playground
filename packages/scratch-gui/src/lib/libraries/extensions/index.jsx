@@ -1,6 +1,12 @@
 import React from 'react';
 import {FormattedMessage} from 'react-intl';
 
+import textClassificationBlocksIconURL from './text_classification/text-classification-blocks.png';
+import textClassificationBlocksInsetIconURL from './text_classification/text-classification-blocks-small.svg';
+
+import poseBodyBlocksIconURL from './posenet/pose-body.png';
+import poseHandBlocksIconURL from './posenet/pose-hand.png';
+import poseFaceBlocksIconURL from './posenet/pose-face.png';
 import teachableMachineBlocksIconURL from './teachable-machine-blocks/teachable-machine-blocks.png';
 import teachableMachineBlocksInsetIconURL from './teachable-machine-blocks/teachable-machine-blocks-small.svg';
 
@@ -20,6 +26,11 @@ import penInsetIconURL from './pen/pen-small.svg';
 
 import videoSensingIconURL from './videoSensing/video-sensing.png';
 import videoSensingInsetIconURL from './videoSensing/video-sensing-small.svg';
+
+// import posenetIconURL from './posenet/video-sensing.png';
+import poseHandInsetIconURL from './posenet/pose-hand-small-3.svg';
+import poseFaceInsetIconURL from './posenet/pose-face-small.svg';
+import poseBodyInsetIconURL from './posenet/pose-body-small.svg';
 
 import text2speechIconURL from './text2speech/text2speech.png';
 import text2speechInsetIconURL from './text2speech/text2speech-small.svg';
@@ -156,7 +167,7 @@ export default [
             />
         ),
         featured: true
-    },
+    }, //*/ // RANDI Removing extensions I don't want students to play with
     {
         name: (
             <FormattedMessage
@@ -261,7 +272,7 @@ export default [
         featured: true,
         internetConnectionRequired: true
     },
-    /*{
+    {
         name: 'Makey Makey',
         extensionId: 'makeymakey',
         collaborator: 'JoyLabz',
@@ -427,5 +438,5 @@ export default [
             />
         ),
         helpLink: 'https://scratch.mit.edu/vernier'
-    }*/
+    }//*/
 ];

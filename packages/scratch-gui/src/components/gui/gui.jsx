@@ -30,6 +30,8 @@ import Alerts from '../../containers/alerts.jsx';
 import DragLayer from '../../containers/drag-layer.jsx';
 import ConnectionModal from '../../containers/connection-modal.jsx';
 import TelemetryModal from '../telemetry-modal/telemetry-modal.jsx';
+import TextModelModal from '../../containers/model-modal.jsx';
+import ClassifierModelModal from '../../containers/classifier-model-modal.jsx'
 
 import layout, {STAGE_SIZE_MODES} from '../../lib/layout-constants';
 import {resolveStageSize} from '../../lib/screen-utils';
@@ -114,6 +116,8 @@ const GUIComponent = props => {
         targetIsStage,
         telemetryModalVisible,
         tipsLibraryVisible,
+        textModelModalVisible,
+        classifierModelModalVisible,
         vm,
         ...componentProps
     } = omit(props, 'dispatch');
@@ -175,6 +179,16 @@ const GUIComponent = props => {
                 )}
                 {tipsLibraryVisible ? (
                     <TipsLibrary />
+                ) : null}
+                {textModelModalVisible ? (
+                    <TextModelModal
+                        vm={vm}
+                    />
+                ) : null}
+                {classifierModelModalVisible ? (
+                    <ClassifierModelModal
+                        vm={vm}
+                    />
                 ) : null}
                 {cardsVisible ? (
                     <Cards />
@@ -411,6 +425,8 @@ GUIComponent.propTypes = {
     targetIsStage: PropTypes.bool,
     telemetryModalVisible: PropTypes.bool,
     tipsLibraryVisible: PropTypes.bool,
+    textModelModalVisible: PropTypes.bool,
+    classifierModelModalVisible: PropTypes.bool,
     vm: PropTypes.instanceOf(VM).isRequired
 };
 GUIComponent.defaultProps = {

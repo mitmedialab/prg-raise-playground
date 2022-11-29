@@ -70,6 +70,14 @@ const VideoState = {
     ON_FLIPPED: "on-flipped",
 };
 
+const ModelType = {
+    POSE: 'pose',
+    IMAGE: 'image',
+    AUDIO: 'audio',
+}
+
+const EXTENSION_ID = 'teachableMachine';
+
 /**
  * Class for the motion-related blocks in Scratch 3.0
  * @param {Runtime} runtime - the runtime instantiating this block package.
@@ -106,6 +114,10 @@ class Scratch3VideoSensingBlocks {
          * @type {boolean}
          */
         this.firstInstall = true;
+        
+        // What is the confidence of the latest prediction
+        this.maxConfidence = '';
+        this.modelConfidences = {};
 
         if (this.runtime.ioDevices) {
             // Configure the video device with values from globally stored locations.
@@ -449,7 +461,7 @@ class Scratch3VideoSensingBlocks {
         // first added to a project, and is overwritten by a PROJECT_LOADED
         // event listener that later calls updateVideoDisplay
         if (this.firstInstall) {
-            this.globalVideoState = VideoState.ON;
+            this.globalVideoState = VideoState.OFF;
             this.globalVideoTransparency = 50;
             this.updateVideoDisplay();
             this.updateToStageModel();
@@ -458,6 +470,118 @@ class Scratch3VideoSensingBlocks {
         }
 
         // Return extension definition
+        const blocks = [
+            {
+                opcode: 'useModelBlock',
+                text: `use model [MODEL_URL]`,
+                arguments: {
+                    MODEL_URL: {
+                        type: ArgumentType.STRING,
+                        defaultValue: this.teachableImageModel || 'https://teachablemachine.withgoogle.com/models/knrpLxv8N/'
+                    }
+                }
+            },
+            {
+                // @todo (copied from motion) this hat needs to be set itself to restart existing
+                // threads like Scratch 2's behaviour.
+                opcode: 'whenModelMatches',
+                text: 'when model detects [CLASS_NAME]',
+                blockType: BlockType.HAT,
+                arguments: {
+                    CLASS_NAME: {
+                        type: ArgumentType.STRING,
+                        defaultValue: this.getCurrentClasses()[0],
+                        menu: 'CLASS_NAME'
+                    }
+                },
+            },
+            {
+                opcode: 'modelPrediction',
+                text: formatMessage({
+                    id: 'teachableMachine.modelPrediction',
+                    default: 'model prediction',
+                    description: 'Value of latest model prediction'
+                }),
+                blockType: BlockType.REPORTER,
+                isTerminal: true
+            },
+            {
+                // @todo (copied from motion) this hat needs to be set itself to restart existing
+                // threads like Scratch 2's behaviour.
+                opcode: 'modelMatches',
+                text: formatMessage({
+                    id: 'teachableMachine.modelMatches',
+                    default: 'prediction is [CLASS_NAME]',
+                    description: 'Boolean that is true when the model matches [CLASS_NAME]'
+                }),
+                blockType: BlockType.BOOLEAN,
+                arguments: {
+                    CLASS_NAME: {
+                        type: ArgumentType.STRING,
+                        defaultValue: this.getCurrentClasses()[0],
+                        menu: 'CLASS_NAME'
+                    }
+                },
+            },
+            /*{
+                opcode: 'modelCon',
+                text: formatMessage({
+                    id: 'teachableMachine.modelConfidence',
+                    default: 'prediction confidence',
+                    description: 'Confidence value of latest model prediction'
+                }),
+                blockType: BlockType.REPORTER,
+                isTerminal: true
+            },*/
+            {
+                opcode: 'classConfidence',
+                text: formatMessage({
+                    id: 'teachableMachine.classConfidence',
+                    default: 'confidence for [CLASS_NAME]',
+                    description: 'Reporter that returns the model confience level for [CLASS_NAME]'
+                }),
+                blockType: BlockType.REPORTER,
+                isTerminal: true,
+                arguments: {
+                    CLASS_NAME: {
+                        type: ArgumentType.STRING,
+                        defaultValue: this.getCurrentClasses()[0],
+                        menu: 'CLASS_NAME'
+                    }
+                },
+            },
+            '---',
+            {
+                opcode: 'videoToggle',
+                text: formatMessage({
+                    id: 'videoSensing.videoToggle',
+                    default: 'turn video [VIDEO_STATE]',
+                    description: 'Controls display of the video preview layer'
+                }),
+                arguments: {
+                    VIDEO_STATE: {
+                        type: ArgumentType.NUMBER,
+                        menu: 'VIDEO_STATE',
+                        defaultValue: VideoState.ON
+                    }
+                }
+            },
+            {
+                opcode: 'setVideoTransparency',
+                text: formatMessage({
+                    id: 'videoSensing.setVideoTransparency',
+                    default: 'set video transparency to [TRANSPARENCY]',
+                    description: 'Controls transparency of the video preview layer'
+                }),
+                arguments: {
+                    TRANSPARENCY: {
+                        type: ArgumentType.NUMBER,
+                        defaultValue: 50
+                    }
+                }
+            }
+        ];
+
         return {
             id: "teachableMachine",
             name: formatMessage({
@@ -634,9 +758,20 @@ class Scratch3VideoSensingBlocks {
         const currentMaxClass = predictionState.topClass;
         return currentMaxClass === String(className);
     }
+    
+    classConfidence(args, util) {
+        const className = args.CLASS_NAME;
+        
+        return this.modelConfidences[className];
+    }
+    
+    
+    modelCon(args, util) {
+        return this.maxConfidence;
+    }
 
     /**
-     * A scratch hat block reporter that returns whether the current video frame matches the model class.
+     * A scratch reporter that returns the top class seen in the current video frame
      * @param {object} args - the block arguments
      * @param {BlockUtility} util - the block utility
      * @returns {string} class name if video frame matched, empty string if model not loaded yet
@@ -648,9 +783,9 @@ class Scratch3VideoSensingBlocks {
         if (!predictionState) {
             return "";
         }
-
         return predictionState.topClass;
     }
+    
 
     async getPredictionFor(args, util) {
         let image_source = args.IMAGE_SRC;
@@ -756,12 +891,33 @@ class Scratch3VideoSensingBlocks {
                 maxProbability = probability;
             }
         }
+        this.maxConfidence = maxProbability; // update for reporter block
         return maxClassName;
     }
     async getPredictionFromModel(modelUrl, frame) {
         const model = this.predictionState[modelUrl].model;
         imageBitmap = await createImageBitmap(frame);
         return await model.predict(imageBitmap);
+    }
+
+    async getPredictionFromModel(modelUrl, frame) {
+        const {model, modelType} = this.predictionState[modelUrl];
+        switch (modelType) {
+            case ModelType.IMAGE:
+                const imageBitmap = await createImageBitmap(frame);
+                return await model.predict(imageBitmap);
+            case ModelType.POSE:
+                const {pose, posenetOutput} = await model.estimatePose(frame);
+                return await model.predict(posenetOutput);
+            case ModelType.AUDIO:
+                if (this.latestAudioResults) {
+                    return model.wordLabels().map((label, i) => {
+                        return {className: label, probability: this.latestAudioResults.scores[i]}
+                    });
+                } else {
+                    return null;
+                }
+        }
     }
 
     /**

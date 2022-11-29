@@ -59,6 +59,7 @@ const _line_states = ["right side", "left side", "neither side", "both sides"];
 
 const EXTENSION_ID = "microbitRobot";
 
+
 // Core, Team, and Official extension classes should be registered statically with the Extension Manager.
 // See: scratch-vm/src/extension-support/extension-manager.js
 class MicrobitRobot {
@@ -71,7 +72,6 @@ class MicrobitRobot {
         this.scratch_vm = runtime;
         this.scratch_vm.registerPeripheralExtension(EXTENSION_ID, this);
         this.scratch_vm.connectPeripheral(EXTENSION_ID, 0);
-
         this.robot = this;
 
         this._mStatus = 1;
