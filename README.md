@@ -126,7 +126,7 @@ Also, try hovering over fields to view their documentation (typically a [summary
 
 ![Gif of video hovering over fields to peak documentation](/assets/hover.gif)
 
-Still stuck? Check out our [From 0 to Extension guide](#-from-0-to-extension) and/or contact more experienced Scratch developers, like [Parker](https://github.com/pmalacho-mit) or [Randi](https://github.com/randi-c-dubs)
+Still stuck? Check out our [From 0 to Extension guide](#-from-0-to-extension) and/or contact more experienced extension developers, like [Parker](https://github.com/pmalacho-mit) or [Randi](https://github.com/randi-c-dubs)
 
 ### 🪜 From 0 to Extension
 
@@ -135,7 +135,7 @@ Still stuck? Check out our [From 0 to Extension guide](#-from-0-to-extension) an
 Currently, depending on what's new to you, here are some recommendations:
 - ***New to Javascript and Typescript?*** Follow this [javascript tutorial](https://www.w3schools.com/js/) and then check out the [Typescript handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
 - ***Know javascript but new to Typescript?*** Check out the [Typescript handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
-- ***Know javascript/typescript but never made an extension before?*** Nice! The documentation of the template `index.ts` should be enough to get you started (and if not, please give that feedback)
+- ***Know javascript/typescript but never made an extension before?*** Nice! The documentation of the template `index.ts` should be enough to get you started (and if not, please give us that feedback)
 - ***New to the extension framework (but had developed extensions in the past)?*** The [Porting an extension to Typescript guide](#-porting-an-extension-to-typescript) is likely for you!
 
 Probably will have:
@@ -147,7 +147,7 @@ Probably will have:
 
 ### 🎨 Adding UI
 
-To develop UI for your extension, we ask that you implement an interface that will be rendered in a [modal](https://blog.hubspot.com/website/modal-web-design#:~:text=A%20modal%20(also%20called%20a,action%20or%20by%20closing%20it.) / pop-up.
+To develop UI for your extension, we ask that you implement an interface that will be rendered in a [modal](https://blog.hubspot.com/website/modal-web-design) / pop-up.
 
 We currently require you to implement this interface in the [Svelte front-end framework](https://svelte.dev/). Hop down to the [Svelte dependency](#svelte-only-if-you-are-developing-ui) to configure your development environment, understand why we chose svelte, and start learning the ropes.
 
