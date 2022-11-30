@@ -5,6 +5,7 @@ const ArgumentType = require("../../extension-support/argument-type");
 const BlockType = require("../../extension-support/block-type");
 const formatMessage = require("format-message");
 const Tag = require("en-pos").Tag;
+const { wordsToNumbers } = require("words-to-numbers");
 
 /**
  * Icon svg to be displayed in the blocks category menu, encoded as a data URI.
@@ -23,12 +24,12 @@ const blockIconURI =
     "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhLS0gQ3JlYXRlZCB3aXRoIElua3NjYXBlIChodHRwOi8vd3d3Lmlua3NjYXBlLm9yZy8pIC0tPgoKPHN2ZwogICB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iCiAgIHhtbG5zOmNjPSJodHRwOi8vY3JlYXRpdmVjb21tb25zLm9yZy9ucyMiCiAgIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyIKICAgeG1sbnM6c3ZnPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIKICAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogICB4bWxuczpzb2RpcG9kaT0iaHR0cDovL3NvZGlwb2RpLnNvdXJjZWZvcmdlLm5ldC9EVEQvc29kaXBvZGktMC5kdGQiCiAgIHhtbG5zOmlua3NjYXBlPSJodHRwOi8vd3d3Lmlua3NjYXBlLm9yZy9uYW1lc3BhY2VzL2lua3NjYXBlIgogICB3aWR0aD0iNTIuMTcxMzg3bW0iCiAgIGhlaWdodD0iMzkuODY1NjA4bW0iCiAgIHZpZXdCb3g9IjAgMCA1Mi4xNzEzODcgMzkuODY1NjA4IgogICB2ZXJzaW9uPSIxLjEiCiAgIGlkPSJzdmc4IgogICBpbmtzY2FwZTp2ZXJzaW9uPSIwLjkyLjQgKDVkYTY4OWMzMTMsIDIwMTktMDEtMTQpIgogICBzb2RpcG9kaTpkb2NuYW1lPSJubHBfaWNvbi5zdmciPgogIDxkZWZzCiAgICAgaWQ9ImRlZnMyIiAvPgogIDxzb2RpcG9kaTpuYW1lZHZpZXcKICAgICBpZD0iYmFzZSIKICAgICBwYWdlY29sb3I9IiNmZmZmZmYiCiAgICAgYm9yZGVyY29sb3I9IiM2NjY2NjYiCiAgICAgYm9yZGVyb3BhY2l0eT0iMS4wIgogICAgIGlua3NjYXBlOnBhZ2VvcGFjaXR5PSIwLjAiCiAgICAgaW5rc2NhcGU6cGFnZXNoYWRvdz0iMiIKICAgICBpbmtzY2FwZTp6b29tPSI1LjYiCiAgICAgaW5rc2NhcGU6Y3g9IjE2Mi43NjA1MSIKICAgICBpbmtzY2FwZTpjeT0iNzAuOTU0NDE1IgogICAgIGlua3NjYXBlOmRvY3VtZW50LXVuaXRzPSJtbSIKICAgICBpbmtzY2FwZTpjdXJyZW50LWxheWVyPSJsYXllcjEiCiAgICAgc2hvd2dyaWQ9ImZhbHNlIgogICAgIGZpdC1tYXJnaW4tdG9wPSIwIgogICAgIGZpdC1tYXJnaW4tbGVmdD0iLTAuMSIKICAgICBmaXQtbWFyZ2luLXJpZ2h0PSIwIgogICAgIGZpdC1tYXJnaW4tYm90dG9tPSIwIgogICAgIGlua3NjYXBlOndpbmRvdy13aWR0aD0iMTU3MyIKICAgICBpbmtzY2FwZTp3aW5kb3ctaGVpZ2h0PSIxMDgwIgogICAgIGlua3NjYXBlOndpbmRvdy14PSIzNTIxIgogICAgIGlua3NjYXBlOndpbmRvdy15PSIyMjYiCiAgICAgaW5rc2NhcGU6d2luZG93LW1heGltaXplZD0iMCIgLz4KICA8bWV0YWRhdGEKICAgICBpZD0ibWV0YWRhdGE1Ij4KICAgIDxyZGY6UkRGPgogICAgICA8Y2M6V29yawogICAgICAgICByZGY6YWJvdXQ9IiI+CiAgICAgICAgPGRjOmZvcm1hdD5pbWFnZS9zdmcreG1sPC9kYzpmb3JtYXQ+CiAgICAgICAgPGRjOnR5cGUKICAgICAgICAgICByZGY6cmVzb3VyY2U9Imh0dHA6Ly9wdXJsLm9yZy9kYy9kY21pdHlwZS9TdGlsbEltYWdlIiAvPgogICAgICAgIDxkYzp0aXRsZT48L2RjOnRpdGxlPgogICAgICA8L2NjOldvcms+CiAgICA8L3JkZjpSREY+CiAgPC9tZXRhZGF0YT4KICA8ZwogICAgIGlua3NjYXBlOmxhYmVsPSJMYXllciAxIgogICAgIGlua3NjYXBlOmdyb3VwbW9kZT0ibGF5ZXIiCiAgICAgaWQ9ImxheWVyMSIKICAgICB0cmFuc2Zvcm09InRyYW5zbGF0ZSg4MS4xNzM3MzEsLTE2OC43OTkxOCkiPgogICAgPHBhdGgKICAgICAgIHN0eWxlPSJmaWxsOiNmOWNmY2Y7ZmlsbC1vcGFjaXR5OjE7c3Ryb2tlOiM0NzcwYzc7c3Ryb2tlLXdpZHRoOjAuOTQ5OTk5OTk7c3Ryb2tlLWxpbmVjYXA6YnV0dDtzdHJva2UtbGluZWpvaW46bWl0ZXI7c3Ryb2tlLW1pdGVybGltaXQ6NDtzdHJva2UtZGFzaGFycmF5Om5vbmU7c3Ryb2tlLW9wYWNpdHk6MSIKICAgICAgIGQ9Im0gLTUyLjM1MzE5NCwxODAuNzE0ODggMy4zNDA4NjcsMC41MzQ1NCAxLjgwNDA3LC0xLjMzNjM0IDIuMTM4MTU2LC0wLjA2NjggMi4wNzEzNDEsMC43MzQ5OSAxLjQwMzE2NCwxLjczNzI1IDAuNzM0OTkyLDEuOTM3NzEgLTAuNTM0NTQxLDEuNzM3MjUgLTAuNzUzOTI0LDEuMzM5MyAtMS44NDI2MzMsMS4zOTM3OSAtMS44MTkwMSwwLjI1OTg2IDAuMjQ1Njg5LDMuMTI3MzkgMi4xODc1MzMsLTAuMDU2MyAyLjUwNDA5MSwtMS4yNzU2NyAxLjcwMDg5MiwtMS45MzcxMyAwLjk0NDk0MSwtMS42NzcyNyAwLjUxOTcxOCwtMi4wNTUyNSAtMC4wNDcyNSwtMi4zMTUxIC0wLjY2MTQ1OSwtMS43NzE3NiAtMS4yNTIwNDgsLTEuOTM3MTMgLTEuNTgyNzc0LC0xLjUzNTUzIC0yLjA1NTI0NywtMC44MjY4MiAtMy43MzI1MTQsLTAuMTg4OTkgLTIuMjQ0MjMyLDAuODI2ODIgLTMuMDk0NjgxLDIuNjIyMjEgeiIKICAgICAgIGlkPSJwYXRoMzg3MCIKICAgICAgIGlua3NjYXBlOmNvbm5lY3Rvci1jdXJ2YXR1cmU9IjAiIC8+CiAgICA8cGF0aAogICAgICAgc3R5bGU9ImZpbGw6I2Y5YTdhNztmaWxsLW9wYWNpdHk6MTtzdHJva2U6IzQ3NzBjNztzdHJva2Utd2lkdGg6My41OTA1NTExNDtzdHJva2UtbGluZWNhcDpidXR0O3N0cm9rZS1saW5lam9pbjptaXRlcjtzdHJva2UtbWl0ZXJsaW1pdDo0O3N0cm9rZS1kYXNoYXJyYXk6bm9uZTtzdHJva2Utb3BhY2l0eToxIgogICAgICAgZD0iTSAxNDUuODkyNTgsMi45Mzc1IDEyMywzLjUgbCAtMi4wMTc1OCwxMy4wMDk3NjYgLTcuNTg5ODQsMy41NzAzMTIgLTEwLjgwMjc0LC05LjEwNTQ2OSAtMTAuODA0Njg0LDguMDM1MTU3IC02LjQyNzczNCw5LjgyMDMxMiA4LjU3MDMxMiw5LjI4NzExIDAuNDM5NDU0LDYuMzgyODEyIDIuMTUwMzksMS44MzAwNzggMTAuNzE0ODQyLC0xLjk2Mjg5IDEzLjIxNDg1LC0xMC44OTI1NzkgMTMuOTI3NzMsLTQuMDE5NTMxIDE0LjYyMzA1LDQuMjEyODkxIDAuMDM3MSwwLjE4NTU0NyAxMS4xNDg0MywxMyAyLjY5NTMyLDguNzAzMTI1IDAuMzE0NDUsOS45MzE2NCAtMS41MTE3Miw1LjY2Nzk2OSAtOC41MTU2MiwxMS43NDQxNDEgLTIuNTgyMDQsMi4xMjY5NTMgLTcuODE2NCwzLjk4MjQyMiAtOC4yNjc1OCwwLjIxMjg5IHYgMC43MTI4OTEgbCAtOC45MTk5MiwwLjQ1NzAzMSAtMTUuNDgwNDcsLTEwLjc2OTUzMSAtNS4wMDU4NiwtOS4zNjkxNDEgLTAuMzczMDUsLTguMjYxNzE4IC04Ljc3OTI5NCwwLjE2OTkyMSAyLjMyODEyNSw0Ny4zMzk4NDEgNS45MTAxNTksMC43NzczNSA5LjQxNjAxLC0xMC42NTAzOTQgOS4xNDg0NCwzLjI5MTAxNCAwLjE3MzgzLDE1Ljc0NDE0IDEzLjI0NjA5LDEuNTI5MyAxMS4xMTEzMywtMi42Mjg5MSAwLjk3NDYxLC0xNC4xMjg5IDcuMDg1OTQsLTIuOTk2MSA1LjkyMTg3LDUuOTU3MDMgNi40ODY2MSw0Ljk2ODIgMTIuMzU5MSwtMTQuNzEyMzM2IGMgMCwwIDMuOTEyNjgsLTMuNzUyOTc4IDMuNTIzMTUsLTYuMzU0NjMyIGwgLTMuNDU0NzksLTMuMTE0MTE4IC03Ljg2OTE1LC02LjEwMTU2MyA1LjM4MzkzLC0xMC4zNDg3NzIgOS43NzM0NCwwLjMwNjY0IDYuMzc4OTEsLTAuNzgwMTMzIDEuMTYwMTUsLTEwLjgwNDEzIEwgMTkyLjU4OSw0OC4yOTU0OCAxNzcuNTEzNjYsNDkuMDE5NTMxIDE3Ni4zNjkxMyw0NS40NjY3OTcgMTczLjkyNzcyLDM5LjM2NzE4OCAxODAsMzMuNTYyNSBsIDQuNDY0MjksLTMuNzQ5NDQyIC05LjY5MDg1LC0xMS4wMTIyNzcgLTAuNjg3NSwtMC44ODY3MTkgLTAuNDQ1MzIsLTAuMjc5Mjk2IC01LjUxNTYyLC01LjY3OTY4OCAtMi4xMzU4OCwtMC44MzU2NTkgLTEuODQ4NSwwLjU2MDI2OSAtMi41NjA1NCwyLjQ1NzAzMSAtMC40MTk5MiwwLjE0MDYyNSAtMC45NDE0MSwxLjE2NjAxNSAtNS4xOTUzMSw0Ljk4NjMyOSAtMi4yMjI2NiwwLjE5NzI2NSAtNC41ODU5NCwtMy4wNDY4NzUgeiIKICAgICAgIHRyYW5zZm9ybT0ibWF0cml4KDAuMjY0NTgzMzMsMCwwLDAuMjY0NTgzMzMsLTgxLjE1MTQ4NiwxNjguNTA3MDQpIgogICAgICAgaWQ9InBhdGgzODcyIgogICAgICAgaW5rc2NhcGU6Y29ubmVjdG9yLWN1cnZhdHVyZT0iMCIKICAgICAgIHNvZGlwb2RpOm5vZGV0eXBlcz0iY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjYyIgLz4KICAgIDxwYXRoCiAgICAgICBzdHlsZT0iZmlsbDojZTBlYmZjO2ZpbGwtb3BhY2l0eToxO3N0cm9rZTojNDc3MGM3O3N0cm9rZS13aWR0aDozLjc3OTUyNzY2O3N0cm9rZS1taXRlcmxpbWl0OjQ7c3Ryb2tlLWRhc2hhcnJheTpub25lO3N0cm9rZS1vcGFjaXR5OjEiCiAgICAgICBkPSJtIDI3LjE1NjI1LDQ2LjI0MjE4OCBjIC0xNC4yNTM0MzQsMCAtMjUuNzI4NTE1Niw5Ljk0NTA2NCAtMjUuNzI4NTE1NiwyMi4yOTg4MjggdiA0Mi41NDQ5MjQgYyAwLDEyLjM1Mzc2IDExLjQ3NTA4MTYsMjIuMjk4ODMgMjUuNzI4NTE1NiwyMi4yOTg4MyBoIDI4LjUyMTQ4NCBsIC0wLjk0NTMxMiwxNS4wODk4NCAxLjk2NDg0NCwxLjA3MjI3IEwgNjkuODc2OTUzLDE0MCBsIDkuOTgyNDIyLC02LjYxNTIzIGggMjYuOTEyMTA1IGMgMTQuMjUzNDQsMCAyNS43Mjg1MiwtOS45NDUwNyAyNS43Mjg1MiwtMjIuMjk4ODMgViA2OC41NDEwMTYgYyAwLC0xMi4zNTM3NjQgLTExLjQ3NTA4LC0yMi4yOTg4MjggLTI1LjcyODUyLC0yMi4yOTg4MjggeiIKICAgICAgIHRyYW5zZm9ybT0ibWF0cml4KDAuMjY0NTgzMzMsMCwwLDAuMjY0NTgzMzMsLTgxLjE1MTQ4NiwxNjguNTA3MDQpIgogICAgICAgaWQ9InJlY3QzNzcwIgogICAgICAgaW5rc2NhcGU6Y29ubmVjdG9yLWN1cnZhdHVyZT0iMCIgLz4KICAgIDxwYXRoCiAgICAgICBpbmtzY2FwZTpjb25uZWN0b3ItY3VydmF0dXJlPSIwIgogICAgICAgaWQ9InBhdGgzNzM4IgogICAgICAgZD0ibSAtNzUuNzYwMzc3LDE5Ni43MTAxNCBjIC0wLjE3MDMzNCwtMC4yNzI3NSAtMC4yNzY5MzksLTAuNzE5MjMgLTAuMjM2OTAxLC0wLjk5MjE5IDAuMDY5ODIsLTAuNDc1OTYgMC41NzMzNzgsLTAuNDk5MDkgMTIuMzAwODQxLC0wLjU2NTA4IDEwLjM1MDAxNywtMC4wNTgyIDEyLjI4NjUwMywtMC4wMTAzIDEyLjYwODY3MiwwLjMxMTgzIDAuNDkzMjg0LDAuNDkzMjkgMC40ODI1MjEsMC41ODExMiAtMC4xNDg1MzcsMS4yMTIxOCAtMC41MTM0MDIsMC41MTM0IC0wLjg4MTk0MywwLjUyOTE3IC0xMi4zNzE3NzIsMC41MjkxNyAtMTEuMjkxMjk1LDAgLTExLjg1NzAyMiwtMC4wMjMxIC0xMi4xNTIzMDMsLTAuNDk1OTEgeiBtIDAsLTcuNDA4MzMgYyAtMC4xNzAzMzQsLTAuMjcyNzUgLTAuMjc2OTQsLTAuNzE5MjQgLTAuMjM2OTAyLC0wLjk5MjE5IDAuMDY5NzgsLTAuNDc1NzUgMC41Njk4NTMsLTAuNDk5MjUgMTIuMDg2MTU3LC0wLjU2ODA0IDEzLjQ4MjA5MSwtMC4wODA1IDE0LjE5NjI4LDAuMDA2IDEyLjY3NDgyLDEuNTI2OTcgLTAuNTEzNDAyLDAuNTEzNCAtMC44ODE5NDMsMC41MjkxNiAtMTIuMzcxNzcyLDAuNTI5MTYgLTExLjI5MTI5NSwwIC0xMS44NTcwMjIsLTAuMDIzMSAtMTIuMTUyMzAzLC0wLjQ5NTkgeiIKICAgICAgIHN0eWxlPSJmaWxsOiM0NzcwYzc7c3Ryb2tlLXdpZHRoOjAuMjY0NTgzMzIiCiAgICAgICBzb2RpcG9kaTpub2RldHlwZXM9ImNjY2Njc2NjY2Njc2MiIC8+CiAgICA8cGF0aAogICAgICAgc3R5bGU9ImZpbGw6I2ZmNjYwMDtmaWxsLW9wYWNpdHk6MTtzdHJva2U6IzFhMWExYTtzdHJva2Utd2lkdGg6MC4wNDQ2NDI4NjtzdHJva2UtbWl0ZXJsaW1pdDo0O3N0cm9rZS1kYXNoYXJyYXk6bm9uZSIKICAgICAgIGQ9IiIKICAgICAgIGlkPSJwYXRoMzgyMyIKICAgICAgIGlua3NjYXBlOmNvbm5lY3Rvci1jdXJ2YXR1cmU9IjAiCiAgICAgICB0cmFuc2Zvcm09Im1hdHJpeCgwLjI2NDU4MzMzLDAsMCwwLjI2NDU4MzMzLC04MS4xNTE0ODYsMTY4LjUwNzA0KSIgLz4KICAgIDxwYXRoCiAgICAgICBzdHlsZT0iZmlsbDojZmY2NjAwO2ZpbGwtb3BhY2l0eToxO3N0cm9rZTojMWExYTFhO3N0cm9rZS13aWR0aDowLjA0NDY0Mjg2O3N0cm9rZS1taXRlcmxpbWl0OjQ7c3Ryb2tlLWRhc2hhcnJheTpub25lIgogICAgICAgZD0iIgogICAgICAgaWQ9InBhdGgzODI5IgogICAgICAgaW5rc2NhcGU6Y29ubmVjdG9yLWN1cnZhdHVyZT0iMCIKICAgICAgIHRyYW5zZm9ybT0ibWF0cml4KDAuMjY0NTgzMzMsMCwwLDAuMjY0NTgzMzMsLTgxLjE1MTQ4NiwxNjguNTA3MDQpIiAvPgogICAgPHBhdGgKICAgICAgIHN0eWxlPSJmaWxsOiNmZjY2MDA7ZmlsbC1vcGFjaXR5OjE7c3Ryb2tlOiMxYTFhMWE7c3Ryb2tlLXdpZHRoOjAuMDQ0NjQyODY7c3Ryb2tlLW1pdGVybGltaXQ6NDtzdHJva2UtZGFzaGFycmF5Om5vbmUiCiAgICAgICBkPSIiCiAgICAgICBpZD0icGF0aDM4MzEiCiAgICAgICBpbmtzY2FwZTpjb25uZWN0b3ItY3VydmF0dXJlPSIwIgogICAgICAgdHJhbnNmb3JtPSJtYXRyaXgoMC4yNjQ1ODMzMywwLDAsMC4yNjQ1ODMzMywtODEuMTUxNDg2LDE2OC41MDcwNCkiIC8+CiAgPC9nPgo8L3N2Zz4K";
 
 const _partsOfSpeech = {
-    noun: "NN",
-    "proper noun": "NNP",
-    verb: "VB",
-    adverb: "RB",
-    adjective: "JJ",
-    number: "CD",
+    noun: ["NN", "PRP", "WP"],
+    "proper noun": ["NNP"],
+    verb: ["VB"],
+    adverb: ["RB", "WRB"],
+    adjective: ["JJ"],
+    number: ["CD"],
 };
 
 /**
@@ -66,9 +67,9 @@ class Scratch3TextProcessingBlocks {
             //color1, color2, color3
             blocks: [
                 {
-                    opcode: "splitString",
+                    opcode: "getWordInString",
                     text: formatMessage({
-                        id: "textClassification.splitString",
+                        id: "textClassification.getWordInString",
                         default: "word [NUM] of [TEXT]",
                         description:
                             "Reporter block that returns the nth word of an input string",
@@ -189,30 +190,54 @@ class Scratch3TextProcessingBlocks {
         };
     }
 
-    splitString(args) {
-        let number = Number.parseInt(args.NUM);
-        if (number && number > 0) {
+    getWordInString(args) {
+        let wordIdx = Number.parseInt(args.NUM);
+        if (wordIdx && wordIdx > 0) {
             let splitText = args.TEXT.split(" ");
-            if (number <= splitText.length) return splitText[number - 1];
+            if (wordIdx <= splitText.length) return splitText[wordIdx - 1];
         }
         return "";
     }
 
-    getPartOfSpeech(args) {
-        let words = args.TEXT
-            .replace(/[^\w\s\']|_/g, "")
-            .replace(/\s+/g, " ")
-            .split(" ");
-        var tags = new Tag(words)
-        .initial() // initial dictionary and pattern based tagging
-        .smooth() // further context based smoothing
-        .tags;
-        console.log(words);
-        console.log(tags);
+    getPOSTags(inputText) {
+        let words = inputText
+            .replace(/[^\w\s\'\-]|_/g, "") // don't erase apostrophes and dashes
+            .replace(/\s+/g, " ") // remove extra spaces
+            .split(/[\s']+/); // split on spaces and apostrophes
 
+        let tags = new Tag(words).initial().smooth().tags;
+        return [words, tags];
+    }
+
+    tagMatchesPOS(tag, partOfSpeech) {
+        let posRules = _partsOfSpeech[partOfSpeech];
+
+        for (let j = 0; j < posRules.length; j++) {
+            if (tag.startsWith(posRules[j])) return true;
+        }
+
+        return false;
+    }
+
+    // turn number words into values (e.g. "twenty" to 20)
+    // if it cannot be converted, return original string
+    convertStringToNum(inputText) {
+        let convertToNum = wordsToNumbers(inputText);
+
+        if (convertToNum) return convertToNum;
+        return inputText;
+    }
+
+    getPartOfSpeech(args) {
+        let [words,
+            tags] = this.getPOSTags(args.TEXT);
+
+        // loop through tagged words and return matches
         for (let i = 0; i < tags.length; i++) {
-            let taggedWord = tags[i];
-            if (taggedWord.startsWith(_partsOfSpeech[args.POS])) {
+            let tag = tags[i];
+
+            if (this.tagMatchesPOS(tag, args.POS)) {
+                if (args.POS == "number") return this.convertStringToNum(words[i]);
                 return words[i];
             }
         }
@@ -222,42 +247,43 @@ class Scratch3TextProcessingBlocks {
     }
 
     getPartOfSpeechAll(args) {
-        let words = args.TEXT
-            .replace(/[^\w\s\']|_/g, "")
-            .replace(/\s+/g, " ")
-            .split(" ");
-        var tags = new Tag(words)
-        .initial() // initial dictionary and pattern based tagging
-        .smooth() // further context based smoothing
-        .tags;
-        console.log(words);
-        console.log(tags);
+        let [words,
+            tags] = this.getPOSTags(args.TEXT);
 
         // collect matches
         let matches = [];
 
-        //
-        let partOfSpeech = args.POS.slice(0, -1);
+        // loop through tagged words and return matches
         for (let i = 0; i < tags.length; i++) {
-            let taggedWord = tags[i];
-            if (taggedWord.startsWith(_partsOfSpeech[partOfSpeech])) {
-                matches.push(words[i]);
+            let tag = tags[i];
+            let partOfSpeech = args.POS.slice(0, -1);
+            
+            if (this.tagMatchesPOS(tag, partOfSpeech)) {
+                if (args.POS == "numbers") matches.push(this.convertStringToNum(words[i]));
+                else matches.push(words[i]);
             }
         }
 
-        // no matches
         return matches.join(" ");
     }
 
-    getWordsLike(args) {
-        let lists = this.scratch_vm.getTargetForStage().variables;
-        let l = Object.keys(lists).find((x) => lists[x].name === args.LIST);
+    getTargetWordList(listName) {
+        let allLists = this.scratch_vm.getTargetForStage().variables;
+        let targetList = Object.keys(allLists).find((x) => allLists[x].name === listName);
 
-        // target words can come as a string or list name
-        let targetWords = args.LIST.toLowerCase().split(" ");
-        if (l) {
-            // we've got a list name
-            targetWords = lists[l].value.map((x) => x.toLowerCase());
+        // list name found, return 
+        if (targetList) return allLists[targetList].value.map((x) => x.toLowerCase());
+        
+        // list not found, return ""
+        return "";
+    }
+
+    getWordsLike(args) {
+        // user can past name of list or a string
+        let targetWords = this.getTargetWordList(args.LIST);
+
+        if (targetWords == "") { // this is not a list name, it's a string
+            targetWords = args.LIST.toLowerCase().split(" ");
         }
 
         let splitText = args.TEXT.toLowerCase().split(" ");
@@ -272,14 +298,11 @@ class Scratch3TextProcessingBlocks {
     }
 
     removeWordsLike(args) {
-        let lists = this.scratch_vm.getTargetForStage().variables;
-        let l = Object.keys(lists).find((x) => lists[x].name === args.LIST);
+        // user can past name of list or a string
+        let targetWords = this.getTargetWordList(args.LIST);
 
-        // target words can come as a string or list name
-        let targetWords = args.LIST.toLowerCase().split(" ");
-        if (l) {
-            // we've got a list name
-            targetWords = lists[l].value.map((x) => x.toLowerCase());
+        if (targetWords == "") { // this is not a list name, it's a string
+            targetWords = args.LIST.toLowerCase().split(" ");
         }
 
         let splitText = args.TEXT.split(" ");
@@ -300,7 +323,6 @@ class Scratch3TextProcessingBlocks {
      * @return {array of strings} an array of the list names
      */
     getListNames() {
-        // TODO make sure this updates properly
         this.listNames = this.scratch_vm.getAllVarNamesOfType("list");
         return this.listNames;
     }
