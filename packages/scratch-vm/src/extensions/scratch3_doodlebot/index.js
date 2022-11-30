@@ -153,7 +153,7 @@ class DoodlebotBlocks {
         this.motorEvent = new EventEmitter();
 
         this.sensorValues = {};
-        this.sensorEvent = new EventEmitter();
+        this.dataEvent = new EventEmitter();
         this.last_reading_time = 0;
 
         /**
@@ -946,6 +946,7 @@ class DoodlebotBlocks {
         let robotTestOutput = "";
         console.log("Testing Doodlebot");
         robotTestOutput += "========== Testing Doodlebot ==========\n";
+        // TODO display results in popup
         // connect to doodlebot if not already connected
         if (!this.ifRobotConnected()) {
             await this.connectToBLE();
@@ -954,14 +955,88 @@ class DoodlebotBlocks {
         if (this.ifRobotConnected()) {
             robotTestOutput += "n.n Robot BT connection: pass\n";
 
-            // 1. check battery
+            // 1. check battery and sensors
             console.log("Testing battery");
+            // TODO set time limit on battery ready
             let batteryLevel = await this.readBattery();
             await this.displayText({ TEXT: `Battery level: ${batteryLevel}` });
             if (batteryLevel > 3.2 && batteryLevel < 4.0)
-                robotTestOutput += "n.n Sufficient battery level: pass\n";
+                robotTestOutput += `n.n Battery level: pass, ${batteryLevel}\n`;
             else
-                robotTestOutput += `n.n Sufficient battery level: fail, ${batteryLevel}`;
+                robotTestOutput += `n.n Battery level: fail, ${batteryLevel}\n`;
+
+            // test accelerometer
+            let sensor_dirs = ["x","y","z"];
+            let val = 0;
+            for (let i=0; i<sensor_dirs.length; i++) {
+                val = await this.readAccelerometer({DIR: sensor_dirs[i]});
+                await this.displayText({ TEXT: `Acc.${sensor_dirs[i]}: ${val}` });
+                if (val != -1)
+                    robotTestOutput += `n.n Accelerometer ${sensor_dirs[i]}: pass, ${val}\n`;
+                else
+                    robotTestOutput += `n.n Accelerometer ${sensor_dirs[i]}: fail, ${val}}\n`;
+            }
+            // test magnetometer
+            sensor_dirs = ["roll","pitch","yaw"];
+            for (let i=0; i<sensor_dirs.length; i++) {
+                val = await this.readMagnetometer({DIR: sensor_dirs[i]});
+                await this.displayText({ TEXT: `Mag.${sensor_dirs[i]}: ${val}` });
+                if (val != -1)
+                    robotTestOutput += `n.n Magnetometer ${sensor_dirs[i]}: pass, ${val}\n`;
+                else
+                    robotTestOutput += `n.n Magnetometer ${sensor_dirs[i]}: fail, ${val}}\n`;
+            }
+            // test gyroscope
+            sensor_dirs = ["x","y","z"];
+            for (let i=0; i<sensor_dirs.length; i++) {
+                val = await this.readGyroscope({DIR: sensor_dirs[i]});
+                await this.displayText({ TEXT: `Gyro.${sensor_dirs[i]}: ${val}` });
+                if (val != -1)
+                    robotTestOutput += `n.n Gyroscope ${sensor_dirs[i]}: pass, ${val}\n`;
+                else
+                    robotTestOutput += `n.n Gyroscope ${sensor_dirs[i]}: fail, ${val}}\n`;
+            }
+            // test thermometer
+             val = await this.readTemperature();
+            await this.displayText({ TEXT: `Temp: ${val}` });
+            if (val != -1)
+                robotTestOutput += `n.n Temperature: pass, ${val}\n`;
+            else
+                robotTestOutput += `n.n Temperature: fail, ${val}}\n`;
+            // test distance
+            val = await this.readDistance();
+            await this.displayText({ TEXT: `Dist: ${val}` });
+            if (val != -1)
+                robotTestOutput += `n.n Distance: pass, ${val}\n`;
+            else
+                robotTestOutput += `n.n Distance: fail, ${val}}\n`;
+            // test pressure
+            val = await this.readPressure();
+            await this.displayText({ TEXT: `Pres.: ${val}` });
+            if (val != -1)
+                robotTestOutput += `n.n Pressure: pass, ${val}\n`;
+            else
+                robotTestOutput += `n.n Pressure: fail, ${val}}\n`;
+            // test humidity
+            val = await this.readHumidity();
+            await this.displayText({ TEXT: `Humid.: ${val}` });
+            if (val != -1)
+                robotTestOutput += `n.n Humidity: pass, ${val}\n`;
+            else
+                robotTestOutput += `n.n Humidity: fail, ${val}}\n`;
+            // test bumpers
+            sensor_dirs = ["front","back"];
+            for (let i=0; i<sensor_dirs.length; i++) {
+                val = await this.ifBumperPressed({BUMPER: sensor_dirs[i]});
+                await this.displayText({ TEXT: `Bumper ${sensor_dirs[i]}: ${val}` });
+                if (val != -1)
+                    robotTestOutput += `n.n Bumper ${sensor_dirs[i]}: pass, ${val}\n`;
+                else
+                    robotTestOutput += `n.n Bumper ${sensor_dirs[i]}: fail, ${val}}\n`;
+            }
+
+            // disable sensors
+            this.disableSensor({SENSOR: "all sensors"});
 
             // 2. run through faces --> wait for user to say go
             let facesReady = prompt("Ready to test face display? [y|n]");
@@ -1044,8 +1119,7 @@ class DoodlebotBlocks {
             // TODO test everything beyond this point
 
             // 7. draw flower (large radius)
-            // 8. run through sensors --> reasonable ranges
-            // 9. connect to WiFi --> wait for user to input SSID and PW
+            // 8. connect to WiFi --> wait for user to input SSID and PW*/
         } else {
             robotTestOutput +=
                 "n.n Robot BT connection: fail, aborting tests\n";
@@ -1344,7 +1418,7 @@ class DoodlebotBlocks {
 
             // wait for sensor to return
             return new Promise((resolve) => {
-                this.sensorEvent.once("battery", async (value) => {
+                this.dataEvent.once("battery", async (value) => {
                     // disable the battery
                     console.log("disable battery");
                     await this.sendCommandToRobot("(x,f)", command_pause);
@@ -1389,7 +1463,7 @@ class DoodlebotBlocks {
             }
         }
 
-        return false; // should never get here
+        return -1; // should never get here
     }
     /**
      * Implement whenBumperPressed
@@ -1398,7 +1472,7 @@ class DoodlebotBlocks {
         let bumperSel = args.BUMPER;
 
         if (this._robotUart) {
-            // make sure the bumpers are on
+            // TODO this does not properly enable bumpers
             if (
                 this.sensorValues.hasOwnProperty("bumper.front") &&
                 this.sensorValues.hasOwnProperty("bumper.back")
@@ -1431,20 +1505,6 @@ class DoodlebotBlocks {
                 resolve();
             }, delayInMs);
         });
-    }
-
-    async enableAllSensors(args) {
-        const cmd = args.MODE == "enable" ? "e" : "x";
-        const sensor_pause = 50;
-
-        console.log("all sensors", args.MODE);
-
-        for (const [sensor, sensor_cmd] of Object.entries(_sensors)) {
-            await this.sendCommandToRobot(
-                "(" + cmd + "," + sensor_cmd + ")",
-                sensor_pause
-            );
-        }
     }
 
     /**
@@ -1483,7 +1543,7 @@ class DoodlebotBlocks {
         }
 
         return new Promise((resolve) => {
-            this.sensorEvent.once(sensorName, (value) => {
+            this.dataEvent.once(sensorName, (value) => {
                 resolve();
             });
         });
@@ -1549,11 +1609,11 @@ class DoodlebotBlocks {
                     const sensor = ds[0];
                     switch (sensor) {
                         case "b":
-                            this.sensorEvent.emit(
+                            this.dataEvent.emit(
                                 "bumper.front",
                                 Number.parseInt(ds[1])
                             );
-                            this.sensorEvent.emit(
+                            this.dataEvent.emit(
                                 "bumper.back",
                                 Number.parseInt(ds[2])
                             );
@@ -1565,15 +1625,15 @@ class DoodlebotBlocks {
                             );
                             break;
                         case "l":
-                            this.sensorEvent.emit(
+                            this.dataEvent.emit(
                                 "color.red",
                                 Number.parseFloat(ds[1])
                             );
-                            this.sensorEvent.emit(
+                            this.dataEvent.emit(
                                 "color.green",
                                 Number.parseFloat(ds[2])
                             );
-                            this.sensorEvent.emit(
+                            this.dataEvent.emit(
                                 "color.blue",
                                 Number.parseFloat(ds[3])
                             );
@@ -1587,7 +1647,7 @@ class DoodlebotBlocks {
                             );
                             break;
                         case "d":
-                            this.sensorEvent.emit(
+                            this.dataEvent.emit(
                                 "distance",
                                 Number.parseInt(ds[1])
                             );
@@ -1596,7 +1656,7 @@ class DoodlebotBlocks {
                             );
                             break;
                         case "h":
-                            this.sensorEvent.emit(
+                            this.dataEvent.emit(
                                 "humidity",
                                 Number.parseFloat(ds[1])
                             );
@@ -1605,7 +1665,7 @@ class DoodlebotBlocks {
                             );
                             break;
                         case "t":
-                            this.sensorEvent.emit(
+                            this.dataEvent.emit(
                                 "temperature",
                                 Number.parseFloat(ds[1])
                             );
@@ -1613,7 +1673,7 @@ class DoodlebotBlocks {
                                 Number.parseFloat(ds[1]);
                             break;
                         case "p":
-                            this.sensorEvent.emit(
+                            this.dataEvent.emit(
                                 "pressure",
                                 Number.parseFloat(ds[1])
                             );
@@ -1622,15 +1682,15 @@ class DoodlebotBlocks {
                             );
                             break;
                         case "o":
-                            this.sensorEvent.emit(
+                            this.dataEvent.emit(
                                 "magnetometer.roll",
                                 Number.parseFloat(ds[1])
                             );
-                            this.sensorEvent.emit(
+                            this.dataEvent.emit(
                                 "magnetometer.pitch",
                                 Number.parseFloat(ds[2])
                             );
-                            this.sensorEvent.emit(
+                            this.dataEvent.emit(
                                 "magnetometer.yaw",
                                 Number.parseFloat(ds[3])
                             );
@@ -1642,15 +1702,15 @@ class DoodlebotBlocks {
                                 Number.parseFloat(ds[3]);
                             break;
                         case "g":
-                            this.sensorEvent.emit(
+                            this.dataEvent.emit(
                                 "gyroscope.x",
                                 Number.parseFloat(ds[1])
                             );
-                            this.sensorEvent.emit(
+                            this.dataEvent.emit(
                                 "gyroscope.y",
                                 Number.parseFloat(ds[2])
                             );
-                            this.sensorEvent.emit(
+                            this.dataEvent.emit(
                                 "gyroscope.z",
                                 Number.parseFloat(ds[3])
                             );
@@ -1662,7 +1722,7 @@ class DoodlebotBlocks {
                                 Number.parseFloat(ds[3]);
                             break;
                         case "u":
-                            this.sensorEvent.emit(
+                            this.dataEvent.emit(
                                 "altitude",
                                 Number.parseFloat(ds[1])
                             );
@@ -1671,15 +1731,15 @@ class DoodlebotBlocks {
                             );
                             break;
                         case "x":
-                            this.sensorEvent.emit(
+                            this.dataEvent.emit(
                                 "accelerometer.x",
                                 Number.parseFloat(ds[1])
                             );
-                            this.sensorEvent.emit(
+                            this.dataEvent.emit(
                                 "accelerometer.y",
                                 Number.parseFloat(ds[2])
                             );
-                            this.sensorEvent.emit(
+                            this.dataEvent.emit(
                                 "accelerometer.z",
                                 Number.parseFloat(ds[3])
                             );
@@ -1691,13 +1751,19 @@ class DoodlebotBlocks {
                                 Number.parseFloat(ds[3]);
                             break;
                         case "f":
-                            this.sensorEvent.emit(
+                            this.dataEvent.emit(
                                 "battery",
                                 Number.parseFloat(ds[1])
                             );
                             this.sensorValues["battery"] = Number.parseFloat(
                                 ds[1]
                             ); // TODO constantly monitor battery
+                            break;
+                        case "c":
+                            this.dataEvent.emit(
+                                "ipAddress",
+                                ds[1].substring(7).replace(")","")
+                            );
                             break;
                         default:
                             console.log("Received unrecognized data:", data);
@@ -2055,10 +2121,13 @@ class DoodlebotBlocks {
         );
 
         // wait to receive ip address in response
-        /*return new Promise((resolve) => {
-        this.robotEvent.once('ip', () =>{ 
-            resolve(ipAddress);
-        });*/
+        return new Promise((resolve) => {
+            // TODO have "camera connected" bool, 0.0.0.0 is invalid
+            this.dataEvent.once("ipAddress", async (value) => {
+                window.open("http://" + value);
+                resolve(value);
+            });
+        });
     }
     /**
      * Block for putting items in low power mode
