@@ -46,6 +46,8 @@ const SPEECH_VOLUME = 250;
 const SQUEAK_ID = "SQUEAK";
 
 const command_pause = 100;
+const motor_timeout = 50;
+const sensor_timeout = 2000;
 
 const _drive = ["forward", "backward", "left", "right"];
 const _turns = ["left", "right"];
@@ -175,7 +177,9 @@ class DoodlebotBlocks {
         this.scratch_vm.on("CONNECT_DOODLEBOT", this.connectToBLE.bind(this));
         this.scratch_vm.on("TEST_DOODLEBOT", this.testDoodlebot.bind(this));
 
-        console.log("Version: trying Jan. firmware updates");
+        this.getWifiInfo();
+
+        console.log("Version: Dec. 2022 adding test module");
     }
 
     /**
@@ -478,7 +482,7 @@ class DoodlebotBlocks {
                         SENSOR: {
                             type: ArgumentType.String,
                             menu: "SENSORS",
-                            defaultValue: _sensors[0],
+                            defaultValue: "all sensors",
                         },
                     },
                 },
@@ -494,7 +498,7 @@ class DoodlebotBlocks {
                         SENSOR: {
                             type: ArgumentType.String,
                             menu: "SENSORS",
-                            defaultValue: _sensors[0],
+                            defaultValue: "all_sensors",
                         },
                     },
                 },
@@ -645,17 +649,17 @@ class DoodlebotBlocks {
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
                         id: "doodlebot.setWifi",
-                        default: "connect to [SSID] pw [PASSWORD]",
+                        default: "connect camera to [SSID] pw [PASSWORD]",
                         description: "Command to connect to Wifi network",
                     }),
                     arguments: {
                         SSID: {
                             type: ArgumentType.STRING,
-                            defaultValue: "ssid",
+                            defaultValue: this.ssid,
                         },
                         PASSWORD: {
                             type: ArgumentType.STRING,
-                            defaultValue: "pw",
+                            defaultValue: this.pw,
                         },
                     },
                 },
@@ -750,7 +754,7 @@ class DoodlebotBlocks {
                 },
                 SYSTEMS: {
                     acceptReporters: false,
-                    items: ["all", "motors", "camera"],
+                    items: ["all", "motors", "camera"], // TODO test camera turn on
                 },
                 TURNS: {
                     acceptReports: false,
@@ -837,6 +841,27 @@ class DoodlebotBlocks {
     isConnected() {
         console.log("isConnected status: " + this._robotStatus);
         return this._robotStatus == 2;
+    }
+
+    getWifiInfo() {
+        this.ssid =
+            window.localStorage.getItem("doodlebot_wifi_ssid") || "wifi name";
+        this.pw = window.localStorage.getItem("doodlebot_wifi_pw") || "pw";
+    }
+
+    setWifiInfo() {
+        storedSsid = window.localStorage.getItem("doodlebot_wifi_ssid");
+        storedPw = window.localStorage.getItem("doodlebot_wifi_pw");
+
+        if (this.ssid !== storedSsid && this.pw !== storedPw) {
+            let save = confirm(`Save ${this.ssid} Wifi information for later?`);
+            if (save) {
+                // save working ssid and pw
+                window.localStorage.setItem("doodlebot_wifi_ssid", this.ssid);
+                // save working ssid and pw
+                window.localStorage.setItem("doodlebot_wifi_pw", this.pw);
+            }
+        }
     }
 
     async onDeviceConnected() {
@@ -946,7 +971,6 @@ class DoodlebotBlocks {
         let robotTestOutput = "";
         console.log("Testing Doodlebot");
         robotTestOutput += "========== Testing Doodlebot ==========\n";
-        // TODO display results in popup
         // connect to doodlebot if not already connected
         if (!this.ifRobotConnected()) {
             await this.connectToBLE();
@@ -966,77 +990,77 @@ class DoodlebotBlocks {
                 robotTestOutput += `n.n Battery level: fail, ${batteryLevel}\n`;
 
             // test accelerometer
-            let sensor_dirs = ["x","y","z"];
+            let sensor_dirs = ["x", "y", "z"];
             let val = 0;
-            for (let i=0; i<sensor_dirs.length; i++) {
-                val = await this.readAccelerometer({DIR: sensor_dirs[i]});
-                await this.displayText({ TEXT: `Acc.${sensor_dirs[i]}: ${val}` });
+            for (let i = 0; i < sensor_dirs.length; i++) {
+                val = await this.readAccelerometer({ DIR: sensor_dirs[i] });
+                await this.displayText({
+                    TEXT: `Acc.${sensor_dirs[i]}: ${val}`,
+                });
                 if (val != -1)
                     robotTestOutput += `n.n Accelerometer ${sensor_dirs[i]}: pass, ${val}\n`;
                 else
-                    robotTestOutput += `n.n Accelerometer ${sensor_dirs[i]}: fail, ${val}}\n`;
+                    robotTestOutput += `n.n Accelerometer ${sensor_dirs[i]}: fail, ${val}\n`;
             }
             // test magnetometer
-            sensor_dirs = ["roll","pitch","yaw"];
-            for (let i=0; i<sensor_dirs.length; i++) {
-                val = await this.readMagnetometer({DIR: sensor_dirs[i]});
-                await this.displayText({ TEXT: `Mag.${sensor_dirs[i]}: ${val}` });
+            sensor_dirs = ["roll", "pitch", "yaw"];
+            for (let i = 0; i < sensor_dirs.length; i++) {
+                val = await this.readMagnetometer({ DIR: sensor_dirs[i] });
+                await this.displayText({
+                    TEXT: `Mag.${sensor_dirs[i]}: ${val}`,
+                });
                 if (val != -1)
                     robotTestOutput += `n.n Magnetometer ${sensor_dirs[i]}: pass, ${val}\n`;
                 else
-                    robotTestOutput += `n.n Magnetometer ${sensor_dirs[i]}: fail, ${val}}\n`;
+                    robotTestOutput += `n.n Magnetometer ${sensor_dirs[i]}: fail, ${val}\n`;
             }
             // test gyroscope
-            sensor_dirs = ["x","y","z"];
-            for (let i=0; i<sensor_dirs.length; i++) {
-                val = await this.readGyroscope({DIR: sensor_dirs[i]});
-                await this.displayText({ TEXT: `Gyro.${sensor_dirs[i]}: ${val}` });
+            sensor_dirs = ["x", "y", "z"];
+            for (let i = 0; i < sensor_dirs.length; i++) {
+                val = await this.readGyroscope({ DIR: sensor_dirs[i] });
+                await this.displayText({
+                    TEXT: `Gyro.${sensor_dirs[i]}: ${val}`,
+                });
                 if (val != -1)
                     robotTestOutput += `n.n Gyroscope ${sensor_dirs[i]}: pass, ${val}\n`;
                 else
-                    robotTestOutput += `n.n Gyroscope ${sensor_dirs[i]}: fail, ${val}}\n`;
+                    robotTestOutput += `n.n Gyroscope ${sensor_dirs[i]}: fail, ${val}\n`;
             }
             // test thermometer
-             val = await this.readTemperature();
+            val = await this.readTemperature();
             await this.displayText({ TEXT: `Temp: ${val}` });
-            if (val != -1)
-                robotTestOutput += `n.n Temperature: pass, ${val}\n`;
-            else
-                robotTestOutput += `n.n Temperature: fail, ${val}}\n`;
+            if (val != -1) robotTestOutput += `n.n Temperature: pass, ${val}\n`;
+            else robotTestOutput += `n.n Temperature: fail, ${val}\n`;
             // test distance
             val = await this.readDistance();
             await this.displayText({ TEXT: `Dist: ${val}` });
-            if (val != -1)
-                robotTestOutput += `n.n Distance: pass, ${val}\n`;
-            else
-                robotTestOutput += `n.n Distance: fail, ${val}}\n`;
+            if (val != -1) robotTestOutput += `n.n Distance: pass, ${val}\n`;
+            else robotTestOutput += `n.n Distance: fail, ${val}\n`;
             // test pressure
             val = await this.readPressure();
             await this.displayText({ TEXT: `Pres.: ${val}` });
-            if (val != -1)
-                robotTestOutput += `n.n Pressure: pass, ${val}\n`;
-            else
-                robotTestOutput += `n.n Pressure: fail, ${val}}\n`;
+            if (val != -1) robotTestOutput += `n.n Pressure: pass, ${val}\n`;
+            else robotTestOutput += `n.n Pressure: fail, ${val}\n`;
             // test humidity
             val = await this.readHumidity();
             await this.displayText({ TEXT: `Humid.: ${val}` });
-            if (val != -1)
-                robotTestOutput += `n.n Humidity: pass, ${val}\n`;
-            else
-                robotTestOutput += `n.n Humidity: fail, ${val}}\n`;
+            if (val != -1) robotTestOutput += `n.n Humidity: pass, ${val}\n`;
+            else robotTestOutput += `n.n Humidity: fail, ${val}\n`;
             // test bumpers
-            sensor_dirs = ["front","back"];
-            for (let i=0; i<sensor_dirs.length; i++) {
-                val = await this.ifBumperPressed({BUMPER: sensor_dirs[i]});
-                await this.displayText({ TEXT: `Bumper ${sensor_dirs[i]}: ${val}` });
+            sensor_dirs = ["front", "back"];
+            for (let i = 0; i < sensor_dirs.length; i++) {
+                val = await this.ifBumperPressed({ BUMPER: sensor_dirs[i] });
+                await this.displayText({
+                    TEXT: `Bumper ${sensor_dirs[i]}: ${val}`,
+                });
                 if (val != -1)
                     robotTestOutput += `n.n Bumper ${sensor_dirs[i]}: pass, ${val}\n`;
                 else
-                    robotTestOutput += `n.n Bumper ${sensor_dirs[i]}: fail, ${val}}\n`;
+                    robotTestOutput += `n.n Bumper ${sensor_dirs[i]}: fail, ${val}\n`;
             }
 
             // disable sensors
-            this.disableSensor({SENSOR: "all sensors"});
+            this.disableSensor({ SENSOR: "all sensors" });
 
             // 2. run through faces --> wait for user to say go
             let facesReady = prompt("Ready to test face display? [y|n]");
@@ -1057,9 +1081,7 @@ class DoodlebotBlocks {
                 } else {
                     robotTestOutput += `n.n Face animations: fail, user indicated error\n`;
                 }
-            } else {
-                robotTestOutput += `n.n Face animations: N/A`;
-            }
+            } else robotTestOutput += `n.n Face animations: N/A\n`;
 
             // 3. display text
             await this.displayText({ TEXT: "pw: prg" });
@@ -1069,7 +1091,7 @@ class DoodlebotBlocks {
             if (displayCorrect.toLowerCase() == "prg") {
                 robotTestOutput += `n.n Display text: pass\n`;
             } else {
-                robotTestOutput += `n.n Face animations: fail, user indicated error\n`;
+                robotTestOutput += `n.n Display text: fail, user indicated error\n`;
             }
 
             // 4. draw square 1 (straight line, turn in place)
@@ -1077,7 +1099,7 @@ class DoodlebotBlocks {
                 "Drawing colocated squares, ready? [y|n]"
             );
             if (drivingReady.toLowerCase() == "y") {
-                await this.movePen({DIR: "down"});
+                await this.movePen({ DIR: "down" });
                 for (let i = 0; i < 2; i++) {
                     await this.displayText({ TEXT: `Square ${i + 1}` });
                     for (let j = 0; j < 4; j++) {
@@ -1085,7 +1107,7 @@ class DoodlebotBlocks {
                         await this.turn({ DIR: "left", NUM: "90" });
                     }
                 }
-                await this.movePen({DIR: "up"});
+                await this.movePen({ DIR: "up" });
 
                 let drivingCorrect = prompt(
                     "Did squares draw correctly? [y|n]"
@@ -1095,17 +1117,21 @@ class DoodlebotBlocks {
                 } else {
                     robotTestOutput += `n.n Square drawing: fail, user indicated error\n`;
                 }
-            }
+            } else robotTestOutput += `n.n Square drawing: N/A\n`;
 
             // 6. draw small circle (small radius)
             drivingReady = prompt("Drawing two small circles, ready? [y|n]");
             if (drivingReady.toLowerCase() == "y") {
-                await this.movePen({DIR: "down"});                
+                await this.movePen({ DIR: "down" });
                 for (let i = 0; i < 2; i++) {
-                    await this.displayText({ TEXT: `Small circle ${i+1}` });
-                    await this.turnArc({ DIR: "right", RAD: `${1 + 0.5*i}`, NUM: "360" });
+                    await this.displayText({ TEXT: `Small circle ${i + 1}` });
+                    await this.turnArc({
+                        DIR: "right",
+                        RAD: `${1 + 0.5 * i}`,
+                        NUM: "360",
+                    });
                 }
-                await this.movePen({DIR: "up"});
+                await this.movePen({ DIR: "up" });
 
                 let drivingCorrect = prompt(
                     "Did small circle draw correctly? [y|n]"
@@ -1115,17 +1141,58 @@ class DoodlebotBlocks {
                 } else {
                     robotTestOutput += `n.n Small circle drawing: fail, user indicated error\n`;
                 }
-            }
-            // TODO test everything beyond this point
+            } else robotTestOutput += `n.n Small circle drawing: N/A\n`;
 
-            // 7. draw flower (large radius)
-            // 8. connect to WiFi --> wait for user to input SSID and PW*/
+            // 7. draw flower (large radius arcs)
+            drivingReady = prompt("Drawing a flower, ready? [y|n]");
+            if (drivingReady.toLowerCase() == "y") {
+                await this.movePen({ DIR: "down" });
+                await this.displayText({ TEXT: `Flower` });
+                for (let i = 0; i < 5; i++) {
+                    await this.turnArc({
+                        DIR: "left",
+                        RAD: `5`,
+                        NUM: "90",
+                    });
+                    await this.turn({
+                        DIR: "left",
+                        NUM: "90",
+                    });
+                    await this.turnArc({
+                        DIR: "left",
+                        RAD: `5`,
+                        NUM: "90",
+                    });
+                    await this.turn({
+                        DIR: "left",
+                        NUM: "15",
+                    });
+                }
+                await this.movePen({ DIR: "up" });
+
+                let drivingCorrect = prompt(
+                    "Did flowewr draw correctly? [y|n]"
+                );
+                if (drivingCorrect.toLowerCase() == "y") {
+                    robotTestOutput += `n.n Flower drawing: pass\n`;
+                } else {
+                    robotTestOutput += `n.n Flower drawing: fail, user indicated error\n`;
+                }
+            } else robotTestOutput += `n.n Flower drawing: N/A\n`;
+
+            // 8. connect to WiFi --> wait for user to input SSID and PW
+            let ssid = prompt("Wifi Camera test\nEnter Wifi name:", this.ssid);
+            let pw = prompt(`Wifi Camera test\nEnter ${ssid} Wifi password`, this.pw);
+            let ip = await this.connectToWifi({SSID: ssid, PW: pw});
+            if (ip) robotTestOutput += `n.n Wifi camera connect: pass, ${ip}\n`;
+            else robotTestOutput += `n.n Wifi camera connect: fail, no valid IP address received\n`;
         } else {
             robotTestOutput +=
                 "n.n Robot BT connection: fail, aborting tests\n";
         }
         // 10. report results
         console.log(robotTestOutput);
+        alert(robotTestOutput); 
     }
 
     /**
@@ -1185,17 +1252,13 @@ class DoodlebotBlocks {
     async speakText(args, util) {
         // Cast input to string
         const words = Cast.toString(args.TEXT);
-        const locale = "cmn-CN";
-
         const state = this._getState(util.target);
-
-        const gender = this.VOICE_INFO[state.voiceId].gender;
         const playbackRate = this.VOICE_INFO[state.voiceId].playbackRate;
 
         // Build up URL
         let path = `${SERVER_HOST}/synth`;
-        path += `?locale=${locale}`;
-        path += `&gender=${gender}`;
+        path += `?locale=cmn-CN`;
+        path += `&gender=female`;
         path += `&text=${encodeURIComponent(words.substring(0, 128))}`;
         // Perform HTTP request to get audio file
         return new Promise((resolve) => {
@@ -1542,11 +1605,13 @@ class DoodlebotBlocks {
             sensorName = "magnetometer.roll";
         }
 
-        return new Promise((resolve) => {
+        let sensorReading = new Promise((resolve) => {
             this.dataEvent.once(sensorName, (value) => {
                 resolve();
             });
         });
+
+        return this.timeboundPromise(sensorReading, sensor_timeout); 
     }
 
     /**
@@ -1762,7 +1827,7 @@ class DoodlebotBlocks {
                         case "c":
                             this.dataEvent.emit(
                                 "ipAddress",
-                                ds[1].substring(7).replace(")","")
+                                ds[1].substring(7).replace(")", "").trim()
                             );
                             break;
                         default:
@@ -2026,11 +2091,12 @@ class DoodlebotBlocks {
         );
 
         // wait for the motor command to finish executing
-        return new Promise((resolve) => {
+        let motorFinish = new Promise((resolve) => {
             this.motorEvent.once("stop", () => {
                 resolve();
             });
         });
+        return this.timeboundPromise(motorFinish, motor_timeout * args.NUM); 
     }
     async turn(args) {
         console.log("turn command: " + args.DIR + " " + args.NUM + " degrees");
@@ -2045,12 +2111,13 @@ class DoodlebotBlocks {
             command_pause
         );
 
-        // wait for the motor command to finish executing
-        return new Promise((resolve) => {
-            this.motorEvent.once("stop", () => {
-                resolve();
-            });
-        });
+                // wait for the motor command to finish executing
+                let motorFinish = new Promise((resolve) => {
+                    this.motorEvent.once("stop", () => {
+                        resolve();
+                    });
+                });
+                return this.timeboundPromise(motorFinish, motor_timeout * args.NUM); 
     }
     async turnArc(args) {
         console.log(
@@ -2074,11 +2141,12 @@ class DoodlebotBlocks {
         );
 
         // wait for the motor command to finish executing
-        return new Promise((resolve) => {
+        let motorFinish = new Promise((resolve) => {
             this.motorEvent.once("stop", () => {
                 resolve();
             });
         });
+        return this.timeboundPromise(motorFinish, motor_timeout * args.NUM); 
     }
     /**
      * For moving the pen
@@ -2106,28 +2174,81 @@ class DoodlebotBlocks {
     ifRobotConnected(args) {
         return this._robotStatus == 2;
     }
+
+    timeboundPromise(prom, time) {
+        return Promise.race([
+            prom,
+            new Promise((_r, rej) =>
+                setTimeout(() => {
+                    console.log(`Timeout reached`);
+                    _r();
+                }, time)
+            ),
+        ]);
+    }
+
+    async waitForIpAddress() {
+        return new Promise((resolve) => {
+            // TODO decide if I want this to be "once" or always listening
+            this.dataEvent.once("ipAddress", async (value) => {
+                if (value !== "0.0.0.0") {
+                    // save wifi info in local storage
+                    this.setWifiInfo();
+
+                    // store ip address
+                    this.sensorValues["camera"] = value;
+
+                    // open window
+                    window.open("http://" + value);
+
+                    resolve(value);
+                } else {
+                    console.log("Received ip address 0.0.0.0");
+                }
+                resolve();
+            });
+        });
+    }
+
     /**
      * Block for connecting to Wifi network TODO return or store ip address
      */
     async connectToWifi(args) {
-        let ssid = args.SSID;
-        let pw = args.PASSWORD;
+        if (!this.ifRobotConnected()) return;
 
-        console.log("connecting to Wifi");
-        //send message
+        // if we already have ipaddress, open page
+        let ipAddress = this.sensorValues["camera"];
+        if (ipAddress) {
+            console.log(`Already have ip address ${ipAddress} stored`);
+            window.open("http://" + ipAddress);
+            return;
+        }
+        console.log(`No ipAddress stored`);
+
+        // make sure camera is on
+        // TODO test that this actually turns camera back on
+        await this.sendCommandToRobot("(l)", command_pause);
+        console.log(`Turning camera on with (l) command`);
+
+        // try to get ipAddress with g
+        await this.sendCommandToRobot("(g)", command_pause);
+        let ipAddressEvent = this.waitForIpAddress();
+        ipAddress = await this.timeboundPromise(ipAddressEvent, 5000);
+        if (ipAddress) {
+            console.log(`Got ip address ${ipAddress} from g command`);
+            return;
+        }
+
+        // connect to Wifi using ssid and password
+        this.ssid = args.SSID;
+        this.pw = args.PASSWORD;
         await this.sendCommandToRobot(
-            "(k," + ssid + "," + pw + ")",
+            "(k," + this.ssid + "," + this.pw + ")",
             command_pause
         );
-
-        // wait to receive ip address in response
-        return new Promise((resolve) => {
-            // TODO have "camera connected" bool, 0.0.0.0 is invalid
-            this.dataEvent.once("ipAddress", async (value) => {
-                window.open("http://" + value);
-                resolve(value);
-            });
-        });
+        
+        ipAddress = await this.timeboundPromise(ipAddressEvent, 5000);
+        return ipAddress;
     }
     /**
      * Block for putting items in low power mode
@@ -2142,6 +2263,7 @@ class DoodlebotBlocks {
             system_cmd = "m";
         } else if (system == "camera") {
             system_cmd = "c";
+            delete this.sensorValues["camera"];
         }
 
         //send message
@@ -2172,12 +2294,13 @@ class DoodlebotBlocks {
         // send message
         await this.sendCommandToRobot(command, command_pause);
 
-        // wait for the motor command to finish executing
-        return new Promise((resolve) => {
-            this.motorEvent.once("stop", () => {
-                resolve();
-            });
-        });
+                // wait for the motor command to finish executing
+                let motorFinish = new Promise((resolve) => {
+                    this.motorEvent.once("stop", () => {
+                        resolve();
+                    });
+                });
+                return this.timeboundPromise(motorFinish, motor_timeout * args.NUM); 
     }
 }
 module.exports = DoodlebotBlocks;
