@@ -12,7 +12,7 @@
   const container = activeClass;
   const tableListDropdown = activeClass, tableBox = activeClass, tableValueInput = activeClass;
 
-  const tableNames = Object.keys(extension.tables);
+  const tableNames = Object.keys(extension.runner.tables);
   let selected: string = tableNames.length > 0 ? tableNames[0] : "";
 
   type InputChangeEvent = Event & { currentTarget: EventTarget & HTMLInputElement};
@@ -58,7 +58,7 @@
 <div class:container style:width="360px" style:background-color={color.ui.white} style:color={color.text.primary}>
   <div>
     <select bind:value={selected} class:tableListDropdown>
-      {#each Object.keys(extension.tables) as name}
+      {#each Object.keys(extension.runner.tables) as name}
         <option value={name}>
           {name}
         </option>
@@ -70,13 +70,13 @@
       <thead>
         <tr>
           <th></th>
-          {#each [...Array(extension.tables[selected][0].length)] as _, i}
+          {#each [...Array(extension.runner.tables[selected][0].length)] as _, i}
             <th>{i + 1}</th>
           {/each}
       </tr>
       </thead>
       <tbody>
-        {#each extension.tables[selected] as row, i}
+        {#each extension.runner.tables[selected] as row, i}
           <tr>
             <th>{i + 1}</th>
             {#each row as value, j}

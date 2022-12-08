@@ -570,6 +570,9 @@ const serialize = function (runtime, targetId) {
     // Save training data for the text classifier model
     obj.textModel = runtime.modelData ? runtime.modelData.classifierData : undefined;
 
+    // Save table data for next use
+    obj.tableData = runtime.tables ? runtime.tables : undefined;
+
     // Assemble metadata
     const meta = Object.create(null);
     meta.semver = '3.0.0';
@@ -1264,6 +1267,11 @@ const deserialize = function (json, runtime, zip, isSingleSprite) {
                 runtime.modelData.classifierData[label].push(example);
             }
         }
+    }
+
+    // Unpack table data for table extension
+    if (json.hasOwnProperty("tableData")) {
+        runtime.tableData = json.tableData;
     }
 
     // Store the origin field (e.g. project originated at CSFirst) so that we can save it again.
