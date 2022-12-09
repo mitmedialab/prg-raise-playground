@@ -305,6 +305,7 @@ const GUIComponent = props => {
                                             id="gui.gui.soundsTab"
                                         />
                                     </Tab>
+                                    {/* Commenting out Text Classifier Auxiliary UI per ProjectSTEM's request - Parker, 12/9/22
                                     <Tab
                                         className={tabClassNames.tab}
                                         onClick={onActivateProgressTab}
@@ -319,6 +320,7 @@ const GUIComponent = props => {
                                             id="gui.gui.progressTab"
                                         />
                                     </Tab>
+                                    */}
                                     {/*<Tab*/}
                                     {/*    className={tabClassNames.tab}*/}
                                     {/*    onClick={onActivateModelsTab}*/}
@@ -370,9 +372,11 @@ const GUIComponent = props => {
                                 <TabPanel className={tabClassNames.tabPanel}>
                                     {soundsTabVisible ? <SoundTab vm={vm} /> : null}
                                 </TabPanel>
+                                {/*
                                 <TabPanel className={tabClassNames.tabPanel}>
                                     {progressTabVisible ? <ProgressTab vm={vm} /> : null}
                                 </TabPanel>
+                                */}
                                 {/*<TabPanel className={tabClassNames.tabPanel}>*/}
                                 {/*    {modelsTabVisible ? <ModelsTab vm={vm} /> : null}*/}
                                 {/*</TabPanel>*/}

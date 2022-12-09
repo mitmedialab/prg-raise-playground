@@ -776,6 +776,7 @@ Then, after clicking 'OK', you'll be prompted to select the folder to save to.`;
                         </div>
                     </div>
                     <Divider className={classNames(styles.divider)} />
+                    {/** Commenting out Text Classifier Auxiliary UI per ProjectSTEM's request - Parker, 12/9/22
                     <img
                                     className={styles.helpIcon}
                                     src={helpIcon}
@@ -812,6 +813,7 @@ Then, after clicking 'OK', you'll be prompted to select the folder to save to.`;
                         </div>) :
                         null
                     }
+                    */}
                     <a
                         className={classNames(styles.menuBarItem, styles.hoverable, styles.blankLink)}
                         href="https://teachablemachine.withgoogle.com/train"
