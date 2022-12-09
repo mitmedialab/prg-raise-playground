@@ -12,9 +12,9 @@ import Renderer from 'scratch-render';
 
 import Blocks from '../../containers/blocks.jsx';
 import CostumeTab from '../../containers/costume-tab.jsx';
-import ModelsTab from '../../containers/models-tab.jsx';
 import TargetPane from '../../containers/target-pane.jsx';
 import SoundTab from '../../containers/sound-tab.jsx';
+import ProgressTab from '../../containers/progress-tab.jsx';
 import StageWrapper from '../../containers/stage-wrapper.jsx';
 import Loader from '../loader/loader.jsx';
 import Box from '../box/box.jsx';
@@ -31,6 +31,8 @@ import Alerts from '../../containers/alerts.jsx';
 import DragLayer from '../../containers/drag-layer.jsx';
 import ConnectionModal from '../../containers/connection-modal.jsx';
 import TelemetryModal from '../telemetry-modal/telemetry-modal.jsx';
+import TextModelModal from '../../containers/model-modal.jsx';
+import ClassifierModelModal from '../../containers/classifier-model-modal.jsx'
 
 import layout, {STAGE_SIZE_MODES} from '../../lib/layout-constants';
 import {resolveStageSize} from '../../lib/screen-utils';
@@ -40,7 +42,7 @@ import addExtensionIcon from './icon--extensions.svg';
 import codeIcon from './icon--code.svg';
 import costumesIcon from './icon--costumes.svg';
 import soundsIcon from './icon--sounds.svg';
-import modelsIcon from './icon--sounds.svg';
+import progressIcon from './blue-progress-bar.svg';
 
 const messages = defineMessages({
     addExtension: {
@@ -90,7 +92,6 @@ const GUIComponent = props => {
         isShared,
         loading,
         logo,
-        modelsTabVisible,
         renderLogin,
         onClickAccountNav,
         onCloseAccountNav,
@@ -99,7 +100,7 @@ const GUIComponent = props => {
         onToggleLoginOpen,
         onActivateCostumesTab,
         onActivateSoundsTab,
-        onActivateModelsTab,
+        onActivateProgressTab,
         onActivateTab,
         onClickLogo,
         onExtensionButtonClick,
@@ -114,10 +115,13 @@ const GUIComponent = props => {
         onTelemetryModalOptOut,
         showComingSoon,
         soundsTabVisible,
+        progressTabVisible,
         stageSizeMode,
         targetIsStage,
         telemetryModalVisible,
         tipsLibraryVisible,
+        textModelModalVisible,
+        classifierModelModalVisible,
         vm,
         ...componentProps
     } = omit(props, 'dispatch');
@@ -179,6 +183,16 @@ const GUIComponent = props => {
                 )}
                 {tipsLibraryVisible ? (
                     <TipsLibrary />
+                ) : null}
+                {textModelModalVisible ? (
+                    <TextModelModal
+                        vm={vm}
+                    />
+                ) : null}
+                {classifierModelModalVisible ? (
+                    <ClassifierModelModal
+                        vm={vm}
+                    />
                 ) : null}
                 {cardsVisible ? (
                     <Cards />
@@ -291,6 +305,22 @@ const GUIComponent = props => {
                                             id="gui.gui.soundsTab"
                                         />
                                     </Tab>
+                                    {/* Commenting out Text Classifier Auxiliary UI per ProjectSTEM's request - Parker, 12/9/22
+                                    <Tab
+                                        className={tabClassNames.tab}
+                                        onClick={onActivateProgressTab}
+                                    >
+                                        <img
+                                            draggable={false}
+                                            src={progressIcon}
+                                        />
+                                        <FormattedMessage
+                                            defaultMessage="Progress"
+                                            description="Button to get to the progress panel"
+                                            id="gui.gui.progressTab"
+                                        />
+                                    </Tab>
+                                    */}
                                     {/*<Tab*/}
                                     {/*    className={tabClassNames.tab}*/}
                                     {/*    onClick={onActivateModelsTab}*/}
@@ -342,6 +372,11 @@ const GUIComponent = props => {
                                 <TabPanel className={tabClassNames.tabPanel}>
                                     {soundsTabVisible ? <SoundTab vm={vm} /> : null}
                                 </TabPanel>
+                                {/*
+                                <TabPanel className={tabClassNames.tabPanel}>
+                                    {progressTabVisible ? <ProgressTab vm={vm} /> : null}
+                                </TabPanel>
+                                */}
                                 {/*<TabPanel className={tabClassNames.tabPanel}>*/}
                                 {/*    {modelsTabVisible ? <ModelsTab vm={vm} /> : null}*/}
                                 {/*</TabPanel>*/}
@@ -408,6 +443,7 @@ GUIComponent.propTypes = {
     logo: PropTypes.string,
     onActivateCostumesTab: PropTypes.func,
     onActivateSoundsTab: PropTypes.func,
+    onActivateProgressTab: PropTypes.func,
     onActivateTab: PropTypes.func,
     onClickAccountNav: PropTypes.func,
     onClickLogo: PropTypes.func,
@@ -428,10 +464,13 @@ GUIComponent.propTypes = {
     renderLogin: PropTypes.func,
     showComingSoon: PropTypes.bool,
     soundsTabVisible: PropTypes.bool,
+    progressTabVisible: PropTypes.bool,
     stageSizeMode: PropTypes.oneOf(Object.keys(STAGE_SIZE_MODES)),
     targetIsStage: PropTypes.bool,
     telemetryModalVisible: PropTypes.bool,
     tipsLibraryVisible: PropTypes.bool,
+    textModelModalVisible: PropTypes.bool,
+    classifierModelModalVisible: PropTypes.bool,
     vm: PropTypes.instanceOf(VM).isRequired
 };
 GUIComponent.defaultProps = {
@@ -461,5 +500,5 @@ const mapStateToProps = state => ({
 });
 
 export default injectIntl(connect(
-)(GUIComponent));
     mapStateToProps
+)(GUIComponent));
