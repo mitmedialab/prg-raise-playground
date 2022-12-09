@@ -304,15 +304,7 @@ class MenuBar extends React.Component {
         }
         }
     }
-    doAuth(callback) {
-        window.gapi.auth.authorize({
-            client_id: CLIENT_ID,
-            scope: DRIVE_SCOPE,
-            immediate: false
-            },
-            callback
-        );
-    }
+    
     handleClickLoadProjectLink() {
         let templateLink = "https://www.dropbox.com/s/o8jegh940y7f7qc/SimpleProject.sb3";
         let url = window.prompt("Enter project url (e.g. from Dropbox or Github)", templateLink);
@@ -331,52 +323,7 @@ class MenuBar extends React.Component {
         }
         this.props.onRequestCloseFile();
     }
-    handleClickDriveSave() {
-        // make sure user has logged into Google Drive
-        if (!this.state.authToken) {
-            this.doAuth(response => {
-                if (response.access_token) {
-                    this.handleDriveAuthenticate(response.access_token);
-                    this.handleClickDriveSave();
-                }
-            });
-            this.props.onRequestCloseFile();
-            return;
-        }
-        // check if we have already created file
-        let fileId = this.state.fileId;
-        if (!fileId) {
-            if (this.isGoogleDriveReady()) {
-                let fileName = prompt("Name your project", this.props.projectTitle);
-                if (fileName != null && fileName != "") {
-                    window.gapi.client.drive.files.create({
-                        name: fileName + ".sb3",
-                        mimeType: "application/x-zip"
-                    }).then((response) => {
-                        if (response.status == 200) {
-                            this.setState({
-                                fileId: response.result.id
-                            });
-                            this.handleClickDriveSave();
-                        }
-                    });
-                }
-            }
-            this.props.onRequestCloseFile();
-            return;
-        }
-        const url = "https://www.googleapis.com/upload/drive/v3/files/" + fileId + "?uploadType=media;" + this.state.authToken;
-        this.props.vm.uploadProjectToURL(url);
-        
-        // show alert that we are saving project
-        window.alert("Project saved");
-        this.props.onRequestCloseFile();
-    }
-    handleDriveAuthenticate(token) {
-        this.setState({
-            authToken: token
-        });
-    }
+    
     getProjectTitleFromFilename (fileInputFilename) {
         if (!fileInputFilename) return '';
         // only parse title with valid scratch project extensions
@@ -386,52 +333,6 @@ class MenuBar extends React.Component {
         if (!matches) return '';
         return matches[1].substring(0, 100); // truncate project title to max 100 chars
     }
-    handleDriveProjectSelect(data) {
-        console.log(data);
-        if (data.docs) {
-            const fileId = data.docs[0].id;
-            const url = "https://www.googleapis.com/drive/v3/files/" + fileId + "/?alt=media;" + this.state.authToken;
-            
-            const readyToReplaceProject = this.props.confirmReadyToReplaceProject(
-                this.props.intl.formatMessage(sharedMessages.replaceProjectWarning)
-            );
-            if (readyToReplaceProject) {
-                this.props.vm.downloadProjectFromURLDirect(url);
-                
-                this.props.onReceivedProjectTitle(this.getProjectTitleFromFilename(data.docs[0].name));
-                
-                // if project does not have a parentId, it's a shared project and you cannot save
-                if (data.docs[0].parentId !== undefined) {
-                    this.setState({
-                        fileId: fileId
-                    });
-                } else {
-                    this.setState({
-                        fileId: null
-                    });
-                }
-            }
-        }
-        this.props.onRequestCloseFile();
-    }
-    isGoogleReady() {
-        return !!window.gapi;
-    }
-    
-    isGoogleAuthReady() {
-        return !!window.gapi.auth;
-    }
-    isGoogleDriveReady() {
-        return !!window.gapi.client.drive;
-    }
-    
-    onApiLoad() {
-        window.gapi.load('auth');
-        window.gapi.load('client', () => {
-            window.gapi.client.load('drive', 'v3');
-        });
-    }
-
 
     render () {
         const saveNowMessage = (
@@ -535,9 +436,8 @@ class MenuBar extends React.Component {
                                         >
                                             {newProjectMessage}
                                         </MenuItem>
-                                    </MenuSection>
                                     {(this.props.canSave || this.props.canCreateCopy || this.props.canRemix) && (
-                                        <MenuSection>
+                                        <>
                                             {this.props.canSave && (
                                                 <MenuItem onClick={this.handleClickSave}>
                                                     {saveNowMessage}
@@ -553,9 +453,8 @@ class MenuBar extends React.Component {
                                                     {remixMessage}
                                                 </MenuItem>
                                             )}
-                                        </MenuSection>
+                                        </>
                                     )}
-                                    <MenuSection>
                                     <MenuItem
                                             onClick={this.handleClickLoadProjectLink}
                                         >
@@ -565,8 +464,6 @@ class MenuBar extends React.Component {
                                                 id="gui.menuBar.loadFromLink"
                                             />
                                         </MenuItem>
-                                    </MenuSection>
-                                    <MenuSection>
                                         <SB3Downloader>{(className, downloadProjectCallback) => (
                                             <MenuItem
                                                 className={className}
@@ -595,8 +492,6 @@ class MenuBar extends React.Component {
                                                 </MenuItem>
                                             )}
                                         </SBFileUploader>
-                                    </MenuSection>
-                                    <MenuSection>
                                         <MenuItem
                                             onClick={this.handleClickDriveSave}
                                         >
