@@ -302,9 +302,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _steps_talking_13_ask_and_answer_es_png__WEBPACK_IMPORTED_MODULE_144___default = /*#__PURE__*/__webpack_require__.n(_steps_talking_13_ask_and_answer_es_png__WEBPACK_IMPORTED_MODULE_144__);
 // Intro
 
- // Text to Speech
 
 
+// Text to Speech
 
 
 
@@ -313,41 +313,40 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
- // Cartoon Network
 
 
 
+// Cartoon Network
 
 
 
 
 
- // Add sprite
 
- // Animate a name
 
 
 
+// Add sprite
 
 
+// Animate a name
 
- // Make Music
 
 
 
 
 
- // Chase-Game
 
+// Make Music
 
 
 
 
 
 
+// Chase-Game
 
 
- // Clicker-Game (Pop Game)
 
 
 
@@ -355,8 +354,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
- // Animate A Character
 
+// Clicker-Game (Pop Game)
 
 
 
@@ -364,8 +363,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
- // Tell A Story
 
+// Animate A Character
 
 
 
@@ -375,12 +374,11 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
- // Video Sensing
+// Tell A Story
 
 
 
 
- // Make it Fly
 
 
 
@@ -388,12 +386,13 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+// Video Sensing
 
 
 
 
 
- // Pong
+// Make it Fly
 
 
 
@@ -407,7 +406,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
- // Imagine a World
+// Pong
 
 
 
@@ -422,46 +421,71 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+// Imagine a World
 
- // Add a Backdrop
 
- // Add Effects
 
- // Hide and Show
 
- // Switch Costumes
 
- // Change Size
 
- // Spin
 
 
- // Record a Sound
 
 
 
 
 
- // Use Arrow Keys
 
 
- // Glide Around
 
+// Add a Backdrop
 
- // Code a Cartoon
 
+// Add Effects
 
 
+// Hide and Show
 
 
+// Switch Costumes
 
 
+// Change Size
 
 
+// Spin
 
 
- // Talking Tales
 
+// Record a Sound
+
+
+
+
+
+
+// Use Arrow Keys
+
+
+
+// Glide Around
+
+
+
+// Code a Cartoon
+
+
+
+
+
+
+
+
+
+
+
+
+// Talking Tales
 
 
 
