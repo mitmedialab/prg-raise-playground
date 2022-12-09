@@ -15,10 +15,15 @@ Items will be crossed off as they are completed and merged to dev. The merge & r
   - [launchPeripheralConnectionFlow]()  (easy)
   - [terminal]() (easy)
 - [Save/load data per extension]()
+- [Workers]()
 - First class support for other cloud providers (re-order based on feedback from teacher's schools)
   - Dropbox
   - OneDrive
   - Microsoft
+
+# Wishlist
+- Opencv / feature perception object classification and localization extension (maybe 2 seperate extensions)
+- Fly tello using scratch
 
 # Things that'd be awesome to do, but are likely more work than is currently worth it
 - Split every extension into it's own package
