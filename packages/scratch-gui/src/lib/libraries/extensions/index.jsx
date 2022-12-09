@@ -336,7 +336,7 @@ export default [
         featured: true,
         internetConnectionRequired: true
     },
-    /*{
+    {
         name: 'Makey Makey',
         extensionId: 'makeymakey',
         collaborator: 'JoyLabz',
@@ -502,5 +502,5 @@ export default [
             />
         ),
         helpLink: 'https://scratch.mit.edu/vernier'
-    }*/
+    }
 ];
