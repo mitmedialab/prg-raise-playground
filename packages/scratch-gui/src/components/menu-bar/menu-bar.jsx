@@ -595,6 +595,24 @@ Then, after clicking 'OK', you'll be prompted to select the folder to save to.`;
                                             {newProjectMessage}
                                         </MenuItem>
                                     </MenuSection>
+                                    <MenuSection>	                                   
+                                        <MenuItem	                                   
+                                            isRtl={this.props.isRtl}	                                  
+                                            onClick={() => {	                                  
+                                                this.props.vm.sendLastClipToGfy();	                                           
+                                            }}	                                   
+                                        >	                                    
+                                            Upload Clip to Gfycat	                                  
+                                        </MenuItem>	                                  
+                                        <MenuItem	                                  
+                                            isRtl={this.props.isRtl}	                                   
+                                            onClick={() => {	                                    
+                                                this.props.vm.loadLastClipOnGfy();	                                   
+                                            }}	                                   
+                                        >	                                  
+                                            Load Last Uploaded Clip	                                  
+                                        </MenuItem>	                                 
+                                    </MenuSection>
                                     {(this.props.canSave || this.props.canCreateCopy || this.props.canRemix) && (
                                         <MenuSection>
                                             {this.props.canSave && (
@@ -758,6 +776,44 @@ Then, after clicking 'OK', you'll be prompted to select the folder to save to.`;
                         </div>
                     </div>
                     <Divider className={classNames(styles.divider)} />
+                    {/** Commenting out Text Classifier Auxiliary UI per ProjectSTEM's request - Parker, 12/9/22
+                    <img
+                                    className={styles.helpIcon}
+                                    src={helpIcon}
+                                />
+                    <a
+                        className={classNames(styles.menuBarItem, styles.hoverable)}
+                        href="https://docs.google.com/presentation/d/1JFvhBqcBlHy803c2had5akcUGfpO6ghnJl2eVX6TJyM/edit?usp=sharing"
+                        target="_blank"
+                    >
+                        Text Classifier Tutorial
+                    </a>
+                    <Divider className={classNames(styles.divider)} />
+                    <a
+                        className={classNames(styles.menuBarItem, styles.hoverable)}
+                        href="https://docs.google.com/presentation/d/1tdWzwRMUkDoAxyt5QHdJ3AKJcdrRE6aQ8URdVt_R0xk/edit?usp=sharing"
+                        target="_blank"
+                    >
+                        Progress Tab Doc
+                    </a>
+                    {this.props.showTutorials ? (
+                        <div>
+                            <Divider className={classNames(styles.divider)} />
+                            <div
+                                aria-label={this.props.intl.formatMessage(ariaMessages.tutorials)}
+                                className={classNames(styles.menuBarItem, styles.hoverable)}
+                                onClick={this.props.onOpenTipLibrary}
+                            >
+                                <img
+                                    className={styles.helpIcon}
+                                    src={helpIcon}
+                                />
+                                <FormattedMessage {...ariaMessages.tutorials} />
+                            </div>
+                        </div>) :
+                        null
+                    }
+                    */}
                     <a
                         className={classNames(styles.menuBarItem, styles.hoverable, styles.blankLink)}
                         href="https://teachablemachine.withgoogle.com/train"

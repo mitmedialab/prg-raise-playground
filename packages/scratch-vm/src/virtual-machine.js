@@ -85,6 +85,17 @@ class ScratchCanvasRecorder {
         this.video.src = window.URL.createObjectURL(superBuffer);
     }
 
+    toggleRecording() {
+        if (recordButton.textContent === 'Start Recording') {
+            startRecording();
+        } else {
+            stopRecording();
+            recordButton.textContent = 'Start Recording';
+            playButton.disabled = false;
+            downloadButton.disabled = false;
+        }
+    }
+
     // The nested try blocks will be simplified when Chrome 47 moves to Stable
     startRecording() {
         this.startCapturing();

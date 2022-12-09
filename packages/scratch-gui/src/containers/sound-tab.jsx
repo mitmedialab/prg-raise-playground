@@ -33,7 +33,8 @@ import {
 
 import {
     activateTab,
-    COSTUMES_TAB_INDEX
+    COSTUMES_TAB_INDEX,
+    PROGRESS_TAB_INDEX
 } from '../reducers/editor-tab';
 
 import {setRestore} from '../reducers/restore-deletion';
@@ -281,6 +282,7 @@ SoundTab.propTypes = {
     intl: intlShape,
     isRtl: PropTypes.bool,
     onActivateCostumesTab: PropTypes.func.isRequired,
+    onActivateProgressTab: PropTypes.func.isRequired,
     onCloseImporting: PropTypes.func.isRequired,
     onNewSoundFromLibraryClick: PropTypes.func.isRequired,
     onNewSoundFromRecordingClick: PropTypes.func.isRequired,
@@ -314,6 +316,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
     onActivateCostumesTab: () => dispatch(activateTab(COSTUMES_TAB_INDEX)),
+    onActivateProgressTab: () => dispatch(activateTab(PROGRESS_TAB_INDEX)),
     onNewSoundFromLibraryClick: e => {
         e.preventDefault();
         dispatch(openSoundLibrary());

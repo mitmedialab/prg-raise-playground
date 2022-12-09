@@ -8,8 +8,7 @@ import HashParserHOC from '../lib/hash-parser-hoc.jsx';
 import log from '../lib/log.js';
 
 const onClickLogo = () => {
-    window.location = 'https://' +
-        'dancingwithai.github.io';
+    window.location = 'https://raise.mit.edu';
 };
 
 const handleTelemetryModalCancel = () => {
