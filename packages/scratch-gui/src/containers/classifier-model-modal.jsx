@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import bindAll from 'lodash.bindall';
 import ClassifierModelModalComponent from '../components/classifier-modal/classifier-model-modal.jsx';
-import { VM } from 'scratch-vm';
+import VM from 'scratch-vm';
 import {connect} from 'react-redux';
 import {closeClassifierModelModal} from '../reducers/modals';
 import {handleFileUpload} from '../lib/file-uploader.js';
