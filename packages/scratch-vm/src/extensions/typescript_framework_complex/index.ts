@@ -1,6 +1,4 @@
-import { ArgumentType, BlockType } from "../../typescript-support/enums";
-import { Extension } from "../../typescript-support/Extension";
-import { Block, BlockDefinitions, RGBObject, MenuItem, AllText, ButtonBlock } from "../../typescript-support/types";
+import { ArgumentType, BlockType, Block, BlockDefinitions, RGBObject, MenuItem, ButtonBlock, Extension } from "../../typescript-support";
 import addDefinition from "./addDefinition";
 
 type DisplayDetails = {

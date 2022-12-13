@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import bindAll from 'lodash.bindall';
 import TextModelModalComponent from '../components/text-model-modal/model-modal.jsx';
-import VM from 'scratch-vm';
+import { VM } from 'scratch-vm';
 import {connect} from 'react-redux';
 import {closeTextModelModal} from '../reducers/modals';
 

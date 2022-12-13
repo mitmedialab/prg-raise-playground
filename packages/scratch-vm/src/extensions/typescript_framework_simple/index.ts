@@ -1,6 +1,4 @@
-import { ArgumentType, BlockType, Branch, Language } from "../../typescript-support/enums";
-import { Extension } from "../../typescript-support/Extension";
-import { ButtonBlock, Environment } from "../../typescript-support/types";
+import { ArgumentType, BlockType, Language, Extension, ButtonBlock, Environment } from "../../typescript-support/";
 import defineTranslations from "./translations";
 
 type Details = {

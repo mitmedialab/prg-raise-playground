@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import VM from 'scratch-vm';
+import { VM } from 'scratch-vm';
 import {connect} from 'react-redux';
 import SvelteComponent from "../../svelte/Modal.svelte";
 import Modal from '../../containers/modal.jsx';
