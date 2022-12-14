@@ -10,11 +10,14 @@ import autoPreprocess from 'svelte-preprocess';
 import css from 'rollup-plugin-css-only';
 import commonjs from "@rollup/plugin-commonjs";
 import sucrase from '@rollup/plugin-sucrase';
+import alias from '@rollup/plugin-alias';
 
 //const __dirname = path.dirname(fileURLToPath(import.meta.url));
 //console.log(__dirname);
 
 const getBuildDirectory = (dir) => path.join(dir, "build");
+const toNamedDefaultExport = ({ path, name }: { path: string, name: string }) =>
+  `export { default as ${name} } from '${path}';`
 
 const bundleExtension = (dir) => {
 
@@ -24,19 +27,31 @@ const bundleMenuDetails = (dir) => {
 
 }
 
+const FrameworkDirectory = path.resolve(__dirname, "..", "..", "packages", "scratch-vm", "src", "typescript-support");
+
+if (!fs.existsSync(FrameworkDirectory)) throw new Error("Could not find framework directory at specified path");
+
 const bundleUI = async (dir) => {
   const svelteFiles = glob.sync(`${dir}/*.svelte`);
 
-  const exportAllUI = svelteFiles
+  const filesToBundle = svelteFiles
     .map(file => ({ path: file, name: path.basename(file).replace(path.extname(file), "") }))
-    .map(({ path, name }) => `export { default as ${name} } from '${path}';`)
-    .join("\n");
+    .map(toNamedDefaultExport);
+
+  const indexFile = path.join(dir, "index.ts");
+
+  filesToBundle.push(toNamedDefaultExport({ path: indexFile, name: "Extension" }));
 
   const generatedFileName = "ui.js";
   const generatedFilePath = path.join(dir, generatedFileName);
-  fs.writeFileSync(generatedFilePath, exportAllUI);
+  fs.writeFileSync(generatedFilePath, filesToBundle.join("\n"));
 
   const plugins = [
+    alias({
+      entries: {
+        $ExtensionFramework: FrameworkDirectory
+      }
+    }),
     svelte({
       preprocess: autoPreprocess(),
       emitCss: false,
@@ -64,7 +79,7 @@ const bundleUI = async (dir) => {
 
   const id = "typescriptprg95grpframeworkprg95grpsimple"
 
-  const bundleFile = path.join(buildDirectory, id, 'ui.bundle.js');
+  const bundleFile = path.join(buildDirectory, 'ui.bundle.js');
 
   const output: rollup.OutputOptions = {
     file: bundleFile,
