@@ -3,6 +3,7 @@ const log = require('../util/log');
 const maybeFormatMessage = require('../util/maybe-format-message');
 
 const BlockType = require('./block-type');
+const { tryLoadExtensionFromBundle } = require('./bundle-loader');
 const { isValidID, decode } = require('./extension-id-factory');
 
 const serveExtension = (extensionId) => require(`../extensions/${decode(extensionId)}`)
@@ -115,6 +116,14 @@ class ExtensionManager {
         this._loadedExtensions = new Map();
 
         /**
+         * Map of loaded in extensions
+         * @type {Map.<string, object>}
+         */
+        this.extensionInstances = new Map();
+
+        this._auxiliaryObjectsPerExtension = new Map();
+
+        /**
          * Keep a reference to the runtime so we can construct internal extension objects.
          * TODO: remove this in favor of extensions accessing the runtime as a service.
          * @type {Runtime}
@@ -165,22 +174,31 @@ class ExtensionManager {
      * @param {string} extensionURL - the URL for the extension to load OR the ID of an internal extension
      * @returns {Promise} resolved once the extension is loaded and initialized or rejected on failure
      */
-    loadExtensionURL(extensionURL) {
+    async loadExtensionURL(extensionURL) {
         const extension = tryRetrieveExtensionConstructor(extensionURL);
         if (extension) {
             /** @TODO dupe handling for non-builtin extensions. See commit 670e51d33580e8a2e852b3b038bb3afc282f81b9 */
             if (this.isExtensionLoaded(extensionURL)) {
                 const message = `Rejecting attempt to load a second extension with ID ${extensionURL}`;
                 log.warn(message);
-                return Promise.resolve();
+                return;
             }
             const extensionInstance = new extension(this.runtime);
             tryInitExtension(extensionInstance);
             const serviceName = this._registerInternalExtension(extensionInstance);
             this._loadedExtensions.set(extensionURL, serviceName);
-            return Promise.resolve();
+            return;
         }
 
+        const loadedFromBundle = await tryLoadExtensionFromBundle(this.runtime, 
+            extensionURL, 
+            (instance) => {
+            const serviceName = this._registerInternalExtension(instance);
+            this._loadedExtensions.set(extensionURL, serviceName);
+        });
+
+        if (loadedFromBundle) return;
+        
         return new Promise((resolve, reject) => {
             // If we `require` this at the global level it breaks non-webpack targets, including tests
             const ExtensionWorker = require('worker-loader?name=extension-worker.js!./extension-worker');
@@ -188,6 +206,10 @@ class ExtensionManager {
             this.pendingExtensions.push({ extensionURL, resolve, reject });
             dispatch.addWorker(new ExtensionWorker());
         });
+    }
+
+    getAuxiliaryObjectConstructor(extensionID, name) {
+        return this._auxiliaryObjectsPerExtension.get(extensionID)[name];
     }
 
     /**
@@ -256,8 +278,10 @@ class ExtensionManager {
      */
     _registerInternalExtension(extensionObject) {
         const extensionInfo = extensionObject.getInfo();
+        const { id } = extensionInfo;
+        this.extensionInstances.set(id, extensionObject);
         const fakeWorkerId = this.nextExtensionWorker++;
-        const serviceName = `extension_${fakeWorkerId}_${extensionInfo.id}`;
+        const serviceName = `extension_${fakeWorkerId}_${id}`;
         dispatch.setServiceSync(serviceName, extensionObject);
         dispatch.callSync('extensions', 'registerExtensionServiceSync', serviceName);
         return serviceName;

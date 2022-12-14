@@ -1,7 +1,7 @@
 import { ArgumentType, BlockType, Language } from './enums';
 import type { ExtensionMenuDisplayDetails, ExtensionBlocks, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, VerboseArgument, Environment, Menu, DynamicMenu, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters, TypeByArgumentType, AllText, Translations, BlockOperation } from './types';
 import Cast from '../util/cast';
-import formatMessage = require('format-message');
+//import * as formatMessage from 'format-message';
 import Runtime from "../engine/runtime";
 import { openUI, registerButtonCallback } from './ui';
 
@@ -10,6 +10,8 @@ export type CodeGenArgs = {
   id: never,
   blockIconURI: never,
 }
+
+export type PopulateCodeGenArgs = { [k in keyof CodeGenArgs]: CodeGenArgs[k] extends never ? string : never };
 
 /**
  * @summary Base class for all extensions implemented via the Typescript Extension Framework.
@@ -310,11 +312,14 @@ export abstract class Extension
   }
 
   private format(text: string, identifier: string, description: string): string {
+    return text;
+    /** 
     return formatMessage({
       id: `extension.${this.id}.${identifier}`,
       default: text,
       description: `${description} (of '${this.name}' extension)`,
     });
+    */
   }
 
   /*

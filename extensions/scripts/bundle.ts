@@ -11,6 +11,7 @@ import css from 'rollup-plugin-css-only';
 import commonjs from "@rollup/plugin-commonjs";
 import sucrase from '@rollup/plugin-sucrase';
 import alias from '@rollup/plugin-alias';
+import custom from "./plugin";
 
 //const __dirname = path.dirname(fileURLToPath(import.meta.url));
 //console.log(__dirname);
@@ -42,7 +43,7 @@ const bundleUI = async (dir) => {
 
   filesToBundle.push(toNamedDefaultExport({ path: indexFile, name: "Extension" }));
 
-  const generatedFileName = "ui.js";
+  const generatedFileName = "filesToBundle.js";
   const generatedFilePath = path.join(dir, generatedFileName);
   fs.writeFileSync(generatedFilePath, filesToBundle.join("\n"));
 
@@ -59,11 +60,11 @@ const bundleUI = async (dir) => {
     sucrase({
       transforms: ['typescript']
     }),
-
     nodeResolve(),
     commonjs(),
     css(),
-    //terser(),
+    custom(),
+    terser(),
   ];
 
   const options: rollup.RollupOptions = {
@@ -77,15 +78,15 @@ const bundleUI = async (dir) => {
 
   if (!fs.existsSync(buildDirectory)) fs.mkdirSync(buildDirectory);
 
-  const id = "typescriptprg95grpframeworkprg95grpsimple"
+  const id = "test"
 
-  const bundleFile = path.join(buildDirectory, 'ui.bundle.js');
+  const bundleFile = path.join(buildDirectory, 'bundle.js');
 
   const output: rollup.OutputOptions = {
     file: bundleFile,
     format: "iife",
     compact: true,
-    name: `${id}_UI`,
+    name: id,
     sourcemap: 'inline'
   };
 
