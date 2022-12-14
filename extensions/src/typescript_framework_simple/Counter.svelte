@@ -1,6 +1,6 @@
 <script lang="ts">
   import type Extension from ".";
-  import { activeClass, px, color } from "../../../packages/scratch-vm/src/extension-framework";
+  import { activeClass, px, color } from "../../../packages/scratch-vm/src/typescript-support";
 
   export let extension: any;
   export let close: () => void;

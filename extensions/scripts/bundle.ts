@@ -9,11 +9,7 @@ import svelte from 'rollup-plugin-svelte';
 import autoPreprocess from 'svelte-preprocess';
 import css from 'rollup-plugin-css-only';
 import commonjs from "@rollup/plugin-commonjs";
-import alias from 'rollup-plugin-alias';
-import includePaths from 'rollup-plugin-includepaths';
-import { fileURLToPath } from 'url';
-import typescript2 from 'rollup-plugin-typescript2';
-
+import sucrase from '@rollup/plugin-sucrase';
 
 //const __dirname = path.dirname(fileURLToPath(import.meta.url));
 //console.log(__dirname);
@@ -45,11 +41,8 @@ const bundleUI = async (dir) => {
       preprocess: autoPreprocess(),
       emitCss: false,
     }),
-    typescript2({
-      /*include: [
-        path.resolve(__dirname, "..", "src", "**", "*.ts"),
-        path.resolve("..", "..", "packages", "scratch-vm", "src", "**", "*.ts")
-      ]*/
+    sucrase({
+      transforms: ['typescript']
     }),
 
     nodeResolve(),
