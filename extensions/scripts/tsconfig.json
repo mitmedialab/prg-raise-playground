@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "CommonJS",
+    "noImplicitAny": false,
+    "esModuleInterop": true,
+    "allowJs": false,
+    "moduleResolution": "node",
+    //"noUnusedLocals": true,
+    //"noUnusedParameters": true,
+    //"noImplicitReturns": true,
+    "skipLibCheck": true,
+    "paths": {
+      "$ExtensionFramework": ["../../packages/scratch-vm/src/extension-framework"],
+      "$ExtensionFramework/*": ["../../packages/scratch-vm/src/extension-framework/*"]
+    }
+  },
+  "include": ["**/*.ts"],
+}
