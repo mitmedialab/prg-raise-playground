@@ -1,4 +1,8 @@
 <script lang="ts" context="module">
+  import type _ExtensionManager from 'scratch-vm/src/extension-support/extension-manager';
+  import type { Extension } from "scratch-vm/src/typescript-support/Extension";
+  import type _VirtualMachine from "scratch-vm/src/virtual-machine";
+
   type ExtensionID = string;
   type ComponentName = string;
 
@@ -7,15 +11,18 @@
     props: { close: () => void, extension: Extension<any, any> };
   }
 
-
   type UIConstructor = (details: Payload) => void; 
+
+  type ExtensionManager = _ExtensionManager & { 
+    getAuxiliaryObject: (id: ExtensionID, name: ComponentName) => UIConstructor,
+    getExtensionInstance: (id: ExtensionID) => Extension<any, any>
+  };
+  type VirtualMachine = _VirtualMachine & { extensionManager: ExtensionManager };
 </script>
 
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
 
-  import type ExtensionManager from 'scratch-vm/src/extension-support/extension-manager';
-  import { Extension } from "scratch-vm/src/typescript-support/Extension";
 
   /** CODE GEN GUARDS: Begin Component Import Statements*/
 	import Typescriptprg95grpframeworkprg95grpcomplex_Alert from "scratch-vm/src/extensions/typescript_framework_complex/Alert.svelte";
@@ -30,17 +37,18 @@
   export let component: ComponentName;
   export let name: string;
 
-  export let vm: { extensionManager: ExtensionManager & {getAuxiliaryObjectConstructor: (id: ExtensionID, name: ComponentName) => UIConstructor } };
+  export let vm: VirtualMachine;
   export let close: () => void;
 
   let target: HTMLDivElement;
 
   onMount(async () => {
-    const props = {close, extension: Extension.GetExtensionByID(id)};
-    const options = {target, props};
+    const props = { close, extension: vm.extensionManager.getExtensionInstance(id) };
+    const options = { target, props };
 
     if (id === "test") {
-      vm.extensionManager.getAuxiliaryObjectConstructor(id, component)(options);
+      const constructor = vm.extensionManager.getAuxiliaryObject(id, component);
+      new constructor(options);
       return;
     }
     

@@ -1,3 +1,6 @@
+const constructors = new Map();
+const auxiliarObjects = new Map();
+
 const tryInitExtension = (extension) => {
   const extensionInit = "internal_init";
   if (extensionInit in extension) extension[extensionInit]();
@@ -53,20 +56,34 @@ const tryImportExtensionBundle = async (id, onLoad, onError, error = false) => {
   }
 }
 
-export const tryLoadExtensionFromBundle = async (runtime, id, onLoad) => {
+export const tryGetExtensionConstructorFromBundle = async (id) => {
+  if (constructors.has(id)) return constructors.get(id);
+
   const success = await tryImportExtensionBundle(id, 
     () => {
       const bundle = window[id];
       const {Extension, ...UI} = bundle;
-
-      console.log(UI);
-
-      const extensionInstance = new Extension(runtime);
-      tryInitExtension(extensionInstance); 
-      onLoad(extensionInstance);
+      constructors.set(id, Extension);
+      auxiliarObjects.set(id, UI);
     }, 
     () => {
       console.log(`Unable to load bundle for ${id}`);
   });
-  return success;
+  return success ? constructors.get(id) : undefined;
+}
+
+export const tryGetAuxiliaryObjectFromLoadedBundle = (id, name) => {
+  if (!auxiliarObjects.has(id)){
+    console.error("Tried to access auxiliar constructor of an extension bundle that wasn't already loaded.");
+    return undefined;
+  } 
+
+  const auxiliarContainer = auxiliarObjects.get(id);
+
+  if(!(name in auxiliarContainer)) {
+    console.error(`The requested object '${name}' was not loaded with extension ${id}`);
+    return undefined;
+  }
+
+  return auxiliarContainer[name];
 }
