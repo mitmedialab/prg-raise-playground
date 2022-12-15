@@ -31,7 +31,7 @@ export const cacheFile = "cache.generated.json";
 
 const { gui } = packages;
 
-const generatedDirectory = path.join(gui, "src", "lib", "libraries", "extensions", "generated");
+const generatedDirectory = path.join(gui, "generated");
 const generatedFile = path.join(generatedDirectory, `${detailFileName}.js`);
 const newline = "\n";
 const tab = "\t";
@@ -88,6 +88,7 @@ export const generateCodeForExtensions = (
 
   for (const extensionId in extensions) {
     const assetsDirectory = path.join(generatedDirectory, extensionId);
+    if (!existsSync(generatedDirectory)) mkdirSync(generatedDirectory);
     if (!existsSync(assetsDirectory)) mkdirSync(assetsDirectory);
     const implementationDirectory = path.join(extensionsFolder, extensionId);
     const cached = useCaches ? getCached(implementationDirectory) : undefined;

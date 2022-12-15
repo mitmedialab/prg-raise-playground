@@ -169,7 +169,7 @@ class ExtensionManager {
      */
     async loadExtensionURL(extensionURL) {
         const extension = tryRetrieveExtensionConstructor(extensionURL)
-            ?? await tryGetExtensionConstructorFromBundle(extensionId);
+            ?? await tryGetExtensionConstructorFromBundle(extensionURL);
 
         if (extension) {
             /** @TODO dupe handling for non-builtin extensions. See commit 670e51d33580e8a2e852b3b038bb3afc282f81b9 */

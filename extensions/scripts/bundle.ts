@@ -11,7 +11,7 @@ import css from 'rollup-plugin-css-only';
 import commonjs from "@rollup/plugin-commonjs";
 import sucrase from '@rollup/plugin-sucrase';
 import alias from '@rollup/plugin-alias';
-import custom from "./plugin";
+import { fillInCodeGenArgs, extractMenuDetailsFromType } from "./plugins";
 
 //const __dirname = path.dirname(fileURLToPath(import.meta.url));
 //console.log(__dirname);
@@ -57,13 +57,14 @@ const bundleUI = async (dir) => {
       preprocess: autoPreprocess(),
       emitCss: false,
     }),
+    extractMenuDetailsFromType(),
     sucrase({
       transforms: ['typescript']
     }),
+    fillInCodeGenArgs(),
     nodeResolve(),
     commonjs(),
     css(),
-    custom(),
     terser(),
   ];
 
