@@ -1,8 +1,7 @@
 import ts = require("typescript");
 import path = require("path");
 import assert = require("assert");
-import { ExtensionMenuDisplayDetails, KeysWithValuesOfType, UnionToTuple } from "../../src/typescript-support/types";
-import { Language, LanguageKeys } from "../../src/typescript-support/enums";
+import { ExtensionMenuDisplayDetails, KeysWithValuesOfType, UnionToTuple, Language, LanguageKeys } from "$ExtensionFramework";
 import TypeProbe from "./TypeProbe";
 
 export const retrieveExtensionDetails = (program: ts.Program, testOverride: boolean = false): Record<string, ExtensionMenuDisplayDetails> => {

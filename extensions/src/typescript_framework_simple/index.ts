@@ -40,7 +40,7 @@ export default class SimpleTypescript extends Extension<Details, {
       log: () => ({
         type: BlockType.Command,
         arg: {
-          type: ArgumentType.String,
+          type: ArgumentType.Angle,
           options: {
             items: ['one', 'two', 'three'],
             acceptsReporters: true,

@@ -1,10 +1,12 @@
-export enum Flag {
-  InitialTranspileComplete,
-  TsError
-}
+export const Conditon = {
+  InitialTranspileComplete: "transpile complete",
+  TsError: "typescript error"
+} as const;
+
+type ValueOf<T> = T[keyof T];
 
 export type Message = {
-  flag: Flag
+  condition: ValueOf<typeof Conditon>
 }
 
 export const sendToParent = (child: NodeJS.Process, message: Message) => {

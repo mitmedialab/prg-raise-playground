@@ -3,13 +3,21 @@ import path from "path";
 import type { PopulateCodeGenArgs } from "$ExtensionFramework";
 import rollup from "rollup";
 
-const debug = async (code: string, id: string, optIn: boolean = true) => {
-  if (!optIn) return; // change this to opt in/out of debugging
+const debug = async (code: string, id: string, optOut: boolean = false) => {
+  if (optOut) return;
   const outDir = path.join(__dirname, "fragments");
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir);
   const sanitizer = await (await import("sanitize-filename")).default;
-  const name = sanitizer(path.basename(id));
-  fs.writeFileSync(path.join(outDir, name), code);
+  const basename = path.basename(id);
+  const ext = path.extname(basename);
+  const name = sanitizer(basename.replace(ext, ""));
+  let filepath = path.join(outDir, name + ext);
+  let count = 0;
+  while (fs.existsSync(filepath)) {
+    count++;
+    filepath = path.join(outDir, name + count + ext)
+  }
+  fs.writeFileSync(filepath, `// ${id}\n${code}`);
 }
 
 export const extractMenuDetailsFromType = () => {
@@ -18,7 +26,7 @@ export const extractMenuDetailsFromType = () => {
     transform: {
       order: 'pre',
       handler: (code: string, id: string) => {
-        debug(code, id, true);
+        debug(code, id);
       }
     }
   }
@@ -36,7 +44,7 @@ export const fillInCodeGenArgs = (opts = {}) => {
           blockIconURI: "",
         };
         code = code.replace("= codeGenArgs", `= /* codeGenArgs */ ${JSON.stringify(codeGenArgs)}`);
-        debug(code, id, false);
+        debug(code, id, true);
         return { code, map: null }
       }
     }

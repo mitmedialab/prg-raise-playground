@@ -12,6 +12,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import sucrase from '@rollup/plugin-sucrase';
 import alias from '@rollup/plugin-alias';
 import { fillInCodeGenArgs, extractMenuDetailsFromType } from "./plugins";
+import customTs from "./plugins/typescript";
 
 //const __dirname = path.dirname(fileURLToPath(import.meta.url));
 //console.log(__dirname);
@@ -53,6 +54,7 @@ const bundleUI = async (dir) => {
         $ExtensionFramework: FrameworkDirectory
       }
     }),
+    customTs({ entry: indexFile }),
     svelte({
       preprocess: autoPreprocess(),
       emitCss: false,

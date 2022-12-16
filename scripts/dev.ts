@@ -1,6 +1,6 @@
 import { fork } from 'child_process';
 import path = require("path");
-import { Message, Flag } from './devComms';
+import { Message, Conditon } from './devComms';
 import { packages } from './paths';
 
 const { vm, gui } = packages;
@@ -13,12 +13,12 @@ const transpilation = fork(transpile, ["watch=true", "cache=true"]);
 const children = [transpilation];
 
 transpilation.on("message", (msg: Message) => {
-  const { flag } = msg;
+  const { condition: flag } = msg;
   switch (flag) {
-    case Flag.TsError:
+    case Conditon.TsError:
       children.forEach(child => child.kill());
       break;
-    case Flag.InitialTranspileComplete:
+    case Conditon.InitialTranspileComplete:
       const bundle = fork(webpack, ["--config", config], { cwd: gui });
       children.push(bundle);
       break;

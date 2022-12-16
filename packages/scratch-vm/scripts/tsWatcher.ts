@@ -5,7 +5,7 @@ import { retrieveExtensionDetails } from "./typeProbing";
 import { generateCodeForExtensions } from "./codeGeneration";
 import { profile, start, stop } from "../../../scripts/profile";
 import { writeFileSync } from "fs";
-import { Flag, sendToParent } from "../../../scripts/devComms";
+import { Conditon, sendToParent } from "../../../scripts/devComms";
 import { extensionsFolder, vmSrc } from "../../../scripts/paths";
 
 const tsconfig = path.join(__dirname, "tsconfig.generated.json");
@@ -81,10 +81,10 @@ function customAfterProgramCreate(status: ProgramStatus, ...params: Parameters<P
     const program = semanticProgram.getProgram();
     const diagnostics = semanticProgram.getSemanticDiagnostics();
     printDiagnostics(program, diagnostics);
-    sendToParent(process, { flag: Flag.TsError });
+    sendToParent(process, { condition: Conditon.TsError });
   }
   else if (isStartUp) {
-    sendToParent(process, { flag: Flag.InitialTranspileComplete });
+    sendToParent(process, { condition: Conditon.InitialTranspileComplete });
   }
 
   status.increment(); // don't destructure to avoid issues with 'this'
