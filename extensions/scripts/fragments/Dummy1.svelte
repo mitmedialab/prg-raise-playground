@@ -1,3 +1,4 @@
+// /Users/parkermalachowsky/MIT/prg-extension-boilerplate/extensions/src/typescript_framework_simple/Dummy.svelte
 <script lang="ts">
   import type Extension from ".";
   import { activeClass, px, color } from "$common";

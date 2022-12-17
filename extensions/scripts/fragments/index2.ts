@@ -1,3 +1,4 @@
+// /Users/parkermalachowsky/MIT/prg-extension-boilerplate/extensions/src/typescript_framework_simple/index.ts
 import { ArgumentType, BlockType, Language, Extension, ButtonBlock, Environment } from "$common";
 import defineTranslations from "./translations";
 

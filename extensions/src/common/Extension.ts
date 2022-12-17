@@ -1,8 +1,8 @@
 import { ArgumentType, BlockType, Language } from './enums';
 import type { ExtensionMenuDisplayDetails, ExtensionBlocks, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, VerboseArgument, Environment, Menu, DynamicMenu, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters, TypeByArgumentType, AllText, Translations, BlockOperation } from './types';
-import Cast from '../util/cast';
+import Cast from '$scratch-vm/util/cast';
 //import * as formatMessage from 'format-message';
-import Runtime from "../engine/runtime";
+import Runtime from "$scratch-vm/engine/runtime";
 import { openUI, registerButtonCallback } from './ui';
 
 export type CodeGenArgs = {

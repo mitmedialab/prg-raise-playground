@@ -29,7 +29,7 @@ const bundleMenuDetails = (dir) => {
 
 }
 
-const FrameworkDirectory = path.resolve(__dirname, "..", "..", "packages", "scratch-vm", "src", "typescript-support");
+const FrameworkDirectory = path.resolve(__dirname, "..", "src", "common");
 
 if (!fs.existsSync(FrameworkDirectory)) throw new Error("Could not find framework directory at specified path");
 

@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import type { PopulateCodeGenArgs } from "$ExtensionFramework";
+import type { PopulateCodeGenArgs } from "$common";
 import rollup from "rollup";
 
 const debug = async (code: string, id: string, optOut: boolean = false) => {

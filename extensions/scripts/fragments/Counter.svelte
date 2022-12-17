@@ -1,6 +1,7 @@
+// /Users/parkermalachowsky/MIT/prg-extension-boilerplate/extensions/src/typescript_framework_simple/Counter.svelte
 <script lang="ts">
   import type Extension from ".";
-  import { activeClass, px, color } from "$common";
+  import { activeClass, px, color } from "../../../packages/scratch-vm/src/typescript-support";
 
   export let extension: any;
   export let close: () => void;

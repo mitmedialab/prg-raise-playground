@@ -1,7 +1,7 @@
 import ts = require("typescript");
 import path = require("path");
 import assert = require("assert");
-import { ExtensionMenuDisplayDetails, KeysWithValuesOfType, UnionToTuple, Language, LanguageKeys } from "$ExtensionFramework";
+import { ExtensionMenuDisplayDetails, KeysWithValuesOfType, UnionToTuple, Language, LanguageKeys } from "$common";
 import TypeProbe from "./TypeProbe";
 
 export const retrieveExtensionDetails = (program: ts.Program, testOverride: boolean = false): Record<string, ExtensionMenuDisplayDetails> => {
@@ -40,8 +40,11 @@ type AllMenuFlags = UnionToTuple<MenuFlag>;
 type MenuTranslations = KeysWithValuesOfType<ExtensionMenuDisplayDetails, Partial<Record<Language, any>>>;
 type AllMenuTranslations = UnionToTuple<MenuTranslations>;
 
+//@ts-ignore 
 const menuDetailTextKeys: AllMenuText = ["name", "description", "iconURL", "insetIconURL", "collaborator", "connectionIconURL", "connectionSmallIconURL", "connectionTipIconURL", "connectingMessage", "helpLink", "implementationLanguage"];
+//@ts-ignore
 const menuDetailFlagKeys: AllMenuFlags = ["internetConnectionRequired", "bluetoothRequired", "launchPeripheralConnectionFlow", "useAutoScan", "featured", "hidden", "disabled"];
+//@ts-ignore
 const requiredKeys: (MenuText | MenuFlag)[] = ["name", "description", "iconURL", "insetIconURL"];
 
 const getMenuDisplayDetails = (type: ts.Type): ExtensionMenuDisplayDetails => {

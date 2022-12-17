@@ -11,8 +11,12 @@
     //"noImplicitReturns": true,
     "skipLibCheck": true,
     "paths": {
-      "$ExtensionFramework": ["../../packages/scratch-vm/src/typescript-support"],
-      "$ExtensionFramework/*": ["../../packages/scratch-vm/src/typescript-support/*"]
+      "$root": ["../../"],
+      "$root/*": ["../../*"],
+      "$common": ["./common"],
+      "$common/*": ["./common/*"],
+      "$scratch-vm": ["../../packages/scratch-vm/src"],
+      "$scratch-vm/*": ["../../packages/scratch-vm/src/*"]
     }
   },
   "include": ["**/*.ts"],

@@ -1,5 +1,5 @@
-import type Runtime from '../engine/runtime';
-import BlockUtility from '../engine/block-utility';
+import type Runtime from '$scratch-vm/engine/runtime';
+import BlockUtility from '$scratch-vm/engine/block-utility';
 import { ArgumentType, BlockType, Branch, Language } from './enums';
 import type { Extension } from './Extension';
 import type { EnsureInclusionInTypescriptProgram } from './flag';

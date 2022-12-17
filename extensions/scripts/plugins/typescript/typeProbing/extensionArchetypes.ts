@@ -1,4 +1,4 @@
-import { Extension } from "$ExtensionFramework";
+import { Extension } from "$common";
 
 export const location = () => __filename;
 

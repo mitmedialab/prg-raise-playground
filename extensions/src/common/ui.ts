@@ -1,4 +1,4 @@
-import Runtime from "../engine/runtime";
+import Runtime from "$scratch-vm/engine/runtime";
 import { Extension as BaseExtension } from "./Extension";
 
 export type ReactivityDependency = any | any[];

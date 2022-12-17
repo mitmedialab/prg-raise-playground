@@ -5,15 +5,15 @@
     "noImplicitAny": false,
     "esModuleInterop": true,
     "allowJs": false,
-    "moduleResolution": "node",
-    //"noUnusedLocals": true,
-    //"noUnusedParameters": true,
-    //"noImplicitReturns": true,
-    "baseUrl": ".",
+    "moduleResolution": "Node",
     "skipLibCheck": true,
     "paths": {
-      "$ExtensionFramework": ["../../packages/scratch-vm/src/typescript-support"],
-      "$ExtensionFramework/*": ["../../packages/scratch-vm/src/typescript-support/*"],
+      "$root": ["../../"],
+      "$root/*": ["../../*"],
+      "$common": ["../src/common"],
+      "$common/*": ["../src/common/*"],
+      "$scratch-vm": ["../../packages/scratch-vm/src"],
+      "$scratch-vm/*": ["../../packages/scratch-vm/src/*"]
     }
   },
   "include": ["**/*.ts", "../../scripts/**/*.ts"],
