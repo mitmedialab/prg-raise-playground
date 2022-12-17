@@ -13,6 +13,7 @@ import sucrase from '@rollup/plugin-sucrase';
 import alias from '@rollup/plugin-alias';
 import { fillInCodeGenArgs, extractMenuDetailsFromType } from "./plugins";
 import customTs from "./plugins/typescript";
+import { vmSrc } from '$root/scripts/paths';
 
 //const __dirname = path.dirname(fileURLToPath(import.meta.url));
 //console.log(__dirname);
@@ -51,7 +52,8 @@ const bundleUI = async (dir) => {
   const plugins = [
     alias({
       entries: {
-        $ExtensionFramework: FrameworkDirectory
+        $common: FrameworkDirectory,
+        "$scratch-vm": vmSrc
       }
     }),
     customTs({ entry: indexFile }),
