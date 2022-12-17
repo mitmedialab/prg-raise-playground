@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "$root": ["../"],
+      "$root/*": ["../*"],
+      "$common": ["./src/common"],
+      "$common/*": ["./src/common/*"],
+      "$scratch-vm": ["../packages/scratch-vm/src"],
+      "$scratch-vm/*": ["../packages/scratch-vm/src/*"]
+    }
+  }
+}
