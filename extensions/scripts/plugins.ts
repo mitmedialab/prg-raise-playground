@@ -5,6 +5,7 @@ import rollup, { type Plugin } from "rollup";
 import Transpiler, { TranspileEvent } from './typeProbing/Transpiler';
 import { debug } from "./utils/debug";
 import { getBlockIconURI } from "./utils/URIs";
+import { populateMenuForExtensions } from "./extensionsMenu";
 
 export const transpileExtensions = (options: { entry: string, onSuccess: TranspileEvent, onError: TranspileEvent }): Plugin => {
   let ts: Transpiler;
@@ -32,4 +33,8 @@ export const fillInCodeGenArgs = (options: { id: string, dir: string, menuDetail
       }
     }
   };
+}
+
+export const createExtensionMenuAssets = () => {
+  //populateMenuForExtensions();
 }
