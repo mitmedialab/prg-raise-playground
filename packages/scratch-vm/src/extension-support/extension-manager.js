@@ -1,27 +1,13 @@
 const dispatch = require('../dispatch/central-dispatch');
 const log = require('../util/log');
 const maybeFormatMessage = require('../util/maybe-format-message');
-
 const BlockType = require('./block-type');
-const { tryGetExtensionConstructorFromBundle, tryGetAuxiliaryObjectFromLoadedBundle } = require('./bundle-loader');
-const { isValidID, decode } = require('./extension-id-factory');
+const { tryInitExtension, tryGetExtensionConstructorFromBundle, tryGetAuxiliaryObjectFromLoadedBundle } = require('./bundle-loader');
 
-const serveExtension = (extensionId) => require(`../extensions/${decode(extensionId)}`)
-
-const tryLoadAnonymousExtension = (extensionId) => {
-    try { return serveExtension(extensionId); }
-    catch(e) { return console.error(e) }
-}
-
-const tryRetrieveExtensionConstructor = (extensionId) =>
-    builtinExtensions.hasOwnProperty(extensionId) ?
-        builtinExtensions[extensionId]() :
-        tryLoadAnonymousExtension(extensionId);
-
-const tryInitExtension = (extension) => {
-    const extensionInit = "internal_init";
-    if (extensionInit in extension) extension[extensionInit]();
-}
+const tryRetrieveExtensionConstructor = async (extensionId) =>
+    await extensionId in builtinExtensions 
+    ? builtinExtensions[extensionId]() 
+    : tryGetExtensionConstructorFromBundle(extensionId);
 
 // These extensions are currently built into the VM repository but should not be loaded at startup.
 // TODO: move these out into a separate repository?
@@ -144,8 +130,7 @@ class ExtensionManager {
      * @param {string} extensionId - the ID of an internal extension
      */
     async loadExtensionIdSync(extensionId) {
-        const extension = tryRetrieveExtensionConstructor(extensionId) 
-            ?? await tryGetExtensionConstructorFromBundle(extensionId);
+        const extension = await tryRetrieveExtensionConstructor(extensionId);
 
         if (!extension) return log.warn(`Could not find extension ${extensionId} in the built in extensions.`);
 
@@ -168,8 +153,7 @@ class ExtensionManager {
      * @returns {Promise} resolved once the extension is loaded and initialized or rejected on failure
      */
     async loadExtensionURL(extensionURL) {
-        const extension = tryRetrieveExtensionConstructor(extensionURL)
-            ?? await tryGetExtensionConstructorFromBundle(extensionURL);
+        const extension = await tryRetrieveExtensionConstructor(extensionURL);
 
         if (extension) {
             /** @TODO dupe handling for non-builtin extensions. See commit 670e51d33580e8a2e852b3b038bb3afc282f81b9 */
@@ -304,7 +288,7 @@ class ExtensionManager {
      */
     _prepareExtensionInfo(serviceName, extensionInfo) {
         extensionInfo = Object.assign({}, extensionInfo);
-        if (!isValidID(extensionInfo.id)) {
+        if (!/^[a-z0-9]+$/i.test(extensionInfo.id)) {
             throw new Error('Invalid extension id');
         }
         extensionInfo.name = extensionInfo.name || extensionInfo.id;

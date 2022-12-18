@@ -1,15 +1,9 @@
 import chalk from "chalk";
-import fs from "fs";
 import path from "path";
 import ts from "typescript";
-import { retrieveExtensionDetails } from "./typeProbing";
-//import { generateCodeForExtensions } from "./codeGeneration";
-import { profile, start, stop } from "../../../../scripts/profile";
-import { Conditon, sendToParent } from "../../../../scripts/devComms";
-import { extensionsFolder, vmSrc } from "../../../../scripts/paths";
-import { oneliner } from "../../../../scripts/utils";
-import { writeFileSync } from "fs";
-import { getProgramMsg, printDiagnostics, reportDiagnostic, reportWatchStatusChanged } from "./diagnostics";
+import { profile, start, stop } from "../../../scripts/profile";
+import { extensionsFolder } from "../../../scripts/paths";
+import { getProgramMsg, reportDiagnostic, reportWatchStatusChanged } from "./diagnostics";
 
 type Program = ts.EmitAndSemanticDiagnosticsBuilderProgram;
 type Host = ts.WatchCompilerHostOfFilesAndCompilerOptions<Program>;

@@ -1,7 +1,7 @@
 const constructors = new Map();
 const auxiliarObjects = new Map();
 
-const tryInitExtension = (extension) => {
+export const tryInitExtension = (extension) => {
   const extensionInit = "internal_init";
   if (extensionInit in extension) extension[extensionInit]();
 }

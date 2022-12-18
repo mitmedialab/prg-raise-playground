@@ -11,22 +11,46 @@ import css from 'rollup-plugin-css-only';
 import commonjs from "@rollup/plugin-commonjs";
 import sucrase from '@rollup/plugin-sucrase';
 import alias from '@rollup/plugin-alias';
-import { fillInCodeGenArgs, extractMenuDetailsFromType } from "./plugins";
-import customTs from "./plugins/typescript";
+import { transpileExtensions, fillInCodeGenArgs } from "./plugins";
 import { vmSrc } from '$root/scripts/paths';
+import type Transpiler from './typeProbing/Transpiler';
+import { ExtensionMenuDisplayDetails, encode } from '$common';
+import { retrieveExtensionDetails } from './typeProbing';
+
 
 //const __dirname = path.dirname(fileURLToPath(import.meta.url));
 //console.log(__dirname);
 
-const getBuildDirectory = (dir) => path.join(dir, "build");
-const toNamedDefaultExport = ({ path, name }: { path: string, name: string }) =>
-  `export { default as ${name} } from '${path}';`
-
-const bundleExtension = (dir) => {
-
+/*
+const announceError = (semanticProgram: ts.EmitAndSemanticDiagnosticsBuilderProgram) => {
+  console.log("here");
+  printDiagnostics(semanticProgram.getProgram(), semanticProgram.getSemanticDiagnostics());
+  sendToParent(process, { condition: "typescript error" });
 }
 
-const bundleMenuDetails = (dir) => {
+const announceTranspilation = () => sendToParent(process, { condition: "transpile complete" });
+*/
+
+const getBuildDirectory = (dir) => path.join(dir, "build");
+
+const toNamedDefaultExport = (details: { path: string, name: string }) => `export { default as ${details.name} } from '${details.path}';`;
+
+const deleteAllFilesInDir = (dir) => fs.readdirSync(dir).forEach(file => fs.unlinkSync(path.join(dir, file)));
+
+const fileName = (file) => path.basename(file).replace(path.extname(file), "");
+
+const transpileComplete = (ts: Transpiler, dir: string, menuDetailsContainer: object) => {
+  const record = retrieveExtensionDetails(ts.program);
+  for (const id in record) {
+    if (id !== dir) continue;
+    const details = record[id];
+    for (const key in details) {
+      menuDetailsContainer[key] = details[key];
+    }
+  }
+}
+
+const transpileFailed = (ts: Transpiler, dir: string) => {
 
 }
 
@@ -34,20 +58,24 @@ const FrameworkDirectory = path.resolve(__dirname, "..", "src", "common");
 
 if (!fs.existsSync(FrameworkDirectory)) throw new Error("Could not find framework directory at specified path");
 
-const bundleUI = async (dir) => {
-  const svelteFiles = glob.sync(`${dir}/*.svelte`);
-
-  const filesToBundle = svelteFiles
-    .map(file => ({ path: file, name: path.basename(file).replace(path.extname(file), "") }))
-    .map(toNamedDefaultExport);
-
+const bundleExtension = async (dir) => {
   const indexFile = path.join(dir, "index.ts");
 
-  filesToBundle.push(toNamedDefaultExport({ path: indexFile, name: "Extension" }));
+  const filesToBundle = [toNamedDefaultExport({ path: indexFile, name: "Extension" })];
+
+  const svelteFiles = glob.sync(`${dir}/**/*.svelte`);
+  filesToBundle.push(
+    ...svelteFiles
+      .map(file => ({ path: file, name: fileName(file) }))
+      .map(toNamedDefaultExport)
+  );
 
   const generatedFileName = "filesToBundle.js";
   const generatedFilePath = path.join(dir, generatedFileName);
   fs.writeFileSync(generatedFilePath, filesToBundle.join("\n"));
+
+  const menuDetails = {} as ExtensionMenuDisplayDetails;
+  const id = encode(path.basename(dir));
 
   const plugins = [
     alias({
@@ -56,16 +84,19 @@ const bundleUI = async (dir) => {
         "$scratch-vm": vmSrc
       }
     }),
-    customTs({ entry: indexFile }),
+    transpileExtensions({
+      entry: indexFile,
+      onSuccess: (ts) => transpileComplete(ts, dir, menuDetails),
+      onError: (ts) => transpileFailed(ts, dir)
+    }),
     svelte({
       preprocess: autoPreprocess(),
       emitCss: false,
     }),
-    extractMenuDetailsFromType(),
     sucrase({
       transforms: ['typescript']
     }),
-    fillInCodeGenArgs(),
+    fillInCodeGenArgs({ id, dir, menuDetails }),
     nodeResolve(),
     commonjs(),
     css(),
@@ -81,9 +112,9 @@ const bundleUI = async (dir) => {
   const bundled = await rollup.rollup(options);
   const buildDirectory = getBuildDirectory(dir);
 
-  if (!fs.existsSync(buildDirectory)) fs.mkdirSync(buildDirectory);
-
-  const id = "test"
+  fs.existsSync(buildDirectory)
+    ? deleteAllFilesInDir(buildDirectory)
+    : fs.mkdirSync(buildDirectory);
 
   const bundleFile = path.join(buildDirectory, 'bundle.js');
 
@@ -103,12 +134,10 @@ const bundleUI = async (dir) => {
   fs.rmSync(path.join(buildDirectory, "assets"), { recursive: true, force: true });
 }
 
-bundleUI(path.resolve(__dirname, "..", "src", "typescript_framework_simple"));
+bundleExtension(path.resolve(__dirname, "..", "src", "typescript_framework_simple"));
 
 export const bundle = (dir) => {
   bundleExtension(dir);
-  bundleMenuDetails(dir);
-  bundleUI(dir);
 }
 
 export const bundlee = async (watch) => {

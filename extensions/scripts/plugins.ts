@@ -1,50 +1,33 @@
 import fs from "fs";
 import path from "path";
-import type { PopulateCodeGenArgs } from "$common";
-import rollup from "rollup";
+import type { ExtensionMenuDisplayDetails, PopulateCodeGenArgs } from "$common";
+import rollup, { type Plugin } from "rollup";
+import Transpiler, { TranspileEvent } from './typeProbing/Transpiler';
+import { debug } from "./utils/debug";
+import { getBlockIconURI } from "./utils/URIs";
 
-const debug = async (code: string, id: string, optOut: boolean = false) => {
-  if (optOut) return;
-  const outDir = path.join(__dirname, "fragments");
-  if (!fs.existsSync(outDir)) fs.mkdirSync(outDir);
-  const sanitizer = await (await import("sanitize-filename")).default;
-  const basename = path.basename(id);
-  const ext = path.extname(basename);
-  const name = sanitizer(basename.replace(ext, ""));
-  let filepath = path.join(outDir, name + ext);
-  let count = 0;
-  while (fs.existsSync(filepath)) {
-    count++;
-    filepath = path.join(outDir, name + count + ext)
-  }
-  fs.writeFileSync(filepath, `// ${id}\n${code}`);
-}
-
-export const extractMenuDetailsFromType = () => {
+export const transpileExtensions = (options: { entry: string, onSuccess: TranspileEvent, onError: TranspileEvent }): Plugin => {
+  let ts: Transpiler;
+  const { entry, onSuccess, onError } = options;
   return {
-    name: 'extract-menu-details-from-extension-type',
-    transform: {
-      order: 'pre',
-      handler: (code: string, id: string) => {
-        debug(code, id);
-      }
-    }
+    name: 'transpile-extension-typescript',
+    buildStart() { ts ??= Transpiler.Make([entry], onSuccess, onError) },
+    buildEnd() { if (this.meta.watchMode !== true) ts?.close(); },
   }
 }
 
-export const fillInCodeGenArgs = (opts = {}) => {
+export const fillInCodeGenArgs = (options: { id: string, dir: string, menuDetails: ExtensionMenuDisplayDetails }) => {
+  const { id, dir, menuDetails } = options;
+  const { name } = menuDetails;
+  const blockIconURI = getBlockIconURI(menuDetails, dir);
   return {
     name: 'fill-in-code-gen-args-for-extension',
     transform: {
       order: 'post',
-      handler: (code: string, id: string) => {
-        const codeGenArgs: PopulateCodeGenArgs = {
-          id: "test",
-          name: "test",
-          blockIconURI: "",
-        };
+      handler: (code: string, file: string) => {
+        const codeGenArgs: PopulateCodeGenArgs = { id, name, blockIconURI };
         code = code.replace("= codeGenArgs", `= /* codeGenArgs */ ${JSON.stringify(codeGenArgs)}`);
-        debug(code, id, true);
+        debug(code, file, true);
         return { code, map: null }
       }
     }

@@ -1,7 +1,7 @@
 import ts from "typescript";
 import fs from "fs";
 import path from "path";
-import { reportDiagnostic } from "./plugins/typescript/diagnostics";
+import { reportDiagnostic } from "./typeProbing/diagnostics";
 import { extensionsFolder, vmSrc, root, packages } from "$root/scripts/paths";
 import chalk from "chalk";
 

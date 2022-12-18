@@ -1,4 +1,4 @@
-import { ExtensionMenuDisplayDetails } from "$ExtensionFramework";
+import { ExtensionMenuDisplayDetails } from "$common";
 
 const tab = "\t";
 const newline = "\n";
