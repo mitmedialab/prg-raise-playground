@@ -2,28 +2,26 @@ import ts = require("typescript");
 import path = require("path");
 import assert = require("assert");
 import { ExtensionMenuDisplayDetails, KeysWithValuesOfType, UnionToTuple, Language, LanguageKeys } from "$common";
-import TypeProbe from "./TypeProbe";
 
-export const retrieveExtensionDetails = (program: ts.Program, testOverride: boolean = false): Record<string, ExtensionMenuDisplayDetails> => {
-  const details: Record<string, ExtensionMenuDisplayDetails> = {};
-
+export const retrieveExtensionDetails = (program: ts.Program): ExtensionMenuDisplayDetails => {
   const typeChecker = program.getTypeChecker();
   const sources = program.getSourceFiles();
   const roots = program.getRootFileNames();
   const rootSources = sources.filter(source => roots.includes(source.fileName));
 
-  for (const root of rootSources) {
-    ts.forEachChild(root, node => {
-      const type = typeChecker.getTypeAtLocation(node);
-
-      if (isExtension(type)) {
-        const dirName = path.basename(path.dirname(root.fileName));
-        details[testOverride ? type.symbol.name : dirName] = getMenuDisplayDetails(type);
-      }
-    });
+  if (rootSources.length > 1) {
+    const error = `Expected only one root source (the file where the extension is declared, e.g. index.ts), but found ${rootSources.length}`;
+    const delimiter = "\n\t-";
+    const allSouces = rootSources.map(source => source.fileName).join(delimiter);
+    throw new Error(`${error} ${delimiter} ${allSouces}`);
   }
 
-  return details;
+  const rootSource = rootSources[0];
+
+  return ts.forEachChild(rootSource, node => {
+    const type = typeChecker.getTypeAtLocation(node);
+    if (isExtension(type)) return getMenuDisplayDetails(type);
+  });;
 }
 
 export const isExtension = (type: ts.Type) => {

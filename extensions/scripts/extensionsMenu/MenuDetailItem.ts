@@ -15,13 +15,13 @@ export default class MenuDetailItem {
     this.extensionId = id;
 
     for (const key in details) {
-      this.push(key, details[key]);
+      this.append(key, details[key]);
     }
     if (featured in details) return;
-    this.push(featured, true);
+    this.append(featured, true);
   }
 
-  push<T>(key: string, value: T, isCode: boolean = false, dontFormat: boolean = false) {
+  append<T>(key: string, value: T, isCode: boolean = false, dontFormat: boolean = false) {
     if (isCode) return this.entries[key] = `${value}`;
     if (typeof value === 'string') return this.entries[key] = dontFormat ? `'${value}'` : `${MenuDetailItem.FormatMessage(this, key, value)}`;
     this.entries[key] = JSON.stringify(value);

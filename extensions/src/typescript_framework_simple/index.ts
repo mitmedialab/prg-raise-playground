@@ -2,7 +2,7 @@ import { ArgumentType, BlockType, Language, Extension, ButtonBlock, Environment 
 import defineTranslations from "./translations";
 
 type Details = {
-  name: "Super Simple Typescript Extension",
+  name: "Super Simple Typescript Extension!",
   description: "Skeleton for a typescript extension",
   iconURL: "Typescript_logo.png",
   insetIconURL: "typescript-logo.svg",

@@ -4,6 +4,7 @@ import ts from "typescript";
 import { profile, start, stop } from "../../../scripts/profile";
 import { extensionsFolder } from "../../../scripts/paths";
 import { getProgramMsg, reportDiagnostic, reportWatchStatusChanged } from "./diagnostics";
+import { getSrcCompilerOptions } from "./config";
 
 type Program = ts.EmitAndSemanticDiagnosticsBuilderProgram;
 type Host = ts.WatchCompilerHostOfFilesAndCompilerOptions<Program>;
@@ -70,15 +71,10 @@ export default class Transpiler {
   }
 }
 
-const getWatchHost = (files: string[], onError: () => void): Host => {
-  const srcDir = path.join(extensionsFolder, "src");
-  const configFile = path.join(srcDir, "tsconfig.json");
-  const { config } = ts.readConfigFile(configFile, ts.sys.readFile);
-  const { options } = ts.parseJsonConfigFileContent(config, ts.sys, srcDir, undefined, configFile);
-
-  return ts.createWatchCompilerHost(
+const getWatchHost = (files: string[], onError: () => void): Host =>
+  ts.createWatchCompilerHost(
     files,
-    { ...options, noEmit: true },
+    { ...getSrcCompilerOptions(), noEmit: true },
     ts.sys,
     ts.createEmitAndSemanticDiagnosticsBuilderProgram,
     reportDiagnostic,
@@ -87,4 +83,3 @@ const getWatchHost = (files: string[], onError: () => void): Host => {
       if (errorCount) onError();
     },
   );
-}
