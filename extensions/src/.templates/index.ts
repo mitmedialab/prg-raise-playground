@@ -1,5 +1,4 @@
-import { Extension } from "../../typescript-support/Extension";
-import { Environment } from "../../typescript-support/types";
+import { Extension, Environment } from "$common";
 import defineTranslations from "./translations";
 
 type Details = {
@@ -9,7 +8,7 @@ type Details = {
   insetIconURL: ""
 };
 
-class _ extends Extension<Details, {
+export default class _ extends Extension<Details, {
   // Blocks
 }> {
   init(env: Environment) { }
@@ -23,5 +22,3 @@ class _ extends Extension<Details, {
   // Ignore! Translations are still a work in progress (but will be supported)
   defineTranslations = defineTranslations;
 }
-
-export = _;

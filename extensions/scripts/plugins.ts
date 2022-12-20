@@ -1,9 +1,8 @@
 import fs from "fs";
 import path from "path";
-import type { ExtensionMenuDisplayDetails, PopulateCodeGenArgs } from "$common";
-import rollup, { type Plugin } from "rollup";
+import type { PopulateCodeGenArgs } from "$common";
+import { type Plugin } from "rollup";
 import Transpiler, { TranspileEvent } from './typeProbing/Transpiler';
-import { debug } from "./utils/debug";
 import { getBlockIconURI } from "./utils/URIs";
 import { appendToRootDetailsFile, populateMenuFileForExtension } from "./extensionsMenu";
 import { toNamedDefaultExport } from "./utils/importExport";
@@ -11,16 +10,12 @@ import { default as glob } from 'glob';
 import { commonDirectory, deleteAllFilesInDir, extensionBundlesDir, fileName, generatedDetailsFileName, generatedMenuDetailsDir } from "./utils/fileSystem";
 import { ExtensionInfo } from "./bundle";
 import ts from "typescript";
-import { getSrcCompilerOptions } from "./typeProbing/config";
+import { getSrcCompilerOptions } from "./typeProbing/tsConfig";
 import { extensionsFolder, vmSrc } from "$root/scripts/paths";
 import { reportDiagnostic } from "./typeProbing/diagnostics";
 import chalk from "chalk";
-
-const runOnceForEachExtension = (): { check: () => boolean, internal?: any } => ({ internal: 0, check() { return 0 === (this.internal++ as number) } });
-const runOnceAcrossAllExtensions = ({ indexInProcess }: ExtensionInfo): { check: () => boolean, internal?: any } =>
-  indexInProcess === 0
-    ? { internal: 0, check() { return 0 === (this.internal++ as number) } }
-    : { check: () => false }
+import { runOnceAcrossAllExtensions, runOncePerExtension } from "./utils/coordination";
+import { sendToParent } from "$root/scripts/devComms";
 
 export const clearDestinationDirectories = (info: ExtensionInfo): Plugin => {
   const runner = runOnceAcrossAllExtensions(info);
@@ -117,7 +112,7 @@ export const fillInCodeGenArgs = ({ id, directory, menuDetails, indexFile }: Ext
 }
 
 export const createExtensionMenuAssets = (info: ExtensionInfo): Plugin => {
-  const runner = runOnceForEachExtension();
+  const runner = runOncePerExtension();
   return {
     name: "",
     buildStart() {
@@ -132,6 +127,23 @@ export const cleanup = ({ bundleDestination }: ExtensionInfo): Plugin => {
     name: "",
     writeBundle: () => {
       fs.rmSync(path.join(path.resolve(bundleDestination, ".."), "assets"), { recursive: true, force: true });
+    }
+  }
+}
+
+let writeCount = 0;
+const allExtensionsInitiallyWritten = () => {
+  console.log(chalk.green("All extensions bundled!"));
+  sendToParent(process, { condition: "transpile complete" });
+}
+
+export const announceWrite = ({ totalNumberOfExtensions, name }: ExtensionInfo): Plugin => {
+  const runner = runOncePerExtension();
+  return {
+    name: "",
+    writeBundle: () => {
+      if (!runner.check()) return;
+      if (++writeCount === totalNumberOfExtensions) allExtensionsInitiallyWritten();
     }
   }
 }

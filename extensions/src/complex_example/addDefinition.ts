@@ -1,6 +1,5 @@
-import TypeScriptFrameworkExample = require(".");
-import { ArgumentType, BlockType } from "../../typescript-support/enums";
-import { DefineBlock } from "../../typescript-support/types";
+import TypeScriptFrameworkExample from ".";
+import { ArgumentType, BlockType, DefineBlock } from "$common";
 
 type AddDefinition = DefineBlock<(left: number, right: number) => number>;
 

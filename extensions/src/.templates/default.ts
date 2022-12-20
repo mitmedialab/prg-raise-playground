@@ -1,6 +1,4 @@
-import { ArgumentType, BlockType } from "../../typescript-support/enums";
-import { Extension } from "../../typescript-support/Extension";
-import { Block, DefineBlock, Environment, ExtensionMenuDisplayDetails } from "../../typescript-support/types";
+import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails } from "$common";
 import defineTranslations from "./translations";
 
 /**
@@ -58,7 +56,7 @@ type Blocks = {
  * 
  * Hover over `Extension` to get a more in depth explanation of the base class, and what it means to `extend it`.
  */
-class ExtensionNameGoesHere extends Extension<Details, Blocks> {
+export default class ExtensionNameGoesHere extends Extension<Details, Blocks> {
   /**
    * @summary A field to demonstrate how Typescript Class fields work
    * @link https://www.typescriptlang.org/docs/handbook/2/classes.html#fields
@@ -114,5 +112,3 @@ const pickFromOptions = (): Block<WithOptionsBlock> => ({
     return argument1;
   }
 });
-
-export = ExtensionNameGoesHere;

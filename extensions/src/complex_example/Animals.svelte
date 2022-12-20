@@ -1,6 +1,6 @@
 <script lang="ts">
   import type Extension from ".";
-  import { ReactiveSet, ReactiveInvoke, reactiveInvoke, reactiveSet, color, ReactivityDependency } from "../../typescript-support/ui";
+  import { ReactiveInvoke, reactiveInvoke, color, ReactivityDependency } from "$common";
 
   export let extension: Extension;
   export let close: () => void;

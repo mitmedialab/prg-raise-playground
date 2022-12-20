@@ -1,5 +1,5 @@
-import Extension = require(".")
-import { Language } from "../../typescript-support/enums";
+import Extension from ".";
+import { Language } from "$common";
 
 // Ignore this file for now! 
 // Translations are still a work in progress, but will be supported (woohoo!)

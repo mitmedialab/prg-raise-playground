@@ -1,37 +1,28 @@
 import * as rollup from 'rollup';
-import nodeResolve from "@rollup/plugin-node-resolve";
-import { terser } from "rollup-plugin-terser";
-import path from "path";
-import svelte from 'rollup-plugin-svelte';
-import autoPreprocess from 'svelte-preprocess';
-import css from 'rollup-plugin-css-only';
-import commonjs from "@rollup/plugin-commonjs";
-import sucrase from '@rollup/plugin-sucrase';
 import alias from '@rollup/plugin-alias';
-import { transpileExtensions, fillInCodeGenArgs, setupBundleEntry, cleanup, clearDestinationDirectories, generateVmDeclarations, createExtensionMenuAssets } from "./plugins";
-import { guiSrc, packages } from '$root/scripts/paths';
+import commonjs from "@rollup/plugin-commonjs";
+import nodeResolve from "@rollup/plugin-node-resolve";
+import sucrase from '@rollup/plugin-sucrase';
+import css from 'rollup-plugin-css-only';
+import svelte from 'rollup-plugin-svelte';
+import { terser } from "rollup-plugin-terser";
+import autoPreprocess from 'svelte-preprocess';
+import path from "path";
+import chalk from 'chalk';
+import { transpileExtensions, fillInCodeGenArgs, setupBundleEntry, cleanup, clearDestinationDirectories, generateVmDeclarations, createExtensionMenuAssets, announceWrite } from "./plugins";
 import type Transpiler from './typeProbing/Transpiler';
 import { ExtensionMenuDisplayDetails, encode } from '$common';
 import { retrieveExtensionDetails } from './typeProbing';
-import { deleteAllFilesInDir, fileName, getAliases, getBundleFile, getMenuDetailsAssetsDirectory, getMenuDetailsAssetsFile } from './utils/fileSystem';
-
-
-//const __dirname = path.dirname(fileURLToPath(import.meta.url));
-//console.log(__dirname);
-
-/*
-const announceError = (semanticProgram: ts.EmitAndSemanticDiagnosticsBuilderProgram) => {
-  console.log("here");
-  printDiagnostics(semanticProgram.getProgram(), semanticProgram.getSemanticDiagnostics());
-  sendToParent(process, { condition: "typescript error" });
-}
-
-const announceTranspilation = () => sendToParent(process, { condition: "transpile complete" });
-*/
+import { fileName, getAliases, getAllExtensionDirectories, getBundleFile, getMenuDetailsAssetsDirectory, getMenuDetailsAssetsFile, watchForExtensionDirectoryAdded } from './utils/fileSystem';
+import { printDiagnostics } from './typeProbing/diagnostics';
+import { sendToParent } from '$root/scripts/devComms';
+import { processArgs } from '$root/scripts/processArgs';
 
 export type ExtensionInfo = {
   directory: string,
+  name: string,
   indexInProcess: number,
+  totalNumberOfExtensions: number,
   indexFile: string,
   bundleEntry: string,
   bundleDestination: string,
@@ -41,14 +32,13 @@ export type ExtensionInfo = {
   menuDetails: ExtensionMenuDisplayDetails
 }
 
-const getExtensionInfo = (dir: string, index: number): ExtensionInfo => {
-  const id = encode(fileName(dir));
+const getExtensionInfo = (directory: string, indexInProcess: number, totalNumberOfExtensions: number): ExtensionInfo => {
+  const id = encode(fileName(directory));
   return {
-    id,
-    directory: dir,
-    indexInProcess: index,
-    indexFile: path.join(dir, "index.ts"),
-    bundleEntry: path.join(dir, ".filesToBundle.js"),
+    id, directory, indexInProcess, totalNumberOfExtensions,
+    name: fileName(directory),
+    indexFile: path.join(directory, "index.ts"),
+    bundleEntry: path.join(directory, ".filesToBundle.js"),
     bundleDestination: getBundleFile(id),
     menuAssetsDestination: getMenuDetailsAssetsDirectory(id),
     menuAssetsFile: getMenuDetailsAssetsFile(id),
@@ -62,13 +52,14 @@ const transpileComplete = (ts: Transpiler, { menuDetails }: ExtensionInfo) => {
 }
 
 const transpileFailed = (ts: Transpiler, info: ExtensionInfo) => {
-
+  console.error(chalk.bgRed(`Typescript error in ${info.directory}`));
+  printDiagnostics(ts.program, ts.program.getSemanticDiagnostics());
+  sendToParent(process, { condition: "typescript error" });
 }
 
-
-const bundleExtension = async (dir: string, index: number, watch: boolean = true) => {
-  const info = getExtensionInfo(dir, index);
-  const { bundleEntry, bundleDestination, id, directory } = info;
+const bundleExtension = async (dir: string, index: number, extensionCount: number, watch: boolean = true) => {
+  const info = getExtensionInfo(dir, index, extensionCount);
+  const { bundleEntry, bundleDestination, id, directory, name } = info;
 
   const plugins = [
     alias({ entries: getAliases() }),
@@ -76,11 +67,14 @@ const bundleExtension = async (dir: string, index: number, watch: boolean = true
     generateVmDeclarations(info),
     setupBundleEntry(info),
     transpileExtensions({
+      ...info,
       onSuccess: (ts) => transpileComplete(ts, info),
-      onError: (ts) => transpileFailed(ts, info),
-      ...info
+      onError: (ts) => transpileFailed(ts, info)
     }),
     createExtensionMenuAssets(info),
+    fillInCodeGenArgs(info),
+    announceWrite(info),
+    cleanup(info),
     svelte({
       preprocess: autoPreprocess(),
       emitCss: false,
@@ -88,12 +82,10 @@ const bundleExtension = async (dir: string, index: number, watch: boolean = true
     sucrase({
       transforms: ['typescript']
     }),
-    fillInCodeGenArgs(info),
     nodeResolve(),
     commonjs(),
     css(),
     terser(),
-    cleanup(info),
   ];
 
   const options: rollup.RollupOptions = { input: bundleEntry, plugins }
@@ -118,14 +110,21 @@ const bundleExtension = async (dir: string, index: number, watch: boolean = true
   });
 
   watcher.on('event', (event) => {
-    console.log(event.code);
-    if (event.code === "ERROR") console.error(event.error);
+    const prefix = "[rollup]";
+    event.code === "ERROR"
+      ? console.error(chalk.bgRed(`${prefix} ${name}:`) + chalk.red(`${event.error}`))
+      : console.log(chalk.bgGreen(`${prefix} ${name}:`) + chalk.cyan(` ${event.code}`));
     if (event.code === "BUNDLE_END") event.result?.close();
   });
 };
 
-bundleExtension(path.resolve(__dirname, "..", "src", "typescript_framework_simple"), 0);
+const defaults = { doWatch: false };
+const flagByOption = { doWatch: "watch", };
+const { doWatch } = processArgs<typeof defaults>(flagByOption, defaults);
 
-export const bundle = (dir) => {
-  bundleExtension(dir, 0);
-}
+const extensionDirectories = getAllExtensionDirectories();
+
+const { length } = extensionDirectories;
+extensionDirectories.forEach((dir, index) => bundleExtension(dir, index, length, doWatch));
+
+if (doWatch) watchForExtensionDirectoryAdded((path, stats) => bundleExtension(path, 0, 1, true));

@@ -1,5 +1,6 @@
 import path from "path";
 import fs from "fs";
+import chokidar from "chokidar";
 import { extensionsFolder, guiSrc, packages, vmSrc } from "$root/scripts/paths";
 
 export const extensionBundlesDir = path.join(packages.gui, "static", "extension-bundles");
@@ -19,7 +20,9 @@ export const deleteAllFilesInDir = (dir, exclude?: string[]) =>
 
 export const fileName = (file) => path.basename(file).replace(path.extname(file), "");
 
-export const commonDirectory = path.join(extensionsFolder, "src", "common");
+export const extensionsSrc = path.join(extensionsFolder, "src");
+export const commonDirectory = path.join(extensionsSrc, "common");
+
 const getCommonAlias = () => getAlias(commonDirectory, "$common");
 const getScratchVmAlias = () => getAlias(vmSrc, "$scratch-vm");
 
@@ -29,3 +32,19 @@ const getAlias = (location: string, alias: string) => {
 }
 
 export const getAliases = () => ({ ...getCommonAlias(), ...getScratchVmAlias() });
+
+const isDirectory = (file: fs.Dirent) => file.isDirectory();
+const getName = ({ name }: fs.Dirent) => name;
+const isValid = (dirName: string) => !["..", ".", "common", ".templates"].includes(dirName);
+const getPath = (dirName: string) => path.join(extensionsSrc, dirName);
+const hasIndex = (dirPath: string) => fs.existsSync(path.join(dirPath, "index.ts"));
+
+export const getAllExtensionDirectories = () => fs.readdirSync(extensionsSrc, { withFileTypes: true })
+  .filter(isDirectory)
+  .map(getName)
+  .filter(isValid)
+  .map(getPath)
+  .filter(hasIndex);
+
+export const watchForExtensionDirectoryAdded = (callback: (path: string, stats: fs.Stats) => void) =>
+  chokidar.watch(extensionsSrc).on("addDir", callback);

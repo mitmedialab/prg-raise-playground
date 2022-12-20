@@ -4,7 +4,7 @@ import ts from "typescript";
 import { profile, start, stop } from "../../../scripts/profile";
 import { extensionsFolder } from "../../../scripts/paths";
 import { getProgramMsg, reportDiagnostic, reportWatchStatusChanged } from "./diagnostics";
-import { getSrcCompilerOptions } from "./config";
+import { getSrcCompilerOptions } from "./tsConfig";
 
 type Program = ts.EmitAndSemanticDiagnosticsBuilderProgram;
 type Host = ts.WatchCompilerHostOfFilesAndCompilerOptions<Program>;

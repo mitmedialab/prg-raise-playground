@@ -1,4 +1,4 @@
-import { ArgumentType, BlockType, Block, BlockDefinitions, RGBObject, MenuItem, ButtonBlock, Extension } from "../../typescript-support";
+import { ArgumentType, BlockType, Block, BlockDefinitions, RGBObject, MenuItem, ButtonBlock, Extension } from "$common";
 import addDefinition from "./addDefinition";
 
 type DisplayDetails = {
@@ -56,7 +56,7 @@ type Blocks = {
   showAnimalCollectionUI: ButtonBlock;
 }
 
-class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
+export default class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
   lhsOptions: number[];
   animals: MenuItem<Animal>[];
   collection: Animal[] = [Animal.Gorilla];
@@ -274,5 +274,3 @@ class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
     })
   }
 }
-
-export = TypeScriptFrameworkExample;
