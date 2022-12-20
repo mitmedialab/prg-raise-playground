@@ -9,5 +9,5 @@
     "moduleResolution": "Node",
     "skipLibCheck": true,
   },
-  "include": [".?**/*.ts"],
+  "include": [".**/*.ts", "**/*.ts"],
 }
