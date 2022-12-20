@@ -109,7 +109,7 @@ export default class TypeScriptFrameworkExample extends Extension<DisplayDetails
       }),
 
       'sumMatrix': () => ({
-        type: BlockType.Reporter,
+        type: "reporter",
         args: [
           ArgumentType.Matrix,
           {

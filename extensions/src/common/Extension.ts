@@ -1,5 +1,5 @@
 import { ArgumentType, BlockType, Language } from './enums';
-import type { ExtensionMenuDisplayDetails, ExtensionBlocks, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, VerboseArgument, Environment, Menu, DynamicMenu, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters, TypeByArgumentType, AllText, Translations, BlockOperation } from './types';
+import type { ExtensionMenuDisplayDetails, ExtensionBlocks, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, VerboseArgument, Environment, Menu, DynamicMenu, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters, TypeByArgumentType, AllText, Translations, BlockOperation, ValueOf } from './types';
 import Cast from '$scratch-vm/util/cast';
 //import * as formatMessage from 'format-message';
 import Runtime from "$scratch-vm/engine/runtime";
@@ -346,14 +346,14 @@ export abstract class Extension
     return undefined;
   }
 
-  static TryCastToArgumentType = <T extends ArgumentType>(
+  static TryCastToArgumentType = <T extends ValueOf<typeof ArgumentType>>(
     argumentType: T,
     value: any,
-    onFailure: (value: any) => TypeByArgumentType[T]
-  ): TypeByArgumentType[T] => {
+    onFailure: (value: any) => TypeByArgumentType<T>
+  ): TypeByArgumentType<T> => {
     try {
       const casted = Extension.CastToType(argumentType, value);
-      return casted as TypeByArgumentType[T];
+      return casted as TypeByArgumentType<T>;
     }
     catch {
       return onFailure(value);
@@ -367,8 +367,8 @@ export abstract class Extension
   private static GetInternalKey = (key: string) => `internal_${key}`;
   private static GetButtonID = (id: string, opcode: string) => `${id}_${opcode}`;
 
-  private static GetArgumentType = <T>(arg: Argument<T>): ArgumentType =>
-    Extension.IsPrimitive(arg) ? arg as ArgumentType : (arg as VerboseArgument<T>).type;
+  private static GetArgumentType = <T>(arg: Argument<T>): ValueOf<typeof ArgumentType> =>
+    Extension.IsPrimitive(arg) ? arg as ValueOf<typeof ArgumentType> : (arg as VerboseArgument<T>).type;
 
   private static ToFlag = (value: string): boolean => parseInt(value) === 1;
 
@@ -386,7 +386,7 @@ export abstract class Extension
     return matrix;
   }
 
-  private static CastToType = (argumentType: ArgumentType, value: any) => {
+  private static CastToType = (argumentType: ValueOf<typeof ArgumentType>, value: any) => {
     switch (argumentType) {
       case ArgumentType.String:
         return `${value}`;

@@ -84,26 +84,21 @@ export type Argument<T> = VerboseArgument<T> | ScratchArgument<T>;
 export type RGBObject = { r: number, g: number, b: number };
 export type Matrix = boolean[][];
 
-export type TypeByArgumentType = {
-  [ArgumentType.Color]: RGBObject,
-  [ArgumentType.Matrix]: boolean[][],
-  [ArgumentType.Number]: number,
-  [ArgumentType.Angle]: number,
-  [ArgumentType.Note]: number,
-  [ArgumentType.String]: string,
-  [ArgumentType.Boolean]: boolean,
-  /**
-   * TODO
-   */
-  [ArgumentType.Image]: string,
-}
+export type TypeByArgumentType<T extends ValueOf<typeof ArgumentType>> =
+  T extends typeof ArgumentType.Number | typeof ArgumentType.Angle | typeof ArgumentType.Note ? number
+  : T extends typeof ArgumentType.Boolean ? boolean
+  : T extends typeof ArgumentType.String ? string
+  : T extends typeof ArgumentType.Color ? RGBObject
+  : T extends typeof ArgumentType.Matrix ? boolean[][]
+  : T extends typeof ArgumentType.Image ? string // TODO
+  : never;
 
 export type ScratchArgument<T> =
-  T extends RGBObject ? ArgumentType.Color :
-  T extends boolean[][] ? ArgumentType.Matrix :
-  T extends number ? (ArgumentType.Number | ArgumentType.Angle | ArgumentType.Note) :
-  T extends string ? ArgumentType.String :
-  T extends boolean ? (ArgumentType.Boolean) :
+  T extends RGBObject ? typeof ArgumentType.Color :
+  T extends boolean[][] ? typeof ArgumentType.Matrix :
+  T extends number ? (typeof ArgumentType.Number | typeof ArgumentType.Angle | typeof ArgumentType.Note) :
+  T extends string ? typeof ArgumentType.String :
+  T extends boolean ? (typeof ArgumentType.Boolean) :
   never;
 
 // Used to be <T extends [...any[]]> ... not sure if it needs to be?
@@ -159,16 +154,16 @@ export type Block<T extends BlockOperation> = {
    * * `BlockType.Event` - Starts a stack in response to an event (full spec TBD)
    */
   type: ReturnType<T> extends ReturnType<ButtonBlock>
-  ? BlockType.Button
+  ? typeof BlockType.Button
   : ReturnType<T> extends void
-  ? BlockType.Command | BlockType.Button | BlockType.Loop
+  ? typeof BlockType.Command | typeof BlockType.Button | typeof BlockType.Loop
   : ReturnType<T> extends boolean
-  ? (BlockType.Reporter | BlockType.Boolean | BlockType.Hat)
+  ? (typeof BlockType.Reporter | typeof BlockType.Boolean | typeof BlockType.Hat)
   : ReturnType<T> extends number
-  ? (BlockType.Reporter | BlockType.Conditional)
+  ? (typeof BlockType.Reporter | typeof BlockType.Conditional)
   : ReturnType<T> extends Promise<any>
   ? never
-  : BlockType.Reporter;
+  : typeof BlockType.Reporter;
 
   /**
    * @summary A function that encapsulates the code that runs when a block is executed
@@ -398,8 +393,8 @@ export type ExtensionMenuDisplayDetails = {
   featured?: boolean;
   hidden?: boolean;
   disabled?: boolean;
-  implementationLanguage?: Language;
-} & Partial<Record<Language, { name: string, description: string }>>
+  implementationLanguage?: ValueOf<typeof Language>;
+} & Partial<Record<ValueOf<typeof Language>, { name: string, description: string }>>
 
 export type DefineBlock<T extends BlockOperation> = (extension: Extension<any, any>) => Block<T>;
 
@@ -448,7 +443,7 @@ export type AllText<T extends Extension<any, any>> = {
   [k in keyof T["BlockFunctions"]]: ExtractTextFromBlock<T["BlockFunctions"][k], Block<T["BlockFunctions"][k]>>
 };
 
-export type Translations<T extends Extension<any, any>> = Partial<{ [k in Language]: AllText<T> | undefined }>;
+export type Translations<T extends Extension<any, any>> = Partial<{ [k in ValueOf<typeof Language>]: AllText<T> | undefined }>;
 
 type UnionToIntersection<U> = (
   U extends never ? never : (arg: U) => never
@@ -459,8 +454,8 @@ type UnionToIntersection<U> = (
 export type UnionToTuple<T> = UnionToIntersection<
   T extends never ? never : (t: T) => T
 > extends (_: never) => infer W
-  ? [...UnionToTuple<Exclude<T, W>>, W]
-  : [];
+  ? readonly [...UnionToTuple<Exclude<T, W>>, W]
+  : readonly [];
 
 export type KeysWithValuesOfType<T, V> = keyof { [P in keyof T as T[P] extends V ? P : never]: P };
 
@@ -567,7 +562,7 @@ export interface ExtensionBlockMetadata {
   func?: string | undefined;
 
   /** The type of block (command, reporter, etc.) being described. */
-  blockType: BlockType;
+  blockType: ValueOf<typeof BlockType>;
 
   /** The text on the block, with [PLACEHOLDERS] for arguments. */
   text: string;
@@ -600,7 +595,7 @@ export interface ExtensionBlockMetadata {
 /** All the metadata needed to register an argument for an extension block. */
 export interface ExtensionArgumentMetadata {
   /** The type of the argument (number, string, etc.) */
-  type: ArgumentType;
+  type: ValueOf<typeof ArgumentType>;
 
   /** The default value of this argument. */
   defaultValue?: any;

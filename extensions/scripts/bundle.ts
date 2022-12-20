@@ -62,7 +62,7 @@ const bundleExtension = async (dir: string, index: number, extensionCount: numbe
   const { bundleEntry, bundleDestination, id, directory, name } = info;
 
   const plugins = [
-    alias({ entries: getAliases() }),
+    /** custom PRG-developed plugins */
     clearDestinationDirectories(info),
     generateVmDeclarations(info),
     setupBundleEntry(info),
@@ -75,6 +75,8 @@ const bundleExtension = async (dir: string, index: number, extensionCount: numbe
     fillInCodeGenArgs(info),
     announceWrite(info),
     cleanup(info),
+    /** Third-party rollup plugins */
+    alias({ entries: getAliases() }),
     svelte({
       preprocess: autoPreprocess(),
       emitCss: false,
@@ -85,7 +87,7 @@ const bundleExtension = async (dir: string, index: number, extensionCount: numbe
     nodeResolve(),
     commonjs(),
     css(),
-    terser(),
+    //terser(),
   ];
 
   const options: rollup.RollupOptions = { input: bundleEntry, plugins }
