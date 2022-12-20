@@ -1,7 +1,7 @@
 import ts = require("typescript");
 import path = require("path");
 import assert = require("assert");
-import { ExtensionMenuDisplayDetails, KeysWithValuesOfType, UnionToTuple, Language, LanguageKeys } from "$common";
+import { ExtensionMenuDisplayDetails, KeysWithValuesOfType, UnionToTuple, Language, LanguageKeys, ValueOf } from "$common";
 
 export const retrieveExtensionDetails = (program: ts.Program): ExtensionMenuDisplayDetails => {
   const typeChecker = program.getTypeChecker();
@@ -29,14 +29,37 @@ export const isExtension = (type: ts.Type) => {
   return baseTypes?.some(t => t.symbol.name === "Extension") ?? false;
 }
 
+export const extractLanguageFromValue = (member: any): ValueOf<typeof Language> => {
+  const { exprName, literal } = member.type;
+
+  const definedUsingObjectReference = exprName !== undefined;
+  if (definedUsingObjectReference) return Language[exprName.right.escapedText];
+
+  const definedUsingLiteralValue = literal !== undefined;
+  if (definedUsingLiteralValue) return literal.text;
+
+  return undefined;
+}
+
+export const extractLanguageFromKey = (member: any) => {
+  const { name } = member;
+  if (!name) return undefined
+  const { expression } = name;
+  if (!expression) return undefined;
+  const { text } = expression;
+
+  const definedUsingLiteralValue = text !== undefined;
+  if (definedUsingLiteralValue) return text;
+
+  const definedUsingObjectReference = expression !== undefined;
+  if (definedUsingObjectReference) return Language[expression.name.escapedText];
+}
+
 type MenuText = KeysWithValuesOfType<ExtensionMenuDisplayDetails, string>;
 type AllMenuText = UnionToTuple<MenuText>;
 
 type MenuFlag = KeysWithValuesOfType<ExtensionMenuDisplayDetails, boolean>;
 type AllMenuFlags = UnionToTuple<MenuFlag>;
-
-type MenuTranslations = KeysWithValuesOfType<ExtensionMenuDisplayDetails, Partial<Record<Language, any>>>;
-type AllMenuTranslations = UnionToTuple<MenuTranslations>;
 
 //@ts-ignore 
 const menuDetailTextKeys: AllMenuText = ["name", "description", "iconURL", "insetIconURL", "collaborator", "connectionIconURL", "connectionSmallIconURL", "connectionTipIconURL", "connectingMessage", "helpLink", "implementationLanguage"];
@@ -50,13 +73,13 @@ const getMenuDisplayDetails = (type: ts.Type): ExtensionMenuDisplayDetails => {
   const { members } = type.getBaseTypes()[0].resolvedTypeArguments[0].symbol.declarations[0];
 
 
-  let implementationLanguage: string = undefined;
+  let implementationLanguage: ValueOf<typeof Language> = undefined;
 
   const details: Map<string, any> = members.reduce((map: Map<string, any>, member) => {
     const key: keyof ExtensionMenuDisplayDetails = member.symbol.escapedName;
 
     if (key === "implementationLanguage") {
-      implementationLanguage = Language[member.type.typeName.right.escapedText] as Language;
+      implementationLanguage = extractLanguageFromValue(member);
       return map;
     }
 
@@ -72,9 +95,8 @@ const getMenuDisplayDetails = (type: ts.Type): ExtensionMenuDisplayDetails => {
       }
     }
 
-    if (LanguageKeys.includes(member.name?.expression?.name?.escapedText)) {
-      const language = Language[member.name.expression.name.escapedText] as Language;
-
+    const language = extractLanguageFromKey(member);
+    if (language) {
       const entries = (member.type.members as Array<any>)?.map(child => {
         const childKey = child.symbol.escapedName as "name" | "description";
         const value: string = child.type.literal.text;
