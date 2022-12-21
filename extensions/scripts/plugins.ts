@@ -7,10 +7,10 @@ import { getBlockIconURI } from "./utils/URIs";
 import { appendToRootDetailsFile, populateMenuFileForExtension } from "./extensionsMenu";
 import { toNamedDefaultExport } from "./utils/importExport";
 import { default as glob } from 'glob';
-import { commonDirectory, deleteAllFilesInDir, extensionBundlesDir, fileName, generatedDetailsFileName, generatedMenuDetailsDir } from "./utils/fileSystem";
+import { commonDirectory, deleteAllFilesInDir, extensionBundlesDir, extensionsSrc, fileName, generatedDetailsFileName, generatedMenuDetailsDir, tsToJs } from "./utils/fileSystem";
 import { ExtensionInfo } from "./bundle";
 import ts from "typescript";
-import { getSrcCompilerOptions } from "./typeProbing/tsConfig";
+import { getSrcCompilerHost, getSrcCompilerOptions } from "./typeProbing/tsConfig";
 import { extensionsFolder, vmSrc } from "$root/scripts/paths";
 import { reportDiagnostic } from "./typeProbing/diagnostics";
 import chalk from "chalk";
@@ -40,11 +40,8 @@ export const generateVmDeclarations = (info: ExtensionInfo): Plugin => {
 
       const emittedFiles: Map<string, string[]> = new Map();
 
-      const options: ts.CompilerOptions = {
-        ...getSrcCompilerOptions(),
-        allowJs: true, checkJs: false, declaration: true, emitDeclarationOnly: true,
-      }
-      const host = ts.createCompilerHost(options);
+      const overrides: ts.CompilerOptions = { allowJs: true, checkJs: false, declaration: true, emitDeclarationOnly: true };
+      const { options, host } = getSrcCompilerHost(overrides);
 
       host.writeFile = (fileName: string, contents: string) => {
         if (fileName.includes(extensionsFolder) || !fileName.includes(".d.ts")) return;
@@ -64,6 +61,29 @@ export const generateVmDeclarations = (info: ExtensionInfo): Plugin => {
       const readout = Object.entries(Object.fromEntries(emittedFiles)).map(([dir, files]) => ({ dir, files }));
       console.log(chalk.whiteBright(`Emitted declarations for javascript files:`));
       console.table(readout);
+    }
+  }
+}
+
+export const transpileExtensionEvents = (info: ExtensionInfo): Plugin => {
+  const runner = runOnceAcrossAllExtensions(info);
+  return {
+    name: "",
+    buildStart() {
+      if (!runner.check()) return;
+      const eventsFile = path.join(commonDirectory, "events.ts");
+      const { options, host } = getSrcCompilerHost();
+
+      const program = ts.createProgram([eventsFile], options, host);
+      const result = program.emit();
+
+      if (result.emitSkipped) return result.diagnostics.forEach(reportDiagnostic);
+
+      const transpiledFile = tsToJs(eventsFile);
+      const destinationDir = path.join(extensionsFolder, "dist");
+
+      if (!fs.existsSync(destinationDir)) fs.mkdirSync(destinationDir);
+      fs.renameSync(transpiledFile, path.join(destinationDir, "events.js"));
     }
   }
 }
@@ -94,13 +114,13 @@ export const transpileExtensions = ({ indexFile, onSuccess, onError }: Extension
   }
 }
 
-export const fillInCodeGenArgs = ({ id, directory, menuDetails, indexFile }: ExtensionInfo) => {
+export const fillInCodeGenArgs = ({ id, directory, menuDetails, indexFile }: ExtensionInfo): Plugin => {
   return {
     name: 'fill-in-code-gen-args-for-extension',
     transform: {
       order: 'post',
       handler: (code: string, file: string) => {
-        if (file !== indexFile) return;
+        if (!file.includes("Extension.ts")) return;
         const { name } = menuDetails;
         const blockIconURI = getBlockIconURI(menuDetails, directory);
         const codeGenArgs: PopulateCodeGenArgs = { id, name, blockIconURI };
@@ -134,7 +154,7 @@ export const cleanup = ({ bundleDestination }: ExtensionInfo): Plugin => {
 let writeCount = 0;
 const allExtensionsInitiallyWritten = () => {
   console.log(chalk.green("All extensions bundled!"));
-  sendToParent(process, { condition: "transpile complete" });
+  sendToParent(process, { condition: "extensions complete" });
 }
 
 export const announceWrite = ({ totalNumberOfExtensions, name }: ExtensionInfo): Plugin => {

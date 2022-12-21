@@ -47,7 +47,7 @@ const importStaticScript = async(endpoint, onLoad, onError) => {
 
 const tryImportExtensionBundle = async (id, onLoad, onError, error = false) => {
   try {
-      await importStaticScript(`${id}/bundle.js`, onLoad, onError);
+      await importStaticScript(`extension-bundles/${id}.js`, onLoad, onError);
       return true;
   }
   catch(e) {

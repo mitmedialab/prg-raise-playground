@@ -12,16 +12,18 @@
     "build:vm": "npm run compile:ts --prefix ./packages/scratch-vm",
     "build:gui": "npm run build --prefix ./packages/scratch-gui/",
     "build": "npm run init:build && npm run clean:build && npm run build:vm && npm run build:gui && npm run move:build:to:root",
-    "dev": "npm run clean:type:declarations && ./node_modules/.bin/ts-node ./scripts/dev.ts",
+    "ts:node": "./node_modules/.bin/ts-node -r tsconfig-paths/register",
+    "dev": "npm run ts:node -- --project ./extensions/scripts/tsconfig.json ./scripts/dev.ts",
     "new:extension": "./node_modules/.bin/ts-node ./packages/scratch-vm/scripts/factories/extension.ts",
     "add:ui": "./node_modules/.bin/ts-node ./packages/scratch-vm/scripts/factories/ui.ts",
-    "rebuild:blocks": "npm run prepublish --prefix ./packages/scratch-blocks && npm run dev",
-    "clean:type:declarations": "rm -f packages/scratch-vm/src/**/*.d.ts"
+    "rebuild:blocks": "npm run prepublish --prefix ./packages/scratch-blocks && npm run dev"
   },
   "devDependencies": {
     "@types/webgl2": "^0.0.6",
     "lerna": "^3.20.2",
     "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.1.1",
+    "tslib": "^2.4.1",
     "typescript": "^4.9.4"
   }
 }

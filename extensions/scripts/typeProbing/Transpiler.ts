@@ -1,8 +1,6 @@
 import chalk from "chalk";
-import path from "path";
 import ts from "typescript";
 import { profile, start, stop } from "../../../scripts/profile";
-import { extensionsFolder } from "../../../scripts/paths";
 import { getProgramMsg, reportDiagnostic, reportWatchStatusChanged } from "./diagnostics";
 import { getSrcCompilerOptions } from "./tsConfig";
 

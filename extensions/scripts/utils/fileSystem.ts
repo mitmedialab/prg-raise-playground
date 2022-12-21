@@ -6,7 +6,7 @@ import { extensionsFolder, guiSrc, packages, vmSrc } from "$root/scripts/paths";
 export const extensionBundlesDir = path.join(packages.gui, "static", "extension-bundles");
 export const generatedMenuDetailsDir = path.join(guiSrc, "generated");
 
-export const getBundleFile = (extensionID: string) => path.join(extensionBundlesDir, extensionID);
+export const getBundleFile = (extensionID: string) => path.join(extensionBundlesDir, `${extensionID}.js`);
 
 export const generatedDetailsFileName = "details.generated.js";
 export const getMenuDetailsAssetsDirectory = (extensionID: string) => path.join(generatedMenuDetailsDir, extensionID);
@@ -48,3 +48,5 @@ export const getAllExtensionDirectories = () => fs.readdirSync(extensionsSrc, { 
 
 export const watchForExtensionDirectoryAdded = (callback: (path: string, stats: fs.Stats) => void) =>
   chokidar.watch(extensionsSrc).on("addDir", callback);
+
+export const tsToJs = (tsFile: string) => path.join(path.dirname(tsFile), path.basename(tsFile).replace(".ts", ".js"));

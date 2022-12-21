@@ -1,6 +1,6 @@
 export const Conditon = {
-  InitialTranspileComplete: "transpile complete",
-  TsError: "typescript error"
+  ExtensionsSuccesfullyBundled: "extensions complete",
+  ErrorBundlingExtensions: "extensions error"
 } as const;
 
 type ValueOf<T> = T[keyof T];

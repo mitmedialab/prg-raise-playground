@@ -1,6 +1,5 @@
-import ts = require("typescript");
-import path = require("path");
-import assert = require("assert");
+import ts from "typescript";
+import assert from "assert";
 import { ExtensionMenuDisplayDetails, KeysWithValuesOfType, UnionToTuple, Language, LanguageKeys, ValueOf } from "$common";
 
 export const retrieveExtensionDetails = (program: ts.Program): ExtensionMenuDisplayDetails => {
@@ -125,6 +124,6 @@ const getMenuDisplayDetails = (type: ts.Type): ExtensionMenuDisplayDetails => {
 
   details.set(implementationLanguage ?? defaultLanguage, { name: details.get("name"), description: details.get("description") });
 
-  requiredKeys.forEach(key => assert(details.has(key)));
+  requiredKeys.forEach(key => assert(details.has(key), new Error(`Required key '${key}' not found`)));
   return Object.fromEntries(details) as ExtensionMenuDisplayDetails;
 }

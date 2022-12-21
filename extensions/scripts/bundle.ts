@@ -1,4 +1,4 @@
-import * as rollup from 'rollup';
+import { watch, rollup, type Plugin, type RollupOptions, type OutputOptions } from "rollup";
 import alias from '@rollup/plugin-alias';
 import commonjs from "@rollup/plugin-commonjs";
 import nodeResolve from "@rollup/plugin-node-resolve";
@@ -9,7 +9,7 @@ import { terser } from "rollup-plugin-terser";
 import autoPreprocess from 'svelte-preprocess';
 import path from "path";
 import chalk from 'chalk';
-import { transpileExtensions, fillInCodeGenArgs, setupBundleEntry, cleanup, clearDestinationDirectories, generateVmDeclarations, createExtensionMenuAssets, announceWrite } from "./plugins";
+import { transpileExtensions, fillInCodeGenArgs, setupBundleEntry, cleanup, clearDestinationDirectories, generateVmDeclarations, createExtensionMenuAssets, announceWrite, transpileExtensionEvents } from "./plugins";
 import type Transpiler from './typeProbing/Transpiler';
 import { ExtensionMenuDisplayDetails, encode } from '$common';
 import { retrieveExtensionDetails } from './typeProbing';
@@ -54,16 +54,16 @@ const transpileComplete = (ts: Transpiler, { menuDetails }: ExtensionInfo) => {
 const transpileFailed = (ts: Transpiler, info: ExtensionInfo) => {
   console.error(chalk.bgRed(`Typescript error in ${info.directory}`));
   printDiagnostics(ts.program, ts.program.getSemanticDiagnostics());
-  sendToParent(process, { condition: "typescript error" });
+  sendToParent(process, { condition: "extensions error" });
 }
 
-const bundleExtension = async (dir: string, index: number, extensionCount: number, watch: boolean = true) => {
+const bundleExtension = async (dir: string, index: number, extensionCount: number, doWatch: boolean = true) => {
   const info = getExtensionInfo(dir, index, extensionCount);
   const { bundleEntry, bundleDestination, id, directory, name } = info;
 
-  const plugins = [
-    /** custom PRG-developed plugins */
+  const customPRGPlugins: Plugin[] = [
     clearDestinationDirectories(info),
+    transpileExtensionEvents(info),
     generateVmDeclarations(info),
     setupBundleEntry(info),
     transpileExtensions({
@@ -74,8 +74,10 @@ const bundleExtension = async (dir: string, index: number, extensionCount: numbe
     createExtensionMenuAssets(info),
     fillInCodeGenArgs(info),
     announceWrite(info),
-    cleanup(info),
-    /** Third-party rollup plugins */
+    cleanup(info)
+  ];
+
+  const thirdPartyPlugins: Plugin[] = [
     alias({ entries: getAliases() }),
     svelte({
       preprocess: autoPreprocess(),
@@ -87,13 +89,15 @@ const bundleExtension = async (dir: string, index: number, extensionCount: numbe
     nodeResolve(),
     commonjs(),
     css(),
-    //terser(),
+    terser(),
   ];
 
-  const options: rollup.RollupOptions = { input: bundleEntry, plugins }
-  const bundled = await rollup.rollup(options);
+  const plugins = [...customPRGPlugins, ...thirdPartyPlugins];
 
-  const output: rollup.OutputOptions = {
+  const options: RollupOptions = { input: bundleEntry, plugins }
+  const bundled = await rollup(options);
+
+  const output: OutputOptions = {
     file: bundleDestination,
     format: "iife",
     compact: true,
@@ -103,9 +107,9 @@ const bundleExtension = async (dir: string, index: number, extensionCount: numbe
 
   await bundled.write(output);
 
-  if (!watch) return;
+  if (!doWatch) return;
 
-  const watcher = rollup.watch({
+  const watcher = watch({
     ...options,
     output: [output],
     watch: { include: [path.join(directory, "**", "*.{ts,svelte}")] }
@@ -129,4 +133,4 @@ const extensionDirectories = getAllExtensionDirectories();
 const { length } = extensionDirectories;
 extensionDirectories.forEach((dir, index) => bundleExtension(dir, index, length, doWatch));
 
-if (doWatch) watchForExtensionDirectoryAdded((path, stats) => bundleExtension(path, 0, 1, true));
+//if (doWatch) watchForExtensionDirectoryAdded((path, stats) => bundleExtension(path, 0, 1, true));

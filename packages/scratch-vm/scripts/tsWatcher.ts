@@ -81,10 +81,10 @@ function customAfterProgramCreate(status: ProgramStatus, ...params: Parameters<P
     const program = semanticProgram.getProgram();
     const diagnostics = semanticProgram.getSemanticDiagnostics();
     printDiagnostics(program, diagnostics);
-    sendToParent(process, { condition: Conditon.TsError });
+    sendToParent(process, { condition: Conditon.ErrorBundlingExtensions });
   }
   else if (isStartUp) {
-    sendToParent(process, { condition: Conditon.InitialTranspileComplete });
+    sendToParent(process, { condition: Conditon.ExtensionsSuccesfullyBundled });
   }
 
   status.increment(); // don't destructure to avoid issues with 'this'

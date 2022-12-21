@@ -11,6 +11,7 @@
    * Your UI is also to manipulate that state through interacting with the public properties and functions of your extension
    * (NOTE: functions should not be invoked directly, but instead called through the `invoke` function below).
    */
+  // svelte-ignore unused-export-let
   export let extension: Extension;
 
   /**
@@ -21,6 +22,7 @@
    * <button on:click={close}>Cancel</button>
    * ```
    */
+  // svelte-ignore unused-export-let
   export let close: () => void;
 
   /**

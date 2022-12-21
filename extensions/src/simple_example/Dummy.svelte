@@ -2,7 +2,9 @@
   import type Extension from ".";
   import { activeClass, px, color } from "$common";
 
+  // svelte-ignore unused-export-let
   export let extension: any;
+  // svelte-ignore unused-export-let
   export let close: () => void;
 
   const container = activeClass;

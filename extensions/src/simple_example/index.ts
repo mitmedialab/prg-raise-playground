@@ -6,7 +6,7 @@ type Details = {
   description: "Skeleton for a typescript extension",
   iconURL: "Typescript_logo.png",
   insetIconURL: "typescript-logo.svg",
-  implementationLanguage: Language.English,
+  implementationLanguage: typeof Language.English,
   [Language.Español]: {
     name: "Extensión simple Typescript",
     description: "Ejemplo de una extensión simple usando Typescript"
@@ -42,7 +42,7 @@ export default class SimpleTypescript extends Extension<Details, {
         arg: {
           type: ArgumentType.String,
           options: {
-            items: ['one', 'two', 'three'],
+            items: ['1', 'two', 'three'],
             acceptsReporters: true,
             handler: (x: any) => Extension.TryCastToArgumentType(ArgumentType.String, x, () => {
               alert(`Unsopported input: ${x}`);

@@ -1,25 +1,30 @@
 import { fork } from 'child_process';
 import path = require("path");
 import { Message, Conditon } from './devComms';
-import { packages } from './paths';
+import { extensionsFolder, packages } from './paths';
 
-const { vm, gui } = packages;
+const { gui } = packages;
 
-const webpack = path.join(gui, "node_modules", ".bin", "webpack-dev-server");
-const config = path.join(gui, "webpack.config.js");
-const transpile = path.join(vm, "scripts", "transpile.ts");
+const getNodeModule = (dir: string, module: string) => path.join(dir, "node_modules", ".bin", module);
+const argsToFlags = (args: Record<string, string>) => Object.entries(args).map(([flag, value]) => [`--${flag}`, value]).flat()
 
-const transpilation = fork(transpile, ["watch=true", "cache=true"]);
-const children = [transpilation];
+const extensionsScripts = path.join(extensionsFolder, "scripts");
+const bundleExtensionsScript = path.join(extensionsScripts, "bundle.ts");
+const bundleExtensions = fork(bundleExtensionsScript, ["watch=true"]);
 
-transpilation.on("message", (msg: Message) => {
+const children = [bundleExtensions];
+
+bundleExtensions.on("message", (msg: Message) => {
   const { condition: flag } = msg;
   switch (flag) {
-    case Conditon.TsError:
+    case Conditon.ErrorBundlingExtensions:
       children.forEach(child => child.kill());
       break;
-    case Conditon.InitialTranspileComplete:
-      const bundle = fork(webpack, ["--config", config], { cwd: gui });
+    case Conditon.ExtensionsSuccesfullyBundled:
+      const webpack = getNodeModule(gui, "webpack-dev-server");
+      const config = path.join(gui, "webpack.config.js");
+      const clearTsNodeArgs = [];
+      const bundle = fork(webpack, argsToFlags({ config }), { cwd: gui, execArgv: clearTsNodeArgs, });
       children.push(bundle);
       break;
   }

@@ -2,7 +2,9 @@
   import type Extension from ".";
   import { activeClass, color as uiColors } from "$common";
 
+  // svelte-ignore unused-export-let
   export let extension: any;
+  // svelte-ignore unused-export-let
   export let close: () => void;
 
   const colors: {name: string, color: string}[] = Object.entries(uiColors).map(([key, innerColors]) => {

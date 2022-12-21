@@ -1,14 +1,12 @@
 import Runtime from "$scratch-vm/engine/runtime";
 import { Extension as BaseExtension } from "./Extension";
+import { openUIEvent, registerButtonCallbackEvent } from "./events";
 
 export type ReactivityDependency = any | any[];
 
 export const activeClass = true;
 
 export const px = (numberOf: number) => `${numberOf}px`;
-
-export const openUIEvent = "OPEN_UI_FROM_EXTENSION";
-export const registerButtonCallbackEvent = "REGISTER_BUTTON_CALLBACK_FROM_EXTENSION";
 
 type UniqueKeys<Extension> = Exclude<keyof Extension, keyof BaseExtension<any, any>>;
 type Methods<Extension> = { [K in UniqueKeys<Extension>]-?: Extension[K] extends (...args: any) => any ? K : never };
