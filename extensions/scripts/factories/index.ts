@@ -1,7 +1,5 @@
 import path = require("path");
-import { extensionsFolder } from "$root/scripts/paths";
-
-const templatesFolder = path.join(extensionsFolder, "src", ".templates");
+import { extensionsSrc, templatesFolder } from "scripts/utils/fileSystem";
 
 export const getPathToTemplate = (name: string, extension: string = ".ts") => path.join(templatesFolder, `${name}${extension}`);
-export const getPathToExtension = (extensionDirectory: string) => path.join(extensionsFolder, extensionDirectory);
+export const getPathToExtension = (extensionDirectory: string) => path.join(extensionsSrc, extensionDirectory);

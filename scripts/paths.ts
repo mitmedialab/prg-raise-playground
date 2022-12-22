@@ -1,6 +1,6 @@
-import path = require("path");
-import fs = require("fs");
-import assert = require("assert");
+import path from "path";
+import fs from "fs";
+import assert from "assert";
 
 export const root = path.resolve(__dirname, "..");
 

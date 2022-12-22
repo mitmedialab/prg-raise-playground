@@ -13,9 +13,10 @@
     "build:gui": "npm run build --prefix ./packages/scratch-gui/",
     "build": "npm run init:build && npm run clean:build && npm run build:vm && npm run build:gui && npm run move:build:to:root",
     "ts:node": "./node_modules/.bin/ts-node -r tsconfig-paths/register",
-    "dev": "npm run ts:node -- --project ./extensions/scripts/tsconfig.json ./scripts/dev.ts",
-    "new:extension": "./node_modules/.bin/ts-node ./packages/scratch-vm/scripts/factories/extension.ts",
-    "add:ui": "./node_modules/.bin/ts-node ./packages/scratch-vm/scripts/factories/ui.ts",
+    "ts:node:extensions": "npm run ts:node -- --project ./extensions/scripts/tsconfig.json",
+    "dev": "npm run ts:node:extensions -- ./scripts/dev.ts",
+    "new:extension": "npm run ts:node:extensions -- ./extensions/scripts/factories/extension.ts",
+    "add:ui": "npm run ts:node:extensions -- ./extensions/scripts/factories/ui.ts",
     "rebuild:blocks": "npm run prepublish --prefix ./packages/scratch-blocks && npm run dev"
   },
   "devDependencies": {

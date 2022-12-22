@@ -5,6 +5,10 @@ import { extensionsFolder, guiSrc, packages, vmSrc } from "$root/scripts/paths";
 
 export const extensionBundlesDir = path.join(packages.gui, "static", "extension-bundles");
 export const generatedMenuDetailsDir = path.join(guiSrc, "generated");
+export const templatesFolder = path.join(extensionsFolder, "src", ".templates");
+
+export const raiseLogo = path.join(templatesFolder, "RAISE_Logo.png");
+export const prgLogo = path.join(templatesFolder, "PRG_Logo.png")
 
 export const getBundleFile = (extensionID: string) => path.join(extensionBundlesDir, `${extensionID}.js`);
 
@@ -50,3 +54,8 @@ export const watchForExtensionDirectoryAdded = (callback: (path: string, stats: 
   chokidar.watch(extensionsSrc).on("addDir", callback);
 
 export const tsToJs = (tsFile: string) => path.join(path.dirname(tsFile), path.basename(tsFile).replace(".ts", ".js"));
+
+export const getDirectoryAndFileName = (pathToFile: string, root: string) => {
+  const relativeToRoot = path.relative(root, pathToFile);
+  return { directory: path.dirname(relativeToRoot), fileName: path.basename(relativeToRoot) };
+}

@@ -1,9 +1,7 @@
-import assert = require("assert");
-
 const parse = (value: any) => {
   try {
     return JSON.parse(value.toLowerCase())
-  } 
+  }
   catch {
     return value; // must be string (not bool or number)
   }
@@ -43,10 +41,10 @@ export const processArgs = <TProcessedOutput>(
     }
 
     const flag = setting[0];
-    assert(flags.includes(flag), `The passed in command line flag '${flag}' is not valid. Valid options are: ${flags.join(", ")}`);
+    if (!flags.includes(flag)) throw new Error(`The passed in command line flag '${flag}' is not valid. Valid options are: ${flags.join(", ")}`);
 
     const key = optionByFlag[flag];
     output[key] = parse(setting[1]);
     return output;
-  }, {...defaults});
+  }, { ...defaults });
 }

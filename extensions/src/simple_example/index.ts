@@ -4,8 +4,8 @@ import defineTranslations from "./translations";
 type Details = {
   name: "Super Simple Typescript Extension!",
   description: "Skeleton for a typescript extension",
-  iconURL: "Typescript_logo.png",
-  insetIconURL: "typescript-logo.svg",
+  iconURL: ""/*"Typescript_logo.png"*/,
+  insetIconURL: ""/*"typescript-logo.svg"*/,
   implementationLanguage: typeof Language.English,
   [Language.Español]: {
     name: "Extensión simple Typescript",

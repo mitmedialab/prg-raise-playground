@@ -7,7 +7,7 @@ import { getBlockIconURI } from "./utils/URIs";
 import { appendToRootDetailsFile, populateMenuFileForExtension } from "./extensionsMenu";
 import { toNamedDefaultExport } from "./utils/importExport";
 import { default as glob } from 'glob';
-import { commonDirectory, deleteAllFilesInDir, extensionBundlesDir, extensionsSrc, fileName, generatedDetailsFileName, generatedMenuDetailsDir, tsToJs } from "./utils/fileSystem";
+import { commonDirectory, deleteAllFilesInDir, extensionBundlesDir, extensionsSrc, fileName, generatedDetailsFileName, generatedMenuDetailsDir, getDirectoryAndFileName, tsToJs } from "./utils/fileSystem";
 import { ExtensionInfo } from "./bundle";
 import ts from "typescript";
 import { getSrcCompilerHost, getSrcCompilerOptions } from "./typeProbing/tsConfig";
@@ -43,13 +43,11 @@ export const generateVmDeclarations = (info: ExtensionInfo): Plugin => {
       const overrides: ts.CompilerOptions = { allowJs: true, checkJs: false, declaration: true, emitDeclarationOnly: true };
       const { options, host } = getSrcCompilerHost(overrides);
 
-      host.writeFile = (fileName: string, contents: string) => {
-        if (fileName.includes(extensionsFolder) || !fileName.includes(".d.ts")) return;
-        fs.writeFileSync(fileName, contents);
-        const relativeToSrc = path.relative(vmSrc, fileName);
-        const dir = path.dirname(relativeToSrc);
-        const base = path.basename(relativeToSrc);
-        emittedFiles.has(dir) ? emittedFiles.get(dir).push(base) : emittedFiles.set(dir, [base]);
+      host.writeFile = (pathToFile: string, contents: string) => {
+        if (pathToFile.includes(extensionsFolder) || !pathToFile.includes(".d.ts")) return;
+        fs.writeFileSync(pathToFile, contents);
+        const { directory, fileName } = getDirectoryAndFileName(pathToFile, vmSrc);
+        emittedFiles.has(directory) ? emittedFiles.get(directory).push(fileName) : emittedFiles.set(directory, [fileName]);
       };;
 
       const entry = path.join(commonDirectory, "index.ts");
@@ -116,7 +114,7 @@ export const transpileExtensions = ({ indexFile, onSuccess, onError }: Extension
 
 export const fillInCodeGenArgs = ({ id, directory, menuDetails, indexFile }: ExtensionInfo): Plugin => {
   return {
-    name: 'fill-in-code-gen-args-for-extension',
+    name: 'Fill in Code Gen Args per Extension',
     transform: {
       order: 'post',
       handler: (code: string, file: string) => {

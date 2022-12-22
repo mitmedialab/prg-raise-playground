@@ -46,6 +46,6 @@ const msg = [
   chalk.cyan(`\n\n\t${destination}\n`),
   chalk.greenBright(`Use it in your extension by calling`),
   chalk.cyan(`\n\n\t${invocation}\n\n`),
-  chalk.greenBright("You should also change the name of the file to be more reflective of it's usage (which will effect the first argument you give to the 'openUI' function)")
+  chalk.greenBright("You should also change the name of the file to be more reflective of it's usage (which will affect the first argument you give to the 'openUI' function)")
 ];
 console.log(...msg);

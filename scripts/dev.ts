@@ -1,5 +1,5 @@
 import { fork } from 'child_process';
-import path = require("path");
+import path from "path";
 import { Message, Conditon } from './devComms';
 import { extensionsFolder, packages } from './paths';
 
