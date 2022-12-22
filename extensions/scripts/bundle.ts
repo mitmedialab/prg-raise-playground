@@ -102,7 +102,7 @@ const bundleExtension = async (dir: string, index: number, extensionCount: numbe
     format: "iife",
     compact: true,
     name: id,
-    sourcemap: 'inline',
+    sourcemap: true,
   };
 
   await bundled.write(output);
