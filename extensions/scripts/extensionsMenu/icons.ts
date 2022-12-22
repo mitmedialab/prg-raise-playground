@@ -1,6 +1,6 @@
 import path from "path";
 import { copyFileSync, existsSync } from "fs";
-import { generatedMenuDetailsDir, prgLogo, raiseLogo } from "scripts/utils/fileSystem";
+import { generatedMenuDetailsDirectory, prgLogo, raiseLogo } from "scripts/utils/fileSystem";
 import { ExtensionMenuDisplayDetails } from "$common";
 
 export const iconDefaults = {
@@ -14,7 +14,7 @@ export type PathToIcons = Record<Key, string>;
 const getPathToDefault = (key: keyof typeof iconDefaults) => {
   const location = iconDefaults[key];
   const fileName = path.basename(location);
-  const destination = path.join(generatedMenuDetailsDir, fileName);
+  const destination = path.join(generatedMenuDetailsDirectory, fileName);
   if (!existsSync(destination)) copyFileSync(location, destination);
   return `../${fileName}`;
 }

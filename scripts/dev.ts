@@ -1,4 +1,4 @@
-import { fork } from 'child_process';
+import { fork, type ChildProcess } from 'child_process';
 import path from "path";
 import { Message, Conditon } from './devComms';
 import { extensionsFolder, packages } from './paths';
@@ -12,20 +12,23 @@ const extensionsScripts = path.join(extensionsFolder, "scripts");
 const bundleExtensionsScript = path.join(extensionsScripts, "bundle.ts");
 const bundleExtensions = fork(bundleExtensionsScript, ["watch=true"]);
 
-const children = [bundleExtensions];
+const childProcesses: Record<string, ChildProcess> = {
+  bundleExtensions,
+  serveGui: undefined
+}
 
 bundleExtensions.on("message", (msg: Message) => {
   const { condition: flag } = msg;
   switch (flag) {
     case Conditon.ErrorBundlingExtensions:
-      children.forEach(child => child.kill());
+      Object.values(childProcesses).forEach(child => child?.kill());
       break;
     case Conditon.ExtensionsSuccesfullyBundled:
+      if (childProcesses.serveGui) return;
       const webpack = getNodeModule(gui, "webpack-dev-server");
       const config = path.join(gui, "webpack.config.js");
       const clearTsNodeArgs = [];
-      const bundle = fork(webpack, argsToFlags({ config }), { cwd: gui, execArgv: clearTsNodeArgs, });
-      children.push(bundle);
+      childProcesses.serveGui = fork(webpack, argsToFlags({ config }), { cwd: gui, execArgv: clearTsNodeArgs, })
       break;
   }
 });

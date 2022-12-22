@@ -4,7 +4,7 @@ import { ExtensionMenuDisplayDetails } from "$common";
 import MenuDetailItem from "./MenuDetailItem";
 import { ExtensionInfo } from "scripts/bundle";
 import { importStatement } from "scripts/utils/importExport";
-import { generatedDetailsFileName, generatedMenuDetailsDir, getMenuDetailsAssetsFile, menuDetailsRootFile, prgLogo, raiseLogo } from "scripts/utils/fileSystem";
+import { generatedDetailsFileName, generatedMenuDetailsDirectory, getMenuDetailsAssetsFile, menuDetailsRootFile, prgLogo, raiseLogo } from "scripts/utils/fileSystem";
 import { PathToIcons, copyIconsToAssetsDirectory } from "./icons";
 
 export const generatedFileWarning = `/* 

@@ -7,7 +7,7 @@ import { getBlockIconURI } from "./utils/URIs";
 import { appendToRootDetailsFile, populateMenuFileForExtension } from "./extensionsMenu";
 import { toNamedDefaultExport } from "./utils/importExport";
 import { default as glob } from 'glob';
-import { commonDirectory, deleteAllFilesInDir, extensionBundlesDir, extensionsSrc, fileName, generatedDetailsFileName, generatedMenuDetailsDir, getDirectoryAndFileName, tsToJs } from "./utils/fileSystem";
+import { commonDirectory, deleteAllFilesInDir, extensionBundlesDirectory, extensionsSrc, fileName, generatedDetailsFileName, generatedMenuDetailsDirectory, getDirectoryAndFileName, tsToJs } from "./utils/fileSystem";
 import { ExtensionInfo } from "./bundle";
 import ts from "typescript";
 import { getSrcCompilerHost, getSrcCompilerOptions } from "./typeProbing/tsConfig";
@@ -23,8 +23,8 @@ export const clearDestinationDirectories = (info: ExtensionInfo): Plugin => {
     name: "",
     buildStart() {
       if (!runner.check()) return;
-      deleteAllFilesInDir(extensionBundlesDir);
-      deleteAllFilesInDir(generatedMenuDetailsDir);
+      deleteAllFilesInDir(extensionBundlesDirectory);
+      deleteAllFilesInDir(generatedMenuDetailsDirectory);
     }
   }
 }

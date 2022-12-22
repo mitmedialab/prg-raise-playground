@@ -133,4 +133,9 @@ const extensionDirectories = getAllExtensionDirectories();
 const { length } = extensionDirectories;
 extensionDirectories.forEach((dir, index) => bundleExtension(dir, index, length, doWatch));
 
-//if (doWatch) watchForExtensionDirectoryAdded((path, stats) => bundleExtension(path, 0, 1, true));
+if (doWatch) {
+  watchForExtensionDirectoryAdded(extensionDirectories, (path, stats) => {
+    const index = extensionDirectories.length;
+    bundleExtension(path, index, index + 1, true);
+  });
+}
