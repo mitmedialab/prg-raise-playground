@@ -3,7 +3,7 @@ import { copyFileSync, existsSync } from "fs";
 import { generatedMenuDetailsDir, prgLogo, raiseLogo } from "scripts/utils/fileSystem";
 import { ExtensionMenuDisplayDetails } from "$common";
 
-const iconDefaults = {
+export const iconDefaults = {
   iconURL: raiseLogo,
   insetIconURL: prgLogo
 }
