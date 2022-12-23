@@ -64,13 +64,14 @@ export const generateVmDeclarations = (): Plugin => {
   }
 }
 
-export const transpileExtensionEvents = (): Plugin => {
+export const transpileExtensionGlobals = (): Plugin => {
   const runner = runOncePerBundling();
   return {
     name: "",
     buildStart() {
       if (!runner.check()) return;
-      const eventsFile = path.join(commonDirectory, "events.ts");
+      const filename = "globals.ts";
+      const eventsFile = path.join(commonDirectory, filename);
       const { options, host } = getSrcCompilerHost();
 
       const program = ts.createProgram([eventsFile], options, host);
@@ -82,7 +83,7 @@ export const transpileExtensionEvents = (): Plugin => {
       const destinationDir = path.join(extensionsFolder, "dist");
 
       if (!fs.existsSync(destinationDir)) fs.mkdirSync(destinationDir);
-      fs.renameSync(transpiledFile, path.join(destinationDir, "events.js"));
+      fs.renameSync(transpiledFile, path.join(destinationDir, tsToJs(filename)));
     }
   }
 }
@@ -176,7 +177,7 @@ export const cleanup = ({ bundleDestination }: BundleInfo): Plugin => {
   return {
     name: "",
     writeBundle: () => {
-      fs.rmSync(path.join(path.resolve(bundleDestination, ".."), "assets"), { recursive: true, force: true });
+      //fs.rmSync(path.join(path.resolve(bundleDestination, ".."), "assets"), { recursive: true, force: true });
     }
   }
 }

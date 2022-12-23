@@ -1,6 +1,6 @@
 import Runtime from "$scratch-vm/engine/runtime";
 import { Extension as BaseExtension } from "./Extension";
-import { openUIEvent, registerButtonCallbackEvent } from "./events";
+import { openUIEvent, registerButtonCallbackEvent } from "./globals";
 
 export type ReactivityDependency = any | any[];
 

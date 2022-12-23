@@ -9,9 +9,9 @@ import { terser } from "rollup-plugin-terser";
 import autoPreprocess from 'svelte-preprocess';
 import path from "path";
 import chalk from 'chalk';
-import { transpileExtensions, fillInCodeGenArgs, setupExtensionBundleEntry, cleanup, clearDestinationDirectories, generateVmDeclarations, createExtensionMenuAssets, announceWrite, transpileExtensionEvents, setupFrameworkBundleEntry } from "./plugins";
+import { transpileExtensions, fillInCodeGenArgs, setupExtensionBundleEntry, cleanup, clearDestinationDirectories, generateVmDeclarations, createExtensionMenuAssets, announceWrite, transpileExtensionGlobals, setupFrameworkBundleEntry } from "./plugins";
 import type Transpiler from './typeProbing/Transpiler';
-import { ExtensionMenuDisplayDetails, encode } from '$common';
+import { ExtensionMenuDisplayDetails, FrameworkID, encode } from '$common';
 import { retrieveExtensionDetails } from './typeProbing';
 import { commonDirectory, fileName, getAllExtensionDirectories, getBundleFile, getMenuDetailsAssetsDirectory, getMenuDetailsAssetsFile, watchForExtensionDirectoryAdded } from './utils/fileSystem';
 import { printDiagnostics } from './typeProbing/diagnostics';
@@ -32,8 +32,6 @@ export type BundleInfo = {
   id: string,
   menuDetails: ExtensionMenuDisplayDetails
 }
-
-const FrameworkID = "ExtensionFramework";
 
 const getFrameworkInfo = () => getBundleInfo(commonDirectory, { id: FrameworkID });
 const getExtensionInfo = (directory: string, totalNumberOfExtensions: number) => getBundleInfo(directory, { totalNumberOfExtensions });
@@ -87,7 +85,7 @@ const bundleFramework = async (doWatch: boolean) => {
 
   const customPRGPlugins = [
     clearDestinationDirectories(),
-    transpileExtensionEvents(),
+    transpileExtensionGlobals(),
     generateVmDeclarations(),
     setupFrameworkBundleEntry(info),
     cleanup(info)

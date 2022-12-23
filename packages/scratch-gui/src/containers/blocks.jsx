@@ -25,7 +25,7 @@ import {activateColorPicker} from '../reducers/color-picker';
 import {closeExtensionLibrary, openSoundRecorder, openConnectionModal, openTextModelModal,openClassifierModelModal, openProgrammaticModal} from '../reducers/modals';
 import {activateCustomProcedures, deactivateCustomProcedures} from '../reducers/custom-procedures';
 import {setConnectionModalExtensionId} from '../reducers/connection-modal';
-import {openUIEvent, registerButtonCallbackEvent} from "../../../../extensions/dist/events";
+import {openUIEvent, registerButtonCallbackEvent} from "../../../../extensions/dist/globals";
 
 import {
     activateTab,
