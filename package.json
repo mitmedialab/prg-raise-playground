@@ -4,8 +4,8 @@
   "scripts": {
     "ts:node": "./node_modules/.bin/ts-node -r tsconfig-paths/register",
     "ts:node:extensions": "npm run ts:node -- --project ./extensions/scripts/tsconfig.json",
-    "init": "npm install && npx lerna bootstrap --force-local",
-    "init:build": "npm install && npx lerna link --force-local && npx lerna exec -- npm install && npx lerna link --force-local",
+    "init": "npm install && npm install --prefix ./extensions/ && npx lerna bootstrap --force-local",
+    "init:build": "npm install && npm install --prefix ./extensions/ && npx lerna link --force-local && npx lerna exec -- npm install && npx lerna link --force-local",
     "clean:build": "rm -rf ./build",
     "move:build:to:root": "mv ./packages/scratch-gui/build ./build",
     "invalidate:node:modules": "rm -rf node_modules && rm -rf packages/**/node_modules",
