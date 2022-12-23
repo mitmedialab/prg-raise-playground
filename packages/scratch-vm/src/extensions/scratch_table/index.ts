@@ -75,20 +75,19 @@ class Tables extends Extension<Details, Blocks> {
   tables: Record<string, number[][]>;
   changeMonitorVisibility: (id: any, visible: boolean) => void;
 
-  private runner: Runtime;
   private tableNamesArg: Argument<string>;
   private defaultNumberArg: Argument<number>;
 
   init(env: Environment) {
-    this.runner = env.runtime;
-
-    this.runner.on('PROJECT_LOADED', () => {
-      this.runner.tables = this.runner.tableData;
+    this.runtime.on('PROJECT_LOADED', () => {
+      if (this.runtime.tableData) {
+        this.runtime.tables = this.runtime.tableData;
+      }
     });
 
-    this.runner.tables = {};
-    this.runner.tables.myTable = [];
-    this.runner.tables.myTable.push([0]);
+    this.runtime.tables = {};
+    this.runtime.tables.myTable = [];
+    this.runtime.tables.myTable.push([0]);
     
     this.tableNamesArg = {
       type: ArgumentType.String,
@@ -101,7 +100,7 @@ class Tables extends Extension<Details, Blocks> {
   }
 
   getTableNames(): MenuItem<string>[] {
-    return Object.keys(this.runner.tables).map(
+    return Object.keys(this.runtime.tables).map(
       tableName => ({
         text: tableName,
         value: tableName
@@ -112,17 +111,17 @@ class Tables extends Extension<Details, Blocks> {
 
   newTable(info: { name: string, rows: number, columns: number }) {
     const { name, rows, columns } = info;
-    this.runner.tables[name] = [];
+    this.runtime.tables[name] = [];
     for (let i = 0; i < rows; i++) {
       let newRow = [];
       for (let j = 0; j < columns; j++) newRow.push(0);
-      this.runner.tables[name].push(newRow);
+      this.runtime.tables[name].push(newRow);
     }
   }
 
   changeTableValue(info: { name: string, row: number, column: number, value: number }) {
     const { name, row, column, value } = info;
-    this.runner.tables[name][row][column] = value;
+    this.runtime.tables[name][row][column] = value;
   }
 
   // Ignore! Translations coming soon...
@@ -142,7 +141,7 @@ class Tables extends Extension<Details, Blocks> {
         args: [self.tableNamesArg, self.defaultNumberArg, self.defaultNumberArg],
         text: (name, rows, columns) => `add table called ${name} with ${rows} rows and ${columns} columns`,
         operation: (name, rows, columns) => {
-          if (name in self.runner.tables) {
+          if (name in self.runtime.tables) {
             alert(`that table already exists`);
             return;
           }
@@ -158,15 +157,19 @@ class Tables extends Extension<Details, Blocks> {
         type: BlockType.Command,
         arg: self.tableNamesArg,
         text: (table) => `remove ${table}`,
-        operation: (table) => delete this.runner.tables[table]
+        operation: (table) => {
+          if (this.runtime.tables[table]) { 
+            delete this.runtime.tables[table]
+          }
+        }
       }),
       insertColumn: (self: Tables) => ({
         type: BlockType.Command,
         arg: self.tableNamesArg,
         text: (table) => `add column to ${table}`,
         operation: (table) => {
-          for (let i = 0; i < this.runner.tables[table].length; i++) {
-            this.runner.tables[table][i].push(0);
+          for (let i = 0; i < this.runtime.tables[table].length; i++) {
+            this.runtime.tables[table][i].push(0);
           }
         }
       }),
@@ -176,10 +179,10 @@ class Tables extends Extension<Details, Blocks> {
         text: (table) => `add row to ${table}`,
         operation: (table) => {
           let newRow = [];
-          for (let i = 0; i < this.runner.tables[table][0].length; i++) {
+          for (let i = 0; i < this.runtime.tables[table][0].length; i++) {
             newRow.push(0);
           }
-          this.runner.tables[table].push(newRow);
+          this.runtime.tables[table].push(newRow);
         }
       }),
       insertValueAt: (self: Tables) => ({
@@ -187,12 +190,12 @@ class Tables extends Extension<Details, Blocks> {
         args: [self.tableNamesArg, ArgumentType.Number, self.defaultNumberArg, self.defaultNumberArg],
         text: (table, value, row, column) => `insert ${value} at row ${row} and column ${column} of ${table}`,
         operation: (table, value, row, column) => {
-          if (this.runner.tables[table].length < row) {
+          if (this.runtime.tables[table].length < row) {
             alert(`That row value is too high!`);
-          } else if (this.runner.tables[table][0].length < column) {
+          } else if (this.runtime.tables[table][0].length < column) {
             alert(`That column value is too high!`);
           } else {
-            this.runner.tables[table][row - 1][column - 1] = value;
+            this.runtime.tables[table][row - 1][column - 1] = value;
           }
         }
       }),
@@ -201,14 +204,14 @@ class Tables extends Extension<Details, Blocks> {
         args: [self.tableNamesArg, self.defaultNumberArg, self.defaultNumberArg],
         text: (table, row, column) => `item at row ${row} and column ${column} of ${table}`,
         operation: (table, row, column) => {
-          if (this.runner.tables[table].length < row) {
+          if (this.runtime.tables[table].length < row) {
             alert(`That row value is too high!`);
             return -1;
-          } else if (this.runner.tables[table][0].length < column) {
+          } else if (this.runtime.tables[table][0].length < column) {
             alert(`That column value is too high!`);
             return -1;
           } else {
-            return this.runner.tables[table][row - 1][column - 1]
+            return this.runtime.tables[table][row - 1][column - 1]
           }
         }
       }),
@@ -216,34 +219,34 @@ class Tables extends Extension<Details, Blocks> {
         type: BlockType.Reporter,
         arg: self.tableNamesArg,
         text: (table) => `number of rows in ${table}`,
-        operation: (table) => this.runner.tables[table].length
+        operation: (table) => this.runtime.tables[table].length
       }),
       numberOfColumns: (self: Tables) => ({
         type: BlockType.Reporter,
         arg: self.tableNamesArg,
         text: (table) => `number of columns in ${table}`,
-        operation: (table) => this.runner.tables[table][0].length
+        operation: (table) => this.runtime.tables[table][0].length
       }),
       highestValueOfColumn: (self: Tables) => ({
         type: BlockType.Reporter,
         args: [self.tableNamesArg, self.defaultNumberArg],
         text: (table, column) => `highest value of column ${column} in ${table}`,
         operation: (table, column) => {
-          return this.runner.tables[table].reduce((max, current) => Math.max(max, current[column - 1]), -Infinity)
+          return this.runtime.tables[table].reduce((max, current) => Math.max(max, current[column - 1]), -Infinity)
         }
       }),
       highestValueOfRow: (self: Tables) => ({
         type: BlockType.Reporter,
         args: [self.tableNamesArg, self.defaultNumberArg],
         text: (table, row) => `highest value of row ${row} in ${table}`,
-        operation: (table, row) => Math.max(...this.runner.tables[table][row - 1])
+        operation: (table, row) => Math.max(...this.runtime.tables[table][row - 1])
       }),
       indexOfHighestColumnValue: (self: Tables) => ({
         type: BlockType.Reporter,
         args: [self.tableNamesArg, self.defaultNumberArg],
         text: (table, column) => `row # of highest value in column ${column} of ${table}`,
         operation: (table, column) => {
-          let max = this.runner.tables[table].reduce((curMax, current, index) => {
+          let max = this.runtime.tables[table].reduce((curMax, current, index) => {
             if (curMax[1] >= current[column - 1]) {
               return curMax;
             } else {
@@ -258,8 +261,8 @@ class Tables extends Extension<Details, Blocks> {
         args: [self.tableNamesArg, self.defaultNumberArg],
         text: (table, row) => `column # of highest value in row ${row} of ${table}`,
         operation: (table, row) => {
-          let max = Math.max(...this.runner.tables[table][row - 1]);
-          return (this.runner.tables[table][row - 1].indexOf(max) + 1);
+          let max = Math.max(...this.runtime.tables[table][row - 1]);
+          return (this.runtime.tables[table][row - 1].indexOf(max) + 1);
         }
       }),
       showTable: () => ({

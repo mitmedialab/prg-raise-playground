@@ -24,7 +24,7 @@
   let zeroLength: boolean, alreadyTaken: boolean;
 
   $: zeroLength = name.length === 0;
-  $: alreadyTaken = name in extension.runner.tables;
+  $: alreadyTaken = name in extension.runtime.tables;
 
   const submit = () => {
     invoke("newTable", {name, rows, columns});
