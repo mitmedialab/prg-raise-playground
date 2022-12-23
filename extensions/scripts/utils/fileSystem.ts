@@ -17,17 +17,17 @@ export const getMenuDetailsAssetsDirectory = (extensionID: string) => path.join(
 export const getMenuDetailsAssetsFile = (extensionID: string) => path.join(generatedMenuDetailsDirectory, extensionID, generatedDetailsFileName);
 export const menuDetailsRootFile = path.join(generatedMenuDetailsDirectory, generatedDetailsFileName);
 
-export const deleteAllFilesInDir = (dir, exclude?: string[]) =>
-  fs.readdirSync(dir)
+export const deleteAllFilesInDir = (dir, exclude?: string[]) => fs.existsSync(dir)
+  ? fs.readdirSync(dir)
     .filter(file => (!exclude || !exclude?.includes(file)) && file !== "." && file !== "..")
-    .forEach(file => fs.rmSync(path.join(dir, file), { recursive: true, force: true }));
+    .forEach(file => fs.rmSync(path.join(dir, file), { recursive: true, force: true }))
+  : {};
 
 export const fileName = (file) => path.basename(file).replace(path.extname(file), "");
 
 export const extensionsSrc = path.join(extensionsFolder, "src");
 export const commonDirectory = path.join(extensionsSrc, "common");
 export const componentsDirectory = path.join(commonDirectory, "components");
-
 
 const isDirectory = (file: fs.Dirent) => file.isDirectory();
 const getName = ({ name }: fs.Dirent) => name;
