@@ -57,6 +57,8 @@ export default [
 
 export const appendToRootDetailsFile = ({ id }: BundleInfo) => {
   const encoding = "utf-8";
+
+  if (!existsSync(generatedMenuDetailsDirectory)) mkdirSync(generatedMenuDetailsDirectory);
   if (!existsSync(menuDetailsRootFile)) writeFileSync(menuDetailsRootFile, generateFileSkeleton, encoding);
 
   const lines = readFileSync(menuDetailsRootFile, encoding).split("\n");
