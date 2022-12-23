@@ -9,19 +9,20 @@ import { terser } from "rollup-plugin-terser";
 import autoPreprocess from 'svelte-preprocess';
 import path from "path";
 import chalk from 'chalk';
-import { transpileExtensions, fillInCodeGenArgs, setupBundleEntry, cleanup, clearDestinationDirectories, generateVmDeclarations, createExtensionMenuAssets, announceWrite, transpileExtensionEvents } from "./plugins";
+import { transpileExtensions, fillInCodeGenArgs, setupExtensionBundleEntry, cleanup, clearDestinationDirectories, generateVmDeclarations, createExtensionMenuAssets, announceWrite, transpileExtensionEvents, setupFrameworkBundleEntry } from "./plugins";
 import type Transpiler from './typeProbing/Transpiler';
 import { ExtensionMenuDisplayDetails, encode } from '$common';
 import { retrieveExtensionDetails } from './typeProbing';
-import { fileName, getAliases, getAllExtensionDirectories, getBundleFile, getMenuDetailsAssetsDirectory, getMenuDetailsAssetsFile, watchForExtensionDirectoryAdded } from './utils/fileSystem';
+import { commonDirectory, fileName, getAllExtensionDirectories, getBundleFile, getMenuDetailsAssetsDirectory, getMenuDetailsAssetsFile, watchForExtensionDirectoryAdded } from './utils/fileSystem';
 import { printDiagnostics } from './typeProbing/diagnostics';
 import { sendToParent } from '$root/scripts/devComms';
 import { processArgs } from '$root/scripts/processArgs';
+import { watchAllFilesInDirectoryAndCommon } from "./utils/rollupHelper";
+import { commonAlias, getAliasEntries } from "./utils/aliases";
 
-export type ExtensionInfo = {
+export type BundleInfo = {
   directory: string,
   name: string,
-  indexInProcess: number,
   totalNumberOfExtensions: number,
   indexFile: string,
   bundleEntry: string,
@@ -32,10 +33,16 @@ export type ExtensionInfo = {
   menuDetails: ExtensionMenuDisplayDetails
 }
 
-const getExtensionInfo = (directory: string, indexInProcess: number, totalNumberOfExtensions: number): ExtensionInfo => {
-  const id = encode(fileName(directory));
+const FrameworkID = "ExtensionFramework";
+
+const getFrameworkInfo = () => getBundleInfo(commonDirectory, { id: FrameworkID });
+const getExtensionInfo = (directory: string, totalNumberOfExtensions: number) => getBundleInfo(directory, { totalNumberOfExtensions });
+
+const getBundleInfo = (directory: string, { totalNumberOfExtensions, id }: { totalNumberOfExtensions?: number, id?: string }): BundleInfo => {
+  id ??= encode(fileName(directory));
+  totalNumberOfExtensions ??= 0;
   return {
-    id, directory, indexInProcess, totalNumberOfExtensions,
+    directory, id, totalNumberOfExtensions,
     name: fileName(directory),
     indexFile: path.join(directory, "index.ts"),
     bundleEntry: path.join(directory, ".filesToBundle.js"),
@@ -46,96 +53,93 @@ const getExtensionInfo = (directory: string, indexInProcess: number, totalNumber
   }
 }
 
-const transpileComplete = (ts: Transpiler, { menuDetails }: ExtensionInfo) => {
+const transpileComplete = (ts: Transpiler, { menuDetails }: BundleInfo) => {
   const details = retrieveExtensionDetails(ts.program);
   for (const key in details) menuDetails[key] = details[key];
 }
 
-const transpileFailed = (ts: Transpiler, info: ExtensionInfo) => {
+const transpileFailed = (ts: Transpiler, info: BundleInfo) => {
   console.error(chalk.bgRed(`Typescript error in ${info.directory}`));
   printDiagnostics(ts.program, ts.program.getSemanticDiagnostics());
   sendToParent(process, { condition: "extensions error" });
 }
 
-const bundleExtension = async (dir: string, index: number, extensionCount: number, doWatch: boolean = true) => {
-  const info = getExtensionInfo(dir, index, extensionCount);
-  const { bundleEntry, bundleDestination, id, directory, name } = info;
+const getThirdPartyPlugins = (): Plugin[] => [
+  alias({ entries: getAliasEntries() }),
+  svelte({
+    preprocess: autoPreprocess(),
+    emitCss: false,
+  }),
+  sucrase({
+    transforms: ['typescript']
+  }),
+  nodeResolve(),
+  commonjs(),
+  css(),
+  terser(),
+];
+
+const getOutputOptions = ({ id: name, bundleDestination: file }: BundleInfo, overrides?: OutputOptions): OutputOptions =>
+  ({ file, name, format: "iife", compact: true, sourcemap: true, ...(overrides || {}) });
+
+const bundleFramework = async (doWatch: boolean) => {
+  const info = getFrameworkInfo();
+
+  const customPRGPlugins = [
+    clearDestinationDirectories(),
+    transpileExtensionEvents(),
+    generateVmDeclarations(),
+    setupFrameworkBundleEntry(info),
+    cleanup(info)
+  ];
+
+  const plugins = [...customPRGPlugins, ...getThirdPartyPlugins()];
+  const options: RollupOptions = { input: info.bundleEntry, plugins };
+  const bundled = await rollup(options);
+
+  const output = getOutputOptions(info);
+  await bundled.write(output);
+
+  if (doWatch) watchAllFilesInDirectoryAndCommon(info, options, output);
+}
+
+const bundleExtension = async (dir: string, extensionCount: number, doWatch: boolean = true) => {
+  const info = getExtensionInfo(dir, extensionCount);
 
   const customPRGPlugins: Plugin[] = [
-    clearDestinationDirectories(info),
-    transpileExtensionEvents(info),
-    generateVmDeclarations(info),
-    setupBundleEntry(info),
-    transpileExtensions({
-      ...info,
-      onSuccess: (ts) => transpileComplete(ts, info),
-      onError: (ts) => transpileFailed(ts, info)
-    }),
+    setupExtensionBundleEntry(info),
+    transpileExtensions(info, { onSuccess: transpileComplete, onError: transpileFailed }),
     createExtensionMenuAssets(info),
     fillInCodeGenArgs(info),
     announceWrite(info),
     cleanup(info)
   ];
 
-  const thirdPartyPlugins: Plugin[] = [
-    alias({ entries: getAliases() }),
-    svelte({
-      preprocess: autoPreprocess(),
-      emitCss: false,
-    }),
-    sucrase({
-      transforms: ['typescript']
-    }),
-    nodeResolve(),
-    commonjs(),
-    css(),
-    terser(),
-  ];
-
-  const plugins = [...customPRGPlugins, ...thirdPartyPlugins];
-
-  const options: RollupOptions = { input: bundleEntry, plugins }
+  const plugins = [...customPRGPlugins, ...getThirdPartyPlugins()];
+  const options: RollupOptions = { input: info.bundleEntry, plugins, external: commonAlias }
   const bundled = await rollup(options);
+  const globals = { [commonAlias]: FrameworkID };
 
-  const output: OutputOptions = {
-    file: bundleDestination,
-    format: "iife",
-    compact: true,
-    name: id,
-    sourcemap: true,
-  };
-
+  const output = getOutputOptions(info, { globals });
   await bundled.write(output);
 
-  if (!doWatch) return;
-
-  const watcher = watch({
-    ...options,
-    output: [output],
-    watch: { include: [path.join(directory, "**", "*.{ts,svelte}")] }
-  });
-
-  watcher.on('event', (event) => {
-    const prefix = "[rollup]";
-    event.code === "ERROR"
-      ? console.error(chalk.bgRed(`${prefix} ${name}:`) + chalk.red(`${event.error}`))
-      : console.log(chalk.bgGreen(`${prefix} ${name}:`) + chalk.cyan(` ${event.code}`));
-    if (event.code === "BUNDLE_END") event.result?.close();
-  });
+  if (doWatch) watchAllFilesInDirectoryAndCommon(info, options, output);
 };
 
 const defaults = { doWatch: false };
 const flagByOption = { doWatch: "watch", };
 const { doWatch } = processArgs<typeof defaults>(flagByOption, defaults);
 
+bundleFramework(doWatch);
+
 const extensionDirectories = getAllExtensionDirectories();
 
 const { length } = extensionDirectories;
-extensionDirectories.forEach((dir, index) => bundleExtension(dir, index, length, doWatch));
+extensionDirectories.forEach(dir => bundleExtension(dir, length, doWatch));
 
 if (doWatch) {
-  watchForExtensionDirectoryAdded(extensionDirectories, (path, stats) => {
-    const index = extensionDirectories.length;
-    bundleExtension(path, index, index + 1, true);
-  });
+  watchForExtensionDirectoryAdded(
+    extensionDirectories,
+    (path, stats) => bundleExtension(path, extensionDirectories.length + 1, true)
+  );
 }

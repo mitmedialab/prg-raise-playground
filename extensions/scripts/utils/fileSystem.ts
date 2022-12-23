@@ -26,16 +26,8 @@ export const fileName = (file) => path.basename(file).replace(path.extname(file)
 
 export const extensionsSrc = path.join(extensionsFolder, "src");
 export const commonDirectory = path.join(extensionsSrc, "common");
+export const componentsDirectory = path.join(commonDirectory, "components");
 
-const getCommonAlias = () => getAlias(commonDirectory, "$common");
-const getScratchVmAlias = () => getAlias(vmSrc, "$scratch-vm");
-
-const getAlias = (location: string, alias: string) => {
-  if (!fs.existsSync(location)) throw new Error(`Could not form alias '${alias}' because location didn't exist: ${location}`);
-  return { [alias]: location }
-}
-
-export const getAliases = () => ({ ...getCommonAlias(), ...getScratchVmAlias() });
 
 const isDirectory = (file: fs.Dirent) => file.isDirectory();
 const getName = ({ name }: fs.Dirent) => name;
@@ -50,10 +42,11 @@ export const getAllExtensionDirectories = () => fs.readdirSync(extensionsSrc, { 
   .map(getPath)
   .filter(hasIndex);
 
-const pathIsValid = (path: string) => {
+const pathIsValid = (dir: string) => {
   const invalidDirs = [extensionsSrc, commonDirectory, templatesDirectory];
-  if (invalidDirs.includes(path)) return false;
-  if (path.startsWith(commonDirectory) || path.startsWith(templatesDirectory)) return false;
+  if (invalidDirs.includes(dir)) return false;
+  if (path.dirname(dir) !== extensionsSrc) return false;
+  if (dir.startsWith(commonDirectory) || dir.startsWith(templatesDirectory)) return false;
   return true;
 }
 

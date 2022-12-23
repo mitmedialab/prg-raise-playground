@@ -2,23 +2,24 @@ import fs from "fs";
 import path from "path";
 import type { PopulateCodeGenArgs } from "$common";
 import { type Plugin } from "rollup";
-import Transpiler, { TranspileEvent } from './typeProbing/Transpiler';
+import Transpiler from './typeProbing/Transpiler';
 import { getBlockIconURI } from "./utils/URIs";
 import { appendToRootDetailsFile, populateMenuFileForExtension } from "./extensionsMenu";
-import { toNamedDefaultExport } from "./utils/importExport";
+import { exportAllFromModule, toNamedDefaultExport } from "./utils/importExport";
 import { default as glob } from 'glob';
-import { commonDirectory, deleteAllFilesInDir, extensionBundlesDirectory, extensionsSrc, fileName, generatedDetailsFileName, generatedMenuDetailsDirectory, getDirectoryAndFileName, tsToJs } from "./utils/fileSystem";
-import { ExtensionInfo } from "./bundle";
+import { commonDirectory, componentsDirectory, deleteAllFilesInDir, extensionBundlesDirectory, fileName, generatedMenuDetailsDirectory, getDirectoryAndFileName, tsToJs } from "./utils/fileSystem";
+import { BundleInfo } from "./bundle";
 import ts from "typescript";
-import { getSrcCompilerHost, getSrcCompilerOptions } from "./typeProbing/tsConfig";
+import { getSrcCompilerHost } from "./typeProbing/tsConfig";
 import { extensionsFolder, vmSrc } from "$root/scripts/paths";
 import { reportDiagnostic } from "./typeProbing/diagnostics";
 import chalk from "chalk";
-import { runOnceAcrossAllExtensions, runOncePerExtension } from "./utils/coordination";
+import { runOncePerBundling } from "./utils/rollupHelper";
 import { sendToParent } from "$root/scripts/devComms";
+import { createMatchGroup, createMatchSelection, matchAnyLetterOrNumber, matchAnyLowerCase, matchAnyNumber, matchAnyUpperCase, matchOneOrMoreTimes } from "./utils/regularExpressions";
 
-export const clearDestinationDirectories = (info: ExtensionInfo): Plugin => {
-  const runner = runOnceAcrossAllExtensions(info);
+export const clearDestinationDirectories = (): Plugin => {
+  const runner = runOncePerBundling();
   return {
     name: "",
     buildStart() {
@@ -29,8 +30,8 @@ export const clearDestinationDirectories = (info: ExtensionInfo): Plugin => {
   }
 }
 
-export const generateVmDeclarations = (info: ExtensionInfo): Plugin => {
-  const runner = runOnceAcrossAllExtensions(info);
+export const generateVmDeclarations = (): Plugin => {
+  const runner = runOncePerBundling();
   return {
     name: "",
     buildStart() {
@@ -63,8 +64,8 @@ export const generateVmDeclarations = (info: ExtensionInfo): Plugin => {
   }
 }
 
-export const transpileExtensionEvents = (info: ExtensionInfo): Plugin => {
-  const runner = runOnceAcrossAllExtensions(info);
+export const transpileExtensionEvents = (): Plugin => {
+  const runner = runOncePerBundling();
   return {
     name: "",
     buildStart() {
@@ -86,7 +87,20 @@ export const transpileExtensionEvents = (info: ExtensionInfo): Plugin => {
   }
 }
 
-export const setupBundleEntry = ({ indexFile, bundleEntry, directory }: ExtensionInfo): Plugin => {
+
+export const setupFrameworkBundleEntry = ({ indexFile, bundleEntry }: BundleInfo): Plugin => {
+  return {
+    name: "",
+    buildStart() {
+      fs.writeFileSync(bundleEntry, exportAllFromModule(indexFile));
+    },
+    buildEnd() {
+      fs.rmSync(bundleEntry);
+    },
+  }
+}
+
+export const setupExtensionBundleEntry = ({ indexFile, bundleEntry, directory }: BundleInfo): Plugin => {
   return {
     name: "",
     buildStart() {
@@ -103,34 +117,52 @@ export const setupBundleEntry = ({ indexFile, bundleEntry, directory }: Extensio
   }
 }
 
-export const transpileExtensions = ({ indexFile, onSuccess, onError }: ExtensionInfo & { onSuccess: TranspileEvent, onError: TranspileEvent }): Plugin => {
+type TranspileEvents = "onSuccess" | "onError";
+type TranspileEventForExtension = (ts: Transpiler, info: BundleInfo) => void;
+export const transpileExtensions = (info: BundleInfo, callbacks: Record<TranspileEvents, TranspileEventForExtension>): Plugin => {
   let ts: Transpiler;
+  const { indexFile } = info;
+  const { onSuccess, onError } = callbacks;
   return {
     name: 'transpile-extension-typescript',
-    buildStart() { ts ??= Transpiler.Make([indexFile], onSuccess, onError) },
+    buildStart() { ts ??= Transpiler.Make([indexFile], (ts) => onSuccess(ts, info), () => onError(ts, info)) },
     buildEnd() { if (this.meta.watchMode !== true) ts?.close(); },
   }
 }
 
-export const fillInCodeGenArgs = ({ id, directory, menuDetails, indexFile }: ExtensionInfo): Plugin => {
+const matchArgsName = createMatchSelection(matchAnyLetterOrNumber) + matchOneOrMoreTimes;
+const matchArgsGroup = createMatchGroup(matchArgsName);
+const getCallToSuper = (query: string) => `super\\(...${query}\\)`;
+const expression = getCallToSuper(matchArgsGroup);
+
+export const fillInCodeGenArgs = ({ id, directory, menuDetails, indexFile }: BundleInfo): Plugin => {
   return {
     name: 'Fill in Code Gen Args per Extension',
     transform: {
       order: 'post',
       handler: (code: string, file: string) => {
-        if (!file.includes("Extension.ts")) return;
+        if (file !== indexFile) return;
+        const re = new RegExp(expression);
+        const match = re.exec(code);
+
+        if (match.length < 2) throw new Error("Unable to location call to Extension's constructor. The strategy likely needs to be updated...");
+        if (match.length > 2) throw new Error("Multiple matches found when trying to locate call to Extension's constructor. The strategy likely needs to be updated...");
+
+        const [matchText, argName] = match;
+        const { index } = match;
+        const [before, after] = [code.substring(0, index), code.substring(index + matchText.length)];
         const { name } = menuDetails;
         const blockIconURI = getBlockIconURI(menuDetails, directory);
         const codeGenArgs: PopulateCodeGenArgs = { id, name, blockIconURI };
-        code = code.replace("= codeGenArgs", `= /* codeGenArgs */ ${JSON.stringify(codeGenArgs)}`);
-        return { code, map: null }
+        const replacement = `[...${argName}, ${JSON.stringify(codeGenArgs)}]`;
+        return { code: before + matchText.replace(argName, replacement) + after, map: null }
       }
     }
   };
 }
 
-export const createExtensionMenuAssets = (info: ExtensionInfo): Plugin => {
-  const runner = runOncePerExtension();
+export const createExtensionMenuAssets = (info: BundleInfo): Plugin => {
+  const runner = runOncePerBundling();
   return {
     name: "",
     buildStart() {
@@ -140,7 +172,7 @@ export const createExtensionMenuAssets = (info: ExtensionInfo): Plugin => {
   }
 }
 
-export const cleanup = ({ bundleDestination }: ExtensionInfo): Plugin => {
+export const cleanup = ({ bundleDestination }: BundleInfo): Plugin => {
   return {
     name: "",
     writeBundle: () => {
@@ -155,8 +187,8 @@ const allExtensionsInitiallyWritten = () => {
   sendToParent(process, { condition: "extensions complete" });
 }
 
-export const announceWrite = ({ totalNumberOfExtensions, name }: ExtensionInfo): Plugin => {
-  const runner = runOncePerExtension();
+export const announceWrite = ({ totalNumberOfExtensions }: BundleInfo): Plugin => {
+  const runner = runOncePerBundling();
   return {
     name: "",
     writeBundle: () => {

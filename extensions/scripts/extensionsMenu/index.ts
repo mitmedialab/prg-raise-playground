@@ -2,7 +2,7 @@ import { copyFileSync, existsSync, writeFileSync, mkdirSync, readFileSync } from
 import path = require("path");
 import { ExtensionMenuDisplayDetails } from "$common";
 import MenuDetailItem from "./MenuDetailItem";
-import { ExtensionInfo } from "scripts/bundle";
+import { BundleInfo } from "scripts/bundle";
 import { importStatement } from "scripts/utils/importExport";
 import { generatedDetailsFileName, generatedMenuDetailsDirectory, getMenuDetailsAssetsFile, menuDetailsRootFile, prgLogo, raiseLogo } from "scripts/utils/fileSystem";
 import { PathToIcons, copyIconsToAssetsDirectory } from "./icons";
@@ -14,7 +14,7 @@ Any changes you make to this file will not be saved nor git tracked.
 */
 `;
 
-export const populateMenuFileForExtension = ({ menuDetails, id, directory, menuAssetsDestination, menuAssetsFile }: ExtensionInfo) => {
+export const populateMenuFileForExtension = ({ menuDetails, id, directory, menuAssetsDestination, menuAssetsFile }: BundleInfo) => {
   if (!existsSync(menuAssetsDestination)) mkdirSync(menuAssetsDestination);
   const pathToIcons = copyIconsToAssetsDirectory(directory, menuAssetsDestination, menuDetails);
   const iconImports = generateIconImports(id, pathToIcons);
@@ -55,7 +55,7 @@ export default [
   ${exportsIdentifier}
 ];`
 
-export const appendToRootDetailsFile = ({ id }: ExtensionInfo) => {
+export const appendToRootDetailsFile = ({ id }: BundleInfo) => {
   const encoding = "utf-8";
   if (!existsSync(menuDetailsRootFile)) writeFileSync(menuDetailsRootFile, generateFileSkeleton, encoding);
 

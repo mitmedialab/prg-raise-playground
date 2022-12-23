@@ -45,9 +45,20 @@ const importStaticScript = async(endpoint, onLoad, onError) => {
   if (condition.timeout) throw new Error(`Timed out loading endpoint: ${endpoint}`)
 }
 
+const FrameworkID = "ExtensionFramework";
+const getFrameworkObject = () => window[FrameworkID];
+const onFrameworkLoad = () => getFrameworkObject() 
+  ? console.log("Extension Framework succesfully loaded!")
+  : console.error("Could not find Extension Framework object after loading script");
+
+const onFrameworkError = () => { throw new Error("Could not load Extension Framework") };
+
+const getEndPoint = (filename) => `extension-bundles/${filename}.js`;
+
 const tryImportExtensionBundle = async (id, onLoad, onError, error = false) => {
   try {
-      await importStaticScript(`extension-bundles/${id}.js`, onLoad, onError);
+      if (!getFrameworkObject()) await importStaticScript(getEndPoint(FrameworkID), onFrameworkLoad, onFrameworkError);
+      await importStaticScript(getEndPoint(id), onLoad, onError);
       return true;
   }
   catch(e) {
