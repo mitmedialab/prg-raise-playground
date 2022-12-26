@@ -109,7 +109,7 @@ type ToArguments<T extends any[]> =
 
 type ParamsAndUtility<T extends BlockOperation> = [...params: Parameters<T>, util: BlockUtility];
 
-type NonEmptyArray<T> = [T, ...T[]];
+export type NonEmptyArray<T> = [T, ...T[]];
 
 const enum ArgField {
   Arg = 'arg',
