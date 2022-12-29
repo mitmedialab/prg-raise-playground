@@ -7,9 +7,12 @@ createTestSuite(Extension,
       log: [{
         input: "s",
       }],
-      dummyUI: [],
+      dummyUI: [
+        {
+
+        }
+      ],
       counterUI: [],
-      colorUI: []
     },
     integrationTests: undefined
   });

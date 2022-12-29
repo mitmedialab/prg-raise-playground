@@ -360,6 +360,8 @@ export abstract class Extension
     }
   }
 
+  static GetKeyFromOpcode = (opcode: string) => opcode.replace(Extension.GetInternalKey(""), "");
+
   private static GetArgTranslationID = (blockname: string, index: number) => {
     return `${blockname}-arg${index}-default`;
   }
