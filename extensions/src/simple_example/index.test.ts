@@ -1,7 +1,7 @@
 import { createTestSuite } from "$testing";
-import Extension from '.';
+import extension from '.';
 
-createTestSuite(Extension,
+createTestSuite({ extension, __dirname },
   {
     unitTests: {
       log: [{
