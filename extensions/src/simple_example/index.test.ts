@@ -24,9 +24,9 @@ createTestSuite({ Extension, __dirname },
         }
       }],
       dummyUI: {
-        async after(extension, ui) {
-          const msg = "Hello, world!";
-          const text = await ui.findByText(msg);
+        async after(_, { findByText, component: { displayText } }) {
+          const msg = displayText as string;
+          const text = await findByText(msg);
           this.expect(text).not.toBe(undefined);
           this.expect(text.innerHTML).toBe(msg);
         }

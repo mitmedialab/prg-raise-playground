@@ -42,6 +42,13 @@ export const getAllExtensionDirectories = () => fs.readdirSync(extensionsSrc, { 
   .map(getPath)
   .filter(hasIndex);
 
+export const getExtensionDirectory = (name: string) => {
+  const location = path.join(extensionsSrc, name);
+  if (!fs.existsSync(location)) throw new Error(`Location ${location} does not exist`);
+  if (!hasIndex(location)) throw new Error(`No index file found at ${location}`);
+  return location;
+}
+
 const pathIsValid = (dir: string) => {
   const invalidDirs = [extensionsSrc, commonDirectory, templatesDirectory];
   if (invalidDirs.includes(dir)) return false;

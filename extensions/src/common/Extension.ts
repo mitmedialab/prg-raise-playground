@@ -4,7 +4,7 @@ import Cast from '$scratch-vm/util/cast';
 //import * as formatMessage from 'format-message';
 import Runtime from "$scratch-vm/engine/runtime";
 import { openUI, registerButtonCallback } from './ui';
-import { isFunction } from './utils';
+import { isFunction, isString } from './utils';
 
 export type CodeGenArgs = {
   name: never,
@@ -58,7 +58,7 @@ export abstract class Extension
   runtime: Runtime;
 
   readonly BlockFunctions: Blocks;
-  readonly BlockDefinitions: BlockDefinitions<Blocks>;
+  readonly BlockDefinitions: BlockDefinitions<Extension<MenuDetails, Blocks>>;
   readonly Translations: Translations<Extension<MenuDetails, Blocks>>;
 
   private readonly internal_blocks: ExtensionBlockMetadata[] = [];
@@ -197,7 +197,7 @@ export abstract class Extension
    * @see BlockDefinitions
    * @returns {BlockDefinitions<Blocks>} An object defining 'block definition' functions for each block associated with this Extension.
    */
-  abstract defineBlocks(): BlockDefinitions<Blocks>;
+  abstract defineBlocks(): BlockDefinitions<Extension<MenuDetails, Blocks>>;
 
   /**
    * @summary Define the translations for this extension.
@@ -235,7 +235,7 @@ export abstract class Extension
     this.internal_menus.push({ acceptReporters, items: key });
   }
 
-  private convertToInfo(key: string, block: Block<BlockOperation>, menusToAdd: MenuItem<any>[]): ExtensionBlockMetadata {
+  private convertToInfo(key: string, block: Block<this, BlockOperation>, menusToAdd: MenuItem<any>[]): ExtensionBlockMetadata {
     const { type, text, operation } = block;
     const args: Argument<any>[] = block.arg ? [block.arg] : block.args;
 
@@ -416,7 +416,7 @@ export abstract class Extension
   private static IsPrimitive = (query) => query !== Object(query);
   private static IsFunction = (query) => isFunction(query);
 
-  private static IsString = (query) => typeof query === 'string' || query instanceof String;
+  private static IsString = (query) => isString(query);
 
   private static ExtensionsByID = new Map<string, Extension<any, any>>();
 

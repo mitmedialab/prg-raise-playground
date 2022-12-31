@@ -7,6 +7,8 @@ import type { EnsureInclusionInTypescriptProgram } from './flag';
 export type InternalButtonKey = "__button__";
 export type ButtonBlock = () => InternalButtonKey;
 
+export type BaseExtension = Extension<ExtensionMenuDisplayDetails, ExtensionBlocks>;
+
 /**
  * @summary An object passed to extensions on initialization. 
  * @description The Environment object should contain anything necessary for an extension to interact with the Scratch/Blockly environment
@@ -116,7 +118,7 @@ const enum ArgField {
   Args = 'args'
 }
 
-export type Block<T extends BlockOperation> = {
+export type Block<TExt extends BaseExtension, TOp extends BlockOperation> = {
   /**
    * @type {BlockType}
    * @example type: BlockType.Command
@@ -153,15 +155,15 @@ export type Block<T extends BlockOperation> = {
    *        * each time a child branch finishes, the loop block is called again.
    * * `BlockType.Event` - Starts a stack in response to an event (full spec TBD)
    */
-  type: ReturnType<T> extends ReturnType<ButtonBlock>
+  type: ReturnType<TOp> extends ReturnType<ButtonBlock>
   ? typeof BlockType.Button
-  : ReturnType<T> extends void
+  : ReturnType<TOp> extends void
   ? typeof BlockType.Command | typeof BlockType.Button | typeof BlockType.Loop
-  : ReturnType<T> extends boolean
+  : ReturnType<TOp> extends boolean
   ? (typeof BlockType.Reporter | typeof BlockType.Boolean | typeof BlockType.Hat)
-  : ReturnType<T> extends number
+  : ReturnType<TOp> extends number
   ? (typeof BlockType.Reporter | typeof BlockType.Conditional)
-  : ReturnType<T> extends Promise<any>
+  : ReturnType<TOp> extends Promise<any>
   ? never
   : typeof BlockType.Reporter;
 
@@ -194,7 +196,7 @@ export type Block<T extends BlockOperation> = {
    * which can help you accomplish more advanced block behavior. If you don't need to use it, feel free to omit it.
    * @see {BlockUtility} type for more information on the final argument passed to this function.
    */
-  operation: (...params: T extends ButtonBlock ? Parameters<T> : ParamsAndUtility<T>) => T extends ButtonBlock ? void : ReturnType<T>;
+  operation: (this: TExt, ...params: TOp extends ButtonBlock ? Parameters<TOp> : ParamsAndUtility<TOp>) => TOp extends ButtonBlock ? void : ReturnType<TOp>;
   /**
    * @summary The display text of your block.
    * @description This is where you describe what your block should say. 
@@ -211,9 +213,9 @@ export type Block<T extends BlockOperation> = {
    * text: (name: string, age: number) => `My name is ${name} and I'm ${age} years old`
    * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals for more info on Template Strings (aka Template Literals)
    */
-  text: Parameters<T> extends NonEmptyArray<any> ? (...params: Parameters<T>) => string : string;
-} & (Parameters<T> extends NonEmptyArray<any>
-  ? Parameters<T> extends [any]
+  text: Parameters<TOp> extends NonEmptyArray<any> ? (...params: Parameters<TOp>) => string : string;
+} & (Parameters<TOp> extends NonEmptyArray<any>
+  ? Parameters<TOp> extends [any]
   // NOTE: The above check shouldn't be necessary, and instead a mapped type should be used, but JS Doc comments currently don't work with mapped types:
   // For example: [K in Parameters<T> extends [any] ? "arg" : "args"]: Parameters<T> extends [any] ? ToArguments<Parameters<T>>[0] : ToArguments<Parameters<T>>
   ? {
@@ -287,7 +289,7 @@ export type Block<T extends BlockOperation> = {
      *  }
      * }
      */
-    arg: ToArguments<Parameters<T>>[0]
+    arg: ToArguments<Parameters<TOp>>[0]
   }
   : {
     /**
@@ -359,7 +361,7 @@ export type Block<T extends BlockOperation> = {
      *  } 
      * ]
      */
-    args: ToArguments<Parameters<T>>
+    args: ToArguments<Parameters<TOp>>
   }
   : {
     /**
@@ -396,15 +398,15 @@ export type ExtensionMenuDisplayDetails = {
   implementationLanguage?: ValueOf<typeof Language>;
 } & Partial<Record<ValueOf<typeof Language>, { name: string, description: string }>>
 
-export type DefineBlock<T extends BlockOperation> = (extension: Extension<any, any>) => Block<T>;
+export type DefineBlock<TExt extends BaseExtension, TOp extends BlockOperation> = (extension: Extension<any, any>) => Block<TExt, TOp>;
 
 export type ExtensionBlocks = Record<string, BlockOperation>;
 
-export type BlockDefinitions<TBlocks extends ExtensionBlocks> =
+export type BlockDefinitions<T extends BaseExtension> =
   {
-    [k in keyof TBlocks]: TBlocks[k] extends
+    [k in keyof T["BlockFunctions"]]: T["BlockFunctions"][k] extends
     (...args: infer A) => infer R
-    ? DefineBlock<(...args: A) => R>
+    ? DefineBlock<T, (...args: A) => R>
     : never
   };
 
@@ -424,7 +426,7 @@ type ToArgumentsText<T extends any[]> =
   : [];
 
 
-type ExtractTextFromBlock<TOp extends BlockOperation, TBlock extends Block<TOp>> =
+type ExtractTextFromBlock<TOp extends BlockOperation, TBlock extends Block<BaseExtension, TOp>> =
   TBlock["args"] extends never
   ? TBlock["arg"] extends never
   ? string | { blockText: TBlock["text"] }
@@ -440,7 +442,7 @@ type ExtractTextFromBlock<TOp extends BlockOperation, TBlock extends Block<TOp>>
   : never // shouldn't happen
 
 export type AllText<T extends Extension<any, any>> = {
-  [k in keyof T["BlockFunctions"]]: ExtractTextFromBlock<T["BlockFunctions"][k], Block<T["BlockFunctions"][k]>>
+  [k in keyof T["BlockFunctions"]]: ExtractTextFromBlock<T["BlockFunctions"][k], Block<BaseExtension, T["BlockFunctions"][k]>>
 };
 
 export type Translations<T extends Extension<any, any>> = Partial<{ [k in ValueOf<typeof Language>]: AllText<T> | undefined }>;

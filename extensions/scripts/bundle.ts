@@ -13,7 +13,7 @@ import { transpileExtensions, fillInCodeGenArgs, setupExtensionBundleEntry, clea
 import type Transpiler from './typeProbing/Transpiler';
 import { ExtensionMenuDisplayDetails, FrameworkID, encode } from '$common';
 import { retrieveExtensionDetails } from './typeProbing';
-import { commonDirectory, fileName, getAllExtensionDirectories, getBundleFile, getMenuDetailsAssetsDirectory, getMenuDetailsAssetsFile, watchForExtensionDirectoryAdded } from './utils/fileSystem';
+import { commonDirectory, fileName, getAllExtensionDirectories, getBundleFile, getExtensionDirectory, getMenuDetailsAssetsDirectory, getMenuDetailsAssetsFile, watchForExtensionDirectoryAdded } from './utils/fileSystem';
 import { printDiagnostics } from './typeProbing/diagnostics';
 import { sendToParent } from '$root/scripts/devComms';
 import { processArgs } from '$root/scripts/processArgs';
@@ -124,13 +124,15 @@ const bundleExtension = async (dir: string, extensionCount: number, doWatch: boo
   if (doWatch) watchAllFilesInDirectoryAndCommon(info, options, output);
 };
 
-const defaults = { doWatch: false };
-const flagByOption = { doWatch: "watch", };
-const { doWatch } = processArgs<typeof defaults>(flagByOption, defaults);
+const defaults = { doWatch: false, specificDir: "" };
+const flagByOption = { doWatch: "watch", specificDir: "dir" };
+const { doWatch, specificDir } = processArgs<typeof defaults>(flagByOption, defaults);
 
 bundleFramework(doWatch);
 
-const extensionDirectories = getAllExtensionDirectories();
+const directorySpecified = specificDir !== undefined || specificDir !== "";
+
+const extensionDirectories = directorySpecified ? [getExtensionDirectory(specificDir)] : getAllExtensionDirectories();
 
 const { length } = extensionDirectories;
 extensionDirectories.forEach(dir => bundleExtension(dir, length, doWatch));

@@ -1,7 +1,7 @@
 import TypeScriptFrameworkExample from ".";
 import { ArgumentType, BlockType, DefineBlock } from "$common";
 
-type AddDefinition = DefineBlock<(left: number, right: number) => number>;
+type AddDefinition = DefineBlock<TypeScriptFrameworkExample, (left: number, right: number) => number>;
 
 const addDefinition: AddDefinition = (extension: TypeScriptFrameworkExample) => ({
   type: BlockType.Reporter,

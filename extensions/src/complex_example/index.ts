@@ -14,7 +14,7 @@ const enum MatrixDimension {
   Both
 }
 
-const enum Animal {
+export const enum Animal {
   Leopard,
   Tiger,
   Gorilla,
@@ -84,7 +84,7 @@ export default class TypeScriptFrameworkExample extends Extension<DisplayDetails
     );
   }
 
-  defineBlocks(): BlockDefinitions<Blocks> {
+  defineBlocks(): BlockDefinitions<TypeScriptFrameworkExample> {
     return {
 
       reportId: () => ({
@@ -248,7 +248,7 @@ export default class TypeScriptFrameworkExample extends Extension<DisplayDetails
     }
   }
 
-  private multiplyUsingSelf(self: TypeScriptFrameworkExample): Block<Blocks['multiplyUsingSelf']> {
+  private multiplyUsingSelf(self: TypeScriptFrameworkExample): Block<TypeScriptFrameworkExample, Blocks['multiplyUsingSelf']> {
     return ({
       type: BlockType.Reporter,
       args: [
@@ -260,7 +260,7 @@ export default class TypeScriptFrameworkExample extends Extension<DisplayDetails
     })
   }
 
-  private multiplyUsingThis(): Block<Blocks['multiplyUsingThis']> {
+  private multiplyUsingThis(): Block<TypeScriptFrameworkExample, Blocks['multiplyUsingThis']> {
     return ({
       type: BlockType.Reporter,
       args: [

@@ -21,6 +21,8 @@ const templateByOperation: Record<Operation, string> = {
 };
 
 const translationsFile = getPathToTemplate("translations");
+const packageJson = getPathToTemplate("package", ".json");
+const testFile = getPathToTemplate("index", ".test.ts");
 
 Object.values(templateByOperation)
   .map(template => getPathToTemplate(template))
@@ -49,6 +51,24 @@ const destination = path.join(folder, "index.ts");
 fs.mkdirSync(folder);
 fs.copyFileSync(template, destination);
 fs.copyFileSync(translationsFile, path.join(folder, "translations.ts"));
+
+const convertToPackageName = (name: string) => name; // TODO replace capital letters with -lowercase
+
+const fillInPackageDetails = (location: string, name: string) => {
+  const encoding = "utf-8";
+  const text = fs.readFileSync(location, { encoding });
+  const packageNameIdentifier = "replace-with-package-name";
+  const directoryNameIdentifier = "replace-with-directory-name";
+  text.replace(packageNameIdentifier, convertToPackageName(name));
+  text.replace(directoryNameIdentifier, name);
+  fs.writeFileSync(location, text, { encoding });
+}
+
+const packageDesination = path.join(folder, "package.json");
+fs.copyFileSync(packageJson, packageDesination);
+fillInPackageDetails(packageDesination, directory);
+
+fs.copyFileSync(testFile, path.join(folder, "index.test.ts"));
 
 const msg = [
   chalk.greenBright("Success! Your extension has been created at:"),

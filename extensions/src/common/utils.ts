@@ -1,7 +1,14 @@
+import { Extension } from "./Extension";
+import { MenuItem } from "./types"
+
 type FetchParams = {
   request: Parameters<typeof fetch>[0],
   options: Parameters<typeof fetch>[1]
 }
+
+export const getValueFromMenuItem = <T>(item: MenuItem<T>) => typeof item === "object" ? (item as { value: T }).value : item;
+
+export const getTextFromMenuItem = <T>(item: MenuItem<T>) => typeof item === "object" ? (item as { text: string }).text : item;
 
 export async function fetchWithTimeout(
   resource: FetchParams["request"],
@@ -46,6 +53,8 @@ export async function waitForCondition(condition: () => boolean, delay: number =
   }
   clearTimeout(timeout);
 };
+
+export const isString = (query: any) => (query) => typeof query === 'string' || query instanceof String;
 
 export const isFunction = (query: any) =>
   Object.prototype.toString.call(query) === "[object Function]"
