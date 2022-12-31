@@ -4,8 +4,24 @@ import Extension from '.';
 createTestSuite({ Extension, __dirname },
   {
     unitTests: {
-      log: [{
-        input: "s",
+      log: [({ expect }) => {
+        const input = "Tfst string";
+        let count = 0;
+        const actualConsole = console;
+        console = {
+          ...console,
+          log: (message) => {
+            expect(message).toBe(input);
+            count++;
+          }
+        };
+        return {
+          input,
+          after: () => {
+            expect(count).toBe(1);
+            console = actualConsole;
+          }
+        }
       }],
       dummyUI: {
         async after(extension, ui) {
@@ -14,8 +30,7 @@ createTestSuite({ Extension, __dirname },
           this.expect(text).not.toBe(undefined);
           this.expect(text.innerHTML).toBe(msg);
         }
-      }
-      ,
+      },
       counterUI: {
         async after(extension, { findByText }) {
           const texts = ["Add 1", "Add", "Reset"];
@@ -44,6 +59,7 @@ createTestSuite({ Extension, __dirname },
           this.expect(extension.count).toBe(valueToAdd);
         }
       },
+
     },
     integrationTests: undefined
   });

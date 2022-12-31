@@ -46,3 +46,8 @@ export async function waitForCondition(condition: () => boolean, delay: number =
   }
   clearTimeout(timeout);
 };
+
+export const isFunction = (query: any) =>
+  Object.prototype.toString.call(query) === "[object Function]"
+  || "function" === typeof query
+  || query instanceof Function;

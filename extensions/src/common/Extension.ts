@@ -4,6 +4,7 @@ import Cast from '$scratch-vm/util/cast';
 //import * as formatMessage from 'format-message';
 import Runtime from "$scratch-vm/engine/runtime";
 import { openUI, registerButtonCallback } from './ui';
+import { isFunction } from './utils';
 
 export type CodeGenArgs = {
   name: never,
@@ -405,7 +406,7 @@ export abstract class Extension
       case ArgumentType.Color:
         return Cast.toRgbColorObject(value) as RGBObject;
       default:
-        throw new Error("Method not implemented.");
+        throw new Error(`Method not implemented for value of ${value} and type ${argumentType}`);
     }
   }
 
@@ -413,10 +414,7 @@ export abstract class Extension
     Extension.IsPrimitive(item) ? `${item}` : { ...item, value: `${item.value}` };
 
   private static IsPrimitive = (query) => query !== Object(query);
-  private static IsFunction = (query) =>
-    Object.prototype.toString.call(query) === "[object Function]"
-    || "function" === typeof query
-    || query instanceof Function;
+  private static IsFunction = (query) => isFunction(query);
 
   private static IsString = (query) => typeof query === 'string' || query instanceof String;
 

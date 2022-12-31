@@ -1,20 +1,24 @@
 import { vmSrc } from "$root/scripts/paths";
-import { CodeGenArgs, Extension, PopulateCodeGenArgs, ExtensionBlockMetadata, BlockType, registerButtonCallbackEvent, waitForCondition, openUIEvent, openUI } from "$common";
+import { CodeGenArgs, Extension, PopulateCodeGenArgs, ExtensionBlockMetadata, BlockType, registerButtonCallbackEvent, waitForCondition, openUIEvent, openUI, isFunction } from "$common";
 import Runtime from "$scratch-vm/engine/runtime";
 import { describe, expect, jest, test } from '@jest/globals';
 import path from "path";
-import { AnyExtension, BlockKey, BlockTestCase, ExtensionConstructor, RuntimeForTest, UnitTests } from "./types";
+import { AnyExtension, BlockKey, BlockTestCase, ExtensionConstructor, RuntimeForTest, SingleOrFunc, TestHelper, UnitTests, GetTestCase, TestCaseEntry } from "./types";
 import { render, fireEvent } from '@testing-library/svelte';
 import glob from "glob";
 import fs from "fs";
+import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 
 type TestDetails<T extends AnyExtension, Key extends BlockKey<T>> = {
   Extension: ExtensionConstructor<T>,
   key: Key,
   directory: string,
+  testHelper: TestHelper,
 }
 
 type KeyToBlockIndexMap = Map<string, number>;
+
+const getEngineFile = (name: string) => path.join(vmSrc, "engine", name);
 
 async function mockOpenUI<T extends AnyExtension>({ component }: Parameters<typeof openUI>["1"]) {
   const { directory, runtime } = this as any as TestDetails<T, any> & { runtime: RuntimeForTest<T> };
@@ -29,7 +33,7 @@ async function mockOpenUI<T extends AnyExtension>({ component }: Parameters<type
 }
 
 const mockRuntime = <T extends AnyExtension>(details: TestDetails<T, any>): RuntimeForTest<T> => {
-  const runtime = jest.mock(path.join(vmSrc, "engine", "runtime")) as any as RuntimeForTest<T>;
+  const runtime = jest.createMockFromModule(getEngineFile("runtime")) as any as RuntimeForTest<T>;
 
   runtime.forTest = {
     UIPromise: undefined,
@@ -52,6 +56,12 @@ const mockRuntime = <T extends AnyExtension>(details: TestDetails<T, any>): Runt
   return runtime;
 }
 
+const mockBlockUtility = <T extends AnyExtension>(details: TestDetails<T, any>): BlockUtility => {
+  const utility = new (jest.createMockFromModule(getEngineFile("block-utility")) as any)() as BlockUtility;
+  // utility can be built up over time
+  return utility;
+}
+
 const getInstance = <T extends AnyExtension>(details: TestDetails<T, any>): T => {
   const runtime = mockRuntime(details);
   const args: PopulateCodeGenArgs = { name: "", blockIconURI: "", id: "" };
@@ -60,51 +70,55 @@ const getInstance = <T extends AnyExtension>(details: TestDetails<T, any>): T =>
   return instance;
 }
 
-const processUnitTest = async <T extends AnyExtension, Key extends BlockKey<T>>(
+const processUnitTest = <T extends AnyExtension, Key extends BlockKey<T>>(
+  name: string,
   testCase: BlockTestCase<T, Key>,
   details: TestDetails<T, Key>,
   map: KeyToBlockIndexMap
-) => {
-  const instance: T = getInstance(details);
-  const { runtime } = instance;
-  const { forTest } = runtime as RuntimeForTest<T>;
+) =>
+  test(name, async () => {
+    const instance: T = getInstance(details);
+    const { runtime } = instance;
+    const { forTest } = runtime as RuntimeForTest<T>;
 
-  forTest.extension = instance;
+    forTest.extension = instance;
 
-  const { key } = details;
-  const index = map.get(key);
-  const { blockType, func, opcode } = Extension.TestGetBlocks(instance)[index];
+    const { key, testHelper } = details;
+    const index = map.get(key);
+    const { blockType, func, opcode } = Extension.TestGetBlocks(instance)[index];
 
-  const {
-    isReady, before, after,
-    // @ts-ignore 
-    input, expected
-  } = testCase;
+    const {
+      isReady, before, after,
+      // @ts-ignore 
+      input, expected
+    } = testCase;
 
-  if (isReady) await waitForCondition(() => isReady(instance));
+    if (isReady) await waitForCondition(() => isReady(instance));
 
-  await before?.(instance);
+    await before?.bind(testHelper)?.(instance);
 
-  const blockFunction: Function = blockType === BlockType.Button ? runtime[func] : instance[opcode];
+    const blockFunction: Function = blockType === BlockType.Button ? runtime[func] : instance[opcode];
 
-  const output = await Promise.resolve(
-    input !== undefined
-      ? blockFunction(...(Array.isArray(input) ? input : [input]))
-      : blockFunction()
-  );
+    const mutation = {}; // Need to research what this is for
 
-  const renderedUI = forTest.UIPromise ? await forTest.UIPromise : undefined;
+    const args = input !== undefined
+      ? Array.isArray(input)
+        ? (input as Array<any>).reduce((acc, curr, index) => acc[index] = curr, { mutation })
+        : { mutation, 0: input }
+      : undefined;
 
-  if (expected !== undefined) expect(output).toBe(expected);
+    const utility = mockBlockUtility(details);
 
-  const afterContext: ThisParameterType<typeof after> = {
-    expect,
-    fireEvent,
-    updateInputValue: async (element, value) => fireEvent.input(element, { target: { value } })
-  };
+    const output = await Promise.resolve(
+      args !== undefined ? blockFunction(args, utility) : blockFunction(utility)
+    );
 
-  await after?.bind(afterContext)?.(instance, renderedUI);
-}
+    const renderedUI = forTest.UIPromise ? await forTest.UIPromise : undefined;
+
+    if (expected !== undefined) expect(output).toBe(expected);
+
+    await after?.bind(testHelper)?.(instance, renderedUI);
+  });
 
 const getKeyBlockMap = <T extends AnyExtension>(details: TestDetails<T, any>): KeyToBlockIndexMap =>
   Extension.TestGetInfo(getInstance(details))
@@ -113,25 +127,38 @@ const getKeyBlockMap = <T extends AnyExtension>(details: TestDetails<T, any>): K
       new Map<string, number>()
     );
 
+const getTestCase = <T extends AnyExtension, K extends BlockKey<T>>(testCase: TestCaseEntry<T, K>, { testHelper }: TestDetails<T, K>): BlockTestCase<T, K> =>
+  isFunction(testCase) ? (testCase as GetTestCase<T, K>)(testHelper) : testCase as BlockTestCase<T, K>;
+
 export const createTestSuite = <T extends AnyExtension>(
   extensionInfo: { Extension: ExtensionConstructor<T>, __dirname: string },
   cases: { unitTests: UnitTests<T>, integrationTests: any },
 ) => {
   const { Extension, __dirname: directory } = extensionInfo;
   const { unitTests } = cases;
-  const keyToBlockMap = getKeyBlockMap({ Extension, directory, key: undefined });
+
+  const testHelper: TestHelper = {
+    expect,
+    fireEvent,
+    updateInputValue: async (element, value) => fireEvent.input(element, { target: { value } })
+  };
+
+  const keyToBlockMap = getKeyBlockMap({ Extension, directory, key: undefined, testHelper });
+
 
   describe(Extension.name, () => {
-
     for (const key in unitTests) {
-      const asArray = unitTests[key] as Array<BlockTestCase<T, typeof key>>;
-      const asCase = unitTests[key] as BlockTestCase<T, typeof key>;
-      const args = { Extension, key, directory };
+      type Case = TestCaseEntry<T, typeof key>
+
+      const asSingleOrFunc = unitTests[key] as Case;
+      const asArray = unitTests[key] as Array<Case>;
+      const args: TestDetails<T, typeof key> = { Extension, key, directory, testHelper };
 
       Array.isArray(unitTests[key])
-        ? asArray.map((_case, index) => test(`${key} ${index + 1}`, () => processUnitTest(_case, args, keyToBlockMap)))
-        : test(key, () => processUnitTest(asCase, args, keyToBlockMap));
+        ? asArray
+          .map(_case => getTestCase(_case, args))
+          .map((_case, index) => processUnitTest(`${key} ${index + 1}`, _case, args, keyToBlockMap))
+        : processUnitTest(key, getTestCase(asSingleOrFunc, args), args, keyToBlockMap);
     }
-
   });
 };

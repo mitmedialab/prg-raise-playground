@@ -11,14 +11,14 @@ export interface ExtensionConstructor<T extends AnyExtension> {
   new(...args: ConstructorParameters<typeof Extension>): T;
 }
 
-type TestHelper = {
+export type TestHelper = {
   expect: typeof expect,
   fireEvent: typeof fireEvent,
   updateInputValue: (input: HTMLInputElement, value: string) => Promise<boolean>,
 }
 
 export type Hooks<T extends AnyExtension> = {
-  before?: (extension: T) => void | Promise<void>,
+  before?: (this: TestHelper, extension: T) => void | Promise<void>,
   after?: (this: TestHelper, extension: T, ui?: RenderedUI) => void | Promise<void>,
 };
 
@@ -43,7 +43,13 @@ export type BlockTestCase<T extends AnyExtension, Key extends BlockKey<T>> =
   Input<T, Key> &
   Expected<T, Key>;
 
-export type UnitTests<T extends AnyExtension> = { [k in BlockKey<T>]?: BlockTestCase<T, k> | BlockTestCase<T, k>[] };
+export type SingleOrArray<T> = T | T[];
+export type SingleOrFunc<T, Args extends any[]> = T | ((...args: Args) => T);
+
+export type GetTestCase<T extends AnyExtension, K extends BlockKey<T>> = (helper: TestHelper) => BlockTestCase<T, K>;
+export type TestCaseEntry<T extends AnyExtension, K extends BlockKey<T>> = SingleOrFunc<BlockTestCase<T, K>, Parameters<GetTestCase<T, K>>>;
+
+export type UnitTests<T extends AnyExtension> = { [k in BlockKey<T>]?: SingleOrArray<SingleOrFunc<BlockTestCase<T, k>, Parameters<GetTestCase<T, k>>>> };
 
 type RenderedUI = RenderResult<SvelteComponentDev, typeof import("/Users/parkermalachowsky/MIT/prg-extension-boilerplate/extensions/testing/node_modules/@testing-library/dom/types/queries")>;
 
