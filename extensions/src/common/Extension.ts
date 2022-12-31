@@ -421,4 +421,8 @@ export abstract class Extension
   private static IsString = (query) => typeof query === 'string' || query instanceof String;
 
   private static ExtensionsByID = new Map<string, Extension<any, any>>();
+
+  static TestGetInfo = <T extends Extension<any, any>>(ext: T, ...params: Parameters<Extension<any, any>["getInfo"]>) => ext.getInfo(...params);
+  static TestGetBlocks = <T extends Extension<any, any>>(ext: T, ...params: Parameters<Extension<any, any>["getInfo"]>) => ext.getInfo(...params).blocks as ExtensionBlockMetadata[];
+  static TestInit = <T extends Extension<any, any>>(ext: T, ...params: Parameters<Extension<any, any>["internal_init"]>) => ext.internal_init(...params);
 };

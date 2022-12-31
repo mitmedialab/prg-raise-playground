@@ -1,7 +1,8 @@
-import type { RenderResult } from '@testing-library/svelte';
+import type { RenderResult, fireEvent } from '@testing-library/svelte';
 import type { SvelteComponentDev } from "svelte/internal";
 import { Extension, ExtensionBlocks, ExtensionMenuDisplayDetails, NonEmptyArray, InternalButtonKey, } from "$common";
 import Runtime from "$root/packages/scratch-vm/src/engine/runtime";
+import { expect } from '@jest/globals';
 
 export type AnyExtension = Extension<ExtensionMenuDisplayDetails, ExtensionBlocks>;
 export type BlockKey<T extends AnyExtension> = keyof T["BlockFunctions"] & string;
@@ -10,9 +11,15 @@ export interface ExtensionConstructor<T extends AnyExtension> {
   new(...args: ConstructorParameters<typeof Extension>): T;
 }
 
+type TestHelper = {
+  expect: typeof expect,
+  fireEvent: typeof fireEvent,
+  updateInputValue: (input: HTMLInputElement, value: string) => Promise<boolean>,
+}
+
 export type Hooks<T extends AnyExtension> = {
-  before?: (extension: T) => void,
-  after?: (extension: T, ui?: RenderedUI) => void,
+  before?: (extension: T) => void | Promise<void>,
+  after?: (this: TestHelper, extension: T, ui?: RenderedUI) => void | Promise<void>,
 };
 
 export type Input<T extends AnyExtension, Key extends BlockKey<T>> =
@@ -40,9 +47,9 @@ export type UnitTests<T extends AnyExtension> = { [k in BlockKey<T>]?: BlockTest
 
 type RenderedUI = RenderResult<SvelteComponentDev, typeof import("/Users/parkermalachowsky/MIT/prg-extension-boilerplate/extensions/testing/node_modules/@testing-library/dom/types/queries")>;
 
-
-export type RuntimeForTest = Runtime & {
+export type RuntimeForTest<T extends AnyExtension> = Runtime & {
   forTest: {
+    extension: T,
     UIPromise: Promise<RenderedUI>;
   }
 }
