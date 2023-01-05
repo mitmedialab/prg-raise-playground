@@ -74,7 +74,7 @@ export default class ExtensionNameGoesHere extends Extension<Details, Blocks> {
   // and which you use is just a matter of preference.
   defineBlocks(): ExtensionNameGoesHere["BlockDefinitions"] {
 
-    type DefineExampleCommand = DefineBlock<Blocks["exampleCommand"]>;
+    type DefineExampleCommand = DefineBlock<ExtensionNameGoesHere, Blocks["exampleCommand"]>;
     const exampleCommand: DefineExampleCommand = () => ({
       type: BlockType.Command,
       args: [ArgumentType.String, { type: ArgumentType.Number, defaultValue: 789 }],
@@ -88,7 +88,7 @@ export default class ExtensionNameGoesHere extends Extension<Details, Blocks> {
     return {
       exampleCommand,
 
-      exampleReporter: function (self: ExtensionNameGoesHere): Block<Blocks["exampleReporter"]> {
+      exampleReporter: function (self: ExtensionNameGoesHere): Block<ExtensionNameGoesHere, Blocks["exampleReporter"]> {
         return {
           type: BlockType.Reporter,
           text: "This increments an internal field and then reports it's value",
@@ -104,7 +104,7 @@ export default class ExtensionNameGoesHere extends Extension<Details, Blocks> {
 }
 
 type WithOptionsBlock = Blocks["exampleHat"];
-const pickFromOptions = (): Block<WithOptionsBlock> => ({
+const pickFromOptions = (): Block<ExtensionNameGoesHere, WithOptionsBlock> => ({
   type: BlockType.Hat,
   arg: { type: ArgumentType.Boolean, options: [{ text: 'Yes', value: true }, { text: 'No', value: false }] },
   text: (argument1) => `Should the below block execute? ${argument1}`,

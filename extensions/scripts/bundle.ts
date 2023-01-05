@@ -1,4 +1,4 @@
-import { watch, rollup, type Plugin, type RollupOptions, type OutputOptions } from "rollup";
+import { rollup, type Plugin, type RollupOptions, type OutputOptions } from "rollup";
 import alias from '@rollup/plugin-alias';
 import commonjs from "@rollup/plugin-commonjs";
 import nodeResolve from "@rollup/plugin-node-resolve";
@@ -122,15 +122,13 @@ const bundleExtension = async (dir: string, extensionCount: number, doWatch: boo
   if (doWatch) watchAllFilesInDirectoryAndCommon(info, options, output);
 };
 
-const defaults = { doWatch: false, specificDir: "" };
-const flagByOption = { doWatch: "watch", specificDir: "dir" };
-const { doWatch, specificDir } = processArgs<typeof defaults>(flagByOption, defaults);
+const defaults = { doWatch: false };
+const flagByOption = { doWatch: "watch" };
+const { doWatch } = processArgs<typeof defaults>(flagByOption, defaults);
 
 bundleFramework(doWatch);
 
-const directorySpecified = specificDir !== undefined && specificDir !== "";
-
-const extensionDirectories = directorySpecified ? [getExtensionDirectory(specificDir)] : getAllExtensionDirectories();
+const extensionDirectories = getAllExtensionDirectories();
 
 const { length } = extensionDirectories;
 extensionDirectories.forEach(dir => bundleExtension(dir, length, doWatch));

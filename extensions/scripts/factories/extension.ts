@@ -3,7 +3,7 @@ import assert from "assert";
 import fs from "fs";
 import chalk from "chalk";
 import { processArgs } from "$root/scripts/processArgs";
-import { UnionToTuple } from "$common";
+import { UnionToTuple, splitOnCapitals } from "$common";
 import { getPathToExtension, getPathToTemplate } from ".";
 
 const alreadyExists = (directory: string) => fs.existsSync(getPathToExtension(directory));
@@ -52,15 +52,15 @@ fs.mkdirSync(folder);
 fs.copyFileSync(template, destination);
 fs.copyFileSync(translationsFile, path.join(folder, "translations.ts"));
 
-const convertToPackageName = (name: string) => name; // TODO replace capital letters with -lowercase
+const convertToPackageName = (name: string) => splitOnCapitals(name).map(name => name.toLowerCase()).join("-") + "-extension";
 
 const fillInPackageDetails = (location: string, name: string) => {
   const encoding = "utf-8";
-  const text = fs.readFileSync(location, { encoding });
+  let text = fs.readFileSync(location, { encoding });
   const packageNameIdentifier = "replace-with-package-name";
   const directoryNameIdentifier = "replace-with-directory-name";
-  text.replace(packageNameIdentifier, convertToPackageName(name));
-  text.replace(directoryNameIdentifier, name);
+  text = text.replace(packageNameIdentifier, convertToPackageName(name));
+  text = text.replaceAll(directoryNameIdentifier, name);
   fs.writeFileSync(location, text, { encoding });
 }
 
@@ -72,6 +72,6 @@ fs.copyFileSync(testFile, path.join(folder, "index.test.ts"));
 
 const msg = [
   chalk.greenBright("Success! Your extension has been created at:"),
-  chalk.cyan(`\n\n\t${destination}\n`)
+  chalk.cyan(`\n\n\t${folder}\n`),
 ];
 console.log(...msg);

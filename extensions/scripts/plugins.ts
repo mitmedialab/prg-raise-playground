@@ -118,9 +118,9 @@ export const setupExtensionBundleEntry = ({ indexFile, bundleEntry, directory }:
   }
 }
 
-type TranspileEvents = "onSuccess" | "onError";
+type TranspileEventNames = "onSuccess" | "onError";
 type TranspileEventForExtension = (ts: Transpiler, info: BundleInfo) => void;
-export const transpileExtensions = (info: BundleInfo, callbacks: Record<TranspileEvents, TranspileEventForExtension>): Plugin => {
+export const transpileExtensions = (info: BundleInfo, callbacks: Record<TranspileEventNames, TranspileEventForExtension>): Plugin => {
   let ts: Transpiler;
   const { indexFile } = info;
   const { onSuccess, onError } = callbacks;
