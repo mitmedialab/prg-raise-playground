@@ -60,3 +60,5 @@ export const isFunction = (query: any) =>
   Object.prototype.toString.call(query) === "[object Function]"
   || "function" === typeof query
   || query instanceof Function;
+
+export const splitOnCapitals = (query: string) => query.split(/(?=[A-Z])/);

@@ -9,13 +9,13 @@ import { terser } from "rollup-plugin-terser";
 import autoPreprocess from 'svelte-preprocess';
 import path from "path";
 import chalk from 'chalk';
-import { transpileExtensions, fillInCodeGenArgs, setupExtensionBundleEntry, cleanup, clearDestinationDirectories, generateVmDeclarations, createExtensionMenuAssets, announceWrite, transpileExtensionGlobals, setupFrameworkBundleEntry } from "./plugins";
+import { transpileExtensions, fillInCodeGenArgs, setupExtensionBundleEntry, clearDestinationDirectories, generateVmDeclarations, createExtensionMenuAssets, announceWrite, transpileExtensionGlobals, setupFrameworkBundleEntry } from "./plugins";
 import type Transpiler from './typeProbing/Transpiler';
 import { ExtensionMenuDisplayDetails, FrameworkID, encode } from '$common';
 import { retrieveExtensionDetails } from './typeProbing';
 import { commonDirectory, fileName, getAllExtensionDirectories, getBundleFile, getExtensionDirectory, getMenuDetailsAssetsDirectory, getMenuDetailsAssetsFile, watchForExtensionDirectoryAdded } from './utils/fileSystem';
 import { printDiagnostics } from './typeProbing/diagnostics';
-import { sendToParent } from '$root/scripts/devComms';
+import { sendToParent } from '$root/scripts/comms';
 import { processArgs } from '$root/scripts/processArgs';
 import { watchAllFilesInDirectoryAndCommon } from "./utils/rollupHelper";
 import { commonAlias, getAliasEntries } from "./utils/aliases";
@@ -88,7 +88,6 @@ const bundleFramework = async (doWatch: boolean) => {
     transpileExtensionGlobals(),
     generateVmDeclarations(),
     setupFrameworkBundleEntry(info),
-    cleanup(info)
   ];
 
   const plugins = [...customPRGPlugins, ...getThirdPartyPlugins()];
@@ -110,7 +109,6 @@ const bundleExtension = async (dir: string, extensionCount: number, doWatch: boo
     createExtensionMenuAssets(info),
     fillInCodeGenArgs(info),
     announceWrite(info),
-    cleanup(info)
   ];
 
   const plugins = [...customPRGPlugins, ...getThirdPartyPlugins()];
@@ -130,7 +128,7 @@ const { doWatch, specificDir } = processArgs<typeof defaults>(flagByOption, defa
 
 bundleFramework(doWatch);
 
-const directorySpecified = specificDir !== undefined || specificDir !== "";
+const directorySpecified = specificDir !== undefined && specificDir !== "";
 
 const extensionDirectories = directorySpecified ? [getExtensionDirectory(specificDir)] : getAllExtensionDirectories();
 

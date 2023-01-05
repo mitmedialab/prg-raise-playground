@@ -7,7 +7,7 @@ import { getBlockIconURI } from "./utils/URIs";
 import { appendToRootDetailsFile, populateMenuFileForExtension } from "./extensionsMenu";
 import { exportAllFromModule, toNamedDefaultExport } from "./utils/importExport";
 import { default as glob } from 'glob';
-import { commonDirectory, componentsDirectory, deleteAllFilesInDir, extensionBundlesDirectory, fileName, generatedMenuDetailsDirectory, getDirectoryAndFileName, tsToJs } from "./utils/fileSystem";
+import { commonDirectory, deleteAllFilesInDir, extensionBundlesDirectory, fileName, generatedMenuDetailsDirectory, getDirectoryAndFileName, tsToJs } from "./utils/fileSystem";
 import { BundleInfo } from "./bundle";
 import ts from "typescript";
 import { getSrcCompilerHost } from "./typeProbing/tsConfig";
@@ -15,8 +15,8 @@ import { extensionsFolder, vmSrc } from "$root/scripts/paths";
 import { reportDiagnostic } from "./typeProbing/diagnostics";
 import chalk from "chalk";
 import { runOncePerBundling } from "./utils/rollupHelper";
-import { sendToParent } from "$root/scripts/devComms";
-import { createMatchGroup, createMatchSelection, matchAnyLetterOrNumber, matchAnyLowerCase, matchAnyNumber, matchAnyUpperCase, matchOneOrMoreTimes } from "./utils/regularExpressions";
+import { sendToParent } from "$root/scripts/comms";
+import { createMatchGroup, createMatchSelection, matchAnyLetterOrNumber, matchOneOrMoreTimes } from "./utils/regularExpressions";
 
 export const clearDestinationDirectories = (): Plugin => {
   const runner = runOncePerBundling();
@@ -131,12 +131,12 @@ export const transpileExtensions = (info: BundleInfo, callbacks: Record<Transpil
   }
 }
 
-const matchArgsName = createMatchSelection(matchAnyLetterOrNumber) + matchOneOrMoreTimes;
-const matchArgsGroup = createMatchGroup(matchArgsName);
-const getCallToSuper = (query: string) => `super\\(...${query}\\)`;
-const expression = getCallToSuper(matchArgsGroup);
-
 export const fillInCodeGenArgs = ({ id, directory, menuDetails, indexFile }: BundleInfo): Plugin => {
+  const matchArgsName = createMatchSelection(matchAnyLetterOrNumber) + matchOneOrMoreTimes;
+  const matchArgsGroup = createMatchGroup(matchArgsName);
+  const getCallToSuper = (query: string) => `super\\(...${query}\\)`;
+  const expression = getCallToSuper(matchArgsGroup);
+
   return {
     name: 'Fill in Code Gen Args per Extension',
     transform: {
@@ -173,23 +173,15 @@ export const createExtensionMenuAssets = (info: BundleInfo): Plugin => {
   }
 }
 
-export const cleanup = ({ bundleDestination }: BundleInfo): Plugin => {
-  return {
-    name: "",
-    writeBundle: () => {
-      //fs.rmSync(path.join(path.resolve(bundleDestination, ".."), "assets"), { recursive: true, force: true });
-    }
-  }
-}
-
 let writeCount = 0;
-const allExtensionsInitiallyWritten = () => {
-  console.log(chalk.green("All extensions bundled!"));
-  sendToParent(process, { condition: "extensions complete" });
-}
-
 export const announceWrite = ({ totalNumberOfExtensions }: BundleInfo): Plugin => {
   const runner = runOncePerBundling();
+
+  const allExtensionsInitiallyWritten = () => {
+    console.log(chalk.green("All extensions bundled!"));
+    sendToParent(process, { condition: "extensions complete" });
+  }
+
   return {
     name: "",
     writeBundle: () => {

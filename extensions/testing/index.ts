@@ -1,4 +1,4 @@
-import { CodeGenArgs, Extension, PopulateCodeGenArgs, ExtensionBlockMetadata, BlockType, registerButtonCallbackEvent, waitForCondition, openUIEvent, openUI, isFunction, isString } from "$common";
+import { CodeGenArgs, Extension, PopulateCodeGenArgs, ExtensionBlockMetadata, BlockType, registerButtonCallbackEvent, waitForCondition, openUIEvent, openUI, isFunction, isString, splitOnCapitals } from "$common";
 import { describe, expect, jest, test } from '@jest/globals';
 import path from "path";
 import { AnyExtension, BlockKey, BlockTestCase, ExtensionConstructor, RuntimeForTest, SingleOrFunc, TestHelper, UnitTests, GetTestCase, TestCaseEntry, InputArray, KeyToBlockIndexMap, IntegrationTest } from "./types";
@@ -159,8 +159,9 @@ export const createTestSuite = <T extends AnyExtension>(
 
   describe(`${Extension.name} Integration Tests`, () => {
     for (const key in integrationTests) {
+      const name = splitOnCapitals(key).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(" ");
       const args: TestDetails<T, typeof key> = { Extension, key, directory, testHelper };
-      processIntegrationTest(key, integrationTests[key], args, keyToBlockMap);
+      processIntegrationTest(name, integrationTests[key], args, keyToBlockMap);
     }
   })
 };

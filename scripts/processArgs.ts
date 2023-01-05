@@ -3,7 +3,7 @@ const parse = (value: any) => {
     return JSON.parse(value.toLowerCase())
   }
   catch {
-    return value; // must be string (not bool or number)
+    return value; // value must be of type string (not bool or number)
   }
 }
 
