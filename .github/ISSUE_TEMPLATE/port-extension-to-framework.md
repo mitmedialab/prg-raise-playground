@@ -9,9 +9,9 @@ assignees: ''
 
 # Details
 
-Old extension Location: packages/scratch-vm/extensions/___
+Old extension Location: `packages/scratch-vm/extensions/___`
 
-Branch name: ___
+Branch name: `___`
 
 # Getting started
 
