@@ -4,8 +4,9 @@
   "scripts": {
     "ts:node": "./node_modules/.bin/ts-node -r tsconfig-paths/register",
     "ts:node:extensions": "npm run ts:node -- --project ./extensions/scripts/tsconfig.json",
-    "init": "npm install && npm install --prefix ./extensions/ && npx lerna bootstrap --force-local",
-    "init:build": "npm install && npm install --prefix ./extensions/ && npx lerna link --force-local && npx lerna exec -- npm install && npx lerna link --force-local",
+    "init:extensions": "npm run init --prefix ./extensions/",
+    "init": "npm install && npm run init:extensions && npx lerna bootstrap --force-local",
+    "init:build": "npm install && npm run init:extensions && npx lerna link --force-local && npx lerna exec -- npm install && npx lerna link --force-local",
     "invalidate:node:modules": "rm -rf node_modules && rm -rf packages/**/node_modules",
     "invalidate:package:locks": "rm -f package-lock.json && rm -f packages/**/package-lock.json",
     "clean:init": "npm run invalidate:node:modules && npm run invalidate:package:locks && npm run init",
