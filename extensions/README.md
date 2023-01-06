@@ -7,8 +7,8 @@ Here we drill down more into the development details associated with extensions.
 This document will be most helpful for people doing more complex development, like:
 - Adding UI to extensions
 - Writing tests for extensions 
-- Porting old extensions to the new Extension Framework methodology
-- Working on the Extension Framework itself
+- Porting vanilla Javascript extensions to the use the newer Typescript Extension Framework
+- Working on the Typescript Extension Framework itself
 
 ## Anatomy of an Extension Directory
 
@@ -16,7 +16,7 @@ Extensions are defined by all the files that appear in their associated director
 
 This directory is created when you run the command `npm run new:extension <extension name>` from the root of the project, where the value you provide for `<extension name>` is used to name this new directory. 
 
-> **NOTE:** It is important to keep in mind that the name of an extension's associated directory is internally used to identify it, so it is best to avoid changing the directory's name unless you absolutely have to (as this could affect previously saved `.sb3` projects that reference the extension).
+> **NOTE:** It is important to keep in mind that the name of an extension's associated directory is internally used to identify it, so it is best to avoid changing the directory's name (as this could affect previously saved `.sb3` projects that reference the extension).
 
 ### Included Files
 
@@ -25,7 +25,7 @@ Below are the files you should always find within an extension's directory:
 - `index.ts`
     - This is the main place where your extension is implemented. It is **expected** that your extension class will be the `default export` of this file. For example:
 ```ts 
-export default class MyExtension extends Extension<...> {
+export default class ExampleExtension extends Extension<...> {
     ...
 }
 ```
@@ -44,17 +44,29 @@ In adition to the above files, you might find any of the below:
     - Image files included in an extension directory are likely either used for icons and/or tutorials.
 - `.svelte` files
     - Extensions can have their own associated UI windows, which are implemented using the [Svelte Frontend Framework](https://svelte.dev/).
-    - These files can be created by running the command `npm run add:ui <extension name>` from the root of the project.
     - Hop down to [Creating UI for Extensions](#creating-ui-for-extensions) for more info.
 - `translations.ts`
     - In the future, this file will be used to support defining an extension's display text in mulitple languages.
     - Currently **NOT** used.
 - Additional `.ts` files
-    - Developers are free to create as many typescript files as they like -- and frankly it's encouraged! Long files can be difficult to read. 
+    - Developers are free to create as many typescript files as they need within their extensions's directory -- and frankly it's encouraged! Long files can be difficult to read. 
+- `README.md`
+    - Motivated developers might include a README file to help document their extension. 
+
+### Official Examples
+
+A great to start digging into the files that make up an Extension is to check out some working examples:
+
+- [Simple]()
+- [Complex]()
 
 ## Creating UI for Extensions
 
+To develop UI for your extension, we ask that you implement an interface that will be rendered in a [modal](https://blog.hubspot.com/website/modal-web-design#:~:text=What%20is%20a%20modal?) / pop-up.
+
 Extension UI is implemented using the [Svelte Frontend Framework](https://svelte.dev/).
+
+Please first make sure you've satisfied [Svelte Dependency](https://github.com/mitmedialab/prg-extension-boilerplate#svelte-only-if-you-are-developing-ui).
 
 To generate a new svelte file, run the following command:
 
@@ -131,8 +143,12 @@ import Extension from '.';
 
 createTestSuite({ Extension, __dirname },
   {
-    unitTests: {},
-    integrationTests: {}
+    unitTests: {
+        // tests go here
+    },
+    integrationTests: {
+        // tests go here
+    }
   }
 );
 ```
@@ -143,13 +159,19 @@ As is clear from the second argument of the `createTestSuite` function, there ar
 
 Specifically for extensions, `unit tests` test the operation of a single block. 
 
+TODO
+
 ### Integration Tests
 
 Specifically for extensions, `integration tests` test either the operations of multiple blocks or how one extension interacts with another.
 
+TODO
+
 ### Testing UI
 
 The testing framework allows you to interact with UI opened by blocks under test.
+
+TODO
 
 ## 🔀 Porting an Extension to Typescript
 
@@ -162,8 +184,8 @@ Please check out the below example to get a good idea of what this would look li
 Below is a sample, vanilla JS extension based on the final example provided in the [Scratch Extensions document](https://github.com/LLK/scratch-vm/blob/develop/docs/extensions.md). 
 
 What's not captured in the below example is all the additional work necessary to get the extension to show up, which includes:
-- Updating [extension library jsx](https://github.com/mitmedialab/prg-extension-boilerplate/blob/5ec7cca7e1827da49c2faaf173706fc19874a3a1/packages/scratch-gui/src/lib/libraries/extensions/index.jsx#L71)
-- Updating [extension manager](https://github.com/mitmedialab/prg-extension-boilerplate/blob/5ec7cca7e1827da49c2faaf173706fc19874a3a1/packages/scratch-vm/src/extension-support/extension-manager.js#L11) to support this extension 
+- Updating [extension library jsx](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/packages/scratch-gui/src/lib/libraries/extensions/index.jsx#L71)
+- Updating [extension manager](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/packages/scratch-vm/src/extension-support/extension-manager.js#L11) to support this extension 
 
 Every step of this process is not typesafe, and thus very error prone.
 
@@ -268,10 +290,10 @@ class SomeBlocks {
 
 Things to note:
 - The `Details` type object encodes how the extension will be displayed in the extensions menu
-    - No more editing [any jsx](https://github.com/mitmedialab/prg-extension-boilerplate/blob/5ec7cca7e1827da49c2faaf173706fc19874a3a1/packages/scratch-gui/src/lib/libraries/extensions/index.jsx#L71) to specify how your extension should display in the Extensions Menu
+    - No more editing [any jsx](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/packages/scratch-gui/src/lib/libraries/extensions/index.jsx#L71) to specify how your extension should display in the Extensions Menu
     - Now your image assets related to your extension should reside in the same place as your implementation (i.e. in the same directory as the `index.ts` file)
 - Any index.ts file within a subfolder of the [extensions directory](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/packages/scratch-vm/src/extensions) will be assumed to implement an extension
-    - This means there's no need to specify your extension in the [extension-manager](https://github.com/mitmedialab/prg-extension-boilerplate/blob/5ec7cca7e1827da49c2faaf173706fc19874a3a1/packages/scratch-vm/src/extension-support/extension-manager.js#L11)
+    - This means there's no need to specify your extension in the [extension-manager](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/packages/scratch-vm/src/extension-support/extension-manager.js#L11)
 - All Block text is automatically formatted for translation
     - How to actually specify these translations is coming soon! 
     - Translations for extensions are not actually supported via Scratch out of the box, so enabling this for all extensions is a win for the Typescript Framework!

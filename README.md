@@ -19,7 +19,6 @@ Looking for the old documentation (<= Sept. 2022)? Head [here](./BACKGROUND.md).
     - [*"I have an `index.ts` file.. now what?"*](#i-have-an-indexts-file-now-what)
     - [From 0 to Extension](#-from-0-to-extension)
     - [Adding UI](#-adding-ui)
-    - [Porting an Extension to Typescript](#-porting-an-extension-to-typescript)
 - [Project Dependencies](#%EF%B8%8F-dependencies)
     - [Git](#git)
     - [Node](#node)
@@ -145,11 +144,11 @@ Probably will have:
 
 ### 🎨 Adding UI
 
-To develop UI for your extension, we ask that you implement an interface that will be rendered in a [modal](https://blog.hubspot.com/website/modal-web-design#:~:text=A%20modal%20(also%20called%20a,action%20or%20by%20closing%20it.) / pop-up.
+An exciting feature of PRG's work to expand the Scratch Extension workflow is that you can easily create custom UIs for your extensions. 
 
-We currently require you to implement this interface in the [Svelte front-end framework](https://svelte.dev/). Hop down to the [Svelte dependency](#svelte-only-if-you-are-developing-ui) to configure your development environment, understand why we chose svelte, and start learning the ropes.
+We require you to implement this interface in the [Svelte front-end framework](https://svelte.dev/). Hop down to the [Svelte dependency](#svelte-only-if-you-are-developing-ui) to configure your development environment, understand why we chose svelte, and start learning the ropes.
 
-Then, head over to the Extension specific section on adding / developing UI. (TODO)
+Then, head over to the [Extension specific section on adding / developing UI](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/extensions/README.md#creating-ui-for-extensions).
 
 ## ⛓️ Dependencies
 
