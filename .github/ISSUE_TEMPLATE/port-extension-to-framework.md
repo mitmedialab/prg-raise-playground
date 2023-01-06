@@ -13,6 +13,8 @@ Old extension Location: `packages/scratch-vm/extensions/___`
 
 Branch name: `___`
 
+Folder name: `___`
+
 # Getting started
 
 ## Checkout branch
