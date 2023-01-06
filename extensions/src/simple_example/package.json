@@ -1,10 +1,10 @@
 {
-  "name": "replace-with-package-name",
+  "name": "simple_example-extension",
   "version": "1.0.0",
   "description": "An extension created using the PRG AI Blocks framework",
   "main": "index.ts",
   "scripts": {
-    "dir:name": "simple_example",
+    "directory": "echo simple_example",
     "test": "npm run test --prefix ../../ -- simple_example/index.test.ts"
   },
   "author": "",

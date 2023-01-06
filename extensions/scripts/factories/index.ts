@@ -1,5 +1,43 @@
-import path = require("path");
+import path from "path";
+import fs from "fs";
 import { extensionsSrc, templatesDirectory } from "scripts/utils/fileSystem";
+import chalk from "chalk";
+import { processArgs } from "$root/scripts/processArgs";
 
-export const getPathToTemplate = (name: string, extension: string = ".ts") => path.join(templatesDirectory, `${name}${extension}`);
-export const getPathToExtension = (extensionDirectory: string) => path.join(extensionsSrc, extensionDirectory);
+export const getPathToTemplate = (name: string) => {
+  const location = path.join(templatesDirectory, name);
+  if (!fs.existsSync(location)) error(`The provided template (${name}) does not exist!`);
+  return location;
+};
+
+export const getPathToExtension = (extensionDirectory: string, shouldExist: boolean = true) => {
+  const location = path.join(extensionsSrc, extensionDirectory);
+  if (shouldExist && !fs.existsSync(location)) error(`The provided extension directory (${extensionDirectory}) does not exist!`);
+  return location;
+};
+
+export const getExtensionDestination = (extensionDirectory: string) => path.join(extensionsSrc, extensionDirectory);
+
+export const copyTemplateToDestination = (extensionDirectory: string, filename: string, destinationName?: string) => {
+  const folder = getPathToExtension(extensionDirectory);
+  const template = getPathToTemplate(filename);
+  const destination = path.join(folder, destinationName ?? filename);
+  if (fs.existsSync(destination)) error(`Desired destination for template (${filename}) already exists: ${destination}`);
+  fs.copyFileSync(template, destination);
+  return destination;
+}
+
+export type DirectoryArg = {
+  directory: string;
+}
+
+export const directoryFlag: DirectoryArg = { directory: "dir" };
+export const directoryDefault: DirectoryArg = { directory: null };
+
+export const error = (msg: string) => { throw new Error(chalk.redBright(msg)) };
+
+export const processDirectoryArg = () => {
+  const { directory } = processArgs<DirectoryArg>(directoryFlag, directoryDefault);
+  if (!directory) error("An extension directory must be provided in order to add a ui to an extension.");
+  return directory;
+}

@@ -1,5 +1,4 @@
 import { Extension, Environment } from "$common";
-import defineTranslations from "./translations";
 
 type Details = {
   name: "",
@@ -18,7 +17,4 @@ export default class _ extends Extension<Details, {
 
     }
   }
-
-  // Ignore! Translations are still a work in progress (but will be supported)
-  defineTranslations = defineTranslations;
 }

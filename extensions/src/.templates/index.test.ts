@@ -3,7 +3,7 @@ import Extension from '.';
 
 createTestSuite({ Extension, __dirname },
   {
-    unitTests: {},
-    integrationTests: {}
+    unitTests: undefined,
+    integrationTests: undefined
   }
 );

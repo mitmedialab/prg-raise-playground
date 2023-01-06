@@ -22,6 +22,7 @@ export const enum Animal {
   Pig
 }
 
+
 const nameByAnimal: Record<Animal, string> = {
   [Animal.Leopard]: 'leopard',
   [Animal.Tiger]: 'tiger',

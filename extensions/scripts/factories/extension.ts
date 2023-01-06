@@ -3,10 +3,10 @@ import assert from "assert";
 import fs from "fs";
 import chalk from "chalk";
 import { processArgs } from "$root/scripts/processArgs";
-import { UnionToTuple, splitOnCapitals } from "$common";
-import { getPathToExtension, getPathToTemplate } from ".";
+import { UnionToTuple } from "$common";
+import { DirectoryArg, directoryDefault, directoryFlag, getPathToExtension, getPathToTemplate } from ".";
 
-const alreadyExists = (directory: string) => fs.existsSync(getPathToExtension(directory));
+const alreadyExists = (directory: string) => fs.existsSync(getPathToExtension(directory, false));
 
 const enum Operation {
   Default = "default",
@@ -16,26 +16,17 @@ const enum Operation {
 const operations: UnionToTuple<Operation> = [Operation.Default, Operation.Minimal];
 
 const templateByOperation: Record<Operation, string> = {
-  [Operation.Default]: "default",
-  [Operation.Minimal]: "index"
+  [Operation.Default]: "default.ts",
+  [Operation.Minimal]: "index.ts"
 };
-
-const translationsFile = getPathToTemplate("translations");
-const packageJson = getPathToTemplate("package", ".json");
-const testFile = getPathToTemplate("index", ".test.ts");
 
 Object.values(templateByOperation)
   .map(template => getPathToTemplate(template))
   .forEach(filepath => assert(fs.existsSync(filepath)));
 
-type CommandLineArgs = {
-  directory: string,
-  operation: Operation,
-}
-
-const { directory, operation } = processArgs<CommandLineArgs>(
-  { directory: "dir", operation: "op" },
-  { directory: undefined, operation: Operation.Default }
+const { directory, operation } = processArgs<DirectoryArg & { operation: Operation }>(
+  { ...directoryFlag, operation: "op" },
+  { ...directoryDefault, operation: Operation.Default }
 );
 
 const error = (msg: string) => { throw new Error(chalk.redBright(msg)) };
@@ -45,33 +36,18 @@ if (alreadyExists(directory)) error(`An extension has already been created under
 if (!operations.includes(operation)) error(`The provided operation (${operation}) is not supported. The supported operations are: ${operations.join(", ")}`);
 
 const template = getPathToTemplate(templateByOperation[operation]);
-const folder = getPathToExtension(directory);
+const folder = getPathToExtension(directory, false);
 const destination = path.join(folder, "index.ts");
 
 fs.mkdirSync(folder);
 fs.copyFileSync(template, destination);
-fs.copyFileSync(translationsFile, path.join(folder, "translations.ts"));
 
-const convertToPackageName = (name: string) => splitOnCapitals(name).map(name => name.toLowerCase()).join("-") + "-extension";
-
-const fillInPackageDetails = (location: string, name: string) => {
-  const encoding = "utf-8";
-  let text = fs.readFileSync(location, { encoding });
-  const packageNameIdentifier = "replace-with-package-name";
-  const directoryNameIdentifier = "replace-with-directory-name";
-  text = text.replace(packageNameIdentifier, convertToPackageName(name));
-  text = text.replaceAll(directoryNameIdentifier, name);
-  fs.writeFileSync(location, text, { encoding });
-}
-
-const packageDesination = path.join(folder, "package.json");
-fs.copyFileSync(packageJson, packageDesination);
-fillInPackageDetails(packageDesination, directory);
-
-fs.copyFileSync(testFile, path.join(folder, "index.test.ts"));
+import("./package");
+import("./test");
 
 const msg = [
   chalk.greenBright("Success! Your extension has been created at:"),
   chalk.cyan(`\n\n\t${folder}\n`),
 ];
 console.log(...msg);
+

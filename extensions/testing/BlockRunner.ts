@@ -1,6 +1,7 @@
-import { BlockType, Extension } from "$common";
+import { BlockType, CodeGenArgs, Extension, PopulateCodeGenArgs } from "$common";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
-import { AnyExtension, BlockKey, InputArray, KeyToBlockIndexMap, RenderedUI, RuntimeForTest } from "./types";
+import { buildKeyBlockMap } from "$testing";
+import { AnyExtension, BlockKey, ExtensionConstructor, InputArray, KeyToBlockIndexMap, RenderedUI, RuntimeForTest } from "./types";
 import { getEngineFile } from "./utils";
 
 export class BlockRunner<T extends AnyExtension> {
@@ -22,6 +23,14 @@ export class BlockRunner<T extends AnyExtension> {
     const output = await Promise.resolve(blockFunction(...args));
     const renderedUI = forTest.UIPromise ? await forTest.UIPromise : undefined;
     return { output, renderedUI };
+  }
+
+  createCompanion<TCompanion extends AnyExtension>(constructor: ExtensionConstructor<TCompanion>) {
+    const { instance: { runtime } } = this;
+    const args: PopulateCodeGenArgs = { name: "", blockIconURI: "", id: "" };
+    const companion = new constructor(runtime, args as CodeGenArgs);
+    Extension.TestInit(companion);
+    return new BlockRunner(buildKeyBlockMap(companion), companion);
   }
 
   private mockBlockUtility(): BlockUtility {

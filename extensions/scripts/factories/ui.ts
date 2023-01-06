@@ -1,42 +1,29 @@
-import { processArgs } from "$root/scripts/processArgs";
 import chalk from "chalk";
 import path from "path";
 import fs from "fs";
-import { getPathToExtension, getPathToTemplate } from ".";
+import { getPathToExtension, getPathToTemplate, processDirectoryArg } from ".";
 
-type CommandLineArgs = {
-  directory: string,
-}
-
-const { directory } = processArgs<CommandLineArgs>(
-  { directory: "dir" },
-  { directory: undefined }
-);
-
-const error = (msg: string) => { throw new Error(chalk.redBright(msg)) };
-
-if (!directory) error("An extension directory must be provided in order to add a ui to an extension.");
+const directory = processDirectoryArg();
 
 const extensionDirectory = getPathToExtension(directory);
-if (!fs.existsSync(extensionDirectory)) error(`The provided extension directory (${directory}) does not exist!`);
 
 const uiTemplate = "UI";
 const extension = ".svelte";
-const filename = (modifier: string = "") => `${uiTemplate}${modifier}${extension}`;
-const template = getPathToTemplate(uiTemplate, extension);
+const template = getPathToTemplate(uiTemplate + extension);
+
+const getFilename = (modifier: string = "") => `${uiTemplate}${modifier}${extension}`;
 
 const getDestination = () => {
-  let desired = path.join(extensionDirectory, filename());
-  let i = 2;
-  while (fs.existsSync(desired)) {
-    desired = path.join(extensionDirectory, filename(`_${i}`));
-    i++;
+  let desired = path.join(extensionDirectory, getFilename());
+  for (let index = 2; index < Number.MAX_SAFE_INTEGER; index++) {
+    if (fs.existsSync(desired)) break;
+    desired = path.join(extensionDirectory, getFilename(`_${index}`));
   }
   return desired;
 }
 
 const destination = getDestination();
-const name = path.basename(destination).replace(path.extname(destination), "");
+const name = path.basename(destination).replace(extension, "");
 const invocation = `this.openUI("${name}");`;
 
 fs.copyFileSync(template, destination);

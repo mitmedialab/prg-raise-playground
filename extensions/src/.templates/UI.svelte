@@ -6,9 +6,9 @@
    * @summary This is a reference to the instance of your extension. 
    * @description Use your extension to collect, display, and update information.
    * 
-   * In this way, the UI acts as 'view' into your extension and it's current state.
+   * In this way, the UI acts as 'view' into your extension and its current state.
    * 
-   * Your UI is also to manipulate that state through interacting with the public properties and functions of your extension
+   * Your UI is also able to manipulate your extension's state through interacting with the public properties and functions of your extension
    * (NOTE: functions should not be invoked directly, but instead called through the `invoke` function below).
    */
   // svelte-ignore unused-export-let

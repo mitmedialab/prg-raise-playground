@@ -30,7 +30,6 @@ export type PopulateCodeGenArgs = { [k in keyof CodeGenArgs]: CodeGenArgs[k] ext
  * > {
  *  init(env: Environment): { ... };
  *  defineBlocks(): MyExtension["BlockDefinitions"] { return ... }
- *  defineTranslations(): MyExtension["Translations"] { return ... }
  * }
  * @description Extension developers will create Typescript classes that `extend` (or 'inherit', or 'implement') this `Extension` class.
  * 
@@ -45,7 +44,6 @@ export type PopulateCodeGenArgs = { [k in keyof CodeGenArgs]: CodeGenArgs[k] ext
  * This includes:
  * * Defining an `init` method, which is used INSTEAD of a constructor
  * * Defining a `defineBlocks` method that does just that: defines this extension's blocks 
- * * Defining a `defineTranslations` method for international support -- ignore this for now, coming soon!
  * @template MenuDetails How the extension should display in the extensions menu 
  * @template Blocks What kind of blocks this extension implements
  * @link https://www.typescriptlang.org/docs/handbook/2/generics.html Learn more about generics! 
@@ -206,7 +204,7 @@ export abstract class Extension
    * 
    * Translations are still a work in progress, but will be supported.
    */
-  abstract defineTranslations(): Translations<Extension<MenuDetails, Blocks>>;
+  defineTranslations?(): Translations<Extension<MenuDetails, Blocks>>;
 
   private getInfo(): ExtensionMetadata {
     const { id, internal_blocks: blocks, internal_menus: menus, name, blockIconURI } = this;

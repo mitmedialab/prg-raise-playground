@@ -107,14 +107,15 @@ const processIntegrationTest = <T extends AnyExtension>(
   const instance: T = getInstance(details);
   const runner = new BlockRunner(map, instance);
   await testCase(runner, details.testHelper);
-})
+});
 
-const getKeyBlockMap = <T extends AnyExtension>(details: TestDetails<T, any>): KeyToBlockIndexMap =>
-  Extension.TestGetInfo(getInstance(details))
-    .blocks.reduce((acc, { opcode }: ExtensionBlockMetadata, index) =>
-      acc.set(Extension.GetKeyFromOpcode(opcode), index),
-      new Map<string, number>()
-    );
+const toKeyToBlockMap = (map: KeyToBlockIndexMap, { opcode }: ExtensionBlockMetadata, index: number) =>
+  map.set(Extension.GetKeyFromOpcode(opcode), index);
+
+export const buildKeyBlockMap = <T extends AnyExtension>(instance: T): KeyToBlockIndexMap =>
+  Extension.TestGetInfo(instance).blocks.reduce(toKeyToBlockMap, new Map<string, number>());
+
+const getKeyBlockMap = <T extends AnyExtension>(details: TestDetails<T, any>) => buildKeyBlockMap(getInstance(details));
 
 const getTestCase = <T extends AnyExtension, K extends BlockKey<T>>(testCase: TestCaseEntry<T, K>, { testHelper }: TestDetails<T, K>): BlockTestCase<T, K> =>
   isFunction(testCase) ? (testCase as GetTestCase<T, K>)(testHelper) : testCase as BlockTestCase<T, K>;
@@ -139,7 +140,7 @@ export const createTestSuite = <T extends AnyExtension>(
 
   const keyToBlockMap = getKeyBlockMap({ Extension, directory, key: undefined, testHelper });
 
-  describe(`${Extension.name} Unit Tests`, () => {
+  if (unitTests) describe(`${Extension.name} Unit Tests`, () => {
     for (const key in unitTests) {
       type Case = TestCaseEntry<T, typeof key>
 
@@ -155,9 +156,7 @@ export const createTestSuite = <T extends AnyExtension>(
     }
   });
 
-  if (!integrationTests) return;
-
-  describe(`${Extension.name} Integration Tests`, () => {
+  if (integrationTests) describe(`${Extension.name} Integration Tests`, () => {
     for (const key in integrationTests) {
       const name = splitOnCapitals(key).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(" ");
       const args: TestDetails<T, typeof key> = { Extension, key, directory, testHelper };

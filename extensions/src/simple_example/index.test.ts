@@ -5,21 +5,19 @@ createTestSuite({ Extension, __dirname },
   {
     unitTests: {
       log: [({ expect }) => {
-        const input = "Tfst string";
+        const input = "some string";
         let count = 0;
-        const actualConsole = console;
-        console = {
-          ...console,
-          log: (message) => {
-            expect(message).toBe(input);
-            count++;
-          }
+        const { log } = console;
+        console.log = (message) => {
+          expect(message).toBe(input);
+          count++;
         };
+
         return {
           input,
           after: () => {
             expect(count).toBe(1);
-            console = actualConsole;
+            console.log = log;
           }
         }
       }],

@@ -1,5 +1,4 @@
 import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails } from "$common";
-import defineTranslations from "./translations";
 
 /**
  * @summary This type describes how your extension will display in the extensions menu. 
@@ -66,9 +65,6 @@ export default class ExtensionNameGoesHere extends Extension<Details, Blocks> {
   init(env: Environment) {
     this.exampleField = 0;
   }
-
-  // Ignore! Translations coming soon...
-  defineTranslations = defineTranslations as typeof this.defineTranslations;
 
   // All example definitions below are syntactically equivalent, 
   // and which you use is just a matter of preference.

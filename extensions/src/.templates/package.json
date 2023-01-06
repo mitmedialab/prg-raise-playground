@@ -4,7 +4,7 @@
   "description": "An extension created using the PRG AI Blocks framework",
   "main": "index.ts",
   "scripts": {
-    "directory": "replace-with-directory-name",
+    "directory": "echo replace-with-directory-name",
     "test": "npm run test --prefix ../../ -- replace-with-directory-name/index.test.ts"
   },
   "author": "",
