@@ -19,24 +19,33 @@ export type TestHelper = {
   updateInputValue: (input: HTMLInputElement, value: string) => Promise<boolean>,
 }
 
-export type Hooks<T extends AnyExtension> = {
+type ReturnsValue<T extends AnyExtension, Key extends BlockKey<T>> =
+  ReturnType<T["BlockFunctions"][Key]> extends void | Promise<void> | InternalButtonKey
+  ? false
+  : true;
+
+type ReportedValue<T extends AnyExtension, Key extends BlockKey<T>> = ReturnType<T["BlockFunctions"][Key]>;
+
+export type Hooks<T extends AnyExtension, Key extends BlockKey<T>> = {
   /**
-   * 
+   * Ran before the begining of a test
    * @param this 
    * @param extension 
-   * @returns 
+   * @returns Nothing (but can be implemented as an async function)
    */
   before?: (this: TestHelper, extension: T) => void | Promise<void>,
   /**
-   * 
-   * @param this 
-   * @param extension 
+   * Ran after the conclusion of a test, and thus is the best place to put test cases.
+   * @param this `this` refers to a TestHelper object
+   * @param extension The instance of the extension under test that the block function was called on
+   * @param result (If the block function under test returns a value) the returned value of the block function under test
    * @param ui 
-   * @returns 
+   * @returns Nothing (but can be implemented as an async function)
    */
-  after?: (this: TestHelper, extension: T, ui?: RenderedUI) => void | Promise<void>,
+  after?: ReturnsValue<T, Key> extends false
+  ? (this: TestHelper, extension: T, ui?: RenderedUI) => void | Promise<void>
+  : (this: TestHelper, extension: T, result: ReportedValue<T, Key>, ui?: RenderedUI) => void | Promise<void>
 };
-
 
 export type InputArray<T extends AnyExtension, Key extends BlockKey<T>> =
   Parameters<T["BlockFunctions"][Key]> extends NonEmptyArray<any>
@@ -58,15 +67,15 @@ export type Input<T extends AnyExtension, Key extends BlockKey<T>> =
   : {};
 
 export type Expected<T extends AnyExtension, Key extends BlockKey<T>> =
-  ReturnType<T["BlockFunctions"][Key]> extends void | Promise<void> | InternalButtonKey
-  ? {}
-  : {
+  ReturnsValue<T, Key> extends true
+  ? {
     /**
      * The expected value returned by the block function (or "operation") under test.
-     * At the conclusion of the test, this value will be compared to the actual value return by the function under test.
+     * At the conclusion of the test, this value will be compared to the actual value returned (or "reported") by the function under test.
      */
-    expected: ReturnType<T["BlockFunctions"][Key]>
-  };
+    expected: ReportedValue<T, Key>
+  }
+  : {};
 
 export type EnsureReady<T extends AnyExtension> = {
   /**
@@ -84,7 +93,7 @@ export type EnsureReady<T extends AnyExtension> = {
 };
 
 export type BlockTestCase<T extends AnyExtension, Key extends BlockKey<T>> =
-  Hooks<T> &
+  Hooks<T, Key> &
   EnsureReady<T> &
   Input<T, Key> &
   Expected<T, Key>;

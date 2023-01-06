@@ -19,6 +19,11 @@ createTestSuite({ Extension, __dirname }, {
           expect(value).toBe(input);
         }
       }
+    },
+    selectAngle: {
+      input: 3,
+      expected: 3,
+      after(_, result) { this.expect(result).toBe(3) }
     }
   },
   integrationTests: {
