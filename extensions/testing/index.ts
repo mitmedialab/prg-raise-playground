@@ -81,12 +81,12 @@ const processUnitTest = <T extends AnyExtension, Key extends BlockKey<T>>(
   const { key, testHelper } = details;
 
   const {
-    isReady, before, after,
+    isReady, before, after, checkIsReadyRate,
     // @ts-ignore 
     input, expected
   } = testCase;
 
-  if (isReady) await waitForCondition(() => isReady(instance));
+  if (isReady) await waitForCondition(() => isReady(instance), checkIsReadyRate);
 
   await before?.bind(testHelper)?.(instance);
 

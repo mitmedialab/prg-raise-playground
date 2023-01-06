@@ -20,7 +20,20 @@ export type TestHelper = {
 }
 
 export type Hooks<T extends AnyExtension> = {
+  /**
+   * 
+   * @param this 
+   * @param extension 
+   * @returns 
+   */
   before?: (this: TestHelper, extension: T) => void | Promise<void>,
+  /**
+   * 
+   * @param this 
+   * @param extension 
+   * @param ui 
+   * @returns 
+   */
   after?: (this: TestHelper, extension: T, ui?: RenderedUI) => void | Promise<void>,
 };
 
@@ -32,16 +45,41 @@ export type InputArray<T extends AnyExtension, Key extends BlockKey<T>> =
 
 export type Input<T extends AnyExtension, Key extends BlockKey<T>> =
   Parameters<T["BlockFunctions"][Key]> extends NonEmptyArray<any>
-  ? { input: Parameters<T["BlockFunctions"][Key]> extends { length: 1 } ? Parameters<T["BlockFunctions"][Key]>[0] : readonly [...Parameters<T["BlockFunctions"][Key]>] }
+  ? {
+    /**
+     * The input(s) that the block function (or "operation") under test should be given. 
+     * If the block function takes one argument, then this will be a single value.
+     * If the block function takes multiple arguments, then this field will be an array of values.
+     */
+    input: Parameters<T["BlockFunctions"][Key]> extends { length: 1 }
+    ? Parameters<T["BlockFunctions"][Key]>[0]
+    : readonly [...Parameters<T["BlockFunctions"][Key]>]
+  }
   : {};
 
 export type Expected<T extends AnyExtension, Key extends BlockKey<T>> =
   ReturnType<T["BlockFunctions"][Key]> extends void | Promise<void> | InternalButtonKey
   ? {}
-  : { expected: ReturnType<T["BlockFunctions"][Key]> };
+  : {
+    /**
+     * The expected value returned by the block function (or "operation") under test.
+     * At the conclusion of the test, this value will be compared to the actual value return by the function under test.
+     */
+    expected: ReturnType<T["BlockFunctions"][Key]>
+  };
 
 export type EnsureReady<T extends AnyExtension> = {
+  /**
+   * Function invoked periodically before a test begins.
+   * Once this function returns true (if defined), the test will begin.
+   * @param extension 
+   * @returns 
+   */
   isReady?: (extension: T) => boolean;
+  /**
+   * How often (in ms) to invoke the isReady function. 
+   * If not defined, a rate of 100ms will be used.
+   */
   checkIsReadyRate?: number;
 };
 
