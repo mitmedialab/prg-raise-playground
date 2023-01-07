@@ -9,24 +9,8 @@ It's a fullblown [fork](https://en.wikipedia.org/wiki/Fork_(software_development
 Looking for the old documentation (<= Sept. 2022)? Head [here](./BACKGROUND.md).
 
 ## 📖 Table of Contents
-- [Quick Start](#-quick-start)
-    - [Project setup](#-project-setup)
-    - [Making an extension](#-making-an-extension)
-        - [Advanced](#-advanced)
-    - [Running an extension](#-running-an-extension)
-    - [Committing, pushing, and deploying an extension](#-committing-pushing-and-deploying-an-extension)
-- [How to program an extension](#-how-to-program-an-extension)
-    - [*"I have an `index.ts` file.. now what?"*](#i-have-an-indexts-file-now-what)
-    - [From 0 to Extension](#-from-0-to-extension)
-    - [Adding UI](#-adding-ui)
-- [Project Dependencies](#%EF%B8%8F-dependencies)
-    - [Git](#git)
-    - [Node](#node)
-    - [NPM](#NPM)
-    - [VS Code](#vs-code-recommended) 
-    - [Svelte (if you're developing UI)](#svelte-only-if-you-are-developing-ui)
-- [Troubleshooting](#-Troubleshooting)
-    - [webpack: command not found](#webpack-command-not-found)
+
+[Click on the ⁝≡ icon above](https://github.blog/changelog/2021-04-13-table-of-contents-support-in-markdown-files/)
 
 ## ⚡ Quick Start
 

@@ -99,12 +99,12 @@ export type BlockTestCase<T extends AnyExtension, Key extends BlockKey<T>> =
   Expected<T, Key>;
 
 export type SingleOrArray<T> = T | T[];
-export type SingleOrFunc<T, Args extends any[]> = T | ((...args: Args) => T);
+export type ObjectOrFunc<T, Args extends any[]> = T | ((...args: Args) => T);
 
 export type GetTestCase<T extends AnyExtension, K extends BlockKey<T>> = (helper: TestHelper) => BlockTestCase<T, K>;
-export type TestCaseEntry<T extends AnyExtension, K extends BlockKey<T>> = SingleOrFunc<BlockTestCase<T, K>, Parameters<GetTestCase<T, K>>>;
+export type TestCaseEntry<T extends AnyExtension, K extends BlockKey<T>> = ObjectOrFunc<BlockTestCase<T, K>, Parameters<GetTestCase<T, K>>>;
 
-export type UnitTests<T extends AnyExtension> = { [k in BlockKey<T>]?: SingleOrArray<SingleOrFunc<BlockTestCase<T, k>, Parameters<GetTestCase<T, k>>>> };
+export type UnitTests<T extends AnyExtension> = { [k in BlockKey<T>]?: SingleOrArray<ObjectOrFunc<BlockTestCase<T, k>, Parameters<GetTestCase<T, k>>>> };
 
 export type RenderedUI = RenderResult<SvelteComponentDev, typeof import("/Users/parkermalachowsky/MIT/prg-extension-boilerplate/extensions/testing/node_modules/@testing-library/dom/types/queries")>;
 
