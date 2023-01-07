@@ -1,6 +1,6 @@
 <script lang="ts" context="module">
   import type _ExtensionManager from 'scratch-vm/src/extension-support/extension-manager';
-  import type { Extension } from "scratch-vm/src/typescript-support/Extension";
+  import type { Extension } from "../../../../extensions/src/common/Extension";
   import type _VirtualMachine from "scratch-vm/src/virtual-machine";
 
   type ExtensionID = string;
