@@ -66,11 +66,10 @@ export default class MyFirstExtension extends Extension<Details, Blocks> {
    * @link https://www.typescriptlang.org/docs/handbook/2/classes.html#fields
    */
   exampleField: number;
-  firstWords: string;
+  firstWords: string = "Hi there";
 
   init(env: Environment) {
     this.exampleField = 0;
-    this.firstWords = "Hi there";
   }
 
   // All example definitions below are syntactically equivalent, 
@@ -94,10 +93,10 @@ export default class MyFirstExtension extends Extension<Details, Blocks> {
       args: [ArgumentType.String, ArgumentType.Boolean],
       text: (statement, condition) => `Sends your statement to the console if condition is true --> ${statement} and ${condition}`,
       operation: (statement, condition) => {
-        if (condition){
+        if (condition) {
           console.log(statement);
         }
-      }  
+      }
     });
 
     type DefineStringReturner = DefineBlock<MyFirstExtension, Blocks["stringReturner"]>
@@ -111,20 +110,20 @@ export default class MyFirstExtension extends Extension<Details, Blocks> {
 
     type DefineDoTrue = DefineBlock<MyFirstExtension, Blocks["doTrue"]>
     const doTrue: DefineDoTrue = () => ({
-        type: BlockType.Hat,
-        text: "Returns True",
-        operation: () => {
-          return true;
-        }
+      type: BlockType.Hat,
+      text: "Returns True",
+      operation: () => {
+        return true;
+      }
     });
 
     type DefineDoFalse = DefineBlock<MyFirstExtension, Blocks["doFalse"]>
     const doFalse: DefineDoFalse = () => ({
-        type: BlockType.Hat,
-        text: "Returns True",
-        operation: () => {
-          return true;
-        }
+      type: BlockType.Hat,
+      text: "Returns True",
+      operation: () => {
+        return true;
+      }
     });
 
 
