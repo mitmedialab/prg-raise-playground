@@ -3,6 +3,7 @@ const log = require('../util/log');
 const maybeFormatMessage = require('../util/maybe-format-message');
 const BlockType = require('./block-type');
 const { tryInitExtension, tryGetExtensionConstructorFromBundle, tryGetAuxiliaryObjectFromLoadedBundle } = require('./bundle-loader');
+const { getCallingContext } = require('./custom-arguments');
 
 const tryRetrieveExtensionConstructor = async (extensionId) =>
     await extensionId in builtinExtensions 
@@ -364,6 +365,9 @@ class ExtensionManager {
         const editingTargetID = editingTarget ? editingTarget.id : null;
         const extensionMessageContext = this.runtime.makeMessageContextForTarget(editingTarget);
 
+        console.log(getCallingContext());
+        //console.log(editingTarget.blocks);
+
         // TODO: Fix this to use dispatch.call when extensions are running in workers.
         const menuFunc = extensionObject[menuItemFunctionName];
         const menuItems = menuFunc.call(extensionObject, editingTargetID).map(
@@ -371,6 +375,7 @@ class ExtensionManager {
                 item = maybeFormatMessage(item, extensionMessageContext);
                 switch (typeof item) {
                     case 'object':
+                        const {text, value} = item;
                         return [
                             maybeFormatMessage(item.text, extensionMessageContext),
                             item.value

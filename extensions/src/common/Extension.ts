@@ -74,6 +74,9 @@ export abstract class Extension
     this.blockIconURI = blockIconURI;
     this.runtime = runtime;
     Extension.ExtensionsByID.set(id, this);
+    this.runtime
+    const editingTarget = this.runtime.getEditingTarget() || this.runtime.getTargetForStage();
+    console.error("H");
   }
 
   private internal_init() {
