@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import type { PopulateCodeGenArgs } from "$common";
+import { Extension, PopulateCodeGenArgs } from "$common";
 import { type Plugin } from "rollup";
 import Transpiler from './typeProbing/Transpiler';
 import { getBlockIconURI } from "./utils/URIs";
@@ -16,7 +16,7 @@ import { reportDiagnostic } from "./typeProbing/diagnostics";
 import chalk from "chalk";
 import { runOncePerBundling } from "./utils/rollupHelper";
 import { sendToParent } from "$root/scripts/comms";
-import { createMatchGroup, createMatchSelection, matchAnyLetterOrNumber, matchOneOrMoreTimes } from "./utils/regularExpressions";
+import { createMatchGroup, createMatchSelection, matchAnyLetterOrNumber, matchAnyWhiteSpaceIncludingNewLine, matchOneOrMoreTimes } from "./utils/regularExpressions";
 
 export const clearDestinationDirectories = (): Plugin => {
   const runner = runOncePerBundling();
@@ -132,10 +132,9 @@ export const transpileExtensions = (info: BundleInfo, callbacks: Record<Transpil
 }
 
 export const fillInCodeGenArgs = ({ id, directory, menuDetails, indexFile }: BundleInfo): Plugin => {
-  const matchArgsName = createMatchSelection(matchAnyLetterOrNumber) + matchOneOrMoreTimes;
-  const matchArgsGroup = createMatchGroup(matchArgsName);
-  const getCallToSuper = (query: string) => `super\\(...${query}\\)`;
-  const expression = getCallToSuper(matchArgsGroup);
+  const keywords = ["extends", "Extension", "{"];
+  const matchClass = keywords.join(matchAnyWhiteSpaceIncludingNewLine + matchOneOrMoreTimes);
+  const expression = createMatchGroup(matchClass);
 
   return {
     name: 'Fill in Code Gen Args per Extension',
@@ -143,20 +142,23 @@ export const fillInCodeGenArgs = ({ id, directory, menuDetails, indexFile }: Bun
       order: 'post',
       handler: (code: string, file: string) => {
         if (file !== indexFile) return;
+
         const re = new RegExp(expression);
         const match = re.exec(code);
 
-        if (match.length < 2) throw new Error("Unable to location call to Extension's constructor. The strategy likely needs to be updated...");
-        if (match.length > 2) throw new Error("Multiple matches found when trying to locate call to Extension's constructor. The strategy likely needs to be updated...");
+        if (match.length < 2) throw new Error("Unable to locate insertion point within Extension class. The strategy likely needs to be updated...");
+        if (match.length > 2) throw new Error("Multiple matches found when trying to locate insertion point within Extension class. The strategy likely needs to be updated...");
 
-        const [matchText, argName] = match;
+        const [matchText] = match;
+
         const { index } = match;
-        const [before, after] = [code.substring(0, index), code.substring(index + matchText.length)];
+        const splitPoint = index + matchText.length;
+        const [before, after] = [code.substring(0, splitPoint), code.substring(splitPoint)];
         const { name } = menuDetails;
         const blockIconURI = getBlockIconURI(menuDetails, directory);
         const codeGenArgs: PopulateCodeGenArgs = { id, name, blockIconURI };
-        const replacement = `[...${argName}, ${JSON.stringify(codeGenArgs)}]`;
-        return { code: before + matchText.replace(argName, replacement) + after, map: null }
+        const getCodeGenArgs = `${Extension.InternalCodeGenArgsGetterKey}() { return ${JSON.stringify(codeGenArgs)} }`;
+        return { code: `${before}\n\t${getCodeGenArgs}\n${after}`, map: null }
       }
     }
   };

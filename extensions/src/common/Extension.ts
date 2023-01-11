@@ -67,8 +67,8 @@ export abstract class Extension
     openUI(runtime, { id, name, component: component.replace(".svelte", ""), label });
   }
 
-  constructor(runtime: Runtime, codeGenArgs: CodeGenArgs) {
-    const { name, id, blockIconURI } = codeGenArgs;
+  constructor(runtime: Runtime, codeGenArgs?: CodeGenArgs) {
+    const { name, id, blockIconURI } = codeGenArgs ?? this[Extension.InternalCodeGenArgsGetterKey]() as CodeGenArgs;
     this.name = name;
     this.id = id;
     this.blockIconURI = blockIconURI;
@@ -417,6 +417,8 @@ export abstract class Extension
   private static IsString = (query) => isString(query);
 
   private static ExtensionsByID = new Map<string, Extension<any, any>>();
+
+  static InternalCodeGenArgsGetterKey = "internal_getCodeGenArgs";
 
   static TestGetInfo = <T extends Extension<any, any>>(ext: T, ...params: Parameters<Extension<any, any>["getInfo"]>) => ext.getInfo(...params);
   static TestGetBlocks = <T extends Extension<any, any>>(ext: T, ...params: Parameters<Extension<any, any>["getInfo"]>) => ext.getInfo(...params).blocks as ExtensionBlockMetadata[];
