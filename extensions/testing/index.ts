@@ -93,9 +93,12 @@ const processUnitTest = <T extends AnyExtension, Key extends BlockKey<T>>(
   const runner = new BlockRunner(map, instance);
   const { output, renderedUI } = await runner.invoke(key, ...getInputArray<T, Key>(input));
 
-  if (expected !== undefined) expect(output).toBe(expected);
+  const expectsResult = expected !== undefined;
 
-  await after?.bind(testHelper)?.(instance, renderedUI);
+  if (expectsResult) expect(output).toBe(expected);
+
+  const afterArgs = expectsResult ? [instance, output, renderedUI] : [instance, renderedUI];
+  await after?.bind(testHelper)?.(...afterArgs);
 });
 
 const processIntegrationTest = <T extends AnyExtension>(

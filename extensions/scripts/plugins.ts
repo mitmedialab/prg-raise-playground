@@ -146,11 +146,11 @@ export const fillInCodeGenArgs = ({ id, directory, menuDetails, indexFile }: Bun
         const re = new RegExp(expression);
         const match = re.exec(code);
 
-        if (match.length < 2) throw new Error("Unable to locate insertion point within Extension class. The strategy likely needs to be updated...");
-        if (match.length > 2) throw new Error("Multiple matches found when trying to locate insertion point within Extension class. The strategy likely needs to be updated...");
+        const errorPrefix = "Framework error -- contact Parker Malachowsky (or project maintainer): ";
+        if (match.length < 2) throw new Error(errorPrefix + "Unable to locate insertion point within Extension class. The strategy likely needs to be updated...");
+        if (match.length > 2) throw new Error(errorPrefix + "Multiple matches found when trying to locate insertion point within Extension class. The strategy likely needs to be updated...");
 
         const [matchText] = match;
-
         const { index } = match;
         const splitPoint = index + matchText.length;
         const [before, after] = [code.substring(0, splitPoint), code.substring(splitPoint)];
