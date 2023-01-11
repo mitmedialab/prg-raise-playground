@@ -24,6 +24,7 @@ const newBlockIds = require('./util/new-block-ids');
 const {loadCostume} = require('./import/load-costume.js');
 const {loadSound} = require('./import/load-sound.js');
 const {serializeSounds, serializeCostumes} = require('./serialization/serialize-assets');
+const { processBlocklyEvent } = require('./extension-support/custom-arguments');
 require('canvas-toBlob');
 
 const RESERVED_NAMES = ['_mouse_', '_stage_', '_edge_', '_myself_', '_random_'];
@@ -1461,6 +1462,7 @@ class VirtualMachine extends EventEmitter {
         if (this.editingTarget) {
             this.editingTarget.blocks.blocklyListen(e);
         }
+        processBlocklyEvent(e);
     }
 
     /**
