@@ -1,7 +1,7 @@
 import ScratchBlocks from 'scratch-blocks';
 
 const {fromJson, prototype} = ScratchBlocks.FieldDropdown;
-const {setValue} = prototype;
+const {setValue, showEditor_ } = prototype;
 
 
 /**
@@ -12,9 +12,13 @@ const {setValue} = prototype;
 export default function (vm) {
 
     function overrideSetValue(...args) {
-        console.log(this);
-        vm.runtime.dropdownState = "Open";
+        vm.runtime.dropdownState = "close";
         return setValue.bind(this)(...args);
+    }
+
+    function overrideShowEditor_(...args) {
+        vm.runtime.dropdownState = "open";
+        return showEditor_.bind(this)(...args);
     }
 
     const jsonForMenuBlock = function (name, menuOptionsFn, colors, start) {
@@ -331,11 +335,12 @@ export default function (vm) {
     };
 
     ScratchBlocks.FieldDropdown.fromJson = (...args) => {
-        vm.runtime.dropdownState = "Init";
+        vm.runtime.dropdownState = "init";
         return fromJson(...args);
     };
 
     ScratchBlocks.FieldDropdown.prototype.setValue = overrideSetValue;
+    ScratchBlocks.FieldDropdown.prototype.showEditor_ = overrideShowEditor_;
 
     // Use a collator's compare instead of localeCompare which internally
     // creates a collator. Using this is a lot faster in browsers that create a

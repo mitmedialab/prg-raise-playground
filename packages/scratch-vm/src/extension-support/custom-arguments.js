@@ -62,9 +62,10 @@ const handleOpen = () => {
 
 }
 
-export const processCustomArgumentHack = ([obj]) => {
+export const processCustomArgumentHack = (runtime, [obj]) => {
+  
   const {value} = obj;
-  const context = getCallingContext();
+  const context = runtime.dropdownState; //getCallingContext();
   switch (context) {
     case callingContext.Init:
       // This needs to keep track of all the currently being used 'states' / 'ids' / 'timestamps'.

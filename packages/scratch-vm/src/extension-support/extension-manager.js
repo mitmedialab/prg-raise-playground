@@ -365,14 +365,11 @@ class ExtensionManager {
         const editingTargetID = editingTarget ? editingTarget.id : null;
         const extensionMessageContext = this.runtime.makeMessageContextForTarget(editingTarget);
 
-        console.log(editingTarget);
-
         // TODO: Fix this to use dispatch.call when extensions are running in workers.
         const menuFunc = extensionObject[menuItemFunctionName];
         const menuResult = menuFunc.call(extensionObject, editingTargetID);
 
-        console.log(this.runtime.dropdownState);
-        if (isCustomArgumentHack(menuResult)) return processCustomArgumentHack(menuResult);
+        if (isCustomArgumentHack(menuResult)) return processCustomArgumentHack(this.runtime, menuResult);
 
         console.log("no");
 
