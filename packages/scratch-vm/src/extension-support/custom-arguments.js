@@ -1,7 +1,12 @@
+import * as StackTrace from "stacktrace-js";
 export const identifier = "eee";
 
 export const customArgumentFlag = "internal_IsCustomArgument";
 export const customArgumentHTMLTextIdentifier = "...loading...";
+
+const initFunctions = ["interpolate_", "fromJson", "domToBlock", "jsonInit"];
+const openFunctions = ["HTMLDocument"];
+const closeFunctions = ["fireListeners"];
 
 const callingContext = {  
   DrowpdownOpen: "open",
@@ -18,21 +23,30 @@ const state = {
   }
 }
 
+const newLineIdentifier = "\n";
+const blocklyFileIndentifier = "blockly_compressed_vertical.js.";
+const chromeText = "    at ";
+
+const u = "./node_modules/imports-loader/index.js?this=>window!./node_modules/exports-loader/index.js?Blockly&goog!./node_modules/scratch-blocks/blockly_compressed_vertical.js";
+
 const getCallStack = () => {
-  Error.stackTraceLimit = Infinity;
-  const newLineIdentifier = "\n";
-  const blocklyFileIndentifier = "blockly_compressed_vertical.js.";
+  if (Error.stackTraceLimit) Error.stackTraceLimit = Infinity;
+  const traces = StackTrace.getSync().map(({functionName}) => functionName).map(name => name?.replace(u, ""));
+  console.log(traces);
   return new Error().stack
     .split(newLineIdentifier)
-    .map(line => line.split(blocklyFileIndentifier)[1] ?? line);
+    .map(line => line.split(blocklyFileIndentifier)[1] ?? line)
+    .map(line => line.replace(chromeText, ""))
+    .slice(0, 10);
 }
 
 export const getCallingContext = () => {
   const items = getCallStack();
   const last = items[items.length - 1];
-  if (last.startsWith("HTMLDocument")) return callingContext.DrowpdownOpen;
-  if (last.startsWith("goog")) return callingContext.DropdownClose;
-  if (last.startsWith("Blockly")) return callingContext.Init;
+  console.log(last);
+  if (openFunctions.some(identifier => last.includes(identifier))) return callingContext.DrowpdownOpen;
+  if (closeFunctions.some(identifier => last.includes(identifier))) return callingContext.DropdownClose;
+  if (initFunctions.some(identifier => last.includes(identifier))) return callingContext.Init;
   throw new Error("Unhandled calling context: " + last)
 }
 

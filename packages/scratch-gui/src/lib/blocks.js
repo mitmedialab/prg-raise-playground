@@ -1,11 +1,21 @@
 import ScratchBlocks from 'scratch-blocks';
 
+const {fromJson, prototype} = ScratchBlocks.FieldDropdown;
+const {setValue} = prototype;
+
+
 /**
  * Connect scratch blocks with the vm
  * @param {VirtualMachine} vm - The scratch vm
  * @return {ScratchBlocks} ScratchBlocks connected with the vm
  */
 export default function (vm) {
+
+    function overrideSetValue(...args) {
+        console.log(this);
+        vm.runtime.dropdownState = "Open";
+        return setValue.bind(this)(...args);
+    }
 
     const jsonForMenuBlock = function (name, menuOptionsFn, colors, start) {
         return {
@@ -319,6 +329,13 @@ export default function (vm) {
     ScratchBlocks.FieldNote.playNote_ = function (noteNum, extensionId) {
         vm.runtime.emit('PLAY_NOTE', noteNum, extensionId);
     };
+
+    ScratchBlocks.FieldDropdown.fromJson = (...args) => {
+        vm.runtime.dropdownState = "Init";
+        return fromJson(...args);
+    };
+
+    ScratchBlocks.FieldDropdown.prototype.setValue = overrideSetValue;
 
     // Use a collator's compare instead of localeCompare which internally
     // creates a collator. Using this is a lot faster in browsers that create a
