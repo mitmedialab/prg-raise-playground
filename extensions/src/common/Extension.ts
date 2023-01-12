@@ -5,6 +5,7 @@ import Cast from '$scratch-vm/util/cast';
 import Runtime from "$scratch-vm/engine/runtime";
 import { openUI, registerButtonCallback } from './ui';
 import { isFunction, isString } from './utils';
+import { isCustomArgumentHack, processCustomArgumentHack } from './customArguments';
 
 export type CodeGenArgs = {
   name: never,
@@ -56,8 +57,8 @@ export abstract class Extension
   runtime: Runtime;
 
   readonly BlockFunctions: Blocks;
-  readonly BlockDefinitions: BlockDefinitions<Extension<MenuDetails, Blocks>>;
-  readonly Translations: Translations<Extension<MenuDetails, Blocks>>;
+  readonly BlockDefinitions: BlockDefinitions<typeof this>;
+  readonly Translations: Translations<typeof this>;
 
   private readonly internal_blocks: ExtensionBlockMetadata[] = [];
   private readonly internal_menus: ExtensionMenuMetadata[] = [];
@@ -309,6 +310,9 @@ export abstract class Extension
       func: buttonID,
     }
   }
+
+  private isCustomArgumentHack = isCustomArgumentHack.bind(this) as typeof isCustomArgumentHack;
+  private processCustomArgumentHack = processCustomArgumentHack.bind(this) as typeof processCustomArgumentHack<Extension<MenuDetails, Blocks>>;
 
   private format(text: string, identifier: string, description: string): string {
     return text;

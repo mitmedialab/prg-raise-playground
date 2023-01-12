@@ -3,7 +3,6 @@ const log = require('../util/log');
 const maybeFormatMessage = require('../util/maybe-format-message');
 const BlockType = require('./block-type');
 const { tryInitExtension, tryGetExtensionConstructorFromBundle, tryGetAuxiliaryObjectFromLoadedBundle } = require('./bundle-loader');
-const { getCallingContext, isCustomArgumentHack, processCustomArgumentHack } = require('./custom-arguments');
 
 const tryRetrieveExtensionConstructor = async (extensionId) =>
     await extensionId in builtinExtensions 
@@ -369,9 +368,10 @@ class ExtensionManager {
         const menuFunc = extensionObject[menuItemFunctionName];
         const menuResult = menuFunc.call(extensionObject, editingTargetID);
 
-        if (isCustomArgumentHack(menuResult)) return processCustomArgumentHack(this.runtime, menuResult);
-
-        console.log("no");
+        if (extensionObject["isCustomArgumentHack"]?.(menuResult)) {
+            const { runtime, getAuxiliaryObject } = this;
+            return extensionObject.processCustomArgumentHack(runtime, menuResult, getAuxiliaryObject);
+        }
 
         const menuItems = menuResult.map(
             item => {

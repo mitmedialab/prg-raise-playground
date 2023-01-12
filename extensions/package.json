@@ -11,5 +11,8 @@
   "license": "ISC",
   "devDependencies": {
     "svelte": "^3.55.0"
+  },
+  "dependencies": {
+    "stacktrace-js": "^2.0.2"
   }
 }

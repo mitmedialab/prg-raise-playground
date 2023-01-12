@@ -63,7 +63,6 @@ const handleOpen = () => {
 }
 
 export const processCustomArgumentHack = (runtime, [obj]) => {
-  
   const {value} = obj;
   const context = runtime.dropdownState; //getCallingContext();
   switch (context) {

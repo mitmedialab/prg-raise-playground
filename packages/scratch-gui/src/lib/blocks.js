@@ -1,8 +1,5 @@
 import ScratchBlocks from 'scratch-blocks';
-
-const {fromJson, prototype} = ScratchBlocks.FieldDropdown;
-const {setValue, showEditor_ } = prototype;
-
+import { overridesForCustomArgumentSupport } from './customBlockOverrides';
 
 /**
  * Connect scratch blocks with the vm
@@ -10,17 +7,6 @@ const {setValue, showEditor_ } = prototype;
  * @return {ScratchBlocks} ScratchBlocks connected with the vm
  */
 export default function (vm) {
-
-    function overrideSetValue(...args) {
-        vm.runtime.dropdownState = "close";
-        return setValue.bind(this)(...args);
-    }
-
-    function overrideShowEditor_(...args) {
-        vm.runtime.dropdownState = "open";
-        return showEditor_.bind(this)(...args);
-    }
-
     const jsonForMenuBlock = function (name, menuOptionsFn, colors, start) {
         return {
             message0: '%1',
@@ -334,14 +320,6 @@ export default function (vm) {
         vm.runtime.emit('PLAY_NOTE', noteNum, extensionId);
     };
 
-    ScratchBlocks.FieldDropdown.fromJson = (...args) => {
-        vm.runtime.dropdownState = "init";
-        return fromJson(...args);
-    };
-
-    ScratchBlocks.FieldDropdown.prototype.setValue = overrideSetValue;
-    ScratchBlocks.FieldDropdown.prototype.showEditor_ = overrideShowEditor_;
-
     // Use a collator's compare instead of localeCompare which internally
     // creates a collator. Using this is a lot faster in browsers that create a
     // collator for every localeCompare call.
@@ -363,5 +341,6 @@ export default function (vm) {
         return true;
     };
 
+    overridesForCustomArgumentSupport(ScratchBlocks, vm);
     return ScratchBlocks;
 }
