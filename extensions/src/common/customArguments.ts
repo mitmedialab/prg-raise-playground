@@ -3,10 +3,13 @@ import { Extension } from "./Extension";
 import { closeDropdownState, customArgumentFlag, dropdownStateFlag, initDropdownState, openDropdownState } from "./globals";
 import { waitForCondition, waitForObject } from "./utils";
 
+/** Constructed based on Svelte documentation: https://svelte.dev/docs#run-time-client-side-component-api-creating-a-component */
 type Payload = {
-  target: HTMLDivElement;
+  target: Element | HTMLElement;
+  anchor?: Element | HTMLElement;
   props: {};
 }
+
 
 type CustomArgumentUIConstructor = (details: Payload) => void;
 
@@ -38,10 +41,12 @@ export const isCustomArgumentHack = (arr: Array<string | { text: string }>) => {
 }
 
 const renderToDropdown = async (compononentConstructor: CustomArgumentUIConstructor) => {
-  const elements = document.getElementsByClassName("blocklyDropDownContent");
-  const textContainer = "goog-menuitem-content"; // consider going one level higher!
-  const element = await waitForObject(() => elements[0].getElementsByClassName(textContainer)[0]);
-  new compononentConstructor({ target: element as HTMLDivElement, props: {} });
+  const dropdownContainerClass = "blocklyDropDownContent";
+  const elements = document.getElementsByClassName(dropdownContainerClass);
+  if (elements.length !== 1) return console.error(`Uh oh! Expected 1 element with class '${dropdownContainerClass}', but found ${elements.length}`);
+  const [target] = elements;
+  const anchor = await waitForObject(() => target.children[0]);
+  new compononentConstructor({ target, anchor, props: {} });
 }
 
 export function processCustomArgumentHack<T extends Extension<any, any>>(
