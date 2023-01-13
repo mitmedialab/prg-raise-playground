@@ -125,10 +125,10 @@ export default class PoseHand extends Extension<Details, Blocks> {
       operation: (transparency) => {
           let trans=transparency;
           if(transparency>100){
-            trans=100
+            trans=100;
           }
           else if(transparency<0){
-            trans=0
+            trans=0;
           }
         console.log("video transparency is "+trans); // Replace with what the block should do!
       }
