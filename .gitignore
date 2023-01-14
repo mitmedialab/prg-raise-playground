@@ -108,3 +108,5 @@ dist
 # Scratch specific
 */package-lock.json
 */package.json
+packages/scratch-vm/package-lock.json
+packages/scratch-vm/package-lock.json
