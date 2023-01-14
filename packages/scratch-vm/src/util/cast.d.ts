@@ -43,7 +43,7 @@ declare class Cast {
      * @param {*} value Value to convert to RGB color object.
      * @return {import("../typescript-support/types").RGBObject} [r,g,b], values between 0-255.
      */
-    static toRgbColorObject(value: any): import("../typescript-support/types").RGBObject;
+    static toRgbColorObject(value: any): any;
     /**
      * Determine if a Scratch argument is a white space string (or null / empty).
      * @param {*} val value to check.
