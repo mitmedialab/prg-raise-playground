@@ -1,17 +1,9 @@
 /// <reference types="spotify-api" />
 
-import { ArgumentType, BlockType } from "../../typescript-support/enums";
-import { Extension } from "../../typescript-support/Extension";
-import {
-    Block,
-    DefineBlock,
-    Environment,
-    ExtensionMenuDisplayDetails,
-} from "../../typescript-support/types";
-import defineTranslations from "./translations";
-// TODO figure out if ER used his own implementation of tone.js for a reason
+import { ArgumentType, Block, BlockType, Environment, Extension } from "$common";
+
 import * as Tone from "tone";
-import { asyncSome, fetchWithTimeout } from "../../typescript-support/utils";
+import { asyncSome, fetchWithTimeout } from "$common";
 import { getTimingDataFromResponse, TimingData } from "./helper";
 
 // TODO use fetch instead of nets
@@ -28,7 +20,7 @@ const SERVER_TIMEOUT = 10000; // 10 seconds
  */
 type Details = {
     name: "Spotify";
-    description: "This extension plays 30 second previews of songs from Spotify. It's a resurrection of Eric Rosenbaum's https://github.com/ericrosenbaum/spotify-extension/blob/gh-pages/extension.js";
+    description: "This extension plays 30 second previews of songs from Spotify."; // It's a resurrection of Eric Rosenbaum's https://github.com/ericrosenbaum/spotify-extension/blob/gh-pages/extension.js";
     /**
      * IMPORTANT! Place your icon image (typically a png) in the same directory as this index.ts file
      */
@@ -81,7 +73,7 @@ type Blocks = {
  *
  * Hover over `Extension` to get a more in depth explanation of the base class, and what it means to `extend it`.
  */
-class Spotify extends Extension<Details, Blocks> {
+export default class Spotify extends Extension<Details, Blocks> {
     /**
      * @summary A field to demonstrate how Typescript Class fields work
      * @link https://www.typescriptlang.org/docs/handbook/2/classes.html#fields
@@ -137,9 +129,6 @@ class Spotify extends Extension<Details, Blocks> {
 
         env.onStopSign(this.stopMusic);
     }
-
-    // Ignore! Translations coming soon...
-    defineTranslations = defineTranslations as typeof this.defineTranslations;
 
     playTrack() {
         const { player, trackTimingData, currentTrackDuration } = this;
@@ -371,7 +360,7 @@ const refreshAccessTokenIfNeeded = (
 };
 
 type SearchAndPlayBlock = Blocks["searchAndPlay"];
-const searchAndPlay = (extension: Spotify): Block<SearchAndPlayBlock> => ({
+const searchAndPlay = (extension: Spotify) => ({
     type: BlockType.Command,
     arg: { type: ArgumentType.String, defaultValue: "tacos" },
     text: (searchQuery) => `play music like ${searchQuery}`,
@@ -388,9 +377,9 @@ const searchAndPlay = (extension: Spotify): Block<SearchAndPlayBlock> => ({
 });
 
 type SearchAndPlayWaitBlock = Blocks["searchAndPlayWait"];
-const searchAndPlayWait = (extension: Spotify): Block<SearchAndPlayWaitBlock> => ({
+const searchAndPlayWait = (extension: Spotify) => ({
     type: BlockType.Command,
-    arg: { type: ArgumentType.String, defaultValue: "lauryn hill" },
+    arg: { type: ArgumentType.String, defaultValue: "Lauryn Hill" },
     text: (searchQuery) => `play music like ${searchQuery} until done`,
     operation: async function (searchQuery) {
         let token = await refreshAccessTokenIfNeeded(extension.spotifyToken);
@@ -406,14 +395,14 @@ const searchAndPlayWait = (extension: Spotify): Block<SearchAndPlayWaitBlock> =>
 });
 
 type StopMusicBlock = Blocks["stopMusic"];
-const stopMusic = (extension: Spotify): Block<StopMusicBlock> => ({
+const stopMusic = (extension: Spotify) => ({
     type: BlockType.Command,
     text: `stop the music`,
     operation: extension.stopMusic,
 });
 
 type TrackData = Blocks["trackData"];
-const getTrackData = (): Block<TrackData> => ({
+const getTrackData = () => ({
     type: BlockType.Reporter,
     arg: {
         type: ArgumentType.String,
@@ -438,7 +427,7 @@ const getTrackData = (): Block<TrackData> => ({
 });
 
 type EveryBeat = Blocks["everyBeat"];
-const everyBeat = (extension: Spotify): Block<EveryBeat> => ({
+const everyBeat = (extension: Spotify) => ({
     type: BlockType.Hat,
     text: `every beat`,
     operation: function () {
@@ -449,7 +438,7 @@ const everyBeat = (extension: Spotify): Block<EveryBeat> => ({
 });
 
 type EveryBar = Blocks["everyBar"];
-const everyBar = (extension: Spotify): Block<EveryBar> => ({
+const everyBar = (extension: Spotify) => ({
     type: BlockType.Hat,
     text: `every 4 beats`,
     operation: function () {
@@ -459,10 +448,8 @@ const everyBar = (extension: Spotify): Block<EveryBar> => ({
 });
 
 type MusicStopped = Blocks["musicStopped"];
-const musicStopped = (extension: Spotify): Block<MusicStopped> => ({
+const musicStopped = (extension: Spotify) => ({
     type: BlockType.Boolean,
     text: `music stopped?`,
     operation: () => !extension.songFlag,
 });
-
-export = Spotify;

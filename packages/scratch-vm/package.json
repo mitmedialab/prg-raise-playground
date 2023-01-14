@@ -74,7 +74,6 @@
     "sentiment": "latest",
     "socket.io-client": "2.0.4",
     "text-encoding": "0.7.0",
-    "tone": "^14.7.77",
     "worker-loader": "^1.1.1"
   },
   "devDependencies": {
@@ -90,7 +89,6 @@
     "@types/glob": "^7.2.0",
     "@types/jest": "^28.1.4",
     "@types/node": "^18.0.3",
-    "@types/spotify-api": "^0.0.19",
     "@types/webgl2": "^0.0.6",
     "adm-zip": "0.4.11",
     "babel-eslint": "10.1.0",
