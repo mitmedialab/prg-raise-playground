@@ -1,4 +1,4 @@
-import {dropdownStateFlag, openDropdownState, closeDropdownState, initDropdownState} from "../dist/globals";
+import {dropdownStateFlag, openDropdownState, closeDropdownState, initDropdownState, dropdownEntryFlag} from "../dist/globals";
 
 /**
  * @param {import("scratch-blocks")} blocks
@@ -12,7 +12,10 @@ export const overridesForCustomArgumentSupport = (blocks, vm) => {
 
   const { runtime } = vm;
 
-  const setState = (state) => runtime[dropdownStateFlag] = state;
+  const setState = (state, dropdown) => {
+    runtime[dropdownStateFlag] = state;
+    runtime[dropdownEntryFlag] = dropdown ? {text: dropdown.text_, value: dropdown.value_} : undefined;
+  }
 
   const resetAndReturn = (result) => { 
     setState(null);
@@ -20,17 +23,17 @@ export const overridesForCustomArgumentSupport = (blocks, vm) => {
   };
 
   FieldDropdown.fromJson = (...args) => {
-      setState(initDropdownState);
+      setState(initDropdownState, undefined);
       return resetAndReturn(fromJson(...args));
   };
 
   FieldDropdown.prototype.setValue = function (...args) {
-    setState(closeDropdownState);
+    setState(closeDropdownState, this);
     return resetAndReturn(setValue.bind(this)(...args));
   };
 
   FieldDropdown.prototype.showEditor_ = function (...args) {
-    setState(openDropdownState);
+    setState(openDropdownState, this);
     return resetAndReturn(showEditor_.bind(this)(...args));
   }
 }

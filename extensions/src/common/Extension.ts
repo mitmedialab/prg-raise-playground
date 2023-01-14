@@ -6,6 +6,8 @@ import Runtime from "$scratch-vm/engine/runtime";
 import { openUI, registerButtonCallback } from './ui';
 import { isFunction, isString } from './utils';
 import { isCustomArgumentHack, processCustomArgumentHack } from './customArguments';
+import { customArgumentFlag } from './globals';
+import { ArgumentEntry } from './customArguments/CustomArgumentManager';
 
 export type CodeGenArgs = {
   name: never,
@@ -360,6 +362,13 @@ export abstract class Extension
     }
     catch {
       return onFailure(value);
+    }
+  }
+
+  static MakeCustomArgument = <T>(component: string, defaultEntry: ArgumentEntry): Argument<string> => {
+    return {
+      type: ArgumentType.String,
+      options: () => [{ text: customArgumentFlag, value: JSON.stringify({ component, defaultEntry }) }],
     }
   }
 

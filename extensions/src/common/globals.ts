@@ -4,6 +4,7 @@ export const FrameworkID = "ExtensionFramework";
 
 export const customArgumentFlag = "internal_IsCustomArgument";
 export const dropdownStateFlag = "dropdownState";
+export const dropdownEntryFlag = "dropdownEntry";
 export const initDropdownState = "init";
 export const openDropdownState = "open";
 export const closeDropdownState = "close"; 
