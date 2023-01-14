@@ -4,11 +4,11 @@
   import { Extension } from "scratch-vm/src/typescript-support/Extension";
 
   /** CODE GEN GUARDS: Begin Component Import Statements*/
-	import Typescriptprg95grpframeworkprg95grpcomplex_Alert from "/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_complex/Alert.svelte";
-	import Typescriptprg95grpframeworkprg95grpcomplex_Animals from "/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_complex/Animals.svelte";
-	import Typescriptprg95grpframeworkprg95grpsimple_Counter from "/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_simple/Counter.svelte";
-	import Typescriptprg95grpframeworkprg95grpsimple_Dummy from "/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_simple/Dummy.svelte";
-	import Typescriptprg95grpframeworkprg95grpsimple_Palette from "/Users/parkermalachowsky/MIT/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_simple/Palette.svelte";
+	import Typescriptprg95grpframeworkprg95grpcomplex_Alert from "/workspace/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_complex/Alert.svelte";
+	import Typescriptprg95grpframeworkprg95grpcomplex_Animals from "/workspace/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_complex/Animals.svelte";
+	import Typescriptprg95grpframeworkprg95grpsimple_Counter from "/workspace/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_simple/Counter.svelte";
+	import Typescriptprg95grpframeworkprg95grpsimple_Dummy from "/workspace/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_simple/Dummy.svelte";
+	import Typescriptprg95grpframeworkprg95grpsimple_Palette from "/workspace/prg-extension-boilerplate/packages/scratch-vm/src/extensions/typescript_framework_simple/Palette.svelte";
   /** CODE GEN GUARDS: End Component Import Statements*/
 
   export let id: string;
