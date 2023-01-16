@@ -72,32 +72,37 @@ export default class PoseHand extends Extension<Details, Blocks> {
     this.exampleField = 0;
   }
 
-  // All example definitions below are syntactically equivalent, 
-  // and which you use is just a matter of preference.
   defineBlocks(): PoseHand["BlockDefinitions"] {
-    /*
-    type DefineExampleCommand = DefineBlock<ExtensionNameGoesHere, Blocks["exampleCommand"]>;
-    const exampleCommand: DefineExampleCommand = () => ({
-      type: BlockType.Command,
-      args: [ArgumentType.String, { type: ArgumentType.Number, defaultValue: 789 }],
-      text: (exampleString, exampleNumber) => `This is where the blocks display text goes, with arguments --> ${exampleString} and ${exampleNumber}`,
-      operation: (exampleString, exampleNumber, util) => {
-        alert(`This is a command! Here's what it received: ${exampleString} and ${exampleNumber}`); // Replace with what the block should do! 
-        console.log(util.stackFrame.isLoop); // just an example of using the BlockUtility
-      }
-    });
-    */
+    
     const fingerOptions = 
     [{text: "thumb", value: "thumb"}, {text: "index finger", value: "index"},
     {text: "middle finger", value: "middle"}, {text: "ring finger", value: "ring"}, {text: "pinky finger", value: "pinky"}];
-    
+
     const partOfFingerOptions = [{text: "tip", value: 0}, {text: "first knuckle", value: 1},
     {text: "second knuckle", value: 2}, {text: "base", value: 3}];;
 
     type DefineGoToHandPart = DefineBlock<PoseHand, Blocks["goToHandPart"]>;
     const goToHandPart: DefineGoToHandPart = () => ({
       type: BlockType.Command,
-      args: [{type: ArgumentType.String, options: fingerOptions}, {type: ArgumentType.Number, options: partOfFingerOptions}],
+      args: [{type: ArgumentType.String, 
+              options: {acceptsReporters: true, 
+                        items: fingerOptions, 
+                        handler: (part: string) => {
+                          if (!(part in ["thumb", "index", "middle", "ring", "pinky"])){
+                            console.log("Error: 'go to' block only accepts 'thumb', 'index', 'middle', 'ring', or 'pinky'");
+                            return "thumb"
+                          }
+                        }
+                       }
+              }, 
+             {type: ArgumentType.Number, 
+              options: {acceptsReporters: true, 
+                        items: partOfFingerOptions, 
+                        handler: (part: number) => {
+                          return Math.max(Math.min(part, 3), 0)
+                        }
+                       }
+             }],
       text: (handPart: string, fingerPart: number) => `go to ${handPart} ${fingerPart}`,
       operation: (handPart, fingerPart) => { 
 
@@ -109,11 +114,24 @@ export default class PoseHand extends Extension<Details, Blocks> {
     type DefineVideoToggle = DefineBlock<PoseHand, Blocks["videoToggle"]>;
     const videoToggle: DefineVideoToggle = () => ({
       type: BlockType.Command,
-      arg: {type: ArgumentType.Number, options: [{text: 'off', value: 0}, {text: 'on', value: 1}, {text: 'on and flipped', value: 2}] },
+      arg: {type: ArgumentType.Number, 
+            options: {acceptsReporters: true, 
+                      items: [{text: 'off', value: 0}, {text: 'on', value: 1}, {text: 'on and flipped', value: 2}],
+                      handler: (x: number) => {
+                        return Math.min(Math.max(x, 0), 2);
+                      }
+                     }
+           },
       text: (state: number) => `turn video ${state}`,
       operation: (state) => {
-         
-        console.log("video state is "+state); // Replace with what the block should do!
+        if (state === 0) {
+          this.runtime.ioDevices.video.disableVideo();
+        } 
+        else {
+          this.runtime.ioDevices.video.enableVideo();
+          // Mirror if state is ON. Do not mirror if state is ON_FLIPPED.
+          this.runtime.ioDevices.video.mirror = (state == 1);
+        }
       }
     });
 
@@ -123,14 +141,8 @@ export default class PoseHand extends Extension<Details, Blocks> {
       arg: {type: ArgumentType.Number, defaultValue: 50},
       text: (transparency) => `set video transparency to ${transparency}`,
       operation: (transparency) => {
-          let trans=transparency;
-          if(transparency>100){
-            trans=100;
-          }
-          else if(transparency<0){
-            trans=0;
-          }
-        console.log("video transparency is "+trans); // Replace with what the block should do!
+        const trans = Math.max(Math.min(transparency,100), 0);
+        this.runtime.ioDevices.video.setPreviewGhost(trans);
       }
     });
 
