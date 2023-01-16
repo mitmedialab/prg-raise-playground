@@ -2,7 +2,6 @@ import type Runtime from '$scratch-vm/engine/runtime';
 import BlockUtility from '$scratch-vm/engine/block-utility';
 import { ArgumentType, BlockType, Branch, Language } from './enums';
 import type { Extension } from './Extension';
-import type { EnsureInclusionInTypescriptProgram } from './flag';
 
 export type InternalButtonKey = "__button__";
 export type ButtonBlock = () => InternalButtonKey;
@@ -31,6 +30,12 @@ export type Environment = {
 }
 
 export type BlockOperation = (...args: any) => any;
+
+export type ParameterOf<
+  TExtension extends Extension<any, any>,
+  TBlockKey extends keyof TExtension["BlockFunctions"],
+  TIndex extends number,
+> = Parameters<TExtension["BlockFunctions"][TBlockKey]>[TIndex];
 
 export type MenuItem<T> = T | {
   value: T;
@@ -93,15 +98,16 @@ export type TypeByArgumentType<T extends ValueOf<typeof ArgumentType>> =
   : T extends typeof ArgumentType.Color ? RGBObject
   : T extends typeof ArgumentType.Matrix ? boolean[][]
   : T extends typeof ArgumentType.Image ? string // TODO
+  : T extends typeof ArgumentType.Custom ? any
   : never;
 
 export type ScratchArgument<T> =
   T extends RGBObject ? typeof ArgumentType.Color :
   T extends boolean[][] ? typeof ArgumentType.Matrix :
-  T extends number ? (typeof ArgumentType.Number | typeof ArgumentType.Angle | typeof ArgumentType.Note) :
-  T extends string ? typeof ArgumentType.String :
-  T extends boolean ? (typeof ArgumentType.Boolean) :
-  never;
+  T extends number ? (typeof ArgumentType.Number | typeof ArgumentType.Angle | typeof ArgumentType.Note | typeof ArgumentType.Custom) :
+  T extends string ? (typeof ArgumentType.String | typeof ArgumentType.Custom) :
+  T extends boolean ? (typeof ArgumentType.Boolean | typeof ArgumentType.Custom) :
+  (typeof ArgumentType.Custom);
 
 // Used to be <T extends [...any[]]> ... not sure if it needs to be?
 type ToArguments<T extends any[]> =

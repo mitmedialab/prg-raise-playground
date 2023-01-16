@@ -1,46 +1,57 @@
-export type ArgumentEntry = { text: string, value: any };
-export type ArgumentEntrySetter = (entry: ArgumentEntry) => void;
+export type ArgumentEntry<T> = { text: string, value: T };
+export type ArgumentEntrySetter<T> = (entry: ArgumentEntry<T>) => void;
 
 export default class CustomArgumentManager {
-  map: Record<string, ArgumentEntry> = {};
+  map: Record<string, ArgumentEntry<any>> = {};
+  pending = { id: null as string, entry: null as ArgumentEntry<any> };
 
-  pending: { id: string, entry: ArgumentEntry } = {
-    id: null,
-    entry: null
-  };
-
-  reset() {
+  clearPending() {
     this.pending.entry = null;
     this.pending.id = null;
   }
 
-  request(): readonly [string, ArgumentEntrySetter] {
-    this.reset();
+  add<T>(entry: ArgumentEntry<T>): string {
+    const id = CustomArgumentManager.GetIdentifier();
+    this.map[id] = entry;
+    this.clearPending();
+    return id;
+  }
+
+  request<T>(): [string, ArgumentEntrySetter<T>] {
+    this.clearPending();
     const self = this;
     const id = CustomArgumentManager.GetIdentifier();
     self.pending.id = id;
-    return [
-      id,
-      (entry: ArgumentEntry) => {
-        if (self.pending.id !== id) throw new Error("IDs mismatch!"); // might not be necessary
-        self.pending.entry = entry;
-      }
-    ] as const;
+    return [id, (entry) => self.pending.entry = entry];
   }
 
   tryResolve() {
     const { pending: { entry, id } } = this;
     if (!entry) return undefined;
     this.map[id] = entry;
-    this.reset();
+    this.clearPending();
     return { entry, id };
   }
 
   getCurrentEntries() {
-    return Object.entries(this.map).filter(([_, entry]) => entry !== null).map(([id, { text }]) => [text, id] as const);
+    return Object.entries(this.map)
+      .filter(([_, entry]) => entry !== null)
+      .map(([id, { text }]) => [text, id] as const);
   }
 
   getEntry(id: string) { return this.map[id] }
 
-  private static GetIdentifier = () => new Date().getTime().toString()
+  /**
+   * @todo Implement this if it becomes necessary (i.e the every growing size of this.map becomes an issue)
+   */
+  private purgeStaleIDs() {
+    // Somehow, tap into blockly to loop through all current blocks & their field dropdowns.
+    // Collect all field dropdowns values. 
+    // Then, loop over entries in this.map -- if the values don't appear in the collected in-use values, drop those items.
+    // NOTE: The blocks in the 'pallette' do not show up in a target's "blocks" object, which makes this tricky.
+  }
+
+  static IsIdentifier = (query: string) => query.startsWith(CustomArgumentManager.IdentifierPrefix);
+  private static GetIdentifier = () => CustomArgumentManager.IdentifierPrefix + new Date().getTime().toString();
+  private static IdentifierPrefix = "__customArg__";
 }

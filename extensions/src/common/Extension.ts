@@ -6,8 +6,8 @@ import Runtime from "$scratch-vm/engine/runtime";
 import { openUI, registerButtonCallback } from './ui';
 import { isFunction, isString } from './utils';
 import { isCustomArgumentHack, processCustomArgumentHack } from './customArguments';
-import { customArgumentFlag } from './globals';
-import { ArgumentEntry } from './customArguments/CustomArgumentManager';
+import { customArgumentCheck, customArgumentFlag } from './globals';
+import CustomArgumentManager, { ArgumentEntry } from './customArguments/CustomArgumentManager';
 
 export type CodeGenArgs = {
   name: never,
@@ -64,6 +64,8 @@ export abstract class Extension
 
   private readonly internal_blocks: ExtensionBlockMetadata[] = [];
   private readonly internal_menus: ExtensionMenuMetadata[] = [];
+
+  readonly customArgumentManager = new CustomArgumentManager();
 
   openUI(component: string, label?: string) {
     const { id, name, runtime } = this;
@@ -284,8 +286,10 @@ export abstract class Extension
     const opcode = Extension.GetInternalKey(key);
     const bound = operation.bind(this);
 
+    const { id, customArgumentManager } = this;
+
     const isButton = type === BlockType.Button;
-    const buttonID = isButton ? Extension.GetButtonID(this.id, opcode) : undefined;
+    const buttonID = isButton ? Extension.GetButtonID(id, opcode) : undefined;
 
     if (isButton) {
       registerButtonCallback(this.runtime, buttonID, bound)
@@ -298,7 +302,7 @@ export abstract class Extension
         const casted = uncasted.map((value, index) => {
           const handled = handlers[index] ? handlers[index](value) : value;
           const type = Extension.GetArgumentType(args[index]);
-          return Extension.CastToType(type, handled)
+          return type === ArgumentType.Custom ? customArgumentManager.getEntry(handled).value : Extension.CastToType(type, handled)
         });
         return bound(...casted, blockUtility); // can add more util params as necessary
       }
@@ -313,7 +317,7 @@ export abstract class Extension
     }
   }
 
-  private isCustomArgumentHack = isCustomArgumentHack.bind(this) as typeof isCustomArgumentHack;
+  private [customArgumentCheck] = isCustomArgumentHack.bind(this) as typeof isCustomArgumentHack;
   private processCustomArgumentHack = processCustomArgumentHack.bind(this) as typeof processCustomArgumentHack<Extension<MenuDetails, Blocks>>;
 
   private format(text: string, identifier: string, description: string): string {
@@ -365,11 +369,13 @@ export abstract class Extension
     }
   }
 
-  static MakeCustomArgument = <T>(component: string, defaultEntry: ArgumentEntry): Argument<string> => {
+  protected makeCustomArgument = <T>({ component, initial }: { component: string, initial: ArgumentEntry<T> }): Argument<T> => {
+    const id = this.customArgumentManager.add(initial);
     return {
-      type: ArgumentType.String,
-      options: () => [{ text: customArgumentFlag, value: JSON.stringify({ component, defaultEntry }) }],
-    }
+      type: ArgumentType.Custom,
+      defaultValue: id,
+      options: () => [{ text: customArgumentFlag, value: JSON.stringify({ component, id }) }],
+    } as Argument<T>
   }
 
   static GetKeyFromOpcode = (opcode: string) => opcode.replace(Extension.GetInternalKey(""), "");

@@ -8,7 +8,8 @@ type Details = {
 };
 
 export default class _ extends Extension<Details, {
-  test: (x: string) => string
+  test: (x: { t: string }) => string,
+  list: (x: string) => void,
 }> {
   init(env): void { }
 
@@ -16,9 +17,21 @@ export default class _ extends Extension<Details, {
     return {
       test: () => ({
         text: (arg) => `Hi ${arg}`,
-        operation: (arg) => arg,
+        operation: (arg) => arg.t,
         type: BlockType.Reporter,
-        arg: Extension.MakeCustomArgument("Dummy", { text: "hi", value: 5 })
+        arg: this.makeCustomArgument({
+          component: "Dummy",
+          initial: { text: "hi", value: { t: "e" } }
+        })
+      }),
+      list: () => ({
+        text: (arg) => `${arg}`,
+        operation: () => { },
+        type: BlockType.Command,
+        arg: {
+          type: ArgumentType.String,
+          options: () => this.customArgumentManager.getCurrentEntries().map(([_0, _1]) => _1)
+        }
       })
     }
   }

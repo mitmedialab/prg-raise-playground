@@ -24,7 +24,8 @@ export const overridesForCustomArgumentSupport = (blocks, vm) => {
 
   FieldDropdown.fromJson = (...args) => {
       setState(initDropdownState, undefined);
-      return resetAndReturn(fromJson(...args));
+      const item = resetAndReturn(fromJson(...args));
+      return item;
   };
 
   FieldDropdown.prototype.setValue = function (...args) {

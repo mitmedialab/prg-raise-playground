@@ -1,18 +1,21 @@
 <script lang="ts">
-  import { activeClass, px, color } from "$common";
+  import Extension from ".";
+  import { activeClass, px, color, ParameterOf } from "$common";
   import { ArgumentEntry, ArgumentEntrySetter } from "$common/customArguments/CustomArgumentManager";
+
+  type Value = ParameterOf<Extension, "test", 0>; 
   
   // svelte-ignore unused-export-let
-  export let setter: ArgumentEntrySetter;
+  export let setter: ArgumentEntrySetter<Value>;
 
   // svelte-ignore unused-export-let
-  export let current: ArgumentEntry;
+  export let current: ArgumentEntry<Value>;
 
   const container = activeClass;
 
-  let name = current.text;
+  let {text} = current;
 
-  $: setter({ text: name, value: name.length });
+  $: setter({ text, value: {t: text.length.toString()} });
 </script>
 
 <style>
@@ -23,5 +26,5 @@
 </style>
 
 <div class:container style:width={px(360)} style:background-color={color.ui.white} style:color={color.text.primary}>
-  <input bind:value={name}>
+  <input bind:value={text}>
 </div>

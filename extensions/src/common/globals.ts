@@ -3,6 +3,7 @@ export const registerButtonCallbackEvent = "REGISTER_BUTTON_CALLBACK_FROM_EXTENS
 export const FrameworkID = "ExtensionFramework";
 
 export const customArgumentFlag = "internal_IsCustomArgument";
+export const customArgumentCheck = "isCustomArgumentHack";
 export const dropdownStateFlag = "dropdownState";
 export const dropdownEntryFlag = "dropdownEntry";
 export const initDropdownState = "init";

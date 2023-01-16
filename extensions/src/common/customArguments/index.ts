@@ -2,8 +2,7 @@ import { printCallStack } from "$common/callStack";
 import Runtime from "$root/packages/scratch-vm/src/engine/runtime";
 import { Extension } from "../Extension";
 import { closeDropdownState, customArgumentFlag, dropdownEntryFlag, dropdownStateFlag, initDropdownState, openDropdownState } from "../globals";
-import { waitForCondition, waitForObject } from "../utils";
-import CustomArgumentManager, { ArgumentEntry, ArgumentEntrySetter } from "./CustomArgumentManager";
+import { ArgumentEntry } from "./CustomArgumentManager";
 import { CustomArgumentUIConstructor, renderToDropdown } from "./dropdownOverride";
 
 type ComponentGetter = (id: string, componentName: string) => CustomArgumentUIConstructor;
@@ -14,8 +13,6 @@ const callingContext = {
   Init: initDropdownState,
 } as const;
 
-const manager = new CustomArgumentManager();
-
 export const isCustomArgumentHack = (arr: Array<string | { text: string }>) => {
   if (arr.length !== 1) return false;
   const item = arr[0];
@@ -24,34 +21,29 @@ export const isCustomArgumentHack = (arr: Array<string | { text: string }>) => {
   return text === customArgumentFlag;
 }
 
-const defaultText = "Click me";
-
 export function processCustomArgumentHack<T extends Extension<any, any>>(
   this: T,
   runtime: Runtime,
   [{ value }]: Array<{ value: string }>,
   getComponent: ComponentGetter
 ): (readonly [string, string])[] {
-  const { component, defaultEntry } = JSON.parse(value) as { component: string, defaultEntry: ArgumentEntry };
+  const { id: extensionID, customArgumentManager } = this;
+  const { component, id: initialID } = JSON.parse(value) as { component: string, id: string };
   const context = runtime[dropdownStateFlag];
+
   switch (context) {
     case callingContext.Init:
-      return [[defaultText, defaultText], ...manager.getCurrentEntries()];
+      return customArgumentManager.getCurrentEntries();
     case callingContext.DropdownClose: {
-      const result = manager.tryResolve();
-      if (!result) return manager.getCurrentEntries();
-      const { id, entry: { text } } = result;
-      return [[text, id]];
+      const result = customArgumentManager.tryResolve();
+      return result ? [[result.entry.text, result.id]] : customArgumentManager.getCurrentEntries();
     }
     case callingContext.DrowpdownOpen: {
-      const currentEntry = runtime[dropdownEntryFlag] as ArgumentEntry;
-
-      const current = !currentEntry || (currentEntry.text === defaultText && currentEntry.value === defaultText)
-        ? defaultEntry
-        : manager.getEntry(currentEntry.value);
-
-      const [id, setEntry] = manager.request();
-      renderToDropdown(getComponent(this.id, component), setEntry, current);
+      const currentEntry = runtime[dropdownEntryFlag] as ArgumentEntry<any>;
+      const prevID = currentEntry?.value ?? initialID;
+      const current = customArgumentManager.getEntry(prevID);
+      const [id, setEntry] = customArgumentManager.request();
+      renderToDropdown(getComponent(extensionID, component), setEntry, current);
       return [["Apply", id]];
     }
   }

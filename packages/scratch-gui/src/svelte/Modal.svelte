@@ -23,11 +23,15 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
 
+  // svelte-ignore unused-export-let
   export let id: ExtensionID;
+  // svelte-ignore unused-export-let
   export let component: ComponentName;
+  // svelte-ignore unused-export-let
   export let name: string;
-
+  // svelte-ignore unused-export-let
   export let vm: VirtualMachine;
+  // svelte-ignore unused-export-let
   export let close: () => void;
 
   let target: HTMLDivElement;

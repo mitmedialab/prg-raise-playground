@@ -10,10 +10,10 @@ type CreateComponentOptions = {
 
 export type CustomArgumentUIConstructor = (options: CreateComponentOptions) => void;
 
-export const renderToDropdown = async (
+export const renderToDropdown = async <T>(
   compononentConstructor: CustomArgumentUIConstructor,
-  setter: ArgumentEntrySetter,
-  current: ArgumentEntry
+  setter: ArgumentEntrySetter<T>,
+  current: ArgumentEntry<T>
 ) => {
   const dropdownContainerClass = "blocklyDropDownContent";
   const elements = document.getElementsByClassName(dropdownContainerClass);
