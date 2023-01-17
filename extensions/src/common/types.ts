@@ -398,7 +398,7 @@ export type ExtensionMenuDisplayDetails = {
   implementationLanguage?: ValueOf<typeof Language>;
 } & Partial<Record<ValueOf<typeof Language>, { name: string, description: string }>>
 
-export type DefineBlock<TExt extends BaseExtension, TOp extends BlockOperation> = (extension: Extension<any, any>) => Block<TExt, TOp>;
+export type DefineBlock<TExt extends BaseExtension, TOp extends BlockOperation> = ((extension: Extension<any, any>) => Block<TExt, TOp>) | Block<TExt, TOp>;
 
 export type ExtensionBlocks = Record<string, BlockOperation>;
 
@@ -409,6 +409,15 @@ export type BlockDefinitions<T extends BaseExtension> =
     ? DefineBlock<T, (...args: A) => R>
     : never
   };
+
+export type BlocksInfo<T extends BaseExtension> = {
+  [k in keyof T["BlockFunctions"]]: T["BlockFunctions"][k] extends
+  (...args: infer A) => infer R
+  ? Block<T, (...args: A) => R>
+  : never
+};
+
+export type BlockInfo<TExtension extends BaseExtension, TKey extends keyof BlocksInfo<TExtension>> = BlocksInfo<TExtension>[TKey];
 
 type ArgsTextCommon = {
   options?: (string)[]

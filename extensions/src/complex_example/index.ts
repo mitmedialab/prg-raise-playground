@@ -1,4 +1,4 @@
-import { ArgumentType, BlockType, Block, BlockDefinitions, RGBObject, MenuItem, ButtonBlock, Extension } from "$common";
+import { ArgumentType, BlockType, Block, BlockDefinitions, RGBObject, MenuItem, ButtonBlock, Extension, BlockInfo } from "$common";
 import addDefinition from "./addDefinition";
 
 type DisplayDetails = {
@@ -88,13 +88,13 @@ export default class TypeScriptFrameworkExample extends Extension<DisplayDetails
   defineBlocks(): BlockDefinitions<TypeScriptFrameworkExample> {
     return {
 
-      reportId: () => ({
+      reportId: {
         type: BlockType.Reporter,
         text: 'My Extension ID is',
         operation: () => this.id
-      }),
+      },
 
-      reportColorChannel: () => ({
+      reportColorChannel: {
         type: BlockType.Reporter,
         args: [
           ArgumentType.Color,
@@ -107,9 +107,9 @@ export default class TypeScriptFrameworkExample extends Extension<DisplayDetails
           }],
         text: (color, channel) => `Report ${channel} of ${color}`,
         operation: (color, channel) => color[channel]
-      }),
+      },
 
-      'sumMatrix': () => ({
+      'sumMatrix': {
         type: "reporter",
         args: [
           ArgumentType.Matrix,
@@ -138,13 +138,13 @@ export default class TypeScriptFrameworkExample extends Extension<DisplayDetails
                 .toString();
           }
         }
-      }),
+      },
 
-      incrementStateViaThis: () => ({
+      incrementStateViaThis: {
         type: BlockType.Reporter,
         text: 'Increment (via \'this\')',
         operation: () => ++this.state
-      }),
+      },
 
       'incrementStateViaSelf': (self: TypeScriptFrameworkExample) => ({
         type: BlockType.Reporter,
@@ -152,21 +152,21 @@ export default class TypeScriptFrameworkExample extends Extension<DisplayDetails
         operation: () => ++self.state
       }),
 
-      'selectNote': () => ({
+      'selectNote': {
         type: BlockType.Reporter,
         arg: ArgumentType.Note,
         text: (note) => `Pick note ${note}`,
         operation: (note) => note
-      }),
+      },
 
-      'selectAngle': () => ({
+      'selectAngle': {
         type: BlockType.Reporter,
         arg: ArgumentType.Angle,
         text: (angle) => `Pick angle ${angle}`,
         operation: (angle) => angle
-      }),
+      },
 
-      'useAnimalMenu1': () => ({
+      'useAnimalMenu1': {
         type: BlockType.Reporter,
         arg:
         {
@@ -192,7 +192,7 @@ export default class TypeScriptFrameworkExample extends Extension<DisplayDetails
         ,
         text: (animal) => `This is a ${animal}`,
         operation: (animal) => nameByAnimal[animal],
-      }),
+      },
 
       'useAnimalMenu2': (self: TypeScriptFrameworkExample) => ({
         type: BlockType.Reporter,
@@ -239,17 +239,17 @@ export default class TypeScriptFrameworkExample extends Extension<DisplayDetails
       // Example of an external 'definition'
       add: addDefinition,
 
-      showAnimalCollectionUI: () => ({
+      showAnimalCollectionUI: {
         type: BlockType.Button,
         text: "Show Animal Collection",
         operation: () => {
           this.openUI("Animals", "Here's your animal collection");
         }
-      })
+      }
     }
   }
 
-  private multiplyUsingSelf(self: TypeScriptFrameworkExample): Block<TypeScriptFrameworkExample, Blocks['multiplyUsingSelf']> {
+  private multiplyUsingSelf(self: TypeScriptFrameworkExample): BlockInfo<TypeScriptFrameworkExample, 'multiplyUsingSelf'> {
     return ({
       type: BlockType.Reporter,
       args: [
@@ -261,7 +261,7 @@ export default class TypeScriptFrameworkExample extends Extension<DisplayDetails
     })
   }
 
-  private multiplyUsingThis(): Block<TypeScriptFrameworkExample, Blocks['multiplyUsingThis']> {
+  private multiplyUsingThis(): BlockInfo<TypeScriptFrameworkExample, "multiplyUsingThis"> {
     return ({
       type: BlockType.Reporter,
       args: [
