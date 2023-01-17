@@ -27,19 +27,19 @@ createTestSuite({ Extension, __dirname }, {
     }
   },
   integrationTests: {
-    multipliesGiveSameResult: async (runner, { expect }) => {
+    multipliesGiveSameResult: async ({ blockrunner, testHelper: { expect } }) => {
       const left = 4;
       const right = 5;
-      const { output: outputFromSelf } = await runner.invoke("multiplyUsingSelf", left, right);
-      const { output: outputFromThis } = await runner.invoke("multiplyUsingThis", left, right);
+      const { output: outputFromSelf } = await blockrunner.invoke("multiplyUsingSelf", left, right);
+      const { output: outputFromThis } = await blockrunner.invoke("multiplyUsingThis", left, right);
       expect(outputFromSelf).toBe(outputFromThis);
       expect(outputFromSelf).toBe(left * right);
     },
-    logMultiplicationResult: async (runner, { expect }) => {
-      const simpleRunner = runner.createCompanion(Simple);
+    logMultiplicationResult: async ({ blockrunner, testHelper: { expect } }) => {
+      const simpleRunner = blockrunner.createCompanion(Simple);
       const left = 4;
       const right = 5;
-      const { output } = await runner.invoke("multiplyUsingSelf", left, right);
+      const { output } = await blockrunner.invoke("multiplyUsingSelf", left, right);
       const { log } = console;
       console.log = (message?: any) => expect(message).toBe(`${left * right}`);
       await simpleRunner.invoke("log", `${output}`);

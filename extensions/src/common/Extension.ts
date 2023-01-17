@@ -81,7 +81,7 @@ export abstract class Extension
     const definitions = this.defineBlocks();
     const menus: Menu<any>[] = [];
     for (const key in definitions) {
-      const block = definitions[key](this);
+      const block = Extension.IsFunction(definitions[key]) ? (definitions[key] as Function)(this) : definitions[key];
       const info = this.convertToInfo(key, block, menus);
       this.internal_blocks.push(info);
     }

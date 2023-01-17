@@ -1,22 +1,29 @@
-import { BlockType, CodeGenArgs, Extension, PopulateCodeGenArgs } from "$common";
+import { BlockType, BlocksInfo, CodeGenArgs, Extension, ExtensionBlockMetadata, PopulateCodeGenArgs } from "$common";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import { buildKeyBlockMap } from "$testing";
 import { AnyExtension, BlockKey, ExtensionConstructor, InputArray, KeyToBlockIndexMap, RenderedUI, RuntimeForTest } from "./types";
 import { getEngineFile } from "./utils";
 
 export class BlockRunner<T extends AnyExtension> {
-  constructor(private map: KeyToBlockIndexMap, private instance: T) {
+  private blockData: ExtensionBlockMetadata[];
 
+  constructor(private map: KeyToBlockIndexMap, private instance: T) {
+    this.blockData = Extension.TestGetBlocks(instance);
+  }
+
+  getBlockMetaDataByKey<K extends BlockKey<T>>(key: K) {
+    const { map, blockData } = this;
+    const index = map.get(key);
+    return blockData[index];
   }
 
   async invoke<K extends BlockKey<T>>(key: K, ...input: InputArray<T, K>):
-    Promise<{ output: ReturnType<T["BlockDefinitions"][K]>, renderedUI?: RenderedUI }> {
-    const { map, instance } = this;
+    Promise<{ output: BlocksInfo<T>[K], renderedUI?: RenderedUI }> {
+    const { instance } = this;
     const { runtime } = instance;
     const { forTest } = runtime as RuntimeForTest<T>;
 
-    const index = map.get(key);
-    const { blockType, func, opcode } = Extension.TestGetBlocks(instance)[index];
+    const { blockType, func, opcode } = this.getBlockMetaDataByKey(key);
     const blockFunction: Function = blockType === BlockType.Button ? runtime[func] : instance[opcode];
     const args = this.getBlockArgs(input);
 

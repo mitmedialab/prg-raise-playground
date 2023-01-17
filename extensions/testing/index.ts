@@ -108,8 +108,8 @@ const processIntegrationTest = <T extends AnyExtension>(
   map: KeyToBlockIndexMap
 ) => test(name, async () => {
   const instance: T = getInstance(details);
-  const runner = new BlockRunner(map, instance);
-  await testCase(runner, details.testHelper);
+  const blockrunner = new BlockRunner(map, instance);
+  await testCase({ blockrunner, testHelper: details.testHelper });
 });
 
 const toKeyToBlockMap = (map: KeyToBlockIndexMap, { opcode }: ExtensionBlockMetadata, index: number) =>
