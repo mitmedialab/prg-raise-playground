@@ -417,6 +417,8 @@ export type BlocksInfo<T extends BaseExtension> = {
   : never
 };
 
+export type BlockInfo<TExtension extends BaseExtension, TKey extends keyof BlocksInfo<TExtension>> = BlocksInfo<TExtension>[TKey];
+
 type ArgsTextCommon = {
   options?: (string)[]
 }

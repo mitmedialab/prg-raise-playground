@@ -164,11 +164,26 @@ export abstract class Extension
   abstract init(env: Environment): void;
 
   /**
-   * @summary This member function (or 'method') will be called to 
+   * @summary Extension member method that returns an object defining all blocks that belong to the extension.
+   * @description Every block your extension implements (defined by the second generic argument of the Extension class), will have an entry in the object return by this function.
+   * Each entry will either be an object or a function that returns an object that provides the:
+   * - type: the type of block
+   * - text: what is displayed on the block
+   * - arg or args: the arguments the block accepts
+   * - operation: the function that is called when the blocked is executed
    * @example
    * // Returning an object with two block definition function for 'someBlock'
    * defineBlocks(): ExampleExtension["BlockDefinitions"] {
    *  return {
+   *    // Using object syntax
+   *    someBlock: {
+   *      type: BlockType.Reporter,
+   *      arg: ArgumentType.String,
+   *      text: (argument) => `Some text about ${argument}`,
+   *      operation: (argument) => {
+   *        // do something
+   *      }
+   *    },
    *    // Using arrow function syntax
    *    someBlock: (self: MyExtension) => ({
    *      type: BlockType.Reporter,
@@ -193,7 +208,7 @@ export abstract class Extension
    *  }
    * }
    * @see BlockDefinitions
-   * @returns {BlockDefinitions<Blocks>} An object defining 'block definition' functions for each block associated with this Extension.
+   * @returns {BlockDefinitions<Blocks>} An object defining 'block definition' objects / functions for each block associated with this Extension.
    */
   abstract defineBlocks(): BlockDefinitions<Extension<MenuDetails, Blocks>>;
 

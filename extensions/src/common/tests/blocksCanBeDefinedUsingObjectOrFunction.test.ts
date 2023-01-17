@@ -4,14 +4,14 @@ import { BlockDefinitions, Block } from "$common/types";
 import { createTestSuite } from "$testing";
 import { DefaultDisplayDetails } from "$testing/defaults";
 
-type BlockUnderTest = () => string;
+type BlockFunctionUnderTest = () => string;
 
-type Blocks = { a: BlockUnderTest, b: BlockUnderTest }
+type Blocks = { a: BlockFunctionUnderTest, b: BlockFunctionUnderTest }
 
 const returnValue = "test";
 
-const implementation: Block<TestExtension, BlockUnderTest> = {
-  text: "Hi",
+const definition: Block<TestExtension, BlockFunctionUnderTest> = {
+  text: "dummy text",
   operation: () => returnValue,
   type: BlockType.Reporter
 }
@@ -21,8 +21,8 @@ class TestExtension extends Extension<DefaultDisplayDetails, Blocks> {
 
   defineBlocks(): BlockDefinitions<TestExtension> {
     return {
-      a: () => implementation,
-      b: implementation
+      a: () => definition,
+      b: definition
     }
   }
 }
