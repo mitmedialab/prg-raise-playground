@@ -62,6 +62,24 @@ export abstract class Extension
   private readonly internal_blocks: ExtensionBlockMetadata[] = [];
   private readonly internal_menus: ExtensionMenuMetadata[] = [];
 
+  private static SaveDataKey = "customSaveDataPerExtension" as const;
+
+  private save(toSave: { [Extension.SaveDataKey]: Record<string, any> }, extensionIDs: Set<string>) {
+    const { saveDataHandler, id } = this;
+    const saveData = saveDataHandler?.onSave();
+    if (!saveData) return;
+    const container = toSave[Extension.SaveDataKey];
+    container ? (container[id] = saveData) : (toSave[Extension.SaveDataKey] = { [id]: saveData });
+    extensionIDs.add(id);
+  }
+
+  private load(saved: { [Extension.SaveDataKey]: Record<string, any> }) {
+    const { saveDataHandler, id } = this;
+    const saveData = Extension.SaveDataKey in saved ? saved[Extension.SaveDataKey][id] : null;
+    const valid = saveDataHandler && saveData;
+    if (valid) saveDataHandler.onLoad(saveData);
+  }
+
   openUI(component: string, label?: string) {
     const { id, name, runtime } = this;
     openUI(runtime, { id, name, component: component.replace(".svelte", ""), label });
@@ -221,6 +239,8 @@ export abstract class Extension
    */
   defineTranslations?(): Translations<Extension<MenuDetails, Blocks>>;
 
+  protected saveDataHandler: ReturnType<typeof Extension.MakeSaveHandler> = undefined;
+
   private getInfo(): ExtensionMetadata {
     const { id, internal_blocks: blocks, internal_menus: menus, name, blockIconURI } = this;
     const info = { id, blocks, name, blockIconURI };
@@ -375,6 +395,10 @@ export abstract class Extension
   }
 
   static GetKeyFromOpcode = (opcode: string) => opcode.replace(Extension.GetInternalKey(""), "");
+
+  protected static MakeSaveHandler<TSaveData>(hooks: { onSave: () => TSaveData, onLoad: (data: TSaveData) => void }) {
+    return hooks
+  }
 
   private static GetArgTranslationID = (blockname: string, index: number) => {
     return `${blockname}-arg${index}-default`;

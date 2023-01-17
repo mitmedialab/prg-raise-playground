@@ -492,6 +492,7 @@ const serializeTarget = function (target, extensions) {
 
     // Add found extensions to the extensions object
     targetExtensions.forEach(extensionId => {
+
         extensions.add(extensionId);
     });
     return obj;
@@ -530,9 +531,10 @@ const serializeMonitors = function (monitors) {
  * Serializes the specified VM runtime.
  * @param {!Runtime} runtime VM runtime instance to be serialized.
  * @param {string=} targetId Optional target id if serializing only a single target
+ * @param {import("../extension-support/extension-manager")} extensionManager
  * @return {object} Serialized runtime instance.
  */
-const serialize = function (runtime, targetId) {
+const serialize = function (runtime, targetId, extensionManager) {
     // Fetch targets
     const obj = Object.create(null);
     // Create extension set to hold extension ids found while serializing targets
@@ -564,6 +566,11 @@ const serialize = function (runtime, targetId) {
 
     obj.monitors = serializeMonitors(runtime.getMonitorState());
 
+    extensionManager.getLoadedExtensionIDs().forEach(id => {
+        const instance = extensionManager.getExtensionInstance(id);
+        instance["save"]?.(obj, extensions);
+    });
+
     // Assemble extension list
     obj.extensions = Array.from(extensions);
     
@@ -584,6 +591,8 @@ const serialize = function (runtime, targetId) {
 
     // Assemble payload and return
     obj.meta = meta;
+
+    console.log(obj);
     return obj;
 };
 
@@ -1248,8 +1257,10 @@ const replaceUnsafeCharsInVariableIds = function (targets) {
 const deserialize = function (json, runtime, zip, isSingleSprite) {
     const extensions = {
         extensionIDs: new Set(),
-        extensionURLs: new Map()
+        extensionURLs: new Map(),
     };
+
+    json["extensions"]?.forEach(id => extensions.extensionIDs.add(id));
     
     // Unpack the data for the text model
     runtime.modelData = {"textData": {}, "classifierData": {}, "nextLabelNumber": 1};
