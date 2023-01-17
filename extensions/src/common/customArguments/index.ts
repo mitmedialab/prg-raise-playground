@@ -1,4 +1,3 @@
-import { printCallStack } from "$common/callStack";
 import Runtime from "$root/packages/scratch-vm/src/engine/runtime";
 import { Extension } from "../Extension";
 import { closeDropdownState, customArgumentFlag, dropdownEntryFlag, dropdownStateFlag, initDropdownState, openDropdownState } from "../globals";
@@ -13,6 +12,11 @@ const callingContext = {
   Init: initDropdownState,
 } as const;
 
+/**
+ * Checks if the value returned by a dyanmic menu indicates that it should be treated as a 'custom argument'
+ * @param arr 
+ * @returns 
+ */
 export const isCustomArgumentHack = (arr: Array<string | { text: string }>) => {
   if (arr.length !== 1) return false;
   const item = arr[0];
@@ -21,6 +25,14 @@ export const isCustomArgumentHack = (arr: Array<string | { text: string }>) => {
   return text === customArgumentFlag;
 }
 
+/**
+ * 
+ * @param this The 'this' calling context of this function is assumed to be an Extension
+ * @param runtime 
+ * @param entry 
+ * @param getComponent 
+ * @returns 
+ */
 export function processCustomArgumentHack<T extends Extension<any, any>>(
   this: T,
   runtime: Runtime,

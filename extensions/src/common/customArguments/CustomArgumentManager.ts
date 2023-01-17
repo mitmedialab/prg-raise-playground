@@ -2,44 +2,40 @@ export type ArgumentEntry<T> = { text: string, value: T };
 export type ArgumentEntrySetter<T> = (entry: ArgumentEntry<T>) => void;
 
 export default class CustomArgumentManager {
-  map: Record<string, ArgumentEntry<any>> = {};
+  map: Map<string, ArgumentEntry<any>> = new Map();
   pending = { id: null as string, entry: null as ArgumentEntry<any> };
 
-  clearPending() {
-    this.pending.entry = null;
-    this.pending.id = null;
-  }
+  clearPending() { this.pending = null }
+  setPending(update: typeof this.pending) { this.pending = update }
 
   add<T>(entry: ArgumentEntry<T>): string {
     const id = CustomArgumentManager.GetIdentifier();
-    this.map[id] = entry;
+    this.map.set(id, entry);
     this.clearPending();
     return id;
   }
 
   request<T>(): [string, ArgumentEntrySetter<T>] {
     this.clearPending();
-    const self = this;
     const id = CustomArgumentManager.GetIdentifier();
-    self.pending.id = id;
-    return [id, (entry) => self.pending.entry = entry];
+    return [id, (entry) => this.setPending({ id, entry })];
   }
 
   tryResolve() {
+    if (!this.pending) return;
     const { pending: { entry, id } } = this;
-    if (!entry) return undefined;
-    this.map[id] = entry;
+    this.map.set(id, entry);
     this.clearPending();
     return { entry, id };
   }
 
   getCurrentEntries() {
-    return Object.entries(this.map)
+    return Array.from(this.map.entries())
       .filter(([_, entry]) => entry !== null)
       .map(([id, { text }]) => [text, id] as const);
   }
 
-  getEntry(id: string) { return this.map[id] }
+  getEntry(id: string) { return this.map.get(id) }
 
   /**
    * @todo Implement this if it becomes necessary (i.e the every growing size of this.map becomes an issue)
