@@ -5,6 +5,7 @@ import Cast from '$scratch-vm/util/cast';
 import Runtime from "$scratch-vm/engine/runtime";
 import { openUI, registerButtonCallback } from './ui';
 import { isFunction, isString } from './utils';
+import { SaveDataHandler } from './SavaDataHandler';
 
 export type CodeGenArgs = {
   name: never,

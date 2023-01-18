@@ -13,7 +13,7 @@
    *    }
    * })
    */
-class SaveDataHandler<T> {
+export class SaveDataHandler<T> {
   constructor(public hooks: {
     onSave: () => T,
     onLoad: (data: T) => void,
