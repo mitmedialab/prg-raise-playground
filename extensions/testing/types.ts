@@ -9,10 +9,6 @@ export type AnyExtension = Extension<ExtensionMenuDisplayDetails, ExtensionBlock
 export type BlockKey<T extends AnyExtension> = keyof T["BlockFunctions"] & string;
 export type KeyToBlockIndexMap = Map<string, number>;
 
-export interface ExtensionConstructor<T extends AnyExtension> {
-  new(...args: ConstructorParameters<typeof Extension>): T;
-}
-
 export type TestHelper = {
   expect: typeof expect,
   fireEvent: typeof fireEvent,
@@ -115,4 +111,9 @@ export type RuntimeForTest<T extends AnyExtension> = Runtime & {
   }
 }
 
-export type IntegrationTest<T extends AnyExtension> = (blockrunner: BlockRunner<T>, helper: TestHelper) => void | Promise<void>;
+/**
+ * The word 'harness' is used for the funciton argument, 
+ * as "In software testing, a test harness or automated test framework is a collection of software and test data configured to test a program unit by running it under varying conditions and monitoring its behavior and outputs. It has two main parts: the test execution engine and the test script repository."
+ * @see https://en.wikipedia.org/wiki/Test_harness
+ */
+export type IntegrationTest<T extends AnyExtension> = (harness: { blockrunner: BlockRunner<T>, testHelper: TestHelper }) => void | Promise<void>;

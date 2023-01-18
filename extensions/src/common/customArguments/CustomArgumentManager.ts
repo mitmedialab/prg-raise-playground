@@ -3,7 +3,7 @@ export type ArgumentEntrySetter<T> = (entry: ArgumentEntry<T>) => void;
 
 export default class CustomArgumentManager {
   map: Map<string, ArgumentEntry<any>> = new Map();
-  pending = { id: null as string, entry: null as ArgumentEntry<any> };
+  pending: { id: string, entry: ArgumentEntry<any> } = null;
 
   clearPending() { this.pending = null }
   setPending(update: typeof this.pending) { this.pending = update }

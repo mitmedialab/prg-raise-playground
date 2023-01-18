@@ -1,5 +1,5 @@
 import { ArgumentType, BlockType, Language } from './enums';
-import type { ExtensionMenuDisplayDetails, ExtensionBlocks, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, VerboseArgument, Environment, Menu, DynamicMenu, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters, TypeByArgumentType, AllText, Translations, BlockOperation, ValueOf } from './types';
+import type { ExtensionMenuDisplayDetails, ExtensionBlocks, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, VerboseArgument, Environment, Menu, DynamicMenu, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters, TypeByArgumentType, AllText, Translations, BlockOperation, ValueOf, BaseExtension } from './types';
 import Cast from '$scratch-vm/util/cast';
 //import * as formatMessage from 'format-message';
 import Runtime from "$scratch-vm/engine/runtime";
@@ -8,6 +8,8 @@ import { isFunction, isString } from './utils';
 import { isCustomArgumentHack, processCustomArgumentHack } from './customArguments';
 import { customArgumentCheck, customArgumentFlag } from './globals';
 import CustomArgumentManager, { ArgumentEntry } from './customArguments/CustomArgumentManager';
+import { SaveDataHandler } from './SavaDataHandler';
+
 
 export type CodeGenArgs = {
   name: never,
@@ -58,6 +60,24 @@ export abstract class Extension
   > {
   runtime: Runtime;
 
+  /**
+   * Optional field that can be defined if you need to save custom data for an extension 
+   * (like some extension specific variable, or an API endpoint).
+   * @example
+   * class Example extends Extension<..., ...> {
+   *    someValue = 5;
+   *    ...
+   *    saveDataHandler = new SaveDataHandler({
+   *      extension: Example,
+   *      // NOTE: The type info for 'instance' could be left off in the line below
+   *      onSave: (instance: Example) => ({ valueToSave: instance.someValue }),
+   *      onLoad: (instance, data) => instance.someValue = data.valueToSave
+   *    })
+   * }
+   * @see Extension.MakeSaveDataHandler
+   */
+  protected saveDataHandler: SaveDataHandler<typeof this, any> = undefined;
+
   readonly BlockFunctions: Blocks;
   readonly BlockDefinitions: BlockDefinitions<typeof this>;
   readonly Translations: Translations<typeof this>;
@@ -66,13 +86,48 @@ export abstract class Extension
   private readonly internal_menus: ExtensionMenuMetadata[] = [];
 
   readonly customArgumentManager = new CustomArgumentManager();
+  /**
+   * WARNING! If you change this key, it will affect already saved projects.
+   * Do not rename this without first developing a mechanism for searching for previously used keys.
+   */
+  private static SaveDataKey = "customSaveDataPerExtension" as const;
+
+  /**
+   * Save function called 'internally' by the VM when serializing a project.
+   * @param toSave 
+   * @param extensionIDs 
+   * @returns 
+   */
+  private save(toSave: { [Extension.SaveDataKey]: Record<string, any> }, extensionIDs: Set<string>) {
+    const { saveDataHandler, id } = this;
+    const saveData = saveDataHandler?.hooks.onSave(this);
+    if (!saveData) return;
+    const container = toSave[Extension.SaveDataKey];
+    container ? (container[id] = saveData) : (toSave[Extension.SaveDataKey] = { [id]: saveData });
+    extensionIDs.add(id);
+  }
+
+  /**
+   * Load function called 'internally' by the VM when loading a project.
+   * Will be invoked on an extension immediately after it is constructed.
+   * @param saved 
+   * @returns 
+   */
+  private load(saved: { [Extension.SaveDataKey]: Record<string, any> }) {
+    if (!saved) return;
+    const { saveDataHandler, id } = this;
+    if (!saveDataHandler) return;
+    const saveData = Extension.SaveDataKey in saved ? saved[Extension.SaveDataKey][id] : null;
+    if (saveData) saveDataHandler.hooks.onLoad(this, saveData);
+  }
+
 
   openUI(component: string, label?: string) {
     const { id, name, runtime } = this;
     openUI(runtime, { id, name, component: component.replace(".svelte", ""), label });
   }
 
-  constructor(runtime: Runtime, codeGenArgs?: CodeGenArgs) {
+  constructor(runtime: never, codeGenArgs?: CodeGenArgs) {
     const { name, id, blockIconURI } = codeGenArgs ?? this[Extension.InternalCodeGenArgsGetterKey]() as CodeGenArgs;
     this.name = name;
     this.id = id;
@@ -86,7 +141,7 @@ export abstract class Extension
     const definitions = this.defineBlocks();
     const menus: Menu<any>[] = [];
     for (const key in definitions) {
-      const block = definitions[key](this);
+      const block = Extension.IsFunction(definitions[key]) ? (definitions[key] as Function)(this) : definitions[key];
       const info = this.convertToInfo(key, block, menus);
       this.internal_blocks.push(info);
     }
@@ -169,11 +224,26 @@ export abstract class Extension
   abstract init(env: Environment): void;
 
   /**
-   * @summary This member function (or 'method') will be called to 
+   * @summary Extension member method that returns an object defining all blocks that belong to the extension.
+   * @description Every block your extension implements (defined by the second generic argument of the Extension class), will have an entry in the object return by this function.
+   * Each entry will either be an object or a function that returns an object that provides the:
+   * - type: the type of block
+   * - text: what is displayed on the block
+   * - arg or args: the arguments the block accepts
+   * - operation: the function that is called when the blocked is executed
    * @example
    * // Returning an object with two block definition function for 'someBlock'
    * defineBlocks(): ExampleExtension["BlockDefinitions"] {
    *  return {
+   *    // Using object syntax
+   *    someBlock: {
+   *      type: BlockType.Reporter,
+   *      arg: ArgumentType.String,
+   *      text: (argument) => `Some text about ${argument}`,
+   *      operation: (argument) => {
+   *        // do something
+   *      }
+   *    },
    *    // Using arrow function syntax
    *    someBlock: (self: MyExtension) => ({
    *      type: BlockType.Reporter,
@@ -198,7 +268,7 @@ export abstract class Extension
    *  }
    * }
    * @see BlockDefinitions
-   * @returns {BlockDefinitions<Blocks>} An object defining 'block definition' functions for each block associated with this Extension.
+   * @returns {BlockDefinitions<Blocks>} An object defining 'block definition' objects / functions for each block associated with this Extension.
    */
   abstract defineBlocks(): BlockDefinitions<Extension<MenuDetails, Blocks>>;
 
