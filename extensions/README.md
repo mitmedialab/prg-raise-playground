@@ -159,7 +159,61 @@ As is clear from the second argument of the `createTestSuite` function, there ar
 
 Specifically for extensions, `unit tests` test the operation of a single block. 
 
-TODO
+A unit test for a block is defined as an entry in the `unitTests` object whose key is the name of the block (as defined in the second generic parameter of the Extension class).
+
+```ts
+// Inside index.ts
+
+export default class ExtensionUnderTest extends Extension<..., {
+    myBlock: (input: string) => void,
+}> {
+    ....
+}
+```
+
+```ts
+// Inside index.test.ts
+import { createTestSuite } from "$testing";
+import Extension from '.';
+
+createTestSuite({ Extension, __dirname },
+  {
+    unitTests: {
+        myBlock: {
+            ...
+            // Test details go here
+        }
+    },
+    ....
+  }
+);
+```
+
+You can either provide a single test case, or an array of test cases.
+
+```ts
+unitTests: {
+    myBlock: {
+        ...
+        // Test details go here
+    }
+}
+```
+
+```ts
+unitTests: {
+    myBlock: [{
+        ...
+        // Test details go here
+    },
+    {
+        ...
+        // Test details go here
+    },
+    ]
+}
+```
+
 
 ### Integration Tests
 
