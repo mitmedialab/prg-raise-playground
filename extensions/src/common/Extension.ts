@@ -362,7 +362,7 @@ export abstract class Extension
     const opcode = Extension.GetInternalKey(key);
     const bound = operation.bind(this);
 
-    const { id, argumentManager: customArgumentManager } = this;
+    const { id, customArgumentManager } = this;
 
     const isButton = type === BlockType.Button;
     const buttonID = isButton ? Extension.GetButtonID(id, opcode) : undefined;
@@ -375,11 +375,18 @@ export abstract class Extension
         const { mutation } = argsFromScratch; // if we need it...
         // NOTE: Assumption is that args order will be correct since their keys are parsable as ints (i.e. '0', '1', ...)
         const uncasted = Object.values(argsFromScratch).slice(0, -1);
-        const casted = uncasted.map((value, index) => {
-          const handled = handlers[index] ? handlers[index](value) : value;
+
+        const casted = uncasted.map((param: any, index) => {
           const type = Extension.GetArgumentType(args[index]);
-          return type === ArgumentType.Custom ? customArgumentManager.getEntry(handled).value : Extension.CastToType(type, handled)
+          const handler = handlers[index] ?? ((x) => x);
+
+          return type !== ArgumentType.Custom
+            ? Extension.CastToType(type, handler(param))
+            : !(Extension.IsString(param) && CustomArgumentManager.IsIdentifier(param))
+              ? handler(param)
+              : handler(customArgumentManager.getEntry(param).value)
         });
+
         return bound(...casted, blockUtility); // can add more util params as necessary
       }
     }
@@ -445,13 +452,14 @@ export abstract class Extension
     }
   }
 
-  protected makeCustomArgument = <T>({ component, initial }: { component: string, initial: ArgumentEntry<T> }): Argument<T> => {
+  protected makeCustomArgument = <T>({ component, initial, acceptReportersHandler: handler }: { component: string, initial: ArgumentEntry<T>, acceptReportersHandler?: (x: any) => ArgumentEntry<T> }): Argument<T> => {
     this.argumentManager ??= new CustomArgumentManager();
     const id = this.argumentManager.add(initial);
+    const getItems = () => [{ text: customArgumentFlag, value: JSON.stringify({ component, id }) }];
     return {
       type: ArgumentType.Custom,
       defaultValue: id,
-      options: () => [{ text: customArgumentFlag, value: JSON.stringify({ component, id }) }],
+      options: handler === undefined ? getItems : { acceptsReports: true, getItems, handler },
     } as Argument<T>
   }
 

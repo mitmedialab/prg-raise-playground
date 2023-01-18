@@ -1,4 +1,4 @@
-import { Extension, Environment, BlockType, ArgumentType } from "$common";
+import { Extension, Environment, BlockType, ArgumentType, VerboseArgument } from "$common";
 
 type Details = {
   name: "ee",
@@ -9,14 +9,13 @@ type Details = {
 
 export default class _ extends Extension<Details, {
   test: (x: { t: string }) => { t: string },
-  list: (x: string) => void,
+  extract: ({ t }: { t: string }) => string,
 }> {
   init(env): void { }
 
   defineBlocks(): _["BlockDefinitions"] {
     return {
-
-      test: () => ({
+      test: {
         text: (arg) => `Hi ${arg}`,
         operation: (arg) => arg,
         type: BlockType.Reporter,
@@ -24,21 +23,20 @@ export default class _ extends Extension<Details, {
           component: "Dummy",
           initial: { text: "hi", value: { t: "e" } }
         })
-      }),
-
-      list: () => ({
-        text: (arg) => `${arg}`,
-        operation: (arg) => { console.log(arg) },
-        type: BlockType.Command,
-        arg: {
-          type: ArgumentType.String,
-          options: {
-            acceptsReporters: true,
-            handler: (x) => x["t"],
-            getItems: () => this.customArgumentManager.getCurrentEntries().map(([_0, _1]) => _1)
-          }
-        }
-      })
+      },
+      extract: {
+        text: (arg) => `Return ${arg}`,
+        operation: ({ t }) => {
+          console.log(t);
+          return t;
+        },
+        type: BlockType.Reporter,
+        arg: this.makeCustomArgument({
+          component: "Dummy",
+          initial: { text: "hi", value: { t: "e" } },
+          acceptReportersHandler: (x) => x
+        }),
+      }
     }
   }
 }

@@ -25,6 +25,6 @@
   }
 </style>
 
-<div class:container style:width={px(360)} style:background-color={color.ui.white} style:color={color.text.primary}>
+<div class:container style:background-color={color.ui.white} style:color={color.text.primary}>
   <input bind:value={text}>
 </div>
