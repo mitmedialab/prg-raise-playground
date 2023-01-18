@@ -61,12 +61,13 @@ export abstract class Extension
    * (like some extension specific variable, or an API endpoint).
    * @example
    * class Example extends Extension<..., ...> {
+   *    someValue = 5;
    *    ...
-   *    saveDataHandler = Extension.MakeSaveHandler({
-   *      onSave: () => ({ valueToSave: 4 }),
-   *      onLoad: (data) => {
-   *        console.log(data.valueToSave); // do something with saved value
-   *      }
+   *    saveDataHandler = new SaveDataHandler({
+   *      extension: Example,
+   *      // NOTE: The type info for 'instance' could be left off in the line below
+   *      onSave: (instance: Example) => ({ valueToSave: instance.someValue }),
+   *      onLoad: (instance, data) => instance.someValue = data.valueToSave
    *    })
    * }
    * @see Extension.MakeSaveDataHandler
@@ -110,9 +111,9 @@ export abstract class Extension
   private load(saved: { [Extension.SaveDataKey]: Record<string, any> }) {
     if (!saved) return;
     const { saveDataHandler, id } = this;
+    if (!saveDataHandler) return;
     const saveData = Extension.SaveDataKey in saved ? saved[Extension.SaveDataKey][id] : null;
-    const valid = saveDataHandler && saveData;
-    if (valid) saveDataHandler.hooks.onLoad(this, saveData);
+    if (saveData) saveDataHandler.hooks.onLoad(this, saveData);
   }
 
   openUI(component: string, label?: string) {
