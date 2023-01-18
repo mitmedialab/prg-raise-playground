@@ -1,5 +1,5 @@
 import { Extension } from "$common/Extension";
-import { Environment, BlockDefinitions } from "$common/types";
+import { Environment } from "$common/types";
 import Runtime from "$root/packages/scratch-vm/src/engine/runtime";
 import { test, describe } from "$testing";
 import { DefaultDisplayDetails } from "$testing/defaults";

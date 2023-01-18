@@ -58,7 +58,7 @@ const mockRuntime = <T extends AnyExtension>(details: TestDetails<T, any>): Runt
 const getInstance = <T extends AnyExtension>(details: TestDetails<T, any>): T => {
   const runtime = mockRuntime(details);
   const args: PopulateCodeGenArgs = { name: "", blockIconURI: "", id: "" };
-  const instance = new details.Extension(runtime as any as never, args as CodeGenArgs);
+  const instance = new details.Extension(runtime as never, args as CodeGenArgs);
   Extension.TestInit(instance);
   return instance;
 }
