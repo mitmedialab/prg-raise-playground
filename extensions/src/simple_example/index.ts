@@ -20,7 +20,7 @@ export default class SimpleTypescript extends Extension<Details, {
 }> {
   count: number = 0;
 
-  saveDataHandler = Extension.MakeSaveHandler({
+  saveDataHandler = new SaveDataHandler({
     onSave: () => ({ count: this.count }),
     onLoad: (data) => this.count = data.count
   });

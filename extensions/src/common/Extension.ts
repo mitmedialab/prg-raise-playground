@@ -68,9 +68,9 @@ export abstract class Extension
    *      }
    *    })
    * }
-   * @see Extension.MakeSaveHandler
+   * @see Extension.MakeSaveDataHandler
    */
-  protected saveDataHandler: ReturnType<typeof Extension.MakeSaveHandler> = undefined;
+  protected saveDataHandler: SaveDataHandler<any> = undefined;
 
   readonly BlockFunctions: Blocks;
   readonly BlockDefinitions: BlockDefinitions<Extension<MenuDetails, Blocks>>;
@@ -93,7 +93,7 @@ export abstract class Extension
    */
   private save(toSave: { [Extension.SaveDataKey]: Record<string, any> }, extensionIDs: Set<string>) {
     const { saveDataHandler, id } = this;
-    const saveData = saveDataHandler?.onSave();
+    const saveData = saveDataHandler?.hooks.onSave();
     if (!saveData) return;
     const container = toSave[Extension.SaveDataKey];
     container ? (container[id] = saveData) : (toSave[Extension.SaveDataKey] = { [id]: saveData });
@@ -111,7 +111,7 @@ export abstract class Extension
     const { saveDataHandler, id } = this;
     const saveData = Extension.SaveDataKey in saved ? saved[Extension.SaveDataKey][id] : null;
     const valid = saveDataHandler && saveData;
-    if (valid) saveDataHandler.onLoad(saveData);
+    if (valid) saveDataHandler.hooks.onLoad(saveData);
   }
 
   openUI(component: string, label?: string) {
@@ -427,19 +427,6 @@ export abstract class Extension
   }
 
   static GetKeyFromOpcode = (opcode: string) => opcode.replace(Extension.GetInternalKey(""), "");
-
-  /**
-   * @summary Utility function to assist in creating a (typesafe) saveDataHandler object that both:
-   * - writes out an object on save
-   * - does something with written out save data on load
-   * 
-   * @description This function really just enables you to get better type inference, 
-   * so if you know what you're doing, you can define your own object 
-   * (but be careful to make sure `onSave`'s return type matches `onLoad`'s argument type)
-   * @param hooks Object that defines the `onSave` and `onLoad`
-   * @returns Object with both `onSave` and `onLoad` methods (just like the input `hooks` argument)
-   */
-  protected static MakeSaveHandler = <TSaveData>(hooks: { onSave: () => TSaveData, onLoad: (data: TSaveData) => void }) => hooks;
 
   private static GetArgTranslationID = (blockname: string, index: number) => {
     return `${blockname}-arg${index}-default`;
