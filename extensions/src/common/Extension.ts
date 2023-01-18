@@ -10,7 +10,6 @@ import { customArgumentCheck, customArgumentFlag } from './globals';
 import CustomArgumentManager, { ArgumentEntry } from './customArguments/CustomArgumentManager';
 import { SaveDataHandler } from './SavaDataHandler';
 
-
 export type CodeGenArgs = {
   name: never,
   id: never,
@@ -85,7 +84,12 @@ export abstract class Extension
   private readonly internal_blocks: ExtensionBlockMetadata[] = [];
   private readonly internal_menus: ExtensionMenuMetadata[] = [];
 
-  readonly customArgumentManager = new CustomArgumentManager();
+  private argumentManager: CustomArgumentManager = null;
+
+  public get customArgumentManager(): CustomArgumentManager {
+    return this.argumentManager
+  }
+
   /**
    * WARNING! If you change this key, it will affect already saved projects.
    * Do not rename this without first developing a mechanism for searching for previously used keys.
@@ -99,9 +103,10 @@ export abstract class Extension
    * @returns 
    */
   private save(toSave: { [Extension.SaveDataKey]: Record<string, any> }, extensionIDs: Set<string>) {
-    const { saveDataHandler, id } = this;
-    const saveData = saveDataHandler?.hooks.onSave(this);
-    if (!saveData) return;
+    const { saveDataHandler, id, argumentManager } = this;
+    const saveData = saveDataHandler?.hooks.onSave(this) ?? {};
+    argumentManager?.saveTo(saveData);
+    if (Object.keys(saveData).length === 0) return;
     const container = toSave[Extension.SaveDataKey];
     container ? (container[id] = saveData) : (toSave[Extension.SaveDataKey] = { [id]: saveData });
     extensionIDs.add(id);
@@ -116,9 +121,10 @@ export abstract class Extension
   private load(saved: { [Extension.SaveDataKey]: Record<string, any> }) {
     if (!saved) return;
     const { saveDataHandler, id } = this;
-    if (!saveDataHandler) return;
     const saveData = Extension.SaveDataKey in saved ? saved[Extension.SaveDataKey][id] : null;
-    if (saveData) saveDataHandler.hooks.onLoad(this, saveData);
+    if (!saveData) return;
+    saveDataHandler?.hooks.onLoad(this, saveData);
+    (this.argumentManager ??= new CustomArgumentManager()).loadFrom(saveData);
   }
 
 
@@ -356,7 +362,7 @@ export abstract class Extension
     const opcode = Extension.GetInternalKey(key);
     const bound = operation.bind(this);
 
-    const { id, customArgumentManager } = this;
+    const { id, argumentManager: customArgumentManager } = this;
 
     const isButton = type === BlockType.Button;
     const buttonID = isButton ? Extension.GetButtonID(id, opcode) : undefined;
@@ -440,7 +446,8 @@ export abstract class Extension
   }
 
   protected makeCustomArgument = <T>({ component, initial }: { component: string, initial: ArgumentEntry<T> }): Argument<T> => {
-    const id = this.customArgumentManager.add(initial);
+    this.argumentManager ??= new CustomArgumentManager();
+    const id = this.argumentManager.add(initial);
     return {
       type: ArgumentType.Custom,
       defaultValue: id,

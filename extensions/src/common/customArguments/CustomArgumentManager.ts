@@ -15,6 +15,12 @@ export default class CustomArgumentManager {
     return id;
   }
 
+  insert<T>(id: string, entry: ArgumentEntry<T>): string {
+    this.map.set(id, entry);
+    this.clearPending();
+    return id;
+  }
+
   request<T>(): [string, ArgumentEntrySetter<T>] {
     this.clearPending();
     const id = CustomArgumentManager.GetIdentifier();
@@ -36,6 +42,24 @@ export default class CustomArgumentManager {
   }
 
   getEntry(id: string) { return this.map.get(id) }
+
+  static SaveKey = "internal_customArgumentsSaveData" as const;
+
+  requiresSave() { this.map.size > 0 }
+
+  saveTo(obj: object) {
+    const entries = Array.from(this.map.entries())
+      .filter(([_, entry]) => entry !== null)
+      .map(([id, entry]) => ({ id, entry }));
+    if (entries.length === 0) return;
+    obj[CustomArgumentManager.SaveKey] = entries;
+  }
+
+  loadFrom(obj: Record<typeof CustomArgumentManager["SaveKey"], { id: string, entry: ArgumentEntry<any> }[]>) {
+    obj[CustomArgumentManager.SaveKey]?.forEach(({ id, entry }) => {
+      this.map.set(id, entry);
+    });
+  }
 
   /**
    * @todo Implement this if it becomes necessary (i.e the every growing size of this.map becomes an issue)
