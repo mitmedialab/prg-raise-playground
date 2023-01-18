@@ -16,7 +16,8 @@
     "add:ui": "npm run ts:node:extensions -- ./extensions/scripts/factories/ui.ts",
     "add:test": "npm run ts:node:extensions -- ./extensions/scripts/factories/test.ts",
     "add:package": "npm run ts:node:extensions -- ./extensions/scripts/factories/package.ts",
-    "rebuild:blocks": "npm run prepublish --prefix ./packages/scratch-blocks && npm run dev"
+    "rebuild:blocks": "npm run prepublish --prefix ./packages/scratch-blocks && npm run dev",
+    "test:extensions": "npm run test --prefix ./extensions/"
   },
   "devDependencies": {
     "@types/webgl2": "^0.0.6",
