@@ -1,7 +1,7 @@
-import { CodeGenArgs, Extension, PopulateCodeGenArgs, ExtensionBlockMetadata, BlockType, registerButtonCallbackEvent, waitForCondition, openUIEvent, openUI, isFunction, isString, splitOnCapitals } from "$common";
+import { CodeGenArgs, Extension, PopulateCodeGenArgs, ExtensionBlockMetadata, BlockType, registerButtonCallbackEvent, waitForCondition, openUIEvent, openUI, isFunction, isString, splitOnCapitals, ExtensionConstructor } from "$common";
 import { describe, expect, jest, test } from '@jest/globals';
 import path from "path";
-import { AnyExtension, BlockKey, BlockTestCase, ExtensionConstructor, RuntimeForTest, TestHelper, UnitTests, GetTestCase, TestCaseEntry, InputArray, KeyToBlockIndexMap, IntegrationTest } from "./types";
+import { AnyExtension, BlockKey, BlockTestCase, RuntimeForTest, TestHelper, UnitTests, GetTestCase, TestCaseEntry, InputArray, KeyToBlockIndexMap, IntegrationTest } from "./types";
 import { render, fireEvent } from '@testing-library/svelte';
 import glob from "glob";
 import fs from "fs";

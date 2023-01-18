@@ -1,7 +1,7 @@
-import { BlockType, BlocksInfo, CodeGenArgs, Extension, ExtensionBlockMetadata, PopulateCodeGenArgs } from "$common";
+import { BlockType, BlocksInfo, CodeGenArgs, Extension, ExtensionBlockMetadata, ExtensionConstructor, PopulateCodeGenArgs } from "$common";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import { buildKeyBlockMap } from "$testing";
-import { AnyExtension, BlockKey, ExtensionConstructor, InputArray, KeyToBlockIndexMap, RenderedUI, RuntimeForTest } from "./types";
+import { AnyExtension, BlockKey, InputArray, KeyToBlockIndexMap, RenderedUI, RuntimeForTest } from "./types";
 import { getEngineFile } from "./utils";
 
 export class BlockRunner<T extends AnyExtension> {

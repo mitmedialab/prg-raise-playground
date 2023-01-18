@@ -1,5 +1,5 @@
 import { ArgumentType, BlockType, Language } from './enums';
-import type { ExtensionMenuDisplayDetails, ExtensionBlocks, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, VerboseArgument, Environment, Menu, DynamicMenu, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters, TypeByArgumentType, AllText, Translations, BlockOperation, ValueOf } from './types';
+import type { ExtensionMenuDisplayDetails, ExtensionBlocks, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, VerboseArgument, Environment, Menu, DynamicMenu, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters, TypeByArgumentType, AllText, Translations, BlockOperation, ValueOf, BaseExtension } from './types';
 import Cast from '$scratch-vm/util/cast';
 //import * as formatMessage from 'format-message';
 import Runtime from "$scratch-vm/engine/runtime";
@@ -71,7 +71,7 @@ export abstract class Extension
    * }
    * @see Extension.MakeSaveDataHandler
    */
-  protected saveDataHandler: SaveDataHandler<any> = undefined;
+  protected saveDataHandler: SaveDataHandler<typeof this, any> = undefined;
 
   readonly BlockFunctions: Blocks;
   readonly BlockDefinitions: BlockDefinitions<Extension<MenuDetails, Blocks>>;
@@ -94,7 +94,7 @@ export abstract class Extension
    */
   private save(toSave: { [Extension.SaveDataKey]: Record<string, any> }, extensionIDs: Set<string>) {
     const { saveDataHandler, id } = this;
-    const saveData = saveDataHandler?.hooks.onSave();
+    const saveData = saveDataHandler?.hooks.onSave(this);
     if (!saveData) return;
     const container = toSave[Extension.SaveDataKey];
     container ? (container[id] = saveData) : (toSave[Extension.SaveDataKey] = { [id]: saveData });
@@ -112,7 +112,7 @@ export abstract class Extension
     const { saveDataHandler, id } = this;
     const saveData = Extension.SaveDataKey in saved ? saved[Extension.SaveDataKey][id] : null;
     const valid = saveDataHandler && saveData;
-    if (valid) saveDataHandler.hooks.onLoad(saveData);
+    if (valid) saveDataHandler.hooks.onLoad(this, saveData);
   }
 
   openUI(component: string, label?: string) {

@@ -62,3 +62,7 @@ export const isFunction = (query: any) =>
   || query instanceof Function;
 
 export const splitOnCapitals = (query: string) => query.split(/(?=[A-Z])/);
+
+export const copyTo = <TTarget, TSource extends { [k in keyof TTarget]?: TTarget[k] }>({ target: TTarget, source: TSource }) => {
+
+}

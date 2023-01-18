@@ -21,8 +21,9 @@ export default class SimpleTypescript extends Extension<Details, {
   count: number = 0;
 
   saveDataHandler = new SaveDataHandler({
-    onSave: () => ({ count: this.count }),
-    onLoad: (data) => this.count = data.count
+    extension: SimpleTypescript,
+    onSave: ({ count }) => ({ count }),
+    onLoad: (self, { count }) => self.count = count
   });
 
   init(env: Environment) {
