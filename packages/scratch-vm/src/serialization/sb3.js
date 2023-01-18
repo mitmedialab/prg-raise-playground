@@ -492,7 +492,6 @@ const serializeTarget = function (target, extensions) {
 
     // Add found extensions to the extensions object
     targetExtensions.forEach(extensionId => {
-
         extensions.add(extensionId);
     });
     return obj;
@@ -531,7 +530,7 @@ const serializeMonitors = function (monitors) {
  * Serializes the specified VM runtime.
  * @param {!Runtime} runtime VM runtime instance to be serialized.
  * @param {string=} targetId Optional target id if serializing only a single target
- * @param {import("../extension-support/extension-manager")} extensionManager
+ * @param {import("../extension-support/extension-manager")} extensionManager Reference to VM's extension manager.
  * @return {object} Serialized runtime instance.
  */
 const serialize = function (runtime, targetId, extensionManager) {
@@ -591,8 +590,6 @@ const serialize = function (runtime, targetId, extensionManager) {
 
     // Assemble payload and return
     obj.meta = meta;
-
-    console.log(obj);
     return obj;
 };
 
@@ -1257,7 +1254,7 @@ const replaceUnsafeCharsInVariableIds = function (targets) {
 const deserialize = function (json, runtime, zip, isSingleSprite) {
     const extensions = {
         extensionIDs: new Set(),
-        extensionURLs: new Map(),
+        extensionURLs: new Map()
     };
 
     json["extensions"]?.forEach(id => extensions.extensionIDs.add(id));

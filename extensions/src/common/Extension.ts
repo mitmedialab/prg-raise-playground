@@ -55,6 +55,23 @@ export abstract class Extension
   > {
   runtime: Runtime;
 
+  /**
+   * Optional field that can be defined if you need to save custom data for an extension 
+   * (like some extension specific variable, or an API endpoint).
+   * @example
+   * class Example extends Extension<..., ...> {
+   *    ...
+   *    saveDataHandler = Extension.MakeSaveHandler({
+   *      onSave: () => ({ valueToSave: 4 }),
+   *      onLoad: (data) => {
+   *        console.log(data.valueToSave); // do something with saved value
+   *      }
+   *    })
+   * }
+   * @see Extension.MakeSaveHandler
+   */
+  protected saveDataHandler: ReturnType<typeof Extension.MakeSaveHandler> = undefined;
+
   readonly BlockFunctions: Blocks;
   readonly BlockDefinitions: BlockDefinitions<Extension<MenuDetails, Blocks>>;
   readonly Translations: Translations<Extension<MenuDetails, Blocks>>;
@@ -62,8 +79,18 @@ export abstract class Extension
   private readonly internal_blocks: ExtensionBlockMetadata[] = [];
   private readonly internal_menus: ExtensionMenuMetadata[] = [];
 
+  /**
+   * WARNING! If you change this key, it will affect already saved projects.
+   * Do not rename this without first developing a mechanism for searching for previously used keys.
+   */
   private static SaveDataKey = "customSaveDataPerExtension" as const;
 
+  /**
+   * Save function called 'internally' by the VM when serializing a project.
+   * @param toSave 
+   * @param extensionIDs 
+   * @returns 
+   */
   private save(toSave: { [Extension.SaveDataKey]: Record<string, any> }, extensionIDs: Set<string>) {
     const { saveDataHandler, id } = this;
     const saveData = saveDataHandler?.onSave();
@@ -73,6 +100,12 @@ export abstract class Extension
     extensionIDs.add(id);
   }
 
+  /**
+   * Load function called 'internally' by the VM when loading a project.
+   * Will be invoked on an extension immediately after it is constructed.
+   * @param saved 
+   * @returns 
+   */
   private load(saved: { [Extension.SaveDataKey]: Record<string, any> }) {
     if (!saved) return;
     const { saveDataHandler, id } = this;
@@ -240,8 +273,6 @@ export abstract class Extension
    */
   defineTranslations?(): Translations<Extension<MenuDetails, Blocks>>;
 
-  protected saveDataHandler: ReturnType<typeof Extension.MakeSaveHandler> = undefined;
-
   private getInfo(): ExtensionMetadata {
     const { id, internal_blocks: blocks, internal_menus: menus, name, blockIconURI } = this;
     const info = { id, blocks, name, blockIconURI };
@@ -397,9 +428,18 @@ export abstract class Extension
 
   static GetKeyFromOpcode = (opcode: string) => opcode.replace(Extension.GetInternalKey(""), "");
 
-  protected static MakeSaveHandler<TSaveData>(hooks: { onSave: () => TSaveData, onLoad: (data: TSaveData) => void }) {
-    return hooks
-  }
+  /**
+   * @summary Utility function to assist in creating a (typesafe) saveDataHandler object that both:
+   * - writes out an object on save
+   * - does something with written out save data on load
+   * 
+   * @description This function really just enables you to get better type inference, 
+   * so if you know what you're doing, you can define your own object 
+   * (but be careful to make sure `onSave`'s return type matches `onLoad`'s argument type)
+   * @param hooks Object that defines the `onSave` and `onLoad`
+   * @returns Object with both `onSave` and `onLoad` methods (just like the input `hooks` argument)
+   */
+  protected static MakeSaveHandler = <TSaveData>(hooks: { onSave: () => TSaveData, onLoad: (data: TSaveData) => void }) => hooks;
 
   private static GetArgTranslationID = (blockname: string, index: number) => {
     return `${blockname}-arg${index}-default`;

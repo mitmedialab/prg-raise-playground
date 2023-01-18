@@ -1,5 +1,4 @@
 import { ArgumentType, BlockType, Language, Extension, ButtonBlock, Environment } from "$common";
-import Runtime from "$root/packages/scratch-vm/src/engine/runtime";
 
 type Details = {
   name: "Super Simple Typescript Extension!",
