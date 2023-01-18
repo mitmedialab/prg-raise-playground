@@ -35,7 +35,7 @@ export class BlockRunner<T extends AnyExtension> {
   createCompanion<TCompanion extends AnyExtension>(constructor: ExtensionConstructor<TCompanion>) {
     const { instance: { runtime } } = this;
     const args: PopulateCodeGenArgs = { name: "", blockIconURI: "", id: "" };
-    const companion = new constructor(runtime, args as CodeGenArgs);
+    const companion = new constructor(runtime as never, args as CodeGenArgs);
     Extension.TestInit(companion);
     return new BlockRunner(buildKeyBlockMap(companion), companion);
   }
