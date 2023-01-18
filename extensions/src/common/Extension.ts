@@ -74,6 +74,7 @@ export abstract class Extension
   }
 
   private load(saved: { [Extension.SaveDataKey]: Record<string, any> }) {
+    if (!saved) return;
     const { saveDataHandler, id } = this;
     const saveData = Extension.SaveDataKey in saved ? saved[Extension.SaveDataKey][id] : null;
     const valid = saveDataHandler && saveData;

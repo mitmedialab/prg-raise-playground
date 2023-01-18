@@ -809,7 +809,7 @@ class VirtualMachine extends EventEmitter {
                     performance.measure('scratch-vm-deserialize',
                         'scratch-vm-deserialize-start', 'scratch-vm-deserialize-end');
                 }
-                return this.installTargets(targets, extensions, true);
+                return this.installTargets(targets, extensions, true, projectJSON);
             });
     }
 
@@ -818,6 +818,7 @@ class VirtualMachine extends EventEmitter {
      * @param {Array.<Target>} targets - the targets to be installed
      * @param {ImportedExtensionsInfo} extensions - metadata about extensions used by these targets
      * @param {boolean} wholeProject - set to true if installing a whole project, as opposed to a single sprite.
+     * @param {object} fullJSON - the entire saved contents
      * @returns {Promise} resolved once targets have been installed
      */
     installTargets (targets, extensions, wholeProject, fullJSON) {

@@ -1,4 +1,5 @@
 import { ArgumentType, BlockType, Language, Extension, ButtonBlock, Environment } from "$common";
+import Runtime from "$root/packages/scratch-vm/src/engine/runtime";
 
 type Details = {
   name: "Super Simple Typescript Extension!",
@@ -18,7 +19,6 @@ export default class SimpleTypescript extends Extension<Details, {
   counterUI: ButtonBlock;
   colorUI: ButtonBlock;
 }> {
-
   count: number = 0;
 
   saveDataHandler = Extension.MakeSaveHandler({
