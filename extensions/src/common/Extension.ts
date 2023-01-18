@@ -67,7 +67,7 @@ export abstract class Extension
     openUI(runtime, { id, name, component: component.replace(".svelte", ""), label });
   }
 
-  constructor(runtime: Runtime, codeGenArgs?: CodeGenArgs) {
+  constructor(runtime: never, codeGenArgs?: CodeGenArgs) {
     const { name, id, blockIconURI } = codeGenArgs ?? this[Extension.InternalCodeGenArgsGetterKey]() as CodeGenArgs;
     this.name = name;
     this.id = id;
