@@ -1,6 +1,5 @@
 import { Extension } from "$common/Extension";
 import { Environment, ButtonBlock, ArgumentType, BlockType, BlockDefinitions } from "$common";
-import { DefaultDisplayDetails } from "$testing/defaults"; // You can ignore this!
 
 export default class ExtensionUnderTest extends Extension<DefaultDisplayDetails, {
   exampleCommand: (input: number) => void;
@@ -10,11 +9,12 @@ export default class ExtensionUnderTest extends Extension<DefaultDisplayDetails,
 
   init(env: Environment): void { }
 
-  defineBlocks(): BlockDefinitions<ExtensionUnderTest> {
+  defineBlocks(): ExtensionUnderTest["BlockDefinitions"] {
     return defineBlocksElsewhere(); // You can ignore this!
   }
-
 }
+
+import { DefaultDisplayDetails } from "$testing/defaults"; // You can ignore this!
 
 const defineBlocksElsewhere = (): BlockDefinitions<ExtensionUnderTest> => ({
   exampleCommand: {
