@@ -1,8 +1,6 @@
 import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, RuntimeEvent } from "$common";
 
 import Video from '../../../packages/scratch-vm/src/io/video';
-// import Runtime from '../../../packages/scratch-vm/src/engine/runtime';
-// import type RenderedTarget from '../../../packages/scratch-vm/src/sprites/rendered-target';
 import * as handpose from '../../../packages/scratch-vm/node_modules/@tensorflow-models/handpose';
 
 /**
@@ -22,7 +20,7 @@ const VideoState = {
 };
 
 /**
- * 
+ * Contains the details about the Hand Sensing extension
  */
 type Details = {
   name: "Hand Sensing",
@@ -39,7 +37,7 @@ type Details = {
 };
 
 /**
- * 
+ * Contains descriptions of the blocks of the Hand Sensing extension
  */
 type Blocks = {
   goToHandPartBlock(handPart: string, fingerPart: number): void; 
@@ -51,14 +49,31 @@ type Blocks = {
 
 export default class PoseHand extends Extension<Details, Blocks> {
   /**
-   * @summary A field to demonstrate how Typescript Class fields work
-   * @link https://www.typescriptlang.org/docs/handbook/2/classes.html#fields
+   * The state of where the hand and its parts are estimated to be
    */
-  
   handPoseState;
+
+  /**
+   * Flag to determine if the extension has been installed before
+   * @type {boolean}
+   */
   firstInstall: boolean;
+
+  /**
+   * The hand model from handpose
+   */
   _handModel;
+
+  /**
+   * The current video state
+   * @type {number}
+   */
   globalVideoState: number;
+
+  /**
+   * The current transparency of the video
+   * @type {number}
+   */
   globalVideoTransparency: number;
 
   /**
@@ -70,23 +85,17 @@ export default class PoseHand extends Extension<Details, Blocks> {
     this.runtime = env.runtime;
     const EXTENSION_ID = 'PoseHand';
 
-    /*
+    /* Unused but possibly needed in the future
     this.runtime.registerPeripheralExtension(EXTENSION_ID, this);
     this.runtime.connectPeripheral(EXTENSION_ID, 0);
     this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
     */
 
-    /**
-     * A flag to determine if this extension has been installed in a project.
-     * It is set to false the first time getInfo is run.
-     * @type {boolean}
-     */
     this.firstInstall = true;
     
     if (this.runtime.ioDevices) {
-      //console.log('check 1');
-        this.runtime.on(RuntimeEvent.ProjectLoaded, this.projectStarted.bind(this));
-        this.runtime.on(RuntimeEvent.ProjectRunStart, this.reset.bind(this));
+        this.runtime.on(RuntimeEvent.ProjectLoaded, this.projectStarted.bind(this)); // May be unnecessary
+        this.runtime.on(RuntimeEvent.ProjectRunStart, this.reset.bind(this)); // May be unnecessary, see reset() definition
         this._loop();
     }
   }
@@ -100,6 +109,13 @@ export default class PoseHand extends Extension<Details, Blocks> {
       return [480, 360];
   }
 
+  /**
+   * Converts the coordinates from the hand pose estimate to Scratch coordinates
+   * @param x 
+   * @param y
+   * @param z
+   * @returns enum
+   */
   tfCoordsToScratch({x, y, z}) {
     return {x: x - 250, y: 200 - y};
   }
@@ -114,13 +130,13 @@ export default class PoseHand extends Extension<Details, Blocks> {
   }
 
   /**
-   * init() does something with this? Don't know if this is important to keep still.
+   * init() binds to this function, but it is never called, so this may be unimportant
    */
   reset () {
   }
 
   /**
-   * Checks if something is connected ???
+   * Checks if the hand pose estimate is ready to be used
    * @returns {boolean} true if connected, false if not connected
    */
   isConnected() {
@@ -128,7 +144,9 @@ export default class PoseHand extends Extension<Details, Blocks> {
   }
 
   /**
-   * 
+   * Runs for the entire time the extension is running. Gets information about the video frame.
+   * Estimates where the hand is on the video frame. Creates a delay to prevent this function from constantly running,
+   * so as to prevent the entire program from slowing down.
    */
   async _loop () {
     while (true) {
@@ -139,7 +157,6 @@ export default class PoseHand extends Extension<Details, Blocks> {
 
         const time = +new Date();
         if (frame) {
-          //console.log('check 2');
             this.handPoseState = await this.estimateHandPoseOnImage(frame);
             /*
             if (this.isConnected()) {
@@ -155,6 +172,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
   }
   
   /**
+   * Estimates where the hand is on the video frame.
    * @param imageElement
    * @returns {Promise<AnnotatedPrediction[]>}
    */
@@ -165,16 +183,19 @@ export default class PoseHand extends Extension<Details, Blocks> {
     });
   }
 
+  /**
+   * Gets the hand model from handpose
+   * @returns
+   */
   async getLoadedHandModel() {
     if (!this._handModel) {
-        //console.log('check 3');
         this._handModel = await handpose.load();
     }
     return this._handModel;
   }
 
   /**
-   * Turns the video camera off/on/on and flipped
+   * Turns the video camera off/on/on and flipped. This is called in the operation of videoToggleBlock
    * @param state 
    */
   videoToggle (state: number) {
@@ -189,7 +210,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
   }
 
   /**
-   * 
+   * Sets the video's transparency. This is called in the operation of setVideoTransparencyBlock
    * @param transparency 
    */
   setVideoTransparency (transparency: number) {
@@ -198,13 +219,13 @@ export default class PoseHand extends Extension<Details, Blocks> {
   }
 
   /**
-   * 
-   * @returns  
+   * Sets up the default settings for the extension. Gives information related to each of the extension's blocks
+   * @returns The extension's blocks
    */
   defineBlocks(): PoseHand["BlockDefinitions"] {
     
     /**
-     * Sets up the extension's video
+     * Sets up the extension's default video settings
      */
     if (this.firstInstall) {
       this.globalVideoState = VideoState.ON;
@@ -214,13 +235,22 @@ export default class PoseHand extends Extension<Details, Blocks> {
       this._handModel = null;
     }
     
+    /**
+     * The options for each finger
+     * @type {Array}
+     */
     const fingerOptions = 
     [{text: "thumb", value: "thumb"}, {text: "index finger", value: "indexFinger"},
     {text: "middle finger", value: "middleFinger"}, {text: "ring finger", value: "ringFinger"}, {text: "pinky finger", value: "pinky"}];
 
+    /**
+     * The options for the part of a finger
+     * @type {Array}
+     */
     const partOfFingerOptions = [{text: "tip", value: 3}, {text: "first knuckle", value: 2},
     {text: "second knuckle", value: 1}, {text: "base", value: 0}];
 
+    
     type DefineGoToHandPart = DefineBlock<PoseHand, Blocks["goToHandPartBlock"]>;
     const goToHandPartBlock: DefineGoToHandPart = () => ({
       type: BlockType.Command,
@@ -228,7 +258,6 @@ export default class PoseHand extends Extension<Details, Blocks> {
               options: {acceptsReporters: true, 
                         items: fingerOptions, 
                         handler: (part: string) => {
-                          console.log(part);
                           if (["thumb","indexFinger","middleFinger","ringFinger","pinky"].indexOf(part) != -1){
                             return part;
                           }
@@ -246,11 +275,8 @@ export default class PoseHand extends Extension<Details, Blocks> {
              }],
       text: (handPart: string, fingerPart: number) => `go to ${handPart} ${fingerPart}`,
       operation: (handPart, fingerPart, util) => { 
-
-        // console.log(this.handPoseState);
         
         if (this.isConnected()) {
-          //console.log('last check');
           const [x, y, z] = this.handPoseState[0].annotations[handPart][fingerPart];
           const {x: scratchX, y: scratchY} = this.tfCoordsToScratch({x, y, z});
           (util.target as any).setXY(scratchX, scratchY, false); 
