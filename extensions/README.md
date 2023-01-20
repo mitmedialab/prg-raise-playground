@@ -135,7 +135,30 @@ In addition to identifying bugs during an initial implementation or after a refa
 
 Extension test suites will make use of the `createTestSuite` utility function implemented in `extensions/testing/index.ts` (available under the alias `$testing`).
 
+// index.ts
+
+// Extension definition
 https://github.com/mitmedialab/prg-extension-boilerplate/blob/872343812e6ebdfb9c1e2a5b682a6bfbf3a3d5eb/extensions/src/common/documentation/testing/index.ts#L2-L16
+
+// Block definitions
+https://github.com/mitmedialab/prg-extension-boilerplate/blob/872343812e6ebdfb9c1e2a5b682a6bfbf3a3d5eb/extensions/src/common/documentation/testing/index.ts#L22-L41
+
+// index.test.ts
+
+// Top of file
+https://github.com/mitmedialab/prg-extension-boilerplate/blob/f57f7233cd19e3d9a0892e8befd99235317ba490/extensions/src/common/documentation/testing/index.test.ts#L2-L19
+
+// Simple example unit
+https://github.com/mitmedialab/prg-extension-boilerplate/blob/f57f7233cd19e3d9a0892e8befd99235317ba490/extensions/src/common/documentation/testing/index.test.ts#L26-L44
+
+// Complex example unit
+https://github.com/mitmedialab/prg-extension-boilerplate/blob/f57f7233cd19e3d9a0892e8befd99235317ba490/extensions/src/common/documentation/testing/index.test.ts#L48-L118
+
+// ui test unit
+https://github.com/mitmedialab/prg-extension-boilerplate/blob/f57f7233cd19e3d9a0892e8befd99235317ba490/extensions/src/common/documentation/testing/index.test.ts#L121-L141
+
+// integration 
+https://github.com/mitmedialab/prg-extension-boilerplate/blob/f57f7233cd19e3d9a0892e8befd99235317ba490/extensions/src/common/documentation/testing/index.test.ts#L145-L184
 
 For example:
 
