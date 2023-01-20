@@ -135,6 +135,8 @@ In addition to identifying bugs during an initial implementation or after a refa
 
 Extension test suites will make use of the `createTestSuite` utility function implemented in `extensions/testing/index.ts` (available under the alias `$testing`).
 
+https://github.com/mitmedialab/prg-extension-boilerplate/blob/dev/extensions/src/common/documentation/testing/index.ts#L2-L16
+
 For example:
 
 ```ts
@@ -156,6 +158,8 @@ createTestSuite({ Extension, __dirname },
 As is clear from the second argument of the `createTestSuite` function, there are two different types of tests:
 
 ### Unit Tests
+
+
 
 Specifically for extensions, `unit tests` test the operation of a single block. 
 
