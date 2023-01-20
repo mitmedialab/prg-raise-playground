@@ -36,7 +36,6 @@ const builtinExtensions = {
     teachableMachine: () => require('../extensions/scratch3_teachable_machine'),
     textClassification: () => require('../extensions/scratch3_text_classification'),
     poseFace: () => require('../extensions/scratch3_pose_face'),
-    poseHand: () => require('../extensions/scratch3_pose_hand'),
     poseBody: () => require('../extensions/scratch3_pose_body')
 };
 

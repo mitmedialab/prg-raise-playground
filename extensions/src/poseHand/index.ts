@@ -1,7 +1,7 @@
 import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, RuntimeEvent } from "$common";
 
 import Video from '../../../packages/scratch-vm/src/io/video';
-import * as handpose from '../../../packages/scratch-vm/node_modules/@tensorflow-models/handpose';
+import * as handpose from '../../../packages/scratch-vm/node_modules/@tensorflow-models/handpose/dist';
 
 /**
  * States the video sensing activity can be set to.
@@ -25,15 +25,8 @@ const VideoState = {
 type Details = {
   name: "Hand Sensing",
   description: "Sense hand movement with the camera.",
-  /**
-   * IMPORTANT! Place your icon image (typically a png) in the same directory as this index.ts file
-   */
-  iconURL: "Typescript_logo.png",  //REPLACE WITH ORIGINAL ICON
-  /**
-   * IMPORTANT! Place your inset icon image (typically an svg) in the same directory as this index.ts file
-   * NOTE: This icon will also appear on all of your extension's blocks
-   */
-  insetIconURL: "typescript-logo.svg"   //REPLACE WITH ORIGINAL INSET ICON
+  iconURL: "pose-hand.png",  
+  insetIconURL: "pose-hand-small-3.svg"
 };
 
 /**
