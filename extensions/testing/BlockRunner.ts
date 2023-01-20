@@ -7,7 +7,7 @@ import { getEngineFile } from "./utils";
 export class BlockRunner<T extends AnyExtension> {
   private blockData: ExtensionBlockMetadata[];
 
-  constructor(private map: KeyToBlockIndexMap, private instance: T) {
+  constructor(private map: KeyToBlockIndexMap, public instance: T) {
     this.blockData = Extension.TestGetBlocks(instance);
   }
 
@@ -18,7 +18,7 @@ export class BlockRunner<T extends AnyExtension> {
   }
 
   async invoke<K extends BlockKey<T>>(key: K, ...input: InputArray<T, K>):
-    Promise<{ output: BlocksInfo<T>[K], renderedUI?: RenderedUI }> {
+    Promise<{ output: ReturnType<BlocksInfo<T>[K]["operation"]>, ui?: RenderedUI }> {
     const { instance } = this;
     const { runtime } = instance;
     const { forTest } = runtime as RuntimeForTest<T>;
@@ -29,7 +29,7 @@ export class BlockRunner<T extends AnyExtension> {
 
     const output = await Promise.resolve(blockFunction(...args));
     const renderedUI = forTest.UIPromise ? await forTest.UIPromise : undefined;
-    return { output, renderedUI };
+    return { output, ui: renderedUI };
   }
 
   createCompanion<TCompanion extends AnyExtension>(constructor: ExtensionConstructor<TCompanion>) {

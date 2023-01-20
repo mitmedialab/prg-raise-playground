@@ -90,17 +90,16 @@ const processUnitTest = <T extends AnyExtension, Key extends BlockKey<T>>(
 
   if (isReady) await waitForCondition(() => isReady(instance), checkIsReadyRate);
 
-  await before?.bind(testHelper)?.(instance);
+  await before?.({ extension: instance, testHelper });
 
   const runner = new BlockRunner(map, instance);
-  const { output, renderedUI } = await runner.invoke(key, ...getInputArray<T, Key>(input));
+  const { output: result, ui } = await runner.invoke(key, ...getInputArray<T, Key>(input));
 
   const expectsResult = expected !== undefined;
 
-  if (expectsResult) expect(output).toBe(expected);
+  if (expectsResult) expect(result).toBe(expected);
 
-  const afterArgs = expectsResult ? [instance, output, renderedUI] : [instance, renderedUI];
-  await after?.bind(testHelper)?.(...afterArgs);
+  await after?.({ extension: instance, result, ui, testHelper });
 });
 
 const processIntegrationTest = <T extends AnyExtension>(
@@ -110,8 +109,8 @@ const processIntegrationTest = <T extends AnyExtension>(
   map: KeyToBlockIndexMap
 ) => test(name, async () => {
   const instance: T = getInstance(details);
-  const blockrunner = new BlockRunner(map, instance);
-  await testCase({ blockrunner, testHelper: details.testHelper });
+  const blockRunner = new BlockRunner(map, instance);
+  await testCase({ extension: instance, blockRunner, testHelper: details.testHelper });
 });
 
 const toKeyToBlockMap = (map: KeyToBlockIndexMap, { opcode }: ExtensionBlockMetadata, index: number) =>
@@ -140,7 +139,7 @@ export const createTestSuite = <T extends AnyExtension>(
   const testHelper: TestHelper = {
     expect,
     fireEvent,
-    updateInputValue: async (element, value) => fireEvent.input(element, { target: { value } })
+    updateHTMLInputValue: async (element, value) => fireEvent.input(element, { target: { value } })
   };
 
   const keyToBlockMap = getKeyBlockMap({ Extension, directory, key: undefined, testHelper });

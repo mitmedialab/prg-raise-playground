@@ -405,7 +405,7 @@ export type ExtensionMenuDisplayDetails = {
   implementationLanguage?: ValueOf<typeof Language>;
 } & Partial<Record<ValueOf<typeof Language>, { name: string, description: string }>>
 
-export type DefineBlock<TExt extends BaseExtension, TOp extends BlockOperation> = ((extension: Extension<any, any>) => Block<TExt, TOp>) | Block<TExt, TOp>;
+export type DefineBlock<TExt extends BaseExtension, TOp extends BlockOperation> = ((extension: TExt) => Block<TExt, TOp>) | Block<TExt, TOp>;
 
 export type ExtensionBlocks = Record<string, BlockOperation>;
 
