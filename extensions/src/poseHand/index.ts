@@ -25,7 +25,7 @@ const VideoState = {
 type Details = {
   name: "Hand Sensing",
   description: "Sense hand movement with the camera.",
-  iconURL: "pose-hand.png",  
+  iconURL: "pose-hand.png",
   insetIconURL: "pose-hand-small-3.svg"
 };
 
@@ -33,9 +33,9 @@ type Details = {
  * Contains descriptions of the blocks of the Hand Sensing extension
  */
 type Blocks = {
-  goToHandPartBlock(handPart: string, fingerPart: number): void; 
+  goToHandPartBlock(handPart: string, fingerPart: number): void;
   // these video blocks are present in a few different extensions, perhaps making a file just for these?
-  videoToggleBlock(state: number): void;   
+  videoToggleBlock(state: number): void;
   setVideoTransparencyBlock(transparency: number): void;
 };
 
@@ -85,11 +85,11 @@ export default class PoseHand extends Extension<Details, Blocks> {
     */
 
     this.firstInstall = true;
-    
+
     if (this.runtime.ioDevices) {
-        this.runtime.on(RuntimeEvent.ProjectLoaded, this.projectStarted.bind(this)); // May be unnecessary
-        this.runtime.on(RuntimeEvent.ProjectRunStart, this.reset.bind(this)); // May be unnecessary, see reset() definition
-        this._loop();
+      this.runtime.on(RuntimeEvent.ProjectLoaded, this.projectStarted.bind(this)); // May be unnecessary
+      this.runtime.on(RuntimeEvent.ProjectRunStart, this.reset.bind(this)); // May be unnecessary, see reset() definition
+      this._loop();
     }
   }
 
@@ -98,8 +98,8 @@ export default class PoseHand extends Extension<Details, Blocks> {
    * sample canvas.
    * @type {Array.<number>}
    */
-  static get DIMENSIONS () {
-      return [480, 360];
+  static get DIMENSIONS() {
+    return [480, 360];
   }
 
   /**
@@ -109,15 +109,15 @@ export default class PoseHand extends Extension<Details, Blocks> {
    * @param z
    * @returns enum
    */
-  tfCoordsToScratch({x, y, z}) {
-    return {x: x - 250, y: 200 - y};
+  tfCoordsToScratch({ x, y, z }) {
+    return { x: x - 250, y: 200 - y };
   }
 
   /**
    * Get the latest values for video transparency and state,
    * and set the video device to use them.
    */
-  projectStarted () {
+  projectStarted() {
     this.setVideoTransparency(this.globalVideoTransparency);
     this.videoToggle(this.globalVideoState);
   }
@@ -125,7 +125,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
   /**
    * init() binds to this function, but it is never called, so this may be unimportant
    */
-  reset () {
+  reset() {
   }
 
   /**
@@ -141,29 +141,29 @@ export default class PoseHand extends Extension<Details, Blocks> {
    * Estimates where the hand is on the video frame. Creates a delay to prevent this function from constantly running,
    * so as to prevent the entire program from slowing down.
    */
-  async _loop () {
+  async _loop() {
     while (true) {
-        const frame = this.runtime.ioDevices.video.getFrame({
-            format: Video.FORMAT_IMAGE_DATA,
-            dimensions: PoseHand.DIMENSIONS
-        });
+      const frame = this.runtime.ioDevices.video.getFrame({
+        format: Video.FORMAT_IMAGE_DATA,
+        dimensions: PoseHand.DIMENSIONS
+      });
 
-        const time = +new Date();
-        if (frame) {
-            this.handPoseState = await this.estimateHandPoseOnImage(frame);
-            /*
-            if (this.isConnected()) {
-                this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
-            } else {
-                this.runtime.emit(this.runtime.constructor.PERIPHERAL_DISCONNECTED);
-            }
-            */
+      const time = +new Date();
+      if (frame) {
+        this.handPoseState = await this.estimateHandPoseOnImage(frame);
+        /*
+        if (this.isConnected()) {
+            this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
+        } else {
+            this.runtime.emit(this.runtime.constructor.PERIPHERAL_DISCONNECTED);
         }
-        const estimateThrottleTimeout = (+new Date() - time) / 4;
-        await new Promise(r => setTimeout(r, estimateThrottleTimeout));
+        */
+      }
+      const estimateThrottleTimeout = (+new Date() - time) / 4;
+      await new Promise(r => setTimeout(r, estimateThrottleTimeout));
     }
   }
-  
+
   /**
    * Estimates where the hand is on the video frame.
    * @param imageElement
@@ -172,7 +172,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
   async estimateHandPoseOnImage(imageElement) {
     const handModel = await this.getLoadedHandModel();
     return await handModel.estimateHands(imageElement, {
-        flipHorizontal: false
+      flipHorizontal: false
     });
   }
 
@@ -182,7 +182,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
    */
   async getLoadedHandModel() {
     if (!this._handModel) {
-        this._handModel = await handpose.load();
+      this._handModel = await handpose.load();
     }
     return this._handModel;
   }
@@ -191,10 +191,10 @@ export default class PoseHand extends Extension<Details, Blocks> {
    * Turns the video camera off/on/on and flipped. This is called in the operation of videoToggleBlock
    * @param state 
    */
-  videoToggle (state: number) {
+  videoToggle(state: number) {
     if (state === VideoState.OFF) {
       this.runtime.ioDevices.video.disableVideo();
-    } 
+    }
     else {
       this.runtime.ioDevices.video.enableVideo();
       // Mirror if state is ON. Do not mirror if state is ON_FLIPPED.
@@ -206,8 +206,8 @@ export default class PoseHand extends Extension<Details, Blocks> {
    * Sets the video's transparency. This is called in the operation of setVideoTransparencyBlock
    * @param transparency 
    */
-  setVideoTransparency (transparency: number) {
-    const trans = Math.max(Math.min(transparency,100), 0);
+  setVideoTransparency(transparency: number) {
+    const trans = Math.max(Math.min(transparency, 100), 0);
     this.runtime.ioDevices.video.setPreviewGhost(trans);
   }
 
@@ -216,7 +216,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
    * @returns The extension's blocks
    */
   defineBlocks(): PoseHand["BlockDefinitions"] {
-    
+
     /**
      * Sets up the extension's default video settings
      */
@@ -227,52 +227,56 @@ export default class PoseHand extends Extension<Details, Blocks> {
       this.firstInstall = false;
       this._handModel = null;
     }
-    
+
     /**
      * The options for each finger
      * @type {Array}
      */
-    const fingerOptions = 
-    [{text: "thumb", value: "thumb"}, {text: "index finger", value: "indexFinger"},
-    {text: "middle finger", value: "middleFinger"}, {text: "ring finger", value: "ringFinger"}, {text: "pinky finger", value: "pinky"}];
+    const fingerOptions =
+      [{ text: "thumb", value: "thumb" }, { text: "index finger", value: "indexFinger" },
+      { text: "middle finger", value: "middleFinger" }, { text: "ring finger", value: "ringFinger" }, { text: "pinky finger", value: "pinky" }];
 
     /**
      * The options for the part of a finger
      * @type {Array}
      */
-    const partOfFingerOptions = [{text: "tip", value: 3}, {text: "first knuckle", value: 2},
-    {text: "second knuckle", value: 1}, {text: "base", value: 0}];
+    const partOfFingerOptions = [{ text: "tip", value: 3 }, { text: "first knuckle", value: 2 },
+    { text: "second knuckle", value: 1 }, { text: "base", value: 0 }];
 
-    
+
     type DefineGoToHandPart = DefineBlock<PoseHand, Blocks["goToHandPartBlock"]>;
     const goToHandPartBlock: DefineGoToHandPart = () => ({
       type: BlockType.Command,
-      args: [{type: ArgumentType.String, 
-              options: {acceptsReporters: true, 
-                        items: fingerOptions, 
-                        handler: (part: string) => {
-                          if (["thumb","indexFinger","middleFinger","ringFinger","pinky"].indexOf(part) != -1){
-                            return part;
-                          }
-                          else return "thumb";
-                        }
-                       }
-              }, 
-             {type: ArgumentType.Number, 
-              options: {acceptsReporters: true, 
-                        items: partOfFingerOptions, 
-                        handler: (part: number) => {
-                          return Math.max(Math.min(part, 3), 0)
-                        }
-                       }
-             }],
+      args: [{
+        type: ArgumentType.String,
+        options: {
+          acceptsReporters: true,
+          items: fingerOptions,
+          handler: (part: string) => {
+            if (["thumb", "indexFinger", "middleFinger", "ringFinger", "pinky"].indexOf(part) != -1) {
+              return part;
+            }
+            else return "thumb";
+          }
+        }
+      },
+      {
+        type: ArgumentType.Number,
+        options: {
+          acceptsReporters: true,
+          items: partOfFingerOptions,
+          handler: (part: number) => {
+            return Math.max(Math.min(part, 3), 0)
+          }
+        }
+      }],
       text: (handPart: string, fingerPart: number) => `go to ${handPart} ${fingerPart}`,
-      operation: (handPart, fingerPart, util) => { 
-        
+      operation: (handPart, fingerPart, util) => {
+
         if (this.isConnected()) {
           const [x, y, z] = this.handPoseState[0].annotations[handPart][fingerPart];
-          const {x: scratchX, y: scratchY} = this.tfCoordsToScratch({x, y, z});
-          (util.target as any).setXY(scratchX, scratchY, false); 
+          const { x: scratchX, y: scratchY } = this.tfCoordsToScratch({ x, y, z });
+          (util.target as any).setXY(scratchX, scratchY, false);
         }
       }
     });
@@ -280,14 +284,16 @@ export default class PoseHand extends Extension<Details, Blocks> {
     type DefineVideoToggle = DefineBlock<PoseHand, Blocks["videoToggleBlock"]>;
     const videoToggleBlock: DefineVideoToggle = () => ({
       type: BlockType.Command,
-      arg: {type: ArgumentType.Number, 
-            options: {acceptsReporters: true, 
-                      items: [{text: 'off', value: 0}, {text: 'on', value: 1}, {text: 'on and flipped', value: 2}],
-                      handler: (x: number) => {
-                        return Math.min(Math.max(x, 0), 2);
-                      }
-                     }
-           },
+      arg: {
+        type: ArgumentType.Number,
+        options: {
+          acceptsReporters: true,
+          items: [{ text: 'off', value: 0 }, { text: 'on', value: 1 }, { text: 'on and flipped', value: 2 }],
+          handler: (x: number) => {
+            return Math.min(Math.max(x, 0), 2);
+          }
+        }
+      },
       text: (state: number) => `turn video ${state}`,
       operation: (state) => {
         this.videoToggle(state);
@@ -297,7 +303,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
     type DefineSetVideoTransparency = DefineBlock<PoseHand, Blocks["setVideoTransparencyBlock"]>;
     const setVideoTransparencyBlock: DefineSetVideoTransparency = () => ({
       type: BlockType.Command,
-      arg: {type: ArgumentType.Number, defaultValue: 50},
+      arg: { type: ArgumentType.Number, defaultValue: 50 },
       text: (transparency) => `set video transparency to ${transparency}`,
       operation: (transparency) => {
         this.setVideoTransparency(transparency);
