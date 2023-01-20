@@ -18,6 +18,7 @@ export default class ExtensionUnderTest extends Extension<DefaultDisplayDetails,
 
 import { DefaultDisplayDetails } from "$testing/defaults";
 
+// Snippet START
 const defineBlocksElsewhere = (): BlockDefinitions<ExtensionUnderTest> => ({
   exampleCommand: {
     type: BlockType.Command,
@@ -29,11 +30,13 @@ const defineBlocksElsewhere = (): BlockDefinitions<ExtensionUnderTest> => ({
     type: BlockType.Reporter,
     text: () => "",
     arg: ArgumentType.String,
-    operation: () => "",
+    // This is the same dummy value used by the tests
+    operation: () => "Whatever you expect to be the output, given the input",
   },
   exampleButtonThatOpensUI: (ext) => ({
     type: BlockType.Button,
     text: "",
-    operation: () => { ext.openUI("Anything") }
+    operation: () => { ext.openUI("Test") }
   })
 })
+// Snippet END

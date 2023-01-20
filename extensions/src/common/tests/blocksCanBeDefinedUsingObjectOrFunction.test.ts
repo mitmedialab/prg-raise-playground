@@ -37,7 +37,7 @@ createTestSuite({ Extension: TestExtension, __dirname }, {
     }
   },
   integrationTests: {
-    confirmInfoMatches: ({ blockrunner, testHelper }) => {
+    confirmInfoMatches: ({ blockRunner: blockrunner, testHelper }) => {
       const { opcode: opcodeA, ...a } = blockrunner.getBlockMetaDataByKey("a");
       const { opcode: opcodeB, ...b } = blockrunner.getBlockMetaDataByKey("b");
       testHelper.expect(a).toEqual(b);
