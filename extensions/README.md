@@ -135,8 +135,7 @@ In addition to identifying bugs during an initial implementation or after a refa
 
 Extension test suites will make use of the `createTestSuite` utility function implemented in `extensions/testing/index.ts` (available under the alias `$testing`).
 
-[https://github.com/mitmedialab/prg-extension-boilerplate/blob/dev/extensions/src/common/documentation/testing/index.ts#L2-L16
-](https://github.com/mitmedialab/prg-extension-boilerplate/blob/872343812e6ebdfb9c1e2a5b682a6bfbf3a3d5eb/extensions/src/common/documentation/testing/index.ts#L2-L16)
+https://github.com/mitmedialab/prg-extension-boilerplate/blob/872343812e6ebdfb9c1e2a5b682a6bfbf3a3d5eb/extensions/src/common/documentation/testing/index.ts#L2-L16
 
 For example:
 
