@@ -123,7 +123,7 @@ const extractSnippet = async (query: string, containgFile: string): Promise<stri
   )
 }
 
-const process = async (pathToREADME: string): Promise<{ order: number, content: string }> => {
+const process = async (pathToREADME: string): Promise<{ order: number, content: string, pathToREADME: string }> => {
   await init;
 
   const lines = fs.readFileSync(pathToREADME, { encoding: "utf8" }).split("\n");
@@ -149,7 +149,7 @@ const process = async (pathToREADME: string): Promise<{ order: number, content: 
     lines[index] = await extractSnippet(url, pathToREADME);
   }
 
-  return { order, content: lines.filter(line => line !== deleteLineFlag).join("\n") };
+  return { order, content: lines.filter(line => line !== deleteLineFlag).join("\n"), pathToREADME };
 }
 
 const documentationRoot = path.resolve(__dirname, "..");
@@ -157,7 +157,7 @@ const srcDir = path.resolve(documentationRoot, "src");
 const extensionsRoot = path.resolve(documentationRoot, "..");
 
 const fileToEdit = path.join(extensionsRoot, "README.md");
-const generatedGuard = "Generated Content Guard";
+const generatedGuard = "GeneratedContentGuard";
 
 const invalidNames = [".", ".."];
 
@@ -182,7 +182,20 @@ const sortEntries = (entries: Entries) => {
 }
 
 const addIsGeneratedWarning = (entries: Entries) => {
-  return entries;
+  const warning = "\n> NOTE: This is a generated README section, so no edits you make to it in this file will be saved. \nIf you want to edit it, please go to ";
+  const repoURL = "https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev";
+  return entries.map(({ content, pathToREADME, order }) => {
+    const lines = content.split("\n");
+    const relativePath = path.join("extension", path.relative(extensionsRoot, pathToREADME));
+    lines.splice(1, 0, warning + `[${relativePath}](${path.join(repoURL, relativePath)})`);
+    return { pathToREADME, order, content: lines.join("\n") }
+  });
+}
+
+const createTOC = (entries: Entries) => {
+  entries.map(({ content }) => {
+
+  });
 }
 
 const concat = (entries: Entries) => entries.map(({ content }) => content).join("\n\n");
@@ -196,15 +209,20 @@ Promise.all(readMes.map(process))
     const linesToEdit = fs.readFileSync(fileToEdit, fileOptions).split("\n");
 
     const guards = linesToEdit
-      .filter(line => line.includes(generatedGuard))
-      .map((value, index) => ({ value, index }));
+      .map((value, index) => ({ value, index }))
+      .filter(({ value }) => value.includes(generatedGuard));
 
     if (guards.length !== 2) {
       throw new Error(`Found ${guards.length} code generation guards, but expected 2 (one for start, one for end).`)
     }
 
     const [guardStart, guardEnd] = guards;
-    const updates = [...linesToEdit.slice(0, guardStart.index), content, ...linesToEdit.slice(guardEnd.index)];
 
-    console.log(updates);
+    const updates = [
+      ...linesToEdit.slice(0, guardStart.index + 1),
+      content,
+      ...linesToEdit.slice(guardEnd.index)
+    ].join("\n");
+
+    fs.writeFileSync(fileToEdit, updates, fileOptions);
   });
