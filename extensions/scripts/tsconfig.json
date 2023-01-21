@@ -1,0 +1,13 @@
+{
+  "extends": "../paths.tsconfig.json",
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "CommonJS",
+    "noImplicitAny": false,
+    "esModuleInterop": true,
+    "allowJs": false,
+    "moduleResolution": "Node",
+    "skipLibCheck": true,
+  },
+  "include": ["**/*.ts", "../../scripts/**/*.ts"],
+}

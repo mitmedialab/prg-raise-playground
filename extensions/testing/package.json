@@ -1,0 +1,22 @@
+{
+  "name": "extensions-testing",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.ts",
+  "type": "module",
+  "scripts": {
+    "test": "jest --verbose"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@jest/globals": "^29.3.1",
+    "@testing-library/svelte": "^3.2.2",
+    "@types/jest": "^29.2.4",
+    "jest": "^29.3.1",
+    "jest-environment-jsdom": "^29.3.1",
+    "svelte-jester": "^2.3.2",
+    "svelte-preprocess": "^5.0.0",
+    "ts-jest": "^29.0.3"
+  }
+}

@@ -1,6 +1,6 @@
-/* CODE GEN GUARD START: Please do not edit code within guards */
-import generatedDetails from './generated/details.generated';
-/* CODE GEN GUARD END: Please do not edit code within guards */
+/* DO NOT REMOVE */
+import generatedDetails from '../../../generated/details.generated';
+/* DO NOT REMOVE */
 
 import React from 'react';
 import { FormattedMessage } from 'react-intl';
@@ -73,9 +73,9 @@ import gdxforConnectionIconURL from './gdxfor/gdxfor-illustration.svg';
 import gdxforConnectionSmallIconURL from './gdxfor/gdxfor-small.svg';
 
 export default [
-    /* CODE GEN GUARD START: Please do not edit code within guards */
+    /* DO NOT REMOVE */
     ...generatedDetails,
-    /* CODE GEN GUARD END: Please do not edit code within guards */
+    /* DO NOT REMOVE */
     {
         name: (
             <FormattedMessage
