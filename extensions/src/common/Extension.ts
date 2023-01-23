@@ -4,7 +4,7 @@ import Cast from '$scratch-vm/util/cast';
 //import * as formatMessage from 'format-message';
 import Runtime from "$scratch-vm/engine/runtime";
 import { openUI, registerButtonCallback } from './ui';
-import { isFunction, isString } from './utils';
+import { identity, isFunction, isString } from './utils';
 import { isCustomArgumentHack, processCustomArgumentHack } from './customArguments';
 import { customArgumentCheck, customArgumentFlag } from './globals';
 import CustomArgumentManager, { ArgumentEntry } from './customArguments/CustomArgumentManager';
@@ -378,7 +378,7 @@ export abstract class Extension
 
         const casted = uncasted.map((param: any, index) => {
           const type = Extension.GetArgumentType(args[index]);
-          const handler = handlers[index] ?? ((x) => x);
+          const handler = handlers[index] ?? identity;
 
           return type !== ArgumentType.Custom
             ? Extension.CastToType(type, handler(param))

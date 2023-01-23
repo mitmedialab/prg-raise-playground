@@ -74,3 +74,5 @@ export const copyTo = <TTarget extends object, TSource extends { [k in keyof TTa
     target[key] = source[key]
   }
 }
+
+export const identity = (x: any) => x;
