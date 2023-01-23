@@ -70,7 +70,7 @@ export default class TypeScriptFrameworkExample extends Extension<DisplayDetails
   state: number = 0;
 
   saveDataHandler = new SaveDataHandler({
-    extension: TypeScriptFrameworkExample,
+    Extension: TypeScriptFrameworkExample,
     onSave: ({ collection, state }) => ({ collection, state }),
     onLoad: (target, source) => copyTo({ target, source })
   });

@@ -11,8 +11,8 @@ createTestSuite({ Extension, __dirname }, {
       const input = Animal.Tiger;
       return {
         input,
-        before: (extension) => { startingCount = extension.collection.length },
-        after: ({ collection }) => {
+        before: ({ extension: { collection } }) => { startingCount = collection.length },
+        after: ({ extension: { collection } }) => {
           expect(collection.length).toBe(startingCount + 1);
           const animal = collection[startingCount];
           const value = getValueFromMenuItem(animal);
@@ -23,11 +23,11 @@ createTestSuite({ Extension, __dirname }, {
     selectAngle: {
       input: 3,
       expected: 3,
-      after(_, result) { this.expect(result).toBe(3) }
+      after({ result, testHelper: { expect } }) { expect(result).toBe(3) }
     }
   },
   integrationTests: {
-    multipliesGiveSameResult: async ({ blockrunner, testHelper: { expect } }) => {
+    multipliesGiveSameResult: async ({ blockRunner: blockrunner, testHelper: { expect } }) => {
       const left = 4;
       const right = 5;
       const { output: outputFromSelf } = await blockrunner.invoke("multiplyUsingSelf", left, right);
@@ -35,7 +35,7 @@ createTestSuite({ Extension, __dirname }, {
       expect(outputFromSelf).toBe(outputFromThis);
       expect(outputFromSelf).toBe(left * right);
     },
-    logMultiplicationResult: async ({ blockrunner, testHelper: { expect } }) => {
+    logMultiplicationResult: async ({ blockRunner: blockrunner, testHelper: { expect } }) => {
       const simpleRunner = blockrunner.createCompanion(Simple);
       const left = 4;
       const right = 5;

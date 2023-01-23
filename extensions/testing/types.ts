@@ -12,7 +12,7 @@ export type KeyToBlockIndexMap = Map<string, number>;
 export type TestHelper = {
   expect: typeof expect,
   fireEvent: typeof fireEvent,
-  updateInputValue: (input: HTMLInputElement, value: string) => Promise<boolean>,
+  updateHTMLInputValue: (input: HTMLInputElement, value: string) => Promise<boolean>,
 }
 
 type ReturnsValue<T extends AnyExtension, Key extends BlockKey<T>> =
@@ -24,23 +24,27 @@ type ReportedValue<T extends AnyExtension, Key extends BlockKey<T>> = ReturnType
 
 export type Hooks<T extends AnyExtension, Key extends BlockKey<T>> = {
   /**
-   * Ran before the begining of a test
-   * @param this 
-   * @param extension 
+   * Ran before the block-under-test is executed (useful for initialization)
+   * @param fixture An object to help you define your test. Includes:
+   * - extension: A reference to the extension instance being used in this test
+   * - testHelper: An object with utility functions to support your test
+   * @see https://en.wikipedia.org/wiki/Test_fixture
    * @returns Nothing (but can be implemented as an async function)
    */
-  before?: (this: TestHelper, extension: T) => void | Promise<void>,
+  before?: (fixture: { extension: T, testHelper: TestHelper }) => void | Promise<void>,
   /**
    * Ran after the conclusion of a test, and thus is the best place to put test cases.
-   * @param this `this` refers to a TestHelper object
-   * @param extension The instance of the extension under test that the block function was called on
-   * @param result (If the block function under test returns a value) the returned value of the block function under test
-   * @param ui 
-   * @returns Nothing (but can be implemented as an async function)
+   * @param fixture An object to help you define your test. Includes:
+   * - extension: A reference to the extension instance being used in this test
+   * - testHelper: An object with utility functions to support your test
+   * - result: (If the block function under test returns a value) the returned value of the block function under test
+   * - ui: (NOT DEFINED if the block function doesn't open a UI element) a reference to the RenderedUI
+   * @see https://en.wikipedia.org/wiki/Test_fixture
+   * @returns Void (but can be implemented as an async function and thus return Promise<void>)
    */
   after?: ReturnsValue<T, Key> extends false
-  ? (this: TestHelper, extension: T, ui?: RenderedUI) => void | Promise<void>
-  : (this: TestHelper, extension: T, result: ReportedValue<T, Key>, ui?: RenderedUI) => void | Promise<void>
+  ? (fixture: { extension: T, ui?: RenderedUI, testHelper: TestHelper }) => void | Promise<void>
+  : (fixture: { extension: T, result: ReportedValue<T, Key>, ui?: RenderedUI, testHelper: TestHelper }) => void | Promise<void>
 };
 
 export type InputArray<T extends AnyExtension, Key extends BlockKey<T>> =
@@ -112,8 +116,6 @@ export type RuntimeForTest<T extends AnyExtension> = Runtime & {
 }
 
 /**
- * The word 'harness' is used for the funciton argument, 
- * as "In software testing, a test harness or automated test framework is a collection of software and test data configured to test a program unit by running it under varying conditions and monitoring its behavior and outputs. It has two main parts: the test execution engine and the test script repository."
- * @see https://en.wikipedia.org/wiki/Test_harness
+ @see https://en.wikipedia.org/wiki/Test_fixture
  */
-export type IntegrationTest<T extends AnyExtension> = (harness: { blockrunner: BlockRunner<T>, testHelper: TestHelper }) => void | Promise<void>;
+export type IntegrationTest<T extends AnyExtension> = (fixture: { extension: T, blockRunner: BlockRunner<T>, testHelper: TestHelper }) => void | Promise<void>;
