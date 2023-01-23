@@ -750,7 +750,8 @@ All you must do is define the `saveDataHandler` property on your extension, like
 
 ```ts
 
-export default class SaveLoadExample extends Extension<DefaultDisplayDetails, {}> {
+export default class SaveLoadExample extends Extension<DefaultDisplayDetails, NoBlocks> {
+
   /** This is an example of some data on an Extension that the user might manipulate over the course of their session and must be preserved in order to restore the same state to the extension */
   somePersistentData = { x: 3, input: "Hello" };
 
@@ -767,6 +768,7 @@ export default class SaveLoadExample extends Extension<DefaultDisplayDetails, {}
     // Use the loaded 'data' to restore the state of our Extension
     onLoad(self, data) { self.somePersistentData = data },
   });
+
 
   init = notRelevantToExample;
   defineBlocks = notRelevantToExample;
