@@ -1,7 +1,7 @@
 import { BaseExtension, ExtensionConstructor } from "./types";
 
 /**
- * @summary Utility class to assist in creating a (typesafe) object that handles both:
+ * @summary Utility class to assist in creating a (typesafe) object that, for a given Extension type, handles both:
  * - writing out data on save
  * - doing something with save data on load
  * 
@@ -9,6 +9,7 @@ import { BaseExtension, ExtensionConstructor } from "./types";
  * (and the `onSave`'s return type must match `onLoad`'s argument type)
  * @example
  * new SaveDataHandler({
+ *    Extension: MyExtension,
  *    onSave: () => ({x: 0, y: 3}),
  *    onLoad: (data) => {
  *       const sum = data.x + data.y; // do something with saved data
@@ -17,7 +18,7 @@ import { BaseExtension, ExtensionConstructor } from "./types";
  */
 export class SaveDataHandler<T extends BaseExtension, TData> {
   constructor(public hooks: {
-    extension: ExtensionConstructor<T>,
+    Extension: ExtensionConstructor<T>,
     onSave: (self: T) => TData,
     onLoad: (self: T, data: TData) => void,
   }) { }

@@ -64,7 +64,7 @@ export abstract class Extension
    *    someValue = 5;
    *    ...
    *    saveDataHandler = new SaveDataHandler({
-   *      extension: Example,
+   *      Extension: Example,
    *      // NOTE: The type info for 'instance' could be left off in the line below
    *      onSave: (instance: Example) => ({ valueToSave: instance.someValue }),
    *      onLoad: (instance, data) => instance.someValue = data.valueToSave
