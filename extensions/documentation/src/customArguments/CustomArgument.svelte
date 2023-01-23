@@ -3,9 +3,12 @@
   import { ParameterOf, ArgumentEntry, ArgumentEntrySetter } from "$common";
 
   /**
-   * Modify this type to match the argument you're developing this UI for.
-   * The second parameter is the name of the block function this arguemnt belongs to.
-   * The third parameter is the index of the argument (i.e. is the functions 2nd argument? Then it's index would be 1)
+   * This type will hold onto the type of our custom argument
+   * and ensure this UI remains in sync with the block function argument it's associated with.
+   * To do so, we make use of the 'ParameterOf' utility type.
+   * The first parameter is our Extension.
+   * The second parameter is the name of the block function this argument belongs to.
+   * The third parameter is the index of the argument (Since here we want the first argument, we use an index of 0)
    */
   type Value = ParameterOf<Extension, "blockWithCustomArgument", 0>; 
   

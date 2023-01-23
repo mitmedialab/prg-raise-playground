@@ -4,7 +4,8 @@
 
   /**
    * Modify this type to match the argument you're developing this UI for.
-   * The second parameter is the name of the block function this arguemnt belongs to.
+   * The first parameter is a reference to your extension.
+   * The second parameter is the name of the block function this argument belongs to.
    * The third parameter is the index of the argument (i.e. is the functions 2nd argument? Then it's index would be 1)
    */
   type Value = ParameterOf<Extension, ReplaceWithBlockFunctionName, 0>; 
