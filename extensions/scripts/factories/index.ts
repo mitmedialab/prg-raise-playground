@@ -33,7 +33,6 @@ export const copyTemplateToDestinationAndIncrementIfExists = (extensionDirectory
 
   const extension = path.extname(destinationName ?? filename);
   const name = (destinationName ?? filename).replace(extension, "");
-  console.log(name, extension);
 
   const getFilename = (modifier: string = "") => `${name}${modifier}${extension}`;
 
