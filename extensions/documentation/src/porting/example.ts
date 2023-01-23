@@ -1,6 +1,5 @@
 import { Extension, ArgumentType, BlockType, Environment } from "$common";
-// @ts-ignore 
-import formatMessage from 'format-message';
+import formatMessage from './format-message'; // This should actually be an npm package and thus be 'format-message'
 
 type Details = {
   name: "Some Blocks",

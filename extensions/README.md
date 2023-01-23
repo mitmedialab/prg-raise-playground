@@ -15,7 +15,7 @@ This document will be most helpful for people doing more complex development, li
 1. [Anatomy of an Extension Directory](#anatomy-of-an-extension-directory)
 2. [Testing Extensions](#testing-extensions)
 3. [Creating UI for Extensions](#creating-ui-for-extensions)
-4. [Porting an Extension to use our Framework ](#porting-an-extension-to-use-our-framework-&-typescript)
+4. [Porting an Extension to use our Framework & Typescript](#porting-an-extension-to-use-our-framework--typescript)
 5. [Reference](#reference)
 
 ## Anatomy of an Extension Directory
@@ -70,8 +70,8 @@ In adition to the above files, you might find any of the below:
 
 A great to start digging into the files that make up an Extension is to check out some working examples:
 
-- [Simple]()
-- [Complex]()
+- [Simple](https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extensions/src/simple_example)
+- [Complex](https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extensions/src/complex_example)
 
 ## Testing Extensions
 
@@ -637,8 +637,7 @@ Things to note:
 
 ```ts
 import { Extension, ArgumentType, BlockType, Environment } from "$common";
-// @ts-ignore 
-import formatMessage from 'format-message';
+import formatMessage from './format-message'; // This should actually be an npm package and thus be 'format-message'
 
 type Details = {
   name: "Some Blocks",

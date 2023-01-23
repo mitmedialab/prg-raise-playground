@@ -8,6 +8,7 @@ const fileOptions = { encoding: "utf8" } as const;
 const documentationRoot = path.resolve(__dirname, "..");
 const srcDir = path.resolve(documentationRoot, "src");
 const extensionsRoot = path.resolve(documentationRoot, "..");
+const projectRoot = path.resolve(extensionsRoot, "..");
 const fileToEdit = path.join(extensionsRoot, "README.md");
 
 const process = async (pathToREADME: string): Promise<{ order: number, content: string, pathToREADME: string }> => {
@@ -20,8 +21,12 @@ const process = async (pathToREADME: string): Promise<{ order: number, content: 
 
   let order = Number.MAX_SAFE_INTEGER;
 
+  let numberOfSnippets = 0;
+  let orderSet = false;
+
   for (let index = lines.length; index >= 0; index--) {
     const request = { pathToREADME, query: lines[index] };
+    const lineNumber = index + 1;
 
     await Parser.Process(request,
       {
@@ -29,26 +34,32 @@ const process = async (pathToREADME: string): Promise<{ order: number, content: 
           success: ({ value }) => {
             order = value;
             lines.splice(index, 1);
-            console.log(chalk.green(`Set order '${order}' for: ${relativePath}`));
+            if (orderSet) console.log(chalk.red(`Multiple order settings given for: ${relativePath}`));
+            orderSet = true;
           },
           failure: () => {
+            console.error(chalk.red(`Unable to set order for ${relativePath} (line ${lineNumber}: ${lines[index]})`));
             lines[index] = orderError;
-            console.error(chalk.red(`Unable to set order for: ${relativePath}`));
           }
         },
         snippet: {
           success: ({ content }) => {
             lines[index] = content;
-            console.log(chalk.green(`Replaced snippet in: ${relativePath}`));
+            numberOfSnippets++;
           },
           failure: () => {
+            console.error(chalk.red(`Unable to replace snippet in ${relativePath} on line ${index + 1}: ${lines[index]}`));
             lines[index] = snippetError;
-            console.error(chalk.red(`Unable to replace snippet in: ${relativePath}`));
           }
         }
       }
     );
   }
+
+  const message = `Replaced ${numberOfSnippets} snippet${numberOfSnippets === 1 ? "" : "s"} in ${relativePath}`
+    + (orderSet ? ` and order was set to '${order}'` : "");
+
+  console.log(chalk.cyan(message));
 
   return { order, content: lines.join("\n"), pathToREADME };
 }
@@ -66,6 +77,9 @@ const directories = fs.readdirSync(srcDir, { withFileTypes: true })
 const readmeFiles = directories
   .map(directory => path.join(directory, "README.md"))
   .filter(readme => fs.existsSync(readme));
+
+console.log(chalk.green(`Identified the following directories with READMEs to process inside of ${path.relative(projectRoot, srcDir)}:`));
+console.log(chalk.green(`- ${readmeFiles.map(fullPath => path.relative(srcDir, path.dirname(fullPath))).join("\n- ")}`));
 
 type Entry = Awaited<ReturnType<typeof process>>;
 type Entries = Entry[];
@@ -96,7 +110,7 @@ const createTOC = (entries: OrderedEntries): OrderedEntries => {
   const toMarkdownAnchor = (header: string) => {
     const anchor = header
       .toLowerCase()
-      .replaceAll("#", "")
+      .replaceAll(/[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]*/gm, "") // remove punctuation
       .replaceAll(" ", "-");
     return anchor.startsWith("-") ? `#${anchor.substring(1)}` : "#" + anchor;
   }
@@ -104,7 +118,7 @@ const createTOC = (entries: OrderedEntries): OrderedEntries => {
   const headers: { anchor: string, title: string }[] = entries
     .map(({ content }) => {
       const [firstLine,] = content.split("\n");
-      const isHeader = /#+\s*([A-Za-z\s]+)/gm;
+      const isHeader = /#+\s*([A-Za-z0-9!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~\s]+)/gm; // match any letter, digit, or punctuation with spaces
       return { match: isHeader.exec(firstLine), firstLine };
     })
     .filter(({ match }) => match !== null)
@@ -122,6 +136,8 @@ const createTOC = (entries: OrderedEntries): OrderedEntries => {
 }
 
 const concat = (entries: OrderedEntries) => entries.map(({ content }) => content).join("\n\n");
+
+
 
 Promise.all(readmeFiles.map(process))
   .then(sortEntries)
@@ -149,4 +165,6 @@ Promise.all(readmeFiles.map(process))
     ].join("\n");
 
     fs.writeFileSync(fileToEdit, updates, fileOptions);
+
+    console.log(chalk.green(`Content succesfully written to: ${path.relative(projectRoot, fileToEdit)}`));
   });

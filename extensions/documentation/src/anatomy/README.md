@@ -42,5 +42,5 @@ In adition to the above files, you might find any of the below:
 
 A great to start digging into the files that make up an Extension is to check out some working examples:
 
-- [Simple]()
-- [Complex]()
+- [Simple](https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extensions/src/simple_example)
+- [Complex](https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extensions/src/complex_example)
