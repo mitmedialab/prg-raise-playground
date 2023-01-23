@@ -17,6 +17,7 @@ This document will be most helpful for people doing more complex development, li
 3. [Creating UI for Extensions](#creating-ui-for-extensions)
 4. [Porting an Extension to use our Framework & Typescript](#porting-an-extension-to-use-our-framework--typescript)
 5. [Reference](#reference)
+6. [Saving Custom Data for an Extension](#saving-custom-data-for-an-extension)
 
 ## Anatomy of an Extension Directory
 
@@ -454,7 +455,7 @@ For example:
 ```ts
 
 export default class ExampleExtension extends Extension<DefaultDisplayDetails, Blocks> {
-  init = notImportant;
+  init = notRelevantToExample;
 
   defineBlocks(): ExampleExtension["BlockDefinitions"] {
     return {
@@ -678,7 +679,6 @@ export default class SomeBlocks extends Extension<Details, {
 
           const result = text.charAt(letterNum);
 
-          // This doesn't actually work/compile -- perhaps the formatMessage API changed since the Scratch example was made
           return message.format({ text, letterNum, result });
         }
       })
@@ -736,4 +736,44 @@ sequenceDiagram
     C->>B: Retrieve appropriate extension bundle from <br> (url) static/extension-bundles/
     deactivate C
 ```
+
+## Saving Custom Data for an Extension
+
+> NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
+If you want to edit it, please go to [extension/documentation/src/saveLoad/README.md](https:/github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extension/documentation/src/saveLoad/README.md)
+
+The Extension Framework allows you to easily save arbitrary data for an extension when an `.sb3` (Scratch 3 format) project is saved. 
+
+You can also set up how your extension utilizes that data when a project is loaded that contains custom save data. 
+
+All you must do is define the `saveDataHandler` property on your extension, like so:
+
+```ts
+
+export default class SaveLoadExample extends Extension<DefaultDisplayDetails, NoBlocks> {
+
+  /** This is an example of some data on an Extension that the user might manipulate over the course of their session and must be preserved in order to restore the same state to the extension */
+  somePersistentData = { x: 3, input: "Hello" };
+
+  /**
+   * The SaveDataHandler constructor takes an object with 3 values:
+   * - Extension: This should be a reference to the Extension class you are implementing. This will then be used as the type for the first 'self' parameter of both `onSave` and `onLoad`.
+   * - onSave: A function called when a user SAVES their project which should return some data (likely an object), which will be written to the saved file.
+   * - onLoad: A function called when a user LOADS a project. The second parameter 'data' will take on the type of the thing that `onSave` returns. This way, the two functions stay in sync.
+   */
+  saveDataHandler = new SaveDataHandler({
+    Extension: SaveLoadExample,
+    // Return the information that we want to save
+    onSave(self) { return self.somePersistentData },
+    // Use the loaded 'data' to restore the state of our Extension
+    onLoad(self, data) { self.somePersistentData = data },
+  });
+
+
+  init = notRelevantToExample;
+  defineBlocks = notRelevantToExample;
+}
+
+```
+
 [](GeneratedContentGuardEnd_NoChangesInThisSectionWillBeSaved)

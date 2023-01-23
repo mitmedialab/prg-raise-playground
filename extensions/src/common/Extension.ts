@@ -1,10 +1,11 @@
 import { ArgumentType, BlockType, Language } from './enums';
-import type { ExtensionMenuDisplayDetails, ExtensionBlocks, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, VerboseArgument, Environment, Menu, DynamicMenu, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters, TypeByArgumentType, AllText, Translations, BlockOperation, ValueOf } from './types';
+import type { ExtensionMenuDisplayDetails, ExtensionBlocks, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, VerboseArgument, Environment, Menu, DynamicMenu, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters, TypeByArgumentType, AllText, Translations, BlockOperation, ValueOf, BaseExtension } from './types';
 import Cast from '$scratch-vm/util/cast';
 //import * as formatMessage from 'format-message';
 import Runtime from "$scratch-vm/engine/runtime";
 import { openUI, registerButtonCallback } from './ui';
 import { isFunction, isString } from './utils';
+import { SaveDataHandler } from './SavaDataHandler';
 
 export type CodeGenArgs = {
   name: never,
@@ -55,12 +56,65 @@ export abstract class Extension
   > {
   runtime: Runtime;
 
+  /**
+   * Optional field that can be defined if you need to save custom data for an extension 
+   * (like some extension specific variable, or an API endpoint).
+   * @example
+   * class Example extends Extension<..., ...> {
+   *    someValue = 5;
+   *    ...
+   *    saveDataHandler = new SaveDataHandler({
+   *      Extension: Example,
+   *      // NOTE: The type info for 'instance' could be left off in the line below
+   *      onSave: (instance: Example) => ({ valueToSave: instance.someValue }),
+   *      onLoad: (instance, data) => instance.someValue = data.valueToSave
+   *    })
+   * }
+   * @see Extension.MakeSaveDataHandler
+   */
+  protected saveDataHandler: SaveDataHandler<typeof this, any> = undefined;
+
   readonly BlockFunctions: Blocks;
   readonly BlockDefinitions: BlockDefinitions<Extension<MenuDetails, Blocks>>;
   readonly Translations: Translations<Extension<MenuDetails, Blocks>>;
 
   private readonly internal_blocks: ExtensionBlockMetadata[] = [];
   private readonly internal_menus: ExtensionMenuMetadata[] = [];
+
+  /**
+   * WARNING! If you change this key, it will affect already saved projects.
+   * Do not rename this without first developing a mechanism for searching for previously used keys.
+   */
+  private static SaveDataKey = "customSaveDataPerExtension" as const;
+
+  /**
+   * Save function called 'internally' by the VM when serializing a project.
+   * @param toSave 
+   * @param extensionIDs 
+   * @returns 
+   */
+  private save(toSave: { [Extension.SaveDataKey]: Record<string, any> }, extensionIDs: Set<string>) {
+    const { saveDataHandler, id } = this;
+    const saveData = saveDataHandler?.hooks.onSave(this);
+    if (!saveData) return;
+    const container = toSave[Extension.SaveDataKey];
+    container ? (container[id] = saveData) : (toSave[Extension.SaveDataKey] = { [id]: saveData });
+    extensionIDs.add(id);
+  }
+
+  /**
+   * Load function called 'internally' by the VM when loading a project.
+   * Will be invoked on an extension immediately after it is constructed.
+   * @param saved 
+   * @returns 
+   */
+  private load(saved: { [Extension.SaveDataKey]: Record<string, any> }) {
+    if (!saved) return;
+    const { saveDataHandler, id } = this;
+    if (!saveDataHandler) return;
+    const saveData = Extension.SaveDataKey in saved ? saved[Extension.SaveDataKey][id] : null;
+    if (saveData) saveDataHandler.hooks.onLoad(this, saveData);
+  }
 
   openUI(component: string, label?: string) {
     const { id, name, runtime } = this;

@@ -178,8 +178,11 @@ class ExtensionManager {
         });
     }
 
+    /** Begin PRG Additions */
+    getLoadedExtensionIDs() { return Array.from(this._loadedExtensions.keys()) }
     getExtensionInstance(id) { return this._loadedExtensions.has(id) ? dispatch.services[this._loadedExtensions.get(id)] : undefined }
     getAuxiliaryObject (extensionID, name) { return tryGetAuxiliaryObjectFromLoadedBundle(extensionID, name) };
+    /** END PRG Additions */
 
     /**
      * Regenerate blockinfo for any loaded extensions

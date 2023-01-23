@@ -1,4 +1,4 @@
-import { ArgumentType, BlockType, Block, BlockDefinitions, RGBObject, MenuItem, ButtonBlock, Extension, BlockInfo } from "$common";
+import { ArgumentType, BlockType, Block, BlockDefinitions, RGBObject, MenuItem, ButtonBlock, Extension, BlockInfo, SaveDataHandler, copyTo } from "$common";
 import addDefinition from "./addDefinition";
 
 type DisplayDetails = {
@@ -69,7 +69,11 @@ export default class TypeScriptFrameworkExample extends Extension<DisplayDetails
 
   state: number = 0;
 
-  defineTranslations() { return undefined };
+  saveDataHandler = new SaveDataHandler({
+    Extension: TypeScriptFrameworkExample,
+    onSave: ({ collection, state }) => ({ collection, state }),
+    onLoad: (target, source) => copyTo({ target, source })
+  });
 
   init() {
     this.lhsOptions = [3, 4, 5];

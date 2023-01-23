@@ -30,6 +30,13 @@ export type Environment = {
   videoFeed: undefined | any
 }
 
+/**
+ * Helpful way to specify you want a reference to Extension class itself (not an instance of it) 
+ */
+export interface ExtensionConstructor<T extends BaseExtension> {
+  new(...args: ConstructorParameters<typeof Extension>): T;
+}
+
 export type BlockOperation = (...args: any) => any;
 
 export type MenuItem<T> = T | {

@@ -9,10 +9,6 @@ export type AnyExtension = Extension<ExtensionMenuDisplayDetails, ExtensionBlock
 export type BlockKey<T extends AnyExtension> = keyof T["BlockFunctions"] & string;
 export type KeyToBlockIndexMap = Map<string, number>;
 
-export interface ExtensionConstructor<T extends AnyExtension> {
-  new(...args: ConstructorParameters<typeof Extension>): T;
-}
-
 export type TestHelper = {
   expect: typeof expect,
   fireEvent: typeof fireEvent,

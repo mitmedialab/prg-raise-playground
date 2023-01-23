@@ -5,3 +5,4 @@ export * from "./ui";
 export * from "./enums";
 export * from "./IDs";
 export * from "./globals";
+export * from "./SavaDataHandler";
