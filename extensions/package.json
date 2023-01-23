@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "init": "find . -maxdepth 3 -name package.json -not -path \"**/node_modules/*\" -execdir pwd \\; -execdir npm i \\;",
-    "test": "npm run test --prefix testing/"
+    "test": "npm run test --prefix testing/",
+    "document": "npm run generate --prefix documentation/"
   },
   "author": "",
   "license": "ISC",

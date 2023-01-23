@@ -1,4 +1,8 @@
-// Snippet START
+import { DefaultDisplayDetails } from "$testing/defaults";
+import { codeSnippet } from "../../";
+
+export const defineExtension = codeSnippet();
+
 import { Extension } from "$common/Extension";
 import { Environment, ButtonBlock, ArgumentType, BlockType, BlockDefinitions } from "$common";
 
@@ -14,17 +18,17 @@ export default class ExtensionUnderTest extends Extension<DefaultDisplayDetails,
     return defineBlocksElsewhere(); // You can ignore this!
   }
 }
-// Snippet END
 
-import { DefaultDisplayDetails } from "$testing/defaults";
+defineExtension.end;
 
-// Snippet START
+export const defineBlocks = codeSnippet();
+
 const defineBlocksElsewhere = (): BlockDefinitions<ExtensionUnderTest> => ({
   exampleCommand: {
     type: BlockType.Command,
     args: [ArgumentType.Number, ArgumentType.Number],
     text: () => "",
-    operation: () => 5,
+    operation: () => { },
   },
   exampleReporter: {
     type: BlockType.Reporter,
@@ -38,5 +42,6 @@ const defineBlocksElsewhere = (): BlockDefinitions<ExtensionUnderTest> => ({
     text: "",
     operation: () => { ext.openUI("Test") }
   })
-})
-// Snippet END
+});
+
+defineBlocks.end;
