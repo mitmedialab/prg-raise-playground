@@ -137,8 +137,6 @@ const createTOC = (entries: OrderedEntries): OrderedEntries => {
 
 const concat = (entries: OrderedEntries) => entries.map(({ content }) => content).join("\n\n");
 
-
-
 Promise.all(readmeFiles.map(process))
   .then(sortEntries)
   .then(addIsGeneratedWarning)
