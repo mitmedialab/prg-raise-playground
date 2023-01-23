@@ -852,7 +852,7 @@ Then, we modify the UI (Svelte) component we created earlier to match our block 
 <div>
   <input bind:value={a} type="number">
   <input bind:value={b} type="text">
-  <input bind:value={c} type="checkbox">
+  <input bind:checked={c} type="checkbox">
 </div>
 ```
 
