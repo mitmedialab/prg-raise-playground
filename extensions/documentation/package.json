@@ -2,7 +2,6 @@
   "name": "documentation",
   "version": "1.0.0",
   "description": "Helper for making documentation",
-  "main": "index.js",
   "scripts": {
     "generate": "npm run ts:node:extensions --prefix ../../ -- ./extensions/documentation/scripts/generateREADME.ts"
   },
