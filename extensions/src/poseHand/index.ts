@@ -87,8 +87,10 @@ export default class PoseHand extends Extension<Details, Blocks> {
     this.firstInstall = true;
 
     if (this.runtime.ioDevices) {
-      this.runtime.on(RuntimeEvent.ProjectLoaded, this.projectStarted.bind(this)); // May be unnecessary
-      this.runtime.on(RuntimeEvent.ProjectRunStart, this.reset.bind(this)); // May be unnecessary, see reset() definition
+      /* Possibly unnecessary, keep commented just in case
+      this.runtime.on(RuntimeEvent.ProjectLoaded, this.projectStarted.bind(this));
+      this.runtime.on(RuntimeEvent.ProjectRunStart, this.reset.bind(this)); 
+      */
       this._loop();
     }
   }
@@ -125,8 +127,8 @@ export default class PoseHand extends Extension<Details, Blocks> {
   /**
    * init() binds to this function, but it is never called, so this may be unimportant
    */
-  reset() {
-  }
+  // reset() {
+  // }
 
   /**
    * Checks if the hand pose estimate is ready to be used
