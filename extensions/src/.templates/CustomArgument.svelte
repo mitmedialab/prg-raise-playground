@@ -27,8 +27,8 @@
 
   /**
    * This is a reference to your extension. 
-   * It should be treated as 'readonly', meaning you should only pull information FROM your extesnion to populate this UI.
-   * You should NOT use this UI to modify by the extension, as that would both confuse the user and anyone developing this extension.
+   * It should be treated as 'readonly', meaning you should only pull information FROM your extension to populate this UI.
+   * You should NOT use this UI to modify the extension, as that would both confuse the user and anyone developing the extension.
    * 
    * If you need a UI to control the extension, instead use the Modal-style UI.
    * @see https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extensions#creating-ui-for-extensions

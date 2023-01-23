@@ -1,13 +1,7 @@
 import { DefaultDisplayDetails } from "$testing/defaults";
 import { codeSnippet, notRelevantToExample } from "documentation";
-
-
 import { BlockDefinitions, BlockType, Extension } from "$common";
-
-
-type Blocks = {
-  blockWithCustomArgument: (arg: { a: number, b: string, c: boolean }) => void;
-}
+import { MyCustomArgument, Blocks } from "./extension";
 
 export const x = codeSnippet();
 
@@ -26,10 +20,11 @@ export default class ExtensionWithCustomArgument extends Extension<DefaultDispla
          *  - This is because the value of the custom argument must be able to be represented as a string and displayed directly in the block
          *    once the UI closes -- this is what the 'text' field is used for. Whenever you set a custom argument, 
          *    you'll need to provide both a 'value' and a 'text' representation of that value.
+         *    Here, we use the method `convertArgToText` (see below), which implements this conversion process for our custom type.
          */
         arg: this.makeCustomArgument({
           component: "MyArgUI",
-          initial: { value: { a: 10, b: "Hello world", c: false }, text: "[10, \"Hello world\", false]", }
+          initial: { value: { a: 10, b: "Hello world", c: false }, text: this.convertArgToText({ a: 10, b: "Hello world", c: false }), }
         }),
 
         /** Our operation should expect an input that matches our custom argument type */
@@ -40,6 +35,11 @@ export default class ExtensionWithCustomArgument extends Extension<DefaultDispla
       }
     }
   };
+
+  convertArgToText(arg: MyCustomArgument) {
+    const { a, b, c } = arg;
+    return `${a}, \"${b}\", ${c}`;
+  }
 }
 
 x.end;

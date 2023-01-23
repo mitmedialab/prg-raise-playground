@@ -7,8 +7,10 @@ export const x = codeSnippet();
 
 import { Extension } from "$common";
 
+type MyCustomArgument = { a: number, b: string, c: boolean };
+
 type Blocks = {
-  blockWithCustomArgument: (arg: { a: number, b: string, c: boolean }) => void;
+  blockWithCustomArgument: (arg: MyCustomArgument) => void;
 }
 
 export default class ExtensionWithCustomArgument extends Extension<DefaultDisplayDetails, Blocks> {
@@ -18,3 +20,5 @@ export default class ExtensionWithCustomArgument extends Extension<DefaultDispla
 }
 
 x.end;
+
+export type { Blocks, MyCustomArgument };
