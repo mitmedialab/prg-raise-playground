@@ -1,7 +1,7 @@
 import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails } from "$common";
 
 import Video from '../../../packages/scratch-vm/src/io/video';
-// import * as handpose from '../../../packages/scratch-vm/node_modules/@tensorflow-models/handpose/dist';
+import * as posenet from '../../../packages/scratch-vm/node_modules/@tensorflow-models/posenet';
 
 /**
  * States the video sensing activity can be set to.
@@ -52,9 +52,9 @@ export default class PoseBody extends Extension<Details, Blocks> {
   firstInstall: boolean;
 
   /**
-   * The hand model from handpose
+   * The body model from posenet
    */
-  _handModel;
+  _bodyModel;
 
   /**
    * The current video state
@@ -169,21 +169,21 @@ export default class PoseBody extends Extension<Details, Blocks> {
    * @returns {Promise<AnnotatedPrediction[]>}
    */
   async estimateBodyPoseOnImage(imageElement) {
-    const handModel = await this.getLoadedHandModel();
-    return await handModel.estimateHands(imageElement, {
+    const bodyModel = await this.getLoadedBodyModel();
+    return await bodyModel.estimateBody(imageElement, {
       flipHorizontal: false
     });
   }
 
   /**
-   * Gets the body model from handpose
+   * Gets the body model from posenet
    * @returns
    */
-  async getLoadedHandModel() {
-    if (!this._handModel) {
-      this._handModel = await handpose.load();
+  async getLoadedBodyModel() {
+    if (!this._bodyModel) {
+      this._bodyModel = await posenet.load();
     }
-    return this._handModel;
+    return this._bodyModel;
   }
 
   /**
@@ -224,51 +224,63 @@ export default class PoseBody extends Extension<Details, Blocks> {
       this.globalVideoTransparency = 50;
       this.projectStarted();
       this.firstInstall = false;
-      this._handModel = null;
+      this._bodyModel = null;
     }
 
     /**
      * The options for each finger
      * @type {Array}
      */
-    const fingerOptions =
-      [{ text: "thumb", value: "thumb" }, { text: "index finger", value: "indexFinger" },
-      { text: "middle finger", value: "middleFinger" }, { text: "ring finger", value: "ringFinger" }, { text: "pinky finger", value: "pinky" }];
+    const bodyOptions =
+      [
+        { text: 'nose', value: 'nose' },
+        { text: 'right eye', value: 'leftEye' },
+        { text: 'left eye', value: 'rightEye' },
+        { text: 'right ear', value: 'leftEar' },
+        { text: 'left ear', value: 'rightEar' },
+        { text: 'right shoulder', value: 'leftShoulder' },
+        { text: 'left shoulder', value: 'rightShoulder' },
+        { text: 'right elbow', value: 'leftElbow' },
+        { text: 'left elbow', value: 'rightElbow' },
+        { text: 'right wrist', value: 'leftWrist' },
+        { text: 'left wrist', value: 'rightWrist' },
+        { text: 'right hip', value: 'leftHip' },
+        { text: 'left hip', value: 'rightHip' },
+        { text: 'right knee', value: 'leftKnee' },
+        { text: 'left knee', value: 'rightKnee' },
+        { text: 'right ankle', value: 'leftAnkle' },
+        { text: 'left ankle', value: 'rightAnkle' },
+      ];
 
-    /**
-     * The options for the part of a finger
-     * @type {Array}
-     */
-    const partOfFingerOptions = [{ text: "tip", value: 3 }, { text: "first knuckle", value: 2 },
-    { text: "second knuckle", value: 1 }, { text: "base", value: 0 }];
 
 
-    type DefineGoToHandPart = DefineBlock<PoseBody, Blocks["goToBodyPartBlock"]>;
-    const goToBodyPartBlock: DefineGoToHandPart = () => ({
+    type DefineGoToBodyPart = DefineBlock<PoseBody, Blocks["goToBodyPartBlock"]>;
+    const goToBodyPartBlock: DefineGoToBodyPart = () => ({
       type: BlockType.Command,
-      args: [{
+      arg: {
         type: ArgumentType.String,
         options: {
           acceptsReporters: true,
-          items: fingerOptions,
+          items: bodyOptions,
           handler: (part: string) => {
             // FIX
-            if (["thumb", "indexFinger", "middleFinger", "ringFinger", "pinky"].indexOf(part) != -1) {
-              return part;
-            }
-            else return "thumb";
+            // if (["thumb", "indexFinger", "middleFinger", "ringFinger", "pinky"].indexOf(part) != -1) {
+            //   return part;
+            // }
+            // else return "thumb";
+            return part;
           }
         }
       },
-        text: (bodyPart: string) => `go to ${bodyPart}`,
-        operation: (handPart, util) => {
+      text: (bodyPart: string) => `go to ${bodyPart}`,
+      operation: (bodyPart, util) => {
 
-          if (this.isConnected()) {
-            const [x, y, z] = this.bodyPoseState[0].annotations[bodyPart];
-            const { x: scratchX, y: scratchY } = this.tfCoordsToScratch({ x, y, z });
-            (util.target as any).setXY(scratchX, scratchY, false);
-          }
+        if (this.isConnected()) {
+          const [x, y, z] = this.bodyPoseState[0].annotations[bodyPart];
+          const { x: scratchX, y: scratchY } = this.tfCoordsToScratch({ x, y, z });
+          (util.target as any).setXY(scratchX, scratchY, false);
         }
+      }
     });
 
     type DefineVideoToggle = DefineBlock<PoseBody, Blocks["videoToggleBlock"]>;
