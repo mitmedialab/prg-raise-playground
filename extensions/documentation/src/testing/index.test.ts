@@ -1,4 +1,6 @@
-// Snippet Start
+import { codeSnippet } from "../../";
+export const fileStructure = codeSnippet();
+
 import { createTestSuite } from "$testing";
 // Import our extension exported as default from the index.ts file ("." is shorthand for "./index")
 // NOTE: you can call this import whatever you want, but we use "Extension" to enable the use of "shorthand property names" below (see: https://ui.dev/shorthand-properties)
@@ -17,12 +19,14 @@ createTestSuite({ Extension, __dirname }, {
   unitTests: seeBelow,
   integrationTests: seeBelow
 });
-// Snippet End
+
+fileStructure.end;
 
 var seeBelow = undefined;
 var seeAbove = undefined;
 
-// Snippet Start
+export const simpleExample = codeSnippet();
+
 createTestSuite({ Extension, __dirname }, {
   unitTests: {
     /** A test case of the 'exampleReporter' block defined as an object with 'input' and 'expected' entries */
@@ -42,9 +46,11 @@ createTestSuite({ Extension, __dirname }, {
     },
   }
 });
-// Snippet End
 
-// Snippet Start
+simpleExample.end;
+
+export const complexExample = codeSnippet();
+
 createTestSuite({ Extension, __dirname }, {
   unitTests: {
     /** Below we provide multiple test cases for the 'exampleReporter' block, and thus we define this as an array. */
@@ -56,7 +62,7 @@ createTestSuite({ Extension, __dirname }, {
       },
 
       /** 
-       * Below is a test expressed as a function that returns an object with 'input', 'expected', 'isReady', 'before', and 'after' entries. 
+       * Below is a test expressed as a function that returns an object with 'input', 'expected', 'isReady', 'checkIsReadyRate', 'before', and 'after' entries. 
        * This function has single argument which is a TestHelper object, which should assist you in writing your test cases.
        * This test case represents all the fields a given test can define, and these can similiarly be defined for a test expressed as an object.
       */
@@ -97,7 +103,7 @@ createTestSuite({ Extension, __dirname }, {
            * An 'after' function can be defined which will run right after the block "operation" is executed.
            * This will likely be used in many of your tests, especially for non-reporter blocks, as this is where you can make your test's assertions.
            * Should the value of one of the extension's fields changed when a command block was ran? 
-           * How should the UI a button block opens behave? 
+           * How should the UI behave that a button-block opens? 
            * These kinds of things are what you can check for in the 'after' function.
           */
           after: (fixture) => {
@@ -107,7 +113,7 @@ createTestSuite({ Extension, __dirname }, {
             // But this demonstrates how an `after` test function can be used to further probe the output of a reporter block.
             testHelper.expect(result).toBe(expected);
 
-            // Since our block does not open any UI, the value of 'ui' pulled from the harness won't be defined.
+            // Since our block does not open any UI, the value of 'ui' pulled from the fixture won't be defined.
             // This again is not a valuable thing to check as far as the test goes and is just for demonstration.
             testHelper.expect(ui).toBeUndefined();
           }
@@ -117,7 +123,10 @@ createTestSuite({ Extension, __dirname }, {
   },
 });
 
-// Snippet Start
+complexExample.end;
+
+export const ui = codeSnippet();
+
 createTestSuite({ Extension, __dirname }, {
   unitTests: {
     exampleButtonThatOpensUI: {
@@ -139,27 +148,31 @@ createTestSuite({ Extension, __dirname }, {
     }
   }
 });
-// Snippet End
 
-// Snippet Start
+ui.end;
+
+export const integration = codeSnippet();
+
 createTestSuite({ Extension, __dirname }, {
   unitTests: seeAbove,
   integrationTests: {
     /**
      * An integration test case 
-     * @param fixture 
+     * @param fixture The fixture that will be passed to this function contain all the necessary elements for writing your test. 
+     * We use the term 'fixture' here and elsewhere as a "A test fixture is an environment used to consistently test a piece of software."
+     * https://en.wikipedia.org/wiki/Test_fixture
      */
     testOfTwoBlocks: async (fixture) => {
       const { blockRunner, testHelper: { expect }, extension } = fixture;
 
-      // Utilize the block
+      // Execute the block via the blockRunner (@see $testing/BlockRunner.ts)
       const result = await blockRunner.invoke("exampleReporter", "test input");
       const { output, ui } = result;
 
       expect(output).toBeDefined();
 
       // The "exampleReporter" block doesn't open ui, so here we demonstrate this value won't be defined.
-      // If your test doesn't open UI, the 'ui' object is the same as in the unit test for the "exampleButtonThatOpensUI" block
+      // If your test DOES open UI, the 'ui' object is the same as in the unit test for the "exampleButtonThatOpensUI" block
       expect(ui).toBeUndefined();
 
       await blockRunner.invoke("exampleCommand", output.length, 10);
@@ -169,8 +182,8 @@ createTestSuite({ Extension, __dirname }, {
     testOfTwoExtensions: async (fixture) => {
       const { blockRunner, testHelper: { expect }, extension } = fixture;
 
-      // Here we create a companion extension. To not confuse things, we use the same extension class as in our other tests.
-      // However, these should mainly be used to create a companion BlockRunner for a DIFFERENT extension.
+      // Here we create a "companion extension". To not confuse things with another Extension definition, we use the same 'ExtensionUnderTest' class as in our other tests.
+      // However, the `createCompanion` function should mainly be used to create a companion BlockRunner for a DIFFERENT extension.
       // This way, you can test how two extensions interact with each other.
       const companionExtension = blockRunner.createCompanion(Extension);
 
@@ -182,4 +195,5 @@ createTestSuite({ Extension, __dirname }, {
     }
   }
 })
-// Snippet End
+
+integration.end;
