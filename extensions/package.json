@@ -11,9 +11,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "svelte": "^3.55.0"
-  },
-  "dependencies": {
+    "svelte": "^3.55.0",
     "stacktrace-js": "^2.0.2"
   }
 }
