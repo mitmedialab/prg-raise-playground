@@ -55,7 +55,7 @@ export function processCustomArgumentHack<T extends Extension<any, any>>(
       const prevID = currentEntry?.value ?? initialID;
       const current = argumentManager.getEntry(prevID);
       const [id, setEntry] = argumentManager.request();
-      renderToDropdown(getComponent(extensionID, component), setEntry, current);
+      renderToDropdown(getComponent(extensionID, component), { setter: setEntry, current, extension: this });
       return [["Apply", id]];
     }
   }

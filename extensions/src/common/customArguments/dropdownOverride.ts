@@ -1,3 +1,4 @@
+import { Extension } from "$common/Extension";
 import { waitForObject } from "$common/utils";
 import { ArgumentEntry, ArgumentEntrySetter } from "./CustomArgumentManager";
 
@@ -12,15 +13,17 @@ export type CustomArgumentUIConstructor = (options: CreateComponentOptions) => v
 
 export const renderToDropdown = async <T>(
   compononentConstructor: CustomArgumentUIConstructor,
-  setter: ArgumentEntrySetter<T>,
-  current: ArgumentEntry<T>
+  props: {
+    extension: Extension<any, any>,
+    setter: ArgumentEntrySetter<T>,
+    current: ArgumentEntry<T>
+  }
 ) => {
   const dropdownContainerClass = "blocklyDropDownContent";
   const elements = document.getElementsByClassName(dropdownContainerClass);
   if (elements.length !== 1) return console.error(`Uh oh! Expected 1 element with class '${dropdownContainerClass}', but found ${elements.length}`);
   const [target] = elements;
   const anchor = await waitForObject(() => target.children[0]);
-  const props = { setter, current };
   const component = new compononentConstructor({ target, anchor, props });
   centerDropdownButton(anchor);
 }
