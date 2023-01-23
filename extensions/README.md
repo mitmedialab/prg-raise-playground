@@ -16,8 +16,9 @@ This document will be most helpful for people doing more complex development, li
 2. [Testing Extensions](#testing-extensions)
 3. [Creating UI for Extensions](#creating-ui-for-extensions)
 4. [Porting an Extension to use our Framework & Typescript](#porting-an-extension-to-use-our-framework--typescript)
-5. [Reference](#reference)
-6. [Saving Custom Data for an Extension](#saving-custom-data-for-an-extension)
+5. [Saving Custom Data for an Extension](#saving-custom-data-for-an-extension)
+6. [Adding Custom Arguments](#adding-custom-arguments)
+7. [Reference](#reference)
 
 ## Anatomy of an Extension Directory
 
@@ -475,6 +476,9 @@ The first argument is the name of the `.svelte` file in which your UI is impleme
 
 The second argument is the title that will display at the top of the modal window. If omitted, this will default to the name of your extension.
 
+### Custom Argument UI
+
+You can also create UI in order to accomplish custom arguments. Hop over to [Adding Custom Arguments](#adding-custom-arguments) for a breakdown on how to do that!
 
 ## Porting an Extension to use our Framework & Typescript
 
@@ -688,6 +692,214 @@ export default class SomeBlocks extends Extension<Details, {
 ```
 
 
+## Saving Custom Data for an Extension
+
+> NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
+If you want to edit it, please go to [extension/documentation/src/saveLoad/README.md](https:/github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extension/documentation/src/saveLoad/README.md)
+
+The Extension Framework allows you to easily save arbitrary data for an extension when an `.sb3` (Scratch 3 format) project is saved. 
+
+You can also set up how your extension utilizes that data when a project is loaded that contains custom save data. 
+
+All you must do is define the `saveDataHandler` property on your extension, like so:
+
+```ts
+
+export default class SaveLoadExample extends Extension<DefaultDisplayDetails, NoBlocks> {
+
+  /** This is an example of some data on an Extension that the user might manipulate over the course of their session and must be preserved in order to restore the same state to the extension */
+  somePersistentData = { x: 3, input: "Hello" };
+
+  /**
+   * The SaveDataHandler constructor takes an object with 3 values:
+   * - Extension: This should be a reference to the Extension class you are implementing. This will then be used as the type for the first 'self' parameter of both `onSave` and `onLoad`.
+   * - onSave: A function called when a user SAVES their project which should return some data (likely an object), which will be written to the saved file.
+   * - onLoad: A function called when a user LOADS a project. The second parameter 'data' will take on the type of the thing that `onSave` returns. This way, the two functions stay in sync.
+   */
+  saveDataHandler = new SaveDataHandler({
+    Extension: SaveLoadExample,
+    // Return the information that we want to save
+    onSave(self) { return self.somePersistentData },
+    // Use the loaded 'data' to restore the state of our Extension
+    onLoad(self, data) { self.somePersistentData = data },
+  });
+
+
+  init = notRelevantToExample;
+  defineBlocks = notRelevantToExample;
+}
+
+```
+
+
+## Adding Custom Arguments
+
+> NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
+If you want to edit it, please go to [extension/documentation/src/customArguments/README.md](https:/github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extension/documentation/src/customArguments/README.md)
+
+The Extension Framework allows us to do a lot of cool stuff that would be tricky to do if we were using the [default Scratch Extension workflow]().
+
+One of the coolest is the ability to define custom arguments, which means both:
+- Introducing an arbitrary new type of argument 
+  - It could be an alias for a `number` the same way the built-in `Angle` argument is. Or it could be something new entirely, like an object with some specific keys, or an array of a certain length -- whatever you want!
+- Defining the UI the allows a user to set / interact with that argument type
+  - Imagine being able to create argument-specifc UI like is done for the built-in `Note`, `Angle`, `Color`, and `Matrix` arguments 
+
+Here's how:
+
+### Create a New UI Component
+
+For a quick breakdown of how we handle UI generally in the Extension Framework, head over to [Creating UI for Extensions](#creating-ui-for-extensions) -- take note of resolving [Svelte]((https://github.com/mitmedialab/prg-extension-boilerplate#svelte-only-if-you-are-developing-ui)) dependencies if you haven't already.
+
+Then run the following command:
+
+```bash
+npm run add:arg <extension directory>
+# For example: npm run add:arg myExtension
+```
+
+This will create a new `.svelte` file for you within your extension's directory pre-configured to handle custom arguments. However, there's still some more you need to do before you can visualize and modify custom arguments.
+
+> NOTE: The generated file will be given a default name. Consider changing it to be more expressive of your custom argument type. For the below explanations, assume we changed the name to `MyArgUI.svelte`.
+
+### Specifying a Custom Argument within a Block's Definition
+
+Assume we have the following extension:
+
+```ts
+
+import { Extension } from "$common";
+
+type MyCustomArgument = { a: number, b: string, c: boolean };
+
+type Blocks = {
+  blockWithCustomArgument: (arg: MyCustomArgument) => void;
+}
+
+export default class ExtensionWithCustomArgument extends Extension<DefaultDisplayDetails, Blocks> {
+  init = notRelevantToExample;
+
+  defineBlocks = seeBlow;
+}
+
+```
+
+
+When implementing the `defineBlocks` function, we can then treat the argument of our block function as a custom argument like so:
+
+```ts
+
+export default class ExtensionWithCustomArgument extends Extension<DefaultDisplayDetails, Blocks> {
+  init = notRelevantToExample;
+
+  defineBlocks(): BlockDefinitions<ExtensionWithCustomArgument> {
+    return {
+      blockWithCustomArgument: {
+        type: BlockType.Command,
+        text: (arg) => `Set custom argument ${arg}`,
+
+        /** Invoke the member `makeCustomArgument` function of the Extension class, which requires:
+         * - component: The name of the `.svelte` file that should be display when this argument is clicked on.
+         * - initial: The value that the argument should default to. NOTE that this item has both a 'text' and 'value' field. 
+         *  - This is because the value of the custom argument must be able to be represented as a string and displayed directly in the block
+         *    once the UI closes -- this is what the 'text' field is used for. Whenever you set a custom argument, 
+         *    you'll need to provide both a 'value' and a 'text' representation of that value.
+         *    Here, we use the method `convertArgToText` (see below), which implements this conversion process for our custom type.
+         */
+        arg: this.makeCustomArgument({
+          component: "MyArgUI",
+          initial: { value: { a: 10, b: "Hello world", c: false }, text: this.convertArgToText({ a: 10, b: "Hello world", c: false }), }
+        }),
+
+        /** Our operation should expect an input that matches our custom argument type */
+        operation: (arg) => {
+          const { a, b, c } = arg;
+          console.log(`${b}: ${a}, ${c}`);
+        }
+      }
+    }
+  };
+
+  convertArgToText(arg: MyCustomArgument) {
+    const { a, b, c } = arg;
+    return `${a}, \"${b}\", ${c}`;
+  }
+}
+
+```
+
+
+### Implementing the UI
+
+Then, we modify the UI (Svelte) component we created earlier to match our block function argument, like so:
+
+```ts
+<script lang="ts">
+  import Extension from ".";
+  import { ParameterOf, ArgumentEntry, ArgumentEntrySetter } from "$common";
+
+  /**
+   * This type will hold onto the type of our custom argument,
+   * and ensure this UI remains in sync with the block function argument it's associated with.
+   * To do so, we make use of the 'ParameterOf' utility type.
+   * The first parameter is our Extension.
+   * The second parameter is the name of the block function this argument belongs to.
+   * The third parameter is the index of the argument (since here we want the first argument, we use an index of 0)
+   */
+  type Value = ParameterOf<Extension, "blockWithCustomArgument", 0>; 
+  
+  /**
+   * This function will be used to set the value of your custom argument.
+   * NOTE: The argument won't actually be updated until the user clicks 'Apply' which will appear underneath this UI. 
+   * If they close the UI without clicking 'Apply', the changes won't persist.
+   * So in order for UI changes to take affect, you must call `setter(...)` and then the user must click apply.
+   */
+  // svelte-ignore unused-export-let
+  export let setter: ArgumentEntrySetter<Value>;
+  
+  /**
+   * This is the current value of the custom argument at the time of opening this UI. 
+   * Changing this value will have no effect -- instead use the `setter` function.
+   */
+  // svelte-ignore unused-export-let
+  export let current: ArgumentEntry<Value>;
+
+  /**
+   * This is a reference to your extension. 
+   * It should be treated as 'readonly', meaning you should only pull information FROM your extension to populate this UI.
+   * You should NOT use this UI to modify the extension, as that would both confuse the user and anyone developing the extension.
+   * 
+   * If you need a UI to control the extension, instead use the Modal-style UI.
+   * @see https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extensions#creating-ui-for-extensions
+   */
+  // svelte-ignore unused-export-let
+  export let extension: Extension;
+  
+  /**
+   * Create variables to store the different parts of our argument's value
+   */
+  let {a, b, c} = current.value;
+  
+  /**
+   * Use Svelte's reactivity to call the `setter` function whenever one of our inputs change
+  */
+  $: setter({ value: {a, b, c}, text: extension.convertArgToText({a, b, c}) });
+</script>
+
+<style>
+</style>
+
+<div>
+  <input bind:value={a} type="number">
+  <input bind:value={b} type="text">
+  <input bind:checked={c} type="checkbox">
+</div>
+```
+
+> Included links:
+> * https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extensions#creating-ui-for-extensions
+
+
 ## Reference
 
 > NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
@@ -736,44 +948,4 @@ sequenceDiagram
     C->>B: Retrieve appropriate extension bundle from <br> (url) static/extension-bundles/
     deactivate C
 ```
-
-## Saving Custom Data for an Extension
-
-> NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
-If you want to edit it, please go to [extension/documentation/src/saveLoad/README.md](https:/github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extension/documentation/src/saveLoad/README.md)
-
-The Extension Framework allows you to easily save arbitrary data for an extension when an `.sb3` (Scratch 3 format) project is saved. 
-
-You can also set up how your extension utilizes that data when a project is loaded that contains custom save data. 
-
-All you must do is define the `saveDataHandler` property on your extension, like so:
-
-```ts
-
-export default class SaveLoadExample extends Extension<DefaultDisplayDetails, NoBlocks> {
-
-  /** This is an example of some data on an Extension that the user might manipulate over the course of their session and must be preserved in order to restore the same state to the extension */
-  somePersistentData = { x: 3, input: "Hello" };
-
-  /**
-   * The SaveDataHandler constructor takes an object with 3 values:
-   * - Extension: This should be a reference to the Extension class you are implementing. This will then be used as the type for the first 'self' parameter of both `onSave` and `onLoad`.
-   * - onSave: A function called when a user SAVES their project which should return some data (likely an object), which will be written to the saved file.
-   * - onLoad: A function called when a user LOADS a project. The second parameter 'data' will take on the type of the thing that `onSave` returns. This way, the two functions stay in sync.
-   */
-  saveDataHandler = new SaveDataHandler({
-    Extension: SaveLoadExample,
-    // Return the information that we want to save
-    onSave(self) { return self.somePersistentData },
-    // Use the loaded 'data' to restore the state of our Extension
-    onLoad(self, data) { self.somePersistentData = data },
-  });
-
-
-  init = notRelevantToExample;
-  defineBlocks = notRelevantToExample;
-}
-
-```
-
 [](GeneratedContentGuardEnd_NoChangesInThisSectionWillBeSaved)

@@ -14,6 +14,7 @@
     "dev": "npm run ts:node:extensions -- ./scripts/build.ts watch=true",
     "new:extension": "npm run ts:node:extensions -- ./extensions/scripts/factories/extension.ts",
     "add:ui": "npm run ts:node:extensions -- ./extensions/scripts/factories/ui.ts",
+    "add:arg": "npm run ts:node:extensions -- ./extensions/scripts/factories/customArgument.ts",
     "add:test": "npm run ts:node:extensions -- ./extensions/scripts/factories/test.ts",
     "add:package": "npm run ts:node:extensions -- ./extensions/scripts/factories/package.ts",
     "rebuild:blocks": "npm run prepublish --prefix ./packages/scratch-blocks && npm run dev",

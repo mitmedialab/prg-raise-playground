@@ -4,7 +4,10 @@ import Cast from '$scratch-vm/util/cast';
 //import * as formatMessage from 'format-message';
 import Runtime from "$scratch-vm/engine/runtime";
 import { openUI, registerButtonCallback } from './ui';
-import { isFunction, isString } from './utils';
+import { identity, isFunction, isString } from './utils';
+import { isCustomArgumentHack, processCustomArgumentHack } from './customArguments';
+import { customArgumentCheck, customArgumentFlag } from './globals';
+import CustomArgumentManager, { ArgumentEntry } from './customArguments/CustomArgumentManager';
 import { SaveDataHandler } from './SavaDataHandler';
 
 export type CodeGenArgs = {
@@ -75,11 +78,17 @@ export abstract class Extension
   protected saveDataHandler: SaveDataHandler<typeof this, any> = undefined;
 
   readonly BlockFunctions: Blocks;
-  readonly BlockDefinitions: BlockDefinitions<Extension<MenuDetails, Blocks>>;
-  readonly Translations: Translations<Extension<MenuDetails, Blocks>>;
+  readonly BlockDefinitions: BlockDefinitions<typeof this>;
+  readonly Translations: Translations<typeof this>;
 
   private readonly internal_blocks: ExtensionBlockMetadata[] = [];
   private readonly internal_menus: ExtensionMenuMetadata[] = [];
+
+  private argumentManager: CustomArgumentManager = null;
+
+  public get customArgumentManager(): CustomArgumentManager {
+    return this.argumentManager
+  }
 
   /**
    * WARNING! If you change this key, it will affect already saved projects.
@@ -94,9 +103,10 @@ export abstract class Extension
    * @returns 
    */
   private save(toSave: { [Extension.SaveDataKey]: Record<string, any> }, extensionIDs: Set<string>) {
-    const { saveDataHandler, id } = this;
-    const saveData = saveDataHandler?.hooks.onSave(this);
-    if (!saveData) return;
+    const { saveDataHandler, id, argumentManager } = this;
+    const saveData = saveDataHandler?.hooks.onSave(this) ?? {};
+    argumentManager?.saveTo(saveData);
+    if (Object.keys(saveData).length === 0) return;
     const container = toSave[Extension.SaveDataKey];
     container ? (container[id] = saveData) : (toSave[Extension.SaveDataKey] = { [id]: saveData });
     extensionIDs.add(id);
@@ -111,10 +121,12 @@ export abstract class Extension
   private load(saved: { [Extension.SaveDataKey]: Record<string, any> }) {
     if (!saved) return;
     const { saveDataHandler, id } = this;
-    if (!saveDataHandler) return;
     const saveData = Extension.SaveDataKey in saved ? saved[Extension.SaveDataKey][id] : null;
-    if (saveData) saveDataHandler.hooks.onLoad(this, saveData);
+    if (!saveData) return;
+    saveDataHandler?.hooks.onLoad(this, saveData);
+    (this.argumentManager ??= new CustomArgumentManager()).loadFrom(saveData);
   }
+
 
   openUI(component: string, label?: string) {
     const { id, name, runtime } = this;
@@ -350,8 +362,10 @@ export abstract class Extension
     const opcode = Extension.GetInternalKey(key);
     const bound = operation.bind(this);
 
+    const { id, customArgumentManager } = this;
+
     const isButton = type === BlockType.Button;
-    const buttonID = isButton ? Extension.GetButtonID(this.id, opcode) : undefined;
+    const buttonID = isButton ? Extension.GetButtonID(id, opcode) : undefined;
 
     if (isButton) {
       registerButtonCallback(this.runtime, buttonID, bound)
@@ -361,11 +375,18 @@ export abstract class Extension
         const { mutation } = argsFromScratch; // if we need it...
         // NOTE: Assumption is that args order will be correct since their keys are parsable as ints (i.e. '0', '1', ...)
         const uncasted = Object.values(argsFromScratch).slice(0, -1);
-        const casted = uncasted.map((value, index) => {
-          const handled = handlers[index] ? handlers[index](value) : value;
+
+        const casted = uncasted.map((param: any, index) => {
           const type = Extension.GetArgumentType(args[index]);
-          return Extension.CastToType(type, handled)
+          const handler = handlers[index] ?? identity;
+
+          return type !== ArgumentType.Custom
+            ? Extension.CastToType(type, handler(param))
+            : !(Extension.IsString(param) && CustomArgumentManager.IsIdentifier(param))
+              ? handler(param)
+              : handler(customArgumentManager.getEntry(param).value)
         });
+
         return bound(...casted, blockUtility); // can add more util params as necessary
       }
     }
@@ -378,6 +399,9 @@ export abstract class Extension
       func: buttonID,
     }
   }
+
+  private [customArgumentCheck] = isCustomArgumentHack.bind(this) as typeof isCustomArgumentHack;
+  private processCustomArgumentHack = processCustomArgumentHack.bind(this) as typeof processCustomArgumentHack<Extension<MenuDetails, Blocks>>;
 
   private format(text: string, identifier: string, description: string): string {
     return text;
@@ -426,6 +450,17 @@ export abstract class Extension
     catch {
       return onFailure(value);
     }
+  }
+
+  protected makeCustomArgument = <T>({ component, initial, acceptReportersHandler: handler }: { component: string, initial: ArgumentEntry<T>, acceptReportersHandler?: (x: any) => ArgumentEntry<T> }): Argument<T> => {
+    this.argumentManager ??= new CustomArgumentManager();
+    const id = this.argumentManager.add(initial);
+    const getItems = () => [{ text: customArgumentFlag, value: JSON.stringify({ component, id }) }];
+    return {
+      type: ArgumentType.Custom,
+      defaultValue: id,
+      options: handler === undefined ? getItems : { acceptsReports: true, getItems, handler },
+    } as Argument<T>
   }
 
   static GetKeyFromOpcode = (opcode: string) => opcode.replace(Extension.GetInternalKey(""), "");

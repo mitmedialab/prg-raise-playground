@@ -18,13 +18,11 @@ const snippetify = (content: string) => ["```ts", content, "```", extractLinks(c
 
 const extractSetting = (query: string, kind: string) => {
   const setting = query.split("=");
+  const found = setting.length === 2;
 
-  if (setting.length < 2) {
-    console.error(chalk.red(`No setting was given for ${kind}. Use '[](...${kind}=___)'. Received:  ${query}`));
-    return undefined;
-  }
+  if (!found) console.error(chalk.red(`No setting was given for ${kind}. Use '[](...${kind}=___)'. Received: ${query}`));
 
-  return setting[1];
+  return found ? setting[1] : undefined;
 }
 
 const getLineNumber = (section: string) => section.split("\n").length;

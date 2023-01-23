@@ -54,7 +54,7 @@ export async function waitForCondition(condition: () => boolean, delay: number =
   clearTimeout(timeout);
 };
 
-export const isString = (query: any) => (query) => typeof query === 'string' || query instanceof String;
+export const isString = (query: any) => typeof query === 'string' || query instanceof String;
 
 export const isFunction = (query: any) =>
   Object.prototype.toString.call(query) === "[object Function]"
@@ -74,3 +74,5 @@ export const copyTo = <TTarget extends object, TSource extends { [k in keyof TTa
     target[key] = source[key]
   }
 }
+
+export const identity = (x: any) => x;

@@ -23,7 +23,7 @@ export const enum Animal {
 }
 
 
-const nameByAnimal: Record<Animal, string> = {
+export const nameByAnimal: Record<Animal, string> = {
   [Animal.Leopard]: 'leopard',
   [Animal.Tiger]: 'tiger',
   [Animal.Gorilla]: 'gorilla',
@@ -31,7 +31,7 @@ const nameByAnimal: Record<Animal, string> = {
   [Animal.Pig]: 'pig',
 }
 
-const emojiByAnimal: Record<Animal, string> = {
+export const emojiByAnimal: Record<Animal, string> = {
   [Animal.Leopard]: '🐆',
   [Animal.Tiger]: '🐅',
   [Animal.Gorilla]: '🦍',
@@ -220,7 +220,10 @@ export default class TypeScriptFrameworkExample extends Extension<DisplayDetails
 
       addAnimalToCollection: (self: TypeScriptFrameworkExample) => ({
         type: BlockType.Command,
-        arg: { type: ArgumentType.Number, options: self.animals },
+        arg: self.makeCustomArgument({
+          component: "AnimalArgument",
+          initial: { value: Animal.Leopard, text: nameByAnimal[Animal.Leopard] }
+        }),
         text: (animal) => `Add ${animal} to collection`,
         operation: (animal) => {
           this.addAnimalToCollection(animal);

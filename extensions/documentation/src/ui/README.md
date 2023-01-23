@@ -39,3 +39,7 @@ For example:
 The first argument is the name of the `.svelte` file in which your UI is implemented -- this name must match your filename exactly (but you can omit the `.svelte` extension).
 
 The second argument is the title that will display at the top of the modal window. If omitted, this will default to the name of your extension.
+
+### Custom Argument UI
+
+You can also create UI in order to accomplish custom arguments. Hop over to [Adding Custom Arguments](#adding-custom-arguments) for a breakdown on how to do that!
