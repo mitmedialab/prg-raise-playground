@@ -42,4 +42,4 @@ The second argument is the title that will display at the top of the modal windo
 
 ### Custom Argument UI
 
-You can also create UI in order to accomplish custom arguments. Hop over to [Adding Custom Arguments]() for a breakdown on how to do that!
+You can also create UI in order to accomplish custom arguments. Hop over to [Adding Custom Arguments](#adding-custom-arguments) for a breakdown on how to do that!
