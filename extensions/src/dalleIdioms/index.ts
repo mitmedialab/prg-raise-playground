@@ -79,7 +79,7 @@ export default class ExtensionNameGoesHere extends Extension<Details, Blocks> {
             return;
           }
 
-          const url = await createImage({ apiKey, prompt: idiom, size: 256 });
+          const url = await createImage({ apiKey, prompt: idiom, size: 512 });
           this.toDisplay = { url, alt: `Generated image of ${idiom}` };
           this.openUI("UI", idiom);
         },
