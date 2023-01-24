@@ -94,7 +94,7 @@ const sortEntries = (entries: Entries): OrderedEntries => {
 
 const addIsGeneratedWarning = (entries: OrderedEntries): OrderedEntries => {
   const warning = "\n> NOTE: This is a generated README section, so no edits you make to it in this file will be saved. \nIf you want to edit it, please go to ";
-  const repoURL = "https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev";
+  const repoURL = "mitmedialab/prg-extension-boilerplate/tree/dev";
   return entries.map(({ content, pathToREADME }) => {
     const lines = content.split("\n");
     const relativePath = path.join("extensions", path.relative(extensionsRoot, pathToREADME));
