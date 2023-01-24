@@ -1,5 +1,7 @@
 import { rollup, type Plugin, type RollupOptions, type OutputOptions } from "rollup";
 import alias from '@rollup/plugin-alias';
+import json from '@rollup/plugin-json';
+import nodePolyfills from 'rollup-plugin-polyfill-node';
 import commonjs from "@rollup/plugin-commonjs";
 import nodeResolve from "@rollup/plugin-node-resolve";
 import sucrase from '@rollup/plugin-sucrase';
@@ -63,11 +65,13 @@ const transpileFailed = (ts: Transpiler, info: BundleInfo) => {
 }
 
 const getThirdPartyPlugins = (): Plugin[] => [
+  nodePolyfills(),
   alias({ entries: getAliasEntries() }),
   svelte({
     preprocess: autoPreprocess(),
     emitCss: false,
   }),
+  json(),
   sucrase({
     transforms: ['typescript']
   }),
