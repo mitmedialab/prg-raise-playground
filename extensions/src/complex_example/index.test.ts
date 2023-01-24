@@ -11,8 +11,8 @@ createTestSuite({ Extension, __dirname }, {
       const input = Animal.Tiger;
       return {
         input,
-        before: (extension) => { startingCount = extension.collection.length },
-        after: ({ collection }) => {
+        before: ({ extension: { collection } }) => { startingCount = collection.length },
+        after: ({ extension: { collection } }) => {
           expect(collection.length).toBe(startingCount + 1);
           const animal = collection[startingCount];
           const value = getValueFromMenuItem(animal);
@@ -23,23 +23,23 @@ createTestSuite({ Extension, __dirname }, {
     selectAngle: {
       input: 3,
       expected: 3,
-      after(_, result) { this.expect(result).toBe(3) }
+      after({ result, testHelper: { expect } }) { expect(result).toBe(3) }
     }
   },
   integrationTests: {
-    multipliesGiveSameResult: async (runner, { expect }) => {
+    multipliesGiveSameResult: async ({ blockRunner: blockrunner, testHelper: { expect } }) => {
       const left = 4;
       const right = 5;
-      const { output: outputFromSelf } = await runner.invoke("multiplyUsingSelf", left, right);
-      const { output: outputFromThis } = await runner.invoke("multiplyUsingThis", left, right);
+      const { output: outputFromSelf } = await blockrunner.invoke("multiplyUsingSelf", left, right);
+      const { output: outputFromThis } = await blockrunner.invoke("multiplyUsingThis", left, right);
       expect(outputFromSelf).toBe(outputFromThis);
       expect(outputFromSelf).toBe(left * right);
     },
-    logMultiplicationResult: async (runner, { expect }) => {
-      const simpleRunner = runner.createCompanion(Simple);
+    logMultiplicationResult: async ({ blockRunner: blockrunner, testHelper: { expect } }) => {
+      const simpleRunner = blockrunner.createCompanion(Simple);
       const left = 4;
       const right = 5;
-      const { output } = await runner.invoke("multiplyUsingSelf", left, right);
+      const { output } = await blockrunner.invoke("multiplyUsingSelf", left, right);
       const { log } = console;
       console.log = (message?: any) => expect(message).toBe(`${left * right}`);
       await simpleRunner.invoke("log", `${output}`);

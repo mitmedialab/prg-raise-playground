@@ -54,7 +54,7 @@ export async function waitForCondition(condition: () => boolean, delay: number =
   clearTimeout(timeout);
 };
 
-export const isString = (query: any) => (query) => typeof query === 'string' || query instanceof String;
+export const isString = (query: any) => typeof query === 'string' || query instanceof String;
 
 export const isFunction = (query: any) =>
   Object.prototype.toString.call(query) === "[object Function]"
@@ -62,3 +62,17 @@ export const isFunction = (query: any) =>
   || query instanceof Function;
 
 export const splitOnCapitals = (query: string) => query.split(/(?=[A-Z])/);
+
+/**
+ * A type safe utility function for copy values from one object to another
+ * @param param0 object containing the target to copy values to and the source of the values to copy
+ */
+export const copyTo = <TTarget extends object, TSource extends { [k in keyof TTarget]?: TTarget[k] }>({ target, source }: { target: TTarget, source: TSource }) => {
+  for (const key in source) {
+    if (!(key in target)) continue;
+    // @ts-ignore -- the types of the function should ensure this is valud TS
+    target[key] = source[key]
+  }
+}
+
+export const identity = (x: any) => x;

@@ -1,5 +1,4 @@
-import { ArgumentType, BlockType, Language, Extension, ButtonBlock, Environment } from "$common";
-import defineTranslations from "./translations";
+import { ArgumentType, BlockType, Language, Extension, ButtonBlock, Environment, SaveDataHandler } from "$common";
 
 type Details = {
   name: "Super Simple Typescript Extension!",
@@ -19,8 +18,13 @@ export default class SimpleTypescript extends Extension<Details, {
   counterUI: ButtonBlock;
   colorUI: ButtonBlock;
 }> {
-
   count: number = 0;
+
+  saveDataHandler = new SaveDataHandler({
+    Extension: SimpleTypescript,
+    onSave: ({ count }) => ({ count }),
+    onLoad: (self, { count }) => self.count = count
+  });
 
   init(env: Environment) {
   }
@@ -33,11 +37,9 @@ export default class SimpleTypescript extends Extension<Details, {
     this.count += amount;
   }
 
-  defineTranslations = defineTranslations;
-
   defineBlocks(): SimpleTypescript["BlockDefinitions"] {
     return {
-      log: () => ({
+      log: {
         type: BlockType.Command,
         arg: {
           type: ArgumentType.String,
@@ -52,22 +54,22 @@ export default class SimpleTypescript extends Extension<Details, {
         },
         text: (msg) => `Log ${msg} to the console`,
         operation: (msg) => console.log(msg)
-      }),
-      dummyUI: () => ({
+      },
+      dummyUI: {
         type: BlockType.Button,
         text: `Dummy UI`,
         operation: () => this.openUI("Dummy", "Howdy")
-      }),
-      counterUI: () => ({
+      },
+      counterUI: {
         type: BlockType.Button,
         text: "Open Counter",
         operation: () => this.openUI("Counter", "Pretty cool, right?")
-      }),
-      colorUI: () => ({
+      },
+      colorUI: {
         type: BlockType.Button,
         text: "Show colors",
         operation: () => this.openUI("Palette")
-      })
+      }
     }
   }
 }

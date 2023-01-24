@@ -11,12 +11,12 @@ import { commonDirectory, deleteAllFilesInDir, extensionBundlesDirectory, fileNa
 import { BundleInfo } from "./bundle";
 import ts from "typescript";
 import { getSrcCompilerHost } from "./typeProbing/tsConfig";
-import { extensionsFolder, vmSrc } from "$root/scripts/paths";
+import { extensionsFolder, packages, vmSrc } from "$root/scripts/paths";
 import { reportDiagnostic } from "./typeProbing/diagnostics";
 import chalk from "chalk";
 import { runOncePerBundling } from "./utils/rollupHelper";
 import { sendToParent } from "$root/scripts/comms";
-import { createMatchGroup, createMatchSelection, matchAnyLetterOrNumber, matchAnyWhiteSpaceIncludingNewLine, matchOneOrMoreTimes } from "./utils/regularExpressions";
+import { createMatchGroup, matchAnyWhiteSpaceIncludingNewLine, matchOneOrMoreTimes } from "./utils/regularExpressions";
 
 export const clearDestinationDirectories = (): Plugin => {
   const runner = runOncePerBundling();
@@ -71,19 +71,24 @@ export const transpileExtensionGlobals = (): Plugin => {
     buildStart() {
       if (!runner.check()) return;
       const filename = "globals.ts";
-      const eventsFile = path.join(commonDirectory, filename);
+      const pathToFile = path.join(commonDirectory, filename);
       const { options, host } = getSrcCompilerHost();
 
-      const program = ts.createProgram([eventsFile], options, host);
+      const outDir = path.join(extensionsFolder, "dist");
+      const outFile = path.join(outDir, tsToJs(filename));
+      fs.rmSync(outFile, { force: true });
+
+      const program = ts.createProgram([pathToFile], { ...options, outDir }, host);
       const result = program.emit();
 
       if (result.emitSkipped) return result.diagnostics.forEach(reportDiagnostic);
 
-      const transpiledFile = tsToJs(eventsFile);
-      const destinationDir = path.join(extensionsFolder, "dist");
+      const destinations = [packages.vm, packages.gui].map(dir => path.join(dir, "src", "dist"));
 
-      if (!fs.existsSync(destinationDir)) fs.mkdirSync(destinationDir);
-      fs.renameSync(transpiledFile, path.join(destinationDir, tsToJs(filename)));
+      destinations.forEach(destination => {
+        if (!fs.existsSync(destination)) fs.mkdirSync(destination);
+        fs.copyFileSync(outFile, path.join(destination, tsToJs(filename)));
+      });
     }
   }
 }
