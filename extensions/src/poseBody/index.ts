@@ -1,4 +1,4 @@
-import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails } from "$common";
+import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, RuntimeEvent } from "$common";
 
 import Video from '../../../packages/scratch-vm/src/io/video';
 import * as posenet from '../../../packages/scratch-vm/node_modules/@tensorflow-models/posenet';
@@ -43,7 +43,7 @@ export default class PoseBody extends Extension<Details, Blocks> {
   /**
    * The state of where the body and its parts are estimated to be
    */
-  bodyPoseState;
+  poseState;
 
   /**
    * Flag to determine if the extension has been installed before
@@ -75,19 +75,21 @@ export default class PoseBody extends Extension<Details, Blocks> {
   init(env: Environment) {
 
     this.runtime = env.runtime;
-    const EXTENSION_ID = 'PoseBody';
+    const EXTENSION_ID = 'poseBody';
 
-    /* Unused but possibly needed in the future
-    this.runtime.registerPeripheralExtension(EXTENSION_ID, this);
-    this.runtime.connectPeripheral(EXTENSION_ID, 0);
-    this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
-    */
+    /* Unused but possibly needed in the future */
+    // this.runtime.registerPeripheralExtension(EXTENSION_ID, this);
+    // this.runtime.connectPeripheral(EXTENSION_ID, 0);
+    // this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
+
 
     this.firstInstall = true;
 
     if (this.runtime.ioDevices) {
-      this.runtime.on(RuntimeEvent.ProjectLoaded, this.projectStarted.bind(this)); // May be unnecessary
-      this.runtime.on(RuntimeEvent.ProjectRunStart, this.reset.bind(this)); // May be unnecessary, see reset() definition
+      // Possibly unnecessary, keep commented just in case
+      // this.runtime.on(RuntimeEvent.ProjectLoaded, this.projectStarted.bind(this));
+      // this.runtime.on(RuntimeEvent.ProjectRunStart, this.reset.bind(this)); 
+
       this._loop();
     }
   }
@@ -108,7 +110,7 @@ export default class PoseBody extends Extension<Details, Blocks> {
    * @param z
    * @returns enum
    */
-  tfCoordsToScratch({ x, y, z }) {
+  tfCoordsToScratch({ x, y }) {
     return { x: x - 250, y: 200 - y };
   }
 
@@ -124,15 +126,23 @@ export default class PoseBody extends Extension<Details, Blocks> {
   /**
    * init() binds to this function, but it is never called, so this may be unimportant
    */
-  reset() {
-  }
+  // reset() {
+  // }
 
   /**
    * Checks if the body pose estimate is ready to be used
    * @returns {boolean} true if connected, false if not connected
    */
   isConnected() {
-    return !!this.bodyPoseState && this.bodyPoseState.length > 0;
+    return this.hasPose();
+  }
+
+  /**
+   * Checks if there is a body in the video frame that has a pose
+   * @returns {boolean} true if there is a body pose, false otherwise
+   */
+  hasPose() {
+    return this.poseState && this.poseState.keypoints && this.poseState.score > 0.01;
   }
 
   /**
@@ -149,14 +159,14 @@ export default class PoseBody extends Extension<Details, Blocks> {
 
       const time = +new Date();
       if (frame) {
-        this.bodyPoseState = await this.estimateBodyPoseOnImage(frame);
-        /*
-        if (this.isConnected()) {
-            this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
-        } else {
-            this.runtime.emit(this.runtime.constructor.PERIPHERAL_DISCONNECTED);
-        }
-        */
+        this.poseState = await this.estimatePoseOnImage(frame);
+
+        // if (this.isConnected()) {
+        //   this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
+        // } else {
+        //   this.runtime.emit(this.runtime.constructor.PERIPHERAL_DISCONNECTED);
+        // }
+
       }
       const estimateThrottleTimeout = (+new Date() - time) / 4;
       await new Promise(r => setTimeout(r, estimateThrottleTimeout));
@@ -168,18 +178,19 @@ export default class PoseBody extends Extension<Details, Blocks> {
    * @param imageElement
    * @returns {Promise<AnnotatedPrediction[]>}
    */
-  async estimateBodyPoseOnImage(imageElement) {
-    const bodyModel = await this.getLoadedBodyModel();
-    return await bodyModel.estimateBody(imageElement, {
+  async estimatePoseOnImage(imageElement) {
+    // load the posenet model from a checkpoint
+    const bodyModel = await this.ensureBodyModelLoaded();
+    return await bodyModel.estimateSinglePose(imageElement, {
       flipHorizontal: false
     });
   }
 
   /**
    * Gets the body model from posenet
-   * @returns
+   * @returns 
    */
-  async getLoadedBodyModel() {
+  async ensureBodyModelLoaded() {
     if (!this._bodyModel) {
       this._bodyModel = await posenet.load();
     }
@@ -252,7 +263,9 @@ export default class PoseBody extends Extension<Details, Blocks> {
         { text: 'left ankle', value: 'rightAnkle' },
       ];
 
-
+    const handlerOptions = // SIMPLIFY THIS using the above list
+      ['nose', 'leftEye', 'rightEye', 'leftEar', 'rightEar', 'leftShoulder', 'rightShoulder', 'leftElbow', 'rightElbow',
+        'leftWrist', 'rightWrist', 'leftHip', 'rightHip', 'leftKnee', 'rightKnee', 'leftAnkle', 'rightAnkle']
 
     type DefineGoToBodyPart = DefineBlock<PoseBody, Blocks["goToBodyPartBlock"]>;
     const goToBodyPartBlock: DefineGoToBodyPart = () => ({
@@ -262,24 +275,22 @@ export default class PoseBody extends Extension<Details, Blocks> {
         options: {
           acceptsReporters: true,
           items: bodyOptions,
-          handler: (part: string) => {
-            // FIX
-            // if (["thumb", "indexFinger", "middleFinger", "ringFinger", "pinky"].indexOf(part) != -1) {
-            //   return part;
-            // }
-            // else return "thumb";
-            return part;
+          handler: (bodyPart: string) => {
+            if (handlerOptions.indexOf(bodyPart) == -1) {
+              return 'nose'
+            }
+            else return bodyPart;
           }
         }
       },
       text: (bodyPart: string) => `go to ${bodyPart}`,
       operation: (bodyPart, util) => {
 
-        if (this.isConnected()) {
-          const [x, y, z] = this.bodyPoseState[0].annotations[bodyPart];
-          const { x: scratchX, y: scratchY } = this.tfCoordsToScratch({ x, y, z });
-          (util.target as any).setXY(scratchX, scratchY, false);
+        if (this.hasPose()) {
+          const { x, y } = this.tfCoordsToScratch(this.poseState.keypoints.find(point => point.part === bodyPart).position);
+          (util.target as any).setXY(x, y, false);
         }
+        console.log(bodyPart)
       }
     });
 
