@@ -1,7 +1,7 @@
 import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, RuntimeEvent } from "$common";
 
 import Video from '../../../packages/scratch-vm/src/io/video';
-import handpose from '@tensorflow-models/handpose';
+import * as handpose from '@tensorflow-models/handpose';
 
 /**
  * States the video sensing activity can be set to.
@@ -55,7 +55,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
   /**
    * The hand model from handpose
    */
-  _handModel;
+  private handModel;
 
   /**
    * The current video state
@@ -180,13 +180,11 @@ export default class PoseHand extends Extension<Details, Blocks> {
 
   /**
    * Gets the hand model from handpose
-   * @returns
+   * @returns hand model
    */
   async getLoadedHandModel() {
-    if (!this._handModel) {
-      this._handModel = await handpose.load();
-    }
-    return this._handModel;
+    this.handModel ??= await handpose.load();
+    return this.handModel;
   }
 
   /**
@@ -194,14 +192,11 @@ export default class PoseHand extends Extension<Details, Blocks> {
    * @param state 
    */
   videoToggle(state: number) {
-    if (state === VideoState.OFF) {
-      this.runtime.ioDevices.video.disableVideo();
-    }
-    else {
-      this.runtime.ioDevices.video.enableVideo();
-      // Mirror if state is ON. Do not mirror if state is ON_FLIPPED.
-      this.runtime.ioDevices.video.mirror = (state === VideoState.ON);
-    }
+    if (state === VideoState.OFF) return this.runtime.ioDevices.video.disableVideo();
+
+    this.runtime.ioDevices.video.enableVideo();
+    // Mirror if state is ON. Do not mirror if state is ON_FLIPPED.
+    this.runtime.ioDevices.video.mirror = (state === VideoState.ON);
   }
 
   /**
@@ -227,7 +222,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
       this.globalVideoTransparency = 50;
       this.projectStarted();
       this.firstInstall = false;
-      this._handModel = null;
+      this.handModel = null;
     }
 
     /**
@@ -238,6 +233,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
       [{ text: "thumb", value: "thumb" }, { text: "index finger", value: "indexFinger" },
       { text: "middle finger", value: "middleFinger" }, { text: "ring finger", value: "ringFinger" }, { text: "pinky finger", value: "pinky" }];
 
+    const handlerFingerOptions = fingerOptions.map(finger => finger.value);
     /**
      * The options for the part of a finger
      * @type {Array}
@@ -254,9 +250,10 @@ export default class PoseHand extends Extension<Details, Blocks> {
         options: {
           acceptsReporters: true,
           items: fingerOptions,
-          handler: (part: string) => {
-            if (["thumb", "indexFinger", "middleFinger", "ringFinger", "pinky"].indexOf(part) != -1) {
-              return part;
+          handler: (finger: string) => {
+            // return handlerFingerOptions.includes(finger) ? finger : "thumb";
+            if (["thumb", "indexFinger", "middleFinger", "ringFinger", "pinky"].indexOf(finger) != -1) {
+              return finger;
             }
             else return "thumb";
           }
