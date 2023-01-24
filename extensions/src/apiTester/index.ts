@@ -19,14 +19,7 @@ export default class _ extends Extension<Details, {
         type: BlockType.Button,
         operation: async () => {
           const url = "https://jovial-choux-e140a5.netlify.app/.netlify/functions/ai-blocks/drive";
-
-          const resp = await fetch(url, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify("Hi") // body data type must match "Content-Type" header
-          });
+          const resp = await fetch(url, { method: 'GET' });
           const json = await resp.json();
           console.log(json);
         }
