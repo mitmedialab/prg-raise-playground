@@ -2,7 +2,6 @@ import type Runtime from '$scratch-vm/engine/runtime';
 import BlockUtility from '$scratch-vm/engine/block-utility';
 import { ArgumentType, BlockType, Branch, Language } from './enums';
 import type { Extension } from './Extension';
-import type { EnsureInclusionInTypescriptProgram } from './flag';
 
 export type InternalButtonKey = "__button__";
 export type ButtonBlock = () => InternalButtonKey;
@@ -30,7 +29,20 @@ export type Environment = {
   videoFeed: undefined | any
 }
 
+/**
+ * Helpful way to specify you want a reference to Extension class itself (not an instance of it) 
+ */
+export interface ExtensionConstructor<T extends BaseExtension> {
+  new(...args: ConstructorParameters<typeof Extension>): T;
+}
+
 export type BlockOperation = (...args: any) => any;
+
+export type ParameterOf<
+  TExtension extends Extension<any, any>,
+  TBlockKey extends keyof TExtension["BlockFunctions"],
+  TIndex extends number,
+> = Parameters<TExtension["BlockFunctions"][TBlockKey]>[TIndex];
 
 export type MenuItem<T> = T | {
   value: T;
@@ -93,15 +105,16 @@ export type TypeByArgumentType<T extends ValueOf<typeof ArgumentType>> =
   : T extends typeof ArgumentType.Color ? RGBObject
   : T extends typeof ArgumentType.Matrix ? boolean[][]
   : T extends typeof ArgumentType.Image ? string // TODO
+  : T extends typeof ArgumentType.Custom ? any
   : never;
 
 export type ScratchArgument<T> =
   T extends RGBObject ? typeof ArgumentType.Color :
   T extends boolean[][] ? typeof ArgumentType.Matrix :
-  T extends number ? (typeof ArgumentType.Number | typeof ArgumentType.Angle | typeof ArgumentType.Note) :
-  T extends string ? typeof ArgumentType.String :
-  T extends boolean ? (typeof ArgumentType.Boolean) :
-  never;
+  T extends number ? (typeof ArgumentType.Number | typeof ArgumentType.Angle | typeof ArgumentType.Note | typeof ArgumentType.Custom) :
+  T extends string ? (typeof ArgumentType.String | typeof ArgumentType.Custom) :
+  T extends boolean ? (typeof ArgumentType.Boolean | typeof ArgumentType.Custom) :
+  (typeof ArgumentType.Custom);
 
 // Used to be <T extends [...any[]]> ... not sure if it needs to be?
 type ToArguments<T extends any[]> =
@@ -398,7 +411,7 @@ export type ExtensionMenuDisplayDetails = {
   implementationLanguage?: ValueOf<typeof Language>;
 } & Partial<Record<ValueOf<typeof Language>, { name: string, description: string }>>
 
-export type DefineBlock<TExt extends BaseExtension, TOp extends BlockOperation> = (extension: Extension<any, any>) => Block<TExt, TOp>;
+export type DefineBlock<TExt extends BaseExtension, TOp extends BlockOperation> = ((extension: TExt) => Block<TExt, TOp>) | Block<TExt, TOp>;
 
 export type ExtensionBlocks = Record<string, BlockOperation>;
 
@@ -409,6 +422,15 @@ export type BlockDefinitions<T extends BaseExtension> =
     ? DefineBlock<T, (...args: A) => R>
     : never
   };
+
+export type BlocksInfo<T extends BaseExtension> = {
+  [k in keyof T["BlockFunctions"]]: T["BlockFunctions"][k] extends
+  (...args: infer A) => infer R
+  ? Block<T, (...args: A) => R>
+  : never
+};
+
+export type BlockInfo<TExtension extends BaseExtension, TKey extends keyof BlocksInfo<TExtension>> = BlocksInfo<TExtension>[TKey];
 
 type ArgsTextCommon = {
   options?: (string)[]

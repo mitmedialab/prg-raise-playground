@@ -71,7 +71,10 @@ export const ArgumentType = {
   Note: "note",
 
   /** Inline image on block (as part of the label). */
-  Image: "image"
+  Image: "image",
+
+  /** Type added by PRG to support custom arguments */
+  Custom: "custom"
 } as const;
 
 /**

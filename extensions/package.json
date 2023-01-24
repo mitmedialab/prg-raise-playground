@@ -5,11 +5,13 @@
   "main": "index.js",
   "scripts": {
     "init": "find . -maxdepth 3 -name package.json -not -path \"**/node_modules/*\" -execdir pwd \\; -execdir npm i \\;",
-    "test": "npm run test --prefix testing/"
+    "test": "npm run test --prefix testing/",
+    "document": "npm run generate --prefix documentation/"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "svelte": "^3.55.0"
+    "svelte": "^3.55.0",
+    "stacktrace-js": "^2.0.2"
   }
 }

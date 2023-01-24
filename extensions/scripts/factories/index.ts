@@ -27,6 +27,29 @@ export const copyTemplateToDestination = (extensionDirectory: string, filename: 
   return destination;
 }
 
+export const copyTemplateToDestinationAndIncrementIfExists = (extensionDirectory: string, filename: string, destinationName?: string) => {
+  const folder = getPathToExtension(extensionDirectory);
+  const template = getPathToTemplate(filename);
+
+  const extension = path.extname(destinationName ?? filename);
+  const name = (destinationName ?? filename).replace(extension, "");
+
+  const getFilename = (modifier: string = "") => `${name}${modifier}${extension}`;
+
+  const getDestination = () => {
+    let desired = path.join(folder, getFilename());
+    for (let index = 2; index < Number.MAX_SAFE_INTEGER; index++) {
+      if (!fs.existsSync(desired)) break;
+      desired = path.join(folder, getFilename(`_${index}`));
+    }
+    return desired;
+  }
+
+  const destination = getDestination();
+  fs.copyFileSync(template, destination);
+  return destination;
+}
+
 export type DirectoryArg = {
   directory: string;
 }
