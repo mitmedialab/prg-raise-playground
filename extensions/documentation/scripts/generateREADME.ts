@@ -97,7 +97,7 @@ const addIsGeneratedWarning = (entries: OrderedEntries): OrderedEntries => {
   const repoURL = "https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev";
   return entries.map(({ content, pathToREADME }) => {
     const lines = content.split("\n");
-    const relativePath = path.join("extension", path.relative(extensionsRoot, pathToREADME));
+    const relativePath = path.join("extensions", path.relative(extensionsRoot, pathToREADME));
     lines.splice(1, 0, warning + `[${relativePath}](${path.join(repoURL, relativePath)})`);
     return { pathToREADME, content: lines.join("\n") }
   });
