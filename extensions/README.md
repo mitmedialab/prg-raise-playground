@@ -23,7 +23,7 @@ This document will be most helpful for people doing more complex development, li
 ## Anatomy of an Extension Directory
 
 > NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
-If you want to edit it, please go to [extensions/documentation/src/anatomy/README.md](mitmedialab/prg-extension-boilerplate/tree/dev/extensions/documentation/src/anatomy/README.md)
+If you want to edit it, please go to [extensions/documentation/src/anatomy/README.md](documentation/src/anatomy/README.md)
 
 Extensions are defined by all the files that appear in their associated directory, located within `/extensions/src/`.
 
@@ -78,7 +78,7 @@ A great to start digging into the files that make up an Extension is to check ou
 ## Testing Extensions
 
 > NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
-If you want to edit it, please go to [extensions/documentation/src/testing/README.md](mitmedialab/prg-extension-boilerplate/tree/dev/extensions/documentation/src/testing/README.md)
+If you want to edit it, please go to [extensions/documentation/src/testing/README.md](documentation/src/testing/README.md)
 
 Writing tests is an important part of creating maintainable software.
 
@@ -404,7 +404,7 @@ createTestSuite({ Extension, __dirname }, {
 ## Creating UI for Extensions
 
 > NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
-If you want to edit it, please go to [extensions/documentation/src/ui/README.md](mitmedialab/prg-extension-boilerplate/tree/dev/extensions/documentation/src/ui/README.md)
+If you want to edit it, please go to [extensions/documentation/src/ui/README.md](documentation/src/ui/README.md)
 
 To develop UI for your extension, we ask that you implement an interface that will be rendered in a [modal](https://blog.hubspot.com/website/modal-web-design#:~:text=What%20is%20a%20modal?) / pop-up.
 
@@ -483,7 +483,7 @@ You can also create UI in order to accomplish custom arguments. Hop over to [Add
 ## Porting an Extension to use our Framework & Typescript
 
 > NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
-If you want to edit it, please go to [extensions/documentation/src/porting/README.md](mitmedialab/prg-extension-boilerplate/tree/dev/extensions/documentation/src/porting/README.md)
+If you want to edit it, please go to [extensions/documentation/src/porting/README.md](documentation/src/porting/README.md)
 
 *Want to move your vanilla-JS extension to our Typescript framework and reap the benefits of type safety and code generation?* **Great!**
 
@@ -695,7 +695,7 @@ export default class SomeBlocks extends Extension<Details, {
 ## Saving Custom Data for an Extension
 
 > NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
-If you want to edit it, please go to [extensions/documentation/src/saveLoad/README.md](mitmedialab/prg-extension-boilerplate/tree/dev/extensions/documentation/src/saveLoad/README.md)
+If you want to edit it, please go to [extensions/documentation/src/saveLoad/README.md](documentation/src/saveLoad/README.md)
 
 The Extension Framework allows you to easily save arbitrary data for an extension when an `.sb3` (Scratch 3 format) project is saved. 
 
@@ -735,7 +735,7 @@ export default class SaveLoadExample extends Extension<DefaultDisplayDetails, No
 ## Adding Custom Arguments
 
 > NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
-If you want to edit it, please go to [extensions/documentation/src/customArguments/README.md](mitmedialab/prg-extension-boilerplate/tree/dev/extensions/documentation/src/customArguments/README.md)
+If you want to edit it, please go to [extensions/documentation/src/customArguments/README.md](documentation/src/customArguments/README.md)
 
 The Extension Framework allows us to do a lot of cool stuff that would be tricky to do if we were using the [default Scratch Extension workflow]().
 
@@ -903,7 +903,7 @@ Then, we modify the UI (Svelte) component we created earlier to match our block 
 ## Reference
 
 > NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
-If you want to edit it, please go to [extensions/documentation/src/reference/README.md](mitmedialab/prg-extension-boilerplate/tree/dev/extensions/documentation/src/reference/README.md)
+If you want to edit it, please go to [extensions/documentation/src/reference/README.md](documentation/src/reference/README.md)
 
 ### How Everything Fits Together
 ```mermaid
