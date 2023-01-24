@@ -8,5 +8,8 @@
     "test": "npm run test --prefix ../../ -- poseHand/index.test.ts"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@tensorflow-models/handpose": "^0.0.7"
+  }
 }
