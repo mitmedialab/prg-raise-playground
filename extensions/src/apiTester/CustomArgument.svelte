@@ -59,7 +59,8 @@
   <br>
   {#each Array.from(new Array(num)) as _, index}
     <div>
-      Key: <input bind:value={keys[index]}>; Value: <input bind:value={values[index]}>
+      Key: <input on:change={() => keys = keys} bind:value={keys[index]}>:
+      Value: <input on:change={() => values = values} bind:value={values[index]}>
     </div>
   {/each}
   

@@ -22,14 +22,18 @@ export default class _ extends Extension<Details, {
           initial: { value: { url: "", entries: {} }, text: "click" }
         }),
         operation: async ({ url, entries }) => {
+
           console.log(url);
           console.log(entries);
           const resp = await fetch(url, {
             ...entries
           });
-          console.log(resp);
-          if (!resp.ok) return console.error(resp);
-          if (resp.status !== 200) return console.error(resp.body);
+
+          if (!resp.ok) {
+            const json = await resp.json() as { error: string };
+            return console.error(json.error);
+          }
+
           const json = await resp.json();
           console.log(json);
         }
