@@ -53,7 +53,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _a;
+var _a, _b;
 var cast_1 = __importDefault(require("../../util/cast"));
 var log_1 = __importDefault(require("../../util/log"));
 var events_1 = __importDefault(require("events"));
@@ -72,12 +72,48 @@ var _colors = {
     "white": { x: 255, y: 255, z: 255 },
     "random": "random"
 };
-var fileByDance = (_a = {},
-    _a[0 /* Dance.Disco */] = "Dances/dance_disco_00.keys",
-    _a[1 /* Dance.SlowDance */] = "Dances/Prom_Night_01_01.keys",
-    _a[2 /* Dance.HappyDance */] = "Dances/Happy_Lucky_01_01.keys",
-    _a[3 /* Dance.Robot */] = "Dances/Robotic_01_01.keys",
+var nameByDance = (_a = {},
+    _a[0 /* Dance.BackStep */] = "BackStep",
+    _a[1 /* Dance.Carlton */] = "Carlton",
+    _a[2 /* Dance.Celebrate */] = "Celebrate",
+    _a[3 /* Dance.Clockworker */] = "Clockworker",
+    _a[4 /* Dance.Doughkneader */] = "Doughkneader",
+    _a[5 /* Dance.Footstomper */] = "Footstomper",
+    _a[6 /* Dance.HappyDance */] = "Happy",
+    _a[7 /* Dance.Headbanger */] = "Headbanger",
+    _a[8 /* Dance.Headdipper */] = "Headdipper",
+    _a[9 /* Dance.Pigeon */] = "Pigeon",
+    _a[10 /* Dance.SlowDance */] = "Slow",
+    _a[11 /* Dance.RobotDance */] = "Robot",
+    _a[12 /* Dance.RockingChair */] = "Rocking Chair",
+    _a[13 /* Dance.Roxbury */] = "Roxbury",
+    _a[14 /* Dance.Samba */] = "Samba",
+    _a[15 /* Dance.Seaweed */] = "Seaweed",
+    _a[16 /* Dance.Slideshow */] = "Slideshow",
+    _a[17 /* Dance.Waltz */] = "Waltz",
+    _a[18 /* Dance.Disco */] = "Disco",
     _a);
+var fileByDance = (_b = {},
+    _b[0 /* Dance.BackStep */] = "Dances/Back_Stepper_01_01.keys",
+    _b[1 /* Dance.Carlton */] = "Dances/Carlton_01_01.keys",
+    _b[2 /* Dance.Celebrate */] = "Dances/Celebrate_01.keys",
+    _b[3 /* Dance.Clockworker */] = "Dances/Clockworker_01_01.keys",
+    _b[4 /* Dance.Doughkneader */] = "Dances/Doughkneader_01_01.keys",
+    _b[5 /* Dance.Footstomper */] = "Dances/Footstomper_01_01.keys",
+    _b[6 /* Dance.HappyDance */] = "Dances/Happy_Lucky_01_01.keys",
+    _b[7 /* Dance.Headbanger */] = "Dances/Headbanger_01_01.keys",
+    _b[8 /* Dance.Headdipper */] = "Dances/Headdipper_01_01.keys",
+    _b[9 /* Dance.Pigeon */] = "Dances/Pigeon_01_01.keys",
+    _b[10 /* Dance.SlowDance */] = "Dances/Prom_Night_01_01.keys",
+    _b[11 /* Dance.RobotDance */] = "Dances/Robotic_01_01.keys",
+    _b[12 /* Dance.RockingChair */] = "Dances/Rocking_Chair_01.keys",
+    _b[13 /* Dance.Roxbury */] = "Dances/Roxbury_01_01.keys",
+    _b[14 /* Dance.Samba */] = "Dances/Samba_01_01.keys",
+    _b[15 /* Dance.Seaweed */] = "Dances/Seaweed_01_01.keys",
+    _b[16 /* Dance.Slideshow */] = "Dances/SlideshowDance_01_01.keys",
+    _b[17 /* Dance.Waltz */] = "Dances/Waltz_01_01.keys",
+    _b[18 /* Dance.Disco */] = "Dances/dance_disco_00.keys",
+    _b);
 // const _dances = {
 //     "Disco": "Dances/dance_disco_00.keys",
 //     "Slow Dance": "Dances/Prom_Night_01_01.keys",
@@ -85,16 +121,39 @@ var fileByDance = (_a = {},
 //     "Robot": "Dances/Robotic_01_01.keys"
 // }
 var _emotions = {
-    "Celebrate": "Dances/Celebrate_01.keys",
     "Embarassed": "Misc/embarassed_01_02.keys",
     "Frustrated": "Misc/Frustrated_01_04.keys",
     "Laugh": "Misc/Laughter_01_03.keys",
     "Sad": "Misc/Sad_03.keys",
     "Thinking": "Misc/thinking_08.keys",
-    "Disco": "Dances/dance_disco_00.keys",
-    "Slow Dance": "Dances/Prom_Night_01_01.keys",
-    "Happy Dance": "Dances/Happy_Lucky_01_01.keys",
-    "Robot": "Dances/Robotic_01_01.keys"
+    "Happy": "Misc/Eye_to_Happy_02.keys",
+    "Sad Eyes": "Misc/Eye_Sad_03_02.keys",
+    "Interested": "Misc/interested_01.keys",
+    "Curious": "Misc/Question_01_02.keys",
+    "No": "Misc/no_4.keys",
+    "Yep": "Misc/yep_02.keys",
+    "Puzzled": "Misc/puzzled_01_02.keys",
+    "Relieved": "Misc/relieved_01.keys",
+    "Success": "Misc/success_02.keys"
+};
+var _icons = {
+    "✈️": "Airplane",
+    "🍎": "Apple",
+    "🎨": "Art",
+    "🎳": "Bowling",
+    "✅": "Correct",
+    "❕": "Exclamation",
+    "🏈": "Football",
+    "❤️": "Heart",
+    "🪄": "Magic",
+    "🌊": "Ocean",
+    "🐧": "Penguin",
+    "🌈": "Rainbow",
+    "🤖": "Robot",
+    "🚀": "Rocket",
+    "❄️": "Snowflake",
+    "🌮": "Taco",
+    "🎮": "Video Game"
 };
 var _emojis = {
     "Airplane": "Emoji/Emoji_Airplane_01_01.keys",
@@ -139,9 +198,20 @@ var Scratch3Jibo = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, [...arguments, _codeGenArgs]) || this;
     }
     Scratch3Jibo.prototype.init = function (env) {
+        var _this = this;
         this.text = "Hello! I'm Jibo!";
         this.animName = "My Animation";
         this.animEmoji = "Penguin";
+        this.multitask = false;
+        this.prevTasks = [];
+        this.multitask_msg = {};
+        this.busy = false;
+        this.dances = Object.entries(nameByDance).map(function (_a) {
+            var dance = _a[0], name = _a[1];
+            return ({
+                value: parseInt(dance), text: name
+            });
+        });
         this.runtime = env.runtime;
         this.runtime.registerPeripheralExtension(EXTENSION_ID, this);
         this.runtime.connectPeripheral(EXTENSION_ID, 0);
@@ -152,7 +222,10 @@ var Scratch3Jibo = /** @class */ (function (_super) {
         this.jbVolume = "60";
         this.asr_out = "";
         this.jiboEvent = new events_1.default();
+        this.tts = [];
+        this.animation_list = Object.keys(_emotions);
         this.RosConnect({ rosIP: "localhost" });
+        var self = this;
         this.runtime.on("PROJECT_CHANGED", this.updateProgress.bind(this));
         this.runtime.on("PROGRESS_TAB_ACCESS", this.progressReport.bind(this));
         this.runtime.on("TUTORIAL_CHANGED", this.updateTutorial.bind(this));
@@ -175,6 +248,32 @@ var Scratch3Jibo = /** @class */ (function (_super) {
                 'It seems like you\'re not using the same type of answer and asking blocks.': false,
             }
         };
+        this.getAnimationList = function () { return _this.animation_list.map(function (anim) { return ({
+            text: anim,
+            value: anim
+        }); }); };
+        setInterval((function () {
+            _this.checkBusy(self);
+            console.log("busy: " + _this.busy);
+            console.log(_this.animation_list);
+            console.log(_this.getAnimationList());
+        }), 100);
+    };
+    Scratch3Jibo.prototype.checkBusy = function (self) {
+        // checking state 
+        var state_listener = new roslib_1.default.Topic({
+            ros: this.ros,
+            name: '/jibo_state',
+            messageType: 'jibo_msgs/JiboState'
+        });
+        state_listener.subscribe(function (message) {
+            // console.log('Received message on ' + state_listener.name + ': ');
+            // console.log("check: " + message.is_playing_sound);
+            // console.log(message)
+            self.busy = message.is_playing_sound;
+            // console.log("in check, busy: " + this.busy)
+            state_listener.unsubscribe();
+        });
     };
     Scratch3Jibo.prototype.defineTranslations = function () { return undefined; };
     ;
@@ -188,7 +287,7 @@ var Scratch3Jibo = /** @class */ (function (_super) {
                     defaultValue: "Hello, I am Jibo"
                 },
                 text: function (text) { return "say ".concat(text); },
-                operation: function (text) { return _this.JiboTTS(text); }
+                operation: function (text) { return _this.JiboTTS(_this, text); }
             }); },
             JiboAsk: function (self) { return ({
                 type: "command" /* BlockType.Command */,
@@ -204,6 +303,20 @@ var Scratch3Jibo = /** @class */ (function (_super) {
                 text: "answer",
                 operation: function () { return _this.JiboListen(); }
             }); },
+            JiboState: function (self) { return ({
+                type: "command" /* BlockType.Command */,
+                text: "read state",
+                operation: function () { return _this.JiboState(); }
+            }); },
+            JiboDance: function (self) { return ({
+                type: "command" /* BlockType.Command */,
+                arg: {
+                    type: "number" /* ArgumentType.Number */,
+                    options: self.dances
+                },
+                text: function (dname) { return "set Jibo Dance to ".concat(dname); },
+                operation: function (dkey) { _this.JiboDance(dkey); }
+            }); },
             JiboEmoji: function (self) { return ({
                 type: "command" /* BlockType.Command */,
                 arg: {
@@ -211,22 +324,24 @@ var Scratch3Jibo = /** @class */ (function (_super) {
                     defaultValue: self.emoji,
                     options: {
                         acceptsReporters: true,
-                        items: Object.keys(_emojis),
+                        items: Object.keys(_icons),
                         handler: function (input) {
-                            if (input in Object.keys(_emojis)) {
-                                return input;
+                            if (_icons[input] in Object.keys(_emojis)) {
+                                return _icons[input];
                             }
                             return 'Penguin';
                         }
                     }
                 },
                 text: function (akey) { return "set Jibo Emoji ".concat(akey); },
-                operation: function (akey) { return _this.JiboEmoji(akey); }
+                operation: function (akey) {
+                    _this.JiboEmoji(akey);
+                }
             }); },
             Emoji: function (self) { return ({
                 type: "reporter" /* BlockType.Reporter */,
                 text: "emoji",
-                operation: function () { return _this.setEmoji(); }
+                operation: function () { return _this.emoji; }
             }); },
             emojiUI: function (self) { return ({
                 type: "button" /* BlockType.Button */,
@@ -238,19 +353,23 @@ var Scratch3Jibo = /** @class */ (function (_super) {
                 arg: {
                     type: "string" /* ArgumentType.String */,
                     defaultValue: "Celebrate",
-                    options: {
-                        acceptsReporters: true,
-                        items: Object.keys(_emotions),
-                        handler: function (input) {
-                            if (input in Object.keys(_emotions)) {
-                                return input;
-                            }
-                            else {
-                                return "custom";
-                            }
-                        }
-                    }
+                    options: self.getAnimationList
                 },
+                // arg: {
+                //         type: ArgumentType.String, 
+                //         defaultValue: "Celebrate", 
+                //         options: {
+                //             acceptsReporters: true,
+                //             items: Object.keys(_emotions),
+                //             handler: (input: any) => {
+                //                 if (input in Object.keys(_emotions)) {
+                //                     return input;
+                //                 } else {
+                //                     return "custom";
+                //                 }
+                //             }
+                //         }
+                //     }, 
                 text: function (akey) { return "set Jibo Animation to ".concat(akey); },
                 operation: function (akey) {
                     if (akey in Object.keys(_emotions)) {
@@ -261,11 +380,11 @@ var Scratch3Jibo = /** @class */ (function (_super) {
                     }
                 }
             }); },
-            Anim: function (self) { return ({
-                type: "reporter" /* BlockType.Reporter */,
-                text: "My Animation",
-                operation: function () { return _this.animName; }
-            }); },
+            // Anim: (self: Scratch3Jibo) => ({
+            //     type: BlockType.Reporter, 
+            //     text: `My Animation`, 
+            //     operation: () => {return this.animName}
+            // }),
             customAnim: function (self) { return ({
                 type: "button" /* BlockType.Button */,
                 text: "Create Animation",
@@ -274,18 +393,17 @@ var Scratch3Jibo = /** @class */ (function (_super) {
             JiboLED: function (self) { return ({
                 type: "command" /* BlockType.Command */,
                 arg: {
-                    type: "string" /* ArgumentType.String */,
-                    defaultValue: "random",
-                    options: Object.keys(_colors)
+                    type: "color" /* ArgumentType.Color */,
                 },
                 text: function (color) { return "set Jibo LED to ".concat(color); },
                 operation: function (color) { return _this.JiboLED(color); }
             }); },
-            JiboLEDOff: function (self) { return ({
-                type: "command" /* BlockType.Command */,
-                text: "turn Jibo LED off",
-                operation: function () { return _this.JiboLEDOff(); }
-            }); },
+            // JiboLEDOff: (self: Scratch3Jibo) => ({
+            //     type: BlockType.Command, 
+            //     arg: ArgumentType.Boolean, 
+            //     text: (status) => `turn Jibo LED ${status}`, 
+            //     operation: (status) => this.JiboLEDOff()
+            // }), 
             JiboLook: function (self) { return ({
                 type: "command" /* BlockType.Command */,
                 args: [
@@ -306,10 +424,25 @@ var Scratch3Jibo = /** @class */ (function (_super) {
                 operation: function (x_angle, y_angle, z_angle) { return _this.JiboLook(x_angle, y_angle, z_angle); }
             }); },
             JiboMultitask: function (self) { return ({
-                type: "loop" /* BlockType.Loop */,
-                text: "multitask",
-                operation: function () { return _this.JiboMultitask(); }
+                type: "command" /* BlockType.Command */,
+                text: "start multitask",
+                operation: function () {
+                    _this.multitask = true;
+                    console.log("starting multitask");
+                }
             }); },
+            JiboEnd: function (self) { return ({
+                type: "command" /* BlockType.Command */,
+                text: "end multitask",
+                operation: function () {
+                    console.log(_this.multitask_msg);
+                    _this.JiboPublish(_this.multitask_msg);
+                    _this.multitask = false;
+                    _this.multitask_msg = {};
+                    _this.prevTasks.length = 0;
+                    console.log("ending multitask");
+                }
+            }); }
         };
     };
     /* The following 4 functions have to exist for the peripherial indicator */
@@ -329,19 +462,19 @@ var Scratch3Jibo = /** @class */ (function (_super) {
         console.log(progressState);
         // percentage
         if (progressState.percentage == 100) {
-            this.JiboTTS('Excellent work. You\'ve accomplished all of the items in checklist.');
+            this.JiboTTS(this, 'Excellent work. You\'ve accomplished all of the items in checklist.');
         }
         else if (progressState.percentage >= 75) {
-            this.JiboTTS('You\'ve made solid progress on your text classifier. There are a few more things I might add.');
+            this.JiboTTS(this, 'You\'ve made solid progress on your text classifier. There are a few more things I might add.');
         }
         else if (progressState.percentage >= 50) {
-            this.JiboTTS('Looking good so far. Let\'s add a few more things to make your classifier work even better.');
+            this.JiboTTS(this, 'Looking good so far. Let\'s add a few more things to make your classifier work even better.');
         }
         else if (progressState.percentage >= 25) {
-            this.JiboTTS('You\'re off to a really good start. Let\'s look at ways we might improve this program.');
+            this.JiboTTS(this, 'You\'re off to a really good start. Let\'s look at ways we might improve this program.');
         }
         else {
-            this.JiboTTS('I bet that making some of these improvements will help you make your project work really well.');
+            this.JiboTTS(this, 'I bet that making some of these improvements will help you make your project work really well.');
         }
         // improvements
         // compliments
@@ -374,7 +507,7 @@ var Scratch3Jibo = /** @class */ (function (_super) {
         if (textModelClasses.length === 2) {
             // Jibo comment
             if (!this.progress.compliments['Two text classifier classes']) {
-                this.JiboTTS('It\'s great that you have two text classifier classes. Try to keep adding more');
+                this.JiboTTS(this, 'It\'s great that you have two text classifier classes. Try to keep adding more');
             }
             // update compliments
             this.progress.compliments['Two text classifier classes'] = true;
@@ -386,7 +519,7 @@ var Scratch3Jibo = /** @class */ (function (_super) {
         else if (textModelClasses.length > 2) {
             // Jibo comment
             if (!this.progress.compliments['Three or more text classifier classes']) {
-                this.JiboTTS('Great job adding additional classes to your classifier');
+                this.JiboTTS(this, 'Great job adding additional classes to your classifier');
             }
             // update compliments
             this.progress.compliments['Two text classifier classes'] = true;
@@ -415,7 +548,7 @@ var Scratch3Jibo = /** @class */ (function (_super) {
         if (minimum === true) {
             // Jibo comment
             if (this.progress.compliments['At least five examples per text classifier class']) {
-                this.JiboTTS('Don\'t forget to have at least five examples in each class');
+                this.JiboTTS(this, 'Don\'t forget to have at least five examples in each class');
             }
             // update compliments
             this.progress.compliments['At least five examples per text classifier class'] = false;
@@ -425,7 +558,7 @@ var Scratch3Jibo = /** @class */ (function (_super) {
         else if (Object.keys(textModel).length > 0) {
             // Jibo comment
             if (!this.progress.compliments['At least five examples per text classifier class']) {
-                this.JiboTTS('Nice! You added at least five examples to every class label');
+                this.JiboTTS(this, 'Nice! You added at least five examples to every class label');
             }
             // update compliments
             this.progress.compliments['At least five examples per text classifier class'] = true;
@@ -451,7 +584,7 @@ var Scratch3Jibo = /** @class */ (function (_super) {
             if (classNumbers[classNumbers.length - 1] - classNumbers[0] > 3) {
                 // Jibo comment
                 if (this.progress.compliments['Text classifier classes are well balanced']) {
-                    this.JiboTTS('Don\'t forget to balance those classes again');
+                    this.JiboTTS(this, 'Don\'t forget to balance those classes again');
                 }
                 // update compliments
                 this.progress.compliments['Text classifier classes are well balanced'] = false;
@@ -461,7 +594,7 @@ var Scratch3Jibo = /** @class */ (function (_super) {
             else if (minimum === false) {
                 // Jibo comment
                 if (!this.progress.compliments['Text classifier classes are well balanced']) {
-                    this.JiboTTS('Look at that, your classes are all well balanced');
+                    this.JiboTTS(this, 'Look at that, your classes are all well balanced');
                 }
                 // update compliments
                 this.progress.compliments['Text classifier classes are well balanced'] = true;
@@ -523,7 +656,7 @@ var Scratch3Jibo = /** @class */ (function (_super) {
         else {
             // Jibo comment
             if (!this.progress.compliments['Using embedded conditionals']) {
-                this.JiboTTS('Good use of embedded conditionals');
+                this.JiboTTS(this, 'Good use of embedded conditionals');
             }
             // update compliments
             this.progress.compliments['Using embedded conditionals'] = true;
@@ -534,7 +667,7 @@ var Scratch3Jibo = /** @class */ (function (_super) {
         if (count >= 2) {
             // Jibo comment
             if (!this.progress.compliments['Using two text classification blocks']) {
-                this.JiboTTS('Nice coding. You used a lot of text classification blocks');
+                this.JiboTTS(this, 'Nice coding. You used a lot of text classification blocks');
             }
             // update compliments
             this.progress.compliments['Using two text classification blocks'] = true;
@@ -594,13 +727,55 @@ var Scratch3Jibo = /** @class */ (function (_super) {
         this.JiboASR_reseive();
         return this.connected;
     };
-    Scratch3Jibo.prototype.JiboTTS = function (text) {
+    Scratch3Jibo.prototype.JiboTTS = function (self, text) {
         return __awaiter(this, void 0, void 0, function () {
             var jibo_msg;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         log_1.default.log(text);
+                        console.log("multitask: " + self.multitask);
+                        if (!self.multitask) return [3 /*break*/, 3];
+                        console.log(this.prevTasks);
+                        if (!(self.prevTasks.includes("tts") || self.prevTasks.includes("emote"))) return [3 /*break*/, 2];
+                        self.prevTasks.length = 0;
+                        console.log("performing");
+                        console.log(this.multitask_msg);
+                        while (self.busy) {
+                            console.log("hello");
+                        }
+                        self.busy = true;
+                        return [4 /*yield*/, self.JiboPublish(self.multitask_msg)];
+                    case 1:
+                        _a.sent();
+                        self.busy = false;
+                        self.multitask_msg = {};
+                        _a.label = 2;
+                    case 2:
+                        self.multitask_msg["do_tts"] = true;
+                        self.multitask_msg["tts_text"] = text;
+                        self.multitask_msg["volume"] = parseFloat(self.jbVolume);
+                        self.prevTasks.push("tts");
+                        console.log(self.multitask_msg);
+                        return [2 /*return*/];
+                    case 3:
+                        // // checking state 
+                        // var state_listener = new ROSLIB.Topic({
+                        //     ros : this.ros,
+                        //     name : '/jibo_state',
+                        //     messageType : 'jibo_msgs/JiboState'
+                        // });
+                        // // call a promise that doesn't resolve
+                        // state_listener.subscribe(function(message: any) {
+                        //     console.log('Received message on ' + state_listener.name + ': ');
+                        //     console.log("in tts: " + message.is_playing_sound);
+                        //     console.log(message)
+                        //     state_listener.unsubscribe();
+                        // });
+                        while (self.busy) {
+                            console.log(self.busy);
+                            this.checkBusy(self);
+                        }
                         jibo_msg = {
                             "do_tts": true,
                             "tts_text": text,
@@ -608,9 +783,48 @@ var Scratch3Jibo = /** @class */ (function (_super) {
                             "do_motion": false,
                             "volume": parseFloat(this.jbVolume)
                         };
-                        return [4 /*yield*/, this.JiboPublish(jibo_msg)];
-                    case 1:
+                        // this.tts.push(jibo_msg); 
+                        // console.log(this.tts)
+                        // while (this.tts.length != 0 && !this.busy) {
+                        //     console.log(this.tts)
+                        //     this.busy = true;
+                        //     await this.JiboPublish(this.tts.shift())
+                        //     this.busy = false; 
+                        // }
+                        // this.busy = true;
+                        // console.log("before publishing")
+                        return [4 /*yield*/, self.JiboPublish(jibo_msg)
+                            // console.log("after publishing")
+                            // var rep = true; 
+                            // while (rep) {
+                            //     this.JiboPublish(jibo_msg).then(() => {
+                            //         rep = false;
+                            //         console.log(rep);
+                            //     }
+                            //     )
+                            // }
+                        ];
+                    case 4:
+                        // this.tts.push(jibo_msg); 
+                        // console.log(this.tts)
+                        // while (this.tts.length != 0 && !this.busy) {
+                        //     console.log(this.tts)
+                        //     this.busy = true;
+                        //     await this.JiboPublish(this.tts.shift())
+                        //     this.busy = false; 
+                        // }
+                        // this.busy = true;
+                        // console.log("before publishing")
                         _a.sent();
+                        // console.log("after publishing")
+                        // var rep = true; 
+                        // while (rep) {
+                        //     this.JiboPublish(jibo_msg).then(() => {
+                        //         rep = false;
+                        //         console.log(rep);
+                        //     }
+                        //     )
+                        // }
                         return [2 /*return*/];
                 }
             });
@@ -623,7 +837,7 @@ var Scratch3Jibo = /** @class */ (function (_super) {
                 switch (_b.label) {
                     case 0: 
                     // say question
-                    return [4 /*yield*/, this.JiboTTS(text)];
+                    return [4 /*yield*/, this.JiboTTS(this, text)];
                     case 1:
                         // say question
                         _b.sent();
@@ -655,6 +869,19 @@ var Scratch3Jibo = /** @class */ (function (_super) {
             ledHex = _colors[randomColor];
         }
         log_1.default.log(ledHex);
+        if (this.multitask) {
+            if (this.prevTasks.includes("led")) {
+                this.prevTasks.length = 0;
+                console.log("performing");
+                console.log(this.multitask_msg);
+                this.JiboPublish(this.multitask_msg);
+                this.multitask_msg = {};
+            }
+            this.multitask_msg["do_led"] = true;
+            this.multitask_msg["led_color"] = ledHex;
+            this.prevTasks.push("led");
+            return;
+        }
         var jibo_msg = {
             "do_led": true,
             "led_color": ledHex
@@ -701,6 +928,23 @@ var Scratch3Jibo = /** @class */ (function (_super) {
     // }
     Scratch3Jibo.prototype.JiboLook = function (X, Y, Z) {
         log_1.default.log(parseFloat(X), parseFloat(Y), parseFloat(Z));
+        if (this.multitask) {
+            if (this.prevTasks.includes("look") || this.prevTasks.includes("emote") || this.prevTasks.includes("emoji")) {
+                console.log("performing");
+                console.log(this.multitask_msg);
+                this.JiboPublish(this.multitask_msg);
+                this.prevTasks.length = 0;
+                this.multitask_msg = {};
+            }
+            this.multitask_msg["do_lookat"] = true;
+            this.multitask["lookat"] = {
+                x: parseFloat(X),
+                y: parseFloat(Y),
+                z: parseFloat(Z)
+            };
+            this.prevTasks.push("look");
+            return;
+        }
         var jibo_msg = {
             "do_lookat": true,
             "lookat": {
@@ -717,7 +961,7 @@ var Scratch3Jibo = /** @class */ (function (_super) {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        animation_key = _emojis[akey];
+                        animation_key = _emojis[this.emoji];
                         return [4 /*yield*/, this.JiboAnim(animation_key)];
                     case 1:
                         _a.sent();
@@ -740,6 +984,21 @@ var Scratch3Jibo = /** @class */ (function (_super) {
                     case 0:
                         animation_key = _emotions[akey];
                         return [4 /*yield*/, this.JiboAnim(animation_key)];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    Scratch3Jibo.prototype.JiboDance = function (dkey) {
+        return __awaiter(this, void 0, void 0, function () {
+            var dance_file;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        dance_file = fileByDance[dkey];
+                        return [4 /*yield*/, this.JiboAnim(dance_file)];
                     case 1:
                         _a.sent();
                         return [2 /*return*/];
@@ -834,7 +1093,7 @@ var Scratch3Jibo = /** @class */ (function (_super) {
                         return [4 /*yield*/, this.JiboPublish(jibo_msg)];
                     case 1:
                         _a.sent();
-                        return [2 /*return*/];
+                        return [2 /*return*/, "done"];
                 }
             });
         });
@@ -854,13 +1113,11 @@ var Scratch3Jibo = /** @class */ (function (_super) {
                             name: '/jibo',
                             messageType: 'jibo_msgs/JiboAction'
                         });
-                        console.log(msg);
                         jibo_msg = new roslib_1.default.Message(msg);
                         cmdVel.publish(jibo_msg);
-                        return [4 /*yield*/, new Promise(function (r) { return setTimeout(r, 2000); })];
+                        return [4 /*yield*/, new Promise(function (r) { return setTimeout(r, 500); })];
                     case 1:
                         _a.sent();
-                        this.JiboState();
                         return [2 /*return*/];
                 }
             });
@@ -869,6 +1126,7 @@ var Scratch3Jibo = /** @class */ (function (_super) {
     Scratch3Jibo.prototype.JiboState = function () {
         // Subscribing to a Topic
         // ----------------------
+        console.log("listening...");
         var state_listener = new roslib_1.default.Topic({
             ros: this.ros,
             name: '/jibo_state',
@@ -922,6 +1180,9 @@ var Scratch3Jibo = /** @class */ (function (_super) {
             y: parseInt(result[2], 16),
             z: parseInt(result[3], 16)
         } : null;
+    };
+    Scratch3Jibo.prototype.addAnimationToList = function (anim) {
+        return this.animation_list.push(anim);
     };
     return Scratch3Jibo;
 }(Extension_1.Extension));

@@ -5,7 +5,7 @@ import EventEmitter from 'events';
 
 import { ArgumentType, BlockType } from "../../typescript-support/enums";
 import { Extension } from "../../typescript-support/Extension";
-import { Environment, BlockDefinitions, ButtonBlock } from "../../typescript-support/types";
+import { Environment, BlockDefinitions, ButtonBlock, MenuItem } from "../../typescript-support/types";
 
 import ROSLIB from 'roslib';
 
@@ -25,17 +25,69 @@ const _colors = {
 }
 
 const enum Dance {
-    Disco, 
-    SlowDance, 
+    BackStep, 
+    Carlton, 
+    Celebrate,
+    Clockworker, 
+    Doughkneader, 
+    Footstomper, 
     HappyDance, 
-    Robot
+    Headbanger,
+    Headdipper,
+    Pigeon, 
+    SlowDance, 
+    RobotDance, 
+    RockingChair, 
+    Roxbury, 
+    Samba, 
+    Seaweed,
+    Slideshow, 
+    Waltz, 
+    Disco
+}
+
+const nameByDance: Record<Dance, string> = {
+    [Dance.BackStep]: "BackStep", 
+    [Dance.Carlton]: "Carlton",
+    [Dance.Celebrate]: "Celebrate",
+    [Dance.Clockworker]: "Clockworker",
+    [Dance.Doughkneader]: "Doughkneader",
+    [Dance.Footstomper]: "Footstomper",
+    [Dance.HappyDance]: "Happy", 
+    [Dance.Headbanger]: "Headbanger",
+    [Dance.Headdipper]: "Headdipper",
+    [Dance.Pigeon]: "Pigeon", 
+    [Dance.SlowDance]: "Slow", 
+    [Dance.RobotDance]: "Robot",
+    [Dance.RockingChair]: "Rocking Chair", 
+    [Dance.Roxbury]: "Roxbury",
+    [Dance.Samba]: "Samba",
+    [Dance.Seaweed]: "Seaweed", 
+    [Dance.Slideshow]: "Slideshow",
+    [Dance.Waltz]: "Waltz", 
+    [Dance.Disco]: "Disco"
 }
 
 const fileByDance: Record<Dance, string> = {
-    [Dance.Disco]: "Dances/dance_disco_00.keys",
-    [Dance.SlowDance]: "Dances/Prom_Night_01_01.keys",
-    [Dance.HappyDance]: "Dances/Happy_Lucky_01_01.keys",
-    [Dance.Robot]: "Dances/Robotic_01_01.keys"
+    [Dance.BackStep]: "Dances/Back_Stepper_01_01.keys", 
+    [Dance.Carlton]: "Dances/Carlton_01_01.keys",
+    [Dance.Celebrate]: "Dances/Celebrate_01.keys",
+    [Dance.Clockworker]: "Dances/Clockworker_01_01.keys",
+    [Dance.Doughkneader]: "Dances/Doughkneader_01_01.keys",
+    [Dance.Footstomper]: "Dances/Footstomper_01_01.keys",
+    [Dance.HappyDance]: "Dances/Happy_Lucky_01_01.keys", 
+    [Dance.Headbanger]: "Dances/Headbanger_01_01.keys",
+    [Dance.Headdipper]: "Dances/Headdipper_01_01.keys",
+    [Dance.Pigeon]: "Dances/Pigeon_01_01.keys", 
+    [Dance.SlowDance]: "Dances/Prom_Night_01_01.keys", 
+    [Dance.RobotDance]: "Dances/Robotic_01_01.keys", 
+    [Dance.RockingChair]: "Dances/Rocking_Chair_01.keys", 
+    [Dance.Roxbury]: "Dances/Roxbury_01_01.keys",
+    [Dance.Samba]: "Dances/Samba_01_01.keys",
+    [Dance.Seaweed]: "Dances/Seaweed_01_01.keys", 
+    [Dance.Slideshow]: "Dances/SlideshowDance_01_01.keys",
+    [Dance.Waltz]: "Dances/Waltz_01_01.keys", 
+    [Dance.Disco]: "Dances/dance_disco_00.keys"
 }
 
 // const _dances = {
@@ -46,16 +98,40 @@ const fileByDance: Record<Dance, string> = {
 // }
 
 const _emotions = {
-    "Celebrate": "Dances/Celebrate_01.keys",
     "Embarassed": "Misc/embarassed_01_02.keys",
     "Frustrated": "Misc/Frustrated_01_04.keys",
     "Laugh": "Misc/Laughter_01_03.keys",
     "Sad": "Misc/Sad_03.keys",
     "Thinking": "Misc/thinking_08.keys",
-    "Disco": "Dances/dance_disco_00.keys",
-    "Slow Dance": "Dances/Prom_Night_01_01.keys",
-    "Happy Dance": "Dances/Happy_Lucky_01_01.keys",
-    "Robot": "Dances/Robotic_01_01.keys"
+    "Happy": "Misc/Eye_to_Happy_02.keys", 
+    "Sad Eyes": "Misc/Eye_Sad_03_02.keys", 
+    "Interested": "Misc/interested_01.keys",
+    "Curious": "Misc/Question_01_02.keys",
+    "No": "Misc/no_4.keys", 
+    "Yep": "Misc/yep_02.keys",
+    "Puzzled": "Misc/puzzled_01_02.keys", 
+    "Relieved": "Misc/relieved_01.keys", 
+    "Success": "Misc/success_02.keys"
+}
+
+const _icons = {
+    "✈️": "Airplane", 
+    "🍎": "Apple",
+    "🎨": "Art",
+    "🎳": "Bowling",
+    "✅": "Correct",
+    "❕": "Exclamation",
+    "🏈": "Football",
+    "❤️": "Heart",
+    "🪄": "Magic",
+    "🌊": "Ocean",
+    "🐧": "Penguin",
+    "🌈": "Rainbow",
+    "🤖": "Robot",
+    "🚀": "Rocket",
+    "❄️": "Snowflake",
+    "🌮": "Taco",
+    "🎮": "Video Game"
 }
 
 const _emojis = {
@@ -102,7 +178,7 @@ const _progress_tab_speech = [
 type Details = {
     name: "Jibo", 
     description: "jibo blocks", 
-    iconURL: "jibo_icon.png", 
+    iconURL: "jibo_icon.png",  
     insetIconURL: "jibo_inset_icon.png"
 }
 
@@ -112,12 +188,15 @@ type Blocks = {
     JiboListen: () => any, 
     JiboEmoji: (akey: string) => void, 
     JiboEmote: (akey: string) => void, 
-    JiboLED: (color: string) => void, 
-    JiboLEDOff: () => void, 
+    JiboDance: (dkey) => void,
+    JiboLED: (color) => void, 
+    // JiboLEDOff: (status) => void, 
     JiboLook: (x_angle: string, y_angle: string, z_angle: string) => void, 
     JiboMultitask: () => void, 
+    JiboEnd: () => void, 
+    JiboState: () => void, 
     Emoji: () => string,
-    Anim: () => any,
+    // Anim: () => any,
     emojiUI: ButtonBlock,
     customAnim: ButtonBlock
 }
@@ -136,11 +215,28 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
     text: string;
     animEmoji: string;
     animName: string; 
+    multitask: boolean;
+    prevTasks: any;
+    multitask_msg: any; 
+    busy: boolean; 
+    tts: any;
+    animation_list: string[]; 
+    getAnimationList: () => MenuItem<string>[];
+    dances: MenuItem<Dance>[]; 
 
     init(env: Environment) {
         this.text = "Hello! I'm Jibo!"
         this.animName = "My Animation"
         this.animEmoji = "Penguin"
+        this.multitask = false
+        this.prevTasks = []
+        this.multitask_msg = {}
+        this.busy = false;
+
+        this.dances = Object.entries(nameByDance).map(([dance, name]) => ({
+            value: parseInt(dance), text: name
+        })) 
+
         this.runtime = env.runtime;
         this.runtime.registerPeripheralExtension(EXTENSION_ID, this);
         this.runtime.connectPeripheral(EXTENSION_ID, 0); 
@@ -152,8 +248,12 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
         this.jbVolume="60";
         this.asr_out="";
         this.jiboEvent = new EventEmitter();
+        this.tts = []
+        this.animation_list = Object.keys(_emotions)
 
         this.RosConnect({rosIP: "localhost"});
+
+        var self = this; 
 
         this.runtime.on("PROJECT_CHANGED", this.updateProgress.bind(this));
         this.runtime.on("PROGRESS_TAB_ACCESS", this.progressReport.bind(this));
@@ -177,6 +277,38 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
                 'It seems like you\'re not using the same type of answer and asking blocks.': false,
             }
           };
+        
+          this.getAnimationList = () => this.animation_list.map(
+            anim => ({
+                text: anim, 
+                value: anim
+            })
+          )
+
+          setInterval((() => {
+            this.checkBusy(self);
+            console.log("busy: " + this.busy);
+            console.log(this.animation_list)
+            console.log(this.getAnimationList())
+        }), 100); 
+    }
+
+    checkBusy(self: Scratch3Jibo) {
+        // checking state 
+        var state_listener = new ROSLIB.Topic({
+            ros : this.ros,
+            name : '/jibo_state',
+            messageType : 'jibo_msgs/JiboState'
+        });
+
+        state_listener.subscribe(function(message: any) {
+            // console.log('Received message on ' + state_listener.name + ': ');
+            // console.log("check: " + message.is_playing_sound);
+            // console.log(message)
+            self.busy = message.is_playing_sound 
+            // console.log("in check, busy: " + this.busy)
+            state_listener.unsubscribe();
+        });
     }
 
     defineTranslations() { return undefined };
@@ -190,7 +322,7 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
                         defaultValue: "Hello, I am Jibo"
                     },
                 text: (text: string) => `say ${text}`, 
-                operation: (text: string) => this.JiboTTS(text)
+                operation: (text: string) => this.JiboTTS(this, text)
             }), 
             JiboAsk: (self: Scratch3Jibo) => ({
                 type: BlockType.Command, 
@@ -207,6 +339,20 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
                 text: `answer`, 
                 operation: () => this.JiboListen()
             }), 
+            JiboState: (self: Scratch3Jibo) => ({
+                type:BlockType.Command,
+                text: `read state`, 
+                operation: () => this.JiboState()
+            }),
+            JiboDance: (self: Scratch3Jibo) => ({
+                type: BlockType.Command, 
+                arg: {
+                    type: ArgumentType.Number, 
+                    options: self.dances
+                }, 
+                text: (dname: string) => `set Jibo Dance to ${dname}`,
+                operation: (dkey: Dance) => {this.JiboDance(dkey)}
+            }),
             JiboEmoji: (self: Scratch3Jibo) => ({
                 type: BlockType.Command, 
                 arg: {
@@ -214,22 +360,24 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
                         defaultValue: self.emoji, 
                         options: {
                             acceptsReporters: true, 
-                            items: Object.keys(_emojis),
+                            items: Object.keys(_icons),
                             handler: (input: any) => {
-                                if (input in Object.keys(_emojis)) {
-                                    return input; 
+                                if (_icons[input] in Object.keys(_emojis)) {
+                                    return _icons[input]; 
                                 }
                                 return 'Penguin'
                             }
                         }
                     }, 
                 text: (akey: string) => `set Jibo Emoji ${akey}`, 
-                operation: (akey: string) => this.JiboEmoji(akey)
+                operation: (akey: string) => {
+                    this.JiboEmoji(akey);
+                }
             }), 
             Emoji: (self: Scratch3Jibo) => ({
                 type: BlockType.Reporter, 
                 text: `emoji`, 
-                operation: () => {return this.setEmoji()}
+                operation: () => {return this.emoji}
             }),
             emojiUI: (self: Scratch3Jibo) => ({
                 type: BlockType.Button, 
@@ -238,21 +386,26 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
             }),
             JiboEmote: (self: Scratch3Jibo) => ({
                 type: BlockType.Command, 
-                arg: {
-                        type: ArgumentType.String, 
-                        defaultValue: "Celebrate", 
-                        options: {
-                            acceptsReporters: true,
-                            items: Object.keys(_emotions),
-                            handler: (input: any) => {
-                                if (input in Object.keys(_emotions)) {
-                                    return input;
-                                } else {
-                                    return "custom";
-                                }
-                            }
-                        }
-                    }, 
+                arg: { 
+                    type: ArgumentType.String, 
+                    defaultValue: "Celebrate", 
+                    options: self.getAnimationList
+                },
+                // arg: {
+                //         type: ArgumentType.String, 
+                //         defaultValue: "Celebrate", 
+                //         options: {
+                //             acceptsReporters: true,
+                //             items: Object.keys(_emotions),
+                //             handler: (input: any) => {
+                //                 if (input in Object.keys(_emotions)) {
+                //                     return input;
+                //                 } else {
+                //                     return "custom";
+                //                 }
+                //             }
+                //         }
+                //     }, 
                 text: (akey: string) => `set Jibo Animation to ${akey}`, 
                 operation: (akey: string) => {
                     if (akey in Object.keys(_emotions)) {
@@ -262,11 +415,11 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
                     }
                 }
             }), 
-            Anim: (self: Scratch3Jibo) => ({
-                type: BlockType.Reporter, 
-                text: `My Animation`, 
-                operation: () => {return this.animName}
-            }),
+            // Anim: (self: Scratch3Jibo) => ({
+            //     type: BlockType.Reporter, 
+            //     text: `My Animation`, 
+            //     operation: () => {return this.animName}
+            // }),
             customAnim: (self: Scratch3Jibo) => ({
                 type: BlockType.Button,
                 text: `Create Animation`, 
@@ -275,18 +428,17 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
             JiboLED: (self: Scratch3Jibo) => ({
                 type: BlockType.Command, 
                 arg: {
-                        type: ArgumentType.String, 
-                        defaultValue: "random",
-                        options: Object.keys(_colors)
-                    }, 
-                text: (color: string) => `set Jibo LED to ${color}`, 
-                operation: (color: string) => this.JiboLED(color)
+                    type: ArgumentType.Color,
+                },
+                text: (color) => `set Jibo LED to ${color}`, 
+                operation: (color) => this.JiboLED(color)
             }), 
-            JiboLEDOff: (self: Scratch3Jibo) => ({
-                type: BlockType.Command, 
-                text: `turn Jibo LED off`, 
-                operation: () => this.JiboLEDOff()
-            }), 
+            // JiboLEDOff: (self: Scratch3Jibo) => ({
+            //     type: BlockType.Command, 
+            //     arg: ArgumentType.Boolean, 
+            //     text: (status) => `turn Jibo LED ${status}`, 
+            //     operation: (status) => this.JiboLEDOff()
+            // }), 
             JiboLook: (self: Scratch3Jibo) => ({
                 type: BlockType.Command, 
                 args: [
@@ -307,12 +459,25 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
                 operation: (x_angle: string, y_angle: string, z_angle: string) => this.JiboLook(x_angle, y_angle, z_angle)
             }), 
             JiboMultitask: (self: Scratch3Jibo) => ({
-                type: BlockType.Loop, 
-                text: `multitask`, 
-                operation: () => this.JiboMultitask()
+                type: BlockType.Command, 
+                text: `start multitask`, 
+                operation: () => {
+                    this.multitask = true
+                    console.log("starting multitask")
+                }
             }), 
-
-
+            JiboEnd: (self: Scratch3Jibo) => ({
+                type: BlockType.Command, 
+                text: `end multitask`, 
+                operation: () => {
+                    console.log(this.multitask_msg)
+                    this.JiboPublish(this.multitask_msg)
+                    this.multitask = false
+                    this.multitask_msg = {}
+                    this.prevTasks.length = 0
+                    console.log("ending multitask")
+                }
+            })
         }
     }
 
@@ -335,15 +500,15 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
         console.log(progressState);
         // percentage
         if (progressState.percentage == 100) {
-            this.JiboTTS('Excellent work. You\'ve accomplished all of the items in checklist.');
+            this.JiboTTS(this, 'Excellent work. You\'ve accomplished all of the items in checklist.');
         } else if (progressState.percentage >= 75) {
-            this.JiboTTS('You\'ve made solid progress on your text classifier. There are a few more things I might add.');
+            this.JiboTTS(this, 'You\'ve made solid progress on your text classifier. There are a few more things I might add.');
         } else if (progressState.percentage >= 50) {
-            this.JiboTTS('Looking good so far. Let\'s add a few more things to make your classifier work even better.');
+            this.JiboTTS(this, 'Looking good so far. Let\'s add a few more things to make your classifier work even better.');
         } else if (progressState.percentage >= 25) {
-            this.JiboTTS('You\'re off to a really good start. Let\'s look at ways we might improve this program.');
+            this.JiboTTS(this, 'You\'re off to a really good start. Let\'s look at ways we might improve this program.');
         } else {
-            this.JiboTTS('I bet that making some of these improvements will help you make your project work really well.');
+            this.JiboTTS(this, 'I bet that making some of these improvements will help you make your project work really well.');
         }
 
         // improvements
@@ -384,7 +549,7 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
         if (textModelClasses.length === 2) {
             // Jibo comment
             if (!this.progress.compliments['Two text classifier classes']) {
-                this.JiboTTS('It\'s great that you have two text classifier classes. Try to keep adding more');
+                this.JiboTTS(this, 'It\'s great that you have two text classifier classes. Try to keep adding more');
             }
             // update compliments
             this.progress.compliments['Two text classifier classes'] = true;
@@ -395,7 +560,7 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
         } else if (textModelClasses.length > 2) {
             // Jibo comment
             if(!this.progress.compliments['Three or more text classifier classes']) {
-                this.JiboTTS('Great job adding additional classes to your classifier');
+                this.JiboTTS(this, 'Great job adding additional classes to your classifier');
             }
             // update compliments
             this.progress.compliments['Two text classifier classes'] = true;
@@ -426,7 +591,7 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
         if (minimum === true) {
             // Jibo comment
             if (this.progress.compliments['At least five examples per text classifier class']) {
-                this.JiboTTS('Don\'t forget to have at least five examples in each class');
+                this.JiboTTS(this, 'Don\'t forget to have at least five examples in each class');
             }
             // update compliments
             this.progress.compliments['At least five examples per text classifier class'] = false;
@@ -435,7 +600,7 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
         } else if (Object.keys(textModel).length > 0) {
             // Jibo comment
             if (!this.progress.compliments['At least five examples per text classifier class']) {
-                this.JiboTTS('Nice! You added at least five examples to every class label');
+                this.JiboTTS(this, 'Nice! You added at least five examples to every class label');
             }
             // update compliments
             this.progress.compliments['At least five examples per text classifier class'] = true;
@@ -463,7 +628,7 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
             if (classNumbers[classNumbers.length - 1] - classNumbers[0] > 3) {
                 // Jibo comment
                 if (this.progress.compliments['Text classifier classes are well balanced']) {
-                    this.JiboTTS('Don\'t forget to balance those classes again');
+                    this.JiboTTS(this, 'Don\'t forget to balance those classes again');
                 }
                 // update compliments
                 this.progress.compliments['Text classifier classes are well balanced'] = false;
@@ -472,7 +637,7 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
             } else if (minimum === false) {
                 // Jibo comment
                 if (!this.progress.compliments['Text classifier classes are well balanced']) {
-                    this.JiboTTS('Look at that, your classes are all well balanced');
+                    this.JiboTTS(this, 'Look at that, your classes are all well balanced');
                 }
                 // update compliments
                 this.progress.compliments['Text classifier classes are well balanced'] = true;
@@ -543,7 +708,7 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
         } else {
             // Jibo comment
             if (!this.progress.compliments['Using embedded conditionals']) {
-                this.JiboTTS('Good use of embedded conditionals');
+                this.JiboTTS(this, 'Good use of embedded conditionals');
             }
             // update compliments
             this.progress.compliments['Using embedded conditionals'] = true;
@@ -555,7 +720,7 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
         if (count >= 2) {
             // Jibo comment
             if (!this.progress.compliments['Using two text classification blocks']) {
-                this.JiboTTS('Nice coding. You used a lot of text classification blocks');
+                this.JiboTTS(this, 'Nice coding. You used a lot of text classification blocks');
             }
             // update compliments
             this.progress.compliments['Using two text classification blocks'] = true;
@@ -616,26 +781,107 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
             "led_color": {"x":0,"y":0,"z":0,}
         });
         this.JiboASR_reseive();
-
         return this.connected;
-    
     }
 
-    async JiboTTS (text: string) {
+    async JiboTTS (self: Scratch3Jibo, text: string) {
         log.log(text);
-        var jibo_msg ={
+        
+        console.log("multitask: " + self.multitask)
+
+        if (self.multitask) {
+            console.log(this.prevTasks)
+            if (self.prevTasks.includes("tts") || self.prevTasks.includes("emote")) {
+                self.prevTasks.length = 0;
+                console.log("performing")
+                console.log(this.multitask_msg)
+
+                while (self.busy) {
+                    console.log("hello")
+                }
+                self.busy = true;
+                await self.JiboPublish(self.multitask_msg); 
+                self.busy = false;
+                
+                self.multitask_msg = {}; 
+            }
+
+            self.multitask_msg["do_tts"] = true;
+            self.multitask_msg["tts_text"] = text; 
+            self.multitask_msg["volume"] = parseFloat(self.jbVolume)
+
+            self.prevTasks.push("tts")
+            console.log(self.multitask_msg)
+            return; 
+        }
+
+        // // checking state 
+        // var state_listener = new ROSLIB.Topic({
+        //     ros : this.ros,
+        //     name : '/jibo_state',
+        //     messageType : 'jibo_msgs/JiboState'
+        // });
+
+        // // call a promise that doesn't resolve
+
+        // state_listener.subscribe(function(message: any) {
+
+        //     console.log('Received message on ' + state_listener.name + ': ');
+        //     console.log("in tts: " + message.is_playing_sound);
+        //     console.log(message)
+        //     state_listener.unsubscribe();
+
+        // });
+
+        while (self.busy) {
+            console.log(self.busy)
+            this.checkBusy(self);
+        }
+
+        // console.log("before while: " + this.busy)
+        // var i = 0; 
+        // while (this.busy && i <= 10000) {
+        //     console.log("busy")
+        //     i = i + 1; 
+        // }   
+
+        var jibo_msg = {
             "do_tts":true,
             "tts_text": text,
             "do_lookat":false,
             "do_motion":false,
             "volume":parseFloat(this.jbVolume)
             };
-        await this.JiboPublish(jibo_msg);
+
+        // this.tts.push(jibo_msg); 
+        // console.log(this.tts)
+
+        // while (this.tts.length != 0 && !this.busy) {
+        //     console.log(this.tts)
+        //     this.busy = true;
+        //     await this.JiboPublish(this.tts.shift())
+        //     this.busy = false; 
+        // }
+
+        // this.busy = true;
+        // console.log("before publishing")
+        await self.JiboPublish(jibo_msg)
+        // console.log("after publishing")
+
+        // var rep = true; 
+        // while (rep) {
+        //     this.JiboPublish(jibo_msg).then(() => {
+        //         rep = false;
+        //         console.log(rep);
+        //     }
+        //     )
+        // }
+        return; 
     }
 
     async JiboAsk (text: string) {
         // say question
-        await this.JiboTTS(text);
+        await this.JiboTTS(this, text);
 
         // listen for answer
         this.JiboASR_request();
@@ -657,11 +903,27 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
         }
         log.log(ledHex);
 
+
+        if (this.multitask) {
+            if (this.prevTasks.includes("led")) {
+                this.prevTasks.length = 0; 
+                console.log("performing");
+                console.log(this.multitask_msg);
+                this.JiboPublish(this.multitask_msg); 
+                this.multitask_msg = {}; 
+            }
+            this.multitask_msg["do_led"] = true; 
+            this.multitask_msg["led_color"] = ledHex;
+            this.prevTasks.push("led")
+            return;
+        }
+
         var jibo_msg ={
             "do_led":true,
             "led_color": ledHex
             };
         this.JiboPublish(jibo_msg);
+
     }
 
     async JiboLEDOff () {
@@ -699,6 +961,24 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
     JiboLook (X: string, Y: string, Z: string) {
         log.log(parseFloat(X), parseFloat(Y), parseFloat(Z));
 
+        if (this.multitask) {
+            if (this.prevTasks.includes("look") || this.prevTasks.includes("emote") || this.prevTasks.includes("emoji")) {
+                console.log("performing")
+                console.log(this.multitask_msg)
+                this.JiboPublish(this.multitask_msg)
+                this.prevTasks.length = 0;
+                this.multitask_msg = {}
+            }
+            this.multitask_msg["do_lookat"] = true; 
+            this.multitask["lookat"] = {
+                x: parseFloat(X),
+                y: parseFloat(Y),
+                z: parseFloat(Z)
+              }
+            this.prevTasks.push("look")
+            return;
+        }
+
         var jibo_msg ={
             "do_lookat":true,
             "lookat": {
@@ -711,7 +991,7 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
     }
 
     async JiboEmoji(akey: string) {
-        const animation_key = _emojis[akey];
+        const animation_key = _emojis[this.emoji];
         await this.JiboAnim(animation_key);
     }
 
@@ -726,6 +1006,11 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
     async JiboEmote(akey: string) {
         const animation_key = _emotions[akey];
         await this.JiboAnim(animation_key);
+    }
+
+    async JiboDance(dkey: Dance) {
+        const dance_file = fileByDance[dkey];
+        await this.JiboAnim(dance_file); 
     }
 
     // async JiboDance(args) {
@@ -799,6 +1084,7 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
             }
             };
         await this.JiboPublish(jibo_msg);
+        return "done";
     }
 
 
@@ -812,17 +1098,18 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
                 name : '/jibo',
                 messageType : 'jibo_msgs/JiboAction'
             });
-        console.log(msg);
+        // console.log(msg);
         var jibo_msg = new ROSLIB.Message(msg);
         cmdVel.publish(jibo_msg);
-        await new Promise(r => setTimeout(r, 2000));
-        this.JiboState();
+        await new Promise(r => setTimeout(r, 500));
     }
 
     JiboState(){
 
         // Subscribing to a Topic
         // ----------------------
+
+        console.log("listening...")
 
         var state_listener = new ROSLIB.Topic({
             ros : this.ros,
@@ -878,6 +1165,11 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
         z: parseInt(result[3], 16)
       } : null;
     }
+
+    addAnimationToList(anim: string) {
+        return this.animation_list.push(anim); 
+    }
 }
+
 
 export = Scratch3Jibo;

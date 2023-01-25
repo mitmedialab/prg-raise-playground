@@ -106,7 +106,7 @@
     Custom Animation Name: <input bind:value={name} on:input={() => {extension.animName=name}}/>
   </div>
   <div style:padding='10px'>
-    Your Animation: {extension.text} + <img class='emoji' src={emojiIcons[extension.emoji]} alt={extension.emoji}/>
+    Your Animation: {extension.text} + <img class='emoji' src={emojiIcons[extension.animEmoji]} alt={extension.animEmoji}/>
   </div>
   <div style:padding='10px'>
     Say: <input bind:value={text} on:input={() => {extension.text=text}}/>
@@ -115,11 +115,12 @@
     {#each emojis as e}
     <div class="cell">
       <button style:cursor=pointer on:click={() => {
-        extension.emoji = e; 
+        extension.animEmoji = e; 
       }}>
         <img class="emoji" src={emojiIcons[e]} alt={e}/>
       </button>
     </div>
     {/each}
   </div>
+  <button on:click={() => invoke("addAnimationToList", name)}>Add</button>
 </div>

@@ -100,13 +100,13 @@
 
 <div class:container style:width=auto style:background-color={color.ui.white} style:color={color.text.primary}>
   <div style:padding='10px'>
-    Current Emoji: {extension.animEmoji}
+    Current Emoji: {extension.emoji}
   </div>
   <div id="grid">
     {#each emojis as e}
     <div class="cell">
       <button style:cursor=pointer on:click={() => {
-        extension.animEmoji = e; 
+        extension.emoji = e; 
       }}>
         <img class="emoji" src={emojiIcons[e]} alt={e}/>
       </button>
