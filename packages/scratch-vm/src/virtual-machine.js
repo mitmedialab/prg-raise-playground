@@ -738,7 +738,7 @@ class VirtualMachine extends EventEmitter {
 
         const soundDescs = serializeSounds(this.runtime, targetId);
         const costumeDescs = serializeCostumes(this.runtime, targetId);
-        const spriteJson = StringUtil.stringify(sb3.serialize(this.runtime, targetId));
+        const spriteJson = StringUtil.stringify(sb3.serialize(this.runtime, targetId, this.extensionManager));
 
         const zip = new JSZip();
         zip.file('sprite.json', spriteJson);
@@ -761,7 +761,7 @@ class VirtualMachine extends EventEmitter {
      */
     toJSON (optTargetId) {
         const sb3 = require('./serialization/sb3');
-        return StringUtil.stringify(sb3.serialize(this.runtime, optTargetId));
+        return StringUtil.stringify(sb3.serialize(this.runtime, optTargetId, this.extensionManager));
     }
 
     // TODO do we still need this function? Keeping it here so as not to introduce
@@ -790,6 +790,7 @@ class VirtualMachine extends EventEmitter {
             performance.mark('scratch-vm-deserialize-start');
         }
         const runtime = this.runtime;
+
         const deserializePromise = function () {
             const projectVersion = projectJSON.projectVersion;
             if (projectVersion === 2) {
@@ -809,7 +810,7 @@ class VirtualMachine extends EventEmitter {
                     performance.measure('scratch-vm-deserialize',
                         'scratch-vm-deserialize-start', 'scratch-vm-deserialize-end');
                 }
-                return this.installTargets(targets, extensions, true);
+                return this.installTargets(targets, extensions, true, projectJSON);
             });
     }
 
@@ -818,16 +819,17 @@ class VirtualMachine extends EventEmitter {
      * @param {Array.<Target>} targets - the targets to be installed
      * @param {ImportedExtensionsInfo} extensions - metadata about extensions used by these targets
      * @param {boolean} wholeProject - set to true if installing a whole project, as opposed to a single sprite.
+     * @param {object} fullJSON - the entire saved contents
      * @returns {Promise} resolved once targets have been installed
      */
-    installTargets (targets, extensions, wholeProject) {
-        const extensionPromises = [];
+    installTargets (targets, extensions, wholeProject, fullJSON) {
+        const { extensionManager } = this;
 
-        extensions.extensionIDs.forEach(extensionID => {
-            if (!this.extensionManager.isExtensionLoaded(extensionID)) {
-                const extensionURL = extensions.extensionURLs.get(extensionID) || extensionID;
-                extensionPromises.push(this.extensionManager.loadExtensionURL(extensionURL));
-            }
+        const extensionPromises = Array.from(extensions.extensionIDs).map(async extensionID => {
+            if (!extensionManager.isExtensionLoaded(extensionID)) await extensionManager.loadExtensionURL(extensionID);
+            const instance = this.extensionManager.getExtensionInstance(extensionID);
+            instance?.["load"]?.(fullJSON); // TODO: Verify that this is okay to do on already loaded extensions
+            return instance;
         });
 
         targets = targets.filter(target => !!target);

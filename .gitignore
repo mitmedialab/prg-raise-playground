@@ -105,7 +105,3 @@ dist
 .tern-port
 
 .idea
-
-# Scratch specific
-*/package-lock.json
-*/package.json
