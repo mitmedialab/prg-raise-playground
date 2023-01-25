@@ -18,7 +18,7 @@ export default class _ extends Extension<Details, {
         text: "Do it",
         type: BlockType.Button,
         operation: async () => {
-          const url = "https://jovial-choux-e140a5.netlify.app/.netlify/functions/ai-blocks/drive";
+          const url = "https://prg-key-server.netlify.app/.netlify/functions/ai-blocks-drive";
           const resp = await fetch(url, { method: 'GET' });
           const json = await resp.json();
           console.log(json);
