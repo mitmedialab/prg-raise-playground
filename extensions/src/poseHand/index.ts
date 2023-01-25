@@ -1,7 +1,8 @@
 import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, RuntimeEvent } from "$common";
 
-import Video from '../../../packages/scratch-vm/src/io/video';
-import * as handpose from '@tensorflow-models/handpose';
+// import Video from '../../../packages/scratch-vm/src/io/video'; // Save for now
+import * as handpose from '../../../packages/scratch-vm/node_modules/@tensorflow-models/handpose/dist';
+// import * as handpose from '@tensorflow-models/handpose';
 
 /**
  * States the video sensing activity can be set to.
@@ -135,6 +136,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
    * @returns {boolean} true if connected, false if not connected
    */
   isConnected() {
+    console.log('connected');
     return !!this.handPoseState && this.handPoseState.length > 0;
   }
 
@@ -146,7 +148,8 @@ export default class PoseHand extends Extension<Details, Blocks> {
   async _loop() {
     while (true) {
       const frame = this.runtime.ioDevices.video.getFrame({
-        format: Video.FORMAT_IMAGE_DATA,
+        format: 'image-data',
+        // format: Video.FORMAT_IMAGE_DATA,
         dimensions: PoseHand.DIMENSIONS
       });
 
@@ -251,11 +254,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
           acceptsReporters: true,
           items: fingerOptions,
           handler: (finger: string) => {
-            // return handlerFingerOptions.includes(finger) ? finger : "thumb";
-            if (["thumb", "indexFinger", "middleFinger", "ringFinger", "pinky"].indexOf(finger) != -1) {
-              return finger;
-            }
-            else return "thumb";
+            return handlerFingerOptions.includes(finger) ? finger : "thumb";
           }
         }
       },
@@ -270,9 +269,10 @@ export default class PoseHand extends Extension<Details, Blocks> {
         }
       }],
       text: (handPart: string, fingerPart: number) => `go to ${handPart} ${fingerPart}`,
-      operation: (handPart, fingerPart, util) => {
+      operation: (handPart: string, fingerPart: number, util) => {
 
         if (this.isConnected()) {
+          console.log('connected 2');
           const [x, y, z] = this.handPoseState[0].annotations[handPart][fingerPart];
           const { x: scratchX, y: scratchY } = this.tfCoordsToScratch({ x, y, z });
           (util.target as any).setXY(scratchX, scratchY, false);
@@ -287,15 +287,15 @@ export default class PoseHand extends Extension<Details, Blocks> {
         type: ArgumentType.Number,
         options: {
           acceptsReporters: true,
-          items: [{ text: 'off', value: 0 }, { text: 'on', value: 1 }, { text: 'on and flipped', value: 2 }],
-          handler: (x: number) => {
-            return Math.min(Math.max(x, 0), 2);
+          items: [{ text: 'off', value: VideoState.OFF }, { text: 'on', value: VideoState.ON }, { text: 'on and flipped', value: VideoState.ON_FLIPPED }],
+          handler: (video_state: number) => {
+            return Math.min(Math.max(video_state, VideoState.OFF), VideoState.ON_FLIPPED);
           }
         }
       },
-      text: (state: number) => `turn video ${state}`,
-      operation: (state) => {
-        this.videoToggle(state);
+      text: (video_state: number) => `turn video ${video_state}`,
+      operation: (video_state: number) => {
+        this.videoToggle(video_state);
       }
     });
 
@@ -303,8 +303,8 @@ export default class PoseHand extends Extension<Details, Blocks> {
     const setVideoTransparencyBlock: DefineSetVideoTransparency = () => ({
       type: BlockType.Command,
       arg: { type: ArgumentType.Number, defaultValue: 50 },
-      text: (transparency) => `set video transparency to ${transparency}`,
-      operation: (transparency) => {
+      text: (transparency: number) => `set video transparency to ${transparency}`,
+      operation: (transparency: number) => {
         this.setVideoTransparency(transparency);
       }
     });
