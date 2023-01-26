@@ -46,12 +46,6 @@ export default class PoseHand extends Extension<Details, Blocks> {
   handPoseState;
 
   /**
-   * Flag to determine if the extension has been installed before
-   * @type {boolean}
-   */
-  firstInstall: boolean;
-
-  /**
    * The hand model from handpose
    */
   private handModel;
@@ -82,8 +76,6 @@ export default class PoseHand extends Extension<Details, Blocks> {
     this.runtime.connectPeripheral(EXTENSION_ID, 0);
     this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
     */
-
-    this.firstInstall = true;
 
     if (this.runtime.ioDevices) {
       /* Possibly unnecessary, keep commented just in case
@@ -218,13 +210,12 @@ export default class PoseHand extends Extension<Details, Blocks> {
     /**
      * Sets up the extension's default video settings
      */
-    if (this.firstInstall) {
-      this.globalVideoState = VideoState.ON;
-      this.globalVideoTransparency = 50;
-      this.projectStarted();
-      this.firstInstall = false;
-      this.handModel = null;
-    }
+
+    this.globalVideoState = VideoState.ON;
+    this.globalVideoTransparency = 50;
+    this.projectStarted();
+    this.handModel = null;
+
 
     /**
      * The options for each finger
