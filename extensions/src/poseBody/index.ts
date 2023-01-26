@@ -194,11 +194,6 @@ export default class PoseBody extends Extension<Details, Blocks> {
   async ensureBodyModelLoaded() {
     this.bodyModel ??= await posenet.load();
     return this.bodyModel;
-
-    // if (!this.bodyModel) {
-    //   this.bodyModel = await posenet.load();
-    // }
-    // return this.bodyModel;
   }
 
   /**
@@ -211,15 +206,6 @@ export default class PoseBody extends Extension<Details, Blocks> {
     this.runtime.ioDevices.video.enableVideo();
     // Mirror if state is ON. Do not mirror if state is ON_FLIPPED.
     this.runtime.ioDevices.video.mirror = (state === VideoState.ON);
-
-    // if (state === VideoState.OFF) {
-    //   this.runtime.ioDevices.video.disableVideo();
-    // }
-    // else {
-    //   this.runtime.ioDevices.video.enableVideo();
-    //   // Mirror if state is ON. Do not mirror if state is ON_FLIPPED.
-    //   this.runtime.ioDevices.video.mirror = (state === VideoState.ON);
-    // }
   }
 
   /**
