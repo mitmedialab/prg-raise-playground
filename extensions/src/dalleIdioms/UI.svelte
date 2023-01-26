@@ -13,12 +13,17 @@
 </script>
 
 <style>
-
+  div {
+    height: 600px;
+    overflow: scroll;
+  }
 </style>
 
 <div>
   {#if extension.toDisplay}
-    <img src={extension.toDisplay.url} alt={extension.toDisplay.alt}>
+    {#each extension.toDisplay as {url, alt}}
+      <img src={url} alt={alt}>
+    {/each}
   {:else}
     No source!
   {/if}
