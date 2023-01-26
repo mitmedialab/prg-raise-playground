@@ -1,6 +1,6 @@
 import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, RuntimeEvent } from "$common";
 
-import Video from '../../../packages/scratch-vm/src/io/video';
+// import Video from '../../../packages/scratch-vm/src/io/video';
 import * as posenet from '../../../packages/scratch-vm/node_modules/@tensorflow-models/posenet';
 
 /**
@@ -54,7 +54,7 @@ export default class PoseBody extends Extension<Details, Blocks> {
   /**
    * The body model from posenet
    */
-  _bodyModel;
+  bodyModel;
 
   /**
    * The current video state
@@ -153,7 +153,8 @@ export default class PoseBody extends Extension<Details, Blocks> {
   async _loop() {
     while (true) {
       const frame = this.runtime.ioDevices.video.getFrame({
-        format: Video.FORMAT_IMAGE_DATA,
+        format: 'image-data',
+        // format: Video.FORMAT_IMAGE_DATA,
         dimensions: PoseBody.DIMENSIONS
       });
 
@@ -191,10 +192,13 @@ export default class PoseBody extends Extension<Details, Blocks> {
    * @returns 
    */
   async ensureBodyModelLoaded() {
-    if (!this._bodyModel) {
-      this._bodyModel = await posenet.load();
-    }
-    return this._bodyModel;
+    this.bodyModel ??= await posenet.load();
+    return this.bodyModel;
+
+    // if (!this.bodyModel) {
+    //   this.bodyModel = await posenet.load();
+    // }
+    // return this.bodyModel;
   }
 
   /**
@@ -202,14 +206,20 @@ export default class PoseBody extends Extension<Details, Blocks> {
    * @param state 
    */
   videoToggle(state: number) {
-    if (state === VideoState.OFF) {
-      this.runtime.ioDevices.video.disableVideo();
-    }
-    else {
-      this.runtime.ioDevices.video.enableVideo();
-      // Mirror if state is ON. Do not mirror if state is ON_FLIPPED.
-      this.runtime.ioDevices.video.mirror = (state === VideoState.ON);
-    }
+    if (state === VideoState.OFF) return this.runtime.ioDevices.video.disableVideo();
+
+    this.runtime.ioDevices.video.enableVideo();
+    // Mirror if state is ON. Do not mirror if state is ON_FLIPPED.
+    this.runtime.ioDevices.video.mirror = (state === VideoState.ON);
+
+    // if (state === VideoState.OFF) {
+    //   this.runtime.ioDevices.video.disableVideo();
+    // }
+    // else {
+    //   this.runtime.ioDevices.video.enableVideo();
+    //   // Mirror if state is ON. Do not mirror if state is ON_FLIPPED.
+    //   this.runtime.ioDevices.video.mirror = (state === VideoState.ON);
+    // }
   }
 
   /**
@@ -235,7 +245,7 @@ export default class PoseBody extends Extension<Details, Blocks> {
       this.globalVideoTransparency = 50;
       this.projectStarted();
       this.firstInstall = false;
-      this._bodyModel = null;
+      this.bodyModel = null;
     }
 
     /**
@@ -263,9 +273,7 @@ export default class PoseBody extends Extension<Details, Blocks> {
         { text: 'left ankle', value: 'rightAnkle' },
       ];
 
-    const handlerOptions = // SIMPLIFY THIS using the above list
-      ['nose', 'leftEye', 'rightEye', 'leftEar', 'rightEar', 'leftShoulder', 'rightShoulder', 'leftElbow', 'rightElbow',
-        'leftWrist', 'rightWrist', 'leftHip', 'rightHip', 'leftKnee', 'rightKnee', 'leftAnkle', 'rightAnkle']
+    const handlerOptions = bodyOptions.map(part => part.value);
 
     type DefineGoToBodyPart = DefineBlock<PoseBody, Blocks["goToBodyPartBlock"]>;
     const goToBodyPartBlock: DefineGoToBodyPart = () => ({
@@ -276,21 +284,17 @@ export default class PoseBody extends Extension<Details, Blocks> {
           acceptsReporters: true,
           items: bodyOptions,
           handler: (bodyPart: string) => {
-            if (handlerOptions.indexOf(bodyPart) == -1) {
-              return 'nose'
-            }
-            else return bodyPart;
+            return handlerOptions.includes(bodyPart) ? bodyPart : 'nose';
           }
         }
       },
       text: (bodyPart: string) => `go to ${bodyPart}`,
-      operation: (bodyPart, util) => {
+      operation: (bodyPart: string, util) => {
 
         if (this.hasPose()) {
           const { x, y } = this.tfCoordsToScratch(this.poseState.keypoints.find(point => point.part === bodyPart).position);
           (util.target as any).setXY(x, y, false);
         }
-        console.log(bodyPart)
       }
     });
 
@@ -301,15 +305,15 @@ export default class PoseBody extends Extension<Details, Blocks> {
         type: ArgumentType.Number,
         options: {
           acceptsReporters: true,
-          items: [{ text: 'off', value: 0 }, { text: 'on', value: 1 }, { text: 'on and flipped', value: 2 }],
-          handler: (x: number) => {
-            return Math.min(Math.max(x, 0), 2);
+          items: [{ text: 'off', value: VideoState.OFF }, { text: 'on', value: VideoState.ON }, { text: 'on and flipped', value: VideoState.ON_FLIPPED }],
+          handler: (video_state: number) => {
+            return Math.min(Math.max(video_state, VideoState.OFF), VideoState.ON_FLIPPED);
           }
         }
       },
-      text: (state: number) => `turn video ${state}`,
-      operation: (state) => {
-        this.videoToggle(state);
+      text: (video_state: number) => `turn video ${video_state}`,
+      operation: (video_state: number) => {
+        this.videoToggle(video_state);
       }
     });
 
@@ -317,8 +321,8 @@ export default class PoseBody extends Extension<Details, Blocks> {
     const setVideoTransparencyBlock: DefineSetVideoTransparency = () => ({
       type: BlockType.Command,
       arg: { type: ArgumentType.Number, defaultValue: 50 },
-      text: (transparency) => `set video transparency to ${transparency}`,
-      operation: (transparency) => {
+      text: (transparency: number) => `set video transparency to ${transparency}`,
+      operation: (transparency: number) => {
         this.setVideoTransparency(transparency);
       }
     });
