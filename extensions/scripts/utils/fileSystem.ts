@@ -54,6 +54,7 @@ const pathIsValid = (dir: string) => {
   if (invalidDirs.includes(dir)) return false;
   if (path.dirname(dir) !== extensionsSrc) return false;
   if (dir.startsWith(commonDirectory) || dir.startsWith(templatesDirectory)) return false;
+  if (!hasIndex(dir)) return false;
   return true;
 }
 
