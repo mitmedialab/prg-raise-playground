@@ -1,7 +1,9 @@
 import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, RuntimeEvent } from "$common";
 
 // import Video from '../../../packages/scratch-vm/src/io/video';
+
 import * as posenet from '../../../packages/scratch-vm/node_modules/@tensorflow-models/posenet';
+// import * as posenet from '@tensorflow-models/posenet';
 
 /**
  * States the video sensing activity can be set to.

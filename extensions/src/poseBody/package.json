@@ -8,5 +8,8 @@
     "test": "npm run test --prefix ../../ -- poseBody/index.test.ts"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@tensorflow-models/posenet": "^2.2.2"
+  }
 }
