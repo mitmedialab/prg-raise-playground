@@ -1,13 +1,11 @@
-import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, RuntimeEvent } from "$common";
+import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, RuntimeEvent, ValueOf } from "$common";
 
 // import Video from '../../../packages/scratch-vm/src/io/video';
 
 import * as posenet from '@tensorflow-models/posenet';
 
 /**
- * States the video sensing activity can be set to.
- * @readonly
- * @enum {string}
+ * States what the video sensing activity can be set to.
  */
 const VideoState = {
   /** Video turned off. */
@@ -18,7 +16,7 @@ const VideoState = {
 
   /** Video turned on without default y axis mirroring. */
   ON_FLIPPED: 2
-};
+} as const;
 
 /**
  * Contains descriptions of the blocks of the Body Sensing extension
@@ -55,7 +53,7 @@ export default class PoseBody extends Extension<Details, Blocks> {
   /**
    * The body model from posenet
    */
-  bodyModel;
+  private bodyModel;
 
   /**
    * The current video state
@@ -125,18 +123,19 @@ export default class PoseBody extends Extension<Details, Blocks> {
   }
 
   /**
-   * init() binds to this function, but it is never called, so this may be unimportant
+   * Used by registerPeripheral and connectPeripheral functions
    */
   // reset() {
   // }
 
   /**
+   * Used by registerPeripheral and connectPeripheral functions
    * Checks if the body pose estimate is ready to be used
    * @returns {boolean} true if connected, false if not connected
    */
-  isConnected() {
-    return this.hasPose();
-  }
+  // isConnected() {
+  //   return this.hasPose();
+  // }
 
   /**
    * Checks if there is a body in the video frame that has a pose
