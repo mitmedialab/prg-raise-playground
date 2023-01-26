@@ -210,7 +210,6 @@ export default class PoseHand extends Extension<Details, Blocks> {
     /**
      * Sets up the extension's default video settings
      */
-
     this.globalVideoState = VideoState.ON;
     this.globalVideoTransparency = 50;
     this.projectStarted();
