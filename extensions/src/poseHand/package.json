@@ -10,6 +10,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@tensorflow-models/handpose": "^0.0.7"
+    "@tensorflow-models/handpose": "0.0.3"
   }
 }

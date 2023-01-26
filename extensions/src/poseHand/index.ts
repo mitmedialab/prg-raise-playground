@@ -1,8 +1,7 @@
 import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, RuntimeEvent } from "$common";
 
 // import Video from '../../../packages/scratch-vm/src/io/video'; // Save for now
-import * as handpose from '../../../packages/scratch-vm/node_modules/@tensorflow-models/handpose/dist';
-// import * as handpose from '@tensorflow-models/handpose';
+import * as handpose from '@tensorflow-models/handpose';
 
 /**
  * States the video sensing activity can be set to.
