@@ -4,9 +4,8 @@ import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, Ex
 import * as handpose from '@tensorflow-models/handpose';
 
 /**
- * States the video sensing activity can be set to.
+ * States what the video state can be set to.
  * @readonly
- * @enum {string}
  */
 const VideoState = {
   /** Video turned off. */
@@ -17,7 +16,7 @@ const VideoState = {
 
   /** Video turned on without default y axis mirroring. */
   ON_FLIPPED: 2
-};
+} as const;
 
 /**
  * Contains the details about the Hand Sensing extension
