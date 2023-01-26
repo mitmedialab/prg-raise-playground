@@ -45,12 +45,6 @@ export default class PoseBody extends Extension<Details, Blocks> {
   poseState;
 
   /**
-   * Flag to determine if the extension has been installed before
-   * @type {boolean}
-   */
-  firstInstall: boolean;
-
-  /**
    * The body model from posenet
    */
   private bodyModel;
@@ -80,9 +74,6 @@ export default class PoseBody extends Extension<Details, Blocks> {
     // this.runtime.registerPeripheralExtension(EXTENSION_ID, this);
     // this.runtime.connectPeripheral(EXTENSION_ID, 0);
     // this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
-
-
-    this.firstInstall = true;
 
     if (this.runtime.ioDevices) {
       // Possibly unnecessary, keep commented just in case
@@ -226,13 +217,10 @@ export default class PoseBody extends Extension<Details, Blocks> {
     /**
      * Sets up the extension's default video settings
      */
-    if (this.firstInstall) {
-      this.globalVideoState = VideoState.ON;
-      this.globalVideoTransparency = 50;
-      this.projectStarted();
-      this.firstInstall = false;
-      this.bodyModel = null;
-    }
+    this.globalVideoState = VideoState.ON;
+    this.globalVideoTransparency = 50;
+    this.projectStarted();
+    this.bodyModel = null;
 
     /**
      * The options for each finger
