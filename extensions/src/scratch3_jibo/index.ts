@@ -1,11 +1,12 @@
-import Runtime from "../../engine/runtime";
-import Cast from "../../util/cast";
-import log from "../../util/log";
+import Runtime from "../../../packages/scratch-vm/src/engine/runtime";
+import Cast from "../../../packages/scratch-vm/src/util/cast";
+import log from "../../../packages/scratch-vm/src/util/log";
 import EventEmitter from 'events';
 
-import { ArgumentType, BlockType } from "../../typescript-support/enums";
-import { Extension } from "../../typescript-support/Extension";
-import { Environment, BlockDefinitions, ButtonBlock, MenuItem } from "../../typescript-support/types";
+
+import { ArgumentType, BlockType } from "$common";
+import { Environment, BlockDefinitions, ButtonBlock, MenuItem } from "$common"
+import { Extension } from "$common"
 
 import ROSLIB from 'roslib';
 
@@ -89,13 +90,6 @@ const fileByDance: Record<Dance, string> = {
     [Dance.Waltz]: "Dances/Waltz_01_01.keys", 
     [Dance.Disco]: "Dances/dance_disco_00.keys"
 }
-
-// const _dances = {
-//     "Disco": "Dances/dance_disco_00.keys",
-//     "Slow Dance": "Dances/Prom_Night_01_01.keys",
-//     "Happy Dance": "Dances/Happy_Lucky_01_01.keys",
-//     "Robot": "Dances/Robotic_01_01.keys"
-// }
 
 const _emotions = {
     "Embarassed": "Misc/embarassed_01_02.keys",
@@ -186,7 +180,8 @@ type Blocks = {
     JiboTTS: (text: string) => void, 
     JiboAsk: (text: string) => void, 
     JiboListen: () => any, 
-    JiboEmoji: (akey: string) => void, 
+    // JiboEmoji: (akey: string) => void, 
+    JiboEmoji: (arg: EmojiArgument) => void,
     JiboEmote: (akey: string) => void, 
     JiboDance: (dkey) => void,
     JiboLED: (color) => void, 
@@ -196,13 +191,12 @@ type Blocks = {
     JiboEnd: () => void, 
     JiboState: () => void, 
     Emoji: () => string,
-    // Anim: () => any,
-    emojiUI: ButtonBlock,
-    customAnim: ButtonBlock
 }
 
-class Scratch3Jibo extends Extension<Details, Blocks> {
-    runtime: Runtime;
+type EmojiArgument = { name: string, file: string };
+
+export default class Scratch3Jibo extends Extension<Details, Blocks> {
+    // runtime: Runtime;
     ros: any; // TODO
     connected: boolean; 
     failed: boolean; 
@@ -313,7 +307,7 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
 
     defineTranslations() { return undefined };
 
-    defineBlocks(): BlockDefinitions<Blocks> {
+    defineBlocks(): BlockDefinitions<Scratch3Jibo> {
         return {
             JiboTTS: (self: Scratch3Jibo) => ({
                 type: BlockType.Command, 
@@ -353,37 +347,52 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
                 text: (dname: string) => `set Jibo Dance to ${dname}`,
                 operation: (dkey: Dance) => {this.JiboDance(dkey)}
             }),
+            // JiboEmoji: (self: Scratch3Jibo) => ({
+            //     type: BlockType.Command, 
+            //     arg: {
+            //             type: ArgumentType.String, 
+            //             defaultValue: self.emoji, 
+            //             options: {
+            //                 acceptsReporters: true, 
+            //                 items: Object.keys(_icons),
+            //                 handler: (input: any) => {
+            //                     if (_icons[input] in Object.keys(_emojis)) {
+            //                         return _icons[input]; 
+            //                     }
+            //                     return 'Penguin'
+            //                 }
+            //             }
+            //         }, 
+            //     text: (akey: string) => `set Jibo Emoji ${akey}`, 
+            //     operation: (akey: string) => {
+            //         this.JiboEmoji(akey);
+            //     }
+            // }), 
             JiboEmoji: (self: Scratch3Jibo) => ({
                 type: BlockType.Command, 
-                arg: {
-                        type: ArgumentType.String, 
-                        defaultValue: self.emoji, 
-                        options: {
-                            acceptsReporters: true, 
-                            items: Object.keys(_icons),
-                            handler: (input: any) => {
-                                if (_icons[input] in Object.keys(_emojis)) {
-                                    return _icons[input]; 
-                                }
-                                return 'Penguin'
-                            }
-                        }
-                    }, 
-                text: (akey: string) => `set Jibo Emoji ${akey}`, 
-                operation: (akey: string) => {
-                    this.JiboEmoji(akey);
+                text: (arg) => `Set Jibo Emoji to ${arg.name}`,
+                arg: this.makeCustomArgument({
+                    component: "CustomArgument", 
+                    initial: { 
+                        value: { name: "Apple", file: "Emoji/Emoji_AppleRed_01_01.keys" }, 
+                        text: "Apple"
+                    }
+                }), 
+                operation: (arg) => {
+                    const { name, file } = arg;
+                    console.log(name)
                 }
-            }), 
+            }),
             Emoji: (self: Scratch3Jibo) => ({
                 type: BlockType.Reporter, 
                 text: `emoji`, 
                 operation: () => {return this.emoji}
             }),
-            emojiUI: (self: Scratch3Jibo) => ({
-                type: BlockType.Button, 
-                text: `Set Emoji`, 
-                operation: () => {this.openUI("Emoji")}
-            }),
+            // emojiUI: (self: Scratch3Jibo) => ({
+            //     type: BlockType.Button, 
+            //     text: `Set Emoji`, 
+            //     operation: () => {this.openUI("Emoji")}
+            // }),
             JiboEmote: (self: Scratch3Jibo) => ({
                 type: BlockType.Command, 
                 arg: { 
@@ -420,11 +429,11 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
             //     text: `My Animation`, 
             //     operation: () => {return this.animName}
             // }),
-            customAnim: (self: Scratch3Jibo) => ({
-                type: BlockType.Button,
-                text: `Create Animation`, 
-                operation: () => {this.openUI("CustomAnim")}
-            }),
+            // customAnim: (self: Scratch3Jibo) => ({
+            //     type: BlockType.Button,
+            //     text: `Create Animation`, 
+            //     operation: () => {this.openUI("CustomAnim")}
+            // }),
             JiboLED: (self: Scratch3Jibo) => ({
                 type: BlockType.Command, 
                 arg: {
@@ -1170,6 +1179,3 @@ class Scratch3Jibo extends Extension<Details, Blocks> {
         return this.animation_list.push(anim); 
     }
 }
-
-
-export = Scratch3Jibo;

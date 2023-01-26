@@ -1,0 +1,15 @@
+{
+  "name": "scratch3_jibo-extension",
+  "version": "1.0.0",
+  "description": "An extension created using the PRG AI Blocks framework",
+  "main": "index.ts",
+  "scripts": {
+    "directory": "echo scratch3_jibo",
+    "test": "npm run test --prefix ../../ -- scratch3_jibo/index.test.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "roslib": "^1.3.0"
+  }
+}
