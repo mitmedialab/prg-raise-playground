@@ -2,11 +2,14 @@ import type Runtime from '$scratch-vm/engine/runtime';
 import BlockUtility from '$scratch-vm/engine/block-utility';
 import { ArgumentType, BlockType, Branch, Language } from './enums';
 import type { Extension } from './Extension';
+import { blockIDKey } from './globals';
 
 export type InternalButtonKey = "__button__";
 export type ButtonBlock = () => InternalButtonKey;
 
 export type BaseExtension = Extension<ExtensionMenuDisplayDetails, ExtensionBlocks>;
+
+export type BlockUtilityWithID = BlockUtility & { [blockIDKey]: string };
 
 /**
  * @summary An object passed to extensions on initialization. 
@@ -122,7 +125,7 @@ type ToArguments<T extends any[]> =
   ? [Argument<Head>, ...ToArguments<Tail>]
   : [];
 
-type ParamsAndUtility<T extends BlockOperation> = [...params: Parameters<T>, util: BlockUtility];
+type ParamsAndUtility<T extends BlockOperation> = [...params: Parameters<T>, util: BlockUtilityWithID];
 
 export type NonEmptyArray<T> = [T, ...T[]];
 

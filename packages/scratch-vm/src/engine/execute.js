@@ -4,6 +4,7 @@ const log = require('../util/log');
 const Thread = require('./thread');
 const {Map} = require('immutable');
 const cast = require('../util/cast');
+const {blockIDKey} = require("../dist/globals");
 
 /**
  * Single BlockUtility instance reused by execute for every pritimive ran.
@@ -520,6 +521,7 @@ const execute = function (sequencer, thread) {
 
         // Inputs are set during previous steps in the loop.
 
+        blockUtility[blockIDKey] = opCached.id;
         const primitiveReportedValue = blockFunction(argValues, blockUtility);
 
         // If it's a promise, wait until promise resolves.
