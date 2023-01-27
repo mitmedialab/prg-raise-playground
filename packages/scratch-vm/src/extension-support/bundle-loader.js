@@ -40,7 +40,7 @@ const waitForCondition = async (conditionObj, timeout = 3000, updateFrequency = 
 */
 const importStaticScript = async(endpoint, onLoad, onError) => {
   var scriptTag = document.createElement('script');
-  scriptTag.src = `${location.href}/static/${endpoint}`;
+  scriptTag.src = `${location.href.split("?")[0]}/static/${endpoint}`;
   let condition = { test: true, arg: false, timeout: false };
   scriptTag.onload = () => {
       onLoad();
