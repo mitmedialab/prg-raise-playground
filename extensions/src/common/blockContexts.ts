@@ -1,5 +1,6 @@
 import type BlockUtility from '$scratch-vm/engine/block-utility.js';
 import type Blocks from '$scratch-vm/engine/blocks.js';
+import { Branch } from './enums';
 import { blockIDKey } from './globals';
 import { BlockUtilityWithID } from './types';
 
@@ -16,9 +17,57 @@ const contexts = new Map<BlockID, Map<string, any>>();
 
 const getBlockContainer = (util: BlockUtility): Blocks => util.thread.blockContainer;
 const getBlocksMap = ({ _blocks }: Blocks): BlockMap => _blocks;
+
+export const setStackContext = <TKey extends string, TValue>({ [blockIDKey]: id }: BlockUtilityWithID, key: TKey, value: TValue) =>
+  (contexts.has(id) ? contexts.get(id) : contexts.set(id, new Map<string, any>())).set(key, value);
+
+export const getStackContext = <T>(util: BlockUtilityWithID, keys?: Array<keyof T>): Partial<T> => {
+  const map = getBlocksMap(getBlockContainer(util));
+  const id = util[blockIDKey];
+  let block = map[id];
+  if (typeof block === 'undefined') return null;
+
+  let context = {};
+  const useKeys = keys !== undefined;
+
+  console.log(JSON.stringify(contexts));
+
+  while (block.parent) {
+    const { parent } = block;
+    if (contexts.has(parent)) {
+      for (const [key, value] of contexts.get(parent)) {
+        console.log(key, value);
+        if (key in context) continue;
+
+        const indexOfKey = useKeys ? keys.indexOf(key as any) : -1;
+        if (useKeys && indexOfKey < 0) continue;
+
+        context[key] = value;
+
+        if (useKeys) {
+          keys.splice(indexOfKey, 1);
+          if (keys.length === 0) return context;
+        }
+      }
+    }
+    block = map[parent];
+  }
+
+  return context;
+}
+
+export const createContextManager = <TContext>() => ({
+  openContext: (util: BlockUtilityWithID, op: (set: <TKey extends keyof TContext & string>(key: TKey, value: TContext[TKey]) => void) => void) => {
+    op((key, value) => setStackContext(util, key, value));
+    return Branch.First;
+  }
+});
+
+
+// --------------------------------------------------
+const getTopBlockID = (id: BlockID, blocks: Blocks) => blocks.getTopLevelScript(id);
 const getTopBlockIDs = (map: BlockMap) => Object.keys(map).filter(id => map[id].topLevel);
 const isTopBlockID = (id: string, map: BlockMap): boolean => map[id].topLevel;
-const getTopBlockID = (id: BlockID, blocks: Blocks) => blocks.getTopLevelScript(id);
 
 /**
 * NOTE: Also returns true if baseID === aboveID
@@ -32,32 +81,6 @@ const isBlockAbove = (rereferenceID: string, queryID: string, map: BlockMap) => 
     if (block.id === queryID) return true;
   }
   return false;
-}
-
-export const setStackContext = <T>({ [blockIDKey]: id }: BlockUtilityWithID, key: string, value: T) =>
-  (contexts.has(id) ? contexts.get(id) : contexts.set(id, new Map<string, any>())).set(key, value);
-
-export const getStackContext = <T>(util: BlockUtilityWithID): Partial<T> => {
-  const id = util[blockIDKey];
-  console.log(id);
-  const map = getBlocksMap(getBlockContainer(util));
-  let block = map[id];
-  if (typeof block === 'undefined') return null;
-
-  let context = {};
-
-  while (block.parent) {
-    const { parent } = block;
-    if (contexts.has(parent)) {
-      for (const [key, value] of contexts.get(parent)) {
-        if (key in context) continue;
-        context[key] = value;
-      }
-    }
-    block = map[parent];
-  }
-
-  return context;
 }
 
 /**

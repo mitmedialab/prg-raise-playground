@@ -11,6 +11,8 @@ export type BaseExtension = Extension<ExtensionMenuDisplayDetails, ExtensionBloc
 
 export type BlockUtilityWithID = BlockUtility & { [blockIDKey]: string };
 
+export type BranchToRun = { branch: ValueOf<typeof Branch> };
+
 /**
  * @summary An object passed to extensions on initialization. 
  * @description The Environment object should contain anything necessary for an extension to interact with the Scratch/Blockly environment
@@ -134,6 +136,13 @@ const enum ArgField {
   Args = 'args'
 }
 
+type BlockReturn<TOp extends BlockOperation> =
+  TOp extends ButtonBlock
+  ? void
+  : ReturnType<TOp> extends BranchToRun
+  ? BranchToRun["branch"]
+  : ReturnType<TOp>
+
 export type Block<TExt extends BaseExtension, TOp extends BlockOperation> = {
   /**
    * @type {BlockType}
@@ -173,12 +182,12 @@ export type Block<TExt extends BaseExtension, TOp extends BlockOperation> = {
    */
   type: ReturnType<TOp> extends ReturnType<ButtonBlock>
   ? typeof BlockType.Button
+  : ReturnType<TOp> extends BranchToRun
+  ? typeof BlockType.Conditional
   : ReturnType<TOp> extends void
   ? typeof BlockType.Command | typeof BlockType.Button | typeof BlockType.Loop
   : ReturnType<TOp> extends boolean
   ? (typeof BlockType.Reporter | typeof BlockType.Boolean | typeof BlockType.Hat)
-  : ReturnType<TOp> extends number
-  ? (typeof BlockType.Reporter | typeof BlockType.Conditional)
   : ReturnType<TOp> extends Promise<any>
   ? never
   : typeof BlockType.Reporter;
@@ -212,7 +221,7 @@ export type Block<TExt extends BaseExtension, TOp extends BlockOperation> = {
    * which can help you accomplish more advanced block behavior. If you don't need to use it, feel free to omit it.
    * @see {BlockUtility} type for more information on the final argument passed to this function.
    */
-  operation: (this: TExt, ...params: TOp extends ButtonBlock ? Parameters<TOp> : ParamsAndUtility<TOp>) => TOp extends ButtonBlock ? void : ReturnType<TOp>;
+  operation: (this: TExt, ...params: TOp extends ButtonBlock ? Parameters<TOp> : ParamsAndUtility<TOp>) => BlockReturn<TOp>;
   /**
    * @summary The display text of your block.
    * @description This is where you describe what your block should say. 
@@ -385,7 +394,14 @@ export type Block<TExt extends BaseExtension, TOp extends BlockOperation> = {
      */
     args?: never
     arg?: never
-  });
+  })
+  & (ReturnType<TOp> extends BranchToRun ? {
+    /**
+     * branchCount should only be defined for conditional blocks
+     */
+    branchCount?: number,
+  } : {});
+
 
 /**
  * How an extension should display in the extensions menu.

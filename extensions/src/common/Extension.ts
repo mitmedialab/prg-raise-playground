@@ -9,6 +9,7 @@ import { isCustomArgumentHack, processCustomArgumentHack } from './customArgumen
 import { customArgumentCheck, customArgumentFlag } from './globals';
 import CustomArgumentManager, { ArgumentEntry } from './customArguments/CustomArgumentManager';
 import { SaveDataHandler } from './SavaDataHandler';
+import BlockUtility from '$root/packages/scratch-vm/src/engine/block-utility';
 
 export type CodeGenArgs = {
   name: never,
@@ -318,6 +319,8 @@ export abstract class Extension
     const { type, text, operation } = block;
     const args: Argument<any>[] = block.arg ? [block.arg] : block.args;
 
+    const branchCount = type === BlockType.Conditional ? (block as { branchCount: number }).branchCount : undefined;
+
     const defaultText: string = Extension.IsFunction(text)
       ? (text as unknown as (...params: any[]) => string)(...args.map((_, index) => `[${index}]`))
       : text as string;
@@ -371,7 +374,7 @@ export abstract class Extension
       registerButtonCallback(this.runtime, buttonID, bound)
     }
     else {
-      this[opcode] = (argsFromScratch, blockUtility) => {
+      this[opcode] = (argsFromScratch, blockUtility: BlockUtility) => {
         const { mutation } = argsFromScratch; // if we need it...
         // NOTE: Assumption is that args order will be correct since their keys are parsable as ints (i.e. '0', '1', ...)
         const uncasted = Object.values(argsFromScratch).slice(0, -1);
@@ -387,6 +390,12 @@ export abstract class Extension
               : handler(customArgumentManager.getEntry(param).value)
         });
 
+        if (type === BlockType.Conditional) {
+          const branch = bound(...casted, blockUtility);
+          blockUtility.startBranch(branch, false);
+          return branch;
+        }
+
         return bound(...casted, blockUtility); // can add more util params as necessary
       }
     }
@@ -396,7 +405,8 @@ export abstract class Extension
       text: displayText,
       blockType: type,
       arguments: argsInfo,
-      func: buttonID,
+      func: type === BlockType.Conditional ? opcode : buttonID,
+      branchCount
     }
   }
 
