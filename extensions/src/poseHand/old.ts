@@ -1,6 +1,6 @@
-import { extractFromGetInfo, mockFormatMessage as formatMessage, BlockType, ArgumentType } from "$common";
+import { extractFromGetInfo, mockFormatMessage as formatMessage, BlockType, ArgumentType, ExtractType } from "$common";
 
-const blocks = extractFromGetInfo({
+const x = {
   blocks: [
     {
       opcode: 'goToHandPart',
@@ -73,21 +73,11 @@ const blocks = extractFromGetInfo({
         { text: 'tip', value: 3 },
       ]
     },
-    ATTRIBUTE: {
-      acceptReporters: true,
-      items: []
-    },
-    SUBJECT: {
-      acceptReporters: true,
-      items: []
-    },
     VIDEO_STATE: {
       acceptReporters: true,
       items: []
     }
   }
-} as const);
+} as const;
 
-type x = typeof blocks;
-
-type y = x["setVideoTransparency"];
+type y = ExtractType<typeof x, "videoToggle">["type"]["videoToggle"];

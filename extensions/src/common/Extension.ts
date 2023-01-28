@@ -325,97 +325,27 @@ export abstract class Extension
 
     const legacyInfo = Extension.ExtractLegacyInformation(block);
     const isLegacy = legacyInfo !== undefined;
-    const orderedNames = isLegacy ? [] : undefined;
 
-    const defaultText: string = Extension.IsFunction(text)
-      ? (text as unknown as (...params: any[]) => string)(...args.map((arg, index) => {
-        const name = isLegacy ? Extension.ExtractLegacyInformation(arg).name : index;
-        if (isLegacy) orderedNames.push(name);
-        return `[${name}]`
-      }))
-      : text as string;
-
-    const displayText = this.format(defaultText, key, `Block text for '${key}'`);
-
-    type Handler = MenuThatAcceptsReporters<any>['handler'];
-    const handlerKey: keyof MenuThatAcceptsReporters<any> = 'handler';
-    const handlers = args ? new Array<Handler>(args.length).fill(undefined) : undefined;
-
-    const argsInfo: Record<string, ExtensionArgumentMetadata> = args?.map((element, index) => {
-      const entry = {} as ExtensionArgumentMetadata & { name: string };
-      entry.type = Extension.GetArgumentType(element);
-      entry.name = isLegacy ? Extension.ExtractLegacyInformation(element).name : `${index}`;
-
-      if (Extension.IsPrimitive(element)) return entry;
-
-      const { defaultValue, options } = element as VerboseArgument<any>;
-
-      if (defaultValue !== undefined) entry.defaultValue =
-        Extension.IsString(entry)
-          ? this.format(defaultValue, Extension.GetArgTranslationID(key, index), `Default value for arg ${index + 1} of ${key} block`)
-          : defaultValue;
-
-      if (!options) return entry;
-
-      const alreadyAddedIndex = menusToAdd.indexOf(options);
-      const alreadyAdded = alreadyAddedIndex >= 0;
-      const menuIndex = alreadyAdded ? alreadyAddedIndex : menusToAdd.push(options) - 1;
-      const name = Extension.ExtractLegacyInformation(options)?.name ?? `${menuIndex}`;
-      if (!alreadyAdded) menuNames.push(name);
-      entry.menu = name;
-
-      if (handlerKey in options) {
-        const { handler } = options as MenuThatAcceptsReporters<any> | DynamicMenuThatAcceptsReporters<any>;
-        handlers[index] = handler;
-      }
-
-      return entry;
-    })
-      .reduce((accumulation, { name, ...value }) => {
-        accumulation[name] = value;
-        return accumulation;
-      }, {});
+    const { displayText, orderedNames } = Extension.ConvertToDisplayText(this, key, text, args, isLegacy);
+    const { argumentsInfo, handlers } = Extension.ConvertToArgumentInfo(this, key, args, menusToAdd, menuNames, isLegacy);
 
     const opcode = isLegacy ? legacyInfo.name : Extension.GetInternalKey(key);
     const bound = operation.bind(this);
 
-    const { id, customArgumentManager } = this;
+    const { id } = this;
 
     const isButton = type === BlockType.Button;
     const buttonID = isButton ? Extension.GetButtonID(id, opcode) : undefined;
 
-    if (isButton) {
-      registerButtonCallback(this.runtime, buttonID, bound)
-    }
-    else {
-      this[opcode] = (argsFromScratch, blockUtility) => {
-        const { mutation } = argsFromScratch; // if we need it...
-
-        const uncasted = isLegacy
-          ? orderedNames.map(name => argsFromScratch[name])
-          // NOTE: Assumption is that args order will be correct since their keys are parsable as ints (i.e. '0', '1', ...)
-          : Object.values(argsFromScratch).slice(0, -1);
-
-        const casted = uncasted.map((param: any, index) => {
-          const type = Extension.GetArgumentType(args[index]);
-          const handler = handlers[index] ?? identity;
-
-          return type !== ArgumentType.Custom
-            ? Extension.CastToType(type, handler(param))
-            : !(Extension.IsString(param) && CustomArgumentManager.IsIdentifier(param))
-              ? handler(param)
-              : handler(customArgumentManager.getEntry(param).value)
-        });
-
-        return bound(...casted, blockUtility); // can add more util params as necessary
-      }
-    }
+    isButton
+      ? registerButtonCallback(this.runtime, buttonID, bound)
+      : this.registerOpcode(opcode, bound, args, handlers, orderedNames, isLegacy);
 
     return {
       opcode,
       text: displayText,
       blockType: type,
-      arguments: argsInfo,
+      arguments: argumentsInfo,
       func: buttonID,
     }
   }
@@ -432,6 +362,31 @@ export abstract class Extension
       description: `${description} (of '${this.name}' extension)`,
     });
     */
+  }
+
+  private registerOpcode(opcode: string, bound: Function, args: Argument<any>[], handlers: Function[], orderedNames: string[], isLegacy: boolean,) {
+    const { customArgumentManager } = this;
+    this[opcode] = (argsFromScratch, blockUtility) => {
+      const { mutation } = argsFromScratch; // if we need it...
+
+      const uncasted = isLegacy
+        ? orderedNames.map(name => argsFromScratch[name])
+        // NOTE: Assumption is that args order will be correct since their keys are parsable as ints (i.e. '0', '1', ...)
+        : Object.values(argsFromScratch).slice(0, -1);
+
+      const casted = uncasted.map((param: any, index) => {
+        const type = Extension.GetArgumentType(args[index]);
+        const handler = handlers[index] ?? identity;
+
+        return type !== ArgumentType.Custom
+          ? Extension.CastToType(type, handler(param))
+          : !(Extension.IsString(param) && CustomArgumentManager.IsIdentifier(param))
+            ? handler(param)
+            : handler(customArgumentManager.getEntry(param).value)
+      });
+
+      return bound(...casted, blockUtility); // can add more util params as necessary
+    }
   }
 
   /*
@@ -484,6 +439,71 @@ export abstract class Extension
   }
 
   static GetKeyFromOpcode = (opcode: string) => opcode.replace(Extension.GetInternalKey(""), "");
+
+  private static ConvertToDisplayText<T extends BaseExtension>(ext: T, key: string, text: string | ((...args: any[]) => string), args: Argument<any>[], isLegacy: boolean) {
+    const orderedNames = isLegacy ? [] : undefined;
+
+    const resolvedText: string = Extension.IsFunction(text)
+      ? (text as unknown as (...params: any[]) => string)(...args.map((arg, index) => {
+        const name = isLegacy ? Extension.ExtractLegacyInformation(arg).name : index;
+        if (isLegacy) orderedNames.push(name);
+        return `[${name}]`
+      }))
+      : text as string;
+
+    // Once translations supported, replace with 'format'
+    return { displayText: ext.format(resolvedText, key, `Block text for '${key}'`), orderedNames };
+  }
+
+  private static ConvertToArgumentInfo<T extends BaseExtension>(ext: T, key: string, args: Argument<any>[], menusToAdd: MenuItem<any>[], menuNames: string[], isLegacy: boolean) {
+    if (!args) return undefined;
+
+    type Handler = MenuThatAcceptsReporters<any>['handler'];
+    const handlerKey: keyof MenuThatAcceptsReporters<any> = 'handler';
+    const handlers = args ? new Array<Handler>(args.length).fill(undefined) : undefined;
+
+    type Entry = ExtensionArgumentMetadata & { name: string };
+
+    const argumentsInfo = args
+      .map((element, index) => {
+        const entry = {} as Entry;
+        entry.type = Extension.GetArgumentType(element);
+        entry.name = isLegacy ? Extension.ExtractLegacyInformation(element).name : `${index}`;
+
+        if (Extension.IsPrimitive(element)) return entry;
+
+        const { defaultValue, options } = element as VerboseArgument<any>;
+
+        if (defaultValue !== undefined)
+          entry.defaultValue = Extension.IsString(entry)
+            ? ext.format(defaultValue, Extension.GetArgTranslationID(key, index), `Default value for arg ${index + 1} of ${key} block`)
+            : defaultValue;
+
+        if (!options) return entry;
+
+        const alreadyAddedIndex = menusToAdd.indexOf(options);
+        const alreadyAdded = alreadyAddedIndex >= 0;
+        const menuIndex = alreadyAdded ? alreadyAddedIndex : menusToAdd.push(options) - 1;
+        const name = isLegacy ? Extension.ExtractLegacyInformation(options).name : `${menuIndex}`;
+
+        if (!alreadyAdded) menuNames.push(name);
+
+        entry.menu = name;
+
+        if (handlerKey in options) {
+          const { handler } = options as MenuThatAcceptsReporters<any> | DynamicMenuThatAcceptsReporters<any>;
+          handlers[index] = handler;
+        }
+
+        return entry;
+      })
+      .reduce((accumulation, { name, ...value }) => {
+        accumulation[name] = value;
+        return accumulation;
+      }, {});
+
+    return { argumentsInfo, handlers };
+  }
 
   private static GetArgTranslationID = (blockname: string, index: number) => {
     return `${blockname}-arg${index}-default`;

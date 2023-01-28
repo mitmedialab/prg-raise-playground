@@ -1,7 +1,12 @@
-import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, RuntimeEvent } from "$common";
+import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, RuntimeEvent, BlockDefinitions } from "$common";
 
 // import Video from '../../../packages/scratch-vm/src/io/video'; // Save for now
 import * as handpose from '@tensorflow-models/handpose';
+
+import legacy from "./old";
+const { legacySupport } = legacy;
+
+legacySupport("videoToggle", { type: "" });
 
 /**
  * States what the video state can be set to.
@@ -130,15 +135,6 @@ export default class PoseHand extends Extension<Details, Blocks> {
     return !!this.handPoseState && this.handPoseState.length > 0;
   }
 
-  reset() {
-  }
-
-  scan() {
-  }
-
-  connect() {
-  }
-
   /**
    * Runs for the entire time the extension is running. Gets information about the video frame.
    * Estimates where the hand is on the video frame. Creates a delay to prevent this function from constantly running,
@@ -243,14 +239,12 @@ export default class PoseHand extends Extension<Details, Blocks> {
 
 
     type DefineGoToHandPart = DefineBlock<PoseHand, Blocks["goToHandPartBlock"]>;
-    const goToHandPartBlock: DefineGoToHandPart = () => ({
-      name: "goToHandPart",
+
+    const goToHandPartBlock: DefineGoToHandPart = legacySupport("goToHandPart", {
       type: BlockType.Command,
       args: [{
-        name: "HAND_PART",
         type: ArgumentType.String,
         options: {
-          name: "HAND_PART",
           acceptsReporters: true,
           items: fingerOptions,
           handler: (finger: string) => {
@@ -259,10 +253,8 @@ export default class PoseHand extends Extension<Details, Blocks> {
         }
       },
       {
-        name: "HAND_SUB_PART",
         type: ArgumentType.Number,
         options: {
-          name: "HAND_SUB_PART",
           acceptsReporters: true,
           items: partOfFingerOptions,
           handler: (part: number) => {
@@ -283,7 +275,8 @@ export default class PoseHand extends Extension<Details, Blocks> {
     });
 
     type DefineVideoToggle = DefineBlock<PoseHand, Blocks["videoToggleBlock"]>;
-    const videoToggleBlock: DefineVideoToggle = () => ({
+
+    const videoToggleBlock: DefineVideoToggle = legacySupport("videoToggle", {
       type: BlockType.Command,
       arg: {
         type: ArgumentType.Number,
@@ -301,15 +294,15 @@ export default class PoseHand extends Extension<Details, Blocks> {
       }
     });
 
-    type DefineSetVideoTransparency = DefineBlock<PoseHand, Blocks["setVideoTransparencyBlock"]>;
-    const setVideoTransparencyBlock: DefineSetVideoTransparency = () => ({
-      type: BlockType.Command,
-      arg: { type: ArgumentType.Number, defaultValue: 50 },
-      text: (transparency: number) => `set video transparency to ${transparency}`,
-      operation: (transparency: number) => {
-        this.setVideoTransparency(transparency);
-      }
-    });
+    const setVideoTransparencyBlock: Block<PoseHand, Blocks["setVideoTransparencyBlock"]> =
+      legacySupport("setVideoTransparency", {
+        type: BlockType.Command,
+        arg: { type: ArgumentType.Number, defaultValue: 50 },
+        text: (transparency: number) => `set video transparency to ${transparency}`,
+        operation: (transparency: number) => {
+          this.setVideoTransparency(transparency);
+        }
+      });
 
     return {
       goToHandPartBlock,
