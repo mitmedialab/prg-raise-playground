@@ -1,4 +1,4 @@
-import { BaseExtension, Block, DefineBlock, ExtensionBlockMetadata, ExtensionMetadata, ScratchArgument, TypeByArgumentType, ValueOf, VerboseArgument } from "./types";
+import { BaseExtension, Block, ExtensionBlockMetadata, ExtensionMetadata, TypeByArgumentType, ValueOf, VerboseArgument } from "./types";
 import { ArgumentType } from "./enums";
 
 type SerializedBlockData = Pick<ExtensionMetadata, "blocks" | "menus">;

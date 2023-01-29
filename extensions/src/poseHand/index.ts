@@ -1,4 +1,4 @@
-import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, RuntimeEvent, BlockDefinitions } from "$common";
+import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, } from "$common";
 
 // import Video from '../../../packages/scratch-vm/src/io/video'; // Save for now
 import * as handpose from '@tensorflow-models/handpose';
