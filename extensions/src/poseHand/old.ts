@@ -1,6 +1,6 @@
-import { extractFromGetInfo, mockFormatMessage as formatMessage, BlockType, ArgumentType, ExtractType } from "$common";
+import { extractLegacySupportFromGetInfo, mockFormatMessage as formatMessage, BlockType, ArgumentType } from "$common";
 
-const x = {
+export default extractLegacySupportFromGetInfo({
   blocks: [
     {
       opcode: 'goToHandPart',
@@ -78,6 +78,4 @@ const x = {
       items: []
     }
   }
-} as const;
-
-type y = ExtractType<typeof x, "videoToggle">["type"]["videoToggle"];
+} as const);

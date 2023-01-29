@@ -3,10 +3,7 @@ import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, Ex
 // import Video from '../../../packages/scratch-vm/src/io/video'; // Save for now
 import * as handpose from '@tensorflow-models/handpose';
 
-import legacy from "./old";
-const { legacySupport } = legacy;
-
-legacySupport("videoToggle", { type: "" });
+import legacySupport from "./old";
 
 /**
  * States what the video state can be set to.
