@@ -297,7 +297,6 @@ export abstract class Extension
       return obj;
     }, {});
 
-    console.log(JSON.stringify(info, null, 4));
     return info;
   }
 
