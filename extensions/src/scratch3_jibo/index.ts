@@ -1,6 +1,6 @@
 import Runtime from "../../../packages/scratch-vm/src/engine/runtime";
-import Cast from "../../../packages/scratch-vm/src/util/cast";
-import log from "../../../packages/scratch-vm/src/util/log";
+// import Cast from "../../../packages/scratch-vm/src/util/cast";
+// import log from "../../../packages/scratch-vm/src/util/log";
 import EventEmitter from 'events';
 
 
@@ -742,9 +742,9 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     }
 
     RosConnect (args: { rosIP: any; }) {
-        const rosIP = Cast.toString(args.rosIP);
+        const rosIP = (args.rosIP).toString();
         this.rosbridgeIP = "ws://"+rosIP+":9090";
-        log.log("ROS: Attempting to connect to rosbridge at " + this.rosbridgeIP);
+        // log.log("ROS: Attempting to connect to rosbridge at " + this.rosbridgeIP);
 
         if (!this.connected){
         
@@ -761,7 +761,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
             let connect_cb = connect_cb_factory(this);
             this.ros.on('connection', function() {
                 connect_cb();
-                log.info('ROS: Connected to websocket server.');        
+                // log.info('ROS: Connected to websocket server.');        
             });
 
             // If connection fails
@@ -769,7 +769,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
             let error_cb = error_cb_factory(this);
             this.ros.on('error', function(error: any) {
                 error_cb();
-                log.error('ROS: Error connecting to websocket server: ', error);
+                // log.error('ROS: Error connecting to websocket server: ', error);
             });
 
             // If connection ends
@@ -777,7 +777,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
             let disconnect_cb = disconnect_cb_factory(this);
             this.ros.on('close', function() {
                 disconnect_cb();
-                log.info('ROS: Connection to websocket server closed.');
+                // log.info('ROS: Connection to websocket server closed.');
             });
         }
         this.JiboState();
@@ -794,7 +794,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     }
 
     async JiboTTS (self: Scratch3Jibo, text: string) {
-        log.log(text);
+        // log.log(text);
         
         console.log("multitask: " + self.multitask)
 
@@ -910,7 +910,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
             const randomColor = Object.keys(_colors)[randomColorIdx];
             ledHex = _colors[randomColor];
         }
-        log.log(ledHex);
+        // log.log(ledHex);
 
 
         if (this.multitask) {
@@ -968,7 +968,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     // }
 
     JiboLook (X: string, Y: string, Z: string) {
-        log.log(parseFloat(X), parseFloat(Y), parseFloat(Z));
+        // log.log(parseFloat(X), parseFloat(Y), parseFloat(Z));
 
         if (this.multitask) {
             if (this.prevTasks.includes("look") || this.prevTasks.includes("emote") || this.prevTasks.includes("emoji")) {
@@ -1029,7 +1029,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
 
     async JiboAnim(animation_key: string) {
-        log.log(animation_key);
+        // log.log(animation_key);
 
         var jibo_msg ={
             "do_motion":true,
