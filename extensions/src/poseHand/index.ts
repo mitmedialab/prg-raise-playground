@@ -1,28 +1,18 @@
-import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, } from "$common";
+import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ValueOf, } from "$common";
 
 // import Video from '../../../packages/scratch-vm/src/io/video'; // Save for now
 import * as handpose from '@tensorflow-models/handpose';
 
 import legacySupport from "./old";
 
-/**
- * States what the video state can be set to.
- * @readonly
- */
 const VideoState = {
-  /** Video turned off. */
   OFF: 0,
-
   /** Video turned on with default y axis mirroring. */
   ON: 1,
-
   /** Video turned on without default y axis mirroring. */
   ON_FLIPPED: 2
 } as const;
 
-/**
- * Contains the details about the Hand Sensing extension
- */
 type Details = {
   name: "Hand Sensing",
   description: "Sense hand movement with the camera.",
@@ -30,16 +20,12 @@ type Details = {
   insetIconURL: "pose-hand-small-3.svg"
 };
 
-/**
- * Contains descriptions of the blocks of the Hand Sensing extension
- */
 type Blocks = {
   goToHandPartBlock(handPart: string, fingerPart: number): void;
   // these video blocks are present in a few different extensions, perhaps making a file just for these?
-  videoToggleBlock(state: number): void;
+  videoToggleBlock(state: ValueOf<typeof VideoState>): void;
   setVideoTransparencyBlock(transparency: number): void;
 };
-
 
 export default class PoseHand extends Extension<Details, Blocks> {
   /**
@@ -47,21 +33,10 @@ export default class PoseHand extends Extension<Details, Blocks> {
    */
   handPoseState;
 
-  /**
-   * The hand model from handpose
-   */
-  private handModel;
+  private handModel: handpose.HandPose;
 
-  /**
-   * The current video state
-   * @type {number}
-   */
-  globalVideoState: number;
+  globalVideoState: ValueOf<typeof VideoState>;
 
-  /**
-   * The current transparency of the video
-   * @type {number}
-   */
   globalVideoTransparency: number;
 
   /**
@@ -118,12 +93,6 @@ export default class PoseHand extends Extension<Details, Blocks> {
   }
 
   /**
-   * init() binds to this function, but it is never called, so this may be unimportant
-   */
-  // reset() {
-  // }
-
-  /**
    * Checks if the hand pose estimate is ready to be used
    * @returns {boolean} true if connected, false if not connected
    */
@@ -161,32 +130,17 @@ export default class PoseHand extends Extension<Details, Blocks> {
     }
   }
 
-  /**
-   * Estimates where the hand is on the video frame.
-   * @param imageElement
-   * @returns {Promise<AnnotatedPrediction[]>}
-   */
   async estimateHandPoseOnImage(imageElement) {
     const handModel = await this.getLoadedHandModel();
-    return await handModel.estimateHands(imageElement, {
-      flipHorizontal: false
-    });
+    return await handModel.estimateHands(imageElement, false);
   }
 
-  /**
-   * Gets the hand model from handpose
-   * @returns hand model
-   */
-  async getLoadedHandModel() {
+  async getLoadedHandModel(): Promise<handpose.HandPose> {
     this.handModel ??= await handpose.load();
     return this.handModel;
   }
 
-  /**
-   * Turns the video camera off/on/on and flipped. This is called in the operation of videoToggleBlock
-   * @param state 
-   */
-  videoToggle(state: number) {
+  videoToggle(state: ValueOf<typeof VideoState>) {
     if (state === VideoState.OFF) return this.runtime.ioDevices.video.disableVideo();
 
     this.runtime.ioDevices.video.enableVideo();
@@ -194,13 +148,16 @@ export default class PoseHand extends Extension<Details, Blocks> {
     this.runtime.ioDevices.video.mirror = (state === VideoState.ON);
   }
 
-  /**
-   * Sets the video's transparency. This is called in the operation of setVideoTransparencyBlock
-   * @param transparency 
-   */
   setVideoTransparency(transparency: number) {
     const trans = Math.max(Math.min(transparency, 100), 0);
     this.runtime.ioDevices.video.setPreviewGhost(trans);
+  }
+
+  setDefaults() {
+    this.globalVideoState = VideoState.ON;
+    this.globalVideoTransparency = 50;
+    this.projectStarted();
+    this.handModel = null;
   }
 
   /**
@@ -208,53 +165,39 @@ export default class PoseHand extends Extension<Details, Blocks> {
    * @returns The extension's blocks
    */
   defineBlocks(): PoseHand["BlockDefinitions"] {
+    this.setDefaults();
 
-    /**
-     * Sets up the extension's default video settings
-     */
-    this.globalVideoState = VideoState.ON;
-    this.globalVideoTransparency = 50;
-    this.projectStarted();
-    this.handModel = null;
-
-
-    /**
-     * The options for each finger
-     * @type {Array}
-     */
     const fingerOptions =
       [{ text: "thumb", value: "thumb" }, { text: "index finger", value: "indexFinger" },
       { text: "middle finger", value: "middleFinger" }, { text: "ring finger", value: "ringFinger" }, { text: "pinky finger", value: "pinky" }];
 
     const handlerFingerOptions = fingerOptions.map(finger => finger.value);
-    /**
-     * The options for the part of a finger
-     * @type {Array}
-     */
+
     const partOfFingerOptions = [{ text: "tip", value: 3 }, { text: "first knuckle", value: 2 },
     { text: "second knuckle", value: 1 }, { text: "base", value: 0 }];
-
 
     type DefineGoToHandPart = DefineBlock<PoseHand, Blocks["goToHandPartBlock"]>;
 
     const goToHandPartBlock: DefineGoToHandPart = legacySupport("goToHandPart", {
       type: BlockType.Command,
-      args: [{
-        type: ArgumentType.String,
-        options: {
-          acceptsReporters: true,
-          items: fingerOptions,
-          handler: (finger: string) => handlerFingerOptions.includes(finger) ? finger : "thumb"
+      args: [
+        {
+          type: ArgumentType.String,
+          options: {
+            acceptsReporters: true,
+            items: fingerOptions,
+            handler: (finger: string) => handlerFingerOptions.includes(finger) ? finger : "thumb"
+          }
+        },
+        {
+          type: ArgumentType.Number,
+          options: {
+            acceptsReporters: true,
+            items: partOfFingerOptions,
+            handler: (part: number) => Math.max(Math.min(part, 3), 0)
+          }
         }
-      },
-      {
-        type: ArgumentType.Number,
-        options: {
-          acceptsReporters: true,
-          items: partOfFingerOptions,
-          handler: (part: number) => Math.max(Math.min(part, 3), 0)
-        }
-      }],
+      ],
       text: (handPart: string, fingerPart: number) => `go to ${handPart} ${fingerPart}`,
       operation: (handPart: string, fingerPart: number, util) => {
         if (this.isConnected()) {
@@ -275,13 +218,13 @@ export default class PoseHand extends Extension<Details, Blocks> {
         options: {
           acceptsReporters: true,
           items: [{ text: 'off', value: VideoState.OFF }, { text: 'on', value: VideoState.ON }, { text: 'on and flipped', value: VideoState.ON_FLIPPED }],
-          handler: (video_state: number) => {
-            return Math.min(Math.max(video_state, VideoState.OFF), VideoState.ON_FLIPPED);
+          handler: (video_state: any) => {
+            return Math.min(Math.max(video_state, VideoState.OFF), VideoState.ON_FLIPPED) as ValueOf<typeof VideoState>;
           }
         }
       },
-      text: (video_state: number) => `turn video ${video_state}`,
-      operation: (video_state: number) => {
+      text: (video_state: ValueOf<typeof VideoState>) => `turn video ${video_state}`,
+      operation: (video_state: ValueOf<typeof VideoState>) => {
         this.videoToggle(video_state);
       }
     });
