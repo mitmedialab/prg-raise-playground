@@ -244,9 +244,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
         options: {
           acceptsReporters: true,
           items: fingerOptions,
-          handler: (finger: string) => {
-            return handlerFingerOptions.includes(finger) ? finger : "thumb";
-          }
+          handler: (finger: string) => handlerFingerOptions.includes(finger) ? finger : "thumb"
         }
       },
       {
@@ -254,14 +252,11 @@ export default class PoseHand extends Extension<Details, Blocks> {
         options: {
           acceptsReporters: true,
           items: partOfFingerOptions,
-          handler: (part: number) => {
-            return Math.max(Math.min(part, 3), 0)
-          }
+          handler: (part: number) => Math.max(Math.min(part, 3), 0)
         }
       }],
       text: (handPart: string, fingerPart: number) => `go to ${handPart} ${fingerPart}`,
       operation: (handPart: string, fingerPart: number, util) => {
-        console.log("check 1");
         if (this.isConnected()) {
           console.log('connected 2');
           const [x, y, z] = this.handPoseState[0].annotations[handPart][fingerPart];
@@ -271,7 +266,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
       }
     });
 
-    type DefineVideoToggle = DefineBlock<PoseHand, Blocks["videoToggleBlock"]>;
+    type DefineVideoToggle = Block<PoseHand, Blocks["videoToggleBlock"]>;
 
     const videoToggleBlock: DefineVideoToggle = legacySupport("videoToggle", {
       type: BlockType.Command,
