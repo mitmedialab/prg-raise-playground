@@ -1,4 +1,4 @@
-import { BaseExtension, Block, ExtensionBlockMetadata, ExtensionMetadata, TypeByArgumentType, ValueOf, VerboseArgument } from "./types";
+import { BaseExtension, Block, ExtensionBlockMetadata, ExtensionMetadata, MenuThatAcceptsReporters, TypeByArgumentType, ValueOf, VerboseArgument } from "./types";
 import { ArgumentType } from "./enums";
 import { isString } from "./utils";
 
@@ -36,10 +36,21 @@ type MapToArgument<T extends unknown[]> = T extends [] ? [] :
 
 type WithName = { name: string };
 
+const processArg = (arg: VerboseArgument<any> & WithName, argName: string, menuName: string, menus: ExtensionMetadata["menus"]) => {
+  arg.name = argName;
+  if (!menuName) return;
+
+  (arg.options as WithName).name = menuName;
+  const menuEntry = menus[menuName];
+  if (!menuEntry) return;
+
+}
+
 const attachNames = <T extends SerializedBlockData, TKey extends Opcodes<T>, TBlock>(
   name: TKey,
   block: TBlock & MappedToBlockDefinition<T>[TKey],
-  legacyBlock: ExtensionBlockMetadata
+  legacyBlock: ExtensionBlockMetadata,
+  menus: ExtensionMetadata["menus"]
 ): TBlock => {
   type AnyBlock = Block<BaseExtension, ((...args: any[]) => any) | ((arg: any) => any) | (() => any)>;
   const asBlock = block as AnyBlock;
@@ -48,7 +59,10 @@ const attachNames = <T extends SerializedBlockData, TKey extends Opcodes<T>, TBl
   if ("arg" in asBlock) {
     const [key, { menu }] = Object.entries(legacyBlock.arguments)[0];
     (asBlock.arg as WithName).name = key;
-    if (menu) ((asBlock.arg as VerboseArgument<any>).options as WithName).name = menu;
+    if (menu) {
+      const asVerboseArgument = asBlock.arg as VerboseArgument<any>;;
+      (asVerboseArgument.options as WithName).name = menu;
+    }
   }
   else if ("args" in asBlock) {
     const entries = Object.entries(legacyBlock.arguments);

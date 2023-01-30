@@ -51,5 +51,31 @@ export default extractLegacySupportFromOldGetInfo({
         }
       }
     },
-  ]
+  ],
+  menus: {
+    HAND_PART: {
+      acceptReporters: true,
+      items: [
+        { text: 'thumb', value: 'thumb' },
+        { text: 'index finger', value: 'indexFinger' },
+        { text: 'middle finger', value: 'middleFinger' },
+        { text: 'ring finger', value: 'ringFinger' },
+        { text: 'pinky', value: 'pinky' },
+        // {text: 'base of palm', value: 'palmBase'},
+      ]
+    },
+    HAND_SUB_PART: {
+      acceptReporters: true,
+      items: [
+        { text: 'base', value: 0 },
+        { text: 'first knuckle', value: 1 },
+        { text: 'second knuckle', value: 2 },
+        { text: 'tip', value: 3 },
+      ]
+    },
+    VIDEO_STATE: {
+      acceptReporters: true,
+      items: undefined
+    }
+  }
 } as const);
