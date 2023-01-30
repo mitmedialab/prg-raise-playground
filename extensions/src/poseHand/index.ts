@@ -3,7 +3,7 @@ import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, Va
 // import Video from '../../../packages/scratch-vm/src/io/video'; // Save for now
 import * as handpose from '@tensorflow-models/handpose';
 
-import legacySupport from "./legacy";
+import legacy from "./legacy";
 
 const VideoState = {
   OFF: 0,
@@ -178,7 +178,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
 
     type DefineGoToHandPart = DefineBlock<PoseHand, Blocks["goToHandPartBlock"]>;
 
-    const goToHandPartBlock: DefineGoToHandPart = legacySupport("goToHandPart", {
+    const goToHandPartBlock: DefineGoToHandPart = legacy.goToHandPart({
       type: BlockType.Command,
       args: [
         {
@@ -212,7 +212,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
     return {
       goToHandPartBlock: goToHandPartBlock,
 
-      videoToggleBlock: legacySupport("videoToggle", {
+      videoToggleBlock: legacy.videoToggle({
         type: BlockType.Command,
         arg: {
           type: ArgumentType.Number,
@@ -230,7 +230,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
         operation: (video_state: ValueOf<typeof VideoState>) => this.videoToggle(video_state)
       }),
 
-      setVideoTransparencyBlock: legacySupport("setVideoTransparency", {
+      setVideoTransparencyBlock: legacy.setVideoTransparency({
         type: BlockType.Command,
         arg: { type: ArgumentType.Number, defaultValue: 50 },
         text: (transparency: number) => `set video transparency to ${transparency}`,

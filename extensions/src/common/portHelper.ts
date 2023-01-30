@@ -1,5 +1,6 @@
 import { BaseExtension, Block, ExtensionBlockMetadata, ExtensionMetadata, TypeByArgumentType, ValueOf, VerboseArgument } from "./types";
 import { ArgumentType } from "./enums";
+import { isString } from "./utils";
 
 type SerializedBlockData = Pick<ExtensionMetadata, "blocks" | "menus">;
 
@@ -35,9 +36,46 @@ type MapToArgument<T extends unknown[]> = T extends [] ? [] :
 
 type WithName = { name: string };
 
-export const extractLegacySupportFromOldGetInfo = <T extends SerializedBlockData>(data: T) => {
-  const { blocks: blocks, menus } = data;
+const attachNames = <T extends SerializedBlockData, TKey extends Opcodes<T>, TBlock>(
+  name: TKey,
+  block: TBlock & MappedToBlockDefinition<T>[TKey],
+  legacyBlock: ExtensionBlockMetadata
+): TBlock => {
+  type AnyBlock = Block<BaseExtension, ((...args: any[]) => any) | ((arg: any) => any) | (() => any)>;
+  const asBlock = block as AnyBlock;
+  (block as WithName).name = name;
 
+  if ("arg" in asBlock) {
+    const [key, { menu }] = Object.entries(legacyBlock.arguments)[0];
+    (asBlock.arg as WithName).name = key;
+    if (menu) ((asBlock.arg as VerboseArgument<any>).options as WithName).name = menu;
+  }
+  else if ("args" in asBlock) {
+    const entries = Object.entries(legacyBlock.arguments);
+    for (let index = 0; index < entries.length; index++) {
+      const [key, { menu }] = entries[index];
+      (asBlock.args[index] as WithName).name = key;
+      if (menu) ((asBlock.args[index] as VerboseArgument<any>).options as WithName).name = menu;
+    }
+  }
+
+  return block;
+}
+
+export const extractLegacySupportFromOldGetInfo = <T extends SerializedBlockData>(data: T): { [k in Opcodes<T>]: <TBlock>(block: TBlock & MappedToBlockDefinition<T>[k]) => TBlock } => {
+  const { blocks, menus } = data;
+
+  return ((blocks as any[]).filter(block => !isString(block)) as ExtensionBlockMetadata[])
+    .map(block => {
+      const opcode = block.opcode as Opcodes<T>;
+      return [opcode, (b) => attachNames<T, typeof opcode, typeof b>(block.opcode as Opcodes<T>, b, block)];
+    })
+    .reduce((acc, [key, func]) => {
+      acc[key] = func;
+      return acc;
+    }, {} as any);
+
+  /**
   return <TKey extends Opcodes<T>, TBlock>(name: TKey, block: TBlock & MappedToBlockDefinition<T>[TKey]): TBlock => {
     type AnyBlock = Block<BaseExtension, ((...args: any[]) => any) | ((arg: any) => any) | (() => any)>;
     const asBlock = block as AnyBlock;
@@ -61,7 +99,7 @@ export const extractLegacySupportFromOldGetInfo = <T extends SerializedBlockData
     }
 
     return block;
-  }
+  } */
 };
 
 /**
