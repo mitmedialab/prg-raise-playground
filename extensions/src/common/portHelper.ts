@@ -35,7 +35,7 @@ type MapToArgument<T extends unknown[]> = T extends [] ? [] :
 
 type WithName = { name: string };
 
-export const extractLegacySupportFromGetInfo = <T extends SerializedBlockData>(data: T) => {
+export const extractLegacySupportFromOldGetInfo = <T extends SerializedBlockData>(data: T) => {
   const { blocks: blocks, menus } = data;
 
   return <TKey extends Opcodes<T>, TBlock>(name: TKey, block: TBlock & MappedToBlockDefinition<T>[TKey]): TBlock => {

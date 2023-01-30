@@ -1,6 +1,6 @@
-import { extractLegacySupportFromGetInfo, mockFormatMessage as formatMessage, BlockType, ArgumentType } from "$common";
+import { extractLegacySupportFromOldGetInfo, mockFormatMessage as formatMessage, BlockType, ArgumentType } from "$common";
 
-export default extractLegacySupportFromGetInfo({
+export default extractLegacySupportFromOldGetInfo({
   blocks: [
     {
       opcode: 'goToHandPart',

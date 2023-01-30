@@ -3,7 +3,7 @@ import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, Va
 // import Video from '../../../packages/scratch-vm/src/io/video'; // Save for now
 import * as handpose from '@tensorflow-models/handpose';
 
-import legacySupport from "./old";
+import legacySupport from "./legacy";
 
 const VideoState = {
   OFF: 0,
@@ -209,40 +209,35 @@ export default class PoseHand extends Extension<Details, Blocks> {
       }
     });
 
-    type DefineVideoToggle = Block<PoseHand, Blocks["videoToggleBlock"]>;
+    return {
+      goToHandPartBlock: goToHandPartBlock,
 
-    const videoToggleBlock: DefineVideoToggle = legacySupport("videoToggle", {
-      type: BlockType.Command,
-      arg: {
-        type: ArgumentType.Number,
-        options: {
-          acceptsReporters: true,
-          items: [{ text: 'off', value: VideoState.OFF }, { text: 'on', value: VideoState.ON }, { text: 'on and flipped', value: VideoState.ON_FLIPPED }],
-          handler: (video_state: any) => {
-            return Math.min(Math.max(video_state, VideoState.OFF), VideoState.ON_FLIPPED) as ValueOf<typeof VideoState>;
+      videoToggleBlock: legacySupport("videoToggle", {
+        type: BlockType.Command,
+        arg: {
+          type: ArgumentType.Number,
+          options: {
+            acceptsReporters: true,
+            items: [
+              { text: 'off', value: VideoState.OFF },
+              { text: 'on', value: VideoState.ON },
+              { text: 'on and flipped', value: VideoState.ON_FLIPPED }
+            ],
+            handler: (video_state: any) => Math.min(Math.max(video_state, VideoState.OFF), VideoState.ON_FLIPPED) as ValueOf<typeof VideoState>
           }
-        }
-      },
-      text: (video_state: ValueOf<typeof VideoState>) => `turn video ${video_state}`,
-      operation: (video_state: ValueOf<typeof VideoState>) => {
-        this.videoToggle(video_state);
-      }
-    });
+        },
+        text: (video_state: ValueOf<typeof VideoState>) => `turn video ${video_state}`,
+        operation: (video_state: ValueOf<typeof VideoState>) => this.videoToggle(video_state)
+      }),
 
-    const setVideoTransparencyBlock: Block<PoseHand, Blocks["setVideoTransparencyBlock"]> =
-      legacySupport("setVideoTransparency", {
+      setVideoTransparencyBlock: legacySupport("setVideoTransparency", {
         type: BlockType.Command,
         arg: { type: ArgumentType.Number, defaultValue: 50 },
         text: (transparency: number) => `set video transparency to ${transparency}`,
         operation: (transparency: number) => {
           this.setVideoTransparency(transparency);
         }
-      });
-
-    return {
-      goToHandPartBlock,
-      videoToggleBlock,
-      setVideoTransparencyBlock
+      })
     }
   }
 }
