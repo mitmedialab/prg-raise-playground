@@ -16,14 +16,14 @@ type Type<A extends ExtensionMetadata["blocks"], Opcode extends string> = {
   [E in keyof A as A[E] extends { opcode: infer K extends Opcode } ? K : never]: A[E] extends ExtensionBlockMetadata ? A[E]['blockType'] : never;
 }
 
-type MappedToBlockDefinition<T extends SerializedBlockData> = { [k in Opcodes<T>]: {
-  type: Type<T["blocks"], k>[keyof Type<T["blocks"], k>],
-}
-  & TsMagic.ObjValueTuple<Arguments<T["blocks"], k>[keyof Arguments<T["blocks"], k>]> extends { length: 0 }
-  ? {}
-  : TsMagic.ObjValueTuple<Arguments<T["blocks"], k>[keyof Arguments<T["blocks"], k>]> extends { length: 1 }
-  ? { arg: MapToArgument<TsMagic.ObjValueTuple<Arguments<T["blocks"], k>[keyof Arguments<T["blocks"], k>]>>[0], }
-  : { args: MapToArgument<TsMagic.ObjValueTuple<Arguments<T["blocks"], k>[keyof Arguments<T["blocks"], k>]>>, }
+type MappedToBlockDefinition<T extends SerializedBlockData> = { [k in Opcodes<T>]:
+  {
+    type: Type<T["blocks"], k>[keyof Type<T["blocks"], k>],
+  } & (TsMagic.ObjValueTuple<Arguments<T["blocks"], k>[keyof Arguments<T["blocks"], k>]> extends { length: 0 }
+    ? {}
+    : TsMagic.ObjValueTuple<Arguments<T["blocks"], k>[keyof Arguments<T["blocks"], k>]> extends { length: 1 }
+    ? { arg: MapToArgument<TsMagic.ObjValueTuple<Arguments<T["blocks"], k>[keyof Arguments<T["blocks"], k>]>>[0], }
+    : { args: MapToArgument<TsMagic.ObjValueTuple<Arguments<T["blocks"], k>[keyof Arguments<T["blocks"], k>]>>, })
 };
 
 type MapToArgument<T extends unknown[]> = T extends [] ? [] :
@@ -31,7 +31,7 @@ type MapToArgument<T extends unknown[]> = T extends [] ? [] :
   H extends { type: infer X extends ValueOf<typeof ArgumentType> }
   ? H extends { menu: string }
   ? [{ type: X, options: Required<VerboseArgument<TypeByArgumentType<X>>>["options"] }, ...MapToArgument<R>]
-  : [{ type: X }, ...MapToArgument<R>]
+  : [{ type: X, options?: Required<VerboseArgument<TypeByArgumentType<X>>>["options"] }, ...MapToArgument<R>]
   : MapToArgument<R> : T
 
 type WithName = { name: string };
