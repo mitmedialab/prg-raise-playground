@@ -1,5 +1,6 @@
 import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails } from "$common";
 
+// import * as window from 'affdex.js';
 
 /**
  * States what the video sensing activity can be set to.
@@ -14,6 +15,15 @@ const VideoState = {
   /** Video turned on without default y axis mirroring. */
   ON_FLIPPED: 2
 } as const;
+
+/**
+ * Used for rounding
+ * @param amount 
+ * @returns {double} a double
+ */
+function friendlyRound(amount) {
+  return parseFloat(Number(amount).toFixed(2));
+}
 
 /**
  * Contains details about the Face Sensing extension
@@ -44,6 +54,16 @@ type Blocks = {
 
 export default class PoseFace extends Extension<Details, Blocks> {
 
+
+  /**
+   * The state of where the hand and its parts are estimated to be
+   */
+  affdexState;
+
+  hasResult: boolean;
+
+  private affdex;
+
   /**
    * The current video state
    * @type {number}
@@ -56,11 +76,198 @@ export default class PoseFace extends Extension<Details, Blocks> {
    */
   globalVideoTransparency: number;
 
-
+  /**
+   * Acts like class PoseHand's constructor (instead of a child class constructor)
+   * @param env 
+   */
   init(env: Environment) {
+    this.runtime = env.runtime;
+    const EXTENSION_ID = 'PoseHand';
 
+    /* Unused but possibly needed in the future
+    this.runtime.registerPeripheralExtension(EXTENSION_ID, this);
+    this.runtime.connectPeripheral(EXTENSION_ID, 0);
+    this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
+    */
+
+    if (this.runtime.ioDevices) {
+      /* Possibly unnecessary, keep commented just in case
+      this.runtime.on(RuntimeEvent.ProjectLoaded, this.projectStarted.bind(this));
+      this.runtime.on(RuntimeEvent.ProjectRunStart, this.reset.bind(this)); 
+      */
+      this._loop();
+    }
   }
 
+  /**
+   * Dimensions the video stream is analyzed at after its rendered to the
+   * sample canvas.
+   * @type {Array.<number>}
+   */
+  static get DIMENSIONS() {
+    return [480, 360];
+  }
+
+  projectStarted() {
+    this.setVideoTransparency(this.globalVideoTransparency);
+    this.videoToggle(this.globalVideoState);
+  }
+
+  /**
+   * Converts the coordinates from the hand pose estimate to Scratch coordinates
+   * @param x 
+   * @param y
+   * @returns enum
+   */
+  affdexCoordsToScratch({ x, y }) {
+    return { x: x - (PoseFace.DIMENSIONS[0] / 2), y: (PoseFace.DIMENSIONS[1] / 2) - y };
+  }
+
+  async _loop() {
+    while (true) {
+      const frame = this.runtime.ioDevices.video.getFrame({
+        format: 'image-data',
+        dimensions: PoseFace.DIMENSIONS
+      });
+
+      const time = +new Date();
+      if (frame) {
+        this.affdexState = await this.estimateAffdexOnImage(frame);
+        /*
+        if (this.affdexState) {
+          this.hasResult = true;
+          this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
+        } else {
+          this.hasResult = false;
+          this.runtime.emit(this.runtime.constructor.PERIPHERAL_DISCONNECTED);
+        }
+        */
+      }
+      const estimateThrottleTimeout = (+new Date() - time) / 4;
+      await new Promise(r => setTimeout(r, estimateThrottleTimeout));
+    }
+  }
+
+  isConnected() {
+    return this.hasResult;
+  }
+
+  async estimateAffdexOnImage(imageElement) {
+    const affdexDetector = await this.ensureAffdexLoaded(imageElement);
+
+    affdexDetector.process(imageElement, 0);
+    return new Promise((resolve, reject) => {
+      const resultListener = function (faces, image, timestamp) {
+        affdexDetector.removeEventListener("onImageResultsSuccess", resultListener);
+        if (faces.length < 1) {
+          resolve(null);
+          return;
+        }
+        resolve(faces[0]);
+      };
+      affdexDetector.addEventListener("onImageResultsSuccess", resultListener);
+    });
+  }
+
+  async ensureAffdexLoaded(imageElement) {
+    if (!this.affdex) {
+      const affdexLoader = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        document.body.appendChild(script);
+        script.onload = resolve;
+        script.onerror = reject;
+        script.async = true;
+        script.src = 'https://download.affectiva.com/js/3.2.1/affdex.js';
+      });
+      await affdexLoader;
+      const affdexStarter = new Promise((resolve, reject) => {
+        const width = PoseFace.DIMENSIONS[0];
+        const height = PoseFace.DIMENSIONS[1];
+        const faceMode = window.affdex.FaceDetectorMode.LARGE_FACES;
+        const detector = new window.affdex.PhotoDetector(imageElement, width, height, faceMode);
+        detector.detectAllEmotions();
+        detector.detectAllExpressions();
+        detector.start();
+        this.affdex = detector;
+        detector.addEventListener("onInitializeSuccess", resolve);
+      });
+      await affdexStarter;
+    }
+    return this.affdex;
+  }
+
+  /**
+   * 
+   * @param part 
+   * @param util 
+   * @returns 
+   */
+  affdexGoToPart(part, util) {
+    if (!this.affdexState || !this.affdexState.featurePoints) {
+      return;
+    }
+    const featurePoint = this.affdexState.featurePoints[part];
+    const { x, y } = this.affdexCoordsToScratch(featurePoint);
+    (util.target as any).setXY(x, y, false);
+  }
+
+  /**
+   * 
+   * @param expression 
+   * @returns 
+   */
+  affdexIsExpression(expression) {
+    if (!this.affdexState || !this.affdexState.expressions) {
+      return false;
+    }
+    return this.affdexState.expressions[expression] > .5;
+  }
+
+  /**
+   * 
+   * @param expression 
+   * @returns 
+   */
+  affdexExpressionAmount(expression) {
+    if (!this.affdexState || !this.affdexState.expressions) {
+      return 0;
+    }
+    return friendlyRound(this.affdexState.expressions[expression]);
+  }
+
+  /**
+   * 
+   * @param emotion 
+   * @param emotions 
+   * @returns 
+   */
+  affdexIsTopEmotion(emotion, emotions) {
+    if (!this.affdexState || !this.affdexState.emotions) {
+      return false;
+    }
+    let maxEmotionValue = -Number.MAX_VALUE;
+    let maxEmotion = null;
+    emotions.forEach((emotion) => {
+      const emotionValue = this.affdexState.emotions[emotion];
+      if (emotionValue > maxEmotionValue) {
+        maxEmotionValue = emotionValue;
+        maxEmotion = emotion;
+      }
+    });
+    return emotion === maxEmotion;
+  }
+
+  /**
+   * 
+   * @param emotion 
+   * @returns 
+   */
+  affdexEmotionAmount(emotion) {
+    if (!this.affdexState || !this.affdexState.emotions) {
+      return 0;
+    }
+    return friendlyRound(this.affdexState.emotions[emotion]);
+  }
 
   /**
    * Turns the video camera off/on/on and flipped. This is called in the operation of videoToggleBlock
@@ -94,7 +301,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
      */
     this.globalVideoState = VideoState.ON;
     this.globalVideoTransparency = 50;
-    // this.projectStarted();
+    this.projectStarted();
     // this._bodyModel = null;
 
 
@@ -152,8 +359,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
       },
       text: (part: number) => `go to ${part}`,
       operation: (part: number, util) => {
-        console.log(part);
-
+        this.affdexGoToPart(part, util)
       }
     });
 
@@ -198,8 +404,8 @@ export default class PoseFace extends Extension<Details, Blocks> {
         }
       },
       text: (expression: string) => `when ${expression} detected`,
-      operation: (expression: string, util) => {
-        return true;
+      operation: (expression: string) => {
+        return this.affdexIsExpression(expression);
       }
     });
 
@@ -217,8 +423,8 @@ export default class PoseFace extends Extension<Details, Blocks> {
         }
       },
       text: (expression: string) => `amount of ${expression}`,
-      operation: (expression: string, util) => {
-        return 0;
+      operation: (expression: string) => {
+        return this.affdexExpressionAmount(expression);
       }
     });
 
@@ -274,8 +480,8 @@ export default class PoseFace extends Extension<Details, Blocks> {
         }
       },
       text: (emotion: string) => `when ${emotion} feeling detected`,
-      operation: (emotion: string, util) => {
-        return true;
+      operation: (emotion: string, list) => {
+        return this.affdexIsTopEmotion(emotion, list);
       }
     });
 
@@ -293,8 +499,8 @@ export default class PoseFace extends Extension<Details, Blocks> {
         }
       },
       text: (emotion: string) => `level of ${emotion}`,
-      operation: (emotion: string, util) => {
-        return 0;
+      operation: (emotion: string) => {
+        return this.affdexEmotionAmount(emotion)
       }
     });
 
@@ -312,8 +518,8 @@ export default class PoseFace extends Extension<Details, Blocks> {
         }
       },
       text: (emotion: string) => `feeling ${emotion}`,
-      operation: (emotion: string, util) => {
-        return true;
+      operation: (emotion: string) => {
+        return this.affdexIsTopEmotion(emotion, emotions);
       }
     });
 
