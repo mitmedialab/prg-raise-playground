@@ -1,12 +1,11 @@
-var BUILD_DEFS = {};
-import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, loadExternalScript, untilCondition, untilReady } from "$common";
+import { BlockType, Extension, Environment, } from "$common";
 import { OnnxRuntime } from "$common/onnx";
 
 type Details = {
-  name: "Replace me with name of your extension",
-  description: "Replace me with a description of your extension",
-  iconURL: "Replace with the name of your icon image file (which should be placed in the same directory as this file)",
-  insetIconURL: "Replace with the name of your inset icon image file (which should be placed in the same directory as this file)"
+  name: "Onnx Example",
+  description: "A demonstration that an onnx model can be used (not exciting, nor educationally valuable)",
+  iconURL: "",
+  insetIconURL: ""
 };
 
 
