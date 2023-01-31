@@ -2,6 +2,7 @@ import { rollup, type Plugin, type RollupOptions, type OutputOptions } from "rol
 import alias from '@rollup/plugin-alias';
 import commonjs from "@rollup/plugin-commonjs";
 import nodeResolve from "@rollup/plugin-node-resolve";
+import json from '@rollup/plugin-json';
 import sucrase from '@rollup/plugin-sucrase';
 import css from 'rollup-plugin-css-only';
 import svelte from 'rollup-plugin-svelte';
@@ -64,6 +65,7 @@ const transpileFailed = (ts: Transpiler, info: BundleInfo) => {
 
 const getThirdPartyPlugins = (): Plugin[] => [
   alias({ entries: getAliasEntries() }),
+  json(),
   svelte({
     preprocess: autoPreprocess(),
     emitCss: false,
