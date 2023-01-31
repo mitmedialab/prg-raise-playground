@@ -15,11 +15,11 @@ export class OnnxRuntime {
 
   constructor() {
     const onnx = this.globalOnnx;
-    onnx ? this.resolve(onnx) : loadExternalScript(OnnxRuntime.FromCDN, this.resolve);
+    onnx ? this.resolve() : loadExternalScript(OnnxRuntime.FromCDN, this.resolve.bind(this));
   }
 
-  private resolve(onnx?: typeof ort) {
+  private resolve() {
     this.ready = true;
-    this.onnx = onnx ?? this.globalOnnx;
+    this.onnx = this.globalOnnx;
   }
 }
