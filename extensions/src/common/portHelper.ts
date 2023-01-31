@@ -1,6 +1,6 @@
-import { BaseExtension, Block, ExtensionBlockMetadata, ExtensionMetadata, MenuThatAcceptsReporters, TypeByArgumentType, ValueOf, VerboseArgument } from "./types";
+import { BaseExtension, Block, ExtensionBlockMetadata, ExtensionMetadata, ExtensionMenuItems, DynamicMenu, DynamicMenuThatAcceptsReporters, MenuItem, MenuThatAcceptsReporters, TypeByArgumentType, ValueOf, VerboseArgument } from "./types";
 import { ArgumentType } from "./enums";
-import { isString } from "./utils";
+import { isFunction, isString } from "./utils";
 
 type SerializedBlockData = Pick<ExtensionMetadata, "blocks" | "menus">;
 
@@ -36,7 +36,7 @@ type MapToArgument<T extends unknown[]> = T extends [] ? [] :
 
 type WithName = { name: string };
 
-const processArg = (arg: VerboseArgument<any> & WithName, argName: string, menuName: string, menus: ExtensionMetadata["menus"]) => {
+const processArg = (arg: VerboseArgument<any> & WithName, argName: string, menuName: string, menus: ExtensionMetadata["menus"], blockName: string) => {
   arg.name = argName;
   if (!menuName) return;
 
@@ -44,6 +44,28 @@ const processArg = (arg: VerboseArgument<any> & WithName, argName: string, menuN
   const menuEntry = menus[menuName];
   if (!menuEntry) return;
 
+  const oldItems = (Array.isArray(menuEntry) ? menuEntry : (menuEntry as ExtensionMenuItems).items) as MenuItem<any>[];
+  if (oldItems.length === 0) return;
+
+  const newItems: MenuItem<any>[] = Array.isArray(arg.options)
+    ? (arg.options as MenuItem<any>[])
+    : isFunction(arg.options)
+      ? (arg.options as DynamicMenu<any>)()
+      : (arg.options as MenuThatAcceptsReporters<any>).items
+        ? (arg.options as MenuThatAcceptsReporters<any>).items
+        : (arg.options as DynamicMenuThatAcceptsReporters<any>).getItems();
+
+  const expand = (item: MenuItem<any>) => isString(item) ? ({ text: item, value: item }) : item as { value: any; text: string; };
+  const serialize = (item: any) => JSON.stringify(item);
+
+  const oldItemsExpanded = oldItems.map(expand).map(serialize);
+  const newItemsExpand = newItems.map(expand).map(serialize);
+
+  for (const oldItem of oldItemsExpanded) {
+    if (!newItemsExpand.includes(oldItem)) {
+      throw new Error(`Mismatch in old and new menus for block ${blockName}: arg ${argName}. Old entry: ${oldItem}, new entries: [${newItemsExpand.join(", ")}]`)
+    }
+  }
 }
 
 const attachNames = <T extends SerializedBlockData, TKey extends Opcodes<T>, TBlock>(
@@ -82,7 +104,7 @@ export const extractLegacySupportFromOldGetInfo = <T extends SerializedBlockData
   return ((blocks as any[]).filter(block => !isString(block)) as ExtensionBlockMetadata[])
     .map(block => {
       const opcode = block.opcode as Opcodes<T>;
-      return [opcode, (b) => attachNames<T, typeof opcode, typeof b>(block.opcode as Opcodes<T>, b, block)];
+      return [opcode, (b) => attachNames<T, typeof opcode, typeof b>(block.opcode as Opcodes<T>, b, block, menus)];
     })
     .reduce((acc, [key, func]) => {
       acc[key] = func;
