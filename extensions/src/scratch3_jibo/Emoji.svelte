@@ -1,6 +1,6 @@
 <script lang="ts">
   import type Extension from ".";
-  import { ReactiveInvoke, reactiveInvoke, activeClass, color, } from "../../typescript-support/ui";
+  import { ReactiveInvoke, reactiveInvoke, activeClass, color } from "$common";
 
   /**
    * @summary This is a reference to the instance of your extension. 

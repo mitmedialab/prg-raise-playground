@@ -536,11 +536,12 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     }
 
     calculatePercentage () {
-        if (!this.runtime || !this.runtime.modelData || this.runtime.targets <= 0) {
+        const runtime = this.runtime as any;
+        if (!runtime || !runtime.modelData || runtime.targets <= 0) {
             return ;
         }
-        let modelData = this.runtime.modelData.classifierData;
-        let blocks_used = this.runtime.targets[1].blocks._blocks;
+        let modelData = runtime.modelData.classifierData;
+        let blocks_used = runtime.targets[1].blocks._blocks;
 
         this.numberOfClasses(modelData);
         this.atLeastFive(modelData);
