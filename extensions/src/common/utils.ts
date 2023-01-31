@@ -29,7 +29,7 @@ export async function fetchWithTimeout(
   return response;
 }
 
-export async function waitForObject<T>(getter: () => T, delay: number = 100): Promise<T> {
+export async function untilObject<T>(getter: () => T, delay: number = 100): Promise<T> {
   let timeout: NodeJS.Timeout;
   let value: T = getter();
   while (!value) {
@@ -43,9 +43,20 @@ export async function waitForObject<T>(getter: () => T, delay: number = 100): Pr
   return value;
 }
 
-export async function waitForCondition(condition: () => boolean, delay: number = 100): Promise<void> {
+export async function untilCondition(condition: () => boolean, delay: number = 100): Promise<void> {
   let timeout: NodeJS.Timeout;
   while (!condition()) {
+    await new Promise(resolve => {
+      clearTimeout(timeout);
+      timeout = setTimeout(resolve, delay);
+    });
+  }
+  clearTimeout(timeout);
+};
+
+export async function untilReady<T extends { ready: boolean }>(obj: T, delay: number = 100): Promise<void> {
+  let timeout: NodeJS.Timeout;
+  while (!obj.ready) {
     await new Promise(resolve => {
       clearTimeout(timeout);
       timeout = setTimeout(resolve, delay);
@@ -76,3 +87,17 @@ export const copyTo = <TTarget extends object, TSource extends { [k in keyof TTa
 }
 
 export const identity = (x: any) => x;
+
+export const loadExternalScript = (url: string, onLoad: () => void, onError?: () => void) => {
+  const script = document.createElement('script');
+
+  script.onload = onLoad;
+
+  script.onerror = onError ?? (() => {
+    throw new Error(`Error loading endpoint: ${url}`)
+  });
+
+  script.src = url;
+
+  document.body.appendChild(script);
+}
