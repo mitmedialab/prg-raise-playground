@@ -302,7 +302,6 @@ export default class PoseFace extends Extension<Details, Blocks> {
     this.globalVideoState = VideoState.ON;
     this.globalVideoTransparency = 50;
     this.projectStarted();
-    // this._bodyModel = null;
 
 
     // FACE PART Block
@@ -442,8 +441,8 @@ export default class PoseFace extends Extension<Details, Blocks> {
         }
       },
       text: (expression: string) => `expressing ${expression}`,
-      operation: (expression: string, util) => {
-        return true;
+      operation: (expression: string) => {
+        return this.affdexIsExpression(expression);
       }
     });
 
@@ -480,8 +479,8 @@ export default class PoseFace extends Extension<Details, Blocks> {
         }
       },
       text: (emotion: string) => `when ${emotion} feeling detected`,
-      operation: (emotion: string, list) => {
-        return this.affdexIsTopEmotion(emotion, list);
+      operation: (emotion: string) => {
+        return this.affdexIsTopEmotion(emotion, emotions);
       }
     });
 
