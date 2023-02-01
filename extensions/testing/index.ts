@@ -117,7 +117,7 @@ const toKeyToBlockMap = (map: KeyToBlockIndexMap, { opcode }: ExtensionBlockMeta
   map.set(Extension.GetKeyFromOpcode(opcode), index);
 
 export const buildKeyBlockMap = <T extends AnyExtension>(instance: T): KeyToBlockIndexMap =>
-  Extension.TestGetInfo(instance).blocks.reduce(toKeyToBlockMap, new Map<string, number>());
+  (Extension.TestGetInfo(instance).blocks as ExtensionBlockMetadata[]).reduce(toKeyToBlockMap, new Map<string, number>());
 
 const getKeyBlockMap = <T extends AnyExtension>(details: TestDetails<T, any>) => buildKeyBlockMap(getInstance(details));
 

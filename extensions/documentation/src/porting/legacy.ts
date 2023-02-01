@@ -62,18 +62,11 @@ export default class ExampleExtension extends Extension<DefaultDisplayDetails, {
   defineBlocks(): BlockDefinitions<ExampleExtension> {
     return {
       newBlock: legacy.exampleBlock({
-        type: "command",
+        type: BlockType.Command,
         args: [
-
           { type: ArgumentType.String, options: ["A", "B", "D"] },
-
-
           { type: ArgumentType.Number, options: [0, 1, 2] },
-
-
           { type: ArgumentType.String, options: ["A", "B", "D"] },
-
-
           { type: ArgumentType.Number, options: [0, 1, 2] },
           { type: ArgumentType.Angle },
           { type: ArgumentType.Angle, options: [3, 5] }

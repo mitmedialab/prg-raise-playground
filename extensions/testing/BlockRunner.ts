@@ -13,7 +13,7 @@ export class BlockRunner<T extends AnyExtension> {
 
   getBlockMetaDataByKey<K extends BlockKey<T>>(key: K) {
     const { map, blockData } = this;
-    const index = map.get(key);
+    const index = map.get(key) ?? map.get(Extension.GetLegacyName(this.instance, key));
     return blockData[index];
   }
 
@@ -23,13 +23,19 @@ export class BlockRunner<T extends AnyExtension> {
     const { runtime } = instance;
     const { forTest } = runtime as RuntimeForTest<T>;
 
-    const { blockType, func, opcode } = this.getBlockMetaDataByKey(key);
-    const blockFunction: Function = blockType === BlockType.Button ? runtime[func] : instance[opcode];
-    const args = this.getBlockArgs(input);
+    try {
+      const { blockType, func, opcode } = this.getBlockMetaDataByKey(key);
+      const blockFunction: Function = blockType === BlockType.Button ? runtime[func] : instance[opcode];
+      const args = this.getBlockArgs(input);
 
-    const output = await Promise.resolve(blockFunction(...args));
-    const renderedUI = forTest.UIPromise ? await forTest.UIPromise : undefined;
-    return { output, ui: renderedUI };
+      const output = await Promise.resolve(blockFunction(...args));
+      const renderedUI = forTest.UIPromise ? await forTest.UIPromise : undefined;
+      return { output, ui: renderedUI };
+    }
+    catch {
+      throw new Error(`${key}; ${this.blockData.map(b => b.opcode).join(", ")};`);
+    }
+
   }
 
   createCompanion<TCompanion extends AnyExtension>(constructor: ExtensionConstructor<TCompanion>) {

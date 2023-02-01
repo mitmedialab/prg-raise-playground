@@ -1,4 +1,4 @@
-import { BaseExtension, Block, ExtensionBlockMetadata, ExtensionMetadata, ExtensionMenuItems, DynamicMenu, DynamicMenuThatAcceptsReporters, MenuItem, MenuThatAcceptsReporters, TypeByArgumentType, ValueOf, VerboseArgument } from "./types";
+import { BaseExtension, Block, ExtensionBlockMetadata, ExtensionMetadata, ExtensionMenuItems, DynamicMenu, DynamicMenuThatAcceptsReporters, MenuItem, MenuThatAcceptsReporters, TypeByArgumentType, ValueOf, VerboseArgument, Argument } from "./types";
 import { ArgumentType } from "./enums";
 import { isFunction, isString } from "./utils";
 
@@ -26,12 +26,15 @@ type MappedToBlockDefinition<T extends SerializedBlockData> = { [k in Opcodes<T>
     : { args: MapToArgument<TsMagic.ObjValueTuple<Arguments<T["blocks"], k>[keyof Arguments<T["blocks"], k>]>>, })
 };
 
+type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] }
+
+
 type MapToArgument<T extends unknown[]> = T extends [] ? [] :
   T extends [infer H, ...infer R] ?
   H extends { type: infer X extends ValueOf<typeof ArgumentType> }
   ? H extends { menu: string }
-  ? [{ type: X, options: Required<VerboseArgument<TypeByArgumentType<X>>>["options"] }, ...MapToArgument<R>]
-  : [{ type: X, options?: Required<VerboseArgument<TypeByArgumentType<X>>>["options"] }, ...MapToArgument<R>]
+  ? [WithRequired<VerboseArgument<TypeByArgumentType<X>>, "options">, ...MapToArgument<R>]
+  : [VerboseArgument<TypeByArgumentType<X>>, ...MapToArgument<R>]
   : MapToArgument<R> : T
 
 type WithName = { name: string };
@@ -75,8 +78,8 @@ const attachNames = <T extends SerializedBlockData, TKey extends Opcodes<T>, TBl
   menus: ExtensionMetadata["menus"]
 ): TBlock => {
   type AnyBlock = Block<BaseExtension, ((...args: any[]) => any) | ((arg: any) => any) | (() => any)>;
-  const asBlock = block as AnyBlock;
-  (block as WithName).name = name;
+  const asBlock = block as any as AnyBlock;
+  (block as any as WithName).name = name;
 
   if ("arg" in asBlock) {
     const [key, { menu }] = Object.entries(legacyBlock.arguments)[0];

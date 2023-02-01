@@ -84,6 +84,8 @@ export abstract class Extension
   private readonly internal_blocks: ExtensionBlockMetadata[] = [];
   private readonly internal_menus: (ExtensionMenuItems & { name: string })[] = [];
 
+  private keyByLegacyName: Record<keyof Blocks, string> = undefined;
+
   private argumentManager: CustomArgumentManager = null;
 
   public get customArgumentManager(): CustomArgumentManager {
@@ -318,15 +320,19 @@ export abstract class Extension
     this.internal_menus.push({ acceptReporters, items: key, name });
   }
 
-  private convertToInfo(key: string, block: Block<this, BlockOperation>, menusToAdd: MenuItem<any>[], menuNames: string[]): ExtensionBlockMetadata {
+  private convertToInfo(key: keyof Blocks & string, block: Block<this, BlockOperation>, menusToAdd: MenuItem<any>[], menuNames: string[]): ExtensionBlockMetadata {
     const { type, text, operation } = block;
     const args: Argument<any>[] = block.arg ? [block.arg] : block.args;
 
     const legacyInfo = Extension.ExtractLegacyInformation(block);
     const isLegacy = legacyInfo !== undefined;
 
+    if (isLegacy) this.keyByLegacyName
+      ? this.keyByLegacyName[key] = legacyInfo.name
+      : this.keyByLegacyName = { [key]: legacyInfo.name } as Record<keyof Blocks, string>;
+
     const { displayText, orderedNames } = Extension.ConvertToDisplayText(this, key, text, args, isLegacy);
-    const { argumentsInfo, handlers } = Extension.ConvertToArgumentInfo(this, key, args, menusToAdd, menuNames, isLegacy);
+    const { argumentsInfo, handlers } = Extension.ConvertToArgumentInfo(this, key, args, menusToAdd, menuNames) ?? { argumentsInfo: undefined, handlers: undefined };
 
     const opcode = isLegacy ? legacyInfo.name : Extension.GetInternalKey(key);
     const bound = operation.bind(this);
@@ -442,8 +448,9 @@ export abstract class Extension
   private static ConvertToDisplayText<T extends BaseExtension>(ext: T, key: string, text: string | ((...args: any[]) => string), args: Argument<any>[], isLegacy: boolean) {
     const orderedNames = isLegacy ? [] : undefined;
 
+    type TextFunc = (...params: any[]) => string;
     const resolvedText: string = Extension.IsFunction(text)
-      ? (text as unknown as (...params: any[]) => string)(...args.map((arg, index) => {
+      ? (text as TextFunc)(...args.map((arg, index) => {
         const name = isLegacy ? Extension.ExtractLegacyInformation(arg).name : index;
         if (isLegacy) orderedNames.push(name);
         return `[${name}]`
@@ -454,7 +461,7 @@ export abstract class Extension
     return { displayText: ext.format(resolvedText, key, `Block text for '${key}'`), orderedNames };
   }
 
-  private static ConvertToArgumentInfo<T extends BaseExtension>(ext: T, key: string, args: Argument<any>[], menusToAdd: MenuItem<any>[], menuNames: string[], isLegacy: boolean) {
+  private static ConvertToArgumentInfo<T extends BaseExtension>(ext: T, key: string, args: Argument<any>[], menusToAdd: MenuItem<any>[], menuNames: string[]) {
     if (!args) return undefined;
 
     type Handler = MenuThatAcceptsReporters<any>['handler'];
@@ -467,7 +474,7 @@ export abstract class Extension
       .map((element, index) => {
         const entry = {} as Entry;
         entry.type = Extension.GetArgumentType(element);
-        entry.name = isLegacy ? Extension.ExtractLegacyInformation(element).name : `${index}`;
+        entry.name = Extension.ExtractLegacyInformation(element)?.name ?? `${index}`;
 
         if (Extension.IsPrimitive(element)) return entry;
 
@@ -483,7 +490,7 @@ export abstract class Extension
         const alreadyAddedIndex = menusToAdd.indexOf(options);
         const alreadyAdded = alreadyAddedIndex >= 0;
         const menuIndex = alreadyAdded ? alreadyAddedIndex : menusToAdd.push(options) - 1;
-        const name = isLegacy ? Extension.ExtractLegacyInformation(options).name : `${menuIndex}`;
+        const name = Extension.ExtractLegacyInformation(options)?.name ?? `${menuIndex}`;
 
         if (!alreadyAdded) menuNames.push(name);
 
@@ -567,5 +574,7 @@ export abstract class Extension
   static TestGetBlocks = <T extends Extension<any, any>>(ext: T, ...params: Parameters<Extension<any, any>["getInfo"]>) => ext.getInfo(...params).blocks as ExtensionBlockMetadata[];
   static TestInit = <T extends Extension<any, any>>(ext: T, ...params: Parameters<Extension<any, any>["internal_init"]>) => ext.internal_init(...params);
 
-  static ExtractLegacyInformation = (item) => "name" in item ? ({ name: item["name"] as string | undefined }) : undefined;
+  static ExtractLegacyInformation = (item) => !Extension.IsPrimitive(item) && "name" in item ? ({ name: item["name"] as string | undefined }) : undefined;
+
+  static GetLegacyName = <Blocks extends ExtensionBlocks, T extends Extension<any, Blocks>>(ext: T, key: keyof Blocks) => ext.keyByLegacyName?.[key];
 };
