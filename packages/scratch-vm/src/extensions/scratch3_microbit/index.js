@@ -30,7 +30,7 @@ const BLECommand = {
  * A time interval to wait (in milliseconds) before reporting to the BLE socket
  * that data has stopped coming from the peripheral.
  */
-const BLETimeout = 4500;
+const BLETimeout = 10000;
 
 /**
  * A time interval to wait (in milliseconds) while a block that sends a BLE message is running.
