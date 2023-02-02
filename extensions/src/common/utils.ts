@@ -1,4 +1,3 @@
-import { Extension } from "./Extension";
 import { MenuItem } from "./types"
 
 type FetchParams = {
@@ -98,6 +97,37 @@ export const loadExternalScript = (url: string, onLoad: () => void, onError?: ()
   });
 
   script.src = url;
+  script.async = true;
 
   document.body.appendChild(script);
+}
+
+/**
+ * 
+ * @param url 
+ * @returns 
+ */
+export const untilExternalScriptLoaded = async (url: string): Promise<void> => {
+  const scriptLoaded = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.onload = resolve;
+    script.onerror = reject;
+    script.async = true;
+    script.src = url;
+    document.body.appendChild(script);
+  });
+  await scriptLoaded;
+  return;
+}
+
+/**
+ * 
+ * @param url 
+ * @param globalVariableName 
+ * @returns 
+ */
+export const untilExternalGlobalVariableLoaded = async <T>(url: string, globalVariableName: string): Promise<T> => {
+  if (window[globalVariableName]) return window[globalVariableName];
+  await untilExternalScriptLoaded(url);
+  return window[globalVariableName];
 }
