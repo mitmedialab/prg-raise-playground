@@ -1,4 +1,4 @@
-import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails } from "$common";
+import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, untilExternalGlobalVariableLoaded } from "$common";
 
 // import * as window from 'affdex.js';
 
@@ -51,6 +51,24 @@ type Blocks = {
   setVideoTransparencyBlock(transparency: number): void;
 }
 
+type Affdex = {
+  PhotoDetector: new (imageElement, width: number, height: number, mode) => Detector,
+
+  FaceDetectorMode: {
+    LARGE_FACES: 0,
+    SMALL_FACES: 1
+  };
+};
+
+type Detector = {
+  process: (imageElement: any, index: number) => void;
+  addEventListener: (eventName: string, data: any) => void;
+  detectAllEmotions();
+  detectAllExpressions();
+  start();
+  removeEventListener: (eventName: string, toRemove: Function) => void;
+}
+
 
 export default class PoseFace extends Extension<Details, Blocks> {
 
@@ -62,7 +80,8 @@ export default class PoseFace extends Extension<Details, Blocks> {
 
   hasResult: boolean;
 
-  private affdex;
+  private affdexDetector: Detector;
+
 
   /**
    * The current video state
@@ -120,11 +139,13 @@ export default class PoseFace extends Extension<Details, Blocks> {
    * @returns enum
    */
   affdexCoordsToScratch({ x, y }) {
+    console.log('coord to scratch');
     return { x: x - (PoseFace.DIMENSIONS[0] / 2), y: (PoseFace.DIMENSIONS[1] / 2) - y };
   }
 
   async _loop() {
     while (true) {
+      console.log('loop 1')
       const frame = this.runtime.ioDevices.video.getFrame({
         format: 'image-data',
         dimensions: PoseFace.DIMENSIONS
@@ -133,6 +154,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
       const time = +new Date();
       if (frame) {
         this.affdexState = await this.estimateAffdexOnImage(frame);
+        console.log('loop 2');
         /*
         if (this.affdexState) {
           this.hasResult = true;
@@ -156,6 +178,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
     const affdexDetector = await this.ensureAffdexLoaded(imageElement);
 
     affdexDetector.process(imageElement, 0);
+    console.log('estimate affdex');
     return new Promise((resolve, reject) => {
       const resultListener = function (faces, image, timestamp) {
         affdexDetector.removeEventListener("onImageResultsSuccess", resultListener);
@@ -170,30 +193,24 @@ export default class PoseFace extends Extension<Details, Blocks> {
   }
 
   async ensureAffdexLoaded(imageElement) {
-    if (!this.affdex) {
-      const affdexLoader = new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        document.body.appendChild(script);
-        script.onload = resolve;
-        script.onerror = reject;
-        script.async = true;
-        script.src = 'https://download.affectiva.com/js/3.2.1/affdex.js';
-      });
-      await affdexLoader;
-      const affdexStarter = new Promise((resolve, reject) => {
-        const width = PoseFace.DIMENSIONS[0];
-        const height = PoseFace.DIMENSIONS[1];
-        const faceMode = window.affdex.FaceDetectorMode.LARGE_FACES;
-        const detector = new window.affdex.PhotoDetector(imageElement, width, height, faceMode);
-        detector.detectAllEmotions();
-        detector.detectAllExpressions();
-        detector.start();
-        this.affdex = detector;
-        detector.addEventListener("onInitializeSuccess", resolve);
-      });
-      await affdexStarter;
-    }
-    return this.affdex;
+    if (this.affdexDetector) return this.affdexDetector
+
+    const affdex: Affdex = await untilExternalGlobalVariableLoaded('https://download.affectiva.com/js/3.2.1/affdex.js', 'affdex');
+
+    const affdexStarter = new Promise((resolve, reject) => {
+      const width = PoseFace.DIMENSIONS[0];
+      const height = PoseFace.DIMENSIONS[1];
+      const faceMode = affdex.FaceDetectorMode.LARGE_FACES;
+      const detector = new affdex.PhotoDetector(imageElement, width, height, faceMode);
+      detector.detectAllEmotions();
+      detector.detectAllExpressions();
+      detector.start();
+      this.affdexDetector = detector;
+      detector.addEventListener("onInitializeSuccess", resolve);
+    });
+    await affdexStarter;
+
+    return this.affdexDetector;
   }
 
   /**
@@ -206,6 +223,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
     if (!this.affdexState || !this.affdexState.featurePoints) {
       return;
     }
+    console.log('go to fxn');
     const featurePoint = this.affdexState.featurePoints[part];
     const { x, y } = this.affdexCoordsToScratch(featurePoint);
     (util.target as any).setXY(x, y, false);
@@ -358,7 +376,9 @@ export default class PoseFace extends Extension<Details, Blocks> {
       },
       text: (part: number) => `go to ${part}`,
       operation: (part: number, util) => {
+        console.log('1')
         this.affdexGoToPart(part, util)
+        console.log('2')
       }
     });
 
@@ -404,6 +424,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
       },
       text: (expression: string) => `when ${expression} detected`,
       operation: (expression: string) => {
+        console.log('return')
         return this.affdexIsExpression(expression);
       }
     });
@@ -423,13 +444,14 @@ export default class PoseFace extends Extension<Details, Blocks> {
       },
       text: (expression: string) => `amount of ${expression}`,
       operation: (expression: string) => {
+        console.log('return')
         return this.affdexExpressionAmount(expression);
       }
     });
 
     type DefineExpressReport = DefineBlock<PoseFace, Blocks["isExpressionReport"]>;
     const isExpressionReport: DefineExpressReport = () => ({
-      type: BlockType.Reporter,
+      type: BlockType.Boolean,
       arg: {
         type: ArgumentType.String,
         options: {
@@ -442,6 +464,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
       },
       text: (expression: string) => `expressing ${expression}`,
       operation: (expression: string) => {
+        console.log('return')
         return this.affdexIsExpression(expression);
       }
     });
@@ -480,6 +503,8 @@ export default class PoseFace extends Extension<Details, Blocks> {
       },
       text: (emotion: string) => `when ${emotion} feeling detected`,
       operation: (emotion: string) => {
+        console.log('return')
+
         return this.affdexIsTopEmotion(emotion, emotions);
       }
     });
@@ -493,6 +518,8 @@ export default class PoseFace extends Extension<Details, Blocks> {
           acceptsReporters: true,
           items: allEmotionValues,
           handler: (emotion: string) => {
+            console.log('return')
+
             return allEmotionValues.includes(emotion) ? emotion : 'joy';
           }
         }
@@ -505,7 +532,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
 
     type DefineIsFeeling = DefineBlock<PoseFace, Blocks["isFeelingReport"]>;
     const isFeelingReport: DefineIsFeeling = () => ({
-      type: BlockType.Reporter,
+      type: BlockType.Boolean,
       arg: {
         type: ArgumentType.String,
         options: {
@@ -518,6 +545,8 @@ export default class PoseFace extends Extension<Details, Blocks> {
       },
       text: (emotion: string) => `feeling ${emotion}`,
       operation: (emotion: string) => {
+        console.log('return')
+
         return this.affdexIsTopEmotion(emotion, emotions);
       }
     });
