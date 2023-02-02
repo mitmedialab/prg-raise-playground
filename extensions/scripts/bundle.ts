@@ -3,6 +3,8 @@ import alias from '@rollup/plugin-alias';
 import commonjs from "@rollup/plugin-commonjs";
 import nodeResolve from "@rollup/plugin-node-resolve";
 import json from '@rollup/plugin-json';
+import nodePolyfills from 'rollup-plugin-polyfill-node';
+import babel from "@rollup/plugin-babel";
 import sucrase from '@rollup/plugin-sucrase';
 import css from 'rollup-plugin-css-only';
 import svelte from 'rollup-plugin-svelte';
@@ -66,6 +68,7 @@ const transpileFailed = (ts: Transpiler, info: BundleInfo) => {
 const getThirdPartyPlugins = (): Plugin[] => [
   alias({ entries: getAliasEntries() }),
   json(),
+  nodePolyfills(),
   svelte({
     preprocess: autoPreprocess(),
     emitCss: false,
@@ -73,8 +76,14 @@ const getThirdPartyPlugins = (): Plugin[] => [
   sucrase({
     transforms: ['typescript']
   }),
-  nodeResolve(),
+  nodeResolve({
+    browser: true,
+  }),
   commonjs(),
+  babel({
+    include: ["**.js", "node_modules/**"],
+    babelHelpers: "bundled",
+  }),
   css(),
   terser(),
 ];
