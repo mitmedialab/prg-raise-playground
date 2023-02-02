@@ -1,4 +1,3 @@
-import { Extension } from "./Extension";
 import { MenuItem } from "./types"
 
 type FetchParams = {
@@ -29,7 +28,7 @@ export async function fetchWithTimeout(
   return response;
 }
 
-export async function waitForObject<T>(getter: () => T, delay: number = 100): Promise<T> {
+export async function untilObject<T>(getter: () => T, delay: number = 100): Promise<T> {
   let timeout: NodeJS.Timeout;
   let value: T = getter();
   while (!value) {
@@ -43,9 +42,20 @@ export async function waitForObject<T>(getter: () => T, delay: number = 100): Pr
   return value;
 }
 
-export async function waitForCondition(condition: () => boolean, delay: number = 100): Promise<void> {
+export async function untilCondition(condition: () => boolean, delay: number = 100): Promise<void> {
   let timeout: NodeJS.Timeout;
   while (!condition()) {
+    await new Promise(resolve => {
+      clearTimeout(timeout);
+      timeout = setTimeout(resolve, delay);
+    });
+  }
+  clearTimeout(timeout);
+};
+
+export async function untilReady<T extends { ready: boolean }>(obj: T, delay: number = 100): Promise<void> {
+  let timeout: NodeJS.Timeout;
+  while (!obj.ready) {
     await new Promise(resolve => {
       clearTimeout(timeout);
       timeout = setTimeout(resolve, delay);
@@ -78,3 +88,48 @@ export const copyTo = <TTarget extends object, TSource extends { [k in keyof TTa
 }
 
 export const identity = (x: any) => x;
+
+export const loadExternalScript = (url: string, onLoad: () => void, onError?: () => void) => {
+  const script = document.createElement('script');
+
+  script.onload = onLoad;
+
+  script.onerror = onError ?? (() => {
+    throw new Error(`Error loading endpoint: ${url}`)
+  });
+
+  script.src = url;
+  script.async = true;
+
+  document.body.appendChild(script);
+}
+
+/**
+ * 
+ * @param url 
+ * @returns 
+ */
+export const untilExternalScriptLoaded = async (url: string): Promise<void> => {
+  const scriptLoaded = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.onload = resolve;
+    script.onerror = reject;
+    script.async = true;
+    script.src = url;
+    document.body.appendChild(script);
+  });
+  await scriptLoaded;
+  return;
+}
+
+/**
+ * 
+ * @param url 
+ * @param globalVariableName 
+ * @returns 
+ */
+export const untilExternalGlobalVariableLoaded = async <T>(url: string, globalVariableName: string): Promise<T> => {
+  if (window[globalVariableName]) return window[globalVariableName];
+  await untilExternalScriptLoaded(url);
+  return window[globalVariableName];
+}
