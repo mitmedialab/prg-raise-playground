@@ -6,6 +6,7 @@ export * from "./enums";
 export * from "./IDs";
 export * from "./globals";
 export * from "./SavaDataHandler";
+export * from "./portHelper";
 export type { ArgumentEntry, ArgumentEntrySetter } from "./customArguments/CustomArgumentManager";
 
 export type ReplaceWithBlockFunctionName = never;

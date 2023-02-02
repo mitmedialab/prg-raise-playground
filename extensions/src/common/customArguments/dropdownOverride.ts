@@ -1,5 +1,5 @@
 import { Extension } from "$common/Extension";
-import { untilObject } from "$common/utils";
+import { waitForObject } from "$common/utils";
 import { ArgumentEntry, ArgumentEntrySetter } from "./CustomArgumentManager";
 
 /** Constructed based on Svelte documentation: https://svelte.dev/docs#run-time-client-side-component-api-creating-a-component */
@@ -23,7 +23,7 @@ export const renderToDropdown = async <T>(
   const elements = document.getElementsByClassName(dropdownContainerClass);
   if (elements.length !== 1) return console.error(`Uh oh! Expected 1 element with class '${dropdownContainerClass}', but found ${elements.length}`);
   const [target] = elements;
-  const anchor = await untilObject(() => target.children[0]);
+  const anchor = await waitForObject(() => target.children[0]);
   const component = new compononentConstructor({ target, anchor, props });
   centerDropdownButton(anchor);
 }
