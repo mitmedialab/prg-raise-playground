@@ -15,13 +15,13 @@ import { mockFormatMessage as formatMessage } from "$common";
  * (see below, at the end of the function call).
  * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-4.html#const-assertions
  */
-export const legacy = extractLegacySupportFromOldGetInfo({
-  id: 'someBlocks', // not required / used
+export default extractLegacySupportFromOldGetInfo({
+  id: 'someBlocks', // not required 
 
-  color1: '#FF8C1A',  // not required / used
-  color2: '#DB6E00',  // not required / used
+  color1: '#FF8C1A',  // not required 
+  color2: '#DB6E00',  // not required 
 
-  name: formatMessage({  // not required / used
+  name: formatMessage({  // not required 
     id: 'extensionName',
     default: 'Some Blocks',
     description: 'The name of the "Some Blocks" extension'
@@ -51,14 +51,16 @@ export const legacy = extractLegacySupportFromOldGetInfo({
     someMenu: {
 
       /**
-       * Extract the values from the class function previously used to populate the 'items' array.
+       * Extract the values return from the method previously used to populate the 'items' array.
        * The contents of 'items' will be validated against the corresponding 'options' array within the new block definition.
-       * If the items array was already implemented an array, you can leave it as-is. 
+       * If the items array was already implemented as an array, you can leave it as-is. 
        */
       items: [{ text: "0", value: 0 }, { text: "1", value: 1 }],
       /**
        * NOTE: If you do not want an items array to be checked (or if it cannot, say if the menu was 'dynamic'),
-       * you can set items field to 'undefined' or an empty array ('[]')
+       * you can set items field to 'undefined' or an empty array ('[]'), or delete the menu item altogether.
+       * This will simply mean that the menu values won't validated automatically,
+       * so you must work to make sure the 'options' provided by your new block match the old block it recreates.
        */
 
       acceptReporters: false,

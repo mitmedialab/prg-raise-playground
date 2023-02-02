@@ -5,7 +5,7 @@ export const extension = codeSnippet();
 
 import { BlockDefinitions, Environment, Extension, BlockType, ArgumentType } from "$common";
 // Import the object returned by our invocation of the 'extractLegacySupportFromOldGetInfo' function
-import { legacy } from "./legacy";
+import legacy from "./legacy";
 
 type Block = (someArg: string, someArgWithOptions: number) => number;
 
@@ -13,7 +13,7 @@ export default class ExampleExtension extends Extension<DefaultDisplayDetails, {
   /**
    * This represents the block that our new extension will implement that 'replaces' / supercedes
    * the block from our old extension 
-   * (while still preserving the ability to load-in projects saved using the old extension).
+   * (while still preserving the ability to load-in projects saved using the old block).
    */
   exampleUpdatedBlock: Block
 }> {
@@ -23,10 +23,8 @@ export default class ExampleExtension extends Extension<DefaultDisplayDetails, {
     return {
       /**
        * When defining our block in the new Extension format, we'll make use of the 'legacy' object.
-       * This will ensure our new block definition matches the old block definition in such a way that
-       * projects saved using the old extension work with the new extension.
        * 
-       * First, we locate the "opcode" of the block we want to replace on the 'legacy' object
+       * First, we locate the "opcode" of the block we want to recreate/replace on the 'legacy' object
        * (if you need help remembering which opcode is tied to which block, 
        * consult the old extension's 'getInfo' method).
        * 
@@ -34,13 +32,14 @@ export default class ExampleExtension extends Extension<DefaultDisplayDetails, {
        * 
        * Typescript will ensure that the types of the old & new block match, along with their arguemnts.
        * Typescript will also ensure that, if an argument previously used a 'menu', 
-       * an 'options' value must be provided when defining the corresponding arg / args entry.
+       * then an 'options' value must be provided when defining the corresponding arg / args entry.
        * 
-       * At runtime, this function it will attach 'names' to the blocks, their arguments, and their menus 
+       * At runtime, this function will attach legacy 'names' to the blocks, their arguments, and their menus 
        * to ensure old saved projects can interop with our new extension.
        * 
        * Also, at runtime, the 'options' values will be compared against the values in their corresponding 'menu' 
-       * (if the menu was provided in the object given to the 'extractLegacySupportFromOldGetInfo' function)
+       * (if the menu was provided in the object given to the 'extractLegacySupportFromOldGetInfo' function).
+       * An error will be thrown if they don't match, so make sure to check the Console in your browser. 
        */
       exampleUpdatedBlock: legacy.exampleLegacyBlock({
         type: BlockType.Reporter,

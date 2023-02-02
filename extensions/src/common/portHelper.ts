@@ -28,7 +28,6 @@ type MappedToBlockDefinition<T extends SerializedBlockData> = { [k in Opcodes<T>
 
 type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] }
 
-
 type MapToArgument<T extends unknown[]> = T extends [] ? [] :
   T extends [infer H, ...infer R] ?
   H extends { type: infer X extends ValueOf<typeof ArgumentType> }
@@ -101,6 +100,13 @@ type LegacySupport<T extends SerializedBlockData> =
   & { tsIgnore: { [k in Opcodes<T>]: <TBlock>(block: TBlock) => TBlock } }
   & { legacyBlocksForTests: { [k in Opcodes<T>]: ExtensionBlockMetadata } }
 
+/**
+ * 
+ * @param data The object returned by a vanilla-javascript extension's `getInfo` method
+ * @returns An object where the keys are the 'opcodes' of the blocks provided as an argument this function. 
+ * The value for each key is a function that, when applied to a block definition, 
+ * adds the necessary legacy support so old projects will load correctly. 
+ */
 export const extractLegacySupportFromOldGetInfo = <T extends SerializedBlockData>(data: T): LegacySupport<T> => {
   const { blocks, menus } = data;
 
