@@ -13,7 +13,7 @@ export class BlockRunner<T extends AnyExtension> {
 
   getBlockMetaDataByKey<K extends BlockKey<T>>(key: K) {
     const { map, blockData } = this;
-    const index = map.get(key);
+    const index = map.get(key) ?? map.get(Extension.GetLegacyName(this.instance, key));
     return blockData[index];
   }
 

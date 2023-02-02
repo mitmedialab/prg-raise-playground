@@ -571,7 +571,7 @@ export interface ExtensionMetadata {
   docsURI?: string | undefined;
 
   /** The blocks provided by this extension and the separators. */
-  blocks: Array<ExtensionBlockMetadata | string>;
+  blocks: readonly ExtensionBlockMetadata[] | readonly string[];
 
   /** Map of menu name to metadata for each of this extension's menus. */
   menus?: Record<string, ExtensionMenuMetadata> | undefined;
@@ -636,7 +636,7 @@ export type ExtensionDynamicMenu = string;
 
 /** Items in an extension menu. */
 export type ExtensionMenuItems = {
-  items: Array<ExtensionMenuItemSimple | ExtensionMenuItemComplex> | ExtensionDynamicMenu,
+  items: readonly ExtensionMenuItemSimple[] | readonly ExtensionMenuItemComplex[] | ExtensionDynamicMenu,
   acceptReporters: boolean
 };
 
