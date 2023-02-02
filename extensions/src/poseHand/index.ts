@@ -169,12 +169,16 @@ export default class PoseHand extends Extension<Details, Blocks> {
 
     const fingerOptions =
       [{ text: "thumb", value: "thumb" }, { text: "index finger", value: "indexFinger" },
-      { text: "middle finger", value: "middleFinger" }, { text: "ring finger", value: "ringFinger" }, { text: "pinky finger", value: "pinky" }];
+      { text: "middle finger", value: "middleFinger" }, { text: "ring finger", value: "ringFinger" }, { text: "pinky", value: "pinky" }];
 
     const handlerFingerOptions = fingerOptions.map(finger => finger.value);
 
-    const partOfFingerOptions = [{ text: "tip", value: 3 }, { text: "first knuckle", value: 2 },
-    { text: "second knuckle", value: 1 }, { text: "base", value: 0 }];
+    const partOfFingerOptions = [
+      { text: "tip", value: 3 },
+      { text: "second knuckle", value: 2 },
+      { text: "first knuckle", value: 1 },
+      { text: "base", value: 0 }
+    ];
 
     type DefineGoToHandPart = DefineBlock<PoseHand, Blocks["goToHandPartBlock"]>;
 
