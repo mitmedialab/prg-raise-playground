@@ -61,6 +61,8 @@ export const isFunction = (query: any) =>
   || "function" === typeof query
   || query instanceof Function;
 
+export const isPrimitive = (query: any) => query !== Object(query);
+
 export const splitOnCapitals = (query: string) => query.split(/(?=[A-Z])/);
 
 /**

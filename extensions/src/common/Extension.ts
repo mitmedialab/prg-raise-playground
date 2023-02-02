@@ -4,7 +4,7 @@ import Cast from '$scratch-vm/util/cast';
 //import * as formatMessage from 'format-message';
 import Runtime from "$scratch-vm/engine/runtime";
 import { openUI, registerButtonCallback } from './ui';
-import { identity, isFunction, isString } from './utils';
+import { identity, isFunction, isPrimitive, isString } from './utils';
 import { isCustomArgumentHack, processCustomArgumentHack } from './customArguments';
 import { customArgumentCheck, customArgumentFlag } from './globals';
 import CustomArgumentManager, { ArgumentEntry } from './customArguments/CustomArgumentManager';
@@ -150,7 +150,7 @@ export abstract class Extension
     const menus: Menu<any>[] = [];
     const menuNames: string[] = [];
     for (const key in definitions) {
-      const block = Extension.IsFunction(definitions[key]) ? (definitions[key] as Function)(this) : definitions[key];
+      const block = isFunction(definitions[key]) ? (definitions[key] as Function)(this) : definitions[key];
       const info = this.convertToInfo(key, block, menus, menuNames);
       this.internal_blocks.push(info);
     }
@@ -167,7 +167,7 @@ export abstract class Extension
         continue;
       }
 
-      if (Extension.IsFunction(menu)) {
+      if (isFunction(menu)) {
         const getItems = menu as DynamicMenu<any>;
         this.addDynamicMenu(getItems, acceptReporters, name);
         continue;
@@ -385,7 +385,7 @@ export abstract class Extension
 
         return type !== ArgumentType.Custom
           ? Extension.CastToType(type, handler(param))
-          : !(Extension.IsString(param) && CustomArgumentManager.IsIdentifier(param))
+          : !(isString(param) && CustomArgumentManager.IsIdentifier(param))
             ? handler(param)
             : handler(customArgumentManager.getEntry(param).value)
       });
@@ -449,7 +449,7 @@ export abstract class Extension
     const orderedNames = isLegacy ? [] : undefined;
 
     type TextFunc = (...params: any[]) => string;
-    const resolvedText: string = Extension.IsFunction(text)
+    const resolvedText: string = isFunction(text)
       ? (text as TextFunc)(...args.map((arg, index) => {
         const name = isLegacy ? Extension.ExtractLegacyInformation(arg).name : index;
         if (isLegacy) orderedNames.push(name);
@@ -476,12 +476,12 @@ export abstract class Extension
         entry.type = Extension.GetArgumentType(element);
         entry.name = Extension.ExtractLegacyInformation(element)?.name ?? `${index}`;
 
-        if (Extension.IsPrimitive(element)) return entry;
+        if (isPrimitive(element)) return entry;
 
         const { defaultValue, options } = element as VerboseArgument<any>;
 
         if (defaultValue !== undefined)
-          entry.defaultValue = Extension.IsString(entry)
+          entry.defaultValue = isString(entry)
             ? ext.format(defaultValue, Extension.GetArgTranslationID(key, index), `Default value for arg ${index + 1} of ${key} block`)
             : defaultValue;
 
@@ -519,7 +519,7 @@ export abstract class Extension
   private static GetButtonID = (id: string, opcode: string) => `${id}_${opcode}`;
 
   private static GetArgumentType = <T>(arg: Argument<T>): ValueOf<typeof ArgumentType> =>
-    Extension.IsPrimitive(arg) ? arg as ValueOf<typeof ArgumentType> : (arg as VerboseArgument<T>).type;
+    isPrimitive(arg) ? arg as ValueOf<typeof ArgumentType> : (arg as VerboseArgument<T>).type;
 
   private static ToFlag = (value: string): boolean => parseInt(value) === 1;
 
@@ -559,12 +559,7 @@ export abstract class Extension
   }
 
   private static ConvertMenuItemsToString = (item: any | MenuItem<any>) =>
-    Extension.IsPrimitive(item) ? `${item}` : { ...item, value: `${item.value}` };
-
-  private static IsPrimitive = (query) => query !== Object(query);
-  private static IsFunction = (query) => isFunction(query);
-
-  private static IsString = (query) => isString(query);
+    isPrimitive(item) ? `${item}` : { ...item, value: `${item.value}` };
 
   private static ExtensionsByID = new Map<string, Extension<any, any>>();
 
@@ -574,7 +569,7 @@ export abstract class Extension
   static TestGetBlocks = <T extends Extension<any, any>>(ext: T, ...params: Parameters<Extension<any, any>["getInfo"]>) => ext.getInfo(...params).blocks as ExtensionBlockMetadata[];
   static TestInit = <T extends Extension<any, any>>(ext: T, ...params: Parameters<Extension<any, any>["internal_init"]>) => ext.internal_init(...params);
 
-  static ExtractLegacyInformation = (item) => !Extension.IsPrimitive(item) && "name" in item ? ({ name: item["name"] as string | undefined }) : undefined;
+  static ExtractLegacyInformation = (item) => !isPrimitive(item) && "name" in item ? ({ name: item["name"] as string | undefined }) : undefined;
 
   static GetLegacyName = <Blocks extends ExtensionBlocks, T extends Extension<any, Blocks>>(ext: T, key: keyof Blocks) => ext.keyByLegacyName?.[key];
 };

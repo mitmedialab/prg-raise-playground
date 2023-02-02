@@ -1,8 +1,8 @@
 import { BaseExtension, Block, ExtensionBlockMetadata, ExtensionMetadata, ExtensionMenuItems, DynamicMenu, DynamicMenuThatAcceptsReporters, MenuItem, MenuThatAcceptsReporters, TypeByArgumentType, ValueOf, VerboseArgument, Argument } from "./types";
 import { ArgumentType } from "./enums";
-import { isFunction, isString } from "./utils";
+import { isFunction, isPrimitive, isString } from "./utils";
 
-type SerializedBlockData = Pick<ExtensionMetadata, "blocks" | "menus">;
+export type SerializedBlockData = Pick<ExtensionMetadata, "blocks" | "menus">;
 
 export const mockFormatMessage = (args: { id: string, default: string, description: string }): string => "";
 
@@ -47,8 +47,8 @@ const processArg = (arg: VerboseArgument<any> & WithName, argName: string, menuN
   const menuEntry = menus[menuName];
   if (!menuEntry) return;
 
-  const oldItems = (Array.isArray(menuEntry) ? menuEntry : (menuEntry as ExtensionMenuItems).items) as MenuItem<any>[];
-  if (oldItems.length === 0) return;
+  const oldItems = (menuEntry as ExtensionMenuItems).items as MenuItem<any>[];
+  if (!oldItems || oldItems.length === 0) return;
 
   const newItems: MenuItem<any>[] = Array.isArray(arg.options)
     ? (arg.options as MenuItem<any>[])
@@ -58,7 +58,7 @@ const processArg = (arg: VerboseArgument<any> & WithName, argName: string, menuN
         ? (arg.options as MenuThatAcceptsReporters<any>).items
         : (arg.options as DynamicMenuThatAcceptsReporters<any>).getItems();
 
-  const expand = (item: MenuItem<any>) => isString(item) ? ({ text: item, value: item }) : item as { value: any; text: string; };
+  const expand = (item: MenuItem<any>) => isPrimitive(item) ? ({ text: `${item}`, value: item }) : item as { value: any; text: string; };
   const serialize = (item: any) => JSON.stringify(item);
 
   const oldItemsExpanded = oldItems.map(expand).map(serialize);
@@ -83,28 +83,28 @@ const attachNames = <T extends SerializedBlockData, TKey extends Opcodes<T>, TBl
 
   if ("arg" in asBlock) {
     const [key, { menu }] = Object.entries(legacyBlock.arguments)[0];
-    (asBlock.arg as WithName).name = key;
-    if (menu) {
-      const asVerboseArgument = asBlock.arg as VerboseArgument<any>;;
-      (asVerboseArgument.options as WithName).name = menu;
-    }
+    processArg(asBlock.arg, key, menu, menus, name);
   }
   else if ("args" in asBlock) {
     const entries = Object.entries(legacyBlock.arguments);
     for (let index = 0; index < entries.length; index++) {
       const [key, { menu }] = entries[index];
-      (asBlock.args[index] as WithName).name = key;
-      if (menu) ((asBlock.args[index] as VerboseArgument<any>).options as WithName).name = menu;
+      processArg(asBlock.args[index], key, menu, menus, name);
     }
   }
 
   return block;
 }
 
-export const extractLegacySupportFromOldGetInfo = <T extends SerializedBlockData>(data: T): { [k in Opcodes<T>]: <TBlock>(block: TBlock & MappedToBlockDefinition<T>[k]) => TBlock } => {
+type LegacySupport<T extends SerializedBlockData> =
+  { [k in Opcodes<T>]: <TBlock extends MappedToBlockDefinition<T>[k]>(block: TBlock) => TBlock }
+  & { tsIgnore: { [k in Opcodes<T>]: <TBlock>(block: TBlock) => TBlock } }
+  & { legacyBlocksForTests: { [k in Opcodes<T>]: ExtensionBlockMetadata } }
+
+export const extractLegacySupportFromOldGetInfo = <T extends SerializedBlockData>(data: T): LegacySupport<T> => {
   const { blocks, menus } = data;
 
-  return ((blocks as any[]).filter(block => !isString(block)) as ExtensionBlockMetadata[])
+  const mapper: LegacySupport<T> = ((blocks as ExtensionBlockMetadata[]).filter(block => !isString(block)) as ExtensionBlockMetadata[])
     .map(block => {
       const opcode = block.opcode as Opcodes<T>;
       return [opcode, (b) => attachNames<T, typeof opcode, typeof b>(block.opcode as Opcodes<T>, b, block, menus)];
@@ -114,31 +114,14 @@ export const extractLegacySupportFromOldGetInfo = <T extends SerializedBlockData
       return acc;
     }, {} as any);
 
-  /**
-  return <TKey extends Opcodes<T>, TBlock>(name: TKey, block: TBlock & MappedToBlockDefinition<T>[TKey]): TBlock => {
-    type AnyBlock = Block<BaseExtension, ((...args: any[]) => any) | ((arg: any) => any) | (() => any)>;
-    const asBlock = block as AnyBlock;
-    (block as WithName).name = name;
+  mapper["tsIgnore"] = mapper as any as LegacySupport<T>["tsIgnore"];
 
-    const metaData = (blocks as readonly ExtensionBlockMetadata[]).find(({ opcode }) => opcode === name);
-    if (!metaData) throw new Error("Could not locate legacy block definition with name: " + name);
+  mapper.legacyBlocksForTests = (blocks as ExtensionBlockMetadata[]).reduce((acc, block) => {
+    acc[block.opcode] = block;
+    return acc;
+  }, {} as LegacySupport<T>["legacyBlocksForTests"]);
 
-    if ("arg" in asBlock) {
-      const [key, { menu }] = Object.entries(metaData.arguments)[0];
-      (asBlock.arg as WithName).name = key;
-      if (menu) ((asBlock.arg as VerboseArgument<any>).options as WithName).name = menu;
-    }
-    else if ("args" in asBlock) {
-      const entries = Object.entries(metaData.arguments);
-      for (let index = 0; index < entries.length; index++) {
-        const [key, { menu }] = entries[index];
-        (asBlock.args[index] as WithName).name = key;
-        if (menu) ((asBlock.args[index] as VerboseArgument<any>).options as WithName).name = menu;
-      }
-    }
-
-    return block;
-  } */
+  return mapper;
 };
 
 /**

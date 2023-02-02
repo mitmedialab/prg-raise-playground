@@ -1,81 +1,74 @@
-import { ArgumentType, BlockDefinitions, BlockType, Environment, Extension, extractLegacySupportFromOldGetInfo } from "$common";
-import { createTestSuite } from "$testing";
-import { DefaultDisplayDetails } from "$testing/defaults";
+import { codeSnippet } from "../../";
 
-const legacy = extractLegacySupportFromOldGetInfo({
+export const extract = codeSnippet();
+
+import { ArgumentType, BlockType, extractLegacySupportFromOldGetInfo } from "$common";
+// To make things easier, we provide a 'mockFormatMessage' you can use when copying over legacy code
+import { mockFormatMessage as formatMessage } from "$common";
+
+/**
+ * Copy and paste over the of the object returned by the old extension's 'getInfo' method 
+ * (making the necessary changes outlined below, and note that only the 'blocks' and 'menus' fields are required)
+ * and pass it as an argument to the 'extractLegacySupportFromOldGetInfo' function.
+ * If you're doing this in a seperate file from your Extension, make sure to export the return value.
+ * NOTE: The object makes use of the 'as const' assertion applied to the argument object 
+ * (see below, at the end of the function call).
+ * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-4.html#const-assertions
+ */
+export const legacy = extractLegacySupportFromOldGetInfo({
+  id: 'someBlocks', // not required / used
+
+  color1: '#FF8C1A',  // not required / used
+  color2: '#DB6E00',  // not required / used
+
+  name: formatMessage({  // not required / used
+    id: 'extensionName',
+    default: 'Some Blocks',
+    description: 'The name of the "Some Blocks" extension'
+  }),
+
   blocks: [
     {
-      opcode: "exampleBlock",
-      blockType: "command",
-      text: "Dummy text [ARG_1] [ARG_2] [ARG_3] [ARG_4] [ARG_5]",
+      opcode: 'exampleLegacyBlock',
+      blockType: BlockType.Reporter, // Update to use new BlockType object (note the Pascal Case)
+      text: formatMessage({
+        id: 'exampleLegacyBlock',
+        default: 'Example text with [someArg] and [someArgWithMenu]',
+        description: 'Label on exampleLegacyBlock'
+      }),
       arguments: {
-        ARG_1: {
-          type: "string",
-          menu: "Menu 1"
+        someArg: {
+          type: ArgumentType.String, // Update to use new ArgumentType object (note the Pascal Case)
         },
-        ARG_2: {
-          type: "number",
-          menu: "Menu 2"
-        },
-        ARG_3: {
-          type: "string",
-          menu: "Menu 3"
-        },
-        ARG_4: {
-          type: "number",
-          menu: "Menu 4"
-        },
-        ARG_5: {
-          type: "angle",
-        },
-        ARG_6: {
-          type: "angle",
+        someArgWithMenu: {
+          type: ArgumentType.Number,
+          menu: "someMenu"
         }
       }
     }
   ],
   menus: {
-    "Menu 1": {
-      items: ["A", "B", "C"],
+    someMenu: {
+
+      /**
+       * Extract the values from the class function previously used to populate the 'items' array.
+       * The contents of 'items' will be validated against the corresponding 'options' array within the new block definition.
+       * If the items array was already implemented an array, you can leave it as-is. 
+       */
+      items: [{ text: "0", value: 0 }, { text: "1", value: 1 }],
+      /**
+       * NOTE: If you do not want an items array to be checked (or if it cannot, say if the menu was 'dynamic'),
+       * you can set items field to 'undefined' or an empty array ('[]')
+       */
+
       acceptReporters: false,
     },
-    "Menu 2": {
-      items: [{ text: "0", value: 0 }, { text: "1", value: 1 }, { text: "2", value: 2 }],
-      acceptReporters: true
-    },
-    // Will not be checked -- this can be useful if the original menu was dynamic and you can't extract the values  
-    "Menu 3": undefined,
-    // "Menu 4" is left out, so it will also not be checked
-  }
-} as const);
+  },
+} as const); // VERY IMPORTANT! Note the use of 'as const' on the object passed to the function
 
+/**
+ * By using 'as const', 
+ * we ensure typescript is able to extract as much information from the old getInfo object as possible
+ */
 
-// Define
-type Block = (arg1: string, arg2: number, arg3: string, arg4: number, arg5: number, arg6: number) => void;
-
-export default class ExampleExtension extends Extension<DefaultDisplayDetails, {
-  // The new block based on the old 'exampleBlock'. NOTE: You should never name arguments like this
-  newBlock: Block
-}> {
-  init(env: Environment): void { }
-
-  defineBlocks(): BlockDefinitions<ExampleExtension> {
-    return {
-      newBlock: legacy.exampleBlock({
-        type: BlockType.Command,
-        args: [
-          { type: ArgumentType.String, options: ["A", "B", "D"] },
-          { type: ArgumentType.Number, options: [0, 1, 2] },
-          { type: ArgumentType.String, options: ["A", "B", "D"] },
-          { type: ArgumentType.Number, options: [0, 1, 2] },
-          { type: ArgumentType.Angle },
-          { type: ArgumentType.Angle, options: [3, 5] }
-        ],
-        text: (a, b, c, d, e, f) => `New dummy text ${a} ${b} ${c} ${d} ${e} ${f}`,
-        operation: (a, b, c, d, e, f) => {
-          // do something
-        }
-      })
-    }
-  }
-}
+extract.end;

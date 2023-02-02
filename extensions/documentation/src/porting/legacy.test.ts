@@ -1,10 +1,11 @@
 import { createTestSuite } from "$testing";
-import Extension from "./legacy";
+import Extension from "./ported";
 
 createTestSuite({ Extension, __dirname }, {
   unitTests: {
-    newBlock: {
-      input: ["a", 0, "b", 1, 2, 3]
+    exampleUpdatedBlock: {
+      input: ["a", 0],
+      expected: 0
     }
   }
 })
