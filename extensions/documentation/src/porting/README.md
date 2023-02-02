@@ -182,7 +182,7 @@ Assume that our old, vanilla javascript extension looks the following:
 
 #### Usage of `extractLegacySupportFromOldGetInfo`
 
-We then copy over the object returned by the above `getInfo` method, and pass it to the `extractLegacySupportFromOldGetInfo` function like so:
+(Assuming we are in a new file, `legacy.ts` inside of our extension directory) we then copy over the object returned by the above `getInfo` method, and pass it to the `extractLegacySupportFromOldGetInfo` function like so:
 
 [](./legacy.ts?export=extract)
 
@@ -190,6 +190,6 @@ Pay attention to the comments, which describe a few changes that must be made, a
 
 #### Using `legacy` in `defineBlocks`
 
-Now that we've obtained the return of `extractLegacySupportFromOldGetInfo` (imported as `legacy` below), we can make use of it when defing blocks in our new Framework-based extension. 
+Now that we've obtained the return of `extractLegacySupportFromOldGetInfo` (imported as `legacy` below), we can make use of it when defining blocks in our new Framework-based extension. 
 
 [](./ported.ts?export=extension)
