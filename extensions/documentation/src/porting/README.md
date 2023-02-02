@@ -36,7 +36,9 @@ Here's how:
 8. Now, there should be no remnants of the "old" extension inside of either [packages/scratch-vm](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/packages/scratch-vm) or [packages/scratch-gui](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/packages/scratch-gui) folders, and instead everything lives neatly inside its own directory within [extensions/src](https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extensions/src)
 9. Test out the project you saved in step 0 to verify that your port worked as expected.
 
-### Implementing an Extension in Vanilla JS vs 
+### Implementing an Extension in Vanilla JS vs the Extension Framework
+
+Below you can compare what an extension that was originally implemented in vanilla javascript would look like rewritten in Typescript leveraging the Extension Framework. 
 
 #### Vanilla JS
 
@@ -145,9 +147,9 @@ class SomeBlocks {
 }
 ```
 
-### Typescript Extension Framework
+#### Typescript / Extension Framework
 
-Things to note:
+Things to note about the below typescript snippet:
 - The `Details` type object encodes how the extension will be displayed in the extensions menu
     - No more editing [any jsx](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/packages/scratch-gui/src/lib/libraries/extensions/index.jsx#L71) to specify how your extension should display in the Extensions Menu
     - Now your image assets related to your extension should reside in the same place as your implementation (i.e. in the same directory as the `index.ts` file)

@@ -23,19 +23,13 @@ export class BlockRunner<T extends AnyExtension> {
     const { runtime } = instance;
     const { forTest } = runtime as RuntimeForTest<T>;
 
-    try {
-      const { blockType, func, opcode } = this.getBlockMetaDataByKey(key);
-      const blockFunction: Function = blockType === BlockType.Button ? runtime[func] : instance[opcode];
-      const args = this.getBlockArgs(input);
+    const { blockType, func, opcode } = this.getBlockMetaDataByKey(key);
+    const blockFunction: Function = blockType === BlockType.Button ? runtime[func] : instance[opcode];
+    const args = this.getBlockArgs(input);
 
-      const output = await Promise.resolve(blockFunction(...args));
-      const renderedUI = forTest.UIPromise ? await forTest.UIPromise : undefined;
-      return { output, ui: renderedUI };
-    }
-    catch {
-      throw new Error(`${key}; ${this.blockData.map(b => b.opcode).join(", ")};`);
-    }
-
+    const output = await Promise.resolve(blockFunction(...args));
+    const renderedUI = forTest.UIPromise ? await forTest.UIPromise : undefined;
+    return { output, ui: renderedUI };
   }
 
   createCompanion<TCompanion extends AnyExtension>(constructor: ExtensionConstructor<TCompanion>) {
