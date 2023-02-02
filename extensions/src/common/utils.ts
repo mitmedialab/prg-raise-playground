@@ -71,6 +71,8 @@ export const isFunction = (query: any) =>
   || "function" === typeof query
   || query instanceof Function;
 
+export const isPrimitive = (query: any) => query !== Object(query);
+
 export const splitOnCapitals = (query: string) => query.split(/(?=[A-Z])/);
 
 /**
@@ -127,9 +129,7 @@ export const untilExternalScriptLoaded = async (url: string): Promise<void> => {
  * @returns 
  */
 export const untilExternalGlobalVariableLoaded = async <T>(url: string, globalVariableName: string): Promise<T> => {
-  console.log('exGloVar 1')
   if (window[globalVariableName]) return window[globalVariableName];
-  console.log('exGloVar 2')
   await untilExternalScriptLoaded(url);
   return window[globalVariableName];
 }

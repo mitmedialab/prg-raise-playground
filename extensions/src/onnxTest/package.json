@@ -1,0 +1,14 @@
+{
+  "name": "onnx-test-extension",
+  "version": "1.0.0",
+  "description": "An extension created using the PRG AI Blocks framework",
+  "main": "index.ts",
+  "scripts": {
+    "directory": "echo onnxTest",
+    "test": "npm run test --prefix ../../ -- onnxTest/index.test.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+  }
+}
