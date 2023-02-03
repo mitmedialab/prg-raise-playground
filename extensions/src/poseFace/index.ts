@@ -83,7 +83,6 @@ export default class PoseFace extends Extension<Details, Blocks> {
 
   private affdexDetector: Detector;
 
-
   /**
    * The current video state
    * @type {number}
@@ -140,13 +139,13 @@ export default class PoseFace extends Extension<Details, Blocks> {
    * @returns enum
    */
   affdexCoordsToScratch({ x, y }) {
-    console.log('coord to scratch');
+    //console.log('coord to scratch');
     return { x: x - (PoseFace.DIMENSIONS[0] / 2), y: (PoseFace.DIMENSIONS[1] / 2) - y };
   }
 
   async _loop() {
     while (true) {
-      console.log('loop 1')
+      //console.log('loop 1')
       const frame = this.runtime.ioDevices.video.getFrame({
         format: 'image-data',
         dimensions: PoseFace.DIMENSIONS
@@ -155,7 +154,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
       const time = +new Date();
       if (frame) {
         this.affdexState = await this.estimateAffdexOnImage(frame);
-        console.log('loop 2');
+        //console.log('loop 2');
         /*
         if (this.affdexState) {
           this.hasResult = true;
@@ -179,7 +178,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
     const affdexDetector = await this.ensureAffdexLoaded(imageElement);
 
     affdexDetector.process(imageElement, 0);
-    console.log('estimate affdex');
+    //console.log('estimate affdex');
     return new Promise((resolve, reject) => {
       const resultListener = function (faces, image, timestamp) {
         affdexDetector.removeEventListener("onImageResultsSuccess", resultListener);
@@ -224,7 +223,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
     if (!this.affdexState || !this.affdexState.featurePoints) {
       return;
     }
-    console.log('go to fxn');
+    //console.log('go to fxn');
     const featurePoint = this.affdexState.featurePoints[part];
     const { x, y } = this.affdexCoordsToScratch(featurePoint);
     (util.target as any).setXY(x, y, false);
@@ -362,8 +361,8 @@ export default class PoseFace extends Extension<Details, Blocks> {
       { text: 'right lower eyelid', value: 33 }
     ];
 
-    type DefineGoToFacePart = DefineBlock<PoseFace, Blocks["goToFacePartCommand"]>;
-    const goToFacePartCommand: DefineGoToFacePart = () => ({
+    //type DefineGoToFacePart = DefineBlock<PoseFace, Blocks["goToFacePartCommand"]>;
+    const goToFacePartCommand = () => legacy.affdexGoToPart({
       type: BlockType.Command,
       arg: {
         type: ArgumentType.Number,
@@ -377,9 +376,9 @@ export default class PoseFace extends Extension<Details, Blocks> {
       },
       text: (part: number) => `go to ${part}`,
       operation: (part: number, util) => {
-        console.log('1')
+        //console.log('1')
         this.affdexGoToPart(part, util)
-        console.log('2')
+        //console.log('2')
       }
     });
 
@@ -425,7 +424,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
       },
       text: (expression: string) => `when ${expression} detected`,
       operation: (expression: string) => {
-        console.log('return')
+        //console.log('return')
         return this.affdexIsExpression(expression);
       }
     });
@@ -445,7 +444,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
       },
       text: (expression: string) => `amount of ${expression}`,
       operation: (expression: string) => {
-        console.log('return')
+        //console.log('return')
         return this.affdexExpressionAmount(expression);
       }
     });
@@ -465,7 +464,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
       },
       text: (expression: string) => `expressing ${expression}`,
       operation: (expression: string) => {
-        console.log('return')
+        //console.log('return')
         return this.affdexIsExpression(expression);
       }
     });
@@ -504,7 +503,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
       },
       text: (emotion: string) => `when ${emotion} feeling detected`,
       operation: (emotion: string) => {
-        console.log('return')
+        //console.log('return')
 
         return this.affdexIsTopEmotion(emotion, emotions);
       }
@@ -519,7 +518,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
           acceptsReporters: true,
           items: allEmotionValues,
           handler: (emotion: string) => {
-            console.log('return')
+            //console.log('return')
 
             return allEmotionValues.includes(emotion) ? emotion : 'joy';
           }
@@ -546,7 +545,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
       },
       text: (emotion: string) => `feeling ${emotion}`,
       operation: (emotion: string) => {
-        console.log('return')
+        //console.log('return')
 
         return this.affdexIsTopEmotion(emotion, emotions);
       }
@@ -555,7 +554,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
     // VIDEO BLOCKS
 
     type DefineVideoToggle = DefineBlock<PoseFace, Blocks["videoToggleBlock"]>;
-    const videoToggleBlock: legacy.DefineVideoToggle = () => ({
+    const videoToggleBlock: DefineVideoToggle = () => ({
       type: BlockType.Command,
       arg: {
         type: ArgumentType.Number,
