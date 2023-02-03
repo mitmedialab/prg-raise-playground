@@ -1,6 +1,6 @@
 import { ArgumentType, BlockType } from "$common/enums";
-import { SerializedBlockData, extractLegacySupportFromOldGetInfo } from "$common/portHelper";
-import { BaseExtension, Block, DefineBlock, ExtensionBlockMetadata, ExtensionMetadata } from "$common/types";
+import { extractLegacySupportFromOldGetInfo } from "$common/portHelper";
+import { BaseExtension, Block, ExtensionBlockMetadata } from "$common/types";
 import { describe, expect, test } from "$testing";
 
 type WithName<T> = T & { name: string };
@@ -163,5 +163,99 @@ describe("Arguments mismatch", () => {
       }
     })).toThrow();
   });
+});
 
-})
+describe("Accepts reporters mismatch", () => {
+  const legacyDoesAccept = extractLegacySupportFromOldGetInfo({
+    blocks: [
+      {
+        opcode: "testCase",
+        blockType: "command",
+        text: "Dummy",
+        arguments: {
+          ARG_0: {
+            type: "string",
+            menu: "mismatch"
+          }
+        }
+      }
+    ],
+    menus: {
+      mismatch: {
+        items: ["a", "b", "c"],
+        acceptReporters: true,
+      }
+    }
+  } as const);
+
+  test("No error does accept", () => {
+    expect(() => legacyDoesAccept.testCase({
+      type: BlockType.Command,
+      arg: {
+        type: ArgumentType.String,
+        options: {
+          acceptsReporters: true,
+          items: ["a", "b", "c"],
+          handler: (x) => "x",
+        }
+      }
+    })).not.toThrow();
+  });
+
+  test("Error does accept", () => {
+    expect(() => legacyDoesAccept.testCase({
+      type: BlockType.Command,
+      arg: {
+        type: ArgumentType.String,
+        options: ["a", "b", "c"]
+      }
+    })).toThrow();
+  });
+
+  const legacyDoesNotAccept = extractLegacySupportFromOldGetInfo({
+    blocks: [
+      {
+        opcode: "testCase",
+        blockType: "command",
+        text: "Dummy",
+        arguments: {
+          ARG_0: {
+            type: "string",
+            menu: "mismatch"
+          }
+        }
+      }
+    ],
+    menus: {
+      mismatch: {
+        items: ["a", "b", "c"],
+        acceptReporters: false,
+      }
+    }
+  } as const);
+
+  test("No error does not accept", () => {
+    expect(() => legacyDoesNotAccept.testCase({
+      type: BlockType.Command,
+      arg: {
+        type: ArgumentType.String,
+        options: ["a", "b", "c"]
+      }
+    })).not.toThrow();
+  });
+
+  test("Error does accept", () => {
+    expect(() => legacyDoesNotAccept.testCase({
+      type: BlockType.Command,
+      arg: {
+        type: ArgumentType.String,
+        options: {
+          acceptsReporters: true,
+          items: ["a", "b", "c"],
+          handler: (x) => "",
+        }
+      }
+    })).toThrow();
+  });
+
+});
