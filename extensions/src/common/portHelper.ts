@@ -46,6 +46,12 @@ const processArg = (arg: VerboseArgument<any> & WithName, argName: string, menuN
   const menuEntry = menus[menuName];
   if (!menuEntry) return;
 
+  const legacyAcceptReporters = (menuEntry as ExtensionMenuItems).acceptReporters;
+  const updatedAcceptReporters = (arg.options as MenuThatAcceptsReporters<any>).acceptsReporters ?? false;
+  if (legacyAcceptReporters !== updatedAcceptReporters) {
+    throw new Error(`The new options provided for the legacy block '${blockName}' for legacy argument '${argName}' ${legacyAcceptReporters ? "should" : "should NOT"} accept reporters`);
+  }
+
   const oldItems = (menuEntry as ExtensionMenuItems).items as MenuItem<any>[];
   if (!oldItems || oldItems.length === 0) return;
 
