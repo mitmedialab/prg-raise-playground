@@ -5,7 +5,7 @@ type Details = {
   name: "Onnx Example",
   description: "A demonstration that an onnx model can be used (not exciting, nor educationally valuable)",
   iconURL: "",
-  insetIconURL: ""
+  insetIconURL: " "
 };
 
 
@@ -14,9 +14,12 @@ type Blocks = {
 }
 
 export default class ExtensionNameGoesHere extends Extension<Details, Blocks> {
-  onnx = new OnnxRuntime();
+  private onnxRuntime: Awaited<OnnxRuntime["runtime"]>;
 
-  init(env: Environment) { }
+  async init(env: Environment) {
+    const onnx = new OnnxRuntime();
+    this.onnxRuntime = await onnx.runtime;
+  }
 
   defineBlocks(): ExtensionNameGoesHere["BlockDefinitions"] {
 
@@ -26,10 +29,10 @@ export default class ExtensionNameGoesHere extends Extension<Details, Blocks> {
         text: "eee",
         operation: async () => {
           try {
-            const { InferenceSession, Tensor } = await this.onnx.runtime;
+            const { InferenceSession, Tensor } = await this.onnxRuntime;
 
             // create a new session and load the specific model.
-            //
+            // 
             // the model in this example contains a single MatMul node
             // it has 2 inputs: 'a'(float32, 3x4) and 'b'(float32, 4x3)
             // it has 1 output: 'c'(float32, 3x3)
