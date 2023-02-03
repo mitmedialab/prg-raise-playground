@@ -1,4 +1,5 @@
-import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, untilExternalGlobalVariableLoaded } from "$common";
+import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, untilExternalGlobalVariableLoaded, extractLegacySupportFromOldGetInfo } from "$common";
+import legacy from "./legacy";
 
 // import * as window from 'affdex.js';
 
@@ -554,7 +555,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
     // VIDEO BLOCKS
 
     type DefineVideoToggle = DefineBlock<PoseFace, Blocks["videoToggleBlock"]>;
-    const videoToggleBlock: DefineVideoToggle = () => ({
+    const videoToggleBlock: legacy.DefineVideoToggle = () => ({
       type: BlockType.Command,
       arg: {
         type: ArgumentType.Number,
