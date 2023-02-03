@@ -122,7 +122,7 @@ const bundleExtension = async (dir: string, extensionCount: number, doWatch: boo
   if (doWatch) watchAllFilesInDirectoryAndCommon(info, options, output);
 };
 
-const { watch, specifiedDir } = processOptions({ watch: true });
+const { watch, specifiedDir } = processOptions({ watch: false });
 
 bundleFramework(watch);
 
