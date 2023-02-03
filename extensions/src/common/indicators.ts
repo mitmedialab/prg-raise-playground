@@ -28,10 +28,11 @@ export const indicate = async (name: string) => {
   const [rect, triangle, text] = elements;
 
   const y = 55;
+  const x = 5;
 
   applyAttributes(triangle, { points: equilateralTrianglePoints });
 
-  applyAttributes(text, { y, x: padding / 2, class: "blocklyFlyoutLabelText" });
+  applyAttributes(text, { y, x: x + padding / 2, class: "blocklyFlyoutLabelText" });
   text.innerHTML = "HIIIIIIIII";
 
   elements.forEach(el => container.appendChild(el));
@@ -39,7 +40,7 @@ export const indicate = async (name: string) => {
   await Promise.resolve();
 
   const { width, height } = text.getBBox();
-  applyAttributes(rect, { width: width + padding, height: height + padding, y: y - height });
+  applyAttributes(rect, { x, width: width + padding, height: height + padding, y: y - height });
 }
 
 const applyAttributes = <T extends Record<string, any>>(element: Element, attributes: T) => {
