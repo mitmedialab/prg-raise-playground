@@ -366,13 +366,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
       type: BlockType.Command,
       arg: {
         type: ArgumentType.Number,
-        options: {
-          acceptsReporters: true,
-          items: faceParts,
-          handler: (part: number) => {
-            return Math.min(Math.max(part, 0), 33);
-          }
-        }
+        options: faceParts
       },
       text: (part: number) => `go to ${part}`,
       operation: (part: number, util) => {
