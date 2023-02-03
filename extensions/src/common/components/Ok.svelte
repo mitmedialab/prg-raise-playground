@@ -23,6 +23,6 @@
   }
 </style>
 
-<button on:click {disabled} style:border-color={solid} style:background-color={solid} style:color={text}>
+<button on:click {disabled} style:border-color={solid} style:background-color={solid} style:color={text} data-testid="ok">
   OK
 </button>
