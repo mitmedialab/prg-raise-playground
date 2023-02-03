@@ -1,4 +1,5 @@
 import { ArgumentType, BlockType, Language, Extension, ButtonBlock, Environment, SaveDataHandler } from "$common";
+import { indicate } from "$common/indicators";
 
 type Details = {
   name: "Super Simple Typescript Extension!",
@@ -53,7 +54,9 @@ export default class SimpleTypescript extends Extension<Details, {
           }
         },
         text: (msg) => `Log ${msg} to the console`,
-        operation: (msg) => console.log(msg)
+        operation: (msg) => {
+          indicate(this.name);
+        }
       },
       dummyUI: {
         type: BlockType.Button,
