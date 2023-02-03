@@ -1,5 +1,5 @@
 import { ArgumentType, BlockType, Language, Extension, ButtonBlock, Environment, SaveDataHandler } from "$common";
-import { indicate } from "$common/indicators";
+import { indicateOnCategoryLabel } from "$common/indicators";
 
 type Details = {
   name: "Super Simple Typescript Extension!",
@@ -54,8 +54,10 @@ export default class SimpleTypescript extends Extension<Details, {
           }
         },
         text: (msg) => `Log ${msg} to the console`,
-        operation: (msg) => {
-          indicate(this.name);
+        operation: async (msg) => {
+          const indicator = await indicateOnCategoryLabel(this.name, "Uh oh! Pizza pie", "warning");
+          await new Promise(r => setTimeout(r, 5000));
+          indicator.close();
         }
       },
       dummyUI: {
