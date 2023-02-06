@@ -1,5 +1,6 @@
 import { BlockType, Extension, Environment, } from "$common";
-import { OnnxRuntime } from "$common/onnx";
+import Onnx from "$common/libraries/onnx";
+import OpenCV from "$common/libraries/opencv";
 
 type Details = {
   name: "Onnx Example",
@@ -10,31 +11,49 @@ type Details = {
 
 
 type Blocks = {
-  test: () => void
+  test: () => void,
+  superResolution: () => void,
 }
 
 export default class ExtensionNameGoesHere extends Extension<Details, Blocks> {
-  onnx = new OnnxRuntime();
-  modelAsset = this.getAssetPath("model.onnx");
+  onnx: Onnx["type"];
+  opencv: OpenCV["type"];
 
-  init(env: Environment) { }
+  testModelAsset = this.getAssetPath("test.onnx");
+  superResolutionAsset = this.getAssetPath("super-resolution-10.onnx");
+
+  async init(env: Environment) {
+    const [onnx, opencv] = await Promise.all([new Onnx().lib, new OpenCV().lib]);
+    this.onnx = onnx;
+    this.opencv = opencv;
+  }
 
   defineBlocks(): ExtensionNameGoesHere["BlockDefinitions"] {
 
     return {
+      superResolution: {
+        type: BlockType.Command,
+        text: "Super resoluton",
+        operation: async () => {
+          const { InferenceSession, Tensor } = this.onnx;
+          const session = await InferenceSession.create(this.superResolutionAsset);
+          console.log(session.inputNames);
+        }
+      },
       test: {
         type: BlockType.Command,
-        text: "eee",
+        text: "test",
         operation: async () => {
           try {
-            const { InferenceSession, Tensor } = await this.onnx.runtime;
+            const { InferenceSession, Tensor, } = this.onnx;
 
             // create a new session and load the specific model.
             //
             // the model in this example contains a single MatMul node
             // it has 2 inputs: 'a'(float32, 3x4) and 'b'(float32, 4x3)
             // it has 1 output: 'c'(float32, 3x3)
-            const session = await InferenceSession.create(this.modelAsset);
+            const session = await InferenceSession.create(this.testModelAsset);
+
 
             // prepare inputs. a tensor need its corresponding TypedArray as data
             const dataA = Float32Array.from([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
