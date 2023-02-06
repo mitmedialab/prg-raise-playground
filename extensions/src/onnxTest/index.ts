@@ -15,6 +15,7 @@ type Blocks = {
 
 export default class ExtensionNameGoesHere extends Extension<Details, Blocks> {
   onnx = new OnnxRuntime();
+  modelAsset = this.getAssetPath("model.onnx");
 
   init(env: Environment) { }
 
@@ -33,7 +34,7 @@ export default class ExtensionNameGoesHere extends Extension<Details, Blocks> {
             // the model in this example contains a single MatMul node
             // it has 2 inputs: 'a'(float32, 3x4) and 'b'(float32, 4x3)
             // it has 1 output: 'c'(float32, 3x3)
-            const session = await InferenceSession.create(`${location.href}/static/model.onnx`);
+            const session = await InferenceSession.create(this.modelAsset);
 
             // prepare inputs. a tensor need its corresponding TypedArray as data
             const dataA = Float32Array.from([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
