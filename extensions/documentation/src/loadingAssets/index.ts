@@ -1,4 +1,5 @@
 import { DefaultDisplayDetails } from "$testing/defaults";
+import { codeSnippet } from "../../";
 
 export const x = codeSnippet();
 
@@ -18,5 +19,4 @@ export default class ExampleThatUsesAsset extends Extension<DefaultDisplayDetail
 x.end;
 
 import { BlockDefinitions } from "$common";
-import { codeSnippet } from "documentation";
-const notRelevant: () => BlockDefinitions<ExampleThatUsesAsset> = undefined;
+const notRelevant: () => BlockDefinitions<ExampleThatUsesAsset> = () => ({});
