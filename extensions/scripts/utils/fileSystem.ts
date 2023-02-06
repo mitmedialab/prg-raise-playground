@@ -2,8 +2,10 @@ import path from "path";
 import fs from "fs";
 import chokidar from "chokidar";
 import { extensionsFolder, guiSrc, packages, vmSrc } from "$root/scripts/paths";
+import { assetsLocation } from "$common";
 
 export const extensionBundlesDirectory = path.join(packages.gui, "static", "extension-bundles");
+export const extensionAssetsDirectory = path.join(packages.gui, "static", assetsLocation);
 export const generatedMenuDetailsDirectory = path.join(guiSrc, "generated");
 export const templatesDirectory = path.join(extensionsFolder, "src", ".templates");
 

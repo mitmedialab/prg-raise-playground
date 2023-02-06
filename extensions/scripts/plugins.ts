@@ -7,7 +7,7 @@ import { getBlockIconURI } from "./utils/URIs";
 import { appendToRootDetailsFile, populateMenuFileForExtension } from "./extensionsMenu";
 import { exportAllFromModule, toNamedDefaultExport } from "./utils/importExport";
 import { default as glob } from 'glob';
-import { commonDirectory, deleteAllFilesInDir, extensionBundlesDirectory, fileName, generatedMenuDetailsDirectory, getDirectoryAndFileName, tsToJs } from "./utils/fileSystem";
+import { commonDirectory, deleteAllFilesInDir, extensionAssetsDirectory, extensionBundlesDirectory, fileName, generatedMenuDetailsDirectory, getDirectoryAndFileName, tsToJs } from "./utils/fileSystem";
 import { BundleInfo } from "./bundle";
 import ts from "typescript";
 import { getSrcCompilerHost } from "./typeProbing/tsConfig";
@@ -25,6 +25,7 @@ export const clearDestinationDirectories = (): Plugin => {
     buildStart() {
       if (!runner.check()) return;
       deleteAllFilesInDir(extensionBundlesDirectory);
+      deleteAllFilesInDir(extensionAssetsDirectory);
       deleteAllFilesInDir(generatedMenuDetailsDirectory);
     }
   }
@@ -176,6 +177,20 @@ export const createExtensionMenuAssets = (info: BundleInfo): Plugin => {
     buildStart() {
       if (runner.check()) appendToRootDetailsFile(info);
       populateMenuFileForExtension(info);
+    }
+  }
+}
+
+export const symlinkAssets = ({ id, directory }: BundleInfo): Plugin => {
+  const assetsPath = path.join(directory, "assets");
+  const linkPath = path.join(extensionAssetsDirectory, id);
+  if (!fs.existsSync(extensionAssetsDirectory)) fs.mkdirSync(extensionAssetsDirectory);
+  return {
+    name: "",
+    buildEnd() {
+      if (!fs.existsSync(assetsPath)) return;
+      if (fs.existsSync(linkPath)) return;
+      fs.symlinkSync(assetsPath, linkPath);
     }
   }
 }

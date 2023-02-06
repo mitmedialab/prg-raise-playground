@@ -1,4 +1,5 @@
 static/extension-bundles/*
+static/extension-assets/*
 
 # Mac OS
 .DS_Store
