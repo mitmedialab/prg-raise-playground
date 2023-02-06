@@ -11,9 +11,9 @@ const FrameworkID = "ExtensionFramework";
 const constructors = new Map();
 const auxiliarObjects = new Map();
 
-export const tryInitExtension = (extension) => {
+export const tryInitExtension = async (extension) => {
   const extensionInit = "internal_init";
-  if (extensionInit in extension) extension[extensionInit]();
+  if (extensionInit in extension) await extension[extensionInit]();
 }
 
 /**

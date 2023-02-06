@@ -36,7 +36,7 @@ createTestSuite({ Extension, __dirname }, {
       expect(outputFromSelf).toBe(left * right);
     },
     logMultiplicationResult: async ({ blockRunner: blockrunner, testHelper: { expect } }) => {
-      const simpleRunner = blockrunner.createCompanion(Simple);
+      const simpleRunner = await blockrunner.createCompanion(Simple);
       const left = 4;
       const right = 5;
       const { output } = await blockrunner.invoke("multiplyUsingSelf", left, right);

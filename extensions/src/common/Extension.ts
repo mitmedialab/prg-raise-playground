@@ -148,8 +148,8 @@ export abstract class Extension
     Extension.ExtensionsByID.set(id, this);
   }
 
-  private internal_init() {
-    this.init({ runtime: this.runtime, videoFeed: this.runtime.ioDevices?.video });
+  private async internal_init() {
+    await this.init({ runtime: this.runtime, videoFeed: this.runtime.ioDevices?.video });
     const definitions = this.defineBlocks();
     const menus: Menu<any>[] = [];
     const menuNames: string[] = [];
@@ -235,7 +235,7 @@ export abstract class Extension
    * 
    * For Scratch developers: The `runtime` property on env is the same as the runtime passed to non-Typescript-Framework Extension constructors
    */
-  abstract init(env: Environment): void;
+  abstract init(env: Environment): void | Promise<void>;
 
   /**
    * @summary Extension member method that returns an object defining all blocks that belong to the extension.
@@ -571,7 +571,7 @@ export abstract class Extension
 
   static TestGetInfo = <T extends Extension<any, any>>(ext: T, ...params: Parameters<Extension<any, any>["getInfo"]>) => ext.getInfo(...params);
   static TestGetBlocks = <T extends Extension<any, any>>(ext: T, ...params: Parameters<Extension<any, any>["getInfo"]>) => ext.getInfo(...params).blocks as ExtensionBlockMetadata[];
-  static TestInit = <T extends Extension<any, any>>(ext: T, ...params: Parameters<Extension<any, any>["internal_init"]>) => ext.internal_init(...params);
+  static TestInit = async <T extends Extension<any, any>>(ext: T, ...params: Parameters<Extension<any, any>["internal_init"]>) => ext.internal_init(...params);
 
   static ExtractLegacyInformation = (item) => !isPrimitive(item) && "name" in item ? ({ name: item["name"] as string | undefined }) : undefined;
 

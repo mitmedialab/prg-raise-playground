@@ -55,11 +55,11 @@ const mockRuntime = <T extends AnyExtension>(details: TestDetails<T, any>): Runt
   return runtime;
 }
 
-const getInstance = <T extends AnyExtension>(details: TestDetails<T, any>): T => {
+const getInstance = async <T extends AnyExtension>(details: TestDetails<T, any>): Promise<T> => {
   const runtime = mockRuntime(details);
   const args: PopulateCodeGenArgs = { name: "", blockIconURI: "", id: "" };
   const instance = new details.Extension(runtime as never, args as CodeGenArgs);
-  Extension.TestInit(instance);
+  await Extension.TestInit(instance);
   return instance;
 }
 
@@ -74,7 +74,7 @@ const processUnitTest = <T extends AnyExtension, Key extends BlockKey<T>>(
   details: TestDetails<T, Key>,
   map: KeyToBlockIndexMap
 ) => test(name, async () => {
-  const instance: T = getInstance(details);
+  const instance: T = await getInstance(details);
   const { runtime } = instance;
   const { forTest } = runtime as RuntimeForTest<T>;
 
@@ -108,7 +108,7 @@ const processIntegrationTest = <T extends AnyExtension>(
   details: TestDetails<T, BlockKey<T>>,
   map: KeyToBlockIndexMap
 ) => test(name, async () => {
-  const instance: T = getInstance(details);
+  const instance: T = await getInstance(details);
   const blockRunner = new BlockRunner(map, instance);
   await testCase({ extension: instance, blockRunner, testHelper: details.testHelper });
 });
@@ -119,7 +119,7 @@ const toKeyToBlockMap = (map: KeyToBlockIndexMap, { opcode }: ExtensionBlockMeta
 export const buildKeyBlockMap = <T extends AnyExtension>(instance: T): KeyToBlockIndexMap =>
   (Extension.TestGetInfo(instance).blocks as ExtensionBlockMetadata[]).reduce(toKeyToBlockMap, new Map<string, number>());
 
-const getKeyBlockMap = <T extends AnyExtension>(details: TestDetails<T, any>) => buildKeyBlockMap(getInstance(details));
+const getKeyBlockMap = async <T extends AnyExtension>(details: TestDetails<T, any>) => buildKeyBlockMap(await getInstance(details));
 
 const getTestCase = <T extends AnyExtension, K extends BlockKey<T>>(testCase: TestCaseEntry<T, K>, { testHelper }: TestDetails<T, K>): BlockTestCase<T, K> =>
   isFunction(testCase) ? (testCase as GetTestCase<T, K>)(testHelper) : testCase as BlockTestCase<T, K>;
@@ -129,7 +129,7 @@ const getTestCase = <T extends AnyExtension, K extends BlockKey<T>>(testCase: Te
  * @param extensionInfo
  * @param cases 
  */
-export const createTestSuite = <T extends AnyExtension>(
+export const createTestSuite = async <T extends AnyExtension>(
   extensionInfo: { Extension: ExtensionConstructor<T>, __dirname: string },
   cases: { unitTests: UnitTests<T>, integrationTests?: Record<string, IntegrationTest<T>> },
 ) => {
@@ -142,7 +142,7 @@ export const createTestSuite = <T extends AnyExtension>(
     updateHTMLInputValue: async (element, value) => fireEvent.input(element, { target: { value } })
   };
 
-  const keyToBlockMap = getKeyBlockMap({ Extension, directory, key: undefined, testHelper });
+  const keyToBlockMap = await getKeyBlockMap({ Extension, directory, key: undefined, testHelper });
 
   if (unitTests) describe(`${Extension.name} Unit Tests`, () => {
     for (const key in unitTests) {
@@ -153,9 +153,11 @@ export const createTestSuite = <T extends AnyExtension>(
       const args: TestDetails<T, typeof key> = { Extension, key, directory, testHelper };
 
       Array.isArray(unitTests[key])
-        ? asArray
-          .map(_case => getTestCase(_case, args))
-          .map((_case, index) => processUnitTest(`${key} ${index + 1}`, _case, args, keyToBlockMap))
+        ? Promise.all(
+          asArray
+            .map(_case => getTestCase(_case, args))
+            .map((_case, index) => processUnitTest(`${key} ${index + 1}`, _case, args, keyToBlockMap))
+        )
         : processUnitTest(key, getTestCase(asSingleOrFunc, args), args, keyToBlockMap);
     }
   });

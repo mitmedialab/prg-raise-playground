@@ -185,7 +185,7 @@ createTestSuite({ Extension, __dirname }, {
       // Here we create a "companion extension". To not confuse things with another Extension definition, we use the same 'ExtensionUnderTest' class as in our other tests.
       // However, the `createCompanion` function should mainly be used to create a companion BlockRunner for a DIFFERENT extension.
       // This way, you can test how two extensions interact with each other.
-      const companionExtension = blockRunner.createCompanion(Extension);
+      const companionExtension = await blockRunner.createCompanion(Extension);
 
       // We can check that even though the extensions are the same type, 
       // the 'blockRunner.createCompanion' function actually creates a brand new instance.

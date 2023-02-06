@@ -32,11 +32,11 @@ export class BlockRunner<T extends AnyExtension> {
     return { output, ui: renderedUI };
   }
 
-  createCompanion<TCompanion extends AnyExtension>(constructor: ExtensionConstructor<TCompanion>) {
+  async createCompanion<TCompanion extends AnyExtension>(constructor: ExtensionConstructor<TCompanion>) {
     const { instance: { runtime } } = this;
     const args: PopulateCodeGenArgs = { name: "", blockIconURI: "", id: "" };
     const companion = new constructor(runtime as never, args as CodeGenArgs);
-    Extension.TestInit(companion);
+    await Extension.TestInit(companion);
     return new BlockRunner(buildKeyBlockMap(companion), companion);
   }
 
