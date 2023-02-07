@@ -1,6 +1,7 @@
 import { ArgumentType, BlockType, Block, BlockDefinitions, RGBObject, MenuItem, ButtonBlock, Extension, BlockInfo, SaveDataHandler, copyTo } from "$common";
 import { ExtensionV2 } from "$common/ExtensionV2";
 import { block, buttonBlock } from "$common/decorators";
+import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import addDefinition from "./addDefinition";
 
 type DisplayDetails = {
