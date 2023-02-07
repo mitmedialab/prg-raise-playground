@@ -178,7 +178,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
     const affdexDetector = await this.ensureAffdexLoaded(imageElement);
 
     affdexDetector.process(imageElement, 0);
-    //console.log('estimate affdex');
+    // console.log('estimate affdex');
     return new Promise((resolve, reject) => {
       const resultListener = function (faces, image, timestamp) {
         affdexDetector.removeEventListener("onImageResultsSuccess", resultListener);
@@ -220,10 +220,10 @@ export default class PoseFace extends Extension<Details, Blocks> {
    * @returns 
    */
   affdexGoToPart(part, util) {
-    if (!this.affdexState || !this.affdexState.featurePoints) {
-      return;
-    }
-    //console.log('go to fxn');
+    console.log('go to 1')
+    if (!this.affdexState || !this.affdexState.featurePoints) return;
+
+    console.log('go to fxn');
     const featurePoint = this.affdexState.featurePoints[part];
     const { x, y } = this.affdexCoordsToScratch(featurePoint);
     (util.target as any).setXY(x, y, false);
@@ -370,9 +370,9 @@ export default class PoseFace extends Extension<Details, Blocks> {
       },
       text: (part: number) => `go to ${part}`,
       operation: (part: number, util) => {
-        //console.log('1')
+        console.log('1')
         this.affdexGoToPart(part, util)
-        //console.log('2')
+        console.log('2')
       }
     });
 
@@ -403,8 +403,8 @@ export default class PoseFace extends Extension<Details, Blocks> {
     ];
     const handlerExpressions = expressions.map(expression => expression.value);
 
-    type DefineExpressDetect = DefineBlock<PoseFace, Blocks["whenExpressionDetectedHat"]>;
-    const whenExpressionDetectedHat: DefineExpressDetect = () => ({
+    // type DefineExpressDetect = DefineBlock<PoseFace, Blocks["whenExpressionDetectedHat"]>;
+    const whenExpressionDetectedHat = () => legacy.affdexWhenExpression({
       type: BlockType.Hat,
       arg: {
         type: ArgumentType.String,
@@ -418,13 +418,13 @@ export default class PoseFace extends Extension<Details, Blocks> {
       },
       text: (expression: string) => `when ${expression} detected`,
       operation: (expression: string) => {
-        //console.log('return')
+        // console.log('return')
         return this.affdexIsExpression(expression);
       }
     });
 
-    type DefineAmountExpress = DefineBlock<PoseFace, Blocks["amountOfExpressionDetectedReport"]>;
-    const amountOfExpressionDetectedReport: DefineAmountExpress = () => ({
+    // type DefineAmountExpress = DefineBlock<PoseFace, Blocks["amountOfExpressionDetectedReport"]>;
+    const amountOfExpressionDetectedReport = () => legacy.affdexExpressionAmount({
       type: BlockType.Reporter,
       arg: {
         type: ArgumentType.String,
@@ -443,8 +443,8 @@ export default class PoseFace extends Extension<Details, Blocks> {
       }
     });
 
-    type DefineExpressReport = DefineBlock<PoseFace, Blocks["isExpressionReport"]>;
-    const isExpressionReport: DefineExpressReport = () => ({
+    // type DefineExpressReport = DefineBlock<PoseFace, Blocks["isExpressionReport"]>;
+    const isExpressionReport = () => legacy.affdexIsExpression({
       type: BlockType.Boolean,
       arg: {
         type: ArgumentType.String,
@@ -482,8 +482,8 @@ export default class PoseFace extends Extension<Details, Blocks> {
     ];
     const allEmotionValues = emotions.concat(emotions2).map(emotion => emotion.value);
 
-    type DefineFeelingDetect = DefineBlock<PoseFace, Blocks["whenFeelingDetectedHat"]>;
-    const whenFeelingDetectedHat: DefineFeelingDetect = () => ({
+    // type DefineFeelingDetect = DefineBlock<PoseFace, Blocks["whenFeelingDetectedHat"]>;
+    const whenFeelingDetectedHat = () => legacy.affdexWhenEmotion({
       type: BlockType.Hat,
       arg: {
         type: ArgumentType.String,
@@ -503,8 +503,8 @@ export default class PoseFace extends Extension<Details, Blocks> {
       }
     });
 
-    type DefineLevelFeeling = DefineBlock<PoseFace, Blocks["levelOfFeelingReport"]>;
-    const levelOfFeelingReport: DefineLevelFeeling = () => ({
+    // type DefineLevelFeeling = DefineBlock<PoseFace, Blocks["levelOfFeelingReport"]>;
+    const levelOfFeelingReport = () => legacy.affdexEmotionAmount({
       type: BlockType.Reporter,
       arg: {
         type: ArgumentType.String,
@@ -524,8 +524,8 @@ export default class PoseFace extends Extension<Details, Blocks> {
       }
     });
 
-    type DefineIsFeeling = DefineBlock<PoseFace, Blocks["isFeelingReport"]>;
-    const isFeelingReport: DefineIsFeeling = () => ({
+    // type DefineIsFeeling = DefineBlock<PoseFace, Blocks["isFeelingReport"]>;
+    const isFeelingReport = () => legacy.affdexIsTopEmotion({
       type: BlockType.Boolean,
       arg: {
         type: ArgumentType.String,
@@ -547,8 +547,8 @@ export default class PoseFace extends Extension<Details, Blocks> {
 
     // VIDEO BLOCKS
 
-    type DefineVideoToggle = DefineBlock<PoseFace, Blocks["videoToggleBlock"]>;
-    const videoToggleBlock: DefineVideoToggle = () => ({
+    // type DefineVideoToggle = DefineBlock<PoseFace, Blocks["videoToggleBlock"]>;
+    const videoToggleBlock = () => legacy.videoToggle({
       type: BlockType.Command,
       arg: {
         type: ArgumentType.Number,
@@ -566,8 +566,8 @@ export default class PoseFace extends Extension<Details, Blocks> {
       }
     });
 
-    type DefineSetVideoTransparency = DefineBlock<PoseFace, Blocks["setVideoTransparencyBlock"]>;
-    const setVideoTransparencyBlock: DefineSetVideoTransparency = () => ({
+    // type DefineSetVideoTransparency = DefineBlock<PoseFace, Blocks["setVideoTransparencyBlock"]>;
+    const setVideoTransparencyBlock = () => legacy.setVideoTransparency({
       type: BlockType.Command,
       arg: { type: ArgumentType.Number, defaultValue: 50 },
       text: (transparency: number) => `set video transparency to ${transparency}`,
