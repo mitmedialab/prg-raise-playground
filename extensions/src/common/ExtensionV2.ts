@@ -25,10 +25,6 @@ export abstract class ExtensionBase {
    * NOTE: The `never` type is used to prevent users from re-defining the blockIconURI (the insetIconURI from ExtensionMenuDisplayDetails will be encoded and used)
    */
   readonly blockIconURI: never;
-
-  static Hi() {
-
-  }
 }
 
 export class ExtensionV2 extends applyAllMixins(ExtensionBase) { }
