@@ -21,7 +21,8 @@ const isBlockGetter = <This, Fn extends BlockOperation>(details: BlockInfo<Fn> |
 
 export function block<
   This extends ExtensionV2,
-  Args extends any[], Return,
+  Args extends any[],
+  const Return,
   Fn extends (...args: Args) => Return
 >
   (blockInfoOrGetter: BlockV2<Fn> | ((this: This, self: This) => BlockV2<Fn>)): TypedMethodDecorator<This, Args, Return, (...args: Args) => Return> {

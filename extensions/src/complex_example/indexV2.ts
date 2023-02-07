@@ -1,15 +1,6 @@
 import { ArgumentType, BlockType, Block, BlockDefinitions, RGBObject, MenuItem, ButtonBlock, Extension, BlockInfo, SaveDataHandler, copyTo } from "$common";
 import { ExtensionV2 } from "$common/ExtensionV2";
-import { block, buttonBlock } from "$common/decorators";
-import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
-import addDefinition from "./addDefinition";
-
-type DisplayDetails = {
-  name: "Realistic Typescript-Based Extension",
-  description: "Demonstrating how typescript can be used to write a realistic extension",
-  iconURL: "Typescript_logo.png",
-  insetIconURL: "typescript-logo.svg"
-};
+import { block, buttonBlock, category } from "$common/decorators";
 
 const enum MatrixDimension {
   Row,
@@ -42,24 +33,12 @@ export const emojiByAnimal: Record<Animal, string> = {
   [Animal.Pig]: '🐖',
 }
 
-type Blocks = {
-  reportId: () => string;
-  reportColorChannel: (color: RGBObject, channel: string) => number;
-  sumMatrix: (matrix: boolean[][], dimension: MatrixDimension) => string;
-  incrementStateViaThis: () => number;
-  incrementStateViaSelf: () => number;
-  selectNote: (note: number) => number;
-  selectAngle: (angle: number) => number;
-  useAnimalMenu1: (animal: Animal) => string;
-  useAnimalMenu2: (animal: Animal) => string;
-  addAnimalToCollection: (animal: Animal) => void;
-  chooseBetweenAnimals: (animal: Animal) => string;
-  multiplyUsingSelf: (left: number, right: number) => number;
-  multiplyUsingThis: (left: number, right: number) => number;
-  add: (left: number, right: number) => number;
-  showAnimalCollectionUI: ButtonBlock;
-}
-
+@category({
+  name: "Realistic Typescript-Based Extension",
+  description: "Demonstrating how typescript can be used to write a realistic extension",
+  iconURL: "Typescript_logo.png",
+  insetIconURL: "typescript-logo.svg"
+})
 export default class TypeScriptFrameworkExample extends ExtensionV2 {
   lhsOptions: number[];
   animals: MenuItem<Animal>[];
@@ -92,150 +71,146 @@ export default class TypeScriptFrameworkExample extends ExtensionV2 {
     );
   }
 
-  defineBlocks(): BlockDefinitions<TypeScriptFrameworkExample> {
-    return {
+  @block({
+    type: BlockType.Reporter,
+    text: 'My Extension ID is',
+  })
+  getID() {
+    return this.id as string;
+  }
 
-      reportId: {
-        type: BlockType.Reporter,
-        text: 'My Extension ID is',
-        operation: () => this.id
-      },
+  @block({
+    type: BlockType.Reporter,
+    args: [
+      ArgumentType.Color,
+      {
+        type: ArgumentType.String, options: [
+          { value: 'r', text: 'red' },
+          { value: 'g', text: 'green' },
+          { value: 'b', text: 'blue' }
+        ]
+      }],
+    text: (color, channel) => `Report ${channel} of ${color}`,
+  })
+  getColorChannel(color: RGBObject, channel: string) {
+    return color[channel];
+  }
 
-      reportColorChannel: {
-        type: BlockType.Reporter,
-        args: [
-          ArgumentType.Color,
-          {
-            type: ArgumentType.String, options: [
-              { value: 'r', text: 'red' },
-              { value: 'g', text: 'green' },
-              { value: 'b', text: 'blue' }
-            ]
-          }],
-        text: (color, channel) => `Report ${channel} of ${color}`,
-        operation: (color, channel) => color[channel]
-      },
+  @block((self) => ({
+    type: BlockType.Reporter,
+    args: [
+      { type: ArgumentType.Number, defaultValue: 3, options: self.lhsOptions },
+      { type: ArgumentType.Number }
+    ],
+    text: (left, right) => `Add ${left} to ${right}`,
+  }))
+  add(left: number, right: number) {
+    return left + right;
+  }
 
-      'sumMatrix': {
-        type: "reporter",
-        args: [
-          ArgumentType.Matrix,
-          {
-            type: ArgumentType.Number, options: [
-              { value: MatrixDimension.Row, text: 'rows' },
-              { value: MatrixDimension.Column, text: 'columns' },
-              { value: MatrixDimension.Both, text: 'rows and columns' }
-            ]
-          }],
-        text: (matrix, dimension) => `Sum ${dimension} of ${matrix}`,
-        operation: (matrix, dimension) => {
-          switch (dimension) {
-            case MatrixDimension.Row:
-              return matrix.map(row => row.reduce((count, current) => count + Number(current), 0)).join("\n");
-            case MatrixDimension.Column:
-              const columnSums = [0, 0, 0, 0, 0];
-              matrix.forEach(row => row.forEach((value, index) => {
-                columnSums[index] += Number(value);
-              }));
-              return columnSums.join(" ");
-            case MatrixDimension.Both:
-              return matrix
-                .map(row => row.reduce((count, current) => count + Number(current), 0))
-                .reduce((count, current) => count + current, 0)
-                .toString();
+  @block({
+    type: "reporter",
+    args: [
+      ArgumentType.Matrix,
+      {
+        type: ArgumentType.Number, options: [
+          { value: MatrixDimension.Row, text: 'rows' },
+          { value: MatrixDimension.Column, text: 'columns' },
+          { value: MatrixDimension.Both, text: 'rows and columns' }
+        ]
+      }],
+    text: (matrix, dimension) => `Sum ${dimension} of ${matrix}`,
+  })
+  sumMatrix(matrix: boolean[][], dimension: MatrixDimension) {
+    switch (dimension) {
+      case MatrixDimension.Row:
+        return matrix.map(row => row.reduce((count, current) => count + Number(current), 0)).join("\n");
+      case MatrixDimension.Column:
+        const columnSums = [0, 0, 0, 0, 0];
+        matrix.forEach(row => row.forEach((value, index) => {
+          columnSums[index] += Number(value);
+        }));
+        return columnSums.join(" ");
+      case MatrixDimension.Both:
+        return matrix
+          .map(row => row.reduce((count, current) => count + Number(current), 0))
+          .reduce((count, current) => count + current, 0)
+          .toString();
+    }
+  }
+
+  @block({
+    type: BlockType.Reporter,
+    arg: ArgumentType.Note,
+    text: (note) => `Pick note ${note}`,
+  })
+  selectNote(note: number) {
+    return note;
+  }
+
+  @block({
+    type: BlockType.Reporter,
+    arg: ArgumentType.Angle,
+    text: (angle) => `Pick angle ${angle}`,
+  })
+  selectAngle(angle: number) {
+    return angle;
+  }
+
+  @block({
+    type: BlockType.Reporter,
+    text: 'Increment',
+  })
+  increment() {
+    return ++this.state;
+  }
+
+  @block((self) => ({
+    type: BlockType.Reporter,
+    text: (animal) => `This is a ${animal}`,
+    arg:
+    {
+      type: ArgumentType.Number,
+      options: {
+        items: self.animals,
+        acceptsReporters: true,
+        handler: (input) => {
+          switch (input) {
+            case `${Animal.Leopard}`:
+            case `${Animal.Tiger}`:
+            case `${Animal.Gorilla}`:
+            case `${Animal.Monkey}`:
+            case `${Animal.Pig}`:
+              return input as Animal;
+            default:
+              alert(`You silly goose! ${input} is not an animal.`);
+              return Animal.Leopard;
           }
         }
-      },
+      }
+    }
+  }))
+  animalName(animal: Animal) {
+    return nameByAnimal[animal];
+  }
 
-      incrementStateViaThis: {
-        type: BlockType.Reporter,
-        text: 'Increment (via \'this\')',
-        operation: () => ++this.state
-      },
-
-      'incrementStateViaSelf': (self: TypeScriptFrameworkExample) => ({
-        type: BlockType.Reporter,
-        text: 'Increment (via \'self\')',
-        operation: () => ++self.state
-      }),
-
-      'selectNote': {
-        type: BlockType.Reporter,
-        arg: ArgumentType.Note,
-        text: (note) => `Pick note ${note}`,
-        operation: (note) => note
-      },
-
-      'selectAngle': {
-        type: BlockType.Reporter,
-        arg: ArgumentType.Angle,
-        text: (angle) => `Pick angle ${angle}`,
-        operation: (angle) => angle
-      },
-
-      'useAnimalMenu1': {
-        type: BlockType.Reporter,
-        arg:
-        {
-          type: ArgumentType.Number,
-          options: {
-            items: this.animals,
-            acceptsReporters: true,
-            handler: (input: any) => {
-              switch (input) {
-                case `${Animal.Leopard}`:
-                case `${Animal.Tiger}`:
-                case `${Animal.Gorilla}`:
-                case `${Animal.Monkey}`:
-                case `${Animal.Pig}`:
-                  return input as Animal;
-                default:
-                  alert(`You silly goose! ${input} is not an animal.`);
-                  return Animal.Leopard;
-              }
-            }
-          }
-        }
-        ,
-        text: (animal) => `This is a ${animal}`,
-        operation: (animal) => nameByAnimal[animal],
-      },
-
-      'useAnimalMenu2': (self: TypeScriptFrameworkExample) => ({
-        type: BlockType.Reporter,
-        arg: { type: ArgumentType.Number, options: self.animals },
-        text: (animal) => `Where does the ${animal} live?`,
-        operation: (animal) => {
-          switch (animal) {
-            case Animal.Leopard:
-              return 'Africa and Asia';
-            case Animal.Tiger:
-              return 'Asia';
-            case Animal.Gorilla:
-              return 'Africa';
-            case Animal.Monkey:
-              return 'Africa, Asia, and South America';
-            case Animal.Pig:
-              return 'Almost everywhere (except Antartica)';
-          }
-        },
-      }),
-
-      addAnimalToCollection: (self: TypeScriptFrameworkExample) => ({
-        type: BlockType.Command,
-        arg: self.makeCustomArgument({
-          component: "AnimalArgument",
-          initial: { value: Animal.Leopard, text: nameByAnimal[Animal.Leopard] }
-        }),
-        text: (animal) => `Add ${animal} to collection`,
-        operation: (animal) => {
-          this.addAnimalToCollection(animal);
-          this.openUI("Alert");
-        },
-      }),
-
-      // Example of an external 'definition'
-      add: addDefinition,
+  @block((self) => ({
+    type: BlockType.Reporter,
+    arg: { type: ArgumentType.Number, options: self.animals },
+    text: (animal) => `Where does the ${animal} live?`,
+  }))
+  animalHabit(animal: Animal) {
+    switch (animal) {
+      case Animal.Leopard:
+        return 'Africa and Asia';
+      case Animal.Tiger:
+        return 'Asia';
+      case Animal.Gorilla:
+        return 'Africa';
+      case Animal.Monkey:
+        return 'Africa, Asia, and South America';
+      case Animal.Pig:
+        return 'Almost everywhere (except Antartica)';
     }
   }
 

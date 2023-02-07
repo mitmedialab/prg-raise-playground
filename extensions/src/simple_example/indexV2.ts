@@ -53,12 +53,12 @@ export default class SimpleTypescript extends ExtensionV2 {
   }
 }
 
-const logOptions: Menu<string> = {
+const logOptions = {
   items: ['1', 'two', 'three'],
   acceptsReporters: true,
   handler: (x: any) => Extension.TryCastToArgumentType(ArgumentType.String, x, () => {
     alert(`Unsopported input: ${x}`);
     return "";
   })
-};
+} satisfies Menu<string>;
 
