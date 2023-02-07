@@ -114,6 +114,7 @@ export default function <T extends ExtensionConstructor>(Ctor: T) {
     }
   }
 
+
   return _;
 }
 
@@ -160,11 +161,11 @@ const convertToArgumentInfo = (key: string, args: Argument<any>[], menusToAdd: M
       const alreadyAddedIndex = menusToAdd.indexOf(options);
       const alreadyAdded = alreadyAddedIndex >= 0;
       const menuIndex = alreadyAdded ? alreadyAddedIndex : menusToAdd.push(options) - 1;
-      const name = extractLegacyInformation(options)?.name ?? `${menuIndex}`;
+      const menuName = extractLegacyInformation(options)?.name ?? `${menuIndex}`;
 
-      if (!alreadyAdded) menuNames.push(name);
+      if (!alreadyAdded) menuNames.push(menuName);
 
-      entry.menu = name;
+      entry.menu = menuName;
 
       return entry;
     })
