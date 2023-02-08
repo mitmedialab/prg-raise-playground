@@ -128,8 +128,8 @@ export default class PoseFace extends Extension<Details, Blocks> {
   }
 
   projectStarted() {
-    this.setVideoTransparency(this.globalVideoTransparency);
-    this.videoToggle(this.globalVideoState);
+    this.setTransparency(this.globalVideoTransparency);
+    this.toggleVideo(this.globalVideoState);
   }
 
   /**
@@ -138,14 +138,12 @@ export default class PoseFace extends Extension<Details, Blocks> {
    * @param y
    * @returns enum
    */
-  affdexCoordsToScratch({ x, y }) {
-    //console.log('coord to scratch');
+  convertCoordsToScratch({ x, y }) {
     return { x: x - (PoseFace.DIMENSIONS[0] / 2), y: (PoseFace.DIMENSIONS[1] / 2) - y };
   }
 
   async _loop() {
     while (true) {
-      //console.log('loop 1')
       const frame = this.runtime.ioDevices.video.getFrame({
         format: 'image-data',
         dimensions: PoseFace.DIMENSIONS
@@ -154,7 +152,6 @@ export default class PoseFace extends Extension<Details, Blocks> {
       const time = +new Date();
       if (frame) {
         this.affdexState = await this.estimateAffdexOnImage(frame);
-        //console.log('loop 2');
         /*
         if (this.affdexState) {
           this.hasResult = true;
@@ -178,7 +175,6 @@ export default class PoseFace extends Extension<Details, Blocks> {
     const affdexDetector = await this.ensureAffdexLoaded(imageElement);
 
     affdexDetector.process(imageElement, 0);
-    // console.log('estimate affdex');
     return new Promise((resolve, reject) => {
       const resultListener = function (faces, image, timestamp) {
         affdexDetector.removeEventListener("onImageResultsSuccess", resultListener);
@@ -219,13 +215,11 @@ export default class PoseFace extends Extension<Details, Blocks> {
    * @param util 
    * @returns 
    */
-  affdexGoToPart(part, util) {
-    console.log('go to 1')
+  goToPart(part, util) {
     if (!this.affdexState || !this.affdexState.featurePoints) return;
 
-    console.log('go to fxn');
     const featurePoint = this.affdexState.featurePoints[part];
-    const { x, y } = this.affdexCoordsToScratch(featurePoint);
+    const { x, y } = this.convertCoordsToScratch(featurePoint);
     (util.target as any).setXY(x, y, false);
   }
 
@@ -234,7 +228,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
    * @param expression 
    * @returns 
    */
-  affdexIsExpression(expression) {
+  isExpression(expression) {
     if (!this.affdexState || !this.affdexState.expressions) {
       return false;
     }
@@ -246,7 +240,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
    * @param expression 
    * @returns 
    */
-  affdexExpressionAmount(expression) {
+  expressionAmount(expression) {
     if (!this.affdexState || !this.affdexState.expressions) {
       return 0;
     }
@@ -259,7 +253,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
    * @param emotions 
    * @returns 
    */
-  affdexIsTopEmotion(emotion, emotions) {
+  isTopEmotion(emotion, emotions) {
     if (!this.affdexState || !this.affdexState.emotions) {
       return false;
     }
@@ -280,7 +274,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
    * @param emotion 
    * @returns 
    */
-  affdexEmotionAmount(emotion) {
+  emotionAmount(emotion) {
     if (!this.affdexState || !this.affdexState.emotions) {
       return 0;
     }
@@ -291,7 +285,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
    * Turns the video camera off/on/on and flipped. This is called in the operation of videoToggleBlock
    * @param state 
    */
-  videoToggle(state: number) {
+  toggleVideo(state: number) {
     if (state === VideoState.OFF) return this.runtime.ioDevices.video.disableVideo();
 
     this.runtime.ioDevices.video.enableVideo();
@@ -303,7 +297,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
    * Sets the video's transparency. This is called in the operation of setVideoTransparencyBlock
    * @param transparency 
    */
-  setVideoTransparency(transparency: number) {
+  setTransparency(transparency: number) {
     const trans = Math.max(Math.min(transparency, 100), 0);
     this.runtime.ioDevices.video.setPreviewGhost(trans);
   }
@@ -370,9 +364,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
       },
       text: (part: number) => `go to ${part}`,
       operation: (part: number, util) => {
-        console.log('1')
-        this.affdexGoToPart(part, util)
-        console.log('2')
+        this.goToPart(part, util)
       }
     });
 
@@ -418,8 +410,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
       },
       text: (expression: string) => `when ${expression} detected`,
       operation: (expression: string) => {
-        // console.log('return')
-        return this.affdexIsExpression(expression);
+        return this.isExpression(expression);
       }
     });
 
@@ -438,8 +429,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
       },
       text: (expression: string) => `amount of ${expression}`,
       operation: (expression: string) => {
-        //console.log('return')
-        return this.affdexExpressionAmount(expression);
+        return this.expressionAmount(expression);
       }
     });
 
@@ -458,8 +448,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
       },
       text: (expression: string) => `expressing ${expression}`,
       operation: (expression: string) => {
-        //console.log('return')
-        return this.affdexIsExpression(expression);
+        return this.isExpression(expression);
       }
     });
 
@@ -497,9 +486,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
       },
       text: (emotion: string) => `when ${emotion} feeling detected`,
       operation: (emotion: string) => {
-        //console.log('return')
-
-        return this.affdexIsTopEmotion(emotion, emotions);
+        return this.isTopEmotion(emotion, emotions);
       }
     });
 
@@ -512,15 +499,13 @@ export default class PoseFace extends Extension<Details, Blocks> {
           acceptsReporters: true,
           items: allEmotionValues,
           handler: (emotion: string) => {
-            //console.log('return')
-
             return allEmotionValues.includes(emotion) ? emotion : 'joy';
           }
         }
       },
       text: (emotion: string) => `level of ${emotion}`,
       operation: (emotion: string) => {
-        return this.affdexEmotionAmount(emotion)
+        return this.emotionAmount(emotion)
       }
     });
 
@@ -539,9 +524,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
       },
       text: (emotion: string) => `feeling ${emotion}`,
       operation: (emotion: string) => {
-        //console.log('return')
-
-        return this.affdexIsTopEmotion(emotion, emotions);
+        return this.isTopEmotion(emotion, emotions);
       }
     });
 
@@ -562,7 +545,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
       },
       text: (video_state: number) => `turn video ${video_state}`,
       operation: (video_state: number) => {
-        this.videoToggle(video_state);
+        this.toggleVideo(video_state);
       }
     });
 
@@ -572,7 +555,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
       arg: { type: ArgumentType.Number, defaultValue: 50 },
       text: (transparency: number) => `set video transparency to ${transparency}`,
       operation: (transparency: number) => {
-        this.setVideoTransparency(transparency);
+        this.setTransparency(transparency);
       }
     });
 
