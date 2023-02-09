@@ -1,6 +1,6 @@
 import { ArgumentType, BlockType, Block, BlockDefinitions, RGBObject, MenuItem, ButtonBlock, Extension, BlockInfo, SaveDataHandler, copyTo } from "$common";
-import { ExtensionV2 } from "$common/ExtensionV2";
-import { block, buttonBlock, category } from "$common/decorators";
+import { ExtensionV2 } from "$common/v2/Extension";
+import { block, buttonBlock, extension } from "$common/v2/decorators/extension";
 
 const enum MatrixDimension {
   Row,
@@ -33,7 +33,7 @@ export const emojiByAnimal: Record<Animal, string> = {
   [Animal.Pig]: '🐖',
 }
 
-@category({
+@extension({
   name: "Realistic Typescript-Based Extension",
   description: "Demonstrating how typescript can be used to write a realistic extension",
   iconURL: "Typescript_logo.png",

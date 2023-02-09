@@ -1,6 +1,6 @@
 import { BaseExtension, ExtensionConstructor } from "./types";
-import { ExtensionBase } from "./ExtensionV2";
-import { ExtensionConstructor as ExtensionConstructorV2 } from "./ExtensionMixins";
+import { ExtensionBase } from "./v2/Extension";
+import { ExtensionBaseConstructor as ExtensionConstructorV2 } from "./v2/mixins";
 
 
 /**

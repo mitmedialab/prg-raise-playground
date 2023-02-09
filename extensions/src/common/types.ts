@@ -108,12 +108,15 @@ export type TypeByArgumentType<T extends ValueOf<typeof ArgumentType>> =
   : T extends typeof ArgumentType.Custom ? any
   : never;
 
+export type Writeable<T> = { -readonly [P in keyof T]: T[P] };
+
 export type ScratchArgument<T> =
   T extends RGBObject ? typeof ArgumentType.Color :
   T extends boolean[][] ? typeof ArgumentType.Matrix :
   T extends number ? (typeof ArgumentType.Number | typeof ArgumentType.Angle | typeof ArgumentType.Note | typeof ArgumentType.Custom) :
   T extends string ? (typeof ArgumentType.String | typeof ArgumentType.Custom) :
   T extends boolean ? (typeof ArgumentType.Boolean | typeof ArgumentType.Custom) :
+  T extends { dataURI: string, alt: string, flipRTL: boolean } ? typeof ArgumentType.Image :
   (typeof ArgumentType.Custom);
 
 // Used to be <T extends [...any[]]> ... not sure if it needs to be?
@@ -178,7 +181,7 @@ export type Block<TExt extends BaseExtension, TOp extends BlockOperation> = {
   ? (typeof BlockType.Reporter | typeof BlockType.Conditional)
   : ReturnType<TOp> extends Promise<any>
   ? never
-  : typeof BlockType.Reporter;
+  : typeof BlockType.Reporter | typeof BlockType.Event;
 
   /**
    * @summary A function that encapsulates the code that runs when a block is executed

@@ -1,9 +1,9 @@
-import { isCustomArgumentHack, processCustomArgumentHack } from "$common/customArguments";
+import { isCustomArgumentHack } from "$common/customArguments";
 import CustomArgumentManager, { ArgumentEntry } from "$common/customArguments/CustomArgumentManager";
 import { ArgumentType } from "$common/enums";
 import { closeDropdownState, customArgumentCheck, customArgumentFlag, dropdownEntryFlag, dropdownStateFlag, initDropdownState, openDropdownState } from "$common/globals";
 import { Argument, BaseExtension, Menu, MenuItem } from "$common/types";
-import { ExtensionConstructor } from ".";
+import { ExtensionBaseConstructor } from ".";
 import Runtime from "$root/packages/scratch-vm/src/engine/runtime";
 import { CustomArgumentUIConstructor, renderToDropdown } from "$common/customArguments/dropdownOverride";
 
@@ -16,11 +16,11 @@ const callingContext = {
 } as const;
 
 /**
- * Mixin the ability for extensions to create custom arguments types with their own specific UIs
+ * Mixin the ability for extensions to create custom argument types with their own specific UIs
  * @param Ctor 
  * @returns 
  */
-export default function <T extends ExtensionConstructor>(Ctor: T) {
+export default function <T extends ExtensionBaseConstructor>(Ctor: T) {
   abstract class _ extends Ctor {
 
     /**
@@ -49,12 +49,23 @@ export default function <T extends ExtensionConstructor>(Ctor: T) {
     }
 
     /**
-     * Utilized externally by scratch-vm to check if a given argument should be treated as a 'custom argument'
+     * Utilized externally by scratch-vm to check if a given argument should be treated as a 'custom argument'.
+     * Checks if the value returned by a dyanmic menu indicates that it should be treated as a 'custom argument'
      */
-    private [customArgumentCheck] = isCustomArgumentHack.bind(this) as typeof isCustomArgumentHack;
+    private [customArgumentCheck](arr: Array<string | { text: string }>) {
+      if (arr.length !== 1) return false;
+      const item = arr[0];
+      if (typeof item !== "object") return false;
+      const { text } = item;
+      return text === customArgumentFlag;
+    };
 
     /**
      * Utilized externally by scratch-vm to process custom arguments
+     * @param runtime NOTE: once we switch to V2, we can remove this and instead use the extension's runtime
+     * @param param1 
+     * @param getComponent 
+     * @returns 
      */
     private processCustomArgumentHack(runtime: Runtime, [{ value }]: { value: string }[], getComponent: ComponentGetter): (readonly [string, string])[] {
 

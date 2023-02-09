@@ -1,13 +1,17 @@
 import { ArgumentType, BlockType, Language, ButtonBlock, Environment, SaveDataHandler, Menu, Extension } from "$common";
-import { block, category } from "$common/decorators";
-import { ExtensionV2 } from "$common/ExtensionV2";
+import { block, buttonBlock } from "$common/v2/decorators/blocks";
+import { extension } from "$common/v2/decorators/extension";
+import { legacy } from "$common/v2/decorators/legacy";
+import { ExtensionV2 } from "$common/v2/Extension";
+import { oldGetInfo } from "./legacyTest";
 
-@category({
+@extension({
   name: "Super Simple Typescript Extension!",
   description: "Skeleton for a typescript extension",
   iconURL: "",
   insetIconURL: "",
 })
+@legacy(oldGetInfo)
 export default class SimpleTypescript extends ExtensionV2 {
   count: number = 0;
 
@@ -16,6 +20,10 @@ export default class SimpleTypescript extends ExtensionV2 {
     onSave: ({ count }) => ({ count }),
     onLoad: (self, { count }) => self.count = count
   });
+
+  hello() {
+
+  }
 
   init(env: Environment) {
   }
@@ -37,17 +45,17 @@ export default class SimpleTypescript extends ExtensionV2 {
     console.log(msg);
   }
 
-  @block({ type: "button", text: `Dummy UI` })
+  @block({ type: BlockType.Button, text: `Dummy UI` })
   dummyUI() {
     this.openUI("Dummy", "Howdy");
   }
 
-  @block({ type: "button", text: "Open Counter" })
+  @block({ type: BlockType.Button, text: "Open Counter" })
   counterUI() {
     this.openUI("Counter", "Pretty cool, right?");
   }
 
-  @block({ type: "button", text: "Show colors" })
+  @buttonBlock("Show colors")
   colorUI() {
     this.openUI("Palette");
   }
@@ -61,4 +69,3 @@ const logOptions = {
     return "";
   })
 } satisfies Menu<string>;
-

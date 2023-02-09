@@ -1,11 +1,11 @@
 import { SaveDataHandler } from "$common/SavaDataHandler";
 import CustomArgumentManager from "$common/customArguments/CustomArgumentManager";
-import { ExtensionConstructor } from ".";
+import { ExtensionBaseConstructor } from ".";
 import customArgumentSupport from "./customArguments";
 
 const saveDataKey = "customSaveDataPerExtension" as const;
 
-export default function <T extends ExtensionConstructor & ReturnType<typeof customArgumentSupport>>(Ctor: T) {
+export default function <T extends ExtensionBaseConstructor & ReturnType<typeof customArgumentSupport>>(Ctor: T) {
   abstract class _ extends Ctor {
 
     /**
