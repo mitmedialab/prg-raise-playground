@@ -20,20 +20,22 @@ export function block<
   (blockInfoOrGetter: BlockFunction | ((this: This, self: This) => BlockFunction)): TypedMethodDecorator<This, Args, Return, (...args: Args) => Return> {
 
   return function (this: This, target: (this: This, ...args: Args) => Return, context: ClassMethodDecoratorContext<This, Fn>) {
-    const block = isBlockGetter(blockInfoOrGetter) ? blockInfoOrGetter.call(this, this) as BlockV2<Fn> : blockInfoOrGetter;
-
     const opcode = target.name;
+    const internalFuncName = `${opcode}_implementation`;
 
-    context.addInitializer(function () { this.setInfo(opcode, block) });
+    context.addInitializer(function () {
+      const block = isBlockGetter(blockInfoOrGetter) ? blockInfoOrGetter.call(this, this) as BlockV2<Fn> : blockInfoOrGetter;
+      this.setInfo(opcode, block);
 
-    if (block.type === BlockType.Button) return target;
+      if (block.type === BlockType.Button) {
+        return this[internalFuncName] = target.bind(this)
+      };
 
-    const args: Argument<any>[] = block.arg ? [block.arg] : block.args;
-    const argTypes = args.map(getArgumentType);
-    const handlers = extractHandlers(args);
+      const args: Argument<any>[] = block.arg ? [block.arg] : block.args;
+      const argTypes = args.map(getArgumentType);
+      const handlers = extractHandlers(args);
 
-    return (
-      function (this: This, argsFromScratch, blockUtility) {
+      function implementation(this: This, argsFromScratch, blockUtility) {
         const castedArguments = this.getOrderedArgumentNames(opcode)
           .map(name => argsFromScratch[name])
           .map((param, index) => ({ param, type: argTypes[index], handler: handlers[index] }))
@@ -50,6 +52,12 @@ export function block<
 
         return (target as any)(...castedArguments, blockUtility);
       }
+
+      this[`${opcode}_implementation`] = implementation;
+    });
+
+    return (
+      function (this: This) { return this[internalFuncName].call(this, ...arguments) }
     ) as Function as Fn;
   };
 }

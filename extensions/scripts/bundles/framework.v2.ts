@@ -14,7 +14,7 @@ export default async function (doWatch: boolean) {
   ];
 
   const plugins = [...customPRGPlugins, ...getThirdPartyPlugins("typescript")];
-  const options: RollupOptions = { input: info.bundleEntry, plugins, external: commonAlias };
+  const options: RollupOptions = { input: info.bundleEntry, plugins, external: commonAlias, cache: false };
   const bundled = await rollup(options);
   const globals = { [commonAlias]: FrameworkID };
 

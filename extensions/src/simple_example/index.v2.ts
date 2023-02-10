@@ -54,7 +54,7 @@ export default class SimpleTypescript extends ExtensionV2 {
   @block((self) => ({
     type: BlockType.Command,
     text: (msg) => `Log ${msg} to the console`,
-    arg: { type: ArgumentType.String, options: logOptions }
+    arg: { type: ArgumentType.String, options: self.logOptions }
   }))
   log(msg: string) {
     console.log(msg);
