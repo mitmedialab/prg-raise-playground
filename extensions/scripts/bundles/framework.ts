@@ -9,10 +9,10 @@ export default async function (doWatch: boolean) {
   const info = getBundleInfo(commonDirectory, { id: FrameworkID });
 
   const customPRGPlugins = [
+    setupFrameworkBundleEntry(info),
     clearDestinationDirectories(),
     transpileExtensionGlobals(),
     generateVmDeclarations(),
-    setupFrameworkBundleEntry(info),
   ];
 
   const plugins = [...customPRGPlugins, ...getThirdPartyPlugins("sucrase")];

@@ -56,7 +56,7 @@ export const getThirdPartyPlugins = (transpilerPlugin: "sucrase" | "typescript" 
   nodeResolve(),
   commonjs(),
   css(),
-  terser(),
+  //terser(),
 ];
 
 export const getOutputOptions = ({ id: name, bundleDestination: file }: BundleInfo, overrides?: OutputOptions): OutputOptions =>

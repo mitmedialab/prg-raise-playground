@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type Extension from ".";
+  import type Extension from "./index.v2";
   import { activeClass, color as uiColors } from "$common/index";
 
   // svelte-ignore unused-export-let

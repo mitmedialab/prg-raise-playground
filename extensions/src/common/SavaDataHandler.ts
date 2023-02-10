@@ -1,5 +1,4 @@
 import { BaseExtension, ExtensionConstructor } from "./types";
-import { ExtensionBase } from "../v2/Extension";
 
 /**
  * @summary Utility class to assist in creating a (typesafe) object that, for a given Extension type, handles both:
@@ -17,7 +16,7 @@ import { ExtensionBase } from "../v2/Extension";
  *    }
  * })
  */
-export class SaveDataHandler<T extends BaseExtension | ExtensionBase, TData> {
+export class SaveDataHandler<T extends BaseExtension, TData> {
   constructor(public hooks: {
     // @ts-ignore
     Extension: ExtensionConstructor<T>,

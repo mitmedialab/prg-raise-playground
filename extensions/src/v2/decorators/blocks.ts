@@ -24,7 +24,7 @@ export function block<
 
     const opcode = target.name;
 
-    context.addInitializer(() => this.setInfo(opcode, block));
+    context.addInitializer(function () { this.setInfo(opcode, block) });
 
     if (block.type === BlockType.Button) return target;
 

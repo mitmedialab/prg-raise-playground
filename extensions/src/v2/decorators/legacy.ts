@@ -1,4 +1,4 @@
-import { ExtensionV2, ExtensionV2Constructor, ExtensionBaseConstructor, legacySupport } from "$v2";
+import { ExtensionV2, ExtensionV2Constructor, ExtensionBaseConstructor, legacySupport } from "$v2/index";
 import { ArgumentType, ExtensionMetadata, ExtensionBlockMetadata, TypeByArgumentType, ValueOf, ExtensionMenuItems, } from "$common";
 import { TypedClassDecorator } from ".";
 

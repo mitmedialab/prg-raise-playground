@@ -27,7 +27,7 @@ export const fileName = (file) => path.basename(file).replace(path.extname(file)
 
 export const extensionsSrc = path.join(extensionsFolder, "src");
 export const commonDirectory = path.join(extensionsSrc, "common");
-export const v2Directory = path.join(extensionsSrc, "common");
+export const v2Directory = path.join(extensionsSrc, "v2");
 export const componentsDirectory = path.join(commonDirectory, "components");
 
 const isDirectory = (file: fs.Dirent) => file.isDirectory();

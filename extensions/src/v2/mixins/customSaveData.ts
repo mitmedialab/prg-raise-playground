@@ -1,5 +1,5 @@
 import { CustomArgumentManager } from "$common";
-import { ExtensionBaseConstructor, TypedConstructor } from ".";
+import { ExtensionBaseConstructor, TypedConstructor } from "../Extension";
 import { ExtensionBase } from "..";
 import customArgumentSupport from "./customArguments";
 

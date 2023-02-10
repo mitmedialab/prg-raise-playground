@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type Extension from ".";
+  import type Extension from "./index.v2";
   import { activeClass, px, color } from "$common/index";
 
   export let displayText = "Hello, world!";

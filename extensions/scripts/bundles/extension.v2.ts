@@ -1,11 +1,12 @@
 import { rollup, type RollupOptions, type Plugin } from "rollup";
 import { FrameworkID, V2FrameworkID } from "$common";
-import { announceWrite, createExtensionMenuAssets, fillInCodeGenArgs, setupExtensionBundleEntry, transpileExtensions } from "../plugins";
+import { announceWrite, createExtensionMenuAssets, setupExtensionBundleEntry, transpileExtensions } from "../plugins";
 import { commonAlias, v2Alias } from "../utils/aliases";
 import { watchAllFilesInDirectoryAndCommon } from "../utils/rollupHelper";
 import { getThirdPartyPlugins, getOutputOptions, BundleInfo, getBundleInfo } from ".";
 import fs from 'fs';
 import path from 'path';
+import { v2Directory } from "scripts/utils/fileSystem";
 
 export const isV2Extension = (dir: string) => fs.existsSync(path.join(dir, "index.v2.ts"));
 
@@ -38,5 +39,6 @@ export default async function (dir: string, extensionCount: number, doWatch: boo
   const output = getOutputOptions(info, { globals });
   await bundled.write(output);
 
+  if (doWatch) watchAllFilesInDirectoryAndCommon({ name: "V2 Framework", directory: v2Directory }, options, output);
   if (doWatch) watchAllFilesInDirectoryAndCommon(info, options, output);
 };

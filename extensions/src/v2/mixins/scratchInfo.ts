@@ -1,6 +1,5 @@
 import { ArgumentType, BlockType, registerButtonCallback, isFunction, isPrimitive, isString, Argument, BlockOperation, DynamicMenu, DynamicMenuThatAcceptsReporters, ExtensionArgumentMetadata, ExtensionBlockMetadata, ExtensionMenuItems, ExtensionMenuMetadata, ExtensionMetadata, Menu, MenuItem, MenuThatAcceptsReporters, ValueOf, VerboseArgument } from "$common";
-import { BlockV2 } from "$v2/Extension";
-import { ExtensionBaseConstructor } from ".";
+import { BlockV2, ExtensionBaseConstructor } from "$v2/Extension";
 
 export const extractArgNamesFromText = ({ text, arguments: args }: ExtensionBlockMetadata): string[] => {
   const textAndNumbersInBrackets = /\[([A-Za-z0-9]+)\]/gm;
