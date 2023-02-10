@@ -1,11 +1,12 @@
-import { ExtensionBase } from "$common/v2/Extension";
+import { ExtensionBase } from "$v2";
 import customArgumentSupport from "./customArguments";
-import customSaveData from "./customSaveData";
-import legacySupport from "./legacySupport";
-import scratchInfo from "./scratchInfo";
+import customSaveData, { SaveDataHandler } from "./customSaveData";
+import scratchInfo, { getArgumentType } from "./scratchInfo";
 import uiSupport from "./ui";
+import legacySupport from "./legacySupport";
 
 export type AbstractConstructor<T> = abstract new (...args: any[]) => T;
+export type TypedConstructor<T> = new (...args: any[]) => T;
 export type ExtensionBaseConstructor = AbstractConstructor<ExtensionBase>;
 
 export const applyAllMixins = (base: ExtensionBaseConstructor) =>
@@ -20,3 +21,5 @@ export const applyAllMixins = (base: ExtensionBaseConstructor) =>
       )
     )
   );
+
+export { customArgumentSupport, customSaveData, SaveDataHandler, scratchInfo, getArgumentType, uiSupport, legacySupport };

@@ -8,6 +8,9 @@
     "allowJs": false,
     "moduleResolution": "Node",
     "skipLibCheck": true,
+    "ignoreDeprecations": "5.0"
   },
   "include": ["**/*.ts", "../../scripts/**/*.ts"],
+  "ignoreDeprecations": "5.0"
+
 }

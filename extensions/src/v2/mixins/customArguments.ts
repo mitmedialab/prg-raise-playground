@@ -1,11 +1,6 @@
-import { isCustomArgumentHack } from "$common/customArguments";
-import CustomArgumentManager, { ArgumentEntry } from "$common/customArguments/CustomArgumentManager";
-import { ArgumentType } from "$common/enums";
-import { closeDropdownState, customArgumentCheck, customArgumentFlag, dropdownEntryFlag, dropdownStateFlag, initDropdownState, openDropdownState } from "$common/globals";
-import { Argument, BaseExtension, Menu, MenuItem } from "$common/types";
+import { CustomArgumentUIConstructor, renderToDropdown, CustomArgumentManager, ArgumentType, ArgumentEntry, Argument, BaseExtension, closeDropdownState, customArgumentCheck, customArgumentFlag, dropdownEntryFlag, dropdownStateFlag, initDropdownState, openDropdownState } from "$common";
 import { ExtensionBaseConstructor } from ".";
 import Runtime from "$root/packages/scratch-vm/src/engine/runtime";
-import { CustomArgumentUIConstructor, renderToDropdown } from "$common/customArguments/dropdownOverride";
 
 type ComponentGetter = (id: string, componentName: string) => CustomArgumentUIConstructor;
 

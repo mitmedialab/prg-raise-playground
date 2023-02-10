@@ -1,4 +1,4 @@
-import { ExtensionMenuDisplayDetails } from "../../types";
+import { ExtensionMenuDisplayDetails } from "$common";
 import { ExtensionV2 } from "../Extension";
 import { TypedClassDecorator } from ".";
 

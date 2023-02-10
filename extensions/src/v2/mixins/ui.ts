@@ -1,4 +1,4 @@
-import { openUI } from "$common/ui";
+import { openUI } from "$common";
 import { ExtensionBaseConstructor } from ".";
 
 export default function <T extends ExtensionBaseConstructor>(Ctor: T) {

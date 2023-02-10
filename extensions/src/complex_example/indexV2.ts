@@ -1,6 +1,7 @@
-import { ArgumentType, BlockType, Block, BlockDefinitions, RGBObject, MenuItem, ButtonBlock, Extension, BlockInfo, SaveDataHandler, copyTo } from "$common";
-import { ExtensionV2 } from "$common/v2/Extension";
-import { block, buttonBlock, extension } from "$common/v2/decorators/extension";
+import { ArgumentType, BlockType, RGBObject, MenuItem, copyTo } from "$common";
+import { ExtensionV2 } from "$src/v2/Extension";
+import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
+import { block, buttonBlock, extension, SaveDataHandler } from "$v2/index";
 
 const enum MatrixDimension {
   Row,
@@ -189,7 +190,7 @@ export default class TypeScriptFrameworkExample extends ExtensionV2 {
         }
       }
     }
-  }))
+  } as const))
   animalName(animal: Animal) {
     return nameByAnimal[animal];
   }
@@ -243,7 +244,7 @@ export default class TypeScriptFrameworkExample extends ExtensionV2 {
 
   // Details of block defined using a 'block getter' function implemented using 'method' syntax.
   // This block is functionally equivalent to the one for 'multiplyUsingSelf' below.
-  @block(function () {
+  @block(function (self) {
     return {
       type: BlockType.Reporter,
       args: [
@@ -267,7 +268,7 @@ export default class TypeScriptFrameworkExample extends ExtensionV2 {
       ArgumentType.Number
     ],
   }))
-  multiplyUsingSelf(left: number, right: number) {
+  multiplyUsingSelf(left: number, right: number, u: BlockUtility) {
     return left * right;
   }
 }

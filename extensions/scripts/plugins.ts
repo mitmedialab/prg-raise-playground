@@ -8,7 +8,7 @@ import { appendToRootDetailsFile, populateMenuFileForExtension } from "./extensi
 import { exportAllFromModule, toNamedDefaultExport } from "./utils/importExport";
 import { default as glob } from 'glob';
 import { commonDirectory, deleteAllFilesInDir, extensionBundlesDirectory, fileName, generatedMenuDetailsDirectory, getDirectoryAndFileName, tsToJs } from "./utils/fileSystem";
-import { BundleInfo } from "./bundle";
+import { BundleInfo } from "./bundles";
 import ts from "typescript";
 import { getSrcCompilerHost } from "./typeProbing/tsConfig";
 import { extensionsFolder, packages, vmSrc } from "$root/scripts/paths";
@@ -118,7 +118,7 @@ export const setupExtensionBundleEntry = ({ indexFile, bundleEntry, directory }:
       fs.writeFileSync(bundleEntry, filesToBundle.join("\n"));
     },
     buildEnd() {
-      fs.rmSync(bundleEntry);
+      //fs.rmSync(bundleEntry);
     },
   }
 }

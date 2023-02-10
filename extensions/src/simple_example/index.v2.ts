@@ -1,8 +1,5 @@
-import { ArgumentType, BlockType, Language, ButtonBlock, Environment, SaveDataHandler, Menu, Extension } from "$common";
-import { block, buttonBlock } from "$common/v2/decorators/blocks";
-import { extension } from "$common/v2/decorators/extension";
-import { legacy } from "$common/v2/decorators/legacy";
-import { ExtensionV2 } from "$common/v2/Extension";
+import { ArgumentType, BlockType, Environment, Menu, Extension } from "$common";
+import { SaveDataHandler, block, buttonBlock, extension, legacy, ExtensionV2 } from "$v2";
 import { oldGetInfo } from "./legacyTest";
 
 @extension({

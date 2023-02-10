@@ -5,7 +5,7 @@ import Cast from '$scratch-vm/util/cast';
 import Runtime from "$scratch-vm/engine/runtime";
 import { openUI, registerButtonCallback } from './ui';
 import { identity, isFunction, isPrimitive, isString } from './utils';
-import { isCustomArgumentHack, processCustomArgumentHack } from './customArguments';
+import { isCustomArgumentHack, processCustomArgumentHack } from './customArguments/index';
 import { customArgumentCheck, customArgumentFlag } from './globals';
 import CustomArgumentManager, { ArgumentEntry } from './customArguments/CustomArgumentManager';
 import { SaveDataHandler } from './SavaDataHandler';

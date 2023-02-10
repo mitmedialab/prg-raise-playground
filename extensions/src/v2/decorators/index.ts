@@ -9,3 +9,7 @@ export type TypedMethodDecorator<
   Return,
   Fn extends (...args: Args) => Return
 > = (target: Fn, context: ClassMethodDecoratorContext<This, Fn>) => Fn;
+
+export * from "$src/v2/decorators/blocks";
+export * from "$src/v2/decorators/extension";
+export * from "$src/v2/decorators/legacy";

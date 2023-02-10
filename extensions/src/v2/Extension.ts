@@ -1,8 +1,11 @@
-import { AbstractConstructor, applyAllMixins } from "./mixins";
+import { AbstractConstructor, applyAllMixins } from "$v2/index";
 import Runtime from "$scratch-vm/engine/runtime";
-import { BaseExtension, Block, BlockOperation, Environment } from "../types";
+import { BaseExtension, Block, BlockOperation, Environment } from "$common";
+import type BlockUtility from "$scratch-vm/engine/block-utility";
 
-export type BlockV2<Fn extends BlockOperation> = Omit<Block<BaseExtension, Fn>, "operation">;
+export type BlockV2<Fn extends BlockOperation> = Parameters<Fn> extends [...infer R extends any[], BlockUtility]
+  ? Omit<Block<BaseExtension, (...args: R) => ReturnType<Fn>>, "operation">
+  : Omit<Block<BaseExtension, Fn>, "operation">;
 
 export type CodeGenArgs = {
   name: never,
@@ -28,7 +31,8 @@ export abstract class ExtensionV2 extends applyAllMixins(ExtensionBase) {
 
   constructor(runtime: never, codeGenArgs?: CodeGenArgs) {
     const { name, id, blockIconURI } = codeGenArgs;
-    super(runtime, name, id, blockIconURI);
+    //super(runtime, name, id, blockIconURI);
+    super(runtime, "Super Simple Typescript Extension!", "simpleprg95grpexample", undefined)
     extensionsMap.set(id, this);
   }
 }

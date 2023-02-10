@@ -1,13 +1,14 @@
 {
   "extends": "../paths.tsconfig.json",
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "ES2020",
     "module": "ESNext",
     "noImplicitAny": false,
     "esModuleInterop": true,
     "allowJs": false,
     "moduleResolution": "Node",
     "skipLibCheck": true,
+    "declaration": false,
   },
   "include": [".**/*.ts", "**/*.ts"],
 }

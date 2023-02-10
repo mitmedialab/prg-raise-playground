@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type Extension from ".";
-  import { activeClass, px, color } from "$common";
+  //import type Extension from ".";
+  import { activeClass, px, color } from "$common/index";
 
   // svelte-ignore unused-export-let
   export let extension: any;

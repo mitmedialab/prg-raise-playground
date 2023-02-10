@@ -1,10 +1,15 @@
-import { Argument, BlockOperation, DynamicMenu, DynamicMenuThatAcceptsReporters, ExtensionArgumentMetadata, ExtensionBlockMetadata, ExtensionMenuItems, ExtensionMenuMetadata, ExtensionMetadata, Menu, MenuItem, MenuThatAcceptsReporters, ValueOf, VerboseArgument } from "$common/types";
-import { BlockV2 } from "$common/v2/Extension";
+import { ArgumentType, BlockType, registerButtonCallback, isFunction, isPrimitive, isString, Argument, BlockOperation, DynamicMenu, DynamicMenuThatAcceptsReporters, ExtensionArgumentMetadata, ExtensionBlockMetadata, ExtensionMenuItems, ExtensionMenuMetadata, ExtensionMetadata, Menu, MenuItem, MenuThatAcceptsReporters, ValueOf, VerboseArgument } from "$common";
+import { BlockV2 } from "$v2/Extension";
 import { ExtensionBaseConstructor } from ".";
-import { identity, isFunction, isPrimitive, isString } from "$common/utils";
-import { ArgumentType, BlockType } from "$common/enums";
-import { registerButtonCallback } from "$common/ui";
-import { BlockVariant, MultipleArgs } from "./legacySupport";
+
+export const extractArgNamesFromText = ({ text, arguments: args }: ExtensionBlockMetadata): string[] => {
+  const textAndNumbersInBrackets = /\[([A-Za-z0-9]+)\]/gm;
+  const argNames: string[] = [];
+  for (const [_, result] of text.matchAll(textAndNumbersInBrackets)) {
+    argNames.push(result);
+  }
+  return argNames;
+}
 
 export default function <T extends ExtensionBaseConstructor>(Ctor: T) {
   abstract class _ extends Ctor {
@@ -12,15 +17,22 @@ export default function <T extends ExtensionBaseConstructor>(Ctor: T) {
     private readonly blocks: ExtensionBlockMetadata[] = [];
     private readonly menus: Menu<any>[] = [];
     private info: ExtensionMetadata;
+    private readonly argumentsByOpcode = new Map<string, string[]>();
 
     getOrderedArgumentNames(opcode: string): string[] {
-      return [];
+      if (this.argumentsByOpcode.has(opcode)) return this.argumentsByOpcode.get(opcode);
+
+      const { blocks } = this.getInfo();
+      const block = (blocks as ExtensionBlockMetadata[]).find(({ opcode: op }) => opcode = op);
+      const argNames = extractArgNamesFromText(block);
+      this.argumentsByOpcode.set(opcode, argNames);
+      return extractArgNamesFromText(block);
     }
 
     setInfo<Fn extends BlockOperation>(opcode: string, block: BlockV2<Fn>) {
       const { type, text } = block;
 
-      const args: Argument<any>[] = block.arg ? [block.arg] : block.args;
+      const args: Argument<any>[] = block.args ? block.args : block.arg ? [block.arg] : [];
 
       const { id, runtime, menus, blocks } = this;
 
@@ -79,8 +91,7 @@ const format = (text: string, identifier: string, description: string): string =
   return text; // make use of formatMessage in the future
 }
 
-const isDynamicText = (text: BlockVariant["text"]): text is (...args: any[]) => string => !isString(text);
-
+const isDynamicText = (text: Block.Any["text"]): text is (...args: any[]) => string => !isString(text);
 
 const convertMenuItemsToString = (item: any | MenuItem<any>) =>
   isPrimitive(item) ? `${item}` : { ...item, value: `${item.value}` };
@@ -94,16 +105,17 @@ const getButtonID = (id: string, opcode: string) => `${id}_${opcode}`;
 export const getArgumentType = <T>(arg: Argument<T>): ValueOf<typeof ArgumentType> =>
   isPrimitive(arg) ? arg as ValueOf<typeof ArgumentType> : (arg as VerboseArgument<T>).type;
 
-const convertToDisplayText = (opcode: string, text: BlockVariant["text"], args: Argument<any>[]) => {
+const convertToDisplayText = (opcode: string, text: Block.Any["text"], args: Argument<any>[]) => {
+  validateText(text, args.length);
+
   if (!isDynamicText(text)) return format(text, opcode, `Block text for '${opcode}'`);
 
-  validateText(text, args.length);
   const argPlaceholders = args.map((_, index) => `[${getArgName(index)}]`);
   return format(text(...argPlaceholders), opcode, `Block text for '${opcode}'`);
 }
 
 const convertToArgumentInfo = (opcode: string, args: Argument<any>[], menus: Menu<any>[]) => {
-  if (!args) return undefined;
+  if (!args || args.length === 0) return undefined;
 
   const argumentsInfo = args
     .map((element, index) => {
@@ -151,7 +163,7 @@ const setMenu = (entry: ExtensionArgumentMetadata, options: Menu<any>, menus: Me
   entry.menu = addOptionsAndGetMenuName(options, menus);
 }
 
-const validateText = (text: BlockV2<MultipleArgs>["text"], argCount: number) => {
+const validateText = (text: Block.Any["text"], argCount: number) => {
   // TODO: Check that no numbers within square brackets appear in text
   return true;
 }
@@ -172,3 +184,10 @@ const asStaticMenu = (items: MenuItem<any>[], acceptReporters: boolean) => ({
     .map(item => item /**TODO figure out how to format */)
     .map(convertMenuItemsToString)
 } satisfies ExtensionMenuMetadata);
+
+namespace Block {
+  export type NoArgs = BlockV2<() => any>;
+  export type OneArg = BlockV2<(arg: any) => any>;
+  export type MultipleArgs = BlockV2<(...args: [any, any]) => any>;
+  export type Any = NoArgs | OneArg | MultipleArgs;
+}

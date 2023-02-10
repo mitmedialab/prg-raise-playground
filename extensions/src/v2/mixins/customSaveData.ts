@@ -1,9 +1,18 @@
-import { SaveDataHandler } from "$common/SavaDataHandler";
-import CustomArgumentManager from "$common/customArguments/CustomArgumentManager";
-import { ExtensionBaseConstructor } from ".";
+import { CustomArgumentManager } from "$common";
+import { ExtensionBaseConstructor, TypedConstructor } from ".";
+import { ExtensionBase } from "..";
 import customArgumentSupport from "./customArguments";
 
 const saveDataKey = "customSaveDataPerExtension" as const;
+
+export class SaveDataHandler<T extends ExtensionBase, TData> {
+  constructor(public hooks: {
+    // @ts-ignore
+    Extension: TypedConstructor<T>,
+    onSave: (self: T) => TData,
+    onLoad: (self: T, data: TData) => void,
+  }) { }
+}
 
 export default function <T extends ExtensionBaseConstructor & ReturnType<typeof customArgumentSupport>>(Ctor: T) {
   abstract class _ extends Ctor {

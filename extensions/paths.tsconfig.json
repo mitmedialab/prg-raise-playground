@@ -10,6 +10,8 @@
       "$src/*": ["./src/*"],
       "$testing": ["./testing"],
       "$testing/*": ["./testing/*"],
+      "$v2": ["./src/v2"],
+      "$v2/*": ["./src/v2/*"],
       "$scratch-vm": ["../packages/scratch-vm/src"],
       "$scratch-vm/*": ["../packages/scratch-vm/src/*"]
     }
