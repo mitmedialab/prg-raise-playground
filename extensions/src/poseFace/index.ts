@@ -75,7 +75,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
 
 
   /**
-   * The state of where the hand and its parts are estimated to be
+   * The state the face's points, expressions, and emotions
    */
   affdexState;
 
@@ -253,20 +253,23 @@ export default class PoseFace extends Extension<Details, Blocks> {
    * @param emotions 
    * @returns 
    */
-  isTopEmotion(emotion, emotions) {
+  isTopEmotion(felt_emotion, emotions) {
     if (!this.affdexState || !this.affdexState.emotions) {
       return false;
     }
     let maxEmotionValue = -Number.MAX_VALUE;
     let maxEmotion = null;
     emotions.forEach((emotion) => {
+      console.log(emotion);
       const emotionValue = this.affdexState.emotions[emotion];
+      console.log(emotionValue)
       if (emotionValue > maxEmotionValue) {
         maxEmotionValue = emotionValue;
         maxEmotion = emotion;
       }
     });
-    return emotion === maxEmotion;
+    console.log(maxEmotion);
+    return felt_emotion === maxEmotion;
   }
 
   /**
