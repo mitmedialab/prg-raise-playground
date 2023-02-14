@@ -1,7 +1,12 @@
-import { ArgumentType, BlockType, registerButtonCallback, isFunction, isPrimitive, isString, Argument, BlockOperation, DynamicMenu, DynamicMenuThatAcceptsReporters, ExtensionArgumentMetadata, ExtensionBlockMetadata, ExtensionMenuItems, ExtensionMenuMetadata, ExtensionMetadata, Menu, MenuItem, MenuThatAcceptsReporters, ValueOf, VerboseArgument } from "$common";
-import { BlockV2, ExtensionBaseConstructor } from "$v2/Extension";
+import { ArgumentType, BlockType, registerButtonCallback, isFunction, isPrimitive, isString, Argument, BlockOperation, DynamicMenu, DynamicMenuThatAcceptsReporters, ExtensionArgumentMetadata, ExtensionBlockMetadata, ExtensionMenuItems, ExtensionMenuMetadata, ExtensionMetadata, Menu, MenuItem, MenuThatAcceptsReporters, ValueOf, VerboseArgument, CustomArgumentManager, castToType, identity } from "$common";
+import { BlockV2, ExtensionBaseConstructor, ExtensionV2 } from "$v2/Extension";
+import customArguments from "./customArguments";
 
-export const extractArgNamesFromText = ({ text, arguments: args }: ExtensionBlockMetadata): string[] => {
+export type BlockInfo<Fn extends BlockOperation> = BlockV2<Fn>
+export type BlockGetter<This, Fn extends BlockOperation> = (this: This, self: This) => BlockV2<Fn>;
+type BlockDefinition<T, Fn extends BlockOperation> = BlockInfo<Fn> | BlockGetter<T, Fn>;
+
+export const extractArgNamesFromText = (text: string): string[] => {
   const textAndNumbersInBrackets = /\[([A-Za-z0-9]+)\]/gm;
   const argNames: string[] = [];
   for (const [_, result] of text.matchAll(textAndNumbersInBrackets)) {
@@ -10,68 +15,91 @@ export const extractArgNamesFromText = ({ text, arguments: args }: ExtensionBloc
   return argNames;
 }
 
-export default function <T extends ExtensionBaseConstructor>(Ctor: T) {
-  abstract class _ extends Ctor {
+export const getImplementationName = (opcode: string) => `${opcode}_implementation`;
 
-    private readonly blocks: ExtensionBlockMetadata[] = [];
+export const wrapOperation = (context: any, operation: BlockOperation, args: { name: string, type: ValueOf<typeof ArgumentType>, handler: Handler }[]) => {
+  return function (this: ExtensionV2, argsFromScratch, blockUtility) {
+    const castedArguments = args.map(({ name, type, handler }) => {
+      const param = argsFromScratch[name];
+      switch (type) {
+        case ArgumentType.Custom:
+          const isIdentifier = isString(param) && CustomArgumentManager.IsIdentifier(param);
+          const value = isIdentifier ? this.customArgumentManager.getEntry(param).value : param;
+          return handler(value);
+        default:
+          return castToType(type, handler(param));
+      }
+    });
+    return operation.call(context, ...castedArguments, blockUtility);
+  }
+}
+
+export default function <T extends ExtensionBaseConstructor & ReturnType<typeof customArguments>>(Ctor: T) {
+  type BlockEntry = { definition: BlockDefinition<_, BlockOperation>, operation: BlockOperation };
+  type BlockMap = Map<string, BlockEntry>;
+
+  abstract class _ extends Ctor {
+    private readonly blockMap: BlockMap = new Map();
+
     private readonly menus: Menu<any>[] = [];
     private info: ExtensionMetadata;
     private readonly argumentsByOpcode = new Map<string, string[]>();
 
-    getOrderedArgumentNames(opcode: string): string[] {
-      if (this.argumentsByOpcode.has(opcode)) return this.argumentsByOpcode.get(opcode);
-
-      const { blocks } = this.getInfo();
-      const block = (blocks as ExtensionBlockMetadata[]).find(({ opcode: op }) => opcode = op);
-      const argNames = extractArgNamesFromText(block);
-      this.argumentsByOpcode.set(opcode, argNames);
-      return extractArgNamesFromText(block);
+    pushBlock<Fn extends BlockOperation>(opcode: string, block: BlockDefinition<any, Fn>, operation: BlockOperation) {
+      if (this.blockMap.has(opcode)) throw new Error(`Attempt to push block with opcode ${opcode}, but it was already set. This is assumed to be a mistake.`)
+      this.blockMap.set(opcode, { definition: block, operation });
     }
 
-    setInfo<Fn extends BlockOperation>(opcode: string, block: BlockV2<Fn>) {
+    protected getInfo(): ExtensionMetadata {
+      if (!this.info) {
+        const blocks = Array.from(this.blockMap.entries()).map(entry => this.convertToInfo(entry));
+        const { id, name, blockIconURI } = this;
+        this.info = { id, blocks, name, blockIconURI, menus: this.collectMenus() };
+      }
+      return this.info;
+    }
+
+    private convertToInfo<Fn extends BlockOperation>(details: [opcode: string, entry: BlockEntry]) {
+      const [opcode, entry] = details;
+      const { definition, operation } = entry;
+      const block = isBlockGetter<BlockOperation>(definition) ? definition.call(this, this) as BlockV2<Fn> : definition;
+
       const { type, text } = block;
 
       const args: Argument<any>[] = block.args ? block.args : block.arg ? [block.arg] : [];
 
-      const { id, runtime, menus, blocks } = this;
+      const { id, runtime, menus } = this;
 
       const displayText = convertToDisplayText(opcode, text, args);
       const argumentsInfo = convertToArgumentInfo(opcode, args, menus);
 
       const info: ExtensionBlockMetadata = { opcode, text: displayText, blockType: type, arguments: argumentsInfo };
 
-      if (type === BlockType.Button) {
-        const buttonID = getButtonID(id, opcode);
-        registerButtonCallback(runtime, buttonID, this[opcode].bind(this));
-        info.func = buttonID;
+      switch (type) {
+        case BlockType.Button:
+          const buttonID = getButtonID(id, opcode);
+          registerButtonCallback(runtime, buttonID, operation.bind(this));
+          info.func = buttonID;
+          return info;
+        default:
+          const implementationName = getImplementationName(opcode);
+          this[implementationName] = wrapOperation(this, operation, zipArgs(args));
+          return info;
       }
-
-      blocks.push(info);
-    }
-
-    protected getInfo(): ExtensionMetadata {
-      if (!this.info) {
-        const { id, blocks, name, blockIconURI } = this;
-        this.info = { id, blocks, name, blockIconURI, menus: this.collectMenus() };
-      }
-      return this.info;
     }
 
     private collectMenus() {
+      const { isSimpleStatic, isSimpleDynamic, isStaticWithReporters, isDynamicWithReporters } = menuProbe;
       return Object.fromEntries(
         this.menus
           .map((menu, index) => {
-            const { isSimpleStatic, isSimpleDynamic, isStaticWithReporters, isDynamicWithReporters } = menuProbe;
             if (isSimpleStatic(menu)) return asStaticMenu(menu, false);
             if (isSimpleDynamic(menu)) return this.registerDynamicMenu(menu, false, index);
             if (isStaticWithReporters(menu)) return asStaticMenu(menu.items, true);
             if (isDynamicWithReporters(menu)) return this.registerDynamicMenu(menu.getItems, true, index);
             throw new Error("Unable to process menu");
           })
-          .reduce((map, menu, index) =>
-            map.set(getMenuName(index), menu),
-            new Map<string, ExtensionMenuMetadata>()
-          )
+          .reduce((map, menu, index) => map.set(getMenuName(index), menu), new Map<string, ExtensionMenuMetadata>())
       );
     }
 
@@ -82,9 +110,20 @@ export default function <T extends ExtensionBaseConstructor>(Ctor: T) {
     }
   }
 
-
   return _;
 }
+
+const zipArgs = (args: Argument<any>[], names?: string[]) => {
+  const types = args.map(getArgumentType);
+  const handlers = extractHandlers(args);
+  names ??= types.map((_, index) => getArgName(index));
+  const lengths = new Set();
+  lengths.add(types.length).add(handlers.length).add(names.length);
+  if (lengths.size !== 1) throw new Error("Zip failed because collections weren't equal length");
+  return types.map((type, index) => ({ type, name: names[index], handler: handlers[index] }));
+}
+
+const isBlockGetter = <Fn extends BlockOperation>(details: BlockInfo<Fn> | BlockGetter<any, Fn>): details is BlockGetter<any, Fn> => isFunction(details);
 
 const format = (text: string, identifier: string, description: string): string => {
   return text; // make use of formatMessage in the future
@@ -105,6 +144,8 @@ export const getArgumentType = <T>(arg: Argument<T>): ValueOf<typeof ArgumentTyp
   isPrimitive(arg) ? arg as ValueOf<typeof ArgumentType> : (arg as VerboseArgument<T>).type;
 
 const convertToDisplayText = (opcode: string, text: Block.Any["text"], args: Argument<any>[]) => {
+  if (!args || args.length === 0) return text as string;
+
   validateText(text, args.length);
 
   if (!isDynamicText(text)) return format(text, opcode, `Block text for '${opcode}'`);
@@ -166,6 +207,18 @@ const validateText = (text: Block.Any["text"], argCount: number) => {
   // TODO: Check that no numbers within square brackets appear in text
   return true;
 }
+
+type Handler = (MenuThatAcceptsReporters<any>['handler']);
+const isVerbose = (arg: Argument<any>): arg is VerboseArgument<any> => !isPrimitive(arg);
+const handlerKey: keyof MenuThatAcceptsReporters<any> = 'handler';
+const hasHandler = (options: Menu<any>): options is MenuThatAcceptsReporters<any> | DynamicMenuThatAcceptsReporters<any> => options && handlerKey in options;
+
+const extractHandlers = (args: Argument<any>[]): Handler[] => args.map(element => {
+  if (!isVerbose(element)) return identity;
+  const { options } = element;
+  if (!hasHandler(options)) return identity;
+  return options.handler;
+});
 
 const reporterItemsKey: keyof MenuThatAcceptsReporters<any> = "items";
 const reporterItemsGetterKey: keyof DynamicMenuThatAcceptsReporters<any> = "getItems";

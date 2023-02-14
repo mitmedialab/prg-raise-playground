@@ -1,13 +1,13 @@
 import fs from "fs";
 import path from "path";
-import { Extension, PopulateCodeGenArgs } from "$common";
+import { Extension, FrameworkID, PopulateCodeGenArgs, V2FrameworkID, copyTo, untilCondition } from "$common";
 import { type Plugin } from "rollup";
 import Transpiler from './typeProbing/Transpiler';
 import { getBlockIconURI } from "./utils/URIs";
 import { appendToRootDetailsFile, populateMenuFileForExtension } from "./extensionsMenu";
 import { exportAllFromModule, toNamedDefaultExport } from "./utils/importExport";
 import { default as glob } from 'glob';
-import { commonDirectory, deleteAllFilesInDir, extensionBundlesDirectory, fileName, generatedMenuDetailsDirectory, getDirectoryAndFileName, tsToJs } from "./utils/fileSystem";
+import { commonDirectory, deleteAllFilesInDir, extensionBundlesDirectory, fileName, generatedMenuDetailsDirectory, getBundleFile, getDirectoryAndFileName, tsToJs } from "./utils/fileSystem";
 import { BundleInfo } from "./bundles";
 import ts from "typescript";
 import { getSrcCompilerHost } from "./typeProbing/tsConfig";
@@ -17,6 +17,7 @@ import chalk from "chalk";
 import { runOncePerBundling } from "./utils/rollupHelper";
 import { sendToParent } from "$root/scripts/comms";
 import { createMatchGroup, matchAnyWhiteSpaceIncludingNewLine, matchOneOrMoreTimes } from "./utils/regularExpressions";
+import { registerDetailsIdentifier } from "$v2";
 
 export const clearDestinationDirectories = (): Plugin => {
   const runner = runOncePerBundling();
@@ -108,14 +109,16 @@ export const setupFrameworkBundleEntry = ({ indexFile, bundleEntry }: BundleInfo
 
 export const setupExtensionBundleEntry = ({ indexFile, bundleEntry, directory }: BundleInfo): Plugin => {
   return {
-    name: "",
+    name: "Setup Bundle Entry",
     buildStart() {
       const svelteFiles = glob.sync(`${directory}/**/*.svelte`);
       const filesToBundle = svelteFiles
         .map(file => ({ path: file, name: fileName(file) }))
         .map(toNamedDefaultExport);
       filesToBundle.push(toNamedDefaultExport({ path: indexFile, name: "Extension" }));
-      fs.writeFileSync(bundleEntry, filesToBundle.join("\n"));
+      const content = filesToBundle.join("\n");
+      if (!fs.existsSync(bundleEntry) || fs.readFileSync(bundleEntry, "utf8") !== content)
+        fs.writeFileSync(bundleEntry, filesToBundle.join("\n"));
     },
     buildEnd() {
       //fs.rmSync(bundleEntry);
@@ -136,6 +139,12 @@ export const transpileExtensions = (info: BundleInfo, callbacks: Record<Transpil
   }
 }
 
+export const executee = ({ id, directory, menuDetails, indexFile }: BundleInfo): Plugin => {
+  return {
+    name: "",
+  }
+}
+
 export const fillInCodeGenArgs = ({ id, directory, menuDetails, indexFile }: BundleInfo): Plugin => {
   const keywords = ["extends", "Extension", "{"];
   const matchClass = keywords.join(matchAnyWhiteSpaceIncludingNewLine + matchOneOrMoreTimes);
@@ -147,7 +156,6 @@ export const fillInCodeGenArgs = ({ id, directory, menuDetails, indexFile }: Bun
       order: 'post',
       handler: (code: string, file: string) => {
         if (file !== indexFile) return;
-
         const re = new RegExp(expression);
         const match = re.exec(code);
 
@@ -172,7 +180,7 @@ export const fillInCodeGenArgs = ({ id, directory, menuDetails, indexFile }: Bun
 export const createExtensionMenuAssets = (info: BundleInfo): Plugin => {
   const runner = runOncePerBundling();
   return {
-    name: "",
+    name: "Create Menu Assets",
     buildStart() {
       if (runner.check()) appendToRootDetailsFile(info);
       populateMenuFileForExtension(info);
@@ -190,10 +198,60 @@ export const announceWrite = ({ totalNumberOfExtensions }: BundleInfo): Plugin =
   }
 
   return {
-    name: "",
+    name: "Announce Extensions Written",
     writeBundle: () => {
       if (!runner.check()) return;
       if (++writeCount === totalNumberOfExtensions) allExtensionsInitiallyWritten();
     }
+  }
+}
+
+let [frameworkContent, getFrameworkContent] = [null, async () => {
+  const v1Framework = getBundleFile(FrameworkID);
+  const v2Framework = getBundleFile(V2FrameworkID);
+  const frameworkBundles = [v1Framework, v2Framework];
+  const { length } = frameworkBundles;
+  await untilCondition(() => frameworkBundles.filter(fs.existsSync).length == length);
+  return frameworkBundles.map(file => fs.readFileSync(file, "utf-8")).join("\n");
+}];
+
+export const finalizeV2Bundle = (info: BundleInfo): Plugin => {
+  const { bundleDestination, id, menuDetails, totalNumberOfExtensions } = info;
+  const runner = runOncePerBundling();
+
+  const executeBundleAndExtractMenuDetails = async () => {
+    frameworkContent ??= await getFrameworkContent();
+    global[registerDetailsIdentifier] = (details) => { for (const key in details) menuDetails[key] = details[key]; };
+    eval(frameworkContent + "\n" + fs.readFileSync(bundleDestination));
+    delete global[registerDetailsIdentifier];
+  }
+
+  const writeOutMenuDetails = (isFirstRun: boolean) => {
+    if (isFirstRun) appendToRootDetailsFile(info);
+    populateMenuFileForExtension(info);
+  }
+
+  const tryAnnounceInitialExtensionsWrite = (isFirstRun: boolean) => {
+    if (!isFirstRun) return;
+    if (++writeCount === totalNumberOfExtensions) {
+      console.log(chalk.green("All extensions bundled!"));
+      sendToParent(process, { condition: "extensions complete" });
+    }
+  }
+
+  return {
+    name: "Bundle check",
+    writeBundle: async () => {
+      try {
+        await executeBundleAndExtractMenuDetails();
+        const isFirstRun = runner.check();
+        writeOutMenuDetails(isFirstRun);
+        tryAnnounceInitialExtensionsWrite(isFirstRun);
+      }
+      catch (e) {
+        throw new Error(`Unable to execute bundle (& extract display menu details) for ${id}: ${e}`)
+      }
+    }
+
   }
 }

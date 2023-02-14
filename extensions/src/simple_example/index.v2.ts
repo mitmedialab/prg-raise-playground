@@ -2,17 +2,8 @@ import { ArgumentType, BlockType, Environment, Menu, Extension } from "$common";
 import { SaveDataHandler, block, buttonBlock, extension, legacy, ExtensionV2 } from "$v2";
 import { oldGetInfo } from "./legacyTest";
 
-const logOptions = {
-  items: ['1', 'two', 'three'],
-  acceptsReporters: true,
-  handler: (x: any) => Extension.TryCastToArgumentType(ArgumentType.String, x, () => {
-    alert(`Unsopported input: ${x}`);
-    return "";
-  })
-} satisfies Menu<string>;
-
 @extension({
-  name: "Super Simple Typescript Extension!",
+  name: "Super Simple Typescript Extension1!!",
   description: "Skeleton for a typescript extension",
   iconURL: "",
   insetIconURL: "",
@@ -21,24 +12,20 @@ const logOptions = {
 export default class SimpleTypescript extends ExtensionV2 {
   count: number = 0;
 
-  logOptions: Menu<string> = {
+  logOptions = {
     items: ['1', 'two', 'three'],
     acceptsReporters: true,
     handler: (x: any) => Extension.TryCastToArgumentType(ArgumentType.String, x, () => {
       alert(`Unsopported input: ${x}`);
       return "";
     })
-  }
+  } satisfies Menu<string>
 
   saveDataHandler = new SaveDataHandler({
     Extension: SimpleTypescript,
     onSave: ({ count }) => ({ count }),
     onLoad: (self, { count }) => self.count = count
   });
-
-  hello() {
-
-  }
 
   init(env: Environment) {
   }

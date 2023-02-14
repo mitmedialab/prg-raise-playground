@@ -82,7 +82,7 @@ export const splitOnCapitals = (query: string) => query.split(/(?=[A-Z])/);
 export const copyTo = <TTarget extends object, TSource extends { [k in keyof TTarget]?: TTarget[k] }>({ target, source }: { target: TTarget, source: TSource }) => {
   for (const key in source) {
     if (!(key in target)) continue;
-    // @ts-ignore -- the types of the function should ensure this is valud TS
+    // @ts-ignore -- the types of the function should ensure this is valid TS
     target[key] = source[key]
   }
 }
