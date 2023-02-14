@@ -17,7 +17,7 @@ import chalk from "chalk";
 import { runOncePerBundling } from "./utils/rollupHelper";
 import { sendToParent } from "$root/scripts/comms";
 import { createMatchGroup, matchAnyWhiteSpaceIncludingNewLine, matchOneOrMoreTimes } from "./utils/regularExpressions";
-import { registerDetailsIdentifier } from "$v2";
+import { registerExtensionDefinitionCallback } from "$v2";
 
 export const clearDestinationDirectories = (): Plugin => {
   const runner = runOncePerBundling();
@@ -177,6 +177,39 @@ export const fillInCodeGenArgs = ({ id, directory, menuDetails, indexFile }: Bun
   };
 }
 
+
+export const fillInCodeGenArgsV2 = ({ id, directory, menuDetails, indexFile }: BundleInfo): Plugin => {
+  const keywords = ["extends", "Extension", "{"];
+  const matchClass = keywords.join(matchAnyWhiteSpaceIncludingNewLine + matchOneOrMoreTimes);
+  const expression = createMatchGroup(matchClass);
+
+  return {
+    name: 'Fill in Code Gen Args per V2 Extension ',
+    transform: {
+      order: 'post',
+      handler: (code: string, file: string) => {
+        if (file !== indexFile) return;
+        const re = new RegExp(expression);
+        const match = re.exec(code);
+
+        const errorPrefix = "Framework error -- contact Parker Malachowsky (or project maintainer): ";
+        if (match.length < 2) throw new Error(errorPrefix + "Unable to locate insertion point within Extension class. The strategy likely needs to be updated...");
+        if (match.length > 2) throw new Error(errorPrefix + "Multiple matches found when trying to locate insertion point within Extension class. The strategy likely needs to be updated...");
+
+        const [matchText] = match;
+        const { index } = match;
+        const splitPoint = index + matchText.length;
+        const [before, after] = [code.substring(0, splitPoint), code.substring(splitPoint)];
+        const { name } = menuDetails;
+        const blockIconURI = getBlockIconURI(menuDetails, directory);
+        const codeGenArgs: PopulateCodeGenArgs = { id, name, blockIconURI };
+        const getCodeGenArgs = `${Extension.InternalCodeGenArgsGetterKey}() { return ${JSON.stringify(codeGenArgs)} }`;
+        return { code: `${before}\n\t${getCodeGenArgs}\n${after}`, map: null }
+      }
+    }
+  };
+}
+
 export const createExtensionMenuAssets = (info: BundleInfo): Plugin => {
   const runner = runOncePerBundling();
   return {
@@ -206,24 +239,35 @@ export const announceWrite = ({ totalNumberOfExtensions }: BundleInfo): Plugin =
   }
 }
 
-let [frameworkContent, getFrameworkContent] = [null, async () => {
-  const v1Framework = getBundleFile(FrameworkID);
-  const v2Framework = getBundleFile(V2FrameworkID);
-  const frameworkBundles = [v1Framework, v2Framework];
-  const { length } = frameworkBundles;
-  await untilCondition(() => frameworkBundles.filter(fs.existsSync).length == length);
-  return frameworkBundles.map(file => fs.readFileSync(file, "utf-8")).join("\n");
-}];
+const frameworkBundle: { content: Promise<string> } & Record<string, any> = {
+  cache: null,
+  retrieve: async () => {
+    const v1Framework = getBundleFile(FrameworkID);
+    const v2Framework = getBundleFile(V2FrameworkID);
+    const frameworkBundles = [v1Framework, v2Framework];
+    const { length } = frameworkBundles;
+    await untilCondition(() => frameworkBundles.filter(fs.existsSync).length == length);
+    return frameworkBundles.map(file => fs.readFileSync(file, "utf-8")).join("\n");
+  },
+  get content() {
+    this.cache ??= this.retrieve();
+    return this.cache;
+  }
+}
 
 export const finalizeV2Bundle = (info: BundleInfo): Plugin => {
-  const { bundleDestination, id, menuDetails, totalNumberOfExtensions } = info;
+  const { bundleDestination, id, menuDetails, totalNumberOfExtensions, name } = info;
   const runner = runOncePerBundling();
 
   const executeBundleAndExtractMenuDetails = async () => {
-    frameworkContent ??= await getFrameworkContent();
-    global[registerDetailsIdentifier] = (details) => { for (const key in details) menuDetails[key] = details[key]; };
-    eval(frameworkContent + "\n" + fs.readFileSync(bundleDestination));
-    delete global[registerDetailsIdentifier];
+    const framework = await frameworkBundle.content;
+    let success = false;
+    registerExtensionDefinitionCallback(function (details) {
+      for (const key in details) menuDetails[key] = details[key];
+      success = true;
+    });
+    eval(framework + "\n" + fs.readFileSync(bundleDestination));
+    if (!success) throw new Error(`No extension registered for '${name}'. Did you forget to use the extension decorator?`);
   }
 
   const writeOutMenuDetails = (isFirstRun: boolean) => {
@@ -233,14 +277,13 @@ export const finalizeV2Bundle = (info: BundleInfo): Plugin => {
 
   const tryAnnounceInitialExtensionsWrite = (isFirstRun: boolean) => {
     if (!isFirstRun) return;
-    if (++writeCount === totalNumberOfExtensions) {
-      console.log(chalk.green("All extensions bundled!"));
-      sendToParent(process, { condition: "extensions complete" });
-    }
+    if (++writeCount !== totalNumberOfExtensions) return;
+    console.log(chalk.green("All extensions bundled!"));
+    sendToParent(process, { condition: "extensions complete" });
   }
 
   return {
-    name: "Bundle check",
+    name: "Finalize V2 Bundle",
     writeBundle: async () => {
       try {
         await executeBundleAndExtractMenuDetails();
@@ -252,6 +295,5 @@ export const finalizeV2Bundle = (info: BundleInfo): Plugin => {
         throw new Error(`Unable to execute bundle (& extract display menu details) for ${id}: ${e}`)
       }
     }
-
   }
 }

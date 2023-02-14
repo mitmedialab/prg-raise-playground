@@ -59,6 +59,7 @@ export default class TypeScriptFrameworkExample extends ExtensionV2 {
   });
 
   init() {
+    console.log("inited");
     this.lhsOptions = [3, 4, 5];
     this.animals = Object.entries(emojiByAnimal).map(([animal, emoji]) => ({
       value: parseInt(animal), text: emoji
@@ -244,7 +245,7 @@ export default class TypeScriptFrameworkExample extends ExtensionV2 {
 
   // Details of block defined using a 'block getter' function implemented using 'method' syntax.
   // This block is functionally equivalent to the one for 'multiplyUsingSelf' below.
-  @block(function (self) {
+  @block(function () {
     return {
       type: BlockType.Reporter,
       args: [

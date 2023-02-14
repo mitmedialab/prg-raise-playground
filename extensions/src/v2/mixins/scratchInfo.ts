@@ -6,6 +6,9 @@ export type BlockInfo<Fn extends BlockOperation> = BlockV2<Fn>
 export type BlockGetter<This, Fn extends BlockOperation> = (this: This, self: This) => BlockV2<Fn>;
 type BlockDefinition<T, Fn extends BlockOperation> = BlockInfo<Fn> | BlockGetter<T, Fn>;
 
+export const getArgumentType = <T>(arg: Argument<T>): ValueOf<typeof ArgumentType> =>
+  isPrimitive(arg) ? arg as ValueOf<typeof ArgumentType> : (arg as VerboseArgument<T>).type;
+
 export const extractArgNamesFromText = (text: string): string[] => {
   const textAndNumbersInBrackets = /\[([A-Za-z0-9]+)\]/gm;
   const argNames: string[] = [];
@@ -15,7 +18,7 @@ export const extractArgNamesFromText = (text: string): string[] => {
   return argNames;
 }
 
-export const getImplementationName = (opcode: string) => `${opcode}_implementation`;
+export const getImplementationName = (opcode: string) => `internal_${opcode}`;
 
 export const wrapOperation = (context: any, operation: BlockOperation, args: { name: string, type: ValueOf<typeof ArgumentType>, handler: Handler }[]) => {
   return function (this: ExtensionV2, argsFromScratch, blockUtility) {
@@ -52,8 +55,8 @@ export default function <T extends ExtensionBaseConstructor & ReturnType<typeof 
 
     protected getInfo(): ExtensionMetadata {
       if (!this.info) {
-        const blocks = Array.from(this.blockMap.entries()).map(entry => this.convertToInfo(entry));
         const { id, name, blockIconURI } = this;
+        const blocks = Array.from(this.blockMap.entries()).map(entry => this.convertToInfo(entry));
         this.info = { id, blocks, name, blockIconURI, menus: this.collectMenus() };
       }
       return this.info;
@@ -75,17 +78,16 @@ export default function <T extends ExtensionBaseConstructor & ReturnType<typeof 
 
       const info: ExtensionBlockMetadata = { opcode, text: displayText, blockType: type, arguments: argumentsInfo };
 
-      switch (type) {
-        case BlockType.Button:
-          const buttonID = getButtonID(id, opcode);
-          registerButtonCallback(runtime, buttonID, operation.bind(this));
-          info.func = buttonID;
-          return info;
-        default:
-          const implementationName = getImplementationName(opcode);
-          this[implementationName] = wrapOperation(this, operation, zipArgs(args));
-          return info;
+      if (type === BlockType.Button) {
+        const buttonID = getButtonID(id, opcode);
+        registerButtonCallback(runtime, buttonID, operation.bind(this));
+        info.func = buttonID;
+      } else {
+        const implementationName = getImplementationName(opcode);
+        this[implementationName] = wrapOperation(this, operation, zipArgs(args));
       }
+
+      return info;
     }
 
     private collectMenus() {
@@ -93,6 +95,7 @@ export default function <T extends ExtensionBaseConstructor & ReturnType<typeof 
       return Object.fromEntries(
         this.menus
           .map((menu, index) => {
+            console.log(menu);
             if (isSimpleStatic(menu)) return asStaticMenu(menu, false);
             if (isSimpleDynamic(menu)) return this.registerDynamicMenu(menu, false, index);
             if (isStaticWithReporters(menu)) return asStaticMenu(menu.items, true);
@@ -117,10 +120,13 @@ const zipArgs = (args: Argument<any>[], names?: string[]) => {
   const types = args.map(getArgumentType);
   const handlers = extractHandlers(args);
   names ??= types.map((_, index) => getArgName(index));
-  const lengths = new Set();
-  lengths.add(types.length).add(handlers.length).add(names.length);
-  if (lengths.size !== 1) throw new Error("Zip failed because collections weren't equal length");
+  assertSameLength(types, handlers, names);
   return types.map((type, index) => ({ type, name: names[index], handler: handlers[index] }));
+}
+
+const assertSameLength = (...collections: any[][]) => {
+  const { size } = collections.reduce((set, { length }) => set.add(length), new Set<number>());
+  if (size !== 1) throw new Error("Zip failed because collections weren't equal length");
 }
 
 const isBlockGetter = <Fn extends BlockOperation>(details: BlockInfo<Fn> | BlockGetter<any, Fn>): details is BlockGetter<any, Fn> => isFunction(details);
@@ -134,14 +140,9 @@ const isDynamicText = (text: Block.Any["text"]): text is (...args: any[]) => str
 const convertMenuItemsToString = (item: any | MenuItem<any>) =>
   isPrimitive(item) ? `${item}` : { ...item, value: `${item.value}` };
 
-const getArgTranslationID = (blockname: string, index: number) => {
-  return `${blockname}-arg${index}-default`;
-}
+const getArgTranslationID = (blockname: string, index: number) => `${blockname}-arg${index}-default`;
 
 const getButtonID = (id: string, opcode: string) => `${id}_${opcode}`;
-
-export const getArgumentType = <T>(arg: Argument<T>): ValueOf<typeof ArgumentType> =>
-  isPrimitive(arg) ? arg as ValueOf<typeof ArgumentType> : (arg as VerboseArgument<T>).type;
 
 const convertToDisplayText = (opcode: string, text: Block.Any["text"], args: Argument<any>[]) => {
   if (!args || args.length === 0) return text as string;
@@ -157,26 +158,26 @@ const convertToDisplayText = (opcode: string, text: Block.Any["text"], args: Arg
 const convertToArgumentInfo = (opcode: string, args: Argument<any>[], menus: Menu<any>[]) => {
   if (!args || args.length === 0) return undefined;
 
-  const argumentsInfo = args
-    .map((element, index) => {
-      const entry = {} as ExtensionArgumentMetadata;
-      entry.type = getArgumentType(element);
+  return Object.fromEntries(
+    args
+      .map((element, index) => {
+        const entry = {} as ExtensionArgumentMetadata;
+        entry.type = getArgumentType(element);
 
-      if (isPrimitive(element)) return entry;
+        if (isPrimitive(element)) return entry;
 
-      const { defaultValue, options } = element as VerboseArgument<any>;
+        const { defaultValue, options } = element as VerboseArgument<any>;
 
-      setDefaultValue(entry, opcode, index, defaultValue);
-      setMenu(entry, options, menus);
+        setDefaultValue(entry, opcode, index, defaultValue);
+        setMenu(entry, options, menus);
 
-      return entry;
-    })
-    .reduce((accumulation, entry, index) => {
-      accumulation[getArgName(index)] = entry;
-      return accumulation;
-    }, {});
-
-  return argumentsInfo;
+        return entry;
+      })
+      .reduce(
+        (accumulation, entry, index) => accumulation.set(getArgName(index), entry),
+        new Map<string, ExtensionArgumentMetadata>
+      )
+  );
 }
 
 
@@ -198,10 +199,8 @@ const addOptionsAndGetMenuName = (options: Menu<any>, menus: Menu<any>[],) => {
   return `${getMenuName(menuIndex)}`;
 }
 
-const setMenu = (entry: ExtensionArgumentMetadata, options: Menu<any>, menus: Menu<any>[]) => {
-  if (!options) return;
-  entry.menu = addOptionsAndGetMenuName(options, menus);
-}
+const setMenu = (entry: ExtensionArgumentMetadata, options: Menu<any>, menus: Menu<any>[]) =>
+  options ? entry.menu = addOptionsAndGetMenuName(options, menus) : null;
 
 const validateText = (text: Block.Any["text"], argCount: number) => {
   // TODO: Check that no numbers within square brackets appear in text

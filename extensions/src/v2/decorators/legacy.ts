@@ -1,5 +1,5 @@
-import { ExtensionV2, ExtensionV2Constructor, ExtensionBaseConstructor, legacySupport } from "$v2/index";
-import { ArgumentType, ExtensionMetadata, ExtensionBlockMetadata, TypeByArgumentType, ValueOf, ExtensionMenuItems, } from "$common";
+import { ExtensionV2, ExtensionV2Constructor, ExtensionBaseConstructor, legacySupport, AbstractConstructor } from "$v2/index";
+import { ArgumentType, ExtensionMetadata, ExtensionBlockMetadata, TypeByArgumentType, ValueOf, ExtensionMenuItems, Extension, ExtensionMenuDisplayDetails, } from "$common";
 import { TypedClassDecorator } from ".";
 
 export function legacy<

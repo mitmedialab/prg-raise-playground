@@ -1,4 +1,6 @@
 import { ArgumentType, BlockType, Language, Extension, ButtonBlock, Environment, SaveDataHandler } from "$common";
+import { legacy } from "$src/v2";
+import { oldGetInfo } from "./legacyTest";
 
 type Details = {
   name: "Super Simple Typescript Extension!",
