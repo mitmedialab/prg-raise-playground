@@ -117,9 +117,9 @@ export default extractLegacySupportFromOldGetInfo({
       }),
       arguments: {
         VIDEO_STATE: {
-          type: ArgumentType.Number,
+          type: ArgumentType.String,
           menu: 'VIDEO_STATE',
-          defaultValue: 0
+          defaultValue: 'off'
         }
       }
     },
@@ -284,7 +284,7 @@ export default extractLegacySupportFromOldGetInfo({
             default: 'off',
             description: 'Option for the "turn video [STATE]" block'
           }),
-          value: 0
+          value: 'off'
         },
         {
           text: formatMessage({
@@ -292,7 +292,7 @@ export default extractLegacySupportFromOldGetInfo({
             default: 'on',
             description: 'Option for the "turn video [STATE]" block'
           }),
-          value: 1
+          value: 'on'
         },
         {
           text: formatMessage({
@@ -301,7 +301,7 @@ export default extractLegacySupportFromOldGetInfo({
             description: 'Option for the "turn video [STATE]" block that causes the video to be flipped' +
               ' horizontally (reversed as in a mirror)'
           }),
-          value: 2
+          value: "on-flipped"
         }
       ]
     }

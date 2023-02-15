@@ -1,4 +1,4 @@
-import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, untilExternalGlobalVariableLoaded, extractLegacySupportFromOldGetInfo } from "$common";
+import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, untilExternalGlobalVariableLoaded, extractLegacySupportFromOldGetInfo, ValueOf } from "$common";
 import legacy from "./legacy";
 
 // import * as window from 'affdex.js';
@@ -8,13 +8,13 @@ import legacy from "./legacy";
  */
 const VideoState = {
   /** Video turned off. */
-  OFF: 0,
+  OFF: 'off',
 
   /** Video turned on with default y axis mirroring. */
-  ON: 1,
+  ON: 'on',
 
   /** Video turned on without default y axis mirroring. */
-  ON_FLIPPED: 2
+  ON_FLIPPED: 'on-flipped'
 } as const;
 
 /**
@@ -48,7 +48,7 @@ type Blocks = {
   levelOfFeelingReport(feeling: string): number;
   isFeelingReport(feeling: string): boolean;
   // these video blocks are present in a few different extensions, perhaps making a file just for these?
-  videoToggleBlock(state: number): void;
+  videoToggleBlock(state: string): void;
   setVideoTransparencyBlock(transparency: number): void;
 }
 
@@ -87,7 +87,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
    * The current video state
    * @type {number}
    */
-  globalVideoState: number;
+  globalVideoState: ValueOf<typeof VideoState>;
 
   /**
    * The current transparency of the video
@@ -288,7 +288,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
    * Turns the video camera off/on/on and flipped. This is called in the operation of videoToggleBlock
    * @param state 
    */
-  toggleVideo(state: number) {
+  toggleVideo(state: ValueOf<typeof VideoState>) {
     if (state === VideoState.OFF) return this.runtime.ioDevices.video.disableVideo();
 
     this.runtime.ioDevices.video.enableVideo();
@@ -537,17 +537,17 @@ export default class PoseFace extends Extension<Details, Blocks> {
     const videoToggleBlock = () => legacy.videoToggle({
       type: BlockType.Command,
       arg: {
-        type: ArgumentType.Number,
+        type: ArgumentType.String,
         options: {
           acceptsReporters: true,
           items: [{ text: 'off', value: VideoState.OFF }, { text: 'on', value: VideoState.ON }, { text: 'on and flipped', value: VideoState.ON_FLIPPED }],
-          handler: (video_state: number) => {
-            return Math.min(Math.max(video_state, VideoState.OFF), VideoState.ON_FLIPPED);
+          handler: (video_state: any) => {
+            return 'off';
           }
         }
       },
-      text: (video_state: number) => `turn video ${video_state}`,
-      operation: (video_state: number) => {
+      text: (video_state) => `turn video ${video_state}`,
+      operation: (video_state: ValueOf<typeof VideoState>) => {
         this.toggleVideo(video_state);
       }
     });
