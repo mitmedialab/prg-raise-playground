@@ -17,13 +17,10 @@ export const retrieveExtensionDetails = (program: ts.Program): ExtensionMenuDisp
 
   const rootSource = rootSources[0];
 
-  if (rootSource.fileName.includes(".v2"))
-    return { name: "v2 Test", description: "This is a v2 test", insetIconURL: "", iconURL: "" }
-
   return ts.forEachChild(rootSource, node => {
     const type = typeChecker.getTypeAtLocation(node);
     if (isExtension(type)) return getMenuDisplayDetails(type);
-  });;
+  });
 }
 
 export const isExtension = (type: ts.Type) => {

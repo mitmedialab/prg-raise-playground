@@ -1,10 +1,10 @@
 import { ExtensionMenuDisplayDetails } from "$common/types";
-import { ExtensionV2 } from "$common/extension/Extension";
+import { DecoratedExtension } from "$common/extension/Extension";
 import { TypedClassDecorator } from ".";
 
 const registerDetailsIdentifier = "__registerMenuDetials";
 
-export function extension<T extends ExtensionV2, Args extends any[]>(details: ExtensionMenuDisplayDetails): TypedClassDecorator<T, Args> {
+export function extension<T extends DecoratedExtension, Args extends any[]>(details: ExtensionMenuDisplayDetails): TypedClassDecorator<T, Args> {
   return (value) => {
     const isNode = typeof window === 'undefined';
     if (isNode) global?.[registerDetailsIdentifier]?.(details);

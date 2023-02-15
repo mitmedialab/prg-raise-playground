@@ -8,7 +8,6 @@ import { printDiagnostics } from "../typeProbing/diagnostics";
 import { retrieveExtensionDetails } from "../typeProbing";
 import { sendToParent } from "$root/scripts/comms";
 import chalk from "chalk";
-import { getBlockIconURI } from "scripts/utils/URIs";
 
 const transpileComplete = (ts: Transpiler, { menuDetails }: BundleInfo) => {
   const details = retrieveExtensionDetails(ts.program);
@@ -21,8 +20,7 @@ const transpileFailed = (ts: Transpiler, info: BundleInfo) => {
   sendToParent(process, { condition: "extensions error" });
 }
 
-export default async function (dir: string, extensionCount: number, doWatch: boolean = true) {
-  const info = getBundleInfo(dir, { totalNumberOfExtensions: extensionCount });
+export default async function (info: BundleInfo, doWatch: boolean = true) {
 
   const customPRGPlugins: Plugin[] = [
     setupExtensionBundleEntry(info),
@@ -43,4 +41,5 @@ export default async function (dir: string, extensionCount: number, doWatch: boo
   const output = getOutputOptions(info, { globals });
   const watcher = watch({ ...options, output });
   logEvents(watcher, info);
+  if (!doWatch) watcher.close();
 };

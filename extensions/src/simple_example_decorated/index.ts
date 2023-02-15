@@ -1,24 +1,22 @@
-import { ArgumentType, BlockType, Environment, Menu, Extension, SaveDataHandler, block, buttonBlock, extension, legacy, ExtensionV2, tryCastToArgumentType } from "$common";
-import { oldGetInfo } from "./legacyTest";
+import { ArgumentType, BlockType, Environment, Menu, SaveDataHandler, block, buttonBlock, extension, DecoratedExtension, tryCastToArgumentType } from "$common";
 
 @extension({
-  name: "Super Simple Typescript Extension!",
+  name: "Super Simple Typescript Extension (decorted)!",
   description: "Skeleton for a typescript extension",
   iconURL: "",
   insetIconURL: "",
 })
-//@legacy(oldGetInfo)
-export default class SimpleTypescript extends ExtensionV2 {
+export default class SimpleTypescript extends DecoratedExtension {
   count: number = 0;
 
-  logOptions = {
+  logOptions: Menu<string> = {
     items: ['1', 'two', 'three'],
     acceptsReporters: true,
     handler: (x: any) => tryCastToArgumentType(ArgumentType.String, x, () => {
       alert(`Unsopported input: ${x}`);
       return "";
     })
-  } satisfies Menu<string>
+  }
 
   saveDataHandler = new SaveDataHandler({
     Extension: SimpleTypescript,
@@ -34,6 +32,9 @@ export default class SimpleTypescript extends ExtensionV2 {
     this.count += amount;
   }
 
+  init(env: Environment) {
+  }
+
   @block((self) => ({
     type: BlockType.Command,
     text: (msg) => `Log ${msg} to the console`,
@@ -41,9 +42,6 @@ export default class SimpleTypescript extends ExtensionV2 {
   }))
   log(msg: string) {
     console.log(msg);
-  }
-
-  init(env: Environment) {
   }
 
   @block({ type: BlockType.Button, text: `Dummy UI` })

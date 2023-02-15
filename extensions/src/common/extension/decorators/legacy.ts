@@ -1,5 +1,5 @@
 import { TypedClassDecorator } from ".";
-import { ExtensionV2, ExtensionV2Constructor } from "$common/extension/Extension";
+import { DecoratedExtension, ExtensionV2Constructor } from "$common/extension/Extension";
 import legacySupport from "$common/extension/mixins/legacySupport";
 import { ArgumentType } from "$common/enums";
 import { ExtensionMetadata, ExtensionBlockMetadata, ValueOf, TypeByArgumentType, ExtensionMenuItems } from "$common/types";
@@ -7,7 +7,7 @@ import { ExtensionMetadata, ExtensionBlockMetadata, ValueOf, TypeByArgumentType,
 export function legacy<
   Args extends any[],
   TData extends ExtensionMetadata,
-  T extends ExtensionV2 & LegacyProbe.LegacyMethods<TData>,
+  T extends DecoratedExtension & LegacyProbe.LegacyMethods<TData>,
 >(details: TData): TypedClassDecorator<T, Args> {
 
   return function (value, context) {

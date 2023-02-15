@@ -4,7 +4,7 @@ import { ArgumentType, BlockType } from "$common/enums";
 import { BlockOperation, Argument, ValueOf, VerboseArgument, Menu, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, DynamicMenu, MenuItem, ExtensionArgumentMetadata, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters } from "$common/types";
 import { registerButtonCallback } from "$common/ui";
 import { isPrimitive, isString, isFunction, identity } from "$common/utils";
-import { BlockV2, ExtensionBaseConstructor, ExtensionV2 } from "$common/extension/Extension";
+import { BlockV2, ExtensionBaseConstructor, DecoratedExtension } from "$common/extension/Extension";
 import customArguments from "$common/extension/mixins/customArguments";
 
 export type BlockInfo<Fn extends BlockOperation> = BlockV2<Fn>
@@ -26,7 +26,7 @@ export const extractArgNamesFromText = (text: string): string[] => {
 export const getImplementationName = (opcode: string) => `internal_${opcode}`;
 
 export const wrapOperation = (context: any, operation: BlockOperation, args: { name: string, type: ValueOf<typeof ArgumentType>, handler: Handler }[]) => {
-  return function (this: ExtensionV2, argsFromScratch, blockUtility) {
+  return function (this: DecoratedExtension, argsFromScratch, blockUtility) {
     const castedArguments = args.map(({ name, type, handler }) => {
       const param = argsFromScratch[name];
       switch (type) {

@@ -1,4 +1,4 @@
-import { ArgumentType, BlockType, RGBObject, MenuItem, copyTo, ExtensionV2, SaveDataHandler, block, buttonBlock, extension } from "$common";
+import { ArgumentType, BlockType, RGBObject, MenuItem, copyTo, DecoratedExtension, SaveDataHandler, block, buttonBlock, extension } from "$common";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 
 const enum MatrixDimension {
@@ -38,7 +38,7 @@ export const emojiByAnimal: Record<Animal, string> = {
   iconURL: "Typescript_logo.png",
   insetIconURL: "typescript-logo.svg"
 })
-export default class TypeScriptFrameworkExample extends ExtensionV2 {
+export default class TypeScriptFrameworkExample extends DecoratedExtension {
   lhsOptions: number[];
   animals: MenuItem<Animal>[];
   collection: Animal[] = [Animal.Gorilla];

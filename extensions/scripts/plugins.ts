@@ -146,12 +146,8 @@ export const transpileExtensions = (info: BundleInfo, callbacks: Record<Transpil
 }
 
 export const fillInConstructorArgs = (info: BundleInfo, getContent: (info: BundleInfo) => string): Plugin => {
-  const keywords = ["extends", "Extension", "{"];
-  const matchClass = keywords.join(matchAnyWhiteSpaceIncludingNewLine + matchOneOrMoreTimes);
-  const expression = createMatchGroup(matchClass);
-
-  type ExlcudeFirst<F> = F extends [any, ...infer R] ? R : never;
-  type CodeGenParams = ExlcudeFirst<ConstructorParameters<typeof ExtensionBase>>;
+  const searchValue = "super(...arguments)";
+  const replaceValue = () => `super(...[...arguments, ${getContent(info)}])`;
 
   return {
     name: 'Fill in Code Gen Args per Extension',
@@ -159,28 +155,13 @@ export const fillInConstructorArgs = (info: BundleInfo, getContent: (info: Bundl
       order: 'post',
       handler: (code: string, file: string) => {
         if (file !== info.indexFile) return;
+        const matches = code.includes(searchValue);
+        if (!matches) throw new Error("Framework error -- contact Parker Malachowsky (or project maintainer): Unable to locate insertion point within Extension class. The strategy likely needs to be updated...");
+
         return {
-          code: code.replace("super(...arguments)", `super(...[...arguments, ${getContent(info)}])`),
+          code: code.replace(searchValue, replaceValue()),
           map: null
         };
-
-        /*
-        const re = new RegExp(expression);
-        const match = re.exec(code);
-
-        const errorPrefix = "Framework error -- contact Parker Malachowsky (or project maintainer): ";
-        if (match.length < 2) throw new Error(errorPrefix + "Unable to locate insertion point within Extension class. The strategy likely needs to be updated...");
-        if (match.length > 2) throw new Error(errorPrefix + "Multiple matches found when trying to locate insertion point within Extension class. The strategy likely needs to be updated...");
-
-        const [matchText] = match;
-        const { index } = match;
-        const splitPoint = index + matchText.length;
-        const [before, after] = [code.substring(0, splitPoint), code.substring(splitPoint)];
-        const { name } = menuDetails;
-        const blockIconURI = getBlockIconURI(menuDetails, directory);
-        const codeGenArgs: PopulateCodeGenArgs = { id, name, blockIconURI };
-        const getCodeGenArgs = ""; //`${Extension.InternalCodeGenArgsGetterKey}() { return ${JSON.stringify(codeGenArgs)} }`;
-        return { code: `${before}\n\t${getCodeGenArgs}\n${after}`, map: null }*/
       }
     }
   };
@@ -193,6 +174,18 @@ export const createExtensionMenuAssets = (info: BundleInfo): Plugin => {
     buildStart() {
       if (runner.check()) appendToRootDetailsFile(info);
       populateMenuFileForExtension(info);
+    }
+  }
+}
+
+export const onFrameworkBundle = (callback: () => void): Plugin => {
+  const runner = runOncePerBundling();
+
+  return {
+    name: "Announce Extensions Written",
+    writeBundle: () => {
+      if (!runner.check()) return;
+      callback();
     }
   }
 }
@@ -230,9 +223,8 @@ const frameworkBundle: { content: Promise<string> } & Record<string, any> = {
 
 export const v2CodeGenFlag = "replace_code_gen_args";
 
-export const finalizeV2Bundle = (info: BundleInfo): Plugin => {
-  const { bundleDestination, id, menuDetails, totalNumberOfExtensions, name } = info;
-  const runner = runOncePerBundling();
+export const finalizeDecoratedExtensionBundle = (info: BundleInfo): Plugin => {
+  const { bundleDestination, menuDetails, name, directory } = info;
 
   const executeBundleAndExtractMenuDetails = async () => {
     const framework = await frameworkBundle.content;
@@ -245,21 +237,16 @@ export const finalizeV2Bundle = (info: BundleInfo): Plugin => {
     if (!success) throw new Error(`No extension registered for '${name}'. Did you forget to use the extension decorator?`);
   }
 
-  const writeOutMenuDetails = (isFirstRun: boolean) => {
-    if (isFirstRun) appendToRootDetailsFile(info);
-    populateMenuFileForExtension(info);
-  }
-
   const fillCodeGenParams = () => {
     const content = fs.readFileSync(bundleDestination, "utf-8").replace(v2CodeGenFlag, stringifyCodeGenArgs(info));
     fs.writeFileSync(bundleDestination, content);
   }
 
-  const tryAnnounceInitialExtensionsWrite = (isFirstRun: boolean) => {
-    if (!isFirstRun) return;
-    if (++writeCount !== totalNumberOfExtensions) return;
-    console.log(chalk.green("All extensions bundled!"));
-    sendToParent(process, { condition: "extensions complete" });
+  const runner = runOncePerBundling();
+
+  const writeOutMenuDetails = () => {
+    if (runner.check()) appendToRootDetailsFile(info);
+    populateMenuFileForExtension(info);
   }
 
   return {
@@ -268,12 +255,10 @@ export const finalizeV2Bundle = (info: BundleInfo): Plugin => {
       try {
         await executeBundleAndExtractMenuDetails();
         fillCodeGenParams();
-        const isFirstRun = runner.check();
-        writeOutMenuDetails(isFirstRun);
-        tryAnnounceInitialExtensionsWrite(isFirstRun);
+        writeOutMenuDetails();
       }
       catch (e) {
-        throw new Error(`Unable to execute bundle (& extract display menu details) for ${id}: ${e}`)
+        throw new Error(`Unable to execute bundle (& extract display menu details) for ${name} (${directory}/): ${e}`)
       }
     }
   }

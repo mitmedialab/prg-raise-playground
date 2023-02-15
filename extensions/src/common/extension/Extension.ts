@@ -79,15 +79,24 @@ const applyAllMixins = (base: ExtensionBaseConstructor) =>
     )
   );
 
-export const extensionsMap = new Map<string, ExtensionV2>();
+export const extensionsMap = new Map<string, DecoratedExtension>();
 
-export abstract class ExtensionV2 extends applyAllMixins(ExtensionBase) {
+export abstract class DecoratedExtension extends applyAllMixins(ExtensionBase) {
+  /**
+   * Prevent developers from implementing the constructor.
+   * This must be controlled by the framework since Scratch is the one who calls the extension's constructor.
+   * @param FORBIDDEN 
+   */
   constructor(FORBIDDEN: never) {
     super(...arguments);
   }
 }
 
-export type ExtensionV2Constructor = AbstractConstructor<ExtensionV2>;
+export type ExtensionV2Constructor = AbstractConstructor<DecoratedExtension>;
+
+type X<Blocks extends ExtensionBlocks> = {
+  [k in keyof Blocks]: never;
+}
 
 /**
  * @summary Base class for all extensions implemented via the Typescript Extension Framework.
@@ -127,7 +136,7 @@ export abstract class Extension
   <
     MenuDetails extends ExtensionMenuDisplayDetails,
     Blocks extends ExtensionBlocks
-  > extends ExtensionV2 {
+  > extends DecoratedExtension {
 
   readonly BlockFunctions: Blocks;
   readonly BlockDefinitions: BlockDefinitions<typeof this>;
@@ -186,13 +195,12 @@ export abstract class Extension
     super.internal_init();
     const blocks = this.defineBlocks();
     for (const opcode in blocks) {
-      // asser the below via type
-      if (opcode in this) throw new Error("Your extension cannot have a method named the same thing as one of your blocks");
       const block = blocks[opcode];
+      const validOpcode = opcode in this ? `__block_${opcode}` : opcode;
       const { operation, text, arg, args, type } = isFunction(block) ? block.call(this, this) : block;;
-      this.pushBlock(opcode, { text, arg, args, type }, operation);
-      const internalFuncName = getImplementationName(opcode);
-      (this as any)[opcode] = function () { return this[internalFuncName].call(this, ...arguments) };
+      this.pushBlock(validOpcode, { text, arg, args, type }, operation);
+      const internalFuncName = getImplementationName(validOpcode);
+      (this as any)[validOpcode] = function () { return this[internalFuncName].call(this, ...arguments) };
     }
   }
 };

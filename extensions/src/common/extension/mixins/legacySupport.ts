@@ -1,4 +1,4 @@
-import { ExtensionV2, ExtensionV2Constructor } from "$common/extension/Extension";
+import { DecoratedExtension, ExtensionV2Constructor } from "$common/extension/Extension";
 import { ExtensionMetadata } from "$common/types";
 
 export default function <T extends ExtensionV2Constructor>(Ctor: T, legacyInfo: ExtensionMetadata) {
@@ -9,7 +9,7 @@ export default function <T extends ExtensionV2Constructor>(Ctor: T, legacyInfo: 
 
       if (!this.validatedInfo) {
         // @ts-ignore
-        const { getInfo } = ExtensionV2.prototype;
+        const { getInfo } = DecoratedExtension.prototype;
         const info = (getInfo.call(this));
         this.validatedInfo = this.validateAndAttach(info);
       }

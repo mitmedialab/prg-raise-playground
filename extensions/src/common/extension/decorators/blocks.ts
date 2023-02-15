@@ -1,6 +1,6 @@
 import type BlockUtility from "$scratch-vm/engine/block-utility";
 import { TypedMethodDecorator } from ".";
-import { BlockV2, ExtensionV2 } from "$common/extension/Extension";
+import { BlockV2, DecoratedExtension } from "$common/extension/Extension";
 import { getImplementationName } from "$common/extension/mixins/scratchInfo";
 import { BlockType } from "$common/enums";
 
@@ -8,7 +8,7 @@ type BlockFromArgsAndReturn<Args extends any[], Return> = Args extends [...infer
   ? BlockV2<(...args: R) => Return> : BlockV2<(...args: Args) => Return>;
 
 export function block<
-  This extends ExtensionV2,
+  This extends DecoratedExtension,
   const Args extends any[],
   const Return,
   const Fn extends (...args: Args) => Return,
@@ -25,7 +25,7 @@ export function block<
 }
 
 export function buttonBlock<
-  This extends ExtensionV2,
+  This extends DecoratedExtension,
 >(text: string): TypedMethodDecorator<This, [], void, () => void> {
   type Args = [] | [BlockUtility];
   type Return = void;
