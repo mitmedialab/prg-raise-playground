@@ -1,13 +1,14 @@
 import { watch, type RollupOptions, type Plugin } from "rollup";
 import { FrameworkID } from "$common";
-import { announceWrite, createExtensionMenuAssets, fillInCodeGenArgs, setupExtensionBundleEntry, transpileExtensions } from "../plugins";
+import { announceWrite, createExtensionMenuAssets, fillInConstructorArgs, setupExtensionBundleEntry, transpileExtensions } from "../plugins";
 import { commonAlias } from "../utils/aliases";
-import { getThirdPartyPlugins, getOutputOptions, BundleInfo, getBundleInfo, logEvents } from ".";
+import { getThirdPartyPlugins, getOutputOptions, BundleInfo, getBundleInfo, logEvents, stringifyCodeGenArgs } from ".";
 import Transpiler from "../typeProbing/Transpiler";
 import { printDiagnostics } from "../typeProbing/diagnostics";
 import { retrieveExtensionDetails } from "../typeProbing";
 import { sendToParent } from "$root/scripts/comms";
 import chalk from "chalk";
+import { getBlockIconURI } from "scripts/utils/URIs";
 
 const transpileComplete = (ts: Transpiler, { menuDetails }: BundleInfo) => {
   const details = retrieveExtensionDetails(ts.program);
@@ -27,7 +28,7 @@ export default async function (dir: string, extensionCount: number, doWatch: boo
     setupExtensionBundleEntry(info),
     transpileExtensions(info, { onSuccess: transpileComplete, onError: transpileFailed }),
     createExtensionMenuAssets(info),
-    fillInCodeGenArgs(info),
+    fillInConstructorArgs(info, stringifyCodeGenArgs),
     announceWrite(info),
   ];
 

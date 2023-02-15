@@ -1,6 +1,6 @@
 import { type RollupOptions, type Plugin, watch } from "rollup";
 import { FrameworkID } from "$common";
-import { finalizeV2Bundle, setupExtensionBundleEntry, transpileExtensions } from "../plugins";
+import { fillInConstructorArgs, finalizeV2Bundle, setupExtensionBundleEntry, transpileExtensions, v2CodeGenFlag } from "../plugins";
 import { commonAlias } from "../utils/aliases";
 import { getThirdPartyPlugins, getOutputOptions, BundleInfo, getBundleInfo, logEvents } from ".";
 import fs from 'fs';
@@ -13,6 +13,7 @@ export default async function (dir: string, extensionCount: number, doWatch: boo
 
   const customPRGPlugins: Plugin[] = [
     setupExtensionBundleEntry(info),
+    fillInConstructorArgs(info, () => v2CodeGenFlag),
     finalizeV2Bundle(info)
   ];
 

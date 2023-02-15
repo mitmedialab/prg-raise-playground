@@ -8,7 +8,7 @@ import { appendToRootDetailsFile, populateMenuFileForExtension } from "./extensi
 import { exportAllFromModule, toNamedDefaultExport } from "./utils/importExport";
 import { default as glob } from 'glob';
 import { commonDirectory, deleteAllFilesInDir, extensionBundlesDirectory, fileName, generatedMenuDetailsDirectory, getBundleFile, getDirectoryAndFileName, tsToJs } from "./utils/fileSystem";
-import { BundleInfo } from "./bundles";
+import { BundleInfo, stringifyCodeGenArgs } from "./bundles";
 import ts from "typescript";
 import { getSrcCompilerHost } from "./typeProbing/tsConfig";
 import { extensionsFolder, packages, vmSrc } from "$root/scripts/paths";
@@ -127,7 +127,7 @@ export const setupExtensionBundleEntry = ({ indexFile, bundleEntry, directory }:
         fs.writeFileSync(bundleEntry, filesToBundle.join("\n"));
     },
     buildEnd() {
-      //fs.rmSync(bundleEntry);
+      fs.rmSync(bundleEntry);
     },
   }
 }
@@ -145,13 +145,7 @@ export const transpileExtensions = (info: BundleInfo, callbacks: Record<Transpil
   }
 }
 
-export const executee = ({ id, directory, menuDetails, indexFile }: BundleInfo): Plugin => {
-  return {
-    name: "",
-  }
-}
-
-export const fillInCodeGenArgs = ({ id, directory, menuDetails, indexFile }: BundleInfo): Plugin => {
+export const fillInConstructorArgs = (info: BundleInfo, getContent: (info: BundleInfo) => string): Plugin => {
   const keywords = ["extends", "Extension", "{"];
   const matchClass = keywords.join(matchAnyWhiteSpaceIncludingNewLine + matchOneOrMoreTimes);
   const expression = createMatchGroup(matchClass);
@@ -164,12 +158,9 @@ export const fillInCodeGenArgs = ({ id, directory, menuDetails, indexFile }: Bun
     transform: {
       order: 'post',
       handler: (code: string, file: string) => {
-        if (file !== indexFile) return;
-        const { name } = menuDetails;
-        const blockIconURI = getBlockIconURI(menuDetails, directory);
-        const codeGenArgs: CodeGenParams = [name, id, blockIconURI];
+        if (file !== info.indexFile) return;
         return {
-          code: code.replace("super(...arguments)", `super(...[...arguments, ...${JSON.stringify(codeGenArgs)}])`),
+          code: code.replace("super(...arguments)", `super(...[...arguments, ${getContent(info)}])`),
           map: null
         };
 
@@ -237,6 +228,8 @@ const frameworkBundle: { content: Promise<string> } & Record<string, any> = {
   }
 }
 
+export const v2CodeGenFlag = "replace_code_gen_args";
+
 export const finalizeV2Bundle = (info: BundleInfo): Plugin => {
   const { bundleDestination, id, menuDetails, totalNumberOfExtensions, name } = info;
   const runner = runOncePerBundling();
@@ -248,13 +241,18 @@ export const finalizeV2Bundle = (info: BundleInfo): Plugin => {
       for (const key in details) menuDetails[key] = details[key];
       success = true;
     });
-    eval(framework + "\n" + fs.readFileSync(bundleDestination));
+    eval(framework + "\n" + fs.readFileSync(bundleDestination, "utf-8"));
     if (!success) throw new Error(`No extension registered for '${name}'. Did you forget to use the extension decorator?`);
   }
 
   const writeOutMenuDetails = (isFirstRun: boolean) => {
     if (isFirstRun) appendToRootDetailsFile(info);
     populateMenuFileForExtension(info);
+  }
+
+  const fillCodeGenParams = () => {
+    const content = fs.readFileSync(bundleDestination, "utf-8").replace(v2CodeGenFlag, stringifyCodeGenArgs(info));
+    fs.writeFileSync(bundleDestination, content);
   }
 
   const tryAnnounceInitialExtensionsWrite = (isFirstRun: boolean) => {
@@ -269,6 +267,7 @@ export const finalizeV2Bundle = (info: BundleInfo): Plugin => {
     writeBundle: async () => {
       try {
         await executeBundleAndExtractMenuDetails();
+        fillCodeGenParams();
         const isFirstRun = runner.check();
         writeOutMenuDetails(isFirstRun);
         tryAnnounceInitialExtensionsWrite(isFirstRun);

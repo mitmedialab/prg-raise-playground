@@ -17,6 +17,9 @@ export type CodeGenArgs = {
   blockIconURI: never,
 }
 
+type ExlcudeFirst<F> = F extends [any, ...infer R] ? R : never;
+export type CodeGenParams = ExlcudeFirst<ConstructorParameters<typeof ExtensionBase>>;
+
 export abstract class ExtensionBase {
   /**
    * @summary This member function (or 'method') will be called when a user adds your extension via the Extensions Menu (i.e. when your extension is instantiated)
@@ -79,14 +82,8 @@ const applyAllMixins = (base: ExtensionBaseConstructor) =>
 export const extensionsMap = new Map<string, ExtensionV2>();
 
 export abstract class ExtensionV2 extends applyAllMixins(ExtensionBase) {
-  abstract init(env: Environment);
-
-  constructor(runtime: never, codeGenArgs?: CodeGenArgs) {
-    //const { name, id, blockIconURI } = codeGenArgs;
-    //super(runtime, name, id, blockIconURI);
-    const id = "simpleprg95grpexample";
-    super(runtime, "Super Simple Typescript Extension!", "simpleprg95grpexample", undefined)
-    extensionsMap.set(id, this);
+  constructor(FORBIDDEN: never) {
+    super(...arguments);
   }
 }
 
@@ -130,7 +127,7 @@ export abstract class Extension
   <
     MenuDetails extends ExtensionMenuDisplayDetails,
     Blocks extends ExtensionBlocks
-  > extends applyAllMixins(ExtensionBase) {
+  > extends ExtensionV2 {
 
   readonly BlockFunctions: Blocks;
   readonly BlockDefinitions: BlockDefinitions<typeof this>;

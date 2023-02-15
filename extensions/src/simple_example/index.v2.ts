@@ -2,7 +2,7 @@ import { ArgumentType, BlockType, Environment, Menu, Extension, SaveDataHandler,
 import { oldGetInfo } from "./legacyTest";
 
 @extension({
-  name: "Super Simple Typescript Extension1!!",
+  name: "Super Simple Typescript Extension!",
   description: "Skeleton for a typescript extension",
   iconURL: "",
   insetIconURL: "",
@@ -26,9 +26,6 @@ export default class SimpleTypescript extends ExtensionV2 {
     onLoad: (self, { count }) => self.count = count
   });
 
-  init(env: Environment) {
-  }
-
   increment() {
     this.count++;
   }
@@ -44,6 +41,9 @@ export default class SimpleTypescript extends ExtensionV2 {
   }))
   log(msg: string) {
     console.log(msg);
+  }
+
+  init(env: Environment) {
   }
 
   @block({ type: BlockType.Button, text: `Dummy UI` })

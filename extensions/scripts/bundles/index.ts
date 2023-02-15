@@ -1,5 +1,5 @@
 import path from "path";
-import { ExtensionMenuDisplayDetails, encode } from "$common"
+import { CodeGenParams, ExtensionMenuDisplayDetails, encode } from "$common"
 import { fileName, getBundleFile, getMenuDetailsAssetsDirectory, getMenuDetailsAssetsFile } from "../utils/fileSystem";
 import { type Plugin, type OutputOptions, type RollupWatcher } from "rollup";
 import alias from "@rollup/plugin-alias";
@@ -14,6 +14,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import { terser } from "rollup-plugin-terser";
 import css from 'rollup-plugin-css-only';
 import chalk from "chalk";
+import { getBlockIconURI } from "scripts/utils/URIs";
 
 export type BundleInfo = {
   directory: string,
@@ -72,4 +73,12 @@ export const logEvents = (watcher: RollupWatcher, { name }: BundleInfo) => {
     });
 
   watcher.on("change", (id, { event }) => console.log(chalk.bgGreen(prefix) + chalk.cyan(`${event} on ${id}`)));
+}
+
+
+export const stringifyCodeGenArgs = ({ menuDetails, directory, id }: BundleInfo) => {
+  const { name } = menuDetails;
+  const blockIconURI = getBlockIconURI(menuDetails, directory);
+  const codeGenArgs: CodeGenParams = [name, id, blockIconURI];
+  return "..." + JSON.stringify(codeGenArgs);
 }
