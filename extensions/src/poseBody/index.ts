@@ -1,5 +1,5 @@
 import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, RuntimeEvent, ValueOf, extractLegacySupportFromOldGetInfo } from "$common";
-
+import legacy from "./legacy";
 // import Video from '../../../packages/scratch-vm/src/io/video';
 
 import * as posenet from '@tensorflow-models/posenet';
@@ -109,8 +109,8 @@ export default class PoseBody extends Extension<Details, Blocks> {
    * and set the video device to use them.
    */
   projectStarted() {
-    this.setVideoTransparency(this.globalVideoTransparency);
-    this.videoToggle(this.globalVideoState);
+    this.setTransparency(this.globalVideoTransparency);
+    this.toggleVideo(this.globalVideoState);
   }
 
   /**
@@ -191,7 +191,7 @@ export default class PoseBody extends Extension<Details, Blocks> {
    * Turns the video camera off/on/on and flipped. This is called in the operation of videoToggleBlock
    * @param state 
    */
-  videoToggle(state: number) {
+  toggleVideo(state: number) {
     if (state === VideoState.OFF) return this.runtime.ioDevices.video.disableVideo();
 
     this.runtime.ioDevices.video.enableVideo();
@@ -203,7 +203,7 @@ export default class PoseBody extends Extension<Details, Blocks> {
    * Sets the video's transparency. This is called in the operation of setVideoTransparencyBlock
    * @param transparency 
    */
-  setVideoTransparency(transparency: number) {
+  setTransparency(transparency: number) {
     const trans = Math.max(Math.min(transparency, 100), 0);
     this.runtime.ioDevices.video.setPreviewGhost(trans);
   }
@@ -249,8 +249,8 @@ export default class PoseBody extends Extension<Details, Blocks> {
 
     const handlerOptions = bodyOptions.map(part => part.value);
 
-    type DefineGoToBodyPart = DefineBlock<PoseBody, Blocks["goToBodyPartBlock"]>;
-    const goToBodyPartBlock: DefineGoToBodyPart = () => ({
+    // type DefineGoToBodyPart = DefineBlock<PoseBody, Blocks["goToBodyPartBlock"]>;
+    const goToBodyPartBlock = () => legacy.goToPart({
       type: BlockType.Command,
       arg: {
         type: ArgumentType.String,
@@ -272,8 +272,8 @@ export default class PoseBody extends Extension<Details, Blocks> {
       }
     });
 
-    type DefineVideoToggle = DefineBlock<PoseBody, Blocks["videoToggleBlock"]>;
-    const videoToggleBlock: DefineVideoToggle = () => ({
+    // type DefineVideoToggle = DefineBlock<PoseBody, Blocks["videoToggleBlock"]>;
+    const videoToggleBlock = () => legacy.videoToggle({
       type: BlockType.Command,
       arg: {
         type: ArgumentType.Number,
@@ -287,17 +287,17 @@ export default class PoseBody extends Extension<Details, Blocks> {
       },
       text: (video_state: number) => `turn video ${video_state}`,
       operation: (video_state: number) => {
-        this.videoToggle(video_state);
+        this.toggleVideo(video_state);
       }
     });
 
-    type DefineSetVideoTransparency = DefineBlock<PoseBody, Blocks["setVideoTransparencyBlock"]>;
-    const setVideoTransparencyBlock: DefineSetVideoTransparency = () => ({
+    // type DefineSetVideoTransparency = DefineBlock<PoseBody, Blocks["setVideoTransparencyBlock"]>;
+    const setVideoTransparencyBlock = () => legacy.setVideoTransparency({
       type: BlockType.Command,
       arg: { type: ArgumentType.Number, defaultValue: 50 },
       text: (transparency: number) => `set video transparency to ${transparency}`,
       operation: (transparency: number) => {
-        this.setVideoTransparency(transparency);
+        this.setTransparency(transparency);
       }
     });
 
