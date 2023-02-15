@@ -11,7 +11,7 @@ import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, Ex
  */
 type Details = {
   name: "Teachable Machine",
-  description: "Use Google Teachable Machine models in your Scratch project."
+  description: "Use your Teachable Machine models in your Scratch project!"
   iconURL: "teachable-machine-blocks.png",
   insetIconURL: "teachable-machine-blocks-small.svg"
 };
