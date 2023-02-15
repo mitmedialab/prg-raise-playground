@@ -1,4 +1,4 @@
-import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, RuntimeEvent, ValueOf } from "$common";
+import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, RuntimeEvent, ValueOf, extractLegacySupportFromOldGetInfo } from "$common";
 
 // import Video from '../../../packages/scratch-vm/src/io/video';
 
