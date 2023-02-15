@@ -249,7 +249,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
 
   /**
    * 
-   * @param emotion 
+   * @param felt_emotion 
    * @param emotions 
    * @returns 
    */
@@ -260,16 +260,16 @@ export default class PoseFace extends Extension<Details, Blocks> {
     let maxEmotionValue = -Number.MAX_VALUE;
     let maxEmotion = null;
     emotions.forEach((emotion) => {
-      console.log(emotion);
-      const emotionValue = this.affdexState.emotions[emotion];
-      console.log(emotionValue)
+      // console.log(emotion);
+      const emotionValue = this.affdexState.emotions[emotion.value];
+      // console.log(emotionValue)
       if (emotionValue > maxEmotionValue) {
         maxEmotionValue = emotionValue;
         maxEmotion = emotion;
       }
     });
-    console.log(maxEmotion);
-    return felt_emotion === maxEmotion;
+    // console.log(maxEmotion.value + " "+ felt_emotion);
+    return felt_emotion == maxEmotion.value;
   }
 
   /**
