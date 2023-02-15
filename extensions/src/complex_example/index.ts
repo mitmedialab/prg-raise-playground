@@ -1,4 +1,4 @@
-import { ArgumentType, BlockType, Block, BlockDefinitions, RGBObject, MenuItem, ButtonBlock, Extension, BlockInfo } from "$common";
+import { ArgumentType, BlockType, Block, BlockDefinitions, RGBObject, MenuItem, ButtonBlock, Extension, BlockInfo, SaveDataHandler, copyTo } from "$common";
 import addDefinition from "./addDefinition";
 
 type DisplayDetails = {
@@ -23,7 +23,7 @@ export const enum Animal {
 }
 
 
-const nameByAnimal: Record<Animal, string> = {
+export const nameByAnimal: Record<Animal, string> = {
   [Animal.Leopard]: 'leopard',
   [Animal.Tiger]: 'tiger',
   [Animal.Gorilla]: 'gorilla',
@@ -31,7 +31,7 @@ const nameByAnimal: Record<Animal, string> = {
   [Animal.Pig]: 'pig',
 }
 
-const emojiByAnimal: Record<Animal, string> = {
+export const emojiByAnimal: Record<Animal, string> = {
   [Animal.Leopard]: '🐆',
   [Animal.Tiger]: '🐅',
   [Animal.Gorilla]: '🦍',
@@ -69,7 +69,11 @@ export default class TypeScriptFrameworkExample extends Extension<DisplayDetails
 
   state: number = 0;
 
-  defineTranslations() { return undefined };
+  saveDataHandler = new SaveDataHandler({
+    Extension: TypeScriptFrameworkExample,
+    onSave: ({ collection, state }) => ({ collection, state }),
+    onLoad: (target, source) => copyTo({ target, source })
+  });
 
   init() {
     this.lhsOptions = [3, 4, 5];
@@ -216,7 +220,10 @@ export default class TypeScriptFrameworkExample extends Extension<DisplayDetails
 
       addAnimalToCollection: (self: TypeScriptFrameworkExample) => ({
         type: BlockType.Command,
-        arg: { type: ArgumentType.Number, options: self.animals },
+        arg: self.makeCustomArgument({
+          component: "AnimalArgument",
+          initial: { value: Animal.Leopard, text: nameByAnimal[Animal.Leopard] }
+        }),
         text: (animal) => `Add ${animal} to collection`,
         operation: (animal) => {
           this.addAnimalToCollection(animal);

@@ -1,10 +1,14 @@
 import { ArgumentType, BlockType, Language } from './enums';
-import type { ExtensionMenuDisplayDetails, ExtensionBlocks, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, VerboseArgument, Environment, Menu, DynamicMenu, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters, TypeByArgumentType, AllText, Translations, BlockOperation, ValueOf } from './types';
+import type { ExtensionMenuDisplayDetails, ExtensionBlocks, Block, ExtensionArgumentMetadata, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, Argument, MenuItem, RGBObject, BlockDefinitions, VerboseArgument, Environment, Menu, DynamicMenu, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters, TypeByArgumentType, AllText, Translations, BlockOperation, ValueOf, BaseExtension, ExtensionMenuItems } from './types';
 import Cast from '$scratch-vm/util/cast';
 //import * as formatMessage from 'format-message';
 import Runtime from "$scratch-vm/engine/runtime";
 import { openUI, registerButtonCallback } from './ui';
-import { isFunction, isString } from './utils';
+import { identity, isFunction, isPrimitive, isString } from './utils';
+import { isCustomArgumentHack, processCustomArgumentHack } from './customArguments';
+import { customArgumentCheck, customArgumentFlag } from './globals';
+import CustomArgumentManager, { ArgumentEntry } from './customArguments/CustomArgumentManager';
+import { SaveDataHandler } from './SavaDataHandler';
 
 export type CodeGenArgs = {
   name: never,
@@ -55,12 +59,76 @@ export abstract class Extension
   > {
   runtime: Runtime;
 
+  /**
+   * Optional field that can be defined if you need to save custom data for an extension 
+   * (like some extension specific variable, or an API endpoint).
+   * @example
+   * class Example extends Extension<..., ...> {
+   *    someValue = 5;
+   *    ...
+   *    saveDataHandler = new SaveDataHandler({
+   *      Extension: Example,
+   *      // NOTE: The type info for 'instance' could be left off in the line below
+   *      onSave: (instance: Example) => ({ valueToSave: instance.someValue }),
+   *      onLoad: (instance, data) => instance.someValue = data.valueToSave
+   *    })
+   * }
+   * @see Extension.MakeSaveDataHandler
+   */
+  protected saveDataHandler: SaveDataHandler<typeof this, any> = undefined;
+
   readonly BlockFunctions: Blocks;
-  readonly BlockDefinitions: BlockDefinitions<Extension<MenuDetails, Blocks>>;
-  readonly Translations: Translations<Extension<MenuDetails, Blocks>>;
+  readonly BlockDefinitions: BlockDefinitions<typeof this>;
+  readonly Translations: Translations<typeof this>;
 
   private readonly internal_blocks: ExtensionBlockMetadata[] = [];
-  private readonly internal_menus: ExtensionMenuMetadata[] = [];
+  private readonly internal_menus: (ExtensionMenuItems & { name: string })[] = [];
+
+  private keyByLegacyName: Record<keyof Blocks, string> = undefined;
+
+  private argumentManager: CustomArgumentManager = null;
+
+  public get customArgumentManager(): CustomArgumentManager {
+    return this.argumentManager
+  }
+
+  /**
+   * WARNING! If you change this key, it will affect already saved projects.
+   * Do not rename this without first developing a mechanism for searching for previously used keys.
+   */
+  private static SaveDataKey = "customSaveDataPerExtension" as const;
+
+  /**
+   * Save function called 'internally' by the VM when serializing a project.
+   * @param toSave 
+   * @param extensionIDs 
+   * @returns 
+   */
+  private save(toSave: { [Extension.SaveDataKey]: Record<string, any> }, extensionIDs: Set<string>) {
+    const { saveDataHandler, id, argumentManager } = this;
+    const saveData = saveDataHandler?.hooks.onSave(this) ?? {};
+    argumentManager?.saveTo(saveData);
+    if (Object.keys(saveData).length === 0) return;
+    const container = toSave[Extension.SaveDataKey];
+    container ? (container[id] = saveData) : (toSave[Extension.SaveDataKey] = { [id]: saveData });
+    extensionIDs.add(id);
+  }
+
+  /**
+   * Load function called 'internally' by the VM when loading a project.
+   * Will be invoked on an extension immediately after it is constructed.
+   * @param saved 
+   * @returns 
+   */
+  private load(saved: { [Extension.SaveDataKey]: Record<string, any> }) {
+    if (!saved) return;
+    const { saveDataHandler, id } = this;
+    const saveData = Extension.SaveDataKey in saved ? saved[Extension.SaveDataKey][id] : null;
+    if (!saveData) return;
+    saveDataHandler?.hooks.onLoad(this, saveData);
+    (this.argumentManager ??= new CustomArgumentManager()).loadFrom(saveData);
+  }
+
 
   openUI(component: string, label?: string) {
     const { id, name, runtime } = this;
@@ -80,26 +148,28 @@ export abstract class Extension
     this.init({ runtime: this.runtime, videoFeed: this.runtime.ioDevices?.video });
     const definitions = this.defineBlocks();
     const menus: Menu<any>[] = [];
+    const menuNames: string[] = [];
     for (const key in definitions) {
-      const block = Extension.IsFunction(definitions[key]) ? (definitions[key] as Function)(this) : definitions[key];
-      const info = this.convertToInfo(key, block, menus);
+      const block = isFunction(definitions[key]) ? (definitions[key] as Function)(this) : definitions[key];
+      const info = this.convertToInfo(key, block, menus, menuNames);
       this.internal_blocks.push(info);
     }
 
     const reporterItemsKey: keyof MenuThatAcceptsReporters<any> = "items";
     const reporterItemsGetterKey: keyof DynamicMenuThatAcceptsReporters<any> = "getItems";
-    for (const menu of menus) {
+    for (const [index, menu] of menus.entries()) {
       let acceptReporters = false;
+      const name = menuNames[index];
 
       if (Array.isArray(menu)) {
         const items: any[] | MenuItem<any>[] = menu;
-        this.addStaticMenu(items, acceptReporters);
+        this.addStaticMenu(items, acceptReporters, name);
         continue;
       }
 
-      if (Extension.IsFunction(menu)) {
+      if (isFunction(menu)) {
         const getItems = menu as DynamicMenu<any>;
-        this.addDynamicMenu(getItems, acceptReporters);
+        this.addDynamicMenu(getItems, acceptReporters, name);
         continue;
       }
 
@@ -107,13 +177,13 @@ export abstract class Extension
 
       if (reporterItemsKey in menu) {
         const nonDynamic = menu as MenuThatAcceptsReporters<any>;
-        this.addStaticMenu(nonDynamic.items, acceptReporters);
+        this.addStaticMenu(nonDynamic.items, acceptReporters, name);
         continue;
       }
 
       if (reporterItemsGetterKey in menu) {
         const dynamicMenu = menu as DynamicMenuThatAcceptsReporters<any>;
-        this.addDynamicMenu(dynamicMenu.getItems, acceptReporters);
+        this.addDynamicMenu(dynamicMenu.getItems, acceptReporters, name);
         continue;
       }
     }
@@ -224,106 +294,69 @@ export abstract class Extension
   private getInfo(): ExtensionMetadata {
     const { id, internal_blocks: blocks, internal_menus: menus, name, blockIconURI } = this;
     const info = { id, blocks, name, blockIconURI };
-    if (menus) info['menus'] = Object.entries(this.internal_menus).reduce((obj, [key, value]) => {
-      obj[key] = value;
+    if (menus) info['menus'] = Object.values(this.internal_menus).reduce((obj, { name, ...value }) => {
+      obj[name] = value;
       return obj;
     }, {});
 
     return info;
   }
 
-  private addStaticMenu(items: MenuItem<any>[], acceptReporters: boolean) {
+  private addStaticMenu(items: MenuItem<any>[], acceptReporters: boolean, name: string) {
     this.internal_menus.push({
+      name,
       acceptReporters,
       items: items.map(item => item /**TODO figure out how to format */).map(Extension.ConvertMenuItemsToString)
     });
   }
 
-  private addDynamicMenu(getItems: DynamicMenu<any>, acceptReporters: boolean) {
+  private addDynamicMenu(getItems: DynamicMenu<any>, acceptReporters: boolean, name: string) {
+    // this key might need to be adapted for legacy extensions
     const key = `internal_dynamic_${this.internal_menus.length}`;
     this[key] = () => {
       const items = getItems();
       return items.map(item => item).map(Extension.ConvertMenuItemsToString);
     };
-    this.internal_menus.push({ acceptReporters, items: key });
+    this.internal_menus.push({ acceptReporters, items: key, name });
   }
 
-  private convertToInfo(key: string, block: Block<this, BlockOperation>, menusToAdd: MenuItem<any>[]): ExtensionBlockMetadata {
+  private convertToInfo(key: keyof Blocks & string, block: Block<this, BlockOperation>, menusToAdd: MenuItem<any>[], menuNames: string[]): ExtensionBlockMetadata {
     const { type, text, operation } = block;
     const args: Argument<any>[] = block.arg ? [block.arg] : block.args;
 
-    const defaultText: string = Extension.IsFunction(text)
-      ? (text as unknown as (...params: any[]) => string)(...args.map((_, index) => `[${index}]`))
-      : text as string;
+    const legacyInfo = Extension.ExtractLegacyInformation(block);
+    const isLegacy = legacyInfo !== undefined;
 
-    const displayText = this.format(defaultText, key, `Block text for '${key}'`);
+    if (isLegacy) this.keyByLegacyName
+      ? this.keyByLegacyName[key] = legacyInfo.name
+      : this.keyByLegacyName = { [key]: legacyInfo.name } as Record<keyof Blocks, string>;
 
-    type Handler = MenuThatAcceptsReporters<any>['handler'];
-    const handlerKey: keyof MenuThatAcceptsReporters<any> = 'handler';
-    const handlers = args ? new Array<Handler>(args.length).fill(undefined) : undefined;
+    const { displayText, orderedNames } = Extension.ConvertToDisplayText(this, key, text, args, isLegacy);
+    const { argumentsInfo, handlers } = Extension.ConvertToArgumentInfo(this, key, args, menusToAdd, menuNames) ?? { argumentsInfo: undefined, handlers: undefined };
 
-    const argsInfo: Record<string, ExtensionArgumentMetadata> = args?.map((element, index) => {
-      const entry = {} as ExtensionArgumentMetadata;
-      entry.type = Extension.GetArgumentType(element);
-
-      if (Extension.IsPrimitive(element)) return entry;
-
-      const { defaultValue, options } = element as VerboseArgument<any>;
-
-      if (defaultValue !== undefined) entry.defaultValue =
-        Extension.IsString(entry)
-          ? this.format(defaultValue, Extension.GetArgTranslationID(key, index), `Default value for arg ${index + 1} of ${key} block`)
-          : defaultValue;
-
-      if (!options) return entry;
-
-      const alreadyAddedIndex = menusToAdd.indexOf(options);
-      const menuIndex = alreadyAddedIndex >= 0 ? alreadyAddedIndex : menusToAdd.push(options) - 1;
-      entry.menu = `${menuIndex}`;
-
-      if (handlerKey in options) {
-        const { handler } = options as MenuThatAcceptsReporters<any> | DynamicMenuThatAcceptsReporters<any>;
-        handlers[index] = handler;
-      }
-
-      return entry;
-    })
-      .reduce((accumulation, value, index) => {
-        accumulation[`${index}`] = value;
-        return accumulation;
-      }, {});
-
-    const opcode = Extension.GetInternalKey(key);
+    const opcode = isLegacy ? legacyInfo.name : Extension.GetInternalKey(key);
     const bound = operation.bind(this);
 
-    const isButton = type === BlockType.Button;
-    const buttonID = isButton ? Extension.GetButtonID(this.id, opcode) : undefined;
+    const { id } = this;
 
-    if (isButton) {
-      registerButtonCallback(this.runtime, buttonID, bound)
-    }
-    else {
-      this[opcode] = (argsFromScratch, blockUtility) => {
-        const { mutation } = argsFromScratch; // if we need it...
-        // NOTE: Assumption is that args order will be correct since their keys are parsable as ints (i.e. '0', '1', ...)
-        const uncasted = Object.values(argsFromScratch).slice(0, -1);
-        const casted = uncasted.map((value, index) => {
-          const handled = handlers[index] ? handlers[index](value) : value;
-          const type = Extension.GetArgumentType(args[index]);
-          return Extension.CastToType(type, handled)
-        });
-        return bound(...casted, blockUtility); // can add more util params as necessary
-      }
-    }
+    const isButton = type === BlockType.Button;
+    const buttonID = isButton ? Extension.GetButtonID(id, opcode) : undefined;
+
+    isButton
+      ? registerButtonCallback(this.runtime, buttonID, bound)
+      : this.registerOpcode(opcode, bound, args, handlers, orderedNames, isLegacy);
 
     return {
       opcode,
       text: displayText,
       blockType: type,
-      arguments: argsInfo,
+      arguments: argumentsInfo,
       func: buttonID,
     }
   }
+
+  private [customArgumentCheck] = isCustomArgumentHack.bind(this) as typeof isCustomArgumentHack;
+  private processCustomArgumentHack = processCustomArgumentHack.bind(this) as typeof processCustomArgumentHack<Extension<MenuDetails, Blocks>>;
 
   private format(text: string, identifier: string, description: string): string {
     return text;
@@ -334,6 +367,31 @@ export abstract class Extension
       description: `${description} (of '${this.name}' extension)`,
     });
     */
+  }
+
+  private registerOpcode(opcode: string, bound: Function, args: Argument<any>[], handlers: Function[], orderedNames: string[], isLegacy: boolean,) {
+    const { customArgumentManager } = this;
+    this[opcode] = (argsFromScratch, blockUtility) => {
+      const { mutation } = argsFromScratch; // if we need it...
+
+      const uncasted = isLegacy
+        ? orderedNames.map(name => argsFromScratch[name])
+        // NOTE: Assumption is that args order will be correct since their keys are parsable as ints (i.e. '0', '1', ...)
+        : Object.values(argsFromScratch).slice(0, -1);
+
+      const casted = uncasted.map((param: any, index) => {
+        const type = Extension.GetArgumentType(args[index]);
+        const handler = handlers[index] ?? identity;
+
+        return type !== ArgumentType.Custom
+          ? Extension.CastToType(type, handler(param))
+          : !(isString(param) && CustomArgumentManager.IsIdentifier(param))
+            ? handler(param)
+            : handler(customArgumentManager.getEntry(param).value)
+      });
+
+      return bound(...casted, blockUtility); // can add more util params as necessary
+    }
   }
 
   /*
@@ -374,7 +432,84 @@ export abstract class Extension
     }
   }
 
+  protected makeCustomArgument = <T>({ component, initial, acceptReportersHandler: handler }: { component: string, initial: ArgumentEntry<T>, acceptReportersHandler?: (x: any) => ArgumentEntry<T> }): Argument<T> => {
+    this.argumentManager ??= new CustomArgumentManager();
+    const id = this.argumentManager.add(initial);
+    const getItems = () => [{ text: customArgumentFlag, value: JSON.stringify({ component, id }) }];
+    return {
+      type: ArgumentType.Custom,
+      defaultValue: id,
+      options: handler === undefined ? getItems : { acceptsReports: true, getItems, handler },
+    } as Argument<T>
+  }
+
   static GetKeyFromOpcode = (opcode: string) => opcode.replace(Extension.GetInternalKey(""), "");
+
+  private static ConvertToDisplayText<T extends BaseExtension>(ext: T, key: string, text: string | ((...args: any[]) => string), args: Argument<any>[], isLegacy: boolean) {
+    const orderedNames = isLegacy ? [] : undefined;
+
+    type TextFunc = (...params: any[]) => string;
+    const resolvedText: string = isFunction(text)
+      ? (text as TextFunc)(...args.map((arg, index) => {
+        const name = isLegacy ? Extension.ExtractLegacyInformation(arg).name : index;
+        if (isLegacy) orderedNames.push(name);
+        return `[${name}]`
+      }))
+      : text as string;
+
+    // Once translations supported, replace with 'format'
+    return { displayText: ext.format(resolvedText, key, `Block text for '${key}'`), orderedNames };
+  }
+
+  private static ConvertToArgumentInfo<T extends BaseExtension>(ext: T, key: string, args: Argument<any>[], menusToAdd: MenuItem<any>[], menuNames: string[]) {
+    if (!args) return undefined;
+
+    type Handler = MenuThatAcceptsReporters<any>['handler'];
+    const handlerKey: keyof MenuThatAcceptsReporters<any> = 'handler';
+    const handlers = args ? new Array<Handler>(args.length).fill(undefined) : undefined;
+
+    type Entry = ExtensionArgumentMetadata & { name: string };
+
+    const argumentsInfo = args
+      .map((element, index) => {
+        const entry = {} as Entry;
+        entry.type = Extension.GetArgumentType(element);
+        entry.name = Extension.ExtractLegacyInformation(element)?.name ?? `${index}`;
+
+        if (isPrimitive(element)) return entry;
+
+        const { defaultValue, options } = element as VerboseArgument<any>;
+
+        if (defaultValue !== undefined)
+          entry.defaultValue = isString(entry)
+            ? ext.format(defaultValue, Extension.GetArgTranslationID(key, index), `Default value for arg ${index + 1} of ${key} block`)
+            : defaultValue;
+
+        if (!options) return entry;
+
+        const alreadyAddedIndex = menusToAdd.indexOf(options);
+        const alreadyAdded = alreadyAddedIndex >= 0;
+        const menuIndex = alreadyAdded ? alreadyAddedIndex : menusToAdd.push(options) - 1;
+        const name = Extension.ExtractLegacyInformation(options)?.name ?? `${menuIndex}`;
+
+        if (!alreadyAdded) menuNames.push(name);
+
+        entry.menu = name;
+
+        if (handlerKey in options) {
+          const { handler } = options as MenuThatAcceptsReporters<any> | DynamicMenuThatAcceptsReporters<any>;
+          handlers[index] = handler;
+        }
+
+        return entry;
+      })
+      .reduce((accumulation, { name, ...value }) => {
+        accumulation[name] = value;
+        return accumulation;
+      }, {});
+
+    return { argumentsInfo, handlers };
+  }
 
   private static GetArgTranslationID = (blockname: string, index: number) => {
     return `${blockname}-arg${index}-default`;
@@ -384,7 +519,7 @@ export abstract class Extension
   private static GetButtonID = (id: string, opcode: string) => `${id}_${opcode}`;
 
   private static GetArgumentType = <T>(arg: Argument<T>): ValueOf<typeof ArgumentType> =>
-    Extension.IsPrimitive(arg) ? arg as ValueOf<typeof ArgumentType> : (arg as VerboseArgument<T>).type;
+    isPrimitive(arg) ? arg as ValueOf<typeof ArgumentType> : (arg as VerboseArgument<T>).type;
 
   private static ToFlag = (value: string): boolean => parseInt(value) === 1;
 
@@ -424,12 +559,7 @@ export abstract class Extension
   }
 
   private static ConvertMenuItemsToString = (item: any | MenuItem<any>) =>
-    Extension.IsPrimitive(item) ? `${item}` : { ...item, value: `${item.value}` };
-
-  private static IsPrimitive = (query) => query !== Object(query);
-  private static IsFunction = (query) => isFunction(query);
-
-  private static IsString = (query) => isString(query);
+    isPrimitive(item) ? `${item}` : { ...item, value: `${item.value}` };
 
   private static ExtensionsByID = new Map<string, Extension<any, any>>();
 
@@ -438,4 +568,8 @@ export abstract class Extension
   static TestGetInfo = <T extends Extension<any, any>>(ext: T, ...params: Parameters<Extension<any, any>["getInfo"]>) => ext.getInfo(...params);
   static TestGetBlocks = <T extends Extension<any, any>>(ext: T, ...params: Parameters<Extension<any, any>["getInfo"]>) => ext.getInfo(...params).blocks as ExtensionBlockMetadata[];
   static TestInit = <T extends Extension<any, any>>(ext: T, ...params: Parameters<Extension<any, any>["internal_init"]>) => ext.internal_init(...params);
+
+  static ExtractLegacyInformation = (item) => !isPrimitive(item) && "name" in item ? ({ name: item["name"] as string | undefined }) : undefined;
+
+  static GetLegacyName = <Blocks extends ExtensionBlocks, T extends Extension<any, Blocks>>(ext: T, key: keyof Blocks) => ext.keyByLegacyName?.[key];
 };

@@ -16,9 +16,9 @@ import { retrieveExtensionDetails } from './typeProbing';
 import { commonDirectory, fileName, getAllExtensionDirectories, getBundleFile, getExtensionDirectory, getMenuDetailsAssetsDirectory, getMenuDetailsAssetsFile, watchForExtensionDirectoryAdded } from './utils/fileSystem';
 import { printDiagnostics } from './typeProbing/diagnostics';
 import { sendToParent } from '$root/scripts/comms';
-import { processArgs } from '$root/scripts/processArgs';
 import { watchAllFilesInDirectoryAndCommon } from "./utils/rollupHelper";
 import { commonAlias, getAliasEntries } from "./utils/aliases";
+import { processOptions } from "$root/scripts/buildOptions";
 
 export type BundleInfo = {
   directory: string,
@@ -122,20 +122,25 @@ const bundleExtension = async (dir: string, extensionCount: number, doWatch: boo
   if (doWatch) watchAllFilesInDirectoryAndCommon(info, options, output);
 };
 
-const defaults = { doWatch: false };
-const flagByOption = { doWatch: "watch" };
-const { doWatch } = processArgs<typeof defaults>(flagByOption, defaults);
+const { watch, specifiedDir } = processOptions({ watch: false });
 
-bundleFramework(doWatch);
+bundleFramework(watch);
 
-const extensionDirectories = getAllExtensionDirectories();
+try {
+  const soloDirectory = specifiedDir ? getExtensionDirectory(specifiedDir) : undefined;
+  const extensionDirectories = soloDirectory ? [soloDirectory] : getAllExtensionDirectories();
 
-const { length } = extensionDirectories;
-extensionDirectories.forEach(dir => bundleExtension(dir, length, doWatch));
+  const { length } = extensionDirectories;
+  extensionDirectories.forEach(dir => bundleExtension(dir, length, watch));
 
-if (doWatch) {
-  watchForExtensionDirectoryAdded(
-    extensionDirectories,
-    (path, stats) => bundleExtension(path, extensionDirectories.length + 1, true)
-  );
+  if (!soloDirectory && watch) {
+    watchForExtensionDirectoryAdded(
+      extensionDirectories,
+      (path, stats) => bundleExtension(path, extensionDirectories.length + 1, true)
+    );
+  }
+}
+catch (e) {
+  console.error(chalk.red(e));
+  sendToParent(process, { condition: "extensions error" })
 }

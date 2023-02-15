@@ -1,24 +1,24 @@
-import { BlockType, BlocksInfo, CodeGenArgs, Extension, ExtensionBlockMetadata, PopulateCodeGenArgs } from "$common";
+import { BlockType, BlocksInfo, CodeGenArgs, Extension, ExtensionBlockMetadata, ExtensionConstructor, PopulateCodeGenArgs } from "$common";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import { buildKeyBlockMap } from "$testing";
-import { AnyExtension, BlockKey, ExtensionConstructor, InputArray, KeyToBlockIndexMap, RenderedUI, RuntimeForTest } from "./types";
+import { AnyExtension, BlockKey, InputArray, KeyToBlockIndexMap, RenderedUI, RuntimeForTest } from "./types";
 import { getEngineFile } from "./utils";
 
 export class BlockRunner<T extends AnyExtension> {
   private blockData: ExtensionBlockMetadata[];
 
-  constructor(private map: KeyToBlockIndexMap, private instance: T) {
+  constructor(private map: KeyToBlockIndexMap, public instance: T) {
     this.blockData = Extension.TestGetBlocks(instance);
   }
 
   getBlockMetaDataByKey<K extends BlockKey<T>>(key: K) {
     const { map, blockData } = this;
-    const index = map.get(key);
+    const index = map.get(key) ?? map.get(Extension.GetLegacyName(this.instance, key));
     return blockData[index];
   }
 
   async invoke<K extends BlockKey<T>>(key: K, ...input: InputArray<T, K>):
-    Promise<{ output: BlocksInfo<T>[K], renderedUI?: RenderedUI }> {
+    Promise<{ output: ReturnType<BlocksInfo<T>[K]["operation"]>, ui?: RenderedUI }> {
     const { instance } = this;
     const { runtime } = instance;
     const { forTest } = runtime as RuntimeForTest<T>;
@@ -29,7 +29,7 @@ export class BlockRunner<T extends AnyExtension> {
 
     const output = await Promise.resolve(blockFunction(...args));
     const renderedUI = forTest.UIPromise ? await forTest.UIPromise : undefined;
-    return { output, renderedUI };
+    return { output, ui: renderedUI };
   }
 
   createCompanion<TCompanion extends AnyExtension>(constructor: ExtensionConstructor<TCompanion>) {

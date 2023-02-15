@@ -1,5 +1,4 @@
-import { ArgumentType, BlockType, Language, Extension, ButtonBlock, Environment } from "$common";
-import defineTranslations from "./translations";
+import { ArgumentType, BlockType, Language, Extension, ButtonBlock, Environment, SaveDataHandler } from "$common";
 
 type Details = {
   name: "Super Simple Typescript Extension!",
@@ -19,8 +18,13 @@ export default class SimpleTypescript extends Extension<Details, {
   counterUI: ButtonBlock;
   colorUI: ButtonBlock;
 }> {
-
   count: number = 0;
+
+  saveDataHandler = new SaveDataHandler({
+    Extension: SimpleTypescript,
+    onSave: ({ count }) => ({ count }),
+    onLoad: (self, { count }) => self.count = count
+  });
 
   init(env: Environment) {
   }
@@ -32,8 +36,6 @@ export default class SimpleTypescript extends Extension<Details, {
   incrementBy(amount: number) {
     this.count += amount;
   }
-
-  defineTranslations = defineTranslations;
 
   defineBlocks(): SimpleTypescript["BlockDefinitions"] {
     return {
