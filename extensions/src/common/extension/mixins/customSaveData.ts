@@ -1,10 +1,29 @@
-import { CustomArgumentManager } from "$common";
-import { ExtensionBaseConstructor, TypedConstructor } from "../Extension";
-import { ExtensionBase } from "..";
-import customArgumentSupport from "./customArguments";
+import CustomArgumentManager from "$common/customArguments/CustomArgumentManager";
+import { ExtensionBaseConstructor, TypedConstructor, ExtensionBase } from "$common/extension/Extension";
+import customArgumentSupport from "$common/extension/mixins/customArguments";
 
+/**
+ * WARNING! If you change this key, it will affect already saved projects.
+ * Do not rename this without first developing a mechanism for searching for previously used keys.
+ */
 const saveDataKey = "customSaveDataPerExtension" as const;
 
+/**
+ * @summary Utility class to assist in creating a (typesafe) object that, for a given Extension type, handles both:
+ * - writing out data on save
+ * - doing something with save data on load
+ * 
+ * @description This class's constructor takes an object with both an `onSave` and an `onLoad` method
+ * (and the `onSave`'s return type must match `onLoad`'s argument type)
+ * @example
+ * new SaveDataHandler({
+ *    Extension: MyExtension,
+ *    onSave: () => ({x: 0, y: 3}),
+ *    onLoad: (data) => {
+ *       const sum = data.x + data.y; // do something with saved data
+ *    }
+ * })
+ */
 export class SaveDataHandler<T extends ExtensionBase, TData> {
   constructor(public hooks: {
     // @ts-ignore

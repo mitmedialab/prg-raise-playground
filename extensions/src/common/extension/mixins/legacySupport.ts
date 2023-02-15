@@ -1,5 +1,5 @@
-import { ExtensionV2, ExtensionV2Constructor } from "$v2/Extension";
-import { ExtensionMetadata } from "$common";
+import { ExtensionV2, ExtensionV2Constructor } from "$common/extension/Extension";
+import { ExtensionMetadata } from "$common/types";
 
 export default function <T extends ExtensionV2Constructor>(Ctor: T, legacyInfo: ExtensionMetadata) {
   abstract class _ extends Ctor {

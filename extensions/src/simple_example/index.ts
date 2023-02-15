@@ -1,5 +1,4 @@
-import { ArgumentType, BlockType, Language, Extension, ButtonBlock, Environment, SaveDataHandler } from "$common";
-import { legacy } from "$src/v2";
+import { ArgumentType, BlockType, Language, Extension, ButtonBlock, Environment, SaveDataHandler, tryCastToArgumentType } from "$common";
 import { oldGetInfo } from "./legacyTest";
 
 type Details = {
@@ -48,7 +47,7 @@ export default class SimpleTypescript extends Extension<Details, {
           options: {
             items: ['1', 'two', 'three'],
             acceptsReporters: true,
-            handler: (x: any) => Extension.TryCastToArgumentType(ArgumentType.String, x, () => {
+            handler: (x: any) => tryCastToArgumentType(ArgumentType.String, x, () => {
               alert(`Unsopported input: ${x}`);
               return "";
             })

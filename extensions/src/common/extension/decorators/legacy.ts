@@ -1,6 +1,8 @@
-import { ExtensionV2, ExtensionV2Constructor, ExtensionBaseConstructor, legacySupport, AbstractConstructor } from "$v2/index";
-import { ArgumentType, ExtensionMetadata, ExtensionBlockMetadata, TypeByArgumentType, ValueOf, ExtensionMenuItems, Extension, ExtensionMenuDisplayDetails, } from "$common";
 import { TypedClassDecorator } from ".";
+import { ExtensionV2, ExtensionV2Constructor } from "$common/extension/Extension";
+import legacySupport from "$common/extension/mixins/legacySupport";
+import { ArgumentType } from "$common/enums";
+import { ExtensionMetadata, ExtensionBlockMetadata, ValueOf, TypeByArgumentType, ExtensionMenuItems } from "$common/types";
 
 export function legacy<
   Args extends any[],
@@ -13,7 +15,7 @@ export function legacy<
       readonly originalClassName = context.name;
     };
 
-    return LegacySupport as ExtensionBaseConstructor as new (...args: Args) => T;
+    return LegacySupport as ExtensionV2Constructor as new (...args: Args) => T;
   }
 }
 

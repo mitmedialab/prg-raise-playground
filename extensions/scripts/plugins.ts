@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { Extension, FrameworkID, PopulateCodeGenArgs, V2FrameworkID, copyTo, untilCondition } from "$common";
+import { FrameworkID, untilCondition, registerExtensionDefinitionCallback, ExtensionBase } from "$common";
 import { type Plugin } from "rollup";
 import Transpiler from './typeProbing/Transpiler';
 import { getBlockIconURI } from "./utils/URIs";
@@ -17,7 +17,6 @@ import chalk from "chalk";
 import { runOncePerBundling } from "./utils/rollupHelper";
 import { sendToParent } from "$root/scripts/comms";
 import { createMatchGroup, matchAnyWhiteSpaceIncludingNewLine, matchOneOrMoreTimes } from "./utils/regularExpressions";
-import { registerExtensionDefinitionCallback } from "$v2";
 
 export const clearDestinationDirectories = (): Plugin => {
   const runner = runOncePerBundling();
@@ -33,6 +32,13 @@ export const clearDestinationDirectories = (): Plugin => {
 
 export const generateVmDeclarations = (): Plugin => {
   const runner = runOncePerBundling();
+
+  const isUnhandledError = ({ file: { fileName: name }, code }: ts.Diagnostic) => {
+    const isMixinDeclarationError = fileName(name) === "Extension" && code === 4094;
+    const isCannotDeclareInternalTypeError = fileName(name) === "legacySupport" && code === 4058;
+    return !(isMixinDeclarationError || isCannotDeclareInternalTypeError);
+  }
+
   return {
     name: "",
     buildStart() {
@@ -56,7 +62,7 @@ export const generateVmDeclarations = (): Plugin => {
       const program = ts.createProgram([entry], options, host);
       const result = program.emit();
 
-      if (result.emitSkipped) result.diagnostics.forEach(reportDiagnostic);
+      if (result.emitSkipped) result.diagnostics.filter(isUnhandledError).forEach(reportDiagnostic);
 
       const readout = Object.entries(Object.fromEntries(emittedFiles)).map(([dir, files]) => ({ dir, files }));
       console.log(chalk.whiteBright(`Emitted declarations for javascript files:`));
@@ -150,12 +156,24 @@ export const fillInCodeGenArgs = ({ id, directory, menuDetails, indexFile }: Bun
   const matchClass = keywords.join(matchAnyWhiteSpaceIncludingNewLine + matchOneOrMoreTimes);
   const expression = createMatchGroup(matchClass);
 
+  type ExlcudeFirst<F> = F extends [any, ...infer R] ? R : never;
+  type CodeGenParams = ExlcudeFirst<ConstructorParameters<typeof ExtensionBase>>;
+
   return {
     name: 'Fill in Code Gen Args per Extension',
     transform: {
       order: 'post',
       handler: (code: string, file: string) => {
         if (file !== indexFile) return;
+        const { name } = menuDetails;
+        const blockIconURI = getBlockIconURI(menuDetails, directory);
+        const codeGenArgs: CodeGenParams = [name, id, blockIconURI];
+        return {
+          code: code.replace("super(...arguments)", `super(...[...arguments, ...${JSON.stringify(codeGenArgs)}])`),
+          map: null
+        };
+
+        /*
         const re = new RegExp(expression);
         const match = re.exec(code);
 
@@ -170,41 +188,8 @@ export const fillInCodeGenArgs = ({ id, directory, menuDetails, indexFile }: Bun
         const { name } = menuDetails;
         const blockIconURI = getBlockIconURI(menuDetails, directory);
         const codeGenArgs: PopulateCodeGenArgs = { id, name, blockIconURI };
-        const getCodeGenArgs = `${Extension.InternalCodeGenArgsGetterKey}() { return ${JSON.stringify(codeGenArgs)} }`;
-        return { code: `${before}\n\t${getCodeGenArgs}\n${after}`, map: null }
-      }
-    }
-  };
-}
-
-
-export const fillInCodeGenArgsV2 = ({ id, directory, menuDetails, indexFile }: BundleInfo): Plugin => {
-  const keywords = ["extends", "Extension", "{"];
-  const matchClass = keywords.join(matchAnyWhiteSpaceIncludingNewLine + matchOneOrMoreTimes);
-  const expression = createMatchGroup(matchClass);
-
-  return {
-    name: 'Fill in Code Gen Args per V2 Extension ',
-    transform: {
-      order: 'post',
-      handler: (code: string, file: string) => {
-        if (file !== indexFile) return;
-        const re = new RegExp(expression);
-        const match = re.exec(code);
-
-        const errorPrefix = "Framework error -- contact Parker Malachowsky (or project maintainer): ";
-        if (match.length < 2) throw new Error(errorPrefix + "Unable to locate insertion point within Extension class. The strategy likely needs to be updated...");
-        if (match.length > 2) throw new Error(errorPrefix + "Multiple matches found when trying to locate insertion point within Extension class. The strategy likely needs to be updated...");
-
-        const [matchText] = match;
-        const { index } = match;
-        const splitPoint = index + matchText.length;
-        const [before, after] = [code.substring(0, splitPoint), code.substring(splitPoint)];
-        const { name } = menuDetails;
-        const blockIconURI = getBlockIconURI(menuDetails, directory);
-        const codeGenArgs: PopulateCodeGenArgs = { id, name, blockIconURI };
-        const getCodeGenArgs = `${Extension.InternalCodeGenArgsGetterKey}() { return ${JSON.stringify(codeGenArgs)} }`;
-        return { code: `${before}\n\t${getCodeGenArgs}\n${after}`, map: null }
+        const getCodeGenArgs = ""; //`${Extension.InternalCodeGenArgsGetterKey}() { return ${JSON.stringify(codeGenArgs)} }`;
+        return { code: `${before}\n\t${getCodeGenArgs}\n${after}`, map: null }*/
       }
     }
   };
@@ -242,12 +227,9 @@ export const announceWrite = ({ totalNumberOfExtensions }: BundleInfo): Plugin =
 const frameworkBundle: { content: Promise<string> } & Record<string, any> = {
   cache: null,
   retrieve: async () => {
-    const v1Framework = getBundleFile(FrameworkID);
-    const v2Framework = getBundleFile(V2FrameworkID);
-    const frameworkBundles = [v1Framework, v2Framework];
-    const { length } = frameworkBundles;
-    await untilCondition(() => frameworkBundles.filter(fs.existsSync).length == length);
-    return frameworkBundles.map(file => fs.readFileSync(file, "utf-8")).join("\n");
+    const framework = getBundleFile(FrameworkID);
+    await untilCondition(() => fs.existsSync(framework));
+    return fs.readFileSync(framework, "utf-8");
   },
   get content() {
     this.cache ??= this.retrieve();

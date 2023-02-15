@@ -66,7 +66,7 @@ export async function untilReady<T extends { ready: boolean }>(obj: T, delay: nu
 
 export const isString = (query: any) => typeof query === 'string' || query instanceof String;
 
-export const isFunction = (query: any) =>
+export const isFunction = (query: any): query is (...args: any[]) => any =>
   Object.prototype.toString.call(query) === "[object Function]"
   || "function" === typeof query
   || query instanceof Function;

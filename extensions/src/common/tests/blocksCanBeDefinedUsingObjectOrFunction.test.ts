@@ -1,4 +1,4 @@
-import { Extension } from "$common/Extension";
+import { Extension } from "$common/extension/Extension";
 import { BlockType } from "$common/enums";
 import { BlockDefinitions, Block } from "$common/types";
 import { createTestSuite } from "$testing";

@@ -1,7 +1,5 @@
-import { ArgumentType, BlockType, RGBObject, MenuItem, copyTo } from "$common";
-import { ExtensionV2 } from "$src/v2/Extension";
+import { ArgumentType, BlockType, RGBObject, MenuItem, copyTo, ExtensionV2, SaveDataHandler, block, buttonBlock, extension } from "$common";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
-import { block, buttonBlock, extension, SaveDataHandler } from "$v2/index";
 
 const enum MatrixDimension {
   Row,

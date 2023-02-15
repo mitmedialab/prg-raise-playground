@@ -1,6 +1,11 @@
-import { ArgumentType, BlockType, registerButtonCallback, isFunction, isPrimitive, isString, Argument, BlockOperation, DynamicMenu, DynamicMenuThatAcceptsReporters, ExtensionArgumentMetadata, ExtensionBlockMetadata, ExtensionMenuItems, ExtensionMenuMetadata, ExtensionMetadata, Menu, MenuItem, MenuThatAcceptsReporters, ValueOf, VerboseArgument, CustomArgumentManager, castToType, identity } from "$common";
-import { BlockV2, ExtensionBaseConstructor, ExtensionV2 } from "$v2/Extension";
-import customArguments from "./customArguments";
+import { castToType } from "$common/cast";
+import CustomArgumentManager from "$common/customArguments/CustomArgumentManager";
+import { ArgumentType, BlockType } from "$common/enums";
+import { BlockOperation, Argument, ValueOf, VerboseArgument, Menu, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, DynamicMenu, MenuItem, ExtensionArgumentMetadata, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters } from "$common/types";
+import { registerButtonCallback } from "$common/ui";
+import { isPrimitive, isString, isFunction, identity } from "$common/utils";
+import { BlockV2, ExtensionBaseConstructor, ExtensionV2 } from "$common/extension/Extension";
+import customArguments from "$common/extension/mixins/customArguments";
 
 export type BlockInfo<Fn extends BlockOperation> = BlockV2<Fn>
 export type BlockGetter<This, Fn extends BlockOperation> = (this: This, self: This) => BlockV2<Fn>;
@@ -40,7 +45,6 @@ export const wrapOperation = (context: any, operation: BlockOperation, args: { n
 export default function <T extends ExtensionBaseConstructor & ReturnType<typeof customArguments>>(Ctor: T) {
   type BlockEntry = { definition: BlockDefinition<_, BlockOperation>, operation: BlockOperation };
   type BlockMap = Map<string, BlockEntry>;
-
   abstract class _ extends Ctor {
     private readonly blockMap: BlockMap = new Map();
 

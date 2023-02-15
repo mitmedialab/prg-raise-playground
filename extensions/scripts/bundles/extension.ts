@@ -1,9 +1,8 @@
-import { rollup, type RollupOptions, type Plugin } from "rollup";
+import { watch, type RollupOptions, type Plugin } from "rollup";
 import { FrameworkID } from "$common";
 import { announceWrite, createExtensionMenuAssets, fillInCodeGenArgs, setupExtensionBundleEntry, transpileExtensions } from "../plugins";
 import { commonAlias } from "../utils/aliases";
-import { watchAllFilesInDirectoryAndCommon } from "../utils/rollupHelper";
-import { getThirdPartyPlugins, getOutputOptions, BundleInfo, getBundleInfo } from ".";
+import { getThirdPartyPlugins, getOutputOptions, BundleInfo, getBundleInfo, logEvents } from ".";
 import Transpiler from "../typeProbing/Transpiler";
 import { printDiagnostics } from "../typeProbing/diagnostics";
 import { retrieveExtensionDetails } from "../typeProbing";
@@ -33,12 +32,14 @@ export default async function (dir: string, extensionCount: number, doWatch: boo
   ];
 
   const plugins = [...customPRGPlugins, ...getThirdPartyPlugins()];
-  const options: RollupOptions = { input: info.bundleEntry, plugins, external: commonAlias }
-  const bundled = await rollup(options);
+  const options: RollupOptions = {
+    input: info.bundleEntry,
+    plugins,
+    external: [commonAlias]
+  }
+
   const globals = { [commonAlias]: FrameworkID };
-
   const output = getOutputOptions(info, { globals });
-  await bundled.write(output);
-
-  if (doWatch) watchAllFilesInDirectoryAndCommon(info, options, output);
+  const watcher = watch({ ...options, output });
+  logEvents(watcher, info);
 };

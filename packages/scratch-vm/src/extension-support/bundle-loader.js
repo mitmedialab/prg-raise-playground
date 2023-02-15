@@ -58,24 +58,17 @@ const importStaticScript = async(endpoint, onLoad, onError) => {
 const getFrameworkObject = () => window[FrameworkID];
 const getV2FrameworkObject = () => window[V2FrameworkID];
 
-const onFrameworkLoad = (v2) => getFrameworkObject() 
+const onFrameworkLoad = () => getFrameworkObject() 
   ? console.log("Extension Framework succesfully loaded!")
   : console.error("Could not find Extension Framework object after loading script");
 
 const onFrameworkError = () => { throw new Error("Could not load Extension Framework") };
-
-const onV2FrameworkLoad = (v2) => getFrameworkObject() 
-  ? console.log("Extension Framework V2 succesfully loaded!")
-  : console.error("Could not find Extension Framework V2 object after loading script");
-
-const onV2FrameworkError = () => { throw new Error("Could not load Extension Framework V2") };
 
 const getEndPoint = (filename) => `extension-bundles/${filename}.js`;
 
 const tryImportExtensionBundle = async (id, onLoad, onError, error = false) => {
   try {
       if (!getFrameworkObject()) await importStaticScript(getEndPoint(FrameworkID), onFrameworkLoad, onFrameworkError);
-      if (!getV2FrameworkObject()) await importStaticScript(getEndPoint(V2FrameworkID), onV2FrameworkLoad, onV2FrameworkError);
 
       await importStaticScript(getEndPoint(id), onLoad, onError);
       return true;

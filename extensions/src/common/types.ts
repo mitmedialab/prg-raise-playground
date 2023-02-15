@@ -1,7 +1,7 @@
 import type Runtime from '$scratch-vm/engine/runtime';
 import BlockUtility from '$scratch-vm/engine/block-utility';
 import { ArgumentType, BlockType, Branch, Language } from './enums';
-import type { Extension } from './Extension';
+import type { Extension } from './extension/Extension';
 
 export type InternalButtonKey = "__button__";
 export type ButtonBlock = () => InternalButtonKey;

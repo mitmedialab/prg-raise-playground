@@ -1,5 +1,5 @@
-import { openUI } from "$common";
-import { ExtensionBaseConstructor } from "../Extension";
+import { openUI } from "$common/ui";
+import { ExtensionBaseConstructor } from "$common/extension/Extension";
 
 export default function <T extends ExtensionBaseConstructor>(Ctor: T) {
   abstract class _ extends Ctor {

@@ -1,5 +1,5 @@
-import { ExtensionMenuDisplayDetails } from "$common";
-import { AbstractConstructor, ExtensionV2, ExtensionV2Constructor } from "../Extension";
+import { ExtensionMenuDisplayDetails } from "$common/types";
+import { ExtensionV2 } from "$common/extension/Extension";
 import { TypedClassDecorator } from ".";
 
 const registerDetailsIdentifier = "__registerMenuDetials";

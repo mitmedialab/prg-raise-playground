@@ -43,21 +43,17 @@ export const getBundleInfo = (directory: string, { totalNumberOfExtensions, id }
   }
 }
 
-export const getThirdPartyPlugins = (transpilerPlugin: "sucrase" | "typescript" = "sucrase"): Plugin[] => [
+export const getThirdPartyPlugins = (): Plugin[] => [
   alias({ entries: getAliasEntries() }),
   svelte({
     preprocess: autoPreprocess(),
     emitCss: false,
   }),
-  (
-    transpilerPlugin === "sucrase"
-      ? sucrase({ transforms: ['typescript'] })
-      : typescript({ ...getSrcCompilerOptions(), ignoreDeprecations: "5.0" })
-  ),
+  typescript({ ...getSrcCompilerOptions(), ignoreDeprecations: "5.0" }),
   nodeResolve(),
   commonjs(),
   css(),
-  terser(),
+  //terser(),
 ];
 
 export const getOutputOptions = ({ id: name, bundleDestination: file }: BundleInfo, overrides?: OutputOptions): OutputOptions =>

@@ -1,7 +1,6 @@
-import { rollup, type RollupOptions, } from "rollup";
-import { getBundleInfo, getOutputOptions, getThirdPartyPlugins } from ".";
+import { watch, type RollupOptions, } from "rollup";
+import { getBundleInfo, getOutputOptions, getThirdPartyPlugins, logEvents } from ".";
 import { clearDestinationDirectories, generateVmDeclarations, setupFrameworkBundleEntry, transpileExtensionGlobals } from "../plugins";
-import { watchAllFilesInDirectoryAndCommon } from "scripts/utils/rollupHelper";
 import { commonDirectory } from "scripts/utils/fileSystem";
 import { FrameworkID } from "$common";
 
@@ -15,12 +14,9 @@ export default async function (doWatch: boolean) {
     generateVmDeclarations(),
   ];
 
-  const plugins = [...customPRGPlugins, ...getThirdPartyPlugins("sucrase")];
+  const plugins = [...customPRGPlugins, ...getThirdPartyPlugins()];
   const options: RollupOptions = { input: info.bundleEntry, plugins };
-  const bundled = await rollup(options);
-
   const output = getOutputOptions(info);
-  await bundled.write(output);
-
-  if (doWatch) watchAllFilesInDirectoryAndCommon(info, options, output);
+  const watcher = watch({ ...options, output });
+  logEvents(watcher, info);
 }

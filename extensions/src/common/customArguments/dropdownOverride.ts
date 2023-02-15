@@ -1,4 +1,4 @@
-import { Extension } from "$common/Extension";
+import { Extension } from "$common/extension/Extension";
 import { untilObject } from "$common/utils";
 import { ArgumentEntry, ArgumentEntrySetter } from "./CustomArgumentManager";
 

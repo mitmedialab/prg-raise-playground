@@ -1,5 +1,5 @@
 import { ArgumentType } from "./enums";
-import { RGBObject, ValueOf } from "./types";
+import { RGBObject, TypeByArgumentType, ValueOf } from "./types";
 import Cast from '$scratch-vm/util/cast';
 
 export const castToType = (argumentType: ValueOf<typeof ArgumentType>, value: any) => {
@@ -20,6 +20,20 @@ export const castToType = (argumentType: ValueOf<typeof ArgumentType>, value: an
       return Cast.toRgbColorObject(value) as RGBObject;
     default:
       throw new Error(`Method not implemented for value of ${value} and type ${argumentType}`);
+  }
+}
+
+export const tryCastToArgumentType = <T extends ValueOf<typeof ArgumentType>>(
+  argumentType: T,
+  value: any,
+  onFailure: (value: any) => TypeByArgumentType<T>
+): TypeByArgumentType<T> => {
+  try {
+    const casted = castToType(argumentType, value);
+    return casted as TypeByArgumentType<T>;
+  }
+  catch {
+    return onFailure(value);
   }
 }
 
