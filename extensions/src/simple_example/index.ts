@@ -1,4 +1,4 @@
-import { ArgumentType, BlockType, Language, Extension, ButtonBlock, Environment, SaveDataHandler, tryCastToArgumentType } from "$common";
+import { ArgumentType, BlockType, Language, Extension, ButtonBlock, Environment, SaveDataHandler, tryCastToArgumentType, legacy } from "$common";
 import { oldGetInfo } from "./legacyTest";
 
 type Details = {
@@ -13,6 +13,7 @@ type Details = {
   }
 };
 
+@legacy(oldGetInfo)
 export default class SimpleTypescript extends Extension<Details, {
   log: (msg: string) => void;
   dummyUI: ButtonBlock;
@@ -20,6 +21,10 @@ export default class SimpleTypescript extends Extension<Details, {
   colorUI: ButtonBlock;
 }> {
   count: number = 0;
+
+  log() {
+
+  }
 
   saveDataHandler = new SaveDataHandler({
     Extension: SimpleTypescript,

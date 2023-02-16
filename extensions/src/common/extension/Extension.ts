@@ -63,6 +63,7 @@ export abstract class ExtensionBase {
 }
 
 export type AbstractConstructor<T> = abstract new (...args: any[]) => T;
+export type NonAbstractConstructor<T> = new (...args: any[]) => T;
 export type TypedConstructor<T> = new (...args: any[]) => T;
 export type ExtensionBaseConstructor = AbstractConstructor<ExtensionBase>;
 
@@ -81,7 +82,7 @@ const applyAllMixins = (base: ExtensionBaseConstructor) =>
 
 export const extensionsMap = new Map<string, DecoratedExtension>();
 
-export abstract class DecoratedExtension extends applyAllMixins(ExtensionBase) {
+export abstract class ExtensionCommon extends applyAllMixins(ExtensionBase) {
   /**
    * Prevent developers from implementing the constructor.
    * This must be controlled by the framework since Scratch is the one who calls the extension's constructor.
@@ -92,11 +93,9 @@ export abstract class DecoratedExtension extends applyAllMixins(ExtensionBase) {
   }
 }
 
-export type ExtensionV2Constructor = AbstractConstructor<DecoratedExtension>;
+export abstract class DecoratedExtension extends ExtensionCommon { }
 
-type X<Blocks extends ExtensionBlocks> = {
-  [k in keyof Blocks]: never;
-}
+export const getAlternativeOpcodeName = (opcode: string) => `__block_${opcode}`;
 
 /**
  * @summary Base class for all extensions implemented via the Typescript Extension Framework.
@@ -136,7 +135,7 @@ export abstract class Extension
   <
     MenuDetails extends ExtensionMenuDisplayDetails,
     Blocks extends ExtensionBlocks
-  > extends DecoratedExtension {
+  > extends ExtensionCommon {
 
   readonly BlockFunctions: Blocks;
   readonly BlockDefinitions: BlockDefinitions<typeof this>;
@@ -196,7 +195,7 @@ export abstract class Extension
     const blocks = this.defineBlocks();
     for (const opcode in blocks) {
       const block = blocks[opcode];
-      const validOpcode = opcode in this ? `__block_${opcode}` : opcode;
+      const validOpcode = opcode in this ? getAlternativeOpcodeName(opcode) : opcode;
       const { operation, text, arg, args, type } = isFunction(block) ? block.call(this, this) : block;;
       this.pushBlock(validOpcode, { text, arg, args, type }, operation);
       const internalFuncName = getImplementationName(validOpcode);

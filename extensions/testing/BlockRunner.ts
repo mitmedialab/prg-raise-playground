@@ -1,24 +1,25 @@
-import { BlockType, BlocksInfo, CodeGenArgs, Extension, ExtensionBlockMetadata, ExtensionConstructor, PopulateCodeGenArgs } from "$common";
+import { BlockType, BlocksInfo, CodeGenArgs, Extension, ExtensionBase, ExtensionBlockMetadata, ExtensionCommon, NonAbstractConstructor } from "$common";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import { buildKeyBlockMap } from "$testing";
-import { AnyExtension, BlockKey, InputArray, KeyToBlockIndexMap, RenderedUI, RuntimeForTest } from "./types";
+import testable from "./mixins/testable";
+import { GenericExtension, BlockKey, InputArray, KeyToBlockIndexMap, RenderedUI, RuntimeForTest, Testable, ReportedValue } from "./types";
 import { getEngineFile } from "./utils";
 
-export class BlockRunner<T extends AnyExtension> {
+export class BlockRunner<T extends ExtensionCommon> {
   private blockData: ExtensionBlockMetadata[];
 
-  constructor(private map: KeyToBlockIndexMap, public instance: T) {
-    this.blockData = Extension.TestGetBlocks(instance);
+  constructor(private map: KeyToBlockIndexMap, public instance: Testable<T>) {
+    this.blockData = instance.getBlockInfo();
   }
 
   getBlockMetaDataByKey<K extends BlockKey<T>>(key: K) {
     const { map, blockData } = this;
-    const index = map.get(key) ?? map.get(Extension.GetLegacyName(this.instance, key));
+    const index = map.get(key);
     return blockData[index];
   }
 
   async invoke<K extends BlockKey<T>>(key: K, ...input: InputArray<T, K>):
-    Promise<{ output: ReturnType<BlocksInfo<T>[K]["operation"]>, ui?: RenderedUI }> {
+    Promise<{ output: Awaited<ReportedValue<T, K>>, ui?: RenderedUI }> {
     const { instance } = this;
     const { runtime } = instance;
     const { forTest } = runtime as RuntimeForTest<T>;
@@ -32,11 +33,13 @@ export class BlockRunner<T extends AnyExtension> {
     return { output, ui: renderedUI };
   }
 
-  createCompanion<TCompanion extends AnyExtension>(constructor: ExtensionConstructor<TCompanion>) {
+  createCompanion<TCompanion extends GenericExtension>(constructor: NonAbstractConstructor<TCompanion>) {
     const { instance: { runtime } } = this;
-    const args: PopulateCodeGenArgs = { name: "", blockIconURI: "", id: "" };
-    const companion = new constructor(runtime as never, args as CodeGenArgs);
-    Extension.TestInit(companion);
+    const args: ConstructorParameters<typeof ExtensionBase> = [runtime, "", "", ""];
+    const TestClass = testable(constructor);
+    const companion = new TestClass(...args);
+    companion.initialize();
+
     return new BlockRunner(buildKeyBlockMap(companion), companion);
   }
 

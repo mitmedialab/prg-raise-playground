@@ -1,21 +1,21 @@
 import { TypedClassDecorator } from ".";
-import { DecoratedExtension, ExtensionV2Constructor } from "$common/extension/Extension";
+import { AbstractConstructor, DecoratedExtension, Extension, ExtensionCommon } from "$common/extension/Extension";
 import legacySupport from "$common/extension/mixins/legacySupport";
 import { ArgumentType } from "$common/enums";
-import { ExtensionMetadata, ExtensionBlockMetadata, ValueOf, TypeByArgumentType, ExtensionMenuItems } from "$common/types";
+import { ExtensionMetadata, ExtensionBlockMetadata, ValueOf, TypeByArgumentType, ExtensionMenuItems, ExtensionMenuDisplayDetails, ExtensionBlocks } from "$common/types";
 
 export function legacy<
-  Args extends any[],
   TData extends ExtensionMetadata,
-  T extends DecoratedExtension & LegacyProbe.LegacyMethods<TData>,
->(details: TData): TypedClassDecorator<T, Args> {
+  TBlocks extends ExtensionBlocks & LegacyProbe.LegacyMethods<TData>,
+  T extends (Extension<ExtensionMenuDisplayDetails, TBlocks> & { [k in keyof LegacyProbe.LegacyMethods<TData>]?: never }) | DecoratedExtension & LegacyProbe.LegacyMethods<TData>,
+>(details: TData): TypedClassDecorator<T, ConstructorParameters<typeof ExtensionCommon>> {
 
   return function (value, context) {
-    abstract class LegacySupport extends legacySupport(value as ExtensionV2Constructor, details) {
+    abstract class LegacySupport extends legacySupport(value as AbstractConstructor<ExtensionCommon>, details) {
       readonly originalClassName = context.name;
     };
 
-    return LegacySupport as ExtensionV2Constructor as new (...args: Args) => T;
+    return LegacySupport as AbstractConstructor<DecoratedExtension> as new (...args: ConstructorParameters<typeof ExtensionCommon>) => T;
   }
 }
 

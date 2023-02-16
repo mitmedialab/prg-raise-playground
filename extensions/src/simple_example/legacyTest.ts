@@ -3,7 +3,6 @@ import { ExtensionMetadata } from "$common";
 export const oldGetInfo = {
   id: "",
   blocks: [
-    /*
     {
       blockType: "reporter",
       text: "aaa",
@@ -13,6 +12,6 @@ export const oldGetInfo = {
           type: "string"
         }
       }
-    }*/
+    }
   ]
 } as const satisfies ExtensionMetadata;

@@ -1,7 +1,7 @@
-import { DecoratedExtension, ExtensionV2Constructor } from "$common/extension/Extension";
+import { AbstractConstructor, ExtensionCommon } from "$common/extension/Extension";
 import { ExtensionMetadata } from "$common/types";
 
-export default function <T extends ExtensionV2Constructor>(Ctor: T, legacyInfo: ExtensionMetadata) {
+export default function <T extends AbstractConstructor<ExtensionCommon>>(Ctor: T, legacyInfo: ExtensionMetadata) {
   abstract class _ extends Ctor {
     private validatedInfo: ExtensionMetadata;
 
@@ -9,7 +9,7 @@ export default function <T extends ExtensionV2Constructor>(Ctor: T, legacyInfo: 
 
       if (!this.validatedInfo) {
         // @ts-ignore
-        const { getInfo } = DecoratedExtension.prototype;
+        const { getInfo } = ExtensionCommon.prototype;
         const info = (getInfo.call(this));
         this.validatedInfo = this.validateAndAttach(info);
       }

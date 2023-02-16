@@ -29,13 +29,6 @@ export type Environment = {
   videoFeed: undefined | any
 }
 
-/**
- * Helpful way to specify you want a reference to Extension class itself (not an instance of it) 
- */
-export interface ExtensionConstructor<T extends BaseExtension> {
-  new(...args: ConstructorParameters<typeof Extension>): T;
-}
-
 export type BlockOperation = (...args: any) => any;
 
 export type ParameterOf<
@@ -128,6 +121,9 @@ type ToArguments<T extends any[]> =
 type ParamsAndUtility<T extends BlockOperation> = [...params: Parameters<T>, util: BlockUtility];
 
 export type NonEmptyArray<T> = [T, ...T[]];
+
+export type MethodNames<T> = { [k in keyof T]: T[k] extends (...args: any) => any ? k : never }[keyof T];
+export type Methods<T> = { [k in MethodNames<T>]: T[k] };
 
 const enum ArgField {
   Arg = 'arg',

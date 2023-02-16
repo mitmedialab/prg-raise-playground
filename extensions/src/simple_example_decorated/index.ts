@@ -1,4 +1,4 @@
-import { ArgumentType, BlockType, Environment, Menu, SaveDataHandler, block, buttonBlock, extension, DecoratedExtension, tryCastToArgumentType } from "$common";
+import { ArgumentType, BlockType, Environment, Menu, SaveDataHandler, block, buttonBlock, extension, DecoratedExtension, tryCastToArgumentType, legacy } from "$common";
 
 @extension({
   name: "Super Simple Typescript Extension (decorted)!",
