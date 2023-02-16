@@ -110,7 +110,13 @@ export type ObjectOrFunc<T, Args extends any[]> = T | ((...args: Args) => T);
 export type GetTestCase<T extends ExtensionCommon, K extends BlockKey<T>> = (helper: TestHelper) => BlockTestCase<T, K>;
 export type TestCaseEntry<T extends ExtensionCommon, K extends BlockKey<T>> = ObjectOrFunc<BlockTestCase<T, K>, Parameters<GetTestCase<T, K>>>;
 
-export type UnitTests<T extends ExtensionCommon> = { [k in BlockKey<T>]?: SingleOrArray<ObjectOrFunc<BlockTestCase<T, k>, Parameters<GetTestCase<T, k>>>> };
+/**
+ * As you might notice, the two branches of the below type are exactly the same. 
+ * For some reason, typescript struggles if they are not split in this way. 
+ */
+export type UnitTests<T extends ExtensionCommon> = T extends GenericExtension
+  ? { [k in BlockKey<T>]?: SingleOrArray<ObjectOrFunc<BlockTestCase<T, k>, Parameters<GetTestCase<T, k>>>> }
+  : { [k in BlockKey<T>]?: SingleOrArray<ObjectOrFunc<BlockTestCase<T, k>, Parameters<GetTestCase<T, k>>>> };
 
 export type RenderedUI = RenderResult<SvelteComponentDev, typeof import("/Users/parkermalachowsky/MIT/prg-extension-boilerplate/extensions/testing/node_modules/@testing-library/dom/types/queries")>;
 

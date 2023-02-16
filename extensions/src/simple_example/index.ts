@@ -12,8 +12,6 @@ type Details = {
     description: "Ejemplo de una extensión simple usando Typescript"
   }
 };
-
-@legacy(oldGetInfo)
 export default class SimpleTypescript extends Extension<Details, {
   log: (msg: string) => void;
   dummyUI: ButtonBlock;
@@ -21,10 +19,6 @@ export default class SimpleTypescript extends Extension<Details, {
   colorUI: ButtonBlock;
 }> {
   count: number = 0;
-
-  log() {
-
-  }
 
   saveDataHandler = new SaveDataHandler({
     Extension: SimpleTypescript,

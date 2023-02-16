@@ -7,7 +7,7 @@ import uiSupport from "$common/extension/mixins/ui";
 import { BlockOperation, Block, BaseExtension, Environment, ExtensionMenuDisplayDetails, ExtensionBlocks, BlockDefinitions, Translations } from "$common/types";
 import { isFunction } from "$common/utils";
 
-export type BlockV2<Fn extends BlockOperation> = Parameters<Fn> extends [...infer R extends any[], BlockUtility]
+export type BlockMetadata<Fn extends BlockOperation> = Parameters<Fn> extends [...infer R extends any[], BlockUtility]
   ? Omit<Block<BaseExtension, (...args: R) => ReturnType<Fn>>, "operation">
   : Omit<Block<BaseExtension, Fn>, "operation">;
 
@@ -83,6 +83,8 @@ const applyAllMixins = (base: ExtensionBaseConstructor) =>
 export const extensionsMap = new Map<string, DecoratedExtension>();
 
 export abstract class ExtensionCommon extends applyAllMixins(ExtensionBase) {
+  abstract version: "decorated" | "generic";
+
   /**
    * Prevent developers from implementing the constructor.
    * This must be controlled by the framework since Scratch is the one who calls the extension's constructor.
@@ -93,7 +95,9 @@ export abstract class ExtensionCommon extends applyAllMixins(ExtensionBase) {
   }
 }
 
-export abstract class DecoratedExtension extends ExtensionCommon { }
+export abstract class DecoratedExtension extends ExtensionCommon {
+  version = "decorated" as const;
+}
 
 export const getAlternativeOpcodeName = (opcode: string) => `__block_${opcode}`;
 
@@ -140,6 +144,8 @@ export abstract class Extension
   readonly BlockFunctions: Blocks;
   readonly BlockDefinitions: BlockDefinitions<typeof this>;
   readonly Translations: Translations<typeof this>;
+
+  version = "generic" as const;
 
   /**
    * @summary Extension member method that returns an object defining all blocks that belong to the extension.
@@ -193,13 +199,14 @@ export abstract class Extension
   protected internal_init(): void {
     super.internal_init();
     const blocks = this.defineBlocks();
+    const self = this;
     for (const opcode in blocks) {
       const block = blocks[opcode];
       const validOpcode = opcode in this ? getAlternativeOpcodeName(opcode) : opcode;
       const { operation, text, arg, args, type } = isFunction(block) ? block.call(this, this) : block;;
       this.pushBlock(validOpcode, { text, arg, args, type }, operation);
       const internalFuncName = getImplementationName(validOpcode);
-      (this as any)[validOpcode] = function () { return this[internalFuncName].call(this, ...arguments) };
+      (this as any)[validOpcode] = function () { return self[internalFuncName].call(self, ...arguments) };
     }
   }
 };

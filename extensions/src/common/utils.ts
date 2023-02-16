@@ -133,3 +133,12 @@ export const untilExternalGlobalVariableLoaded = async <T>(url: string, globalVa
   await untilExternalScriptLoaded(url);
   return window[globalVariableName];
 }
+
+/**
+ * Utilize javascript's "call" method (on Function.prototype) in a typesafe manner
+ * @param fn 
+ * @param _this 
+ * @param args 
+ * @returns 
+ */
+export const typesafeCall = <Args extends any[], Return, This, Fn extends (this: This, ...args: Args) => Return>(fn: Fn, _this: This, ...args: Args) => fn.call(_this, ...args) as Return;

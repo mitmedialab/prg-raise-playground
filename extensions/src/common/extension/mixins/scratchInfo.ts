@@ -1,15 +1,15 @@
 import { castToType } from "$common/cast";
 import CustomArgumentManager from "$common/customArguments/CustomArgumentManager";
 import { ArgumentType, BlockType } from "$common/enums";
-import { BlockOperation, Argument, ValueOf, VerboseArgument, Menu, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, DynamicMenu, MenuItem, ExtensionArgumentMetadata, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters } from "$common/types";
+import { BlockOperation, Argument, ValueOf, VerboseArgument, Menu, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, DynamicMenu, MenuItem, ExtensionArgumentMetadata, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters, ValidKey } from "$common/types";
 import { registerButtonCallback } from "$common/ui";
-import { isPrimitive, isString, isFunction, identity } from "$common/utils";
-import { BlockV2, ExtensionBaseConstructor, DecoratedExtension } from "$common/extension/Extension";
+import { isPrimitive, isString, isFunction, identity, typesafeCall } from "$common/utils";
+import { BlockMetadata, ExtensionBaseConstructor, DecoratedExtension } from "$common/extension/Extension";
 import customArguments from "$common/extension/mixins/customArguments";
+import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 
-export type BlockInfo<Fn extends BlockOperation> = BlockV2<Fn>
-export type BlockGetter<This, Fn extends BlockOperation> = (this: This, self: This) => BlockV2<Fn>;
-type BlockDefinition<T, Fn extends BlockOperation> = BlockInfo<Fn> | BlockGetter<T, Fn>;
+export type BlockGetter<This, Fn extends BlockOperation> = (this: This, self: This) => BlockMetadata<Fn>;
+type BlockDefinition<T, Fn extends BlockOperation> = BlockMetadata<Fn> | BlockGetter<T, Fn>;
 
 export const getArgumentType = <T>(arg: Argument<T>): ValueOf<typeof ArgumentType> =>
   isPrimitive(arg) ? arg as ValueOf<typeof ArgumentType> : (arg as VerboseArgument<T>).type;
@@ -50,7 +50,6 @@ export default function <T extends ExtensionBaseConstructor & ReturnType<typeof 
 
     private readonly menus: Menu<any>[] = [];
     private info: ExtensionMetadata;
-    private readonly argumentsByOpcode = new Map<string, string[]>();
 
     pushBlock<Fn extends BlockOperation>(opcode: string, block: BlockDefinition<any, Fn>, operation: BlockOperation) {
       if (this.blockMap.has(opcode)) throw new Error(`Attempt to push block with opcode ${opcode}, but it was already set. This is assumed to be a mistake.`)
@@ -66,14 +65,18 @@ export default function <T extends ExtensionBaseConstructor & ReturnType<typeof 
       return this.info;
     }
 
-    private convertToInfo<Fn extends BlockOperation>(details: [opcode: string, entry: BlockEntry]) {
+    private convertToInfo(details: [opcode: string, entry: BlockEntry]) {
       const [opcode, entry] = details;
       const { definition, operation } = entry;
-      const block = isBlockGetter<BlockOperation>(definition) ? definition.call(this, this) as BlockV2<Fn> : definition;
+
+      // Utilize explicit casting to appease test framework's typechecker
+      const block = isBlockGetter(definition)
+        ? typesafeCall(definition, this, this) as BlockMetadata<BlockOperation>
+        : definition as BlockMetadata<BlockOperation>;
 
       const { type, text } = block;
 
-      const args: Argument<any>[] = block.args ? block.args : block.arg ? [block.arg] : [];
+      const args = extractArgs(block);
 
       const { id, runtime, menus } = this;
 
@@ -99,7 +102,6 @@ export default function <T extends ExtensionBaseConstructor & ReturnType<typeof 
       return Object.fromEntries(
         this.menus
           .map((menu, index) => {
-            console.log(menu);
             if (isSimpleStatic(menu)) return asStaticMenu(menu, false);
             if (isSimpleDynamic(menu)) return this.registerDynamicMenu(menu, false, index);
             if (isStaticWithReporters(menu)) return asStaticMenu(menu.items, true);
@@ -120,6 +122,14 @@ export default function <T extends ExtensionBaseConstructor & ReturnType<typeof 
   return _;
 }
 
+const extractArgs = (block: BlockMetadata<BlockOperation>) => {
+  const argKey: ValidKey<Block.OneArg> = "arg";
+  const argsKey: ValidKey<Block.MultipleArgs> = "args";
+  if (argKey in block && block[argKey]) return [(block as Block.OneArg).arg];
+  if (argsKey in block && (block[argsKey]?.length ?? 0) > 0) return (block as Block.MultipleArgs).args;
+  return [];
+}
+
 const zipArgs = (args: Argument<any>[], names?: string[]) => {
   const types = args.map(getArgumentType);
   const handlers = extractHandlers(args);
@@ -133,13 +143,13 @@ const assertSameLength = (...collections: any[][]) => {
   if (size !== 1) throw new Error("Zip failed because collections weren't equal length");
 }
 
-const isBlockGetter = <Fn extends BlockOperation>(details: BlockInfo<Fn> | BlockGetter<any, Fn>): details is BlockGetter<any, Fn> => isFunction(details);
+const isBlockGetter = <T, Fn extends BlockOperation>(details: BlockDefinition<any, Fn>): details is BlockGetter<T, Fn> => isFunction(details);
 
 const format = (text: string, identifier: string, description: string): string => {
   return text; // make use of formatMessage in the future
 }
 
-const isDynamicText = (text: Block.Any["text"]): text is (...args: any[]) => string => !isString(text);
+const isDynamicText = (text: Block.Any["text"]): text is (Block.OneArg["text"] | Block.MultipleArgs["text"]) => !isString(text);
 
 const convertMenuItemsToString = (item: any | MenuItem<any>) =>
   isPrimitive(item) ? `${item}` : { ...item, value: `${item.value}` };
@@ -155,8 +165,9 @@ const convertToDisplayText = (opcode: string, text: Block.Any["text"], args: Arg
 
   if (!isDynamicText(text)) return format(text, opcode, `Block text for '${opcode}'`);
 
+  const textFunc: (...args: any[]) => string = text;
   const argPlaceholders = args.map((_, index) => `[${getArgName(index)}]`);
-  return format(text(...argPlaceholders), opcode, `Block text for '${opcode}'`);
+  return format(textFunc(...argPlaceholders), opcode, `Block text for '${opcode}'`);
 }
 
 const convertToArgumentInfo = (opcode: string, args: Argument<any>[], menus: Menu<any>[]) => {
@@ -241,8 +252,9 @@ const asStaticMenu = (items: MenuItem<any>[], acceptReporters: boolean) => ({
 } satisfies ExtensionMenuMetadata);
 
 namespace Block {
-  export type NoArgs = BlockV2<() => any>;
-  export type OneArg = BlockV2<(arg: any) => any>;
-  export type MultipleArgs = BlockV2<(...args: [any, any]) => any>;
+  export type NoArgs = BlockMetadata<() => any>;
+  export type OneArg = BlockMetadata<(arg: any, utility: BlockUtility) => any>;
+  export type MultipleArgs = BlockMetadata<(arg1: any, arg2: any, utility: BlockUtility) => any>;
+  export type WithArgs = BlockMetadata<(...args: any[]) => any>;
   export type Any = NoArgs | OneArg | MultipleArgs;
 }

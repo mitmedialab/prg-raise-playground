@@ -1,5 +1,7 @@
 import { createTestSuite } from "$testing";
+import { UnitTests } from "$testing/types";
 import Extension from '.';
+
 
 createTestSuite({ Extension, __dirname },
   {

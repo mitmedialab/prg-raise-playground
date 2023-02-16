@@ -40,7 +40,7 @@ export class BlockRunner<T extends ExtensionCommon> {
     const companion = new TestClass(...args);
     companion.initialize();
 
-    return new BlockRunner(buildKeyBlockMap(companion), companion);
+    return new BlockRunner<TCompanion>(buildKeyBlockMap(companion), companion as Testable<TCompanion>);
   }
 
   private mockBlockUtility(): BlockUtility {

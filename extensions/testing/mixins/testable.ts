@@ -25,10 +25,7 @@ export default function <T extends ExtensionCommon, C extends NonAbstractConstru
     }
 
     getBlockKeyForOpcode(opcode: string): string {
-      if (!isGenericExtension(this)) {
-        return opcode.replace(getAlternativeOpcodeName(""), "");
-      };
-      return opcode;
+      return this.version === "generic" ? opcode.replace(getAlternativeOpcodeName(""), "") : opcode;
     }
   }
 

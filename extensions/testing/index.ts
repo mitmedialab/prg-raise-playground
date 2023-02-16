@@ -131,8 +131,8 @@ const getTestCase = <T extends ExtensionCommon, K extends BlockKey<T>>(testCase:
  * @param extensionInfo
  * @param cases 
  */
-export const createTestSuite = <T extends ExtensionCommon, C extends new (...args: any[]) => T>(
-  extensionInfo: { Extension: C, __dirname: string },
+export const createTestSuite = <T extends ExtensionCommon>(
+  extensionInfo: { Extension: NonAbstractConstructor<T>, __dirname: string },
   cases: { unitTests: UnitTests<T>, integrationTests?: Record<string, IntegrationTest<T>> },
 ) => {
   const { Extension, __dirname: directory } = extensionInfo;
@@ -148,8 +148,8 @@ export const createTestSuite = <T extends ExtensionCommon, C extends new (...arg
 
   if (unitTests) describe(`${Extension.name} Unit Tests`, () => {
     for (const key in unitTests) {
-      const blockKey = key as BlockKey<T>
-      type Case = TestCaseEntry<T, typeof blockKey>
+      const blockKey = key as any as BlockKey<T>;
+      type Case = TestCaseEntry<T, typeof blockKey>;
 
       const asSingleOrFunc = unitTests[key] as Case;
       const asArray = unitTests[key] as Array<Case>;
