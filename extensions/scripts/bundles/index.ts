@@ -30,14 +30,15 @@ export type BundleInfo = {
   menuAssetsFile: string,
   extensionVersion: "generic" | "decorated" | "none",
   id: string,
-  menuDetails: ExtensionMenuDisplayDetails
+  menuDetails: ExtensionMenuDisplayDetails,
+  watch: boolean,
 }
 
-export const getBundleInfo = (directory: string, { totalNumberOfExtensions, id }: { totalNumberOfExtensions?: number, id?: string }, extensionVersion: BundleInfo["extensionVersion"] = "none"): BundleInfo => {
+export const getBundleInfo = (directory: string, { totalNumberOfExtensions, id, watch }: { totalNumberOfExtensions?: number, id?: string, watch: boolean }, extensionVersion: BundleInfo["extensionVersion"] = "none"): BundleInfo => {
   id ??= encode(fileName(directory));
   totalNumberOfExtensions ??= 0;
   return {
-    directory, id, totalNumberOfExtensions, extensionVersion,
+    directory, id, totalNumberOfExtensions, extensionVersion, watch,
     name: fileName(directory),
     indexFile: path.join(directory, "index.ts"),
     bundleEntry: path.join(directory, ".filesToBundle.js"),
@@ -67,7 +68,6 @@ export const getOutputOptions = ({ id: name, bundleDestination: file }: BundleIn
 export const logEvents = (watcher: RollupWatcher, { name }: BundleInfo) => {
   const prefix = `[rollup] ${name}: `;
 
-
   watcher.on('event',
     (event) => {
       event.code === "ERROR"
@@ -79,6 +79,15 @@ export const logEvents = (watcher: RollupWatcher, { name }: BundleInfo) => {
   watcher.on("change", (id, { event }) => console.log(chalk.bgGreen(prefix) + chalk.cyan(`${event} on ${id}`)));
 }
 
+export const optionalCloseOnBundleEnd = (watcher: RollupWatcher, { name, watch }: BundleInfo) => {
+  if (watch) return;
+  watcher.on('event', (event) => {
+    if (event.code === "BUNDLE_END") {
+      watcher.close();
+      console.log(chalk.cyan(`CLOSING ${name} BUNDLE`));
+    }
+  });
+}
 
 export const stringifyCodeGenArgs = ({ menuDetails, directory, id }: BundleInfo) => {
   const { name } = menuDetails;
@@ -106,8 +115,8 @@ const getExtensionVersion = (dir: string) => {
   throw new Error(`Unable to identify extension type (generic or decorated) for '${path.relative(root, dir)}' --- generic: ${foundGeneric} vs decorated: ${foundDecorated}`);
 }
 
-export const bundleExtension = (dir: string, totalNumberOfExtensions: number, doWatch?: boolean) => {
+export const bundleExtension = (dir: string, totalNumberOfExtensions: number, doWatch: boolean) => {
   const version = getExtensionVersion(dir);
-  const info = getBundleInfo(dir, { totalNumberOfExtensions });
-  version === "decorated" ? bundleDecorated(info, doWatch) : bundleGeneric(info, doWatch);
+  const info = getBundleInfo(dir, { totalNumberOfExtensions, watch: doWatch });
+  version === "decorated" ? bundleDecorated(info) : bundleGeneric(info);
 }

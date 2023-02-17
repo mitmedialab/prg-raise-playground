@@ -2,25 +2,27 @@ import { watch, type RollupOptions, type Plugin } from "rollup";
 import { FrameworkID } from "$common";
 import { announceWrite, createExtensionMenuAssets, fillInConstructorArgs, setupExtensionBundleEntry, transpileExtensions } from "../plugins";
 import { commonAlias } from "../utils/aliases";
-import { getThirdPartyPlugins, getOutputOptions, BundleInfo, getBundleInfo, logEvents, stringifyCodeGenArgs } from ".";
+import { getThirdPartyPlugins, getOutputOptions, BundleInfo, logEvents, stringifyCodeGenArgs, optionalCloseOnBundleEnd } from ".";
 import Transpiler from "../typeProbing/Transpiler";
 import { printDiagnostics } from "../typeProbing/diagnostics";
 import { retrieveExtensionDetails } from "../typeProbing";
 import { sendToParent } from "$root/scripts/comms";
 import chalk from "chalk";
 
-const transpileComplete = (ts: Transpiler, { menuDetails }: BundleInfo) => {
-  const details = retrieveExtensionDetails(ts.program);
+const transpileComplete = (transpiler: Transpiler, { menuDetails, watch }: BundleInfo) => {
+  const details = retrieveExtensionDetails(transpiler.program);
   for (const key in details) menuDetails[key] = details[key];
+  if (!watch) transpiler.close();
 }
 
-const transpileFailed = (ts: Transpiler, info: BundleInfo) => {
-  console.error(chalk.bgRed(`Typescript error in ${info.directory}`));
-  printDiagnostics(ts.program, ts.program.getSemanticDiagnostics());
+const transpileFailed = (transpiler: Transpiler, { directory, watch }: BundleInfo) => {
+  console.error(chalk.bgRed(`Typescript error in ${directory}`));
+  printDiagnostics(transpiler.program, transpiler.program.getSemanticDiagnostics());
   sendToParent(process, { condition: "extensions error" });
+  if (!watch) transpiler.close();
 }
 
-export default async function (info: BundleInfo, doWatch: boolean = true) {
+export default function (info: BundleInfo) {
 
   const customPRGPlugins: Plugin[] = [
     setupExtensionBundleEntry(info),
@@ -41,5 +43,5 @@ export default async function (info: BundleInfo, doWatch: boolean = true) {
   const output = getOutputOptions(info, { globals });
   const watcher = watch({ ...options, output });
   logEvents(watcher, info);
-  if (!doWatch) watcher.close();
+  optionalCloseOnBundleEnd(watcher, info);
 };

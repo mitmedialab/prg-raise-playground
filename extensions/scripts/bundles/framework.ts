@@ -1,11 +1,11 @@
 import { watch, type RollupOptions, } from "rollup";
-import { getBundleInfo, getOutputOptions, getThirdPartyPlugins, logEvents } from ".";
+import { getBundleInfo, getOutputOptions, getThirdPartyPlugins, logEvents, optionalCloseOnBundleEnd } from ".";
 import { clearDestinationDirectories, generateVmDeclarations, onFrameworkBundle, setupFrameworkBundleEntry, transpileExtensionGlobals } from "../plugins";
 import { commonDirectory } from "scripts/utils/fileSystem";
 import { FrameworkID } from "$common";
 
 export default async function (doWatch: boolean, afterFirstBundle: () => void) {
-  const info = getBundleInfo(commonDirectory, { id: FrameworkID });
+  const info = getBundleInfo(commonDirectory, { id: FrameworkID, watch: doWatch });
 
   const customPRGPlugins = [
     setupFrameworkBundleEntry(info),
@@ -20,5 +20,5 @@ export default async function (doWatch: boolean, afterFirstBundle: () => void) {
   const output = getOutputOptions(info);
   const watcher = watch({ ...options, output });
   logEvents(watcher, info);
-  if (!doWatch) watcher.close();
+  optionalCloseOnBundleEnd(watcher, info);
 }

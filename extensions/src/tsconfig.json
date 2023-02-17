@@ -8,7 +8,8 @@
     "allowJs": false,
     "moduleResolution": "Node",
     "skipLibCheck": true,
-    "ignoreDeprecations": "5.0"
+    "ignoreDeprecations": "5.0",
+    "noErrorTruncation": true
   },
   "include": [".**/*.ts", "**/*.ts"],
 }

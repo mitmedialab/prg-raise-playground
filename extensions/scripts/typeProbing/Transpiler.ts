@@ -16,7 +16,7 @@ export default class Transpiler {
   watcher: Watcher;
   program: ts.Program;
 
-  close() { this.watcher.close() }
+  close() { this.watcher.close(); }
 
   static Make(entries: string[], onSuccess: TranspileEvent, onError: TranspileEvent) {
     const errorCallbackContainer: { onErrorReported?: () => void } = { onErrorReported: undefined };
@@ -43,7 +43,13 @@ export default class Transpiler {
     private onError: TranspileEvent
   ) { }
 
-  private start() { this.watcher = profile(() => ts.createWatchProgram(this.host), "Created watcher in") }
+  private start() {
+    console.log("HHHHH")
+    const x = profile(() => ts.createWatchProgram(this.host), "Created watcher in");
+    console.log("ee", typeof x);
+    this.watcher = x;
+  }
+
   private increment() { this.compileCount++; }
   private setErrorFlag() { this.error = true; }
 
