@@ -28,7 +28,7 @@ export class BlockRunner<T extends ExtensionCommon> {
     const blockFunction: Function = blockType === BlockType.Button ? runtime[func] : instance[opcode];
     const args = this.getBlockArgs(input);
 
-    const output = await Promise.resolve(blockFunction(...args));
+    const output = await Promise.resolve(blockFunction.call(instance, ...args));
     const renderedUI = forTest.UIPromise ? await forTest.UIPromise : undefined;
     return { output, ui: renderedUI };
   }
