@@ -67,7 +67,7 @@ const getInstance = <T extends ExtensionCommon>(details: TestDetails<T, any>): T
 }
 
 const getInputArray = <T extends ExtensionCommon, Key extends BlockKey<T>>(input: any): InputArray<T, Key> => {
-  if (input === undefined) return [];
+  if (input === undefined) return [] as InputArray<T, Key>;
   return (Array.isArray(input) ? input : [input]) as InputArray<T, Key>;
 }
 

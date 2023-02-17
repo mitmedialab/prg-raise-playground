@@ -1,8 +1,5 @@
 import { createTestSuite } from "$testing";
-import { Hooks } from "$testing/types";
 import Extension from '.';
-
-type x = Hooks<Extension, "log">;
 
 createTestSuite({ Extension, __dirname },
   {

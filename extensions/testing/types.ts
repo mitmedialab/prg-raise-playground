@@ -5,6 +5,7 @@ import Runtime from "$root/packages/scratch-vm/src/engine/runtime";
 import { expect } from '@jest/globals';
 import { BlockRunner } from './BlockRunner';
 import testable from './mixins/testable';
+import type BlockUtility from '$root/packages/scratch-vm/src/engine/block-utility';
 
 export type GenericExtension = Extension<ExtensionMenuDisplayDetails, ExtensionBlocks>;
 
@@ -55,7 +56,7 @@ export type Hooks<T extends ExtensionCommon, Key extends BlockKey<T>> = {
 
 export type InputArray<T extends ExtensionCommon, Key extends BlockKey<T>> =
   Parameters<BlockMethods<T>[Key]> extends NonEmptyArray<any>
-  ? readonly [...Parameters<BlockMethods<T>[Key]>]
+  ? Parameters<BlockMethods<T>[Key]> extends [...infer X extends any[], BlockUtility?] ? readonly [...X] : readonly [...Parameters<BlockMethods<T>[Key]>]
   : [];
 
 export type Input<T extends ExtensionCommon, Key extends BlockKey<T>> =

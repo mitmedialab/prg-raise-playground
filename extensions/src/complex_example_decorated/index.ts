@@ -33,7 +33,7 @@ export const emojiByAnimal: Record<Animal, string> = {
 }
 
 @extension({
-  name: "Realistic Typescript-Based Extension",
+  name: "Realistic Typescript-Based Extension (Decorated)",
   description: "Demonstrating how typescript can be used to write a realistic extension",
   iconURL: "Typescript_logo.png",
   insetIconURL: "typescript-logo.svg"
@@ -57,7 +57,6 @@ export default class TypeScriptFrameworkExample extends DecoratedExtension {
   });
 
   init() {
-    console.log("inited");
     this.lhsOptions = [3, 4, 5];
     this.animals = Object.entries(emojiByAnimal).map(([animal, emoji]) => ({
       value: parseInt(animal), text: emoji

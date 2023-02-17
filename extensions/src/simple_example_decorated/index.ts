@@ -32,8 +32,7 @@ export default class SimpleTypescript extends DecoratedExtension {
     this.count += amount;
   }
 
-  init(env: Environment) {
-  }
+  init(env: Environment) { }
 
   @block((self) => ({
     type: BlockType.Command,
