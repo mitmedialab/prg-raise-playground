@@ -1,24 +1,25 @@
-import { watch, type RollupOptions, } from "rollup";
-import { getBundleInfo, getOutputOptions, getThirdPartyPlugins, logEvents, optionalCloseOnBundleEnd } from ".";
+import { bundleBasedOnWatchMode, getBundleInfo, getOutputOptions, getThirdPartyPlugins, } from ".";
 import { clearDestinationDirectories, generateVmDeclarations, onFrameworkBundle, setupFrameworkBundleEntry, transpileExtensionGlobals } from "../plugins";
 import { commonDirectory } from "scripts/utils/fileSystem";
-import { FrameworkID } from "$common";
+import { FrameworkID, untilCondition } from "$common";
 
-export default async function (doWatch: boolean, afterFirstBundle: () => void) {
+export default async function (doWatch: boolean) {
   const info = getBundleInfo(commonDirectory, { id: FrameworkID, watch: doWatch });
+
+  let bundleExists = false;
 
   const customPRGPlugins = [
     setupFrameworkBundleEntry(info),
     clearDestinationDirectories(),
     transpileExtensionGlobals(),
     generateVmDeclarations(),
-    onFrameworkBundle(afterFirstBundle)
+    onFrameworkBundle(() => bundleExists = true)
   ];
 
   const plugins = [...customPRGPlugins, ...getThirdPartyPlugins()];
-  const options: RollupOptions = { input: info.bundleEntry, plugins };
-  const output = getOutputOptions(info);
-  const watcher = watch({ ...options, output });
-  logEvents(watcher, info);
-  optionalCloseOnBundleEnd(watcher, info);
+
+  await Promise.all([
+    bundleBasedOnWatchMode({ plugins, info }),
+    untilCondition(() => bundleExists)
+  ]);
 }

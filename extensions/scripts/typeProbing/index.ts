@@ -25,7 +25,7 @@ export const retrieveExtensionDetails = (program: ts.Program): ExtensionMenuDisp
 
 export const isExtension = (type: ts.Type) => {
   const baseTypes = type.getBaseTypes();
-  return baseTypes?.some(t => t.symbol.name === "Extension") ?? false;
+  return baseTypes?.some(t => t?.symbol?.name === "Extension") ?? false;
 }
 
 export const extractLanguageFromValue = (member: any): ValueOf<typeof Language> => {
@@ -67,7 +67,7 @@ const menuDetailFlagKeys: AllMenuFlags = ["internetConnectionRequired", "bluetoo
 //@ts-ignore
 const requiredKeys: (MenuText | MenuFlag)[] = ["name", "description", "iconURL", "insetIconURL"];
 
-const getMenuDisplayDetails = (type: ts.Type): ExtensionMenuDisplayDetails => {
+export const getMenuDisplayDetails = (type: ts.Type): ExtensionMenuDisplayDetails => {
   //@ts-ignore
   const { members } = type.getBaseTypes()[0].resolvedTypeArguments[0].symbol.declarations[0];
 
@@ -114,6 +114,64 @@ const getMenuDisplayDetails = (type: ts.Type): ExtensionMenuDisplayDetails => {
 
   if (details.has(implementationLanguage)) {
     throw new Error(`Attempt to ovveride translation for language '${implementationLanguage}' in Extension '${type.symbol.name}'. It was cited both as the implementationLanguage, and a translation was given`);
+  }
+
+  const defaultLanguage = Language.English;
+
+  if (!implementationLanguage && details.has(defaultLanguage)) {
+    throw new Error(`A translation was given for '${defaultLanguage}', but since no implementationLanguage was given, we assume the default name and description are in laguage '${defaultLanguage}'. Either specify the correct implementation language, or remove the unnecessary translation.`);
+  }
+
+  details.set(implementationLanguage ?? defaultLanguage, { name: details.get("name"), description: details.get("description") });
+
+  requiredKeys.forEach(key => assert(details.has(key), new Error(`Required key '${key}' not found`)));
+  return Object.fromEntries(details) as ExtensionMenuDisplayDetails;
+}
+
+
+export const extractMenuDetailsFromTypeMembers = (members: ts.NodeArray<ts.PropertySignature>) => {
+  let implementationLanguage: ValueOf<typeof Language> = undefined;
+
+  const details: Map<string, any> = members.reduce((map: Map<string, any>, member: any) => {
+    const key: keyof ExtensionMenuDisplayDetails = member.symbol.escapedName;
+
+    if (key === "implementationLanguage") {
+      implementationLanguage = extractLanguageFromValue(member);
+      return map;
+    }
+
+    if (menuDetailTextKeys.includes(key as any)) return map.set(key, member.type.literal.text);
+
+    if (menuDetailFlagKeys.includes(key as any)) {
+      const { kind } = member.type.literal;
+      switch (kind) {
+        case 95:
+          return map.set(key, false);
+        case 110:
+          return map.set(key, true);
+      }
+    }
+
+    const language = extractLanguageFromKey(member);
+    if (language) {
+      const entries = (member.type.members as Array<any>)?.map(child => {
+        const childKey = child.symbol.escapedName as "name" | "description";
+        const value: string = child.type.literal.text;
+        return [childKey, value];
+      }).reduce((container, [childKey, value]) => {
+        container[childKey] = value;
+        return container;
+      }, {});
+
+      map.set(language, entries);
+      return map;
+    }
+
+    throw new TypeError(`Unexpected key found: ${key}`);
+  }, new Map());
+
+  if (details.has(implementationLanguage)) {
+    throw new Error(`Attempt to ovveride translation for language '${implementationLanguage}' in Extension '${/*type.symbol.name*/""}'. It was cited both as the implementationLanguage, and a translation was given`);
   }
 
   const defaultLanguage = Language.English;

@@ -1,10 +1,10 @@
 import path from "path";
 import fs from "fs";
-import { CodeGenParams, ExtensionMenuDisplayDetails, encode } from "$common"
+import { CodeGenParams, ExtensionMenuDisplayDetails, FrameworkID, encode } from "$common"
 import { fileName, getBundleFile, getMenuDetailsAssetsDirectory, getMenuDetailsAssetsFile } from "../utils/fileSystem";
-import { type Plugin, type OutputOptions, type RollupWatcher } from "rollup";
+import { type Plugin, type RollupOptions, type OutputOptions, type RollupWatcher, rollup, watch } from "rollup";
 import alias from "@rollup/plugin-alias";
-import { getAliasEntries } from "scripts/utils/aliases";
+import { commonAlias, getAliasEntries } from "scripts/utils/aliases";
 import svelte from "rollup-plugin-svelte";
 import autoPreprocess from 'svelte-preprocess';
 import typescript from "@rollup/plugin-typescript";
@@ -18,6 +18,7 @@ import { getBlockIconURI } from "scripts/utils/URIs";
 import bundleDecorated from "./extension.decorated";
 import bundleGeneric from "./extension.generic";
 import { root } from "$root/scripts/paths";
+import ts, { CustomTransformerFactory } from "typescript";
 
 export type BundleInfo = {
   directory: string,
@@ -49,17 +50,26 @@ export const getBundleInfo = (directory: string, { totalNumberOfExtensions, id, 
   }
 }
 
-export const getThirdPartyPlugins = (): Plugin[] => [
+export const getThirdPartyPlugins = (customaziations?: { tsTransformers?: ((checker: ts.Program) => CustomTransformerFactory)[] }): Plugin[] => [
   alias({ entries: getAliasEntries() }),
   svelte({
     preprocess: autoPreprocess(),
     emitCss: false,
   }),
-  typescript(getSrcCompilerOptions()),
+  typescript(
+    (customaziations?.tsTransformers?.length ?? 0) > 0
+      ? {
+        ...getSrcCompilerOptions(),
+        transformers: {
+          before: customaziations.tsTransformers.map(factory => ({ type: "program", factory })),
+        }
+      }
+      : getSrcCompilerOptions()
+  ),
   nodeResolve(),
   commonjs(),
   css(),
-  //terser(),
+  terser(),
 ];
 
 export const getOutputOptions = ({ id: name, bundleDestination: file }: BundleInfo, overrides?: OutputOptions): OutputOptions =>
@@ -77,16 +87,6 @@ export const logEvents = (watcher: RollupWatcher, { name }: BundleInfo) => {
     });
 
   watcher.on("change", (id, { event }) => console.log(chalk.bgGreen(prefix) + chalk.cyan(`${event} on ${id}`)));
-}
-
-export const optionalCloseOnBundleEnd = (watcher: RollupWatcher, { name, watch }: BundleInfo) => {
-  if (watch) return;
-  watcher.on('event', (event) => {
-    if (event.code === "BUNDLE_END") {
-      watcher.close();
-      console.log(chalk.cyan(`CLOSING ${name} BUNDLE`));
-    }
-  });
 }
 
 export const stringifyCodeGenArgs = ({ menuDetails, directory, id }: BundleInfo) => {
@@ -113,6 +113,23 @@ const getExtensionVersion = (dir: string) => {
   if (!foundDecorated && foundGeneric) return "generic";
 
   throw new Error(`Unable to identify extension type (generic or decorated) for '${path.relative(root, dir)}' --- generic: ${foundGeneric} vs decorated: ${foundDecorated}`);
+}
+
+export const bundleExtensionBasedOnWatchMode = async ({ plugins, info }: { plugins: Plugin[], info: BundleInfo }) =>
+  bundleBasedOnWatchMode({ plugins, info, globals: { [commonAlias]: FrameworkID }, external: [commonAlias] });
+
+type BundleOptions = { plugins: Plugin[], info: BundleInfo, external?: RollupOptions["external"], globals?: OutputOptions["globals"] };
+
+export const bundleBasedOnWatchMode = async ({ plugins, info, globals, external }: BundleOptions) => {
+  const { bundleEntry, watch: doWatch, name } = info;
+  const options: RollupOptions = { input: bundleEntry, plugins, external };
+  const output = getOutputOptions(info, { globals });
+
+  if (doWatch) return logEvents(watch({ ...options, output }), info);
+
+  const bundled = await rollup(options);
+  await bundled.write(output);
+  console.log(chalk.green(`${name} bundle succesfully written!`));
 }
 
 export const bundleExtension = (dir: string, totalNumberOfExtensions: number, doWatch: boolean) => {

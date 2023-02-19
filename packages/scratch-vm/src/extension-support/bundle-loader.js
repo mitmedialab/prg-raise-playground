@@ -6,7 +6,7 @@ Anyone can feel free to try and get this working, but it's not worth pulling you
 */
 //import {FrameworkID} from "../../../../extensions/dist/globals";
 
-import { FrameworkID, V2FrameworkID } from "../dist/globals";
+import { FrameworkID } from "../dist/globals";
 
 const constructors = new Map();
 const auxiliarObjects = new Map();

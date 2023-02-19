@@ -30,7 +30,8 @@ export default class Transpiler {
     errorCallbackContainer.onErrorReported = instance.setErrorFlag.bind(instance);
     host.createProgram = instance.customCreateProgram.bind(instance);
     host.afterProgramCreate = instance.customAfterProgramCreate.bind(instance);
-    instance.start();
+
+    //instance.start();
 
     return instance;
   }
@@ -45,8 +46,8 @@ export default class Transpiler {
 
   private start() {
     console.log("HHHHH")
-    const x = profile(() => ts.createWatchProgram(this.host), "Created watcher in");
-    console.log("ee", typeof x);
+    const x = profile(() => ts.createWatchProgram(this.host,), "Created watcher in");
+    console.log("ee");
     this.watcher = x;
   }
 
