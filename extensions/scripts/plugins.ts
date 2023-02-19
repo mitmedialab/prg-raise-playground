@@ -1,9 +1,7 @@
 import fs from "fs";
 import path from "path";
-import { FrameworkID, untilCondition, registerExtensionDefinitionCallback, ExtensionBase } from "$common";
+import { FrameworkID, untilCondition, registerExtensionDefinitionCallback } from "$common";
 import { type Plugin } from "rollup";
-import Transpiler from './typeProbing/Transpiler';
-import { getBlockIconURI } from "./utils/URIs";
 import { appendToRootDetailsFile, populateMenuFileForExtension } from "./extensionsMenu";
 import { exportAllFromModule, toNamedDefaultExport } from "./utils/importExport";
 import { default as glob } from 'glob';
@@ -16,7 +14,6 @@ import { reportDiagnostic } from "./typeProbing/diagnostics";
 import chalk from "chalk";
 import { runOncePerBundling } from "./utils/rollupHelper";
 import { sendToParent } from "$root/scripts/comms";
-import { createMatchGroup, matchAnyWhiteSpaceIncludingNewLine, matchOneOrMoreTimes } from "./utils/regularExpressions";
 
 export const clearDestinationDirectories = (): Plugin => {
   const runner = runOncePerBundling();
@@ -132,37 +129,30 @@ export const setupExtensionBundleEntry = ({ indexFile, bundleEntry, directory }:
   }
 }
 
-type TranspileEventNames = "onSuccess" | "onError";
-type TranspileEventForExtension = (ts: Transpiler, info: BundleInfo) => void;
-export const transpileExtensions = (info: BundleInfo, callbacks: Record<TranspileEventNames, TranspileEventForExtension>): Plugin => {
-  let ts: Transpiler;
-  const { indexFile } = info;
-  const { onSuccess, onError } = callbacks;
-  return {
-    name: 'transpile-extension-typescript',
-    buildStart() { ts ??= Transpiler.Make([indexFile], (ts) => onSuccess(ts, info), () => onError(ts, info)) },
-    buildEnd() { if (this.meta.watchMode !== true) ts?.close(); },
-  }
-}
-
+const cachedContent = new Map<string, string>();
 export const fillInConstructorArgs = (info: BundleInfo, getContent: (info: BundleInfo) => string): Plugin => {
   const searchValue = "super(...arguments)";
-  const replaceValue = () => `super(...[...arguments, ${getContent(info)}])`;
+  const replaceValue = (content: string) => `super(...[...arguments, ${content}])`;
+  const { indexFile } = info;
 
   return {
     name: 'Fill in Code Gen Args per Extension',
     transform: {
       order: 'post',
       handler: (code: string, file: string) => {
-        if (file !== info.indexFile) return;
+        if (file !== indexFile) return;
         const matches = code.includes(searchValue);
         if (!matches) throw new Error("Framework error -- contact Parker Malachowsky (or project maintainer): Unable to locate insertion point within Extension class. The strategy likely needs to be updated...");
-
+        const content = getContent(info);
+        cachedContent.set(indexFile, content);
         return {
-          code: code.replace(searchValue, replaceValue()),
+          code: code.replace(searchValue, replaceValue(content)),
           map: null
         };
       }
+    },
+    shouldTransformCachedModule: {
+      handler: ({ id }) => id === indexFile && cachedContent.get(id) !== getContent(info)
     }
   };
 }
@@ -171,7 +161,7 @@ export const createExtensionMenuAssets = (info: BundleInfo): Plugin => {
   const runner = runOncePerBundling();
   return {
     name: "Create Menu Assets",
-    buildStart() {
+    buildEnd() {
       if (runner.check()) appendToRootDetailsFile(info);
       populateMenuFileForExtension(info);
     }
@@ -221,7 +211,7 @@ const frameworkBundle: { content: Promise<string> } & Record<string, any> = {
   }
 }
 
-export const v2CodeGenFlag = "replace_code_gen_args";
+export const decoratorCodeGenFlag = "replace_code_gen_args";
 
 export const finalizeDecoratedExtensionBundle = (info: BundleInfo): Plugin => {
   const { bundleDestination, menuDetails, name, directory } = info;
@@ -238,7 +228,7 @@ export const finalizeDecoratedExtensionBundle = (info: BundleInfo): Plugin => {
   }
 
   const fillCodeGenParams = () => {
-    const content = fs.readFileSync(bundleDestination, "utf-8").replace(v2CodeGenFlag, stringifyCodeGenArgs(info));
+    const content = fs.readFileSync(bundleDestination, "utf-8").replace(decoratorCodeGenFlag, stringifyCodeGenArgs(info));
     fs.writeFileSync(bundleDestination, content);
   }
 

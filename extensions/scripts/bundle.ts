@@ -25,8 +25,7 @@ hackToFilterOutUnhelpfulRollupLogs();
     extensionDirectories,
     (path, stats) => bundleExtension(path, extensionDirectories.length + 1, true)
   );
-})
-  ()
+})()
   .catch((e: any) => {
     console.error(chalk.red(e));
     sendToParent(process, { condition: "extensions error" })

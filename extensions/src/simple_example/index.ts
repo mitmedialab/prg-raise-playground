@@ -2,7 +2,7 @@ import { ArgumentType, BlockType, Language, Extension, ButtonBlock, Environment,
 import { oldGetInfo } from "./legacyTest";
 
 type Details = {
-  name: "Super Simple Typescript Extension!!",
+  name: "Super Simple Typescript Extension!!!",
   description: "Skeleton for a typescript extension",
   iconURL: "",
   insetIconURL: "",

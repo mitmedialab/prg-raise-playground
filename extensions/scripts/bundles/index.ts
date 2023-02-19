@@ -50,18 +50,20 @@ export const getBundleInfo = (directory: string, { totalNumberOfExtensions, id, 
   }
 }
 
-export const getThirdPartyPlugins = (customaziations?: { tsTransformers?: ((checker: ts.Program) => CustomTransformerFactory)[] }): Plugin[] => [
+export type ProgramBasedTransformer = (program: ts.Program) => CustomTransformerFactory;
+
+export const getThirdPartyPlugins = (customizations?: { tsTransformers?: ProgramBasedTransformer[] }): Plugin[] => [
   alias({ entries: getAliasEntries() }),
   svelte({
     preprocess: autoPreprocess(),
     emitCss: false,
   }),
   typescript(
-    (customaziations?.tsTransformers?.length ?? 0) > 0
+    (customizations?.tsTransformers?.length ?? 0) > 0
       ? {
         ...getSrcCompilerOptions(),
         transformers: {
-          before: customaziations.tsTransformers.map(factory => ({ type: "program", factory })),
+          before: customizations.tsTransformers.map(factory => ({ type: "program", factory })),
         }
       }
       : getSrcCompilerOptions()
@@ -135,5 +137,5 @@ export const bundleBasedOnWatchMode = async ({ plugins, info, globals, external 
 export const bundleExtension = (dir: string, totalNumberOfExtensions: number, doWatch: boolean) => {
   const version = getExtensionVersion(dir);
   const info = getBundleInfo(dir, { totalNumberOfExtensions, watch: doWatch });
-  version === "decorated" ? bundleDecorated(info) : bundleGeneric(info);
+  return version === "decorated" ? bundleDecorated(info) : bundleGeneric(info);
 }
