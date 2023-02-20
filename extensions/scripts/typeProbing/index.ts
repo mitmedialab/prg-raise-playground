@@ -1,6 +1,6 @@
 import ts from "typescript";
 import assert from "assert";
-import { ExtensionMenuDisplayDetails, KeysWithValuesOfType, UnionToTuple, Language, identity } from "$common";
+import { ExtensionMenuDisplayDetails, KeysWithValuesOfType, UnionToTuple, Language, identity, ValueOf } from "$common";
 import { BundleInfo, ProgramBasedTransformer } from "scripts/bundles";
 
 type MenuText = KeysWithValuesOfType<ExtensionMenuDisplayDetails, string>;
@@ -18,8 +18,8 @@ const requiredKeys: (MenuText | MenuFlag)[] = ["name", "description", "iconURL",
 
 export const populateDisplayMenuDetailsTransformer = (info: BundleInfo): ProgramBasedTransformer =>
   (program: ts.Program) => {
-    const details = extractExtensionDisplayMenuDetails(info, program);
-    for (const key in details) info.menuDetails[key] = details[key];
+    extractExtensionDisplayMenuDetails(info, program)
+      .forEach((value, key) => info.menuDetails[key] = value);
     return () => ({
       transformSourceFile: identity,
       transformBundle: identity,
@@ -75,7 +75,8 @@ const getValueForProperty = ({ type }: ts.PropertySignature, typeChecker: ts.Typ
 
 const extractExtensionDisplayMenuDetails = ({ indexFile }: BundleInfo, program: ts.Program) => {
   const checker = program.getTypeChecker();
-  let details;
+
+  let details: Map<string, any> & ExtensionMenuDisplayDetails;
   ts.forEachChild(program.getSourceFile(indexFile), child => {
     if (child.kind !== ts.SyntaxKind.ClassDeclaration) return;
     const type = checker.getTypeAtLocation(child);
@@ -83,10 +84,12 @@ const extractExtensionDisplayMenuDetails = ({ indexFile }: BundleInfo, program: 
     const properties = getPropertyMembers(extractExtensionType(type, checker));
     details = properties.reduce((map, property) =>
       map.set(getNameForProperty(property), getValueForProperty(property, checker)),
-      new Map<string, any>()
+      new Map() as typeof details
     );
   });
+
   if (!details) throw new Error("Unable to extract details");
+
   requiredKeys.forEach(key => assert(details.has(key), new Error(`Required key '${key}' not found`)));
-  return Object.fromEntries(details) as ExtensionMenuDisplayDetails;
+  return details;
 }

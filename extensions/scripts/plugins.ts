@@ -152,7 +152,9 @@ export const fillInConstructorArgs = (info: BundleInfo, getContent: (info: Bundl
       }
     },
     shouldTransformCachedModule: {
-      handler: ({ id }) => id === indexFile && cachedContent.get(id) !== getContent(info)
+      handler: ({ id }) => {
+        return id === indexFile && cachedContent.get(id) !== getContent(info)
+      }
     }
   };
 }

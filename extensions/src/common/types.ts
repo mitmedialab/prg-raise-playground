@@ -1,7 +1,7 @@
 import type Runtime from '$scratch-vm/engine/runtime';
 import BlockUtility from '$scratch-vm/engine/block-utility';
 import { ArgumentType, BlockType, Branch, Language } from './enums';
-import type { Extension } from './extension/Extension';
+import type { Extension, ExtensionCommon } from './extension/Extension';
 
 export type InternalButtonKey = "__button__";
 export type ButtonBlock = () => InternalButtonKey;
@@ -31,11 +31,15 @@ export type Environment = {
 
 export type BlockOperation = (...args: any) => any;
 
+type Opocde<TExtension extends ExtensionCommon> = TExtension extends Extension<any, any>
+  ? keyof TExtension["BlockFunctions"]
+  : MethodNames<TExtension>;
+
 export type ParameterOf<
-  TExtension extends Extension<any, any>,
-  TBlockKey extends keyof TExtension["BlockFunctions"],
+  TExtension extends ExtensionCommon,
+  TBlockKey extends Opocde<TExtension>,
   TIndex extends number,
-> = Parameters<TExtension["BlockFunctions"][TBlockKey]>[TIndex];
+> = Parameters<TExtension extends Extension<any, any> ? TExtension["BlockFunctions"][TBlockKey] : TExtension[TBlockKey]>[TIndex];
 
 export type MenuItem<T> = T | {
   value: T;
