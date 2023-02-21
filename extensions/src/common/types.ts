@@ -95,6 +95,25 @@ export type Argument<T> = VerboseArgument<T> | ScratchArgument<T>;
 export type RGBObject = { r: number, g: number, b: number };
 export type Matrix = boolean[][];
 
+export type ReturnTypeByBlockType<T extends ValueOf<typeof BlockType>> =
+  T extends typeof BlockType.Boolean
+  ? boolean
+  : T extends typeof BlockType.Button
+  ? void
+  : T extends typeof BlockType.Command
+  ? void
+  : T extends typeof BlockType.Conditional
+  ? boolean
+  : T extends typeof BlockType.Event
+  ? unknown // not sure yet
+  : T extends typeof BlockType.Hat
+  ? boolean
+  : T extends typeof BlockType.Loop
+  ? void
+  : T extends typeof BlockType.Reporter
+  ? object | string | boolean | number
+  : never;
+
 export type TypeByArgumentType<T extends ValueOf<typeof ArgumentType>> =
   T extends typeof ArgumentType.Number | typeof ArgumentType.Angle | typeof ArgumentType.Note ? number
   : T extends typeof ArgumentType.Boolean ? boolean
@@ -177,7 +196,7 @@ export type Block<TExt extends BaseExtension, TOp extends BlockOperation> = {
   : ReturnType<TOp> extends void
   ? typeof BlockType.Command | typeof BlockType.Button | typeof BlockType.Loop
   : ReturnType<TOp> extends boolean
-  ? (typeof BlockType.Reporter | typeof BlockType.Boolean | typeof BlockType.Hat)
+  ? typeof BlockType.Reporter | typeof BlockType.Boolean | typeof BlockType.Hat
   : ReturnType<TOp> extends number
   ? (typeof BlockType.Reporter | typeof BlockType.Conditional)
   : ReturnType<TOp> extends Promise<any>

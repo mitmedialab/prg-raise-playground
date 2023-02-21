@@ -1,13 +1,16 @@
-import { TypedClassDecorator } from ".";
-import { AbstractConstructor, DecoratedExtension, Extension, ExtensionCommon } from "$common/extension/Extension";
+import { TypedClassDecorator, TypedMethodDecorator } from ".";
+import { AbstractConstructor, DecoratedExtension, Extension, ExtensionCommon, NonAbstractConstructor } from "$common/extension/Extension";
 import legacySupport from "$common/extension/mixins/legacySupport";
-import { ArgumentType } from "$common/enums";
-import { ExtensionMetadata, ExtensionBlockMetadata, ValueOf, TypeByArgumentType, ExtensionMenuItems, ExtensionMenuDisplayDetails, ExtensionBlocks } from "$common/types";
+import { ArgumentType, BlockType } from "$common/enums";
+import { ExtensionMetadata, ExtensionBlockMetadata, ValueOf, TypeByArgumentType, ExtensionMenuItems, ExtensionMenuDisplayDetails, ExtensionBlocks, Block, DefineBlock, ReturnTypeByBlockType } from "$common/types";
+import { BlockMetadata } from "$common/extension/Extension";
+import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 
 export function legacy<
   TData extends ExtensionMetadata,
   TBlocks extends ExtensionBlocks & LegacyProbe.LegacyMethods<TData>,
-  T extends (Extension<ExtensionMenuDisplayDetails, TBlocks> & { [k in keyof LegacyProbe.LegacyMethods<TData>]?: never }) | DecoratedExtension & LegacyProbe.LegacyMethods<TData>,
+  T extends /*(Extension<ExtensionMenuDisplayDetails, TBlocks> & { [k in keyof LegacyProbe.LegacyMethods<TData>]?: never }) |*/ DecoratedExtension & LegacyProbe.LegacyMethods<TData>,
+  Args extends any[]
 >(details: TData): TypedClassDecorator<T, ConstructorParameters<typeof ExtensionCommon>> {
 
   return function (value, context) {
@@ -18,6 +21,26 @@ export function legacy<
     return LegacySupport as AbstractConstructor<DecoratedExtension> as new (...args: ConstructorParameters<typeof ExtensionCommon>) => T;
   }
 }
+
+export function legacyFactory<TData extends ExtensionMetadata>(details: TData): {
+  extension<T extends ExtensionCommon & ((DecoratedExtension & LegacyProbe.LegacyMethods<TData>) | Extension<ExtensionMenuDisplayDetails, LegacyProbe.LegacyMethods<TData>>)>(): TypedClassDecorator<T, ConstructorParameters<typeof ExtensionCommon>>
+} &
+{
+  blockDefinitions: { [k in keyof LegacyProbe.LegacyMethods<TData>]: <T extends Extension<any, LegacyProbe.LegacyMethods<TData>>, TReturn extends LegacyProbe.OpReturn<TData, k>>(
+    extension: NonAbstractConstructor<T>,
+    operation: (this: T, ...args: [...Parameters<LegacyProbe.LegacyMethods<TData>[k]>, BlockUtility]) => TReturn
+  ) => Block<T, (...args: Parameters<LegacyProbe.LegacyMethods<TData>[k]>) => TReturn> & { type: LegacyProbe.BlockType<TData, k> } }
+}
+  &
+{
+  blockDecorators: {
+    [k in keyof LegacyProbe.LegacyMethods<TData>]: <This extends DecoratedExtension, Args extends Parameters<LegacyProbe.LegacyMethods<TData>[k]>, Return extends any>() => TypedMethodDecorator<This, Args, Return, (...args: Args) => Return>
+  }
+} {
+
+  return {} as any;
+}
+
 
 /**
  * Types to assist in extracting information from the return type of the old 'getInfo' method
@@ -31,9 +54,16 @@ namespace LegacyProbe {
     [E in keyof A as A[E] extends { opcode: infer K extends Opcode } ? K : never]: A[E] extends ExtensionBlockMetadata ? A[E]['arguments'] : never;
   };
 
+  export type Types<A extends ExtensionMetadata["blocks"], Opcode extends string> = {
+    [E in keyof A as A[E] extends { opcode: infer K extends Opcode } ? K : never]: A[E] extends ExtensionBlockMetadata ? A[E]['blockType'] : never;
+  }
+
   export type Opcodes<T extends SerializedBlockData> = { [k in keyof T["blocks"]]: T["blocks"][k] extends ExtensionBlockMetadata ? T["blocks"][k]["opcode"] : never }[number];
 
   export type OpArgs<T extends SerializedBlockData, K extends Opcodes<T>> = ArgsArray<TsMagic.ObjValueTuple<Arguments<T["blocks"], K>[keyof Arguments<T["blocks"], K>]>>;
+
+  export type BlockType<T extends SerializedBlockData, K extends Opcodes<T>> = Types<T["blocks"], K>[keyof Types<T["blocks"], K>] extends ValueOf<typeof BlockType> ? Types<T["blocks"], K>[keyof Types<T["blocks"], K>] : never;
+  export type OpReturn<T extends SerializedBlockData, K extends Opcodes<T>, TBlockType extends BlockType<T, K> = BlockType<T, K>> = ReturnTypeByBlockType<TBlockType>;
 
   type ArgsArray<T extends unknown[]> = T extends [] ? [] :
     T extends [infer H, ...infer R]
@@ -42,7 +72,7 @@ namespace LegacyProbe {
     : ArgsArray<R>
     : T
 
-  export type LegacyMethods<T extends SerializedBlockData> = { [k in Opcodes<T>]: (...args: OpArgs<T, k>) => any };
+  export type LegacyMethods<T extends SerializedBlockData> = { [k in Opcodes<T>]: (...args: OpArgs<T, k>) => OpReturn<T, k> };
 
   export type Menus = ExtensionMetadata["menus"];
   export type Items = ExtensionMenuItems["items"];
