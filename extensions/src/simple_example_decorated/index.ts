@@ -1,26 +1,4 @@
-import { ArgumentType, BlockType, Environment, Menu, SaveDataHandler, block, buttonBlock, extension, DecoratedExtension, tryCastToArgumentType, legacy, legacyFactory } from "$common";
-
-const info = {
-  id: "",
-  blocks: [
-    {
-      opcode: "log",
-      blockType: "command",
-      text: "",
-      arguments: {
-        x: {
-          type: ArgumentType.String
-        }
-      }
-    }
-  ]
-} as const;
-
-const { legacyExtension, ...legacyBlocks } = legacyFactory(info);
-
-// legacyBlocks.log.decorator();
-
-// legacyBlocks.log.definition();
+import { ArgumentType, BlockType, Environment, Menu, SaveDataHandler, block, buttonBlock, extension, DecoratedExtension, tryCastToArgumentType } from "$common";
 
 @extension({
   name: "Super Simple Typescript Extension (decorted)!",
@@ -28,7 +6,6 @@ const { legacyExtension, ...legacyBlocks } = legacyFactory(info);
   iconURL: "",
   insetIconURL: "",
 })
-@legacyExtension()
 export default class SimpleTypescript extends DecoratedExtension {
   count: number = 0;
 
@@ -62,7 +39,6 @@ export default class SimpleTypescript extends DecoratedExtension {
     text: (msg) => `Log ${msg} to the console`,
     arg: { type: ArgumentType.String, options: self.logOptions }
   }))
-  @legacyBlocks.log.decorator()
   log(msg: string) {
     console.log(msg);
   }

@@ -196,7 +196,7 @@ const convertToArgumentInfo = (opcode: string, args: Argument<any>[], menus: Men
 }
 
 
-const getArgName = (index: number) => `${index}`;
+export const getArgName = (index: number) => `${index}`;
 const getMenuName = (index: number) => `${index}`;
 
 const getDefaultValue = (defaultValue: any, opcode: string, index: number) => isString(defaultValue)

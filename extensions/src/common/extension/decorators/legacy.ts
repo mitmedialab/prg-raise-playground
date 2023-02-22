@@ -2,45 +2,120 @@ import { TypedClassDecorator, TypedMethodDecorator } from ".";
 import { AbstractConstructor, DecoratedExtension, Extension, ExtensionCommon, NonAbstractConstructor } from "$common/extension/Extension";
 import legacySupport from "$common/extension/mixins/legacySupport";
 import { ArgumentType, BlockType } from "$common/enums";
-import { ExtensionMetadata, ExtensionBlockMetadata, ValueOf, TypeByArgumentType, ExtensionMenuItems, ExtensionMenuDisplayDetails, ExtensionBlocks, Block, DefineBlock, ReturnTypeByBlockType } from "$common/types";
+import { ExtensionMetadata, ExtensionBlockMetadata, ValueOf, TypeByArgumentType, ExtensionMenuItems, ExtensionMenuDisplayDetails, ExtensionBlocks, Block, DefineBlock, ReturnTypeByBlockType, BlockOperation, Argument, ExtensionMenuMetadata, ExtensionDynamicMenu, VerboseArgument, Menu } from "$common/types";
 import { BlockMetadata } from "$common/extension/Extension";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
+import { identity, isString } from "$common/utils";
+import { getArgName } from "../mixins/scratchInfo";
+import { block } from "./blocks";
 
-export function legacy<
-  TData extends ExtensionMetadata,
-  TBlocks extends ExtensionBlocks & LegacyProbe.LegacyMethods<TData>,
-  T extends /*(Extension<ExtensionMenuDisplayDetails, TBlocks> & { [k in keyof LegacyProbe.LegacyMethods<TData>]?: never }) |*/ DecoratedExtension & LegacyProbe.LegacyMethods<TData>,
-  Args extends any[]
->(details: TData): TypedClassDecorator<T, ConstructorParameters<typeof ExtensionCommon>> {
+type LegacyExtension<TData extends ExtensionMetadata> = ExtensionCommon
+  & (
+    (DecoratedExtension & LegacyProbe.LegacyMethods<TData>) |
+    Extension<ExtensionMenuDisplayDetails, LegacyProbe.LegacyMethods<TData>>
+  );
 
-  return function (value, context) {
+type BlockDefinitions<TData extends ExtensionMetadata> = {
+  [k in keyof LegacyProbe.LegacyMethods<TData>]:
+  <T extends Extension<any, LegacyProbe.LegacyMethods<TData>>, TReturn extends LegacyProbe.OpReturn<TData, k>>(
+    extension: NonAbstractConstructor<T>,
+    operation: (this: T, ...args: [...Parameters<LegacyProbe.LegacyMethods<TData>[k]>, BlockUtility]) => TReturn
+  ) => Block<T, (...args: Parameters<LegacyProbe.LegacyMethods<TData>[k]>) => TReturn> & { type: LegacyProbe.BlockType<TData, k> }
+};
+
+type BlockDecorators<TData extends ExtensionMetadata> = {
+  [k in keyof LegacyProbe.LegacyMethods<TData>]:
+  <This extends DecoratedExtension, Args extends Parameters<LegacyProbe.LegacyMethods<TData>[k]>, Return extends any>() =>
+    TypedMethodDecorator<This, Args, Return, (...args: Args) => Return>
+}
+
+export const legacyFactory = <TData extends ExtensionMetadata>(details: TData): {
+  extensionDecorator<T extends LegacyExtension<TData>>(): TypedClassDecorator<T, ConstructorParameters<typeof ExtensionCommon>>
+  blockDefinitions: BlockDefinitions<TData>,
+  blockDecorators: BlockDecorators<TData>
+} => {
+  type Payload = ReturnType<typeof legacyFactory<TData>>;
+
+  const extensionDecorator: Payload["extensionDecorator"] = <T extends LegacyExtension<TData>>() => function (value, context) {
     abstract class LegacySupport extends legacySupport(value as AbstractConstructor<ExtensionCommon>, details) {
       readonly originalClassName = context.name;
     };
 
     return LegacySupport as AbstractConstructor<DecoratedExtension> as new (...args: ConstructorParameters<typeof ExtensionCommon>) => T;
+  };
+
+  const blockMetaData = getBlockMetaData(details);
+
+  const blockDefinitions = blockMetaData.reduce((acc, [opcode, metadata]) => {
+    acc[opcode] = (_, operation) => ({ ...metadata, operation });
+    return acc;
+  }, {} as BlockDefinitions<TData>);
+
+  const blockDecorators = blockMetaData.reduce((acc, [opcode, metadata]) => {
+    acc[opcode] = () => block(metadata as Parameters<typeof block>[0]);
+    return acc;
+  }, {} as BlockDecorators<TData>)
+
+  return { extensionDecorator, blockDefinitions, blockDecorators };
+}
+
+const getBlockMetaData = (metadata: ExtensionMetadata) => Array.from(
+  metadata.blocks
+    .map(block => {
+      if (isString(block)) throw new Error(`Block defined as string, unexpected! ${block}`)
+      return block as ExtensionBlockMetadata;
+    })
+    .reduce((map, block) => {
+      const { opcode, arguments: _arguments, blockType: type } = block;
+      const { text, orderedNames } = parseText(block);
+
+      const args = Object.entries(_arguments)
+        .map(([name, { type, defaultValue, menu }]) => {
+          const options = extractMenuOptions(metadata, menu);
+          return { name, defaultValue, type, options } satisfies Argument<any> & { name: string }
+        })
+        .sort(({ name: a }, { name: b }) => orderedNames.indexOf(a) < orderedNames.indexOf(b) ? -1 : 1)
+        .map(({ name, ...details }) => (details satisfies Argument<any>) as Argument<unknown>);
+
+      const { length } = args;
+      const argsEntry = length >= 2 ? { args: args as [Argument<unknown>] } : length === 1 ? { arg: args[0] } : {};
+
+      return map.set(opcode, { type, text, ...argsEntry });
+    }, new Map<string, BlockMetadata<BlockOperation>>())
+    .entries()
+);
+
+const parseText = ({ arguments: _arguments, text }: ExtensionBlockMetadata): {
+  orderedNames: string[],
+  text: string | ((...args: any[]) => string),
+} => {
+  const args = Object.keys(_arguments)
+    .map(name => ({ name, template: `[${name}]` }))
+    .sort(({ template: a }, { template: b }) => text.indexOf(a) < text.indexOf(b) ? -1 : 1);
+
+  if (args.length === 0) return { orderedNames: undefined, text };
+
+  return {
+    orderedNames: args.map(({ name }) => name),
+    text: () => args.reduce((acc, { template }, index) => acc.replace(template, `[${getArgName(index)}]`), text)
   }
 }
 
-export function legacyFactory<TData extends ExtensionMetadata>(details: TData): {
-  extension<T extends ExtensionCommon & ((DecoratedExtension & LegacyProbe.LegacyMethods<TData>) | Extension<ExtensionMenuDisplayDetails, LegacyProbe.LegacyMethods<TData>>)>(): TypedClassDecorator<T, ConstructorParameters<typeof ExtensionCommon>>
-} &
-{
-  blockDefinitions: { [k in keyof LegacyProbe.LegacyMethods<TData>]: <T extends Extension<any, LegacyProbe.LegacyMethods<TData>>, TReturn extends LegacyProbe.OpReturn<TData, k>>(
-    extension: NonAbstractConstructor<T>,
-    operation: (this: T, ...args: [...Parameters<LegacyProbe.LegacyMethods<TData>[k]>, BlockUtility]) => TReturn
-  ) => Block<T, (...args: Parameters<LegacyProbe.LegacyMethods<TData>[k]>) => TReturn> & { type: LegacyProbe.BlockType<TData, k> } }
-}
-  &
-{
-  blockDecorators: {
-    [k in keyof LegacyProbe.LegacyMethods<TData>]: <This extends DecoratedExtension, Args extends Parameters<LegacyProbe.LegacyMethods<TData>[k]>, Return extends any>() => TypedMethodDecorator<This, Args, Return, (...args: Args) => Return>
+const isDynamicMenu = (menu: ExtensionMenuMetadata | ExtensionMenuItems["items"]): menu is ExtensionDynamicMenu => isString(menu);
+const extractMenuOptions = (data: ExtensionMetadata, menuName: string): Menu<any> => {
+  if (!menuName || !data.menus[menuName]) return undefined;
+  const menu = data.menus[menuName];
+  if (isDynamicMenu(menu)) throw new Error(`Menu '${menuName}' is dynamic, not supported.`);
+  const { items, acceptReporters } = menu;
+  if (isDynamicMenu(items)) throw new Error(`Items is dynamic for menu '${menuName}', not supported: `);
+  if (!items) throw new Error(`Empty items for menu '${menuName}'!`)
+  if (!acceptReporters) return [...items];
+  return {
+    acceptsReporters: acceptReporters,
+    items: [...items],
+    handler: identity
   }
-} {
-
-  return {} as any;
 }
-
 
 /**
  * Types to assist in extracting information from the return type of the old 'getInfo' method

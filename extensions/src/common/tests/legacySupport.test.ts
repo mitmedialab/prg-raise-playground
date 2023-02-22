@@ -1,5 +1,6 @@
 import { ArgumentType, BlockType } from "$common/enums";
 import { DecoratedExtension, Extension } from "$common/extension/Extension";
+import { block } from "$common/extension/decorators/blocks";
 import { extension } from "$common/extension/decorators/extension";
 import { legacyFactory } from "$common/extension/decorators/legacy";
 import { extractLegacySupportFromOldGetInfo } from "$common/portHelper";
@@ -52,7 +53,7 @@ const info = {
     },
     notDefined: {
       acceptReporters: false,
-      items: undefined
+      items: [{ text: "0", value: 0 }, { text: "1", value: 1 }]
     },
     empty: {
       acceptReporters: false,
@@ -65,15 +66,18 @@ const info = {
   }
 } as const;
 
-const legacy = legacyFactory(info);
+const { extensionDecorator, blockDefinitions, blockDecorators } = legacyFactory(info);
 
-@legacy.extension()
+const { multiArgumentsWithMenus } = blockDecorators;
+
+@extensionDecorator()
 class GenericExtension extends Extension<DefaultDisplayDetails, {
   multiArgumentsWithMenus: (args_0: number, args_1: string, args_2: RGBObject, args_3: number, args_4: number, args_5: number) => number
 }> {
+
   defineBlocks(): BlockDefinitions<GenericExtension> {
     return {
-      multiArgumentsWithMenus: legacy.blockDefinitions.multiArgumentsWithMenus(GenericExtension, () => {
+      multiArgumentsWithMenus: blockDefinitions.multiArgumentsWithMenus(GenericExtension, () => {
         return 5
       }),
     }
@@ -83,14 +87,14 @@ class GenericExtension extends Extension<DefaultDisplayDetails, {
   }
 }
 
-@legacy.extension()
+@extensionDecorator()
 class ExtensionDecorated extends DecoratedExtension {
   init(env: Environment): void {
     throw new Error("Method not implemented.");
   }
 
-  @legacy.blockDecorators.multiArgumentsWithMenus()
+  @multiArgumentsWithMenus()
   multiArgumentsWithMenus(args_0: number, args_1: string, args_2: RGBObject, args_3: number, args_4: number, args_5: number) {
-    return 5;
+    return "";
   }
 }
