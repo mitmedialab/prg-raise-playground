@@ -1,14 +1,14 @@
 import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails } from "$common";
 
-/**
- * @summary This type describes how your extension will display in the extensions menu. 
- * @description Like all Typescript type declarations, it looks and acts a lot like a javascript object. 
- * It will be passed as the first generic argument to the Extension class that your specific extension `extends`
- * (see the class defintion below for more information on extending the Extension base class). 
- * @see ExtensionMenuDisplayDetails for all possible display menu properties.
- * @link https://www.typescriptlang.org/docs/handbook/2/objects.html Learn more about object types! (This is specifically a 'type alias')
- * @link https://www.typescriptlang.org/docs/handbook/2/generics.html Learn more about generics! 
- */
+const VideoState = {
+  /** Video turned off. */
+  OFF: 0,
+  /** Video turned on with default y axis mirroring. */
+  ON: 1,
+  /** Video turned on without default y axis mirroring. */
+  ON_FLIPPED: 2
+} as const;
+
 type Details = {
   name: "Teachable Machine",
   description: "Use your Teachable Machine models in your Scratch project!"
@@ -16,88 +16,120 @@ type Details = {
   insetIconURL: "teachable-machine-blocks-small.svg"
 };
 
-/**
- * @summary This type describes all of the blocks your extension will/does implement. 
- * @description As you can see, each block is represented as a function.
- * In typescript, you can specify a function in either of the following ways (and which you choose is a matter of preference):
- * - Arrow syntax: `nameOfFunction: (argument1Name: argument1Type, argument2Name: argument2Type, ...etc...) => returnType;`
- * - 'Method' syntax: `nameOfFunction(argument1Name: argument1Type, argument2Name: argument2Type, ...etc...): returnType;`
- * 
- * The three included functions demonstrate some of the most common types of blocks: commands, reporters, and hats.
- * - Command functions/blocks take 0 or more arguments, and return nothing (indicated by the use of a `void` return type). 
- * - Reporter functions/blocks also take 0 or more arguments, but they must return a value (likely a `string` or `number`).
- * - Hat functions/blocks also take 0 or more arguments, but they must return a boolean value.
- * 
- * Feel free to delete these once you're ready to implement your own blocks.
- * 
- * This type will be passed as the second generic argument to the Extension class that your specific extension 'extends'
- * (see the class defintion below for more information on extending the Extension base class). 
- * @link https://www.typescriptlang.org/docs/handbook/2/functions.html Learn more about function types!
- * @link https://www.typescriptlang.org/docs/handbook/2/objects.html Learn more about object types! (This is specifically a 'type alias')
- * @link https://www.typescriptlang.org/docs/handbook/2/generics.html Learn more about generics! 
- */
 type Blocks = {
-  exampleCommand(exampleString: string, exampleNumber: number): void;
-  exampleReporter: () => number;
-  exampleHat(condition: boolean): boolean;
+  useModel_Command(url: string): void;
+  whenModelDetects_Hat(state: string): boolean;
+  modelPredictionReporter(): string;
+  predictionIs_Boolean(state: string): boolean;
+
+  videoToggleCommand(state: number): void;
+  setVideoTransparencyCommand(state: number): void;
 }
 
-/**
- * @summary This is the class responsible for implementing the functionality of your blocks.
- * @description You'll notice that this class `extends` (or 'inherits') from the base `Extension` class.
- * 
- * Hover over `Extension` to get a more in depth explanation of the base class, and what it means to `extend it`.
- */
-export default class ExtensionNameGoesHere extends Extension<Details, Blocks> {
-  /**
-   * @summary A field to demonstrate how Typescript Class fields work
-   * @link https://www.typescriptlang.org/docs/handbook/2/classes.html#fields
-   */
-  exampleField: number;
+export default class teachableMachine extends Extension<Details, Blocks> {
 
   init(env: Environment) {
-    this.exampleField = 0;
+
   }
+
+  /**
+   * Turns the video camera off/on/on and flipped. This is called in the operation of videoToggleBlock
+   * @param state 
+   */
+  toggleVideo(state: number) {
+    if (state === VideoState.OFF) return this.runtime.ioDevices.video.disableVideo();
+
+    this.runtime.ioDevices.video.enableVideo();
+    // Mirror if state is ON. Do not mirror if state is ON_FLIPPED.
+    this.runtime.ioDevices.video.mirror = (state === VideoState.ON);
+  }
+
+  /**
+   * Sets the video's transparency. This is called in the operation of setVideoTransparencyBlock
+   * @param transparency 
+   */
+  setTransparency(transparency: number) {
+    const trans = Math.max(Math.min(transparency, 100), 0);
+    this.runtime.ioDevices.video.setPreviewGhost(trans);
+  }
+
 
   // All example definitions below are syntactically equivalent, 
   // and which you use is just a matter of preference.
-  defineBlocks(): ExtensionNameGoesHere["BlockDefinitions"] {
+  defineBlocks(): teachableMachine["BlockDefinitions"] {
 
-    type DefineExampleCommand = DefineBlock<ExtensionNameGoesHere, Blocks["exampleCommand"]>;
-    const exampleCommand: DefineExampleCommand = () => ({
+    const useModel_Command: DefineBlock<teachableMachine, Blocks["useModel_Command"]> = () => ({
       type: BlockType.Command,
-      args: [ArgumentType.String, { type: ArgumentType.Number, defaultValue: 789 }],
-      text: (exampleString, exampleNumber) => `This is where the blocks display text goes, with arguments --> ${exampleString} and ${exampleNumber}`,
-      operation: (exampleString, exampleNumber, util) => {
-        alert(`This is a command! Here's what it received: ${exampleString} and ${exampleNumber}`); // Replace with what the block should do! 
-        console.log(util.stackFrame.isLoop); // just an example of using the BlockUtility
+      arg: ArgumentType.String,
+      text: (url) => `use model ${url}`,
+      operation: (url) => {
+        console.log(url)
+      }
+    });
+
+    const whenModelDetects_Hat: DefineBlock<teachableMachine, Blocks["whenModelDetects_Hat"]> = () => ({
+      type: BlockType.Hat,
+      arg: { type: ArgumentType.String, options: ['State 1'] },
+      text: (state) => `when model detects ${state}`,
+      operation: (state) => {
+        console.log(state);
+        return false;
+      }
+    });
+
+    const modelPredictionReporter: DefineBlock<teachableMachine, Blocks["modelPredictionReporter"]> = () => ({
+      type: BlockType.Reporter,
+      text: () => `model prediction`,
+      operation: () => {
+        console.log();
+        return null
+      }
+    });
+
+    const predictionIs_Boolean: DefineBlock<teachableMachine, Blocks["predictionIs_Boolean"]> = () => ({
+      type: BlockType.Boolean,
+      arg: { type: ArgumentType.String, options: ['State 1'] },
+      text: (state) => `when model detects ${state}`,
+      operation: (state) => {
+        console.log(state);
+        return false;
+      }
+    });
+
+    const videoToggleCommand: DefineBlock<teachableMachine, Blocks["videoToggleCommand"]> = () => ({
+      type: BlockType.Command,
+      arg: {
+        type: ArgumentType.Number,
+        options: {
+          acceptsReporters: true,
+          items: [{ text: 'off', value: VideoState.OFF }, { text: 'on', value: VideoState.ON }, { text: 'on and flipped', value: VideoState.ON_FLIPPED }],
+          handler: (video_state: number) => {
+            return Math.min(Math.max(video_state, VideoState.OFF), VideoState.ON_FLIPPED);
+          }
+        }
+      },
+      text: (video_state: number) => `turn video ${video_state}`,
+      operation: (video_state: number) => {
+        this.toggleVideo(video_state);
+      }
+    });
+
+    const setVideoTransparencyCommand: DefineBlock<teachableMachine, Blocks["videoToggleCommand"]> = () => ({
+      type: BlockType.Command,
+      arg: { type: ArgumentType.Number, defaultValue: 50 },
+      text: (transparency: number) => `set video transparency to ${transparency}`,
+      operation: (transparency: number) => {
+        this.setTransparency(transparency);
       }
     });
 
     return {
-      exampleCommand,
-
-      exampleReporter: function (self: ExtensionNameGoesHere): Block<ExtensionNameGoesHere, Blocks["exampleReporter"]> {
-        return {
-          type: BlockType.Reporter,
-          text: "This increments an internal field and then reports it's value",
-          operation: () => {
-            return ++self.exampleField;
-          }
-        }
-      },
-
-      exampleHat: pickFromOptions
+      useModel_Command,
+      whenModelDetects_Hat,
+      modelPredictionReporter,
+      predictionIs_Boolean,
+      videoToggleCommand,
+      setVideoTransparencyCommand,
     }
   }
 }
-
-type WithOptionsBlock = Blocks["exampleHat"];
-const pickFromOptions = (): Block<ExtensionNameGoesHere, WithOptionsBlock> => ({
-  type: BlockType.Hat,
-  arg: { type: ArgumentType.Boolean, options: [{ text: 'Yes', value: true }, { text: 'No', value: false }] },
-  text: (argument1) => `Should the below block execute? ${argument1}`,
-  operation: function (argument1) {
-    return argument1;
-  }
-});
