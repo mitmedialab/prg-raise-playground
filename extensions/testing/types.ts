@@ -131,4 +131,4 @@ export type RuntimeForTest<T extends ExtensionCommon> = Runtime & {
 /**
  @see https://en.wikipedia.org/wiki/Test_fixture
  */
-export type IntegrationTest<T extends ExtensionCommon> = (fixture: { extension: T, blockRunner: BlockRunner<T>, testHelper: TestHelper }) => void | Promise<void>;
+export type IntegrationTest<T extends ExtensionCommon> = (fixture: { extension: Testable<T>, blockRunner: BlockRunner<T>, testHelper: TestHelper }) => void | Promise<void>;

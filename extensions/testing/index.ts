@@ -11,6 +11,9 @@ import testable from "./mixins/testable";
 
 export { describe, expect, test };
 
+export const testID = "extensionUnderTest";
+export const testName = "Extension Under Test";
+
 type TestDetails<T extends ExtensionCommon, Key extends BlockKey<T>> = {
   Extension: NonAbstractConstructor<ExtensionCommon>,
   key: Key,
@@ -58,7 +61,7 @@ const mockRuntime = <T extends ExtensionCommon>(details: TestDetails<T, any>): R
 
 const getInstance = <T extends ExtensionCommon>(details: TestDetails<T, any>): Testable<T> => {
   const runtime = mockRuntime(details);
-  const args: ConstructorParameters<typeof ExtensionBase> = [runtime, "", "", ""];
+  const args: ConstructorParameters<typeof ExtensionBase> = [runtime, testName, testID, ""];
   const TestClass = testable(details.Extension);
   const instance = new TestClass(...args);
   instance.initialize();

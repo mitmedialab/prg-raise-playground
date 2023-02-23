@@ -6,7 +6,7 @@ import { registerButtonCallback } from "$common/ui";
 import { isPrimitive, isString, isFunction, identity, typesafeCall } from "$common/utils";
 import { BlockMetadata, ExtensionBaseConstructor, DecoratedExtension } from "$common/extension/Extension";
 import customArguments from "$common/extension/mixins/customArguments";
-import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
+import type BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 
 export type BlockGetter<This, Fn extends BlockOperation> = (this: This, self: This) => BlockMetadata<Fn>;
 type BlockDefinition<T, Fn extends BlockOperation> = BlockMetadata<Fn> | BlockGetter<T, Fn>;
@@ -26,7 +26,7 @@ export const extractArgNamesFromText = (text: string): string[] => {
 export const getImplementationName = (opcode: string) => `internal_${opcode}`;
 
 export const wrapOperation = (context: any, operation: BlockOperation, args: { name: string, type: ValueOf<typeof ArgumentType>, handler: Handler }[]) => {
-  return function (this: DecoratedExtension, argsFromScratch, blockUtility) {
+  return function (this: DecoratedExtension, argsFromScratch: Record<string, any>, blockUtility: BlockUtility) {
     const castedArguments = args.map(({ name, type, handler }) => {
       const param = argsFromScratch[name];
       switch (type) {

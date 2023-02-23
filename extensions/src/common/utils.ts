@@ -1,4 +1,4 @@
-import { MenuItem } from "./types"
+import { MenuItem, Primitive } from "./types"
 
 type FetchParams = {
   request: Parameters<typeof fetch>[0],
@@ -64,14 +64,14 @@ export async function untilReady<T extends { ready: boolean }>(obj: T, delay: nu
   clearTimeout(timeout);
 };
 
-export const isString = (query: any) => typeof query === 'string' || query instanceof String;
+export const isString = (query: any): query is string => typeof query === 'string' || query instanceof String;
 
 export const isFunction = (query: any): query is (...args: any[]) => any =>
   Object.prototype.toString.call(query) === "[object Function]"
   || "function" === typeof query
   || query instanceof Function;
 
-export const isPrimitive = (query: any) => query !== Object(query);
+export const isPrimitive = (query: any): query is Primitive => query !== Object(query);
 
 export const splitOnCapitals = (query: string) => query.split(/(?=[A-Z])/);
 

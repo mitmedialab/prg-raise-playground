@@ -148,6 +148,9 @@ export type NonEmptyArray<T> = [T, ...T[]];
 export type MethodNames<T> = { [k in keyof T]: T[k] extends (...args: any) => any ? k : never }[keyof T];
 export type Methods<T> = { [k in MethodNames<T>]: T[k] };
 export type ValidKey<T> = { [k in keyof T]: T[k] extends never ? never : k }[keyof T];
+export type Primitive<IncludeSymbol extends boolean = false> = IncludeSymbol extends true
+  ? bigint | boolean | null | number | string | undefined | symbol
+  : bigint | boolean | null | number | string | undefined;
 
 const enum ArgField {
   Arg = 'arg',

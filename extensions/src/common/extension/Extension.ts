@@ -83,7 +83,7 @@ const applyAllMixins = (base: ExtensionBaseConstructor) =>
 export const extensionsMap = new Map<string, DecoratedExtension>();
 
 export abstract class ExtensionCommon extends applyAllMixins(ExtensionBase) {
-  abstract version: "decorated" | "generic";
+  abstract readonly version: "decorated" | "generic";
 
   /**
    * Prevent developers from implementing the constructor.
@@ -96,7 +96,7 @@ export abstract class ExtensionCommon extends applyAllMixins(ExtensionBase) {
 }
 
 export abstract class DecoratedExtension extends ExtensionCommon {
-  version = "decorated" as const;
+  readonly version = "decorated" as const;
 }
 
 export const getAlternativeOpcodeName = (opcode: string) => `__block_${opcode}`;
@@ -145,7 +145,7 @@ export abstract class Extension
   readonly BlockDefinitions: BlockDefinitions<typeof this>;
   readonly Translations: Translations<typeof this>;
 
-  version = "generic" as const;
+  readonly version = "generic" as const;
 
   /**
    * @summary Extension member method that returns an object defining all blocks that belong to the extension.

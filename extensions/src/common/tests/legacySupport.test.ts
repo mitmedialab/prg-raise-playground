@@ -2,18 +2,17 @@ import { ArgumentType, BlockType } from "$common/enums";
 import { DecoratedExtension, Extension } from "$common/extension/Extension";
 import { block } from "$common/extension/decorators/blocks";
 import { extension } from "$common/extension/decorators/extension";
-import { legacyFactory } from "$common/extension/decorators/legacy";
-import { extractLegacySupportFromOldGetInfo } from "$common/portHelper";
+import { LegacyProbe, legacyFactory, } from "$common/extension/decorators/legacy";
 import { BaseExtension, Block, BlockDefinitions, Environment, ExtensionBlockMetadata, RGBObject } from "$common/types";
-import { describe, expect, test } from "$testing";
+import { createTestSuite, describe, expect, test, testID } from "$testing";
 import { DefaultDisplayDetails } from "$testing/defaults";
 
 const info = {
-  id: "legacyTest",
+  id: testID,
   blocks: [{
     blockType: BlockType.Reporter,
     opcode: "multiArgumentsWithMenus",
-    text: "Dummy",
+    text: "Dummy [ARG_0] and [ARG_1] also [ARG_2]",
     arguments: {
       ARG_0: {
         type: ArgumentType.Number,
@@ -24,77 +23,91 @@ const info = {
         menu: "valueOnly"
       },
       ARG_2: {
-        type: ArgumentType.Color,
-        menu: "notDefined"
-      },
-      ARG_3: {
-        type: ArgumentType.Angle,
-        menu: "empty"
-      },
-      ARG_5: {
-        type: ArgumentType.Number,
-        menu: "missing"
-      },
-      ARG_6: {
         type: ArgumentType.Number,
         menu: "expressedAsEntries"
       }
     },
-  } as const],
+  }],
   menus: {
+    dynamicExample: "someFunction",
     textAndValue: {
       acceptReporters: false,
       items: [{ text: "0", value: 0 }, { text: "1", value: 1 }, { text: "2", value: 2 }]
     },
     valueOnly: {
-      acceptReporters: false,
+      acceptReporters: true,
       // Must be strings to provide value only
-      items: ["0", "1", "2"]
-    },
-    notDefined: {
-      acceptReporters: false,
-      items: [{ text: "0", value: 0 }, { text: "1", value: 1 }]
-    },
-    empty: {
-      acceptReporters: false,
-      items: []
+      items: "ee"
     },
     expressedAsEntries: {
-      acceptReporters: false,
+      acceptReporters: true,
       items: [{ text: "0", value: 0 }, { text: "1", value: 1 }]
     }
   }
 } as const;
 
-const { extensionDecorator, blockDefinitions, blockDecorators } = legacyFactory(info);
+const { legacyExtension, legacyDefinition, legacyBlock } = legacyFactory(info);
 
-const { multiArgumentsWithMenus } = blockDecorators;
+type y = LegacyProbe.ReservedMenuNames<typeof info>;
 
-@extensionDecorator()
+type NestedKeyOf<ObjectType extends object> =
+  { [Key in keyof ObjectType]: ObjectType[Key] };
+
+
+@legacyExtension()
 class GenericExtension extends Extension<DefaultDisplayDetails, {
-  multiArgumentsWithMenus: (args_0: number, args_1: string, args_2: RGBObject, args_3: number, args_4: number, args_5: number) => number
+  multiArgumentsWithMenus: (args_0: number, args_1: string, args_2: number) => number,
 }> {
-
   defineBlocks(): BlockDefinitions<GenericExtension> {
     return {
-      multiArgumentsWithMenus: blockDefinitions.multiArgumentsWithMenus(GenericExtension, () => {
-        return 5
-      }),
+
+      multiArgumentsWithMenus: (x) => legacyDefinition.multiArgumentsWithMenus({
+        ExtensionClass: GenericExtension,
+        operation: (x, y, z, util) => 5,
+        argumentModifiers: {
+          1: {
+            dynamicOptions: { reservedName: "ee", getter: () => ["#"] },
+            handler: (x: any) => `${x}`
+          },
+          2: { handler: (x: any) => parseInt(`${x}`) ?? 0 }
+        }
+      })
+
     }
   }
-  init(env: Environment): void {
-    throw new Error("Method not implemented.");
-  }
+
+  init(env: Environment): void { }
 }
 
-@extensionDecorator()
-class ExtensionDecorated extends DecoratedExtension {
-  init(env: Environment): void {
-    throw new Error("Method not implemented.");
-  }
 
-  @multiArgumentsWithMenus()
-  multiArgumentsWithMenus(args_0: number, args_1: string, args_2: RGBObject, args_3: number, args_4: number, args_5: number) {
+
+@extension({
+  name: "",
+  description: "",
+  iconURL: "",
+  insetIconURL: ""
+})
+@legacyExtension()
+class ExtensionDecorated extends DecoratedExtension {
+  init(env: Environment): void { }
+
+  @legacyBlock.multiArgumentsWithMenus({
+    argumentModifiers: {
+      1: { dynamicOptions: { reservedName: "ee", getter: () => ["#"] }, handler: (x: any) => `${x}` },
+      2: { handler: (x: any) => parseInt(`${x}`) ?? 0 }
+    }
+  })
+  multiArgumentsWithMenus(args_0: number, args_1: string, args_2: number) {
     return "";
   }
+
 }
+
+createTestSuite({ Extension: ExtensionDecorated, __dirname }, {
+  unitTests: undefined,
+  integrationTests: {
+    xx: ({ extension }) => {
+      console.log(JSON.stringify(extension.getInfo(), undefined, 3));
+    }
+  }
+})

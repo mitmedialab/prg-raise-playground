@@ -844,6 +844,7 @@ const deserializeBlocks = function (blocks) {
         block.inputs = deserializeInputs(block.inputs, blockId, blocks);
         block.fields = deserializeFields(block.fields);
     }
+    console.log(JSON.stringify(blocks, null, 3));
     return blocks;
 };
 
