@@ -2,24 +2,22 @@
   import Extension from ".";
   import { ParameterOf, ArgumentEntry, ArgumentEntrySetter, ReplaceWithBlockFunctionName} from "$common";
 
-  const emojiIcons = {
-    "Airplane": "https://cdn.emojidex.com/emoji/seal/airplane.png?1499688727",
-    "Apple": "https://images.emojiterra.com/google/noto-emoji/v2.034/512px/1f34e.png",
-    "Art": "https://images.emojiterra.com/google/noto-emoji/v2.034/512px/1f3a8.png",
-    "Bowling": "https://images.emojiterra.com/google/android-pie/512px/1f3b3.png",
-    "Correct": "https://images.emojiterra.com/openmoji/v13.1/512px/2705.png",
-    "Exclamation": "https://emojis.wiki/emoji-pics/messenger/exclamation-mark-messenger.png",
-    "Football": "https://images.emojiterra.com/google/noto-emoji/v2.034/512px/1f3c8.png",
-    "Heart": "https://images.emojiterra.com/openmoji/v13.1/512px/1f498.png",
-    "Magic": "https://images.emojiterra.com/google/android-11/512px/1fa84.png",
-    "Ocean": "https://emojipedia-us.s3.amazonaws.com/source/skype/289/water-wave_1f30a.png",
-    "Penguin": "https://emojipedia-us.s3.amazonaws.com/source/skype/289/penguin_1f427.png",
-    "Rainbow" : "https://emojipedia-us.s3.amazonaws.com/source/skype/289/rainbow_1f308.png",
-    "Robot": "https://images.emojiterra.com/google/android-10/512px/1f916.png",
-    "Rocket": "https://images.emojiterra.com/openmoji/v13.1/512px/1f680.png",
-    "Snowflake": "https://emojipedia-us.s3.amazonaws.com/source/skype/289/snowflake_2744-fe0f.png",
-    "Taco": "https://cdn0.iconfinder.com/data/icons/junk-food-emoji-set/100/Taco_2-512.png",
-    "Video Game": "https://images.emojiterra.com/google/noto-emoji/v2.034/512px/1f3ae.png"
+  const emoteIcons = {
+    "Celebrate": "https://em-content.zobj.net/thumbs/240/apple/325/party-popper_1f389.png", 
+    "Curious": "https://em-content.zobj.net/thumbs/144/apple/325/face-with-raised-eyebrow_1f928.png",
+    "Embarassed": "https://em-content.zobj.net/thumbs/144/apple/325/face-with-hand-over-mouth_1f92d.png", 
+    "Frustrated": "https://em-content.zobj.net/thumbs/144/apple/325/confounded-face_1f616.png", 
+    "Happy": "https://em-content.zobj.net/thumbs/144/apple/325/grinning-face_1f600.png",
+    "Interested": "https://em-content.zobj.net/thumbs/144/apple/325/star-struck_1f929.png", 
+    "Laugh": "https://em-content.zobj.net/thumbs/144/apple/325/face-with-tears-of-joy_1f602.png", 
+    "No": "https://em-content.zobj.net/thumbs/144/apple/325/thumbs-down_1f44e.png",
+    "Puzzled": "https://em-content.zobj.net/thumbs/144/apple/325/face-with-diagonal-mouth_1fae4.png",
+    "Relieved": "https://em-content.zobj.net/thumbs/144/apple/325/relieved-face_1f60c.png",
+    "Sad": "https://em-content.zobj.net/thumbs/144/apple/325/slightly-frowning-face_1f641.png", 
+    "Sad Eyes": "https://em-content.zobj.net/thumbs/144/apple/325/pleading-face_1f97a.png", 
+    "Success": "https://em-content.zobj.net/thumbs/240/apple/325/check-mark-button_2705.png",
+    "Thinking": "https://em-content.zobj.net/thumbs/144/apple/325/thinking-face_1f914.png", 
+    "Yep": "https://em-content.zobj.net/thumbs/144/apple/325/thumbs-up_1f44d.png"
   }
 
   /**
@@ -93,10 +91,10 @@
 </style>
 
 <div id="grid">
-  {#each Object.keys(emojiIcons) as emoji}
+  {#each Object.keys(emoteIcons) as emoji}
   <button disabled={value==emoji} on:click={() => value = emoji }>
     <div class="cell">
-      <img class="emoji" src={emojiIcons[emoji]} alt={emoji}/>
+      <img class="emoji" src={emoteIcons[emoji]} alt={emoji}/>
     </div>
   </button>
   {/each}

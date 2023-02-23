@@ -4,7 +4,7 @@ import Runtime from "../../../packages/scratch-vm/src/engine/runtime";
 import EventEmitter from 'events';
 
 
-import { ArgumentType, BlockType } from "$common";
+import { ArgumentType, BlockType, color } from "$common";
 import { Environment, BlockDefinitions, ButtonBlock, MenuItem } from "$common"
 import { Extension } from "$common"
 
@@ -181,19 +181,20 @@ type Blocks = {
     JiboAsk: (text: string) => void, 
     JiboListen: () => any, 
     // JiboEmoji: (akey: string) => void, 
-    JiboEmoji: (arg: EmojiArgument) => void,
+    JiboEmoji: (akey: string) => void,
     JiboEmote: (akey: string) => void, 
     JiboDance: (dkey) => void,
-    JiboLED: (color) => void, 
+    JiboLED: (arg: string) => void, 
     // JiboLEDOff: (status) => void, 
     JiboLook: (x_angle: string, y_angle: string, z_angle: string) => void, 
     JiboMultitask: () => void, 
     JiboEnd: () => void, 
-    JiboState: () => void, 
-    Emoji: () => string,
+    // JiboState: () => void, 
+    // Emoji: () => string,
 }
 
-type EmojiArgument = { name: string, file: string };
+// type EmojiArgument = { name: string };
+// type ColorArgument = { color: string }
 
 export default class Scratch3Jibo extends Extension<Details, Blocks> {
     // runtime: Runtime;
@@ -279,12 +280,12 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
             })
           )
 
-          setInterval((() => {
-            this.checkBusy(self);
-            console.log("busy: " + this.busy);
-            console.log(this.animation_list)
-            console.log(this.getAnimationList())
-        }), 100); 
+        //   setInterval((() => {
+        //     this.checkBusy(self);
+        //     console.log("busy: " + this.busy);
+        //     console.log(this.animation_list)
+        //     console.log(this.getAnimationList())
+        // }), 100); 
     }
 
     checkBusy(self: Scratch3Jibo) {
@@ -333,11 +334,11 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
                 text: `answer`, 
                 operation: () => this.JiboListen()
             }), 
-            JiboState: (self: Scratch3Jibo) => ({
-                type:BlockType.Command,
-                text: `read state`, 
-                operation: () => this.JiboState()
-            }),
+            // JiboState: (self: Scratch3Jibo) => ({
+            //     type:BlockType.Command,
+            //     text: `read state`, 
+            //     operation: () => this.JiboState()
+            // }),
             JiboDance: (self: Scratch3Jibo) => ({
                 type: BlockType.Command, 
                 arg: {
@@ -370,24 +371,22 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
             // }), 
             JiboEmoji: (self: Scratch3Jibo) => ({
                 type: BlockType.Command, 
-                text: (arg) => `Set Jibo Emoji to ${arg.name}`,
+                text: (arg) => `Set Jibo Emoji to ${arg}`,
                 arg: this.makeCustomArgument({
-                    component: "CustomArgument", 
+                    component: "EmojiArgument", 
                     initial: { 
-                        value: { name: "Apple", file: "Emoji/Emoji_AppleRed_01_01.keys" }, 
+                        value: "Apple", 
                         text: "Apple"
+
                     }
                 }), 
-                operation: (arg) => {
-                    const { name, file } = arg;
-                    console.log(name)
-                }
+                operation: (akey) => this.JiboEmoji(akey)
             }),
-            Emoji: (self: Scratch3Jibo) => ({
-                type: BlockType.Reporter, 
-                text: `emoji`, 
-                operation: () => {return this.emoji}
-            }),
+            // Emoji: (self: Scratch3Jibo) => ({
+            //     type: BlockType.Reporter, 
+            //     text: `emoji`, 
+            //     operation: () => {return this.emoji}
+            // }),
             // emojiUI: (self: Scratch3Jibo) => ({
             //     type: BlockType.Button, 
             //     text: `Set Emoji`, 
@@ -395,11 +394,15 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
             // }),
             JiboEmote: (self: Scratch3Jibo) => ({
                 type: BlockType.Command, 
-                arg: { 
-                    type: ArgumentType.String, 
-                    defaultValue: "Celebrate", 
-                    options: self.getAnimationList
-                },
+                text: (arg) => `Set Jibo Emote to ${arg}`,
+                arg: this.makeCustomArgument({
+                    component: "EmoteArgument", 
+                    initial: {
+                        value: "Celebrate", 
+                        text: "Celebrate"
+                    }
+                }),
+                operation: (akey) => this.JiboEmote(akey)
                 // arg: {
                 //         type: ArgumentType.String, 
                 //         defaultValue: "Celebrate", 
@@ -415,14 +418,6 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
                 //             }
                 //         }
                 //     }, 
-                text: (akey: string) => `set Jibo Animation to ${akey}`, 
-                operation: (akey: string) => {
-                    if (akey in Object.keys(_emotions)) {
-                        this.JiboEmote(akey)
-                    } else {
-                        this.customAnim(); 
-                    }
-                }
             }), 
             // Anim: (self: Scratch3Jibo) => ({
             //     type: BlockType.Reporter, 
@@ -436,11 +431,12 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
             // }),
             JiboLED: (self: Scratch3Jibo) => ({
                 type: BlockType.Command, 
-                arg: {
-                    type: ArgumentType.Color,
-                },
-                text: (color) => `set Jibo LED to ${color}`, 
-                operation: (color) => this.JiboLED(color)
+                arg: this.makeCustomArgument({
+                    component: "ColorArgument", 
+                    initial: { value: "red" , text: "red" }
+                }),
+                text: (arg) => `set Jibo LED to ${arg}`, 
+                operation: (arg) => this.JiboLED(arg)
             }), 
             // JiboLEDOff: (self: Scratch3Jibo) => ({
             //     type: BlockType.Command, 
@@ -1001,7 +997,8 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     }
 
     async JiboEmoji(akey: string) {
-        const animation_key = _emojis[this.emoji];
+        console.log(akey)
+        const animation_key = _emojis[akey];
         await this.JiboAnim(animation_key);
     }
 

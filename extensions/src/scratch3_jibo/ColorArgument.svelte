@@ -1,6 +1,6 @@
 <script lang="ts">
   import Extension from ".";
-  import { ParameterOf, ArgumentEntry, ArgumentEntrySetter, ReplaceWithBlockFunctionName} from "$common";
+  import { ParameterOf, ArgumentEntry, ArgumentEntrySetter, ReplaceWithBlockFunctionName, color} from "$common";
 
   /**
    * Modify this type to match the argument you're developing this UI for.
@@ -34,16 +34,68 @@
    * @see https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extensions#creating-ui-for-extensions
    */
   // svelte-ignore unused-export-let
+
+  const _colors = {
+    "off": {x: 0, y:0, z:0},
+    "red": {x: 255, y:0, z:0},
+    //"orange": {x:255, y:69, z:0},
+    "yellow": {x:255, y:69, z:0},
+    "green": {x:0, y:167, z:0},
+    "cyan": {x:0, y:167, z:48},
+    "blue": {x:0, y:0, z:255},
+    "magenta": {x:255, y:0, z:163},
+    //"pink": {x:255, y:20, z:147},
+    "white": {x:255, y:255, z:255},
+  }
+
   export let extension: Extension;
 
   let value = current.value;
 
-  $: setter({ value, text: "This should be a string representation of the value" });
+  $: setter({ value, text: value });
 </script>
 
 <style>
+  .colorButton {
+    border-radius: 32px;
+    height: 64px;
+    width: 64px;
+  }
+  .color {
+    background-color: var(--color);
+  }
+
+  /* (A) 3 COLUMNS PER ROW */
+  #grid {
+    display: grid;
+    grid-template-columns: auto auto auto; 
+    grid-gap: 10px;
+  }
+  /* (B) 1 COL ON SMALL SCREENS */
+  @media screen and (max-width:768px) {
+    #grid { grid-template-columns: auto; }
+  }
+  /* (C) OPTIONAL FOR THE CELLS */
+  /* .head {
+    font-weight: bold;
+    border: 1px solid;
+    border-radius: 2px;
+  } */
+  .cell {
+    border: 1px solid;
+    border-radius: 2px;
+  }
 </style>
 
-<div>
-  <input bind:value>
+<div id="grid">
+  {#each Object.keys(_colors) as clr}
+    <button 
+      class="colorButton color" 
+      disabled={value==clr}
+      style="--color: {clr}"
+      on:click={ () => value = clr }
+      >
+      {clr}
+    </button>
+  {/each}
 </div>
