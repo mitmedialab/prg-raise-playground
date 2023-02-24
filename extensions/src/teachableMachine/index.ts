@@ -53,9 +53,6 @@ export default class teachableMachine extends Extension<Details, Blocks> {
     this.runtime.ioDevices.video.setPreviewGhost(trans);
   }
 
-
-  // All example definitions below are syntactically equivalent, 
-  // and which you use is just a matter of preference.
   defineBlocks(): teachableMachine["BlockDefinitions"] {
 
     const useModel_Command: DefineBlock<teachableMachine, Blocks["useModel_Command"]> = () => ({
