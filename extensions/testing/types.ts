@@ -59,6 +59,12 @@ export type InputArray<T extends ExtensionCommon, Key extends BlockKey<T>> =
   ? Parameters<BlockMethods<T>[Key]> extends [...infer X extends any[], BlockUtility?] ? readonly [...X] : readonly [...Parameters<BlockMethods<T>[Key]>]
   : [];
 
+export type NamedInputArray<T extends ExtensionCommon, Key extends BlockKey<T>> = RemapToNamed<[...InputArray<T, Key>]>
+
+type RemapToNamed<TArr extends unknown[]> = TArr extends [...infer Rest, infer _]
+  ? [...RemapToNamed<Rest>, [string, _]]
+  : []
+
 export type Input<T extends ExtensionCommon, Key extends BlockKey<T>> =
   Parameters<BlockMethods<T>[Key]> extends NonEmptyArray<any>
   ? {

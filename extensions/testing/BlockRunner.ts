@@ -2,7 +2,7 @@ import { BlockType, BlocksInfo, CodeGenArgs, Extension, ExtensionBase, Extension
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import { buildKeyBlockMap } from "$testing";
 import testable from "./mixins/testable";
-import { GenericExtension, BlockKey, InputArray, KeyToBlockIndexMap, RenderedUI, RuntimeForTest, Testable, ReportedValue } from "./types";
+import { GenericExtension, BlockKey, InputArray, KeyToBlockIndexMap, RenderedUI, RuntimeForTest, Testable, ReportedValue, NamedInputArray } from "./types";
 import { getEngineFile } from "./utils";
 
 export class BlockRunner<T extends ExtensionCommon> {
@@ -33,6 +33,25 @@ export class BlockRunner<T extends ExtensionCommon> {
     return { output, ui: renderedUI };
   }
 
+  async x<K extends BlockKey<T>>(key: K, args: Object): Promise<{ output: Awaited<ReportedValue<T, K>>, ui?: RenderedUI }> {
+    const { instance } = this;
+    const { runtime } = instance;
+    const { forTest } = runtime as RuntimeForTest<T>;
+
+    const { blockType, func, opcode } = this.getBlockMetaDataByKey(key);
+    const blockFunction: Function = blockType === BlockType.Button ? runtime[func] : instance[opcode];
+
+    const output = await Promise.resolve(blockFunction.call(instance, ...[args, this.mockBlockUtility()]));
+    const renderedUI = forTest.UIPromise ? await forTest.UIPromise : undefined;
+    return { output, ui: renderedUI };
+  }
+
+  async invokeWithCustomArgNames<K extends BlockKey<T>>(key: K, ...input: NamedInputArray<T, K>) {
+    const inputs = input as [string, unknown][];
+    const map = new Map<string, any>([["mutation", {}]]); // Need to research what 'mutation' is for
+    return this.x(key, Object.fromEntries(inputs.reduce((args, [name, value]) => args.set(name, value), map)))
+  }
+
   createCompanion<TCompanion extends GenericExtension>(constructor: NonAbstractConstructor<TCompanion>) {
     const { instance: { runtime } } = this;
     const args: ConstructorParameters<typeof ExtensionBase> = [runtime, "", "", ""];
@@ -56,7 +75,12 @@ export class BlockRunner<T extends ExtensionCommon> {
     const mutation = {}; // Need to research what this is for
 
     const args = Array.isArray(input)
-      ? (input as Array<any>).reduce((acc, curr, index) => { acc[index] = curr; return acc }, { mutation } as object)
+      ? (input as Array<any>).reduce((acc, curr, index) => {
+        Array.isArray(curr) ? acc[curr[0]] = curr[1] : acc[index] = curr;
+        return acc
+      },
+        { mutation } as object
+      )
       : { mutation, 0: input }
     return [args, utility];
   }

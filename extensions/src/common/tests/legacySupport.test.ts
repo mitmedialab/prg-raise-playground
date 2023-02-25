@@ -2,7 +2,7 @@ import { ArgumentType, BlockType } from "$common/enums";
 import { DecoratedExtension, Extension } from "$common/extension/Extension";
 import { block } from "$common/extension/decorators/blocks";
 import { extension } from "$common/extension/decorators/extension";
-import { LegacyProbe, legacyFactory, } from "$common/extension/decorators/legacy";
+import { LegacyProbe, legacy, } from "$common/extension/decorators/legacy";
 import { BaseExtension, Block, BlockDefinitions, Environment, ExtensionBlockMetadata, RGBObject } from "$common/types";
 import { createTestSuite, describe, expect, test, testID } from "$testing";
 import { DefaultDisplayDetails } from "$testing/defaults";
@@ -27,7 +27,8 @@ const info = {
         menu: "expressedAsEntries"
       }
     },
-  }],
+  },
+  ],
   menus: {
     dynamicExample: "someFunction",
     textAndValue: {
@@ -46,13 +47,7 @@ const info = {
   }
 } as const;
 
-const { legacyExtension, legacyDefinition, legacyBlock } = legacyFactory(info);
-
-type y = LegacyProbe.ReservedMenuNames<typeof info>;
-
-type NestedKeyOf<ObjectType extends object> =
-  { [Key in keyof ObjectType]: ObjectType[Key] };
-
+const { legacyExtension, legacyDefinition, ReservedNames } = legacy(info).for<GenericExtension>();
 
 @legacyExtension()
 class GenericExtension extends Extension<DefaultDisplayDetails, {
@@ -61,16 +56,12 @@ class GenericExtension extends Extension<DefaultDisplayDetails, {
   defineBlocks(): BlockDefinitions<GenericExtension> {
     return {
 
-      multiArgumentsWithMenus: (x) => legacyDefinition.multiArgumentsWithMenus({
-        ExtensionClass: GenericExtension,
-        operation: (x, y, z, util) => 5,
-        argumentModifiers: {
-          1: {
-            dynamicOptions: { reservedName: "ee", getter: () => ["#"] },
-            handler: (x: any) => `${x}`
-          },
+      multiArgumentsWithMenus: legacyDefinition.multiArgumentsWithMenus({
+        argumentMethods: {
+          1: { getItems: () => ["#"], handler: (x: any) => `${x}` },
           2: { handler: (x: any) => parseInt(`${x}`) ?? 0 }
-        }
+        },
+        operation: (x, y, z, util) => 5,
       })
 
     }
@@ -80,6 +71,7 @@ class GenericExtension extends Extension<DefaultDisplayDetails, {
 }
 
 
+const { legacyExtension: legacyDecorated, legacyBlock } = legacy(info).for<ExtensionDecorated>();
 
 @extension({
   name: "",
@@ -87,27 +79,30 @@ class GenericExtension extends Extension<DefaultDisplayDetails, {
   iconURL: "",
   insetIconURL: ""
 })
-@legacyExtension()
+@legacy(info).for<ExtensionDecorated>().legacyExtension()
 class ExtensionDecorated extends DecoratedExtension {
   init(env: Environment): void { }
 
   @legacyBlock.multiArgumentsWithMenus({
-    argumentModifiers: {
-      1: { dynamicOptions: { reservedName: "ee", getter: () => ["#"] }, handler: (x: any) => `${x}` },
+    argumentMethods: {
+      1: { getItems: () => ["#"], handler: (x: any) => `${x}` },
       2: { handler: (x: any) => parseInt(`${x}`) ?? 0 }
     }
   })
   multiArgumentsWithMenus(args_0: number, args_1: string, args_2: number) {
-    return "";
+    return "Hi" + args_0;
   }
-
 }
 
 createTestSuite({ Extension: ExtensionDecorated, __dirname }, {
   unitTests: undefined,
   integrationTests: {
-    xx: ({ extension }) => {
-      console.log(JSON.stringify(extension.getInfo(), undefined, 3));
+    xx: async ({ extension, blockRunner }) => {
+      const args = info.blocks[0].arguments;
+      const [_0, _1, _2] = Object.keys(info.blocks[0].arguments) as Array<keyof typeof args>;
+      const x = await blockRunner.invokeWithCustomArgNames("multiArgumentsWithMenus", [_0, 100], [_1, ""], [_2, 100]);
+
+      console.log(x);
     }
   }
 })
