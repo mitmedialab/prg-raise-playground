@@ -1,7 +1,5 @@
 import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails } from "$common";
 
-import VideoMotion from './library'
-
 const VideoState = {
   /** Video turned off. */
   OFF: 0,
@@ -27,7 +25,7 @@ type Details = {
 type Blocks = {
   useModel_Command(url: string): void;
   whenModelDetects_Hat(state: string): boolean;
-  // modelPredictionReporter(): string;
+  modelPredictionReporter(): string;
   predictionIs_Boolean(state: string): boolean;
 
   videoToggleCommand(state: number): void;
@@ -53,13 +51,6 @@ export default class teachableMachine extends Extension<Details, Blocks> {
     this.runtime = env.runtime;
 
     /**
-     * The motion detection algoritm used to power the motion amount and
-     * direction values.
-     * @type {VideoMotion}
-     */
-    this.detect = new VideoMotion();
-
-    /**
      * The last millisecond epoch timestamp that the video stream was
      * analyzed.
      * @type {number}
@@ -80,7 +71,9 @@ export default class teachableMachine extends Extension<Details, Blocks> {
     }
   }
 
-
+  options() {
+    return ['State 1']
+  }
 
   /**
      * Occasionally step a loop to sample the video, stamp it to the preview
@@ -223,7 +216,10 @@ export default class teachableMachine extends Extension<Details, Blocks> {
 
     const whenModelDetects_Hat: DefineBlock<teachableMachine, Blocks["whenModelDetects_Hat"]> = () => ({
       type: BlockType.Hat,
-      arg: { type: ArgumentType.String, options: ['State 1'] },
+      arg: {
+        type: ArgumentType.String,
+        options: () => this.options()
+      },
       text: (state) => `when model detects ${state}`,
       operation: (state) => {
         console.log(state);
@@ -231,14 +227,13 @@ export default class teachableMachine extends Extension<Details, Blocks> {
       }
     });
 
-    // const modelPredictionReporter: DefineBlock<teachableMachine, Blocks["modelPredictionReporter"]> = () => ({
-    //   type: BlockType.Reporter,
-    //   text: () => `model prediction`,
-    //   operation: () => {
-    //     console.log();
-    //     return null
-    //   }
-    // });
+    const modelPredictionReporter: DefineBlock<teachableMachine, Blocks["modelPredictionReporter"]> = () => ({
+      type: BlockType.Reporter,
+      text: `model prediction`,
+      operation: () => {
+        return 'string'
+      }
+    });
 
     const predictionIs_Boolean: DefineBlock<teachableMachine, Blocks["predictionIs_Boolean"]> = () => ({
       type: BlockType.Boolean,
@@ -280,7 +275,7 @@ export default class teachableMachine extends Extension<Details, Blocks> {
     return {
       useModel_Command,
       whenModelDetects_Hat,
-      // modelPredictionReporter,
+      modelPredictionReporter,
       predictionIs_Boolean,
       videoToggleCommand,
       setVideoTransparencyCommand,
