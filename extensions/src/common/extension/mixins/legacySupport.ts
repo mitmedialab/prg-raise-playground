@@ -109,16 +109,11 @@ function legacyMixin<T extends AbstractConstructor<ExtensionCommon>>(Ctor: T, le
 
       updates.forEach(({ replaceAt: { index, block } }) => mutableBlocks[index] = block);
 
-      updates.map(({ menuUpdates }) => menuUpdates).flat().forEach(({ type, legacy, modern }) => {
-        switch (type) {
-          case "static":
-            menus[legacy] = modern;
-            return;
-          case "dynamic":
-            self[legacy] = () => self[modern]();
-            return;
-        }
-      });
+      updates.map(({ menuUpdates }) => menuUpdates).flat().forEach(({ type, legacy, modern }) =>
+        type === "static"
+          ? menus[legacy] = modern
+          : self[legacy] = () => self[modern]()
+      );
 
       return {
         id, blocks: mutableBlocks, menus, ...metaData
