@@ -1,15 +1,36 @@
 import { AbstractConstructor, ExtensionCommon } from "$common/extension/Extension";
-import { ExtensionBlockMetadata, ExtensionMetadata } from "$common/types";
-import { isString } from "$common/utils";
-import { parseText } from "../decorators/legacy";
+import { ExtensionArgumentMetadata, ExtensionBlockMetadata, ExtensionMetadata } from "$common/types";
+import { isString, set } from "$common/utils";
+import { isDynamicMenu, legacy, parseText } from "../decorators/legacy";
 import { getImplementationName, wrapOperation } from "./scratchInfo";
 
 type WrappedOperation = ReturnType<typeof wrapOperation>;
 type WrappedOperationParams = Parameters<WrappedOperation>;
+type WithLegacySupport = InstanceType<ReturnType<typeof legacyMixin>>;
+type BlockMap = Map<string, Omit<ExtensionBlockMetadata, "opcode"> & { index: number }>;
 
-export default function <T extends AbstractConstructor<ExtensionCommon>>(Ctor: T, legacyInfo: ExtensionMetadata) {
+export const isLegacy = (extension: ExtensionCommon | WithLegacySupport): extension is WithLegacySupport => {
+  const key: keyof WithLegacySupport = "__isLegacy";
+  return key in extension;
+}
+
+const validBlock = (legacyBlock: string | ExtensionBlockMetadata, blockMap: BlockMap): legacyBlock is ExtensionBlockMetadata => {
+  if (isString(legacyBlock)) throw new Error("Block was unexpectedly a string: " + legacyBlock);
+  if (!blockMap.has(legacyBlock.opcode)) throw new Error(`Could not find legacy opcode ${legacyBlock} within currently defined blocks`);
+  return true;
+}
+
+const validArg = (pair: { legacy: ExtensionArgumentMetadata, modern: ExtensionArgumentMetadata }): typeof pair => {
+  if (typeof pair.legacy.menu !== typeof pair.modern.menu) throw new Error("Menus don't match")
+  return pair;
+}
+
+function legacyMixin<T extends AbstractConstructor<ExtensionCommon>>(Ctor: T, legacyInfo: ExtensionMetadata) {
   abstract class _ extends Ctor {
     private validatedInfo: ExtensionMetadata;
+
+    public __isLegacy = true;
+    public orderArgumentNamesByBlock: Map<string, string[]> = new Map();
 
     protected getInfo(): ExtensionMetadata {
 
@@ -23,6 +44,17 @@ export default function <T extends AbstractConstructor<ExtensionCommon>>(Ctor: T
       return this.validatedInfo;
     }
 
+    private getArgNames = (legacyBlock: ExtensionBlockMetadata) => {
+      const { opcode } = legacyBlock;
+
+      if (!this.orderArgumentNamesByBlock.has(opcode)) {
+        const { orderedNames } = parseText(legacyBlock);
+        this.orderArgumentNamesByBlock.set(opcode, orderedNames);
+      }
+
+      return this.orderArgumentNamesByBlock.get(opcode);
+    }
+
     private validateAndAttach({ id, blocks, menus, ...metaData }: ExtensionMetadata): ExtensionMetadata {
       const { id: legacyID, blocks: legacyBlocks, menus: legacyMenus } = legacyInfo;
       const mutableBlocks = [...blocks as ExtensionBlockMetadata[]];
@@ -31,35 +63,60 @@ export default function <T extends AbstractConstructor<ExtensionCommon>>(Ctor: T
 
       const blockMap = mutableBlocks.reduce(
         (map, { opcode, ...block }, index) => map.set(opcode, { ...block, index }),
-        new Map<string, Omit<ExtensionBlockMetadata, "opcode"> & { index: number }>()
+        new Map() as BlockMap
       );
 
-      const menusToAdd = new Array<string>();
+      const self = this;
 
-      for (const legacyBlock of legacyBlocks) {
-        if (isString(legacyBlock)) throw new Error("Block was unexpectedly a string: " + legacyBlock);
-        const { opcode } = legacyBlock;
-        if (!blockMap.has(opcode)) throw new Error(`Could not find legacy opcode ${legacyBlock} within currently defined blocks`);
+      const updates = legacyBlocks
+        .map(legacyBlock => validBlock(legacyBlock, blockMap) ? legacyBlock : undefined)
+        .filter(Boolean)
+        .map(legacyBlock => {
+          const { opcode, arguments: legacyArgs } = legacyBlock;
+          const { index, arguments: modernArgs } = blockMap.get(opcode);
+          const argNames = this.getArgNames(legacyBlock);
 
-        const { index } = blockMap.get(opcode);
-        mutableBlocks[index] = legacyBlock;
+          const remapper = (args: Record<string, any>) => argNames.reduce(
+            (remap, current, index) => set(remap, index, args[current]),
+            {} as Record<number, any>);
 
-        const { orderedNames } = parseText(legacyBlock);
-        const remapper = (args: Record<string, any>) => orderedNames.reduce((remap, current, index) => {
-          remap[`${index}`] = args[current];
-          return remap;
-        }, {})
+          const implementation: WrappedOperation = this[getImplementationName(opcode)];
 
-        const implementation = this[getImplementationName(opcode)] as ReturnType<typeof wrapOperation>;
-        this[opcode] = ((...[args, util]: WrappedOperationParams) => implementation.call(this, remapper(args), util)).bind(this);
+          this[opcode] = (
+            (...[args, util]: WrappedOperationParams) => implementation.call(self, remapper(args), util)
+          ).bind(self);
 
-        menusToAdd.push(...Object.values(legacyBlock.arguments).map(({ menu }) => menu).filter(Boolean));
-      }
+          const menuUpdates = argNames
+            .map((legacyName, index) => ({ legacy: legacyArgs[legacyName], modern: modernArgs[index] }))
+            .map(validArg)
+            .map(({ legacy: { menu: legacyName }, modern: { menu: modernName } }) => ({ legacyName, modernName }))
+            .filter(menus => menus.legacyName && menus.modernName)
+            .map(({ legacyName, modernName }) =>
+              ({ legacyName, modernName, legacy: legacyMenus[legacyName], modern: menus[modernName] }))
+            .map(({ legacy, modern, legacyName, modernName }) => {
+              if (!isDynamicMenu(legacy) && !isDynamicMenu(legacy.items))
+                return { type: "static", legacy: legacyName, modern: modernName } as const;
 
-      for (const menu of menusToAdd) {
-        if (menu in menus) throw new Error(`Menu '${menu}' has already been defined and risks being overwritten`);
-        menus[menu] = legacyMenus[menu];
-      }
+              const legacyItemsName = isDynamicMenu(legacy) ? legacy : legacy.items as string;
+              const modernItemsName = isDynamicMenu(modern) ? modern : modern.items as string;
+              return { type: "dynamic", legacy: legacyItemsName, modern: modernItemsName } as const;
+            });
+
+          return { menuUpdates, replaceAt: { index, block: legacyBlock } };
+        });
+
+      updates.forEach(({ replaceAt: { index, block } }) => mutableBlocks[index] = block);
+
+      updates.map(({ menuUpdates }) => menuUpdates).flat().forEach(({ type, legacy, modern }) => {
+        switch (type) {
+          case "static":
+            menus[legacy] = modern;
+            return;
+          case "dynamic":
+            this[legacy] = () => self[modern]();
+            return;
+        }
+      });
 
       return {
         id, blocks: mutableBlocks, menus, ...metaData
@@ -69,3 +126,4 @@ export default function <T extends AbstractConstructor<ExtensionCommon>>(Ctor: T
   return _
 }
 
+export default legacyMixin;

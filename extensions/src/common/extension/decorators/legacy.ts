@@ -195,7 +195,8 @@ export const parseText = ({ arguments: _arguments, text }: ExtensionBlockMetadat
 
 const getItemsPlaceholder = { getItems: () => ("Error: This should have been filled in." as any) };
 const handlerPlaceholder = { handler: () => ("Error: This should have been filled in." as any) };
-const isDynamicMenu = (menu: ExtensionMenuMetadata | ExtensionMenuItems["items"]): menu is ExtensionDynamicMenu => isString(menu);
+
+export const isDynamicMenu = (menu: ExtensionMenuMetadata | ExtensionMenuItems["items"]): menu is ExtensionDynamicMenu => isString(menu);
 
 const extractMenuOptions = (data: ExtensionMetadata, menuName: string): Menu<any> => {
   const menu = menuName ? data.menus[menuName] : undefined;

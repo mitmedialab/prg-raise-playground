@@ -95,14 +95,14 @@ class ExtensionDecorated extends DecoratedExtension {
 }
 
 createTestSuite({ Extension: ExtensionDecorated, __dirname }, {
-  unitTests: undefined,
-  integrationTests: {
-    xx: async ({ extension, blockRunner }) => {
-      const args = info.blocks[0].arguments;
-      const [_0, _1, _2] = Object.keys(info.blocks[0].arguments) as Array<keyof typeof args>;
-      const x = await blockRunner.invokeWithCustomArgNames("multiArgumentsWithMenus", [_0, 100], [_1, ""], [_2, 100]);
-
-      console.log(x);
+  unitTests: {
+    multiArgumentsWithMenus: () => {
+      const input = [100, "", 100] as const;
+      return {
+        input,
+        expected: `Hi${input[0]}`
+      }
     }
-  }
+  },
+
 })
