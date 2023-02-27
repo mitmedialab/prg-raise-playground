@@ -1,5 +1,5 @@
 import { AbstractConstructor, ExtensionCommon } from "$common/extension/Extension";
-import { ExtensionArgumentMetadata, ExtensionBlockMetadata, ExtensionMetadata } from "$common/types";
+import { ExtensionArgumentMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, ExtensionMetadata } from "$common/types";
 import { isString, set } from "$common/utils";
 import { isDynamicMenu, legacy, parseText } from "../decorators/legacy";
 import { getImplementationName, wrapOperation } from "./scratchInfo";
@@ -23,6 +23,12 @@ const validBlock = (legacyBlock: string | ExtensionBlockMetadata, blockMap: Bloc
 const validArg = (pair: { legacy: ExtensionArgumentMetadata, modern: ExtensionArgumentMetadata }): typeof pair => {
   if (typeof pair.legacy.menu !== typeof pair.modern.menu) throw new Error("Menus don't match")
   return pair;
+}
+
+const getDynamicMenuName = (menu: ExtensionMenuMetadata): string => {
+  if (isDynamicMenu(menu)) return menu;
+  if (isDynamicMenu(menu.items)) return menu.items;
+  throw new Error("Menu is not dynamic: " + menu);
 }
 
 function legacyMixin<T extends AbstractConstructor<ExtensionCommon>>(Ctor: T, legacyInfo: ExtensionMetadata) {
@@ -93,14 +99,10 @@ function legacyMixin<T extends AbstractConstructor<ExtensionCommon>>(Ctor: T, le
             .filter(menus => menus.legacyName && menus.modernName)
             .map(({ legacyName, modernName }) =>
               ({ legacyName, modernName, legacy: legacyMenus[legacyName], modern: menus[modernName] }))
-            .map(({ legacy, modern, legacyName, modernName }) => {
-              if (!isDynamicMenu(legacy) && !isDynamicMenu(legacy.items))
-                return { type: "static", legacy: legacyName, modern: modernName } as const;
-
-              const legacyItemsName = isDynamicMenu(legacy) ? legacy : legacy.items as string;
-              const modernItemsName = isDynamicMenu(modern) ? modern : modern.items as string;
-              return { type: "dynamic", legacy: legacyItemsName, modern: modernItemsName } as const;
-            });
+            .map(({ legacy, modern, legacyName, modernName }) => !isDynamicMenu(legacy) && !isDynamicMenu(legacy.items)
+              ? { type: "static" as const, legacy: legacyName, modern: modernName }
+              : { type: "dynamic" as const, legacy: getDynamicMenuName(legacy), modern: getDynamicMenuName(modern) }
+            );
 
           return { menuUpdates, replaceAt: { index, block: legacyBlock } };
         });
@@ -113,7 +115,7 @@ function legacyMixin<T extends AbstractConstructor<ExtensionCommon>>(Ctor: T, le
             menus[legacy] = modern;
             return;
           case "dynamic":
-            this[legacy] = () => self[modern]();
+            self[legacy] = () => self[modern]();
             return;
         }
       });
