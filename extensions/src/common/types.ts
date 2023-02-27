@@ -64,7 +64,7 @@ export type DynamicMenuThatAcceptsReporters<T> = {
    * 
    * This function is required because this argument acceptsReporters (i.e.` acceptReporters = true`) and therefore it might receive a value it is not prepared to handle. 
    */
-  handler: (reported: any) => T;
+  handler: (reported: unknown) => T;
 };
 
 export type MenuThatAcceptsReporters<T> = {
@@ -79,7 +79,7 @@ export type MenuThatAcceptsReporters<T> = {
    * 
    * This function is required because this argument acceptsReporters (i.e. `acceptReporters = true`) and therefore the argument might take on a value your block is not prepared to handle. 
    */
-  handler: (reported: any) => T;
+  handler: (reported: unknown) => T;
 };
 
 export type Menu<T> = MenuItem<T>[] | MenuThatAcceptsReporters<T> | DynamicMenu<T> | DynamicMenuThatAcceptsReporters<T>;

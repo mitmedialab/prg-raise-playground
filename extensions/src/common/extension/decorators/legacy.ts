@@ -2,10 +2,10 @@ import { TypedClassDecorator, TypedMethodDecorator } from ".";
 import { AbstractConstructor, DecoratedExtension, Extension, ExtensionCommon, NonAbstractConstructor } from "$common/extension/Extension";
 import legacySupport from "$common/extension/mixins/legacySupport";
 import { ArgumentType, BlockType } from "$common/enums";
-import { ExtensionMetadata, ExtensionBlockMetadata, ValueOf, TypeByArgumentType, ExtensionMenuItems, ExtensionMenuDisplayDetails, Block, ReturnTypeByBlockType, BlockOperation, Argument, ExtensionMenuMetadata, ExtensionDynamicMenu, Menu, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters, BaseExtension } from "$common/types";
+import { ExtensionMetadata, ExtensionBlockMetadata, ValueOf, TypeByArgumentType, ExtensionMenuItems, ExtensionMenuDisplayDetails, Block, ReturnTypeByBlockType, BlockOperation, Argument, ExtensionMenuMetadata, ExtensionDynamicMenu, Menu, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters, BaseExtension, VerboseArgument, DefineBlock } from "$common/types";
 import { BlockMetadata } from "$common/extension/Extension";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
-import { isString } from "$common/utils";
+import { isFunction, isString } from "$common/utils";
 import { block } from "./blocks";
 
 type LegacyExtension<TData extends ExtensionMetadata, TStrict extends boolean> = ExtensionCommon
@@ -36,17 +36,19 @@ type ArgumentMethods<TData extends ExtensionMetadata, K extends keyof LegacyProb
   argumentMethods: TsMagic.TupleToObject<LegacyProbe.OpArgMenus<TData, K>, "argumentIndex", "reservedDynamicMenuName">
 }
 
+type ObjectOrGetter<T, This extends ExtensionCommon> = ((this: This, self: This) => T) | T;
+
 type BlockDefinitions<TInfo extends ExtensionMetadata, TExtension extends ExtensionCommon> = {
-  [k in keyof LegacyProbe.LegacyMethods<TInfo>]: <TReturn extends LegacyProbe.OpReturn<TInfo, k>>(inputs: {
+  [k in keyof LegacyProbe.LegacyMethods<TInfo>]: <TReturn extends LegacyProbe.OpReturn<TInfo, k>>(inputs: ObjectOrGetter<{
     operation: (this: TExtension, ...args: [...Parameters<LegacyProbe.LegacyMethods<TInfo>[k]>, BlockUtility]) => TReturn,
-  } & ArgumentMethods<TInfo, k>
-  ) => Block<BaseExtension, (...args: Parameters<LegacyProbe.LegacyMethods<TInfo>[k]>) => TReturn> & { type: LegacyProbe.BlockType<TInfo, k> }
+  } & ArgumentMethods<TInfo, k>, TExtension>
+  ) => DefineBlock<BaseExtension, (...args: Parameters<LegacyProbe.LegacyMethods<TInfo>[k]>) => TReturn> & { type: LegacyProbe.BlockType<TInfo, k> }
 };
 
 type BlockDecorators<TInfo extends ExtensionMetadata> = {
   [k in keyof LegacyProbe.LegacyMethods<TInfo>]:
   <This extends DecoratedExtension, Args extends Parameters<LegacyProbe.LegacyMethods<TInfo>[k]>, Return extends any>(
-    ...args: LegacyProbe.OpArgMenus<TInfo, k> extends [] ? [] : [ArgumentMethods<TInfo, k>]
+    ...args: LegacyProbe.OpArgMenus<TInfo, k> extends [] ? [] : [ArgumentMethods<TInfo, k> | ((self: This) => ArgumentMethods<TInfo, k>)]
   ) => TypedMethodDecorator<This, Args, Return, (...args: Args) => Return>
 }
 
@@ -105,10 +107,13 @@ export const legacy = <
     const legacyDefinition = blockMetaData.reduce((acc, [opcode, block]) => {
       const key = opcode as keyof BlockDefinitions<TInfo, TExtension>;
 
-      acc[key] = ({ operation, argumentMethods }) => {
-        if (argumentMethods) attachArgumentMethods(block, argumentMethods);
-        return { ...block, operation } as any;
-      };
+      acc[key] = ((objOrGetter) => {
+        return (extension: TExtension) => {
+          const { operation, argumentMethods } = isFunction(objOrGetter) ? objOrGetter.call(extension, extension) : objOrGetter;
+          if (argumentMethods) attachArgumentMethods(block, argumentMethods, extension);
+          return { ...block, operation }
+        }
+      }) as any;
 
       return acc;
     }, {} as BlockDefinitions<TInfo, TExtension>);
@@ -116,9 +121,17 @@ export const legacy = <
     const legacyBlock = blockMetaData.reduce((acc, [opcode, metadata]) => {
       const key = opcode as keyof BlockDefinitions<TInfo, TExtension>;
 
-      acc[key] = (({ argumentMethods }) => {
-        if (argumentMethods) attachArgumentMethods(metadata, argumentMethods);
-        return block(metadata as any);
+      acc[key] = (objOrGetter => {
+        if (!objOrGetter) return block(metadata as any);
+
+        return block((extension) => {
+          const { argumentMethods }: ArgumentMethods<TInfo, typeof key> = isFunction(objOrGetter)
+            ? objOrGetter(extension)
+            : objOrGetter;
+          attachArgumentMethods(metadata, argumentMethods, extension);
+          return metadata as any;
+        });
+
       }) as any;
 
       return acc;
@@ -136,18 +149,21 @@ export const legacy = <
 
 const attachArgumentMethods = (
   block: ReturnType<BlockMap["get"]>,
-  argumentMethods: Record<number, Partial<DynamicMenuThatAcceptsReporters<unknown>>>
+  argumentMethods: Record<number, Partial<DynamicMenuThatAcceptsReporters<unknown>>>,
+  extension: ExtensionCommon
 ) => {
   const args = block.args ? block.args : block.arg ? [block.arg] : [];
 
   Object.entries(argumentMethods).forEach(([indexKey, { handler, getItems }]) => {
-    const arg = args[parseInt(indexKey)];
-    tryUpdateKey(arg, "handler", handler);
-    tryUpdateKey(arg, "getItems", getItems);
+    const arg = args[parseInt(indexKey)] as VerboseArgument<any>;
+
+    tryUpdateKey(arg.options, "handler", handler?.bind(extension));
+    tryUpdateKey(arg.options, "getItems", getItems?.bind(extension));
   });
 }
 
 const tryUpdateKey = <T>(obj, key: string, value: T) => {
+  if (!value) return;
   // more checks?
   obj[key] = value;
 }
@@ -214,7 +230,7 @@ const extractMenuOptions = (data: ExtensionMetadata, menuName: string): Menu<any
 /**
  * Types to assist in extracting information from the return type of the old 'getInfo' method
  */
-export namespace LegacyProbe {
+namespace LegacyProbe {
   export type Blocks = ExtensionMetadata["blocks"];
   export type Block = ExtensionMetadata["blocks"];
 

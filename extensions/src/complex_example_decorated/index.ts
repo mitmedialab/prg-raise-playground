@@ -180,7 +180,7 @@ export default class TypeScriptFrameworkExample extends DecoratedExtension {
             case `${Animal.Gorilla}`:
             case `${Animal.Monkey}`:
             case `${Animal.Pig}`:
-              return input as Animal;
+              return input as any as Animal;
             default:
               alert(`You silly goose! ${input} is not an animal.`);
               return Animal.Leopard;

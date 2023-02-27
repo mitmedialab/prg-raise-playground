@@ -2,9 +2,9 @@ import { ArgumentType, BlockType } from "$common/enums";
 import { DecoratedExtension, Extension } from "$common/extension/Extension";
 import { block } from "$common/extension/decorators/blocks";
 import { extension } from "$common/extension/decorators/extension";
-import { LegacyProbe, legacy, } from "$common/extension/decorators/legacy";
-import { BaseExtension, Block, BlockDefinitions, Environment, ExtensionBlockMetadata, RGBObject } from "$common/types";
-import { createTestSuite, describe, expect, test, testID } from "$testing";
+import { legacy, } from "$common/extension/decorators/legacy";
+import { BlockDefinitions, Environment, } from "$common/types";
+import { createTestSuite, testID } from "$testing";
 import { DefaultDisplayDetails } from "$testing/defaults";
 
 const info = {
@@ -51,20 +51,33 @@ const { legacyExtension, legacyDefinition, ReservedNames } = legacy(info).for<Ge
 
 @legacyExtension()
 class GenericExtension extends Extension<DefaultDisplayDetails, {
-  multiArgumentsWithMenus: (args_0: number, args_1: string, args_2: number) => number,
+  multiArgumentsWithMenus: (args_0: number, args_1: string, args_2: number) => string,
 }> {
+
+  toHandle: any = [];
+
   defineBlocks(): BlockDefinitions<GenericExtension> {
     return {
 
-      multiArgumentsWithMenus: legacyDefinition.multiArgumentsWithMenus({
+      multiArgumentsWithMenus: legacyDefinition.multiArgumentsWithMenus((self) => ({
         argumentMethods: {
-          1: { getItems: () => ["#"], handler: (x: any) => `${x}` },
-          2: { handler: (x: any) => parseInt(`${x}`) ?? 0 }
+          1: { getItems: () => ["#"], handler: self.handle },
+          2: {
+            handler: (x: any) => {
+              self.toHandle.push(x);
+              return parseInt(`${x}`) ?? 0;
+            }
+          }
         },
-        operation: (x, y, z, util) => 5,
-      })
+        operation: (x, y, z, util) => "Hi" + x + y + z,
+      }))
 
     }
+  }
+
+  handle(x: unknown) {
+    this.toHandle.push(x);
+    return `${x}`;
   }
 
   init(env: Environment): void { }
@@ -79,30 +92,61 @@ const { legacyExtension: legacyDecorated, legacyBlock } = legacy(info).for<Exten
   iconURL: "",
   insetIconURL: ""
 })
-@legacy(info).for<ExtensionDecorated>().legacyExtension()
+@legacyDecorated()
 class ExtensionDecorated extends DecoratedExtension {
   init(env: Environment): void { }
 
-  @legacyBlock.multiArgumentsWithMenus({
+  toHandle: any = [];
+
+  handle(x: unknown) {
+    this.toHandle.push(x);
+    return `${x}`;
+  }
+
+  @legacyBlock.multiArgumentsWithMenus((self) => ({
     argumentMethods: {
-      1: { getItems: () => ["#"], handler: (x: any) => `${x}` },
-      2: { handler: (x: any) => parseInt(`${x}`) ?? 0 }
+      1: { getItems: () => ["#"], handler: self.handle },
+      2: {
+        handler: (x) => {
+          self.toHandle.push(x);
+          return parseInt(`${x}`) ?? 0;
+        }
+      }
     }
-  })
+  }))
   multiArgumentsWithMenus(args_0: number, args_1: string, args_2: number) {
-    return "Hi" + args_0;
+    return "Hi" + args_0 + args_1 + args_2;
   }
 }
+
+createTestSuite({ Extension: GenericExtension, __dirname }, {
+  unitTests: {
+    multiArgumentsWithMenus: () => {
+      const input = [100, "Hooo", 100] as const;
+      return {
+        input,
+        expected: `Hi${input.join("")}`,
+        after: (({ extension, testHelper: { expect } }) => {
+          expect(extension.toHandle).toContain(input[1]);
+          expect(extension.toHandle).toContain(input[2]);
+        })
+      }
+    }
+  },
+})
 
 createTestSuite({ Extension: ExtensionDecorated, __dirname }, {
   unitTests: {
     multiArgumentsWithMenus: () => {
-      const input = [100, "", 100] as const;
+      const input = [100, "Hooo", 100] as const;
       return {
         input,
-        expected: `Hi${input[0]}`
+        expected: `Hi${input.join("")}`,
+        after: (({ extension, testHelper: { expect } }) => {
+          expect(extension.toHandle).toContain(input[1]);
+          expect(extension.toHandle).toContain(input[2]);
+        })
       }
     }
   },
-
 })
