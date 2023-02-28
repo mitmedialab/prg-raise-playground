@@ -50,7 +50,7 @@ type BlockDefinitions<TInfo extends ExtensionMetadata, TExtension extends Extens
      * @returns 
      */
     operation: (this: TExtension, ...args: [...Parameters<LegacyProbe.LegacyMethods<TInfo>[k]>, BlockUtility]) => TReturn,
-  } & (LegacyProbe.OpArgMenus<TInfo, k> extends [] ? {} : ArgumentMethods<TInfo, k>), TExtension>
+  } & ArgumentMethods<TInfo, k>, TExtension>
   ) => DefineBlock<BaseExtension, (...args: Parameters<LegacyProbe.LegacyMethods<TInfo>[k]>) => TReturn> & { type: LegacyProbe.BlockType<TInfo, k> }
 };
 
