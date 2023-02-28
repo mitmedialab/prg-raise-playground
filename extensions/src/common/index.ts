@@ -1,4 +1,4 @@
-export * from "./extension/Extension";
+export * from "./extension";
 export * from "./types";
 export * from "./utils";
 export * from "./ui";
@@ -16,6 +16,11 @@ import CustomArgumentManager from "./customArguments/CustomArgumentManager";
 export { CustomArgumentManager };
 
 export * from "./customArguments/dropdownOverride";
+
+export * from "./extension/GenericExtension";
+export * from "./extension/DecoratedExtension";
+export * from "./extension/ExtensionBase";
+export * from "./extension/ExtensionCommon";
 
 export * from "./extension/decorators/blocks";
 export * from "./extension/decorators/extension";

@@ -1,6 +1,7 @@
 import type BlockUtility from "$scratch-vm/engine/block-utility";
 import { TypedMethodDecorator } from ".";
-import { BlockMetadata, DecoratedExtension } from "$common/extension/Extension";
+import { BlockMetadata } from "$common/extension";
+import { DecoratedExtension } from "../DecoratedExtension";
 import { getImplementationName } from "$common/extension/mixins/scratchInfo";
 import { BlockType } from "$common/enums";
 

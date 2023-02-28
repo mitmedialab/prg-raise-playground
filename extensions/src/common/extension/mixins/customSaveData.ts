@@ -1,5 +1,6 @@
 import CustomArgumentManager from "$common/customArguments/CustomArgumentManager";
-import { ExtensionBaseConstructor, TypedConstructor, ExtensionBase } from "$common/extension/Extension";
+import { ExtensionBaseConstructor, TypedConstructor } from "$common/extension";
+import { ExtensionBase } from "../ExtensionBase";
 import customArgumentSupport from "$common/extension/mixins/customArguments";
 
 /**

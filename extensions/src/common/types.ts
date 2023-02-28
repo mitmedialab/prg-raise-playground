@@ -1,7 +1,10 @@
 import type Runtime from '$scratch-vm/engine/runtime';
+import type ExtensionManager from '$scratch-vm/extension-support/extension-manager';
+
 import BlockUtility from '$scratch-vm/engine/block-utility';
 import { ArgumentType, BlockType, Branch, Language } from './enums';
-import type { Extension, ExtensionCommon } from './extension/Extension';
+import { ExtensionCommon } from "./extension/ExtensionCommon";
+import { Extension } from "./extension/GenericExtension";
 
 export type InternalButtonKey = "__button__";
 export type ButtonBlock = () => InternalButtonKey;
@@ -26,7 +29,8 @@ export type Environment = {
    * NOTE: This will have type-safety soon, but currently has none.
    * @todo #161 
    */
-  videoFeed: undefined | any
+  videoFeed: undefined | any,
+  extensionManager: ExtensionManager,
 }
 
 export type BlockOperation = (...args: any) => any;

@@ -1,7 +1,8 @@
-import { AbstractConstructor, ExtensionCommon } from "$common/extension/Extension";
+import { AbstractConstructor } from "../";
+import { ExtensionCommon } from "../ExtensionCommon";
 import { ExtensionArgumentMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, ExtensionMetadata } from "$common/types";
 import { isString, set } from "$common/utils";
-import { isDynamicMenu, legacy, parseText } from "../decorators/legacy";
+import { isDynamicMenu, parseText } from "../decorators/legacy";
 import { getImplementationName, wrapOperation } from "./scratchInfo";
 
 type WrappedOperation = ReturnType<typeof wrapOperation>;

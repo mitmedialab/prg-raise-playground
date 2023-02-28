@@ -1,9 +1,12 @@
 import { TypedClassDecorator, TypedMethodDecorator } from ".";
-import { AbstractConstructor, DecoratedExtension, Extension, ExtensionCommon, NonAbstractConstructor } from "$common/extension/Extension";
+import { AbstractConstructor, NonAbstractConstructor } from "$common/extension";
+import { ExtensionCommon } from "../ExtensionCommon";
+import { DecoratedExtension } from "../DecoratedExtension";
+import { Extension } from "../GenericExtension";
 import legacySupport from "$common/extension/mixins/legacySupport";
 import { ArgumentType, BlockType } from "$common/enums";
 import { ExtensionMetadata, ExtensionBlockMetadata, ValueOf, TypeByArgumentType, ExtensionMenuItems, ExtensionMenuDisplayDetails, Block, ReturnTypeByBlockType, BlockOperation, Argument, ExtensionMenuMetadata, ExtensionDynamicMenu, Menu, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters, BaseExtension, VerboseArgument, DefineBlock } from "$common/types";
-import { BlockMetadata } from "$common/extension/Extension";
+import { BlockMetadata } from "$common/extension";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import { isFunction, isString } from "$common/utils";
 import { block } from "./blocks";
@@ -40,6 +43,12 @@ type ObjectOrGetter<T, This extends ExtensionCommon> = ((this: This, self: This)
 
 type BlockDefinitions<TInfo extends ExtensionMetadata, TExtension extends ExtensionCommon> = {
   [k in keyof LegacyProbe.LegacyMethods<TInfo>]: <TReturn extends LegacyProbe.OpReturn<TInfo, k>>(inputs: ObjectOrGetter<{
+    /**
+     * The underlying operation of your block
+     * @param this The `this` keyword will automatically be bound to your extension.
+     * @param args The args this blocks take (spread). The very last argument will be a BlockUtility.
+     * @returns 
+     */
     operation: (this: TExtension, ...args: [...Parameters<LegacyProbe.LegacyMethods<TInfo>[k]>, BlockUtility]) => TReturn,
   } & ArgumentMethods<TInfo, k>, TExtension>
   ) => DefineBlock<BaseExtension, (...args: Parameters<LegacyProbe.LegacyMethods<TInfo>[k]>) => TReturn> & { type: LegacyProbe.BlockType<TInfo, k> }

@@ -1,5 +1,5 @@
 import { ExtensionMenuDisplayDetails } from "$common/types";
-import { DecoratedExtension } from "$common/extension/Extension";
+import { DecoratedExtension } from "../DecoratedExtension";
 import { TypedClassDecorator } from ".";
 
 const registerDetailsIdentifier = "__registerMenuDetials";

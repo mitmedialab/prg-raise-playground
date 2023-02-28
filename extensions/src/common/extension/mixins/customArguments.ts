@@ -1,4 +1,4 @@
-import { ExtensionBaseConstructor } from "$common/extension/Extension";
+import { ExtensionBaseConstructor } from "$common/extension";
 import type Runtime from "$scratch-vm/engine/runtime";
 import CustomArgumentManager, { ArgumentEntry } from "$common/customArguments/CustomArgumentManager";
 import { CustomArgumentUIConstructor, renderToDropdown } from "$common/customArguments/dropdownOverride";

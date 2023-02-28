@@ -4,7 +4,8 @@ import { ArgumentType, BlockType } from "$common/enums";
 import { BlockOperation, Argument, ValueOf, VerboseArgument, Menu, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, DynamicMenu, MenuItem, ExtensionArgumentMetadata, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters, ValidKey } from "$common/types";
 import { registerButtonCallback } from "$common/ui";
 import { isPrimitive, isString, isFunction, identity, typesafeCall } from "$common/utils";
-import { BlockMetadata, ExtensionBaseConstructor, DecoratedExtension } from "$common/extension/Extension";
+import { BlockMetadata, ExtensionBaseConstructor } from "$common/extension";
+import { DecoratedExtension } from "../DecoratedExtension";
 import customArguments from "$common/extension/mixins/customArguments";
 import type BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 
@@ -33,9 +34,9 @@ export const wrapOperation = (context: any, operation: BlockOperation, args: { n
         case ArgumentType.Custom:
           const isIdentifier = isString(param) && CustomArgumentManager.IsIdentifier(param);
           const value = isIdentifier ? this.customArgumentManager.getEntry(param).value : param;
-          return handler(value);
+          return handler.call(context, value);
         default:
-          return castToType(type, handler(param));
+          return castToType(type, handler.call(context, param));
       }
     });
     return operation.call(context, ...castedArguments, blockUtility);
@@ -114,7 +115,7 @@ export default function <T extends ExtensionBaseConstructor & ReturnType<typeof 
 
     private registerDynamicMenu(getItems: DynamicMenu<any>, acceptReporters: boolean, menuIndex: number) {
       const key = `internal_dynamic_${menuIndex}`; // legacy support?
-      this[key] = () => getItems().map(item => item).map(convertMenuItemsToString);
+      this[key] = () => getItems.call(this).map(item => item).map(convertMenuItemsToString);
       return { acceptReporters, items: key } satisfies ExtensionMenuMetadata
     }
   }

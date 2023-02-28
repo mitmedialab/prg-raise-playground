@@ -31,7 +31,7 @@ export const generateVmDeclarations = (): Plugin => {
   const runner = runOncePerBundling();
 
   const isUnhandledError = ({ file: { fileName: name }, code }: ts.Diagnostic) => {
-    const isMixinDeclarationError = fileName(name) === "Extension" && code === 4094;
+    const isMixinDeclarationError = name.includes(path.join(commonDirectory, "extension")) && (code === 4094 || code === 4023);
     const isCannotDeclareInternalTypeError = fileName(name) === "legacySupport" && code === 4058;
     return !(isMixinDeclarationError || isCannotDeclareInternalTypeError);
   }
@@ -45,11 +45,11 @@ export const generateVmDeclarations = (): Plugin => {
 
       const emittedFiles: Map<string, string[]> = new Map();
 
-      const overrides: ts.CompilerOptions = { allowJs: true, checkJs: false, declaration: true, emitDeclarationOnly: true };
+      const overrides: ts.CompilerOptions = { allowJs: true, checkJs: false, declaration: true, emitDeclarationOnly: true, };
       const { options, host } = getSrcCompilerHost(overrides);
 
       host.writeFile = (pathToFile: string, contents: string) => {
-        if (pathToFile.includes(extensionsFolder) || !pathToFile.includes(".d.ts")) return;
+        if (pathToFile.includes(extensionsFolder) || pathToFile.includes(path.join(vmSrc, "extensions")) || !pathToFile.includes(".d.ts")) return;
         fs.writeFileSync(pathToFile, contents);
         const { directory, fileName } = getDirectoryAndFileName(pathToFile, vmSrc);
         emittedFiles.has(directory) ? emittedFiles.get(directory).push(fileName) : emittedFiles.set(directory, [fileName]);
