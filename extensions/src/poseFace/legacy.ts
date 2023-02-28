@@ -1,5 +1,5 @@
 import { legacy } from "$common";
-const info = {
+export const info = {
   "id": "poseFace",
   "name": "Face Sensing",
   "showStatusButton": true,
@@ -258,7 +258,8 @@ const info = {
           "text": "right lower eyelid",
           "value": "33"
         }
-      ]
+      ],
+      "acceptReporters": false
     },
     "EMOTION": {
       "acceptReporters": true,
@@ -449,4 +450,4 @@ const info = {
   }
 } as const;
 export const legacyFullSupport = legacy(info).for;
-export const legacyIncrementalSupport = legacy(info, {"incrementalDevelopment":true}).for;
+export const legacyIncrementalSupport = legacy(info, { "incrementalDevelopment": true }).for;
