@@ -1,4 +1,4 @@
-import { ArgumentType, DecoratedExtension, Environment, ExtensionCommon, ExtensionMenuItems, ExtensionMetadata, RuntimeEvent, block, extension, isString, legacy } from "$common";
+import { ArgumentType, DecoratedExtension, Environment, ExtensionCommon, ExtensionMetadata, RuntimeEvent, block, extension, isString, legacy } from "$common";
 import type ExtensionManager from "$scratch-vm/extension-support/extension-manager";
 import { filename, fullSuppportName, incrementalSupportName } from "./legacyDocs";
 
@@ -55,21 +55,8 @@ const getCleanedInfo = (extension: LoadedExtension) => {
   info.blocks = info.blocks
     .map(block => isString(block)
       ? undefined
-      : "blockType" in block ? block : { ...block, blockType: "reporter" })
+      : "blockType" in block ? block : { ...block, blockType: "command" })
     .filter(Boolean);
-
-  if (info.menus) {
-    info.menus = Object.entries(info.menus).reduce((acc, [key, value]) => {
-
-      if (!isString(value)) {
-        const acceptReporters: keyof typeof value = "acceptReporters";
-        if (!(acceptReporters in value)) (value as ExtensionMenuItems)[acceptReporters] = false;
-      }
-
-      acc[key] = value;
-      return acc;
-    }, {})
-  }
 
   return info;
 }
