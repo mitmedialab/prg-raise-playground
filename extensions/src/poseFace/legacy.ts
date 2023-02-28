@@ -105,7 +105,7 @@ export const info = {
           "defaultValue": "off"
         }
       },
-      "blockType": "reporter"
+      "blockType": "command"
     },
     {
       "opcode": "setVideoTransparency",
@@ -116,7 +116,7 @@ export const info = {
           "defaultValue": 50
         }
       },
-      "blockType": "reporter"
+      "blockType": "command"
     }
   ],
   "menus": {

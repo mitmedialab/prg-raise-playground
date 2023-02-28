@@ -1,9 +1,16 @@
 import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, untilExternalGlobalVariableLoaded, extractLegacySupportFromOldGetInfo, isString } from "$common";
 import { info, legacyFullSupport, legacyIncrementalSupport } from "./legacy";
 
-const { legacyExtension, legacyDefinition, ReservedNames } = legacyIncrementalSupport<PoseFace>();
+const { legacyExtension, legacyDefinition, ReservedNames } = legacyFullSupport<PoseFace>();
 
 // import * as window from 'affdex.js';
+
+/**
+ * Dimensions the video stream is analyzed at after its rendered to the
+ * sample canvas.
+ * @type {Array.<number>}
+ */
+const dimensions = [480, 360];
 
 /**
  * States what the video sensing activity can be set to.
@@ -42,7 +49,7 @@ type Details = {
  * Contains descriptions of the blocks of the Block Sensing extension
  */
 type Blocks = {
-  affdexGoToPart(facePart: number): void;
+  affdexGoToPart(facePart: string): void;
   affdexWhenExpression(expression: string): boolean;
   affdexExpressionAmount(expression: string): number;
   affdexIsExpression(expression: string): boolean;
@@ -72,9 +79,8 @@ type Detector = {
   removeEventListener: (eventName: string, toRemove: Function) => void;
 }
 
-
+@legacyExtension()
 export default class PoseFace extends Extension<Details, Blocks> {
-
 
   /**
    * The state the face's points, expressions, and emotions
@@ -117,15 +123,6 @@ export default class PoseFace extends Extension<Details, Blocks> {
     }
   }
 
-  /**
-   * Dimensions the video stream is analyzed at after its rendered to the
-   * sample canvas.
-   * @type {Array.<number>}
-   */
-  static get DIMENSIONS() {
-    return [480, 360];
-  }
-
   projectStarted() {
     this.setTransparency(this.globalVideoTransparency);
     this.toggleVideo(this.globalVideoState);
@@ -138,14 +135,14 @@ export default class PoseFace extends Extension<Details, Blocks> {
    * @returns enum
    */
   convertCoordsToScratch({ x, y }) {
-    return { x: x - (PoseFace.DIMENSIONS[0] / 2), y: (PoseFace.DIMENSIONS[1] / 2) - y };
+    return { x: x - (dimensions[0] / 2), y: (dimensions[1] / 2) - y };
   }
 
   async _loop() {
     while (true) {
       const frame = this.runtime.ioDevices.video.getFrame({
         format: 'image-data',
-        dimensions: PoseFace.DIMENSIONS
+        dimensions: dimensions
       });
 
       const time = +new Date();
@@ -193,8 +190,8 @@ export default class PoseFace extends Extension<Details, Blocks> {
     const affdex: Affdex = await untilExternalGlobalVariableLoaded('https://download.affectiva.com/js/3.2.1/affdex.js', 'affdex');
 
     const affdexStarter = new Promise((resolve, reject) => {
-      const width = PoseFace.DIMENSIONS[0];
-      const height = PoseFace.DIMENSIONS[1];
+      const width = dimensions[0];
+      const height = dimensions[1];
       const faceMode = affdex.FaceDetectorMode.LARGE_FACES;
       const detector = new affdex.PhotoDetector(imageElement, width, height, faceMode);
       detector.detectAllEmotions();
@@ -287,7 +284,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
    * Turns the video camera off/on/on and flipped. This is called in the operation of videoToggleBlock
    * @param state 
    */
-  toggleVideo(state: number) {
+  toggleVideo(state: number): void {
     if (state === VideoState.OFF) return this.runtime.ioDevices.video.disableVideo();
 
     this.runtime.ioDevices.video.enableVideo();
@@ -317,12 +314,6 @@ export default class PoseFace extends Extension<Details, Blocks> {
     this.globalVideoTransparency = 50;
     this.projectStarted();
 
-    const affdexGoToPart = legacyDefinition.affdexGoToPart({
-      operation: (part: string, util) => this.goToPart(part, util)
-    });
-
-    // EXPRESSION BLOCKS
-
     const handlerExpressions = info.menus.EXPRESSION.items.map(
       ({ value }) => value satisfies string as string
     );
@@ -333,40 +324,6 @@ export default class PoseFace extends Extension<Details, Blocks> {
           ? expression : 'smile'
     }
 
-    const affdexWhenExpression = legacyDefinition.affdexWhenExpression({
-      operation: (expression: string) => this.isExpression(expression),
-      argumentMethods: { 0: handleExpression }
-    })
-
-    const affdexExpressionAmount = legacyDefinition.affdexExpressionAmount({
-      operation: (expression: string) => this.expressionAmount(expression),
-      argumentMethods: { 0: handleExpression }
-    })
-
-    legacyDefinition.affdexIsExpression({
-      operation: (expression: string) => this.isExpression(expression),
-      argumentMethods: { 0: handleExpression }
-    })
-
-    // EMOTION BLOCKS
-
-    const emotions = [
-      { text: 'joyful', value: 'joy' },
-      { text: 'sad', value: 'sadness' },
-      { text: 'disgusted', value: 'disgust' },
-      { text: 'angry', value: 'anger' },
-      { text: 'fearful', value: 'fear' }
-    ];
-    const handlerEmotionsShort = emotions.map(emotion => emotion.value);
-
-    const emotions2 = [
-      { text: 'contempt', value: 'contempt' },
-      { text: 'surprise', value: 'surprise' },
-      { text: 'valence', value: 'valence' },
-      { text: 'engagement', value: 'engagement' }
-    ];
-    const allEmotionValues = emotions.concat(emotions2).map(emotion => emotion.value);
-
     const allEmotions = info.menus.EMOTION_ALL.items.map(
       ({ value }) => value satisfies string as string
     );
@@ -375,76 +332,54 @@ export default class PoseFace extends Extension<Details, Blocks> {
       handler: (emotion: unknown) => isString(emotion) && allEmotions.includes(emotion) ? emotion : "joy"
     };
 
-    const affdexWhenEmotion = legacyDefinition.affdexWhenEmotion({
-      operation: (emotion: string) => this.isTopEmotion(emotion, emotions),
-      argumentMethods: { 0: emotionHandler }
-    });
+    return {
+      affdexGoToPart: legacyDefinition.affdexGoToPart({
+        operation: (part: string, util) => this.goToPart(part, util)
+      }),
 
-    const affdexEmotionAmount = legacyDefinition.affdexEmotionAmount({
-      operation: (emotion: string) => this.emotionAmount(emotion),
-      argumentMethods: { 0: emotionHandler }
-    });
+      affdexWhenExpression: legacyDefinition.affdexWhenExpression({
+        operation: (expression: string) => this.isExpression(expression),
+        argumentMethods: { 0: handleExpression }
+      }),
 
-    const affdexIsTopEmotion = legacyDefinition.affdexIsTopEmotion({
-      operation: (emotion: string) => this.isTopEmotion(emotion, emotions),
-      argumentMethods: { 0: emotionHandler }
-    });
+      affdexExpressionAmount: legacyDefinition.affdexExpressionAmount({
+        operation: (expression: string) => this.expressionAmount(expression),
+        argumentMethods: { 0: handleExpression }
+      }),
 
-    const videoToggle = legacyDefinition.videoToggle({
-      operation: (video_state: number) => this.toggleVideo(video_state),
-      argumentMethods: {
-        0: {
-          handler: (video_state: number) =>
-            Math.min(Math.max(video_state, VideoState.OFF), VideoState.ON_FLIPPED)
-        }
-      }
-    });
+      affdexIsExpression: legacyDefinition.affdexIsExpression({
+        operation: (expression: string) => this.isExpression(expression),
+        argumentMethods: { 0: handleExpression }
+      }),
 
-    const setVideoTransparency = legacyDefinition.setVideoTransparency({
-      operation: (transparency: number) => this.setTransparency(transparency),
-    });
+      affdexWhenEmotion: legacyDefinition.affdexWhenEmotion({
+        operation: (emotion: string) => this.isTopEmotion(emotion, info.menus.EMOTION.items),
+        argumentMethods: { 0: emotionHandler }
+      }),
 
-    // VIDEO BLOCKS
+      affdexEmotionAmount: legacyDefinition.affdexEmotionAmount({
+        operation: (emotion: string) => this.emotionAmount(emotion),
+        argumentMethods: { 0: emotionHandler }
+      }),
 
-    // type DefineVideoToggle = DefineBlock<PoseFace, Blocks["videoToggleBlock"]>;
-    const videoToggleBlock = () => legacy.videoToggle({
-      type: BlockType.Command,
-      arg: {
-        type: ArgumentType.Number,
-        options: {
-          acceptsReporters: true,
-          items: [{ text: 'off', value: VideoState.OFF }, { text: 'on', value: VideoState.ON }, { text: 'on and flipped', value: VideoState.ON_FLIPPED }],
-          handler: (video_state: number) => {
-            return Math.min(Math.max(video_state, VideoState.OFF), VideoState.ON_FLIPPED);
+      affdexIsTopEmotion: legacyDefinition.affdexIsTopEmotion({
+        operation: (emotion: string) => this.isTopEmotion(emotion, info.menus.EMOTION.items),
+        argumentMethods: { 0: emotionHandler }
+      }),
+
+      videoToggle: legacyDefinition.videoToggle({
+        operation: (video_state: number) => this.toggleVideo(video_state),
+        argumentMethods: {
+          0: {
+            handler: (video_state: number) =>
+              Math.min(Math.max(video_state, VideoState.OFF), VideoState.ON_FLIPPED)
           }
         }
-      },
-      text: (video_state: number) => `turn video ${video_state}`,
-      operation: (video_state: number) => {
-        this.toggleVideo(video_state);
-      }
-    });
+      }),
 
-    // type DefineSetVideoTransparency = DefineBlock<PoseFace, Blocks["setVideoTransparencyBlock"]>;
-    const setVideoTransparencyBlock = () => legacy.setVideoTransparency({
-      type: BlockType.Command,
-      arg: { type: ArgumentType.Number, defaultValue: 50 },
-      text: (transparency: number) => `set video transparency to ${transparency}`,
-      operation: (transparency: number) => {
-        this.setTransparency(transparency);
-      }
-    });
-
-    return {
-      goToFacePartCommand: affdexGoToPart,
-      whenExpressionDetectedHat,
-      amountOfExpressionDetectedReport,
-      isExpressionReport,
-      whenFeelingDetectedHat,
-      levelOfFeelingReport,
-      isFeelingReport,
-      videoToggleBlock,
-      setVideoTransparencyBlock
+      setVideoTransparency: legacyDefinition.setVideoTransparency({
+        operation: (transparency: number) => this.setTransparency(transparency),
+      })
     }
   }
 }
