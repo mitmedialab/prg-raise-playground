@@ -1,5 +1,5 @@
 import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, untilExternalGlobalVariableLoaded, extractLegacySupportFromOldGetInfo } from "$common";
-import legacy from "./legacy";
+import { legacyFullSupport, legacyIncrementalSupport } from "./legacy";
 
 // import * as window from 'affdex.js';
 
