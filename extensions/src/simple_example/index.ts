@@ -1,7 +1,8 @@
-import { ArgumentType, BlockType, Language, Extension, ButtonBlock, Environment, SaveDataHandler } from "$common";
+import { ArgumentType, BlockType, Language, Extension, ButtonBlock, Environment, SaveDataHandler, tryCastToArgumentType, legacy } from "$common";
+import { oldGetInfo } from "./legacyTest";
 
 type Details = {
-  name: "Super Simple Typescript Extension!",
+  name: "Super Simple Typescript Extension!!!",
   description: "Skeleton for a typescript extension",
   iconURL: "",
   insetIconURL: "",
@@ -11,7 +12,6 @@ type Details = {
     description: "Ejemplo de una extensión simple usando Typescript"
   }
 };
-
 export default class SimpleTypescript extends Extension<Details, {
   log: (msg: string) => void;
   dummyUI: ButtonBlock;
@@ -46,7 +46,7 @@ export default class SimpleTypescript extends Extension<Details, {
           options: {
             items: ['1', 'two', 'three'],
             acceptsReporters: true,
-            handler: (x: any) => Extension.TryCastToArgumentType(ArgumentType.String, x, () => {
+            handler: (x: any) => tryCastToArgumentType(ArgumentType.String, x, () => {
               alert(`Unsopported input: ${x}`);
               return "";
             })

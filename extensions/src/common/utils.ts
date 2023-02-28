@@ -1,4 +1,4 @@
-import { MenuItem } from "./types"
+import { MenuItem, Primitive } from "./types"
 
 type FetchParams = {
   request: Parameters<typeof fetch>[0],
@@ -64,14 +64,14 @@ export async function untilReady<T extends { ready: boolean }>(obj: T, delay: nu
   clearTimeout(timeout);
 };
 
-export const isString = (query: any) => typeof query === 'string' || query instanceof String;
+export const isString = (query: any): query is string => typeof query === 'string' || query instanceof String;
 
-export const isFunction = (query: any) =>
+export const isFunction = (query: any): query is (...args: any[]) => any =>
   Object.prototype.toString.call(query) === "[object Function]"
   || "function" === typeof query
   || query instanceof Function;
 
-export const isPrimitive = (query: any) => query !== Object(query);
+export const isPrimitive = (query: any): query is Primitive => query !== Object(query);
 
 export const splitOnCapitals = (query: string) => query.split(/(?=[A-Z])/);
 
@@ -82,7 +82,7 @@ export const splitOnCapitals = (query: string) => query.split(/(?=[A-Z])/);
 export const copyTo = <TTarget extends object, TSource extends { [k in keyof TTarget]?: TTarget[k] }>({ target, source }: { target: TTarget, source: TSource }) => {
   for (const key in source) {
     if (!(key in target)) continue;
-    // @ts-ignore -- the types of the function should ensure this is valud TS
+    // @ts-ignore -- the types of the function should ensure this is valid TS
     target[key] = source[key]
   }
 }
@@ -132,4 +132,18 @@ export const untilExternalGlobalVariableLoaded = async <T>(url: string, globalVa
   if (window[globalVariableName]) return window[globalVariableName];
   await untilExternalScriptLoaded(url);
   return window[globalVariableName];
+}
+
+/**
+ * Utilize javascript's "call" method (on Function.prototype) in a typesafe manner
+ * @param fn 
+ * @param _this 
+ * @param args 
+ * @returns 
+ */
+export const typesafeCall = <Args extends any[], Return, This, Fn extends (this: This, ...args: Args) => Return>(fn: Fn, _this: This, ...args: Args) => fn.call(_this, ...args) as Return;
+
+export const set = <T extends object, K extends keyof T>(container: T, key: K, value: T[K]) => {
+  container[key] = value;
+  return container;
 }

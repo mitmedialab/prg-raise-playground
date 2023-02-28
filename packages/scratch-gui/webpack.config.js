@@ -44,6 +44,7 @@ const base = {
     },
     resolve: {
         symlinks: false,
+        //conditionNames: ["svelte"]
     },
     module: {
         rules: [{

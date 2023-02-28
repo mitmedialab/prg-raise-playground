@@ -5,7 +5,8 @@ type DisplayDetails = {
   name: "Realistic Typescript-Based Extension",
   description: "Demonstrating how typescript can be used to write a realistic extension",
   iconURL: "Typescript_logo.png",
-  insetIconURL: "typescript-logo.svg"
+  insetIconURL: "typescript-logo.svg",
+  bluetoothRequired: false,
 };
 
 const enum MatrixDimension {
@@ -57,7 +58,13 @@ type Blocks = {
   showAnimalCollectionUI: ButtonBlock;
 }
 
-export default class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
+export default class TypeScriptFrameworkExample extends Extension<{
+  name: "Realistic Typescript-Based Extension",
+  description: "Demonstrating how typescript can be used to write a realistic extension",
+  iconURL: "Typescript_logo.png",
+  insetIconURL: "typescript-logo.svg",
+  bluetoothRequired: false,
+}, Blocks> {
   lhsOptions: number[];
   animals: MenuItem<Animal>[];
   collection: Animal[] = [Animal.Gorilla];

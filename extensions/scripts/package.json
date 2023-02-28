@@ -12,8 +12,7 @@
     "@rollup/plugin-alias": "^4.0.2",
     "@rollup/plugin-commonjs": "^23.0.4",
     "@rollup/plugin-node-resolve": "^15.0.1",
-    "@rollup/plugin-sucrase": "^5.0.1",
-    "@rollup/plugin-typescript": "10.0.0",
+    "@rollup/plugin-typescript": "^11.0.0",
     "chalk": "^4.1.2",
     "chokidar": "^3.5.3",
     "mime-types": "^2.1.35",
@@ -22,6 +21,19 @@
     "rollup-plugin-svelte": "^7.1.0",
     "rollup-plugin-terser": "^7.0.2",
     "sanitize-filename": "^1.6.3",
-    "svelte-preprocess": "^5.0.0"
+    "svelte-preprocess": "^5.0.0",
+    "tslib": "^2.5.0",
+    "typescript": "^5.0.0-beta"
+  },
+  "overrides": {
+    "@rollup/plugin-typescript": {
+      "typescript": "$typescript"
+    },
+    "rollup-plugin-typescript2": {
+      "typescript": "$typescript"
+    },
+    "svelte-preprocess": {
+      "typescript": "$typescript"
+    }
   }
 }

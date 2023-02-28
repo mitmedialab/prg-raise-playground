@@ -3,7 +3,7 @@ import { codeSnippet } from "../../";
 
 export const defineExtension = codeSnippet();
 
-import { Extension } from "$common/Extension";
+import { Extension } from "$common";
 import { Environment, ButtonBlock, ArgumentType, BlockType, BlockDefinitions } from "$common";
 
 export default class ExtensionUnderTest extends Extension<DefaultDisplayDetails, {

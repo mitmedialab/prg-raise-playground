@@ -1,7 +1,10 @@
 import type Runtime from '$scratch-vm/engine/runtime';
+import type ExtensionManager from '$scratch-vm/extension-support/extension-manager';
+
 import BlockUtility from '$scratch-vm/engine/block-utility';
 import { ArgumentType, BlockType, Branch, Language } from './enums';
-import type { Extension } from './Extension';
+import { ExtensionCommon } from "./extension/ExtensionCommon";
+import { Extension } from "./extension/GenericExtension";
 
 export type InternalButtonKey = "__button__";
 export type ButtonBlock = () => InternalButtonKey;
@@ -26,23 +29,21 @@ export type Environment = {
    * NOTE: This will have type-safety soon, but currently has none.
    * @todo #161 
    */
-  videoFeed: undefined | any
-}
-
-/**
- * Helpful way to specify you want a reference to Extension class itself (not an instance of it) 
- */
-export interface ExtensionConstructor<T extends BaseExtension> {
-  new(...args: ConstructorParameters<typeof Extension>): T;
+  videoFeed: undefined | any,
+  extensionManager: ExtensionManager,
 }
 
 export type BlockOperation = (...args: any) => any;
 
+type Opocde<TExtension extends ExtensionCommon> = TExtension extends Extension<any, any>
+  ? keyof TExtension["BlockFunctions"]
+  : MethodNames<TExtension>;
+
 export type ParameterOf<
-  TExtension extends Extension<any, any>,
-  TBlockKey extends keyof TExtension["BlockFunctions"],
+  TExtension extends ExtensionCommon,
+  TBlockKey extends Opocde<TExtension>,
   TIndex extends number,
-> = Parameters<TExtension["BlockFunctions"][TBlockKey]>[TIndex];
+> = Parameters<TExtension extends Extension<any, any> ? TExtension["BlockFunctions"][TBlockKey] : TExtension[TBlockKey]>[TIndex];
 
 export type MenuItem<T> = T | {
   value: T;
@@ -67,7 +68,7 @@ export type DynamicMenuThatAcceptsReporters<T> = {
    * 
    * This function is required because this argument acceptsReporters (i.e.` acceptReporters = true`) and therefore it might receive a value it is not prepared to handle. 
    */
-  handler: (reported: any) => T;
+  handler: (reported: unknown) => T;
 };
 
 export type MenuThatAcceptsReporters<T> = {
@@ -82,7 +83,7 @@ export type MenuThatAcceptsReporters<T> = {
    * 
    * This function is required because this argument acceptsReporters (i.e. `acceptReporters = true`) and therefore the argument might take on a value your block is not prepared to handle. 
    */
-  handler: (reported: any) => T;
+  handler: (reported: unknown) => T;
 };
 
 export type Menu<T> = MenuItem<T>[] | MenuThatAcceptsReporters<T> | DynamicMenu<T> | DynamicMenuThatAcceptsReporters<T>;
@@ -98,6 +99,25 @@ export type Argument<T> = VerboseArgument<T> | ScratchArgument<T>;
 export type RGBObject = { r: number, g: number, b: number };
 export type Matrix = boolean[][];
 
+export type ReturnTypeByBlockType<T extends ValueOf<typeof BlockType>> =
+  T extends typeof BlockType.Boolean
+  ? boolean
+  : T extends typeof BlockType.Button
+  ? void
+  : T extends typeof BlockType.Command
+  ? void
+  : T extends typeof BlockType.Conditional
+  ? boolean
+  : T extends typeof BlockType.Event
+  ? unknown // not sure yet
+  : T extends typeof BlockType.Hat
+  ? boolean
+  : T extends typeof BlockType.Loop
+  ? void
+  : T extends typeof BlockType.Reporter
+  ? object | string | boolean | number
+  : never;
+
 export type TypeByArgumentType<T extends ValueOf<typeof ArgumentType>> =
   T extends typeof ArgumentType.Number | typeof ArgumentType.Angle | typeof ArgumentType.Note ? number
   : T extends typeof ArgumentType.Boolean ? boolean
@@ -108,12 +128,15 @@ export type TypeByArgumentType<T extends ValueOf<typeof ArgumentType>> =
   : T extends typeof ArgumentType.Custom ? any
   : never;
 
+export type Writeable<T> = { -readonly [P in keyof T]: T[P] };
+
 export type ScratchArgument<T> =
   T extends RGBObject ? typeof ArgumentType.Color :
   T extends boolean[][] ? typeof ArgumentType.Matrix :
   T extends number ? (typeof ArgumentType.Number | typeof ArgumentType.Angle | typeof ArgumentType.Note | typeof ArgumentType.Custom) :
   T extends string ? (typeof ArgumentType.String | typeof ArgumentType.Custom) :
   T extends boolean ? (typeof ArgumentType.Boolean | typeof ArgumentType.Custom) :
+  T extends { dataURI: string, alt: string, flipRTL: boolean } ? typeof ArgumentType.Image :
   (typeof ArgumentType.Custom);
 
 // Used to be <T extends [...any[]]> ... not sure if it needs to be?
@@ -125,6 +148,13 @@ type ToArguments<T extends any[]> =
 type ParamsAndUtility<T extends BlockOperation> = [...params: Parameters<T>, util: BlockUtility];
 
 export type NonEmptyArray<T> = [T, ...T[]];
+
+export type MethodNames<T> = { [k in keyof T]: T[k] extends (...args: any) => any ? k : never }[keyof T];
+export type Methods<T> = { [k in MethodNames<T>]: T[k] };
+export type ValidKey<T> = { [k in keyof T]: T[k] extends never ? never : k }[keyof T];
+export type Primitive<IncludeSymbol extends boolean = false> = IncludeSymbol extends true
+  ? bigint | boolean | null | number | string | undefined | symbol
+  : bigint | boolean | null | number | string | undefined;
 
 const enum ArgField {
   Arg = 'arg',
@@ -173,12 +203,12 @@ export type Block<TExt extends BaseExtension, TOp extends BlockOperation> = {
   : ReturnType<TOp> extends void
   ? typeof BlockType.Command | typeof BlockType.Button | typeof BlockType.Loop
   : ReturnType<TOp> extends boolean
-  ? (typeof BlockType.Reporter | typeof BlockType.Boolean | typeof BlockType.Hat)
+  ? typeof BlockType.Reporter | typeof BlockType.Boolean | typeof BlockType.Hat
   : ReturnType<TOp> extends number
   ? (typeof BlockType.Reporter | typeof BlockType.Conditional)
   : ReturnType<TOp> extends Promise<any>
   ? never
-  : typeof BlockType.Reporter;
+  : typeof BlockType.Reporter | typeof BlockType.Event;
 
   /**
    * @summary A function that encapsulates the code that runs when a block is executed

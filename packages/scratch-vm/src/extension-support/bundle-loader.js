@@ -6,7 +6,7 @@ Anyone can feel free to try and get this working, but it's not worth pulling you
 */
 //import {FrameworkID} from "../../../../extensions/dist/globals";
 
-const FrameworkID = "ExtensionFramework";
+import { FrameworkID } from "../dist/globals";
 
 const constructors = new Map();
 const auxiliarObjects = new Map();
@@ -56,6 +56,8 @@ const importStaticScript = async(endpoint, onLoad, onError) => {
 }
 
 const getFrameworkObject = () => window[FrameworkID];
+const getV2FrameworkObject = () => window[V2FrameworkID];
+
 const onFrameworkLoad = () => getFrameworkObject() 
   ? console.log("Extension Framework succesfully loaded!")
   : console.error("Could not find Extension Framework object after loading script");
@@ -67,6 +69,7 @@ const getEndPoint = (filename) => `extension-bundles/${filename}.js`;
 const tryImportExtensionBundle = async (id, onLoad, onError, error = false) => {
   try {
       if (!getFrameworkObject()) await importStaticScript(getEndPoint(FrameworkID), onFrameworkLoad, onFrameworkError);
+
       await importStaticScript(getEndPoint(id), onLoad, onError);
       return true;
   }
