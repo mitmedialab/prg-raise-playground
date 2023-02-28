@@ -55,7 +55,7 @@ const getCleanedInfo = (extension: LoadedExtension) => {
   info.blocks = info.blocks
     .map(block => isString(block)
       ? undefined
-      : "blockType" in block ? block : { ...block, blockType: "reporter" })
+      : "blockType" in block ? block : { ...block, blockType: "command" })
     .filter(Boolean);
 
   return info;
