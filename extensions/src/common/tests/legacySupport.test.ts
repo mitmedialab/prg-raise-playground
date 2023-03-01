@@ -5,7 +5,7 @@ import { DecoratedExtension } from "$common/extension/DecoratedExtension";
 import { Extension } from "$common/extension/GenericExtension";
 import { block } from "$common/extension/decorators/blocks";
 import { extension } from "$common/extension/decorators/extension";
-import { legacy, } from "$common/extension/decorators/legacy";
+import { legacy, } from "$common/extension/decorators/legacySupport";
 import { BlockDefinitions, Environment, } from "$common/types";
 import { createTestSuite, testID } from "$testing";
 import { DefaultDisplayDetails } from "$testing/defaults";

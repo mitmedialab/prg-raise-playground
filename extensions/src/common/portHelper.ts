@@ -4,7 +4,7 @@ import { isFunction, isPrimitive, isString } from "./utils";
 
 export type SerializedBlockData = Pick<ExtensionMetadata, "blocks" | "menus">;
 
-export const mockFormatMessage = (args: { id: string, default: string, description: string }): string => "";
+export const mockFormatMessage = (args: { id: string, default: string, description: string }): string => args.default;
 
 type Opcodes<T extends SerializedBlockData> = { [k in keyof T["blocks"]]: T["blocks"][k] extends ExtensionBlockMetadata ? T["blocks"][k]["opcode"] : never }[number];
 
