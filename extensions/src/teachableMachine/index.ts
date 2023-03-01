@@ -43,7 +43,7 @@ export default class teachableMachine extends Extension<Details, Blocks> {
   modelConfidences: object;
   isPredicting: number;
   predictionState: object;
-  teachableImageModel: any;
+  teachableImageModel;
   latestAudioResults: any;
 
   init(env: Environment) {
@@ -183,12 +183,12 @@ export default class teachableMachine extends Extension<Details, Blocks> {
     const modelURL = modelUrl + "model.json";
     const metadataURL = modelUrl + "metadata.json";
     const customMobileNet = await tmImage.load(modelURL, metadataURL);
-    if (customMobileNet._metadata.hasOwnProperty('tfjsSpeechCommandsVersion')) {
+    if ((customMobileNet as any)._metadata.hasOwnProperty('tfjsSpeechCommandsVersion')) {
       // customMobileNet.dispose(); // too early to dispose
       //console.log("We got a speech net yay")
       const recognizer = tmAudioSpeechCommands.create("BROWSER_FFT", undefined, modelURL, metadataURL);
       await recognizer.ensureModelLoaded();
-      await recognizer.listen(result => {
+      await recognizer.listen(async result => {
         this.latestAudioResults = result;
         //console.log(result);
       }, {
@@ -198,7 +198,7 @@ export default class teachableMachine extends Extension<Details, Blocks> {
         overlapFactor: 0.50 // probably want between 0.5 and 0.75. More info in README
       });
       return { model: recognizer, type: ModelType.AUDIO };
-    } else if (customMobileNet._metadata.packageName === "@teachablemachine/pose") {
+    } else if ((customMobileNet as any)._metadata.packageName === "@teachablemachine/pose") {
       const customPoseNet = await tmPose.load(modelURL, metadataURL);
       return { model: customPoseNet, type: ModelType.POSE };
     } else {
