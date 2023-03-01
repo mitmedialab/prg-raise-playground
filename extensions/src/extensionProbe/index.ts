@@ -82,14 +82,15 @@ const getLegacyFileContent = (info: ExtensionMetadata) => {
   const method: LegacyMethod = "for";
 
   const importName = "legacy";
-  const variableName = "info"
-  const imports = `import { ${importName} } from "$common";`
-  const declaration = `const ${variableName} = ${JSON.stringify(info, null, 2)} as const;`;
+  const variableName = "info";
+  const declareAndExport = "export const";
+  const imports = `import { ${importName} } from "$common";`;
+  const declaration = `${declareAndExport} ${variableName} = ${JSON.stringify(info, null, 2)} as const;`;
   const flags = JSON.stringify({ incrementalDevelopment: true } satisfies LegacyFlag);
 
   const exports = [
-    `export const ${fullSuppportName} = ${importName}(${variableName}).${method};`,
-    `export const ${incrementalSupportName} = ${importName}(${variableName}, ${flags}).${method};`
+    `${declareAndExport} ${fullSuppportName} = ${importName}(${variableName}).${method};`,
+    `${declareAndExport} ${incrementalSupportName} = ${importName}(${variableName}, ${flags}).${method};`
   ].join("\n");
 
   return [imports, declaration, exports].join("\n");
