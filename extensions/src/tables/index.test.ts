@@ -3,22 +3,73 @@ import Extension from '.';
 
 createTestSuite({ Extension, __dirname }, {
   unitTests: {
-    createTable: {
+    createTable: [
+      (testHelper) => {
+        return {
+          after: async (fixture) => {
+            const { ui, extension, testHelper: { expect, fireEvent, updateHTMLInputValue } } = fixture;
+            const inputs = await ui.findAllByTestId("makeNameInput");
+            const subs = await ui.findAllByTestId("ok");
+            expect(inputs.length).toBe(1);
+            expect(subs.length).toBe(1);
+            
+            const input = inputs[0];
+            const sub = subs[0];
+
+            await updateHTMLInputValue(input, 'newTable');
+            expect(input.value).toBe('newTable')
+            await fireEvent.click(sub);
+
+            expect(extension.tables.newTable.length).toBe(1);
+            delete extension.tables.newTable;
+          }
+        }
+      },
+      (testHelper) => {
+        return {
+          after: async (fixture) => {
+            const { ui, extension, testHelper: { expect, fireEvent, updateHTMLInputValue } } = fixture;
+            const inputs = await ui.findAllByTestId("makeNameInput");
+            const subs = await ui.findAllByTestId("ok");
+            expect(inputs.length).toBe(1);
+            expect(subs.length).toBe(1);
+            
+            const input = inputs[0];
+            const sub = subs[0];
+
+            await updateHTMLInputValue(input, 'myTable');
+            expect(input.value).toBe('myTable')
+            expect(sub.disabled).toBe(true)
+          }
+        }
+      }
+    ],
+    showTable: {
+      before: (fixture) => {
+        const { extension, testHelper } = fixture;
+        extension.newTable({name: 'newTable', rows: 2, columns: 2});
+        expect(extension.tables.newTable.length).toBe(2);
+      },
       after: async (fixture) => {
-        const { ui, extension, testHelper: { expect, fireEvent } } = fixture;
-        const inputs = await ui.findAllByTestId("makeNameInput");
-        const subs = await ui.findAllByTestId("ok");
-        expect(inputs.length).toBe(1);
-        expect(subs.length).toBe(1);
+        const { ui, extension, testHelper: { expect, fireEvent, updateHTMLInputValue } } = fixture;
+        const myTable = await ui.findByText('myTable');
+        const newTable = await ui.findByText('newTable');
+        expect(myTable.selected).toBe(true);
+        expect(newTable.selected).toBe(false);
         
-        // const input = inputs[0];
-        // const sub = subs[0];
+        const selectors = await ui.findAllByTestId('tableSelect');
+        const selector = selectors[0];
+        await fireEvent.change(selector, { target: { value: 'newTable' } });
+        
+        expect(myTable.selected).toBe(false);
+        expect(newTable.selected).toBe(true);
+        const cells = await ui.findAllByTestId('tableCell');
+        expect(cells.length).toBe(4);
 
-        // await fireEvent.change(input, {target: {value: 'newTable'}});
-        // await fireEvent.click(sub);
-
-        // expect(extension.tables.newTable.length).toBe(1);
-        // delete extension.tables.newTable;
+        await fireEvent.change(cells[0], { target: { value: '3' } });
+        expect(extension.tables.newTable[0][0]).toBe(3);
+        
+        delete extension.tables.newTable;
       }
     },
     addTable: [

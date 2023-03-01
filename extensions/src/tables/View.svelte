@@ -57,7 +57,7 @@
 
 <div class:container style:width="360px" style:background-color={color.ui.white} style:color={color.text.primary}>
   <div>
-    <select bind:value={selected} class:tableListDropdown>
+    <select bind:value={selected} class:tableListDropdown data-testid="tableSelect">
       {#each Object.keys(extension.tables) as name}
         <option value={name}>
           {name}
@@ -81,7 +81,7 @@
             <th>{i + 1}</th>
             {#each row as value, j}
               <th>
-                <input class:tableValueInput type="number" {value} on:change={(e) => update(e, i, j)}>
+                <input class:tableValueInput type="number" {value} on:change={(e) => update(e, i, j)} data-testid="tableCell">
               </th>
             {/each}
           </tr>
