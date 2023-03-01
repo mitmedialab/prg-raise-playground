@@ -18,7 +18,7 @@ export const isLegacy = (extension: ExtensionCommon | WithLegacySupport): extens
 const validBlock = (legacyBlock: string | ExtensionBlockMetadata, blockMap: BlockMap): legacyBlock is ExtensionBlockMetadata => {
   if (isString(legacyBlock)) throw new Error("Block was unexpectedly a string: " + legacyBlock);
   if (!blockMap.has(legacyBlock.opcode)) {
-    console.error(`Could not find legacy opcode ${legacyBlock} within currently defined blocks`);
+    console.error(`Could not find legacy opcode ${legacyBlock.opcode} within currently defined blocks`);
     return false;
   };
   return true;
