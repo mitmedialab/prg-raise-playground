@@ -1,4 +1,4 @@
-import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, untilExternalGlobalVariableLoaded, extractLegacySupportFromOldGetInfo, isString } from "$common";
+import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, untilExternalGlobalVariableLoaded, extractLegacySupportFromOldGetInfo, isString, } from "$common";
 import { info, legacyFullSupport, legacyIncrementalSupport } from "./legacy";
 
 const { legacyExtension, legacyDefinition, ReservedNames } = legacyFullSupport<PoseFace>();
@@ -91,6 +91,14 @@ export default class PoseFace extends Extension<Details, Blocks> {
 
   private affdexDetector: Detector;
 
+  get expressionsReady() {
+    return this.affdexState && this.affdexState.expressions;
+  }
+
+  get emotionsReady() {
+    return this.affdexState && this.affdexState.emotions
+  }
+
   /**
    * The current video state
    * @type {number}
@@ -108,12 +116,6 @@ export default class PoseFace extends Extension<Details, Blocks> {
    * @param env 
    */
   init(env: Environment) {
-    /* Unused but possibly needed in the future
-    this.runtime.registerPeripheralExtension(EXTENSION_ID, this);
-    this.runtime.connectPeripheral(EXTENSION_ID, 0);
-    this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
-    */
-
     if (this.runtime.ioDevices) {
       /* Possibly unnecessary, keep commented just in case
       this.runtime.on(RuntimeEvent.ProjectLoaded, this.projectStarted.bind(this));
@@ -148,15 +150,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
       const time = +new Date();
       if (frame) {
         this.affdexState = await this.estimateAffdexOnImage(frame);
-        /*
-        if (this.affdexState) {
-          this.hasResult = true;
-          this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
-        } else {
-          this.hasResult = false;
-          this.runtime.emit(this.runtime.constructor.PERIPHERAL_DISCONNECTED);
-        }
-        */
+        // Alert user based on (this.affdexState)
       }
       const estimateThrottleTimeout = (+new Date() - time) / 4;
       await new Promise(r => setTimeout(r, estimateThrottleTimeout));
@@ -205,43 +199,6 @@ export default class PoseFace extends Extension<Details, Blocks> {
     return this.affdexDetector;
   }
 
-  /**
-   * 
-   * @param part 
-   * @param util 
-   * @returns 
-   */
-  goToPart(part, util) {
-    if (!this.affdexState || !this.affdexState.featurePoints) return;
-
-    const featurePoint = this.affdexState.featurePoints[part];
-    const { x, y } = this.convertCoordsToScratch(featurePoint);
-    (util.target as any).setXY(x, y, false);
-  }
-
-  /**
-   * 
-   * @param expression 
-   * @returns 
-   */
-  isExpression(expression) {
-    if (!this.affdexState || !this.affdexState.expressions) {
-      return false;
-    }
-    return this.affdexState.expressions[expression] > .5;
-  }
-
-  /**
-   * 
-   * @param expression 
-   * @returns 
-   */
-  expressionAmount(expression) {
-    if (!this.affdexState || !this.affdexState.expressions) {
-      return 0;
-    }
-    return friendlyRound(this.affdexState.expressions[expression]);
-  }
 
   /**
    * 
@@ -250,9 +207,8 @@ export default class PoseFace extends Extension<Details, Blocks> {
    * @returns 
    */
   isTopEmotion(felt_emotion, emotions) {
-    if (!this.affdexState || !this.affdexState.emotions) {
-      return false;
-    }
+    if (!this.emotionsReady) return false;
+
     let maxEmotionValue = -Number.MAX_VALUE;
     let maxEmotion = null;
     emotions.forEach((emotion) => {
@@ -266,18 +222,6 @@ export default class PoseFace extends Extension<Details, Blocks> {
     });
     // console.log(maxEmotion.value + " "+ felt_emotion);
     return felt_emotion == maxEmotion.value;
-  }
-
-  /**
-   * 
-   * @param emotion 
-   * @returns 
-   */
-  emotionAmount(emotion) {
-    if (!this.affdexState || !this.affdexState.emotions) {
-      return 0;
-    }
-    return friendlyRound(this.affdexState.emotions[emotion]);
   }
 
   /**
@@ -328,57 +272,70 @@ export default class PoseFace extends Extension<Details, Blocks> {
       ({ value }) => value satisfies string as string
     );
 
+    const { items: emotionsSubset } = info.menus.EMOTION;
+
     const emotionHandler = {
       handler: (emotion: unknown) => isString(emotion) && allEmotions.includes(emotion) ? emotion : "joy"
     };
 
+    const isExpression = (expression: string) =>
+      this.expressionsReady ? this.affdexState.expressions[expression] > .5 : false;
+
     return {
       affdexGoToPart: legacyDefinition.affdexGoToPart({
-        operation: (part: string, util) => this.goToPart(part, util)
+        operation: (part, util) => {
+          if (!this.affdexState || !this.affdexState.featurePoints) return;
+
+          const featurePoint = this.affdexState.featurePoints[part];
+          const { x, y } = this.convertCoordsToScratch(featurePoint);
+          (util.target as any).setXY(x, y, false);
+        }
       }),
 
       affdexWhenExpression: legacyDefinition.affdexWhenExpression({
-        operation: (expression: string) => this.isExpression(expression),
+        operation: isExpression,
         argumentMethods: { 0: handleExpression }
       }),
 
       affdexExpressionAmount: legacyDefinition.affdexExpressionAmount({
-        operation: (expression: string) => this.expressionAmount(expression),
+        operation: (expression) =>
+          this.expressionsReady ? friendlyRound(this.affdexState.expressions[expression]) : 0,
         argumentMethods: { 0: handleExpression }
       }),
 
       affdexIsExpression: legacyDefinition.affdexIsExpression({
-        operation: (expression: string) => this.isExpression(expression),
+        operation: isExpression,
         argumentMethods: { 0: handleExpression }
       }),
 
       affdexWhenEmotion: legacyDefinition.affdexWhenEmotion({
-        operation: (emotion: string) => this.isTopEmotion(emotion, info.menus.EMOTION.items),
+        operation: (emotion) => this.isTopEmotion(emotion, emotionsSubset),
         argumentMethods: { 0: emotionHandler }
       }),
 
       affdexEmotionAmount: legacyDefinition.affdexEmotionAmount({
-        operation: (emotion: string) => this.emotionAmount(emotion),
-        argumentMethods: { 0: emotionHandler }
+        operation: (emotion) =>
+          this.emotionsReady ? friendlyRound(this.affdexState.emotions[emotion]) : 0,
+        argumentMethods: { 0: emotionHandler },
       }),
 
       affdexIsTopEmotion: legacyDefinition.affdexIsTopEmotion({
-        operation: (emotion: string) => this.isTopEmotion(emotion, info.menus.EMOTION.items),
+        operation: (emotion) => this.isTopEmotion(emotion, emotionsSubset),
         argumentMethods: { 0: emotionHandler }
       }),
 
       videoToggle: legacyDefinition.videoToggle({
-        operation: (video_state: number) => this.toggleVideo(video_state),
+        operation: (video_state) => this.toggleVideo(video_state),
         argumentMethods: {
           0: {
-            handler: (video_state: number) =>
-              Math.min(Math.max(video_state, VideoState.OFF), VideoState.ON_FLIPPED)
+            handler: (video_state) =>
+              Math.min(Math.max(parseInt(`${video_state}`), VideoState.OFF), VideoState.ON_FLIPPED)
           }
         }
       }),
 
       setVideoTransparency: legacyDefinition.setVideoTransparency({
-        operation: (transparency: number) => this.setTransparency(transparency),
+        operation: (transparency) => this.setTransparency(transparency),
       })
     }
   }

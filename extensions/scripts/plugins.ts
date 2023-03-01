@@ -131,8 +131,25 @@ export const setupExtensionBundleEntry = ({ indexFile, bundleEntry, directory }:
 
 const cachedContent = new Map<string, string>();
 export const fillInConstructorArgs = (info: BundleInfo, getContent: (info: BundleInfo) => string): Plugin => {
-  const searchValue = "super(...arguments)";
-  const replaceValue = (content: string) => `super(...[...arguments, ${content}])`;
+  const replacers = {
+    default: {
+      search: "super(...arguments)",
+      replace: (content: string) => `super(...[...arguments, ${content}])`
+    },
+    legacy: {
+      search: "_classThis = class extends Extension {",
+      replace: (content: string) =>
+        `_classThis = class extends Extension {\n\tconstructor() { super(...[...arguments, ${content}]); }\n`,
+    }
+  };
+
+  const tryMatch = (code: string) => {
+    const matchDefault = code.includes(replacers.default.search);
+    const matchLegacy = code.includes(replacers.legacy.search);
+    const method: keyof typeof replacers = matchDefault ? "default" : "legacy";
+    return { match: matchDefault || matchLegacy, method };
+  }
+
   const { indexFile } = info;
 
   return {
@@ -141,12 +158,13 @@ export const fillInConstructorArgs = (info: BundleInfo, getContent: (info: Bundl
       order: 'post',
       handler: (code: string, file: string) => {
         if (file !== indexFile) return;
-        const matches = code.includes(searchValue);
-        if (!matches) throw new Error("Framework error -- contact Parker Malachowsky (or project maintainer): Unable to locate insertion point within Extension class. The strategy likely needs to be updated...");
+        const { match, method } = tryMatch(code);
+        if (!match) fs.writeFileSync(file + ".error.txt", code);
+        if (!match) throw new Error("Framework error -- contact Parker Malachowsky (or project maintainer): Unable to locate insertion point within Extension class. The strategy likely needs to be updated...");
         const content = getContent(info);
         cachedContent.set(indexFile, content);
         return {
-          code: code.replace(searchValue, replaceValue(content)),
+          code: code.replace(replacers[method].search, replacers[method].replace(content)),
           map: null
         };
       }

@@ -84,7 +84,8 @@ type LegacySupport<TInfo extends ExtensionMetadata, TStrict extends boolean> = {
      */
     ReservedNames: {
       Menus: TsMagic.TuplifyUnion<LegacyProbe.ReservedMenuNames<TInfo>>,
-      Blocks: TsMagic.TuplifyUnion<LegacyProbe.Opcodes<TInfo>>
+      Blocks: TsMagic.TuplifyUnion<LegacyProbe.Opcodes<TInfo>>,
+      ArgumentNamesByBlock: { [K in LegacyProbe.Opcodes<TInfo>]: TsMagic.TuplifyUnion<keyof LegacyProbe.Arguments<TInfo["blocks"], K>[keyof LegacyProbe.Arguments<TInfo["blocks"], K>]> }
     },
   }
 }
@@ -150,8 +151,9 @@ export const legacy = <
       legacyExtension, legacyDefinition, legacyBlock,
       ReservedNames: {
         get Menus(): any { throw new Error("This property is not meant to be accessed, and is instead solely for documentation purposes.") },
-        get Blocks(): any { throw new Error("This property is not meant to be accessed, and is instead solely for documentation purposes.") }
-      }
+        get Blocks(): any { throw new Error("This property is not meant to be accessed, and is instead solely for documentation purposes.") },
+        get ArgumentNamesByBlock(): any { throw new Error("This property is not meant to be accessed, and is instead solely for documentation purposes.") },
+      },
     };
   }
 })
@@ -264,6 +266,9 @@ namespace LegacyProbe {
       [Arg in OpArgMenus<T, Op>[number]as Arg["argumentIndex"]]: Arg extends { reservedDynamicMenuName: infer Name extends string } ? Name : never;
     }>
   }> & string;
+
+  export type ArgumentNamesByBlock<T extends ExtensionMetadata> =
+    { [K in Opcodes<T>]: TsMagic.TuplifyUnion<keyof Arguments<T["blocks"], K>[keyof Arguments<T["blocks"], K>]> }
 
   type ArgsArray<T extends unknown[]> = T extends [] ? [] :
     T extends [infer H, ...infer R]

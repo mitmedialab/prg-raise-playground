@@ -112,7 +112,7 @@ function legacyMixin<T extends AbstractConstructor<ExtensionCommon>>(Ctor: T, le
 
       updates.map(({ menuUpdates }) => menuUpdates).flat().forEach(({ type, legacy, modern }) =>
         type === "static"
-          ? menus[legacy] = modern
+          ? menus[legacy] = legacyMenus[legacy]
           : self[legacy] = () => self[modern]()
       );
 
