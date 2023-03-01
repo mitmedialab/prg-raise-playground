@@ -1,7 +1,7 @@
-import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, untilExternalGlobalVariableLoaded, extractLegacySupportFromOldGetInfo, isString, } from "$common";
+import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, untilExternalGlobalVariableLoaded, isString, } from "$common";
 import { info, legacyFullSupport, legacyIncrementalSupport } from "./legacy";
 
-const { legacyExtension, legacyDefinition, ReservedNames } = legacyFullSupport<PoseFace>();
+const { legacyExtension, legacyDefinition, ReservedNames } = legacyIncrementalSupport<PoseFace>();
 
 // import * as window from 'affdex.js';
 
@@ -57,7 +57,7 @@ type Blocks = {
   affdexEmotionAmount(feeling: string): number;
   affdexIsTopEmotion(feeling: string): boolean;
   // these video blocks are present in a few different extensions, perhaps making a file just for these?
-  videoToggle(state: number): void;
+  //videoToggle(state: number): void;
   setVideoTransparency(transparency: number): void;
 }
 
@@ -324,6 +324,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
         argumentMethods: { 0: emotionHandler }
       }),
 
+      /*
       videoToggle: legacyDefinition.videoToggle({
         operation: (video_state) => this.toggleVideo(video_state),
         argumentMethods: {
@@ -332,7 +333,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
               Math.min(Math.max(parseInt(`${video_state}`), VideoState.OFF), VideoState.ON_FLIPPED)
           }
         }
-      }),
+      }),*/
 
       setVideoTransparency: legacyDefinition.setVideoTransparency({
         operation: (transparency) => this.setTransparency(transparency),
