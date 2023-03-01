@@ -8,5 +8,10 @@
     "test": "npm run test --prefix ../../ -- teachableMachine/index.test.ts"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@teachablemachine/image": "^0.8.5",
+    "@teachablemachine/pose": "^0.8.6",
+    "@tensorflow-models/speech-commands": "^0.5.4"
+  }
 }

@@ -1,4 +1,7 @@
 import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails } from "$common";
+import tmImage from '@teachablemachine/image';
+import tmPose from '@teachablemachine/pose';
+import tmAudioSpeechCommands from '@tensorflow-models/speech-commands';
 
 const VideoState = {
   /** Video turned off. */
@@ -27,6 +30,7 @@ type Blocks = {
   whenModelDetects_Hat(state: string): boolean;
   modelPredictionReporter(): string;
   predictionIs_Boolean(state: string): boolean;
+  confidenceFor_Reporter(state: string): boolean;
 
   videoToggleCommand(state: number): void;
   setVideoTransparencyCommand(state: number): void;
@@ -34,7 +38,6 @@ type Blocks = {
 
 export default class teachableMachine extends Extension<Details, Blocks> {
 
-  detect: any;
   lastUpdate: number;
   maxConfidence: number;
   modelConfidences: object;
@@ -69,10 +72,6 @@ export default class teachableMachine extends Extension<Details, Blocks> {
       // Kick off looping the analysis logic.
       this._loop();
     }
-  }
-
-  options() {
-    return ['State 1']
   }
 
   /**
@@ -164,6 +163,49 @@ export default class teachableMachine extends Extension<Details, Blocks> {
     }
   }
 
+  async startPredicting(modelDataUrl) {
+    if (!this.predictionState[modelDataUrl]) {
+      try {
+        this.predictionState[modelDataUrl] = {};
+        // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
+        const { model, type } = await this.initModel(modelDataUrl);
+        this.predictionState[modelDataUrl].modelType = type;
+        this.predictionState[modelDataUrl].model = model;
+        this.runtime.requestToolboxExtensionsUpdate();
+      } catch (e) {
+        this.predictionState[modelDataUrl] = {};
+        console.log("Model initialization failure!", e);
+      }
+    }
+  }
+
+  async initModel(modelUrl) {
+    const modelURL = modelUrl + "model.json";
+    const metadataURL = modelUrl + "metadata.json";
+    const customMobileNet = await tmImage.load(modelURL, metadataURL);
+    if (customMobileNet._metadata.hasOwnProperty('tfjsSpeechCommandsVersion')) {
+      // customMobileNet.dispose(); // too early to dispose
+      //console.log("We got a speech net yay")
+      const recognizer = tmAudioSpeechCommands.create("BROWSER_FFT", undefined, modelURL, metadataURL);
+      await recognizer.ensureModelLoaded();
+      await recognizer.listen(result => {
+        this.latestAudioResults = result;
+        //console.log(result);
+      }, {
+        includeSpectrogram: true, // in case listen should return result.spectrogram
+        probabilityThreshold: 0.75,
+        invokeCallbackOnNoiseAndUnknown: true,
+        overlapFactor: 0.50 // probably want between 0.5 and 0.75. More info in README
+      });
+      return { model: recognizer, type: ModelType.AUDIO };
+    } else if (customMobileNet._metadata.packageName === "@teachablemachine/pose") {
+      const customPoseNet = await tmPose.load(modelURL, metadataURL);
+      return { model: customPoseNet, type: ModelType.POSE };
+    } else {
+      return { model: customMobileNet, type: ModelType.IMAGE };
+    }
+  }
+
   /**
      * After analyzing a frame the amount of milliseconds until another frame
      * is analyzed.
@@ -180,6 +222,56 @@ export default class teachableMachine extends Extension<Details, Blocks> {
      */
   static get DIMENSIONS() {
     return [480, 360];
+  }
+
+  useModel(url) {
+    try {
+      const modelUrl = this.modelArgumentToURL(url);
+      this.getPredictionStateOrStartPredicting(modelUrl);
+      this.updateStageModel(modelUrl);
+    } catch (e) {
+      this.teachableImageModel = null;
+    }
+  }
+
+  modelArgumentToURL(modelArg) {
+    return modelArg.startsWith('https://teachablemachine.withgoogle.com/models/') ?
+      modelArg :
+      `https://teachablemachine.withgoogle.com/models/${modelArg}/`;
+  }
+
+  updateStageModel(modelUrl) {
+    const stage = this.runtime.getTargetForStage();
+    this.teachableImageModel = modelUrl;
+    if (stage) {
+      stage.teachableImageModel = modelUrl;
+    }
+  }
+
+  getPredictionStateOrStartPredicting(modelUrl) {
+    const hasPredictionState = this.predictionState.hasOwnProperty(modelUrl);
+    if (!hasPredictionState) {
+      this.startPredicting(modelUrl);
+      return null;
+    }
+    return this.predictionState[modelUrl];
+  }
+
+  options() {
+    return ['State 1']
+  }
+
+  model_match(state) {
+    const modelUrl = this.teachableImageModel;
+    const className = state;
+
+    const predictionState = this.getPredictionStateOrStartPredicting(modelUrl);
+    if (!predictionState) {
+      return false;
+    }
+
+    const currentMaxClass = predictionState.topClass;
+    return (currentMaxClass === String(className));
   }
 
   /**
@@ -205,12 +297,15 @@ export default class teachableMachine extends Extension<Details, Blocks> {
 
   defineBlocks(): teachableMachine["BlockDefinitions"] {
 
+    this.setTransparency(50);
+    this.toggleVideo(VideoState.ON);
+
     const useModel_Command: DefineBlock<teachableMachine, Blocks["useModel_Command"]> = () => ({
       type: BlockType.Command,
-      arg: ArgumentType.String,
+      arg: { type: ArgumentType.String, defaultValue: 'https://teachablemachine.withgoogle.com/models/knrpLxv8N/' },
       text: (url) => `use model ${url}`,
       operation: (url) => {
-        console.log(url)
+        this.useModel(url);
       }
     });
 
@@ -222,8 +317,7 @@ export default class teachableMachine extends Extension<Details, Blocks> {
       },
       text: (state) => `when model detects ${state}`,
       operation: (state) => {
-        console.log(state);
-        return false;
+        return this.model_match(state)
       }
     });
 
@@ -237,11 +331,25 @@ export default class teachableMachine extends Extension<Details, Blocks> {
 
     const predictionIs_Boolean: DefineBlock<teachableMachine, Blocks["predictionIs_Boolean"]> = () => ({
       type: BlockType.Boolean,
-      arg: { type: ArgumentType.String, options: ['State 1'] },
+      arg: {
+        type: ArgumentType.String,
+        options: () => this.options()
+      },
       text: (state) => `when model detects ${state}`,
       operation: (state) => {
-        console.log(state);
-        return false;
+        return this.model_match(state)
+      }
+    });
+
+    const confidenceFor_Reporter: DefineBlock<teachableMachine, Blocks["predictionIs_Boolean"]> = () => ({
+      type: BlockType.Boolean,
+      arg: {
+        type: ArgumentType.String,
+        options: () => this.options()
+      },
+      text: (state) => `when model detects ${state}`,
+      operation: (state) => {
+        return this.model_match(state)
       }
     });
 
@@ -277,6 +385,7 @@ export default class teachableMachine extends Extension<Details, Blocks> {
       whenModelDetects_Hat,
       modelPredictionReporter,
       predictionIs_Boolean,
+      confidenceFor_Reporter,
       videoToggleCommand,
       setVideoTransparencyCommand,
     }
