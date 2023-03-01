@@ -2,7 +2,7 @@ import { AbstractConstructor } from "../";
 import { ExtensionCommon } from "../ExtensionCommon";
 import { ExtensionArgumentMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, ExtensionMetadata } from "$common/types";
 import { isString, set } from "$common/utils";
-import { isDynamicMenu, parseText } from "../decorators/legacy";
+import { isDynamicMenu, parseText } from "../decorators/legacySupport/index";
 import { getImplementationName, wrapOperation } from "./scratchInfo";
 
 type WrappedOperation = ReturnType<typeof wrapOperation>;
@@ -102,7 +102,7 @@ function legacyMixin<T extends AbstractConstructor<ExtensionCommon>>(Ctor: T, le
               ({ legacyName, modernName, legacy: legacyMenus[legacyName], modern: menus[modernName] }))
             .map(({ legacy, modern, legacyName, modernName }) => !isDynamicMenu(legacy) && !isDynamicMenu(legacy.items)
               ? { type: "static" as const, legacy: legacyName, modern: modernName }
-              : { type: "dynamic" as const, legacy: getDynamicMenuName(legacy), modern: getDynamicMenuName(modern) }
+              : { type: "dynamic" as const, legacy: legacyName, modern: modernName, methods: { legacy: getDynamicMenuName(legacy), modern: getDynamicMenuName(modern) } }
             );
 
           return { menuUpdates, replaceAt: { index, block: legacyBlock } };
@@ -110,11 +110,18 @@ function legacyMixin<T extends AbstractConstructor<ExtensionCommon>>(Ctor: T, le
 
       updates.forEach(({ replaceAt: { index, block } }) => mutableBlocks[index] = block);
 
-      updates.map(({ menuUpdates }) => menuUpdates).flat().forEach(({ type, legacy, modern }) =>
-        type === "static"
-          ? menus[legacy] = legacyMenus[legacy]
-          : self[legacy] = () => self[modern]()
-      );
+      updates
+        .map(({ menuUpdates }) => menuUpdates)
+        .flat()
+        .map(menu => {
+          const { legacy } = menu;
+          if (legacy in menus) throw new Error(`Somehow, there was already a menu called ${legacy}, which will cause issues in the next step.`);
+          return menu;
+        })
+        .forEach(({ type, legacy, methods }) => {
+          menus[legacy] = legacyMenus[legacy];
+          if (type === "dynamic") self[methods.legacy] = () => self[methods.modern]();
+        });
 
       return {
         id, blocks: mutableBlocks, menus, ...metaData

@@ -24,4 +24,4 @@ export * from "./extension/ExtensionCommon";
 
 export * from "./extension/decorators/blocks";
 export * from "./extension/decorators/extension";
-export * from "./extension/decorators/legacy";
+export * from "./extension/decorators/legacySupport/index";
