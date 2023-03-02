@@ -763,8 +763,6 @@ export const legacyIncrementalSupport = legacy(info, { incrementalDevelopment: t
 
 **IMPORTANT!** Do not edit the `legacy.ts` file (unless you really know what you're doing).
 
-#### Using `legacyExtension` and `legacyDefiniton` in `defineBlocks`
-
 Now that we've obtained the return of `legacy.ts`, we can make use of it's exports when defining our extension and its blocks like so: 
 
 ```ts
