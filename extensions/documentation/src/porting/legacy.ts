@@ -1,11 +1,6 @@
 import { codeSnippet } from "../../";
 import { filename, fullSuppportName, incrementalSupportName } from "../../../src/extensionProbe/legacyDocs";
 
-/**
- * Ensure names stay in sync
- */
-const fullSupport: typeof fullSuppportName = "legacyFullSupport";
-const incrementalSupport: typeof incrementalSupportName = "legacyIncrementalSupport";
 
 export const extract = codeSnippet();
 
@@ -44,3 +39,9 @@ export const legacyFullSupport = legacy(info);
 export const legacyIncrementalSupport = legacy(info, { incrementalDevelopment: true });
 
 extract.end;
+
+type VariableNames = typeof fullSuppportName | typeof incrementalSupportName;
+const ensureVariableNamesStayInSync = {
+  legacyFullSupport,
+  legacyIncrementalSupport
+} satisfies Record<VariableNames, ReturnType<typeof legacy<typeof info>>>

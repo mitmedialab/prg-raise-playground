@@ -710,78 +710,17 @@ You're free to define additional blocks in your ported over extension, but you m
 
 Here's how: 
 
-1. Load up the [deployed site]() which should include the 'old' extension you're working to port over. 
-2. First, add in the `Extension Probe` extension using the [extensions menu]().
+1. Load up the [deployed site](https://playground.raise.mit.edu/dev/) which should include the 'old' extension you're working to port over. 
+2. First, add in the `Extension Probe` extension using the [extensions menu](https://en.scratch-wiki.info/wiki/Extension#Adding_Extensions).
 3. Next, add the extension you're porting over. 
 4. Scroll back up to the blocks of the `Extension Probe` and execute the "Get Legacy Support" block (ensure that the block's input field is set to your extension's ID).
     - This will download a file called `legacy.ts` to your computer
     - After approving the download, follow the instructions in the popped-up UI to understand how to make use of the file. An example is included below. 
 
-#### Vanilla Javascript Extension 
 
-Assume that our old, vanilla javascript extension looks the following:
+#### Usage of `legacy.ts`
 
-```ts
-const ArgumentType = require('../../extension-support/argument-type');
-const BlockType = require('../../extension-support/block-type');
-
-class ExampleLegacyExtension {
-  constructor(runtime) { }
-
-  getItems() { return [{ text: "0", value: 0 }, { text: "1", value: 1 }]; }
-
-  getInfo() {
-    return {
-      id: 'someBlocks',
-
-      color1: '#FF8C1A',
-      color2: '#DB6E00',
-      
-      name: formatMessage({
-          id: 'extensionName',
-          default: 'Some Blocks',
-          description: 'The name of the "Some Blocks" extension'
-      }),
-
-      blocks: [
-          {
-              opcode: 'exampleLegacyBlock', 
-              blockType: BlockType.REPORTER,
-              text: formatMessage({
-                  id: 'exampleLegacyBlock',
-                  defaultMessage: 'Example text with [someArg] and [someArgWithMenu]',
-                  description: 'Label on exampleLegacyBlock'
-              }),
-              arguments: {
-                someArg: {
-                  type: ArgumentType.STRING,
-                },
-                someArgWithMenu: {
-                  type: ArgumentType.NUMBER,
-                  menu: "someMenu"
-                }
-              }
-          }
-      ],
-      menus: {
-        someMenu: {
-          items: this.getItems(),
-          acceptReporters: false,
-        },
-      },
-    };
-  };
-
-  exampleLegacyBlock(args) {
-    // ... some implementation
-  }
-}
-```
-
-
-#### Usage of `extractLegacySupportFromOldGetInfo`
-
-(Assuming we are in a new file, `legacy.ts` inside of our extension directory) we then copy over the object returned by the above `getInfo` method, and pass it to the `extractLegacySupportFromOldGetInfo` function like so:
+The downloaded `legacy.ts` file should look something like the following:
 
 ```ts
 
@@ -822,11 +761,11 @@ export const legacyIncrementalSupport = legacy(info, { incrementalDevelopment: t
 ```
 
 
-Pay attention to the comments, which describe a few changes that must be made, as well as the critical usage of `as const` after the object declaration.   
+**IMPORTANT!** Do not edit the `legacy.ts` file (unless you really know what you're doing).
 
-#### Using `legacy` in `defineBlocks`
+#### Using `legacyExtension` and `legacyDefiniton` in `defineBlocks`
 
-Now that we've obtained the return of `extractLegacySupportFromOldGetInfo` (imported as `legacy` below), we can make use of it when defining blocks in our new Framework-based extension. 
+Now that we've obtained the return of `legacy.ts`, we can make use of it's exports when defining our extension and its blocks like so: 
 
 ```ts
 import { Extension, Environment } from "$common";

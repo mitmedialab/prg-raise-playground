@@ -176,29 +176,24 @@ You're free to define additional blocks in your ported over extension, but you m
 
 Here's how: 
 
-1. Load up the [deployed site]() which should include the 'old' extension you're working to port over. 
-2. First, add in the `Extension Probe` extension using the [extensions menu]().
+1. Load up the [deployed site](https://playground.raise.mit.edu/dev/) which should include the 'old' extension you're working to port over. 
+2. First, add in the `Extension Probe` extension using the [extensions menu](https://en.scratch-wiki.info/wiki/Extension#Adding_Extensions).
 3. Next, add the extension you're porting over. 
 4. Scroll back up to the blocks of the `Extension Probe` and execute the "Get Legacy Support" block (ensure that the block's input field is set to your extension's ID).
     - This will download a file called `legacy.ts` to your computer
     - After approving the download, follow the instructions in the popped-up UI to understand how to make use of the file. An example is included below. 
 
-#### Vanilla Javascript Extension 
 
-Assume that our old, vanilla javascript extension looks the following:
+#### Usage of `legacy.ts`
 
-[](./vanillaLegacy.js)
-
-#### Usage of `extractLegacySupportFromOldGetInfo`
-
-(Assuming we are in a new file, `legacy.ts` inside of our extension directory) we then copy over the object returned by the above `getInfo` method, and pass it to the `extractLegacySupportFromOldGetInfo` function like so:
+The downloaded `legacy.ts` file should look something like the following:
 
 [](./legacy.ts?export=extract)
 
-Pay attention to the comments, which describe a few changes that must be made, as well as the critical usage of `as const` after the object declaration.   
+**IMPORTANT!** Do not edit the `legacy.ts` file (unless you really know what you're doing).
 
-#### Using `legacy` in `defineBlocks`
+#### Using `legacyExtension` and `legacyDefiniton` in `defineBlocks`
 
-Now that we've obtained the return of `extractLegacySupportFromOldGetInfo` (imported as `legacy` below), we can make use of it when defining blocks in our new Framework-based extension. 
+Now that we've obtained the return of `legacy.ts`, we can make use of it's exports when defining our extension and its blocks like so: 
 
 [](./ported.ts)
