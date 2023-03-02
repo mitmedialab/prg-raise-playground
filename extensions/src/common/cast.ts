@@ -1,4 +1,4 @@
-import { ArgumentType } from "./enums";
+import { ArgumentType } from "./types/enums";
 import { RGBObject, TypeByArgumentType, ValueOf } from "./types";
 import Cast from '$scratch-vm/util/cast';
 

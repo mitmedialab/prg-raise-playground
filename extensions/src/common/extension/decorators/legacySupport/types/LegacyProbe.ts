@@ -1,4 +1,4 @@
-import { ArgumentType, BlockType } from "$common/enums";
+import { ArgumentType, BlockType } from "$common/types/enums";
 import { ExtensionMetadata, ExtensionBlockMetadata, ValueOf, TypeByArgumentType, ExtensionMenuItems, ReturnTypeByBlockType, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters } from "$common/types";
 import { ObjValueTuple, TuplifyUnion } from "./TsMagic";
 

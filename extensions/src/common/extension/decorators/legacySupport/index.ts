@@ -1,8 +1,6 @@
-import { AbstractConstructor } from "$common/extension";
-import { NonAbstractConstructor } from "$common/extension/NonAbstractConstructor.1";
 import { ExtensionCommon } from "../../ExtensionCommon";
 import legacySupport from "$common/extension/mixins/legacySupport";
-import { ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuItems, BlockOperation, Argument, ExtensionMenuMetadata, ExtensionDynamicMenu, Menu, DynamicMenuThatAcceptsReporters, BaseExtension, VerboseArgument, DefineBlock } from "$common/types";
+import { ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuItems, BlockOperation, Argument, ExtensionMenuMetadata, ExtensionDynamicMenu, Menu, DynamicMenuThatAcceptsReporters, BaseGenericExtension, VerboseArgument, DefineBlock, AbstractConstructor, NonAbstractConstructor } from "$common/types";
 import { isFunction, isString } from "$common/utils";
 import { block } from "../blocks";
 import { ArgumentMethods, BlockDecorators, BlockDefinitions, BlockEntry, BlockMap, LegacyExtension, LegacyExtensionDecorator, LegacySupport, ObjectOrGetter } from "./types";
@@ -27,14 +25,14 @@ export const legacy = <
         readonly originalClassName = context.name;
       };
 
-      return LegacySupport as AbstractConstructor<ExtensionCommon> as NonAbstractConstructor<TExtension>
+      return LegacySupport as AbstractConstructor<ExtensionCommon> as NonAbstractConstructor<TExtension>;
     };
 
     const blockMethodBroker = getBlockMetaData(info).map(([opcode, entry]) => {
       const key = opcode as keyof BlockDefinitions<TInfo, TExtension>;
       return {
         key,
-        definer: createBlockDefiner<TExtension & BaseExtension>(entry),
+        definer: createBlockDefiner<TExtension & BaseGenericExtension>(entry),
         decorator: createBlockDecorator<TExtension & DecoratedExtension>(entry)
       }
     });
@@ -70,7 +68,7 @@ export const legacy = <
  * @param entry 
  * @returns 
  */
-const createBlockDefiner = <TExtension extends ExtensionCommon & BaseExtension>(entry: BlockEntry) =>
+const createBlockDefiner = <TExtension extends ExtensionCommon & BaseGenericExtension>(entry: BlockEntry) =>
   (objOrGetter: ObjectOrGetter<{ opertation: BlockOperation } & Partial<ArgumentMethods<any, any>>, TExtension>) =>
     ((extension: TExtension) => {
       const { operation, argumentMethods } = isFunction(objOrGetter) ? objOrGetter.call(extension, extension) : objOrGetter;
@@ -128,13 +126,15 @@ const convertAndInsertBlock = (map: BlockMap, block: ExtensionBlockMetadata, met
   const { opcode, arguments: _arguments, blockType: type } = block;
   const { text, orderedNames } = parseText(block);
 
-  const args = Object.entries(_arguments)
+  if (!_arguments) return map.set(opcode, { type, text });
+
+  const args = Object.entries(_arguments ?? {})
     .map(([name, { menu, ...rest }]) => ({ options: extractMenuOptions(metadata, menu), name, menu, ...rest }))
     .sort(({ name: a }, { name: b }) => orderedNames.indexOf(a) < orderedNames.indexOf(b) ? -1 : 1)
     .map(({ name, ...details }) => details satisfies Argument<any> as Argument<unknown>);
 
   const { length } = args;
-  const argsEntry = length >= 2 ? { args: args as [Argument<unknown>] } : length === 1 ? { arg: args[0] } : {};
+  const argsEntry = length >= 2 ? { args: args as [Argument<unknown>] } : { arg: args[0] };
 
   return map.set(opcode, { type, text, ...argsEntry });
 }
@@ -147,11 +147,14 @@ const getBlockMetaData = (metadata: ExtensionMetadata) => Array.from(
 );
 
 export const parseText = ({ arguments: _arguments, text }: ExtensionBlockMetadata) => {
+  const placeholder = "Error: This should have been overridden by legacy support";
+
+  if (!_arguments) return { orderedNames: null as null, text: placeholder };
+
   const args = Object.keys(_arguments)
     .map(name => ({ name, template: `[${name}]` }))
     .sort(({ template: a }, { template: b }) => text.indexOf(a) < text.indexOf(b) ? -1 : 1);
 
-  const placeholder = "Error: This should have been overridden by legacy support";
 
   return args.length === 0
     ? { orderedNames: null as null, text: placeholder }

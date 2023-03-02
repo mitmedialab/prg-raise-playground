@@ -1,5 +1,5 @@
 import { Extension } from "$common/extension/GenericExtension";
-import { BlockType } from "$common/enums";
+import { BlockType } from "$common/types/enums";
 import { BlockDefinitions, Block } from "$common/types";
 import { createTestSuite } from "$testing";
 import { DefaultDisplayDetails } from "$testing/defaults";

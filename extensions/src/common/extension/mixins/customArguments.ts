@@ -2,9 +2,9 @@ import { ExtensionBaseConstructor } from "$common/extension";
 import type Runtime from "$scratch-vm/engine/runtime";
 import CustomArgumentManager, { ArgumentEntry } from "$common/customArguments/CustomArgumentManager";
 import { CustomArgumentUIConstructor, renderToDropdown } from "$common/customArguments/dropdownOverride";
-import { ArgumentType } from "$common/enums";
+import { ArgumentType } from "$common/types/enums";
 import { openDropdownState, closeDropdownState, initDropdownState, customArgumentFlag, customArgumentCheck, dropdownStateFlag, dropdownEntryFlag } from "$common/globals";
-import { Argument, BaseExtension } from "$common/types";
+import { Argument, BaseGenericExtension } from "$common/types";
 
 type ComponentGetter = (id: string, componentName: string) => CustomArgumentUIConstructor;
 
@@ -84,7 +84,7 @@ export default function <T extends ExtensionBaseConstructor>(Ctor: T) {
           const prevID = currentEntry?.value ?? initialID;
           const current = argumentManager.getEntry(prevID);
           const [id, setEntry] = argumentManager.request();
-          renderToDropdown(getComponent(extensionID, component), { setter: setEntry, current, extension: this as any as BaseExtension });
+          renderToDropdown(getComponent(extensionID, component), { setter: setEntry, current, extension: this as any as BaseGenericExtension });
           return [["Apply", id]];
         }
       }

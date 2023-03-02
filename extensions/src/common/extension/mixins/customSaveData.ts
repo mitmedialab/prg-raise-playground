@@ -1,8 +1,8 @@
 import CustomArgumentManager from "$common/customArguments/CustomArgumentManager";
 import { ExtensionBaseConstructor } from "$common/extension";
-import { NonAbstractConstructor } from "../NonAbstractConstructor.1";
 import { ExtensionBase } from "../ExtensionBase";
 import customArgumentSupport from "$common/extension/mixins/customArguments";
+import { NonAbstractConstructor } from "$common/types";
 
 /**
  * WARNING! If you change this key, it will affect already saved projects.

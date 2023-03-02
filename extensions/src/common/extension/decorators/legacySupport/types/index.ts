@@ -1,12 +1,11 @@
 import { TypedClassDecorator, TypedMethodDecorator } from "../..";
 import { ExtensionCommon } from "../../../ExtensionCommon";
-import { BaseExtension, BlockOperation, DefineBlock, ExtensionMenuDisplayDetails, ExtensionMetadata } from "$common/types";
+import { BaseGenericExtension, BlockMetadata, BlockOperation, DefineBlock, ExtensionMenuDisplayDetails, ExtensionMetadata } from "$common/types";
 import { Arguments, BlockType, LegacyMethods, OpArgMenus, OpReturn, Opcodes, ReservedMenuNames } from "./LegacyProbe";
 import { TupleToObject, TuplifyUnion } from "./TsMagic";
 import { DecoratedExtension } from "$common/extension/DecoratedExtension";
 import { Extension } from "$common/extension/GenericExtension";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
-import { BlockMetadata } from "$common/extension";
 
 export type BlockEntry = BlockMetadata<BlockOperation>;
 export type BlockMap = Map<string, BlockEntry>;
@@ -51,7 +50,7 @@ export type BlockDefinitions<TInfo extends ExtensionMetadata, TExtension extends
      */
     operation: (this: TExtension, ...args: [...Parameters<LegacyMethods<TInfo>[k]>, BlockUtility]) => TReturn,
   } & (OpArgMenus<TInfo, k> extends [] ? {} : ArgumentMethods<TInfo, k>), TExtension>
-  ) => DefineBlock<BaseExtension, (...args: Parameters<LegacyMethods<TInfo>[k]>) => TReturn> & { type: BlockType<TInfo, k> }
+  ) => DefineBlock<BaseGenericExtension, (...args: Parameters<LegacyMethods<TInfo>[k]>) => TReturn> & { type: BlockType<TInfo, k> }
 };
 
 export type BlockDecorators<TInfo extends ExtensionMetadata> = {

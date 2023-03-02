@@ -1,12 +1,8 @@
-import { ArgumentType, BlockType } from "$common/enums";
-import { NonAbstractConstructor } from "$common/extension/NonAbstractConstructor.1";
-import { ExtensionCommon } from "$common/extension/ExtensionCommon";
 import { DecoratedExtension } from "$common/extension/DecoratedExtension";
 import { Extension } from "$common/extension/GenericExtension";
-import { block } from "$common/extension/decorators/blocks";
 import { extension } from "$common/extension/decorators/extension";
 import { legacy, } from "$common/extension/decorators/legacySupport";
-import { BlockDefinitions, Environment, } from "$common/types";
+import { BlockDefinitions, Environment, NonAbstractConstructor, ArgumentType, BlockType } from "$common/types";
 import { createTestSuite, testID } from "$testing";
 import { DefaultDisplayDetails } from "$testing/defaults";
 

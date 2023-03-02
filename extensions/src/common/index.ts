@@ -2,7 +2,7 @@ export * from "./extension";
 export * from "./types";
 export * from "./utils";
 export * from "./ui";
-export * from "./enums";
+export * from "./types/enums";
 export * from "./IDs";
 export * from "./globals";
 export * from "./extension/mixins/customSaveData";

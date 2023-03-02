@@ -1,6 +1,5 @@
-import { AbstractConstructor } from "../";
 import { ExtensionCommon } from "../ExtensionCommon";
-import { ExtensionArgumentMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, ExtensionMetadata } from "$common/types";
+import { AbstractConstructor, ExtensionArgumentMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, ExtensionMetadata } from "$common/types";
 import { isString, set } from "$common/utils";
 import { isDynamicMenu, parseText } from "../decorators/legacySupport/index";
 import { getImplementationName, wrapOperation } from "./scratchInfo";
@@ -86,6 +85,8 @@ function legacyMixin<T extends AbstractConstructor<ExtensionCommon>>(Ctor: T, le
           const { index, arguments: modernArgs } = blockMap.get(opcode);
           const argNames = this.getArgNames(legacyBlock);
 
+          if (!argNames) return { replaceAt: { index, block: legacyBlock } };
+
           const remapper = (args: Record<string, any>) => argNames.reduce(
             (remap, current, index) => set(remap, index, args[current]),
             {} as Record<number, any>);
@@ -116,6 +117,7 @@ function legacyMixin<T extends AbstractConstructor<ExtensionCommon>>(Ctor: T, le
       updates
         .map(({ menuUpdates }) => menuUpdates)
         .flat()
+        .filter(Boolean)
         .map(menu => {
           const { legacy } = menu;
           if (legacy in menus) throw new Error(`Somehow, there was already a menu called ${legacy}, which will cause issues in the next step.`);

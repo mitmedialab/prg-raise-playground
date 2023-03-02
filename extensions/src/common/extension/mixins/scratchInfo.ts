@@ -1,10 +1,10 @@
 import { castToType } from "$common/cast";
 import CustomArgumentManager from "$common/customArguments/CustomArgumentManager";
-import { ArgumentType, BlockType } from "$common/enums";
-import { BlockOperation, Argument, ValueOf, VerboseArgument, Menu, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, DynamicMenu, MenuItem, ExtensionArgumentMetadata, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters, ValidKey } from "$common/types";
+import { ArgumentType, BlockType } from "$common/types/enums";
+import { BlockOperation, Argument, ValueOf, VerboseArgument, Menu, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, DynamicMenu, MenuItem, ExtensionArgumentMetadata, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters, ValidKey, BlockMetadata } from "$common/types";
 import { registerButtonCallback } from "$common/ui";
 import { isPrimitive, isString, isFunction, identity, typesafeCall } from "$common/utils";
-import { BlockMetadata, ExtensionBaseConstructor } from "$common/extension";
+import { ExtensionBaseConstructor } from "$common/extension";
 import { DecoratedExtension } from "../DecoratedExtension";
 import customArguments from "$common/extension/mixins/customArguments";
 import type BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
