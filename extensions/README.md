@@ -18,7 +18,8 @@ This document will be most helpful for people doing more complex development, li
 4. [Porting an Extension to use our Framework & Typescript](#porting-an-extension-to-use-our-framework--typescript)
 5. [Saving Custom Data for an Extension](#saving-custom-data-for-an-extension)
 6. [Adding Custom Arguments](#adding-custom-arguments)
-7. [Reference](#reference)
+7. [Loading External Files / Assets](#loading-external-files--assets)
+8. [Reference](#reference)
 
 ## Anatomy of an Extension Directory
 
@@ -1123,6 +1124,34 @@ Then, we modify the UI (Svelte) component we created earlier to match our block 
 
 > Included links:
 > * https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extensions#creating-ui-for-extensions
+
+
+## Loading External Files / Assets
+
+> NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
+If you want to edit it, please go to [extensions/documentation/src/loadingAssets/README.md](documentation/src/loadingAssets/README.md)
+
+It's possible your extension might need to leverage an external file (for example a `.png` used in a UI, or an `.onnx` model used for neural network inferencing). In these cases, you likely want a URL pointing to the asset, instead of bundling it with your extension, as is done with code. 
+
+The supported way to do this is:
+1. Create an `assets` directory inside of your extension directory, and place your assets inside of there. 
+2. Get a path / URL to the asset by invoking the `getPathAsset` Extension method. For example:
+```ts
+
+import { Extension } from "$common";
+
+export default class ExampleThatUsesAsset extends Extension<DefaultDisplayDetails, {}> {
+  pathToMyAsset: string;
+
+  init(): void {
+    // This will give us a URL where the asset 'mySpecialPicture.jpg' is hosted
+    this.pathToMyAsset = this.getAssetPath("mySpecialPicture.jpg");
+  }
+
+  defineBlocks = notRelevant;
+}
+
+```
 
 
 ## Reference

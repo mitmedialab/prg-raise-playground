@@ -8,4 +8,6 @@ export const dropdownStateFlag = "dropdownState";
 export const dropdownEntryFlag = "dropdownEntry";
 export const initDropdownState = "init";
 export const openDropdownState = "open";
-export const closeDropdownState = "close"; 
+export const closeDropdownState = "close";
+
+export const assetsLocation = "extension-assets";

@@ -9,7 +9,7 @@ import { terser } from "rollup-plugin-terser";
 import autoPreprocess from 'svelte-preprocess';
 import path from "path";
 import chalk from 'chalk';
-import { transpileExtensions, fillInCodeGenArgs, setupExtensionBundleEntry, clearDestinationDirectories, generateVmDeclarations, createExtensionMenuAssets, announceWrite, transpileExtensionGlobals, setupFrameworkBundleEntry } from "./plugins";
+import { transpileExtensions, fillInCodeGenArgs, setupExtensionBundleEntry, clearDestinationDirectories, generateVmDeclarations, createExtensionMenuAssets, announceWrite, transpileExtensionGlobals, setupFrameworkBundleEntry, symlinkAssets } from "./plugins";
 import type Transpiler from './typeProbing/Transpiler';
 import { ExtensionMenuDisplayDetails, FrameworkID, encode } from '$common';
 import { retrieveExtensionDetails } from './typeProbing';
@@ -108,6 +108,7 @@ const bundleExtension = async (dir: string, extensionCount: number, doWatch: boo
     transpileExtensions(info, { onSuccess: transpileComplete, onError: transpileFailed }),
     createExtensionMenuAssets(info),
     fillInCodeGenArgs(info),
+    symlinkAssets(info),
     announceWrite(info),
   ];
 

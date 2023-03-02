@@ -6,7 +6,7 @@ import Runtime from "$scratch-vm/engine/runtime";
 import { openUI, registerButtonCallback } from './ui';
 import { identity, isFunction, isPrimitive, isString } from './utils';
 import { isCustomArgumentHack, processCustomArgumentHack } from './customArguments';
-import { customArgumentCheck, customArgumentFlag } from './globals';
+import { assetsLocation, customArgumentCheck, customArgumentFlag } from './globals';
 import CustomArgumentManager, { ArgumentEntry } from './customArguments/CustomArgumentManager';
 import { SaveDataHandler } from './SavaDataHandler';
 
@@ -133,6 +133,10 @@ export abstract class Extension
   openUI(component: string, label?: string) {
     const { id, name, runtime } = this;
     openUI(runtime, { id, name, component: component.replace(".svelte", ""), label });
+  }
+
+  getAssetPath(name: string) {
+    return `${location.href.split("?")[0]}/static/${assetsLocation}/${this.id}/${name}`;
   }
 
   constructor(runtime: never, codeGenArgs?: CodeGenArgs) {
