@@ -1,11 +1,3 @@
-/* 
-Unfortunately, the bundling of the scratch-vm prevents this import from working correctly
-(likely because it is 'symlinked' in the scratch-gui's node_modules, so this relative path ends up being incorrect).
-The import is preserved to make it easy to ensure the defined value of 'FrameworkID' matches thex exported one.
-Anyone can feel free to try and get this working, but it's not worth pulling your hair out over.
-*/
-//import {FrameworkID} from "../../../../extensions/dist/globals";
-
 import { FrameworkID } from "../dist/globals";
 
 const constructors = new Map();
@@ -56,7 +48,6 @@ const importStaticScript = async(endpoint, onLoad, onError) => {
 }
 
 const getFrameworkObject = () => window[FrameworkID];
-const getV2FrameworkObject = () => window[V2FrameworkID];
 
 const onFrameworkLoad = () => getFrameworkObject() 
   ? console.log("Extension Framework succesfully loaded!")
@@ -69,7 +60,6 @@ const getEndPoint = (filename) => `extension-bundles/${filename}.js`;
 const tryImportExtensionBundle = async (id, onLoad, onError, error = false) => {
   try {
       if (!getFrameworkObject()) await importStaticScript(getEndPoint(FrameworkID), onFrameworkLoad, onFrameworkError);
-
       await importStaticScript(getEndPoint(id), onLoad, onError);
       return true;
   }

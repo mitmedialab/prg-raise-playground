@@ -1,7 +1,7 @@
 import fs from "fs";
 
 import { vmSrc } from "$root/scripts/paths";
-import { commonDirectory, v2Directory } from "./fileSystem";
+import { commonDirectory } from "./fileSystem";
 
 export const commonAlias = "$common";
 export const scratchVmAlias = "$scratch-vm";

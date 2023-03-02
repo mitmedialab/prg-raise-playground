@@ -9,14 +9,14 @@ createTestSuite({ Extension, __dirname },
         let count = 0;
         const { log } = console;
         console.log = (message) => {
-          //expect(message).toBe(input);
+          expect(message).toBe(input);
           count++;
         };
 
         return {
           input,
           after: () => {
-            //expect(count).toBe(1);
+            expect(count).toBe(1);
             console.log = log;
           }
         }

@@ -1,5 +1,5 @@
 import { ArgumentType, BlockType } from "$common/enums";
-import { NonAbstractConstructor } from "$common/extension";
+import { NonAbstractConstructor } from "$common/extension/NonAbstractConstructor.1";
 import { ExtensionCommon } from "$common/extension/ExtensionCommon";
 import { DecoratedExtension } from "$common/extension/DecoratedExtension";
 import { Extension } from "$common/extension/GenericExtension";

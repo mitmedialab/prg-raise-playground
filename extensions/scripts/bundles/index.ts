@@ -58,16 +58,16 @@ export const getThirdPartyPlugins = (customizations?: { tsTransformers?: Program
     preprocess: autoPreprocess(),
     emitCss: false,
   }),
-  typescript(
-    (customizations?.tsTransformers?.length ?? 0) > 0
+  typescript({
+    ...getSrcCompilerOptions(),
+    ...(customizations?.tsTransformers?.length ?? 0) > 0
       ? {
-        ...getSrcCompilerOptions(),
         transformers: {
           before: customizations.tsTransformers.map(factory => ({ type: "program", factory })),
         }
       }
-      : getSrcCompilerOptions()
-  ),
+      : {}
+  }),
   nodeResolve(),
   commonjs(),
   css(),

@@ -21,7 +21,6 @@ export type CodeGenParams = ExlcudeFirst<ConstructorParameters<typeof ExtensionB
 
 export type AbstractConstructor<T> = abstract new (...args: any[]) => T;
 export type NonAbstractConstructor<T> = new (...args: any[]) => T;
-export type TypedConstructor<T> = new (...args: any[]) => T;
 export type ExtensionBaseConstructor = AbstractConstructor<ExtensionBase>;
 
 export const applyAllMixins = (base: ExtensionBaseConstructor) =>

@@ -1,5 +1,6 @@
 import { TypedClassDecorator, TypedMethodDecorator } from ".";
-import { AbstractConstructor, NonAbstractConstructor } from "$common/extension";
+import { AbstractConstructor } from "$common/extension";
+import { NonAbstractConstructor } from "../NonAbstractConstructor.1";
 import { ExtensionCommon } from "../ExtensionCommon";
 import { DecoratedExtension } from "../DecoratedExtension";
 import { Extension } from "../GenericExtension";

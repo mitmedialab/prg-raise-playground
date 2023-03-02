@@ -1,5 +1,6 @@
 import CustomArgumentManager from "$common/customArguments/CustomArgumentManager";
-import { ExtensionBaseConstructor, TypedConstructor } from "$common/extension";
+import { ExtensionBaseConstructor } from "$common/extension";
+import { NonAbstractConstructor } from "../NonAbstractConstructor.1";
 import { ExtensionBase } from "../ExtensionBase";
 import customArgumentSupport from "$common/extension/mixins/customArguments";
 
@@ -28,7 +29,7 @@ const saveDataKey = "customSaveDataPerExtension" as const;
 export class SaveDataHandler<T extends ExtensionBase, TData> {
   constructor(public hooks: {
     // @ts-ignore
-    Extension: TypedConstructor<T>,
+    Extension: NonAbstractConstructor<T>,
     onSave: (self: T) => TData,
     onLoad: (self: T, data: TData) => void,
   }) { }

@@ -1,4 +1,5 @@
-import { AbstractConstructor, NonAbstractConstructor } from "$common/extension";
+import { AbstractConstructor } from "$common/extension";
+import { NonAbstractConstructor } from "$common/extension/NonAbstractConstructor.1";
 import { ExtensionCommon } from "../../ExtensionCommon";
 import legacySupport from "$common/extension/mixins/legacySupport";
 import { ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuItems, BlockOperation, Argument, ExtensionMenuMetadata, ExtensionDynamicMenu, Menu, DynamicMenuThatAcceptsReporters, BaseExtension, VerboseArgument, DefineBlock } from "$common/types";

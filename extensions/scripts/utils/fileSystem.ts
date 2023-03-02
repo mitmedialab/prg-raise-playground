@@ -27,14 +27,13 @@ export const fileName = (file) => path.basename(file).replace(path.extname(file)
 
 export const extensionsSrc = path.join(extensionsFolder, "src");
 export const commonDirectory = path.join(extensionsSrc, "common");
-export const v2Directory = path.join(extensionsSrc, "v2");
 export const componentsDirectory = path.join(commonDirectory, "components");
 
 const isDirectory = (file: fs.Dirent) => file.isDirectory();
 const getName = ({ name }: fs.Dirent) => name;
-const isValidName = (dirName: string) => !["..", ".", "common", ".templates", "v2"].includes(dirName);
+const isValidName = (dirName: string) => !["..", ".", "common", ".templates"].includes(dirName);
 const getPath = (dirName: string) => path.join(extensionsSrc, dirName);
-const hasIndex = (dirPath: string) => fs.existsSync(path.join(dirPath, "index.ts")) || fs.existsSync(path.join(dirPath, "index.v2.ts"));
+const hasIndex = (dirPath: string) => fs.existsSync(path.join(dirPath, "index.ts"));
 
 export const getAllExtensionDirectories = () => fs.readdirSync(extensionsSrc, { withFileTypes: true })
   .filter(isDirectory)

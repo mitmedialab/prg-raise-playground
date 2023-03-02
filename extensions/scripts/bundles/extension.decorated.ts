@@ -1,8 +1,6 @@
-import { type RollupOptions, type Plugin, watch, rollup } from "rollup";
-import { FrameworkID } from "$common";
+import { type Plugin } from "rollup";
 import { announceWrite, fillInConstructorArgs, finalizeDecoratedExtensionBundle, setupExtensionBundleEntry, decoratorCodeGenFlag } from "../plugins";
-import { commonAlias } from "../utils/aliases";
-import { getThirdPartyPlugins, getOutputOptions, BundleInfo, logEvents, bundleExtensionBasedOnWatchMode } from ".";
+import { getThirdPartyPlugins, BundleInfo, bundleExtensionBasedOnWatchMode } from ".";
 
 export default async function (info: BundleInfo) {
 

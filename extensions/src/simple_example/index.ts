@@ -1,5 +1,4 @@
 import { ArgumentType, BlockType, Language, Extension, ButtonBlock, Environment, SaveDataHandler, tryCastToArgumentType, legacy } from "$common";
-import { oldGetInfo } from "./legacyTest";
 
 type Details = {
   name: "Super Simple Typescript Extension!!!",
