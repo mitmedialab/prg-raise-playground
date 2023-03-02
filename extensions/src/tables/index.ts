@@ -4,15 +4,6 @@ import { ArgumentType, ButtonBlock, BlockType,
   MenuItem, SaveDataHandler
 } from "$common";
 
-/**
- * @summary This type describes how your extension will display in the extensions menu. 
- * @description Like all Typescript type declarations, it looks and acts a lot like a javascript object. 
- * It will be passed as the first generic argument to the Extension class that your specific extension `extends`
- * (see the class defintion below for more information on extending the Extension base class). 
- * @see ExtensionMenuDisplayDetails for all possible display menu properties.
- * @link https://www.typescriptlang.org/docs/handbook/2/objects.html Learn more about object types! (This is specifically a 'type alias')
- * @link https://www.typescriptlang.org/docs/handbook/2/generics.html Learn more about generics! 
- */
 type Details = {
   name: "Tables",
   description: "Make and use tables with rows and columns",
@@ -20,26 +11,6 @@ type Details = {
   insetIconURL: "tables.svg"
 };
 
-/**
- * @summary This type describes all of the blocks your extension will/does implement. 
- * @description As you can see, each block is represented as a function.
- * In typescript, you can specify a function in either of the following ways (and which you choose is a matter of preference):
- * - Arrow syntax: `nameOfFunction: (argument1Name: argument1Type, argument2Name: argument2Type, ...etc...) => returnType;`
- * - 'Method' syntax: `nameOfFunction(argument1Name: argument1Type, argument2Name: argument2Type, ...etc...): returnType;`
- * 
- * The three included functions demonstrate some of the most common types of blocks: commands, reporters, and hats.
- * - Command functions/blocks take 0 or more arguments, and return nothing (indicated by the use of a `void` return type). 
- * - Reporter functions/blocks also take 0 or more arguments, but they must return a value (likely a `string` or `number`).
- * - Hat functions/blocks also take 0 or more arguments, but they must return a boolean value.
- * 
- * Feel free to delete these once you're ready to implement your own blocks.
- * 
- * This type will be passed as the second generic argument to the Extension class that your specific extension 'extends'
- * (see the class defintion below for more information on extending the Extension base class). 
- * @link https://www.typescriptlang.org/docs/handbook/2/functions.html Learn more about function types!
- * @link https://www.typescriptlang.org/docs/handbook/2/objects.html Learn more about object types! (This is specifically a 'type alias')
- * @link https://www.typescriptlang.org/docs/handbook/2/generics.html Learn more about generics! 
- */
 type Blocks = {
   createTable: ButtonBlock;
   addTable: (name: string, rows: number, columns: number) => void;
@@ -57,21 +28,12 @@ type Blocks = {
   showTable: ButtonBlock;
 }
 
-/**
- * @summary This is the class responsible for implementing the functionality of your blocks.
- * @description You'll notice that this class `extends` (or 'inherits') from the base `Extension` class.
- * 
- * Hover over `Extension` to get a more in depth explanation of the base class, and what it means to `extend it`.
- */
 export default class Tables extends Extension<Details, Blocks> {
-  /**
-   * @summary A field to demonstrate how Typescript Class fields work
-   * @link https://www.typescriptlang.org/docs/handbook/2/classes.html#fields
-   */
   tables: Record<string, number[][]>;
   tableNamesArg: any;
   defaultNumberArg: any;
 
+  // save tables to .sb3 when project is saved
   saveDataHandler = new SaveDataHandler({
     Extension: Tables,
     onSave: (self) => { return self.tables },
@@ -85,6 +47,7 @@ export default class Tables extends Extension<Details, Blocks> {
       this.tables.myTable.push([0]);
     }
     
+    // dynamic retriever of table names for block dropdowns
     this.tableNamesArg = {
       type: ArgumentType.String,
       options: {
@@ -131,15 +94,15 @@ export default class Tables extends Extension<Details, Blocks> {
     this.tables[name][row][column] = value;
   }
 
-  // All example definitions below are syntactically equivalent, 
-  // and which you use is just a matter of preference.
   defineBlocks(): Tables["BlockDefinitions"] {
     return {
+      // button that opens a modal to create a new table
       createTable: () => ({
         type: BlockType.Button,
         text: 'new table',
         operation: () => this.openUI("Make", "Add a table"),
       }),
+      // programmatic means for creating a new table
       addTable: (self: Tables) => ({
         type: BlockType.Command,
         args: [self.tableNamesArg, self.defaultNumberArg, self.defaultNumberArg],
@@ -157,6 +120,7 @@ export default class Tables extends Extension<Details, Blocks> {
           self.newTable(info);
         }
       }),
+      // deletes table from project memory
       removeTable: (self: Tables) => ({
         type: BlockType.Command,
         arg: self.tableNamesArg,
@@ -171,6 +135,7 @@ export default class Tables extends Extension<Details, Blocks> {
           }
         }
       }),
+      // adds a new column to the given table
       insertColumn: (self: Tables) => ({
         type: BlockType.Command,
         arg: self.tableNamesArg,
@@ -185,6 +150,7 @@ export default class Tables extends Extension<Details, Blocks> {
           }
         }
       }),
+      // add a row to the given table
       insertRow: (self: Tables) => ({
         type: BlockType.Command,
         arg: self.tableNamesArg,
@@ -201,6 +167,7 @@ export default class Tables extends Extension<Details, Blocks> {
           this.tables[table].push(newRow);
         }
       }),
+      // change the value in a given table cell
       insertValueAt: (self: Tables) => ({
         type: BlockType.Command,
         args: [self.tableNamesArg, ArgumentType.Number, self.defaultNumberArg, self.defaultNumberArg],
@@ -217,6 +184,7 @@ export default class Tables extends Extension<Details, Blocks> {
           }
         }
       }),
+      // get value from a given cell
       getValueAt: (self: Tables) => ({
         type: BlockType.Reporter,
         args: [self.tableNamesArg, self.defaultNumberArg, self.defaultNumberArg],
@@ -284,6 +252,7 @@ export default class Tables extends Extension<Details, Blocks> {
           return Math.max(...this.tables[table][row - 1])
         }
       }),
+      // gets the row # for the highest value in a given column
       indexOfHighestColumnValue: (self: Tables) => ({
         type: BlockType.Reporter,
         args: [self.tableNamesArg, self.defaultNumberArg],
@@ -303,6 +272,7 @@ export default class Tables extends Extension<Details, Blocks> {
           return (max[0] + 1);
         }
       }),
+      // gets the column # for the highest value of a given row
       indexOfHighestRowValue: (self: Tables) => ({
         type: BlockType.Reporter,
         args: [self.tableNamesArg, self.defaultNumberArg],
@@ -316,6 +286,7 @@ export default class Tables extends Extension<Details, Blocks> {
           return (this.tables[table][row - 1].indexOf(max) + 1);
         }
       }),
+      // opens a modal to view a table, in which one can also change table values
       showTable: () => ({
         type: BlockType.Button,
         text: 'view tables',
