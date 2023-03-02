@@ -4,7 +4,7 @@ import { filename, fullSuppportName, incrementalSupportName } from "./legacyDocs
 
 @extension({
   name: "Extension Probe",
-  description: "(INTERNAL)Use this extension to probe the info of other estensions",
+  description: "(INTERNAL) Use this extension to probe the info of other estensions",
   insetIconURL: "",
   iconURL: ""
 })
@@ -12,6 +12,8 @@ export default class ExtensionProbe extends DecoratedExtension {
   extensionManager: ExtensionManager;
   addedExtensions: { text: string, value: string }[] = [];
   private readonly defaultOption = "Add an extension to probe it";
+
+  currentInfo: ExtensionMetadata;
 
   init({ runtime, extensionManager }: Environment): void {
     this.extensionManager = extensionManager;
@@ -24,18 +26,38 @@ export default class ExtensionProbe extends DecoratedExtension {
 
   @block((self) => ({
     type: "command",
+    text: (id) => `Show info for ${id}`,
+    arg: { type: ArgumentType.String, options: self.getIDs }
+  }))
+  displayInfo(extensionID: string) {
+    const info = this.getExtensionInfo(extensionID);
+    this.currentInfo = info;
+    this.openUI("Info", `Info for ${info.name}`);
+  }
+
+  @block((self) => ({
+    type: "command",
     text: (id) => `Get legacy support for ${id}`,
     arg: { type: ArgumentType.String, options: self.getIDs }
   }))
-  probe(extensionID: string) {
-    if (extensionID === this.defaultOption) {
-      alert("You must load an extension and then select it's ID in order to get legacy support.")
-      return;
-    }
-    const instance = this.extensionManager.getExtensionInstance(extensionID) as LoadedExtension;
-    const info = getCleanedInfo(instance);
+  legacyProbe(extensionID: string) {
+    const info = this.getExtensionInfo(extensionID);
+    if (!info) return;
     download(filename, getLegacyFileContent(info));
     this.openUI("Instructions", "How to use legacy.ts");
+  }
+
+  getExtension(id: string) {
+    if (id !== this.defaultOption)
+      return this.extensionManager.getExtensionInstance(id) as LoadedExtension;
+
+    alert("You must load an extension and then select it's ID in order to probe it.");
+    return undefined;
+  }
+
+  getExtensionInfo(id: string) {
+    const instance = this.getExtension(id);
+    return instance ? getCleanedInfo(instance) : undefined;
   }
 
   getIDs() {
