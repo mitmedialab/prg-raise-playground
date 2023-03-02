@@ -73,7 +73,7 @@ const processUnitTest = <T extends AnyExtension, Key extends BlockKey<T>>(
   testCase: BlockTestCase<T, Key>,
   details: TestDetails<T, Key>,
   map: KeyToBlockIndexMap
-) => test(name, async () => {
+) => test(name + (testCase.name ? `: ${testCase.name}` : ""), async () => {
   const instance: T = getInstance(details);
   const { runtime } = instance;
   const { forTest } = runtime as RuntimeForTest<T>;
