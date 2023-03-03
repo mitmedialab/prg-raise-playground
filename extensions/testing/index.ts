@@ -1,4 +1,4 @@
-import { CodeGenArgs, Extension, PopulateCodeGenArgs, ExtensionBlockMetadata, BlockType, registerButtonCallbackEvent, waitForCondition, openUIEvent, openUI, isFunction, isString, splitOnCapitals, ExtensionConstructor } from "$common";
+import { CodeGenArgs, Extension, PopulateCodeGenArgs, ExtensionBlockMetadata, BlockType, registerButtonCallbackEvent, untilCondition, openUIEvent, openUI, isFunction, isString, splitOnCapitals, ExtensionConstructor } from "$common";
 import { describe, expect, jest, test } from '@jest/globals';
 import path from "path";
 import { AnyExtension, BlockKey, BlockTestCase, RuntimeForTest, TestHelper, UnitTests, GetTestCase, TestCaseEntry, InputArray, KeyToBlockIndexMap, IntegrationTest } from "./types";
@@ -73,7 +73,7 @@ const processUnitTest = <T extends AnyExtension, Key extends BlockKey<T>>(
   testCase: BlockTestCase<T, Key>,
   details: TestDetails<T, Key>,
   map: KeyToBlockIndexMap
-) => test(name, async () => {
+) => test(name + (testCase.name ? `: ${testCase.name}` : ""), async () => {
   const instance: T = getInstance(details);
   const { runtime } = instance;
   const { forTest } = runtime as RuntimeForTest<T>;
@@ -88,7 +88,7 @@ const processUnitTest = <T extends AnyExtension, Key extends BlockKey<T>>(
     input, expected
   } = testCase;
 
-  if (isReady) await waitForCondition(() => isReady(instance), checkIsReadyRate);
+  if (isReady) await untilCondition(() => isReady(instance), checkIsReadyRate);
 
   await before?.({ extension: instance, testHelper });
 
@@ -117,7 +117,7 @@ const toKeyToBlockMap = (map: KeyToBlockIndexMap, { opcode }: ExtensionBlockMeta
   map.set(Extension.GetKeyFromOpcode(opcode), index);
 
 export const buildKeyBlockMap = <T extends AnyExtension>(instance: T): KeyToBlockIndexMap =>
-  Extension.TestGetInfo(instance).blocks.reduce(toKeyToBlockMap, new Map<string, number>());
+  (Extension.TestGetInfo(instance).blocks as ExtensionBlockMetadata[]).reduce(toKeyToBlockMap, new Map<string, number>());
 
 const getKeyBlockMap = <T extends AnyExtension>(details: TestDetails<T, any>) => buildKeyBlockMap(getInstance(details));
 

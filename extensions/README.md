@@ -489,6 +489,7 @@ If you want to edit it, please go to [extensions/documentation/src/porting/READM
 
 Here's how:
 
+0. Before beginning the port, save off a project using your old extension which utilizes every one of its blocks. Once you're done porting, if this project can be reloaded and executed the same as before, you'll know you've done your job!
 1. Identify the following details of the "old" extension / the extension you want to port (if you're having trouble finding any, skip around to see if finding one detail helps you identify where to specifically to look for another):
     - ***Implementation***: Where the extension is actually implemented in [vanilla js](https://www.javatpoint.com/what-is-vanilla-javascript)
         - This should be in some folder inside of [packages/scratch-vm/src/extensions/](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/packages/scratch-vm/src/extensions)
@@ -514,11 +515,16 @@ Here's how:
 5. Once you migrate all ***Extension Menu Entry*** details to your new extension, you can remove the ***Extension Menu Entry*** object from the array exported by [packages/scratch-gui/src/lib/libraries/extensions/index.jsx](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/packages/scratch-gui/src/lib/libraries/extensions/index.jsx)
     - You can do this as the extension framework will automatically handle adding your extension (and its Extension Menu Display Details) to the [Extension Menu](https://en.scratch-wiki.info/wiki/Extension#Adding_Extensions)
 6. Now you can start coding! See the below comparison of a vanilla JS extension class and a typescript / framework based one.
+    - NOTE: If there's a chance anyone has saved projects with the extension you're porting over, you need to make sure to follow the [Legacy Support](#legacy-support) instructions so those saved projects will continue to load correctly.
 7. Once you have migrated all of the "old" ***Impementation*** to your new extension folder & typescript code, you can go ahead and delete the ***Implementation*** folder inside of [pacakges/scratch-vm/src/extensions/](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/packages/scratch-vm/src/extensions).
 8. Now, there should be no remnants of the "old" extension inside of either [packages/scratch-vm](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/packages/scratch-vm) or [packages/scratch-gui](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/packages/scratch-gui) folders, and instead everything lives neatly inside its own directory within [extensions/src](https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extensions/src)
+9. Test out the project you saved in step 0 to verify that your port worked as expected.
 
+### Implementing an Extension in Vanilla JS vs the Extension Framework
 
-### Vanilla JS
+Below you can compare what an extension that was originally implemented in vanilla javascript would look like rewritten in Typescript leveraging the Extension Framework. 
+
+#### Vanilla JS
 
 Below is a sample, vanilla JS extension based on the final example provided in the [Scratch Extensions document](https://github.com/LLK/scratch-vm/blob/develop/docs/extensions.md). 
 
@@ -625,9 +631,9 @@ class SomeBlocks {
 }
 ```
 
-### Typescript Extension Framework
+#### Typescript / Extension Framework
 
-Things to note:
+Things to note about the below typescript snippet:
 - The `Details` type object encodes how the extension will be displayed in the extensions menu
     - No more editing [any jsx](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/packages/scratch-gui/src/lib/libraries/extensions/index.jsx#L71) to specify how your extension should display in the Extensions Menu
     - Now your image assets related to your extension should reside in the same place as your implementation (i.e. in the same directory as the `index.ts` file)
@@ -689,6 +695,225 @@ export default class SomeBlocks extends Extension<Details, {
     }
   }
 }
+```
+
+
+### Legacy Support
+
+One thing that makes adopting the new Extension Framework slightlier tricker is the need to support 'old' projects. In other words, any projects saved using the old, vanilla-javascript extension should (***must***) continue to work once you port the extension over to the Framework.
+
+In order to make this as simple as possible, we've developed a utility that is able to extract necessary block info from the object returned by the old `getInfo` method -- this method defines the behavior of vanilla-javascript extensions and their blocks. 
+
+The information that this utility, the `extractLegacySupportFromOldGetInfo` function, retrieves can then be used when defining blocks in the new, Framework-specific method `defineBlocks`. You'll use this for every block that is present in the old extension (and thus might be used in an already saved project). 
+
+You're free to define additional blocks in your ported over extension, but you must support all blocks defined in the old extension with the method demonstrated below:
+
+#### Vanilla Javascript Extension 
+
+Assume that our old, vanilla javascript extension looks the following:
+
+```ts
+const ArgumentType = require('../../extension-support/argument-type');
+const BlockType = require('../../extension-support/block-type');
+
+class ExampleLegacyExtension {
+  constructor(runtime) { }
+
+  getItems() { return [{ text: "0", value: 0 }, { text: "1", value: 1 }]; }
+
+  getInfo() {
+    return {
+      id: 'someBlocks',
+
+      color1: '#FF8C1A',
+      color2: '#DB6E00',
+      
+      name: formatMessage({
+          id: 'extensionName',
+          default: 'Some Blocks',
+          description: 'The name of the "Some Blocks" extension'
+      }),
+
+      blocks: [
+          {
+              opcode: 'exampleLegacyBlock', 
+              blockType: BlockType.REPORTER,
+              text: formatMessage({
+                  id: 'exampleLegacyBlock',
+                  defaultMessage: 'Example text with [someArg] and [someArgWithMenu]',
+                  description: 'Label on exampleLegacyBlock'
+              }),
+              arguments: {
+                someArg: {
+                  type: ArgumentType.STRING,
+                },
+                someArgWithMenu: {
+                  type: ArgumentType.NUMBER,
+                  menu: "someMenu"
+                }
+              }
+          }
+      ],
+      menus: {
+        someMenu: {
+          items: this.getItems(),
+          acceptReporters: false,
+        },
+      },
+    };
+  };
+
+  exampleLegacyBlock(args) {
+    // ... some implementation
+  }
+}
+```
+
+
+#### Usage of `extractLegacySupportFromOldGetInfo`
+
+(Assuming we are in a new file, `legacy.ts` inside of our extension directory) we then copy over the object returned by the above `getInfo` method, and pass it to the `extractLegacySupportFromOldGetInfo` function like so:
+
+```ts
+
+import { ArgumentType, BlockType, extractLegacySupportFromOldGetInfo } from "$common";
+// To make things easier, we provide a 'mockFormatMessage' you can use when copying over legacy code
+import { mockFormatMessage as formatMessage } from "$common";
+
+/**
+ * Copy and paste over the of the object returned by the old extension's 'getInfo' method 
+ * (making the necessary changes outlined below, and note that only the 'blocks' and 'menus' fields are required)
+ * and pass it as an argument to the 'extractLegacySupportFromOldGetInfo' function.
+ * If you're doing this in a seperate file from your Extension, make sure to export the return value.
+ * NOTE: The object makes use of the 'as const' assertion applied to the argument object 
+ * (see below, at the end of the function call).
+ * @see https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-4.html#const-assertions
+ */
+export default extractLegacySupportFromOldGetInfo({
+  id: 'someBlocks', // not required 
+
+  color1: '#FF8C1A',  // not required 
+  color2: '#DB6E00',  // not required 
+
+  name: formatMessage({  // not required 
+    id: 'extensionName',
+    default: 'Some Blocks',
+    description: 'The name of the "Some Blocks" extension'
+  }),
+
+  blocks: [
+    {
+      opcode: 'exampleLegacyBlock',
+      blockType: BlockType.Reporter, // Update to use new BlockType object (note the Pascal Case)
+      text: formatMessage({
+        id: 'exampleLegacyBlock',
+        default: 'Example text with [someArg] and [someArgWithMenu]',
+        description: 'Label on exampleLegacyBlock'
+      }),
+      arguments: {
+        someArg: {
+          type: ArgumentType.String, // Update to use new ArgumentType object (note the Pascal Case)
+        },
+        someArgWithMenu: {
+          type: ArgumentType.Number,
+          menu: "someMenu"
+        }
+      }
+    }
+  ],
+  menus: {
+    someMenu: {
+
+      /**
+       * Extract the values returned from the method previously used to populate the 'items' array.
+       * The contents of 'items' will be validated against the corresponding 'options' array within the new block definition.
+       * If the items array was already implemented as an array, you can leave it as-is. 
+       */
+      items: [{ text: "0", value: 0 }, { text: "1", value: 1 }],
+      /**
+       * NOTE: If you do not want an items array to be checked (or if it cannot, say if the menu was 'dynamic'),
+       * you can set the items field to 'undefined' or an empty array ('[]'), or delete the menu item altogether.
+       * This will simply mean that the menu values won't be validated automatically,
+       * so you must manually work to make sure the 'options' provided by your new block match the old block it recreates.
+       */
+
+      acceptReporters: false,
+    },
+  },
+} as const); // VERY IMPORTANT! Note the use of 'as const' on the object passed to the function
+
+/**
+ * By using 'as const', 
+ * we ensure typescript is able to extract as much information from the old getInfo object as possible
+ */
+
+```
+
+> Included links:
+> * https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-4.html#const-assertions
+
+Pay attention to the comments, which describe a few changes that must be made, as well as the critical usage of `as const` after the object declaration.   
+
+#### Using `legacy` in `defineBlocks`
+
+Now that we've obtained the return of `extractLegacySupportFromOldGetInfo` (imported as `legacy` below), we can make use of it when defining blocks in our new Framework-based extension. 
+
+```ts
+
+import { BlockDefinitions, Environment, Extension, BlockType, ArgumentType } from "$common";
+// Import the object returned by our invocation of the 'extractLegacySupportFromOldGetInfo' function
+import legacy from "./legacy";
+
+type Block = (someArg: string, someArgWithOptions: number) => number;
+
+export default class ExampleExtension extends Extension<DefaultDisplayDetails, {
+  /**
+   * This represents the block that our new extension will implement that 'replaces' / supercedes
+   * the block from our old extension 
+   * (while still preserving the ability to load-in projects saved using the old block).
+   */
+  exampleUpdatedBlock: Block
+}> {
+  init(env: Environment): void { }
+
+  defineBlocks(): BlockDefinitions<ExampleExtension> {
+    return {
+      /**
+       * When defining our block in the new Extension format, we'll make use of the 'legacy' object.
+       * 
+       * First, we locate the "opcode" of the block we want to recreate/replace on the 'legacy' object
+       * (if you need help remembering which opcode is tied to which block, 
+       * consult the old extension's 'getInfo' method).
+       * 
+       * Each old "opcode" will be a function on the 'legacy' object that accepts our new block definition.
+       * 
+       * Typescript will ensure that the types of the old & new block match, along with their arguemnts.
+       * Typescript will also ensure that, if an argument previously used a 'menu', 
+       * then an 'options' value must be provided when defining the corresponding arg / args entry.
+       * 
+       * At runtime, this function will attach legacy 'names' to the blocks, their arguments, and their menus 
+       * to ensure old saved projects can interop with our new extension.
+       * 
+       * Also, at runtime, the 'options' values will be compared against the values in their corresponding 'menu' 
+       * (if the menu was provided in the object given to the 'extractLegacySupportFromOldGetInfo' function).
+       * An error will be thrown if they don't match, so make sure to check the Console in your browser. 
+       */
+      exampleUpdatedBlock: legacy.exampleLegacyBlock({
+        type: BlockType.Reporter,
+        args: [
+          { type: ArgumentType.String, options: ["A", "B", "C"] },
+          { type: ArgumentType.Number, options: [0, 1, 2] },
+        ],
+        text: (someArg, someArgWithOptions) => `New dummy text ${someArg} ${someArgWithOptions}`,
+        operation: (someArg, someArgWithOptions) => {
+          // do something
+          return 0;
+        }
+      })
+    }
+  }
+}
+
 ```
 
 
