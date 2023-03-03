@@ -1,8 +1,9 @@
 import { getImplementationName } from "$common/extension/mixins/scratchInfo";
 import { ExtensionMenuDisplayDetails, ExtensionBlocks, BlockDefinitions, Translations } from "$common/types";
 import { isFunction } from "$common/utils";
-import { getAlternativeOpcodeName } from ".";
 import { ExtensionCommon } from "./ExtensionCommon";
+
+export const getAlternativeOpcodeName = (opcode: string) => `__block_${opcode}`;
 
 /**
  * @summary Base class for all extensions implemented via the Typescript Extension Framework.

@@ -6,7 +6,7 @@ import { getImplementationName, wrapOperation } from "./scratchInfo";
 
 type WrappedOperation = ReturnType<typeof wrapOperation>;
 type WrappedOperationParams = Parameters<WrappedOperation>;
-type WithLegacySupport = InstanceType<ReturnType<typeof legacyMixin>>;
+type WithLegacySupport = InstanceType<ReturnType<typeof mixin>>;
 type BlockMap = Map<string, Omit<ExtensionBlockMetadata, "opcode"> & { index: number }>;
 
 export const isLegacy = (extension: ExtensionCommon | WithLegacySupport): extension is WithLegacySupport => {
@@ -41,7 +41,7 @@ const getDynamicMenuName = (menu: ExtensionMenuMetadata): string => {
  * @param legacyInfo 
  * @returns 
  */
-function legacyMixin<T extends AbstractConstructor<ExtensionCommon>>(Ctor: T, legacyInfo: ExtensionMetadata) {
+export default function mixin<T extends AbstractConstructor<ExtensionCommon>>(Ctor: T, legacyInfo: ExtensionMetadata) {
   abstract class _ extends Ctor {
     private validatedInfo: ExtensionMetadata;
 
@@ -142,5 +142,3 @@ function legacyMixin<T extends AbstractConstructor<ExtensionCommon>>(Ctor: T, le
   }
   return _
 }
-
-export default legacyMixin;

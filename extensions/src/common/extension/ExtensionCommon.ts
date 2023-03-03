@@ -1,9 +1,9 @@
-import { ExtensionBase } from "./ExtensionBase";
-import { applyAllMixins } from ".";
+import { extension } from "./index";
+import { defaults } from "./mixins";
 
 export const extensionsMap = new Map<string, ExtensionCommon>();
 
-export abstract class ExtensionCommon extends applyAllMixins(ExtensionBase) {
+export abstract class ExtensionCommon extends extension(...defaults) {
   abstract readonly version: "decorated" | "generic";
 
   /**

@@ -1,4 +1,4 @@
-import { BlockType, BlocksInfo, CodeGenArgs, Extension, ExtensionBase, ExtensionBlockMetadata, ExtensionCommon, NonAbstractConstructor, parseText } from "$common";
+import { BlockType, BlocksInfo, Extension, ExtensionBase, ExtensionBlockMetadata, ExtensionCommon, NonAbstractConstructor, parseText } from "$common";
 import { isLegacy } from "$common/extension/mixins/legacySupport";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import { buildKeyBlockMap } from "$testing";

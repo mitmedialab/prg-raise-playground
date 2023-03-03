@@ -1,4 +1,3 @@
-export * from "./extension";
 export * from "./types";
 export * from "./utils";
 export * from "./ui";
@@ -18,7 +17,7 @@ export * from "./customArguments/dropdownOverride";
 
 export * from "./extension/GenericExtension";
 export * from "./extension/DecoratedExtension";
-export * from "./extension/ExtensionBase";
+export * from "./extension/mixins/required/ExtensionBase";
 export * from "./extension/ExtensionCommon";
 
 export * from "./extension/decorators/blocks";

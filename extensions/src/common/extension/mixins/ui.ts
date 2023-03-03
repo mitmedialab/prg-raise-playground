@@ -1,5 +1,5 @@
 import { openUI } from "$common/ui";
-import { ExtensionBaseConstructor } from "$common/extension";
+import { ExtensionBaseConstructor } from "$common/extension/mixins/required/ExtensionBase";
 
 /**
  * Mixin the ability for extensions to open up UI at-will

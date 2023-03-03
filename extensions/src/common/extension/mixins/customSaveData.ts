@@ -1,7 +1,6 @@
-import CustomArgumentManager from "$common/customArguments/CustomArgumentManager";
-import { ExtensionBaseConstructor } from "$common/extension";
-import { ExtensionBase } from "../ExtensionBase";
-import customArgumentSupport from "$common/extension/mixins/customArguments";
+import { ExtensionBaseConstructor } from "$common/extension/mixins/required/ExtensionBase";
+import { ExtensionBase } from "./required/ExtensionBase";
+import { hasCustomArgumentSupport } from "$common/extension/mixins/customArguments";
 import { NonAbstractConstructor } from "$common/types";
 
 /**
@@ -41,9 +40,8 @@ export class SaveDataHandler<T extends ExtensionBase, TData> {
  * @returns 
  * @see https://www.typescriptlang.org/docs/handbook/mixins.html
  */
-export default function <T extends ExtensionBaseConstructor & ReturnType<typeof customArgumentSupport>>(Ctor: T) {
+export default function mixin<T extends ExtensionBaseConstructor>(Ctor: T) {
   abstract class _ extends Ctor {
-
     /**
      * Optional field that can be defined if you need to save custom data for an extension 
      * (like some extension specific variable, or an API endpoint).
@@ -69,7 +67,8 @@ export default function <T extends ExtensionBaseConstructor & ReturnType<typeof 
      * @returns 
      */
     private save(toSave: { [saveDataKey]: Record<string, any> }, extensionIDs: Set<string>) {
-      const { saveDataHandler, id, argumentManager } = this;
+      const { saveDataHandler, id } = this;
+      const argumentManager = hasCustomArgumentSupport(this) ? this.customArgumentManager : null;
       const saveData = saveDataHandler?.hooks.onSave(this) ?? {};
       argumentManager?.saveTo(saveData);
       if (Object.keys(saveData).length === 0) return;
@@ -90,7 +89,8 @@ export default function <T extends ExtensionBaseConstructor & ReturnType<typeof 
       const saveData = saveDataKey in saved ? saved[saveDataKey][id] : null;
       if (!saveData) return;
       saveDataHandler?.hooks.onLoad(this, saveData);
-      (this.argumentManager ??= new CustomArgumentManager()).loadFrom(saveData);
+
+      if (hasCustomArgumentSupport(this)) this.getOrCreateCustomArgumentManager().loadFrom(saveData);
     }
   }
   return _;

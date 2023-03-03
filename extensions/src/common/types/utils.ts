@@ -31,3 +31,5 @@ export type Primitive<IncludeSymbol extends boolean = false> = IncludeSymbol ext
 
 export type AbstractConstructor<T> = abstract new (...args: any[]) => T;
 export type NonAbstractConstructor<T> = new (...args: any[]) => T;
+
+export type ExlcudeFirst<F> = F extends [any, ...infer R] ? R : never;

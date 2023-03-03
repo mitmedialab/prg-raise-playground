@@ -4,15 +4,16 @@ import { ArgumentType, BlockType } from "$common/types/enums";
 import { BlockOperation, ValueOf, Menu, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, DynamicMenu, BlockMetadata, } from "$common/types";
 import { registerButtonCallback } from "$common/ui";
 import { isString, typesafeCall, } from "$common/utils";
-import { ExtensionBaseConstructor } from "$common/extension";
-import { DecoratedExtension } from "../../DecoratedExtension";
-import customArguments from "$common/extension/mixins/customArguments";
+import { ExtensionBaseConstructor } from "$common/extension/mixins/required/ExtensionBase";
 import type BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import { menuProbe, asStaticMenu, getMenuName, convertMenuItemsToString } from "./menus";
 import { Handler } from "./handlers";
 import { BlockDefinition, getButtonID, isBlockGetter } from "./util";
 import { convertToArgumentInfo, extractArgs, zipArgs } from "./args";
 import { convertToDisplayText } from "./text";
+import { ExtensionBase } from "$common/extension/mixins/required/ExtensionBase";
+import { ExtensionIntanceWithFunctionality } from "..";
+import { MinimumExtension } from "../required";
 
 export const getImplementationName = (opcode: string) => `internal_${opcode}`;
 
@@ -23,12 +24,22 @@ export const getImplementationName = (opcode: string) => `internal_${opcode}`;
  * @param args The args that must be parsed before being passed to the underlying operation 
  * @returns 
  */
-export const wrapOperation = (
-  _this: any,
+export const wrapOperation = <T extends MinimumExtension>(
+  _this: T,
   operation: BlockOperation,
   args: { name: string, type: ValueOf<typeof ArgumentType>, handler: Handler }[]
 ) => {
-  return function (this: DecoratedExtension, argsFromScratch: Record<string, any>, blockUtility: BlockUtility) {
+
+  if (!_this.supports("customArguments")) {
+    return function (this: T, argsFromScratch: Record<string, any>, blockUtility: BlockUtility) {
+      const castedArguments = args.map(({ name, type, handler }) =>
+        castToType(type, handler.call(_this, argsFromScratch[name]))
+      );
+      return operation.call(_this, ...castedArguments, blockUtility);
+    }
+  }
+
+  return function (this: ExtensionIntanceWithFunctionality<["customArguments"]>, argsFromScratch: Record<string, any>, blockUtility: BlockUtility) {
     const castedArguments = args.map(({ name, type, handler }) => {
       const param = argsFromScratch[name];
       switch (type) {
@@ -52,7 +63,7 @@ export const wrapOperation = (
  * @returns 
  * @see https://www.typescriptlang.org/docs/handbook/mixins.html
  */
-export default function <T extends ExtensionBaseConstructor & ReturnType<typeof customArguments>>(Ctor: T) {
+export default function <T extends ExtensionBaseConstructor>(Ctor: T) {
   type BlockEntry = { definition: BlockDefinition<_, BlockOperation>, operation: BlockOperation };
   type BlockMap = Map<string, BlockEntry>;
   abstract class _ extends Ctor {
