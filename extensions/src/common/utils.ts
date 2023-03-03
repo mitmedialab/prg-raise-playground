@@ -147,3 +147,8 @@ export const set = <T extends object, K extends keyof T>(container: T, key: K, v
   container[key] = value;
   return container;
 }
+
+export const assertSameLength = (...collections: any[][]) => {
+  const { size } = collections.reduce((set, { length }) => set.add(length), new Set<number>());
+  if (size !== 1) throw new Error("Zip failed because collections weren't equal length");
+}

@@ -35,6 +35,12 @@ export class SaveDataHandler<T extends ExtensionBase, TData> {
   }) { }
 }
 
+/**
+ * Mixin the ability for extensions to save and reload custom data (including any data related to custom arguments)
+ * @param Ctor 
+ * @returns 
+ * @see https://www.typescriptlang.org/docs/handbook/mixins.html
+ */
 export default function <T extends ExtensionBaseConstructor & ReturnType<typeof customArgumentSupport>>(Ctor: T) {
   abstract class _ extends Ctor {
 

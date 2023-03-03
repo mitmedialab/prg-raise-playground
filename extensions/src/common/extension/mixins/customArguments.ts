@@ -18,6 +18,7 @@ const callingContext = {
  * Mixin the ability for extensions to create custom argument types with their own specific UIs
  * @param Ctor 
  * @returns 
+ * @see https://www.typescriptlang.org/docs/handbook/mixins.html
  */
 export default function <T extends ExtensionBaseConstructor>(Ctor: T) {
   abstract class _ extends Ctor {

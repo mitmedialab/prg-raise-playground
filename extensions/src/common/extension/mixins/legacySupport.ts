@@ -34,6 +34,13 @@ const getDynamicMenuName = (menu: ExtensionMenuMetadata): string => {
   throw new Error("Menu is not dynamic: " + menu);
 }
 
+/**
+ * Mixin the ability for extensions to make use of 'legacy' `getInfo` json, 
+ * so that extensions ported to the framework can support old, serialized projects
+ * @param Ctor 
+ * @param legacyInfo 
+ * @returns 
+ */
 function legacyMixin<T extends AbstractConstructor<ExtensionCommon>>(Ctor: T, legacyInfo: ExtensionMetadata) {
   abstract class _ extends Ctor {
     private validatedInfo: ExtensionMetadata;

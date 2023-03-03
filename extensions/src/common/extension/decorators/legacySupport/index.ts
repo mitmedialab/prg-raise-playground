@@ -155,7 +155,6 @@ export const parseText = ({ arguments: _arguments, text }: ExtensionBlockMetadat
     .map(name => ({ name, template: `[${name}]` }))
     .sort(({ template: a }, { template: b }) => text.indexOf(a) < text.indexOf(b) ? -1 : 1);
 
-
   return args.length === 0
     ? { orderedNames: null as null, text: placeholder }
     : { orderedNames: args.map(({ name }) => name), text: () => placeholder }

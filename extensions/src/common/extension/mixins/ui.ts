@@ -1,6 +1,12 @@
 import { openUI } from "$common/ui";
 import { ExtensionBaseConstructor } from "$common/extension";
 
+/**
+ * Mixin the ability for extensions to open up UI at-will
+ * @param Ctor 
+ * @returns 
+ * @see https://www.typescriptlang.org/docs/handbook/mixins.html
+ */
 export default function <T extends ExtensionBaseConstructor>(Ctor: T) {
   abstract class _ extends Ctor {
 
