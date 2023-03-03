@@ -13,6 +13,9 @@ import nodeResolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import { terser } from "rollup-plugin-terser";
 import css from 'rollup-plugin-css-only';
+import json from '@rollup/plugin-json';
+import nodePolyfills from 'rollup-plugin-polyfill-node';
+import babel from "@rollup/plugin-babel";
 import chalk from "chalk";
 import { getBlockIconURI } from "scripts/utils/URIs";
 import bundleDecorated from "./extension.decorated";
@@ -54,6 +57,8 @@ export type ProgramBasedTransformer = (program: ts.Program) => CustomTransformer
 
 export const getThirdPartyPlugins = (customizations?: { tsTransformers?: ProgramBasedTransformer[] }): Plugin[] => [
   alias({ entries: getAliasEntries() }),
+  json(),
+  nodePolyfills(),
   svelte({
     preprocess: autoPreprocess(),
     emitCss: false,
@@ -68,8 +73,12 @@ export const getThirdPartyPlugins = (customizations?: { tsTransformers?: Program
       }
       : {}
   }),
-  nodeResolve(),
+  nodeResolve({ browser: true }),
   commonjs(),
+  babel({
+    include: ["**.js", "node_modules/**"],
+    babelHelpers: "bundled",
+  }),
   css(),
   terser(),
 ];

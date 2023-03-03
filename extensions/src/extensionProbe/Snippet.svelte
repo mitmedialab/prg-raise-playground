@@ -4,7 +4,7 @@
   export let code: string;
   export let copyable: boolean = true;
   const clipboard = (text: string) => navigator.clipboard.writeText(text);
-  const highlight = () => window["hljs"].highlightAll();
+  const highlight = () => window["hljs"]?.highlightAll();
   onMount(highlight);
 </script>
 
