@@ -40,5 +40,5 @@ export const registerExtensionDefinitionCallback = (callback: (details: Extensio
     delete global[registerDetailsIdentifier];
   };
 
-
-export type ExtensionInstance<TSupported extends MixinName[] = []> = InstanceType<ReturnType<typeof extension<TSupported>>>;
+export type ExtensionConstructor<TSupported extends MixinName[] = []> = ReturnType<typeof extension<TSupported>>;
+export type ExtensionInstance<TSupported extends MixinName[] = []> = InstanceType<ExtensionConstructor<TSupported>>;

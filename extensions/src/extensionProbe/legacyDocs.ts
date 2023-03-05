@@ -12,7 +12,7 @@ const declareGenericExtension = `export default class ${genericExampleName} exte
 export const extensionDeclarations = [
   "// generic extension\n" + declareGenericExtension,
   "vs",
-  "//decorated extension\nexport default class DecoratedExample extends DecoratedExtension { ... }"
+  "// configurable extension extension\nexport default class ConfigurableExample extends extension({...}) { ... }"
 ].join("\n\n");
 
 const supportMembers: { [k in SupportMembers]: k } = {

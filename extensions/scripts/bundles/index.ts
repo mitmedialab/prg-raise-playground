@@ -18,7 +18,7 @@ import nodePolyfills from 'rollup-plugin-polyfill-node';
 import babel from "@rollup/plugin-babel";
 import chalk from "chalk";
 import { getBlockIconURI } from "scripts/utils/URIs";
-import bundleCommon from "./extension";
+import bundleConfigurable from "./extension.configurable";
 import bundleGeneric from "./extension.generic";
 import { root } from "$root/scripts/paths";
 import ts, { CustomTransformerFactory } from "typescript";
@@ -32,7 +32,7 @@ export type BundleInfo = {
   bundleDestination: string,
   menuAssetsDestination: string,
   menuAssetsFile: string,
-  extensionVersion: "generic" | "decorated" | "none",
+  extensionVersion: "generic" | "configurable" | "none",
   id: string,
   menuDetails: ExtensionMenuDisplayDetails,
   watch: boolean,
@@ -112,18 +112,18 @@ const getExtensionType = (dir: string) => {
   const indexContent = fs.readFileSync(indexFile, "utf-8");
 
   // Match: extends [one or more whitespace or new line character] extension [zero or more whitespace or new line character] (
-  const matchCommon = new RegExp(/extends[\n\r\s]+extension[\n\r\s]*\(/gm);
+  const matchConfigurable = new RegExp(/extends[\n\r\s]+extension[\n\r\s]*\(/gm);
 
   // Match: extends [one or more whitespace or new line character] Extension [zero or more whitespace or new line character] <
   const matchGeneric = new RegExp(/extends[\n\r\s]+Extension[\n\r\s]*</gm);
 
-  const foundCommon = indexContent.search(matchCommon) >= 0;
+  const foundConfigurable = indexContent.search(matchConfigurable) >= 0;
   const foundGeneric = indexContent.search(matchGeneric) >= 0;
 
-  if (foundCommon && !foundGeneric) return "common";
-  if (!foundCommon && foundGeneric) return "generic";
+  if (foundConfigurable && !foundGeneric) return "configurable";
+  if (!foundConfigurable && foundGeneric) return "generic";
 
-  throw new Error(`Unable to identify extension type (generic or decorated) for '${path.relative(root, dir)}' --- generic: ${foundGeneric} vs decorated: ${foundCommon}`);
+  throw new Error(`Unable to identify extension type (generic or configurable) for '${path.relative(root, dir)}' --- generic: ${foundGeneric} vs configurable: ${foundConfigurable}`);
 }
 
 export const bundleExtensionBasedOnWatchMode = async ({ plugins, info }: { plugins: Plugin[], info: BundleInfo }) =>
@@ -146,5 +146,5 @@ export const bundleBasedOnWatchMode = async ({ plugins, info, globals, external 
 export const bundleExtension = (dir: string, totalNumberOfExtensions: number, doWatch: boolean) => {
   const version = getExtensionType(dir);
   const info = getBundleInfo(dir, { totalNumberOfExtensions, watch: doWatch });
-  return version === "common" ? bundleCommon(info) : bundleGeneric(info);
+  return version === "configurable" ? bundleConfigurable(info) : bundleGeneric(info);
 }

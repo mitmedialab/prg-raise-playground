@@ -47,7 +47,7 @@ const info = {
 
 const { legacyExtension, legacyDefinition, ReservedNames } = legacy(info).for<GenericExtension>();
 
-const createArgumentMethods = <T extends GenericExtension | ExtensionCommon>(self: T) => ({
+const createArgumentMethods = <T extends GenericExtension | ConfigurableExtension>(self: T) => ({
   argumentMethods: {
     1: { getItems: () => ["#"], handler: self.handle },
     2: {
@@ -85,10 +85,10 @@ class GenericExtension extends Extension<DefaultDisplayDetails, {
 }
 
 
-const { legacyExtension: legacyDecorated, legacyBlock } = legacy(info).for<ExtensionCommon>();
+const { legacyExtension: legacyConfigurable, legacyBlock } = legacy(info).for<ConfigurableExtension>();
 
-@legacyDecorated()
-class ExtensionCommon extends extension({ name: "" }) {
+@legacyConfigurable()
+class ConfigurableExtension extends extension({ name: "" }) {
   init(env: Environment): void { }
 
   toHandle: any = [];
@@ -98,13 +98,13 @@ class ExtensionCommon extends extension({ name: "" }) {
     return `${x}`;
   }
 
-  @legacyBlock.multiArgumentsWithMenus(createArgumentMethods<ExtensionCommon>)
+  @legacyBlock.multiArgumentsWithMenus(createArgumentMethods<ConfigurableExtension>)
   multiArgumentsWithMenus(args_0: number, args_1: string, args_2: number) {
     return "Hi" + args_0 + args_1 + args_2;
   }
 }
 
-const makeTestSuite = (Extension: NonAbstractConstructor<GenericExtension | ExtensionCommon>) => {
+const makeTestSuite = (Extension: NonAbstractConstructor<GenericExtension | ConfigurableExtension>) => {
   createTestSuite({ Extension, __dirname }, {
     unitTests: {
       multiArgumentsWithMenus: () => {
@@ -130,4 +130,4 @@ const makeTestSuite = (Extension: NonAbstractConstructor<GenericExtension | Exte
 }
 
 makeTestSuite(GenericExtension);
-makeTestSuite(ExtensionCommon);
+makeTestSuite(ConfigurableExtension);

@@ -39,7 +39,7 @@
           Import the following functions into your <span class="codelike">index.ts</span> file from the downloaded legacy file:
           <Snippet code={importStatement} />
       </li>
-      The remaining instructions vary depending on if you're extending the generic Extension base class vs the DecoratedExtension base class.
+      The remaining instructions vary depending on if you're extending the generic Extension base class vs using the onfigurable<span class="codelike">extension()</span> factory function.
       <Snippet code={extensionDeclarations} copyable={false} />
   </ol>
 
@@ -70,6 +70,6 @@
       </li>
   </ol>
 
-  <h3>Decorated Extension</h3>
+  <h3>Configurable Extension</h3>
   TODO
 </div>

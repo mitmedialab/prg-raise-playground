@@ -1,23 +1,22 @@
 import { TypedClassDecorator, TypedMethodDecorator } from "../..";
-import { ExtensionCommon } from "../../../ExtensionCommon";
 import { BaseGenericExtension, BlockMetadata, BlockOperation, DefineBlock, ExtensionMenuDisplayDetails, ExtensionMetadata } from "$common/types";
 import { Arguments, BlockType, LegacyMethods, OpArgMenus, OpReturn, Opcodes, ReservedMenuNames } from "./LegacyProbe";
 import { TupleToObject, TuplifyUnion } from "./TsMagic";
-import { DecoratedExtension } from "$common/extension/DecoratedExtension";
 import { Extension } from "$common/extension/GenericExtension";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
+import { ExtensionConstructor, ExtensionInstance } from "$common/extension";
 
 export type BlockEntry = BlockMetadata<BlockOperation>;
 export type BlockMap = Map<string, BlockEntry>;
 
-export type LegacyExtension<TData extends ExtensionMetadata, TStrict extends boolean> = ExtensionCommon
-  & (
-    (DecoratedExtension & (TStrict extends true ? LegacyMethods<TData> : {})) |
+export type LegacyExtension<TData extends ExtensionMetadata, TStrict extends boolean> =
+  (
+    (ExtensionInstance & (TStrict extends true ? LegacyMethods<TData> : {})) |
     Extension<ExtensionMenuDisplayDetails, (TStrict extends true ? LegacyMethods<TData> : {})> & { [k in Opcodes<TData>]?: void }
   )
   & { [k in ReservedMenuNames<TData>]?: void };
 
-export type LegacyExtensionDecorator<TExtension extends LegacyExtension<ExtensionMetadata, boolean>> = TypedClassDecorator<TExtension, ConstructorParameters<typeof ExtensionCommon>>;
+export type LegacyExtensionDecorator<TExtension extends LegacyExtension<ExtensionMetadata, boolean>> = TypedClassDecorator<TExtension, ConstructorParameters<ExtensionConstructor>>;
 
 export type ArgumentMethods<TData extends ExtensionMetadata, K extends keyof LegacyMethods<TData>> = {
   /**
@@ -38,9 +37,9 @@ export type ArgumentMethods<TData extends ExtensionMetadata, K extends keyof Leg
   argumentMethods: TupleToObject<OpArgMenus<TData, K>, "argumentIndex", "reservedDynamicMenuName">
 }
 
-export type ObjectOrGetter<T, This extends ExtensionCommon> = ((this: This, self: This) => T) | T;
+export type ObjectOrGetter<T, This extends ExtensionInstance> = ((this: This, self: This) => T) | T;
 
-export type BlockDefinitions<TInfo extends ExtensionMetadata, TExtension extends ExtensionCommon> = {
+export type BlockDefinitions<TInfo extends ExtensionMetadata, TExtension extends ExtensionInstance> = {
   [k in keyof LegacyMethods<TInfo>]: <TReturn extends OpReturn<TInfo, k>>(inputs: ObjectOrGetter<{
     /**
      * The underlying operation of your block
@@ -55,7 +54,7 @@ export type BlockDefinitions<TInfo extends ExtensionMetadata, TExtension extends
 
 export type BlockDecorators<TInfo extends ExtensionMetadata> = {
   [k in keyof LegacyMethods<TInfo>]:
-  <This extends DecoratedExtension, Args extends Parameters<LegacyMethods<TInfo>[k]>, Return extends any>(
+  <This extends ExtensionInstance, Args extends Parameters<LegacyMethods<TInfo>[k]>, Return extends any>(
     ...args: OpArgMenus<TInfo, k> extends [] ? [] : [ArgumentMethods<TInfo, k> | ((self: This) => ArgumentMethods<TInfo, k>)]
   ) => TypedMethodDecorator<This, Args, Return, (...args: Args) => Return>
 }
@@ -69,7 +68,7 @@ export type LegacySupport<TInfo extends ExtensionMetadata, TStrict extends boole
     /**
      * The decorator
      */
-    legacyExtension(): TypedClassDecorator<TExtension, ConstructorParameters<typeof ExtensionCommon>>;
+    legacyExtension(): TypedClassDecorator<TExtension, ConstructorParameters<ExtensionConstructor>>;
     /**
      *
      */
