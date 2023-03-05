@@ -1,14 +1,16 @@
-import { ArgumentType, DecoratedExtension, Environment, ExtensionCommon, ExtensionMenuItems, ExtensionMetadata, RuntimeEvent, block, extension, isString, legacy } from "$common";
+import { ArgumentType, Environment, ExtensionInstance, ExtensionMenuItems, ExtensionMetadata, RuntimeEvent, block, extension, isString, legacy } from "$common";
 import type ExtensionManager from "$scratch-vm/extension-support/extension-manager";
 import { filename, fullSuppportName, incrementalSupportName } from "./legacyDocs";
 
-@extension({
-  name: "Extension Probe",
-  description: "(INTERNAL) Use this extension to probe the info of other estensions",
-  insetIconURL: "",
-  iconURL: ""
-})
-export default class ExtensionProbe extends DecoratedExtension {
+export default class ExtensionProbe extends extension(
+  {
+    name: "Extension Probe",
+    description: "(INTERNAL) Use this extension to probe the info of other estensions",
+    insetIconURL: "",
+    iconURL: ""
+  },
+  "ui"
+) {
   extensionManager: ExtensionManager;
   addedExtensions: { text: string, value: string }[] = [];
   private readonly defaultOption = "Add an extension to probe it";
@@ -66,7 +68,7 @@ export default class ExtensionProbe extends DecoratedExtension {
 
 }
 
-type LoadedExtension = { getInfo: ExtensionCommon["getInfo"] }
+type LoadedExtension = { getInfo: ExtensionInstance["getInfo"] }
 
 const getCleanedInfo = (extension: LoadedExtension) => {
   const info = extension.getInfo();

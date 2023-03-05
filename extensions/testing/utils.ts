@@ -1,5 +1,4 @@
 import { isString } from "$common";
-
 import { vmSrc } from "$root/scripts/paths";
 import path from "path";
 

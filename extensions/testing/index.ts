@@ -1,4 +1,4 @@
-import { Extension, ExtensionBlockMetadata, BlockType, registerButtonCallbackEvent, untilCondition, openUIEvent, openUI, isFunction, isString, splitOnCapitals, ExtensionBase, ExtensionBaseConstructor, AbstractConstructor, DecoratedExtension, ExtensionCommon, NonAbstractConstructor } from "$common";
+import { untilCondition, openUIEvent, openUI, isFunction, splitOnCapitals, NonAbstractConstructor, ExtensionInstance, ExtensionConstructorParams } from "$common";
 import { describe, expect, jest, test } from '@jest/globals';
 import path from "path";
 import { BlockKey, BlockTestCase, RuntimeForTest, TestHelper, UnitTests, GetTestCase, TestCaseEntry, InputArray, KeyToBlockIndexMap, IntegrationTest, Testable } from "./types";
@@ -14,14 +14,14 @@ export { describe, expect, test };
 export const testID = "extensionUnderTest";
 export const testName = "Extension Under Test";
 
-type TestDetails<T extends ExtensionCommon, Key extends BlockKey<T>> = {
-  Extension: NonAbstractConstructor<ExtensionCommon>,
+type TestDetails<T extends ExtensionInstance, Key extends BlockKey<T>> = {
+  Extension: NonAbstractConstructor<ExtensionInstance>,
   key: Key,
   directory: string,
   testHelper: TestHelper,
 }
 
-async function mockOpenUI<T extends ExtensionCommon>({ component }: Parameters<typeof openUI>["1"]) {
+async function mockOpenUI<T extends ExtensionInstance>({ component }: Parameters<typeof openUI>["1"]) {
   const { directory, runtime } = this as any as TestDetails<T, any> & { runtime: RuntimeForTest<T> };
   const fileName = component.endsWith(".svelte") ? component : `${component}.svelte`;
   const pathToComponent = fs.existsSync(path.join(directory, fileName))
@@ -35,7 +35,7 @@ async function mockOpenUI<T extends ExtensionCommon>({ component }: Parameters<t
     .then(module => executeAndSquashWarnings(() => render(module, { extension, close: () => { } }), ignoreWarnings));
 }
 
-const mockRuntime = <T extends ExtensionCommon>(details: TestDetails<T, any>): RuntimeForTest<T> => {
+const mockRuntime = <T extends ExtensionInstance>(details: TestDetails<T, any>): RuntimeForTest<T> => {
   const runtime = jest.createMockFromModule(getEngineFile("runtime")) as any as RuntimeForTest<T>;
 
   runtime.forTest = {
@@ -59,9 +59,9 @@ const mockRuntime = <T extends ExtensionCommon>(details: TestDetails<T, any>): R
   return runtime;
 }
 
-const getInstance = <T extends ExtensionCommon>(details: TestDetails<T, any>): Testable<T> => {
+const getInstance = <T extends ExtensionInstance>(details: TestDetails<T, any>): Testable<T> => {
   const runtime = mockRuntime(details);
-  const args: ConstructorParameters<typeof ExtensionBase> = [runtime, testName, testID, ""];
+  const args: ExtensionConstructorParams = [runtime, testName, testID, ""];
   const TestClass = testable(details.Extension);
   const instance = new TestClass(...args);
   instance.initialize();
@@ -69,12 +69,12 @@ const getInstance = <T extends ExtensionCommon>(details: TestDetails<T, any>): T
   return instance as Testable<T>;
 }
 
-const getInputArray = <T extends ExtensionCommon, Key extends BlockKey<T>>(input: any): InputArray<T, Key> => {
+const getInputArray = <T extends ExtensionInstance, Key extends BlockKey<T>>(input: any): InputArray<T, Key> => {
   if (input === undefined) return [] as InputArray<T, Key>;
   return (Array.isArray(input) ? input : [input]) as InputArray<T, Key>;
 }
 
-const processUnitTest = <T extends ExtensionCommon, Key extends BlockKey<T>>(
+const processUnitTest = <T extends ExtensionInstance, Key extends BlockKey<T>>(
   name: string,
   testCase: BlockTestCase<T, Key>,
   details: TestDetails<T, Key>,
@@ -108,7 +108,7 @@ const processUnitTest = <T extends ExtensionCommon, Key extends BlockKey<T>>(
   await after?.({ extension: instance, result, ui, testHelper });
 });
 
-const processIntegrationTest = <T extends ExtensionCommon>(
+const processIntegrationTest = <T extends ExtensionInstance>(
   name: string,
   testCase: IntegrationTest<T>,
   details: TestDetails<T, BlockKey<T>>,
@@ -119,14 +119,14 @@ const processIntegrationTest = <T extends ExtensionCommon>(
   await testCase({ extension: instance, blockRunner, testHelper: details.testHelper });
 });
 
-export const buildKeyBlockMap = <T extends ExtensionCommon>(instance: Testable<T>): KeyToBlockIndexMap =>
+export const buildKeyBlockMap = <T extends ExtensionInstance>(instance: Testable<T>): KeyToBlockIndexMap =>
   instance.getBlockInfo().reduce((map, { opcode }, index) => {
     return map.set(instance.getBlockKeyForOpcode(opcode), index)
   }, new Map<string, number>());
 
-const getKeyBlockMap = <T extends ExtensionCommon>(details: TestDetails<T, any>) => buildKeyBlockMap(getInstance(details));
+const getKeyBlockMap = <T extends ExtensionInstance>(details: TestDetails<T, any>) => buildKeyBlockMap(getInstance(details));
 
-const getTestCase = <T extends ExtensionCommon, K extends BlockKey<T>>(testCase: TestCaseEntry<T, K>, { testHelper }: TestDetails<T, K>): BlockTestCase<T, K> =>
+const getTestCase = <T extends ExtensionInstance, K extends BlockKey<T>>(testCase: TestCaseEntry<T, K>, { testHelper }: TestDetails<T, K>): BlockTestCase<T, K> =>
   isFunction(testCase) ? (testCase as GetTestCase<T, K>)(testHelper) : testCase as BlockTestCase<T, K>;
 
 /**
@@ -134,7 +134,7 @@ const getTestCase = <T extends ExtensionCommon, K extends BlockKey<T>>(testCase:
  * @param extensionInfo
  * @param cases 
  */
-export const createTestSuite = <T extends ExtensionCommon>(
+export const createTestSuite = <T extends ExtensionInstance>(
   extensionInfo: { Extension: NonAbstractConstructor<T>, __dirname: string },
   cases: { unitTests: UnitTests<T>, integrationTests?: Record<string, IntegrationTest<T>> },
 ) => {
@@ -154,7 +154,7 @@ export const createTestSuite = <T extends ExtensionCommon>(
       const blockKey = key as any as BlockKey<T>;
       type Case = TestCaseEntry<T, typeof blockKey>;
 
-      const asSingleOrFunc = unitTests[key] as Case;
+      const asSingleOrFunc = unitTests[blockKey] as Case;
       const asArray = unitTests[key] as Array<Case>;
       const args: TestDetails<T, typeof blockKey> = { Extension, key: blockKey, directory, testHelper };
 

@@ -1,15 +1,15 @@
-import { ExtensionCommon } from "../ExtensionCommon";
+import { ExtensionInstance } from "$common/extension";
 import { AbstractConstructor, ExtensionArgumentMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, ExtensionMetadata } from "$common/types";
 import { isString, set } from "$common/utils";
-import { isDynamicMenu, parseText } from "../decorators/legacySupport/index";
-import { getImplementationName, wrapOperation } from "./scratchInfo";
+import { isDynamicMenu, parseText } from "../../decorators/legacySupport/index";
+import { getImplementationName, wrapOperation } from "../required/scratchInfo/index";
 
 type WrappedOperation = ReturnType<typeof wrapOperation>;
 type WrappedOperationParams = Parameters<WrappedOperation>;
 type WithLegacySupport = InstanceType<ReturnType<typeof mixin>>;
 type BlockMap = Map<string, Omit<ExtensionBlockMetadata, "opcode"> & { index: number }>;
 
-export const isLegacy = (extension: ExtensionCommon | WithLegacySupport): extension is WithLegacySupport => {
+export const isLegacy = (extension: ExtensionInstance | WithLegacySupport): extension is WithLegacySupport => {
   const key: keyof WithLegacySupport = "__isLegacy";
   return key in extension;
 }
@@ -41,7 +41,7 @@ const getDynamicMenuName = (menu: ExtensionMenuMetadata): string => {
  * @param legacyInfo 
  * @returns 
  */
-export default function mixin<T extends AbstractConstructor<ExtensionCommon>>(Ctor: T, legacyInfo: ExtensionMetadata) {
+export default function mixin<T extends AbstractConstructor<ExtensionInstance>>(Ctor: T, legacyInfo: ExtensionMetadata) {
   abstract class _ extends Ctor {
     private validatedInfo: ExtensionMetadata;
 
@@ -49,11 +49,8 @@ export default function mixin<T extends AbstractConstructor<ExtensionCommon>>(Ct
     public orderArgumentNamesByBlock: Map<string, string[]> = new Map();
 
     protected getInfo(): ExtensionMetadata {
-
       if (!this.validatedInfo) {
-        // @ts-ignore
-        const { getInfo } = ExtensionCommon.prototype;
-        const info = (getInfo.call(this));
+        const info = super.getInfo();
         this.validatedInfo = this.validateAndAttach(info);
       }
 

@@ -1,12 +1,13 @@
-import { ArgumentType, BlockType, Environment, Menu, SaveDataHandler, block, buttonBlock, extension, DecoratedExtension, tryCastToArgumentType } from "$common";
+import { ArgumentType, BlockType, Environment, Menu, SaveDataHandler, block, buttonBlock, extension, tryCastToArgumentType } from "$common";
 
-@extension({
-  name: "Super Simple Typescript Extension (decorted)!",
-  description: "Skeleton for a typescript extension",
-  iconURL: "",
-  insetIconURL: "",
-})
-export default class SimpleTypescript extends DecoratedExtension {
+export default class SimpleTypescript extends extension(
+  {
+    name: "Super Simple Typescript Extension (decorted)!",
+    description: "Skeleton for a typescript extension",
+  },
+  "ui",
+  "customSaveData"
+) {
   count: number = 0;
 
   logOptions: Menu<string> = {

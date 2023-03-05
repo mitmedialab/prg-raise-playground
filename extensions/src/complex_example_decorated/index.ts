@@ -1,4 +1,4 @@
-import { ArgumentType, BlockType, RGBObject, MenuItem, copyTo, DecoratedExtension, SaveDataHandler, block, buttonBlock, extension } from "$common";
+import { ArgumentType, BlockType, RGBObject, MenuItem, copyTo, SaveDataHandler, block, buttonBlock, extension } from "$common";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 
 const enum MatrixDimension {
@@ -32,13 +32,17 @@ export const emojiByAnimal: Record<Animal, string> = {
   [Animal.Pig]: '🐖',
 }
 
-@extension({
-  name: "Realistic Typescript-Based Extension (Decorated)",
-  description: "Demonstrating how typescript can be used to write a realistic extension",
-  iconURL: "Typescript_logo.png",
-  insetIconURL: "typescript-logo.svg"
-})
-export default class TypeScriptFrameworkExample extends DecoratedExtension {
+export default class TypeScriptFrameworkExample extends extension(
+  {
+    name: "Realistic Typescript-Based Extension (Decorated)",
+    description: "Demonstrating how typescript can be used to write a realistic extension",
+    iconURL: "Typescript_logo.png",
+    insetIconURL: "typescript-logo.svg",
+  },
+  "ui",
+  "customSaveData",
+  "customArguments"
+) {
   lhsOptions: number[];
   animals: MenuItem<Animal>[];
   collection: Animal[] = [Animal.Gorilla];
@@ -61,6 +65,7 @@ export default class TypeScriptFrameworkExample extends DecoratedExtension {
     this.animals = Object.entries(emojiByAnimal).map(([animal, emoji]) => ({
       value: parseInt(animal), text: emoji
     }));
+
 
     this.getAnimalCollection = () => this.collection.map(
       animal => ({

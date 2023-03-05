@@ -1,7 +1,7 @@
-import { getImplementationName } from "$common/extension/mixins/scratchInfo";
 import { ExtensionMenuDisplayDetails, ExtensionBlocks, BlockDefinitions, Translations } from "$common/types";
 import { isFunction } from "$common/utils";
-import { ExtensionCommon } from "./ExtensionCommon";
+import { extension } from "./index";
+import { getImplementationName } from "./mixins/required/scratchInfo/index";
 
 export const getAlternativeOpcodeName = (opcode: string) => `__block_${opcode}`;
 
@@ -43,13 +43,11 @@ export const getAlternativeOpcodeName = (opcode: string) => `__block_${opcode}`;
 export abstract class Extension<
   MenuDetails extends ExtensionMenuDisplayDetails,
   Blocks extends ExtensionBlocks
-> extends ExtensionCommon {
+> extends extension(undefined, "ui", "customSaveData", "customArguments") {
 
   readonly BlockFunctions: Blocks;
   readonly BlockDefinitions: BlockDefinitions<typeof this>;
   readonly Translations: Translations<typeof this>;
-
-  readonly version = "generic" as const;
 
   /**
    * @summary Extension member method that returns an object defining all blocks that belong to the extension.

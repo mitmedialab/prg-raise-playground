@@ -1,17 +1,17 @@
-import { AbstractConstructor, ExtensionBase, ExtensionBaseConstructor, ExtensionBlockMetadata, ExtensionCommon, ExtensionMetadata, NonAbstractConstructor, getAlternativeOpcodeName } from "$common";
+import { AbstractConstructor, ExtensionBlockMetadata, ExtensionInstance, ExtensionMetadata, NonAbstractConstructor, getAlternativeOpcodeName } from "$common";
 import { GenericExtension } from "$testing/types";
 
 const unAbstract = <T, C extends AbstractConstructor<T>>(c: C) => c as any as NonAbstractConstructor<T>;
 
 type UniqueKey<Base, T extends Base> = { [k in keyof T]: k extends keyof Base ? never : k }[keyof T];
 
-const isGenericExtension = (ext: ExtensionCommon): ext is GenericExtension => {
-  const key: UniqueKey<ExtensionCommon, GenericExtension> = "defineBlocks";
+const isGenericExtension = (ext: ExtensionInstance): ext is GenericExtension => {
+  const key: UniqueKey<ExtensionInstance, GenericExtension> = "defineBlocks";
   return key in ext;
 }
 
-export default function <T extends ExtensionCommon, C extends NonAbstractConstructor<T>>(Ctor: C) {
-  abstract class _ extends (Ctor as AbstractConstructor<ExtensionCommon>) {
+export default function <T extends ExtensionInstance, C extends NonAbstractConstructor<T>>(Ctor: C) {
+  abstract class _ extends (Ctor as AbstractConstructor<ExtensionInstance>) {
     initialize() {
       super.internal_init();
     }
@@ -25,7 +25,7 @@ export default function <T extends ExtensionCommon, C extends NonAbstractConstru
     }
 
     getBlockKeyForOpcode(opcode: string): string {
-      return this.version === "generic" ? opcode.replace(getAlternativeOpcodeName(""), "") : opcode;
+      return isGenericExtension(this) ? opcode.replace(getAlternativeOpcodeName(""), "") : opcode;
     }
   }
 

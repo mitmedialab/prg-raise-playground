@@ -1,7 +1,7 @@
-import { ExtensionBaseConstructor } from "$common/extension/mixins/required/ExtensionBase";
-import { ExtensionBase } from "./required/ExtensionBase";
-import { hasCustomArgumentSupport } from "$common/extension/mixins/customArguments";
+import { ExtensionBaseConstructor } from "$common/extension/ExtensionBase";
+import { ExtensionBase } from "../../ExtensionBase";
 import { NonAbstractConstructor } from "$common/types";
+import { MinimalExtensionConstructor } from "../required";
 
 /**
  * WARNING! If you change this key, it will affect already saved projects.
@@ -40,7 +40,7 @@ export class SaveDataHandler<T extends ExtensionBase, TData> {
  * @returns 
  * @see https://www.typescriptlang.org/docs/handbook/mixins.html
  */
-export default function mixin<T extends ExtensionBaseConstructor>(Ctor: T) {
+export default function mixin<T extends MinimalExtensionConstructor>(Ctor: T) {
   abstract class _ extends Ctor {
     /**
      * Optional field that can be defined if you need to save custom data for an extension 
@@ -68,7 +68,7 @@ export default function mixin<T extends ExtensionBaseConstructor>(Ctor: T) {
      */
     private save(toSave: { [saveDataKey]: Record<string, any> }, extensionIDs: Set<string>) {
       const { saveDataHandler, id } = this;
-      const argumentManager = hasCustomArgumentSupport(this) ? this.customArgumentManager : null;
+      const argumentManager = this.supports("customArguments") ? this.customArgumentManager : null;
       const saveData = saveDataHandler?.hooks.onSave(this) ?? {};
       argumentManager?.saveTo(saveData);
       if (Object.keys(saveData).length === 0) return;
@@ -90,7 +90,7 @@ export default function mixin<T extends ExtensionBaseConstructor>(Ctor: T) {
       if (!saveData) return;
       saveDataHandler?.hooks.onLoad(this, saveData);
 
-      if (hasCustomArgumentSupport(this)) this.getOrCreateCustomArgumentManager().loadFrom(saveData);
+      if (this.supports("customArguments")) this.getOrCreateCustomArgumentManager().loadFrom(saveData);
     }
   }
   return _;

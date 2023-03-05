@@ -1,7 +1,6 @@
-import { DecoratedExtension } from "$common/extension/DecoratedExtension";
+import { extension } from "$common/extension";
 import { Extension } from "$common/extension/GenericExtension";
-import { extension } from "$common/extension/decorators/extension";
-import { legacy, } from "$common/extension/decorators/legacySupport";
+import { legacy } from "$common/extension/decorators/legacySupport";
 import { BlockDefinitions, Environment, NonAbstractConstructor, ArgumentType, BlockType } from "$common/types";
 import { createTestSuite, testID } from "$testing";
 import { DefaultDisplayDetails } from "$testing/defaults";
@@ -48,7 +47,7 @@ const info = {
 
 const { legacyExtension, legacyDefinition, ReservedNames } = legacy(info).for<GenericExtension>();
 
-const createArgumentMethods = <T extends GenericExtension | ExtensionDecorated>(self: T) => ({
+const createArgumentMethods = <T extends GenericExtension | ExtensionCommon>(self: T) => ({
   argumentMethods: {
     1: { getItems: () => ["#"], handler: self.handle },
     2: {
@@ -86,16 +85,10 @@ class GenericExtension extends Extension<DefaultDisplayDetails, {
 }
 
 
-const { legacyExtension: legacyDecorated, legacyBlock } = legacy(info).for<ExtensionDecorated>();
+const { legacyExtension: legacyDecorated, legacyBlock } = legacy(info).for<ExtensionCommon>();
 
-@extension({
-  name: "",
-  description: "",
-  iconURL: "",
-  insetIconURL: ""
-})
 @legacyDecorated()
-class ExtensionDecorated extends DecoratedExtension {
+class ExtensionCommon extends extension({ name: "" }) {
   init(env: Environment): void { }
 
   toHandle: any = [];
@@ -105,13 +98,13 @@ class ExtensionDecorated extends DecoratedExtension {
     return `${x}`;
   }
 
-  @legacyBlock.multiArgumentsWithMenus(createArgumentMethods<ExtensionDecorated>)
+  @legacyBlock.multiArgumentsWithMenus(createArgumentMethods<ExtensionCommon>)
   multiArgumentsWithMenus(args_0: number, args_1: string, args_2: number) {
     return "Hi" + args_0 + args_1 + args_2;
   }
 }
 
-const makeTestSuite = (Extension: NonAbstractConstructor<GenericExtension | DecoratedExtension>) => {
+const makeTestSuite = (Extension: NonAbstractConstructor<GenericExtension | ExtensionCommon>) => {
   createTestSuite({ Extension, __dirname }, {
     unitTests: {
       multiArgumentsWithMenus: () => {
@@ -137,4 +130,4 @@ const makeTestSuite = (Extension: NonAbstractConstructor<GenericExtension | Deco
 }
 
 makeTestSuite(GenericExtension);
-makeTestSuite(ExtensionDecorated);
+makeTestSuite(ExtensionCommon);

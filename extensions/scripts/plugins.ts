@@ -31,9 +31,8 @@ export const generateVmDeclarations = (): Plugin => {
   const runner = runOncePerBundling();
 
   const isUnhandledError = ({ file: { fileName: name }, code }: ts.Diagnostic) => {
-    const isMixinDeclarationError = name.includes(path.join(commonDirectory, "extension")) && (code === 4094 || code === 4023);
-    const isCannotDeclareInternalTypeError = fileName(name) === "legacySupport" && code === 4058;
-    return !(isMixinDeclarationError || isCannotDeclareInternalTypeError);
+    const ignorableCodes = [4094, 4023, 4058, 4020];
+    return !(name.includes(path.join(commonDirectory, "extension")) && ignorableCodes.includes(code));
   }
 
   return {
@@ -215,7 +214,7 @@ const frameworkBundle: { content: Promise<string> } & Record<string, any> = {
 
 export const decoratorCodeGenFlag = "replace_code_gen_args";
 
-export const finalizeDecoratedExtensionBundle = (info: BundleInfo): Plugin => {
+export const finalizeCommonExtensionBundle = (info: BundleInfo): Plugin => {
   const { bundleDestination, menuDetails, name, directory } = info;
 
   const executeBundleAndExtractMenuDetails = async () => {

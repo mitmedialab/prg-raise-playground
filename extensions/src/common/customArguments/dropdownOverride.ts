@@ -1,4 +1,4 @@
-import { ExtensionCommon } from "$common/extension/ExtensionCommon";
+import { ExtensionInstance } from "$common/extension";
 import { untilObject } from "$common/utils";
 import { ArgumentEntry, ArgumentEntrySetter } from "./CustomArgumentManager";
 
@@ -14,7 +14,7 @@ export type CustomArgumentUIConstructor = (options: CreateComponentOptions) => v
 export const renderToDropdown = async <T>(
   compononentConstructor: CustomArgumentUIConstructor,
   props: {
-    extension: ExtensionCommon,
+    extension: ExtensionInstance,
     setter: ArgumentEntrySetter<T>,
     current: ArgumentEntry<T>
   }

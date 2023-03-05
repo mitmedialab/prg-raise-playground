@@ -1,12 +1,12 @@
-import { BlockType, BlocksInfo, Extension, ExtensionBase, ExtensionBlockMetadata, ExtensionCommon, NonAbstractConstructor, parseText } from "$common";
-import { isLegacy } from "$common/extension/mixins/legacySupport";
+import { BlockType, ExtensionBlockMetadata, ExtensionConstructorParams, ExtensionInstance, NonAbstractConstructor } from "$common";
+import { isLegacy } from "$common/extension/mixins/optional/legacySupport";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import { buildKeyBlockMap } from "$testing";
 import testable from "./mixins/testable";
-import { GenericExtension, BlockKey, InputArray, KeyToBlockIndexMap, RenderedUI, RuntimeForTest, Testable, ReportedValue, NamedInputArray } from "./types";
+import { BlockKey, InputArray, KeyToBlockIndexMap, RenderedUI, RuntimeForTest, Testable, ReportedValue } from "./types";
 import { getEngineFile } from "./utils";
 
-export class BlockRunner<T extends ExtensionCommon> {
+export class BlockRunner<T extends ExtensionInstance> {
   private blockData: ExtensionBlockMetadata[];
 
   constructor(private map: KeyToBlockIndexMap, public instance: Testable<T>) {
@@ -45,9 +45,9 @@ export class BlockRunner<T extends ExtensionCommon> {
     return { output, ui: renderedUI };
   }
 
-  createCompanion<TCompanion extends GenericExtension>(constructor: NonAbstractConstructor<TCompanion>) {
+  createCompanion<TCompanion extends ExtensionInstance>(constructor: NonAbstractConstructor<TCompanion>) {
     const { instance: { runtime } } = this;
-    const args: ConstructorParameters<typeof ExtensionBase> = [runtime, "", "", ""];
+    const args: ExtensionConstructorParams = [runtime, "", "", ""];
     const TestClass = testable(constructor);
     const companion = new TestClass(...args);
     companion.initialize();

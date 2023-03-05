@@ -1,11 +1,10 @@
-import { ExtensionBaseConstructor, ExtensionBase } from "$common/extension/mixins/required/ExtensionBase";
 import type Runtime from "$scratch-vm/engine/runtime";
 import CustomArgumentManager, { ArgumentEntry } from "$common/customArguments/CustomArgumentManager";
 import { CustomArgumentUIConstructor, renderToDropdown } from "$common/customArguments/dropdownOverride";
 import { ArgumentType } from "$common/types/enums";
 import { openDropdownState, closeDropdownState, initDropdownState, customArgumentFlag, customArgumentCheck, dropdownStateFlag, dropdownEntryFlag } from "$common/globals";
 import { Argument, BaseGenericExtension } from "$common/types";
-import { ExtensionIntanceWithFunctionality } from ".";
+import { MinimalExtensionConstructor } from "../required";
 
 type ComponentGetter = (id: string, componentName: string) => CustomArgumentUIConstructor;
 
@@ -21,7 +20,7 @@ const callingContext = {
  * @returns 
  * @see https://www.typescriptlang.org/docs/handbook/mixins.html
  */
-export default function mixin<T extends ExtensionBaseConstructor>(Ctor: T) {
+export default function mixin<T extends MinimalExtensionConstructor>(Ctor: T) {
   abstract class _ extends Ctor {
 
     /**

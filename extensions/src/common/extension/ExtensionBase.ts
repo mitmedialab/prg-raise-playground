@@ -1,10 +1,11 @@
 import Runtime from "$scratch-vm/engine/runtime";
 import { AbstractConstructor, Environment, ExlcudeFirst } from "$common/types";
 
-export type CodeGenParams = ExlcudeFirst<ConstructorParameters<typeof ExtensionBase>>;
+export type ExtensionConstructorParams = ConstructorParameters<typeof ConstructableExtension>;
+export type CodeGenParams = ExlcudeFirst<ExtensionConstructorParams>;
 export type ExtensionBaseConstructor = AbstractConstructor<ExtensionBase>;
 
-export abstract class ExtensionBase {
+export abstract class ConstructableExtension {
   /**
    * @summary This member function (or 'method') will be called when a user adds your extension via the Extensions Menu (i.e. when your extension is instantiated)
    * @example
@@ -47,5 +48,16 @@ export abstract class ExtensionBase {
    * @param id The ID of this extension.
    * @param blockIconURI
    */
-  constructor(readonly runtime: Runtime, readonly name: string, readonly id: string, readonly blockIconURI: string) { }
+  constructor(readonly runtime: Runtime, readonly name: string, readonly id: string, readonly blockIconURI: string) {
+  }
+}
+
+export const extensionsMap = new Map<string, ExtensionBase>();
+
+export abstract class ExtensionBase extends ConstructableExtension {
+  constructor(FORBIDDEN: never) {
+    // @ts-ignore
+    super(...arguments);
+    extensionsMap.set(this.id, this);
+  }
 }

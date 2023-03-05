@@ -4,7 +4,7 @@ export * from "./ui";
 export * from "./types/enums";
 export * from "./IDs";
 export * from "./globals";
-export * from "./extension/mixins/customSaveData";
+export * from "./extension/mixins/optional/customSaveData";
 export * from "./cast";
 export type { ArgumentEntry, ArgumentEntrySetter } from "./customArguments/CustomArgumentManager";
 
@@ -16,10 +16,8 @@ export { CustomArgumentManager };
 export * from "./customArguments/dropdownOverride";
 
 export * from "./extension/GenericExtension";
-export * from "./extension/DecoratedExtension";
-export * from "./extension/mixins/required/ExtensionBase";
-export * from "./extension/ExtensionCommon";
+export * from "./extension/ExtensionBase";
 
 export * from "./extension/decorators/blocks";
-export * from "./extension/decorators/extension";
+export * from "./extension/index";
 export * from "./extension/decorators/legacySupport/index";

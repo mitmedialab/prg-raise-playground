@@ -18,7 +18,7 @@ import nodePolyfills from 'rollup-plugin-polyfill-node';
 import babel from "@rollup/plugin-babel";
 import chalk from "chalk";
 import { getBlockIconURI } from "scripts/utils/URIs";
-import bundleDecorated from "./extension.decorated";
+import bundleCommon from "./extension";
 import bundleGeneric from "./extension.generic";
 import { root } from "$root/scripts/paths";
 import ts, { CustomTransformerFactory } from "typescript";
@@ -107,23 +107,23 @@ export const stringifyCodeGenArgs = ({ menuDetails, directory, id }: BundleInfo)
   return "..." + JSON.stringify(codeGenArgs);
 }
 
-const getExtensionVersion = (dir: string) => {
+const getExtensionType = (dir: string) => {
   const indexFile = path.join(dir, "index.ts");
   const indexContent = fs.readFileSync(indexFile, "utf-8");
 
-  // Match: extends [one or more whitespace or new line character] DecoratedExtension [zero or more whitespace or new line character] {
-  const matchDecorated = new RegExp(/extends[\n\r\s]+DecoratedExtension[\n\r\s]*{/gm);
+  // Match: extends [one or more whitespace or new line character] extension [zero or more whitespace or new line character] (
+  const matchCommon = new RegExp(/extends[\n\r\s]+extension[\n\r\s]*\(/gm);
 
   // Match: extends [one or more whitespace or new line character] Extension [zero or more whitespace or new line character] <
   const matchGeneric = new RegExp(/extends[\n\r\s]+Extension[\n\r\s]*</gm);
 
-  const foundDecorated = indexContent.search(matchDecorated) >= 0;
+  const foundCommon = indexContent.search(matchCommon) >= 0;
   const foundGeneric = indexContent.search(matchGeneric) >= 0;
 
-  if (foundDecorated && !foundGeneric) return "decorated";
-  if (!foundDecorated && foundGeneric) return "generic";
+  if (foundCommon && !foundGeneric) return "common";
+  if (!foundCommon && foundGeneric) return "generic";
 
-  throw new Error(`Unable to identify extension type (generic or decorated) for '${path.relative(root, dir)}' --- generic: ${foundGeneric} vs decorated: ${foundDecorated}`);
+  throw new Error(`Unable to identify extension type (generic or decorated) for '${path.relative(root, dir)}' --- generic: ${foundGeneric} vs decorated: ${foundCommon}`);
 }
 
 export const bundleExtensionBasedOnWatchMode = async ({ plugins, info }: { plugins: Plugin[], info: BundleInfo }) =>
@@ -144,7 +144,7 @@ export const bundleBasedOnWatchMode = async ({ plugins, info, globals, external 
 }
 
 export const bundleExtension = (dir: string, totalNumberOfExtensions: number, doWatch: boolean) => {
-  const version = getExtensionVersion(dir);
+  const version = getExtensionType(dir);
   const info = getBundleInfo(dir, { totalNumberOfExtensions, watch: doWatch });
-  return version === "decorated" ? bundleDecorated(info) : bundleGeneric(info);
+  return version === "common" ? bundleCommon(info) : bundleGeneric(info);
 }

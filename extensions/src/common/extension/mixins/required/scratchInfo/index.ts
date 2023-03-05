@@ -4,16 +4,14 @@ import { ArgumentType, BlockType } from "$common/types/enums";
 import { BlockOperation, ValueOf, Menu, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, DynamicMenu, BlockMetadata, } from "$common/types";
 import { registerButtonCallback } from "$common/ui";
 import { isString, typesafeCall, } from "$common/utils";
-import { ExtensionBaseConstructor } from "$common/extension/mixins/required/ExtensionBase";
 import type BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import { menuProbe, asStaticMenu, getMenuName, convertMenuItemsToString } from "./menus";
 import { Handler } from "./handlers";
 import { BlockDefinition, getButtonID, isBlockGetter } from "./util";
 import { convertToArgumentInfo, extractArgs, zipArgs } from "./args";
 import { convertToDisplayText } from "./text";
-import { ExtensionBase } from "$common/extension/mixins/required/ExtensionBase";
-import { ExtensionIntanceWithFunctionality } from "..";
-import { MinimumExtension } from "../required";
+import { CustomizableExtensionConstructor, MinimalExtensionInstance, } from "..";
+import { ExtensionIntanceWithFunctionality } from "../..";
 
 export const getImplementationName = (opcode: string) => `internal_${opcode}`;
 
@@ -24,36 +22,31 @@ export const getImplementationName = (opcode: string) => `internal_${opcode}`;
  * @param args The args that must be parsed before being passed to the underlying operation 
  * @returns 
  */
-export const wrapOperation = <T extends MinimumExtension>(
+export const wrapOperation = <T extends MinimalExtensionInstance>(
   _this: T,
   operation: BlockOperation,
   args: { name: string, type: ValueOf<typeof ArgumentType>, handler: Handler }[]
-) => {
-
-  if (!_this.supports("customArguments")) {
-    return function (this: T, argsFromScratch: Record<string, any>, blockUtility: BlockUtility) {
+) => _this.supports("customArguments")
+    ? function (this: ExtensionIntanceWithFunctionality<["customArguments"]>, argsFromScratch: Record<string, any>, blockUtility: BlockUtility) {
+      const castedArguments = args.map(({ name, type, handler }) => {
+        const param = argsFromScratch[name];
+        switch (type) {
+          case ArgumentType.Custom:
+            const isIdentifier = isString(param) && CustomArgumentManager.IsIdentifier(param);
+            const value = isIdentifier ? this.customArgumentManager.getEntry(param).value : param;
+            return handler.call(_this, value);
+          default:
+            return castToType(type, handler.call(_this, param));
+        }
+      });
+      return operation.call(_this, ...castedArguments, blockUtility);
+    }
+    : function (this: T, argsFromScratch: Record<string, any>, blockUtility: BlockUtility) {
       const castedArguments = args.map(({ name, type, handler }) =>
         castToType(type, handler.call(_this, argsFromScratch[name]))
       );
       return operation.call(_this, ...castedArguments, blockUtility);
     }
-  }
-
-  return function (this: ExtensionIntanceWithFunctionality<["customArguments"]>, argsFromScratch: Record<string, any>, blockUtility: BlockUtility) {
-    const castedArguments = args.map(({ name, type, handler }) => {
-      const param = argsFromScratch[name];
-      switch (type) {
-        case ArgumentType.Custom:
-          const isIdentifier = isString(param) && CustomArgumentManager.IsIdentifier(param);
-          const value = isIdentifier ? this.customArgumentManager.getEntry(param).value : param;
-          return handler.call(_this, value);
-        default:
-          return castToType(type, handler.call(_this, param));
-      }
-    });
-    return operation.call(_this, ...castedArguments, blockUtility);
-  }
-}
 
 /**
  * Mixin the ability for extension's to:
@@ -63,7 +56,7 @@ export const wrapOperation = <T extends MinimumExtension>(
  * @returns 
  * @see https://www.typescriptlang.org/docs/handbook/mixins.html
  */
-export default function <T extends ExtensionBaseConstructor>(Ctor: T) {
+export default function (Ctor: CustomizableExtensionConstructor) {
   type BlockEntry = { definition: BlockDefinition<_, BlockOperation>, operation: BlockOperation };
   type BlockMap = Map<string, BlockEntry>;
   abstract class _ extends Ctor {
@@ -72,6 +65,12 @@ export default function <T extends ExtensionBaseConstructor>(Ctor: T) {
     private readonly menus: Menu<any>[] = [];
     private info: ExtensionMetadata;
 
+    /**
+     * Add a block 
+     * @param opcode 
+     * @param definition 
+     * @param operation 
+     */
     pushBlock<Fn extends BlockOperation>(opcode: string, definition: BlockDefinition<any, Fn>, operation: BlockOperation) {
       if (this.blockMap.has(opcode)) throw new Error(`Attempt to push block with opcode ${opcode}, but it was already set. This is assumed to be a mistake.`)
       this.blockMap.set(opcode, { definition, operation });
@@ -112,7 +111,7 @@ export default function <T extends ExtensionBaseConstructor>(Ctor: T) {
         info.func = buttonID;
       } else {
         const implementationName = getImplementationName(opcode);
-        this[implementationName] = wrapOperation(this, operation, zipArgs(args));
+        this[implementationName] = wrapOperation(this as MinimalExtensionInstance, operation, zipArgs(args));
       }
 
       return info;

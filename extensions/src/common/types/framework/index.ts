@@ -1,10 +1,10 @@
 import { Extension } from "$common/extension/GenericExtension";
-import { ExtensionCommon } from "$common/extension/ExtensionCommon";
 import type ExtensionManager from "$scratch-vm/extension-support/extension-manager";
 import type Runtime from "$scratch-vm/engine/runtime";
 import { ExtensionBlocks } from "./blocks";
 import { Language } from "../enums";
 import { MethodNames, ValueOf } from "../utils";
+import { ExtensionInstance } from "$common/extension";
 
 export type BaseGenericExtension = Extension<ExtensionMenuDisplayDetails, ExtensionBlocks>;
 
@@ -30,12 +30,12 @@ export type Environment = {
   extensionManager: ExtensionManager,
 }
 
-export type Opocde<TExtension extends ExtensionCommon> = TExtension extends Extension<any, any>
+export type Opocde<TExtension extends ExtensionInstance> = TExtension extends Extension<any, any>
   ? keyof TExtension["BlockFunctions"]
   : MethodNames<TExtension>;
 
 export type ParameterOf<
-  TExtension extends ExtensionCommon,
+  TExtension extends ExtensionInstance,
   TBlockKey extends Opocde<TExtension>,
   TIndex extends number,
 > = Parameters<TExtension extends Extension<any, any> ? TExtension["BlockFunctions"][TBlockKey] : TExtension[TBlockKey]>[TIndex];
@@ -48,7 +48,7 @@ export type ParameterOf<
  */
 export type ExtensionMenuDisplayDetails = {
   name: string;
-  description: string;
+  description?: string;
   iconURL?: string;
   insetIconURL?: string;
   internetConnectionRequired?: boolean;

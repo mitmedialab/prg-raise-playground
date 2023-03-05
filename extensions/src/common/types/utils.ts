@@ -29,7 +29,7 @@ export type Primitive<IncludeSymbol extends boolean = false> = IncludeSymbol ext
   ? bigint | boolean | null | number | string | undefined | symbol
   : bigint | boolean | null | number | string | undefined;
 
-export type AbstractConstructor<T> = abstract new (...args: any[]) => T;
-export type NonAbstractConstructor<T> = new (...args: any[]) => T;
+export type AbstractConstructor<T = any> = abstract new (...args: any[]) => T;
+export type NonAbstractConstructor<T = any> = new (...args: any[]) => T;
 
 export type ExlcudeFirst<F> = F extends [any, ...infer R] ? R : never;

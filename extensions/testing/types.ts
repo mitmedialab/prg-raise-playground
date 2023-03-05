@@ -1,6 +1,6 @@
 import type { RenderResult, fireEvent } from '@testing-library/svelte';
 import type { SvelteComponentDev } from "svelte/internal";
-import { Extension, ExtensionBlocks, ExtensionMenuDisplayDetails, NonEmptyArray, InternalButtonKey, ExtensionCommon, DecoratedExtension, Methods, MethodNames, } from "$common";
+import { Extension, ExtensionBlocks, ExtensionMenuDisplayDetails, NonEmptyArray, InternalButtonKey, Methods, MethodNames, ExtensionInstance, } from "$common";
 import Runtime from "$root/packages/scratch-vm/src/engine/runtime";
 import { expect } from '@jest/globals';
 import { BlockRunner } from './BlockRunner';
@@ -9,8 +9,8 @@ import type BlockUtility from '$root/packages/scratch-vm/src/engine/block-utilit
 
 export type GenericExtension = Extension<ExtensionMenuDisplayDetails, ExtensionBlocks>;
 
-export type BlockMethods<T extends ExtensionCommon> = T extends GenericExtension ? T["BlockFunctions"] : Methods<T>;
-export type BlockKey<T extends ExtensionCommon> = (T extends GenericExtension ? keyof T["BlockFunctions"] : MethodNames<T>) & string;
+export type BlockMethods<T extends ExtensionInstance> = T extends GenericExtension ? T["BlockFunctions"] : Methods<T>;
+export type BlockKey<T extends ExtensionInstance> = (T extends GenericExtension ? keyof T["BlockFunctions"] : MethodNames<T>) & string;
 
 export type KeyToBlockIndexMap = Map<string, number>;
 
@@ -22,14 +22,14 @@ export type TestHelper = {
   updateHTMLInputValue: (input: HTMLInputElement, value: string) => Promise<boolean>,
 }
 
-type ReturnsValue<T extends ExtensionCommon, Key extends BlockKey<T>> =
+type ReturnsValue<T extends ExtensionInstance, Key extends BlockKey<T>> =
   ReturnType<BlockMethods<T>[Key]> extends void | Promise<void> | InternalButtonKey
   ? false
   : true;
 
-export type ReportedValue<T extends ExtensionCommon, Key extends BlockKey<T>> = ReturnType<BlockMethods<T>[Key]>;
+export type ReportedValue<T extends ExtensionInstance, Key extends BlockKey<T>> = ReturnType<BlockMethods<T>[Key]>;
 
-export type Hooks<T extends ExtensionCommon, Key extends BlockKey<T>> = {
+export type Hooks<T extends ExtensionInstance, Key extends BlockKey<T>> = {
   /**
    * Ran before the block-under-test is executed (useful for initialization)
    * @param fixture An object to help you define your test. Includes:
@@ -54,18 +54,18 @@ export type Hooks<T extends ExtensionCommon, Key extends BlockKey<T>> = {
   : (fixture: { extension: T, result: ReportedValue<T, Key>, ui?: RenderedUI, testHelper: TestHelper }) => void | Promise<void>
 };
 
-export type InputArray<T extends ExtensionCommon, Key extends BlockKey<T>> =
+export type InputArray<T extends ExtensionInstance, Key extends BlockKey<T>> =
   Parameters<BlockMethods<T>[Key]> extends NonEmptyArray<any>
   ? Parameters<BlockMethods<T>[Key]> extends [...infer X extends any[], BlockUtility?] ? readonly [...X] : readonly [...Parameters<BlockMethods<T>[Key]>]
   : [];
 
-export type NamedInputArray<T extends ExtensionCommon, Key extends BlockKey<T>> = RemapToNamed<[...InputArray<T, Key>]>
+export type NamedInputArray<T extends ExtensionInstance, Key extends BlockKey<T>> = RemapToNamed<[...InputArray<T, Key>]>
 
 type RemapToNamed<TArr extends unknown[]> = TArr extends [...infer Rest, infer _]
   ? [...RemapToNamed<Rest>, [names: string, value: _]]
   : []
 
-export type Input<T extends ExtensionCommon, Key extends BlockKey<T>> =
+export type Input<T extends ExtensionInstance, Key extends BlockKey<T>> =
   Parameters<BlockMethods<T>[Key]> extends NonEmptyArray<any>
   ? {
     /**
@@ -79,7 +79,7 @@ export type Input<T extends ExtensionCommon, Key extends BlockKey<T>> =
   }
   : {};
 
-export type Expected<T extends ExtensionCommon, Key extends BlockKey<T>> =
+export type Expected<T extends ExtensionInstance, Key extends BlockKey<T>> =
   ReturnsValue<T, Key> extends true
   ? {
     /**
@@ -90,7 +90,7 @@ export type Expected<T extends ExtensionCommon, Key extends BlockKey<T>> =
   }
   : {};
 
-export type EnsureReady<T extends ExtensionCommon> = {
+export type EnsureReady<T extends ExtensionInstance> = {
   /**
    * Function invoked periodically before a test begins.
    * Once this function returns true (if defined), the test will begin.
@@ -105,7 +105,7 @@ export type EnsureReady<T extends ExtensionCommon> = {
   checkIsReadyRate?: number;
 };
 
-export type BlockTestCase<T extends ExtensionCommon, Key extends BlockKey<T>> =
+export type BlockTestCase<T extends ExtensionInstance, Key extends BlockKey<T>> =
   Hooks<T, Key> &
   EnsureReady<T> &
   Input<T, Key> &
@@ -114,20 +114,20 @@ export type BlockTestCase<T extends ExtensionCommon, Key extends BlockKey<T>> =
 export type SingleOrArray<T> = T | T[];
 export type ObjectOrFunc<T, Args extends any[]> = T | ((...args: Args) => T);
 
-export type GetTestCase<T extends ExtensionCommon, K extends BlockKey<T>> = (helper: TestHelper) => BlockTestCase<T, K>;
-export type TestCaseEntry<T extends ExtensionCommon, K extends BlockKey<T>> = ObjectOrFunc<BlockTestCase<T, K>, Parameters<GetTestCase<T, K>>>;
+export type GetTestCase<T extends ExtensionInstance, K extends BlockKey<T>> = (helper: TestHelper) => BlockTestCase<T, K>;
+export type TestCaseEntry<T extends ExtensionInstance, K extends BlockKey<T>> = ObjectOrFunc<BlockTestCase<T, K>, Parameters<GetTestCase<T, K>>>;
 
 /**
  * As you might notice, the two branches of the below type are exactly the same. 
  * For some reason, typescript struggles if they are not split in this way. 
  */
-export type UnitTests<T extends ExtensionCommon> = T extends GenericExtension
+export type UnitTests<T extends ExtensionInstance> = T extends GenericExtension
   ? { [k in BlockKey<T>]?: SingleOrArray<ObjectOrFunc<BlockTestCase<T, k>, Parameters<GetTestCase<T, k>>>> }
   : { [k in BlockKey<T>]?: SingleOrArray<ObjectOrFunc<BlockTestCase<T, k>, Parameters<GetTestCase<T, k>>>> };
 
 export type RenderedUI = RenderResult<SvelteComponentDev, typeof import("/Users/parkermalachowsky/MIT/prg-extension-boilerplate/extensions/testing/node_modules/@testing-library/dom/types/queries")>;
 
-export type RuntimeForTest<T extends ExtensionCommon> = Runtime & {
+export type RuntimeForTest<T extends ExtensionInstance> = Runtime & {
   forTest: {
     extension: Testable<T>,
     UIPromise: Promise<RenderedUI>;
@@ -137,4 +137,4 @@ export type RuntimeForTest<T extends ExtensionCommon> = Runtime & {
 /**
  @see https://en.wikipedia.org/wiki/Test_fixture
  */
-export type IntegrationTest<T extends ExtensionCommon> = (fixture: { extension: Testable<T>, blockRunner: BlockRunner<T>, testHelper: TestHelper }) => void | Promise<void>;
+export type IntegrationTest<T extends ExtensionInstance> = (fixture: { extension: Testable<T>, blockRunner: BlockRunner<T>, testHelper: TestHelper }) => void | Promise<void>;

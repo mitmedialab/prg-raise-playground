@@ -1,10 +1,9 @@
-import { ExtensionCommon } from "../../ExtensionCommon";
-import legacySupport from "$common/extension/mixins/legacySupport";
+import legacySupport from "$common/extension/mixins/optional/legacySupport";
 import { ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuItems, BlockOperation, Argument, ExtensionMenuMetadata, ExtensionDynamicMenu, Menu, DynamicMenuThatAcceptsReporters, BaseGenericExtension, VerboseArgument, DefineBlock, AbstractConstructor, NonAbstractConstructor } from "$common/types";
 import { isFunction, isString } from "$common/utils";
 import { block } from "../blocks";
 import { ArgumentMethods, BlockDecorators, BlockDefinitions, BlockEntry, BlockMap, LegacyExtension, LegacyExtensionDecorator, LegacySupport, ObjectOrGetter } from "./types";
-import { DecoratedExtension } from "$common/extension/DecoratedExtension";
+import { ExtensionInstance } from "$common/extension";
 
 /**
  * 
@@ -21,11 +20,11 @@ export const legacy = <
   for<TExtension extends LegacyExtension<TInfo, TStrict>>() {
 
     const legacyExtension = (): LegacyExtensionDecorator<TExtension> => (value, context) => {
-      abstract class LegacySupport extends legacySupport(value as AbstractConstructor<ExtensionCommon>, info) {
+      abstract class LegacySupport extends legacySupport(value as AbstractConstructor<ExtensionInstance>, info) {
         readonly originalClassName = context.name;
       };
 
-      return LegacySupport as AbstractConstructor<ExtensionCommon> as NonAbstractConstructor<TExtension>;
+      return LegacySupport as AbstractConstructor<ExtensionInstance> as NonAbstractConstructor<TExtension>;
     };
 
     const blockMethodBroker = getBlockMetaData(info).map(([opcode, entry]) => {
@@ -33,7 +32,7 @@ export const legacy = <
       return {
         key,
         definer: createBlockDefiner<TExtension & BaseGenericExtension>(entry),
-        decorator: createBlockDecorator<TExtension & DecoratedExtension>(entry)
+        decorator: createBlockDecorator<TExtension & ExtensionInstance>(entry)
       }
     });
 
@@ -68,7 +67,7 @@ export const legacy = <
  * @param entry 
  * @returns 
  */
-const createBlockDefiner = <TExtension extends ExtensionCommon & BaseGenericExtension>(entry: BlockEntry) =>
+const createBlockDefiner = <TExtension extends ExtensionInstance & BaseGenericExtension>(entry: BlockEntry) =>
   (objOrGetter: ObjectOrGetter<{ opertation: BlockOperation } & Partial<ArgumentMethods<any, any>>, TExtension>) =>
     ((extension: TExtension) => {
       const { operation, argumentMethods } = isFunction(objOrGetter) ? objOrGetter.call(extension, extension) : objOrGetter;
@@ -81,7 +80,7 @@ const createBlockDefiner = <TExtension extends ExtensionCommon & BaseGenericExte
  * @param entry 
  * @returns 
  */
-const createBlockDecorator = <TExtension extends ExtensionCommon & DecoratedExtension>(entry: BlockEntry) =>
+const createBlockDecorator = <TExtension extends ExtensionInstance>(entry: BlockEntry) =>
   (...params: ([ObjectOrGetter<ArgumentMethods<any, any>, TExtension>] | [])) => {
     if (params.length === 0 || !params[0]) return block<TExtension, any[], any, any, any>(entry);
     const objOrGetter = params[0];
@@ -97,7 +96,7 @@ const createBlockDecorator = <TExtension extends ExtensionCommon & DecoratedExte
 const attachArgumentMethods = (
   block: ReturnType<BlockMap["get"]>,
   argumentMethods: Record<number, Partial<DynamicMenuThatAcceptsReporters<unknown>>>,
-  extension: ExtensionCommon
+  extension: ExtensionInstance
 ) => {
   const args = block.args ? block.args : block.arg ? [block.arg] : [];
 
