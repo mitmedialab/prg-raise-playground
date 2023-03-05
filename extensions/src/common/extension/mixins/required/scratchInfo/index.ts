@@ -1,5 +1,5 @@
 import { castToType } from "$common/cast";
-import CustomArgumentManager from "$common/customArguments/CustomArgumentManager";
+import CustomArgumentManager from "$common/extension/mixins/optional/customArguments/CustomArgumentManager";
 import { ArgumentType, BlockType } from "$common/types/enums";
 import { BlockOperation, ValueOf, Menu, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, DynamicMenu, BlockMetadata, } from "$common/types";
 import { registerButtonCallback } from "$common/ui";

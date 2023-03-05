@@ -1,4 +1,4 @@
-import customArguments from "./optional/customArguments";
+import customArguments from "./optional/customArguments/index";
 import customSaveData from "./optional/customSaveData";
 import ui from "./optional/ui";
 import { MinimalExtensionConstructor } from "./required";

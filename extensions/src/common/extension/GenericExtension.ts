@@ -6,7 +6,7 @@ import { getImplementationName } from "./mixins/required/scratchInfo/index";
 export const getAlternativeOpcodeName = (opcode: string) => `__block_${opcode}`;
 
 /**
- * @summary Base class for all extensions implemented via the Typescript Extension Framework.
+ * @summary Base class for extensions implemented via the Typescript Extension Framework (using the "generic" strategy).
  * @example
  * class MyExtension extends Extension<
  *  { // Display details

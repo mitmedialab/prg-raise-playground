@@ -6,14 +6,14 @@ export * from "./IDs";
 export * from "./globals";
 export * from "./extension/mixins/optional/customSaveData";
 export * from "./cast";
-export type { ArgumentEntry, ArgumentEntrySetter } from "./customArguments/CustomArgumentManager";
+export type { ArgumentEntry, ArgumentEntrySetter } from "./extension/mixins/optional/customArguments/CustomArgumentManager";
 
 export type ReplaceWithBlockFunctionName = never;
 
-import CustomArgumentManager from "./customArguments/CustomArgumentManager";
+import CustomArgumentManager from "./extension/mixins/optional/customArguments/CustomArgumentManager";
 export { CustomArgumentManager };
 
-export * from "./customArguments/dropdownOverride";
+export * from "./extension/mixins/optional/customArguments/dropdownOverride";
 
 export * from "./extension/GenericExtension";
 export * from "./extension/ExtensionBase";

@@ -1,10 +1,10 @@
 import type Runtime from "$scratch-vm/engine/runtime";
-import CustomArgumentManager, { ArgumentEntry } from "$common/customArguments/CustomArgumentManager";
-import { CustomArgumentUIConstructor, renderToDropdown } from "$common/customArguments/dropdownOverride";
+import CustomArgumentManager, { ArgumentEntry } from "$common/extension/mixins/optional/customArguments/CustomArgumentManager";
+import { CustomArgumentUIConstructor, renderToDropdown } from "$common/extension/mixins/optional/customArguments/dropdownOverride";
 import { ArgumentType } from "$common/types/enums";
 import { openDropdownState, closeDropdownState, initDropdownState, customArgumentFlag, customArgumentCheck, dropdownStateFlag, dropdownEntryFlag } from "$common/globals";
 import { Argument, BaseGenericExtension } from "$common/types";
-import { MinimalExtensionConstructor } from "../required";
+import { MinimalExtensionConstructor } from "../../required";
 
 type ComponentGetter = (id: string, componentName: string) => CustomArgumentUIConstructor;
 
