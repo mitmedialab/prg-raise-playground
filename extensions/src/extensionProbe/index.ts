@@ -6,8 +6,6 @@ export default class ExtensionProbe extends extension(
   {
     name: "Extension Probe",
     description: "(INTERNAL) Use this extension to probe the info of other estensions",
-    insetIconURL: "",
-    iconURL: ""
   },
   "ui"
 ) {
