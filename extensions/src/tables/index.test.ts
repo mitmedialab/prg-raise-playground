@@ -74,9 +74,9 @@ createTestSuite({ Extension, __dirname }, {
       }
     },
     addTable: [
-      //adds new table
       (testHelper) => {
         return {
+          name: "adds new table",
           input: ['addedTable', 1, 1] as const,
           before: (fixture) => {
             const { extension, testHelper } = fixture;
@@ -90,9 +90,9 @@ createTestSuite({ Extension, __dirname }, {
           }
         }
       },
-      //doesn't add if already exists
       (testHelper) => {
         return {
+          name: "doesn't add if already exists",
           input: ['addedTable', 2, 2] as const,
           before: (fixture) => {
             const { extension, testHelper } = fixture;
@@ -146,10 +146,10 @@ createTestSuite({ Extension, __dirname }, {
       }
     },
     getValueAt: [
-      // return -1 for no table
       (testHelper) => {
         let expected = -1;
         return {
+          name: "return -1 for no table",
           input: ['blah', 2, 2] as const,
           expected,
           before: (fixture) => {
@@ -163,10 +163,10 @@ createTestSuite({ Extension, __dirname }, {
           }
         }
       },
-      // return -1 for row too high
       (testHelper) => {
         let expected = -1;
         return {
+          name: "return -1 for row too high",
           input: ['addedTable', 3, 2] as const,
           expected,
           before: (fixture) => {
@@ -180,10 +180,10 @@ createTestSuite({ Extension, __dirname }, {
           }
         }
       },
-      // return -1 for column too high
       (testHelper) => {
         let expected = -1;
         return {
+          name: "return -1 for column too high",
           input: ['addedTable', 2, 3] as const,
           expected,
           before: (fixture) => {
@@ -197,10 +197,10 @@ createTestSuite({ Extension, __dirname }, {
           }
         }
       },
-      // return value correctly
       (testHelper) => {
         let expected = 1;
         return {
+          name: "return value correctly",
           input: ['addedTable', 2, 2] as const,
           expected,
           before: (fixture) => {
@@ -216,10 +216,10 @@ createTestSuite({ Extension, __dirname }, {
       },
     ],
     numberOfRows: [
-      // return -1 for wrong table
       (testHelper) => {
         let expected = -1;
         return {
+          name: "return -1 for wrong table",
           input: 'blah',
           expected,
           before: (fixture) => {
@@ -233,10 +233,10 @@ createTestSuite({ Extension, __dirname }, {
           }
         }
       },
-      // return value correctly
       (testHelper) => {
         let expected = 2;
         return {
+          name: "return value correctly",
           input: 'addedTable',
           expected,
           before: (fixture) => {
@@ -252,10 +252,10 @@ createTestSuite({ Extension, __dirname }, {
       },
     ],
     highestValueOfColumn: [
-      // return -1 for wrong table
       (testHelper) => {
         let expected = -1;
         return {
+          name: "return -1 for wrong table",
           input: ['blah', 2] as const,
           expected,
           before: (fixture) => {
@@ -269,10 +269,10 @@ createTestSuite({ Extension, __dirname }, {
           }
         }
       },
-      // return value correctly
       (testHelper) => {
         let expected = 4;
         return {
+          name: "return value correctly",
           input: ['addedTable', 2] as const,
           expected,
           before: (fixture) => {
@@ -288,10 +288,10 @@ createTestSuite({ Extension, __dirname }, {
       }
     ],
     indexOfHighestColumnValue: [
-      // return -1 for wrong table
       (testHelper) => {
         let expected = -1;
         return {
+          name: "return -1 for wrong table",
           input: ['blah', 2] as const,
           expected,
           before: (fixture) => {
@@ -305,10 +305,10 @@ createTestSuite({ Extension, __dirname }, {
           }
         }
       },
-      // return value correctly
       (testHelper) => {
         let expected = 2;
         return {
+          name: "return value correctly",
           input: ['addedTable', 2] as const,
           expected,
           before: (fixture) => {
