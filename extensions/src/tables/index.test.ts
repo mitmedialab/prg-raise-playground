@@ -13,8 +13,8 @@ createTestSuite({ Extension, __dirname }, {
             expect(inputs.length).toBe(1);
             expect(subs.length).toBe(1);
             
-            const input = inputs[0];
-            const sub = subs[0];
+            const input = inputs[0] as HTMLInputElement;
+            const sub = subs[0] as HTMLButtonElement;
 
             await updateHTMLInputValue(input, 'newTable');
             expect(input.value).toBe('newTable')
@@ -34,8 +34,8 @@ createTestSuite({ Extension, __dirname }, {
             expect(inputs.length).toBe(1);
             expect(subs.length).toBe(1);
             
-            const input = inputs[0];
-            const sub = subs[0];
+            const input = inputs[0] as HTMLInputElement;
+            const sub = subs[0] as HTMLButtonElement;
 
             await updateHTMLInputValue(input, 'myTable');
             expect(input.value).toBe('myTable')
@@ -65,8 +65,9 @@ createTestSuite({ Extension, __dirname }, {
         expect(newTable.selected).toBe(true);
         const cells = await ui.findAllByTestId('tableCell');
         expect(cells.length).toBe(4);
+        const cell = cells[0] as HTMLInputElement;
 
-        await fireEvent.change(cells[0], { target: { value: '3' } });
+        await fireEvent.change(cell, { target: { value: '3' } });
         expect(extension.tables.newTable[0][0]).toBe(3);
         
         delete extension.tables.newTable;
