@@ -1,1 +1,0 @@
-../simple_example/Counter.svelte

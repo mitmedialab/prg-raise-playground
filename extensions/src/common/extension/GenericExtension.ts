@@ -106,7 +106,13 @@ export abstract class Extension<
       const block = blocks[opcode];
       const validOpcode = opcode in this ? getAlternativeOpcodeName(opcode) : opcode;
       const { operation, text, arg, args, type } = isFunction(block) ? block.call(this, this) : block;;
-      this.pushBlock(validOpcode, { text, arg, args, type }, operation);
+      this.pushBlock(validOpcode,
+        arg
+          ? { text, type, arg }
+          : args
+            ? { text, type, args }
+            : { text, type },
+        operation);
       const internalFuncName = getImplementationName(validOpcode);
       (this as any)[validOpcode] = function () { return self[internalFuncName].call(self, ...arguments); };
     }

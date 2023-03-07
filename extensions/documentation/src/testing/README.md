@@ -11,13 +11,6 @@ The below examples will test the below extension:
 
 [](./index.ts?export=defineExtension)
 
-<details>
-<summary>To save space, the block definitions are hidden, but you can open this if you need to see them:</summary>
-
-[](./index.ts?export=defineBlocks)
-
-</details>
-
 ### Anatomy of a test
 
 Extension test suites will make use of the `createTestSuite` utility function implemented in [extensions/testing/index.ts]() (available under the alias `$testing`).
@@ -65,7 +58,7 @@ See [their documentation](https://testing-library.com/docs/) for a complete guid
 
 ### Integration Test
 
-Specifically for extensions, [integration tests]() test either the operations of multiple blocks or how one extension interacts with another.
+Specifically for extensions, [integration tests](https://en.wikipedia.org/wiki/Integration_testing) test either the operations of multiple blocks or how one extension interacts with another.
 
 They are implemented as functions as you can see below:
 

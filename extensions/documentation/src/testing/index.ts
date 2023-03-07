@@ -3,45 +3,34 @@ import { codeSnippet } from "../../";
 
 export const defineExtension = codeSnippet();
 
-import { Extension } from "$common";
-import { Environment, ButtonBlock, ArgumentType, BlockType, BlockDefinitions } from "$common";
+import { block, buttonBlock, extension, Environment } from "$common";
 
-export default class ExtensionUnderTest extends Extension<DefaultDisplayDetails, {
-  exampleReporter: (input: string) => string;
-  exampleCommand: (a: number, b: number) => void;
-  exampleButtonThatOpensUI: ButtonBlock
-}> {
+const name = "Test";
+
+export default class ExtensionUnderTest extends extension({ name }, "ui") {
 
   init(env: Environment): void { }
 
-  defineBlocks(): ExtensionUnderTest["BlockDefinitions"] {
-    return defineBlocksElsewhere(); // You can ignore this!
+  @block({
+    type: "command",
+    args: ["number", "number"],
+    text: (x, y) => "placeholder",
+  })
+  exampleCommand(a: number, b: number) { /* Do something */ }
+
+  @block({
+    type: "reporter",
+    text: (x) => "placeholder",
+    arg: "string",
+  })
+  exampleReporter(input: string) {
+    return "Whatever you expect to be the output, given the input"
+  }
+
+  @buttonBlock("placeholder")
+  exampleButtonThatOpensUI() {
+    this.openUI("Test");
   }
 }
 
 defineExtension.end;
-
-export const defineBlocks = codeSnippet();
-
-const defineBlocksElsewhere = (): BlockDefinitions<ExtensionUnderTest> => ({
-  exampleCommand: {
-    type: BlockType.Command,
-    args: [ArgumentType.Number, ArgumentType.Number],
-    text: () => "",
-    operation: () => { },
-  },
-  exampleReporter: {
-    type: BlockType.Reporter,
-    text: () => "",
-    arg: ArgumentType.String,
-    // This is the same dummy value used by the tests
-    operation: () => "Whatever you expect to be the output, given the input",
-  },
-  exampleButtonThatOpensUI: (ext) => ({
-    type: BlockType.Button,
-    text: "",
-    operation: () => { ext.openUI("Test") }
-  })
-});
-
-defineBlocks.end;

@@ -16,7 +16,7 @@ type ArgsText<T> = T extends ScratchArgument<string> | VerboseArgument<string>
   } & ArgsTextCommon)
   : ArgsTextCommon;
 
-type ToArgumentsText<T extends any[]> =
+type ToArgumentsText<T extends readonly any[]> =
   T extends [infer Head, ...infer Tail]
   ? [ArgsText<Head>, ...ToArgumentsText<Tail>]
   : [];

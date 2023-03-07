@@ -5,7 +5,7 @@ import { format } from "./util";
 
 const isDynamicText = (text: AnyBlock["text"]): text is (OneArgBlock["text"] | MultipleArgsBlock["text"]) => !isString(text);
 
-export const convertToDisplayText = (opcode: string, text: AnyBlock["text"], args: Argument<any>[]) => {
+export const convertToDisplayText = (opcode: string, text: AnyBlock["text"], args: readonly Argument<any>[]) => {
   if (!args || args.length === 0) return text as string;
 
   if (!isDynamicText(text)) return format(text, opcode, `Block text for '${opcode}'`);

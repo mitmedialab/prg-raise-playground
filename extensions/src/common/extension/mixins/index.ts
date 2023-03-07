@@ -1,3 +1,4 @@
+import { AbstractConstructor, ValueOf } from "$common/types";
 import customArguments from "./optional/customArguments/index";
 import customSaveData from "./optional/customSaveData";
 import ui from "./optional/ui";

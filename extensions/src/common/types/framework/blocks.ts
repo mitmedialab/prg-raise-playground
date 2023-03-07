@@ -7,13 +7,15 @@ import { ParamsAndUtility, ToArguments } from "./arguments";
 export type InternalButtonKey = "__button__";
 export type ButtonBlock = () => InternalButtonKey;
 
-export type BlockMetadata<Fn extends BlockOperation> = Parameters<Fn> extends [...infer R extends any[], BlockUtility]
-  ? Omit<Block<BaseGenericExtension, (...args: R) => ReturnType<Fn>>, "operation">
-  : Omit<Block<BaseGenericExtension, Fn>, "operation">;
+export type BlockMetadata<
+  Fn extends BlockOperation,
+  TParameters extends any[] = Parameters<Fn> extends [...infer R, BlockUtility] ? R : Parameters<Fn>
+> = Type<ReturnType<Fn>> & Text<TParameters> & Arguments<TParameters>;
 
-export type Block<TExt extends BaseGenericExtension, TOp extends BlockOperation> = {
+export type Block<TExt extends BaseGenericExtension, TOp extends BlockOperation> = BlockMetadata<TOp> & Operation<TExt, TOp>;
+
+type Type<Return> = {
   /**
-   * @type {BlockType}
    * @example type: BlockType.Command
    * @example type: BlockType.Reporter
    * @description
@@ -48,48 +50,20 @@ export type Block<TExt extends BaseGenericExtension, TOp extends BlockOperation>
    *        * each time a child branch finishes, the loop block is called again.
    * * `BlockType.Event` - Starts a stack in response to an event (full spec TBD)
    */
-  type: ReturnType<TOp> extends ReturnType<ButtonBlock>
+  type: Return extends ReturnType<ButtonBlock>
   ? typeof BlockType.Button
-  : ReturnType<TOp> extends void
+  : Return extends void
   ? typeof BlockType.Command | typeof BlockType.Button | typeof BlockType.Loop
-  : ReturnType<TOp> extends boolean
-  ? typeof BlockType.Reporter | typeof BlockType.Boolean | typeof BlockType.Hat
-  : ReturnType<TOp> extends number
-  ? (typeof BlockType.Reporter | typeof BlockType.Conditional)
-  : ReturnType<TOp> extends Promise<any>
-  ? never
+  : Return extends boolean
+  ? typeof BlockType.Boolean | typeof BlockType.Hat
+  : Return extends number
+  ? typeof BlockType.Reporter | typeof BlockType.Conditional
+  : Return extends Promise<infer Awaited>
+  ? Type<Awaited>["type"]
   : typeof BlockType.Reporter | typeof BlockType.Event;
+}
 
-  /**
-   * @summary A function that encapsulates the code that runs when a block is executed
-   * @description This is where you implement what your block actually does.
-   * 
-   * It can/should act on the arguments you specified for this block.
-   * 
-   * @example
-   * // An operation that could satisfy a one-liner reporter boock
-   * // (specified with arrow syntax)
-   * operation: (text: string, index: number) => text[index];
-   * 
-   * @example
-   * // An operation that could satisfy a  reporter boock
-   * // (specified with arrow syntax)
-   * operation: (dividend: number, divisor: number) => {
-   *  return dividend / divisor;
-   * }
-   * 
-   * @example
-   * // An operation that could satisfy a command block
-   * // (specified with method syntax, and leveraging optional final BlockUtility parameter)
-   * operation: function(msg: string, util: BlockUtility) {
-   *  alert(`${msg} ${util.stackFrame.isLoop}`);
-   * }
-   * 
-   * @param {BlockUtility} util Unless this block is a `Button`, the final argument passed to this function will always be a BlockUtility object, 
-   * which can help you accomplish more advanced block behavior. If you don't need to use it, feel free to omit it.
-   * @see {BlockUtility} type for more information on the final argument passed to this function.
-   */
-  operation: (this: TExt, ...params: TOp extends ButtonBlock ? Parameters<TOp> : ParamsAndUtility<TOp>) => TOp extends ButtonBlock ? void : ReturnType<TOp>;
+type Text<TParameters extends any[]> = {
   /**
    * @summary The display text of your block.
    * @description This is where you describe what your block should say. 
@@ -106,16 +80,25 @@ export type Block<TExt extends BaseGenericExtension, TOp extends BlockOperation>
    * text: (name: string, age: number) => `My name is ${name} and I'm ${age} years old`
    * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals for more info on Template Strings (aka Template Literals)
    */
-  text: Parameters<TOp> extends NonEmptyArray<any> ? (...params: Parameters<TOp>) => string : string;
-} & (Parameters<TOp> extends NonEmptyArray<any>
-  ? Parameters<TOp> extends [any]
-  // NOTE: The above check shouldn't be necessary, and instead a mapped type should be used, but JS Doc comments currently don't work with mapped types:
-  // For example: [K in Parameters<T> extends [any] ? "arg" : "args"]: Parameters<T> extends [any] ? ToArguments<Parameters<T>>[0] : ToArguments<Parameters<T>>
-  ? {
+  text: TParameters extends NonEmptyArray<any> ? (...params: TParameters) => string : string;
+}
+
+type Arguments<TParameters extends any[]> = &
+  TParameters extends [] | [BlockUtility] ? {
+    /**
+     * @description The args field should not be defined for blocks that take no arguments
+     */
+    args?: never;
+    /**
+     * @description The args field should not be defined for blocks that take no arguments
+     */
+    arg?: never;
+  }
+  : TParameters extends [any] ? {
     /**
     * @description The args field should not be defined for blocks that take only one argument
     */
-    args?: never
+    args?: never;
     /**
      * @summary The Argument your block takes.
      * 
@@ -182,13 +165,13 @@ export type Block<TExt extends BaseGenericExtension, TOp extends BlockOperation>
      *  }
      * }
      */
-    arg: ToArguments<Parameters<TOp>>[0]
+    arg: ToArguments<TParameters>[0];
   }
   : {
     /**
     * @description The arg field should not be defined for blocks that take more than one argument
     */
-    arg?: never
+    arg?: never;
     /**
      * @summary The Arguments that your block takes.
      * 
@@ -254,15 +237,42 @@ export type Block<TExt extends BaseGenericExtension, TOp extends BlockOperation>
      *  } 
      * ]
      */
-    args: ToArguments<Parameters<TOp>>
-  }
-  : {
-    /**
-     * @description The args field should not be defined for blocks that take no arguments
-     */
-    args?: never
-    arg?: never
-  });
+    args: ToArguments<TParameters>;
+  };
+
+
+type Operation<TExt extends BaseGenericExtension, TOp extends BlockOperation> = {
+  /**
+ * @summary A function that encapsulates the code that runs when a block is executed
+ * @description This is where you implement what your block actually does.
+ * 
+ * It can/should act on the arguments you specified for this block.
+ * 
+ * @example
+ * // An operation that could satisfy a one-liner reporter boock
+ * // (specified with arrow syntax)
+ * operation: (text: string, index: number) => text[index];
+ * 
+ * @example
+ * // An operation that could satisfy a  reporter boock
+ * // (specified with arrow syntax)
+ * operation: (dividend: number, divisor: number) => {
+ *  return dividend / divisor;
+ * }
+ * 
+ * @example
+ * // An operation that could satisfy a command block
+ * // (specified with method syntax, and leveraging optional final BlockUtility parameter)
+ * operation: function(msg: string, util: BlockUtility) {
+ *  alert(`${msg} ${util.stackFrame.isLoop}`);
+ * }
+ * 
+ * @param {BlockUtility} util Unless this block is a `Button`, the final argument passed to this function will always be a BlockUtility object, 
+ * which can help you accomplish more advanced block behavior. If you don't need to use it, feel free to omit it.
+ * @see {BlockUtility} type for more information on the final argument passed to this function.
+ */
+  operation: (this: TExt, ...params: TOp extends ButtonBlock ? Parameters<TOp> : ParamsAndUtility<TOp>) => TOp extends ButtonBlock ? void : ReturnType<TOp>;
+}
 
 export type ReturnTypeByBlockType<T extends ValueOf<typeof BlockType>> =
   T extends typeof BlockType.Boolean
@@ -307,7 +317,7 @@ export type BlocksInfo<T extends BaseGenericExtension> = {
 export type BlockInfo<TExtension extends BaseGenericExtension, TKey extends keyof BlocksInfo<TExtension>> = BlocksInfo<TExtension>[TKey];
 
 export type NoArgsBlock = BlockMetadata<() => any>;
-export type OneArgBlock = BlockMetadata<(arg: any, utility: BlockUtility) => any>;
+export type OneArgBlock = BlockMetadata<(arg: any, utility: BlockUtility) => any, [string]>;
 export type MultipleArgsBlock = BlockMetadata<(arg1: any, arg2: any, utility: BlockUtility) => any>;
 export type WithArgsBlock = BlockMetadata<(...args: any[]) => any>;
 export type AnyBlock = NoArgsBlock | OneArgBlock | MultipleArgsBlock;

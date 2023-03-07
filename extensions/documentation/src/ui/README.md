@@ -22,23 +22,21 @@ Feel free to change the name of this file to match it's intended usage, e.g. `Ed
 
 ### Open UI Using a Button
 
-The most common (and recommended) way to open UI via your extension is to (1) implement a `ButtonBlock` and (2) invoke the Extension function `openUI` within the block's `operation` (which will be called when the button is clicked).
+The most common (and recommended) way to open UI via your extension is to:
 
-To do so, first declare a `ButtonBlock`, e.g.:
+#### 1. Add UI support to your extension by specifying the "ui" add on
 
-[](./declaration.ts?export=x)
+[](./extension.ts?export=x)
 
-Next, implement the `ButtonBlock` definition inside of the object returned by the `defineBlocks` function. As usual, the defintion of the `ButtonBlock` is a function that returns an object containing all of the details needed to define the block. 
+#### 2. Utilitze the (now available) `openUI` method in a Button Block
 
-Most importantly, within the `operation` function of the block's definition, the function `openUI` should be invoked (which is implemented on the base `Extension` class, and can therefore be invoked using the reference to the Extension passed as the only argument to the block definition function, i.e. `self` below).
-
-For example:
-
-[](./operation.ts?export=x)
-
-The first argument is the name of the `.svelte` file in which your UI is implemented -- this name must match your filename exactly (but you can omit the `.svelte` extension).
+The first argument of the `openUI` method is the name of the `.svelte` file in which your UI is implemented -- this name must match your filename exactly (but you can omit the `.svelte` extension).
 
 The second argument is the title that will display at the top of the modal window. If omitted, this will default to the name of your extension.
+
+Below are two examples of declaring buttons (one using the standard `@block` decorator, and the other using the `@buttonBlock` decorator short-hand):
+
+[](./index.ts?export=x)
 
 ### Custom Argument UI
 

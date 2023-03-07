@@ -28,7 +28,7 @@ export const extractArgs = (block: BlockMetadata<BlockOperation>) => {
  * @param names 
  * @returns 
  */
-export const zipArgs = (args: Argument<any>[], names?: string[]) => {
+export const zipArgs = (args: readonly Argument<any>[], names?: string[]) => {
   const types = args.map(getArgumentType);
   const handlers = extractHandlers(args);
   names ??= types.map((_, index) => getArgName(index));
@@ -36,7 +36,7 @@ export const zipArgs = (args: Argument<any>[], names?: string[]) => {
   return types.map((type, index) => ({ type, name: names[index], handler: handlers[index] }));
 }
 
-export const convertToArgumentInfo = (opcode: string, args: Argument<any>[], menus: Menu<any>[]) => {
+export const convertToArgumentInfo = (opcode: string, args: readonly Argument<any>[], menus: Menu<any>[]) => {
   if (!args || args.length === 0) return undefined;
 
   return Object.fromEntries(

@@ -47,9 +47,35 @@ export type ParameterOf<
  * @link https://www.typescriptlang.org/docs/handbook/2/template-literal-types.html (Not allowed!)
  */
 export type ExtensionMenuDisplayDetails = {
+  /**
+   * The display name of your extension
+   */
   name: string;
+  /**
+   * A short description of your extension
+   */
   description?: string;
+  /**
+   * This field encodes the graphic that will be associated with your extension in the extensions menu.
+   * 
+   * **IMPORTANT:** This field should be set to the name of a file (typically a png) that is in the same directory as your Extension's index.ts file.
+   * @example
+   * This example assumes that there is a file _myExtensionGraphic.png_ located in our extension's directory.
+   * ```ts
+   * iconURL: "myExtensionGraphic.png"
+   * ```
+   */
   iconURL?: string;
+  /**
+   * This field encodes the smaller image (like a thumbnail) that will appear both in the extensions menu, 
+   * as well as on the edge of each of your extensions blocks.
+   * 
+   * **IMPORTANT:** This field should be set to the name of a file (typically an svg) that is in the same directory as your Extension's index.ts file.
+   * @example This example assumes that there is a file _myExtensionLogo.svg_ located in our extension's directory.
+   * ```ts
+   * iconURL: "myExtensionLogo.svg"
+   * ```
+   */
   insetIconURL?: string;
   internetConnectionRequired?: boolean;
   collaborator?: string;

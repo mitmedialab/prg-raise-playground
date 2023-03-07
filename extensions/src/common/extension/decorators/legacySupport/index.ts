@@ -1,5 +1,5 @@
 import legacySupport from "$common/extension/mixins/optional/legacySupport";
-import { ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuItems, BlockOperation, Argument, ExtensionMenuMetadata, ExtensionDynamicMenu, Menu, DynamicMenuThatAcceptsReporters, BaseGenericExtension, VerboseArgument, DefineBlock, AbstractConstructor, NonAbstractConstructor } from "$common/types";
+import { ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuItems, BlockOperation, Argument, ExtensionMenuMetadata, ExtensionDynamicMenu, Menu, DynamicMenuThatAcceptsReporters, BaseGenericExtension, VerboseArgument, DefineBlock, AbstractConstructor, NonAbstractConstructor, BlockMetadata } from "$common/types";
 import { isFunction, isString } from "$common/utils";
 import { block } from "../blocks";
 import { ArgumentMethods, BlockDecorators, BlockDefinitions, BlockEntry, BlockMap, LegacyExtension, LegacyExtensionDecorator, LegacySupport, ObjectOrGetter } from "./types";
@@ -82,14 +82,14 @@ const createBlockDefiner = <TExtension extends ExtensionInstance & BaseGenericEx
  */
 const createBlockDecorator = <TExtension extends ExtensionInstance>(entry: BlockEntry) =>
   (...params: ([ObjectOrGetter<ArgumentMethods<any, any>, TExtension>] | [])) => {
-    if (params.length === 0 || !params[0]) return block<TExtension, any[], any, any, any>(entry);
+    if (params.length === 0 || !params[0]) return block<TExtension, any[], any, any>(entry as BlockMetadata<any>);
     const objOrGetter = params[0];
-    return block<TExtension, any[], any, any, any>((extension: TExtension) => {
+    return block<TExtension, any[], any, any>((extension: TExtension) => {
       const { argumentMethods } = isFunction(objOrGetter)
         ? objOrGetter.call(extension, extension) : objOrGetter;
 
       attachArgumentMethods(entry, argumentMethods, extension);
-      return entry;
+      return entry as BlockMetadata<any>;
     });
   }
 
@@ -133,9 +133,9 @@ const convertAndInsertBlock = (map: BlockMap, block: ExtensionBlockMetadata, met
     .map(({ name, ...details }) => details satisfies Argument<any> as Argument<unknown>);
 
   const { length } = args;
-  const argsEntry = length >= 2 ? { args: args as [Argument<unknown>] } : { arg: args[0] };
-
-  return map.set(opcode, { type, text, ...argsEntry });
+  return length >= 2
+    ? map.set(opcode, { type, text, args: args as [] })
+    : map.set(opcode, { type, text, arg: args[0] })
 }
 
 const getBlockMetaData = (metadata: ExtensionMetadata) => Array.from(

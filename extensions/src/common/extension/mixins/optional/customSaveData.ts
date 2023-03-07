@@ -1,13 +1,14 @@
 import { ExtensionBaseConstructor } from "$common/extension/ExtensionBase";
 import { ExtensionBase } from "../../ExtensionBase";
-import { NonAbstractConstructor } from "$common/types";
+import { BaseGenericExtension, NonAbstractConstructor } from "$common/types";
 import { MinimalExtensionConstructor } from "../required";
+import { ExtensionIntanceWithFunctionality, ExtensionWithFunctionality } from "..";
 
 /**
  * WARNING! If you change this key, it will affect already saved projects.
  * Do not rename this without first developing a mechanism for searching for previously used keys.
  */
-const saveDataKey = "customSaveDataPerExtension" as const;
+export const saveDataKey = "customSaveDataPerExtension" as const;
 
 /**
  * @summary Utility class to assist in creating a (typesafe) object that, for a given Extension type, handles both:
@@ -25,7 +26,7 @@ const saveDataKey = "customSaveDataPerExtension" as const;
  *    }
  * })
  */
-export class SaveDataHandler<T extends ExtensionBase, TData> {
+export class SaveDataHandler<T extends BaseGenericExtension | ExtensionIntanceWithFunctionality<["customSaveData"]>, TData> {
   constructor(public hooks: {
     // @ts-ignore
     Extension: NonAbstractConstructor<T>,

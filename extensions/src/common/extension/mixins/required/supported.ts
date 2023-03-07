@@ -13,7 +13,6 @@ export default function (Ctor: ExtensionBaseConstructor, supported: string[]) {
     supports<const TKey extends MixinName>(mixinName: TKey): this is typeof this & ExtensionIntanceWithFunctionality<[TKey]> {
       return supported.includes(mixinName);
     }
-
   }
 
   return _;

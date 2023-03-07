@@ -37,7 +37,7 @@ export type ScratchArgument<T> =
 // Used to be <T extends [...any[]]> ... not sure if it needs to be?
 export type ToArguments<T extends any[]> =
   T extends [infer Head, ...infer Tail]
-  ? [Argument<Head>, ...ToArguments<Tail>]
+  ? readonly [Argument<Head>, ...ToArguments<Tail>]
   : [];
 
 export type ParamsAndUtility<T extends BlockOperation> = [...params: Parameters<T>, util: BlockUtility];

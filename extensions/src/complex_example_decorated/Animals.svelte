@@ -1,1 +1,0 @@
-../complex_example/Animals.svelte

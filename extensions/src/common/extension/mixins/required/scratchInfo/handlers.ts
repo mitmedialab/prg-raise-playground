@@ -6,7 +6,7 @@ const isVerbose = (arg: Argument<any>): arg is VerboseArgument<any> => !isPrimit
 const handlerKey: keyof MenuThatAcceptsReporters<any> = 'handler';
 const hasHandler = (options: Menu<any>): options is MenuThatAcceptsReporters<any> | DynamicMenuThatAcceptsReporters<any> => options && handlerKey in options;
 
-export const extractHandlers = (args: Argument<any>[]): Handler[] => args.map(element => {
+export const extractHandlers = (args: readonly Argument<any>[]): Handler[] => args.map(element => {
   if (!isVerbose(element)) return identity;
   const { options } = element;
   if (!hasHandler(options)) return identity;
