@@ -109,7 +109,8 @@ export type BlockTestCase<T extends ExtensionInstance, Key extends BlockKey<T>> 
   Hooks<T, Key> &
   EnsureReady<T> &
   Input<T, Key> &
-  Expected<T, Key>;
+  Expected<T, Key> &
+  { name?: string };
 
 export type SingleOrArray<T> = T | T[];
 export type ObjectOrFunc<T, Args extends any[]> = T | ((...args: Args) => T);
