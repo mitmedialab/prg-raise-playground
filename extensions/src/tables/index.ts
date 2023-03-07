@@ -1,6 +1,6 @@
-import { ArgumentType, ButtonBlock, BlockType,
-  Block, DefineBlock, DynamicMenuThatAcceptsReporters,
-  Environment, Extension, ExtensionMenuDisplayDetails,
+import {
+  ArgumentType, ButtonBlock, BlockType,
+  Environment, Extension,
   MenuItem, SaveDataHandler
 } from "$common";
 
@@ -46,7 +46,7 @@ export default class Tables extends Extension<Details, Blocks> {
       this.tables.myTable = [];
       this.tables.myTable.push([0]);
     }
-    
+
     // dynamic retriever of table names for block dropdowns
     this.tableNamesArg = {
       type: ArgumentType.String,
@@ -126,7 +126,7 @@ export default class Tables extends Extension<Details, Blocks> {
         arg: self.tableNamesArg,
         text: (table) => `remove ${table}`,
         operation: (table) => {
-          if (this.tables[table]) { 
+          if (this.tables[table]) {
             delete this.tables[table]
             return;
           } else {
@@ -268,7 +268,7 @@ export default class Tables extends Extension<Details, Blocks> {
             } else {
               return [index, current[column - 1]];
             }
-          }, [-1,-Infinity]);
+          }, [-1, -Infinity]);
           return (max[0] + 1);
         }
       }),

@@ -1,6 +1,6 @@
 <script lang="ts">
   import type Extension from ".";
-  import Ok from "../common/components/Ok.svelte";
+  import Ok from "$common/components/Ok.svelte";
   import { ReactiveSet, ReactiveInvoke, reactiveInvoke, reactiveSet, activeClass, color} from "$common";
 
   export let extension: Extension;
