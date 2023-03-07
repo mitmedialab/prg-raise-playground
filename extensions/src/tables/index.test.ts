@@ -12,7 +12,7 @@ createTestSuite({ Extension, __dirname }, {
             const subs = await ui.findAllByTestId("ok");
             expect(inputs.length).toBe(1);
             expect(subs.length).toBe(1);
-            
+
             const input = inputs[0] as HTMLInputElement;
             const sub = subs[0] as HTMLButtonElement;
 
@@ -33,7 +33,7 @@ createTestSuite({ Extension, __dirname }, {
             const subs = await ui.findAllByTestId("ok");
             expect(inputs.length).toBe(1);
             expect(subs.length).toBe(1);
-            
+
             const input = inputs[0] as HTMLInputElement;
             const sub = subs[0] as HTMLButtonElement;
 
@@ -46,21 +46,21 @@ createTestSuite({ Extension, __dirname }, {
     ],
     showTable: {
       before: (fixture) => {
-        const { extension, testHelper } = fixture;
-        extension.newTable({name: 'newTable', rows: 2, columns: 2});
+        const { extension, testHelper: { expect } } = fixture;
+        extension.newTable({ name: 'newTable', rows: 2, columns: 2 });
         expect(extension.tables.newTable.length).toBe(2);
       },
       after: async (fixture) => {
         const { ui, extension, testHelper: { expect, fireEvent, updateHTMLInputValue } } = fixture;
-        const myTable = await ui.findByText('myTable');
-        const newTable = await ui.findByText('newTable');
+        const myTable = await ui.findByText('myTable') as HTMLOptionElement;
+        const newTable = await ui.findByText('newTable') as HTMLOptionElement;
         expect(myTable.selected).toBe(true);
         expect(newTable.selected).toBe(false);
-        
+
         const selectors = await ui.findAllByTestId('tableSelect');
         const selector = selectors[0];
         await fireEvent.change(selector, { target: { value: 'newTable' } });
-        
+
         expect(myTable.selected).toBe(false);
         expect(newTable.selected).toBe(true);
         const cells = await ui.findAllByTestId('tableCell');
@@ -69,7 +69,7 @@ createTestSuite({ Extension, __dirname }, {
 
         await fireEvent.change(cell, { target: { value: '3' } });
         expect(extension.tables.newTable[0][0]).toBe(3);
-        
+
         delete extension.tables.newTable;
       }
     },
@@ -154,7 +154,7 @@ createTestSuite({ Extension, __dirname }, {
           expected,
           before: (fixture) => {
             const { extension, testHelper } = fixture;
-            extension.tables.addedTable = [[0,1],[0,1]];
+            extension.tables.addedTable = [[0, 1], [0, 1]];
           },
           after: (fixture) => {
             const { extension, testHelper, ui, result } = fixture;
@@ -171,7 +171,7 @@ createTestSuite({ Extension, __dirname }, {
           expected,
           before: (fixture) => {
             const { extension, testHelper } = fixture;
-            extension.tables.addedTable = [[0,1],[0,1]];
+            extension.tables.addedTable = [[0, 1], [0, 1]];
           },
           after: (fixture) => {
             const { extension, testHelper, ui, result } = fixture;
@@ -188,7 +188,7 @@ createTestSuite({ Extension, __dirname }, {
           expected,
           before: (fixture) => {
             const { extension, testHelper } = fixture;
-            extension.tables.addedTable = [[0,1],[0,1]];
+            extension.tables.addedTable = [[0, 1], [0, 1]];
           },
           after: (fixture) => {
             const { extension, testHelper, ui, result } = fixture;
@@ -205,7 +205,7 @@ createTestSuite({ Extension, __dirname }, {
           expected,
           before: (fixture) => {
             const { extension, testHelper } = fixture;
-            extension.tables.addedTable = [[0,1],[0,1]];
+            extension.tables.addedTable = [[0, 1], [0, 1]];
           },
           after: (fixture) => {
             const { extension, testHelper, ui, result } = fixture;
@@ -224,7 +224,7 @@ createTestSuite({ Extension, __dirname }, {
           expected,
           before: (fixture) => {
             const { extension, testHelper } = fixture;
-            extension.tables.addedTable = [[0,1],[0,1]];
+            extension.tables.addedTable = [[0, 1], [0, 1]];
           },
           after: (fixture) => {
             const { extension, testHelper, ui, result } = fixture;
@@ -241,7 +241,7 @@ createTestSuite({ Extension, __dirname }, {
           expected,
           before: (fixture) => {
             const { extension, testHelper } = fixture;
-            extension.tables.addedTable = [[0,1],[0,1]];
+            extension.tables.addedTable = [[0, 1], [0, 1]];
           },
           after: (fixture) => {
             const { extension, testHelper, ui, result } = fixture;
@@ -260,7 +260,7 @@ createTestSuite({ Extension, __dirname }, {
           expected,
           before: (fixture) => {
             const { extension, testHelper } = fixture;
-            extension.tables.addedTable = [[0,1],[0,4]];
+            extension.tables.addedTable = [[0, 1], [0, 4]];
           },
           after: (fixture) => {
             const { extension, testHelper, ui, result } = fixture;
@@ -277,7 +277,7 @@ createTestSuite({ Extension, __dirname }, {
           expected,
           before: (fixture) => {
             const { extension, testHelper } = fixture;
-            extension.tables.addedTable = [[0,1],[0,4]];
+            extension.tables.addedTable = [[0, 1], [0, 4]];
           },
           after: (fixture) => {
             const { extension, testHelper, ui, result } = fixture;
@@ -296,7 +296,7 @@ createTestSuite({ Extension, __dirname }, {
           expected,
           before: (fixture) => {
             const { extension, testHelper } = fixture;
-            extension.tables.addedTable = [[0,1],[0,4]];
+            extension.tables.addedTable = [[0, 1], [0, 4]];
           },
           after: (fixture) => {
             const { extension, testHelper, ui, result } = fixture;
@@ -313,7 +313,7 @@ createTestSuite({ Extension, __dirname }, {
           expected,
           before: (fixture) => {
             const { extension, testHelper } = fixture;
-            extension.tables.addedTable = [[0,1],[0,4]];
+            extension.tables.addedTable = [[0, 1], [0, 4]];
           },
           after: (fixture) => {
             const { extension, testHelper, ui, result } = fixture;
