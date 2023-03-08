@@ -1,5 +1,4 @@
 import { ExtensionWithFunctionality, MixinName, optionalMixins } from "./mixins/index";
-import { MinimalExtensionConstructor } from "./mixins/required";
 import { ExtensionBase } from "./ExtensionBase";
 import scratchInfo from "./mixins/required/scratchInfo";
 import supported from "./mixins/required/supported";
@@ -14,30 +13,33 @@ const tryAnnounceDetails = (details: ExtensionMenuDisplayDetails) => {
 }
 
 /**
- * Creates the extension base class compatible with your request, which has two parts:
+ * Creates the base class that your Extension should 'extend' which is compatible with your request. 
+ * 
+ * Your request will have the following two parts:
  * @param details The details about how your extension should display and behave with the Extensions menu.
  * Only the `name` field is required, but before your extension can be officially published, 
  * it will additionally need a `description`, `iconURL`, and `insetIconURL`
- * @param addOns An optional (zero or more) set of specifiers about what functionality this extension should have.
- * In this way, an 
+ * @param addOns An optional (zero or more) collection of specifiers about what functionality this extension should have.
+ * In this way, the functionality your Extension has access to (through its base class) is configurable.
  * 
  * To see what `addOns` you can specify, place your cursor after the details parameter and type a double quote ("). 
- * Your IDE should then suggest what values you can use (e.g. `"ui"`, `"customArguments"`, `"customSaveData"`, etc.). 
- * Note, the order of the `addOns` does not matter.
+ * Your IDE (code editor) should then suggest what values you can provide (e.g. `"ui"`, `"customArguments"`, `"customSaveData"`, etc.). 
+ * 
+ * **Note:** The order of the `addOns` does not matter.
  * @returns 
- * @example Extending an extension with a name and description (and no add ons)
+ * @example Defining an extension with a name and description (and no add ons)
  * ```ts
  * export default class Example extends extension({ name: "Some Name", description: "Some description..." }) {
  *  ...
  * }
  * ```
- * @example Extending an extension with a name and UI support
+ * @example Defining an extension with a name and UI functionality
  * ```ts
  * export default class Example extends extension({ name: "Some Name" }, "ui") {
  *  ...
  * }
  * ```
- * @example Extending an extension with a name and UI & custom arguments support
+ * @example Defining an extension with a name and UI & custom arguments functionality
  * ```ts
  * export default class Example extends extension({ name: "Some Name" }, "ui", "customArguments") {
  *  ...

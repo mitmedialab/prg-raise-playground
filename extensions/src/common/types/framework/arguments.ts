@@ -25,6 +25,13 @@ export type TypeByArgumentType<T extends ValueOf<typeof ArgumentType>> =
   : T extends typeof ArgumentType.Custom ? any
   : never;
 
+/**
+ * These are the argument types you're block method can accept 'out of the box'. 
+ * 
+ * If none of these suit your needs (and you're adventureous), you can ask someone about **_Custom Arguments_**...
+ */
+export type AcceptableArgumentTypes = TypeByArgumentType<ValueOf<Omit<typeof ArgumentType, "Custom">>>;
+
 export type ScratchArgument<T> =
   T extends RGBObject ? typeof ArgumentType.Color :
   T extends boolean[][] ? typeof ArgumentType.Matrix :

@@ -5,19 +5,38 @@ import { BlockMetadata } from "$common/types";
 import { getImplementationName } from "../mixins/required/scratchInfo/index";
 import { ExtensionInstance } from "..";
 
-
 /**
  * This a decorator function that should be associated with methods of your Extension class, all in order to turn your class methods
  * into Blocks that can be executed in the Block Programming Environment.
- * @param blockInfoOrGetter Either an object or a function that returns an object of the following specified shape:
+ * @param {BlockMetadata} blockInfoOrGetter Either an object or a function that returns an object of the following specified shapes 
+ * (which shape is required depends on your method's argument(s)):
+ * @example 
+ * Block method accepts no arguments
  * ```ts
  * {
  *  type: BlockType, // e.g. "reporter", "command"
- *  text: string | (...args) => string, // either a string (if the method being decorator takes no arguments) or a function that returns a strng
+ *  text: string // the display text of your block
+ * }
+ * ```
+ * @example 
+ * Block method accepts one argument
+ * ```ts
+ * {
+ *  type: BlockType, // e.g. "reporter", "command"
+ *  text: (arg) => string, // a function that returns a string, hover over the 'text' field in your code for more thourough documentation
+ *  arg: Argument, // hover over the 'arg' field in your code for more thourough documentation
+ * }
+ * ```
+* @example 
+ * Block method accepts 2 or more arguments
+ * ```ts
+ * {
+ *  type: BlockType, // e.g. "reporter", "command"
+ *  text: (...args) => string, // a function that returns a string, hover over the 'text' field in your code for more thourough documentation
+ *  args: Argument[], // hover over the 'args' field in your code for more thourough documentation
  * }
  * ```
  * @returns A manipulated version of the original method that is
- * @see 
  */
 export function block<
   const This extends ExtensionInstance,

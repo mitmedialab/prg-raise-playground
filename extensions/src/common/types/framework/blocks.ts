@@ -18,6 +18,7 @@ type Type<Return> = {
   /**
    * @example type: BlockType.Command
    * @example type: BlockType.Reporter
+   * @example type: "reporter" // using the equivalent string from the value pulled off of BlockType
    * @description
    * The kind of block we're defining, from a predefined list 
    * (shown below, roughly in order from most-to-least common).
@@ -292,6 +293,14 @@ export type ReturnTypeByBlockType<T extends ValueOf<typeof BlockType>> =
   : T extends typeof BlockType.Reporter
   ? object | string | boolean | number
   : never;
+
+/**
+ * These are most common types of values returned by block methods. 
+ * The Block Programming environment has built-in support for display these kinds of returned values to the user.
+ * 
+ * If you wanted to return something more complex (like an object), speak with one of this project's maintainers. 
+ */
+export type CommonReturnTypes = boolean | string | number;
 
 export type BlockOperation = (...args: any) => any;
 
