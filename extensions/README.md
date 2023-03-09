@@ -633,7 +633,7 @@ class SomeBlocks {
 #### Typescript / Extension Framework
 
 Things to note about the below typescript snippet:
-- The `Details` type object encodes how the extension will be displayed in the extensions menu
+- The object passed to the `extensions` type object encodes how the extension will be displayed in the extensions menu
     - No more editing [any jsx](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/packages/scratch-gui/src/lib/libraries/extensions/index.jsx#L71) to specify how your extension should display in the Extensions Menu
     - Now your image assets related to your extension should reside in the same place as your implementation (i.e. in the same directory as the `index.ts` file)
 - Any index.ts file within a subfolder of the [extensions directory](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/packages/scratch-vm/src/extensions) will be assumed to implement an extension
@@ -646,52 +646,46 @@ Things to note about the below typescript snippet:
     - [branchCount](https://github.com/mitmedialab/prg-extension-boilerplate/issues/168)
 
 ```ts
-import { Extension, ArgumentType, BlockType, Environment } from "$common";
+import { ArgumentType, BlockType, Environment, block, extension } from "$common";
+import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import formatMessage from './format-message'; // This should actually be an npm package and thus be 'format-message'
 
-type Details = {
+const details = {
   name: "Some Blocks",
   description: "A demonstration of some blocks",
   iconURL: "example.png",
-  insetIconURL: "inset.png"
-};
+  insetIconURL: "thumbnail.svg"
+}
 
-export default class SomeBlocks extends Extension<Details, {
-  myReporter: (text: string, letterNum: number) => string;
-}> {
+export default class SomeBlocks extends extension(details) {
 
   init(env: Environment) { }
 
-  defineBlocks(): SomeBlocks["BlockDefinitions"] {
-    return {
-      myReporter: (self: SomeBlocks) => ({
-        type: BlockType.Reporter,
-        args: [
-          {
-            type: ArgumentType.String,
-            defaultValue: 'text',
-            options: [
-              { text: 'Item One', value: 'itemId1' },
-              'itemId2'
-            ]
-          },
-          { type: ArgumentType.Number, defaultValue: 1 }
-        ],
-        text: (text, letterNum) => `letter ${letterNum} of ${text}'`,
-        operation: (text, letterNum, util) => {
+  @block({
+    type: BlockType.Reporter,
+    args: [
+      {
+        type: ArgumentType.String,
+        defaultValue: 'text',
+        options: [
+          { text: 'Item One', value: 'itemId1' },
+          'itemId2'
+        ]
+      },
+      { type: ArgumentType.Number, defaultValue: 1 }
+    ],
+    text: (text, letterNum) => `letter ${letterNum} of ${text}'`,
+  })
+  myReporter(text: string, letterNum: number, util: BlockUtility) {
+    const message = formatMessage({
+      id: 'myReporter.result',
+      default: 'Letter {letterNum} of {text} is {result}.',
+      description: 'The text template for the "myReporter" block result'
+    });
 
-          const message = formatMessage({
-            id: 'myReporter.result',
-            default: 'Letter {letterNum} of {text} is {result}.',
-            description: 'The text template for the "myReporter" block result'
-          });
+    const result = text.charAt(letterNum);
 
-          const result = text.charAt(letterNum);
-
-          return message.format({ text, letterNum, result });
-        }
-      })
-    }
+    return message.format({ text, letterNum, result });
   }
 }
 ```
@@ -703,7 +697,7 @@ One thing that makes adopting the new Extension Framework slightlier tricker is 
 
 In order to make this as simple as possible, we've developed a utility that is able to extract necessary block info from the object returned by the old `getInfo` method -- this method defines the behavior of vanilla-javascript extensions and their blocks. 
 
-This information can then be used when defining blocks in the new, Framework-specific method `defineBlocks`. You'll use this for every block that is present in the old extension (and thus might be used in an already saved project). 
+This information can then be used when defining blocks. You'll use this for every block that is present in the old extension (and thus might be used in an already saved project). 
 
 You're free to define additional blocks in your ported over extension, but you must support all blocks defined in the old extension with the method demonstrated below:
 
@@ -763,6 +757,89 @@ export const legacyIncrementalSupport = legacy(info, { incrementalDevelopment: t
 **IMPORTANT!** Do not edit the `legacy.ts` file (unless you really know what you're doing).
 
 Now that we've obtained the return of `legacy.ts`, we can make use of it's exports when defining our extension and its blocks like so: 
+
+```ts
+import { Extension, Environment, extension } from "$common";
+import { legacyIncrementalSupport, legacyFullSupport, info } from "./legacy";
+
+/**
+ * Invoke the `for` function on `legacyIncrementalSupport`, 
+ * and provide your Extension as the Generic Argument.
+ * 
+ * Once you've implemented all legacy blocks, change 'legacyIncrementalSupport' to 'legacyFullSupport'.
+ * The `legacyFullSupport` function will ensure that your extension implements all necessary blocks. 
+ * This must be done before you're extension is allowed to merge to dev.
+ */
+const { legacyExtension, legacyBlock } = legacyIncrementalSupport.for<SomeBlocks>();
+
+const details = {
+  name: "Some Blocks",
+  description: "A demonstration of some blocks",
+};
+
+/**
+ * Decorate our extension with the `legacyExtension` decorator
+ */
+@legacyExtension()
+export default class SomeBlocks extends extension(details) {
+
+  init(env: Environment) { }
+
+  /** 
+   * For this simple block, we aren't required to define any block specific data 
+   * (instead, that info will be pulled from the legacy info). 
+   * We only need to implement the method to tie to the legacy block.
+   * */
+  @legacyBlock.exampleSimpleBlock()
+  exampleSimpleBlock() {
+    /* Do something */ console.log(info.blocks[0].opcode);
+  }
+
+  @legacyBlock.moreComplexBlockWithArgumentAndDynamicMenu({
+    /** 
+     * Because this block has arguments that are more complex (accept reporters & use dynamic menu(s)),
+     * We need to define the below `argumentMethods` object.
+     */
+    argumentMethods: {
+      /**
+       * Because our first (and only) argumen, which is the "0th index" argument, 
+       * both accepts reporters uses a dynamic menu, 
+       * we must include a `0` entry in the `argumentMethods` object.
+       */
+      0: {
+
+        /**
+         * Because the legacy block's argument enabled accepting reporters (i.e. `acceptReporters = true`),
+         * we must implement a `handler` method, 
+         * which will ensure that the arguments ultimately passed to our block match what we expect.
+         * @param reported 
+         * @returns 
+         */
+        handler: (reported: unknown) => {
+          const parsed = parseFloat(`${reported}`);
+          return isNaN(parsed) ? 0 : parsed;
+        },
+
+        /**
+         * Because the legacy block's argument made use of a dynamic menu, we are required to implement a `getItems` method.
+         * This method should behave the exact same as the old extension's dynamic menu method. 
+         * You should go look at the implementation of the old extension to see how to do this. 
+         * @returns An array of menu entries which will be used for this dynamic menu
+         */
+        getItems: () => [1, 2, 3, 4, 5].map(value => ({ text: `${value}`, value }))
+      }
+    }
+  })
+  moreComplexBlockWithArgumentAndDynamicMenu(data: number) {
+    /* Do something */ console.log(info.blocks[0].opcode, data)
+  }
+}
+```
+
+
+<details>
+<summary>Already implemented your extension using the old "generics" method? Drop this down to see how you can use the legacy.ts info.
+</summary>
 
 ```ts
 import { Extension, Environment } from "$common";
@@ -845,6 +922,8 @@ export default class SomeBlocks extends Extension<Details, {
 }
 ```
 
+
+</details>
 
 ## Saving Custom Data for an Extension
 

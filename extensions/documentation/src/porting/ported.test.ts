@@ -1,9 +1,10 @@
 import { createTestSuite } from "$testing";
 import { restore, stub } from "$testing/utils";
-import Extension from "./ported";
+import ExtensionDecorated from "./ported";
+import ExtensionGeneric from "./ported.generic";
 import { info } from "./legacy";
 
-createTestSuite({ Extension, __dirname }, {
+const tests = {
   unitTests: {
     exampleSimpleBlock: {
       before: ({ testHelper: { expect } }) => stub(console, "log", (message?: any, ...optionalParams: any[]) => {
@@ -19,4 +20,7 @@ createTestSuite({ Extension, __dirname }, {
       after: () => restore(console, "log")
     }
   }
-})
+}
+
+createTestSuite({ Extension: ExtensionDecorated, __dirname }, tests);
+createTestSuite({ Extension: ExtensionGeneric, __dirname }, tests);

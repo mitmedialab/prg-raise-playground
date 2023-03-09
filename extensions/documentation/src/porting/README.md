@@ -150,7 +150,7 @@ class SomeBlocks {
 #### Typescript / Extension Framework
 
 Things to note about the below typescript snippet:
-- The `Details` type object encodes how the extension will be displayed in the extensions menu
+- The object passed to the `extensions` type object encodes how the extension will be displayed in the extensions menu
     - No more editing [any jsx](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/packages/scratch-gui/src/lib/libraries/extensions/index.jsx#L71) to specify how your extension should display in the Extensions Menu
     - Now your image assets related to your extension should reside in the same place as your implementation (i.e. in the same directory as the `index.ts` file)
 - Any index.ts file within a subfolder of the [extensions directory](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/packages/scratch-vm/src/extensions) will be assumed to implement an extension
@@ -170,7 +170,7 @@ One thing that makes adopting the new Extension Framework slightlier tricker is 
 
 In order to make this as simple as possible, we've developed a utility that is able to extract necessary block info from the object returned by the old `getInfo` method -- this method defines the behavior of vanilla-javascript extensions and their blocks. 
 
-This information can then be used when defining blocks in the new, Framework-specific method `defineBlocks`. You'll use this for every block that is present in the old extension (and thus might be used in an already saved project). 
+This information can then be used when defining blocks. You'll use this for every block that is present in the old extension (and thus might be used in an already saved project). 
 
 You're free to define additional blocks in your ported over extension, but you must support all blocks defined in the old extension with the method demonstrated below:
 
@@ -195,3 +195,11 @@ The downloaded `legacy.ts` file should look something like the following:
 Now that we've obtained the return of `legacy.ts`, we can make use of it's exports when defining our extension and its blocks like so: 
 
 [](./ported.ts)
+
+<details>
+<summary>Already implemented your extension using the old "generics" method? Drop this down to see how you can use the legacy.ts info.
+</summary>
+
+[](./ported.generic.ts)
+
+</details>
