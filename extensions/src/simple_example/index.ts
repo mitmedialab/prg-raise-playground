@@ -1,7 +1,7 @@
 import { ArgumentType, BlockType, Environment, ExtensionMenuDisplayDetails, Language, Menu, SaveDataHandler, block, buttonBlock, extension, tryCastToArgumentType } from "$common";
 
 const details: ExtensionMenuDisplayDetails = {
-  name: "Super Simple Typescript Extension (decorted)!",
+  name: "Simple Typescript Extension",
   description: "Skeleton for a typescript extension",
   implementationLanguage: Language.English,
   [Language.Español]: {
