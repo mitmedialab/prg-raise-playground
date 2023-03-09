@@ -8,7 +8,7 @@ import { MinimalExtensionConstructor } from "../required";
  * @see https://www.typescriptlang.org/docs/handbook/mixins.html
  */
 export default function <T extends MinimalExtensionConstructor>(Ctor: T) {
-  abstract class _ extends Ctor {
+  abstract class ExtensionWithUISupport extends Ctor {
 
     /**
      * Open a UI in a modal window 
@@ -23,5 +23,5 @@ export default function <T extends MinimalExtensionConstructor>(Ctor: T) {
 
   }
 
-  return _;
+  return ExtensionWithUISupport;
 }

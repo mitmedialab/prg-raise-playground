@@ -22,7 +22,7 @@ const callingContext = {
  * @see https://www.typescriptlang.org/docs/handbook/mixins.html
  */
 export default function mixin<T extends MinimalExtensionConstructor>(Ctor: T) {
-  abstract class _ extends Ctor implements WithDependencies<["customSaveData"]> {
+  abstract class ExtensionWithCustomArgumentSupport extends Ctor implements WithDependencies<["customSaveData"]> {
 
     getStaticDependencies() {
       return ["customSaveData"] as const;
@@ -104,5 +104,5 @@ export default function mixin<T extends MinimalExtensionConstructor>(Ctor: T) {
     };
 
   }
-  return _;
+  return ExtensionWithCustomArgumentSupport;
 }

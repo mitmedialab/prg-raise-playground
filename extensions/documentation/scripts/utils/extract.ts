@@ -1,6 +1,6 @@
 import path from "path";
 import fs from "fs";
-import { init, parse } from "es-module-lexer";
+import { type ExportSpecifier, init, parse } from "es-module-lexer";
 import chalk from "chalk";
 import { endSnippetCall } from "documentation";
 import { Parsed, ParseMatch } from "./Parser";
@@ -45,7 +45,7 @@ const exportNotGiven = (error: (msg: string) => void): Parsed<"snippet"> => {
   return { kind: "snippet", failure: true };
 }
 
-const exportNotFound = (exportName: string, pathToFile: string, error: (msg: string) => void): Parsed<"snippet"> => {
+const exportNotFound = (exportName: string, exports: readonly ExportSpecifier[], pathToFile: string, error: (msg: string) => void): Parsed<"snippet"> => {
   const seperator = "\n\t-";
   const allExportNames = seperator + exports.map(({ n }) => n).join(seperator);
   const { red, reset } = chalk;
@@ -68,7 +68,7 @@ const extractFromExport = (exportName: string,
   const exports = parse(content)[1];
   const found = exports.filter(({ n: name }) => name === exportName);
 
-  if (found.length !== 1) exportNotFound(exportName, pathToFile, error);
+  if (found.length !== 1) exportNotFound(exportName, exports, pathToFile, error);
 
   const [{ s: start, e: end }] = found;
   const { start: snippetStart, end: snippetEnd } = getLineNumbersOfExportedSnippet(content, exportName, { start, end });

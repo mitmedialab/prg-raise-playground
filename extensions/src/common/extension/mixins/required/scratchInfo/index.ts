@@ -57,9 +57,9 @@ export const wrapOperation = <T extends MinimalExtensionInstance>(
  * @see https://www.typescriptlang.org/docs/handbook/mixins.html
  */
 export default function (Ctor: CustomizableExtensionConstructor) {
-  type BlockEntry = { definition: BlockDefinition<_, BlockOperation>, operation: BlockOperation };
+  type BlockEntry = { definition: BlockDefinition<ScratchExtension, BlockOperation>, operation: BlockOperation };
   type BlockMap = Map<string, BlockEntry>;
-  abstract class _ extends Ctor {
+  abstract class ScratchExtension extends Ctor {
     private readonly blockMap: BlockMap = new Map();
 
     private readonly menus: Menu<any>[] = [];
@@ -139,5 +139,5 @@ export default function (Ctor: CustomizableExtensionConstructor) {
     }
   }
 
-  return _;
+  return ScratchExtension;
 }

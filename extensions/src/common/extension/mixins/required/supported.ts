@@ -8,12 +8,12 @@ import { ExtensionBaseConstructor } from "../../ExtensionBase";
  * @see https://www.typescriptlang.org/docs/handbook/mixins.html
  */
 export default function (Ctor: ExtensionBaseConstructor, supported: string[]) {
-  abstract class _ extends Ctor {
+  abstract class ExtensionWithConfigurableSupport extends Ctor {
 
     supports<const TKey extends MixinName>(mixinName: TKey): this is typeof this & ExtensionIntanceWithFunctionality<[TKey]> {
       return supported.includes(mixinName);
     }
   }
 
-  return _;
+  return ExtensionWithConfigurableSupport;
 }

@@ -42,7 +42,7 @@ export class SaveDataHandler<T extends BaseGenericExtension | ExtensionIntanceWi
  * @see https://www.typescriptlang.org/docs/handbook/mixins.html
  */
 export default function mixin<T extends MinimalExtensionConstructor>(Ctor: T) {
-  abstract class _ extends Ctor {
+  abstract class ExtensionWithCustomSaveDataSupport extends Ctor {
     /**
      * Optional field that can be defined if you need to save custom data for an extension 
      * (like some extension specific variable, or an API endpoint).
@@ -59,7 +59,7 @@ export default function mixin<T extends MinimalExtensionConstructor>(Ctor: T) {
      * }
      * @see Extension.MakeSaveDataHandler
      */
-    protected saveDataHandler: SaveDataHandler<_, any> = undefined;
+    protected saveDataHandler: SaveDataHandler<ExtensionWithCustomSaveDataSupport, any> = undefined;
 
     /**
      * Save function called 'internally' by the VM when serializing a project.
@@ -94,5 +94,5 @@ export default function mixin<T extends MinimalExtensionConstructor>(Ctor: T) {
       if (this.supports("customArguments")) this.getOrCreateCustomArgumentManager().loadFrom(saveData);
     }
   }
-  return _;
+  return ExtensionWithCustomSaveDataSupport;
 }
