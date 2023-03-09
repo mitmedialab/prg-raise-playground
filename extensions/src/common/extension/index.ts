@@ -16,10 +16,10 @@ const tryAnnounceDetails = (details: ExtensionMenuDisplayDetails) => {
  * Creates the base class that your Extension should 'extend' which is compatible with your request. 
  * 
  * Your request will have the following two parts:
- * @param details The details about how your extension should display and behave with the Extensions menu.
+ * @param details The details about how your extension should display and behave within the Extensions Menu.
  * Only the `name` field is required, but before your extension can be officially published, 
  * it will additionally need a `description`, `iconURL`, and `insetIconURL`
- * @param addOns An optional (zero or more) collection of specifiers about what functionality this extension should have.
+ * @param addOns An optional collection of specifiers about what functionality this extension should have.
  * In this way, the functionality your Extension has access to (through its base class) is configurable.
  * 
  * To see what `addOns` you can specify, place your cursor after the details parameter and type a double quote ("). 

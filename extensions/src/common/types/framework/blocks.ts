@@ -197,7 +197,7 @@ type Arguments<TParameters extends any[]> = &
      *  { // Specifying type, default value, and options (with values and text)
      *    type: ArgumentType.Angle, 
      *    defaultValue: -90, 
-     *    options: [{ text: 'right', value: 90 }, { text: 'two', value: -90 }]
+     *    options: [{ text: 'right', value: 90 }, { text: 'left', value: -90 }]
      *  } 
      * ]
      * 
