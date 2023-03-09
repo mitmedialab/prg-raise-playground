@@ -17,8 +17,9 @@ This document will be most helpful for people doing more complex development, li
 3. [Creating UI for Extensions](#creating-ui-for-extensions)
 4. [Porting an Extension to use our Framework & Typescript](#porting-an-extension-to-use-our-framework--typescript)
 5. [Saving Custom Data for an Extension](#saving-custom-data-for-an-extension)
-6. [Adding Custom Arguments](#adding-custom-arguments)
-7. [Reference](#reference)
+6. [Making use of the Block Utility](#making-use-of-the-block-utility)
+7. [Adding Custom Arguments](#adding-custom-arguments)
+8. [Reference](#reference)
 
 ## Anatomy of an Extension Directory
 
@@ -38,9 +39,8 @@ Below are the files you should always find within an extension's directory:
 - `index.ts`
     - This is the main place where your extension is implemented. It is **expected** that your extension class will be the `default export` of this file. For example:
 ```ts
-export default class ExampleExtension extends Extension<DisplayDetails, Blocks> {
-  init;
-  defineBlocks;
+export default class ExampleExtension extends extension({ name: "Example" }) {
+  init() { /* ... */ };
 }
 ```
 
@@ -90,55 +90,38 @@ The below examples will test the below extension:
 
 ```ts
 
-import { Extension } from "$common";
-import { Environment, ButtonBlock, ArgumentType, BlockType, BlockDefinitions } from "$common";
+import { block, buttonBlock, extension, Environment } from "$common";
 
-export default class ExtensionUnderTest extends Extension<DefaultDisplayDetails, {
-  exampleReporter: (input: string) => string;
-  exampleCommand: (a: number, b: number) => void;
-  exampleButtonThatOpensUI: ButtonBlock
-}> {
+const name = "Test";
+
+export default class ExtensionUnderTest extends extension({ name }, "ui") {
 
   init(env: Environment): void { }
 
-  defineBlocks(): ExtensionUnderTest["BlockDefinitions"] {
-    return defineBlocksElsewhere(); // You can ignore this!
+  @block({
+    type: "command",
+    args: ["number", "number"],
+    text: (x, y) => "placeholder",
+  })
+  exampleCommand(a: number, b: number) { /* Do something */ }
+
+  @block({
+    type: "reporter",
+    text: (x) => "placeholder",
+    arg: "string",
+  })
+  exampleReporter(input: string) {
+    return "Whatever you expect to be the output, given the input"
+  }
+
+  @buttonBlock("placeholder")
+  exampleButtonThatOpensUI() {
+    this.openUI("Test");
   }
 }
 
 ```
 
-
-<details>
-<summary>To save space, the block definitions are hidden, but you can open this if you need to see them:</summary>
-
-```ts
-
-const defineBlocksElsewhere = (): BlockDefinitions<ExtensionUnderTest> => ({
-  exampleCommand: {
-    type: BlockType.Command,
-    args: [ArgumentType.Number, ArgumentType.Number],
-    text: () => "",
-    operation: () => { },
-  },
-  exampleReporter: {
-    type: BlockType.Reporter,
-    text: () => "",
-    arg: ArgumentType.String,
-    // This is the same dummy value used by the tests
-    operation: () => "Whatever you expect to be the output, given the input",
-  },
-  exampleButtonThatOpensUI: (ext) => ({
-    type: BlockType.Button,
-    text: "",
-    operation: () => { ext.openUI("Test") }
-  })
-});
-
-```
-
-
-</details>
 
 ### Anatomy of a test
 
@@ -347,7 +330,7 @@ See [their documentation](https://testing-library.com/docs/) for a complete guid
 
 ### Integration Test
 
-Specifically for extensions, [integration tests]() test either the operations of multiple blocks or how one extension interacts with another.
+Specifically for extensions, [integration tests](https://en.wikipedia.org/wiki/Integration_testing) test either the operations of multiple blocks or how one extension interacts with another.
 
 They are implemented as functions as you can see below:
 
@@ -427,54 +410,59 @@ Feel free to change the name of this file to match it's intended usage, e.g. `Ed
 
 ### Open UI Using a Button
 
-The most common (and recommended) way to open UI via your extension is to (1) implement a `ButtonBlock` and (2) invoke the Extension function `openUI` within the block's `operation` (which will be called when the button is clicked).
+The most common (and recommended) way to open UI via your extension is to:
 
-To do so, first declare a `ButtonBlock`, e.g.:
+#### 1. Add UI support to your extension by specifying the "ui" add on
 
 ```ts
 
-import { Extension, ButtonBlock, BlockDefinitions } from "$common";
+import { extension } from "$common";
 
-type Blocks = {
-  someButton: ButtonBlock;
-}
+const name = "Button Examples";
 
-class ExampleExtension extends Extension<DefaultDisplayDetails, Blocks> {
-  init = notImportant
-  defineBlocks = seeBelow;
+/**
+ * IMPORTANT! Note the usage of "ui" passed as an 'add on' 
+ * in the second argument of the `extension` factory function.
+ * This effectively 'adds on' to your extension the ability to open UI. 
+ */
+export default class ExampleExtension extends extension({ name }, "ui") {
+  init = notRelevantToExample;
 }
 
 ```
 
 
-Next, implement the `ButtonBlock` definition inside of the object returned by the `defineBlocks` function. As usual, the defintion of the `ButtonBlock` is a function that returns an object containing all of the details needed to define the block. 
+#### 2. Utilitze the (now available) `openUI` method in a Button Block
 
-Most importantly, within the `operation` function of the block's definition, the function `openUI` should be invoked (which is implemented on the base `Extension` class, and can therefore be invoked using the reference to the Extension passed as the only argument to the block definition function, i.e. `self` below).
+The first argument of the `openUI` method is the name of the `.svelte` file in which your UI is implemented -- this name must match your filename exactly (but you can omit the `.svelte` extension).
 
-For example:
+The second argument is the title that will display at the top of the modal window. If omitted, this will default to the name of your extension.
+
+Below are two examples of declaring buttons (one using the standard `@block` decorator, and the other using the `@buttonBlock` decorator short-hand):
 
 ```ts
 
-export default class ExampleExtension extends Extension<DefaultDisplayDetails, Blocks> {
+import { block, buttonBlock, extension } from "$common";
+
+export default class ExampleExtension extends extension({ name }, "ui") {
   init = notRelevantToExample;
 
-  defineBlocks(): ExampleExtension["BlockDefinitions"] {
-    return {
-      someButton: () => ({
-        type: BlockType.Button,
-        text: `Button Text Goes Here`,
-        operation: () => this.openUI("SvelteFileName", "Title of Window")
-      })
-    }
+  @block({
+    type: "button",
+    text: `Button Text Goes Here`
+  })
+  verboseButton() {
+    this.openUI("SvelteFileName", "Title of Window");
+  }
+
+  @buttonBlock(`Button Text Goes Here`)
+  shortHandButton() {
+    this.openUI("SvelteFileName", "Title of Window");
   }
 }
 
 ```
 
-
-The first argument is the name of the `.svelte` file in which your UI is implemented -- this name must match your filename exactly (but you can omit the `.svelte` extension).
-
-The second argument is the title that will display at the top of the modal window. If omitted, this will default to the name of your extension.
 
 ### Custom Argument UI
 
@@ -856,20 +844,33 @@ The Extension Framework allows you to easily save arbitrary data for an extensio
 
 You can also set up how your extension utilizes that data when a project is loaded that contains custom save data. 
 
-All you must do is define the `saveDataHandler` property on your extension, like so:
+All you must do is specify the `"customSaveData"` [add on]() when invoking the `extension` creation function, and then define the `saveDataHandler` property in your Extension class, like so:
 
 ```ts
 
-export default class SaveLoadExample extends Extension<DefaultDisplayDetails, NoBlocks> {
+const name = "Example of Save/Load";
 
-  /** This is an example of some data on an Extension that the user might manipulate over the course of their session and must be preserved in order to restore the same state to the extension */
+/**
+ * IMPORTANT! Note the usage of "customSaveData" passed as an 'add on' 
+ * in the second argument of the `extension` factory function.
+ * This effectively 'adds on' to your extension the ability to save / load custom data. 
+ */
+export default class SaveLoadExample extends extension({ name }, "customSaveData") {
+
+  /** This is an example of some data on an Extension 
+   * that the user might manipulate over the course of their session 
+   * and must be preserved in order to restore the same state to the extension */
   somePersistentData = { x: 3, input: "Hello" };
 
   /**
    * The SaveDataHandler constructor takes an object with 3 values:
-   * - Extension: This should be a reference to the Extension class you are implementing. This will then be used as the type for the first 'self' parameter of both `onSave` and `onLoad`.
-   * - onSave: A function called when a user SAVES their project which should return some data (likely an object), which will be written to the saved file.
-   * - onLoad: A function called when a user LOADS a project. The second parameter 'data' will take on the type of the thing that `onSave` returns. This way, the two functions stay in sync.
+   * - Extension: This should be a reference to the Extension class you are implementing. 
+   *   This will then be used as the type for the first 'self' parameter of both `onSave` and `onLoad`.
+   * - onSave: A function called when a user SAVES their project which should return some data (likely an object), 
+   *   which will be written to the saved file.
+   * - onLoad: A function called when a user LOADS a project. 
+   *   The second parameter 'data' will take on the type of the thing that `onSave` returns. 
+   *   This way, the two functions stay in sync.
    */
   saveDataHandler = new SaveDataHandler({
     Extension: SaveLoadExample,
@@ -886,6 +887,13 @@ export default class SaveLoadExample extends Extension<DefaultDisplayDetails, No
 
 ```
 
+
+# Making use of the Block Utility
+
+> NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
+If you want to edit it, please go to [extensions/documentation/src/blockUtility/README.md](documentation/src/blockUtility/README.md)
+
+... Coming soon ...
 
 ## Adding Custom Arguments
 
@@ -923,61 +931,57 @@ Assume we have the following extension:
 
 ```ts
 
-import { Extension } from "$common";
+import { block, extension } from "$common";
 
 type MyCustomArgument = { a: number, b: string, c: boolean };
 
-type Blocks = {
-  blockWithCustomArgument: (arg: MyCustomArgument) => void;
-}
+const details = { name: "Extension using Custom Arguments" };
 
-export default class ExtensionWithCustomArgument extends Extension<DefaultDisplayDetails, Blocks> {
+/**
+ * IMPORTANT! Note the usage of "customArguments" passed as an 'add on' 
+ * in the second argument of the `extension` factory function.
+ * This effectively 'adds on' to your extension the ability to create custom arguemnts. 
+ */
+export default class ExtensionWithCustomArgument extends extension(details, "customArguments") {
   init = notRelevantToExample;
 
-  defineBlocks = seeBlow;
+  @block(definedBelow)
+  blockWithCustomArgument(arg: MyCustomArgument) { }
 }
 
 ```
 
 
-When implementing the `defineBlocks` function, we can then treat the argument of our block function as a custom argument like so:
+When invoking the `@block` decorator function on our method that uses a custom argument, we can define the `arg` field like so:
 
 ```ts
 
-export default class ExtensionWithCustomArgument extends Extension<DefaultDisplayDetails, Blocks> {
+export default class ExtensionWithCustomArgument extends extension(details, "customArguments") {
   init = notRelevantToExample;
 
-  defineBlocks(): BlockDefinitions<ExtensionWithCustomArgument> {
-    return {
-      blockWithCustomArgument: {
-        type: BlockType.Command,
-        text: (arg) => `Set custom argument ${arg}`,
+  @block((self) => ({
+    type: "command",
+    text: (arg) => `Set custom argument ${arg}`,
 
-        /** Invoke the member `makeCustomArgument` function of the Extension class, which requires:
-         * - component: The name of the `.svelte` file that should be display when this argument is clicked on.
-         * - initial: The value that the argument should default to. NOTE that this item has both a 'text' and 'value' field. 
-         *  - This is because the value of the custom argument must be able to be represented as a string and displayed directly in the block
-         *    once the UI closes -- this is what the 'text' field is used for. Whenever you set a custom argument, 
-         *    you'll need to provide both a 'value' and a 'text' representation of that value.
-         *    Here, we use the method `convertArgToText` (see below), which implements this conversion process for our custom type.
-         */
-        arg: this.makeCustomArgument({
-          component: "MyArgUI",
-          initial: { value: { a: 10, b: "Hello world", c: false }, text: this.convertArgToText({ a: 10, b: "Hello world", c: false }), }
-        }),
-
-        /** Our operation should expect an input that matches our custom argument type */
-        operation: (arg) => {
-          const { a, b, c } = arg;
-          console.log(`${b}: ${a}, ${c}`);
-        }
-      }
-    }
-  };
-
-  convertArgToText(arg: MyCustomArgument) {
-    const { a, b, c } = arg;
-    return `${a}, \"${b}\", ${c}`;
+    /** Invoke the member funtcion `makeCustomArgument` of `self` parameter 
+     * (which is an instance of our `ExtensionWithCustomArgument` class).
+     * The `makeCustomArgument` function accepts an object with the following fields:
+     * - component: The name of the `.svelte` file that should be displayed when this argument is clicked on.
+     * - initial: The value that the argument should default to. NOTE that this item has both a 'text' and 'value' field. 
+     *  - This is because the value of the custom argument must be able to be represented as a string
+     *    and displayed directly in the block once the UI closes.
+     *    Thus, whenever you set a custom argument, you'll need to provide both a 'value' and a 'text' 
+     *    representation of that value.
+     */
+    arg: self.makeCustomArgument({
+      component: "MyArgUI",
+      initial: { value: { a: 10, b: "Hello world", c: false }, text: "[10, Hello world, false]", }
+    }),
+  }))
+  /** Our operation should expect an input that matches our custom argument type */
+  blockWithCustomArgument(custom: MyCustomArgument) {
+    const { a, b, c } = custom;
+    console.log(`${b}: ${a}, ${c}`);
   }
 }
 
@@ -1038,7 +1042,7 @@ Then, we modify the UI (Svelte) component we created earlier to match our block 
   /**
    * Use Svelte's reactivity to call the `setter` function whenever one of our inputs change
   */
-  $: setter({ value: {a, b, c}, text: extension.convertArgToText({a, b, c}) });
+  $: setter({ value: {a, b, c}, text: `[${a}, ${b}, ${c}]` });
 </script>
 
 <style>
