@@ -1,9 +1,15 @@
-import { ExtensionMenuDisplayDetails, ExtensionBlocks, BlockDefinitions, Translations } from "$common/types";
+import { ExtensionMenuDisplayDetails, ExtensionBlocks, BlockDefinitions, Translations, UniqueKey } from "$common/types";
 import { isFunction } from "$common/utils";
-import { extension } from "./index";
+import { GenericExtension } from "$testing/types";
+import { ExtensionInstance, extension } from "./index";
 import { getImplementationName } from "./mixins/required/scratchInfo/index";
 
-export const getAlternativeOpcodeName = (opcode: string) => `__block_${opcode}`;
+export const generateOpcodeName = (opcode: string) => `internal_${opcode}`;
+
+export const isGenericExtension = (ext: ExtensionInstance): ext is GenericExtension => {
+  const key: UniqueKey<ExtensionInstance, GenericExtension> = "defineBlocks";
+  return key in ext;
+}
 
 /**
  * @summary Base class for extensions implemented via the Typescript Extension Framework (using the "generic" strategy).
@@ -102,19 +108,19 @@ export abstract class Extension<
     super.internal_init();
     const blocks = this.defineBlocks();
     const self = this;
-    for (const opcode in blocks) {
-      const block = blocks[opcode];
-      const validOpcode = opcode in this ? getAlternativeOpcodeName(opcode) : opcode;
+    for (const key in blocks) {
+      const block = blocks[key];
+      const opcode = generateOpcodeName(key);
       const { operation, text, arg, args, type } = isFunction(block) ? block.call(this, this) : block;;
-      this.pushBlock(validOpcode,
+      this.pushBlock(opcode,
         arg
           ? { text, type, arg }
           : args
             ? { text, type, args }
             : { text, type },
         operation);
-      const internalFuncName = getImplementationName(validOpcode);
-      (this as any)[validOpcode] = function () { return self[internalFuncName].call(self, ...arguments); };
+      const internalFuncName = getImplementationName(opcode);
+      (this as any)[opcode] = function () { return self[internalFuncName].call(self, ...arguments); };
     }
   }
 }

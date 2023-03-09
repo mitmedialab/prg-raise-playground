@@ -1,4 +1,5 @@
 import { ExtensionInstance } from "$common/extension";
+import { generateOpcodeName, isGenericExtension } from "$common/extension/GenericExtension";
 import { AbstractConstructor, ExtensionArgumentMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, ExtensionMetadata } from "$common/types";
 import { isString, set } from "$common/utils";
 import { isDynamicMenu, parseText } from "../../decorators/legacySupport/index";
@@ -74,10 +75,15 @@ export default function mixin<T extends AbstractConstructor<ExtensionInstance>>(
 
       if (id !== legacyID) throw new Error(`ID mismatch! Legacy id: ${legacyID} vs. current id: ${id}`);
 
-      const blockMap = mutableBlocks.reduce(
-        (map, { opcode, ...block }, index) => map.set(opcode, { ...block, index }),
-        new Map() as BlockMap
-      );
+      const blockMap = mutableBlocks
+        // TODO: Once Generic Extensions are no longer supported, remove the below 'map' step
+        .map(block => isGenericExtension(this)
+          ? { ...block, opcode: block.opcode.replace(generateOpcodeName(""), "") }
+          : block)
+        .reduce(
+          (map, { opcode, ...block }, index) => map.set(opcode, { ...block, index }),
+          new Map() as BlockMap
+        );
 
       const self = this;
 
@@ -89,13 +95,19 @@ export default function mixin<T extends AbstractConstructor<ExtensionInstance>>(
           const { index, arguments: modernArgs } = blockMap.get(opcode);
           const argNames = this.getArgNames(legacyBlock);
 
-          if (!argNames) return { replaceAt: { index, block: legacyBlock } };
+          if (!argNames) {
+            // TODO: Once Generic Extensions are no longer supported, remove need to set `this[opcode]`
+            if (isGenericExtension(this)) this[opcode] = this[generateOpcodeName(opcode)].bind(this);
+            return { replaceAt: { index, block: legacyBlock } }
+          }
 
           const remapper = (args: Record<string, any>) => argNames.reduce(
             (remap, current, index) => set(remap, index, args[current]),
             {} as Record<number, any>);
 
-          const implementation: WrappedOperation = this[getImplementationName(opcode)];
+          // TODO: Once Generic Extensions are no longer supported, determine implementationName solely through opcode
+          const implementationName = getImplementationName(isGenericExtension(this) ? generateOpcodeName(opcode) : opcode);
+          const implementation: WrappedOperation = this[implementationName];
 
           this[opcode] = (
             (...[args, util]: WrappedOperationParams) => implementation.call(self, remapper(args), util)
