@@ -186,6 +186,7 @@ type ExplanationOfBlockArg = Documentation;
  * 
  * For every Block method, you can optionally add a final parameter of type `BlockUtility`
  * which can be used to accomplish more [advanced behaviours](https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extensions#making-use-of-the-block-utility). 
+ * No need to worry too much about when you're first starting out, though!
  * 
  * As is the case here, note that the inclusion of a `BlockUtility` argument does not "count" 
  * as an Argument for your Block. 

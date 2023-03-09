@@ -9,7 +9,7 @@ export const castToType = (argumentType: ValueOf<typeof ArgumentType>, value: an
     case ArgumentType.Number:
       return parseFloat(value);
     case ArgumentType.Boolean:
-      return JSON.parse(value);
+      return JSON.parse(value ?? false);
     case ArgumentType.Note:
       return parseInt(value);
     case ArgumentType.Angle:
