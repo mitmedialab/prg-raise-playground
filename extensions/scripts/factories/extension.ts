@@ -3,21 +3,25 @@ import assert from "assert";
 import fs from "fs";
 import chalk from "chalk";
 import { processArgs } from "$root/scripts/processArgs";
-import { UnionToTuple } from "$common";
+import { UnionToTuple, ValueOf } from "$common";
 import { DirectoryArg, directoryDefault, directoryFlag, getPathToExtension, getPathToTemplate } from ".";
 
 const alreadyExists = (directory: string) => fs.existsSync(getPathToExtension(directory, false));
 
-const enum Operation {
-  Default = "default",
-  Minimal = "barebones"
-};
+const OperationMap = {
+  Default: "default",
+  Minimal: "barebones",
+  Generic: "generic"
+} as const;
 
-const operations: UnionToTuple<Operation> = [Operation.Default, Operation.Minimal];
+type Operation = ValueOf<typeof OperationMap>;
+
+const operations = Object.values(OperationMap);
 
 const templateByOperation: Record<Operation, string> = {
-  [Operation.Default]: "default.ts",
-  [Operation.Minimal]: "index.ts"
+  [OperationMap.Default]: "default.ts",
+  [OperationMap.Minimal]: "index.ts",
+  [OperationMap.Generic]: "generic.ts"
 };
 
 Object.values(templateByOperation)
@@ -26,7 +30,7 @@ Object.values(templateByOperation)
 
 const { directory, operation } = processArgs<DirectoryArg & { operation: Operation }>(
   { ...directoryFlag, operation: "op" },
-  { ...directoryDefault, operation: Operation.Default }
+  { ...directoryDefault, operation: OperationMap.Default }
 );
 
 const error = (msg: string) => { throw new Error(chalk.redBright(msg)) };

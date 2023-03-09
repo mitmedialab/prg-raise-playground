@@ -130,7 +130,8 @@
     "uglifyjs-webpack-plugin": "1.2.7",
     "webpack": "4.46.0",
     "webpack-cli": "3.1.0",
-    "webpack-dev-server": "3.11.2"
+    "webpack-dev-server": "3.11.2",
+    "typescript": "^5.0.0-beta"
   },
   "overrides": {
     "@teachablemachine/image": {
@@ -138,6 +139,9 @@
     },
     "@teachablemachine/pose": {
       "@tensorflow/tfjs": "$@tensorflow/tfjs"
+    },
+    "tap": {
+      "typescript": "^5.0.0-beta"
     }
   }
 }

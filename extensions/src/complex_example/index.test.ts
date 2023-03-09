@@ -6,7 +6,7 @@ import Simple from "$src/simple_example";
 createTestSuite({ Extension, __dirname }, {
   unitTests: {
     add: { input: [4, 8], expected: 12 },
-    addAnimalToCollection: ({ expect }) => {
+    addAnimalToCollectionAndAlert: ({ expect }) => {
       let startingCount: number;
       const input = Animal.Tiger;
       return {
