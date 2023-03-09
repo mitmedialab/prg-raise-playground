@@ -66,8 +66,9 @@ type RemapToNamed<TArr extends unknown[]> = TArr extends [...infer Rest, infer _
   : []
 
 export type Input<T extends ExtensionInstance, Key extends BlockKey<T>> =
-  Parameters<BlockMethods<T>[Key]> extends NonEmptyArray<any>
-  ? {
+  Parameters<BlockMethods<T>[Key]> extends [] | [BlockUtility]
+  ? {}
+  : {
     /**
      * The input(s) that the block function (or "operation") under test should be given. 
      * If the block function takes one argument, then this will be a single value.
@@ -75,9 +76,10 @@ export type Input<T extends ExtensionInstance, Key extends BlockKey<T>> =
      */
     input: Parameters<BlockMethods<T>[Key]> extends { length: 1 }
     ? Parameters<BlockMethods<T>[Key]>[0]
+    : Parameters<BlockMethods<T>[Key]> extends [...infer Rest, BlockUtility]
+    ? readonly [...Rest]
     : readonly [...Parameters<BlockMethods<T>[Key]>]
-  }
-  : {};
+  };
 
 export type Expected<T extends ExtensionInstance, Key extends BlockKey<T>> =
   ReturnsValue<T, Key> extends true

@@ -154,7 +154,7 @@ export const createTestSuite = <T extends ExtensionInstance>(
       const blockKey = key as any as BlockKey<T>;
       type Case = TestCaseEntry<T, typeof blockKey>;
 
-      const asSingleOrFunc = unitTests[blockKey] as Case;
+      const asSingleOrFunc = unitTests[blockKey] as unknown as Case;
       const asArray = unitTests[key] as Array<Case>;
       const args: TestDetails<T, typeof blockKey> = { Extension, key: blockKey, directory, testHelper };
 
