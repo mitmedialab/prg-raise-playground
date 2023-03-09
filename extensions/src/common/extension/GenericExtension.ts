@@ -1,13 +1,12 @@
-import { ExtensionMenuDisplayDetails, ExtensionBlocks, BlockDefinitions, Translations, UniqueKey } from "$common/types";
+import { ExtensionMenuDisplayDetails, ExtensionBlocks, BlockDefinitions, Translations, UniqueKey, BaseGenericExtension } from "$common/types";
 import { isFunction } from "$common/utils";
-import { GenericExtension } from "$testing/types";
 import { ExtensionInstance, extension } from "./index";
 import { getImplementationName } from "./mixins/required/scratchInfo/index";
 
 export const generateOpcodeName = (opcode: string) => `internal_${opcode}`;
 
-export const isGenericExtension = (ext: ExtensionInstance): ext is GenericExtension => {
-  const key: UniqueKey<ExtensionInstance, GenericExtension> = "defineBlocks";
+export const isGenericExtension = (ext: ExtensionInstance): ext is BaseGenericExtension => {
+  const key: UniqueKey<ExtensionInstance, BaseGenericExtension> = "defineBlocks";
   return key in ext;
 }
 
