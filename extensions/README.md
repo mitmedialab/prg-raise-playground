@@ -50,6 +50,17 @@ export default class ExampleExtension extends extension({ name: "Example" }) {
 - `package.json`
     - Each extension is treated as it's own package and thus has it's own [package.json](https://docs.npmjs.com/cli/v9/configuring-npm/package-json) file. 
         - This makes it easy to handle cases when two extensions want to use different versions of the same [npm package](https://www.npmjs.com/). 
+        - An extension's `package.json` file also includes [npm scripts](https://docs.npmjs.com/cli/v9/using-npm/scripts) that execute scripts from the [root package.json]() with the exension's folder as an argument. This makes executing certain commands a little easier.
+            - For example, if your extension folder is `myExtension`, you can do the following:
+                ```
+                cd extensions/myExtension # only do this once
+                npm run dev 
+                ```
+             - Instead of running the following from the root of the project every time:
+                ```
+                npm run dev only=myExtension
+                ```
+            - Inspect the `package.json` file to see all augmented scripts.
 
 ### Auxiliary Files
 
@@ -92,7 +103,7 @@ The below examples will test the below extension:
 
 import { block, buttonBlock, extension, Environment } from "$common";
 
-const name = "Test";
+const name = "Extension Under Test";
 
 export default class ExtensionUnderTest extends extension({ name }, "ui") {
 
@@ -162,9 +173,9 @@ As is clear from the second argument of the createTestSuite function, there are 
 
 Specifically for extensions, [unit tests](https://en.wikipedia.org/wiki/Unit_testing) test the operation of a single block.
 
-A unit test for a block is defined as an entry in the unitTests object whose key is the name of the block (as defined in the second generic parameter of the Extension class -- for example, this means either `exampleReporter`, `exampleCommand`, or `exampleButtonThatOpensUI`).
+A unit test for a block is defined as an entry in the unitTests object whose key is the name of the block method of the Extension class (for the above example, this means either `exampleReporter`, `exampleCommand`, or `exampleButtonThatOpensUI`).
 
-The values will either be (1) an object of a certain type, (2) a function that returns an object of that certain type, or (3) an array of either. The object type can have the keys outlined below:
+The values will either be (1) an _object of a certain type_, (2) a function that returns an object of that certain type, or (3) an array of either. The _object of a certain type_ can have the keys outlined below:
 
 #### Simple Example
 
@@ -342,7 +353,7 @@ createTestSuite({ Extension, __dirname }, {
     /**
      * An integration test case 
      * @param fixture The fixture that will be passed to this function contain all the necessary elements for writing your test. 
-     * We use the term 'fixture' here and elsewhere as a "A test fixture is an environment used to consistently test a piece of software."
+     * We use the term 'fixture' here and elsewhere as "A test fixture is an environment used to consistently test a piece of software."
      * https://en.wikipedia.org/wiki/Test_fixture
      */
     testOfTwoBlocks: async (fixture) => {
@@ -395,7 +406,7 @@ Extension UI is implemented using the [Svelte Frontend Framework](https://svelte
 
 Please first make sure you've satisfied [Svelte Dependency](https://github.com/mitmedialab/prg-extension-boilerplate#svelte-only-if-you-are-developing-ui).
 
-To generate a new svelte file, run the following command:
+To generate a new svelte file, run the following command from the root of the project:
 
 ```bash
 npm run add:ui <extension folder>

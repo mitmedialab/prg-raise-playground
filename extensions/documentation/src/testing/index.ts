@@ -5,7 +5,7 @@ export const defineExtension = codeSnippet();
 
 import { block, buttonBlock, extension, Environment } from "$common";
 
-const name = "Test";
+const name = "Extension Under Test";
 
 export default class ExtensionUnderTest extends extension({ name }, "ui") {
 

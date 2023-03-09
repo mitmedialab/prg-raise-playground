@@ -25,9 +25,9 @@ As is clear from the second argument of the createTestSuite function, there are 
 
 Specifically for extensions, [unit tests](https://en.wikipedia.org/wiki/Unit_testing) test the operation of a single block.
 
-A unit test for a block is defined as an entry in the unitTests object whose key is the name of the block (as defined in the second generic parameter of the Extension class -- for example, this means either `exampleReporter`, `exampleCommand`, or `exampleButtonThatOpensUI`).
+A unit test for a block is defined as an entry in the unitTests object whose key is the name of the block method of the Extension class (for the above example, this means either `exampleReporter`, `exampleCommand`, or `exampleButtonThatOpensUI`).
 
-The values will either be (1) an object of a certain type, (2) a function that returns an object of that certain type, or (3) an array of either. The object type can have the keys outlined below:
+The values will either be (1) an _object of a certain type_, (2) a function that returns an object of that certain type, or (3) an array of either. The _object of a certain type_ can have the keys outlined below:
 
 #### Simple Example
 

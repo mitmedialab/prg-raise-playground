@@ -7,7 +7,7 @@ Extension UI is implemented using the [Svelte Frontend Framework](https://svelte
 
 Please first make sure you've satisfied [Svelte Dependency](https://github.com/mitmedialab/prg-extension-boilerplate#svelte-only-if-you-are-developing-ui).
 
-To generate a new svelte file, run the following command:
+To generate a new svelte file, run the following command from the root of the project:
 
 ```bash
 npm run add:ui <extension folder>
