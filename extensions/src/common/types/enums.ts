@@ -1,4 +1,4 @@
-import { ValueOf } from "./types";
+import { ValueOf } from "../types";
 
 /**
  * The different kind of blocks that an extension can define

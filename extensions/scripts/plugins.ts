@@ -1,14 +1,12 @@
 import fs from "fs";
 import path from "path";
-import { Extension, PopulateCodeGenArgs } from "$common";
+import { FrameworkID, untilCondition, registerExtensionDefinitionCallback } from "$common";
 import { type Plugin } from "rollup";
-import Transpiler from './typeProbing/Transpiler';
-import { getBlockIconURI } from "./utils/URIs";
 import { appendToRootDetailsFile, populateMenuFileForExtension } from "./extensionsMenu";
 import { exportAllFromModule, toNamedDefaultExport } from "./utils/importExport";
 import { default as glob } from 'glob';
-import { commonDirectory, deleteAllFilesInDir, extensionBundlesDirectory, fileName, generatedMenuDetailsDirectory, getDirectoryAndFileName, tsToJs } from "./utils/fileSystem";
-import { BundleInfo } from "./bundle";
+import { commonDirectory, deleteAllFilesInDir, extensionBundlesDirectory, fileName, generatedMenuDetailsDirectory, getBundleFile, getDirectoryAndFileName, tsToJs } from "./utils/fileSystem";
+import { BundleInfo, stringifyCodeGenArgs } from "./bundles";
 import ts from "typescript";
 import { getSrcCompilerHost } from "./typeProbing/tsConfig";
 import { extensionsFolder, packages, vmSrc } from "$root/scripts/paths";
@@ -16,7 +14,6 @@ import { reportDiagnostic } from "./typeProbing/diagnostics";
 import chalk from "chalk";
 import { runOncePerBundling } from "./utils/rollupHelper";
 import { sendToParent } from "$root/scripts/comms";
-import { createMatchGroup, matchAnyWhiteSpaceIncludingNewLine, matchOneOrMoreTimes } from "./utils/regularExpressions";
 
 export const clearDestinationDirectories = (): Plugin => {
   const runner = runOncePerBundling();
@@ -32,6 +29,12 @@ export const clearDestinationDirectories = (): Plugin => {
 
 export const generateVmDeclarations = (): Plugin => {
   const runner = runOncePerBundling();
+
+  const isUnhandledError = ({ file: { fileName: name }, code }: ts.Diagnostic) => {
+    const ignorableCodes = [4094, 4023, 4058, 4020];
+    return !(name.includes(path.join(commonDirectory, "extension")) && ignorableCodes.includes(code));
+  }
+
   return {
     name: "",
     buildStart() {
@@ -41,11 +44,11 @@ export const generateVmDeclarations = (): Plugin => {
 
       const emittedFiles: Map<string, string[]> = new Map();
 
-      const overrides: ts.CompilerOptions = { allowJs: true, checkJs: false, declaration: true, emitDeclarationOnly: true };
+      const overrides: ts.CompilerOptions = { allowJs: true, checkJs: false, declaration: true, emitDeclarationOnly: true, };
       const { options, host } = getSrcCompilerHost(overrides);
 
       host.writeFile = (pathToFile: string, contents: string) => {
-        if (pathToFile.includes(extensionsFolder) || !pathToFile.includes(".d.ts")) return;
+        if (pathToFile.includes(extensionsFolder) || pathToFile.includes(path.join(vmSrc, "extensions")) || !pathToFile.includes(".d.ts")) return;
         fs.writeFileSync(pathToFile, contents);
         const { directory, fileName } = getDirectoryAndFileName(pathToFile, vmSrc);
         emittedFiles.has(directory) ? emittedFiles.get(directory).push(fileName) : emittedFiles.set(directory, [fileName]);
@@ -55,7 +58,7 @@ export const generateVmDeclarations = (): Plugin => {
       const program = ts.createProgram([entry], options, host);
       const result = program.emit();
 
-      if (result.emitSkipped) result.diagnostics.forEach(reportDiagnostic);
+      if (result.emitSkipped) result.diagnostics.filter(isUnhandledError).forEach(reportDiagnostic);
 
       const readout = Object.entries(Object.fromEntries(emittedFiles)).map(([dir, files]) => ({ dir, files }));
       console.log(chalk.whiteBright(`Emitted declarations for javascript files:`));
@@ -108,14 +111,16 @@ export const setupFrameworkBundleEntry = ({ indexFile, bundleEntry }: BundleInfo
 
 export const setupExtensionBundleEntry = ({ indexFile, bundleEntry, directory }: BundleInfo): Plugin => {
   return {
-    name: "",
+    name: "Setup Bundle Entry",
     buildStart() {
       const svelteFiles = glob.sync(`${directory}/**/*.svelte`);
       const filesToBundle = svelteFiles
         .map(file => ({ path: file, name: fileName(file) }))
         .map(toNamedDefaultExport);
       filesToBundle.push(toNamedDefaultExport({ path: indexFile, name: "Extension" }));
-      fs.writeFileSync(bundleEntry, filesToBundle.join("\n"));
+      const content = filesToBundle.join("\n");
+      if (!fs.existsSync(bundleEntry) || fs.readFileSync(bundleEntry, "utf8") !== content)
+        fs.writeFileSync(bundleEntry, filesToBundle.join("\n"));
     },
     buildEnd() {
       fs.rmSync(bundleEntry);
@@ -123,23 +128,11 @@ export const setupExtensionBundleEntry = ({ indexFile, bundleEntry, directory }:
   }
 }
 
-type TranspileEventNames = "onSuccess" | "onError";
-type TranspileEventForExtension = (ts: Transpiler, info: BundleInfo) => void;
-export const transpileExtensions = (info: BundleInfo, callbacks: Record<TranspileEventNames, TranspileEventForExtension>): Plugin => {
-  let ts: Transpiler;
+const cachedContent = new Map<string, string>();
+export const fillInConstructorArgs = (info: BundleInfo, getContent: (info: BundleInfo) => string): Plugin => {
+  const searchValue = "super(...arguments)";
+  const replaceValue = (content: string) => `super(...[...arguments, ${content}])`;
   const { indexFile } = info;
-  const { onSuccess, onError } = callbacks;
-  return {
-    name: 'transpile-extension-typescript',
-    buildStart() { ts ??= Transpiler.Make([indexFile], (ts) => onSuccess(ts, info), () => onError(ts, info)) },
-    buildEnd() { if (this.meta.watchMode !== true) ts?.close(); },
-  }
-}
-
-export const fillInCodeGenArgs = ({ id, directory, menuDetails, indexFile }: BundleInfo): Plugin => {
-  const keywords = ["extends", "Extension", "{"];
-  const matchClass = keywords.join(matchAnyWhiteSpaceIncludingNewLine + matchOneOrMoreTimes);
-  const expression = createMatchGroup(matchClass);
 
   return {
     name: 'Fill in Code Gen Args per Extension',
@@ -147,23 +140,19 @@ export const fillInCodeGenArgs = ({ id, directory, menuDetails, indexFile }: Bun
       order: 'post',
       handler: (code: string, file: string) => {
         if (file !== indexFile) return;
-
-        const re = new RegExp(expression);
-        const match = re.exec(code);
-
-        const errorPrefix = "Framework error -- contact Parker Malachowsky (or project maintainer): ";
-        if (match.length < 2) throw new Error(errorPrefix + "Unable to locate insertion point within Extension class. The strategy likely needs to be updated...");
-        if (match.length > 2) throw new Error(errorPrefix + "Multiple matches found when trying to locate insertion point within Extension class. The strategy likely needs to be updated...");
-
-        const [matchText] = match;
-        const { index } = match;
-        const splitPoint = index + matchText.length;
-        const [before, after] = [code.substring(0, splitPoint), code.substring(splitPoint)];
-        const { name } = menuDetails;
-        const blockIconURI = getBlockIconURI(menuDetails, directory);
-        const codeGenArgs: PopulateCodeGenArgs = { id, name, blockIconURI };
-        const getCodeGenArgs = `${Extension.InternalCodeGenArgsGetterKey}() { return ${JSON.stringify(codeGenArgs)} }`;
-        return { code: `${before}\n\t${getCodeGenArgs}\n${after}`, map: null }
+        const matches = code.includes(searchValue);
+        if (!matches) throw new Error("Framework error -- contact Parker Malachowsky (or project maintainer): Unable to locate insertion point within Extension class. The strategy likely needs to be updated...");
+        const content = getContent(info);
+        cachedContent.set(indexFile, content);
+        return {
+          code: code.replace(searchValue, replaceValue(content)),
+          map: null
+        };
+      }
+    },
+    shouldTransformCachedModule: {
+      handler: ({ id }) => {
+        return id === indexFile && cachedContent.get(id) !== getContent(info)
       }
     }
   };
@@ -172,10 +161,22 @@ export const fillInCodeGenArgs = ({ id, directory, menuDetails, indexFile }: Bun
 export const createExtensionMenuAssets = (info: BundleInfo): Plugin => {
   const runner = runOncePerBundling();
   return {
-    name: "",
-    buildStart() {
+    name: "Create Menu Assets",
+    buildEnd() {
       if (runner.check()) appendToRootDetailsFile(info);
       populateMenuFileForExtension(info);
+    }
+  }
+}
+
+export const onFrameworkBundle = (callback: () => void): Plugin => {
+  const runner = runOncePerBundling();
+
+  return {
+    name: "Announce Extensions Written",
+    writeBundle: () => {
+      if (!runner.check()) return;
+      callback();
     }
   }
 }
@@ -190,10 +191,66 @@ export const announceWrite = ({ totalNumberOfExtensions }: BundleInfo): Plugin =
   }
 
   return {
-    name: "",
+    name: "Announce Extensions Written",
     writeBundle: () => {
       if (!runner.check()) return;
       if (++writeCount === totalNumberOfExtensions) allExtensionsInitiallyWritten();
+    }
+  }
+}
+
+const frameworkBundle: { content: Promise<string> } & Record<string, any> = {
+  cache: null,
+  retrieve: async () => {
+    const framework = getBundleFile(FrameworkID);
+    await untilCondition(() => fs.existsSync(framework));
+    return fs.readFileSync(framework, "utf-8");
+  },
+  get content() {
+    this.cache ??= this.retrieve();
+    return this.cache;
+  }
+}
+
+export const decoratorCodeGenFlag = "replace_code_gen_args";
+
+export const finalizeCommonExtensionBundle = (info: BundleInfo): Plugin => {
+  const { bundleDestination, menuDetails, name, directory } = info;
+
+  const executeBundleAndExtractMenuDetails = async () => {
+    const framework = await frameworkBundle.content;
+    let success = false;
+    registerExtensionDefinitionCallback(function (details) {
+      for (const key in details) menuDetails[key] = details[key];
+      success = true;
+    });
+    eval(framework + "\n" + fs.readFileSync(bundleDestination, "utf-8"));
+    if (!success) throw new Error(`No extension registered for '${name}'. Did you forget to use the extension decorator?`);
+  }
+
+  const fillCodeGenParams = () => {
+    const content = fs.readFileSync(bundleDestination, "utf-8").replace(decoratorCodeGenFlag, stringifyCodeGenArgs(info));
+    fs.writeFileSync(bundleDestination, content);
+  }
+
+  const runner = runOncePerBundling();
+
+  const writeOutMenuDetails = () => {
+    if (runner.check()) appendToRootDetailsFile(info);
+    populateMenuFileForExtension(info);
+  }
+
+  return {
+    name: "Finalize V2 Bundle",
+    writeBundle: async () => {
+      try {
+        await executeBundleAndExtractMenuDetails();
+        fillCodeGenParams();
+        writeOutMenuDetails();
+      }
+      catch (e) {
+        throw new Error(`Unable to execute bundle (& extract display menu details) for ${name} (${directory}/): ${e}`)
+      }
     }
   }
 }

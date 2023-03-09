@@ -1,58 +1,7 @@
 import ts from "typescript";
 import assert from "assert";
-import { ExtensionMenuDisplayDetails, KeysWithValuesOfType, UnionToTuple, Language, LanguageKeys, ValueOf } from "$common";
-
-export const retrieveExtensionDetails = (program: ts.Program): ExtensionMenuDisplayDetails => {
-  const typeChecker = program.getTypeChecker();
-  const sources = program.getSourceFiles();
-  const roots = program.getRootFileNames();
-  const rootSources = sources.filter(source => roots.includes(source.fileName));
-
-  if (rootSources.length > 1) {
-    const error = `Expected only one root source (the file where the extension is declared, e.g. index.ts), but found ${rootSources.length}`;
-    const delimiter = "\n\t-";
-    const allSouces = rootSources.map(source => source.fileName).join(delimiter);
-    throw new Error(`${error} ${delimiter} ${allSouces}`);
-  }
-
-  const rootSource = rootSources[0];
-
-  return ts.forEachChild(rootSource, node => {
-    const type = typeChecker.getTypeAtLocation(node);
-    if (isExtension(type)) return getMenuDisplayDetails(type);
-  });;
-}
-
-export const isExtension = (type: ts.Type) => {
-  const baseTypes = type.getBaseTypes();
-  return baseTypes?.some(t => t.symbol.name === "Extension") ?? false;
-}
-
-export const extractLanguageFromValue = (member: any): ValueOf<typeof Language> => {
-  const { exprName, literal } = member.type;
-
-  const definedUsingObjectReference = exprName !== undefined;
-  if (definedUsingObjectReference) return Language[exprName.right.escapedText];
-
-  const definedUsingLiteralValue = literal !== undefined;
-  if (definedUsingLiteralValue) return literal.text;
-
-  return undefined;
-}
-
-export const extractLanguageFromKey = (member: any) => {
-  const { name } = member;
-  if (!name) return undefined
-  const { expression } = name;
-  if (!expression) return undefined;
-  const { text } = expression;
-
-  const definedUsingLiteralValue = text !== undefined;
-  if (definedUsingLiteralValue) return text;
-
-  const definedUsingObjectReference = expression !== undefined;
-  if (definedUsingObjectReference) return Language[expression.name.escapedText];
-}
+import { ExtensionMenuDisplayDetails, KeysWithValuesOfType, UnionToTuple, Language, identity, ValueOf } from "$common";
+import { BundleInfo, ProgramBasedTransformer } from "scripts/bundles";
 
 type MenuText = KeysWithValuesOfType<ExtensionMenuDisplayDetails, string>;
 type AllMenuText = UnionToTuple<MenuText>;
@@ -67,63 +16,80 @@ const menuDetailFlagKeys: AllMenuFlags = ["internetConnectionRequired", "bluetoo
 //@ts-ignore
 const requiredKeys: (MenuText | MenuFlag)[] = ["name", "description", "iconURL", "insetIconURL"];
 
-const getMenuDisplayDetails = (type: ts.Type): ExtensionMenuDisplayDetails => {
-  //@ts-ignore
-  const { members } = type.getBaseTypes()[0].resolvedTypeArguments[0].symbol.declarations[0];
-
-
-  let implementationLanguage: ValueOf<typeof Language> = undefined;
-
-  const details: Map<string, any> = members.reduce((map: Map<string, any>, member) => {
-    const key: keyof ExtensionMenuDisplayDetails = member.symbol.escapedName;
-
-    if (key === "implementationLanguage") {
-      implementationLanguage = extractLanguageFromValue(member);
-      return map;
-    }
-
-    if (menuDetailTextKeys.includes(key as any)) return map.set(key, member.type.literal.text);
-
-    if (menuDetailFlagKeys.includes(key as any)) {
-      const { kind } = member.type.literal;
-      switch (kind) {
-        case 95:
-          return map.set(key, false);
-        case 110:
-          return map.set(key, true);
-      }
-    }
-
-    const language = extractLanguageFromKey(member);
-    if (language) {
-      const entries = (member.type.members as Array<any>)?.map(child => {
-        const childKey = child.symbol.escapedName as "name" | "description";
-        const value: string = child.type.literal.text;
-        return [childKey, value];
-      }).reduce((container, [childKey, value]) => {
-        container[childKey] = value;
-        return container;
-      }, {});
-
-      map.set(language, entries);
-      return map;
-    }
-
-    throw new TypeError(`Unexpected key found: ${key}`);
-  }, new Map());
-
-  if (details.has(implementationLanguage)) {
-    throw new Error(`Attempt to ovveride translation for language '${implementationLanguage}' in Extension '${type.symbol.name}'. It was cited both as the implementationLanguage, and a translation was given`);
+export const populateDisplayMenuDetailsTransformer = (info: BundleInfo): ProgramBasedTransformer =>
+  (program: ts.Program) => {
+    extractExtensionDisplayMenuDetails(info, program)
+      .forEach((value, key) => info.menuDetails[key] = value);
+    return () => ({
+      transformSourceFile: identity,
+      transformBundle: identity,
+    })
   }
 
-  const defaultLanguage = Language.English;
+const extractExtensionType = (derived: ts.Type, checker: ts.TypeChecker) =>
+  checker.getTypeFromTypeNode((derived.symbol.declarations[0] as ts.ClassLikeDeclarationBase).heritageClauses[0].types[0]);
 
-  if (!implementationLanguage && details.has(defaultLanguage)) {
-    throw new Error(`A translation was given for '${defaultLanguage}', but since no implementationLanguage was given, we assume the default name and description are in laguage '${defaultLanguage}'. Either specify the correct implementation language, or remove the unnecessary translation.`);
-  }
+const getPropertyMembers = (extensionType: ts.Type) =>
+  (extensionType.aliasTypeArguments[0].symbol.declarations[0] as ts.TypeLiteralNode).members.map(e => e as ts.PropertySignature);
 
-  details.set(implementationLanguage ?? defaultLanguage, { name: details.get("name"), description: details.get("description") });
+const extractExpressionFromComputedProperyName = (name: ts.ComputedPropertyName) => {
+  const text = name.getText();
+  const lastIndex = text.length - 1;
+  if (text[0] !== "[" || text[lastIndex] !== "]") throw Error("Un expected computed property format: " + text);
+  return text.substring(1, lastIndex);
+}
+
+const getNameForProperty = ({ name }: ts.PropertySignature) => {
+  if (ts.isIdentifier(name)) return name.text;
+  if (ts.isComputedPropertyName(name)) {
+    const expression = extractExpressionFromComputedProperyName(name);
+    return tryTreatAsLanguage(expression) ?? expression;
+  };
+  return "Error -- Couldn't extract name.";
+}
+
+const tryParseAsJSON = (type: ts.TypeNode) => {
+  try { return JSON.parse(type.getText()) }
+  catch { return undefined }
+}
+
+const returnFromIIFE = (text: string) => `(() => (${text}))()`;
+
+const tryTreatAsObject = (type: ts.TypeNode) => {
+  try { return eval(returnFromIIFE(type.getText())) }
+  catch { return undefined }
+}
+
+const tryTreatAsLanguage = (text: string) => {
+  const elements = text.replace("typeof ", "").split(".");
+  if (elements.length !== 2) return undefined;
+  const key = elements[1];
+  return Language[key];
+}
+
+const getValueForProperty = ({ type }: ts.PropertySignature, typeChecker: ts.TypeChecker) => {
+  const resolvedType = typeChecker.getTypeFromTypeNode(type);
+  if (resolvedType.isLiteral()) return resolvedType.value;
+  return tryParseAsJSON(type) ?? tryTreatAsObject(type) ?? tryTreatAsLanguage(type.getText()) ?? "Error -- couldn't extract value";
+}
+
+const extractExtensionDisplayMenuDetails = ({ indexFile }: BundleInfo, program: ts.Program) => {
+  const checker = program.getTypeChecker();
+
+  let details: Map<string, any> & ExtensionMenuDisplayDetails;
+  ts.forEachChild(program.getSourceFile(indexFile), child => {
+    if (child.kind !== ts.SyntaxKind.ClassDeclaration) return;
+    const type = checker.getTypeAtLocation(child);
+    if (type?.symbol?.name !== "default") return;
+    const properties = getPropertyMembers(extractExtensionType(type, checker));
+    details = properties.reduce((map, property) =>
+      map.set(getNameForProperty(property), getValueForProperty(property, checker)),
+      new Map() as typeof details
+    );
+  });
+
+  if (!details) throw new Error("Unable to extract details");
 
   requiredKeys.forEach(key => assert(details.has(key), new Error(`Required key '${key}' not found`)));
-  return Object.fromEntries(details) as ExtensionMenuDisplayDetails;
+  return details;
 }

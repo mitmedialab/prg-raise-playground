@@ -47,7 +47,7 @@
   /**
    * Use Svelte's reactivity to call the `setter` function whenever one of our inputs change
   */
-  $: setter({ value: {a, b, c}, text: extension.convertArgToText({a, b, c}) });
+  $: setter({ value: {a, b, c}, text: `[${a}, ${b}, ${c}]` });
 </script>
 
 <style>
