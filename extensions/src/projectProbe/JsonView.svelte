@@ -17,6 +17,8 @@ $: matches = find ? lines.map(line => Array.from(line.matchAll(new RegExp(find, 
 $: matchLines =  find ? lines.filter(line => Array.from(line.matchAll(new RegExp(find, "g"))).length > 0): undefined;
 $: numMatches = matches?.length;
 
+let editable = false;
+
 </script>
 
 <style>
@@ -75,5 +77,14 @@ $: numMatches = matches?.length;
     </button>
   </center>
   </div>
-  <Snippet {code} copyable={"top"}/>
+  Editable {editable}
+  <label class="switch">
+    <input type="checkbox" bind:checked={editable}>
+    <span class="slider round"></span>
+  </label>
+  {#if editable}
+    <textarea bind:value={code}></textarea>
+  {:else}
+    <Snippet {code} copyable={"top"}/>
+  {/if}
 </div>

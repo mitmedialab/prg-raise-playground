@@ -1,6 +1,6 @@
 import { Environment, extension, ExtensionMenuDisplayDetails, block } from "$common";
 import { unzip } from 'unzipit';
-import JSZip from "jszip";
+//import JSZip from "jszip";
 
 const details: ExtensionMenuDisplayDetails = {
   name: "Project Probe",
@@ -35,7 +35,7 @@ export default class _ extends extension(details, "ui") {
   }
 
   async downloadUpdatedProjectJson(projectJson: string) {
-    const zip = new JSZip();
+    /*const zip = new JSZip();
     zip.file('project.json', projectJson);
 
     for (const key in this.currentEntries) {
@@ -53,7 +53,7 @@ export default class _ extends extension(details, "ui") {
       }
     });
 
-    saveBlob("Update.sb3", final);
+    saveBlob("Update.sb3", final);*/
   }
 }
 
