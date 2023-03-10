@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "jszip": "^3.10.1",
     "unzipit": "^1.4.2"
   }
 }
