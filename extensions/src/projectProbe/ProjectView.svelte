@@ -42,7 +42,9 @@
     >
   </div>
   <div>
-    <i>{numMatches} matches</i>
+    {#if numMatches !== undefined}
+      <i>{numMatches} matches</i>
+    {/if}
   </div>
   <div class="matches">
     {#if matches}
@@ -73,17 +75,18 @@
   <div>
     <center>
       <button on:click={() => extension.downloadUpdatedProjectJson(code)}>
-        Download Updated Project
+        Download Project With Updated JSON
       </button>
     </center>
   </div>
-  Editable {editable}
   <label class="switch">
     <input type="checkbox" bind:checked={editable} />
     <span class="slider round" />
-  </label>
+  </label>Editable
   {#if editable}
-    <textarea bind:value={code} />
+    <div style:width={"100%"} style:height={"100%"}>
+      <textarea bind:value={code} style:width={"100%"} style:height={"100%"} />
+    </div>
   {:else}
     <Snippet {code} copyable={"top"} />
   {/if}
