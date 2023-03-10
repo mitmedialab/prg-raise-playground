@@ -1,7 +1,7 @@
 import {
   ArgumentType, ButtonBlock, BlockType,
   Environment, Extension,
-  MenuItem, SaveDataHandler
+  MenuItem, SaveDataHandler, validGenericExtension
 } from "$common";
 
 type Details = {
@@ -28,6 +28,7 @@ type Blocks = {
   showTable: ButtonBlock;
 }
 
+@validGenericExtension()
 export default class Tables extends Extension<Details, Blocks> {
   tables: Record<string, number[][]>;
   tableNamesArg: any;
