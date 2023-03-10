@@ -101,8 +101,8 @@ export abstract class Extension<
     const blocks = this.defineBlocks();
     const self = this;
     for (const opcode in blocks) {
-      const block = blocks[opcode];
       this.validateOpcode(opcode);
+      const block = blocks[opcode];
       const { operation, text, arg, args, type } = isFunction(block) ? block.call(this, this) : block;;
       this.pushBlock(opcode,
         arg
@@ -112,12 +112,13 @@ export abstract class Extension<
             : { text, type },
         operation);
       const internalFuncName = getImplementationName(opcode);
-      (this as any)[opcode] = function () { return self[internalFuncName].call(self, ...arguments); };
+      (this as unknown)[opcode] = function () { return self[internalFuncName].call(self, ...arguments); };
     }
   }
 
   private validateOpcode(opcode: string) {
     if (!(opcode in this)) return;
+
     const error = `The Extension has a member defined as '${opcode}', ` +
       `but that name should be reserved for the opcode of the block with the same name. ` +
       `Please rename your member, and attach the "validateGenericExtension" decorator to your class ` +

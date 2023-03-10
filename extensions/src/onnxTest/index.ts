@@ -11,13 +11,12 @@ type Details = {
 
 
 type Blocks = {
-  test: () => void
+  test: () => void,
 }
 
-@validGenericExtension(true)
+@validGenericExtension()
 export default class ExtensionNameGoesHere extends Extension<Details, Blocks> {
   onnx = new OnnxRuntime();
-
   init(env: Environment) { }
 
   defineBlocks(): ExtensionNameGoesHere["BlockDefinitions"] {
