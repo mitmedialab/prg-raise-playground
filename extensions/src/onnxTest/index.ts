@@ -1,4 +1,5 @@
 import { BlockType, Extension, Environment, } from "$common";
+import { validGenericExtension } from "$common/extension/decorators/validators";
 import { OnnxRuntime } from "$common/onnx";
 
 type Details = {
@@ -13,6 +14,7 @@ type Blocks = {
   test: () => void
 }
 
+@validGenericExtension(true)
 export default class ExtensionNameGoesHere extends Extension<Details, Blocks> {
   onnx = new OnnxRuntime();
 

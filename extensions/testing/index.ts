@@ -121,7 +121,7 @@ const processIntegrationTest = <T extends ExtensionInstance>(
 
 export const buildKeyBlockMap = <T extends ExtensionInstance>(instance: Testable<T>): KeyToBlockIndexMap =>
   instance.getBlockInfo().reduce((map, { opcode }, index) => {
-    return map.set(instance.getBlockKeyForOpcode(opcode), index)
+    return map.set(opcode, index)
   }, new Map<string, number>());
 
 const getKeyBlockMap = <T extends ExtensionInstance>(details: TestDetails<T, any>) => buildKeyBlockMap(getInstance(details));

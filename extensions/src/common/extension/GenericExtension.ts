@@ -3,8 +3,6 @@ import { isFunction } from "$common/utils";
 import { extension } from "./index";
 import { getImplementationName } from "./mixins/required/scratchInfo/index";
 
-export const getAlternativeOpcodeName = (opcode: string) => `__block_${opcode}`;
-
 /**
  * @summary Base class for extensions implemented via the Typescript Extension Framework (using the "generic" strategy).
  * @example
@@ -104,17 +102,27 @@ export abstract class Extension<
     const self = this;
     for (const opcode in blocks) {
       const block = blocks[opcode];
-      const validOpcode = opcode in this ? getAlternativeOpcodeName(opcode) : opcode;
+      this.validateOpcode(opcode);
       const { operation, text, arg, args, type } = isFunction(block) ? block.call(this, this) : block;;
-      this.pushBlock(validOpcode,
+      this.pushBlock(opcode,
         arg
           ? { text, type, arg }
           : args
             ? { text, type, args }
             : { text, type },
         operation);
-      const internalFuncName = getImplementationName(validOpcode);
-      (this as any)[validOpcode] = function () { return self[internalFuncName].call(self, ...arguments); };
+      const internalFuncName = getImplementationName(opcode);
+      (this as any)[opcode] = function () { return self[internalFuncName].call(self, ...arguments); };
     }
+  }
+
+  private validateOpcode(opcode: string) {
+    if (!(opcode in this)) return;
+    const error = `The Extension has a member defined as '${opcode}', ` +
+      `but that name should be reserved for the opcode of the block with the same name. ` +
+      `Please rename your member, and attach the "validateGenericExtension" decorator to your class ` +
+      `so that this can be an error in your IDE and not at runtime.`;
+
+    throw new Error(error);
   }
 }
