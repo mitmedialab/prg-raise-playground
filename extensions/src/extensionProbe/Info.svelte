@@ -1,7 +1,7 @@
 <script lang="ts">
   import Extension from ".";
   import { activeClass,color } from "$common";
-  import Snippet from "./Snippet.svelte";
+  import Snippet from "$common/components/Snippet.svelte";
 
   // svelte-ignore unused-export-let
   export let extension: Extension;

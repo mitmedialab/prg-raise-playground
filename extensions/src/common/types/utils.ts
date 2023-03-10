@@ -16,6 +16,7 @@ export type KeysWithValuesOfType<T, V> = keyof { [P in keyof T as T[P] extends V
 
 export type RequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];
 export type OptionalKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? K : never }[keyof T];
+export type UniqueKey<Base, T extends Base> = { [k in keyof T]: k extends keyof Base ? never : k }[keyof T];
 
 export type NonEmptyArray<T> = [T, ...T[]];
 

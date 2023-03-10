@@ -9,7 +9,7 @@ import { commonDirectory, deleteAllFilesInDir, extensionBundlesDirectory, fileNa
 import { BundleInfo, stringifyCodeGenArgs } from "./bundles";
 import ts from "typescript";
 import { getSrcCompilerHost } from "./typeProbing/tsConfig";
-import { extensionsFolder, packages, vmSrc } from "$root/scripts/paths";
+import { extensionsFolder, packages, root, vmSrc } from "$root/scripts/paths";
 import { reportDiagnostic } from "./typeProbing/diagnostics";
 import chalk from "chalk";
 import { runOncePerBundling } from "./utils/rollupHelper";
@@ -47,8 +47,10 @@ export const generateVmDeclarations = (): Plugin => {
       const overrides: ts.CompilerOptions = { allowJs: true, checkJs: false, declaration: true, emitDeclarationOnly: true, };
       const { options, host } = getSrcCompilerHost(overrides);
 
+      const exclude = [extensionsFolder, path.join(vmSrc, "extensions"), path.join(root, "scripts")];
+
       host.writeFile = (pathToFile: string, contents: string) => {
-        if (pathToFile.includes(extensionsFolder) || pathToFile.includes(path.join(vmSrc, "extensions")) || !pathToFile.includes(".d.ts")) return;
+        if (exclude.some(excluded => pathToFile.includes(excluded)) || !pathToFile.includes(".d.ts")) return;
         fs.writeFileSync(pathToFile, contents);
         const { directory, fileName } = getDirectoryAndFileName(pathToFile, vmSrc);
         emittedFiles.has(directory) ? emittedFiles.get(directory).push(fileName) : emittedFiles.set(directory, [fileName]);
@@ -141,7 +143,8 @@ export const fillInConstructorArgs = (info: BundleInfo, getContent: (info: Bundl
       handler: (code: string, file: string) => {
         if (file !== indexFile) return;
         const matches = code.includes(searchValue);
-        if (!matches) throw new Error("Framework error -- contact Parker Malachowsky (or project maintainer): Unable to locate insertion point within Extension class. The strategy likely needs to be updated...");
+        if (!matches) fs.writeFileSync(`${indexFile}.failed.js`, code);
+        if (!matches) throw new Error("Framework error: Unable to locate insertion point within Extension class. Have you implemented any blocks? If you have, the strategy likely needs to be updated -- contact Parker Malachowsky (or project maintainer)");
         const content = getContent(info);
         cachedContent.set(indexFile, content);
         return {

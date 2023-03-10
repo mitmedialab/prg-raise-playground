@@ -21,3 +21,4 @@ export * from "./extension/ExtensionBase";
 export * from "./extension/decorators/blocks";
 export * from "./extension/index";
 export * from "./extension/decorators/legacySupport/index";
+export * from "./extension/decorators/validators";
