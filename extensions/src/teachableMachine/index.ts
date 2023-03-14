@@ -46,6 +46,8 @@ export default class teachableMachine extends Extension<Details, Blocks> {
   teachableImageModel;
   latestAudioResults: any;
 
+  test: string = "";
+
   init(env: Environment) {
 
     /**
@@ -239,7 +241,7 @@ export default class teachableMachine extends Extension<Details, Blocks> {
     const stage = this.runtime.getTargetForStage();
     this.teachableImageModel = modelUrl;
     if (stage) {
-      stage.teachableImageModel = modelUrl;
+      (stage as any).teachableImageModel = modelUrl;
     }
   }
 
