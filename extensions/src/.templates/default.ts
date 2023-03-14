@@ -1,110 +1,76 @@
-import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails } from "$common";
+import { ArgumentType, BlockType, Environment, ExtensionMenuDisplayDetails, extension, block } from "$common";
+import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 
-/**
- * @summary This type describes how your extension will display in the extensions menu. 
- * @description Like all Typescript type declarations, it looks and acts a lot like a javascript object. 
- * It will be passed as the first generic argument to the Extension class that your specific extension `extends`
- * (see the class defintion below for more information on extending the Extension base class). 
- * @see ExtensionMenuDisplayDetails for all possible display menu properties.
- * @link https://www.typescriptlang.org/docs/handbook/2/objects.html Learn more about object types! (This is specifically a 'type alias')
- * @link https://www.typescriptlang.org/docs/handbook/2/generics.html Learn more about generics! 
- */
-type Details = {
+/** 👋 Hi!
+
+Below is a working Extension that you should adapt to fit your needs. 
+
+It makes use of JSDoc comments (anything inside of the '/**   * /' regions) 
+to add explanations to what you're seeing. These do not affect the code 
+and can be delete when you no longer need them.
+
+Anywhere you find something that looks like: @see {ExplanationOfSomething} 
+hover over the 'ExplanationOfSomething' part to get a popup that tells you more about the code.
+
+Try out hovering by reviewing the below terminology.
+NOTE: When the documentation refers to these terms, they will be capitalized.
+
+@see {Extension}
+@see {Block}
+@see {BlockProgrammingEnvironment}
+
+If you don't see anything when hovering, or find some documentation is missing, please contact: 
+Parker Malachowsky (pmalacho@media.mit.edu)
+
+Happy coding! 👋 */
+
+/** @see {ExplanationOfDetails} */
+const details: ExtensionMenuDisplayDetails = {
   name: "Replace me with name of your extension",
   description: "Replace me with a description of your extension",
-  /**
-   * IMPORTANT! Place your icon image (typically a png) in the same directory as this index.ts file
-   */
   iconURL: "Replace with the name of your icon image file (which should be placed in the same directory as this file)",
-  /**
-   * IMPORTANT! Place your inset icon image (typically an svg) in the same directory as this index.ts file
-   * NOTE: This icon will also appear on all of your extension's blocks
-   */
   insetIconURL: "Replace with the name of your inset icon image file (which should be placed in the same directory as this file)"
 };
 
-/**
- * @summary This type describes all of the blocks your extension will/does implement. 
- * @description As you can see, each block is represented as a function.
- * In typescript, you can specify a function in either of the following ways (and which you choose is a matter of preference):
- * - Arrow syntax: `nameOfFunction: (argument1Name: argument1Type, argument2Name: argument2Type, ...etc...) => returnType;`
- * - 'Method' syntax: `nameOfFunction(argument1Name: argument1Type, argument2Name: argument2Type, ...etc...): returnType;`
- * 
- * The three included functions demonstrate some of the most common types of blocks: commands, reporters, and hats.
- * - Command functions/blocks take 0 or more arguments, and return nothing (indicated by the use of a `void` return type). 
- * - Reporter functions/blocks also take 0 or more arguments, but they must return a value (likely a `string` or `number`).
- * - Hat functions/blocks also take 0 or more arguments, but they must return a boolean value.
- * 
- * Feel free to delete these once you're ready to implement your own blocks.
- * 
- * This type will be passed as the second generic argument to the Extension class that your specific extension 'extends'
- * (see the class defintion below for more information on extending the Extension base class). 
- * @link https://www.typescriptlang.org/docs/handbook/2/functions.html Learn more about function types!
- * @link https://www.typescriptlang.org/docs/handbook/2/objects.html Learn more about object types! (This is specifically a 'type alias')
- * @link https://www.typescriptlang.org/docs/handbook/2/generics.html Learn more about generics! 
- */
-type Blocks = {
-  exampleCommand(exampleString: string, exampleNumber: number): void;
-  exampleReporter: () => number;
-  exampleHat(condition: boolean): boolean;
-}
-
-/**
- * @summary This is the class responsible for implementing the functionality of your blocks.
- * @description You'll notice that this class `extends` (or 'inherits') from the base `Extension` class.
- * 
- * Hover over `Extension` to get a more in depth explanation of the base class, and what it means to `extend it`.
- */
-export default class ExtensionNameGoesHere extends Extension<Details, Blocks> {
-  /**
-   * @summary A field to demonstrate how Typescript Class fields work
-   * @link https://www.typescriptlang.org/docs/handbook/2/classes.html#fields
-   */
-  exampleField: number;
+/** @see {ExplanationOfClass} */
+/** @see {ExplanationOfInitMethod} */
+export default class ExtensionNameGoesHere extends extension(details) {
 
   init(env: Environment) {
     this.exampleField = 0;
   }
 
-  // All example definitions below are syntactically equivalent, 
-  // and which you use is just a matter of preference.
-  defineBlocks(): ExtensionNameGoesHere["BlockDefinitions"] {
+  /** @see {ExplanationOfField} */
+  exampleField: number;
 
-    type DefineExampleCommand = DefineBlock<ExtensionNameGoesHere, Blocks["exampleCommand"]>;
-    const exampleCommand: DefineExampleCommand = () => ({
-      type: BlockType.Command,
-      args: [ArgumentType.String, { type: ArgumentType.Number, defaultValue: 789 }],
-      text: (exampleString, exampleNumber) => `This is where the blocks display text goes, with arguments --> ${exampleString} and ${exampleNumber}`,
-      operation: (exampleString, exampleNumber, util) => {
-        alert(`This is a command! Here's what it received: ${exampleString} and ${exampleNumber}`); // Replace with what the block should do! 
-        console.log(util.stackFrame.isLoop); // just an example of using the BlockUtility
-      }
-    });
+  /** @see {ExplanationOfReporterBlock} */
+  @block({ type: "reporter", text: "This increments an internal field and then reports it's value" })
+  exampleReporter() {
+    return ++this.exampleField;
+  }
 
-    return {
-      exampleCommand,
+  /** @see {ExplanationOfCommandBlock} */
+  @block((self) => ({
+    /** @see {ExplanationOfBlockType} */
+    type: BlockType.Command,
+    /** @see {ExplanationOfBlockTextFunction} */
+    text: (exampleString, exampleNumber) => `This is the block's display text with inputs here --> ${exampleString} and here --> ${exampleNumber}`,
+    /** @see {ExplanationOfBlockArgs} */
+    args: [ArgumentType.String, { type: ArgumentType.Number, defaultValue: self.exampleField }],
+  }))
+  exampleCommand(exampleString: string, exampleNumber: number) {
+    alert(`This is a command! Here's what it received: ${exampleString} and ${exampleNumber}`); // Replace with what the block should do! 
+  }
 
-      exampleReporter: function (self: ExtensionNameGoesHere): Block<ExtensionNameGoesHere, Blocks["exampleReporter"]> {
-        return {
-          type: BlockType.Reporter,
-          text: "This increments an internal field and then reports it's value",
-          operation: () => {
-            return ++self.exampleField;
-          }
-        }
-      },
-
-      exampleHat: pickFromOptions
-    }
+  /** @see {ExplanationOfHatBlock} */
+  /** @see {ExplanationOfBlockUtility} */
+  @block({
+    type: "hat",
+    text: (condition) => `Should the below block execute: ${condition}`,
+    /** @see {ExplanationOfBlockArg} */
+    arg: "Boolean"
+  })
+  async exampleHat(condition: boolean, util: BlockUtility) {
+    return util.stackFrame.isLoop === condition;
   }
 }
-
-type WithOptionsBlock = Blocks["exampleHat"];
-const pickFromOptions = (): Block<ExtensionNameGoesHere, WithOptionsBlock> => ({
-  type: BlockType.Hat,
-  arg: { type: ArgumentType.Boolean, options: [{ text: 'Yes', value: true }, { text: 'No', value: false }] },
-  text: (argument1) => `Should the below block execute? ${argument1}`,
-  operation: function (argument1) {
-    return argument1;
-  }
-});

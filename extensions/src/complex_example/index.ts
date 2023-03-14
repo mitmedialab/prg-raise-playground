@@ -1,12 +1,5 @@
-import { ArgumentType, BlockType, Block, BlockDefinitions, RGBObject, MenuItem, ButtonBlock, Extension, BlockInfo, SaveDataHandler, copyTo } from "$common";
-import addDefinition from "./addDefinition";
-
-type DisplayDetails = {
-  name: "Realistic Typescript-Based Extension",
-  description: "Demonstrating how typescript can be used to write a realistic extension",
-  iconURL: "Typescript_logo.png",
-  insetIconURL: "typescript-logo.svg"
-};
+import { ArgumentType, BlockType, RGBObject, MenuItem, copyTo, SaveDataHandler, block, buttonBlock, extension } from "$common";
+import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 
 const enum MatrixDimension {
   Row,
@@ -39,25 +32,17 @@ export const emojiByAnimal: Record<Animal, string> = {
   [Animal.Pig]: '🐖',
 }
 
-type Blocks = {
-  reportId: () => string;
-  reportColorChannel: (color: RGBObject, channel: string) => number;
-  sumMatrix: (matrix: boolean[][], dimension: MatrixDimension) => string;
-  incrementStateViaThis: () => number;
-  incrementStateViaSelf: () => number;
-  selectNote: (note: number) => number;
-  selectAngle: (angle: number) => number;
-  useAnimalMenu1: (animal: Animal) => string;
-  useAnimalMenu2: (animal: Animal) => string;
-  addAnimalToCollection: (animal: Animal) => void;
-  chooseBetweenAnimals: (animal: Animal) => string;
-  multiplyUsingSelf: (left: number, right: number) => number;
-  multiplyUsingThis: (left: number, right: number) => number;
-  add: (left: number, right: number) => number;
-  showAnimalCollectionUI: ButtonBlock;
-}
-
-export default class TypeScriptFrameworkExample extends Extension<DisplayDetails, Blocks> {
+export default class TypeScriptFrameworkExample extends extension(
+  {
+    name: "Realistic Typescript-Based Extension",
+    description: "Demonstrating how typescript can be used to write a realistic extension",
+    iconURL: "Typescript_logo.png",
+    insetIconURL: "typescript-logo.svg",
+  },
+  "ui",
+  "customSaveData",
+  "customArguments"
+) {
   lhsOptions: number[];
   animals: MenuItem<Animal>[];
   collection: Animal[] = [Animal.Gorilla];
@@ -81,6 +66,7 @@ export default class TypeScriptFrameworkExample extends Extension<DisplayDetails
       value: parseInt(animal), text: emoji
     }));
 
+
     this.getAnimalCollection = () => this.collection.map(
       animal => ({
         text: emojiByAnimal[animal],
@@ -89,196 +75,203 @@ export default class TypeScriptFrameworkExample extends Extension<DisplayDetails
     );
   }
 
-  defineBlocks(): BlockDefinitions<TypeScriptFrameworkExample> {
-    return {
+  @block({
+    type: BlockType.Reporter,
+    text: 'My Extension ID is',
+  })
+  getID() {
+    return this.id as string;
+  }
 
-      reportId: {
-        type: BlockType.Reporter,
-        text: 'My Extension ID is',
-        operation: () => this.id
-      },
+  @block({
+    type: BlockType.Reporter,
+    args: [
+      ArgumentType.Color,
+      {
+        type: ArgumentType.String, options: [
+          { value: 'r', text: 'red' },
+          { value: 'g', text: 'green' },
+          { value: 'b', text: 'blue' }
+        ]
+      }],
+    text: (color, channel) => `Report ${channel} of ${color}`,
+  })
+  getColorChannel(color: RGBObject, channel: string) {
+    return color[channel];
+  }
 
-      reportColorChannel: {
-        type: BlockType.Reporter,
-        args: [
-          ArgumentType.Color,
-          {
-            type: ArgumentType.String, options: [
-              { value: 'r', text: 'red' },
-              { value: 'g', text: 'green' },
-              { value: 'b', text: 'blue' }
-            ]
-          }],
-        text: (color, channel) => `Report ${channel} of ${color}`,
-        operation: (color, channel) => color[channel]
-      },
+  @block((self) => ({
+    type: BlockType.Reporter,
+    args: [
+      { type: ArgumentType.Number, defaultValue: 3, options: self.lhsOptions },
+      { type: ArgumentType.Number }
+    ],
+    text: (left, right) => `Add ${left} to ${right}`,
+  }))
+  add(left: number, right: number) {
+    return left + right;
+  }
 
-      'sumMatrix': {
-        type: "reporter",
-        args: [
-          ArgumentType.Matrix,
-          {
-            type: ArgumentType.Number, options: [
-              { value: MatrixDimension.Row, text: 'rows' },
-              { value: MatrixDimension.Column, text: 'columns' },
-              { value: MatrixDimension.Both, text: 'rows and columns' }
-            ]
-          }],
-        text: (matrix, dimension) => `Sum ${dimension} of ${matrix}`,
-        operation: (matrix, dimension) => {
-          switch (dimension) {
-            case MatrixDimension.Row:
-              return matrix.map(row => row.reduce((count, current) => count + Number(current), 0)).join("\n");
-            case MatrixDimension.Column:
-              const columnSums = [0, 0, 0, 0, 0];
-              matrix.forEach(row => row.forEach((value, index) => {
-                columnSums[index] += Number(value);
-              }));
-              return columnSums.join(" ");
-            case MatrixDimension.Both:
-              return matrix
-                .map(row => row.reduce((count, current) => count + Number(current), 0))
-                .reduce((count, current) => count + current, 0)
-                .toString();
-          }
-        }
-      },
-
-      incrementStateViaThis: {
-        type: BlockType.Reporter,
-        text: 'Increment (via \'this\')',
-        operation: () => ++this.state
-      },
-
-      'incrementStateViaSelf': (self: TypeScriptFrameworkExample) => ({
-        type: BlockType.Reporter,
-        text: 'Increment (via \'self\')',
-        operation: () => ++self.state
-      }),
-
-      'selectNote': {
-        type: BlockType.Reporter,
-        arg: ArgumentType.Note,
-        text: (note) => `Pick note ${note}`,
-        operation: (note) => note
-      },
-
-      'selectAngle': {
-        type: BlockType.Reporter,
-        arg: ArgumentType.Angle,
-        text: (angle) => `Pick angle ${angle}`,
-        operation: (angle) => angle
-      },
-
-      'useAnimalMenu1': {
-        type: BlockType.Reporter,
-        arg:
-        {
-          type: ArgumentType.Number,
-          options: {
-            items: this.animals,
-            acceptsReporters: true,
-            handler: (input: any) => {
-              switch (input) {
-                case `${Animal.Leopard}`:
-                case `${Animal.Tiger}`:
-                case `${Animal.Gorilla}`:
-                case `${Animal.Monkey}`:
-                case `${Animal.Pig}`:
-                  return input as Animal;
-                default:
-                  alert(`You silly goose! ${input} is not an animal.`);
-                  return Animal.Leopard;
-              }
-            }
-          }
-        }
-        ,
-        text: (animal) => `This is a ${animal}`,
-        operation: (animal) => nameByAnimal[animal],
-      },
-
-      'useAnimalMenu2': (self: TypeScriptFrameworkExample) => ({
-        type: BlockType.Reporter,
-        arg: { type: ArgumentType.Number, options: self.animals },
-        text: (animal) => `Where does the ${animal} live?`,
-        operation: (animal) => {
-          switch (animal) {
-            case Animal.Leopard:
-              return 'Africa and Asia';
-            case Animal.Tiger:
-              return 'Asia';
-            case Animal.Gorilla:
-              return 'Africa';
-            case Animal.Monkey:
-              return 'Africa, Asia, and South America';
-            case Animal.Pig:
-              return 'Almost everywhere (except Antartica)';
-          }
-        },
-      }),
-
-      addAnimalToCollection: (self: TypeScriptFrameworkExample) => ({
-        type: BlockType.Command,
-        arg: self.makeCustomArgument({
-          component: "AnimalArgument",
-          initial: { value: Animal.Leopard, text: nameByAnimal[Animal.Leopard] }
-        }),
-        text: (animal) => `Add ${animal} to collection`,
-        operation: (animal) => {
-          this.addAnimalToCollection(animal);
-          this.openUI("Alert");
-        },
-      }),
-
-
-      chooseBetweenAnimals: (self: TypeScriptFrameworkExample) => ({
-        type: BlockType.Reporter,
-        arg: { type: ArgumentType.Number, options: self.getAnimalCollection },
-        text: (animal) => `Animals in collection: ${animal}`,
-        operation: (animal) => nameByAnimal[animal],
-      }),
-
-      // Example of class methods implementing a 'definition'
-      multiplyUsingSelf: this.multiplyUsingSelf,
-      multiplyUsingThis: this.multiplyUsingThis.bind(this), // NOTE: We must bind 'this' since it is used by our method
-
-      // Example of an external 'definition'
-      add: addDefinition,
-
-      showAnimalCollectionUI: {
-        type: BlockType.Button,
-        text: "Show Animal Collection",
-        operation: () => {
-          this.openUI("Animals", "Here's your animal collection");
-        }
-      }
+  @block({
+    type: "reporter",
+    args: [
+      ArgumentType.Matrix,
+      {
+        type: ArgumentType.Number, options: [
+          { value: MatrixDimension.Row, text: 'rows' },
+          { value: MatrixDimension.Column, text: 'columns' },
+          { value: MatrixDimension.Both, text: 'rows and columns' }
+        ]
+      }],
+    text: (matrix, dimension) => `Sum ${dimension} of ${matrix}`,
+  })
+  sumMatrix(matrix: boolean[][], dimension: MatrixDimension) {
+    switch (dimension) {
+      case MatrixDimension.Row:
+        return matrix.map(row => row.reduce((count, current) => count + Number(current), 0)).join("\n");
+      case MatrixDimension.Column:
+        const columnSums = [0, 0, 0, 0, 0];
+        matrix.forEach(row => row.forEach((value, index) => {
+          columnSums[index] += Number(value);
+        }));
+        return columnSums.join(" ");
+      case MatrixDimension.Both:
+        return matrix
+          .map(row => row.reduce((count, current) => count + Number(current), 0))
+          .reduce((count, current) => count + current, 0)
+          .toString();
     }
   }
 
-  private multiplyUsingSelf(self: TypeScriptFrameworkExample): BlockInfo<TypeScriptFrameworkExample, 'multiplyUsingSelf'> {
-    return ({
-      type: BlockType.Reporter,
-      args: [
-        { type: ArgumentType.Number, defaultValue: 3, options: self.lhsOptions },
-        ArgumentType.Number
-      ],
-      text: (left, right) => `${left} X ${right}`,
-      operation: (left, right) => left * right,
-    })
+  @block({
+    type: BlockType.Reporter,
+    arg: ArgumentType.Note,
+    text: (note) => `Pick note ${note}`,
+  })
+  selectNote(note: number) {
+    return note;
   }
 
-  private multiplyUsingThis(): BlockInfo<TypeScriptFrameworkExample, "multiplyUsingThis"> {
-    return ({
+  @block({
+    type: BlockType.Reporter,
+    arg: ArgumentType.Angle,
+    text: (angle) => `Pick angle ${angle}`,
+  })
+  selectAngle(angle: number) {
+    return angle;
+  }
+
+  @block({
+    type: BlockType.Reporter,
+    text: 'Increment',
+  })
+  increment() {
+    return ++this.state;
+  }
+
+  @block((self) => ({
+    type: BlockType.Reporter,
+    text: (animal) => `This is a ${animal}`,
+    arg:
+    {
+      type: ArgumentType.Number,
+      options: {
+        items: self.animals,
+        acceptsReporters: true,
+        handler: (input) => {
+          switch (input) {
+            case `${Animal.Leopard}`:
+            case `${Animal.Tiger}`:
+            case `${Animal.Gorilla}`:
+            case `${Animal.Monkey}`:
+            case `${Animal.Pig}`:
+              return input as any as Animal;
+            default:
+              alert(`You silly goose! ${input} is not an animal.`);
+              return Animal.Leopard;
+          }
+        }
+      }
+    }
+  } as const))
+  animalName(animal: Animal) {
+    return nameByAnimal[animal];
+  }
+
+  @block((self) => ({
+    type: BlockType.Reporter,
+    arg: { type: ArgumentType.Number, options: self.animals },
+    text: (animal) => `Where does the ${animal} live?`,
+  }))
+  animalHabit(animal: Animal) {
+    switch (animal) {
+      case Animal.Leopard:
+        return 'Africa and Asia';
+      case Animal.Tiger:
+        return 'Asia';
+      case Animal.Gorilla:
+        return 'Africa';
+      case Animal.Monkey:
+        return 'Africa, Asia, and South America';
+      case Animal.Pig:
+        return 'Almost everywhere (except Antartica)';
+    }
+  }
+
+  @block((self) => ({
+    type: BlockType.Command,
+    arg: self.makeCustomArgument({
+      component: "AnimalArgument",
+      initial: { value: Animal.Leopard, text: nameByAnimal[Animal.Leopard] }
+    }),
+    text: (animal) => `Add ${animal} to collection`,
+  }))
+  addAnimalToCollectionAndAlert(animal: Animal) {
+    this.addAnimalToCollection(animal);
+    this.openUI("Alert");
+  }
+
+  @block((self) => ({
+    type: BlockType.Reporter,
+    arg: { type: ArgumentType.Number, options: self.getAnimalCollection },
+    text: (animal) => `Animals in collection: ${animal}`,
+  }))
+  chooseBetweenAnimals(animal: Animal) {
+    return nameByAnimal[animal];
+  }
+
+  @buttonBlock("Show Animal Collection")
+  showAnimalCollectionUI() {
+    this.openUI("Animals", "Here's your animal collection");
+  }
+
+  // Details of block defined using a 'block getter' function implemented using 'method' syntax.
+  // This block is functionally equivalent to the one for 'multiplyUsingSelf' below.
+  @block(function () {
+    return {
       type: BlockType.Reporter,
       args: [
         { type: ArgumentType.Number, defaultValue: 3, options: this.lhsOptions },
         ArgumentType.Number
       ],
       text: (left, right) => `${left} X ${right}`,
-      operation: (left, right) => {
-        return left * right;
-      }
-    })
+    }
+  })
+  multiplyUsingThis(left: number, right: number, util: BlockUtility) {
+    return left * right;
+  }
+
+  // Details of block defined using a 'block getter' function implemented using 'arrow' syntax.
+  // This block is functionally equivalent to the one for 'multiplyUsingThis' above.
+  @block((self) => ({
+    type: BlockType.Reporter,
+    text: (left, right) => `${left} X ${right}`,
+    args: [
+      { type: ArgumentType.Number, defaultValue: 3, options: self.lhsOptions },
+      ArgumentType.Number
+    ],
+  }))
+  multiplyUsingSelf(left: number, right: number, util: BlockUtility) {
+    return left * right;
   }
 }

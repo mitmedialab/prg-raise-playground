@@ -1,5 +1,11 @@
 {
   "svelte.plugin.svelte.compilerWarnings": {
     "missing-declaration": "ignore"
-  }
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "[svelte]": {
+    "editor.defaultFormatter": "svelte.svelte-vscode"
+  },
 }
