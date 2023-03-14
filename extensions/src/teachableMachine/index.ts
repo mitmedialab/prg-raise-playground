@@ -47,11 +47,6 @@ export default class teachableMachine extends Extension<Details, Blocks> {
   latestAudioResults: any;
 
   init(env: Environment) {
-    /**
-        * The runtime instantiating this block package.
-        * @type {Runtime}
-        */
-    this.runtime = env.runtime;
 
     /**
      * The last millisecond epoch timestamp that the video stream was
