@@ -1,7 +1,7 @@
 import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails } from "$common";
 import tmImage from '@teachablemachine/image';
 import tmPose from '@teachablemachine/pose';
-import tmAudioSpeechCommands from '@tensorflow-models/speech-commands';
+import { create } from '@tensorflow-models/speech-commands';
 
 const VideoState = {
   /** Video turned off. */
@@ -183,7 +183,7 @@ export default class teachableMachine extends Extension<Details, Blocks> {
     if ((customMobileNet as any)._metadata.hasOwnProperty('tfjsSpeechCommandsVersion')) {
       // customMobileNet.dispose(); // too early to dispose
       //console.log("We got a speech net yay")
-      const recognizer = tmAudioSpeechCommands.create("BROWSER_FFT", undefined, modelURL, metadataURL);
+      const recognizer = create("BROWSER_FFT", undefined, modelURL, metadataURL);
       await recognizer.ensureModelLoaded();
       await recognizer.listen(async result => {
         this.latestAudioResults = result;
