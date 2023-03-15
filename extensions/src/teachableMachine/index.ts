@@ -28,9 +28,9 @@ type Details = {
 type Blocks = {
   useModel_Command(url: string): void;
   whenModelDetects_Hat(state: string): boolean;
-  modelPredictionReporter(): string;
+  modelPrediction_Reporter(): string;
   predictionIs_Boolean(state: string): boolean;
-  confidenceFor_Reporter(state: string): boolean;
+  confidenceFor_Reporter(state: string): number;
 
   videoToggleCommand(state: number): void;
   setVideoTransparencyCommand(state: number): void;
@@ -40,9 +40,9 @@ export default class teachableMachine extends Extension<Details, Blocks> {
 
   lastUpdate: number;
   maxConfidence: number;
-  modelConfidences: object;
+  modelConfidences: {};
   isPredicting: number;
-  predictionState: object;
+  predictionState = {};
   teachableImageModel;
   latestAudioResults: any;
 
@@ -176,6 +176,19 @@ export default class teachableMachine extends Extension<Details, Blocks> {
     }
   }
 
+  /**
+   * A scratch reporter that returns the top class seen in the current video frame
+   * @returns {string} class name if video frame matched, empty string if model not loaded yet
+   */
+  modelPrediction() {
+    const modelUrl = this.teachableImageModel;
+    const predictionState = this.getPredictionStateOrStartPredicting(modelUrl);
+    if (!predictionState) {
+      return '';
+    }
+    return predictionState.topClass;
+  }
+
   async initModel(modelUrl) {
     const modelURL = modelUrl + "model.json";
     const metadataURL = modelUrl + "metadata.json";
@@ -223,9 +236,13 @@ export default class teachableMachine extends Extension<Details, Blocks> {
 
   useModel(url) {
     try {
+      // console.log('trying model');
       const modelUrl = this.modelArgumentToURL(url);
+      // console.log('1.1');
       this.getPredictionStateOrStartPredicting(modelUrl);
+      // console.log('1.2');
       this.updateStageModel(modelUrl);
+      // console.log('using model');
     } catch (e) {
       this.teachableImageModel = null;
     }
@@ -246,16 +263,34 @@ export default class teachableMachine extends Extension<Details, Blocks> {
   }
 
   getPredictionStateOrStartPredicting(modelUrl) {
+    // console.log('2 start');
+    // console.log(this.predictionState);
     const hasPredictionState = this.predictionState.hasOwnProperty(modelUrl);
+    // console.log('2.1');
     if (!hasPredictionState) {
+      // console.log('start predicting');
       this.startPredicting(modelUrl);
       return null;
     }
+    // console.log('get predict state');
     return this.predictionState[modelUrl];
   }
 
-  options() {
-    return ['State 1']
+  getCurrentClasses() {
+    if (
+      !this.teachableImageModel ||
+      !this.predictionState ||
+      !this.predictionState[this.teachableImageModel] ||
+      !this.predictionState[this.teachableImageModel].hasOwnProperty('model')
+    ) {
+      return ["Select a class"];
+    }
+
+    if (this.predictionState[this.teachableImageModel].modelType === ModelType.AUDIO) {
+      return this.predictionState[this.teachableImageModel].model.wordLabels();
+    }
+
+    return this.predictionState[this.teachableImageModel].model.getClassLabels();
   }
 
   model_match(state) {
@@ -269,6 +304,12 @@ export default class teachableMachine extends Extension<Details, Blocks> {
 
     const currentMaxClass = predictionState.topClass;
     return (currentMaxClass === String(className));
+  }
+
+  classConfidence(args) {
+    const className = args.CLASS_NAME;
+
+    return this.modelConfidences[className];
   }
 
   /**
@@ -299,7 +340,7 @@ export default class teachableMachine extends Extension<Details, Blocks> {
 
     const useModel_Command: DefineBlock<teachableMachine, Blocks["useModel_Command"]> = () => ({
       type: BlockType.Command,
-      arg: { type: ArgumentType.String, defaultValue: 'https://teachablemachine.withgoogle.com/models/knrpLxv8N/' },
+      arg: { type: ArgumentType.String, defaultValue: 'Paste URL Here!' },
       text: (url) => `use model ${url}`,
       operation: (url) => {
         this.useModel(url);
@@ -310,19 +351,19 @@ export default class teachableMachine extends Extension<Details, Blocks> {
       type: BlockType.Hat,
       arg: {
         type: ArgumentType.String,
-        options: () => this.options()
+        options: () => this.getCurrentClasses()
       },
       text: (state) => `when model detects ${state}`,
       operation: (state) => {
-        return this.model_match(state)
+        return this.model_match(state);
       }
     });
 
-    const modelPredictionReporter: DefineBlock<teachableMachine, Blocks["modelPredictionReporter"]> = () => ({
+    const modelPrediction_Reporter: DefineBlock<teachableMachine, Blocks["modelPrediction_Reporter"]> = () => ({
       type: BlockType.Reporter,
       text: `model prediction`,
       operation: () => {
-        return 'string'
+        return this.modelPrediction();
       }
     });
 
@@ -330,25 +371,38 @@ export default class teachableMachine extends Extension<Details, Blocks> {
       type: BlockType.Boolean,
       arg: {
         type: ArgumentType.String,
-        options: () => this.options()
+        options: () => this.getCurrentClasses()
       },
-      text: (state) => `when model detects ${state}`,
+      text: (state) => `prediction is ${state}`,
       operation: (state) => {
-        return this.model_match(state)
+        return this.model_match(state);
       }
     });
 
-    const confidenceFor_Reporter: DefineBlock<teachableMachine, Blocks["predictionIs_Boolean"]> = () => ({
-      type: BlockType.Boolean,
+    const confidenceFor_Reporter: DefineBlock<teachableMachine, Blocks["confidenceFor_Reporter"]> = () => ({
+      type: BlockType.Reporter,
       arg: {
         type: ArgumentType.String,
-        options: () => this.options()
+        options: () => this.getCurrentClasses()
       },
-      text: (state) => `when model detects ${state}`,
+      text: (state) => `confidence for ${state}`,
       operation: (state) => {
-        return this.model_match(state)
+        return this.classConfidence(state);
       }
     });
+
+    // const confidenceFor_Reporter: DefineBlock<teachableMachine, Blocks["confidenceFor_Reporter"]> = () => ({
+    //   type: BlockType.Reporter,
+    //   arg:{
+    //         type: ArgumentType.String,
+    //         options: () => this.getCurrentClasses()
+    //       },
+    //   text: (state: string) => `confidence for ${state}`,
+    //   operation: (emotion: string) => {
+    //     return this.classConfidence(emotion);
+    //   }
+    // });
+
 
     const videoToggleCommand: DefineBlock<teachableMachine, Blocks["videoToggleCommand"]> = () => ({
       type: BlockType.Command,
@@ -380,7 +434,7 @@ export default class teachableMachine extends Extension<Details, Blocks> {
     return {
       useModel_Command,
       whenModelDetects_Hat,
-      modelPredictionReporter,
+      modelPrediction_Reporter,
       predictionIs_Boolean,
       confidenceFor_Reporter,
       videoToggleCommand,
