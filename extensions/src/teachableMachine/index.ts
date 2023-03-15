@@ -379,6 +379,7 @@ export default class teachableMachine extends Extension<Details, Blocks> {
       }
     });
 
+    // FIX FIX FIX
     const confidenceFor_Reporter: DefineBlock<teachableMachine, Blocks["confidenceFor_Reporter"]> = () => ({
       type: BlockType.Reporter,
       arg: {
@@ -390,19 +391,6 @@ export default class teachableMachine extends Extension<Details, Blocks> {
         return this.classConfidence(state);
       }
     });
-
-    // const confidenceFor_Reporter: DefineBlock<teachableMachine, Blocks["confidenceFor_Reporter"]> = () => ({
-    //   type: BlockType.Reporter,
-    //   arg:{
-    //         type: ArgumentType.String,
-    //         options: () => this.getCurrentClasses()
-    //       },
-    //   text: (state: string) => `confidence for ${state}`,
-    //   operation: (emotion: string) => {
-    //     return this.classConfidence(emotion);
-    //   }
-    // });
-
 
     const videoToggleCommand: DefineBlock<teachableMachine, Blocks["videoToggleCommand"]> = () => ({
       type: BlockType.Command,
