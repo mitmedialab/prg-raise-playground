@@ -132,8 +132,10 @@ export const bundleExtensionBasedOnWatchMode = async ({ plugins, info }: { plugi
 type BundleOptions = { plugins: Plugin[], info: BundleInfo, external?: RollupOptions["external"], globals?: OutputOptions["globals"] };
 
 export const bundleBasedOnWatchMode = async ({ plugins, info, globals, external }: BundleOptions) => {
-  const { bundleEntry, watch: doWatch, name } = info;
-  const options: RollupOptions = { input: bundleEntry, plugins, external };
+  const { bundleEntry, watch: doWatch, name, directory } = info;
+  const watchableFileExtensions = ["ts", "svelte", "png", "svg"];
+  const filesToWatch = [...watchableFileExtensions.map(ext => `**/*.${ext}`)].map(file => path.join(directory, file));
+  const options: RollupOptions = { input: bundleEntry, plugins, external, watch: { include: filesToWatch} };
   const output = getOutputOptions(info, { globals });
 
   if (doWatch) return logEvents(watch({ ...options, output }), info);
