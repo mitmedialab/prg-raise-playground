@@ -1,76 +1,57 @@
-import { ArgumentType, BlockType, Environment, ExtensionMenuDisplayDetails, extension, block, loadExternalScript, untilExternalScriptLoaded, untilExternalGlobalVariableLoaded, untilTimePassed, RGBObject, rgbToHex } from "$common";
-import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
+import { ExtensionMenuDisplayDetails, extension, block, untilTimePassed, RGBObject, rgbToHex } from "$common";
 import { type Results, type SelfieSegmentation } from "@mediapipe/selfie_segmentation";
+import { getImageHelper, getSelfieModel } from "./utils";
+import type BlockUtility from "$scratch-vm/engine/block-utility";
+import type RenderedTarget from "$scratch-vm/sprites/rendered-target";
 
 const details: ExtensionMenuDisplayDetails = {
   name: "Selfie Detector",
 };
 
-const packageURL = "https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js";
-const packageClassName = "SelfieSegmentation";
-
-const getImageHelper = (width, height) => {
-  const canvas = document.body.appendChild(document.createElement("canvas"));
-  canvas.hidden = true;
-  canvas.width = width;
-  canvas.height = height;
-  const context = canvas.getContext("2d");
-
-  return {
-    colorIn(mask: ImageBitmap, color: string) {
-      context.save();
-      context.clearRect(0, 0, width, height);
-      context.drawImage(mask, 0, 0);
-      context.globalCompositeOperation = 'source-in';
-      context.fillStyle = color;
-      context.fillRect(0, 0, canvas.width, canvas.height);
-      context.restore();
-      return context.getImageData(0, 0, width, height);
-    },
-    getMasked(image: ImageBitmap, mask: ImageBitmap) {
-      context.save();
-      context.clearRect(0, 0, width, height);
-      context.drawImage(mask, 0, 0);
-      context.globalCompositeOperation = 'source-in';
-      context.fillStyle = "white";
-      context.fillRect(0, 0, canvas.width, canvas.height);
-      context.drawImage(image, 0, 0);
-      context.restore();
-      return context.getImageData(0, 0, width, height);
-    }
-  }
-}
-
 export default class extends extension(details, "video", "drawable") {
+  // A reference to the mediapipe SelfieSegmentation class doing all the work
   model: SelfieSegmentation;
+
+  /**
+   * Whether or not the extension should currently be processing selfies
+   */
   processing: boolean;
+
+  /**
+   * An to the items being drawn on screen
+   */
   drawables: ReturnType<typeof this.createDrawable>[] = [];
+
+  /**
+   * Current drawing method.
+   * - Mask: Mask-out the selfie region of the original image
+   * - Color: Draw the selfi region as a single color
+   */
   mode: "mask" | "color" = "mask";
+
+  /**
+   * How many 'echo' images to preserve on screen
+   */
   echoLength: number = 0;
+
+  /**
+   * Ideal processing time for each selfie
+   */
   processFrequencyMs: number = 100;
+
+  /**
+   * Color used to fill in selfie region when mode = "color"
+   */
   color: string;
 
+  /**
+   * Helper object for using and manipulating the ouputs of the model
+   */
   imageHelper: ReturnType<typeof getImageHelper>;
 
-  async init(env: Environment) {
+  async init() {
     this.enableVideo();
-    // Load the media pipe script from an external source.
-    // This allows us to get around the following bug:
-    // https://github.com/vitejs/vite/issues/4680
-    // An alternative is being explored
-    const SelfieClass = await untilExternalGlobalVariableLoaded<typeof SelfieSegmentation>(packageURL, packageClassName);
-
-    // Initialize the mediaPipe model according to the documentation
-    this.model = new SelfieClass({
-      locateFile: (file) => {
-        return `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1/${file}`;
-      }
-    });
-    this.model.setOptions({ modelSelection: 1 });
-    this.model.onResults((results) => this.processResults(results));
-    await this.model.initialize();
-
-    // start our processing loop
+    this.model = await getSelfieModel((results) => this.processResults(results));
     this.start();
   }
 
@@ -78,7 +59,9 @@ export default class extends extension(details, "video", "drawable") {
     const image = results.image as ImageBitmap;
     const mask = results.segmentationMask as ImageBitmap;
     const { width, height } = mask;
+
     this.imageHelper ??= getImageHelper(width, height);
+
     const { drawables, mode, imageHelper, color } = this;
 
     const toDraw = mode === "color"
@@ -86,15 +69,13 @@ export default class extends extension(details, "video", "drawable") {
       : imageHelper.getMasked(image, mask);
 
     if (this.echoLength <= 0) {
-      if (drawables.length === 0) drawables[0] = this.createDrawable(toDraw);
-      return drawables[0].update(toDraw);
+      drawables.length === 0 ? drawables.push(this.createDrawable(toDraw)) : drawables[0].update(toDraw);
+      return;
     }
 
     while (drawables.length > this.echoLength) drawables.shift().destroy();
-    const { length } = drawables;
-    for (let index = 0; index < length; index++) {
-      drawables[index].setTransparency(100 * ((length - index) / length));
-    }
+
+    drawables.forEach((drawable, index, { length }) => drawable.setTransparency(100 * ((length - index) / length)));
     drawables.push(this.createDrawable(toDraw));
   }
 
@@ -122,6 +103,18 @@ export default class extends extension(details, "video", "drawable") {
   private clearDrawables() {
     this.drawables.forEach(drawable => drawable.destroy());
     this.drawables = [];
+  }
+
+  @block({
+    type: "command",
+    text: (setting) => `Set selfie image to this sprite's costume ${setting}`,
+    arg: { type: "string", options: ["static", "live",] }
+  })
+  setCostume(setting: "static" | "live", util: BlockUtility) {
+    // @ts-ignore
+    // TODO Gur: investigate if this function 'addCostume' can be programmatically used
+    // to create a costume for a sprite from an image
+    (util.target as unknown as RenderedTarget).addCostume();
   }
 
   @block({
@@ -175,7 +168,11 @@ export default class extends extension(details, "video", "drawable") {
   @block((self) => ({
     type: "command",
     text: (fps) => `Set processing rate to ${fps} fps`,
-    arg: { type: "number", options: [60, 30, 10, 2, 1], defaultValue: 1000 / self.processFrequencyMs } as const
+    arg: {
+      type: "number",
+      options: [60, 30, 10, 2, 1],
+      defaultValue: 1000 / self.processFrequencyMs
+    } as const
   }))
   setFrameRate(fps: number) {
     this.processFrequencyMs = 1000 / fps
