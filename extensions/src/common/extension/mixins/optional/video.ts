@@ -15,7 +15,7 @@ type VideoFrameTypeByFormat = {
 }
 
 /**
- * Mixin the ability for extensions to open up UI at-will
+ * Mixin the ability for extensions to interact with the user's web cam video feed
  * @param Ctor 
  * @returns 
  * @see https://www.typescriptlang.org/docs/handbook/mixins.html
@@ -29,6 +29,11 @@ export default function <T extends MinimalExtensionConstructor>(Ctor: T) {
       return this.videoDevice;
     };
 
+    /**
+     * Access the most recent frame captured by the web cam
+     * @param {"image" | "canvas"} format 
+     * @returns 
+     */
     getVideoFrame<TFormat extends keyof typeof Format>(format: TFormat) {
       return this.video?.getFrame({
         format: Format[format]
@@ -39,10 +44,17 @@ export default function <T extends MinimalExtensionConstructor>(Ctor: T) {
       this.video?.setPreviewGhost(transparency);
     }
 
+    /**
+     * Turn the video feed on so that it's frames can be accessed and the feed
+     * diplays within the game window.
+     */
     enableVideo() {
       this.video?.enableVideo();
     }
 
+    /**
+     * Disable the video feed
+     */
     disableVideo() {
       this.video?.disableVideo();
     }

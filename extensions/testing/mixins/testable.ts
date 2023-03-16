@@ -4,8 +4,8 @@ const unAbstract = <T, C extends AbstractConstructor<T>>(c: C) => c as any as No
 
 export default function <T extends ExtensionInstance, C extends NonAbstractConstructor<T>>(Ctor: C) {
   abstract class _ extends (Ctor as AbstractConstructor<ExtensionInstance>) {
-    initialize() {
-      super.internal_init();
+    async initialize() {
+      await super.internal_init();
     }
 
     getInfo(): ExtensionMetadata {

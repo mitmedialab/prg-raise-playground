@@ -111,8 +111,8 @@ export default class extends extension(details, "video", "drawable", "addCostume
     type: "command",
     text: `Set selfie image as costume`,
   })
-  async setCostume(util: BlockUtility) {
-    this.addCostume(util.target as any as RenderedTarget, this.lastProcessedImage, "generate and set")
+  async setCostume({ target }: BlockUtility) {
+    this.addCostume(target, this.lastProcessedImage, "add and set")
   }
 
   @block({

@@ -1,21 +1,10 @@
 import Runtime from "$scratch-vm/engine/runtime";
-import type Video from "$scratch-vm/io/video";
 
 import { AbstractConstructor, Environment, ExlcudeFirst } from "$common/types";
 
 export type ExtensionConstructorParams = ConstructorParameters<typeof ConstructableExtension>;
 export type CodeGenParams = ExlcudeFirst<ExtensionConstructorParams>;
 export type ExtensionBaseConstructor = AbstractConstructor<ExtensionBase>;
-
-const formats = {
-  image: "image-data",
-  canvas: "canvas"
-} satisfies {
-  image: (typeof Video)["FORMAT_IMAGE_DATA"],
-  canvas: (typeof Video)["FORMAT_CANVAS"]
-};
-
-const canvasDimensions = [480, 360];
 
 export abstract class ConstructableExtension {
   /**

@@ -61,7 +61,7 @@ type Renderer = {
 }
 
 /**
- * Mixin the ability for extensions to open up UI at-will
+ * Mixin the ability for extensions to draw images into the canvas
  * @param Ctor 
  * @returns 
  * @see https://www.typescriptlang.org/docs/handbook/mixins.html
@@ -70,6 +70,11 @@ export default function <T extends MinimalExtensionConstructor>(Ctor: T) {
   abstract class ExtensionWithDrawingSupport extends Ctor {
     private renderer: Renderer;
 
+    /**
+     * Draw an item on screen using image data
+     * @param {ImageData | ImageBitmap} image 
+     * @returns 
+     */
     protected createDrawable<T extends ImageData | ImageBitmap>(image: T) {
       this.renderer ??= this.runtime.renderer;
       const { renderer } = this;
