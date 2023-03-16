@@ -1,7 +1,7 @@
 import { extension } from "$common/extension";
 import { Extension } from "$common/extension/GenericExtension";
 import { legacy } from "$common/extension/decorators/legacySupport";
-import { BlockDefinitions, Environment, NonAbstractConstructor, ArgumentType, BlockType } from "$common/types";
+import { BlockDefinitions, Environment, NonAbstractConstructor, ArgumentType, BlockType, ExtensionMetadata } from "$common/types";
 import { createTestSuite, testID } from "$testing";
 import { DefaultDisplayDetails } from "$testing/defaults";
 
@@ -85,10 +85,11 @@ class GenericExtension extends Extension<DefaultDisplayDetails, {
 }
 
 
-const { legacyExtension: legacyConfigurable, legacyBlock } = legacy(info).for<ConfigurableExtension>();
+const { legacyBlock } = legacy(info).for<ConfigurableExtension>();
 
-@legacyConfigurable()
-class ConfigurableExtension extends extension({ name: "" }) {
+class ConfigurableExtension extends extension({ name: "" }, "legacySupport") {
+  protected getLegacyInfo() { return info }
+
   init(env: Environment): void { }
 
   toHandle: any = [];

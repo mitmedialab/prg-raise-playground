@@ -124,8 +124,6 @@ export const buildKeyBlockMap = <T extends ExtensionInstance>(instance: Testable
     return map.set(opcode, index)
   }, new Map<string, number>());
 
-const getKeyBlockMap = async <T extends ExtensionInstance>(details: TestDetails<T, any>) => await buildKeyBlockMap(await getInstance(details));
-
 const getTestCase = <T extends ExtensionInstance, K extends BlockKey<T>>(testCase: TestCaseEntry<T, K>, { testHelper }: TestDetails<T, K>): BlockTestCase<T, K> =>
   isFunction(testCase) ? (testCase as GetTestCase<T, K>)(testHelper) : testCase as BlockTestCase<T, K>;
 
@@ -146,7 +144,6 @@ export const createTestSuite = <T extends ExtensionInstance>(
     fireEvent,
     updateHTMLInputValue: async (element, value) => fireEvent.input(element, { target: { value } })
   };
-
 
   if (unitTests) describe(`${Extension.name} Unit Tests`, () => {
     for (const key in unitTests) {

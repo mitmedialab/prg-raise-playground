@@ -3,6 +3,7 @@ import addCostumes from "./optional/addCostumes/index";
 import customArguments from "./optional/customArguments/index";
 import customSaveData from "./optional/customSaveData";
 import drawable from "./optional/drawable";
+import legacySupport from "./optional/legacySupport";
 import ui from "./optional/ui";
 import video from "./optional/video";
 
@@ -14,7 +15,8 @@ export const optionalMixins = {
   customSaveData,
   video,
   drawable,
-  addCostumes
+  addCostumes,
+  legacySupport
 } as const satisfies OptionalMixins;
 
 export type OptionalMixins<T extends MinimalExtensionConstructor = MinimalExtensionConstructor> = {
@@ -23,7 +25,8 @@ export type OptionalMixins<T extends MinimalExtensionConstructor = MinimalExtens
   customSaveData: typeof customSaveData<T>,
   video: typeof video<T>,
   drawable: typeof drawable<T>,
-  addCostumes: typeof addCostumes<T>
+  addCostumes: typeof addCostumes<T>,
+  legacySupport: typeof legacySupport<T>
 }
 
 export type MixinName = keyof typeof optionalMixins;
