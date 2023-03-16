@@ -2,6 +2,11 @@ import path from "path";
 import ts from "typescript";
 import { extensionsFolder } from "$root/scripts/paths";
 
+export const getTsConfigFile = () => {
+  const srcDir = path.join(extensionsFolder, "src");
+  return path.join(srcDir, "tsconfig.json");
+}
+
 export const getSrcCompilerOptions = () => {
   const srcDir = path.join(extensionsFolder, "src");
   const configFile = path.join(srcDir, "tsconfig.json");
