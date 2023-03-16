@@ -16,8 +16,11 @@ type Blocks = {
 
 @validGenericExtension()
 export default class ExtensionNameGoesHere extends Extension<Details, Blocks> {
-  onnx = new OnnxRuntime();
-  init(env: Environment) { }
+  onnx;
+
+  init(env: Environment) {
+    this.onnx = new OnnxRuntime();
+  }
 
   defineBlocks(): ExtensionNameGoesHere["BlockDefinitions"] {
 
