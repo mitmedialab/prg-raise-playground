@@ -202,15 +202,11 @@ export default class extends extension(details, "video", "drawable") {
   setProcessingState(state: "on" | "off") {
     state === "on" ? this.start() : this.stop();
   }
-  @block({
-    type: "button"
-    text: 
-  })
 
 
   @block({
     type: "command",
-    text: (numberOfPics: number, seconds: number) => `Make ${numberOfPics} selfie images into costumes in ${seconds}`,
+    text: (numberOfPics: number, seconds: number) => `Make ${numberOfPics} selfie images into costumes in ${seconds} seconds`,
     args: [{type: "number"},  {type: "number"}],
   })
   async xCostumesxSeconds(numberOfPics: number, seconds: number, util: BlockUtility){
@@ -223,7 +219,7 @@ export default class extends extension(details, "video", "drawable") {
         await this.runtime.addCostume(costume);
         renderedTarget.addCostume(costume, length);
         renderedTarget.setCostume(length);
-        sleep((seconds*1000)/numberOfPics); 
+        sleep((seconds*1000+10)/numberOfPics); 
     }
 
   }
