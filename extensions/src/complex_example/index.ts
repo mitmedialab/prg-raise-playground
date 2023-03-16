@@ -102,10 +102,7 @@ export default class TypeScriptFrameworkExample extends extension(
 
   @block((self) => ({
     type: BlockType.Reporter,
-    args: [
-      { type: ArgumentType.Number, defaultValue: 3, options: self.lhsOptions },
-      { type: ArgumentType.Number }
-    ],
+    args: [{ type: ArgumentType.Number, defaultValue: 3, options: self.lhsOptions },{ type: ArgumentType.Number }],
     text: (left, right) => `Add ${left} to ${right}`,
   }))
   add(left: number, right: number) {

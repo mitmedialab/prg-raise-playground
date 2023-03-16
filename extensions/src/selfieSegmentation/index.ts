@@ -4,14 +4,25 @@ import { createCostumeAssetFromImage, getImageHelper, getSelfieModel } from "./u
 import type BlockUtility from "$scratch-vm/engine/block-utility";
 import type RenderedTarget from "$scratch-vm/sprites/rendered-target";
 
+//add angle field and rotate image before costume
+//block to take x photos in x seconds 
+
 const details: ExtensionMenuDisplayDetails = {
   name: "Selfie Detector",
 };
+function sleep(milliseconds) {
+  const date = Date.now();
+  let currentDate = null;
+  do {
+    currentDate = Date.now();
+  } while (currentDate - date < milliseconds);
+}
 
 export default class extends extension(details, "video", "drawable") {
   // A reference to the mediapipe SelfieSegmentation class doing all the work
   model: SelfieSegmentation;
 
+  
   /**
    * Whether or not the extension should currently be processing selfies
    */
@@ -21,7 +32,7 @@ export default class extends extension(details, "video", "drawable") {
    * An to the items being drawn on screen
    */
   drawables: ReturnType<typeof this.createDrawable>[] = [];
-
+ 
   /**
    * Current drawing method.
    * - Mask: Mask-out the selfie region of the original image
@@ -190,5 +201,30 @@ export default class extends extension(details, "video", "drawable") {
   })
   setProcessingState(state: "on" | "off") {
     state === "on" ? this.start() : this.stop();
+  }
+  @block({
+    type: "button"
+    text: 
+  })
+
+
+  @block({
+    type: "command",
+    text: (numberOfPics: number, seconds: number) => `Make ${numberOfPics} selfie images into costumes in ${seconds}`,
+    args: [{type: "number"},  {type: "number"}],
+  })
+  async xCostumesxSeconds(numberOfPics: number, seconds: number, util: BlockUtility){
+    for(let x = 0; x <= numberOfPics; x++){
+        const buffer = this.imageHelper.getDataURL(this.lastProcessedImage);
+        const costume = await createCostumeAssetFromImage(buffer, this.runtime);
+        costume.name = `${this.id}_generated_${Date.now()}`;
+        const renderedTarget = util.target as any as RenderedTarget;
+        const { length } = renderedTarget.getCostumes();
+        await this.runtime.addCostume(costume);
+        renderedTarget.addCostume(costume, length);
+        renderedTarget.setCostume(length);
+        sleep((seconds*1000)/numberOfPics); 
+    }
+
   }
 }

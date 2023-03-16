@@ -1015,7 +1015,7 @@ declare class Runtime extends EventEmitter {
      */
     getExtensionManager(): import("../extension-support/extension-manager");
     /**
-     *
+     * Loads a costume asset in
      */
     addCostume(costume: any): Promise<any>;
 }
