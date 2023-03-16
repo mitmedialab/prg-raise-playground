@@ -45,6 +45,7 @@ const getDynamicMenuName = (menu: ExtensionMenuMetadata): string => {
 export default function legacySupportMixin<T extends MinimalExtensionConstructor>(Ctor: T) {
   abstract class ExtensionWithLegacySupport extends Ctor {
     private validatedInfo: ExtensionMetadata;
+
     protected abstract getLegacyInfo(): ExtensionMetadata;
 
     public __isLegacy = true;
@@ -151,7 +152,7 @@ export default function legacySupportMixin<T extends MinimalExtensionConstructor
  */
 export function legacySupportWithInfoArgument<T extends AbstractConstructor<ExtensionInstance>>(Ctor: T, legacyInfo: ExtensionMetadata) {
   abstract class ExtensionWithLegacySupport extends legacySupportMixin(Ctor) {
-    protected getLegacyInfo(): ExtensionMetadata {
+    protected getLegacyInfo() {
       return legacyInfo;
     }
   }

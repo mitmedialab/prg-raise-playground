@@ -183,7 +183,6 @@ Here's how:
     - This will download a file called `legacy.ts` to your computer
     - After approving the download, follow the instructions in the popped-up UI to understand how to make use of the file. An example is included below. 
 
-
 #### Usage of `legacy.ts`
 
 The downloaded `legacy.ts` file should look something like the following:

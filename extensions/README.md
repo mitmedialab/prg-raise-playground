@@ -912,7 +912,6 @@ Here's how:
     - This will download a file called `legacy.ts` to your computer
     - After approving the download, follow the instructions in the popped-up UI to understand how to make use of the file. An example is included below. 
 
-
 #### Usage of `legacy.ts`
 
 The downloaded `legacy.ts` file should look something like the following:
@@ -961,7 +960,7 @@ export const legacyIncrementalSupport = legacy(info, { incrementalDevelopment: t
 Now that we've obtained the return of `legacy.ts`, we can make use of it's exports when defining our extension and its blocks like so: 
 
 ```ts
-import { Extension, Environment, extension } from "$common";
+import { Environment, extension } from "$common";
 import { legacyIncrementalSupport, legacyFullSupport, info } from "./legacy";
 
 /**
@@ -972,18 +971,18 @@ import { legacyIncrementalSupport, legacyFullSupport, info } from "./legacy";
  * The `legacyFullSupport` function will ensure that your extension implements all necessary blocks. 
  * This must be done before you're extension is allowed to merge to dev.
  */
-const { legacyExtension, legacyBlock } = legacyIncrementalSupport.for<SomeBlocks>();
+const { legacyBlock } = legacyIncrementalSupport.for<SomeBlocks>();
 
 const details = {
   name: "Some Blocks",
   description: "A demonstration of some blocks",
 };
 
-/**
- * Decorate our extension with the `legacyExtension` decorator
- */
-@legacyExtension()
-export default class SomeBlocks extends extension(details) {
+export default class SomeBlocks extends extension(details, "legacySupport") {
+  /**
+   * Impelement the required `getLegacyInfo` function, returning the `info` import from the legacy file
+   */
+  protected getLegacyInfo() { return info }
 
   init(env: Environment) { }
 
