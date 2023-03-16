@@ -1,9 +1,21 @@
 import Runtime from "$scratch-vm/engine/runtime";
+import type Video from "$scratch-vm/io/video";
+
 import { AbstractConstructor, Environment, ExlcudeFirst } from "$common/types";
 
 export type ExtensionConstructorParams = ConstructorParameters<typeof ConstructableExtension>;
 export type CodeGenParams = ExlcudeFirst<ExtensionConstructorParams>;
 export type ExtensionBaseConstructor = AbstractConstructor<ExtensionBase>;
+
+const formats = {
+  image: "image-data",
+  canvas: "canvas"
+} satisfies {
+  image: (typeof Video)["FORMAT_IMAGE_DATA"],
+  canvas: (typeof Video)["FORMAT_CANVAS"]
+};
+
+const canvasDimensions = [480, 360];
 
 export abstract class ConstructableExtension {
   /**
@@ -33,11 +45,11 @@ export abstract class ConstructableExtension {
    */
   abstract init(env: Environment): void;
 
-  protected internal_init() {
-    this.init({
-      runtime: this.runtime,
-      videoFeed: this.runtime.ioDevices?.video,
-      get extensionManager() { return this.runtime.getExtensionManager().provider; }
+  protected async internal_init() {
+    const runtime = this.runtime;
+    await this.init({
+      runtime,
+      get extensionManager() { return runtime.getExtensionManager() }
     });
   }
 

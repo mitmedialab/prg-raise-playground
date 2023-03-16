@@ -28,7 +28,7 @@
     "sanitize-filename": "^1.6.3",
     "svelte-preprocess": "^5.0.0",
     "tslib": "^2.5.0",
-    "typescript": "^5.0.0-beta"
+    "typescript": "5.0.1-rc"
   },
   "overrides": {
     "@rollup/plugin-typescript": {

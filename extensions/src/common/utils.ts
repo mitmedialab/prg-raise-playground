@@ -1,4 +1,4 @@
-import { MenuItem, Primitive } from "./types"
+import { MenuItem, Primitive, RGBObject } from "./types"
 
 type FetchParams = {
   request: Parameters<typeof fetch>[0],
@@ -26,6 +26,10 @@ export async function fetchWithTimeout(
   clearTimeout(id);
 
   return response;
+}
+
+export async function untilTimePassed(timeMs: number) {
+  return await new Promise((resolve) => setTimeout(resolve, timeMs));
 }
 
 export async function untilObject<T>(getter: () => T, delay: number = 100): Promise<T> {
@@ -151,4 +155,36 @@ export const set = <T extends object, K extends keyof T>(container: T, key: K, v
 export const assertSameLength = (...collections: any[][]) => {
   const { size } = collections.reduce((set, { length }) => set.add(length), new Set<number>());
   if (size !== 1) throw new Error("Zip failed because collections weren't equal length");
+}
+
+/**
+ * Convert a Scratch decimal color to a hex string, #RRGGBB.
+ * @param {number} decimal RGB color as a decimal.
+ * @return {string} RGB color as #RRGGBB hex string.
+ */
+const decimalToHex = (decimal: number) => {
+  if (decimal < 0) {
+    decimal += 0xFFFFFF + 1;
+  }
+  let hex = Number(decimal).toString(16);
+  hex = `#${'000000'.substr(0, 6 - hex.length)}${hex}`;
+  return hex;
+}
+
+/**
+ * Convert an RGB color object to a Scratch decimal color.
+ * @param {RGBObject} rgb - {r: red [0,255], g: green [0,255], b: blue [0,255]}.
+ * @return {!number} Number representing the color.
+ */
+function rgbToDecimal(rgb: RGBObject) {
+  return (rgb.r << 16) + (rgb.g << 8) + rgb.b;
+}
+
+/**
+ * Convert an RGB color object to a hex color.
+ * @param {RGBObject} rgb - {r: red [0,255], g: green [0,255], b: blue [0,255]}.
+ * @return {!string} Hex representation of the color.
+ */
+export const rgbToHex = (rgb: RGBObject) => {
+  return decimalToHex(rgbToDecimal(rgb));
 }
