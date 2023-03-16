@@ -1,6 +1,6 @@
 import { ExtensionMenuDisplayDetails, extension, block, untilTimePassed, RGBObject, rgbToHex } from "$common";
 import { type Results, type SelfieSegmentation } from "@mediapipe/selfie_segmentation";
-import { createCostumeAssetFromImage, getImageHelper, getSelfieModel } from "./utils";
+import { getImageHelper, getSelfieModel } from "./utils";
 import type BlockUtility from "$scratch-vm/engine/block-utility";
 import type RenderedTarget from "$scratch-vm/sprites/rendered-target";
 
@@ -8,7 +8,7 @@ const details: ExtensionMenuDisplayDetails = {
   name: "Selfie Detector",
 };
 
-export default class extends extension(details, "video", "drawable") {
+export default class extends extension(details, "video", "drawable", "addCostumes") {
   // A reference to the mediapipe SelfieSegmentation class doing all the work
   model: SelfieSegmentation;
 
@@ -112,14 +112,7 @@ export default class extends extension(details, "video", "drawable") {
     text: `Set selfie image as costume`,
   })
   async setCostume(util: BlockUtility) {
-    const buffer = this.imageHelper.getDataURL(this.lastProcessedImage);
-    const costume = await createCostumeAssetFromImage(buffer, this.runtime);
-    costume.name = `${this.id}_generated_${Date.now()}`;
-    const renderedTarget = util.target as any as RenderedTarget;
-    const { length } = renderedTarget.getCostumes();
-    await this.runtime.addCostume(costume);
-    renderedTarget.addCostume(costume, length);
-    renderedTarget.setCostume(length);
+    this.addCostume(util.target as any as RenderedTarget, this.lastProcessedImage, "generate and set")
   }
 
   @block({

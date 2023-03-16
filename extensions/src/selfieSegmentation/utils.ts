@@ -1,7 +1,5 @@
 import { untilExternalGlobalVariableLoaded } from "$common";
-import type Runtime from "$scratch-vm/engine/runtime";
-import { ResultsListener, type Results, type SelfieSegmentation } from "@mediapipe/selfie_segmentation";
-import MockBitmapAdapter from "./MockBitmapAdapter";
+import { ResultsListener, type SelfieSegmentation } from "@mediapipe/selfie_segmentation";
 
 export const getImageHelper = (width, height) => {
   const canvas = document.body.appendChild(document.createElement("canvas"));
@@ -79,33 +77,4 @@ export const getSelfieModel = async (onFrame: ResultsListener) => {
   await model.initialize();
 
   return model;
-}
-
-let bitmapAdapter: MockBitmapAdapter;
-
-export const createCostumeAssetFromImage = async (dataURL: string, runtime: Runtime) => {
-  bitmapAdapter ??= new MockBitmapAdapter();
-
-  // storage is of type: https://github.com/LLK/scratch-storage/blob/develop/src/ScratchStorage.js
-  const storage = runtime.storage;
-  const costumeFormat = storage.DataFormat.PNG;
-  const assetType = storage.AssetType.ImageBitmap;
-
-  const dataBuffer = await bitmapAdapter.importBitmap(dataURL);
-
-  const asset = storage.createAsset(
-    assetType,
-    costumeFormat,
-    dataBuffer,
-    null,
-    true // generate md5
-  );
-
-  return {
-    name: null, // Needs to be set by caller
-    dataFormat: costumeFormat,
-    asset: asset,
-    md5: `${asset.assetId}.${costumeFormat}`,
-    assetId: asset.assetId
-  };
 }

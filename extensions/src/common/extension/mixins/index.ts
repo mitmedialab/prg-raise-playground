@@ -1,4 +1,5 @@
 import { AbstractConstructor, ValueOf } from "$common/types";
+import addCostumes from "./optional/addCostumes/index";
 import customArguments from "./optional/customArguments/index";
 import customSaveData from "./optional/customSaveData";
 import drawable from "./optional/drawable";
@@ -12,7 +13,8 @@ export const optionalMixins = {
   ui,
   customSaveData,
   video,
-  drawable
+  drawable,
+  addCostumes
 } as const satisfies OptionalMixins;
 
 export type OptionalMixins<T extends MinimalExtensionConstructor = MinimalExtensionConstructor> = {
@@ -21,6 +23,7 @@ export type OptionalMixins<T extends MinimalExtensionConstructor = MinimalExtens
   customSaveData: typeof customSaveData<T>,
   video: typeof video<T>,
   drawable: typeof drawable<T>,
+  addCostumes: typeof addCostumes<T>
 }
 
 export type MixinName = keyof typeof optionalMixins;
