@@ -30,6 +30,7 @@ const Video = require('../io/video');
 
 const StringUtil = require('../util/string-util');
 const uid = require('../util/uid');
+const { loadCostume } = require('../import/load-costume');
 
 const defaultBlockPackages = {
     scratch3_control: require('../blocks/scratch3_control'),
@@ -2675,6 +2676,13 @@ class Runtime extends EventEmitter {
     getExtensionManager() {
         // Bad form to access this method since it's naming (i.e. leading underscore) suggests it should be private
         return dispatch._getServiceProvider("extensions");
+    }
+
+    /**
+     * Loads a costume asset in
+     */
+    addCostume(costume) {
+       return loadCostume(costume.md5, costume, this)
     }
 }
 

@@ -1,6 +1,6 @@
 import { ExtensionMenuDisplayDetails, extension, block, untilTimePassed, RGBObject, rgbToHex } from "$common";
 import { type Results, type SelfieSegmentation } from "@mediapipe/selfie_segmentation";
-import { getImageHelper, getSelfieModel } from "./utils";
+import { createCostumeAssetFromImage, getImageHelper, getSelfieModel } from "./utils";
 import type BlockUtility from "$scratch-vm/engine/block-utility";
 import type RenderedTarget from "$scratch-vm/sprites/rendered-target";
 
@@ -49,6 +49,8 @@ export default class extends extension(details, "video", "drawable") {
    */
   imageHelper: ReturnType<typeof getImageHelper>;
 
+  lastProcessedImage: ImageData;
+
   async init() {
     this.enableVideo();
     this.model = await getSelfieModel((results) => this.processResults(results));
@@ -64,9 +66,9 @@ export default class extends extension(details, "video", "drawable") {
 
     const { drawables, mode, imageHelper, color } = this;
 
-    const toDraw = mode === "color"
-      ? imageHelper.colorIn(mask, color)
-      : imageHelper.getMasked(image, mask);
+    const toDraw = mode === "color" ? imageHelper.colorIn(mask, color) : imageHelper.getMasked(image, mask);
+
+    this.lastProcessedImage = toDraw;
 
     if (this.echoLength <= 0) {
       drawables.length === 0 ? drawables.push(this.createDrawable(toDraw)) : drawables[0].update(toDraw);
@@ -107,14 +109,17 @@ export default class extends extension(details, "video", "drawable") {
 
   @block({
     type: "command",
-    text: (setting) => `Set selfie image to this sprite's costume ${setting}`,
-    arg: { type: "string", options: ["static", "live",] }
+    text: `Set selfie image as costume`,
   })
-  setCostume(setting: "static" | "live", util: BlockUtility) {
-    // @ts-ignore
-    // TODO Gur: investigate if this function 'addCostume' can be programmatically used
-    // to create a costume for a sprite from an image
-    (util.target as unknown as RenderedTarget).addCostume();
+  async setCostume(util: BlockUtility) {
+    const buffer = this.imageHelper.getDataURL(this.lastProcessedImage);
+    const costume = await createCostumeAssetFromImage(buffer, this.runtime);
+    costume.name = `${this.id}_generated_${Date.now()}`;
+    const renderedTarget = util.target as any as RenderedTarget;
+    const { length } = renderedTarget.getCostumes();
+    await this.runtime.addCostume(costume);
+    renderedTarget.addCostume(costume, length);
+    renderedTarget.setCostume(length);
   }
 
   @block({

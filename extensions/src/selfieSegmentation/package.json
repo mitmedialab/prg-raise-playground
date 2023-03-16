@@ -12,7 +12,7 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
+  "devDependencies": {
     "@mediapipe/selfie_segmentation": "^0.1.1675465747"
   }
 }
