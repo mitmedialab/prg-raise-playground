@@ -34,8 +34,5 @@
     "ts-node": {
       "typescript": "$typescript"
     }
-  },
-  "dependencies": {
-    "tesseract.js": "^4.0.2"
   }
 }

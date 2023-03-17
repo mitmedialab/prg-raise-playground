@@ -46,6 +46,11 @@ export default function <T extends MinimalExtensionConstructor>(Ctor: T) {
     disableVideo() {
       this.video?.disableVideo();
     }
+
+    flipVideo(doFlip: boolean) {
+      if (!this.video) return;
+      (this.video as any).mirror = doFlip;
+    }
   }
 
   return ExtensionWithVideoSupport;

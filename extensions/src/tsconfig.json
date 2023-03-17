@@ -9,7 +9,8 @@
     "moduleResolution": "Node",
     "skipLibCheck": true,
     "ignoreDeprecations": "5.0",
-    "noErrorTruncation": true
+    "noErrorTruncation": true,
+    "noImplicitOverride": true
   },
   "include": [".**/*.ts", "**/*.ts"],
 }

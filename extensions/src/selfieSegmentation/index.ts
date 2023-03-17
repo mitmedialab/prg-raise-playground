@@ -1,5 +1,5 @@
 //Parker Malachowsky
- //Gur Machol
+//Gur Machol
 
 import { ExtensionMenuDisplayDetails, extension, block, untilTimePassed, RGBObject, rgbToHex } from "$common";
 import { type Results, type SelfieSegmentation } from "@mediapipe/selfie_segmentation";
@@ -36,7 +36,7 @@ export default class extends extension(details, "video", "drawable") {
    * An to the items being drawn on screen
    */
   drawables: ReturnType<typeof this.createDrawable>[] = [];
- 
+
   /**
    * Current drawing method.
    * - Mask: Mask-out the selfie region of the original image
@@ -72,8 +72,7 @@ export default class extends extension(details, "video", "drawable") {
     this.enableVideo();
     this.model = await getSelfieModel((results) => this.processResults(results));
     this.start();
-    this.getTesseractInfrence = await getTesseract(); 
-    
+    this.getTesseractInfrence = await getTesseract();
   }
 
   private processResults(results: Results) {
@@ -230,19 +229,19 @@ export default class extends extension(details, "video", "drawable") {
   @block({
     type: "command",
     text: (numberOfPics: number, seconds: number) => `Make ${numberOfPics} selfie images into costumes in ${seconds} seconds`,
-    args: [{type: "number"},  {type: "number"}],
+    args: [{ type: "number" }, { type: "number" }],
   })
-  async xCostumesxSeconds(numberOfPics: number, seconds: number, util: BlockUtility){
-    for(let x = 0; x <= numberOfPics; x++){
-        const buffer = this.imageHelper.getDataURL(this.lastProcessedImage);
-        const costume = await createCostumeAssetFromImage(buffer, this.runtime);
-        costume.name = `${this.id}_generated_${Date.now()}`;
-        const renderedTarget = util.target as any as RenderedTarget;
-        const { length } = renderedTarget.getCostumes();
-        await this.runtime.addCostume(costume);
-        renderedTarget.addCostume(costume, length);
-        renderedTarget.setCostume(length);
-        sleep((seconds*1000+10)/numberOfPics); 
+  async xCostumesxSeconds(numberOfPics: number, seconds: number, util: BlockUtility) {
+    for (let x = 0; x <= numberOfPics; x++) {
+      const buffer = this.imageHelper.getDataURL(this.lastProcessedImage);
+      const costume = await createCostumeAssetFromImage(buffer, this.runtime);
+      costume.name = `${this.id}_generated_${Date.now()}`;
+      const renderedTarget = util.target as any as RenderedTarget;
+      const { length } = renderedTarget.getCostumes();
+      await this.runtime.addCostume(costume);
+      renderedTarget.addCostume(costume, length);
+      renderedTarget.setCostume(length);
+      sleep((seconds * 1000 + 10) / numberOfPics);
     }
 
   }
@@ -250,10 +249,17 @@ export default class extends extension(details, "video", "drawable") {
     type: "reporter",
     text: "Text recognized in image",
   })
-  async generateText(){
-    let imageText = await this.getTesseractInfrence("eng" ,this.lastProcessedImage);
+  async generateText() {
+    let imageText = await this.getTesseractInfrence("eng", this.imageHelper.getDataURL(this.getVideoFrame("image")));
     return imageText;
   }
 
-
+  @block({
+    type: "command",
+    text: (condition) => `Flip video ${condition}`,
+    arg: { type: "Boolean", options: [true, false] }
+  })
+  flipVideoBlock(doFlip: boolean) {
+    this.flipVideo(doFlip)
+  }
 }

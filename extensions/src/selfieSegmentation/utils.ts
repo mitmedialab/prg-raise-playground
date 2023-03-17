@@ -10,7 +10,7 @@ export const getImageHelper = (width, height) => {
   canvas.width = width;
   canvas.height = height;
   const context = canvas.getContext("2d");
- 
+
   return {
     /**
      * 
@@ -82,14 +82,19 @@ export const getSelfieModel = async (onFrame: ResultsListener) => {
   return model;
 }
 
+
 export const getTesseract = async () => {
   const packageURL = "https://unpkg.com/tesseract.js@4.0.2/dist/tesseract.min.js";
   const packageClassName = "Tesseract";
 
-  let tesseract = await untilExternalGlobalVariableLoaded<typeof Tesseract>(packageURL, packageClassName);
-  function imageToText(language: string, image: ImageData){
+  const img = document.createElement('img');
+  img.hidden = true;
+
+  const tesseract = await untilExternalGlobalVariableLoaded<typeof Tesseract>(packageURL, packageClassName);
+  function imageToText(language: string, imageUrl: string) {
+    img.src = imageUrl;
     return tesseract.recognize(
-      image,
+      img,
       language,
       { logger: m => console.log(m) }
     ).then(({ data: { text } }) => {

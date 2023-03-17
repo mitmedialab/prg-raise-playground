@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@mediapipe/selfie_segmentation": "^0.1.1675465747"
+    "@mediapipe/selfie_segmentation": "^0.1.1675465747",
+    "tesseract.js": "^4.0.2"
   }
 }
