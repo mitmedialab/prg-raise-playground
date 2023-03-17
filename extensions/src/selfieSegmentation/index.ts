@@ -1,8 +1,12 @@
+//Parker Malachowsky
+ //Gur Machol
+
 import { ExtensionMenuDisplayDetails, extension, block, untilTimePassed, RGBObject, rgbToHex } from "$common";
 import { type Results, type SelfieSegmentation } from "@mediapipe/selfie_segmentation";
-import { createCostumeAssetFromImage, getImageHelper, getSelfieModel } from "./utils";
+import { createCostumeAssetFromImage, getImageHelper, getSelfieModel, getTesseract } from "./utils";
 import type BlockUtility from "$scratch-vm/engine/block-utility";
 import type RenderedTarget from "$scratch-vm/sprites/rendered-target";
+
 
 //add angle field and rotate image before costume
 //block to take x photos in x seconds 
@@ -22,7 +26,7 @@ export default class extends extension(details, "video", "drawable") {
   // A reference to the mediapipe SelfieSegmentation class doing all the work
   model: SelfieSegmentation;
 
-  
+
   /**
    * Whether or not the extension should currently be processing selfies
    */
@@ -60,12 +64,16 @@ export default class extends extension(details, "video", "drawable") {
    */
   imageHelper: ReturnType<typeof getImageHelper>;
 
+  getTesseractInfrence: Awaited<ReturnType<typeof getTesseract>>;
+
   lastProcessedImage: ImageData;
 
   async init() {
     this.enableVideo();
     this.model = await getSelfieModel((results) => this.processResults(results));
     this.start();
+    this.getTesseractInfrence = await getTesseract(); 
+    
   }
 
   private processResults(results: Results) {
@@ -132,7 +140,23 @@ export default class extends extension(details, "video", "drawable") {
     renderedTarget.addCostume(costume, length);
     renderedTarget.setCostume(length);
   }
-
+  /*
+  @block({
+    type: "command",
+    arg: "number"
+    text: (degree) =>`Set selfie image as costume rotated ${degree} degrees`,
+  })
+  async setCostumeAndRotaion(util: BlockUtility, degree: number) {
+    const buffer = this.imageHelper.getDataURL(this.lastProcessedImage);
+    const costume = await createCostumeAssetFromImage(buffer, this.runtime);
+    costume.name = `${this.id}_generated_${Date.now()}`;
+    const renderedTarget = util.target as any as RenderedTarget;
+    const { length } = renderedTarget.getCostumes();
+    await this.runtime.addCostume(costume);
+    renderedTarget.addCostume(costume, length);
+    renderedTarget.setCostume(length);
+  }
+  */
   @block({
     type: "command",
     text: (x) => `Set video feed transparency to ${x}%`,
@@ -203,7 +227,6 @@ export default class extends extension(details, "video", "drawable") {
     state === "on" ? this.start() : this.stop();
   }
 
-
   @block({
     type: "command",
     text: (numberOfPics: number, seconds: number) => `Make ${numberOfPics} selfie images into costumes in ${seconds} seconds`,
@@ -223,4 +246,14 @@ export default class extends extension(details, "video", "drawable") {
     }
 
   }
+  @block({
+    type: "reporter",
+    text: "Text recognized in image",
+  })
+  async generateText(){
+    let imageText = await this.getTesseractInfrence("eng" ,this.lastProcessedImage);
+    return imageText;
+  }
+
+
 }

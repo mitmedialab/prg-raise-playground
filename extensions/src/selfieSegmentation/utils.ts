@@ -2,6 +2,7 @@ import { untilExternalGlobalVariableLoaded } from "$common";
 import type Runtime from "$scratch-vm/engine/runtime";
 import { ResultsListener, type Results, type SelfieSegmentation } from "@mediapipe/selfie_segmentation";
 import MockBitmapAdapter from "./MockBitmapAdapter";
+import type Tesseract from "tesseract.js";
 
 export const getImageHelper = (width, height) => {
   const canvas = document.body.appendChild(document.createElement("canvas"));
@@ -79,6 +80,23 @@ export const getSelfieModel = async (onFrame: ResultsListener) => {
   await model.initialize();
 
   return model;
+}
+
+export const getTesseract = async () => {
+  const packageURL = "https://unpkg.com/tesseract.js@4.0.2/dist/tesseract.min.js";
+  const packageClassName = "Tesseract";
+
+  let tesseract = await untilExternalGlobalVariableLoaded<typeof Tesseract>(packageURL, packageClassName);
+  function imageToText(language: string, image: ImageData){
+    return tesseract.recognize(
+      image,
+      language,
+      { logger: m => console.log(m) }
+    ).then(({ data: { text } }) => {
+      return text;
+    })
+  }
+  return imageToText;
 }
 
 let bitmapAdapter: MockBitmapAdapter;

@@ -113,7 +113,7 @@ export default class {
         }
       };
       image.onerror = () => {
-        reject('Image load failed');
+        reject('Image load failed :(');
       };
     });
   }
