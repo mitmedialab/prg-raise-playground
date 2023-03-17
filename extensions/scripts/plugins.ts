@@ -154,7 +154,6 @@ export const fillInConstructorArgs = (info: BundleInfo, getContent: (info: Bundl
           /** Handle special case of generic etension */
           /** TODO: Remove once generic extensions are deprecated */
           if (code.includes(genericExtensionSearchValue)) {
-            console.error("Using alternative method");
             searchValue = genericExtensionSearchValue;
             replacer = (content: string) => `${genericExtensionSearchValue} \n constructor(runtime){ super(...[runtime, ${content} ]) }; \n`;
           }

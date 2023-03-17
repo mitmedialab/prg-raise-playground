@@ -36,9 +36,9 @@ export abstract class ConstructableExtension {
    */
   abstract init(env: Environment): void | Promise<void>;
 
-  protected internal_init() {
+  protected async internal_init() {
     const runtime = this.runtime;
-    return Promise.resolve(this.init({
+    return await Promise.resolve(this.init({
       runtime,
       get extensionManager() { return runtime.getExtensionManager() }
     }));
