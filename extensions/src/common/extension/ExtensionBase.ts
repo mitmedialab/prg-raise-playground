@@ -27,19 +27,21 @@ export abstract class ConstructableExtension {
    * @description This function is intended to behave exactly like a constructor, used to initialize the state of your extension.
    *
    * The reason we use this function INSTEAD of a constructor is so that the base Extension class can manage the construction of this class.
+   * 
+   * This also allows us to enable this method to be async (if you'd like).
    * @param {Environment} env An object that allows your Extension to interact with the Scratch Environment. Currently is a little bare, but will be expanded soon.
    * Can be ommitted if not needed.
    *
    * For Scratch developers: The `runtime` property on env is the same as the runtime passed to non-Typescript-Framework Extension constructors
    */
-  abstract init(env: Environment): void;
+  abstract init(env: Environment): void | Promise<void>;
 
-  protected async internal_init() {
+  protected internal_init() {
     const runtime = this.runtime;
-    await this.init({
+    return Promise.resolve(this.init({
       runtime,
       get extensionManager() { return runtime.getExtensionManager() }
-    });
+    }));
   }
 
   /**

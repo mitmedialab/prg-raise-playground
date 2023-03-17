@@ -80,7 +80,7 @@ export const getThirdPartyPlugins = (customizations?: { tsTransformers?: Program
     babelHelpers: "bundled",
   }),
   css(),
-  terser(),
+  //terser(),
 ];
 
 export const getOutputOptions = ({ id: name, bundleDestination: file }: BundleInfo, overrides?: OutputOptions): OutputOptions =>
@@ -135,7 +135,7 @@ export const bundleBasedOnWatchMode = async ({ plugins, info, globals, external 
   const { bundleEntry, watch: doWatch, name, directory } = info;
   const watchableFileExtensions = ["ts", "svelte", "png", "svg"];
   const filesToWatch = [...watchableFileExtensions.map(ext => `**/*.${ext}`)].map(file => path.join(directory, file));
-  const options: RollupOptions = { input: bundleEntry, plugins, external, watch: { include: filesToWatch} };
+  const options: RollupOptions = { input: bundleEntry, plugins, external, watch: { include: filesToWatch } };
   const output = getOutputOptions(info, { globals });
 
   if (doWatch) return logEvents(watch({ ...options, output }), info);
