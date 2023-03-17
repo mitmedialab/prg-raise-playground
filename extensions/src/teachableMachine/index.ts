@@ -1,7 +1,11 @@
-import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails } from "$common";
+import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, extension } from "$common";
 import tmImage from '@teachablemachine/image';
 import tmPose from '@teachablemachine/pose';
 import { create } from '@tensorflow-models/speech-commands';
+
+import { legacyFullSupport, legacyIncrementalSupport, info } from "./legacy";
+
+const { legacyExtension, legacyBlock } = legacyIncrementalSupport.for<teachableMachine>();
 
 const VideoState = {
   /** Video turned off. */
@@ -18,25 +22,34 @@ const ModelType = {
   AUDIO: 'audio',
 };
 
-type Details = {
+const details = {
   name: "Teachable Machine",
-  description: "Use your Teachable Machine models in your Scratch project!"
+  description: "Use your Teachable Machine models in your Scratch project!",
   iconURL: "teachable-machine-blocks.png",
   insetIconURL: "teachable-machine-blocks-small.svg"
 };
 
-type Blocks = {
-  useModel_Command(url: string): void;
-  whenModelDetects_Hat(state: string): boolean;
-  modelPrediction_Reporter(): string;
-  predictionIs_Boolean(state: string): boolean;
-  confidenceFor_Reporter(state: string): number;
+// type Details = {
+//   name: "Teachable Machine",
+//   description: "Use your Teachable Machine models in your Scratch project!",
+//   iconURL: "teachable-machine-blocks.png",
+//   insetIconURL: "teachable-machine-blocks-small.svg"
+// };
 
-  videoToggleCommand(state: number): void;
-  setVideoTransparencyCommand(state: number): void;
-}
+// type Blocks = {
+//   useModel_Command(url: string): void;
+//   whenModelDetects_Hat(state: string): boolean;
+//   modelPrediction_Reporter(): string;
+//   predictionIs_Boolean(state: string): boolean;
+//   confidenceFor_Reporter(state: string): number;
 
-export default class teachableMachine extends Extension<Details, Blocks> {
+//   videoToggleCommand(state: number): void;
+//   setVideoTransparencyCommand(state: number): void;
+// }
+
+@legacyExtension()
+export default class teachableMachine extends extension(details) {
+  // export default class teachableMachine extends Extension<Details, Blocks> {
 
   lastUpdate: number;
   maxConfidence: number;
@@ -331,6 +344,22 @@ export default class teachableMachine extends Extension<Details, Blocks> {
   setTransparency(transparency: number) {
     const trans = Math.max(Math.min(transparency, 100), 0);
     this.runtime.ioDevices.video.setPreviewGhost(trans);
+  }
+
+  @legacyBlock.useModel_Command()
+  useModel_Command(url) {
+    this.useModel(url);
+  }
+
+  @legacyBlock.useModel_Command({
+    argumentMethods: {
+      0: {
+        getItems: () => teachableMachine.getCurrentClasses()
+      }
+    }
+  })
+  whenModelDetects_Hat(state) {
+    this.model_match(state);
   }
 
   defineBlocks(): teachableMachine["BlockDefinitions"] {
