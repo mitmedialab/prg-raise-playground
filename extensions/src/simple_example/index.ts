@@ -10,7 +10,7 @@ const details: ExtensionMenuDisplayDetails = {
   }
 }
 
-export default class SimpleTypescript extends extension(details, "ui", "customSaveData", "setTransparencyBlock") {
+export default class SimpleTypescript extends extension(details, "ui", "customSaveData") {
   count: number = 0;
 
   logOptions: Menu<string> = {
@@ -44,7 +44,6 @@ export default class SimpleTypescript extends extension(details, "ui", "customSa
     arg: { type: ArgumentType.String, options: self.logOptions }
   }))
   log(msg: string) {
-    this.setVideoTransparencyBlock();
     console.log(msg);
   }
 

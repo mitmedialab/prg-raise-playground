@@ -8,10 +8,6 @@ export default function <T extends ExtensionInstance, C extends NonAbstractConst
       await super.internal_init();
     }
 
-    getInfo(): ExtensionMetadata {
-      return super.getInfo();
-    }
-
     getBlockInfo(): ExtensionBlockMetadata[] {
       return this.getInfo().blocks as ExtensionBlockMetadata[]
     }
