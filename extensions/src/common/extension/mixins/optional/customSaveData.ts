@@ -1,8 +1,6 @@
-import { ExtensionBaseConstructor } from "$common/extension/ExtensionBase";
-import { ExtensionBase } from "../../ExtensionBase";
 import { BaseGenericExtension, NonAbstractConstructor } from "$common/types";
 import { MinimalExtensionConstructor } from "../required";
-import { ExtensionIntanceWithFunctionality, ExtensionWithFunctionality } from "..";
+import { ExtensionIntanceWithFunctionality } from "..";
 
 /**
  * WARNING! If you change this key, it will affect already saved projects.

@@ -1,6 +1,6 @@
-import { AbstractConstructor, ValueOf } from "$common/types";
+import { ValueOf } from "$common/types";
 import { Mixin, MixinName, optionalMixins } from "./index";
-import { MinimalExtensionConstructor, MinimalExtensionInstance } from "./required";
+import { MinimalExtensionConstructor } from "./required";
 
 type DependentFunctionality<TBase, TMixinDependencies extends Mixin<unknown>[]> =
   TMixinDependencies extends [infer Head extends Mixin<unknown>, ...infer Tail extends Mixin<unknown>[]]

@@ -47,9 +47,13 @@ export default function <T extends MinimalExtensionConstructor>(Ctor: T) {
     /**
      * Turn the video feed on so that it's frames can be accessed and the feed
      * diplays within the game window.
+     * @param {boolean} mirror defaults to `true`
+     * @returns 
      */
-    enableVideo() {
-      this.video?.enableVideo();
+    enableVideo(mirror: boolean = true) {
+      if (!this.video) return;
+      this.video.enableVideo();
+      this.video.provider.mirror = mirror;
     }
 
     /**

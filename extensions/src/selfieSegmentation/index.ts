@@ -2,13 +2,14 @@ import { ExtensionMenuDisplayDetails, extension, block, untilTimePassed, RGBObje
 import { type Results, type SelfieSegmentation } from "@mediapipe/selfie_segmentation";
 import { getImageHelper, getSelfieModel } from "./utils";
 import type BlockUtility from "$scratch-vm/engine/block-utility";
-import type RenderedTarget from "$scratch-vm/sprites/rendered-target";
 
 const details: ExtensionMenuDisplayDetails = {
   name: "Selfie Detector",
 };
 
-export default class extends extension(details, "video", "drawable", "addCostumes") {
+export default class extends extension(
+  details, "video", "drawable", "addCostumes", "setTransparencyBlock", "toggleVideoBlock"
+) {
   // A reference to the mediapipe SelfieSegmentation class doing all the work
   model: SelfieSegmentation;
 
@@ -84,6 +85,7 @@ export default class extends extension(details, "video", "drawable", "addCostume
   private start() {
     if (this.processing) return;
     this.processing = true;
+    this.enableVideo();
     this.loop();
   }
 
@@ -113,15 +115,6 @@ export default class extends extension(details, "video", "drawable", "addCostume
   })
   async setCostume({ target }: BlockUtility) {
     this.addCostume(target, this.lastProcessedImage, "add and set")
-  }
-
-  @block({
-    type: "command",
-    text: (x) => `Set video feed transparency to ${x}%`,
-    arg: "number"
-  })
-  setVideoFeedTransparency(transparency: number) {
-    this.setVideoTransparency(transparency);
   }
 
   @block({
