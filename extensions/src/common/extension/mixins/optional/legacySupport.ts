@@ -51,7 +51,7 @@ export default function legacySupportMixin<T extends MinimalExtensionConstructor
     public __isLegacy = true;
     public orderArgumentNamesByBlock: Map<string, string[]> = new Map();
 
-    protected getInfo(): ExtensionMetadata {
+    protected override getInfo(): ExtensionMetadata {
       if (!this.validatedInfo) {
         const info = super.getInfo();
         this.validatedInfo = this.validateAndAttach(info);

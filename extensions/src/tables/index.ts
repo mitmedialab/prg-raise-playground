@@ -35,7 +35,7 @@ export default class Tables extends Extension<Details, Blocks> {
   defaultNumberArg: any;
 
   // save tables to .sb3 when project is saved
-  saveDataHandler = new SaveDataHandler({
+  override saveDataHandler = new SaveDataHandler({
     Extension: Tables,
     onSave: (self) => { return self.tables },
     onLoad: (self, tables) => { self.tables = tables },

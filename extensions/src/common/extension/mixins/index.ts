@@ -1,4 +1,4 @@
-import { AbstractConstructor, ValueOf } from "$common/types";
+import { AbstractConstructor, ScratchExtension, ValueOf } from "$common/types";
 import addCostumes from "./optional/addCostumes/index";
 import customArguments from "./optional/customArguments/index";
 import customSaveData from "./optional/customSaveData";
@@ -6,8 +6,10 @@ import drawable from "./optional/drawable";
 import legacySupport from "./optional/legacySupport";
 import ui from "./optional/ui";
 import video from "./optional/video";
-
+import setTransparencyBlock from "./optional/blocks/setTransparency";
 import { MinimalExtensionConstructor } from "./required";
+
+export type Mixin<T> = (Ctor: MinimalExtensionConstructor) => AbstractConstructor<T>;
 
 export const optionalMixins = {
   customArguments,
@@ -16,8 +18,9 @@ export const optionalMixins = {
   video,
   drawable,
   addCostumes,
-  legacySupport
-} as const satisfies OptionalMixins;
+  legacySupport,
+  setTransparencyBlock
+} as const satisfies OptionalMixins satisfies Record<string, Mixin<unknown>>;
 
 export type OptionalMixins<T extends MinimalExtensionConstructor = MinimalExtensionConstructor> = {
   ui: typeof ui<T>;
@@ -26,12 +29,14 @@ export type OptionalMixins<T extends MinimalExtensionConstructor = MinimalExtens
   video: typeof video<T>,
   drawable: typeof drawable<T>,
   addCostumes: typeof addCostumes<T>,
-  legacySupport: typeof legacySupport<T>
+  legacySupport: typeof legacySupport<T>,
+  setTransparencyBlock: typeof setTransparencyBlock<T>
 }
 
 export type MixinName = keyof typeof optionalMixins;
 
-export type ExtensionWithFunctionality<TSupported extends MixinName[], TBase extends MinimalExtensionConstructor = MinimalExtensionConstructor> = TSupported extends [infer Head, ...infer Tail]
+export type ExtensionWithFunctionality<TSupported extends MixinName[], TBase extends MinimalExtensionConstructor = MinimalExtensionConstructor> =
+  TSupported extends [infer Head, ...infer Tail]
   /** Use `extends` to enable typescript to infer desired characteristics */
   ? Head extends keyof OptionalMixins ? Tail extends (keyof OptionalMixins)[] ? TBase extends MinimalExtensionConstructor
   /** Accumalate the TBase parameter */

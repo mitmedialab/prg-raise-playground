@@ -25,6 +25,7 @@ export const saveDataKey = "customSaveDataPerExtension" as const;
  *       const sum = data.x + data.y; // do something with saved data
  *    }
  * })
+ * @todo Remove the `BaseGenericExtension` Generic Type restraint once Generic Extensions are no longer supported
  */
 export class SaveDataHandler<T extends BaseGenericExtension | ExtensionIntanceWithFunctionality<["customSaveData"]>, TData> {
   constructor(public hooks: {

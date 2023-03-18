@@ -3,7 +3,7 @@ import { ExtensionBase } from "./ExtensionBase";
 import scratchInfo from "./mixins/required/scratchInfo";
 import supported from "./mixins/required/supported";
 import { ExtensionMenuDisplayDetails, Writeable } from "$common/types";
-import { getDependencies } from "./mixins/dependencies";
+import { tryCaptureDependencies } from "./mixins/dependencies";
 
 const registerDetailsIdentifier = "__registerMenuDetials";
 
@@ -57,12 +57,30 @@ export const extension = <const TSupported extends readonly MixinName[]>(
 
   if (!addOns) return Base;
 
-  addOns.push(...getDependencies(...addOns));
+  const { Result, allSupported } = recursivelyApplyMixinsAndDependencies(Base, addOns);
+  return supported(Result, Array.from(allSupported)) as typeof Result;
+}
 
-  return Array.from(new Set([...addOns]))
-    .sort() // Ensure same order always
+const recursivelyApplyMixinsAndDependencies = <const TSupported extends readonly MixinName[]>(
+  Base: ExtensionWithFunctionality<[...TSupported]>,
+  addons: TSupported,
+  alreadyAdded: Set<MixinName> = new Set()
+): { Result: ExtensionWithFunctionality<[...TSupported]>, allSupported: Set<MixinName> } => {
+  const Result = addons
+    .filter(addon => !alreadyAdded.has(addon))
+    .map(key => {
+      alreadyAdded.add(key);
+      return key;
+    })
     .map(key => optionalMixins[key])
-    .reduce((acc, mixin) => mixin(acc), Base)
+    .reduce((acc, mixin) => {
+      const { dependencies, MixedIn } = tryCaptureDependencies(() => mixin(acc));
+      return !dependencies
+        ? MixedIn
+        : recursivelyApplyMixinsAndDependencies(MixedIn, dependencies, alreadyAdded).Result as typeof MixedIn;
+    }, Base);
+
+  return { Result, allSupported: alreadyAdded }
 }
 
 export const registerExtensionDefinitionCallback = (callback: (details: ExtensionMenuDisplayDetails) => void) =>

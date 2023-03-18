@@ -96,7 +96,7 @@ export abstract class Extension<
    */
   abstract defineBlocks(): BlockDefinitions<Extension<MenuDetails, Blocks>>;
 
-  protected async internal_init() {
+  protected override async internal_init() {
     await super.internal_init();
     const blocks = this.defineBlocks();
     const self = this;

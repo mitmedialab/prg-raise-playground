@@ -1,9 +1,5 @@
-import { Extension, SaveDataHandler, extension } from "$common";
-import mixin from "$common/extension/mixins/optional/customSaveData";
-import { DefaultDisplayDetails } from "$testing/defaults";
+import { SaveDataHandler, extension } from "$common";
 import { codeSnippet, notRelevantToExample } from "../../";
-
-type NoBlocks = {};
 
 export const x = codeSnippet();
 
@@ -31,7 +27,7 @@ export default class SaveLoadExample extends extension({ name }, "customSaveData
    *   The second parameter 'data' will take on the type of the thing that `onSave` returns. 
    *   This way, the two functions stay in sync.
    */
-  saveDataHandler = new SaveDataHandler({
+  override saveDataHandler = new SaveDataHandler({
     Extension: SaveLoadExample,
     // Return the information that we want to save
     onSave(self) { return self.somePersistentData },
