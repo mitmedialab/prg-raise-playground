@@ -2190,9 +2190,14 @@ function video (Ctor) {
         /**
          * Turn the video feed on so that it's frames can be accessed and the feed
          * diplays within the game window.
+         * @param {boolean} mirror defaults to `true`
+         * @returns
          */
-        enableVideo() {
-            this.video?.enableVideo();
+        enableVideo(mirror = true) {
+            if (!this.video)
+                return;
+            this.video.enableVideo();
+            this.video.provider.mirror = mirror;
         }
         /**
          * Disable the video feed
@@ -2259,20 +2264,23 @@ function __runInitializers(thisArg, initializers, value) {
   }
   return useValue ? value : void 0;
 }/**
- * Mixin a 'setVideoTransparencyBlock' to control the transparency of the videofeed
+ * Mixin a 'setVideoTransparency' Block to control the transparency of the videofeed
  * @param Ctor
  * @returns
  * @see https://www.typescriptlang.org/docs/handbook/mixins.html
  */
 function setTransparencyBlock (Ctor) {
-    let ExtensionWithSetTransparencyBlock = (() => {
+    let ExtensionWithSetVideoTransparencyBlock = (() => {
         var _a;
         let _instanceExtraInitializers = [];
         let _setVideoTransparencyBlock_decorators;
-        return _a = class ExtensionWithSetTransparencyBlock extends withDependencies(Ctor, video) {
-                setVideoTransparencyBlock() {
-                    console.log(Object.keys(this));
-                    this.enableVideo();
+        return _a = class ExtensionWithSetVideoTransparencyBlock extends withDependencies(Ctor, video) {
+                /**
+                 * A `command` block that takes a single number argument and uses it to set the transparency of the video feed.
+                 * @param transparency What transparency to set -- a higher number is more transparent (thus '100' is fully invisible)
+                 */
+                setVideoTransparencyBlock(transparency) {
+                    this.setVideoTransparency(transparency);
                 }
                 constructor() {
                     super(...arguments);
@@ -2281,14 +2289,53 @@ function setTransparencyBlock (Ctor) {
             },
             (() => {
                 _setVideoTransparencyBlock_decorators = [block({
-                        type: "button",
-                        text: "",
+                        type: "command",
+                        text: (transparency) => `Set video to ${transparency}% transparent`,
+                        arg: "number"
                     })];
                 __esDecorate(_a, null, _setVideoTransparencyBlock_decorators, { kind: "method", name: "setVideoTransparencyBlock", static: false, private: false, access: { has: obj => "setVideoTransparencyBlock" in obj, get: obj => obj.setVideoTransparencyBlock } }, null, _instanceExtraInitializers);
             })(),
             _a;
     })();
-    return ExtensionWithSetTransparencyBlock;
+    return ExtensionWithSetVideoTransparencyBlock;
+}/**
+ * Mixin a 'toggleVideo' Block to control whether the video feed is on, off, or flipped
+ * @param Ctor
+ * @returns
+ * @see https://www.typescriptlang.org/docs/handbook/mixins.html
+ */
+function toggleVideoBlock (Ctor) {
+    let ExtensionWithToggleVideoBlock = (() => {
+        var _a;
+        let _instanceExtraInitializers = [];
+        let _toggleVideoBlock_decorators;
+        return _a = class ExtensionWithToggleVideoBlock extends withDependencies(Ctor, video) {
+                /**
+                 * A `command` block that sets the current video state
+                 * @param state What state to set ("on", "off", or "on (flipped)")
+                 * @returns
+                 */
+                toggleVideoBlock(state) {
+                    if (state === "off")
+                        return this.disableVideo();
+                    this.enableVideo(state === "on");
+                }
+                constructor() {
+                    super(...arguments);
+                    __runInitializers(this, _instanceExtraInitializers);
+                }
+            },
+            (() => {
+                _toggleVideoBlock_decorators = [block({
+                        type: "command",
+                        text: (state) => `Set video feed to ${state}`,
+                        arg: { type: "string", options: ["on", "off", "on (flipped)"] }
+                    })];
+                __esDecorate(_a, null, _toggleVideoBlock_decorators, { kind: "method", name: "toggleVideoBlock", static: false, private: false, access: { has: obj => "toggleVideoBlock" in obj, get: obj => obj.toggleVideoBlock } }, null, _instanceExtraInitializers);
+            })(),
+            _a;
+    })();
+    return ExtensionWithToggleVideoBlock;
 }const optionalMixins = {
     customArguments: mixin,
     ui,
@@ -2297,7 +2344,8 @@ function setTransparencyBlock (Ctor) {
     drawable,
     addCostumes,
     legacySupport: legacySupportMixin,
-    setTransparencyBlock
+    setTransparencyBlock,
+    toggleVideoBlock,
 };class ConstructableExtension {
     async internal_init() {
         const runtime = this.runtime;

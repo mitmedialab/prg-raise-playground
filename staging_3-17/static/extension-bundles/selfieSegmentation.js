@@ -139,13 +139,12 @@ var index = (() => {
     var _a;
     let _instanceExtraInitializers = [];
     let _setCostume_decorators;
-    let _setVideoFeedTransparency_decorators;
     let _setDisplayMode_decorators;
     let _setNumberOfEchos_decorators;
     let _setColor_decorators;
     let _setFrameRate_decorators;
     let _setProcessingState_decorators;
-    return _a = class default_1 extends $common.extension(details, "video", "drawable", "addCostumes") {
+    return _a = class default_1 extends $common.extension(details, "video", "drawable", "addCostumes", "setTransparencyBlock", "toggleVideoBlock") {
             constructor() {
                 super(...[...arguments, ...["Selfie Detector","selfieSegmentation","data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAH0AAAB8CAYAAABE3L+AAAAACXBIWXMAAAsTAAALEwEAmpwYAAADQElEQVR4nO3dMWsUQRyG8edyZyEqqBgVJHiaUvA76CcQK3sbsbJVv0AquxSKjaWlpBS0thDBwkpFLTQgQRQtTIxnsVdJsnO3c//du3nfH1x1Ozube8JuYLJ7vdFohGlZ6voArH2OLsjRBTm6IEcXNKh7893HD+vARWC7ncOxTAeB+6tnh4/qNqqNDlwFTs/skKwNL4Ha6KnT+6fZHYu1ZCu1ga/pghxdkKMLcnRBji7I0QU5uiBHF+ToghxdkKMLcnRBqVW2HLvAZuD+SzUATkVPEGUTGFLFt8mdB95GThAZ/S/wJ3D/pfoRPUHkNX0J6Afuv1RHoifwH3KCHF2QowtydEGOLsjRBTm6IEcX5OiCHF2QowuKjL6DV9iaeB89QeQq21HgJtVqm01uOXqC6Ojrgfu3hnxNF+ToghxdkKMLcnRBji7I0QU5uiBHF+ToghxdkKMLcvTyJJs6enmS98JFLq1uAdfxenqbBsCbSTaK8hN4Erh/ayjy9D7AtyrPJV/TBTm6IEcX5OiCHF2QowtydEGOLsjRBTm6IEcX5OiCIlfZcq0AJzua+zt5T2I+Bxyf0bFM6wvwuW6DeY5+B7jR0dzPgcsZ4+8BV2ZzKFNbA27XbTDPp/cun2KRO3eXjzxP/tPKPEff6XDu35njt2dyFM0kP7d5jm5BHF2QowtydEGOLsjRBTm6IEcX5OiCHF2Qowty9L0dyxx/eCZH0UzyG5nneWk110OqteUmv9g94G7N+yPgwPj1/6rWEtXtwq/H+2lTH3ia2qjk6LeAXw3HXgKeZcx9DXicMT5Uyaf31Yyxuaf3Q5njQ5Ucve1T68IoObrtw9EFObogRxfk6IIcXZCjC3J0QY4uyNEFlRw959ak3NuSurwlK8nR95Ybvct72ZJKXlrdoHoS9bQPJd4FTmTOvUa1tNv259sDHoxf+yo5+oUO5x6OX11I/twln95VfUtt4OiCHF2QowtydEGOLsjRBTm6IEcX5OiCHF2QowtKRV/J2PeZjLEAy5njVSWfPp1aZdugWrWZ9puRe8BXqlt6m3pB9QjtLh8MvGj6wKvURr3RKKeLLSJf0wU5uiBHF+ToghxdkKMLcnRB/wBIt0+4Irv7NwAAAABJRU5ErkJggg=="]]);
                 // A reference to the mediapipe SelfieSegmentation class doing all the work
@@ -195,6 +194,7 @@ var index = (() => {
                 if (this.processing)
                     return;
                 this.processing = true;
+                this.enableVideo();
                 this.loop();
             }
             stop() {
@@ -218,9 +218,6 @@ var index = (() => {
             async setCostume({ target }) {
                 this.addCostume(target, this.lastProcessedImage, "add and set");
             }
-            setVideoFeedTransparency(transparency) {
-                this.setVideoTransparency(transparency);
-            }
             setDisplayMode(mode) {
                 this.clearDrawables();
                 this.mode = mode;
@@ -243,11 +240,6 @@ var index = (() => {
             _setCostume_decorators = [$common.block({
                     type: "command",
                     text: `Set selfie image as costume`,
-                })];
-            _setVideoFeedTransparency_decorators = [$common.block({
-                    type: "command",
-                    text: (x) => `Set video feed transparency to ${x}%`,
-                    arg: "number"
                 })];
             _setDisplayMode_decorators = [$common.block({
                     type: "command",
@@ -290,7 +282,6 @@ var index = (() => {
                     arg: { type: "string", options: ["on", "off"] }
                 })];
             __esDecorate(_a, null, _setCostume_decorators, { kind: "method", name: "setCostume", static: false, private: false, access: { has: obj => "setCostume" in obj, get: obj => obj.setCostume } }, null, _instanceExtraInitializers);
-            __esDecorate(_a, null, _setVideoFeedTransparency_decorators, { kind: "method", name: "setVideoFeedTransparency", static: false, private: false, access: { has: obj => "setVideoFeedTransparency" in obj, get: obj => obj.setVideoFeedTransparency } }, null, _instanceExtraInitializers);
             __esDecorate(_a, null, _setDisplayMode_decorators, { kind: "method", name: "setDisplayMode", static: false, private: false, access: { has: obj => "setDisplayMode" in obj, get: obj => obj.setDisplayMode } }, null, _instanceExtraInitializers);
             __esDecorate(_a, null, _setNumberOfEchos_decorators, { kind: "method", name: "setNumberOfEchos", static: false, private: false, access: { has: obj => "setNumberOfEchos" in obj, get: obj => obj.setNumberOfEchos } }, null, _instanceExtraInitializers);
             __esDecorate(_a, null, _setColor_decorators, { kind: "method", name: "setColor", static: false, private: false, access: { has: obj => "setColor" in obj, get: obj => obj.setColor } }, null, _instanceExtraInitializers);
