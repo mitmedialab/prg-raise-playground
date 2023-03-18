@@ -21,10 +21,10 @@
   },
   "overrides": {
     "svelte-preprocess": {
-      "typescript": "5.0.1-rc"
+      "typescript": "latest"
     },
     "ts-jest": {
-      "typescript": "5.0.1-rc"
+      "typescript": "latest"
     }
   }
 }

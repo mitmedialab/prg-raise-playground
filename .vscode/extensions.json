@@ -1,6 +1,7 @@
 {
   "recommendations": [
     "ms-vscode.vscode-typescript-next",
-    "svelte.svelte-vscode"
+    "svelte.svelte-vscode",
+    "oderwat.indent-rainbow"
   ]
 }
