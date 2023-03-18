@@ -644,6 +644,7 @@ const saveDataKey = "customSaveDataPerExtension";
  *       const sum = data.x + data.y; // do something with saved data
  *    }
  * })
+ * @todo Remove the `BaseGenericExtension` Generic Type restraint once Generic Extensions are no longer supported
  */
 class SaveDataHandler {
     constructor(hooks) {
@@ -1475,7 +1476,30 @@ function addCostumes (Ctor) {
         }
     }
     return ExtensionWithCustomSupport;
-}const callingContext = {
+}const dependencyListeners = [];
+const withDependencies = (Ctor, ...dependencies) => {
+    dependencyListeners.pop()?.(dependencies);
+    return Ctor;
+};
+let mixinsMap;
+const tryCaptureDependencies = (createMixin) => {
+    mixinsMap ?? (mixinsMap = Object.entries(optionalMixins).reduce((map, [name, mixin]) => {
+        return map.set(mixin, name);
+    }, new Map()));
+    let dependencies;
+    dependencyListeners.push((mixins) => {
+        mixins
+            .map(dependency => dependency)
+            .forEach(dependency => {
+            if (!mixinsMap.has(dependency))
+                throw new Error("Unkown mixin dependency! " + dependency);
+            dependencies ?? (dependencies = []);
+            dependencies.push(mixinsMap.get(dependency));
+        });
+    });
+    const MixedIn = createMixin();
+    return { dependencies, MixedIn };
+};const callingContext = {
     DrowpdownOpen: openDropdownState,
     DropdownClose: closeDropdownState,
     Init: initDropdownState,
@@ -1487,7 +1511,7 @@ function addCostumes (Ctor) {
  * @see https://www.typescriptlang.org/docs/handbook/mixins.html
  */
 function mixin(Ctor) {
-    class ExtensionWithCustomArgumentSupport extends Ctor {
+    class ExtensionWithCustomArgumentSupport extends withDependencies(Ctor, mixin$1) {
         constructor() {
             super(...arguments);
             /**
@@ -1509,9 +1533,6 @@ function mixin(Ctor) {
                 };
             };
             this.argumentManager = null;
-        }
-        getStaticDependencies() {
-            return ["customSaveData"];
         }
         get customArgumentManager() {
             return this.argumentManager;
@@ -2181,6 +2202,93 @@ function video (Ctor) {
         }
     }
     return ExtensionWithVideoSupport;
+}/******************************************************************************
+Copyright (c) Microsoft Corporation.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
+function __esDecorate(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
+  function accept(f) {
+    if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
+    return f;
+  }
+  var kind = contextIn.kind,
+    key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
+  var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
+  var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
+  var _,
+    done = false;
+  for (var i = decorators.length - 1; i >= 0; i--) {
+    var context = {};
+    for (var p in contextIn) context[p] = p === "access" ? {} : contextIn[p];
+    for (var p in contextIn.access) context.access[p] = contextIn.access[p];
+    context.addInitializer = function (f) {
+      if (done) throw new TypeError("Cannot add initializers after decoration has completed");
+      extraInitializers.push(accept(f || null));
+    };
+    var result = (0, decorators[i])(kind === "accessor" ? {
+      get: descriptor.get,
+      set: descriptor.set
+    } : descriptor[key], context);
+    if (kind === "accessor") {
+      if (result === void 0) continue;
+      if (result === null || typeof result !== "object") throw new TypeError("Object expected");
+      if (_ = accept(result.get)) descriptor.get = _;
+      if (_ = accept(result.set)) descriptor.set = _;
+      if (_ = accept(result.init)) initializers.push(_);
+    } else if (_ = accept(result)) {
+      if (kind === "field") initializers.push(_);else descriptor[key] = _;
+    }
+  }
+  if (target) Object.defineProperty(target, contextIn.name, descriptor);
+  done = true;
+}
+function __runInitializers(thisArg, initializers, value) {
+  var useValue = arguments.length > 2;
+  for (var i = 0; i < initializers.length; i++) {
+    value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
+  }
+  return useValue ? value : void 0;
+}/**
+ * Mixin a 'setVideoTransparencyBlock' to control the transparency of the videofeed
+ * @param Ctor
+ * @returns
+ * @see https://www.typescriptlang.org/docs/handbook/mixins.html
+ */
+function setTransparencyBlock (Ctor) {
+    let ExtensionWithSetTransparencyBlock = (() => {
+        var _a;
+        let _instanceExtraInitializers = [];
+        let _setVideoTransparencyBlock_decorators;
+        return _a = class ExtensionWithSetTransparencyBlock extends withDependencies(Ctor, video) {
+                setVideoTransparencyBlock() {
+                    console.log(Object.keys(this));
+                    this.enableVideo();
+                }
+                constructor() {
+                    super(...arguments);
+                    __runInitializers(this, _instanceExtraInitializers);
+                }
+            },
+            (() => {
+                _setVideoTransparencyBlock_decorators = [block({
+                        type: "button",
+                        text: "",
+                    })];
+                __esDecorate(_a, null, _setVideoTransparencyBlock_decorators, { kind: "method", name: "setVideoTransparencyBlock", static: false, private: false, access: { has: obj => "setVideoTransparencyBlock" in obj, get: obj => obj.setVideoTransparencyBlock } }, null, _instanceExtraInitializers);
+            })(),
+            _a;
+    })();
+    return ExtensionWithSetTransparencyBlock;
 }const optionalMixins = {
     customArguments: mixin,
     ui,
@@ -2188,7 +2296,8 @@ function video (Ctor) {
     video,
     drawable,
     addCostumes,
-    legacySupport: legacySupportMixin
+    legacySupport: legacySupportMixin,
+    setTransparencyBlock
 };class ConstructableExtension {
     async internal_init() {
         const runtime = this.runtime;
@@ -2231,13 +2340,7 @@ function supported (Ctor, supported) {
         }
     }
     return ExtensionWithConfigurableSupport;
-}const optionalMixinDependencies = {
-    customArguments: ["customSaveData"],
-};
-const getDependencies = (...mixinNames) => mixinNames
-    .filter(key => key in optionalMixinDependencies)
-    .map(key => optionalMixinDependencies[key])
-    .flat();const registerDetailsIdentifier = "__registerMenuDetials";
+}const registerDetailsIdentifier = "__registerMenuDetials";
 const tryAnnounceDetails = (details) => {
     const isNode = typeof window === 'undefined';
     if (isNode)
@@ -2282,11 +2385,24 @@ const extension = (details, ...addOns) => {
     const Base = scratchInfo(supported(ExtensionBase, addOns));
     if (!addOns)
         return Base;
-    addOns.push(...getDependencies(...addOns));
-    return Array.from(new Set([...addOns]))
-        .sort() // Ensure same order always
+    const { Result, allSupported } = recursivelyApplyMixinsAndDependencies(Base, addOns);
+    return supported(Result, Array.from(allSupported));
+};
+const recursivelyApplyMixinsAndDependencies = (Base, addons, alreadyAdded = new Set()) => {
+    const Result = addons
+        .filter(addon => !alreadyAdded.has(addon))
+        .map(key => {
+        alreadyAdded.add(key);
+        return key;
+    })
         .map(key => optionalMixins[key])
-        .reduce((acc, mixin) => mixin(acc), Base);
+        .reduce((acc, mixin) => {
+        const { dependencies, MixedIn } = tryCaptureDependencies(() => mixin(acc));
+        return !dependencies
+            ? MixedIn
+            : recursivelyApplyMixinsAndDependencies(MixedIn, dependencies, alreadyAdded).Result;
+    }, Base);
+    return { Result, allSupported: alreadyAdded };
 };
 const registerExtensionDefinitionCallback = (callback) => global[registerDetailsIdentifier] = (details) => {
     if (!details)
