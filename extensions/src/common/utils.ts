@@ -28,8 +28,22 @@ export async function fetchWithTimeout(
   return response;
 }
 
+/**
+ * A utility to wait a certain amount of milliseconds in an async function.
+ * @param timeMs 
+ * @returns 
+ */
 export async function untilTimePassed(timeMs: number) {
-  return await new Promise((resolve) => setTimeout(resolve, timeMs));
+  let timeout: NodeJS.Timeout;
+  return await new Promise<void>(
+    (resolve) =>
+      timeout = setTimeout(
+        () => {
+          clearTimeout(timeout);
+          resolve();
+        },
+        timeMs)
+  );
 }
 
 export async function untilObject<T>(getter: () => T, delay: number = 100): Promise<T> {
