@@ -1,7 +1,7 @@
 //Parker Malachowsky
 //Gur Machol
 
-import { ExtensionMenuDisplayDetails, extension, block, untilTimePassed, RGBObject, rgbToHex } from "$common";
+import { ExtensionMenuDisplayDetails, extension, block, untilTimePassed, RGBObject, rgbToHex, Language } from "$common";
 import { type Results, type SelfieSegmentation } from "@mediapipe/selfie_segmentation";
 import { createCostumeAssetFromImage, getImageHelper, getSelfieModel, getTesseract } from "./utils";
 import type BlockUtility from "$scratch-vm/engine/block-utility";
@@ -11,9 +11,19 @@ import type RenderedTarget from "$scratch-vm/sprites/rendered-target";
 //add angle field and rotate image before costume
 //block to take x photos in x seconds 
 
+//more langauges can always be added at a later time as long as both lists are edited. 
+//list of languages and codes: https://github.com/naptha/tesseract.js
+let langOptions: Array<string> = ["Arabic", "Chinese - Simplified", "German", "English", "French", "Hebrew", "Japanese", "Russian", "Swedish"];
+let langCodes: Array<string> = ["ara", "chi_sim", "deu", "eng", "fra", "heb", "jpn", "rus", "swe"];
+
+//setting up the face of the extension 
 const details: ExtensionMenuDisplayDetails = {
   name: "Selfie Detector",
+  description: "Extension to create costumes for sprites from your very own webcam!",
+  iconURL: "Gur_Projectdesign.jpg",
 };
+
+//small function to make ts wait for a user specified amount of time
 function sleep(milliseconds) {
   const date = Date.now();
   let currentDate = null;
@@ -67,6 +77,7 @@ export default class extends extension(details, "video", "drawable") {
   getTesseractInfrence: Awaited<ReturnType<typeof getTesseract>>;
 
   lastProcessedImage: ImageData;
+
 
   async init() {
     this.enableVideo();
@@ -156,6 +167,7 @@ export default class extends extension(details, "video", "drawable") {
     renderedTarget.setCostume(length);
   }
   */
+  //sets video transparency 
   @block({
     type: "command",
     text: (x) => `Set video feed transparency to ${x}%`,
@@ -165,6 +177,7 @@ export default class extends extension(details, "video", "drawable") {
     this.setVideoTransparency(transparency);
   }
 
+  //masks the user with a color so they can see what is being segmented.
   @block({
     type: "command",
     text: (mode) => `Set mode to ${mode}`,
@@ -227,6 +240,20 @@ export default class extends extension(details, "video", "drawable") {
   }
 
   @block({
+    "type": "command",
+    text: (state) => `Turn camera ${state}`,
+    arg: { type: "string", options: ["on", "off"] }
+  })
+  cameraSet(state: "on" | "off") {
+    if (state == "on"){
+      this.enableVideo();
+    }
+    else if(state == "off"){
+      this.disableVideo();
+    }
+  }
+
+  @block({
     type: "command",
     text: (numberOfPics: number, seconds: number) => `Make ${numberOfPics} selfie images into costumes in ${seconds} seconds`,
     args: [{ type: "number" }, { type: "number" }],
@@ -255,11 +282,34 @@ export default class extends extension(details, "video", "drawable") {
   }
 
   @block({
+    type: "reporter",
+    arg: {type: "string", options: langOptions},
+    text: (language) => `Text recognized in ${language}`,
+  })
+  async generateTextWLanguage(language:string){
+    let langchoice = langOptions.indexOf(language);
+    let langCode = langCodes[langchoice];
+    let imageText = await this.getTesseractInfrence(langCode, this.imageHelper.getDataURL(this.getVideoFrame("image")));
+    return imageText;
+  }
+
+  @block({
     type: "command",
     text: (condition) => `Flip video ${condition}`,
     arg: { type: "Boolean", options: [true, false] }
   })
   flipVideoBlock(doFlip: boolean) {
-    this.flipVideo(doFlip)
+    this.flipVideo(!doFlip)
   }
+
+  
+
+  @block({
+    type: "button",
+    text: "Take a picture: open UI"
+  })
+  TxtDetecUI(){
+
+  }
+  
 }
