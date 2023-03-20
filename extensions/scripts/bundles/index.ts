@@ -80,7 +80,7 @@ export const getThirdPartyPlugins = (customizations?: { tsTransformers?: Program
     babelHelpers: "bundled",
   }),
   css(),
-  //terser(),
+  terser(),
 ];
 
 export const getOutputOptions = ({ id: name, bundleDestination: file }: BundleInfo, overrides?: OutputOptions): OutputOptions =>

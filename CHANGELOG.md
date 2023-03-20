@@ -8,13 +8,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-- Video mixin:
-- Drawable mixin:
-- Add Costumes mixin:
+- **_Video mixin:_** Ability for extensions to enable video feed and set transparency 
+  - Available as `"video"` addon
+- **_Drawable mixin:_** Ability for extensions to draw arbitrary images onto the stage
+  - Available as `"drawable`" addon
+- **_Add Costumes mixin:_** Ability for extensions to add and set costumes for sprites
+  - Available as `"addCostumes"` addon
   - [Scratch VM Change](#scratch-vm-change): Added `addCostime` function onto `runtime` to allow for utilizing the `loadCostume` function of `scratch-vm/src/import/load-costume.js`
-- Legacy Support mixin:
+- Block mixins
+  - **_Toggle video:_** Ability for extensions to include a toggle video block to set the state of the video feed
+    - Available as `"toggleVideoBlock"` addon
+  - **_Video transparency:_** 
+    - Available as `"addCostumes"` addon
+- **_Legacy Support mixin:_** Legacy support available as a mixin (in addition / instead of as a class decorator)
+  - Available as "legacySupport"
 - Selfie Segmentation extension:
-- **TODO** Guidance on develop on windows
+- Guidance on developing on windows
 - Vs Code setting to use this project's typescript version instead of Vs Code's
 
 ### Fixed
@@ -22,14 +31,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Limited the potential for endless bundling loops
   - Now bundles are only re-generated when a file with a `.ts`, `.svelte`, `.png`, and/or `.svg` extension is changed
   - **_NOTE_**: The above 'watched' file extensions can / should grow overtime
-- 
 
 ### Changed
 
 - Extension's `init` function now supports be implemented as `async`
   - Tests update to support
 - The prescribed workflow for legacy support now uses the Legacy Support mixin (instead of the Legacy Extension class decorator)
-- Typescript version set to the `5.0.1-rc`
+- Typescript version set to the `latest`
+- New way to express dependencies within mixin architecture
 
 # Tags
 
