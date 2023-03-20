@@ -2675,7 +2675,7 @@ class Runtime extends EventEmitter {
      */
     getExtensionManager() {
         // Bad form to access this method since it's naming (i.e. leading underscore) suggests it should be private
-        return dispatch._getServiceProvider("extensions");
+        return dispatch._getServiceProvider("extensions")?.provider;
     }
 
     /**
