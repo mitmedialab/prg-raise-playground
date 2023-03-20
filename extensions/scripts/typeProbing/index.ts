@@ -1,7 +1,8 @@
-import ts from "typescript";
+import ts, { isTypeReferenceNode } from "typescript";
 import assert from "assert";
 import { ExtensionMenuDisplayDetails, KeysWithValuesOfType, UnionToTuple, Language, identity, ValueOf } from "$common";
 import { BundleInfo, ProgramBasedTransformer } from "scripts/bundles";
+import TypeProbe from "./TypeProbe";
 
 type MenuText = KeysWithValuesOfType<ExtensionMenuDisplayDetails, string>;
 type AllMenuText = UnionToTuple<MenuText>;
@@ -29,8 +30,17 @@ export const populateDisplayMenuDetailsTransformer = (info: BundleInfo): Program
 const extractExtensionType = (derived: ts.Type, checker: ts.TypeChecker) =>
   checker.getTypeFromTypeNode((derived.symbol.declarations[0] as ts.ClassLikeDeclarationBase).heritageClauses[0].types[0]);
 
+/**
+ * Leveraging the official type:
+ * https://github.com/microsoft/TypeScript/blob/86f811440484f6a91e3d2a5ddaeb05eed8bf95cc/src/compiler/types.ts#L6338
+ */
+interface TypeReferenceWithInternalField extends ts.TypeReference {
+  /** @internal */
+  resolvedTypeArguments?: readonly ts.Type[];  // Resolved type reference type arguments
+}
+
 const getPropertyMembers = (extensionType: ts.Type) =>
-  (extensionType.aliasTypeArguments[0].symbol.declarations[0] as ts.TypeLiteralNode).members.map(e => e as ts.PropertySignature);
+  ((extensionType as TypeReferenceWithInternalField).resolvedTypeArguments[0].symbol.declarations[0] as ts.TypeLiteralNode).members.map(e => e as ts.PropertySignature);
 
 const extractExpressionFromComputedProperyName = (name: ts.ComputedPropertyName) => {
   const text = name.getText();
@@ -81,7 +91,8 @@ const extractExtensionDisplayMenuDetails = ({ indexFile }: BundleInfo, program: 
     if (child.kind !== ts.SyntaxKind.ClassDeclaration) return;
     const type = checker.getTypeAtLocation(child);
     if (type?.symbol?.name !== "default") return;
-    const properties = getPropertyMembers(extractExtensionType(type, checker));
+    const extensionType = extractExtensionType(type, checker);
+    const properties = getPropertyMembers(extensionType);
     details = properties.reduce((map, property) =>
       map.set(getNameForProperty(property), getValueForProperty(property, checker)),
       new Map() as typeof details

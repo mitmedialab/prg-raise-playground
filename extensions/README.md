@@ -1135,7 +1135,7 @@ The Extension Framework allows you to easily save arbitrary data for an extensio
 
 You can also set up how your extension utilizes that data when a project is loaded that contains custom save data. 
 
-All you must do is specify the `"customSaveData"` [add on]() when invoking the `extension` creation function, and then define the `saveDataHandler` property in your Extension class, like so:
+All you must do is specify the `"customSaveData"` [add on]() when invoking the `extension` creation function, and then override the `saveDataHandler` property in your Extension class, like so:
 
 ```ts
 
@@ -1163,7 +1163,7 @@ export default class SaveLoadExample extends extension({ name }, "customSaveData
    *   The second parameter 'data' will take on the type of the thing that `onSave` returns. 
    *   This way, the two functions stay in sync.
    */
-  saveDataHandler = new SaveDataHandler({
+  override saveDataHandler = new SaveDataHandler({
     Extension: SaveLoadExample,
     // Return the information that we want to save
     onSave(self) { return self.somePersistentData },

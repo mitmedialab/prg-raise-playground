@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## 2023-03-17 (Pending)
+## 2023-03-20
 
 ### Added
 
@@ -18,7 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Block mixins
   - **_Toggle video:_** Ability for extensions to include a toggle video block to set the state of the video feed
     - Available as `"toggleVideoBlock"` addon
-  - **_Video transparency:_** 
+  - **_Video transparency:_** Ability for extensions to include a set transparency block to set how see-through the video feed is
     - Available as `"addCostumes"` addon
 - **_Legacy Support mixin:_** Legacy support available as a mixin (in addition / instead of as a class decorator)
   - Available as "legacySupport"
@@ -35,6 +35,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 
 - Extension's `init` function now supports be implemented as `async`
+  - [Scratch VM Change](#scratch-vm-change): _extension-manager_ now `await`s the `tryInitExtension` function from the _bundle-loader_
   - Tests update to support
 - The prescribed workflow for legacy support now uses the Legacy Support mixin (instead of the Legacy Extension class decorator)
 - Typescript version set to the `latest`

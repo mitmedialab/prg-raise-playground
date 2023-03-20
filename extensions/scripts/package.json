@@ -34,10 +34,10 @@
     "@rollup/plugin-typescript": {
       "typescript": "$typescript"
     },
-    "rollup-plugin-typescript2": {
+    "svelte-preprocess": {
       "typescript": "$typescript"
     },
-    "svelte-preprocess": {
+    "tslib": {
       "typescript": "$typescript"
     }
   }
