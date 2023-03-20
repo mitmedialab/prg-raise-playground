@@ -1,8 +1,7 @@
-import ts, { isTypeReferenceNode } from "typescript";
+import ts from "typescript";
 import assert from "assert";
-import { ExtensionMenuDisplayDetails, KeysWithValuesOfType, UnionToTuple, Language, identity, ValueOf } from "$common";
+import { ExtensionMenuDisplayDetails, KeysWithValuesOfType, UnionToTuple, Language, identity } from "$common";
 import { BundleInfo, ProgramBasedTransformer } from "scripts/bundles";
-import TypeProbe from "./TypeProbe";
 
 type MenuText = KeysWithValuesOfType<ExtensionMenuDisplayDetails, string>;
 type AllMenuText = UnionToTuple<MenuText>;
