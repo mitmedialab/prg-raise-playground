@@ -31,6 +31,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Limited the potential for endless bundling loops
   - Now bundles are only re-generated when a file with a `.ts`, `.svelte`, `.png`, and/or `.svg` extension is changed
   - **_NOTE_**: The above 'watched' file extensions can / should grow overtime
+- Corrected Extension Probe runtime errors
 
 ### Changed
 
