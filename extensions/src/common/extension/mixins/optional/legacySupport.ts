@@ -2,11 +2,12 @@ import { ExtensionInstance } from "$common/extension";
 import { AbstractConstructor, ExtensionArgumentMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, ExtensionMetadata } from "$common/types";
 import { isString, set } from "$common/utils";
 import { isDynamicMenu, parseText } from "../../decorators/legacySupport/index";
+import { MinimalExtensionConstructor } from "../required";
 import { getImplementationName, wrapOperation } from "../required/scratchInfo/index";
 
 type WrappedOperation = ReturnType<typeof wrapOperation>;
 type WrappedOperationParams = Parameters<WrappedOperation>;
-type WithLegacySupport = InstanceType<ReturnType<typeof mixin>>;
+type WithLegacySupport = InstanceType<ReturnType<typeof legacySupportMixin>>;
 type BlockMap = Map<string, Omit<ExtensionBlockMetadata, "opcode"> & { index: number }>;
 
 export const isLegacy = (extension: ExtensionInstance | WithLegacySupport): extension is WithLegacySupport => {
@@ -41,14 +42,16 @@ const getDynamicMenuName = (menu: ExtensionMenuMetadata): string => {
  * @param legacyInfo 
  * @returns 
  */
-export default function mixin<T extends AbstractConstructor<ExtensionInstance>>(Ctor: T, legacyInfo: ExtensionMetadata) {
+export default function legacySupportMixin<T extends MinimalExtensionConstructor>(Ctor: T) {
   abstract class ExtensionWithLegacySupport extends Ctor {
     private validatedInfo: ExtensionMetadata;
+
+    protected abstract getLegacyInfo(): ExtensionMetadata;
 
     public __isLegacy = true;
     public orderArgumentNamesByBlock: Map<string, string[]> = new Map();
 
-    protected getInfo(): ExtensionMetadata {
+    protected override getInfo(): ExtensionMetadata {
       if (!this.validatedInfo) {
         const info = super.getInfo();
         this.validatedInfo = this.validateAndAttach(info);
@@ -69,7 +72,7 @@ export default function mixin<T extends AbstractConstructor<ExtensionInstance>>(
     }
 
     private validateAndAttach({ id, blocks, menus, ...metaData }: ExtensionMetadata): ExtensionMetadata {
-      const { id: legacyID, blocks: legacyBlocks, menus: legacyMenus } = legacyInfo;
+      const { id: legacyID, blocks: legacyBlocks, menus: legacyMenus } = this.getLegacyInfo();
       const mutableBlocks = [...blocks as ExtensionBlockMetadata[]];
 
       if (id !== legacyID) throw new Error(`ID mismatch! Legacy id: ${legacyID} vs. current id: ${id}`);
@@ -137,5 +140,22 @@ export default function mixin<T extends AbstractConstructor<ExtensionInstance>>(
       };
     }
   }
+  return ExtensionWithLegacySupport
+}
+
+/**
+ * Mixin the ability for extensions to make use of 'legacy' `getInfo` json, 
+ * so that extensions ported to the framework can support old, serialized projects
+ * @param Ctor 
+ * @param legacyInfo 
+ * @returns 
+ */
+export function legacySupportWithInfoArgument<T extends AbstractConstructor<ExtensionInstance>>(Ctor: T, legacyInfo: ExtensionMetadata) {
+  abstract class ExtensionWithLegacySupport extends legacySupportMixin(Ctor) {
+    protected getLegacyInfo() {
+      return legacyInfo;
+    }
+  }
+
   return ExtensionWithLegacySupport
 }

@@ -1014,6 +1014,10 @@ declare class Runtime extends EventEmitter {
      * @returns {import("../extension-support/extension-manager")}
      */
     getExtensionManager(): import("../extension-support/extension-manager");
+    /**
+     * Loads a costume asset in
+     */
+    addCostume(costume: any): Promise<any>;
 }
 declare namespace Runtime {
     export { CloudDataManager };

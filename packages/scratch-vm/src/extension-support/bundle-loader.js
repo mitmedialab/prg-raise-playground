@@ -5,7 +5,8 @@ const auxiliarObjects = new Map();
 
 export const tryInitExtension = (extension) => {
   const extensionInit = "internal_init";
-  if (extensionInit in extension) extension[extensionInit]();
+  if (extensionInit in extension) return Promise.resolve(extension[extensionInit]());
+  return Promise.resolve();
 }
 
 /**

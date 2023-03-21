@@ -132,7 +132,7 @@ export const setupExtensionBundleEntry = ({ indexFile, bundleEntry, directory }:
 
 const cachedContent = new Map<string, string>();
 export const fillInConstructorArgs = (info: BundleInfo, getContent: (info: BundleInfo) => string): Plugin => {
-  const searchValue = "super(...arguments)";
+  const preferredSearchValue = "super(...arguments)";
   const replaceValue = (content: string) => `super(...[...arguments, ${content}])`;
   const { indexFile } = info;
 
@@ -142,13 +142,31 @@ export const fillInConstructorArgs = (info: BundleInfo, getContent: (info: Bundl
       order: 'post',
       handler: (code: string, file: string) => {
         if (file !== indexFile) return;
+
+        /** TODO: Remove mutable variables once generic extensions are deprecated */
+        let searchValue = preferredSearchValue;
+        let replacer = replaceValue;
+
         const matches = code.includes(searchValue);
-        if (!matches) fs.writeFileSync(`${indexFile}.failed.js`, code);
-        if (!matches) throw new Error("Framework error: Unable to locate insertion point within Extension class. Have you implemented any blocks? If you have, the strategy likely needs to be updated -- contact Parker Malachowsky (or project maintainer)");
+
+        if (!matches) {
+          const genericExtensionSearchValue = "class extends Extension {";
+          /** Handle special case of generic etension */
+          /** TODO: Remove once generic extensions are deprecated */
+          if (code.includes(genericExtensionSearchValue)) {
+            searchValue = genericExtensionSearchValue;
+            replacer = (content: string) => `${genericExtensionSearchValue} \n constructor(runtime){ super(...[runtime, ${content} ]) }; \n`;
+          }
+          else {
+            fs.writeFileSync(`${indexFile}.failed.js`, code);
+            throw new Error("Framework error: Unable to locate insertion point within Extension class. Have you implemented any blocks? If you have, the strategy likely needs to be updated -- contact Parker Malachowsky (or project maintainer)");
+          }
+        }
+
         const content = getContent(info);
         cachedContent.set(indexFile, content);
         return {
-          code: code.replace(searchValue, replaceValue(content)),
+          code: code.replace(searchValue, replacer(content)),
           map: null
         };
       }

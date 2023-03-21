@@ -22,7 +22,7 @@ export default class SimpleTypescript extends extension(details, "ui", "customSa
     })
   }
 
-  saveDataHandler = new SaveDataHandler({
+  override saveDataHandler = new SaveDataHandler({
     Extension: SimpleTypescript,
     onSave: ({ count }) => ({ count }),
     onLoad: (self, { count }) => self.count = count

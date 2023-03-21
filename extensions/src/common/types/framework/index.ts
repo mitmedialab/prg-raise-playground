@@ -20,13 +20,6 @@ export type Environment = {
    * The scratch runtime 
    */
   runtime: Runtime,
-  /**
-   * An example of a convenient property to have on the Environment.
-   * Prior to the Extension Framework, video (and other io) was available via the runtime and thus required overly intimate knowledge of that class. 
-   * NOTE: This will have type-safety soon, but currently has none.
-   * @todo #161 
-   */
-  videoFeed: undefined | any,
   extensionManager: ExtensionManager,
 }
 

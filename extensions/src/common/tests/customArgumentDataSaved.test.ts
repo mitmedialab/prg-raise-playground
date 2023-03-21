@@ -1,11 +1,9 @@
 import { extension } from "$common/extension";
-import { ExtensionBase } from "$common/extension/ExtensionBase";
 import { block } from "$common/extension/decorators/blocks";
-import { getDependencies } from "$common/extension/mixins/dependencies";
 import CustomArgumentManager from "$common/extension/mixins/optional/customArguments/CustomArgumentManager";
 import customSaveData, { saveDataKey } from "$common/extension/mixins/optional/customSaveData";
-import { ArgumentType, Environment } from "$common/types";
-import { createTestSuite, describe, test, testID } from "$testing";
+import { Environment } from "$common/types";
+import { createTestSuite, testID } from "$testing";
 
 const initial = { text: `${Math.random()}`, value: { x: Math.random() } };
 
@@ -34,9 +32,6 @@ createTestSuite({ Extension: ExtensionWithCustomArguments, __dirname }, {
   integrationTests: {
 
     testDependency: ({ extension, testHelper: { expect } }) => {
-      const actual = getDependencies("customArguments");
-      const expected: typeof actual = ["customSaveData"];
-      expect(actual).toEqual(expected);
       expect(extension.supports("customSaveData")).toBe(true);
     },
 

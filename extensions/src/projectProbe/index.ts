@@ -16,10 +16,19 @@ export default class _ extends extension(details, "ui") {
 
   @block({
     type: "command",
-    arg: "string",
-    text: (url) => `Probe & modify project JSON from ${url}`
+    text: "Probe & modify a local project"
   })
-  async probeProject(url: string) {
+  async probeLocalProject() {
+    const buffer = await openFilePicker();
+    this.unzipProject(buffer);
+  }
+
+  @block({
+    type: "command",
+    arg: "string",
+    text: (url) => `Probe & modify project JSON from link: ${url}`
+  })
+  async probeProjectURL(url: string) {
 
     if (url.includes("dropbox.com")) {
       const dropboxRegex = /\/s\/[A-Za-z0-9]+\/.*.sb3/;
@@ -27,11 +36,15 @@ export default class _ extends extension(details, "ui") {
       if (found.length > 0) url = 'https://dl.dropboxusercontent.com' + found[0];
     }
 
-    const { entries } = await unzip(url);
+    this.unzipProject(url);
+  }
+
+  async unzipProject(zip: ArrayBuffer | string) {
+    const { entries } = await unzip(zip);
     const project = entries["project.json"];
-    const x = await project.json();
+    const json = await project.json();
     this.currentEntries = entries;
-    this.projectJson = JSON.stringify(x, null, 3);
+    this.projectJson = JSON.stringify(json, null, 3);
     this.openUI("ProjectView");
   }
 
@@ -76,3 +89,21 @@ const saveBlob = (filename, blob) => {
   window.URL.revokeObjectURL(url);
   document.body.removeChild(downloadLink);
 };
+
+const openFilePicker = () => {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.click();
+
+  return new Promise<ArrayBuffer>((resolve) => {
+    input.onchange = e => {
+      const file = (e.target as HTMLInputElement).files[0];
+      const reader = new FileReader();
+      reader.readAsArrayBuffer(file);
+      reader.onload = readerEvent => {
+        const content = readerEvent.target.result;
+        resolve(content as ArrayBuffer);
+      }
+    }
+  })
+}
