@@ -54,7 +54,7 @@ export default class TypeScriptFrameworkExample extends extension(
 
   state: number = 0;
 
-  saveDataHandler = new SaveDataHandler({
+  override saveDataHandler = new SaveDataHandler({
     Extension: TypeScriptFrameworkExample,
     onSave: ({ collection, state }) => ({ collection, state }),
     onLoad: (target, source) => copyTo({ target, source })

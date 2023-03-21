@@ -31,6 +31,7 @@ export default class ExtensionProbe extends extension(
   }))
   displayInfo(extensionID: string) {
     const info = this.getExtensionInfo(extensionID);
+    if (!info) return;
     this.currentInfo = info;
     this.openUI("Info", `Info for ${info.name}`);
   }

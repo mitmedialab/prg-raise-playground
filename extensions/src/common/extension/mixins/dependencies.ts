@@ -1,33 +1,44 @@
-import { AbstractConstructor } from "$common/types";
-import { MixinName, optionalMixins } from ".";
+import { ValueOf } from "$common/types";
+import { Mixin, MixinName, optionalMixins } from "./index";
+import { MinimalExtensionConstructor } from "./required";
 
-export interface WithDependencies<TDepends extends MixinName[]> {
-  /**
-   * Get the dependencies of this mixin's classes functionality. 
-   * You may need to cast your returned array as const (e.g. `[] as const`) in order to satisfy type requirements.
-   * 
-   * **NOTE:** The term _Static_ is used here to indicate that this function will be executed on the mixin
-   * class's `prototype` and therefore the implementation should make no reference to `this`.
-   */
-  getStaticDependencies(): readonly [...TDepends];
+type DependentFunctionality<TBase, TMixinDependencies extends Mixin<unknown>[]> =
+  TMixinDependencies extends [infer Head extends Mixin<unknown>, ...infer Tail extends Mixin<unknown>[]]
+  ? DependentFunctionality<ReturnType<Head> & TBase, Tail>
+  : TBase;
+
+const dependencyListeners: ((mixins: Mixin<any>[]) => void)[] = []
+
+export const withDependencies = <
+  Base extends MinimalExtensionConstructor,
+  TMixinDependencies extends Mixin<T>[],
+  T
+>(Ctor: Base, ...dependencies: TMixinDependencies) => {
+  dependencyListeners.pop()?.(dependencies);
+  return Ctor as Base & DependentFunctionality<Base, TMixinDependencies>;
 }
 
-type MixinsWithDependencies = {
-  [
-  k in keyof typeof optionalMixins as
-  ReturnType<typeof optionalMixins[k]> extends AbstractConstructor<WithDependencies<MixinName[]>>
-  ? k
-  : never
-  ]:
-  ReturnType<typeof optionalMixins[k]> extends AbstractConstructor<WithDependencies<infer X>>
-  ? X : never
-}
+let mixinsMap: Map<ValueOf<typeof optionalMixins>, keyof typeof optionalMixins>;
 
-const optionalMixinDependencies: MixinsWithDependencies = {
-  customArguments: ["customSaveData"],
-}
+export const tryCaptureDependencies = <TReturn>(createMixin: () => TReturn): { MixedIn: TReturn, dependencies: MixinName[] | null } => {
 
-export const getDependencies = (...mixinNames: MixinName[]) => mixinNames
-  .filter(key => key in optionalMixinDependencies)
-  .map(key => optionalMixinDependencies[key as keyof typeof optionalMixinDependencies])
-  .flat();
+  mixinsMap ??= Object.entries(optionalMixins).reduce((map, [name, mixin]) => {
+    return map.set(mixin, name as MixinName);
+  }, new Map());
+
+  let dependencies: MixinName[];
+
+  dependencyListeners.push((mixins) => {
+    mixins
+      .map(dependency => dependency as ValueOf<typeof optionalMixins>)
+      .forEach(dependency => {
+        if (!mixinsMap.has(dependency)) throw new Error("Unkown mixin dependency! " + dependency);
+        dependencies ??= [];
+        dependencies.push(mixinsMap.get(dependency));
+      })
+  });
+
+  const MixedIn = createMixin();
+
+  return { dependencies, MixedIn };
+}

@@ -1,4 +1,4 @@
-import legacySupport from "$common/extension/mixins/optional/legacySupport";
+import { legacySupportWithInfoArgument } from "$common/extension/mixins/optional/legacySupport";
 import { ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuItems, BlockOperation, Argument, ExtensionMenuMetadata, ExtensionDynamicMenu, Menu, DynamicMenuThatAcceptsReporters, BaseGenericExtension, VerboseArgument, DefineBlock, AbstractConstructor, NonAbstractConstructor, BlockMetadata } from "$common/types";
 import { isFunction, isString } from "$common/utils";
 import { block } from "../blocks";
@@ -20,7 +20,7 @@ export const legacy = <
   for<TExtension extends LegacyExtension<TInfo, TStrict>>() {
 
     const legacyExtension = (): LegacyExtensionDecorator<TExtension> => (value, context) => {
-      abstract class LegacySupport extends legacySupport(value as AbstractConstructor<ExtensionInstance>, info) {
+      abstract class LegacySupport extends legacySupportWithInfoArgument(value as AbstractConstructor<ExtensionInstance>, info) {
         readonly originalClassName = context.name;
       };
 

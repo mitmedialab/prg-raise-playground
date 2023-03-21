@@ -5,7 +5,8 @@ import { ArgumentType } from "$common/types/enums";
 import { openDropdownState, closeDropdownState, initDropdownState, customArgumentFlag, customArgumentCheck, dropdownStateFlag, dropdownEntryFlag } from "$common/globals";
 import { Argument, BaseGenericExtension } from "$common/types";
 import { MinimalExtensionConstructor } from "../../required";
-import { WithDependencies } from "../../dependencies";
+import { withDependencies } from "../../dependencies";
+import customSaveData from "../customSaveData";
 
 type ComponentGetter = (id: string, componentName: string) => CustomArgumentUIConstructor;
 
@@ -22,12 +23,7 @@ const callingContext = {
  * @see https://www.typescriptlang.org/docs/handbook/mixins.html
  */
 export default function mixin<T extends MinimalExtensionConstructor>(Ctor: T) {
-  abstract class ExtensionWithCustomArgumentSupport extends Ctor implements WithDependencies<["customSaveData"]> {
-
-    getStaticDependencies() {
-      return ["customSaveData"] as const;
-    }
-
+  abstract class ExtensionWithCustomArgumentSupport extends withDependencies(Ctor, customSaveData) {
     /**
      * Create a custom argument for one of this block's arguments
      * @param param0 

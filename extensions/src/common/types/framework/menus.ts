@@ -39,4 +39,4 @@ export type MenuThatAcceptsReporters<T> = {
   handler: (reported: unknown) => T;
 };
 
-export type Menu<T> = MenuItem<T>[] | MenuThatAcceptsReporters<T> | DynamicMenu<T> | DynamicMenuThatAcceptsReporters<T>;
+export type Menu<T> = readonly MenuItem<T>[] | MenuThatAcceptsReporters<T> | DynamicMenu<T> | DynamicMenuThatAcceptsReporters<T>;
