@@ -22,34 +22,34 @@ const ModelType = {
   AUDIO: 'audio',
 };
 
-const details = {
-  name: "Teachable Machine",
-  description: "Use your Teachable Machine models in your Scratch project!",
-  iconURL: "teachable-machine-blocks.png",
-  insetIconURL: "teachable-machine-blocks-small.svg"
-};
-
-// type Details = {
+// const details = {
 //   name: "Teachable Machine",
 //   description: "Use your Teachable Machine models in your Scratch project!",
 //   iconURL: "teachable-machine-blocks.png",
 //   insetIconURL: "teachable-machine-blocks-small.svg"
 // };
 
-// type Blocks = {
-//   useModel_Command(url: string): void;
-//   whenModelDetects_Hat(state: string): boolean;
-//   modelPrediction_Reporter(): string;
-//   predictionIs_Boolean(state: string): boolean;
-//   confidenceFor_Reporter(state: string): number;
+type Details = {
+  name: "Teachable Machine",
+  description: "Use your Teachable Machine models in your Scratch project!",
+  iconURL: "teachable-machine-blocks.png",
+  insetIconURL: "teachable-machine-blocks-small.svg"
+};
 
-//   videoToggleCommand(state: number): void;
-//   setVideoTransparencyCommand(state: number): void;
-// }
+type Blocks = {
+  useModel_Command(url: string): void;
+  whenModelDetects_Hat(state: string): boolean;
+  modelPrediction_Reporter(): string;
+  predictionIs_Boolean(state: string): boolean;
+  confidenceFor_Reporter(state: string): number;
+
+  videoToggleCommand(state: number): void;
+  setVideoTransparencyCommand(state: number): void;
+}
 
 @legacyExtension()
-export default class teachableMachine extends extension(details) {
-  // export default class teachableMachine extends Extension<Details, Blocks> {
+// export default class teachableMachine extends extension(details) {
+export default class teachableMachine extends Extension<Details, Blocks> {
 
   lastUpdate: number;
   maxConfidence: number;
@@ -346,21 +346,21 @@ export default class teachableMachine extends extension(details) {
     this.runtime.ioDevices.video.setPreviewGhost(trans);
   }
 
-  @legacyBlock.useModel_Command()
-  useModel_Command(url) {
-    this.useModel(url);
-  }
+  // @legacyBlock.useModel_Command()
+  // useModel_Command(url) {
+  //   this.useModel(url);
+  // }
 
-  @legacyBlock.useModel_Command({
-    argumentMethods: {
-      0: {
-        getItems: () => teachableMachine.getCurrentClasses()
-      }
-    }
-  })
-  whenModelDetects_Hat(state) {
-    this.model_match(state);
-  }
+  // @legacyBlock.useModel_Command({
+  //   argumentMethods: {
+  //     0: {
+  //       getItems: () => teachableMachine.getCurrentClasses()
+  //     }
+  //   }
+  // })
+  // whenModelDetects_Hat(state) {
+  //   this.model_match(state);
+  // }
 
   defineBlocks(): teachableMachine["BlockDefinitions"] {
 

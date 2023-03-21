@@ -133,5 +133,5 @@ export const info = {
     }
   }
 } as const;
-export const legacyFullSupport = legacy(info).for;
-export const legacyIncrementalSupport = legacy(info, { "incrementalDevelopment": true }).for;
+export const legacyFullSupport = legacy(info);
+export const legacyIncrementalSupport = legacy(info, { "incrementalDevelopment": true });
