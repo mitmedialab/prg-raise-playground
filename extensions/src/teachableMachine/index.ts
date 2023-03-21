@@ -5,7 +5,7 @@ import { create } from '@tensorflow-models/speech-commands';
 
 import { legacyFullSupport, legacyIncrementalSupport, info } from "./legacy";
 
-const { legacyExtension, legacyBlock } = legacyIncrementalSupport.for<teachableMachine>();
+const { legacyExtension, legacyDefinition, legacyBlock } = legacyIncrementalSupport.for<teachableMachine>();
 
 const VideoState = {
   /** Video turned off. */
@@ -48,7 +48,6 @@ type Blocks = {
 }
 
 @legacyExtension()
-// export default class teachableMachine extends extension(details) {
 export default class teachableMachine extends Extension<Details, Blocks> {
 
   lastUpdate: number;
@@ -367,22 +366,35 @@ export default class teachableMachine extends Extension<Details, Blocks> {
     this.setTransparency(50);
     this.toggleVideo(VideoState.ON);
 
-    const useModel_Command: DefineBlock<teachableMachine, Blocks["useModel_Command"]> = () => ({
-      type: BlockType.Command,
-      arg: { type: ArgumentType.String, defaultValue: 'Paste URL Here!' },
-      text: (url) => `use model ${url}`,
+    // const useModel_Command: DefineBlock<teachableMachine, Blocks["useModel_Command"]> = () => ({
+    //   type: BlockType.Command,
+    //   arg: { type: ArgumentType.String, defaultValue: 'Paste URL Here!' },
+    //   text: (url) => `use model ${url}`,
+    //   operation: (url) => {
+    //     this.useModel(url);
+    //   }
+    // });
+
+    const useModel_Command = legacyDefinition.useModelBlock({
       operation: (url) => {
         this.useModel(url);
       }
     });
 
-    const whenModelDetects_Hat: DefineBlock<teachableMachine, Blocks["whenModelDetects_Hat"]> = () => ({
-      type: BlockType.Hat,
-      arg: {
-        type: ArgumentType.String,
-        options: () => this.getCurrentClasses()
-      },
-      text: (state) => `when model detects ${state}`,
+
+    // const whenModelDetects_Hat: DefineBlock<teachableMachine, Blocks["whenModelDetects_Hat"]> = () => ({
+    //   type: BlockType.Hat,
+    //   arg: {
+    //     type: ArgumentType.String,
+    //     options: () => this.getCurrentClasses()
+    //   },
+    //   text: (state) => `when model detects ${state}`,
+    //   operation: (state) => {
+    //     return this.model_match(state);
+    //   }
+    // });
+
+    const whenModelDetects_Hat = legacyDefinition.whenModelMatches({
       operation: (state) => {
         return this.model_match(state);
       }
