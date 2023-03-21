@@ -19,7 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - **_Toggle video:_** Ability for extensions to include a toggle video block to set the state of the video feed
     - Available as `"toggleVideoBlock"` addon
   - **_Video transparency:_** Ability for extensions to include a set transparency block to set how see-through the video feed is
-    - Available as `"addCostumes"` addon
+    - Available as `"setTransparencyBlock"` addon
 - **_Legacy Support mixin:_** Legacy support available as a mixin (in addition / instead of as a class decorator)
   - Available as "legacySupport"
 - Selfie Segmentation extension:
