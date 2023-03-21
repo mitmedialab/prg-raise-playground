@@ -99,10 +99,7 @@ const getCleanedInfo = (extension: LoadedExtension) => {
 
 const getLegacyFileContent = (info: ExtensionMetadata) => {
   type Legacy = typeof legacy;
-  type LegacyMethod = keyof ReturnType<Legacy>
   type LegacyFlag = Parameters<Legacy>[1];
-
-  const method: LegacyMethod = "for";
 
   const importName = "legacy";
   const variableName = "info";
@@ -112,8 +109,8 @@ const getLegacyFileContent = (info: ExtensionMetadata) => {
   const flags = JSON.stringify({ incrementalDevelopment: true } satisfies LegacyFlag);
 
   const exports = [
-    `${declareAndExport} ${fullSuppportName} = ${importName}(${variableName}).${method};`,
-    `${declareAndExport} ${incrementalSupportName} = ${importName}(${variableName}, ${flags}).${method};`
+    `${declareAndExport} ${fullSuppportName} = ${importName}(${variableName});`,
+    `${declareAndExport} ${incrementalSupportName} = ${importName}(${variableName}, ${flags});`
   ].join("\n");
 
   return [imports, declaration, exports].join("\n");
