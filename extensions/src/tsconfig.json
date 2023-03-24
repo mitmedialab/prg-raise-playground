@@ -11,5 +11,5 @@
     "ignoreDeprecations": "5.0",
     "noErrorTruncation": true
   },
-  "include": [".**/*.ts", "**/*.ts"],
+  "include": [".**/*.ts", "**/*.ts", "poseFace/legacy.ts"],
 }

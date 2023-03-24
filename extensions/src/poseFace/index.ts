@@ -1,5 +1,6 @@
-import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, untilExternalGlobalVariableLoaded, extractLegacySupportFromOldGetInfo } from "$common";
-import legacy from "./legacy";
+import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, untilExternalGlobalVariableLoaded } from "$common";
+import { legacyIncrementalSupport, legacyFullSupport, info } from "./legacy";
+const { legacyExtension, legacyDefinition } = legacyIncrementalSupport.for<PoseFace>();
 
 // import * as window from 'affdex.js';
 
@@ -40,7 +41,7 @@ type Details = {
  * Contains descriptions of the blocks of the Block Sensing extension
  */
 type Blocks = {
-  goToFacePartCommand(facePart: number): void;
+  goToFacePartCommand(facePart: string): void;
   whenExpressionDetectedHat(expression: string): boolean;
   amountOfExpressionDetectedReport(expression: string): number;
   isExpressionReport(expression: string): boolean;
@@ -48,8 +49,8 @@ type Blocks = {
   levelOfFeelingReport(feeling: string): number;
   isFeelingReport(feeling: string): boolean;
   // these video blocks are present in a few different extensions, perhaps making a file just for these?
-  videoToggleBlock(state: number): void;
-  setVideoTransparencyBlock(transparency: number): void;
+  videoToggleCommand(state: number): void;
+  setVideoTransparencyCommand(transparency: number): void;
 }
 
 type Affdex = {
@@ -70,7 +71,7 @@ type Detector = {
   removeEventListener: (eventName: string, toRemove: Function) => void;
 }
 
-
+@legacyExtension()
 export default class PoseFace extends Extension<Details, Blocks> {
 
 
@@ -95,12 +96,19 @@ export default class PoseFace extends Extension<Details, Blocks> {
    */
   globalVideoTransparency: number;
 
+  INTERVAL = 33;
+  DIMENSIONS = [480, 360];
+
+  expressions = info.menus.EXPRESSION.items
+  emotions = info.menus.EMOTION.items
+  all_emotions = info.menus.EMOTION_ALL.items
+
   /**
    * Acts like class PoseHand's constructor (instead of a child class constructor)
    * @param env 
    */
   init(env: Environment) {
-    this.runtime = env.runtime;
+    // this.runtime = env.runtime;
     const EXTENSION_ID = 'PoseHand';
 
     /* Unused but possibly needed in the future
@@ -123,9 +131,9 @@ export default class PoseFace extends Extension<Details, Blocks> {
    * sample canvas.
    * @type {Array.<number>}
    */
-  static get DIMENSIONS() {
-    return [480, 360];
-  }
+  // static get DIMENSIONS() {
+  //   return [480, 360];
+  // }
 
   projectStarted() {
     this.setTransparency(this.globalVideoTransparency);
@@ -139,14 +147,14 @@ export default class PoseFace extends Extension<Details, Blocks> {
    * @returns enum
    */
   convertCoordsToScratch({ x, y }) {
-    return { x: x - (PoseFace.DIMENSIONS[0] / 2), y: (PoseFace.DIMENSIONS[1] / 2) - y };
+    return { x: x - (this.DIMENSIONS[0] / 2), y: (this.DIMENSIONS[1] / 2) - y };
   }
 
   async _loop() {
     while (true) {
       const frame = this.runtime.ioDevices.video.getFrame({
         format: 'image-data',
-        dimensions: PoseFace.DIMENSIONS
+        dimensions: this.DIMENSIONS
       });
 
       const time = +new Date();
@@ -194,8 +202,8 @@ export default class PoseFace extends Extension<Details, Blocks> {
     const affdex: Affdex = await untilExternalGlobalVariableLoaded('https://download.affectiva.com/js/3.2.1/affdex.js', 'affdex');
 
     const affdexStarter = new Promise((resolve, reject) => {
-      const width = PoseFace.DIMENSIONS[0];
-      const height = PoseFace.DIMENSIONS[1];
+      const width = this.DIMENSIONS[0];
+      const height = this.DIMENSIONS[1];
       const faceMode = affdex.FaceDetectorMode.LARGE_FACES;
       const detector = new affdex.PhotoDetector(imageElement, width, height, faceMode);
       detector.detectAllEmotions();
@@ -318,250 +326,293 @@ export default class PoseFace extends Extension<Details, Blocks> {
     this.globalVideoTransparency = 50;
     this.projectStarted();
 
+    const handlerExpressions: Array<string> = this.expressions.map(expression => expression.value);
+    const handlerEmotionsShort: Array<string> = this.emotions.map(emotion => emotion.value);
+    const allEmotionValues: Array<string> = this.all_emotions.map(emotion => emotion.value);
+
 
     // FACE PART Block
 
-    const faceParts = [
-      { text: 'left ear', value: 0 },
-      { text: 'left chin', value: 1 },
-      { text: 'chin', value: 2 },
-      { text: 'right chin', value: 3 },
-      { text: 'right ear', value: 4 },
-      { text: 'left outer eyebrow', value: 5 },
-      { text: 'left eyebrow', value: 6 },
-      { text: 'left inner eyebrow', value: 7 },
-      { text: 'right inner eyebrow', value: 8 },
-      { text: 'right eyebrow', value: 9 },
-      { text: 'right outer eyebrow', value: 10 },
-      { text: 'nose bridge', value: 11 },
-      { text: 'nose tip', value: 12 },
-      { text: 'left nostril', value: 13 },
-      { text: 'nose tip', value: 14 },
-      { text: 'right nostril', value: 15 },
-      { text: 'left outer eye crease', value: 16 },
-      { text: 'left inner eye crease', value: 17 },
-      { text: 'right inner eye crease', value: 18 },
-      { text: 'right outer eye crease', value: 19 },
-      { text: 'left mouth crease', value: 20 },
-      { text: 'left upper lip point', value: 21 },
-      { text: 'upper lip', value: 22 },
-      { text: 'right upper lip point', value: 23 },
-      { text: 'right mouth crease', value: 24 },
-      { text: 'right lower lip point', value: 25 },
-      { text: 'lower lip', value: 26 },
-      { text: 'left lower lip point', value: 27 },
-      { text: 'upper lip bottom', value: 28 },
-      { text: 'lower lip top', value: 29 },
-      { text: 'left upper eyelid', value: 30 },
-      { text: 'left lower eyelid', value: 31 },
-      { text: 'right upper eyelid', value: 32 },
-      { text: 'right lower eyelid', value: 33 }
-    ];
+    // const faceParts = [
+    //   { text: 'left ear', value: 0 },
+    //   { text: 'left chin', value: 1 },
+    //   { text: 'chin', value: 2 },
+    //   { text: 'right chin', value: 3 },
+    //   { text: 'right ear', value: 4 },
+    //   { text: 'left outer eyebrow', value: 5 },
+    //   { text: 'left eyebrow', value: 6 },
+    //   { text: 'left inner eyebrow', value: 7 },
+    //   { text: 'right inner eyebrow', value: 8 },
+    //   { text: 'right eyebrow', value: 9 },
+    //   { text: 'right outer eyebrow', value: 10 },
+    //   { text: 'nose bridge', value: 11 },
+    //   { text: 'nose tip', value: 12 },
+    //   { text: 'left nostril', value: 13 },
+    //   { text: 'nose tip', value: 14 },
+    //   { text: 'right nostril', value: 15 },
+    //   { text: 'left outer eye crease', value: 16 },
+    //   { text: 'left inner eye crease', value: 17 },
+    //   { text: 'right inner eye crease', value: 18 },
+    //   { text: 'right outer eye crease', value: 19 },
+    //   { text: 'left mouth crease', value: 20 },
+    //   { text: 'left upper lip point', value: 21 },
+    //   { text: 'upper lip', value: 22 },
+    //   { text: 'right upper lip point', value: 23 },
+    //   { text: 'right mouth crease', value: 24 },
+    //   { text: 'right lower lip point', value: 25 },
+    //   { text: 'lower lip', value: 26 },
+    //   { text: 'left lower lip point', value: 27 },
+    //   { text: 'upper lip bottom', value: 28 },
+    //   { text: 'lower lip top', value: 29 },
+    //   { text: 'left upper eyelid', value: 30 },
+    //   { text: 'left lower eyelid', value: 31 },
+    //   { text: 'right upper eyelid', value: 32 },
+    //   { text: 'right lower eyelid', value: 33 }
+    // ];
 
     //type DefineGoToFacePart = DefineBlock<PoseFace, Blocks["goToFacePartCommand"]>;
-    const goToFacePartCommand = () => legacy.affdexGoToPart({
-      type: BlockType.Command,
-      arg: {
-        type: ArgumentType.Number,
-        options: faceParts
-      },
-      text: (part: number) => `go to ${part}`,
-      operation: (part: number, util) => {
+    const goToFacePartCommand = legacyDefinition.affdexGoToPart({
+      // type: BlockType.Command,
+      // arg: {
+      //   type: ArgumentType.Number,
+      //   options: faceParts
+      // },
+      // text: (part: number) => `go to ${part}`,
+      operation: (part: string, util) => {
         this.goToPart(part, util)
       }
     });
 
     // EXPRESSION BLOCKS
 
-    const expressions = [
-      { text: 'smile', value: 'smile' },
-      { text: 'mouth open', value: 'mouthOpen' },
-      { text: 'eye closure', value: 'eyeClosure' },
-      { text: 'eyebrow raise', value: 'browRaise' },
-      { text: 'whistling', value: 'lipPucker' },
-      { text: 'eye widening', value: 'eyeWiden' },
-      // {text:'innerBrowRaise', value: 'innerBrowRaise'},
-      { text: 'eyebrow furrow', value: 'browFurrow' },
-      { text: 'nose wrinkle', value: 'noseWrinkle' },
-      { text: 'upper lip raise', value: 'upperLipRaise' },
-      { text: 'lip corner pull', value: 'lipCornerDepressor' },
-      { text: 'chin raise', value: 'chinRaise' },
-      // {text:'lip press', value:  'lipPress'},
-      // {text:'lip suck', value:  'lipSuck'},
-      { text: 'smirk', value: 'smirk' },
-      { text: 'attention', value: 'attention' },
-      { text: 'eyelid tighten', value: 'lidTighten' },
-      { text: 'jaw drop', value: 'jawDrop' },
-      { text: 'cheek dimple', value: 'dimpler' },
-      { text: 'cheek raise', value: 'cheekRaise' },
-      { text: 'lip stretch', value: 'lipStretch' }
-    ];
-    const handlerExpressions = expressions.map(expression => expression.value);
+    // const expressions = [
+    //   { text: 'smile', value: 'smile' },
+    //   { text: 'mouth open', value: 'mouthOpen' },
+    //   { text: 'eye closure', value: 'eyeClosure' },
+    //   { text: 'eyebrow raise', value: 'browRaise' },
+    //   { text: 'whistling', value: 'lipPucker' },
+    //   { text: 'eye widening', value: 'eyeWiden' },
+
+    //   // {text:'innerBrowRaise', value: 'innerBrowRaise'},
+
+    //   { text: 'eyebrow furrow', value: 'browFurrow' },
+    //   { text: 'nose wrinkle', value: 'noseWrinkle' },
+    //   { text: 'upper lip raise', value: 'upperLipRaise' },
+    //   { text: 'lip corner pull', value: 'lipCornerDepressor' },
+    //   { text: 'chin raise', value: 'chinRaise' },
+
+    //   // {text:'lip press', value:  'lipPress'},
+    //   // {text:'lip suck', value:  'lipSuck'},
+
+    //   { text: 'smirk', value: 'smirk' },
+    //   { text: 'attention', value: 'attention' },
+    //   { text: 'eyelid tighten', value: 'lidTighten' },
+    //   { text: 'jaw drop', value: 'jawDrop' },
+    //   { text: 'cheek dimple', value: 'dimpler' },
+    //   { text: 'cheek raise', value: 'cheekRaise' },
+    //   { text: 'lip stretch', value: 'lipStretch' }
+    // ];
+    // const handlerExpressions = expressions.map(expression => expression.value);
+
+
 
     // type DefineExpressDetect = DefineBlock<PoseFace, Blocks["whenExpressionDetectedHat"]>;
-    const whenExpressionDetectedHat = () => legacy.affdexWhenExpression({
-      type: BlockType.Hat,
-      arg: {
-        type: ArgumentType.String,
-        options: {
-          acceptsReporters: true,
-          items: expressions,
+    const whenExpressionDetectedHat = legacyDefinition.affdexWhenExpression({
+      // type: BlockType.Hat,
+      // arg: {
+      //   type: ArgumentType.String,
+      //   options: {
+      //     acceptsReporters: true,
+      //     items: expressions,
+      //     handler: (expression: string) => {
+      //       return handlerExpressions.includes(expression) ? expression : 'smile';
+      //     }
+      //   }
+      // },
+      // text: (expression: string) => `when ${expression} detected`,
+      operation: (expression: string) => {
+        return this.isExpression(expression);
+      },
+      argumentMethods: {
+        0: {
           handler: (expression: string) => {
             return handlerExpressions.includes(expression) ? expression : 'smile';
           }
         }
-      },
-      text: (expression: string) => `when ${expression} detected`,
-      operation: (expression: string) => {
-        return this.isExpression(expression);
       }
     });
 
     // type DefineAmountExpress = DefineBlock<PoseFace, Blocks["amountOfExpressionDetectedReport"]>;
-    const amountOfExpressionDetectedReport = () => legacy.affdexExpressionAmount({
-      type: BlockType.Reporter,
-      arg: {
-        type: ArgumentType.String,
-        options: {
-          acceptsReporters: true,
-          items: expressions,
+    const amountOfExpressionDetectedReport = legacyDefinition.affdexExpressionAmount({
+      // type: BlockType.Reporter,
+      // arg: {
+      //   type: ArgumentType.String,
+      //   options: {
+      //     acceptsReporters: true,
+      //     items: expressions,
+      //     handler: (expression: string) => {
+      //       return handlerExpressions.includes(expression) ? expression : 'smile';
+      //     }
+      //   }
+      // },
+      // text: (expression: string) => `amount of ${expression}`,
+      operation: (expression: string) => {
+        return this.expressionAmount(expression);
+      },
+      argumentMethods: {
+        0: {
           handler: (expression: string) => {
             return handlerExpressions.includes(expression) ? expression : 'smile';
           }
         }
-      },
-      text: (expression: string) => `amount of ${expression}`,
-      operation: (expression: string) => {
-        return this.expressionAmount(expression);
       }
     });
 
     // type DefineExpressReport = DefineBlock<PoseFace, Blocks["isExpressionReport"]>;
-    const isExpressionReport = () => legacy.affdexIsExpression({
-      type: BlockType.Boolean,
-      arg: {
-        type: ArgumentType.String,
-        options: {
-          acceptsReporters: true,
-          items: expressions,
+    const isExpressionReport = legacyDefinition.affdexIsExpression({
+      // type: BlockType.Boolean,
+      // arg: {
+      //   type: ArgumentType.String,
+      //   options: {
+      //     acceptsReporters: true,
+      //     items: expressions,
+      //     handler: (expression: string) => {
+      //       return handlerExpressions.includes(expression) ? expression : 'smile';
+      //     }
+      //   }
+      // },
+      // text: (expression: string) => `expressing ${expression}`,
+      operation: (expression: string) => {
+        return this.isExpression(expression);
+      },
+      argumentMethods: {
+        0: {
           handler: (expression: string) => {
             return handlerExpressions.includes(expression) ? expression : 'smile';
           }
         }
-      },
-      text: (expression: string) => `expressing ${expression}`,
-      operation: (expression: string) => {
-        return this.isExpression(expression);
       }
     });
 
     // EMOTION BLOCKS
 
-    const emotions = [
-      { text: 'joyful', value: 'joy' },
-      { text: 'sad', value: 'sadness' },
-      { text: 'disgusted', value: 'disgust' },
-      { text: 'angry', value: 'anger' },
-      { text: 'fearful', value: 'fear' }
-    ];
-    const handlerEmotionsShort = emotions.map(emotion => emotion.value);
+    // const emotions = [
+    //   { text: 'joyful', value: 'joy' },
+    //   { text: 'sad', value: 'sadness' },
+    //   { text: 'disgusted', value: 'disgust' },
+    //   { text: 'angry', value: 'anger' },
+    //   { text: 'fearful', value: 'fear' }
+    // ];
+    // const handlerEmotionsShort = emotions.map(emotion => emotion.value);
 
-    const emotions2 = [
-      { text: 'contempt', value: 'contempt' },
-      { text: 'surprise', value: 'surprise' },
-      { text: 'valence', value: 'valence' },
-      { text: 'engagement', value: 'engagement' }
-    ];
-    const allEmotionValues = emotions.concat(emotions2).map(emotion => emotion.value);
+
+    // const emotions2 = [
+    //   { text: 'contempt', value: 'contempt' },
+    //   { text: 'surprise', value: 'surprise' },
+    //   { text: 'valence', value: 'valence' },
+    //   { text: 'engagement', value: 'engagement' }
+    // ];
+    // const allEmotionValues = emotions.concat(emotions2).map(emotion => emotion.value);
+
 
     // type DefineFeelingDetect = DefineBlock<PoseFace, Blocks["whenFeelingDetectedHat"]>;
-    const whenFeelingDetectedHat = () => legacy.affdexWhenEmotion({
-      type: BlockType.Hat,
-      arg: {
-        type: ArgumentType.String,
-        options: {
-          acceptsReporters: true,
-          items: emotions,
+    const whenFeelingDetectedHat = legacyDefinition.affdexWhenEmotion({
+      // type: BlockType.Hat,
+      // arg: {
+      //   type: ArgumentType.String,
+      //   options: {
+      //     acceptsReporters: true,
+      //     items: emotions,
+      //     handler: (emotion: string) => {
+      //       return handlerEmotionsShort.includes(emotion) ? emotion : 'joy';
+      //     }
+      //   }
+      // },
+      // text: (emotion: string) => `when ${emotion} feeling detected`,
+      operation: (emotion: string) => {
+        return this.isTopEmotion(emotion, this.emotions);
+      },
+      argumentMethods: {
+        0: {
           handler: (emotion: string) => {
             return handlerEmotionsShort.includes(emotion) ? emotion : 'joy';
           }
         }
-      },
-      text: (emotion: string) => `when ${emotion} feeling detected`,
-      operation: (emotion: string) => {
-        return this.isTopEmotion(emotion, emotions);
       }
     });
 
     // type DefineLevelFeeling = DefineBlock<PoseFace, Blocks["levelOfFeelingReport"]>;
-    const levelOfFeelingReport = () => legacy.affdexEmotionAmount({
-      type: BlockType.Reporter,
-      arg: {
-        type: ArgumentType.String,
-        options: {
-          acceptsReporters: true,
-          items: allEmotionValues,
+    const levelOfFeelingReport = legacyDefinition.affdexEmotionAmount({
+      // type: BlockType.Reporter,
+      // arg: {
+      //   type: ArgumentType.String,
+      //   options: {
+      //     acceptsReporters: true,
+      //     items: allEmotionValues,
+      //     handler: (emotion: string) => {
+      //       return allEmotionValues.includes(emotion) ? emotion : 'joy';
+      //     }
+      //   }
+      // },
+      // text: (emotion: string) => `level of ${emotion}`,
+      operation: (emotion: string) => {
+        return this.emotionAmount(emotion)
+      },
+      argumentMethods: {
+        0: {
           handler: (emotion: string) => {
             return allEmotionValues.includes(emotion) ? emotion : 'joy';
           }
         }
-      },
-      text: (emotion: string) => `level of ${emotion}`,
-      operation: (emotion: string) => {
-        return this.emotionAmount(emotion)
       }
     });
 
     // type DefineIsFeeling = DefineBlock<PoseFace, Blocks["isFeelingReport"]>;
-    const isFeelingReport = () => legacy.affdexIsTopEmotion({
-      type: BlockType.Boolean,
-      arg: {
-        type: ArgumentType.String,
-        options: {
-          acceptsReporters: true,
-          items: emotions,
+    const isFeelingReport = legacyDefinition.affdexIsTopEmotion({
+      // type: BlockType.Boolean,
+      // arg: {
+      //   type: ArgumentType.String,
+      //   options: {
+      //     acceptsReporters: true,
+      //     items: emotions,
+      //     handler: (emotion: string) => {
+      //       return handlerEmotionsShort.includes(emotion) ? emotion : 'joy';
+      //     }
+      //   }
+      // },
+      // text: (emotion: string) => `feeling ${emotion}`,
+      operation: (emotion: string) => {
+        return this.isTopEmotion(emotion, this.emotions);
+      },
+      argumentMethods: {
+        0: {
           handler: (emotion: string) => {
             return handlerEmotionsShort.includes(emotion) ? emotion : 'joy';
           }
         }
-      },
-      text: (emotion: string) => `feeling ${emotion}`,
-      operation: (emotion: string) => {
-        return this.isTopEmotion(emotion, emotions);
       }
     });
 
     // VIDEO BLOCKS
 
-    // type DefineVideoToggle = DefineBlock<PoseFace, Blocks["videoToggleBlock"]>;
-    const videoToggleBlock = () => legacy.videoToggle({
-      type: BlockType.Command,
-      arg: {
-        type: ArgumentType.Number,
-        options: {
-          acceptsReporters: true,
-          items: [{ text: 'off', value: VideoState.OFF }, { text: 'on', value: VideoState.ON }, { text: 'on and flipped', value: VideoState.ON_FLIPPED }],
+    const videoToggleCommand = legacyDefinition.videoToggle({
+      operation: (video_state) => {
+        this.toggleVideo(video_state);
+      },
+      argumentMethods: {
+        0: {
           handler: (video_state: number) => {
             return Math.min(Math.max(video_state, VideoState.OFF), VideoState.ON_FLIPPED);
-          }
+          },
         }
-      },
-      text: (video_state: number) => `turn video ${video_state}`,
-      operation: (video_state: number) => {
-        this.toggleVideo(video_state);
       }
-    });
+    })
 
-    // type DefineSetVideoTransparency = DefineBlock<PoseFace, Blocks["setVideoTransparencyBlock"]>;
-    const setVideoTransparencyBlock = () => legacy.setVideoTransparency({
-      type: BlockType.Command,
-      arg: { type: ArgumentType.Number, defaultValue: 50 },
-      text: (transparency: number) => `set video transparency to ${transparency}`,
+    const setVideoTransparencyCommand = legacyDefinition.setVideoTransparency({
       operation: (transparency: number) => {
         this.setTransparency(transparency);
       }
-    });
-
+    })
     return {
       goToFacePartCommand,
       whenExpressionDetectedHat,
@@ -570,8 +621,8 @@ export default class PoseFace extends Extension<Details, Blocks> {
       whenFeelingDetectedHat,
       levelOfFeelingReport,
       isFeelingReport,
-      videoToggleBlock,
-      setVideoTransparencyBlock
+      videoToggleCommand,
+      setVideoTransparencyCommand
     }
   }
 }
