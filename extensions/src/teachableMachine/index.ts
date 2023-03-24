@@ -199,7 +199,7 @@ export default class teachableMachine extends Extension<Details, Blocks> {
    */
   modelPrediction() {
     const modelUrl = this.teachableImageModel;
-    const predictionState = this.getPredictionStateOrStartPredicting(modelUrl);
+    const predictionState: {topClass: string} = this.getPredictionStateOrStartPredicting(modelUrl);
     if (!predictionState) {
       return '';
     }
@@ -323,7 +323,7 @@ export default class teachableMachine extends Extension<Details, Blocks> {
     return (currentMaxClass === String(className));
   }
 
-  classConfidence(args) {
+  classConfidence(args): number {
     const className = args.CLASS_NAME;
 
     return this.modelConfidences[className];
