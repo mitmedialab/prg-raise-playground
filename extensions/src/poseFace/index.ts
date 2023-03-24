@@ -1,5 +1,6 @@
 import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, untilExternalGlobalVariableLoaded } from "$common";
 import { legacyIncrementalSupport, legacyFullSupport, info } from "./legacy";
+
 const { legacyExtension, legacyDefinition } = legacyIncrementalSupport.for<PoseFace>();
 
 // import * as window from 'affdex.js';
