@@ -1,11 +1,11 @@
 <script lang="ts">
-  import type Extension from ".";
+  import Extension from ".";
   import { activeClass, px, color } from "$common";
 
   export let displayText = "Hello, world!";
 
   // svelte-ignore unused-export-let
-  export let extension: any;
+  export let extension: Extension;
   // svelte-ignore unused-export-let
   export let close: () => void;
 

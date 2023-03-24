@@ -142,7 +142,7 @@ class ExtensionManager {
         }
 
         const extensionInstance = new extension(this.runtime);
-        tryInitExtension(extensionInstance);
+        await tryInitExtension(extensionInstance);
         const serviceName = this._registerInternalExtension(extensionInstance);
         this._loadedExtensions.set(extensionId, serviceName);
     }
@@ -163,7 +163,7 @@ class ExtensionManager {
                 return;
             }
             const extensionInstance = new extension(this.runtime);
-            tryInitExtension(extensionInstance);
+            await tryInitExtension(extensionInstance);
             const serviceName = this._registerInternalExtension(extensionInstance);
             this._loadedExtensions.set(extensionURL, serviceName);
             return;

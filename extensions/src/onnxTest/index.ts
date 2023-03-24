@@ -1,4 +1,5 @@
 import { BlockType, Extension, Environment, } from "$common";
+import { validGenericExtension } from "$common/extension/decorators/validators";
 import { OnnxRuntime } from "$common/onnx";
 
 type Details = {
@@ -10,13 +11,16 @@ type Details = {
 
 
 type Blocks = {
-  test: () => void
+  test: () => void,
 }
 
+@validGenericExtension()
 export default class ExtensionNameGoesHere extends Extension<Details, Blocks> {
-  onnx = new OnnxRuntime();
+  onnx: Awaited<OnnxRuntime["runtime"]>;
 
-  init(env: Environment) { }
+  async init(env: Environment) {
+    this.onnx = await new OnnxRuntime().runtime;
+  }
 
   defineBlocks(): ExtensionNameGoesHere["BlockDefinitions"] {
 
@@ -26,7 +30,7 @@ export default class ExtensionNameGoesHere extends Extension<Details, Blocks> {
         text: "eee",
         operation: async () => {
           try {
-            const { InferenceSession, Tensor } = await this.onnx.runtime;
+            const { InferenceSession, Tensor } = this.onnx;
 
             // create a new session and load the specific model.
             //

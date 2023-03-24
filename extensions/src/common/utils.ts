@@ -1,4 +1,4 @@
-import { MenuItem } from "./types"
+import { MenuItem, Primitive, RGBObject } from "./types"
 
 type FetchParams = {
   request: Parameters<typeof fetch>[0],
@@ -26,6 +26,24 @@ export async function fetchWithTimeout(
   clearTimeout(id);
 
   return response;
+}
+
+/**
+ * A utility to wait a certain amount of milliseconds in an async function.
+ * @param timeMs 
+ * @returns 
+ */
+export async function untilTimePassed(timeMs: number) {
+  let timeout: NodeJS.Timeout;
+  return await new Promise<void>(
+    (resolve) =>
+      timeout = setTimeout(
+        () => {
+          clearTimeout(timeout);
+          resolve();
+        },
+        timeMs)
+  );
 }
 
 export async function untilObject<T>(getter: () => T, delay: number = 100): Promise<T> {
@@ -64,14 +82,14 @@ export async function untilReady<T extends { ready: boolean }>(obj: T, delay: nu
   clearTimeout(timeout);
 };
 
-export const isString = (query: any) => typeof query === 'string' || query instanceof String;
+export const isString = (query: any): query is string => typeof query === 'string' || query instanceof String;
 
-export const isFunction = (query: any) =>
+export const isFunction = (query: any): query is (...args: any[]) => any =>
   Object.prototype.toString.call(query) === "[object Function]"
   || "function" === typeof query
   || query instanceof Function;
 
-export const isPrimitive = (query: any) => query !== Object(query);
+export const isPrimitive = (query: any): query is Primitive => query !== Object(query);
 
 export const splitOnCapitals = (query: string) => query.split(/(?=[A-Z])/);
 
@@ -82,7 +100,7 @@ export const splitOnCapitals = (query: string) => query.split(/(?=[A-Z])/);
 export const copyTo = <TTarget extends object, TSource extends { [k in keyof TTarget]?: TTarget[k] }>({ target, source }: { target: TTarget, source: TSource }) => {
   for (const key in source) {
     if (!(key in target)) continue;
-    // @ts-ignore -- the types of the function should ensure this is valud TS
+    // @ts-ignore -- the types of the function should ensure this is valid TS
     target[key] = source[key]
   }
 }
@@ -132,4 +150,55 @@ export const untilExternalGlobalVariableLoaded = async <T>(url: string, globalVa
   if (window[globalVariableName]) return window[globalVariableName];
   await untilExternalScriptLoaded(url);
   return window[globalVariableName];
+}
+
+/**
+ * Utilize javascript's "call" method (on Function.prototype) in a typesafe manner
+ * @param fn 
+ * @param _this 
+ * @param args 
+ * @returns 
+ */
+export const typesafeCall = <Args extends any[], Return, This, Fn extends (this: This, ...args: Args) => Return>(fn: Fn, _this: This, ...args: Args) => fn.call(_this, ...args) as Return;
+
+export const set = <T extends object, K extends keyof T>(container: T, key: K, value: T[K]) => {
+  container[key] = value;
+  return container;
+}
+
+export const assertSameLength = (...collections: any[][]) => {
+  const { size } = collections.reduce((set, { length }) => set.add(length), new Set<number>());
+  if (size !== 1) throw new Error("Zip failed because collections weren't equal length");
+}
+
+/**
+ * Convert a Scratch decimal color to a hex string, #RRGGBB.
+ * @param {number} decimal RGB color as a decimal.
+ * @return {string} RGB color as #RRGGBB hex string.
+ */
+const decimalToHex = (decimal: number) => {
+  if (decimal < 0) {
+    decimal += 0xFFFFFF + 1;
+  }
+  let hex = Number(decimal).toString(16);
+  hex = `#${'000000'.substr(0, 6 - hex.length)}${hex}`;
+  return hex;
+}
+
+/**
+ * Convert an RGB color object to a Scratch decimal color.
+ * @param {RGBObject} rgb - {r: red [0,255], g: green [0,255], b: blue [0,255]}.
+ * @return {!number} Number representing the color.
+ */
+function rgbToDecimal(rgb: RGBObject) {
+  return (rgb.r << 16) + (rgb.g << 8) + rgb.b;
+}
+
+/**
+ * Convert an RGB color object to a hex color.
+ * @param {RGBObject} rgb - {r: red [0,255], g: green [0,255], b: blue [0,255]}.
+ * @return {!string} Hex representation of the color.
+ */
+export const rgbToHex = (rgb: RGBObject) => {
+  return decimalToHex(rgbToDecimal(rgb));
 }
