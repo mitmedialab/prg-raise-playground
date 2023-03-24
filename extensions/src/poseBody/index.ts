@@ -1,8 +1,9 @@
 import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, RuntimeEvent, ValueOf, extractLegacySupportFromOldGetInfo } from "$common";
-import legacy from "./legacy";
+import { legacyIncrementalSupport, legacyFullSupport, info } from "./legacy";
 // import Video from '../../../packages/scratch-vm/src/io/video';
-
 import * as posenet from '@tensorflow-models/posenet';
+
+const { legacyExtension, legacyDefinition } = legacyIncrementalSupport.for<PoseBody>();
 
 /**
  * States what the video sensing activity can be set to.
@@ -67,7 +68,6 @@ export default class PoseBody extends Extension<Details, Blocks> {
    */
   init(env: Environment) {
 
-    this.runtime = env.runtime;
     const EXTENSION_ID = 'poseBody';
 
     /* Unused but possibly needed in the future */
