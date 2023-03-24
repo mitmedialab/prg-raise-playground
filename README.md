@@ -20,6 +20,7 @@ This section contains concise explanations on how to accomplish something (often
 
 Assuming you have...
 - Git installed (if not, jump to: [Git](#Git))
+- **_(Windows only)_** WSL setup (if not, jump to: [Windows Setup](#windows-only))
 - Node <=16 is installed (if not, jump to: [Node](#Node))
 - NPM >= 8.3.0 installed (if not, jump to: [NPM](#NPM))
 - VS Code installed with Typescript Extension added (if not, jump to: [Vs Code](#VS-Code-(Recommended)))
@@ -197,6 +198,10 @@ Not interested in setting up your local environemnt?
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev)
 
+### Windows Only
+
+Please setup and perform all commands through [Node on Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/dev-environment/javascript/nodejs-on-wsl).
+
 ### Git
 
 Please [install git](https://git-scm.com/downloads), which helps us with [source control](https://git-scm.com/book/en/v2/Getting-Started-About-Version-Control) -- basically, how we preserve and share (changes to) the code. 
@@ -207,7 +212,7 @@ Like many web development projects, this project requires [node](https://nodejs.
 
 Also, [due to a Webpack 4 issue](https://github.com/webpack/webpack/issues/14532), we require a node version <=16.
 
-Please follow [these instructions](https://nodejs.org/en/download/) to install a suitable version of Node on your machine.
+Please locate the [latest v16 release](https://nodejs.org/en/blog/release) and install a suitable version for your operating system.
 
 #### Maintainer Note (9/15/22)
 

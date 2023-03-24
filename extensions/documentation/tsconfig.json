@@ -1,13 +1,14 @@
 {
   "extends": "../paths.tsconfig.json",
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "ES2022",
     "module": "ESNext",
     "noImplicitAny": false,
     "esModuleInterop": true,
     "allowJs": false,
     "moduleResolution": "Node",
     "skipLibCheck": true,
+    "ignoreDeprecations": "5.0"
   },
   "include": [".**/*.ts", "**/*.ts"],
 }

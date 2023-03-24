@@ -1,5 +1,4 @@
 import { isString } from "$common";
-
 import { vmSrc } from "$root/scripts/paths";
 import path from "path";
 
@@ -18,3 +17,25 @@ export const executeAndSquashWarnings = <T extends (...args: any[]) => any>(oper
 };
 
 export const getEngineFile = (name: string) => path.join(vmSrc, "engine", name);
+
+
+const stubbed: Map<object, Record<keyof any, any>> = new Map();
+
+export const stub = <const TContainer extends object, const TKey extends keyof TContainer>(
+  container: TContainer,
+  key: TKey,
+  replacement: TContainer[TKey]
+) => {
+  const current = container[key];
+  stubbed.has(container)
+    ? stubbed.get(container)[key] = current
+    : stubbed.set(container, { [key]: current });
+  container[key] = replacement;
+}
+
+export const restore = <const TContainer extends object, const TKey extends keyof TContainer>(
+  container: TContainer,
+  key: TKey,
+) => {
+  container[key] = stubbed.get(container)[key];
+}

@@ -17,6 +17,7 @@ const StageLayering = require('./stage-layering');
 const Variable = require('./variable');
 const xmlEscape = require('../util/xml-escape');
 const ScratchLinkWebSocket = require('../util/scratch-link-websocket');
+const dispatch = require('../dispatch/central-dispatch');
 
 // Virtual I/O devices.
 const Clock = require('../io/clock');
@@ -29,6 +30,7 @@ const Video = require('../io/video');
 
 const StringUtil = require('../util/string-util');
 const uid = require('../util/uid');
+const { loadCostume } = require('../import/load-costume');
 
 const defaultBlockPackages = {
     scratch3_control: require('../blocks/scratch3_control'),
@@ -2663,6 +2665,24 @@ class Runtime extends EventEmitter {
      */
     updateCurrentMSecs () {
         this.currentMSecs = Date.now();
+    }
+
+    /* PRG ADDITIONS BEGIN */
+
+    /**
+     * Get a refernce to the extension manager
+     * @returns {import("../extension-support/extension-manager")}
+     */
+    getExtensionManager() {
+        // Bad form to access this method since it's naming (i.e. leading underscore) suggests it should be private
+        return dispatch._getServiceProvider("extensions")?.provider;
+    }
+
+    /**
+     * Loads a costume asset in
+     */
+    addCostume(costume) {
+       return loadCostume(costume.md5, costume, this)
     }
 }
 

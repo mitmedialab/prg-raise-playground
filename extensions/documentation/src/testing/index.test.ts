@@ -159,7 +159,7 @@ createTestSuite({ Extension, __dirname }, {
     /**
      * An integration test case 
      * @param fixture The fixture that will be passed to this function contain all the necessary elements for writing your test. 
-     * We use the term 'fixture' here and elsewhere as a "A test fixture is an environment used to consistently test a piece of software."
+     * We use the term 'fixture' here and elsewhere as "A test fixture is an environment used to consistently test a piece of software."
      * https://en.wikipedia.org/wiki/Test_fixture
      */
     testOfTwoBlocks: async (fixture) => {
