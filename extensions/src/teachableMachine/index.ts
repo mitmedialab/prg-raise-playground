@@ -4,8 +4,10 @@ import tmPose from '@teachablemachine/pose';
 import { create } from '@tensorflow-models/speech-commands';
 
 import { legacyFullSupport, legacyIncrementalSupport, info } from "./legacy";
+import video from "$common/extension/mixins/optional/video";
 
-const { legacyExtension, legacyDefinition, legacyBlock } = legacyIncrementalSupport.for<teachableMachine>();
+const { legacyExtension, legacyDefinition } = legacyIncrementalSupport.for<teachableMachine>();
+// const { legacyExtension, legacyDefinition } = legacyFullSupport.for<teachableMachine>();
 
 const VideoState = {
   /** Video turned off. */
@@ -60,6 +62,9 @@ export default class teachableMachine extends Extension<Details, Blocks> {
 
   test: string = "";
 
+  INTERVAL = 33;
+  DIMENSIONS = [480, 360];
+
   init(env: Environment) {
 
     /**
@@ -89,7 +94,7 @@ export default class teachableMachine extends Extension<Details, Blocks> {
      * @private
      */
   _loop() {
-    setTimeout(this._loop.bind(this), Math.max(this.runtime.currentStepTime, teachableMachine.INTERVAL));
+    setTimeout(this._loop.bind(this), Math.max(this.runtime.currentStepTime, this.INTERVAL));
 
     // Add frame to detector
     const time = Date.now();
@@ -102,10 +107,10 @@ export default class teachableMachine extends Extension<Details, Blocks> {
     const offset = time - this.lastUpdate;
 
     // TOOD: Self-throttle interval if slow to run predictions
-    if (offset > teachableMachine.INTERVAL && this.isPredicting === 0) {
+    if (offset > this.INTERVAL && this.isPredicting === 0) {
       const frame = this.runtime.ioDevices.video.getFrame({
         format: 'image-data',
-        dimensions: teachableMachine.DIMENSIONS
+        dimensions: this.DIMENSIONS
       });
 
       if (frame) {
@@ -233,18 +238,18 @@ export default class teachableMachine extends Extension<Details, Blocks> {
      * is analyzed.
      * @type {number}
      */
-  static get INTERVAL() {
-    return 33;
-  }
+  // get INTERVAL() {
+  //   return 33;
+  // }
 
   /**
      * Dimensions the video stream is analyzed at after its rendered to the
      * sample canvas.
      * @type {Array.<number>}
      */
-  static get DIMENSIONS() {
-    return [480, 360];
-  }
+  // get DIMENSIONS() {
+  //   return [480, 360];
+  // }
 
   useModel(url) {
     try {
@@ -397,68 +402,120 @@ export default class teachableMachine extends Extension<Details, Blocks> {
     const whenModelDetects_Hat = legacyDefinition.whenModelMatches({
       operation: (state) => {
         return this.model_match(state);
+      },
+      argumentMethods: {
+        0: {
+          getItems: () => this.getCurrentClasses()
+        }
       }
     });
 
-    const modelPrediction_Reporter: DefineBlock<teachableMachine, Blocks["modelPrediction_Reporter"]> = () => ({
-      type: BlockType.Reporter,
-      text: `model prediction`,
+    // const modelPrediction_Reporter: DefineBlock<teachableMachine, Blocks["modelPrediction_Reporter"]> = () => ({
+    //   type: BlockType.Reporter,
+    //   text: `model prediction`,
+    //   operation: () => {
+    //     return this.modelPrediction();
+    //   }
+    // });
+
+    const modelPrediction_Reporter = legacyDefinition.modelPrediction({
       operation: () => {
         return this.modelPrediction();
       }
-    });
+    })
 
-    const predictionIs_Boolean: DefineBlock<teachableMachine, Blocks["predictionIs_Boolean"]> = () => ({
-      type: BlockType.Boolean,
-      arg: {
-        type: ArgumentType.String,
-        options: () => this.getCurrentClasses()
-      },
-      text: (state) => `prediction is ${state}`,
+    // const predictionIs_Boolean: DefineBlock<teachableMachine, Blocks["predictionIs_Boolean"]> = () => ({
+    //   type: BlockType.Boolean,
+    //   arg: {
+    //     type: ArgumentType.String,
+    //     options: () => this.getCurrentClasses()
+    //   },
+    //   text: (state) => `prediction is ${state}`,
+    //   operation: (state) => {
+    //     return this.model_match(state);
+    //   }
+    // });
+
+    const predictionIs_Boolean = legacyDefinition.modelMatches({
       operation: (state) => {
         return this.model_match(state);
+      },
+      argumentMethods: {
+        0: {
+          getItems: () => this.getCurrentClasses()
+        }
       }
-    });
+    })
 
     // FIX FIX FIX
-    const confidenceFor_Reporter: DefineBlock<teachableMachine, Blocks["confidenceFor_Reporter"]> = () => ({
-      type: BlockType.Reporter,
-      arg: {
-        type: ArgumentType.String,
-        options: () => this.getCurrentClasses()
-      },
-      text: (state) => `confidence for ${state}`,
+    // const confidenceFor_Reporter: DefineBlock<teachableMachine, Blocks["confidenceFor_Reporter"]> = () => ({
+    //   type: BlockType.Reporter,
+    //   arg: {
+    //     type: ArgumentType.String,
+    //     options: () => this.getCurrentClasses()
+    //   },
+    //   text: (state) => `confidence for ${state}`,
+    //   operation: (state) => {
+    //     return this.classConfidence(state);
+    //   }
+    // });
+
+    const confidenceFor_Reporter = legacyDefinition.classConfidence({
       operation: (state) => {
         return this.classConfidence(state);
+      },
+      argumentMethods: {
+        0: {
+          getItems: () => this.getCurrentClasses()
+        }
       }
-    });
+    })
 
-    const videoToggleCommand: DefineBlock<teachableMachine, Blocks["videoToggleCommand"]> = () => ({
-      type: BlockType.Command,
-      arg: {
-        type: ArgumentType.Number,
-        options: {
-          acceptsReporters: true,
-          items: [{ text: 'off', value: VideoState.OFF }, { text: 'on', value: VideoState.ON }, { text: 'on and flipped', value: VideoState.ON_FLIPPED }],
+    // const videoToggleCommand: DefineBlock<teachableMachine, Blocks["videoToggleCommand"]> = () => ({
+    //   type: BlockType.Command,
+    //   arg: {
+    //     type: ArgumentType.Number,
+    //     options: {
+    //       acceptsReporters: true,
+    //       items: [{ text: 'off', value: VideoState.OFF }, { text: 'on', value: VideoState.ON }, { text: 'on and flipped', value: VideoState.ON_FLIPPED }],
+    //       handler: (video_state: number) => {
+    //         return Math.min(Math.max(video_state, VideoState.OFF), VideoState.ON_FLIPPED);
+    //       }
+    //     }
+    //   },
+    //   text: (video_state: number) => `turn video ${video_state}`,
+    //   operation: (video_state: number) => {
+    //     this.toggleVideo(video_state);
+    //   }
+    // });
+
+    const videoToggleCommand = legacyDefinition.videoToggle({
+      operation: (video_state) => {
+        this.toggleVideo(video_state);
+      },
+      argumentMethods: {
+        0: {
           handler: (video_state: number) => {
             return Math.min(Math.max(video_state, VideoState.OFF), VideoState.ON_FLIPPED);
-          }
+          },
         }
-      },
-      text: (video_state: number) => `turn video ${video_state}`,
-      operation: (video_state: number) => {
-        this.toggleVideo(video_state);
       }
-    });
+    })
 
-    const setVideoTransparencyCommand: DefineBlock<teachableMachine, Blocks["videoToggleCommand"]> = () => ({
-      type: BlockType.Command,
-      arg: { type: ArgumentType.Number, defaultValue: 50 },
-      text: (transparency: number) => `set video transparency to ${transparency}`,
+    // const setVideoTransparencyCommand: DefineBlock<teachableMachine, Blocks["videoToggleCommand"]> = () => ({
+    //   type: BlockType.Command,
+    //   arg: { type: ArgumentType.Number, defaultValue: 50 },
+    //   text: (transparency: number) => `set video transparency to ${transparency}`,
+    //   operation: (transparency: number) => {
+    //     this.setTransparency(transparency);
+    //   }
+    // });
+
+    const setVideoTransparencyCommand = legacyDefinition.setVideoTransparency({
       operation: (transparency: number) => {
         this.setTransparency(transparency);
       }
-    });
+    })
 
     return {
       useModel_Command,
