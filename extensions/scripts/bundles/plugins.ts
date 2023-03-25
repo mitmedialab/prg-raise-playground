@@ -134,7 +134,7 @@ export const setupExtensionBundleEntry = ({ indexFile, bundleEntry, directory }:
 export const finalizeGenericExtensionBundle = (info: BundleInfo): Plugin => {
   const runner = runOncePerBundling();
   return {
-    name: "Create Menu Assets",
+    name: "Finalize Generic Extension Bundle",
     buildEnd() {
       setAuxiliaryInfoForExtension(info);
       if (runner.check()) appendToRootDetailsFile(info);
@@ -208,7 +208,7 @@ export const finalizeConfigurableExtensionBundle = (info: BundleInfo): Plugin =>
   }
 
   return {
-    name: "Finalize V2 Bundle",
+    name: "Finalize Configurable Extension Bundle",
     writeBundle: async () => {
       try {
         await executeBundleAndExtractMenuDetails();
