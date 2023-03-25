@@ -2,18 +2,19 @@ import fs from "fs";
 import path from "path";
 import { FrameworkID, untilCondition, registerExtensionDefinitionCallback } from "$common";
 import { type Plugin } from "rollup";
-import { appendToRootDetailsFile, populateMenuFileForExtension } from "./extensionsMenu";
-import { exportAllFromModule, toNamedDefaultExport } from "./utils/importExport";
+import { appendToRootDetailsFile, populateMenuFileForExtension } from "../extensionsMenu";
+import { exportAllFromModule, toNamedDefaultExport } from "../utils/importExport";
 import { default as glob } from 'glob';
-import { commonDirectory, deleteAllFilesInDir, extensionBundlesDirectory, fileName, generatedMenuDetailsDirectory, getBundleFile, getDirectoryAndFileName, tsToJs } from "./utils/fileSystem";
-import { BundleInfo, stringifyCodeGenArgs } from "./bundles";
+import { commonDirectory, deleteAllFilesInDir, extensionBundlesDirectory, fileName, generatedMenuDetailsDirectory, getBundleFile, getDirectoryAndFileName, tsToJs } from "../utils/fileSystem";
+import { BundleInfo } from ".";
 import ts from "typescript";
-import { getSrcCompilerHost } from "./typeProbing/tsConfig";
+import { getSrcCompilerHost } from "../typeProbing/tsConfig";
 import { extensionsFolder, packages, root, vmSrc } from "$root/scripts/paths";
-import { reportDiagnostic } from "./typeProbing/diagnostics";
+import { reportDiagnostic } from "../typeProbing/diagnostics";
 import chalk from "chalk";
-import { runOncePerBundling } from "./utils/rollupHelper";
+import { runOncePerBundling } from "../utils/rollupHelper";
 import { sendToParent } from "$root/scripts/comms";
+import { setAuxiliaryInfoForExtension } from "./auxiliaryInfo";
 
 export const clearDestinationDirectories = (): Plugin => {
   const runner = runOncePerBundling();
@@ -130,60 +131,12 @@ export const setupExtensionBundleEntry = ({ indexFile, bundleEntry, directory }:
   }
 }
 
-const cachedContent = new Map<string, string>();
-export const fillInConstructorArgs = (info: BundleInfo, getContent: (info: BundleInfo) => string): Plugin => {
-  const preferredSearchValue = "super(...arguments)";
-  const replaceValue = (content: string) => `super(...[...arguments, ${content}])`;
-  const { indexFile } = info;
-
-  return {
-    name: 'Fill in Code Gen Args per Extension',
-    transform: {
-      order: 'post',
-      handler: (code: string, file: string) => {
-        if (file !== indexFile) return;
-
-        /** TODO: Remove mutable variables once generic extensions are deprecated */
-        let searchValue = preferredSearchValue;
-        let replacer = replaceValue;
-
-        const matches = code.includes(searchValue);
-
-        if (!matches) {
-          const genericExtensionSearchValue = "class extends Extension {";
-          /** Handle special case of generic etension */
-          /** TODO: Remove once generic extensions are deprecated */
-          if (code.includes(genericExtensionSearchValue)) {
-            searchValue = genericExtensionSearchValue;
-            replacer = (content: string) => `${genericExtensionSearchValue} \n constructor(runtime){ super(...[runtime, ${content} ]) }; \n`;
-          }
-          else {
-            fs.writeFileSync(`${indexFile}.failed.js`, code);
-            throw new Error("Framework error: Unable to locate insertion point within Extension class. Have you implemented any blocks? If you have, the strategy likely needs to be updated -- contact Parker Malachowsky (or project maintainer)");
-          }
-        }
-
-        const content = getContent(info);
-        cachedContent.set(indexFile, content);
-        return {
-          code: code.replace(searchValue, replacer(content)),
-          map: null
-        };
-      }
-    },
-    shouldTransformCachedModule: {
-      handler: ({ id }) => {
-        return id === indexFile && cachedContent.get(id) !== getContent(info)
-      }
-    }
-  };
-}
-
-export const createExtensionMenuAssets = (info: BundleInfo): Plugin => {
+export const finalizeGenericExtensionBundle = (info: BundleInfo): Plugin => {
   const runner = runOncePerBundling();
   return {
     name: "Create Menu Assets",
     buildEnd() {
+      setAuxiliaryInfoForExtension(info);
       if (runner.check()) appendToRootDetailsFile(info);
       populateMenuFileForExtension(info);
     }
@@ -233,9 +186,7 @@ const frameworkBundle: { content: Promise<string> } & Record<string, any> = {
   }
 }
 
-export const decoratorCodeGenFlag = "replace_code_gen_args";
-
-export const finalizeCommonExtensionBundle = (info: BundleInfo): Plugin => {
+export const finalizeConfigurableExtensionBundle = (info: BundleInfo): Plugin => {
   const { bundleDestination, menuDetails, name, directory } = info;
 
   const executeBundleAndExtractMenuDetails = async () => {
@@ -247,11 +198,6 @@ export const finalizeCommonExtensionBundle = (info: BundleInfo): Plugin => {
     });
     eval(framework + "\n" + fs.readFileSync(bundleDestination, "utf-8"));
     if (!success) throw new Error(`No extension registered for '${name}'. Did you forget to use the extension decorator?`);
-  }
-
-  const fillCodeGenParams = () => {
-    const content = fs.readFileSync(bundleDestination, "utf-8").replace(decoratorCodeGenFlag, stringifyCodeGenArgs(info));
-    fs.writeFileSync(bundleDestination, content);
   }
 
   const runner = runOncePerBundling();
@@ -266,7 +212,7 @@ export const finalizeCommonExtensionBundle = (info: BundleInfo): Plugin => {
     writeBundle: async () => {
       try {
         await executeBundleAndExtractMenuDetails();
-        fillCodeGenParams();
+        setAuxiliaryInfoForExtension(info)
         writeOutMenuDetails();
       }
       catch (e) {

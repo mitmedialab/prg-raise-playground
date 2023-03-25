@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## 2023-03-24
+
+### Changed
+
+- Info about an extension (e.g. its `id`, `name`, and `blockIconURI`) are now loaded via an external `.js` file instead of being 'filled in' at bundle-time (which was error prone)
+  - [Scratch VM Change](#scratch-vm-change): changes are implemented in _bundle-loader.js_ to load this file in and utilize when retrieving an Extension's constructor
+
+
+
 ## 2023-03-20
 
 ### Added

@@ -23,7 +23,7 @@ export const tryGetExtensionConstructorFromBundle = async (id) => {
       onLoad: function () {
         const { Extension, ...aux } = window[id];
         constructors.set(id, class extends Extension {
-          constructor(runtime) { super(runtime) }
+          constructor(runtime) { super(runtime, ...window[AuxiliaryExtensionInfo][id]) }
         });
         auxiliarObjects.set(id, aux);
       },
@@ -81,7 +81,7 @@ const untilCommonObjects = (...IDs) => Promise.all(
 
 const tryImportExtensionBundle = async (id, callbacks) => {
   try {
-    await untilCommonObjects(FrameworkID);
+    await untilCommonObjects(FrameworkID, AuxiliaryExtensionInfo);
     await untilScriptLoaded(getEndPoint(id), callbacks);
     return true;
   }
