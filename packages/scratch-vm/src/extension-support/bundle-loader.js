@@ -1,19 +1,12 @@
-/* 
-Unfortunately, the bundling of the scratch-vm prevents this import from working correctly
-(likely because it is 'symlinked' in the scratch-gui's node_modules, so this relative path ends up being incorrect).
-The import is preserved to make it easy to ensure the defined value of 'FrameworkID' matches thex exported one.
-Anyone can feel free to try and get this working, but it's not worth pulling your hair out over.
-*/
-//import {FrameworkID} from "../../../../extensions/dist/globals";
-
-const FrameworkID = "ExtensionFramework";
+import { FrameworkID } from "../dist/globals";
 
 const constructors = new Map();
 const auxiliarObjects = new Map();
 
 export const tryInitExtension = (extension) => {
   const extensionInit = "internal_init";
-  if (extensionInit in extension) extension[extensionInit]();
+  if (extensionInit in extension) return Promise.resolve(extension[extensionInit]());
+  return Promise.resolve();
 }
 
 /**
@@ -40,7 +33,7 @@ const waitForCondition = async (conditionObj, timeout = 3000, updateFrequency = 
 */
 const importStaticScript = async(endpoint, onLoad, onError) => {
   var scriptTag = document.createElement('script');
-  scriptTag.src = `${location.href}/static/${endpoint}`;
+  scriptTag.src = `${location.href.split("?")[0]}/static/${endpoint}`;
   let condition = { test: true, arg: false, timeout: false };
   scriptTag.onload = () => {
       onLoad();
@@ -56,6 +49,7 @@ const importStaticScript = async(endpoint, onLoad, onError) => {
 }
 
 const getFrameworkObject = () => window[FrameworkID];
+
 const onFrameworkLoad = () => getFrameworkObject() 
   ? console.log("Extension Framework succesfully loaded!")
   : console.error("Could not find Extension Framework object after loading script");

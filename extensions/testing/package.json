@@ -18,5 +18,13 @@
     "svelte-jester": "^2.3.2",
     "svelte-preprocess": "^5.0.0",
     "ts-jest": "^29.0.3"
+  },
+  "overrides": {
+    "svelte-preprocess": {
+      "typescript": "latest"
+    },
+    "ts-jest": {
+      "typescript": "latest"
+    }
   }
 }

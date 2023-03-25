@@ -14,11 +14,13 @@ This document will be most helpful for people doing more complex development, li
 # Table of Contents
 1. [Anatomy of an Extension Directory](#anatomy-of-an-extension-directory)
 2. [Testing Extensions](#testing-extensions)
-3. [Creating UI for Extensions](#creating-ui-for-extensions)
-4. [Porting an Extension to use our Framework & Typescript](#porting-an-extension-to-use-our-framework--typescript)
-5. [Saving Custom Data for an Extension](#saving-custom-data-for-an-extension)
-6. [Adding Custom Arguments](#adding-custom-arguments)
-7. [Reference](#reference)
+3. [Programming Tutorial](#programming-tutorial)
+4. [Creating UI for Extensions](#creating-ui-for-extensions)
+5. [Porting an Extension to use our Framework & Typescript](#porting-an-extension-to-use-our-framework--typescript)
+6. [Saving Custom Data for an Extension](#saving-custom-data-for-an-extension)
+7. [Making use of the Block Utility](#making-use-of-the-block-utility)
+8. [Adding Custom Arguments](#adding-custom-arguments)
+9. [Reference](#reference)
 
 ## Anatomy of an Extension Directory
 
@@ -38,9 +40,8 @@ Below are the files you should always find within an extension's directory:
 - `index.ts`
     - This is the main place where your extension is implemented. It is **expected** that your extension class will be the `default export` of this file. For example:
 ```ts
-export default class ExampleExtension extends Extension<DisplayDetails, Blocks> {
-  init;
-  defineBlocks;
+export default class ExampleExtension extends extension({ name: "Example" }) {
+  init() { /* ... */ };
 }
 ```
 
@@ -50,6 +51,17 @@ export default class ExampleExtension extends Extension<DisplayDetails, Blocks> 
 - `package.json`
     - Each extension is treated as it's own package and thus has it's own [package.json](https://docs.npmjs.com/cli/v9/configuring-npm/package-json) file. 
         - This makes it easy to handle cases when two extensions want to use different versions of the same [npm package](https://www.npmjs.com/). 
+        - An extension's `package.json` file also includes [npm scripts](https://docs.npmjs.com/cli/v9/using-npm/scripts) that execute scripts from the [root package.json]() with the exension's folder as an argument. This makes executing certain commands a little easier.
+            - For example, if your extension folder is `myExtension`, you can do the following:
+                ```
+                cd extensions/myExtension # only do this once
+                npm run dev 
+                ```
+             - Instead of running the following from the root of the project every time:
+                ```
+                npm run dev only=myExtension
+                ```
+            - Inspect the `package.json` file to see all augmented scripts.
 
 ### Auxiliary Files
 
@@ -90,55 +102,38 @@ The below examples will test the below extension:
 
 ```ts
 
-import { Extension } from "$common/Extension";
-import { Environment, ButtonBlock, ArgumentType, BlockType, BlockDefinitions } from "$common";
+import { block, buttonBlock, extension, Environment } from "$common";
 
-export default class ExtensionUnderTest extends Extension<DefaultDisplayDetails, {
-  exampleReporter: (input: string) => string;
-  exampleCommand: (a: number, b: number) => void;
-  exampleButtonThatOpensUI: ButtonBlock
-}> {
+const name = "Extension Under Test";
+
+export default class ExtensionUnderTest extends extension({ name }, "ui") {
 
   init(env: Environment): void { }
 
-  defineBlocks(): ExtensionUnderTest["BlockDefinitions"] {
-    return defineBlocksElsewhere(); // You can ignore this!
+  @block({
+    type: "command",
+    args: ["number", "number"],
+    text: (x, y) => "placeholder",
+  })
+  exampleCommand(a: number, b: number) { /* Do something */ }
+
+  @block({
+    type: "reporter",
+    text: (x) => "placeholder",
+    arg: "string",
+  })
+  exampleReporter(input: string) {
+    return "Whatever you expect to be the output, given the input"
+  }
+
+  @buttonBlock("placeholder")
+  exampleButtonThatOpensUI() {
+    this.openUI("Test");
   }
 }
 
 ```
 
-
-<details>
-<summary>To save space, the block definitions are hidden, but you can open this if you need to see them:</summary>
-
-```ts
-
-const defineBlocksElsewhere = (): BlockDefinitions<ExtensionUnderTest> => ({
-  exampleCommand: {
-    type: BlockType.Command,
-    args: [ArgumentType.Number, ArgumentType.Number],
-    text: () => "",
-    operation: () => { },
-  },
-  exampleReporter: {
-    type: BlockType.Reporter,
-    text: () => "",
-    arg: ArgumentType.String,
-    // This is the same dummy value used by the tests
-    operation: () => "Whatever you expect to be the output, given the input",
-  },
-  exampleButtonThatOpensUI: (ext) => ({
-    type: BlockType.Button,
-    text: "",
-    operation: () => { ext.openUI("Test") }
-  })
-});
-
-```
-
-
-</details>
 
 ### Anatomy of a test
 
@@ -179,9 +174,9 @@ As is clear from the second argument of the createTestSuite function, there are 
 
 Specifically for extensions, [unit tests](https://en.wikipedia.org/wiki/Unit_testing) test the operation of a single block.
 
-A unit test for a block is defined as an entry in the unitTests object whose key is the name of the block (as defined in the second generic parameter of the Extension class -- for example, this means either `exampleReporter`, `exampleCommand`, or `exampleButtonThatOpensUI`).
+A unit test for a block is defined as an entry in the unitTests object whose key is the name of the block method of the Extension class (for the above example, this means either `exampleReporter`, `exampleCommand`, or `exampleButtonThatOpensUI`).
 
-The values will either be (1) an object of a certain type, (2) a function that returns an object of that certain type, or (3) an array of either. The object type can have the keys outlined below:
+The values will either be (1) an _object of a certain type_, (2) a function that returns an object of that certain type, or (3) an array of either. The _object of a certain type_ can have the keys outlined below:
 
 #### Simple Example
 
@@ -347,7 +342,7 @@ See [their documentation](https://testing-library.com/docs/) for a complete guid
 
 ### Integration Test
 
-Specifically for extensions, [integration tests]() test either the operations of multiple blocks or how one extension interacts with another.
+Specifically for extensions, [integration tests](https://en.wikipedia.org/wiki/Integration_testing) test either the operations of multiple blocks or how one extension interacts with another.
 
 They are implemented as functions as you can see below:
 
@@ -359,7 +354,7 @@ createTestSuite({ Extension, __dirname }, {
     /**
      * An integration test case 
      * @param fixture The fixture that will be passed to this function contain all the necessary elements for writing your test. 
-     * We use the term 'fixture' here and elsewhere as a "A test fixture is an environment used to consistently test a piece of software."
+     * We use the term 'fixture' here and elsewhere as "A test fixture is an environment used to consistently test a piece of software."
      * https://en.wikipedia.org/wiki/Test_fixture
      */
     testOfTwoBlocks: async (fixture) => {
@@ -401,6 +396,207 @@ createTestSuite({ Extension, __dirname }, {
 > Included links:
 > * https://en.wikipedia.org/wiki/Test_fixture
 
+## Programming Tutorial
+
+> NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
+If you want to edit it, please go to [extensions/documentation/src/tutorial/README.md](documentation/src/tutorial/README.md)
+
+**_(Work in progress)_**
+
+Below is our starter piece of code, where we import the following items from the `$common` package:
+- `extension`: A factory function that returns a base class that our extension should [extend](https://www.typescriptlang.org/docs/handbook/2/classes.html#extends-clauses). This function allows for you to configure the capability of your Extension (as you'll see [later](#configuring-your-extensions-functionality)).
+- `block`: A [method decorator](https://www.typescriptlang.org/docs/handbook/decorators.html#:~:text=Method%20Decorators,or%20replace%20a%20method%20definition.) function that will be [used below](#decorating-our-method-with-block) to mark our class method as something that should be turned into a Block. The argument provided to the `block` function contains all the information necessary to create a Block representation of our method in the Block Programming Environment.
+- `ExtensionMenuDisplayDetails`: A type imported to add typesafety to how we define the `details` object which we use when configuring our Extension's base class through the `extension` function. As the name suggests, the contents of this object determine how our Extension displays to the user, especially through the [Extensions Menu](https://en.scratch-wiki.info/wiki/Library#Extensions_Library).
+- `Environment`: A type imported to add typesafety to the argument of the `init` function (which all Extensions are required to implement -- it is used in place of a [constructor](https://www.typescriptlang.org/docs/handbook/2/classes.html#constructors))
+
+```ts
+
+import { extension, block, type ExtensionMenuDisplayDetails, type Environment } from "$common";
+
+const details: ExtensionMenuDisplayDetails = { name: "" };
+
+const BaseClass = extension(details);
+
+export default class Example extends BaseClass {
+  init(env: Environment): void { }
+}
+
+```
+
+
+As you can see, we use the above imports to ultimately define a new [class](https://www.typescriptlang.org/docs/handbook/2/classes.html), which _is_ our Extension.
+
+
+> **NOTE**: As you become more comfortable with the usage of the `extension` function, you can opt to use it's returned value (an [abstract class](https://www.typescriptlang.org/docs/handbook/2/classes.html#abstract-classes-and-members)) directly in the declaration of your extension, like so:
+```ts
+  class Example extends extension(details) { // ...
+```
+
+
+### Populating `details`
+
+As noted above, the `details` object passed to the `extension` function determines how our Extension displays to the user. We can add [key / value pairs](https://www.freecodecamp.org/news/javascript-object-keys-tutorial-how-to-use-a-js-key-value-pair/) to this object to ensure the purpose of our extension is clear and exciting to the user.
+
+```ts
+
+  const details: ExtensionMenuDisplayDetails = {
+    name: "An Exciting Extension",
+    description: "This is an exciting extension",
+    iconURL: "nonStopThrills.png"
+  };
+
+  const BaseClass = extension(details);
+
+  class Example extends BaseClass {
+    init(env: Environment): void { }
+  }
+
+```
+
+
+### Defining a method
+
+Next, let's define a [method](https://www.typescriptlang.org/docs/handbook/2/classes.html#methods), which is how we make our class actually do something.
+
+```ts
+
+  class Example extends BaseClass {
+    init(env: Environment): void { }
+
+    someMethodToBlockify(name: string, age: number) {
+      console.log(`Hello, ${name}! ${age} is the new ${Math.random() * age * 2}`);
+    }
+  }
+
+```
+
+
+### Decorating our method with `block`
+
+In order for this method to become a Block in the Block Programming Environment, we need to mark it (or [decorate](https://www.typescriptlang.org/docs/handbook/decorators.html#:~:text=Method%20Decorators,or%20replace%20a%20method%20definition.) it) with the `block` function. 
+
+```ts
+
+  class Example extends BaseClass {
+    init(env: Environment): void { }
+
+    @block({
+      type: "command",
+      text: (name, age) => `What's your ${name} and ${age}?`,
+      args: [{ type: "string", defaultValue: "name" }, "number"]
+    })
+    someMethodToBlockify(name: string, age: number) {
+      console.log(`Hello, ${name}! ${age} is the new ${Math.random() * age * 2}`);
+    }
+  }
+
+```
+
+
+> **NOTE:** We preceed in the invocation of `block` with an `@` symbol which signifies the `block` function is [decorating](https://www.typescriptlang.org/docs/handbook/decorators.html#introduction) our method.
+
+The argument that `block` takes provides all the information the Block Programming Environment needs in order to create a Block tied to your method. 
+
+Your code editor and typescript will help ensure you provide all the necessary information, as well as give you a sense of the choices you have when defining this information. Make sure to hover over the fields of the object argument (i.g. `type`, `text`, `arg`, and/or `args`) to see thorough documentation on what those fields are and what values they can take on.
+
+#### Need to access properties of your Extension when define a Block?
+<details>
+<summary>
+Open this
+</summary>
+
+If you need to access some information on your extension when invoking `block`, you can do so by passing a function (instead of an object) as an argument. 
+
+This function will accept one argument, which will be a reference to your Extension (the name `self` is used as a convention). You can then pull values off of it (like `defaultValue` below) when defining your return object. The returned object is the same type as the object argument of the `block` function.  
+
+```ts
+  class Example extends _BaseClass {
+    defaultValue = "";
+
+    @block((self) => ({
+      type: "command",
+      text: (name, age) => `What's your ${name} and ${age}?`,
+      args: [{ type: "string", defaultValue: self.defaultValue }, "number"] as const
+    }))
+    someMethodToBlockify(name: string, age: number) { // ...
+```
+
+
+> **NOTE:** As you can see above, we need to make use of the `as const` [const assertion](https://dev.to/typescripttv/best-practices-with-const-assertions-in-typescript-4l10#:~:text=TypeScript%203.4%20introduced%20const%20assertions,pushed%20into%20an%20existing%20array.) when specifying the `args` field. This is only necessary because we are using a string value to define the `type` of our Arguments. Without `as const`, when typescript infers the return type of our function, it thinks our Arguments' `type`s are simply [strings](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#the-primitives-string-number-and-boolean), which causes errors since a `string` is not a valid Argument type. By using `as const`, we ensure it infers our Argument types as [literals](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#literal-types). 
+
+```ts
+  class Example extends _BaseClass {
+    defaultValue = "";
+
+    @block((self) => ({
+      type: "command",
+      text: (name, age) => `What's your ${name} and ${age}?`,
+      args: [{ type: "string", defaultValue: self.defaultValue }, "number"] as const
+    }))
+    someMethodToBlockify(name: string, age: number) { // ...
+```
+
+
+</details>
+
+### Configuring your Extension's functionality
+
+You can incorporate new functionality into your Extension by enhancing the base class returned by `extension`.
+
+You do this by providing "add ons" as arguments, which come after the first `details` argument. 
+
+```ts
+
+  const BaseClass = extension(details, "ui");
+
+  class Example extends BaseClass {
+    init(env: Environment): void { }
+
+    @block({
+      type: "command",
+      text: (name, age) => `What's your ${name} and ${age}?`,
+      args: [{ type: "string", defaultValue: "name" }, "number"]
+    })
+    someMethodToBlockify(name: string, age: number) {
+      this.openUI("someComponent");
+    }
+  }
+
+```
+
+
+Your code editor will help you see which "add ons" are available -- simply start to try to type after the first argument of the `extension` function, and suggestions (and documentation) will pop up.
+
+![Gif of extension addOns being suggested](/assets/addOns.gif)
+
+### Putting it all together
+
+```ts
+import { extension, block, type ExtensionMenuDisplayDetails, type Environment } from "$common";
+
+const details: ExtensionMenuDisplayDetails = {
+  name: "An Exciting Extension",
+  description: "This is an exciting extension",
+  iconURL: "nonStopThrills.png"
+};
+
+const BaseClass = extension(details, "ui");
+
+export default class Example extends BaseClass {
+  init(env: Environment): void { }
+
+  @block({
+    type: "command",
+    text: (name, age) => `What's your ${name} and ${age}?`,
+    args: [{ type: "string", defaultValue: "name" }, "number"]
+  })
+  someMethodToBlockify(name: string, age: number) {
+    this.openUI("someComponent");
+  }
+}
+```
+
+
 ## Creating UI for Extensions
 
 > NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
@@ -412,7 +608,7 @@ Extension UI is implemented using the [Svelte Frontend Framework](https://svelte
 
 Please first make sure you've satisfied [Svelte Dependency](https://github.com/mitmedialab/prg-extension-boilerplate#svelte-only-if-you-are-developing-ui).
 
-To generate a new svelte file, run the following command:
+To generate a new svelte file, run the following command from the root of the project:
 
 ```bash
 npm run add:ui <extension folder>
@@ -427,54 +623,59 @@ Feel free to change the name of this file to match it's intended usage, e.g. `Ed
 
 ### Open UI Using a Button
 
-The most common (and recommended) way to open UI via your extension is to (1) implement a `ButtonBlock` and (2) invoke the Extension function `openUI` within the block's `operation` (which will be called when the button is clicked).
+The most common (and recommended) way to open UI via your extension is to:
 
-To do so, first declare a `ButtonBlock`, e.g.:
+#### 1. Add UI support to your extension by specifying the "ui" add on
 
 ```ts
 
-import { Extension, ButtonBlock, BlockDefinitions } from "$common";
+import { extension } from "$common";
 
-type Blocks = {
-  someButton: ButtonBlock;
-}
+const name = "Button Examples";
 
-class ExampleExtension extends Extension<DefaultDisplayDetails, Blocks> {
-  init = notImportant
-  defineBlocks = seeBelow;
+/**
+ * IMPORTANT! Note the usage of "ui" passed as an 'add on' 
+ * in the second argument of the `extension` factory function.
+ * This effectively 'adds on' to your extension the ability to open UI. 
+ */
+export default class ExampleExtension extends extension({ name }, "ui") {
+  init = notRelevantToExample;
 }
 
 ```
 
 
-Next, implement the `ButtonBlock` definition inside of the object returned by the `defineBlocks` function. As usual, the defintion of the `ButtonBlock` is a function that returns an object containing all of the details needed to define the block. 
+#### 2. Utilitze the (now available) `openUI` method in a Button Block
 
-Most importantly, within the `operation` function of the block's definition, the function `openUI` should be invoked (which is implemented on the base `Extension` class, and can therefore be invoked using the reference to the Extension passed as the only argument to the block definition function, i.e. `self` below).
+The first argument of the `openUI` method is the name of the `.svelte` file in which your UI is implemented -- this name must match your filename exactly (but you can omit the `.svelte` extension).
 
-For example:
+The second argument is the title that will display at the top of the modal window. If omitted, this will default to the name of your extension.
+
+Below are two examples of declaring buttons (one using the standard `@block` decorator, and the other using the `@buttonBlock` decorator short-hand):
 
 ```ts
 
-export default class ExampleExtension extends Extension<DefaultDisplayDetails, Blocks> {
+import { block, buttonBlock, extension } from "$common";
+
+export default class ExampleExtension extends extension({ name }, "ui") {
   init = notRelevantToExample;
 
-  defineBlocks(): ExampleExtension["BlockDefinitions"] {
-    return {
-      someButton: () => ({
-        type: BlockType.Button,
-        text: `Button Text Goes Here`,
-        operation: () => this.openUI("SvelteFileName", "Title of Window")
-      })
-    }
+  @block({
+    type: "button",
+    text: `Button Text Goes Here`
+  })
+  verboseButton() {
+    this.openUI("SvelteFileName", "Title of Window");
+  }
+
+  @buttonBlock(`Button Text Goes Here`)
+  shortHandButton() {
+    this.openUI("SvelteFileName", "Title of Window");
   }
 }
 
 ```
 
-
-The first argument is the name of the `.svelte` file in which your UI is implemented -- this name must match your filename exactly (but you can omit the `.svelte` extension).
-
-The second argument is the title that will display at the top of the modal window. If omitted, this will default to the name of your extension.
 
 ### Custom Argument UI
 
@@ -489,13 +690,14 @@ If you want to edit it, please go to [extensions/documentation/src/porting/READM
 
 Here's how:
 
+0. Before beginning the port, save off a project using your old extension which utilizes every one of its blocks. Once you're done porting, if this project can be reloaded and executed the same as before, you'll know you've done your job!
 1. Identify the following details of the "old" extension / the extension you want to port (if you're having trouble finding any, skip around to see if finding one detail helps you identify where to specifically to look for another):
     - ***Implementation***: Where the extension is actually implemented in [vanilla js](https://www.javatpoint.com/what-is-vanilla-javascript)
         - This should be in some folder inside of [packages/scratch-vm/src/extensions/](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/packages/scratch-vm/src/extensions)
-        - Each extension implemenation folder will have at least an `index.js` file as this is responsible for exporting a [class](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes) definition (and this class can actually be thought of as the extension)
+        - Each extension implemenation folder will have at least an `index.js` file as this is responsible for exporting a [class declaration](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes) (and this class can actually be thought of as the extension)
     - ***Extension ID***: The unique identifier of the extension used by the [Scratch Virtual Machine](https://github.com/LLK/scratch-vm/) to "look up" the extension:
         - You can find this inside of the [packages/scratch-vm/src/extension-support/extension-manager.js](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/packages/scratch-vm/src/extension-support/extension-manager.js) file within the declaration of the `builtinExtensions` object (somewhere near the top of the file)
-        - The `builtinExtensions` object has keys corresponding to ***Extension ID***s and their value is a function that `requires` (or loads in) the corresponding ***Implementation***
+        - The `builtinExtensions` object has keys corresponding to ***Extension ID***s and their value is a function that `requires` (or "loads in", see [CommonJS Modules](https://nodejs.org/api/modules.html#modules-commonjs-modules)) the corresponding ***Implementation***
     - ***Extension Menu Entry***: The details that define how an extension displays inside of the [Extension Menu](https://en.scratch-wiki.info/wiki/Extension#Adding_Extensions) (see "Adding Extensions") and effectively connects the the [GUI](https://github.com/LLK/scratch-gui) that the user sees with the [Virtual Machine](https://github.com/LLK/scratch-vm/) that controls executing extension blocks
         - You will find this in one of the objects within the array exported by [packages/scratch-gui/src/lib/libraries/extensions/index.jsx](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/packages/scratch-gui/src/lib/libraries/extensions/index.jsx)
         - To locate the object that corresponds to the extension you want to port, you can use the ***Extension ID*** (if you have it) which corresponds to the `extensionId` field, or you can use the name or description of the extension you see in the Extensions Menu of the [live site](https://playground.raise.mit.edu/main/) which (you guessed it) correspond to the `name` and `description` fields, respectively
@@ -514,11 +716,16 @@ Here's how:
 5. Once you migrate all ***Extension Menu Entry*** details to your new extension, you can remove the ***Extension Menu Entry*** object from the array exported by [packages/scratch-gui/src/lib/libraries/extensions/index.jsx](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/packages/scratch-gui/src/lib/libraries/extensions/index.jsx)
     - You can do this as the extension framework will automatically handle adding your extension (and its Extension Menu Display Details) to the [Extension Menu](https://en.scratch-wiki.info/wiki/Extension#Adding_Extensions)
 6. Now you can start coding! See the below comparison of a vanilla JS extension class and a typescript / framework based one.
+    - NOTE: If there's a chance anyone has saved projects with the extension you're porting over, you need to make sure to follow the [Legacy Support](#legacy-support) instructions so those saved projects will continue to load correctly.
 7. Once you have migrated all of the "old" ***Impementation*** to your new extension folder & typescript code, you can go ahead and delete the ***Implementation*** folder inside of [pacakges/scratch-vm/src/extensions/](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/packages/scratch-vm/src/extensions).
 8. Now, there should be no remnants of the "old" extension inside of either [packages/scratch-vm](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/packages/scratch-vm) or [packages/scratch-gui](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/packages/scratch-gui) folders, and instead everything lives neatly inside its own directory within [extensions/src](https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extensions/src)
+9. Test out the project you saved in step 0 to verify that your port worked as expected.
 
+### Implementing an Extension in Vanilla JS vs the Extension Framework
 
-### Vanilla JS
+Below you can compare what an extension that was originally implemented in vanilla javascript would look like rewritten in Typescript leveraging the Extension Framework. 
+
+#### Vanilla JS
 
 Below is a sample, vanilla JS extension based on the final example provided in the [Scratch Extensions document](https://github.com/LLK/scratch-vm/blob/develop/docs/extensions.md). 
 
@@ -625,10 +832,10 @@ class SomeBlocks {
 }
 ```
 
-### Typescript Extension Framework
+#### Typescript / Extension Framework
 
-Things to note:
-- The `Details` type object encodes how the extension will be displayed in the extensions menu
+Things to note about the below typescript snippet:
+- The object passed to the `extensions` type object encodes how the extension will be displayed in the extensions menu
     - No more editing [any jsx](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/packages/scratch-gui/src/lib/libraries/extensions/index.jsx#L71) to specify how your extension should display in the Extensions Menu
     - Now your image assets related to your extension should reside in the same place as your implementation (i.e. in the same directory as the `index.ts` file)
 - Any index.ts file within a subfolder of the [extensions directory](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/packages/scratch-vm/src/extensions) will be assumed to implement an extension
@@ -641,49 +848,274 @@ Things to note:
     - [branchCount](https://github.com/mitmedialab/prg-extension-boilerplate/issues/168)
 
 ```ts
-import { Extension, ArgumentType, BlockType, Environment } from "$common";
+import { ArgumentType, BlockType, Environment, block, extension } from "$common";
+import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import formatMessage from './format-message'; // This should actually be an npm package and thus be 'format-message'
+
+const details = {
+  name: "Some Blocks",
+  description: "A demonstration of some blocks",
+  iconURL: "example.png",
+  insetIconURL: "thumbnail.svg"
+}
+
+export default class SomeBlocks extends extension(details) {
+
+  init(env: Environment) { }
+
+  @block({
+    type: BlockType.Reporter,
+    args: [
+      {
+        type: ArgumentType.String,
+        defaultValue: 'text',
+        options: [
+          { text: 'Item One', value: 'itemId1' },
+          'itemId2'
+        ]
+      },
+      { type: ArgumentType.Number, defaultValue: 1 }
+    ],
+    text: (text, letterNum) => `letter ${letterNum} of ${text}'`,
+  })
+  myReporter(text: string, letterNum: number, util: BlockUtility) {
+    const message = formatMessage({
+      id: 'myReporter.result',
+      default: 'Letter {letterNum} of {text} is {result}.',
+      description: 'The text template for the "myReporter" block result'
+    });
+
+    const result = text.charAt(letterNum);
+
+    return message.format({ text, letterNum, result });
+  }
+}
+```
+
+
+### Legacy Support
+
+One thing that makes adopting the new Extension Framework slightlier tricker is the need to support 'old' projects. In other words, any projects saved using the old, vanilla-javascript extension should / ***must*** continue to work once you port the extension over to the Framework.
+
+In order to make this as simple as possible, we've developed a utility that is able to extract necessary block info from the object returned by the old `getInfo` method -- this method defines the behavior of vanilla-javascript extensions and their blocks. 
+
+This information can then be used when defining blocks. You'll use this for every block that is present in the old extension (and thus might be used in an already saved project). 
+
+You're free to define additional blocks in your ported over extension, but you must support all blocks defined in the old extension with the method demonstrated below:
+
+Here's how: 
+
+1. Load up the [deployed site](https://playground.raise.mit.edu/dev/) which should include the 'old' extension you're working to port over. 
+2. First, add in the `Extension Probe` extension using the [extensions menu](https://en.scratch-wiki.info/wiki/Extension#Adding_Extensions).
+3. Next, add the extension you're porting over. 
+4. Scroll back up to the blocks of the `Extension Probe` and execute the "Get Legacy Support" block (ensure that the block's input field is set to your extension's ID).
+    - This will download a file called `legacy.ts` to your computer
+    - After approving the download, follow the instructions in the popped-up UI to understand how to make use of the file. An example is included below. 
+
+#### Usage of `legacy.ts`
+
+The downloaded `legacy.ts` file should look something like the following:
+
+```ts
+
+import { legacy } from "$common";
+
+export const info = {
+  id: "extensionUnderTest",
+  blocks: [
+    {
+      blockType: "command",
+      opcode: "exampleSimpleBlock",
+      text: "BlockText",
+    },
+    {
+      blockType: "command",
+      opcode: "moreComplexBlockWithArgumentAndDynamicMenu",
+      text: "Example text that has argument [ARG_0]",
+      arguments: {
+        ARG_0: {
+          type: "number",
+          menu: "dynamicMenuThatReturnsNumber"
+        }
+      }
+    }
+  ],
+  menus: {
+    dynamicMenuThatReturnsNumber: {
+      acceptReporters: true,
+      items: "methodThatReturnsItems"
+    }
+  }
+} as const;
+
+
+export const legacyFullSupport = legacy(info);
+export const legacyIncrementalSupport = legacy(info, { incrementalDevelopment: true });
+
+```
+
+
+**IMPORTANT!** Do not edit the `legacy.ts` file (unless you really know what you're doing).
+
+Now that we've obtained the return of `legacy.ts`, we can make use of it's exports when defining our extension and its blocks like so: 
+
+```ts
+import { Environment, extension } from "$common";
+import { legacyIncrementalSupport, legacyFullSupport, info } from "./legacy";
+
+/**
+ * Invoke the `for` function on `legacyIncrementalSupport`, 
+ * and provide your Extension as the Generic Argument.
+ * 
+ * Once you've implemented all legacy blocks, change 'legacyIncrementalSupport' to 'legacyFullSupport'.
+ * The `legacyFullSupport` function will ensure that your extension implements all necessary blocks. 
+ * This must be done before you're extension is allowed to merge to dev.
+ */
+const { legacyBlock } = legacyIncrementalSupport.for<SomeBlocks>();
+
+const details = {
+  name: "Some Blocks",
+  description: "A demonstration of some blocks",
+};
+
+export default class SomeBlocks extends extension(details, "legacySupport") {
+  /**
+   * Impelement the required `getLegacyInfo` function, returning the `info` import from the legacy file
+   */
+  protected getLegacyInfo() { return info }
+
+  init(env: Environment) { }
+
+  /** 
+   * For this simple block, we aren't required to define any block specific data 
+   * (instead, that info will be pulled from the legacy info). 
+   * We only need to implement the method to tie to the legacy block.
+   * */
+  @legacyBlock.exampleSimpleBlock()
+  exampleSimpleBlock() {
+    /* Do something */ console.log(info.blocks[0].opcode);
+  }
+
+  @legacyBlock.moreComplexBlockWithArgumentAndDynamicMenu({
+    /** 
+     * Because this block has arguments that are more complex (accept reporters & use dynamic menu(s)),
+     * We need to define the below `argumentMethods` object.
+     */
+    argumentMethods: {
+      /**
+       * Because our first (and only) argumen, which is the "0th index" argument, 
+       * both accepts reporters uses a dynamic menu, 
+       * we must include a `0` entry in the `argumentMethods` object.
+       */
+      0: {
+
+        /**
+         * Because the legacy block's argument enabled accepting reporters (i.e. `acceptReporters = true`),
+         * we must implement a `handler` method, 
+         * which will ensure that the arguments ultimately passed to our block match what we expect.
+         * @param reported 
+         * @returns 
+         */
+        handler: (reported: unknown) => {
+          const parsed = parseFloat(`${reported}`);
+          return isNaN(parsed) ? 0 : parsed;
+        },
+
+        /**
+         * Because the legacy block's argument made use of a dynamic menu, we are required to implement a `getItems` method.
+         * This method should behave the exact same as the old extension's dynamic menu method. 
+         * You should go look at the implementation of the old extension to see how to do this. 
+         * @returns An array of menu entries which will be used for this dynamic menu
+         */
+        getItems: () => [1, 2, 3, 4, 5].map(value => ({ text: `${value}`, value }))
+      }
+    }
+  })
+  moreComplexBlockWithArgumentAndDynamicMenu(data: number) {
+    /* Do something */ console.log(info.blocks[0].opcode, data)
+  }
+}
+```
+
+
+<details>
+<summary>Already implemented your extension using the old "generics" method? Drop this down to see how you can use the legacy.ts info.
+</summary>
+
+```ts
+import { Extension, Environment } from "$common";
+import { legacyIncrementalSupport, legacyFullSupport, info } from "./legacy";
+
+/**
+ * Invoke the `for` function on `legacyIncrementalSupport`, 
+ * and provide your Extension as the Generic Argument.
+ * 
+ * Once you've implemented all legacy blocks, change 'legacyIncrementalSupport' to 'legacyFullSupport'.
+ * The `legacyFullSupport` function will ensure that your extension implements all necessary blocks. 
+ * This must be done before you're extension is allowed to merge to dev.
+ */
+const { legacyExtension, legacyDefinition } = legacyIncrementalSupport.for<SomeBlocks>();
 
 type Details = {
   name: "Some Blocks",
   description: "A demonstration of some blocks",
-  iconURL: "example.png",
-  insetIconURL: "inset.png"
 };
 
+/**
+ * Decorate our extension with the `legacyExtension` decorator
+ */
+@legacyExtension()
 export default class SomeBlocks extends Extension<Details, {
-  myReporter: (text: string, letterNum: number) => string;
+  exampleSimpleBlock: () => void;
+  moreComplexBlockWithArgumentAndDynamicMenu: (data: number) => void;
 }> {
 
   init(env: Environment) { }
 
   defineBlocks(): SomeBlocks["BlockDefinitions"] {
     return {
-      myReporter: (self: SomeBlocks) => ({
-        type: BlockType.Reporter,
-        args: [
-          {
-            type: ArgumentType.String,
-            defaultValue: 'text',
-            options: [
-              { text: 'Item One', value: 'itemId1' },
-              'itemId2'
-            ]
-          },
-          { type: ArgumentType.Number, defaultValue: 1 }
-        ],
-        text: (text, letterNum) => `letter ${letterNum} of ${text}'`,
-        operation: (text, letterNum, util) => {
+      exampleSimpleBlock: legacyDefinition.exampleSimpleBlock({
+        /** 
+         * For this simple block, we are only required to define it's `operation` 
+         * (the function called when the block is executed) 
+         * */
+        operation: () => { /* Do something */ console.log(info.blocks[0].opcode) }
+      }),
 
-          const message = formatMessage({
-            id: 'myReporter.result',
-            default: 'Letter {letterNum} of {text} is {result}.',
-            description: 'The text template for the "myReporter" block result'
-          });
+      moreComplexBlockWithArgumentAndDynamicMenu: legacyDefinition.moreComplexBlockWithArgumentAndDynamicMenu({
+        operation: (data: number) => { /* Do something */ console.log(info.blocks[0].opcode, data) },
+        /** 
+         * Because this block has arguments that are more complex (accept reporters & use dynamic menu(s)),
+         * We need to define the below `argumentMethods` object.
+         */
+        argumentMethods: {
+          /**
+           * Because our first (and only) argumen, which is the "0th index" argument, 
+           * both accepts reporters uses a dynamic menu, 
+           * we must include a `0` entry in the `argumentMethods` object.
+           */
+          0: {
 
-          const result = text.charAt(letterNum);
+            /**
+             * Because the legacy block's argument enabled accepting reporters (i.e. `acceptReporters = true`),
+             * we must implement a `handler` method, 
+             * which will ensure that the arguments ultimately passed to our block match what we expect.
+             * @param reported 
+             * @returns 
+             */
+            handler: (reported: unknown) => {
+              const parsed = parseFloat(`${reported}`);
+              return isNaN(parsed) ? 0 : parsed;
+            },
 
-          return message.format({ text, letterNum, result });
+            /**
+             * Because the legacy block's argument made use of a dynamic menu, we are required to implement a `getItems` method.
+             * This method should behave the exact same as the old extension's dynamic menu method. 
+             * You should go look at the implementation of the old extension to see how to do this. 
+             * @returns An array of menu entries which will be used for this dynamic menu
+             */
+            getItems: () => [1, 2, 3, 4, 5].map(value => ({ text: `${value}`, value }))
+          }
         }
       })
     }
@@ -691,6 +1123,8 @@ export default class SomeBlocks extends Extension<Details, {
 }
 ```
 
+
+</details>
 
 ## Saving Custom Data for an Extension
 
@@ -701,22 +1135,35 @@ The Extension Framework allows you to easily save arbitrary data for an extensio
 
 You can also set up how your extension utilizes that data when a project is loaded that contains custom save data. 
 
-All you must do is define the `saveDataHandler` property on your extension, like so:
+All you must do is specify the `"customSaveData"` [add on]() when invoking the `extension` creation function, and then override the `saveDataHandler` property in your Extension class, like so:
 
 ```ts
 
-export default class SaveLoadExample extends Extension<DefaultDisplayDetails, NoBlocks> {
+const name = "Example of Save/Load";
 
-  /** This is an example of some data on an Extension that the user might manipulate over the course of their session and must be preserved in order to restore the same state to the extension */
+/**
+ * IMPORTANT! Note the usage of "customSaveData" passed as an 'add on' 
+ * in the second argument of the `extension` factory function.
+ * This effectively 'adds on' to your extension the ability to save / load custom data. 
+ */
+export default class SaveLoadExample extends extension({ name }, "customSaveData") {
+
+  /** This is an example of some data on an Extension 
+   * that the user might manipulate over the course of their session 
+   * and must be preserved in order to restore the same state to the extension */
   somePersistentData = { x: 3, input: "Hello" };
 
   /**
    * The SaveDataHandler constructor takes an object with 3 values:
-   * - Extension: This should be a reference to the Extension class you are implementing. This will then be used as the type for the first 'self' parameter of both `onSave` and `onLoad`.
-   * - onSave: A function called when a user SAVES their project which should return some data (likely an object), which will be written to the saved file.
-   * - onLoad: A function called when a user LOADS a project. The second parameter 'data' will take on the type of the thing that `onSave` returns. This way, the two functions stay in sync.
+   * - Extension: This should be a reference to the Extension class you are implementing. 
+   *   This will then be used as the type for the first 'self' parameter of both `onSave` and `onLoad`.
+   * - onSave: A function called when a user SAVES their project which should return some data (likely an object), 
+   *   which will be written to the saved file.
+   * - onLoad: A function called when a user LOADS a project. 
+   *   The second parameter 'data' will take on the type of the thing that `onSave` returns. 
+   *   This way, the two functions stay in sync.
    */
-  saveDataHandler = new SaveDataHandler({
+  override saveDataHandler = new SaveDataHandler({
     Extension: SaveLoadExample,
     // Return the information that we want to save
     onSave(self) { return self.somePersistentData },
@@ -731,6 +1178,13 @@ export default class SaveLoadExample extends Extension<DefaultDisplayDetails, No
 
 ```
 
+
+## Making use of the Block Utility
+
+> NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
+If you want to edit it, please go to [extensions/documentation/src/blockUtility/README.md](documentation/src/blockUtility/README.md)
+
+... Coming soon ...
 
 ## Adding Custom Arguments
 
@@ -768,61 +1222,57 @@ Assume we have the following extension:
 
 ```ts
 
-import { Extension } from "$common";
+import { block, extension } from "$common";
 
 type MyCustomArgument = { a: number, b: string, c: boolean };
 
-type Blocks = {
-  blockWithCustomArgument: (arg: MyCustomArgument) => void;
-}
+const details = { name: "Extension using Custom Arguments" };
 
-export default class ExtensionWithCustomArgument extends Extension<DefaultDisplayDetails, Blocks> {
+/**
+ * IMPORTANT! Note the usage of "customArguments" passed as an 'add on' 
+ * in the second argument of the `extension` factory function.
+ * This effectively 'adds on' to your extension the ability to create custom arguemnts. 
+ */
+export default class ExtensionWithCustomArgument extends extension(details, "customArguments") {
   init = notRelevantToExample;
 
-  defineBlocks = seeBlow;
+  @block(definedBelow)
+  blockWithCustomArgument(arg: MyCustomArgument) { }
 }
 
 ```
 
 
-When implementing the `defineBlocks` function, we can then treat the argument of our block function as a custom argument like so:
+When invoking the `@block` decorator function on our method that uses a custom argument, we can define the `arg` field like so:
 
 ```ts
 
-export default class ExtensionWithCustomArgument extends Extension<DefaultDisplayDetails, Blocks> {
+export default class ExtensionWithCustomArgument extends extension(details, "customArguments") {
   init = notRelevantToExample;
 
-  defineBlocks(): BlockDefinitions<ExtensionWithCustomArgument> {
-    return {
-      blockWithCustomArgument: {
-        type: BlockType.Command,
-        text: (arg) => `Set custom argument ${arg}`,
+  @block((self) => ({
+    type: "command",
+    text: (arg) => `Set custom argument ${arg}`,
 
-        /** Invoke the member `makeCustomArgument` function of the Extension class, which requires:
-         * - component: The name of the `.svelte` file that should be display when this argument is clicked on.
-         * - initial: The value that the argument should default to. NOTE that this item has both a 'text' and 'value' field. 
-         *  - This is because the value of the custom argument must be able to be represented as a string and displayed directly in the block
-         *    once the UI closes -- this is what the 'text' field is used for. Whenever you set a custom argument, 
-         *    you'll need to provide both a 'value' and a 'text' representation of that value.
-         *    Here, we use the method `convertArgToText` (see below), which implements this conversion process for our custom type.
-         */
-        arg: this.makeCustomArgument({
-          component: "MyArgUI",
-          initial: { value: { a: 10, b: "Hello world", c: false }, text: this.convertArgToText({ a: 10, b: "Hello world", c: false }), }
-        }),
-
-        /** Our operation should expect an input that matches our custom argument type */
-        operation: (arg) => {
-          const { a, b, c } = arg;
-          console.log(`${b}: ${a}, ${c}`);
-        }
-      }
-    }
-  };
-
-  convertArgToText(arg: MyCustomArgument) {
-    const { a, b, c } = arg;
-    return `${a}, \"${b}\", ${c}`;
+    /** Invoke the member funtcion `makeCustomArgument` of `self` parameter 
+     * (which is an instance of our `ExtensionWithCustomArgument` class).
+     * The `makeCustomArgument` function accepts an object with the following fields:
+     * - component: The name of the `.svelte` file that should be displayed when this argument is clicked on.
+     * - initial: The value that the argument should default to. NOTE that this item has both a 'text' and 'value' field. 
+     *  - This is because the value of the custom argument must be able to be represented as a string
+     *    and displayed directly in the block once the UI closes.
+     *    Thus, whenever you set a custom argument, you'll need to provide both a 'value' and a 'text' 
+     *    representation of that value.
+     */
+    arg: self.makeCustomArgument({
+      component: "MyArgUI",
+      initial: { value: { a: 10, b: "Hello world", c: false }, text: "[10, Hello world, false]", }
+    }),
+  }))
+  /** Our operation should expect an input that matches our custom argument type */
+  blockWithCustomArgument(custom: MyCustomArgument) {
+    const { a, b, c } = custom;
+    console.log(`${b}: ${a}, ${c}`);
   }
 }
 
@@ -883,7 +1333,7 @@ Then, we modify the UI (Svelte) component we created earlier to match our block 
   /**
    * Use Svelte's reactivity to call the `setter` function whenever one of our inputs change
   */
-  $: setter({ value: {a, b, c}, text: extension.convertArgToText({a, b, c}) });
+  $: setter({ value: {a, b, c}, text: `[${a}, ${b}, ${c}]` });
 </script>
 
 <style>

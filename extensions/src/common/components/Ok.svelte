@@ -1,6 +1,6 @@
 <script lang="ts">
   import { color } from "../ui";
-  export let disabled: boolean;
+  export let disabled: boolean = false;
 
   const text = color.ui.white;
   const solid = color.motion.primary;
@@ -23,6 +23,6 @@
   }
 </style>
 
-<button on:click {disabled} style:border-color={solid} style:background-color={solid} style:color={text}>
+<button on:click {disabled} style:border-color={solid} style:background-color={solid} style:color={text} data-testid="ok">
   OK
 </button>
