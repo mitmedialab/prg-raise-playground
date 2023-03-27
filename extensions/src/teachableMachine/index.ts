@@ -6,7 +6,7 @@ import { create } from '@tensorflow-models/speech-commands';
 import { legacyFullSupport, legacyIncrementalSupport, info } from "./legacy";
 import video from "$common/extension/mixins/optional/video";
 
-const { legacyExtension, legacyDefinition } = legacyIncrementalSupport.for<teachableMachine>();
+const { legacyExtension, legacyDefinition } = legacyFullSupport.for<teachableMachine>();
 // const { legacyExtension, legacyDefinition } = legacyFullSupport.for<teachableMachine>();
 
 const VideoState = {
@@ -39,14 +39,13 @@ type Details = {
 };
 
 type Blocks = {
-  useModel_Command(url: string): void;
-  whenModelDetects_Hat(state: string): boolean;
-  modelPrediction_Reporter(): string;
-  predictionIs_Boolean(state: string): boolean;
-  confidenceFor_Reporter(state: string): number;
-
-  videoToggleCommand(state: number): void;
-  setVideoTransparencyCommand(state: number): void;
+  useModelBlock(url: string): void;
+  whenModelMatches(state: string): boolean;
+  modelPrediction(): string;
+  modelMatches(state: string): boolean;
+  classConfidence(state: string): number;
+  videoToggle(state: number): void;
+  setVideoTransparency(state: number): void;
 }
 
 @legacyExtension()
@@ -197,9 +196,9 @@ export default class teachableMachine extends Extension<Details, Blocks> {
    * A scratch reporter that returns the top class seen in the current video frame
    * @returns {string} class name if video frame matched, empty string if model not loaded yet
    */
-  modelPrediction() {
+  getModelPrediction() {
     const modelUrl = this.teachableImageModel;
-    const predictionState: {topClass: string} = this.getPredictionStateOrStartPredicting(modelUrl);
+    const predictionState: { topClass: string } = this.getPredictionStateOrStartPredicting(modelUrl);
     if (!predictionState) {
       return '';
     }
@@ -293,7 +292,7 @@ export default class teachableMachine extends Extension<Details, Blocks> {
     return this.predictionState[modelUrl];
   }
 
-  getCurrentClasses() {
+  getClasses() {
     if (
       !this.teachableImageModel ||
       !this.predictionState ||
@@ -323,7 +322,7 @@ export default class teachableMachine extends Extension<Details, Blocks> {
     return (currentMaxClass === String(className));
   }
 
-  classConfidence(args): number {
+  getClassConfidence(args): number {
     const className = args.CLASS_NAME;
 
     return this.modelConfidences[className];
@@ -380,7 +379,7 @@ export default class teachableMachine extends Extension<Details, Blocks> {
     //   }
     // });
 
-    const useModel_Command = legacyDefinition.useModelBlock({
+    const useModelBlock = legacyDefinition.useModelBlock({
       operation: (url) => {
         this.useModel(url);
       }
@@ -399,13 +398,13 @@ export default class teachableMachine extends Extension<Details, Blocks> {
     //   }
     // });
 
-    const whenModelDetects_Hat = legacyDefinition.whenModelMatches({
+    const whenModelMatches = legacyDefinition.whenModelMatches({
       operation: (state) => {
         return this.model_match(state);
       },
       argumentMethods: {
         0: {
-          getItems: () => this.getCurrentClasses()
+          getItems: () => this.getClasses()
         }
       }
     });
@@ -418,9 +417,9 @@ export default class teachableMachine extends Extension<Details, Blocks> {
     //   }
     // });
 
-    const modelPrediction_Reporter = legacyDefinition.modelPrediction({
+    const modelPrediction = legacyDefinition.modelPrediction({
       operation: () => {
-        return this.modelPrediction();
+        return this.getModelPrediction();
       }
     })
 
@@ -436,13 +435,13 @@ export default class teachableMachine extends Extension<Details, Blocks> {
     //   }
     // });
 
-    const predictionIs_Boolean = legacyDefinition.modelMatches({
+    const modelMatches = legacyDefinition.modelMatches({
       operation: (state) => {
         return this.model_match(state);
       },
       argumentMethods: {
         0: {
-          getItems: () => this.getCurrentClasses()
+          getItems: () => this.getClasses()
         }
       }
     })
@@ -460,13 +459,13 @@ export default class teachableMachine extends Extension<Details, Blocks> {
     //   }
     // });
 
-    const confidenceFor_Reporter = legacyDefinition.classConfidence({
+    const classConfidence = legacyDefinition.classConfidence({
       operation: (state) => {
-        return this.classConfidence(state);
+        return this.getClassConfidence(state);
       },
       argumentMethods: {
         0: {
-          getItems: () => this.getCurrentClasses()
+          getItems: () => this.getClasses()
         }
       }
     })
@@ -489,7 +488,7 @@ export default class teachableMachine extends Extension<Details, Blocks> {
     //   }
     // });
 
-    const videoToggleCommand = legacyDefinition.videoToggle({
+    const videoToggle = legacyDefinition.videoToggle({
       operation: (video_state) => {
         this.toggleVideo(video_state);
       },
@@ -511,20 +510,20 @@ export default class teachableMachine extends Extension<Details, Blocks> {
     //   }
     // });
 
-    const setVideoTransparencyCommand = legacyDefinition.setVideoTransparency({
+    const setVideoTransparency = legacyDefinition.setVideoTransparency({
       operation: (transparency: number) => {
         this.setTransparency(transparency);
       }
     })
 
     return {
-      useModel_Command,
-      whenModelDetects_Hat,
-      modelPrediction_Reporter,
-      predictionIs_Boolean,
-      confidenceFor_Reporter,
-      videoToggleCommand,
-      setVideoTransparencyCommand,
+      useModelBlock,
+      whenModelMatches,
+      modelPrediction,
+      modelMatches,
+      classConfidence,
+      videoToggle,
+      setVideoTransparency,
     }
   }
 }
