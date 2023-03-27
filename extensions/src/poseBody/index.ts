@@ -231,43 +231,9 @@ export default class PoseBody extends Extension<Details, Blocks> {
      * The options for each finger
      * @type {Array}
      */
-    
-      // [
-      //   { text: 'nose', value: 'nose' },
-      //   { text: 'right eye', value: 'leftEye' },
-      //   { text: 'left eye', value: 'rightEye' },
-      //   { text: 'right ear', value: 'leftEar' },
-      //   { text: 'left ear', value: 'rightEar' },
-      //   { text: 'right shoulder', value: 'leftShoulder' },
-      //   { text: 'left shoulder', value: 'rightShoulder' },
-      //   { text: 'right elbow', value: 'leftElbow' },
-      //   { text: 'left elbow', value: 'rightElbow' },
-      //   { text: 'right wrist', value: 'leftWrist' },
-      //   { text: 'left wrist', value: 'rightWrist' },
-      //   { text: 'right hip', value: 'leftHip' },
-      //   { text: 'left hip', value: 'rightHip' },
-      //   { text: 'right knee', value: 'leftKnee' },
-      //   { text: 'left knee', value: 'rightKnee' },
-      //   { text: 'right ankle', value: 'leftAnkle' },
-      //   { text: 'left ankle', value: 'rightAnkle' },
-      // ];
-
     const handlerOptions: Array<string> = this.bodyOptions.map(part => part.value);
 
-    // type DefineGoToBodyPart = DefineBlock<PoseBody, Blocks["goToBodyPartBlock"]>;
     const goToBodyPartBlock = legacyDefinition.goToPart({
-      // type: BlockType.Command,
-      // arg: {
-      //   type: ArgumentType.String,
-      //   options: {
-      //     acceptsReporters: true,
-      //     items: bodyOptions,
-      //     handler: (bodyPart: string) => {
-      //       return handlerOptions.includes(bodyPart) ? bodyPart : 'nose';
-      //     }
-      //   }
-      // },
-      // text: (bodyPart: string) => `go to ${bodyPart}`,
       operation: (bodyPart: string, util) => {
 
         if (this.hasPose()) {
@@ -284,7 +250,6 @@ export default class PoseBody extends Extension<Details, Blocks> {
       }
     });
 
-    // type DefineVideoToggle = DefineBlock<PoseBody, Blocks["videoToggleBlock"]>;
     const videoToggle = legacyDefinition.videoToggle({
       operation: (video_state) => {
         this.toggleVideo(video_state);
@@ -298,7 +263,6 @@ export default class PoseBody extends Extension<Details, Blocks> {
       }
     });
 
-    // type DefineSetVideoTransparency = DefineBlock<PoseBody, Blocks["setVideoTransparencyBlock"]>;
     const setVideoTransparency = legacyDefinition.setVideoTransparency({
       operation: (transparency: number) => {
         this.setTransparency(transparency);
