@@ -10,13 +10,13 @@ const { legacyExtension, legacyDefinition } = legacyIncrementalSupport.for<PoseF
  */
 const VideoState = {
   /** Video turned off. */
-  OFF: 0,
+  OFF: 'off',
 
   /** Video turned on with default y axis mirroring. */
-  ON: 1,
+  ON: 'on',
 
   /** Video turned on without default y axis mirroring. */
-  ON_FLIPPED: 2
+  ON_FLIPPED: 'on-flipped'
 } as const;
 
 /**
@@ -50,7 +50,7 @@ type Blocks = {
   affdexEmotionAmount(feeling: string): number;
   affdexIsTopEmotion(feeling: string): boolean;
   // these video blocks are present in a few different extensions, perhaps making a file just for these?
-  videoToggle(state: number): void;
+  videoToggle(state: string): void;
   setVideoTransparency(transparency: number): void;
 }
 
@@ -87,9 +87,9 @@ export default class PoseFace extends Extension<Details, Blocks> {
 
   /**
    * The current video state
-   * @type {number}
+   * @type {string}
    */
-  globalVideoState: number;
+  globalVideoState: string;
 
   /**
    * The current transparency of the video
@@ -284,7 +284,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
    * Turns the video camera off/on/on and flipped. This is called in the operation of videoToggleBlock
    * @param state 
    */
-  toggleVideo(state: number) {
+  toggleVideo(state: string) {
     if (state === VideoState.OFF) return this.runtime.ioDevices.video.disableVideo();
 
     this.runtime.ioDevices.video.enableVideo();
@@ -412,18 +412,19 @@ export default class PoseFace extends Extension<Details, Blocks> {
       },
       argumentMethods: {
         0: {
-          handler: (video_state: number) => {
-            return Math.min(Math.max(video_state, VideoState.OFF), VideoState.ON_FLIPPED);
+          handler: (video_state: string) => {
+            return ['on', 'off', 'on-flipped'].includes(video_state) ? video_state : VideoState.ON;
           },
         }
       }
-    })
+    });
 
     const setVideoTransparency = legacyDefinition.setVideoTransparency({
       operation: (transparency: number) => {
         this.setTransparency(transparency);
       }
-    })
+    });
+
     return {
       affdexGoToPart,
       affdexWhenExpression,
