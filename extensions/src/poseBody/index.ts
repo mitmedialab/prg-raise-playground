@@ -3,7 +3,7 @@ import { legacyIncrementalSupport, legacyFullSupport, info } from "./legacy";
 // import Video from '../../../packages/scratch-vm/src/io/video';
 import * as posenet from '@tensorflow-models/posenet';
 
-const { legacyExtension, legacyDefinition } = legacyIncrementalSupport.for<PoseBody>();
+const { legacyExtension, legacyDefinition } = legacyFullSupport.for<PoseBody>();
 
 /**
  * States what the video sensing activity can be set to.
@@ -33,7 +33,7 @@ type Details = {
  * Contains descriptions of the blocks of the Block Sensing extension
  */
 type Blocks = {
-  goToBodyPartBlock(bodyPart: string): void;
+  goToPart(bodyPart: string): void;
   // these video blocks are present in a few different extensions, perhaps making a file just for these?
   videoToggle(state: string): void;
   setVideoTransparency(transparency: number): void;
@@ -233,7 +233,7 @@ export default class PoseBody extends Extension<Details, Blocks> {
      */
     const handlerOptions: Array<string> = this.bodyOptions.map(part => part.value);
 
-    const goToBodyPartBlock = legacyDefinition.goToPart({
+    const goToPart = legacyDefinition.goToPart({
       operation: (bodyPart: string, util) => {
 
         if (this.hasPose()) {
@@ -270,7 +270,7 @@ export default class PoseBody extends Extension<Details, Blocks> {
     });
 
     return {
-      goToBodyPartBlock,
+      goToPart,
       videoToggle,
       setVideoTransparency
     }
