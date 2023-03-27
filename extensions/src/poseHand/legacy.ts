@@ -27,7 +27,7 @@ export const info = {
       "text": "turn video [VIDEO_STATE]",
       "arguments": {
         "VIDEO_STATE": {
-          "type": "number",
+          "type": "string",
           "menu": "VIDEO_STATE",
           "defaultValue": "off"
         }
