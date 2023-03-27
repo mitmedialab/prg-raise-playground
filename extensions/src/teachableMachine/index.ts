@@ -7,29 +7,16 @@ import { legacyFullSupport, legacyIncrementalSupport, info } from "./legacy";
 import video from "$common/extension/mixins/optional/video";
 
 const { legacyExtension, legacyDefinition } = legacyFullSupport.for<teachableMachine>();
-// const { legacyExtension, legacyDefinition } = legacyFullSupport.for<teachableMachine>();
+
 
 const VideoState = {
   /** Video turned off. */
-  OFF: 0,
+  OFF: 'off',
   /** Video turned on with default y axis mirroring. */
-  ON: 1,
+  ON: 'on',
   /** Video turned on without default y axis mirroring. */
-  ON_FLIPPED: 2
+  ON_FLIPPED: 'on-flipped',
 } as const;
-
-const ModelType = {
-  POSE: 'pose',
-  IMAGE: 'image',
-  AUDIO: 'audio',
-};
-
-// const details = {
-//   name: "Teachable Machine",
-//   description: "Use your Teachable Machine models in your Scratch project!",
-//   iconURL: "teachable-machine-blocks.png",
-//   insetIconURL: "teachable-machine-blocks-small.svg"
-// };
 
 type Details = {
   name: "Teachable Machine",
@@ -44,7 +31,7 @@ type Blocks = {
   modelPrediction(): string;
   modelMatches(state: string): boolean;
   classConfidence(state: string): number;
-  videoToggle(state: number): void;
+  videoToggle(state: string): void;
   setVideoTransparency(state: number): void;
 }
 
@@ -63,6 +50,12 @@ export default class teachableMachine extends Extension<Details, Blocks> {
 
   INTERVAL = 33;
   DIMENSIONS = [480, 360];
+
+  ModelType = {
+    POSE: 'pose',
+    IMAGE: 'image',
+    AUDIO: 'audio',
+  };
 
   init(env: Environment) {
 
@@ -159,13 +152,13 @@ export default class teachableMachine extends Extension<Details, Blocks> {
   async getPredictionFromModel(modelUrl, frame) {
     const { model, modelType } = this.predictionState[modelUrl];
     switch (modelType) {
-      case ModelType.IMAGE:
+      case this.ModelType.IMAGE:
         const imageBitmap = await createImageBitmap(frame);
         return await model.predict(imageBitmap);
-      case ModelType.POSE:
+      case this.ModelType.POSE:
         const { pose, posenetOutput } = await model.estimatePose(frame);
         return await model.predict(posenetOutput);
-      case ModelType.AUDIO:
+      case this.ModelType.AUDIO:
         if (this.latestAudioResults) {
           return model.wordLabels().map((label, i) => {
             return { className: label, probability: this.latestAudioResults.scores[i] }
@@ -223,12 +216,12 @@ export default class teachableMachine extends Extension<Details, Blocks> {
         invokeCallbackOnNoiseAndUnknown: true,
         overlapFactor: 0.50 // probably want between 0.5 and 0.75. More info in README
       });
-      return { model: recognizer, type: ModelType.AUDIO };
+      return { model: recognizer, type: this.ModelType.AUDIO };
     } else if ((customMobileNet as any)._metadata.packageName === "@teachablemachine/pose") {
       const customPoseNet = await tmPose.load(modelURL, metadataURL);
-      return { model: customPoseNet, type: ModelType.POSE };
+      return { model: customPoseNet, type: this.ModelType.POSE };
     } else {
-      return { model: customMobileNet, type: ModelType.IMAGE };
+      return { model: customMobileNet, type: this.ModelType.IMAGE };
     }
   }
 
@@ -302,7 +295,7 @@ export default class teachableMachine extends Extension<Details, Blocks> {
       return ["Select a class"];
     }
 
-    if (this.predictionState[this.teachableImageModel].modelType === ModelType.AUDIO) {
+    if (this.predictionState[this.teachableImageModel].modelType === this.ModelType.AUDIO) {
       return this.predictionState[this.teachableImageModel].model.wordLabels();
     }
 
@@ -332,7 +325,7 @@ export default class teachableMachine extends Extension<Details, Blocks> {
    * Turns the video camera off/on/on and flipped. This is called in the operation of videoToggleBlock
    * @param state 
    */
-  toggleVideo(state: number) {
+  toggleVideo(state: string) {
     if (state === VideoState.OFF) return this.runtime.ioDevices.video.disableVideo();
 
     this.runtime.ioDevices.video.enableVideo();
@@ -349,54 +342,16 @@ export default class teachableMachine extends Extension<Details, Blocks> {
     this.runtime.ioDevices.video.setPreviewGhost(trans);
   }
 
-  // @legacyBlock.useModel_Command()
-  // useModel_Command(url) {
-  //   this.useModel(url);
-  // }
-
-  // @legacyBlock.useModel_Command({
-  //   argumentMethods: {
-  //     0: {
-  //       getItems: () => teachableMachine.getCurrentClasses()
-  //     }
-  //   }
-  // })
-  // whenModelDetects_Hat(state) {
-  //   this.model_match(state);
-  // }
-
   defineBlocks(): teachableMachine["BlockDefinitions"] {
 
     this.setTransparency(50);
     this.toggleVideo(VideoState.ON);
-
-    // const useModel_Command: DefineBlock<teachableMachine, Blocks["useModel_Command"]> = () => ({
-    //   type: BlockType.Command,
-    //   arg: { type: ArgumentType.String, defaultValue: 'Paste URL Here!' },
-    //   text: (url) => `use model ${url}`,
-    //   operation: (url) => {
-    //     this.useModel(url);
-    //   }
-    // });
 
     const useModelBlock = legacyDefinition.useModelBlock({
       operation: (url) => {
         this.useModel(url);
       }
     });
-
-
-    // const whenModelDetects_Hat: DefineBlock<teachableMachine, Blocks["whenModelDetects_Hat"]> = () => ({
-    //   type: BlockType.Hat,
-    //   arg: {
-    //     type: ArgumentType.String,
-    //     options: () => this.getCurrentClasses()
-    //   },
-    //   text: (state) => `when model detects ${state}`,
-    //   operation: (state) => {
-    //     return this.model_match(state);
-    //   }
-    // });
 
     const whenModelMatches = legacyDefinition.whenModelMatches({
       operation: (state) => {
@@ -409,31 +364,11 @@ export default class teachableMachine extends Extension<Details, Blocks> {
       }
     });
 
-    // const modelPrediction_Reporter: DefineBlock<teachableMachine, Blocks["modelPrediction_Reporter"]> = () => ({
-    //   type: BlockType.Reporter,
-    //   text: `model prediction`,
-    //   operation: () => {
-    //     return this.modelPrediction();
-    //   }
-    // });
-
     const modelPrediction = legacyDefinition.modelPrediction({
       operation: () => {
         return this.getModelPrediction();
       }
-    })
-
-    // const predictionIs_Boolean: DefineBlock<teachableMachine, Blocks["predictionIs_Boolean"]> = () => ({
-    //   type: BlockType.Boolean,
-    //   arg: {
-    //     type: ArgumentType.String,
-    //     options: () => this.getCurrentClasses()
-    //   },
-    //   text: (state) => `prediction is ${state}`,
-    //   operation: (state) => {
-    //     return this.model_match(state);
-    //   }
-    // });
+    });
 
     const modelMatches = legacyDefinition.modelMatches({
       operation: (state) => {
@@ -444,20 +379,7 @@ export default class teachableMachine extends Extension<Details, Blocks> {
           getItems: () => this.getClasses()
         }
       }
-    })
-
-    // FIX FIX FIX
-    // const confidenceFor_Reporter: DefineBlock<teachableMachine, Blocks["confidenceFor_Reporter"]> = () => ({
-    //   type: BlockType.Reporter,
-    //   arg: {
-    //     type: ArgumentType.String,
-    //     options: () => this.getCurrentClasses()
-    //   },
-    //   text: (state) => `confidence for ${state}`,
-    //   operation: (state) => {
-    //     return this.classConfidence(state);
-    //   }
-    // });
+    });
 
     const classConfidence = legacyDefinition.classConfidence({
       operation: (state) => {
@@ -468,25 +390,7 @@ export default class teachableMachine extends Extension<Details, Blocks> {
           getItems: () => this.getClasses()
         }
       }
-    })
-
-    // const videoToggleCommand: DefineBlock<teachableMachine, Blocks["videoToggleCommand"]> = () => ({
-    //   type: BlockType.Command,
-    //   arg: {
-    //     type: ArgumentType.Number,
-    //     options: {
-    //       acceptsReporters: true,
-    //       items: [{ text: 'off', value: VideoState.OFF }, { text: 'on', value: VideoState.ON }, { text: 'on and flipped', value: VideoState.ON_FLIPPED }],
-    //       handler: (video_state: number) => {
-    //         return Math.min(Math.max(video_state, VideoState.OFF), VideoState.ON_FLIPPED);
-    //       }
-    //     }
-    //   },
-    //   text: (video_state: number) => `turn video ${video_state}`,
-    //   operation: (video_state: number) => {
-    //     this.toggleVideo(video_state);
-    //   }
-    // });
+    });
 
     const videoToggle = legacyDefinition.videoToggle({
       operation: (video_state) => {
@@ -494,27 +398,18 @@ export default class teachableMachine extends Extension<Details, Blocks> {
       },
       argumentMethods: {
         0: {
-          handler: (video_state: number) => {
-            return Math.min(Math.max(video_state, VideoState.OFF), VideoState.ON_FLIPPED);
+          handler: (video_state: string) => {
+            return ['on', 'off', 'on-flipped'].includes(video_state) ? video_state : VideoState.ON;
           },
         }
       }
-    })
-
-    // const setVideoTransparencyCommand: DefineBlock<teachableMachine, Blocks["videoToggleCommand"]> = () => ({
-    //   type: BlockType.Command,
-    //   arg: { type: ArgumentType.Number, defaultValue: 50 },
-    //   text: (transparency: number) => `set video transparency to ${transparency}`,
-    //   operation: (transparency: number) => {
-    //     this.setTransparency(transparency);
-    //   }
-    // });
+    });
 
     const setVideoTransparency = legacyDefinition.setVideoTransparency({
       operation: (transparency: number) => {
         this.setTransparency(transparency);
       }
-    })
+    });
 
     return {
       useModelBlock,
