@@ -219,6 +219,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
     this.handModel = null;
 
 
+    // TO DO: EXTRACT THIS STUFF FROM LEGACY
     /**
      * The options for each finger
      * @type {Array}
