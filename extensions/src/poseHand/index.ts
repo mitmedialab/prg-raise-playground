@@ -66,6 +66,8 @@ export default class PoseHand extends Extension<Details, Blocks> {
 
   DIMENSIONS = [480, 360];
 
+  fingerOptions = info.menus.HAND_PART.items;
+
   /**
    * Acts like class PoseHand's constructor (instead of a child class constructor)
    * @param env 
@@ -218,25 +220,8 @@ export default class PoseHand extends Extension<Details, Blocks> {
     this.projectStarted();
     this.handModel = null;
 
-
-    // TO DO: EXTRACT THIS STUFF FROM LEGACY
-    /**
-     * The options for each finger
-     * @type {Array}
-     */
-    const fingerOptions =
-      [{ text: "thumb", value: "thumb" }, { text: "index finger", value: "indexFinger" },
-      { text: "middle finger", value: "middleFinger" }, { text: "ring finger", value: "ringFinger" }, { text: "pinky finger", value: "pinky" }];
-
-    const handlerFingerOptions = fingerOptions.map(finger => finger.value);
-    /**
-     * The options for the part of a finger
-     * @type {Array}
-     */
-    const partOfFingerOptions = [{ text: "tip", value: 3 }, { text: "first knuckle", value: 2 },
-    { text: "second knuckle", value: 1 }, { text: "base", value: 0 }];
-
-
+    const handlerFingerOptions: Array<string> = this.fingerOptions.map(finger => finger.value);
+    
     const goToHandPart = legacyDefinition.goToHandPart({
       operation: (handPart: string, fingerPart: number, util) => {
         if (this.isConnected()) {
