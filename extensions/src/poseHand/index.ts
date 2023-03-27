@@ -34,13 +34,13 @@ type Details = {
  * Contains descriptions of the blocks of the Hand Sensing extension
  */
 type Blocks = {
-  goToHandPartBlock(handPart: string, fingerPart: number): void;
+  goToHandPart(handPart: string, fingerPart: number): void;
   // these video blocks are present in a few different extensions, perhaps making a file just for these?
-  videoToggleBlock(state: number): void;
-  setVideoTransparencyBlock(transparency: number): void;
+  videoToggle(state: number): void;
+  setVideoTransparency(transparency: number): void;
 };
 
-
+@legacyExtension()
 export default class PoseHand extends Extension<Details, Blocks> {
   /**
    * The state of where the hand and its parts are estimated to be
@@ -64,13 +64,14 @@ export default class PoseHand extends Extension<Details, Blocks> {
    */
   globalVideoTransparency: number;
 
+  DIMENSIONS = [480, 360];
+
   /**
    * Acts like class PoseHand's constructor (instead of a child class constructor)
    * @param env 
    */
   init(env: Environment) {
 
-    this.runtime = env.runtime;
     const EXTENSION_ID = 'PoseHand';
 
     /* Unused but possibly needed in the future
@@ -88,14 +89,14 @@ export default class PoseHand extends Extension<Details, Blocks> {
     }
   }
 
-  /**
-   * Dimensions the video stream is analyzed at after its rendered to the
-   * sample canvas.
-   * @type {Array.<number>}
-   */
-  static get DIMENSIONS() {
-    return [480, 360];
-  }
+  // /**
+  //  * Dimensions the video stream is analyzed at after its rendered to the
+  //  * sample canvas.
+  //  * @type {Array.<number>}
+  //  */
+  // static get DIMENSIONS() {
+  //   return [480, 360];
+  // }
 
   /**
    * Converts the coordinates from the hand pose estimate to Scratch coordinates
@@ -113,8 +114,8 @@ export default class PoseHand extends Extension<Details, Blocks> {
    * and set the video device to use them.
    */
   projectStarted() {
-    this.setVideoTransparency(this.globalVideoTransparency);
-    this.videoToggle(this.globalVideoState);
+    this.videoTransparency(this.globalVideoTransparency);
+    this.toggleVideo(this.globalVideoState);
   }
 
   /**
@@ -142,7 +143,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
       const frame = this.runtime.ioDevices.video.getFrame({
         format: 'image-data',
         // format: Video.FORMAT_IMAGE_DATA,
-        dimensions: PoseHand.DIMENSIONS
+        dimensions: this.DIMENSIONS
       });
 
       const time = +new Date();
@@ -186,7 +187,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
    * Turns the video camera off/on/on and flipped. This is called in the operation of videoToggleBlock
    * @param state 
    */
-  videoToggle(state: number) {
+  toggleVideo(state: number) {
     if (state === VideoState.OFF) return this.runtime.ioDevices.video.disableVideo();
 
     this.runtime.ioDevices.video.enableVideo();
@@ -198,7 +199,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
    * Sets the video's transparency. This is called in the operation of setVideoTransparencyBlock
    * @param transparency 
    */
-  setVideoTransparency(transparency: number) {
+  videoTransparency(transparency: number) {
     const trans = Math.max(Math.min(transparency, 100), 0);
     this.runtime.ioDevices.video.setPreviewGhost(trans);
   }
@@ -235,74 +236,53 @@ export default class PoseHand extends Extension<Details, Blocks> {
     { text: "second knuckle", value: 1 }, { text: "base", value: 0 }];
 
 
-    type DefineGoToHandPart = DefineBlock<PoseHand, Blocks["goToHandPartBlock"]>;
-    const goToHandPartBlock: DefineGoToHandPart = () => ({
-      type: BlockType.Command,
-      args: [{
-        type: ArgumentType.String,
-        options: {
-          acceptsReporters: true,
-          items: fingerOptions,
-          handler: (finger: string) => {
-            return handlerFingerOptions.includes(finger) ? finger : "thumb";
-          }
-        }
-      },
-      {
-        type: ArgumentType.Number,
-        options: {
-          acceptsReporters: true,
-          items: partOfFingerOptions,
-          handler: (part: number) => {
-            return Math.max(Math.min(part, 3), 0)
-          }
-        }
-      }],
-      text: (handPart: string, fingerPart: number) => `go to ${handPart} ${fingerPart}`,
+    const goToHandPart = legacyDefinition.goToHandPart({
       operation: (handPart: string, fingerPart: number, util) => {
-
         if (this.isConnected()) {
           console.log('connected 2');
           const [x, y, z] = this.handPoseState[0].annotations[handPart][fingerPart];
           const { x: scratchX, y: scratchY } = this.tfCoordsToScratch({ x, y, z });
           (util.target as any).setXY(scratchX, scratchY, false);
         }
+      },
+      argumentMethods: {
+        0: {
+          handler: (finger: string) => {
+            return handlerFingerOptions.includes(finger) ? finger : "thumb";
+          }
+        },
+        1: {
+          handler: (part: number) => {
+            return Math.max(Math.min(part, 3), 0)
+          }
+        }
       }
     });
 
-    type DefineVideoToggle = DefineBlock<PoseHand, Blocks["videoToggleBlock"]>;
-    const videoToggleBlock: DefineVideoToggle = () => ({
-      type: BlockType.Command,
-      arg: {
-        type: ArgumentType.Number,
-        options: {
-          acceptsReporters: true,
-          items: [{ text: 'off', value: VideoState.OFF }, { text: 'on', value: VideoState.ON }, { text: 'on and flipped', value: VideoState.ON_FLIPPED }],
+    const videoToggle = legacyDefinition.videoToggle({
+      operation: (video_state: number) => {
+        this.toggleVideo(video_state);
+      },
+      argumentMethods: {
+        0: {
           handler: (video_state: number) => {
             return Math.min(Math.max(video_state, VideoState.OFF), VideoState.ON_FLIPPED);
           }
         }
-      },
-      text: (video_state: number) => `turn video ${video_state}`,
-      operation: (video_state: number) => {
-        this.videoToggle(video_state);
       }
     });
 
-    type DefineSetVideoTransparency = DefineBlock<PoseHand, Blocks["setVideoTransparencyBlock"]>;
-    const setVideoTransparencyBlock: DefineSetVideoTransparency = () => ({
-      type: BlockType.Command,
-      arg: { type: ArgumentType.Number, defaultValue: 50 },
-      text: (transparency: number) => `set video transparency to ${transparency}`,
+    const setVideoTransparency = legacyDefinition.setVideoTransparency({
       operation: (transparency: number) => {
-        this.setVideoTransparency(transparency);
+        this.videoTransparency(transparency);
       }
     });
+
 
     return {
-      goToHandPartBlock,
-      videoToggleBlock,
-      setVideoTransparencyBlock
+      goToHandPart,
+      videoToggle,
+      setVideoTransparency
     }
   }
 }
