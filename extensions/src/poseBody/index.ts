@@ -35,8 +35,8 @@ type Details = {
 type Blocks = {
   goToBodyPartBlock(bodyPart: string): void;
   // these video blocks are present in a few different extensions, perhaps making a file just for these?
-  videoToggleCommand(state: number): void;
-  setVideoTransparencyCommand(transparency: number): void;
+  videoToggle(state: number): void;
+  setVideoTransparency(transparency: number): void;
 };
 
 @legacyExtension()
@@ -285,7 +285,7 @@ export default class PoseBody extends Extension<Details, Blocks> {
     });
 
     // type DefineVideoToggle = DefineBlock<PoseBody, Blocks["videoToggleBlock"]>;
-    const videoToggleCommand = legacyDefinition.videoToggle({
+    const videoToggle = legacyDefinition.videoToggle({
       operation: (video_state) => {
         this.toggleVideo(video_state);
       },
@@ -299,7 +299,7 @@ export default class PoseBody extends Extension<Details, Blocks> {
     });
 
     // type DefineSetVideoTransparency = DefineBlock<PoseBody, Blocks["setVideoTransparencyBlock"]>;
-    const setVideoTransparencyCommand = legacyDefinition.setVideoTransparency({
+    const setVideoTransparency = legacyDefinition.setVideoTransparency({
       operation: (transparency: number) => {
         this.setTransparency(transparency);
       }
@@ -307,8 +307,8 @@ export default class PoseBody extends Extension<Details, Blocks> {
 
     return {
       goToBodyPartBlock,
-      videoToggleCommand,
-      setVideoTransparencyCommand
+      videoToggle,
+      setVideoTransparency
     }
   }
 }
