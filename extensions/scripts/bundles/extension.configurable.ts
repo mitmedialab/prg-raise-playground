@@ -1,13 +1,12 @@
 import { type Plugin } from "rollup";
-import { announceWrite, fillInConstructorArgs, finalizeCommonExtensionBundle, setupExtensionBundleEntry, decoratorCodeGenFlag } from "../plugins";
+import { announceWrite, finalizeConfigurableExtensionBundle, setupExtensionBundleEntry } from "./plugins";
 import { getThirdPartyPlugins, BundleInfo, bundleExtensionBasedOnWatchMode } from ".";
 
 export default async function (info: BundleInfo) {
 
   const customPRGPlugins: Plugin[] = [
     setupExtensionBundleEntry(info),
-    fillInConstructorArgs(info, () => decoratorCodeGenFlag),
-    finalizeCommonExtensionBundle(info),
+    finalizeConfigurableExtensionBundle(info),
     announceWrite(info)
   ];
 
