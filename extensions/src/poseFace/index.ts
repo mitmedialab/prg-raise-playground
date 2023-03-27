@@ -42,16 +42,16 @@ type Details = {
  * Contains descriptions of the blocks of the Block Sensing extension
  */
 type Blocks = {
-  goToFacePartCommand(facePart: string): void;
-  whenExpressionDetectedHat(expression: string): boolean;
-  amountOfExpressionDetectedReport(expression: string): number;
-  isExpressionReport(expression: string): boolean;
-  whenFeelingDetectedHat(feeling: string): boolean;
-  levelOfFeelingReport(feeling: string): number;
-  isFeelingReport(feeling: string): boolean;
+  affdexGoToPart(facePart: string): void;
+  affdexWhenExpression(expression: string): boolean;
+  affdexExpressionAmount(expression: string): number;
+  affdexIsExpression(expression: string): boolean;
+  affdexWhenEmotion(feeling: string): boolean;
+  affdexEmotionAmount(feeling: string): number;
+  affdexIsTopEmotion(feeling: string): boolean;
   // these video blocks are present in a few different extensions, perhaps making a file just for these?
-  videoToggleCommand(state: number): void;
-  setVideoTransparencyCommand(transparency: number): void;
+  videoToggle(state: number): void;
+  setVideoTransparency(transparency: number): void;
 }
 
 type Affdex = {
@@ -109,7 +109,6 @@ export default class PoseFace extends Extension<Details, Blocks> {
    * @param env 
    */
   init(env: Environment) {
-    // this.runtime = env.runtime;
     const EXTENSION_ID = 'PoseHand';
 
     /* Unused but possibly needed in the future
@@ -126,15 +125,6 @@ export default class PoseFace extends Extension<Details, Blocks> {
       this._loop();
     }
   }
-
-  /**
-   * Dimensions the video stream is analyzed at after its rendered to the
-   * sample canvas.
-   * @type {Array.<number>}
-   */
-  // static get DIMENSIONS() {
-  //   return [480, 360];
-  // }
 
   projectStarted() {
     this.setTransparency(this.globalVideoTransparency);
@@ -269,15 +259,12 @@ export default class PoseFace extends Extension<Details, Blocks> {
     let maxEmotionValue = -Number.MAX_VALUE;
     let maxEmotion = null;
     emotions.forEach((emotion) => {
-      // console.log(emotion);
       const emotionValue = this.affdexState.emotions[emotion.value];
-      // console.log(emotionValue)
       if (emotionValue > maxEmotionValue) {
         maxEmotionValue = emotionValue;
         maxEmotion = emotion;
       }
     });
-    // console.log(maxEmotion.value + " "+ felt_emotion);
     return felt_emotion == maxEmotion.value;
   }
 
@@ -332,105 +319,14 @@ export default class PoseFace extends Extension<Details, Blocks> {
     const allEmotionValues: Array<string> = this.all_emotions.map(emotion => emotion.value);
 
 
-    // FACE PART Block
-
-    // const faceParts = [
-    //   { text: 'left ear', value: 0 },
-    //   { text: 'left chin', value: 1 },
-    //   { text: 'chin', value: 2 },
-    //   { text: 'right chin', value: 3 },
-    //   { text: 'right ear', value: 4 },
-    //   { text: 'left outer eyebrow', value: 5 },
-    //   { text: 'left eyebrow', value: 6 },
-    //   { text: 'left inner eyebrow', value: 7 },
-    //   { text: 'right inner eyebrow', value: 8 },
-    //   { text: 'right eyebrow', value: 9 },
-    //   { text: 'right outer eyebrow', value: 10 },
-    //   { text: 'nose bridge', value: 11 },
-    //   { text: 'nose tip', value: 12 },
-    //   { text: 'left nostril', value: 13 },
-    //   { text: 'nose tip', value: 14 },
-    //   { text: 'right nostril', value: 15 },
-    //   { text: 'left outer eye crease', value: 16 },
-    //   { text: 'left inner eye crease', value: 17 },
-    //   { text: 'right inner eye crease', value: 18 },
-    //   { text: 'right outer eye crease', value: 19 },
-    //   { text: 'left mouth crease', value: 20 },
-    //   { text: 'left upper lip point', value: 21 },
-    //   { text: 'upper lip', value: 22 },
-    //   { text: 'right upper lip point', value: 23 },
-    //   { text: 'right mouth crease', value: 24 },
-    //   { text: 'right lower lip point', value: 25 },
-    //   { text: 'lower lip', value: 26 },
-    //   { text: 'left lower lip point', value: 27 },
-    //   { text: 'upper lip bottom', value: 28 },
-    //   { text: 'lower lip top', value: 29 },
-    //   { text: 'left upper eyelid', value: 30 },
-    //   { text: 'left lower eyelid', value: 31 },
-    //   { text: 'right upper eyelid', value: 32 },
-    //   { text: 'right lower eyelid', value: 33 }
-    // ];
-
-    //type DefineGoToFacePart = DefineBlock<PoseFace, Blocks["goToFacePartCommand"]>;
-    const goToFacePartCommand = legacyDefinition.affdexGoToPart({
-      // type: BlockType.Command,
-      // arg: {
-      //   type: ArgumentType.Number,
-      //   options: faceParts
-      // },
-      // text: (part: number) => `go to ${part}`,
+    const affdexGoToPart = legacyDefinition.affdexGoToPart({
       operation: (part: string, util) => {
         this.goToPart(part, util)
       }
     });
 
-    // EXPRESSION BLOCKS
 
-    // const expressions = [
-    //   { text: 'smile', value: 'smile' },
-    //   { text: 'mouth open', value: 'mouthOpen' },
-    //   { text: 'eye closure', value: 'eyeClosure' },
-    //   { text: 'eyebrow raise', value: 'browRaise' },
-    //   { text: 'whistling', value: 'lipPucker' },
-    //   { text: 'eye widening', value: 'eyeWiden' },
-
-    //   // {text:'innerBrowRaise', value: 'innerBrowRaise'},
-
-    //   { text: 'eyebrow furrow', value: 'browFurrow' },
-    //   { text: 'nose wrinkle', value: 'noseWrinkle' },
-    //   { text: 'upper lip raise', value: 'upperLipRaise' },
-    //   { text: 'lip corner pull', value: 'lipCornerDepressor' },
-    //   { text: 'chin raise', value: 'chinRaise' },
-
-    //   // {text:'lip press', value:  'lipPress'},
-    //   // {text:'lip suck', value:  'lipSuck'},
-
-    //   { text: 'smirk', value: 'smirk' },
-    //   { text: 'attention', value: 'attention' },
-    //   { text: 'eyelid tighten', value: 'lidTighten' },
-    //   { text: 'jaw drop', value: 'jawDrop' },
-    //   { text: 'cheek dimple', value: 'dimpler' },
-    //   { text: 'cheek raise', value: 'cheekRaise' },
-    //   { text: 'lip stretch', value: 'lipStretch' }
-    // ];
-    // const handlerExpressions = expressions.map(expression => expression.value);
-
-
-
-    // type DefineExpressDetect = DefineBlock<PoseFace, Blocks["whenExpressionDetectedHat"]>;
-    const whenExpressionDetectedHat = legacyDefinition.affdexWhenExpression({
-      // type: BlockType.Hat,
-      // arg: {
-      //   type: ArgumentType.String,
-      //   options: {
-      //     acceptsReporters: true,
-      //     items: expressions,
-      //     handler: (expression: string) => {
-      //       return handlerExpressions.includes(expression) ? expression : 'smile';
-      //     }
-      //   }
-      // },
-      // text: (expression: string) => `when ${expression} detected`,
+    const affdexWhenExpression = legacyDefinition.affdexWhenExpression({
       operation: (expression: string) => {
         return this.isExpression(expression);
       },
@@ -443,20 +339,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
       }
     });
 
-    // type DefineAmountExpress = DefineBlock<PoseFace, Blocks["amountOfExpressionDetectedReport"]>;
-    const amountOfExpressionDetectedReport = legacyDefinition.affdexExpressionAmount({
-      // type: BlockType.Reporter,
-      // arg: {
-      //   type: ArgumentType.String,
-      //   options: {
-      //     acceptsReporters: true,
-      //     items: expressions,
-      //     handler: (expression: string) => {
-      //       return handlerExpressions.includes(expression) ? expression : 'smile';
-      //     }
-      //   }
-      // },
-      // text: (expression: string) => `amount of ${expression}`,
+    const affdexExpressionAmount = legacyDefinition.affdexExpressionAmount({
       operation: (expression: string) => {
         return this.expressionAmount(expression);
       },
@@ -469,20 +352,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
       }
     });
 
-    // type DefineExpressReport = DefineBlock<PoseFace, Blocks["isExpressionReport"]>;
-    const isExpressionReport = legacyDefinition.affdexIsExpression({
-      // type: BlockType.Boolean,
-      // arg: {
-      //   type: ArgumentType.String,
-      //   options: {
-      //     acceptsReporters: true,
-      //     items: expressions,
-      //     handler: (expression: string) => {
-      //       return handlerExpressions.includes(expression) ? expression : 'smile';
-      //     }
-      //   }
-      // },
-      // text: (expression: string) => `expressing ${expression}`,
+    const affdexIsExpression = legacyDefinition.affdexIsExpression({
       operation: (expression: string) => {
         return this.isExpression(expression);
       },
@@ -495,41 +365,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
       }
     });
 
-    // EMOTION BLOCKS
-
-    // const emotions = [
-    //   { text: 'joyful', value: 'joy' },
-    //   { text: 'sad', value: 'sadness' },
-    //   { text: 'disgusted', value: 'disgust' },
-    //   { text: 'angry', value: 'anger' },
-    //   { text: 'fearful', value: 'fear' }
-    // ];
-    // const handlerEmotionsShort = emotions.map(emotion => emotion.value);
-
-
-    // const emotions2 = [
-    //   { text: 'contempt', value: 'contempt' },
-    //   { text: 'surprise', value: 'surprise' },
-    //   { text: 'valence', value: 'valence' },
-    //   { text: 'engagement', value: 'engagement' }
-    // ];
-    // const allEmotionValues = emotions.concat(emotions2).map(emotion => emotion.value);
-
-
-    // type DefineFeelingDetect = DefineBlock<PoseFace, Blocks["whenFeelingDetectedHat"]>;
-    const whenFeelingDetectedHat = legacyDefinition.affdexWhenEmotion({
-      // type: BlockType.Hat,
-      // arg: {
-      //   type: ArgumentType.String,
-      //   options: {
-      //     acceptsReporters: true,
-      //     items: emotions,
-      //     handler: (emotion: string) => {
-      //       return handlerEmotionsShort.includes(emotion) ? emotion : 'joy';
-      //     }
-      //   }
-      // },
-      // text: (emotion: string) => `when ${emotion} feeling detected`,
+    const affdexWhenEmotion = legacyDefinition.affdexWhenEmotion({
       operation: (emotion: string) => {
         return this.isTopEmotion(emotion, this.emotions);
       },
@@ -542,20 +378,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
       }
     });
 
-    // type DefineLevelFeeling = DefineBlock<PoseFace, Blocks["levelOfFeelingReport"]>;
-    const levelOfFeelingReport = legacyDefinition.affdexEmotionAmount({
-      // type: BlockType.Reporter,
-      // arg: {
-      //   type: ArgumentType.String,
-      //   options: {
-      //     acceptsReporters: true,
-      //     items: allEmotionValues,
-      //     handler: (emotion: string) => {
-      //       return allEmotionValues.includes(emotion) ? emotion : 'joy';
-      //     }
-      //   }
-      // },
-      // text: (emotion: string) => `level of ${emotion}`,
+    const affdexEmotionAmount = legacyDefinition.affdexEmotionAmount({
       operation: (emotion: string) => {
         return this.emotionAmount(emotion)
       },
@@ -568,20 +391,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
       }
     });
 
-    // type DefineIsFeeling = DefineBlock<PoseFace, Blocks["isFeelingReport"]>;
-    const isFeelingReport = legacyDefinition.affdexIsTopEmotion({
-      // type: BlockType.Boolean,
-      // arg: {
-      //   type: ArgumentType.String,
-      //   options: {
-      //     acceptsReporters: true,
-      //     items: emotions,
-      //     handler: (emotion: string) => {
-      //       return handlerEmotionsShort.includes(emotion) ? emotion : 'joy';
-      //     }
-      //   }
-      // },
-      // text: (emotion: string) => `feeling ${emotion}`,
+    const affdexIsTopEmotion = legacyDefinition.affdexIsTopEmotion({
       operation: (emotion: string) => {
         return this.isTopEmotion(emotion, this.emotions);
       },
@@ -596,7 +406,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
 
     // VIDEO BLOCKS
 
-    const videoToggleCommand = legacyDefinition.videoToggle({
+    const videoToggle = legacyDefinition.videoToggle({
       operation: (video_state) => {
         this.toggleVideo(video_state);
       },
@@ -609,21 +419,21 @@ export default class PoseFace extends Extension<Details, Blocks> {
       }
     })
 
-    const setVideoTransparencyCommand = legacyDefinition.setVideoTransparency({
+    const setVideoTransparency = legacyDefinition.setVideoTransparency({
       operation: (transparency: number) => {
         this.setTransparency(transparency);
       }
     })
     return {
-      goToFacePartCommand,
-      whenExpressionDetectedHat,
-      amountOfExpressionDetectedReport,
-      isExpressionReport,
-      whenFeelingDetectedHat,
-      levelOfFeelingReport,
-      isFeelingReport,
-      videoToggleCommand,
-      setVideoTransparencyCommand
+      affdexGoToPart,
+      affdexWhenExpression,
+      affdexExpressionAmount,
+      affdexIsExpression,
+      affdexWhenEmotion,
+      affdexEmotionAmount,
+      affdexIsTopEmotion,
+      videoToggle,
+      setVideoTransparency
     }
   }
 }
