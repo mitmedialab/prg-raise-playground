@@ -5,6 +5,12 @@ import fs from "fs";
 import path from "path";
 import { extensionBundlesDirectory } from "scripts/utils/fileSystem";
 
+/**
+ * Populate the AuxiliaryExtensionInfo file with the given info,
+ * so that it can be read in by the extension framework before the extension is loaded
+ * @param info 
+ * @returns 
+ */
 export const setAuxiliaryInfoForExtension = (info: BundleInfo) => {
   const update = JSON.stringify(convertToParams(info));
   const current = extensionMap.get(info.id);
