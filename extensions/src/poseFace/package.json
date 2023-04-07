@@ -5,7 +5,8 @@
   "main": "index.ts",
   "scripts": {
     "directory": "echo poseFace",
-    "test": "npm run test --prefix ../../ -- poseFace/index.test.ts"
+    "test": "npm run test --prefix ../../ -- poseFace/index.test.ts",
+    "dev": "npm run dev --prefix ../../../ -- only=poseFace"
   },
   "author": "",
   "license": "ISC"

@@ -1,9 +1,7 @@
-import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, untilExternalGlobalVariableLoaded } from "$common";
-import { legacyIncrementalSupport, legacyFullSupport, info } from "./legacy";
+import { Extension, Environment, untilExternalGlobalVariableLoaded, validGenericExtension, RuntimeEvent } from "$common";
+import { legacyFullSupport, info } from "./legacy";
 
 const { legacyExtension, legacyDefinition } = legacyFullSupport.for<PoseFace>();
-
-// import * as window from 'affdex.js';
 
 /**
  * States what the video sensing activity can be set to.
@@ -73,6 +71,7 @@ type Detector = {
 }
 
 @legacyExtension()
+@validGenericExtension()
 export default class PoseFace extends Extension<Details, Blocks> {
 
 
@@ -80,8 +79,6 @@ export default class PoseFace extends Extension<Details, Blocks> {
    * The state the face's points, expressions, and emotions
    */
   affdexState;
-
-  hasResult: boolean;
 
   private affdexDetector: Detector;
 
@@ -109,19 +106,8 @@ export default class PoseFace extends Extension<Details, Blocks> {
    * @param env 
    */
   init(env: Environment) {
-    const EXTENSION_ID = 'PoseHand';
-
-    /* Unused but possibly needed in the future
-    this.runtime.registerPeripheralExtension(EXTENSION_ID, this);
-    this.runtime.connectPeripheral(EXTENSION_ID, 0);
-    this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
-    */
-
     if (this.runtime.ioDevices) {
-      /* Possibly unnecessary, keep commented just in case
-      this.runtime.on(RuntimeEvent.ProjectLoaded, this.projectStarted.bind(this));
-      this.runtime.on(RuntimeEvent.ProjectRunStart, this.reset.bind(this)); 
-      */
+      this.runtime.on(RuntimeEvent.ProjectStart, this.projectStarted.bind(this));
       this._loop();
     }
   }
@@ -151,23 +137,11 @@ export default class PoseFace extends Extension<Details, Blocks> {
       const time = +new Date();
       if (frame) {
         this.affdexState = await this.estimateAffdexOnImage(frame);
-        /*
-        if (this.affdexState) {
-          this.hasResult = true;
-          this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
-        } else {
-          this.hasResult = false;
-          this.runtime.emit(this.runtime.constructor.PERIPHERAL_DISCONNECTED);
-        }
-        */
+        // TODO: Once indicators are implemented, indicate the state of the extension based on this.affdexState
       }
       const estimateThrottleTimeout = (+new Date() - time) / 4;
       await new Promise(r => setTimeout(r, estimateThrottleTimeout));
     }
-  }
-
-  isConnected() {
-    return this.hasResult;
   }
 
   async estimateAffdexOnImage(imageElement) {
