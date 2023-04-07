@@ -107,13 +107,14 @@ const attachArgumentMethods = (
     })
     .forEach(({ arg, methods }) =>
       Object.entries(methods)
-        .filter(([_, method]) => method)
+        .filter(([_, method]) => method !== undefined)
         .map(([key, method]) => [key, method.bind(extension)])
-        .forEach(([key, method]) => tryUpdateKey(arg.options, key, method)));
+        .forEach(([key, method]) => tryUpdateKey(arg, key, method)))
 }
 
-const tryUpdateKey = <T>(obj, key: string, value: T) => {
-  obj[key] = value;
+const tryUpdateKey = <T extends Menu<any>>(arg: VerboseArgument<any>, key: string, value: T) => {
+  if (isFunction(arg.options)) arg.options = value;
+  arg.options[key] = value;
 }
 
 const asBlockMetaData = (block: ExtensionBlockMetadata | string) => {

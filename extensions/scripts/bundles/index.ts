@@ -1,6 +1,6 @@
 import path from "path";
 import fs from "fs";
-import { CodeGenParams, ExtensionMenuDisplayDetails, FrameworkID, encode } from "$common"
+import { ExtensionMenuDisplayDetails, FrameworkID, encode } from "$common"
 import { fileName, getBundleFile, getMenuDetailsAssetsDirectory, getMenuDetailsAssetsFile } from "../utils/fileSystem";
 import { type Plugin, type RollupOptions, type OutputOptions, type RollupWatcher, rollup, watch } from "rollup";
 import alias from "@rollup/plugin-alias";
@@ -17,7 +17,6 @@ import json from '@rollup/plugin-json';
 import nodePolyfills from 'rollup-plugin-polyfill-node';
 import babel from "@rollup/plugin-babel";
 import chalk from "chalk";
-import { getBlockIconURI } from "scripts/utils/URIs";
 import bundleConfigurable from "./extension.configurable";
 import bundleGeneric from "./extension.generic";
 import { root } from "$root/scripts/paths";
@@ -98,13 +97,6 @@ export const logEvents = (watcher: RollupWatcher, { name }: BundleInfo) => {
     });
 
   watcher.on("change", (id, { event }) => console.log(chalk.bgGreen(prefix) + chalk.cyan(`${event} on ${id}`)));
-}
-
-export const stringifyCodeGenArgs = ({ menuDetails, directory, id }: BundleInfo) => {
-  const { name } = menuDetails;
-  const blockIconURI = getBlockIconURI(menuDetails, directory);
-  const codeGenArgs: CodeGenParams = [name, id, blockIconURI];
-  return "..." + JSON.stringify(codeGenArgs);
 }
 
 const getExtensionType = (dir: string) => {
