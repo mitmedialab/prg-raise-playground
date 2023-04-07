@@ -74,7 +74,6 @@ type Detector = {
 @validGenericExtension()
 export default class PoseFace extends Extension<Details, Blocks> {
 
-
   /**
    * The state the face's points, expressions, and emotions
    */
@@ -182,12 +181,6 @@ export default class PoseFace extends Extension<Details, Blocks> {
     return this.affdexDetector;
   }
 
-  /**
-   * 
-   * @param part 
-   * @param util 
-   * @returns 
-   */
   goToPart(part, util) {
     if (!this.affdexState || !this.affdexState.featurePoints) return;
 
