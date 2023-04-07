@@ -1,13 +1,12 @@
-import { announceWrite, createExtensionMenuAssets, fillInConstructorArgs, setupExtensionBundleEntry } from "../plugins";
-import { getThirdPartyPlugins, BundleInfo, stringifyCodeGenArgs, bundleExtensionBasedOnWatchMode } from ".";
+import { announceWrite, finalizeGenericExtensionBundle, setupExtensionBundleEntry } from "./plugins";
+import { getThirdPartyPlugins, BundleInfo, bundleExtensionBasedOnWatchMode } from ".";
 import { populateDisplayMenuDetailsTransformer } from "../typeProbing";
 
 export default async function (info: BundleInfo) {
 
   const customPRGPlugins = [
     setupExtensionBundleEntry(info),
-    createExtensionMenuAssets(info),
-    fillInConstructorArgs(info, stringifyCodeGenArgs),
+    finalizeGenericExtensionBundle(info),
     announceWrite(info),
   ];
 

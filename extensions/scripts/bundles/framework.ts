@@ -1,5 +1,5 @@
 import { bundleBasedOnWatchMode, getBundleInfo, getOutputOptions, getThirdPartyPlugins, } from ".";
-import { clearDestinationDirectories, generateVmDeclarations, onFrameworkBundle, setupFrameworkBundleEntry, transpileExtensionGlobals } from "../plugins";
+import { clearDestinationDirectories, generateVmDeclarations, onFrameworkBundle, setupFrameworkBundleEntry, transpileExtensionGlobals } from "./plugins";
 import { commonDirectory } from "scripts/utils/fileSystem";
 import { FrameworkID, untilCondition } from "$common";
 

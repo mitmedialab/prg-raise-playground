@@ -3,7 +3,7 @@ import Runtime from "$scratch-vm/engine/runtime";
 import { AbstractConstructor, Environment, ExlcudeFirst } from "$common/types";
 
 export type ExtensionConstructorParams = ConstructorParameters<typeof ConstructableExtension>;
-export type CodeGenParams = ExlcudeFirst<ExtensionConstructorParams>;
+export type AuxiliaryExtensionInfoParams = ExlcudeFirst<ExtensionConstructorParams>;
 export type ExtensionBaseConstructor = AbstractConstructor<ExtensionBase>;
 
 export abstract class ConstructableExtension {
