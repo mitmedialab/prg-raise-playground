@@ -4,10 +4,10 @@ import tmPose from '@teachablemachine/pose';
 import { create } from '@tensorflow-models/speech-commands';
 
 import { legacyFullSupport, legacyIncrementalSupport, info } from "./legacy";
-import video from "$common/extension/mixins/optional/video";
 
 const { legacyExtension, legacyDefinition } = legacyFullSupport.for<teachableMachine>();
 
+// TODO: Implement indictator (Peripheral Stuff) to show if the model is loaded or not
 
 const VideoState = {
   /** Video turned off. */
@@ -73,7 +73,7 @@ export default class teachableMachine extends Extension<Details, Blocks> {
 
     if (this.runtime.ioDevices) {
       // Configure the video device with values from globally stored locations.
-      //  this.runtime.on(Runtime.PROJECT_LOADED, this.updateVideoDisplay.bind(this));
+      // this.runtime.on(Runtime.PROJECT_LOADED, this.updateVideoDisplay.bind(this));
 
       // Kick off looping the analysis logic.
       this._loop();
@@ -98,7 +98,7 @@ export default class teachableMachine extends Extension<Details, Blocks> {
     }
     const offset = time - this.lastUpdate;
 
-    // TOOD: Self-throttle interval if slow to run predictions
+    // TODO: Self-throttle interval if slow to run predictions
     if (offset > this.INTERVAL && this.isPredicting === 0) {
       const frame = this.runtime.ioDevices.video.getFrame({
         format: 'image-data',
@@ -225,33 +225,11 @@ export default class teachableMachine extends Extension<Details, Blocks> {
     }
   }
 
-  /**
-     * After analyzing a frame the amount of milliseconds until another frame
-     * is analyzed.
-     * @type {number}
-     */
-  // get INTERVAL() {
-  //   return 33;
-  // }
-
-  /**
-     * Dimensions the video stream is analyzed at after its rendered to the
-     * sample canvas.
-     * @type {Array.<number>}
-     */
-  // get DIMENSIONS() {
-  //   return [480, 360];
-  // }
-
   useModel(url) {
     try {
-      // console.log('trying model');
       const modelUrl = this.modelArgumentToURL(url);
-      // console.log('1.1');
       this.getPredictionStateOrStartPredicting(modelUrl);
-      // console.log('1.2');
       this.updateStageModel(modelUrl);
-      // console.log('using model');
     } catch (e) {
       this.teachableImageModel = null;
     }
@@ -272,16 +250,11 @@ export default class teachableMachine extends Extension<Details, Blocks> {
   }
 
   getPredictionStateOrStartPredicting(modelUrl) {
-    // console.log('2 start');
-    // console.log(this.predictionState);
     const hasPredictionState = this.predictionState.hasOwnProperty(modelUrl);
-    // console.log('2.1');
     if (!hasPredictionState) {
-      // console.log('start predicting');
       this.startPredicting(modelUrl);
       return null;
     }
-    // console.log('get predict state');
     return this.predictionState[modelUrl];
   }
 
@@ -315,10 +288,8 @@ export default class teachableMachine extends Extension<Details, Blocks> {
     return (currentMaxClass === String(className));
   }
 
-  getClassConfidence(args): number {
-    const className = args.CLASS_NAME;
-
-    return this.modelConfidences[className];
+  getClassConfidence(state): number {
+    return this.modelConfidences[state];
   }
 
   /**
