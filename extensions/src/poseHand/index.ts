@@ -1,7 +1,6 @@
 import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, RuntimeEvent } from "$common";
 import { legacyIncrementalSupport, legacyFullSupport, info } from "./legacy";
 
-// import Video from '../../../packages/scratch-vm/src/io/video'; // Save for now
 import * as handpose from '@tensorflow-models/handpose';
 const { legacyExtension, legacyDefinition } = legacyFullSupport.for<PoseHand>();
 
