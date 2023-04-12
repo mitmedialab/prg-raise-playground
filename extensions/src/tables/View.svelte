@@ -45,6 +45,7 @@
     color: var(--text-primary-transparent);
     font-size: 1rem;
     overflow: scroll;
+    max-height: 22.5rem;
   }
 
   .tableValueInput {
