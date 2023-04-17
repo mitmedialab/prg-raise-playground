@@ -3,6 +3,8 @@ import { legacyFullSupport, info } from "./legacy";
 
 const { legacyExtension, legacyDefinition } = legacyFullSupport.for<PoseFace>();
 
+// TODO: Implement extension's health check (peripheral)
+
 /**
  * States what the video sensing activity can be set to.
  */
@@ -181,6 +183,12 @@ export default class PoseFace extends Extension<Details, Blocks> {
     return this.affdexDetector;
   }
 
+  /**
+   * Moves the target to a body part
+   * @param part 
+   * @param util 
+   * @returns None
+   */
   goToPart(part, util) {
     if (!this.affdexState || !this.affdexState.featurePoints) return;
 
@@ -190,9 +198,9 @@ export default class PoseFace extends Extension<Details, Blocks> {
   }
 
   /**
-   * 
+   * If an expression is being expressed
    * @param expression 
-   * @returns 
+   * @returns {boolean}
    */
   isExpression(expression) {
     if (!this.affdexState || !this.affdexState.expressions) {
@@ -202,9 +210,9 @@ export default class PoseFace extends Extension<Details, Blocks> {
   }
 
   /**
-   * 
+   * How much of an expression is being expressed
    * @param expression 
-   * @returns 
+   * @returns {number}
    */
   expressionAmount(expression) {
     if (!this.affdexState || !this.affdexState.expressions) {
@@ -214,10 +222,10 @@ export default class PoseFace extends Extension<Details, Blocks> {
   }
 
   /**
-   * 
+   * Is an emotion is being expressed
    * @param felt_emotion 
    * @param emotions 
-   * @returns 
+   * @returns {boolean}
    */
   isTopEmotion(felt_emotion, emotions) {
     if (!this.affdexState || !this.affdexState.emotions) {
@@ -236,9 +244,9 @@ export default class PoseFace extends Extension<Details, Blocks> {
   }
 
   /**
-   * 
+   * How much of an emotion is being expressed
    * @param emotion 
-   * @returns 
+   * @returns {number}
    */
   emotionAmount(emotion) {
     if (!this.affdexState || !this.affdexState.emotions) {
@@ -291,7 +299,6 @@ export default class PoseFace extends Extension<Details, Blocks> {
         this.goToPart(part, util)
       }
     });
-
 
     const affdexWhenExpression = legacyDefinition.affdexWhenExpression({
       operation: (expression: string) => {
