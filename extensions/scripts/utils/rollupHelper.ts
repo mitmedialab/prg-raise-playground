@@ -18,7 +18,8 @@ export const hackToFilterOutUnhelpfulRollupLogs = async () => {
     "@rollup/plugin-typescript TS1128: Declaration or statement expected.",
     "@rollup/plugin-typescript TS1144: '{' or ';' expected.",
     "@rollup/plugin-typescript TS1434: Unexpected keyword or identifier.",
-    "@rollup/plugin-typescript TS1011: An element access expression should take an argument."
+    "@rollup/plugin-typescript TS1011: An element access expression should take an argument.",
+    "@rollup/plugin-typescript TS1442: Expected '=' for property initializer."
   ]);
 
   console.warn = function (...params: any[]) {
