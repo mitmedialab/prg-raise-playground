@@ -4,6 +4,8 @@ import { legacyFullSupport, info } from "./legacy";
 import * as handpose from '@tensorflow-models/handpose';
 const { legacyExtension, legacyDefinition } = legacyFullSupport.for<PoseHand>();
 
+// TODO: Add extension's health check (peripheral)
+
 /**
  * States what the video state can be set to.
  * @readonly
