@@ -12,5 +12,5 @@
     "noErrorTruncation": true,
     "strictPropertyInitialization": false,
   },
-  "include": [".**/*.ts", "**/*.ts", "poseFace/legacy.ts"],
+  "include": [".**/*.ts", "**/*.ts"],
 }
