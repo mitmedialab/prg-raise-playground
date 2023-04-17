@@ -63,9 +63,17 @@ export default class PoseBody extends Extension<Details, Blocks> {
    */
   globalVideoTransparency: number;
 
+  /**
+   * Dimensions of the video frame
+   */
   DIMENSIONS = [480, 360];
 
+  /**
+   * Accessible body parts
+   */
   bodyOptions = info.menus.PART.items;
+
+  runtime;
 
   /**
    * Acts like class PoseBody's constructor (instead of a child class constructor)
@@ -74,7 +82,7 @@ export default class PoseBody extends Extension<Details, Blocks> {
   init(env: Environment) {
 
     const EXTENSION_ID = 'poseBody';
-
+    this.runtime = env.runtime
     /* Unused but possibly needed in the future */
     // this.runtime.registerPeripheralExtension(EXTENSION_ID, this);
     // this.runtime.connectPeripheral(EXTENSION_ID, 0);
@@ -150,7 +158,6 @@ export default class PoseBody extends Extension<Details, Blocks> {
     while (true) {
       const frame = this.runtime.ioDevices.video.getFrame({
         format: 'image-data',
-        // format: Video.FORMAT_IMAGE_DATA,
         dimensions: this.DIMENSIONS
       });
 
