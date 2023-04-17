@@ -1,5 +1,5 @@
 import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, RuntimeEvent } from "$common";
-import { legacyIncrementalSupport, legacyFullSupport, info } from "./legacy";
+import { legacyFullSupport, info } from "./legacy";
 
 import * as handpose from '@tensorflow-models/handpose';
 const { legacyExtension, legacyDefinition } = legacyFullSupport.for<PoseHand>();
@@ -63,8 +63,15 @@ export default class PoseHand extends Extension<Details, Blocks> {
    */
   globalVideoTransparency: number;
 
+  /**
+   * Dimensions of the frame
+   * @type {number[]}
+   */
   DIMENSIONS = [480, 360];
 
+  /**
+   * Access different fingers
+   */
   fingerOptions = info.menus.HAND_PART.items;
 
   /**
@@ -73,31 +80,10 @@ export default class PoseHand extends Extension<Details, Blocks> {
    */
   init(env: Environment) {
 
-    const EXTENSION_ID = 'PoseHand';
-
-    /* Unused but possibly needed in the future
-    this.runtime.registerPeripheralExtension(EXTENSION_ID, this);
-    this.runtime.connectPeripheral(EXTENSION_ID, 0);
-    this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
-    */
-
     if (this.runtime.ioDevices) {
-      /* Possibly unnecessary, keep commented just in case
-      this.runtime.on(RuntimeEvent.ProjectLoaded, this.projectStarted.bind(this));
-      this.runtime.on(RuntimeEvent.ProjectRunStart, this.reset.bind(this)); 
-      */
       this._loop();
     }
   }
-
-  // /**
-  //  * Dimensions the video stream is analyzed at after its rendered to the
-  //  * sample canvas.
-  //  * @type {Array.<number>}
-  //  */
-  // static get DIMENSIONS() {
-  //   return [480, 360];
-  // }
 
   /**
    * Converts the coordinates from the hand pose estimate to Scratch coordinates
@@ -120,12 +106,6 @@ export default class PoseHand extends Extension<Details, Blocks> {
   }
 
   /**
-   * init() binds to this function, but it is never called, so this may be unimportant
-   */
-  // reset() {
-  // }
-
-  /**
    * Checks if the hand pose estimate is ready to be used
    * @returns {boolean} true if connected, false if not connected
    */
@@ -143,20 +123,12 @@ export default class PoseHand extends Extension<Details, Blocks> {
     while (true) {
       const frame = this.runtime.ioDevices.video.getFrame({
         format: 'image-data',
-        // format: Video.FORMAT_IMAGE_DATA,
         dimensions: this.DIMENSIONS
       });
 
       const time = +new Date();
       if (frame) {
         this.handPoseState = await this.estimateHandPoseOnImage(frame);
-        /*
-        if (this.isConnected()) {
-            this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
-        } else {
-            this.runtime.emit(this.runtime.constructor.PERIPHERAL_DISCONNECTED);
-        }
-        */
       }
       const estimateThrottleTimeout = (+new Date() - time) / 4;
       await new Promise(r => setTimeout(r, estimateThrottleTimeout));
@@ -220,7 +192,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
     this.handModel = null;
 
     const handlerFingerOptions: Array<string> = this.fingerOptions.map(finger => finger.value);
-    
+
     const goToHandPart = legacyDefinition.goToHandPart({
       operation: (handPart: string, fingerPart: number, util) => {
         if (this.isConnected()) {
