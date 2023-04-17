@@ -109,10 +109,7 @@ const attachArgumentMethods = (
       Object.entries(methods)
         .filter(([_, method]) => method !== undefined)
         .map(([key, method]) => [key, method.bind(extension)])
-        .forEach(([key, method]) => {
-          tryUpdateKey(arg, key, method);
-        }))
-
+        .forEach(([key, method]) => tryUpdateKey(arg, key, method)))
 }
 
 const tryUpdateKey = <T extends Menu<any>>(arg: VerboseArgument<any>, key: string, value: T) => {

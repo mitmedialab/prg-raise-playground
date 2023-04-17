@@ -3,7 +3,7 @@ import tmImage from '@teachablemachine/image';
 import tmPose from '@teachablemachine/pose';
 import { create } from '@tensorflow-models/speech-commands';
 
-import { legacyFullSupport, legacyIncrementalSupport, info } from "./legacy";
+import { legacyFullSupport, info } from "./legacy";
 
 const { legacyExtension, legacyDefinition } = legacyFullSupport.for<teachableMachine>();
 
@@ -48,7 +48,15 @@ export default class teachableMachine extends Extension<Details, Blocks> {
 
   test: string = "";
 
+  /**
+   * Video refresh rate
+   * @type {number}
+   */
   INTERVAL = 33;
+  /**
+   * Dimensions of the video frame
+   * @type {number[]}
+   */
   DIMENSIONS = [480, 360];
 
   ModelType = {
