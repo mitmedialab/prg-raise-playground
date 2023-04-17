@@ -1,6 +1,7 @@
 import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, RuntimeEvent, ValueOf } from "$common";
-import { legacyIncrementalSupport, legacyFullSupport, info } from "./legacy";
 import * as posenet from '@tensorflow-models/posenet';
+
+import { legacyFullSupport, info } from "./legacy";
 
 const { legacyExtension, legacyDefinition } = legacyFullSupport.for<PoseBody>();
 
