@@ -1,9 +1,10 @@
 import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, RuntimeEvent, ValueOf } from "$common";
 import { legacyIncrementalSupport, legacyFullSupport, info } from "./legacy";
-// import Video from '../../../packages/scratch-vm/src/io/video';
 import * as posenet from '@tensorflow-models/posenet';
 
 const { legacyExtension, legacyDefinition } = legacyFullSupport.for<PoseBody>();
+
+// TODO: Implement extension health check (peripheral)
 
 /**
  * States what the video sensing activity can be set to.
@@ -73,38 +74,16 @@ export default class PoseBody extends Extension<Details, Blocks> {
    */
   bodyOptions = info.menus.PART.items;
 
-  runtime;
-
   /**
    * Acts like class PoseBody's constructor (instead of a child class constructor)
    * @param env 
    */
   init(env: Environment) {
 
-    const EXTENSION_ID = 'poseBody';
-    this.runtime = env.runtime
-    /* Unused but possibly needed in the future */
-    // this.runtime.registerPeripheralExtension(EXTENSION_ID, this);
-    // this.runtime.connectPeripheral(EXTENSION_ID, 0);
-    // this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
-
     if (this.runtime.ioDevices) {
-      // Possibly unnecessary, keep commented just in case
-      // this.runtime.on(RuntimeEvent.ProjectLoaded, this.projectStarted.bind(this));
-      // this.runtime.on(RuntimeEvent.ProjectRunStart, this.reset.bind(this)); 
-
       this._loop();
     }
   }
-
-  /**
-   * Dimensions the video stream is analyzed at after its rendered to the
-   * sample canvas.
-   * @type {Array.<number>}
-   */
-  // static get DIMENSIONS() {
-  //   return ;
-  // }
 
   /**
    * Converts the coordinates from the body pose estimate to Scratch coordinates
@@ -125,21 +104,6 @@ export default class PoseBody extends Extension<Details, Blocks> {
     this.setTransparency(this.globalVideoTransparency);
     this.toggleVideo(this.globalVideoState);
   }
-
-  /**
-   * Used by registerPeripheral and connectPeripheral functions
-   */
-  // reset() {
-  // }
-
-  /**
-   * Used by registerPeripheral and connectPeripheral functions
-   * Checks if the body pose estimate is ready to be used
-   * @returns {boolean} true if connected, false if not connected
-   */
-  // isConnected() {
-  //   return this.hasPose();
-  // }
 
   /**
    * Checks if there is a body in the video frame that has a pose
@@ -164,13 +128,6 @@ export default class PoseBody extends Extension<Details, Blocks> {
       const time = +new Date();
       if (frame) {
         this.poseState = await this.estimatePoseOnImage(frame);
-
-        // if (this.isConnected()) {
-        //   this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
-        // } else {
-        //   this.runtime.emit(this.runtime.constructor.PERIPHERAL_DISCONNECTED);
-        // }
-
       }
       const estimateThrottleTimeout = (+new Date() - time) / 4;
       await new Promise(r => setTimeout(r, estimateThrottleTimeout));
