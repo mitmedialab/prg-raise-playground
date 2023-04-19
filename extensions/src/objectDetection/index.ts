@@ -1,6 +1,6 @@
 import { ArgumentType, BlockType, Environment, ExtensionMenuDisplayDetails, extension, block } from "$common";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
-
+import { ObjectDetector, FilesetResolver, Detection } from "@mediapipe/tasks-vision"
 
 /** 👋 Hi!
 
@@ -35,11 +35,63 @@ const details: ExtensionMenuDisplayDetails = {
 
 /** @see {ExplanationOfClass} */
 /** @see {ExplanationOfInitMethod} */
-export default class ExtensionNameGoesHere extends extension(details, "toggleVideoBlock", "setTransparencyBlock") {
+export default class objectDetection extends extension(details, "video", "toggleVideoBlock", "setTransparencyBlock") {
+
+  objectDetector: ObjectDetector;
+  // demosSection = document.getElementById("demos");
 
   init(env: Environment) {
-    this.exampleField = 0;
+    this.initializeObjectDetector();
+    if (this.runtime.ioDevices) {
+      this._loop()
+    }
   }
+
+  // Initialize the object detector
+  async initializeObjectDetector() {
+
+    const vision = await FilesetResolver.forVisionTasks(
+      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.1.0-alpha-11/wasm"
+    );
+    this.objectDetector = await ObjectDetector.createFromOptions(vision, {
+      baseOptions: {
+        modelAssetPath: `https://storage.googleapis.com/mediapipe-tasks/object_detector/efficientdet_lite0_uint8.tflite`
+      },
+      scoreThreshold: 0.5,
+      runningMode: 'VIDEO'
+    });
+    // demosSection.classList.remove("invisible");
+  }
+
+  // const initializeObjectDetector = async () => {
+  //   const vision = await FilesetResolver.forVisionTasks(
+  //     "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.1.0-alpha-11/wasm"
+  //   );
+  //   objectDetector = await ObjectDetector.createFromOptions(vision, {
+  //     baseOptions: {
+  //       modelAssetPath: `https://storage.googleapis.com/mediapipe-tasks/object_detector/efficientdet_lite0_uint8.tflite`
+  //     },
+  //     scoreThreshold: 0.5,
+  //     runningMode: runningMode
+  //   });
+  //   demosSection.classList.remove("invisible");
+  // };
+  // initializeObjectDetector();
+
+
+  async _loop() {
+    while (true) {
+      const frame = this.getVideoFrame('image')
+      const time = +new Date();
+      if (frame) {
+        // this.poseState = await this.estimatePoseOnImage(frame);
+      }
+      const estimateThrottleTimeout = (+new Date() - time) / 4;
+      await new Promise(r => setTimeout(r, estimateThrottleTimeout));
+    }
+  }
+
+
 
   /** @see {ExplanationOfField} */
   exampleField: number;
