@@ -87,7 +87,6 @@ export default class Tables extends Extension<Details, Blocks> {
     );
   }
 
-
   newTable(info: { name: string, rows: number, columns: number }) {
     const { name, rows, columns } = info;
     this.tables[name] = [];
@@ -119,6 +118,7 @@ export default class Tables extends Extension<Details, Blocks> {
     return {
       // button that opens a modal to create a new table
       createTable: () => ({
+        type: BlockType.Button,
         text: 'new table',
         operation: () => this.openUI("Make", "Add a table"),
       }),
