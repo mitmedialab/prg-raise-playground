@@ -33,6 +33,8 @@ type Blocks = {
 @validGenericExtension()
 export default class Tables extends Extension<Details, Blocks> {
   tables: Record<string, number[][]>;
+  rowNames: Record<string, string[]>;
+  columnNames: Record<string, string[]>;
   tableNamesArg: any;
   defaultNumberArg: any;
 
@@ -89,8 +91,8 @@ export default class Tables extends Extension<Details, Blocks> {
   newTable(info: { name: string, rows: number, columns: number }) {
     const { name, rows, columns } = info;
     this.tables[name] = [];
-    this.rowNames[name] = Array(rows).fill('row');
-    this.columnNames[name] = Array(columns).fill('column');
+    this.rowNames[name] = new Array(rows).fill('row');
+    this.columnNames[name] = new Array(columns).fill('col');
     for (let i = 0; i < rows; i++) {
       let newRow = [];
       for (let j = 0; j < columns; j++) newRow.push(0);
@@ -117,7 +119,6 @@ export default class Tables extends Extension<Details, Blocks> {
     return {
       // button that opens a modal to create a new table
       createTable: () => ({
-        type: BlockType.Button,
         text: 'new table',
         operation: () => this.openUI("Make", "Add a table"),
       }),
