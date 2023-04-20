@@ -46,8 +46,12 @@ export default class Tables extends Extension<Details, Blocks> {
   init(env: Environment) {
     if (!this.tables) {
       this.tables = {};
+      this.rowNames = {};
+      this.columnNames = {};
       this.tables.myTable = [];
       this.tables.myTable.push([0]);
+      this.rowNames.myTable = ['row'];
+      this.columnNames.myTable = ['col'];
     }
 
     // dynamic retriever of table names for block dropdowns
@@ -85,6 +89,8 @@ export default class Tables extends Extension<Details, Blocks> {
   newTable(info: { name: string, rows: number, columns: number }) {
     const { name, rows, columns } = info;
     this.tables[name] = [];
+    this.rowNames[name] = Array(rows).fill('row');
+    this.columnNames[name] = Array(columns).fill('column');
     for (let i = 0; i < rows; i++) {
       let newRow = [];
       for (let j = 0; j < columns; j++) newRow.push(0);
@@ -95,6 +101,16 @@ export default class Tables extends Extension<Details, Blocks> {
   changeTableValue(info: { name: string, row: number, column: number, value: number }) {
     const { name, row, column, value } = info;
     this.tables[name][row][column] = value;
+  }
+
+  changeColumnName(info: { name: string, column: number, value: string }) {
+    const { name, column, value } = info;
+    this.columnNames[name][column] = value;
+  }
+
+  changeRowName(info: { name: string, row: number, value: string }) {
+    const { name, row, value } = info;
+    this.rowNames[name][row] = value;
   }
 
   defineBlocks(): Tables["BlockDefinitions"] {
@@ -130,7 +146,9 @@ export default class Tables extends Extension<Details, Blocks> {
         text: (table) => `remove ${table}`,
         operation: (table) => {
           if (this.tables[table]) {
-            delete this.tables[table]
+            delete this.tables[table];
+            delete this.rowNames[table];
+            delete this.columnNames[table];
             return;
           } else {
             alert(`that table doesn't exist`);
@@ -151,6 +169,7 @@ export default class Tables extends Extension<Details, Blocks> {
           for (let i = 0; i < this.tables[table].length; i++) {
             this.tables[table][i].push(0);
           }
+          this.columnNames[table].push('col');
         }
       }),
       // add a row to the given table
@@ -168,6 +187,9 @@ export default class Tables extends Extension<Details, Blocks> {
             newRow.push(0);
           }
           this.tables[table].push(newRow);
+          this.rowNames[table].push('row');
+        }
+      }),
       // removes the specified column from the table
       deleteColumn: (self: Tables) => ({
         type: BlockType.Command,
@@ -188,6 +210,7 @@ export default class Tables extends Extension<Details, Blocks> {
           for (let i = 0; i < this.tables[table].length; i++) {
             this.tables[table][i].splice((column - 1), 1);
           }
+          this.columnNames[table].splice((column - 1), 1);
         }
       }),
       // removes the specified row from th table
@@ -208,6 +231,7 @@ export default class Tables extends Extension<Details, Blocks> {
             return;
           }
           this.tables[table].splice((row - 1), 1);
+          this.rowNames[table].splice((row - 1), 1);
         }
       }),
       // change the value in a given table cell

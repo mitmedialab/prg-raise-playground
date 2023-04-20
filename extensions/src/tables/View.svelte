@@ -10,7 +10,7 @@
   const set: ReactiveSet<Extension> = (propertyName, value) => reactiveSet((extension = extension), propertyName, value);
 
   const container = activeClass;
-  const tableListDropdown = activeClass, tableBox = activeClass, tableValueInput = activeClass;
+  const tableListDropdown = activeClass, tableBox = activeClass, tableValueInput = activeClass, nameInput = activeClass;
 
   const tableNames = Object.keys(extension.tables);
   let selected: string = tableNames.length > 0 ? tableNames[0] : "";
@@ -18,11 +18,17 @@
   type InputChangeEvent = Event & { currentTarget: EventTarget & HTMLInputElement};
   const update = (e: InputChangeEvent, row: number, column: number) => 
     invoke("changeTableValue", {name: selected, row, column, value: parseInt(e.currentTarget.value)});
+  const updateColumnName = (e: InputChangeEvent, column: number)
+    =>
+    invoke("changeColumnName", {name: selected, column, value: e.currentTarget.value});
+  const updateRowName = (e: InputChangeEvent, row: number)
+    =>
+    invoke("changeRowName", {name: selected, row, value: e.currentTarget.value});
 </script>
 
 <style>
   .container {
-    width: 480px;
+    width: 640px!important;
     padding: 1.5rem 2.25rem;
   }
 
@@ -52,6 +58,14 @@
     width: 3rem;
     padding: .25rem;
     color: var(--text-primary-transparent);
+    font-size: .85rem;
+  }
+
+  .nameInput {
+    font-weight: bold;
+    width: 4rem;
+    padding: .25rem;
+    color: var(--text-primary-transparent);
     font-size: 1rem;
   }
 </style>
@@ -71,18 +85,22 @@
       <thead>
         <tr>
           <th></th>
-          {#each [...Array(extension.tables[selected][0].length)] as _, i}
-            <th>{i + 1}</th>
+          {#each extension.columnNames[selected] as columnName, i}
+            <th>
+              <input class:nameInput type=text value={columnName} on:change={(e) => updateColumnName(e, i)} data-testid="columnNameCell">
+            </th>
           {/each}
       </tr>
       </thead>
       <tbody>
         {#each extension.tables[selected] as row, i}
           <tr>
-            <th>{i + 1}</th>
+            <th>
+              <input class:nameInput type=text value={extension.rowNames[selected][i]} on:change={(e) => updateRowName(e, i)} data-testid="rowNameCell">
+            </th>
             {#each row as value, j}
               <th>
-                <input class:tableValueInput type="number" {value} on:change={(e) => update(e, i, j)} data-testid="tableCell">
+                <input class:tableValueInput type=number {value} on:change={(e) => update(e, i, j)} data-testid="tableCell">
               </th>
             {/each}
           </tr>
