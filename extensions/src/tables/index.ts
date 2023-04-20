@@ -17,6 +17,8 @@ type Blocks = {
   removeTable: (table: string) => void;
   insertColumn: (table: string) => void;
   insertRow: (table: string) => void;
+  deleteColumn: (table: string, column: number) => void;
+  deleteRow: (table: string, row: number) => void;
   insertValueAt: (table: string, value: any, row: number, column: number) => void;
   getValueAt: (table: string, row: number, column: number) => number;
   numberOfRows: (table: string) => number;
@@ -166,6 +168,46 @@ export default class Tables extends Extension<Details, Blocks> {
             newRow.push(0);
           }
           this.tables[table].push(newRow);
+      // removes the specified column from the table
+      deleteColumn: (self: Tables) => ({
+        type: BlockType.Command,
+        args: [self.tableNamesArg, ArgumentType.Number],
+        text: (table, column) => `delete column ${column} from ${table}`,
+        operation: (table, column) => {
+          if (!(table in self.tables)) {
+            alert(`that table does not exist.`);
+            return;
+          }
+          if (
+            column > this.tables[table][0].length || 
+            column < 0
+          ) {
+            alert(`that column number doesn't exist.`);
+            return;
+          }
+          for (let i = 0; i < this.tables[table].length; i++) {
+            this.tables[table][i].splice((column - 1), 1);
+          }
+        }
+      }),
+      // removes the specified row from th table
+      deleteRow: (self: Tables) => ({
+        type: BlockType.Command,
+        args: [self.tableNamesArg, ArgumentType.Number],
+        text: (table, row) => `delete row ${row} from ${table}`,
+        operation: (table, row) => {
+          if (!(table in self.tables)) {
+            alert(`that table does not exist.`);
+            return;
+          }
+          if (
+            row > this.tables[table].length || 
+            row < 0
+          ) {
+            alert(`that row number doesn't exist.`);
+            return;
+          }
+          this.tables[table].splice((row - 1), 1);
         }
       }),
       // change the value in a given table cell

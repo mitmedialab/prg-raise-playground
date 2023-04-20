@@ -145,6 +145,40 @@ createTestSuite({ Extension, __dirname }, {
         }
       }
     },
+    deleteColumn: ({ expect }) => {
+      return {
+        input: ['newTable', 1],
+        before: ({ extension }) => {
+          extension.tables.newTable = [
+            [0, 0],
+            [1, 0]
+          ];
+        },
+        after: ({ extension }) => {
+          expect(extension.tables.newTable.length).toBe(2);
+          expect(extension.tables.newTable[0].length).toBe(1);
+          expect(extension.tables.newTable[0][0]).toBe(0);
+          delete extension.tables.newTable;
+        }
+      }
+    },
+    deleteRow: ({ expect }) => {
+      return {
+        input: ['newTable', 1],
+        before: ({ extension }) => {
+          extension.tables.newTable = [
+            [0, 0],
+            [1, 1]
+          ];
+        },
+        after: ({ extension }) => {
+          expect(extension.tables.newTable.length).toBe(1);
+          expect(extension.tables.newTable[0].length).toBe(2);
+          expect(extension.tables.newTable[0][0]).toBe(1);
+          delete extension.tables.newTable;
+        }
+      }
+    },
     getValueAt: [
       (testHelper) => {
         let expected = -1;
