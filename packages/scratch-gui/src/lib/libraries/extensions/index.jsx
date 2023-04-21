@@ -8,9 +8,6 @@ import { FormattedMessage } from 'react-intl';
 import textClassificationBlocksIconURL from './text_classification/text-classification-blocks.png';
 import textClassificationBlocksInsetIconURL from './text_classification/text-classification-blocks-small.svg';
 
-import teachableMachineBlocksIconURL from './teachable-machine-blocks/teachable-machine-blocks.png';
-import teachableMachineBlocksInsetIconURL from './teachable-machine-blocks/teachable-machine-blocks-small.svg';
-
 import arduinoRobotIconURL from './arduino_extension/arduino_extension.png';
 import arduinoRobotInsetIconURL from './arduino_extension/arduino_small.svg';
 
@@ -68,26 +65,6 @@ export default [
     /* DO NOT REMOVE */
     ...generatedDetails,
     /* DO NOT REMOVE */
-    {
-        name: (
-            <FormattedMessage
-                defaultMessage="Teachable Machine"
-                description="Teachable Machine name"
-                id="gui.extension.teachable-machine.name"
-            />
-        ),
-        extensionId: 'teachableMachine',
-        iconURL: teachableMachineBlocksIconURL,
-        insetIconURL: teachableMachineBlocksInsetIconURL,
-        description: (
-            <FormattedMessage
-                defaultMessage="Use your Teachable Machine models in your Scratch project!"
-                description="Teachable Machine Description"
-                id="gui.extension.teachable-machine.description"
-            />
-        ),
-        featured: true
-    },
     {
         name: (
             <FormattedMessage
