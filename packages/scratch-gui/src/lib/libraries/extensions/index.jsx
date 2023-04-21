@@ -8,8 +8,6 @@ import { FormattedMessage } from 'react-intl';
 import textClassificationBlocksIconURL from './text_classification/text-classification-blocks.png';
 import textClassificationBlocksInsetIconURL from './text_classification/text-classification-blocks-small.svg';
 
-import poseHandBlocksIconURL from './posenet/pose-hand.png';
-import poseFaceBlocksIconURL from './posenet/pose-face.png';
 import teachableMachineBlocksIconURL from './teachable-machine-blocks/teachable-machine-blocks.png';
 import teachableMachineBlocksInsetIconURL from './teachable-machine-blocks/teachable-machine-blocks-small.svg';
 
@@ -29,10 +27,6 @@ import penInsetIconURL from './pen/pen-small.svg';
 
 import videoSensingIconURL from './videoSensing/video-sensing.png';
 import videoSensingInsetIconURL from './videoSensing/video-sensing-small.svg';
-
-// import posenetIconURL from './posenet/video-sensing.png';
-import poseHandInsetIconURL from './posenet/pose-hand-small-3.svg';
-import poseFaceInsetIconURL from './posenet/pose-face-small.svg';
 
 import text2speechIconURL from './text2speech/text2speech.png';
 import text2speechInsetIconURL from './text2speech/text2speech-small.svg';
@@ -110,34 +104,6 @@ export default [
                 defaultMessage="Create a text classification model for use in a Scratch project!"
                 description="Text Classification Description"
                 id="gui.extension.text-classification.description"
-            />
-        ),
-        featured: true
-    },
-    {
-        name: "Hand Sensing",
-        extensionId: 'poseHand',
-        iconURL: poseHandBlocksIconURL,
-        insetIconURL: poseHandInsetIconURL,
-        description: (
-            <FormattedMessage
-                defaultMessage="Sense hand movement with the camera."
-                description="PoseNet Description"
-                id="gui.extension.pose_hand.description"
-            />
-        ),
-        featured: true
-    },
-    {
-        name: "Face Sensing",
-        extensionId: 'poseFace',
-        iconURL: poseFaceBlocksIconURL,
-        insetIconURL: poseFaceInsetIconURL,
-        description: (
-            <FormattedMessage
-                defaultMessage="Sense face movement with the camera."
-                description="PoseNet Description"
-                id="gui.extension.pose_face.description"
             />
         ),
         featured: true
