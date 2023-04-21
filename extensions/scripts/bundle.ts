@@ -6,7 +6,7 @@ import bundleFramework from "./bundles/framework";
 import { bundleExtension } from "./bundles";
 import { hackToFilterOutUnhelpfulRollupLogs } from './utils/rollupHelper';
 
-const { watch, specifiedDir } = processOptions({ watch: false });
+const { watch, specifiedDir, individually } = processOptions({ watch: false });
 
 hackToFilterOutUnhelpfulRollupLogs();
 
@@ -17,7 +17,14 @@ hackToFilterOutUnhelpfulRollupLogs();
   const extensionDirectories = soloDirectory ? [soloDirectory] : getAllExtensionDirectories();
 
   const { length } = extensionDirectories;
-  extensionDirectories.forEach(dir => bundleExtension(dir, length, watch));
+
+  if (individually) {
+    for (const dir of extensionDirectories) {
+      await bundleExtension(dir, length, watch);
+    }
+  } else {
+    extensionDirectories.forEach(dir => bundleExtension(dir, length, watch));
+  }
 
   if (soloDirectory || !watch) return;
 
