@@ -8,7 +8,6 @@ import { FormattedMessage } from 'react-intl';
 import textClassificationBlocksIconURL from './text_classification/text-classification-blocks.png';
 import textClassificationBlocksInsetIconURL from './text_classification/text-classification-blocks-small.svg';
 
-import poseBodyBlocksIconURL from './posenet/pose-body.png';
 import teachableMachineBlocksIconURL from './teachable-machine-blocks/teachable-machine-blocks.png';
 import teachableMachineBlocksInsetIconURL from './teachable-machine-blocks/teachable-machine-blocks-small.svg';
 
@@ -28,9 +27,6 @@ import penInsetIconURL from './pen/pen-small.svg';
 
 import videoSensingIconURL from './videoSensing/video-sensing.png';
 import videoSensingInsetIconURL from './videoSensing/video-sensing-small.svg';
-
-// import posenetIconURL from './posenet/video-sensing.png';
-import poseBodyInsetIconURL from './posenet/pose-body-small.svg';
 
 import text2speechIconURL from './text2speech/text2speech.png';
 import text2speechInsetIconURL from './text2speech/text2speech-small.svg';
@@ -108,20 +104,6 @@ export default [
                 defaultMessage="Create a text classification model for use in a Scratch project!"
                 description="Text Classification Description"
                 id="gui.extension.text-classification.description"
-            />
-        ),
-        featured: true
-    },
-    {
-        name: "Body Sensing",
-        extensionId: 'poseBody',
-        iconURL: poseBodyBlocksIconURL,
-        insetIconURL: poseBodyInsetIconURL,
-        description: (
-            <FormattedMessage
-                defaultMessage="Sense body position with the camera."
-                description="PoseNet Description"
-                id="gui.extension.pose_body.description"
             />
         ),
         featured: true
