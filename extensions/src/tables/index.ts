@@ -204,7 +204,7 @@ export default class Tables extends Extension<Details, Blocks> {
       // removes the specified column from the table
       deleteColumn: (self: Tables) => ({
         type: BlockType.Command,
-        args: [self.tableNamesArg, ArgumentType.Number],
+        args: [self.tableNamesArg, self.defaultNumberArg],
         text: (table, column) => `delete column ${column} from ${table}`,
         operation: (table, column) => {
           if (!(table in self.tables)) {
@@ -213,7 +213,7 @@ export default class Tables extends Extension<Details, Blocks> {
           }
           if (
             column > this.tables[table][0].length || 
-            column < 0
+            column < 1
           ) {
             alert(`that column number doesn't exist.`);
             return;
@@ -227,7 +227,7 @@ export default class Tables extends Extension<Details, Blocks> {
       // removes the specified row from th table
       deleteRow: (self: Tables) => ({
         type: BlockType.Command,
-        args: [self.tableNamesArg, ArgumentType.Number],
+        args: [self.tableNamesArg, self.defaultNumberArg],
         text: (table, row) => `delete row ${row} from ${table}`,
         operation: (table, row) => {
           if (!(table in self.tables)) {
@@ -236,7 +236,7 @@ export default class Tables extends Extension<Details, Blocks> {
           }
           if (
             row > this.tables[table].length || 
-            row < 0
+            row < 1
           ) {
             alert(`that row number doesn't exist.`);
             return;
