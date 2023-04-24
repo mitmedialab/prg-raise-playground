@@ -49,9 +49,30 @@ export default class Tables extends Extension<Details, Blocks> {
       };
     },
     onLoad: (self, data) => {
-      self.tables = data.tables;
-      self.rowNames = data.rowNames;
-      self.columnNames = data.columnNames;
+      if (data.rowNames === undefined) {
+        // save happened before column names and row names were added
+        // as a feature.
+        // Load data into tables, and then construct default names.
+        
+        self.tables = data;
+        self.rowNames = {};
+        self.columnNames = {};
+        
+        Object.keys(self.tables).forEach(tableName => {
+          self.rowNames[tableName] = self.tables[tableName].map(
+            (row, i) => `row${i + 1}`
+          )
+        })
+        Object.keys(self.tables).forEach(tableName => {
+          self.columnNames[tableName] = self.tables[tableName][0].map(
+            (col, i) => `col${i + 1}`
+          )
+        })
+      } else {
+        self.tables = data.tables;
+        self.rowNames = data.rowNames;
+        self.columnNames = data.columnNames;
+      }
     },
   });
 
