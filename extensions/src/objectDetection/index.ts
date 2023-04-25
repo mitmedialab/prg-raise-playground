@@ -1,6 +1,6 @@
-import { ArgumentType, BlockType, Environment, ExtensionMenuDisplayDetails, extension, block } from "$common";
+import { ArgumentType, BlockType, Environment, ExtensionMenuDisplayDetails, extension, block, untilExternalGlobalVariableLoaded } from "$common";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
-import { ObjectDetector, FilesetResolver, Detection } from "@mediapipe/tasks-vision"
+import { ObjectDetector as ObjectDetectorClass, FilesetResolver, Detection } from "@mediapipe/tasks-vision"
 
 /** 👋 Hi!
 
@@ -37,93 +37,68 @@ const details: ExtensionMenuDisplayDetails = {
 /** @see {ExplanationOfInitMethod} */
 export default class objectDetection extends extension(details, "video", "toggleVideoBlock", "setTransparencyBlock") {
 
-  objectDetector: ObjectDetector;
+  objectDetector: typeof ObjectDetectorClass;
+  detector;
+  runningMode;
+  continuous: boolean;
   // demosSection = document.getElementById("demos");
 
   init(env: Environment) {
+    this.runningMode = 'IMAGE';
+    this.continuous = false;
     this.initializeObjectDetector();
-    if (this.runtime.ioDevices) {
-      this._loop()
-    }
   }
 
   // Initialize the object detector
   async initializeObjectDetector() {
+    // @ts-ignore
+    const z = await import("https://cdn.skypack.dev/@mediapipe/tasks-vision@0.1.0-alpha-11");
+    const objectDetector: typeof ObjectDetectorClass = z["ObjectDetector"];
+    const { ObjectDectector, FilesetResolver } = z as { ObjectDectector: typeof ObjectDetectorClass, FilesetResolver };
+
+    //const package = await untilExternalGlobalVariableLoaded("url", "taskVision");
+    //const objectDector: ObjectDetector = package["ObjectDector"];
 
     const vision = await FilesetResolver.forVisionTasks(
       "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.1.0-alpha-11/wasm"
     );
-    this.objectDetector = await ObjectDetector.createFromOptions(vision, {
+    this.detector = await objectDetector.createFromOptions(vision, {
       baseOptions: {
         modelAssetPath: `https://storage.googleapis.com/mediapipe-tasks/object_detector/efficientdet_lite0_uint8.tflite`
       },
       scoreThreshold: 0.5,
-      runningMode: 'VIDEO'
+      runningMode: this.runningMode
     });
-    // demosSection.classList.remove("invisible");
   }
 
-  // const initializeObjectDetector = async () => {
-  //   const vision = await FilesetResolver.forVisionTasks(
-  //     "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.1.0-alpha-11/wasm"
-  //   );
-  //   objectDetector = await ObjectDetector.createFromOptions(vision, {
-  //     baseOptions: {
-  //       modelAssetPath: `https://storage.googleapis.com/mediapipe-tasks/object_detector/efficientdet_lite0_uint8.tflite`
-  //     },
-  //     scoreThreshold: 0.5,
-  //     runningMode: runningMode
-  //   });
-  //   demosSection.classList.remove("invisible");
-  // };
-  // initializeObjectDetector();
-
-
-  async _loop() {
-    while (true) {
+  private async detectionLoop() {
+    while (this.continuous) {
       const frame = this.getVideoFrame('image')
       const time = +new Date();
       if (frame) {
-        // this.poseState = await this.estimatePoseOnImage(frame);
+        // this.detector = 
       }
       const estimateThrottleTimeout = (+new Date() - time) / 4;
       await new Promise(r => setTimeout(r, estimateThrottleTimeout));
     }
   }
 
-
-
-  /** @see {ExplanationOfField} */
-  exampleField: number;
-
-  /** @see {ExplanationOfReporterBlock} */
-  @block({ type: "reporter", text: "This increments an internal field and then reports it's value" })
-  exampleReporter() {
-    return ++this.exampleField;
-  }
-
-  /** @see {ExplanationOfCommandBlock} */
-  @block((self) => ({
-    /** @see {ExplanationOfBlockType} */
-    type: BlockType.Command,
-    /** @see {ExplanationOfBlockTextFunction} */
-    text: (exampleString, exampleNumber) => `This is the block's display text with inputs here --> ${exampleString} and here --> ${exampleNumber}`,
-    /** @see {ExplanationOfBlockArgs} */
-    args: [ArgumentType.String, { type: ArgumentType.Number, defaultValue: self.exampleField }],
-  }))
-  exampleCommand(exampleString: string, exampleNumber: number) {
-    alert(`This is a command! Here's what it received: ${exampleString} and ${exampleNumber}`); // Replace with what the block should do! 
-  }
-
-  /** @see {ExplanationOfHatBlock} */
-  /** @see {ExplanationOfBlockUtility} */
   @block({
-    type: "hat",
-    text: (condition) => `Should the below block execute: ${condition}`,
-    /** @see {ExplanationOfBlockArg} */
-    arg: "Boolean"
+    type: BlockType.Command,
+    text: `Detect objects`
   })
-  async exampleHat(condition: boolean, util: BlockUtility) {
-    return util.stackFrame.isLoop === condition;
+  detectObject() {
+    console.log('pass')
   }
+
+  @block({
+    type: BlockType.Command,
+    text: (state) => `Toggle continuous detection ${state}`,
+    arg: { type: ArgumentType.Boolean, options: [{ text: 'on', value: true }, { text: 'off', value: false }] }
+  })
+  async continuouslyDetectObjects(state) {
+    this.continuous = state
+    this.detectionLoop()
+  }
+
 }
