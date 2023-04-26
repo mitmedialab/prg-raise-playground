@@ -17,6 +17,8 @@ type Blocks = {
   removeTable: (table: string) => void;
   insertColumn: (table: string) => void;
   insertRow: (table: string) => void;
+  deleteColumn: (table: string, column: number) => void;
+  deleteRow: (table: string, row: number) => void;
   insertValueAt: (table: string, value: any, row: number, column: number) => void;
   getValueAt: (table: string, row: number, column: number) => number;
   numberOfRows: (table: string) => number;
@@ -31,21 +33,59 @@ type Blocks = {
 @validGenericExtension()
 export default class Tables extends Extension<Details, Blocks> {
   tables: Record<string, number[][]>;
+  rowNames: Record<string, string[]>;
+  columnNames: Record<string, string[]>;
   tableNamesArg: any;
   defaultNumberArg: any;
 
   // save tables to .sb3 when project is saved
   override saveDataHandler = new SaveDataHandler({
     Extension: Tables,
-    onSave: (self) => { return self.tables },
-    onLoad: (self, tables) => { self.tables = tables },
+    onSave: (self) => {
+      return {
+        tables: self.tables,
+        rowNames: self.rowNames,
+        columnNames: self.columnNames
+      };
+    },
+    onLoad: (self, data) => {
+      if (data.rowNames === undefined) {
+        // save happened before column names and row names were added
+        // as a feature.
+        // Load data into tables, and then construct default names.
+        
+        self.tables = data;
+        const tableNames = Object.keys(self.tables);
+
+        self.rowNames = tableNames.reduce((rowNames, tableName, i) => {
+          rowNames[tableName] = self.tables[tableName].map(
+            (row, i) => `row${i + 1}`
+          );
+          return rowNames;
+        }, {});
+        self.columnNames = tableNames.reduce((columnNames, tableName, i) => {
+          columnNames[tableName] = self.tables[tableName][0].map(
+            (col, i) => `col${i + 1}`
+          );
+          return columnNames;
+        }, {});
+      } else {
+        self.tables = data.tables;
+        self.rowNames = data.rowNames;
+        self.columnNames = data.columnNames;
+      }
+    },
   });
 
   init(env: Environment) {
     if (!this.tables) {
       this.tables = {};
+      this.rowNames = {};
+      this.columnNames = {};
       this.tables.myTable = [];
       this.tables.myTable.push([0]);
+      this.rowNames.myTable = ['row'];
+      this.columnNames.myTable = ['col'];
     }
 
     // dynamic retriever of table names for block dropdowns
@@ -79,10 +119,11 @@ export default class Tables extends Extension<Details, Blocks> {
     );
   }
 
-
   newTable(info: { name: string, rows: number, columns: number }) {
     const { name, rows, columns } = info;
     this.tables[name] = [];
+    this.rowNames[name] = new Array(rows).fill('row');
+    this.columnNames[name] = new Array(columns).fill('col');
     for (let i = 0; i < rows; i++) {
       let newRow = [];
       for (let j = 0; j < columns; j++) newRow.push(0);
@@ -93,6 +134,16 @@ export default class Tables extends Extension<Details, Blocks> {
   changeTableValue(info: { name: string, row: number, column: number, value: number }) {
     const { name, row, column, value } = info;
     this.tables[name][row][column] = value;
+  }
+
+  changeColumnName(info: { name: string, column: number, value: string }) {
+    const { name, column, value } = info;
+    this.columnNames[name][column] = value;
+  }
+
+  changeRowName(info: { name: string, row: number, value: string }) {
+    const { name, row, value } = info;
+    this.rowNames[name][row] = value;
   }
 
   defineBlocks(): Tables["BlockDefinitions"] {
@@ -128,7 +179,9 @@ export default class Tables extends Extension<Details, Blocks> {
         text: (table) => `remove ${table}`,
         operation: (table) => {
           if (this.tables[table]) {
-            delete this.tables[table]
+            delete this.tables[table];
+            delete this.rowNames[table];
+            delete this.columnNames[table];
             return;
           } else {
             alert(`that table doesn't exist`);
@@ -149,6 +202,7 @@ export default class Tables extends Extension<Details, Blocks> {
           for (let i = 0; i < this.tables[table].length; i++) {
             this.tables[table][i].push(0);
           }
+          this.columnNames[table].push('col');
         }
       }),
       // add a row to the given table
@@ -166,6 +220,51 @@ export default class Tables extends Extension<Details, Blocks> {
             newRow.push(0);
           }
           this.tables[table].push(newRow);
+          this.rowNames[table].push('row');
+        }
+      }),
+      // removes the specified column from the table
+      deleteColumn: (self: Tables) => ({
+        type: BlockType.Command,
+        args: [self.tableNamesArg, self.defaultNumberArg],
+        text: (table, column) => `delete column ${column} from ${table}`,
+        operation: (table, column) => {
+          if (!(table in self.tables)) {
+            alert(`that table does not exist.`);
+            return;
+          }
+          if (
+            column > this.tables[table][0].length || 
+            column < 1
+          ) {
+            alert(`that column number doesn't exist.`);
+            return;
+          }
+          for (let i = 0; i < this.tables[table].length; i++) {
+            this.tables[table][i].splice((column - 1), 1);
+          }
+          this.columnNames[table].splice((column - 1), 1);
+        }
+      }),
+      // removes the specified row from th table
+      deleteRow: (self: Tables) => ({
+        type: BlockType.Command,
+        args: [self.tableNamesArg, self.defaultNumberArg],
+        text: (table, row) => `delete row ${row} from ${table}`,
+        operation: (table, row) => {
+          if (!(table in self.tables)) {
+            alert(`that table does not exist.`);
+            return;
+          }
+          if (
+            row > this.tables[table].length || 
+            row < 1
+          ) {
+            alert(`that row number doesn't exist.`);
+            return;
+          }
+          this.tables[table].splice((row - 1), 1);
+          this.rowNames[table].splice((row - 1), 1);
         }
       }),
       // change the value in a given table cell
