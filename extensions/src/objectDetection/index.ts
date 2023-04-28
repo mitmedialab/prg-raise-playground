@@ -1,6 +1,7 @@
-import { ArgumentType, BlockType, Environment, ExtensionMenuDisplayDetails, extension, block, untilExternalGlobalVariableLoaded } from "$common";
+import { ArgumentType, BlockType, Environment, ExtensionMenuDisplayDetails, extension, block, untilTimePassed, untilExternalGlobalVariableLoaded } from "$common";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import { ObjectDetector as ObjectDetectorClass, FilesetResolver, Detection } from "@mediapipe/tasks-vision"
+// import { ObjectDectector, FilesetResolver, Detection} from ("https://cdn.skypack.dev/@mediapipe/tasks-vision@0.1.0-alpha-11"); 
 
 /** 👋 Hi!
 
@@ -42,11 +43,16 @@ export default class objectDetection extends extension(details, "video", "toggle
   runningMode;
   continuous: boolean;
   // demosSection = document.getElementById("demos");
+  DIMENSIONS = [480, 360];
+  detections: any[];
+  processFreq: number = 100;
 
   init(env: Environment) {
+    this.enableVideo()
     this.runningMode = 'IMAGE';
     this.continuous = false;
     this.initializeObjectDetector();
+    // this.detections = []
   }
 
   // Initialize the object detector
@@ -71,24 +77,121 @@ export default class objectDetection extends extension(details, "video", "toggle
     });
   }
 
+  // async initializeObjectDetector(){
+
+  //   const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.1.0-alpha-11/wasm");
+
+  //   // @ts-ignore
+  //   // const importPackage = await import("https://cdn.skypack.dev/@mediapipe/tasks-vision@0.1.0-alpha-11"); 
+
+  //   this.objectDetector = await ObjectDetector.createFromOptions(vision, {
+  //     baseOptions: {
+  //       modelAssetPath: `https://storage.googleapis.com/mediapipe-tasks/object_detector/efficientdet_lite0_uint8.tflite`
+  //     },
+  //     scoreThreshold: 0.5,
+  //     runningMode: runningMode
+  //   });
+  //   demosSection.classList.remove("invisible");
+
+  // }
+
   private async detectionLoop() {
     while (this.continuous) {
-      const frame = this.getVideoFrame('image')
-      const time = +new Date();
+      // const frame = this.getVideoFrame('image')
+      // const time = +new Date();
+      const frame = this.getVideoFrame("canvas");
+      const start = Date.now();
       if (frame) {
-        // this.detector = 
+        const detections = await this.detector.detect(frame);
+        this.displayImageDetections(detections, frame);
       }
-      const estimateThrottleTimeout = (+new Date() - time) / 4;
-      await new Promise(r => setTimeout(r, estimateThrottleTimeout));
+      // const estimateThrottleTimeout = (+new Date() - time) / 4;
+      // await new Promise(r => setTimeout(r, estimateThrottleTimeout));
+      const elapsed = Date.now() - start;
+      await untilTimePassed(this.processFreq - elapsed);
     }
+  }
+
+  // clearFrame():
+
+  // FIX AND FINISH
+  displayImageDetections(result, resultElement: HTMLElement) {
+
+    let showLength;
+    if (this.continuous) showLength = this.processFreq-1
+    else showLength = 100
+    
+    const ratio = resultElement.height / resultElement.naturalHeight;
+
+    // const image = results.image as ImageBitmap;
+    // const mask = results.segmentationMask as ImageBitmap;
+    // const { width, height } = mask;
+    // console.log(ratio);
+
+    for (let detection of result.detections) {
+      // Description text
+      const p = document.createElement("p");
+      p.setAttribute("class", "info");
+      p.innerText =
+        detection.categories[0].categoryName +
+        " - with " +
+        Math.round(parseFloat(detection.categories[0].score) * 100) +
+        "% confidence.";
+      // Positioned at the top left of the bounding box.
+      // Height is whatever the text takes up.
+      // Width subtracts text padding in CSS so fits perfectly.
+      p.style =
+        "left: " +
+        detection.boundingBox.originX * ratio +
+        "px;" +
+        "top: " +
+        detection.boundingBox.originY * ratio +
+        "px; " +
+        "width: " +
+        (detection.boundingBox.width * ratio - 10) +
+        "px;";
+      const highlighter = document.createElement("div");
+      highlighter.setAttribute("class", "highlighter");
+      highlighter.style =
+        "left: " +
+        detection.boundingBox.originX * ratio +
+        "px;" +
+        "top: " +
+        detection.boundingBox.originY * ratio +
+        "px;" +
+        "width: " +
+        detection.boundingBox.width * ratio +
+        "px;" +
+        "height: " +
+        detection.boundingBox.height * ratio +
+        "px;";
+
+      resultElement.parentNode.appendChild(highlighter);
+      resultElement.parentNode.appendChild(p);
+    }
+  }
+
+  @block({
+    type: "command",
+    text: (delay) => `Set cont-detect delay ${delay}`,
+    arg: {
+      type: "number",
+      options: [60, 30, 10, 2, 1],
+      defaultValue: 10
+    } as const
+  })
+  setFrameRate(delay: number) {
+    this.processFreq = 1000 / delay
   }
 
   @block({
     type: BlockType.Command,
     text: `Detect objects`
   })
-  detectObject() {
-    console.log('pass')
+  async detectObject() {
+    const frame = this.getVideoFrame('canvas')
+    const detections = await this.detector.detect(frame);
+    this.displayImageDetections(detections, frame);
   }
 
   @block({
