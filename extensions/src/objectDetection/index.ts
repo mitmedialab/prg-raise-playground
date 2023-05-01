@@ -1,6 +1,7 @@
 import { ArgumentType, BlockType, Environment, ExtensionMenuDisplayDetails, extension, block, untilTimePassed, untilExternalGlobalVariableLoaded } from "$common";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import { ObjectDetector as ObjectDetectorClass, FilesetResolver, Detection } from "@mediapipe/tasks-vision"
+import { initializeObjectDetector } from './utils'
 // import { ObjectDectector, FilesetResolver, Detection} from ("https://cdn.skypack.dev/@mediapipe/tasks-vision@0.1.0-alpha-11"); 
 
 /** 👋 Hi!
@@ -36,7 +37,7 @@ const details: ExtensionMenuDisplayDetails = {
 
 /** @see {ExplanationOfClass} */
 /** @see {ExplanationOfInitMethod} */
-export default class objectDetection extends extension(details, "video", "toggleVideoBlock", "setTransparencyBlock") {
+export default class objectDetection extends extension(details, "video", "drawable", "addCostumes", "toggleVideoBlock", "setTransparencyBlock") {
 
   objectDetector: typeof ObjectDetectorClass;
   detector;
@@ -51,49 +52,9 @@ export default class objectDetection extends extension(details, "video", "toggle
     this.enableVideo()
     this.runningMode = 'IMAGE';
     this.continuous = false;
-    this.initializeObjectDetector();
+    this.detector = initializeObjectDetector();
     // this.detections = []
   }
-
-  // Initialize the object detector
-  async initializeObjectDetector() {
-    // @ts-ignore
-    const z = await import("https://cdn.skypack.dev/@mediapipe/tasks-vision@0.1.0-alpha-11");
-    const objectDetector: typeof ObjectDetectorClass = z["ObjectDetector"];
-    const { ObjectDectector, FilesetResolver } = z as { ObjectDectector: typeof ObjectDetectorClass, FilesetResolver };
-
-    //const package = await untilExternalGlobalVariableLoaded("url", "taskVision");
-    //const objectDector: ObjectDetector = package["ObjectDector"];
-
-    const vision = await FilesetResolver.forVisionTasks(
-      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.1.0-alpha-11/wasm"
-    );
-    this.detector = await objectDetector.createFromOptions(vision, {
-      baseOptions: {
-        modelAssetPath: `https://storage.googleapis.com/mediapipe-tasks/object_detector/efficientdet_lite0_uint8.tflite`
-      },
-      scoreThreshold: 0.5,
-      runningMode: this.runningMode
-    });
-  }
-
-  // async initializeObjectDetector(){
-
-  //   const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.1.0-alpha-11/wasm");
-
-  //   // @ts-ignore
-  //   // const importPackage = await import("https://cdn.skypack.dev/@mediapipe/tasks-vision@0.1.0-alpha-11"); 
-
-  //   this.objectDetector = await ObjectDetector.createFromOptions(vision, {
-  //     baseOptions: {
-  //       modelAssetPath: `https://storage.googleapis.com/mediapipe-tasks/object_detector/efficientdet_lite0_uint8.tflite`
-  //     },
-  //     scoreThreshold: 0.5,
-  //     runningMode: runningMode
-  //   });
-  //   demosSection.classList.remove("invisible");
-
-  // }
 
   private async detectionLoop() {
     while (this.continuous) {
@@ -101,9 +62,10 @@ export default class objectDetection extends extension(details, "video", "toggle
       // const time = +new Date();
       const frame = this.getVideoFrame("canvas");
       const start = Date.now();
+      console.log(frame)
       if (frame) {
         const detections = await this.detector.detect(frame);
-        this.displayImageDetections(detections, frame);
+        // this.displayImageDetections(detections, frame);
       }
       // const estimateThrottleTimeout = (+new Date() - time) / 4;
       // await new Promise(r => setTimeout(r, estimateThrottleTimeout));
@@ -118,9 +80,9 @@ export default class objectDetection extends extension(details, "video", "toggle
   displayImageDetections(result, resultElement: HTMLElement) {
 
     let showLength;
-    if (this.continuous) showLength = this.processFreq-1
+    if (this.continuous) showLength = this.processFreq - 1
     else showLength = 100
-    
+
     const ratio = resultElement.height / resultElement.naturalHeight;
 
     // const image = results.image as ImageBitmap;
@@ -168,7 +130,32 @@ export default class objectDetection extends extension(details, "video", "toggle
 
       resultElement.parentNode.appendChild(highlighter);
       resultElement.parentNode.appendChild(p);
+
     }
+  }
+
+  private processResults(results: Results) {
+    const image = results.image as ImageBitmap;
+    const mask = results.segmentationMask as ImageBitmap;
+    const { width, height } = mask;
+
+    this.imageHelper ??= getImageHelper(width, height);
+
+    const { drawables, mode, imageHelper, color } = this;
+
+    const toDraw = mode === "color" ? imageHelper.colorIn(mask, color) : imageHelper.getMasked(image, mask);
+
+    this.lastProcessedImage = toDraw;
+
+    if (this.echoLength <= 0) {
+      drawables.length === 0 ? drawables.push(this.createDrawable(toDraw)) : drawables[0].update(toDraw);
+      return;
+    }
+
+    while (drawables.length > this.echoLength) drawables.shift().destroy();
+
+    drawables.forEach((drawable, index, { length }) => drawable.setTransparency(100 * ((length - index) / length)));
+    drawables.push(this.createDrawable(toDraw));
   }
 
   @block({
