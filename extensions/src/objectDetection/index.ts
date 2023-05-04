@@ -1,6 +1,6 @@
 import { ArgumentType, BlockType, Environment, ExtensionMenuDisplayDetails, extension, block, untilTimePassed, untilExternalGlobalVariableLoaded } from "$common";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
-import { ObjectDetector as ObjectDetectorClass, FilesetResolver, Detection } from "@mediapipe/tasks-vision"
+import { type ObjectDetector, FilesetResolver, Detection } from "@mediapipe/tasks-vision"
 import { initializeObjectDetector } from './utils'
 // import { ObjectDectector, FilesetResolver, Detection} from ("https://cdn.skypack.dev/@mediapipe/tasks-vision@0.1.0-alpha-11"); 
 
@@ -39,7 +39,6 @@ const details: ExtensionMenuDisplayDetails = {
 /** @see {ExplanationOfInitMethod} */
 export default class objectDetection extends extension(details, "video", "drawable", "addCostumes", "toggleVideoBlock", "setTransparencyBlock") {
 
-  objectDetector: typeof ObjectDetectorClass;
   detector;
   runningMode;
   continuous: boolean;
@@ -65,6 +64,7 @@ export default class objectDetection extends extension(details, "video", "drawab
       console.log(frame)
       if (frame) {
         const detections = await this.detector.detect(frame);
+        console.log(detections)
         // this.displayImageDetections(detections, frame);
       }
       // const estimateThrottleTimeout = (+new Date() - time) / 4;
@@ -83,7 +83,7 @@ export default class objectDetection extends extension(details, "video", "drawab
     if (this.continuous) showLength = this.processFreq - 1
     else showLength = 100
 
-    const ratio = resultElement.height / resultElement.naturalHeight;
+    const ratio = 1 // resultElement.height / resultElement.naturalHeight;
 
     // const image = results.image as ImageBitmap;
     // const mask = results.segmentationMask as ImageBitmap;
@@ -134,29 +134,29 @@ export default class objectDetection extends extension(details, "video", "drawab
     }
   }
 
-  private processResults(results: Results) {
-    const image = results.image as ImageBitmap;
-    const mask = results.segmentationMask as ImageBitmap;
-    const { width, height } = mask;
+  // private processResults(results: Results) {
+  //   const image = results.image as ImageBitmap;
+  //   const mask = results.segmentationMask as ImageBitmap;
+  //   const { width, height } = mask;
 
-    this.imageHelper ??= getImageHelper(width, height);
+  //   this.imageHelper ??= getImageHelper(width, height);
 
-    const { drawables, mode, imageHelper, color } = this;
+  //   const { drawables, mode, imageHelper, color } = this;
 
-    const toDraw = mode === "color" ? imageHelper.colorIn(mask, color) : imageHelper.getMasked(image, mask);
+  //   const toDraw = mode === "color" ? imageHelper.colorIn(mask, color) : imageHelper.getMasked(image, mask);
 
-    this.lastProcessedImage = toDraw;
+  //   this.lastProcessedImage = toDraw;
 
-    if (this.echoLength <= 0) {
-      drawables.length === 0 ? drawables.push(this.createDrawable(toDraw)) : drawables[0].update(toDraw);
-      return;
-    }
+  //   if (this.echoLength <= 0) {
+  //     drawables.length === 0 ? drawables.push(this.createDrawable(toDraw)) : drawables[0].update(toDraw);
+  //     return;
+  //   }
 
-    while (drawables.length > this.echoLength) drawables.shift().destroy();
+  //   while (drawables.length > this.echoLength) drawables.shift().destroy();
 
-    drawables.forEach((drawable, index, { length }) => drawable.setTransparency(100 * ((length - index) / length)));
-    drawables.push(this.createDrawable(toDraw));
-  }
+  //   drawables.forEach((drawable, index, { length }) => drawable.setTransparency(100 * ((length - index) / length)));
+  //   drawables.push(this.createDrawable(toDraw));
+  // }
 
   @block({
     type: "command",
@@ -177,6 +177,7 @@ export default class objectDetection extends extension(details, "video", "drawab
   })
   async detectObject() {
     const frame = this.getVideoFrame('canvas')
+    console.log(this.detector)
     const detections = await this.detector.detect(frame);
     this.displayImageDetections(detections, frame);
   }
