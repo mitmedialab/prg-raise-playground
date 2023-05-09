@@ -1,6 +1,6 @@
 import { ArgumentType, BlockType, Environment, ExtensionMenuDisplayDetails, extension, block, untilTimePassed, untilExternalGlobalVariableLoaded } from "$common";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
-import { type ObjectDetector, FilesetResolver, Detection } from "@mediapipe/tasks-vision"
+import { ObjectDetector as ObjectDetectorClass, FilesetResolver, Detection } from "@mediapipe/tasks-vision"
 import { initializeObjectDetector } from './utils'
 // import { ObjectDectector, FilesetResolver, Detection} from ("https://cdn.skypack.dev/@mediapipe/tasks-vision@0.1.0-alpha-11"); 
 
@@ -39,7 +39,7 @@ const details: ExtensionMenuDisplayDetails = {
 /** @see {ExplanationOfInitMethod} */
 export default class objectDetection extends extension(details, "video", "drawable", "addCostumes", "toggleVideoBlock", "setTransparencyBlock") {
 
-  detector;
+  detector: ObjectDetectorClass;
   runningMode;
   continuous: boolean;
   // demosSection = document.getElementById("demos");
@@ -47,28 +47,24 @@ export default class objectDetection extends extension(details, "video", "drawab
   detections: any[];
   processFreq: number = 100;
 
-  init(env: Environment) {
+  async init(env: Environment) {
     this.enableVideo()
     this.runningMode = 'IMAGE';
     this.continuous = false;
-    this.detector = initializeObjectDetector();
+    this.detector = await initializeObjectDetector();
     // this.detections = []
   }
 
   private async detectionLoop() {
     while (this.continuous) {
-      // const frame = this.getVideoFrame('image')
-      // const time = +new Date();
       const frame = this.getVideoFrame("canvas");
       const start = Date.now();
       console.log(frame)
       if (frame) {
         const detections = await this.detector.detect(frame);
-        console.log(detections)
-        // this.displayImageDetections(detections, frame);
+        // console.log(detections)
+        this.displayImageDetections(detections, frame);
       }
-      // const estimateThrottleTimeout = (+new Date() - time) / 4;
-      // await new Promise(r => setTimeout(r, estimateThrottleTimeout));
       const elapsed = Date.now() - start;
       await untilTimePassed(this.processFreq - elapsed);
     }
@@ -77,7 +73,7 @@ export default class objectDetection extends extension(details, "video", "drawab
   // clearFrame():
 
   // FIX AND FINISH
-  displayImageDetections(result, resultElement: HTMLElement) {
+  displayImageDetections(detections, resultElement: HTMLElement) {
 
     let showLength;
     if (this.continuous) showLength = this.processFreq - 1
@@ -90,7 +86,7 @@ export default class objectDetection extends extension(details, "video", "drawab
     // const { width, height } = mask;
     // console.log(ratio);
 
-    for (let detection of result.detections) {
+    for (let detection of detections) {
       // Description text
       const p = document.createElement("p");
       p.setAttribute("class", "info");
