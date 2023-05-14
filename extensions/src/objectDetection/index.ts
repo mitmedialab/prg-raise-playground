@@ -1,7 +1,7 @@
 import { ArgumentType, BlockType, Environment, ExtensionMenuDisplayDetails, extension, block, untilTimePassed, untilExternalGlobalVariableLoaded } from "$common";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import { ObjectDetector as ObjectDetectorClass, FilesetResolver, Detection } from "@mediapipe/tasks-vision"
-import { initializeObjectDetector } from './utils'
+import { initializeObjectDetector, getImageHelper } from './utils'
 // import { ObjectDectector, FilesetResolver, Detection} from ("https://cdn.skypack.dev/@mediapipe/tasks-vision@0.1.0-alpha-11"); 
 
 /** 👋 Hi!
@@ -46,12 +46,15 @@ export default class objectDetection extends extension(details, "video", "drawab
   DIMENSIONS = [480, 360];
   detections: any[];
   processFreq: number = 100;
+  imageHelper: ReturnType<typeof getImageHelper>;
+  drawables: ReturnType<typeof this.createDrawable>[] = [];
 
   async init(env: Environment) {
     this.enableVideo()
     this.runningMode = 'IMAGE';
     this.continuous = false;
     this.detector = await initializeObjectDetector();
+    this.imageHelper = getImageHelper(this.DIMENSIONS[0], this.DIMENSIONS[1])
     // this.detections = []
   }
 
@@ -59,7 +62,7 @@ export default class objectDetection extends extension(details, "video", "drawab
     while (this.continuous) {
       const frame = this.getVideoFrame("canvas");
       const start = Date.now();
-      console.log(frame)
+      // console.log(frame)
       if (frame) {
         const detections = await this.detector.detect(frame);
         // console.log(detections)
@@ -67,26 +70,27 @@ export default class objectDetection extends extension(details, "video", "drawab
       }
       const elapsed = Date.now() - start;
       await untilTimePassed(this.processFreq - elapsed);
+      this.clearFrame()
     }
   }
 
-  // clearFrame():
+  clearFrame(){
+    while (this.drawables.length > 0) this.drawables.shift().destroy();
+  }
 
   // FIX AND FINISH
-  displayImageDetections(detections, resultElement: HTMLElement) {
+  async displayImageDetections(detections, resultElement: HTMLCanvasElement) {
 
-    let showLength;
-    if (this.continuous) showLength = this.processFreq - 1
-    else showLength = 100
+    const { drawables, imageHelper } = this;
 
-    const ratio = 1 // resultElement.height / resultElement.naturalHeight;
+    const ratio = 1
 
-    // const image = results.image as ImageBitmap;
-    // const mask = results.segmentationMask as ImageBitmap;
-    // const { width, height } = mask;
-    // console.log(ratio);
+    for (let detection of detections.detections) {
+      // const width = detection.boundingBox.width
+      // const height = detection.boundingBox.height
 
-    for (let detection of detections) {
+      // const box = new Image(width, height)
+
       // Description text
       const p = document.createElement("p");
       p.setAttribute("class", "info");
@@ -124,10 +128,13 @@ export default class objectDetection extends extension(details, "video", "drawab
         detection.boundingBox.height * ratio +
         "px;";
 
-      resultElement.parentNode.appendChild(highlighter);
-      resultElement.parentNode.appendChild(p);
-
+      console.log(resultElement.parentNode)
+      resultElement.appendChild(highlighter);
+      
+      resultElement.appendChild(p);
     }
+
+    drawables.push(this.createDrawable(await createImageBitmap(resultElement)));
   }
 
   // private processResults(results: Results) {
@@ -169,13 +176,16 @@ export default class objectDetection extends extension(details, "video", "drawab
 
   @block({
     type: BlockType.Command,
-    text: `Detect objects`
+    text: (freezeTime) => `Detect objects for ${freezeTime} seconds`,
+    arg: {type: ArgumentType.Number, defaultValue: 1}
   })
-  async detectObject() {
+  async detectObject(freezeTime: number) {
     const frame = this.getVideoFrame('canvas')
-    console.log(this.detector)
     const detections = await this.detector.detect(frame);
+    console.log(detections.detections)
     this.displayImageDetections(detections, frame);
+    await untilTimePassed(freezeTime*1000)
+    this.clearFrame()
   }
 
   @block({
