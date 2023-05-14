@@ -83,7 +83,7 @@ export default class objectDetection extends extension(details, "video", "drawab
 
     const { drawables, imageHelper } = this;
 
-    const ratio = 1
+    const ratio = resultElement.height / 500
 
     for (let detection of detections.detections) {
       // const width = detection.boundingBox.width
@@ -128,9 +128,8 @@ export default class objectDetection extends extension(details, "video", "drawab
         detection.boundingBox.height * ratio +
         "px;";
 
-      console.log(resultElement.parentNode)
+      // console.log(resultElement.parentNode)
       resultElement.appendChild(highlighter);
-      
       resultElement.appendChild(p);
     }
 
