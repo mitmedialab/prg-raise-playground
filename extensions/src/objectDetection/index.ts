@@ -1,4 +1,4 @@
-import { ArgumentType, BlockType, Environment, ExtensionMenuDisplayDetails, extension, block, untilTimePassed, untilExternalGlobalVariableLoaded } from "$common";
+import { ArgumentType, BlockType, Environment, ExtensionMenuDisplayDetails, extension, block, untilTimePassed, untilExternalGlobalVariableLoaded, rgbToHex, RGBObject } from "$common";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import { ObjectDetector as ObjectDetectorClass, FilesetResolver, Detection } from "@mediapipe/tasks-vision"
 import { initializeObjectDetector, getImageHelper } from './utils'
@@ -48,6 +48,8 @@ export default class objectDetection extends extension(details, "video", "drawab
   processFreq: number = 100;
   imageHelper: ReturnType<typeof getImageHelper>;
   drawables: ReturnType<typeof this.createDrawable>[] = [];
+  color: string;
+  thickness: number;
 
   async init(env: Environment) {
     this.enableVideo()
@@ -55,7 +57,8 @@ export default class objectDetection extends extension(details, "video", "drawab
     this.continuous = false;
     this.detector = await initializeObjectDetector();
     this.imageHelper = getImageHelper(this.DIMENSIONS[0], this.DIMENSIONS[1])
-    // this.detections = []
+    this.color = 'white'
+    this.thickness = 5
   }
 
   private async detectionLoop() {
@@ -65,8 +68,7 @@ export default class objectDetection extends extension(details, "video", "drawab
       // console.log(frame)
       if (frame) {
         const detections = await this.detector.detect(frame);
-        // console.log(detections)
-        this.displayImageDetections(detections, frame);
+        this.displayImageDetections(detections);
       }
       const elapsed = Date.now() - start;
       await untilTimePassed(this.processFreq - elapsed);
@@ -74,91 +76,16 @@ export default class objectDetection extends extension(details, "video", "drawab
     }
   }
 
-  clearFrame(){
+  clearFrame() {
     while (this.drawables.length > 0) this.drawables.shift().destroy();
   }
 
   // FIX AND FINISH
-  async displayImageDetections(detections, resultElement: HTMLCanvasElement) {
-
+  async displayImageDetections(detections) {
     const { drawables, imageHelper } = this;
-
-    const ratio = resultElement.height / 500
-
-    for (let detection of detections.detections) {
-      // const width = detection.boundingBox.width
-      // const height = detection.boundingBox.height
-
-      // const box = new Image(width, height)
-
-      // Description text
-      const p = document.createElement("p");
-      p.setAttribute("class", "info");
-      p.innerText =
-        detection.categories[0].categoryName +
-        " - with " +
-        Math.round(parseFloat(detection.categories[0].score) * 100) +
-        "% confidence.";
-      // Positioned at the top left of the bounding box.
-      // Height is whatever the text takes up.
-      // Width subtracts text padding in CSS so fits perfectly.
-      p.style =
-        "left: " +
-        detection.boundingBox.originX * ratio +
-        "px;" +
-        "top: " +
-        detection.boundingBox.originY * ratio +
-        "px; " +
-        "width: " +
-        (detection.boundingBox.width * ratio - 10) +
-        "px;";
-      const highlighter = document.createElement("div");
-      highlighter.setAttribute("class", "highlighter");
-      highlighter.style =
-        "left: " +
-        detection.boundingBox.originX * ratio +
-        "px;" +
-        "top: " +
-        detection.boundingBox.originY * ratio +
-        "px;" +
-        "width: " +
-        detection.boundingBox.width * ratio +
-        "px;" +
-        "height: " +
-        detection.boundingBox.height * ratio +
-        "px;";
-
-      // console.log(resultElement.parentNode)
-      resultElement.appendChild(highlighter);
-      resultElement.appendChild(p);
-    }
-
-    drawables.push(this.createDrawable(await createImageBitmap(resultElement)));
+    const rects = imageHelper.createRects(detections.detections, this.color, this.thickness)
+    drawables.push(this.createDrawable(rects));
   }
-
-  // private processResults(results: Results) {
-  //   const image = results.image as ImageBitmap;
-  //   const mask = results.segmentationMask as ImageBitmap;
-  //   const { width, height } = mask;
-
-  //   this.imageHelper ??= getImageHelper(width, height);
-
-  //   const { drawables, mode, imageHelper, color } = this;
-
-  //   const toDraw = mode === "color" ? imageHelper.colorIn(mask, color) : imageHelper.getMasked(image, mask);
-
-  //   this.lastProcessedImage = toDraw;
-
-  //   if (this.echoLength <= 0) {
-  //     drawables.length === 0 ? drawables.push(this.createDrawable(toDraw)) : drawables[0].update(toDraw);
-  //     return;
-  //   }
-
-  //   while (drawables.length > this.echoLength) drawables.shift().destroy();
-
-  //   drawables.forEach((drawable, index, { length }) => drawable.setTransparency(100 * ((length - index) / length)));
-  //   drawables.push(this.createDrawable(toDraw));
-  // }
 
   @block({
     type: "command",
@@ -174,16 +101,40 @@ export default class objectDetection extends extension(details, "video", "drawab
   }
 
   @block({
+    type: "command",
+    text: (color) => `Set box color to ${color}`,
+    arg: "color"
+  })
+  setColor(color: RGBObject) {
+    this.color = rgbToHex(color);
+  }
+
+  @block({
+    type: "command",
+    text: (thickness) => `Set box thickness to ${thickness}`,
+    arg: {
+      type: "number",
+      defaultValue: 5,
+      handler: (x) => {
+        return Math.min(Math.max(0, x), 20)
+      }
+    }
+  })
+  setThickness(thickness: number) {
+    this.thickness = thickness;
+  }
+
+  @block({
     type: BlockType.Command,
     text: (freezeTime) => `Detect objects for ${freezeTime} seconds`,
-    arg: {type: ArgumentType.Number, defaultValue: 1}
+    arg: { type: ArgumentType.Number, defaultValue: 1 }
   })
   async detectObject(freezeTime: number) {
     const frame = this.getVideoFrame('canvas')
     const detections = await this.detector.detect(frame);
-    console.log(detections.detections)
-    this.displayImageDetections(detections, frame);
-    await untilTimePassed(freezeTime*1000)
+    // console.log(detections.detections)
+    this.displayImageDetections(detections);
+    await untilTimePassed(freezeTime * 1000)
     this.clearFrame()
   }
 
