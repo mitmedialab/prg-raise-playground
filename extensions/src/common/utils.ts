@@ -202,3 +202,12 @@ function rgbToDecimal(rgb: RGBObject) {
 export const rgbToHex = (rgb: RGBObject) => {
   return decimalToHex(rgbToDecimal(rgb));
 }
+
+/**
+ * Hide all elements in the HTML document that have a given class
+ * @param className 
+ */
+export const hideElementsOfClass = (className: string) => {
+  for (const element of document.getElementsByClassName(className))
+    element.setAttribute("style", "display: none;");
+}
