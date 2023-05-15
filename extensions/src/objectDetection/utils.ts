@@ -1,4 +1,3 @@
-import { untilExternalGlobalVariableLoaded } from "$common";
 import { FilesetResolver as FilesetResolverClass, ObjectDetector as ObjectDetectorClass } from "@mediapipe/tasks-vision";
 
 export const getImageHelper = (width, height) => {
@@ -43,9 +42,6 @@ export const initializeObjectDetector = async () => {
   const packageClassName = "ObjectDetector"
 
   const { ObjectDetector, FilesetResolver } = await import(packageURL) as { ObjectDetector: typeof ObjectDetectorClass, FilesetResolver: typeof FilesetResolverClass };
-
-  // const Class = await untilExternalGlobalVariableLoaded<typeof ObjectDetector>(packageURL, packageClassName);
-
 
   const vision = await FilesetResolver.forVisionTasks(
     "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.1.0-alpha-11/wasm"
