@@ -1,15 +1,10 @@
-import { Environment, ExtensionMenuDisplayDetails, extension, block, hideElementsOfClass, } from "$common";
+import { Environment, extension, block, hideElementsWithClass, } from "$common";
 
-const details: ExtensionMenuDisplayDetails = {
-  name: "Replace me with name of your extension",
-  description: "Replace me with a description of your extension",
-  iconURL: "Replace with the name of your icon image file (which should be placed in the same directory as this file)",
-  insetIconURL: "Replace with the name of your inset icon image file (which should be placed in the same directory as this file)"
-};
-
-export default class ExtensionNameGoesHere extends extension(details, "blockly") {
+export default class ExtensionNameGoesHere extends extension(
+  { name: "Dancing Activity for AI Storybook" },
+  "blockly"
+) {
   async init(env: Environment) {
-
     [
       "gui_menu-bar-position_3U1T0",
       "gui_stage-and-target-wrapper_69KBf",
@@ -17,10 +12,12 @@ export default class ExtensionNameGoesHere extends extension(details, "blockly")
       "backpack_backpack-container_2_wGr",
       "blocklyToolboxDiv",
       "gui_extension-button-container_b4rCs"
-    ].forEach(hideElementsOfClass);
+    ].forEach(hideElementsWithClass);
 
     this.blockly.hideChaff();
   }
+
+
 
   @block({
     text: "dummy",
