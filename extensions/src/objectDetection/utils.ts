@@ -9,10 +9,11 @@ export const getImageHelper = (width, height) => {
 
   return {
     /**
-     * 
-     * @param mask 
-     * @param color 
-     * @returns 
+     * Creates rectangular boxes around each detection in the video frame
+     * @param detections A list of detections
+     * @param color Color of the box
+     * @param thickness Thickness of the box
+     * @returns The ImageData object with all of the detections boxes
      */
     createRects(detections, color: string, thickness: number) {
       context.save();
@@ -27,7 +28,7 @@ export const getImageHelper = (width, height) => {
         context.clearRect(x + thickness, y + thickness, width - 2 * thickness, height - 2 * thickness);
         const text = detection.categories[0].categoryName + " - with " +
           Math.round(parseFloat(detection.categories[0].score) * 100) + "% confidence."
-        context.fillText(text, x, y-5)
+        context.fillText(text, x, y - 5)
       }
       context.restore();
       return context.getImageData(0, 0, width, height);
@@ -35,11 +36,13 @@ export const getImageHelper = (width, height) => {
   }
 }
 
-// Initialize the object detector
+/**
+ * Initializes the object detector with the Mediapipe model
+ * @returns A detector object
+ */
 export const initializeObjectDetector = async () => {
 
   const packageURL = "https://cdn.skypack.dev/@mediapipe/tasks-vision@0.1.0-alpha-11"
-  const packageClassName = "ObjectDetector"
 
   const { ObjectDetector, FilesetResolver } = await import(packageURL) as { ObjectDetector: typeof ObjectDetectorClass, FilesetResolver: typeof FilesetResolverClass };
 
