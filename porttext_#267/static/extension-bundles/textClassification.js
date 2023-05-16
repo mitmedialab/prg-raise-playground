@@ -1,0 +1,1 @@
+var textClassification=function(e,n){"use strict";const t={name:""};class s extends(n.extension(t)){init(e){}}return e.Extension=s,Object.defineProperty(e,"__esModule",{value:!0}),e}({},ExtensionFramework);//# sourceMappingURL=textClassification.js.map
