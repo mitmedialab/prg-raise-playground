@@ -42,17 +42,6 @@
     "statements": 70
   },
   "dependencies": {
-    "@teachablemachine/image": "^0.8.4",
-    "@teachablemachine/pose": "^0.8.6",
-    "@tensorflow-models/handpose": "0.0.3",
-    "@tensorflow-models/knn-classifier": "1.2.2",
-    "@tensorflow-models/posenet": "2.2.1",
-    "@tensorflow-models/speech-commands": "0.4.2",
-    "@tensorflow-models/toxicity": "1.2.2",
-    "@tensorflow-models/universal-sentence-encoder": "1.2.2",
-    "@tensorflow/tfjs": "^1.5.1",
-    "@tensorflow/tfjs-layers": "^1.5.1",
-    "@tensorflow/tfjs-node": "^1.5.1",
     "@vernier/godirect": "1.5.0",
     "arraybuffer-loader": "^1.0.6",
     "atob": "2.1.2",
@@ -134,12 +123,6 @@
     "typescript": "latest"
   },
   "overrides": {
-    "@teachablemachine/image": {
-      "@tensorflow/tfjs": "$@tensorflow/tfjs"
-    },
-    "@teachablemachine/pose": {
-      "@tensorflow/tfjs": "$@tensorflow/tfjs"
-    },
     "tap": {
       "typescript": "latest"
     }
