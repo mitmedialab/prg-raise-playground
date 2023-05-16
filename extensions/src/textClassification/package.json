@@ -1,0 +1,15 @@
+{
+  "name": "text-classification-extension",
+  "version": "1.0.0",
+  "description": "An extension created using the PRG AI Blocks framework",
+  "main": "index.ts",
+  "scripts": {
+    "directory": "echo textClassification",
+    "test": "npm run test --prefix ../../ -- textClassification/index.test.ts",
+    "dev": "npm run dev --prefix ../../../ -- only=textClassification",
+    "add:ui": "npm run add:ui --prefix ../../../  -- textClassification",
+    "add:arg": "npm run --prefix ../../../-- textClassification"
+  },
+  "author": "",
+  "license": "ISC"
+}
