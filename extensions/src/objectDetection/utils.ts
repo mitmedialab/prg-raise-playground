@@ -18,17 +18,17 @@ export const getImageHelper = (width, height) => {
     createRects(detections, color: string, thickness: number) {
       context.save();
       context.clearRect(0, 0, width, height);
-      context.fillStyle = color
+      context.fillStyle = color;
       for (let detection of detections) {
-        const x = detection.boundingBox.originX
-        const y = detection.boundingBox.originY
-        const width = detection.boundingBox.width
-        const height = detection.boundingBox.height
+        const x = detection.boundingBox.originX;
+        const y = detection.boundingBox.originY;
+        const width = detection.boundingBox.width;
+        const height = detection.boundingBox.height;
         context.fillRect(x, y, width, height);
         context.clearRect(x + thickness, y + thickness, width - 2 * thickness, height - 2 * thickness);
         const text = detection.categories[0].categoryName + " - with " +
-          Math.round(parseFloat(detection.categories[0].score) * 100) + "% confidence."
-        context.fillText(text, x, y - 5)
+          Math.round(parseFloat(detection.categories[0].score) * 100) + "% confidence.";
+        context.fillText(text, x, y - 5);
       }
       context.restore();
       return context.getImageData(0, 0, width, height);
@@ -42,7 +42,7 @@ export const getImageHelper = (width, height) => {
  */
 export const initializeObjectDetector = async () => {
 
-  const packageURL = "https://cdn.skypack.dev/@mediapipe/tasks-vision@0.1.0-alpha-11"
+  const packageURL = "https://cdn.skypack.dev/@mediapipe/tasks-vision@0.1.0-alpha-11";
 
   const { ObjectDetector, FilesetResolver } = await import(packageURL) as { ObjectDetector: typeof ObjectDetectorClass, FilesetResolver: typeof FilesetResolverClass };
 

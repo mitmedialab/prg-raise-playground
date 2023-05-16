@@ -1,6 +1,6 @@
 import { ArgumentType, BlockType, ExtensionMenuDisplayDetails, extension, block, untilTimePassed, rgbToHex, RGBObject } from "$common";
-import { ObjectDetector as ObjectDetectorClass } from "@mediapipe/tasks-vision"
-import { initializeObjectDetector, getImageHelper } from './utils'
+import { ObjectDetector as ObjectDetectorClass } from "@mediapipe/tasks-vision";
+import { initializeObjectDetector, getImageHelper } from './utils';
 
 const details: ExtensionMenuDisplayDetails = {
   name: "Object Detection",
@@ -58,9 +58,9 @@ export default class objectDetection extends extension(details, "video", "drawab
     this.enableVideo()
     this.continuous = false;
     this.detector = await initializeObjectDetector();
-    this.imageHelper = getImageHelper(this.DIMENSIONS[0], this.DIMENSIONS[1])
-    this.color = 'white'
-    this.thickness = 5
+    this.imageHelper = getImageHelper(this.DIMENSIONS[0], this.DIMENSIONS[1]);
+    this.color = 'white';
+    this.thickness = 5;
     this.processFreq = 100;
   }
 
@@ -78,7 +78,7 @@ export default class objectDetection extends extension(details, "video", "drawab
       }
       const elapsed = Date.now() - start;
       await untilTimePassed(this.processFreq - elapsed);
-      this.clearFrame()
+      this.clearFrame();
     }
   }
 
@@ -95,7 +95,7 @@ export default class objectDetection extends extension(details, "video", "drawab
    */
   async displayImageDetections(detections) {
     const { drawables, imageHelper } = this;
-    const rects = imageHelper.createRects(detections.detections, this.color, this.thickness)
+    const rects = imageHelper.createRects(detections.detections, this.color, this.thickness);
     drawables.push(this.createDrawable(rects));
   }
 
@@ -109,7 +109,7 @@ export default class objectDetection extends extension(details, "video", "drawab
     } as const
   })
   setFrameRate(delay: number) {
-    this.processFreq = 1000 / delay
+    this.processFreq = 1000 / delay;
   }
 
   @block({
@@ -128,7 +128,7 @@ export default class objectDetection extends extension(details, "video", "drawab
       type: "number",
       defaultValue: 5,
       handler: (x) => {
-        return Math.min(Math.max(0, x), 20)
+        return Math.min(Math.max(0, x), 20);
       }
     }
   })
@@ -142,11 +142,11 @@ export default class objectDetection extends extension(details, "video", "drawab
     arg: { type: ArgumentType.Number, defaultValue: 1 }
   })
   async detectObject(freezeTime: number) {
-    const frame = this.getVideoFrame('canvas')
+    const frame = this.getVideoFrame('canvas');
     const detections = await this.detector.detect(frame);
     this.displayImageDetections(detections);
-    await untilTimePassed(freezeTime * 1000)
-    this.clearFrame()
+    await untilTimePassed(freezeTime * 1000);
+    this.clearFrame();
   }
 
   @block({
@@ -155,7 +155,7 @@ export default class objectDetection extends extension(details, "video", "drawab
     arg: { type: ArgumentType.Boolean, options: [{ text: 'on', value: true }, { text: 'off', value: false }] }
   })
   async continuouslyDetectObjects(state) {
-    this.continuous = state
-    this.detectionLoop()
+    this.continuous = state;
+    this.detectionLoop();
   }
 }
