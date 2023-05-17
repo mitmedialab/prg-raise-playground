@@ -5,6 +5,7 @@ import { ExtensionBlocks } from "./blocks";
 import { Language } from "../enums";
 import { MethodNames, ValueOf } from "../utils";
 import { ExtensionInstance } from "$common/extension";
+import { AudioEngine } from "../scratch/audio";
 
 export type BaseGenericExtension = Extension<ExtensionMenuDisplayDetails, ExtensionBlocks>;
 
@@ -19,7 +20,7 @@ export type Environment = {
   /**
    * The scratch runtime 
    */
-  runtime: Runtime,
+  runtime: Omit<Runtime, "audioEngine"> & { audioEngine: AudioEngine },
   extensionManager: ExtensionManager,
 }
 

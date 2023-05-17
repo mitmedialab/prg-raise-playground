@@ -25,7 +25,7 @@ var Sentiment = require('sentiment');
 //const node = require('@tensorflow/tfjs-node');
 //const layers = require('@tensorflow/tfjs-layers');
 
- 
+
 /**
  * Icon svg to be displayed in the blocks category menu, encoded as a data URI.
  * @type {string}
@@ -109,13 +109,13 @@ const FEMALE_GIANT_RATE = 0.79; // -4 semitones
  * @constructor
  */
 class Scratch3TextClassificationBlocks {
-    constructor (runtime) {
+    constructor(runtime) {
 
-         /**
-         * The result from the most recent translation.
-         * @type {string}
-         * @private
-         */
+        /**
+        * The result from the most recent translation.
+        * @type {string}
+        * @private
+        */
         this._translateResult = '';
 
         /**
@@ -136,15 +136,15 @@ class Scratch3TextClassificationBlocks {
          * The runtime instantiating this block package.
          * @type {Runtime}
          */
-         this.scratch_vm = runtime;
-         this.sentencesample = [];
-         this.labledsample = [];
-         this.lastSentenceClassified = null;
-         
-         this.custom_NLP_model = tf.sequential();
+        this.scratch_vm = runtime;
+        this.sentencesample = [];
+        this.labledsample = [];
+        this.lastSentenceClassified = null;
+
+        this.custom_NLP_model = tf.sequential();
 
 
-         
+
         /**
          * The timer utility.
          * @type {Timer}
@@ -162,11 +162,11 @@ class Scratch3TextClassificationBlocks {
          * @type {number}
          */
         this._cachedLoudnessTimestamp = 0;
-         
-         /**
-         * Map of soundPlayers by sound id.
-         * @type {Map<string, SoundPlayer>}
-         */
+
+        /**
+        * Map of soundPlayers by sound id.
+        * @type {Map<string, SoundPlayer>}
+        */
         this._soundPlayers = new Map();
 
         this._stopAllSpeech = this._stopAllSpeech.bind(this);
@@ -178,7 +178,7 @@ class Scratch3TextClassificationBlocks {
         if (this.scratch_vm) {
             this.scratch_vm.on('targetWasCreated', this._onTargetCreated);
         }
-        
+
         this.scratch_vm.on('EDIT_TEXT_MODEL', modelInfo => {
             console.log(modelInfo);
             console.log("Calling bound function");
@@ -189,10 +189,10 @@ class Scratch3TextClassificationBlocks {
             console.log("Calling bound function");
             this.editModel.bind(this, modelInfo);
         });
-        
+
         this.labelList = [''];
         this.labelListEmpty = true;
-        
+
         // When a project is loaded, reset all the model data
         this.scratch_vm.on('PROJECT_LOADED', () => {
             this.clearLocal();
@@ -212,13 +212,13 @@ class Scratch3TextClassificationBlocks {
             this.renameLabel(oldName, newName);
         });
         this.scratch_vm.on('DELETE_LABEL', (label) => {
-            this.clearAllWithLabel({LABEL: label});
+            this.clearAllWithLabel({ LABEL: label });
         });
         this.scratch_vm.on('CLEAR_ALL_LABELS', () => {
             if (!this.labelListEmpty && confirm('Are you sure you want to clear all labels?')) {    //confirm with alert dialogue before clearing the model
                 let labels = [...this.labelList];
                 for (var i = 0; i < labels.length; i++) {
-                    this.clearAllWithLabel({LABEL: labels[i]});
+                    this.clearAllWithLabel({ LABEL: labels[i] });
                 }
                 //this.clearAll(); this crashed Scratch for some reason
             }
@@ -231,7 +231,7 @@ class Scratch3TextClassificationBlocks {
         this.scratch_vm.on('LOAD_CLASSIFIER', () => {
             console.log("load");
             this.loadClassifier();
-            
+
         });
 
         this.scratch_vm.on('DONE', () => {
@@ -239,37 +239,37 @@ class Scratch3TextClassificationBlocks {
             this.buildCustomDeepModel();
         });
 
-        
+
         this._recognizedSpeech = "";
 
         this._toxicity_labels = {
             items: [
                 {
-                    value : 'toxicity',
-                    text : 'toxic'
+                    value: 'toxicity',
+                    text: 'toxic'
                 }, {
-                    value : 'severe_toxicity',
-                    text : 'severely toxic'
+                    value: 'severe_toxicity',
+                    text: 'severely toxic'
                 }, {
-                    value : 'identity_attack',
-                    text : 'an identity-based attack'
+                    value: 'identity_attack',
+                    text: 'an identity-based attack'
                 }, {
-                    value : 'insult',
-                    text : 'insulting'
+                    value: 'insult',
+                    text: 'insulting'
                 }, {
-                    value : 'threat',
-                    text : 'threatening'
+                    value: 'threat',
+                    text: 'threatening'
                 }, {
-                //     value : 'sexual_explicit',
-                //     text : 'sexually explicit'
-                // }, {
-                    value : 'obscene',
-                    text : 'profanity'
+                    //     value : 'sexual_explicit',
+                    //     text : 'sexually explicit'
+                    // }, {
+                    value: 'obscene',
+                    text: 'profanity'
                 }
             ],
             acceptReporters: true
         };
-        
+
         this.resetModelData();
         // load the toxicity model
         this._toxicitymodel = null;
@@ -282,7 +282,7 @@ class Scratch3TextClassificationBlocks {
     /**
      * An object with info for each voice.
      */
-    get VOICE_INFO () {
+    get VOICE_INFO() {
         return {
             [SQUEAK_ID]: {
                 name: formatMessage({
@@ -322,12 +322,12 @@ class Scratch3TextClassificationBlocks {
             }
         };
     }
-    
-     /**
-     * The key to load & store a target's text2speech state.
-     * @return {string} The key.
-     */
-    static get STATE_KEY () {
+
+    /**
+    * The key to load & store a target's text2speech state.
+    * @return {string} The key.
+    */
+    static get STATE_KEY() {
         return 'Scratch.text2speech';
     }
 
@@ -335,18 +335,18 @@ class Scratch3TextClassificationBlocks {
      * The default state, to be used when a target has no existing state.
      * @type {Text2SpeechState}
      */
-    static get DEFAULT_TEXT2SPEECH_STATE () {
+    static get DEFAULT_TEXT2SPEECH_STATE() {
         return {
             voiceId: SQUEAK_ID
         };
     }
-    
+
     /**
      * @param {Target} target - collect  state for this target.
      * @returns {Text2SpeechState} the mutable state associated with that target. This will be created if necessary.
      * @private
      */
-    _getState (target) {
+    _getState(target) {
         let state = target.getCustomState(Scratch3TextClassificationBlocks.STATE_KEY);
         if (!state) {
             state = Clone.simple(Scratch3TextClassificationBlocks.DEFAULT_TEXT2SPEECH_STATE);
@@ -362,7 +362,7 @@ class Scratch3TextClassificationBlocks {
      * @listens Runtime#event:targetWasCreated
      * @private
      */
-    _onTargetCreated (newTarget, sourceTarget) {
+    _onTargetCreated(newTarget, sourceTarget) {
         if (sourceTarget) {
             const state = sourceTarget.getCustomState(Scratch3TextClassificationBlocks.STATE_KEY);
             if (state) {
@@ -370,11 +370,11 @@ class Scratch3TextClassificationBlocks {
             }
         }
     }
-    
+
     /**
      * @returns {object} metadata for this extension and its blocks.
      */
-    getInfo () {
+    getInfo() {
         // Set the video display properties to defaults the first time
         // getInfo is run. This turns on the video device when it is
         // first added to a project, and is overwritten by a PROJECT_LOADED
@@ -409,7 +409,7 @@ class Scratch3TextClassificationBlocks {
                     blockType: BlockType.BUTTON,
                     text: 'Load / Save Model'
                 },
-                
+
                 {
                     opcode: 'ifTextMatchesClass',
                     text: formatMessage({
@@ -463,6 +463,7 @@ class Scratch3TextClassificationBlocks {
                 '---',
 
                 {
+                    // Done
                     opcode: 'confidenceTrue',
                     text: formatMessage({
                         id: 'textClassification.confidencetrue',
@@ -481,26 +482,27 @@ class Scratch3TextClassificationBlocks {
                         }
                     }
                 },
-/*                {
-                    opcode: 'confidenceFalse',
-                    text: formatMessage({
-                        id: 'textClassification.confidencefalse',
-                        default: 'probability that [TEXT] is NOT [LABEL]'
-                    }),
-                    blockType: BlockType.REPORTER,
-                    arguments: {
-                        TEXT: {
-                            type: ArgumentType.STRING,
-                            defaultValue: 'TEXT'
-                        },
-                        LABEL: {
-                            type: ArgumentType.STRING,
-                            defaultValue: this._toxicity_labels.items[0].value,
-                            menu: 'toxicitylabels'
-                        }
-                    }
-                },*/
+                /*                {
+                                    opcode: 'confidenceFalse',
+                                    text: formatMessage({
+                                        id: 'textClassification.confidencefalse',
+                                        default: 'probability that [TEXT] is NOT [LABEL]'
+                                    }),
+                                    blockType: BlockType.REPORTER,
+                                    arguments: {
+                                        TEXT: {
+                                            type: ArgumentType.STRING,
+                                            defaultValue: 'TEXT'
+                                        },
+                                        LABEL: {
+                                            type: ArgumentType.STRING,
+                                            defaultValue: this._toxicity_labels.items[0].value,
+                                            menu: 'toxicitylabels'
+                                        }
+                                    }
+                                },*/
                 {
+                    // DONE
                     opcode: 'sentimentScore',
                     text: formatMessage({
                         id: 'textClassification.sentimentScore',
@@ -516,6 +518,7 @@ class Scratch3TextClassificationBlocks {
                 },
                 '---',
                 {
+                    // DONE
                     opcode: 'speakText',
                     text: formatMessage({
                         id: 'textClassification.speakText',
@@ -531,6 +534,7 @@ class Scratch3TextClassificationBlocks {
                     },
                 },
                 {
+                    // DONE
                     opcode: 'askSpeechRecognition',
                     text: formatMessage({
                         id: 'textClassification.askSpeechRecognition',
@@ -546,6 +550,7 @@ class Scratch3TextClassificationBlocks {
                     },
                 },
                 {
+                    // DONE
                     opcode: 'getRecognizedSpeech',
                     text: formatMessage({
                         id: 'textClassification.getRecognizedSpeech',
@@ -555,6 +560,7 @@ class Scratch3TextClassificationBlocks {
                     blockType: BlockType.REPORTER,
                 },
                 {
+                    // DONE
                     opcode: 'setVoice',
                     text: formatMessage({
                         id: 'text2speech.setVoiceBlock',
@@ -571,6 +577,7 @@ class Scratch3TextClassificationBlocks {
                     }
                 },
                 {
+                    // DONE
                     opcode: 'onHeardSound',
                     text: formatMessage({
                         id: 'textClassification.onHeardSound',
@@ -595,15 +602,15 @@ class Scratch3TextClassificationBlocks {
                     acceptReporters: false,
                     items: 'getLabels'
                 },
-                toxicitylabels : this._toxicity_labels
+                toxicitylabels: this._toxicity_labels
             }
         };
     }
-    
+
     /**
      * TODO Moves info from the runtime into the classifier, called when a project is loaded
-     */    
-    async loadModelFromRuntime () {
+     */
+    async loadModelFromRuntime() {
         //console.log("Load model from runtime");
         this.labelList = [];
         this.labelListEmpty = false;
@@ -634,7 +641,7 @@ class Scratch3TextClassificationBlocks {
      * Return label list for block menus
      * @return {array of strings} an array of the labels for the text model classifier
      */
-    getLabels () {
+    getLabels() {
         return this.labelList;
     }
 
@@ -642,13 +649,13 @@ class Scratch3TextClassificationBlocks {
      * TODO grab text and add it as an example
      * @param {string} args.LABEL the name of the label to add an example to
      */
-    textExample (args) {
+    textExample(args) {
         console.log("Get text example");
         // TODO grab text
         let text = '';
-         if (frame) {
-             this.newExamples([text], args.LABEL);
-         }
+        if (frame) {
+            this.newExamples([text], args.LABEL);
+        }
     }
 
     /**
@@ -656,7 +663,7 @@ class Scratch3TextClassificationBlocks {
      * @param {array of strings} examples a list of text examples to add to a label
      * @param {string} label the name of the label
      */
-    newExamples (text_examples, label) {   //add examples for a label
+    newExamples(text_examples, label) {   //add examples for a label
         console.log("Add examples to label " + label);
         console.log(text_examples);
         if (this.labelListEmpty) {
@@ -675,12 +682,12 @@ class Scratch3TextClassificationBlocks {
         }
 
     }
-    
+
     /**
      * TODO Add a new label to labelList
      * @param {string} label the name of the label
      */
-    newLabel (newLabelName) {   //add the name of a new label
+    newLabel(newLabelName) {   //add the name of a new label
         if (this.labelListEmpty) {
             // Edit label list accordingly
             this.labelList.splice(this.labelList.indexOf(''), 1);
@@ -689,14 +696,14 @@ class Scratch3TextClassificationBlocks {
         if (!this.labelList.includes(newLabelName)) {
             this.labelList.push(newLabelName);
         }
-        
+
         this.scratch_vm.modelData.textData[newLabelName] = [];
         this.scratch_vm.modelData.classifierData[newLabelName] = [];
         // update drowndown of class names
         //this.scratch_vm.emit("TOOLBOX_EXTENSIONS_NEED_UPDATE");
         this.scratch_vm.requestToolboxExtensionsUpdate();
     }
-    
+
 
 
 
@@ -705,7 +712,7 @@ class Scratch3TextClassificationBlocks {
      * @param {string} oldName the name of the label to change
      * @param {string} newname the new name for the label
      */
-    renameLabel (oldName, newName) {
+    renameLabel(oldName, newName) {
         console.log("Rename a label");
 
         this.scratch_vm.modelData.classifierData[newName] = this.scratch_vm.modelData.classifierData[oldName];  //reset the runtime's model data with the new renamed label (to share with GUI)
@@ -723,22 +730,22 @@ class Scratch3TextClassificationBlocks {
      * @param {string} label the name of the label with the example to be removed
      * @param {integer} exampleNum which example, in the array of a label's examples, to remove
      */
-    deleteExample (label, exampleNum) {
+    deleteExample(label, exampleNum) {
         console.log("Delete example " + exampleNum + " with label " + label);
-         // Remove label from the runtime's model data (to share with the GUI)
-         if (exampleNum === -1) {    //if this is true, delete all the loaded examples
+        // Remove label from the runtime's model data (to share with the GUI)
+        if (exampleNum === -1) {    //if this is true, delete all the loaded examples
             let numLoadedExamples = this.scratch_vm.modelData.classifierData[label].length - this.scratch_vm.modelData.textData[label].length;   //imageData[label].length is ONLY the length of the NEW examples (not the saved and then loaded ones!)
             this.scratch_vm.modelData.classifierData[label].splice(0, numLoadedExamples);
-         } else {
-         this.scratch_vm.modelData.textData[label].splice(exampleNum, 1);
-         this.scratch_vm.modelData.classifierData[label].splice(exampleNum - this.scratch_vm.modelData.textData[label].length - 1, 1);
-         }
+        } else {
+            this.scratch_vm.modelData.textData[label].splice(exampleNum, 1);
+            this.scratch_vm.modelData.classifierData[label].splice(exampleNum - this.scratch_vm.modelData.textData[label].length - 1, 1);
+        }
     }
 
     /**
      * TODO Clear all data stored in the classifier and label list
      */
-    clearLocal () {
+    clearLocal() {
         console.log("Clear local data");
         this.scratch_vm.emit("TOOLBOX_EXTENSIONS_NEED_UPDATE");
         this.labelList = [''];
@@ -746,17 +753,17 @@ class Scratch3TextClassificationBlocks {
     }
 
     resetModelData() {
-        this.scratch_vm.modelData = {textData: {}, classifierData: {}, nextLabelNumber: 1};
+        this.scratch_vm.modelData = { textData: {}, classifierData: {}, nextLabelNumber: 1 };
     }
 
     /**
      * TODO Clear local label list, but also clear all data stored in the runtime
      */
-    clearAll () {
+    clearAll() {
         console.log("Clear all data");
         this.clearLocal();
         // Clear runtime's model data
-        
+
         this.resetModelData();
     }
 
@@ -764,39 +771,39 @@ class Scratch3TextClassificationBlocks {
      * TODO Clear all examples with a given label
      * @param {string} args.LABEL the name of the label to remove from the model
      */
-    clearAllWithLabel (args) {
+    clearAllWithLabel(args) {
         console.log("Get rid of all examples with label " + args.LABEL);
         if (this.labelList.includes(args.LABEL)) {
             // Remove label from labelList
             this.labelList.splice(this.labelList.indexOf(args.LABEL), 1);
             // Remove label from the runtime's model data (to share with the GUI)
-            delete this.scratch_vm.modelData.classifierData[args.LABEL];  
+            delete this.scratch_vm.modelData.classifierData[args.LABEL];
             delete this.scratch_vm.modelData.textData[args.LABEL];
             // If the label list is now empty, fill it with an empty string
-            if (this.labelList.length === 0) {  
+            if (this.labelList.length === 0) {
                 this.labelListEmpty = true;
                 this.labelList.push('');
             }
         }
     }
-    
-    
+
+
     /**
      * Detects if the sound from the input mic is louder than a particular threshold
      * @param args.THRESHOLD {integer} the threshold of loudness to trigger on
      * @return {integer} true if the loudness is above the threshold and false if it is not
-     */    
+     */
     onHeardSound(args) {
         let threshold = args.THRESHOLD;
-        
+
         return this.getLoudness() > threshold;
     }
-    
+
     /**
      * Get the input volume from the mic
      * @return {integer} mic volume at current time
      */
-    getLoudness () {
+    getLoudness() {
         if (typeof this.scratch_vm.audioEngine === 'undefined') return -1;
         if (this.scratch_vm.currentStepTime === null) return -1;
 
@@ -810,24 +817,24 @@ class Scratch3TextClassificationBlocks {
         this._cachedLoudness = this.scratch_vm.audioEngine.getLoudness();
         return this._cachedLoudness;
     }
-    
+
     /**
      * Get the menu of voices for the "set voice" block.
      * @return {array} the text and value for each menu item.
      */
-    getVoiceMenu () {
+    getVoiceMenu() {
         return Object.keys(this.VOICE_INFO).map(voiceId => ({
             text: this.VOICE_INFO[voiceId].name,
             value: voiceId
         }));
     }
-    
+
     /**
      * Set the voice for speech synthesis for this sprite.
      * @param  {object} args Block arguments
      * @param {object} util Utility object provided by the runtime.
      */
-    setVoice (args, util) {
+    setVoice(args, util) {
         const state = this._getState(util.target);
 
         let voice = args.VOICE;
@@ -845,11 +852,11 @@ class Scratch3TextClassificationBlocks {
             state.voiceId = voice;
         }
     }
-    
+
     /**
      * Stop all currently playing speech sounds.
      */
-    _stopAllSpeech () {
+    _stopAllSpeech() {
         this._soundPlayers.forEach(player => {
             player.stop();
         });
@@ -870,7 +877,7 @@ class Scratch3TextClassificationBlocks {
 
         let gender = this.VOICE_INFO[state.voiceId].gender;
         let playbackRate = this.VOICE_INFO[state.voiceId].playbackRate;
-        
+
         // Build up URL
         let path = `${SERVER_HOST}/synth`;
         path += `?locale=${locale}`;
@@ -918,14 +925,14 @@ class Scratch3TextClassificationBlocks {
             });
         });
     }
-    
+
     recognizeSpeech() {
         let recognition = new webkitSpeechRecognition();
         let self = this;
-        
+
         return new Promise(resolve => {
             recognition.start();
-            recognition.onresult = function(event) {
+            recognition.onresult = function (event) {
                 if (event.results.length > 0) {
                     self._recognizedSpeech = event.results[0][0].transcript;
                 }
@@ -933,14 +940,14 @@ class Scratch3TextClassificationBlocks {
             };
         });
     }
-    
+
     async askSpeechRecognition(args, util) {
         let prompt = Cast.toString(args.PROMPT);
         args.TEXT = prompt;
         let speakTextResolved = await this.speakText(args, util);
         return this.recognizeSpeech();
-     }
-    
+    }
+
     getRecognizedSpeech() {
         return this._recognizedSpeech;
     }
@@ -955,8 +962,8 @@ class Scratch3TextClassificationBlocks {
     async ifTextMatchesClass(args, util) {
         const text = args.TEXT;
         const className = args.CLASS_NAME;
-        const predictionState = await this.get_embeddings(text,"none","predict");
-        
+        const predictionState = await this.get_embeddings(text, "none", "predict");
+
         if (!predictionState) {
             return false;
         } else {
@@ -973,7 +980,7 @@ class Scratch3TextClassificationBlocks {
      */
     async getModelPrediction(args) {
         const text = args.TEXT;
-        const predictionState = await this.get_embeddings(text,"none","predict");
+        const predictionState = await this.get_embeddings(text, "none", "predict");
         return predictionState;
     }
 
@@ -985,7 +992,7 @@ class Scratch3TextClassificationBlocks {
      */
     async getModelConfidence(args) {
         const text = args.TEXT;
-        const predictionConfidence = await this.get_confidence(text,"none","predict");
+        const predictionConfidence = await this.get_confidence(text, "none", "predict");
         return predictionConfidence;
     }
     /**
@@ -994,21 +1001,21 @@ class Scratch3TextClassificationBlocks {
      * @param className - the class whose examples are being checked
      * @returns a boolean true if the text is an example or false if the text is not an example
      */
-    getPredictedClass(text,className) { 
+    getPredictedClass(text, className) {
         if (!this.labelListEmpty) {   //whenever the classifier has some data
             try {
-            for (let example of this.scratch_vm.modelData.textData[className]) {
-                if (text.toLowerCase() === example.toLowerCase()) {
-                    return true;
+                for (let example of this.scratch_vm.modelData.textData[className]) {
+                    if (text.toLowerCase() === example.toLowerCase()) {
+                        return true;
+                    }
                 }
+            } catch (err) {
+                return false;
             }
-        } catch(err) {
-            return false;
-        }
         } else { //if there is no data in the classifier
             return false;
         }
-    
+
 
     }
 
@@ -1018,11 +1025,11 @@ class Scratch3TextClassificationBlocks {
      * @param label - this is always "none" when embedding examples
      * @param direction - is either "example" when an example is being inputted or "predict" when a word to be classified is inputted
      */
-        // async getembeddedwords(text,label,direction) {
-        //     if (!this.labelListEmpty) {
-        //         const embeddedtext = await this.get_embeddings(text,label,direction);
-        //     }
-        // }
+    // async getembeddedwords(text,label,direction) {
+    //     if (!this.labelListEmpty) {
+    //         const embeddedtext = await this.get_embeddings(text,label,direction);
+    //     }
+    // }
 
 
     /**
@@ -1032,18 +1039,18 @@ class Scratch3TextClassificationBlocks {
      * @param direction - is either "example" when an example is being inputted or "predict" when a word to be classified is inputted
      * @returns if the direction is "predict" returns the predicted label for the text inputted
      */
-    async get_embeddings(text,label,direction) { //changes text into a 2d tensor
-        const newText = await this.getTranslate(text,"en"); //translates text from any language to english
+    async get_embeddings(text, label, direction) { //changes text into a 2d tensor
+        const newText = await this.getTranslate(text, "en"); //translates text from any language to english
         console.log(newText);
 
-        if (!this.labelListEmpty) { 
+        if (!this.labelListEmpty) {
             if (direction === "predict") {
                 await this.predictScore(newText);
                 return this.predictionClass;
             }
-            } else {
-                return "No classes inputted";
-                
+        } else {
+            return "No classes inputted";
+
         }
     }
 
@@ -1054,8 +1061,8 @@ class Scratch3TextClassificationBlocks {
      * @param direction - is eitfher "example" when an example is being inputted or "predict" when a word to be classified is inputted
      * @returns if the direction is "predict" returns the predicted label for the text inputted
      */
-    async get_confidence(text,label,direction) { //changes text into a 2d tensor
-        const newText = await this.getTranslate(text,"en"); //translates text from any language to english
+    async get_confidence(text, label, direction) { //changes text into a 2d tensor
+        const newText = await this.getTranslate(text, "en"); //translates text from any language to english
         console.log(newText);
 
         if (direction === "predict") {
@@ -1063,10 +1070,10 @@ class Scratch3TextClassificationBlocks {
             return this.predictionScore;
         } else {
             return "No classes inputted";
-            
+
         }
     }
-    
+
 
     /**
      * Embeds text and either adds examples to classifier or returns the predicted label
@@ -1075,10 +1082,10 @@ class Scratch3TextClassificationBlocks {
      * @param direction - is either "example" when an example is being inputted or "predict" when a word to be classified is inputted
      * @returns if the direction is "predict" returns the predicted label for the text inputted
      */
-    async buildCustomDeepModel() { 
+    async buildCustomDeepModel() {
         var numClass = this.labelList.length;
 
-        if (numClass < 2){
+        if (numClass < 2) {
             return "No classes inputted";
         }
 
@@ -1089,9 +1096,9 @@ class Scratch3TextClassificationBlocks {
         this.custom_NLP_model = tf.sequential();
         this.sentencesample = [];
         this.labledsample = [];
-        for (let label of this.labelList){
+        for (let label of this.labelList) {
             //console.log(this.scratch_vm.modelData.textData[label])
-            for (let sentense of this.scratch_vm.modelData.textData[label]){
+            for (let sentense of this.scratch_vm.modelData.textData[label]) {
                 //console.log(sentense)
                 this.sentencesample.push(sentense);
                 this.labledsample.push(label);
@@ -1102,18 +1109,18 @@ class Scratch3TextClassificationBlocks {
 
 
         // console.log('model::'+JSON.stringify(this.custom_NLP_model));
-        const ys = tf.oneHot(tf.tensor1d(this.labledsample.map((a) => 
+        const ys = tf.oneHot(tf.tensor1d(this.labledsample.map((a) =>
             this.labelList.findIndex(e => e === a)), 'int32'), numClass);
         // console.log('ys',ys);
 
         const trainingData = await use.load()
-        .then(model => {
-            return model.embed(this.sentencesample)
-                .then(embeddings => {
-                    return embeddings;
-                });
-        })
-        .catch(err => console.error('Fit Error:', err));
+            .then(model => {
+                return model.embed(this.sentencesample)
+                    .then(embeddings => {
+                        return embeddings;
+                    });
+            })
+            .catch(err => console.error('Fit Error:', err));
         // console.log(trainingData)
 
 
@@ -1169,7 +1176,7 @@ class Scratch3TextClassificationBlocks {
 
         // Add layers to the model
         this.custom_NLP_model.add(tf.layers.dense({
-            inputShape: [512], 
+            inputShape: [512],
             activation: 'sigmoid',
             kernelInitializer: 'ones',
             units: numClass,//number of label classes
@@ -1194,11 +1201,11 @@ class Scratch3TextClassificationBlocks {
             validationSplit: 0.15,
             doValidation: true,
             callbacks: [
-                tf.callbacks.earlyStopping({monitor: 'val_loss', patience:50})
+                tf.callbacks.earlyStopping({ monitor: 'val_loss', patience: 50 })
             ]
-         }).then(info => {
-           console.log('Final accuracy', info);
-         });
+        }).then(info => {
+            console.log('Final accuracy', info);
+        });
 
 
         // // This is LSTM exprement - wasn't good
@@ -1257,7 +1264,7 @@ class Scratch3TextClassificationBlocks {
 
         console.log('model is trained')
         this.scratch_vm.emit('SAY', this.scratch_vm.executableTargets[1], 'say', 'The model is ready');
-        
+
     }
 
     /**
@@ -1267,16 +1274,16 @@ class Scratch3TextClassificationBlocks {
      * @param direction - is either "example" when an example is being inputted or "predict" when a word to be classified is inputted
      * @returns if the direction is "predict" returns the predicted label for the text inputted
      */
-    async predictScore(text) { 
+    async predictScore(text) {
         // TODO: check if already got the predection
-        if (this.lastSentenceClassified === text){
+        if (this.lastSentenceClassified === text) {
             console.log('Classification done')
             console.log('Predicted Label', this.predictionLabel);
-            console.log('Predicted Class', this.predictionClass );
-            console.log('Predicted Score', this.predictionScore );
+            console.log('Predicted Class', this.predictionClass);
+            console.log('Predicted Score', this.predictionScore);
             return "elready done."
         }
-        else{
+        else {
             this.lastSentenceClassified = text;
         }
 
@@ -1287,13 +1294,13 @@ class Scratch3TextClassificationBlocks {
         console.log(text)
         var test_ex = [text]
         const testData = await use.load()
-        .then(model => {
-            return model.embed(test_ex)
-                .then(embeddings => {
-                    return embeddings;
-                });
-        })
-        .catch(err => console.error('Fit Error:', err));
+            .then(model => {
+                return model.embed(test_ex)
+                    .then(embeddings => {
+                        return embeddings;
+                    });
+            })
+            .catch(err => console.error('Fit Error:', err));
         // console.log(testData)
         // this.output = await this.custom_NLP_model.predict(testData);
         await this.custom_NLP_model.predict(testData).print();
@@ -1306,15 +1313,15 @@ class Scratch3TextClassificationBlocks {
         this.predictionScore = predict[this.predictionLabel];
 
         console.log('Predicted Label', this.predictionLabel);
-        console.log('Predicted Class', this.predictionClass );
-        console.log('Predicted Score', this.predictionScore );
+        console.log('Predicted Class', this.predictionClass);
+        console.log('Predicted Score', this.predictionScore);
 
 
     }
-   /**
-     * Exports the labels and examples in the form of a json document with the default name of "classifier-info.json"
-     */
-      exportClassifier() { //exports classifier as JSON file
+    /**
+      * Exports the labels and examples in the form of a json document with the default name of "classifier-info.json"
+      */
+    exportClassifier() { //exports classifier as JSON file
         let dataset = this.scratch_vm.modelData.textData;
         let jsonStr = JSON.stringify(dataset);
         //exports json file
@@ -1323,11 +1330,11 @@ class Scratch3TextClassificationBlocks {
         a.setAttribute("href", "data:" + data);
         a.setAttribute("download", "classifier-info.json");
         a.click();
-      }
-   /**
-     * Loads the json document which contains labels and examples. Inputs the labels and examples into the classifier
-     */
-      async loadClassifier() { //loads classifier to project
+    }
+    /**
+      * Loads the json document which contains labels and examples. Inputs the labels and examples into the classifier
+      */
+    async loadClassifier() { //loads classifier to project
         var self = this
         var dataset = document.getElementById("imported-classifier").files[0];
         if (dataset !== undefined) {
@@ -1336,8 +1343,8 @@ class Scratch3TextClassificationBlocks {
             await fr.readAsText(dataset);
             await this.buildCustomDeepModel();
         }
-  
-          function receivedText(e) { //parses through the json document and adds to the model textData and classifier
+
+        function receivedText(e) { //parses through the json document and adds to the model textData and classifier
             let lines = e.target.result;
             try {
                 var newArr = JSON.parse(lines);
@@ -1352,11 +1359,11 @@ class Scratch3TextClassificationBlocks {
             } catch (err) {
                 console.log("Incorrect document form");
             }
-                
+
         }
     }
 
-    getTranslate (words,language) {
+    getTranslate(words, language) {
         // Don't remake the request if we already have the value.
         if (this._lastTextTranslated === words &&
             this._lastLangTranslated === language) {
@@ -1395,7 +1402,7 @@ class Scratch3TextClassificationBlocks {
         translatePromise.then(translatedText => translatedText);
         return translatePromise;
     }
-     
+
 
     confidenceTrue(args) {
         return this._classifyText(args.TEXT, args.LABEL, true);
@@ -1449,12 +1456,11 @@ class Scratch3TextClassificationBlocks {
 
     _classifyText(text, label, returnPositive) {
         if (this._toxicitymodel && text && label) {
-            return this._toxicitymodel.classify([ text ])
+            return this._toxicitymodel.classify([text])
                 .then((predictions) => {
                     const filtered = predictions.filter(prediction => prediction.label === label);
                     if (filtered && filtered.length === 1 &&
-                        filtered[0].results && filtered[0].results.length > 0)
-                    {
+                        filtered[0].results && filtered[0].results.length > 0) {
                         const idx = returnPositive ? 1 : 0;
                         return Math.round(filtered[0].results[0].probabilities[idx] * 100);
                     }
@@ -1466,20 +1472,20 @@ class Scratch3TextClassificationBlocks {
         }
     }
 
-    
+
     /**
      * chech sentiment score of a text 
      * @param text - the text inputted
      * @returns predicted acore for the text inputted -5 (negative) to 5 (positive)
      */
-    async sentimentScore(text){
+    async sentimentScore(text) {
         console.log(text.TEXT);
         console.log(this.sentiment.analyze(text.TEXT))
         this.predictedsentimentScore = this.sentiment.analyze(text.TEXT)
         return this.predictedsentimentScore.comparative;
     }
 
-      
+
 }
 
 module.exports = Scratch3TextClassificationBlocks;

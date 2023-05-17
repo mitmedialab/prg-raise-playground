@@ -11,6 +11,13 @@
     "ignoreDeprecations": "5.0",
     "noErrorTruncation": true,
     "strictPropertyInitialization": false,
+    "lib": [
+      "dom",
+      "es6"
+    ]
   },
-  "include": [".**/*.ts", "**/*.ts"],
+  "include": [
+    ".**/*.ts",
+    "**/*.ts"
+  ],
 }

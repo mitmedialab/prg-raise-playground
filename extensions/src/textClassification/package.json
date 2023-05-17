@@ -11,5 +11,14 @@
     "add:arg": "npm run --prefix ../../../-- textClassification"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@tensorflow-models/toxicity": "^1.2.2",
+    "format-message": "^6.2.4",
+    "sentiment": "^5.0.2"
+  },
+  "devDependencies": {
+    "@types/dom-speech-recognition": "^0.0.1",
+    "@types/sentiment": "^5.0.1"
+  }
 }

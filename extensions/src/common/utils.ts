@@ -199,6 +199,20 @@ function rgbToDecimal(rgb: RGBObject) {
  * @param {RGBObject} rgb - {r: red [0,255], g: green [0,255], b: blue [0,255]}.
  * @return {!string} Hex representation of the color.
  */
-export const rgbToHex = (rgb: RGBObject) => {
-  return decimalToHex(rgbToDecimal(rgb));
+export const rgbToHex = (rgb: RGBObject) => decimalToHex(rgbToDecimal(rgb));
+
+
+/**
+ * Keep a number between two limits, wrapping "extra" into the range.
+ * e.g., wrapClamp(7, 1, 5) == 2
+ * wrapClamp(0, 1, 5) == 5
+ * wrapClamp(-11, -10, 6) == 6, etc.
+ * @param {!number} n Number to wrap.
+ * @param {!number} min Minimum limit.
+ * @param {!number} max Maximum limit.
+ * @return {!number} Value of n wrapped between min and max.
+ */
+export const wrapClamp = (n, min, max) => {
+  const range = (max - min) + 1;
+  return n - (Math.floor((n - min) / range) * range);
 }

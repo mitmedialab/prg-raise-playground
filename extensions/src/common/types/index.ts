@@ -6,3 +6,4 @@ export * from "./framework/arguments";
 export * from "./framework/blocks";
 export * from "./framework/menus";
 export * from "./framework/translations";
+export * from "./scratch/audio";

@@ -377,4 +377,8 @@ export const RuntimeEvent = {
    * Event name for reporting that a block was updated and needs to be rerendered.
    */
   BlocksNeedUpdate: 'BLOCKS_NEED_UPDATE',
+  /**
+   * Report that a new target has been created, possibly by cloning an existing target.
+   */
+  TargetWasCreated: 'targetWasCreated',
 } as const;
