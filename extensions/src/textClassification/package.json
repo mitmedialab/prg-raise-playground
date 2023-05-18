@@ -13,7 +13,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@tensorflow-models/toxicity": "^1.2.2",
+    "@tensorflow-models/toxicity": "~1.2.2",
+    "@tensorflow-models/universal-sentence-encoder": "~1.2.2",
+    "@tensorflow/tfjs": "^4.6.0",
     "format-message": "^6.2.4",
     "sentiment": "^5.0.2"
   },

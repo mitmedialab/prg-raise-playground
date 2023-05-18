@@ -1,4 +1,5 @@
 import { Extension, Environment, untilExternalGlobalVariableLoaded, validGenericExtension, RuntimeEvent } from "$common";
+import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import { legacyFullSupport, info } from "./legacy";
 
 const { legacyExtension, legacyDefinition } = legacyFullSupport.for<PoseFace>();
@@ -295,7 +296,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
 
 
     const affdexGoToPart = legacyDefinition.affdexGoToPart({
-      operation: (part: string, util) => {
+      operation: (part: string, util: BlockUtility) => {
         this.goToPart(part, util)
       }
     });

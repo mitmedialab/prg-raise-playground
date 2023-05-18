@@ -87,7 +87,11 @@ type ArgsToMenusArray<T extends unknown[], TData extends ExtensionMetadata> = T 
   : T;
 
 export type LegacyMethods<T extends ExtensionMetadata> = {
-  [k in Opcodes<T>]: (...args: (OpArgs<T, k> | [...OpArgs<T, k>, BlockUtility])) => OpReturn<T, k>;
+  [k in Opcodes<T>]: (...args: (OpArgs<T, k>)) => OpReturn<T, k>;
+};
+
+export type LegacyMethodsWithUtils<T extends ExtensionMetadata> = {
+  [k in Opcodes<T>]: (...args: [(OpArgs<T, k>), BlockUtility]) => OpReturn<T, k>;
 };
 
 export type Menus = ExtensionMetadata["menus"];

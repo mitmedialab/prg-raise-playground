@@ -381,4 +381,5 @@ export const RuntimeEvent = {
    * Report that a new target has been created, possibly by cloning an existing target.
    */
   TargetWasCreated: 'targetWasCreated',
+  Say: "SAY"
 } as const;
