@@ -1,6 +1,6 @@
 import { TypedClassDecorator, TypedMethodDecorator } from "../..";
 import { BaseGenericExtension, BlockMetadata, BlockOperation, DefineBlock, ExtensionMenuDisplayDetails, ExtensionMetadata } from "$common/types";
-import { Arguments, BlockType, LegacyMethods, LegacyMethodsWithUtils, OpArgMenus, OpReturn, Opcodes, ReservedMenuNames } from "./LegacyProbe";
+import { Arguments, BlockType, LegacyMethods, LegacyMethodsWithBlockUtilities, OpArgMenus, OpReturn, Opcodes, ReservedMenuNames } from "./LegacyProbe";
 import { TupleToObject, TuplifyUnion } from "./TsMagic";
 import { Extension } from "$common/extension/GenericExtension";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
@@ -11,7 +11,7 @@ export type BlockMap = Map<string, BlockEntry>;
 
 export type LegacyExtension<TData extends ExtensionMetadata, TStrict extends boolean> =
   (
-    (ExtensionInstance & (TStrict extends true ? LegacyMethods<TData> | LegacyMethodsWithUtils<TData> : {})) |
+    (ExtensionInstance & (TStrict extends true ? LegacyMethods<TData> | LegacyMethodsWithBlockUtilities<TData> : {})) |
     Extension<ExtensionMenuDisplayDetails, (TStrict extends true ? LegacyMethods<TData> : {})> & { [k in Opcodes<TData>]?: void }
   )
   & { [k in ReservedMenuNames<TData>]?: void };
