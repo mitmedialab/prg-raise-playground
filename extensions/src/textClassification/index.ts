@@ -12,7 +12,7 @@ import encoder from '@tensorflow-models/universal-sentence-encoder';
 import tf, { Tensor2D } from '@tensorflow/tfjs';
 import { getTranslationToEnglish } from "./services/translation";
 
-const { legacyBlock, ReservedNames } = legacyFullSupport.for<TextClassification>();
+const { legacyBlock } = legacyFullSupport.for<TextClassification>();
 const { toxicitylabels: { items: toxicityLabelItems }, voices: { items: voiceItems } } = info.menus;
 
 const details: ExtensionMenuDisplayDetails = { name: "Text Classification" };
