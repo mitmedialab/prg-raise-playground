@@ -1,11 +1,10 @@
 import { Extension } from "$common/extension/GenericExtension";
 import type ExtensionManager from "$scratch-vm/extension-support/extension-manager";
-import type Runtime from "$scratch-vm/engine/runtime";
 import { ExtensionBlocks } from "./blocks";
 import { Language } from "../enums";
 import { MethodNames, ValueOf } from "../utils";
 import { ExtensionInstance } from "$common/extension";
-import { AudioEngine } from "../scratch/audio";
+import { Runtime } from "../scratch/vm";
 
 export type BaseGenericExtension = Extension<ExtensionMenuDisplayDetails, ExtensionBlocks>;
 
@@ -20,7 +19,7 @@ export type Environment = {
   /**
    * The scratch runtime 
    */
-  runtime: Omit<Runtime, "audioEngine"> & { audioEngine: AudioEngine },
+  runtime: Runtime,
   extensionManager: ExtensionManager,
 }
 

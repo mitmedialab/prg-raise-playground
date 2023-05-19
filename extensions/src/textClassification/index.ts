@@ -7,9 +7,9 @@ import { getSynthesisURL } from "./services/synthesis";
 import timer from "./timer";
 import voices, { Voice } from "./voices";
 import Sentiment from "sentiment";
-import toxicity, { ToxicityClassifier } from "@tensorflow-models/toxicity";
-import encoder from '@tensorflow-models/universal-sentence-encoder';
-import tf, { Tensor2D } from '@tensorflow/tfjs';
+import { ToxicityClassifier, load as loadToxicity } from "@tensorflow-models/toxicity";
+import { load as loadEncoder } from '@tensorflow-models/universal-sentence-encoder';
+import * as tf from '@tensorflow/tfjs';
 import { getTranslationToEnglish } from "./services/translation";
 
 const { legacyBlock, } = legacyFullSupport.for<TextClassification>();
@@ -43,7 +43,7 @@ export default class TextClassification extends extension(details, "legacySuppor
     env.runtime.on(RuntimeEvent.TargetWasCreated, tryCopyStateToClone);
     const threshold = 0.1;
     try {
-      this.toxicityModel = await toxicity.load(threshold, toxicityLabelItems.map(({ value }) => value));
+      this.toxicityModel = await loadToxicity(threshold, toxicityLabelItems.map(({ value }) => value));
       console.log('loaded Toxicity model');
     }
     catch (error) {
@@ -225,11 +225,11 @@ export default class TextClassification extends extension(details, "legacySuppor
 
     this.currentClassificationInput = text;
 
-    const model = await encoder.load();
+    const model = await loadEncoder();
     // try also [text] if doesn't work
-    const testData = await model.embed(text);
+    const testData = await model.embed(text) as unknown as tf.Tensor2D;
 
-    const result = await this.customLanguageModel.predict(testData as unknown as Tensor2D);
+    const result = await this.customLanguageModel.predict(testData);
     const singular = Array.isArray(result) ? result[0] : result;
     const predict = await singular.data();
     prediction.label = await singular.as1D().argMax().dataSync()[0];
@@ -271,10 +271,10 @@ export default class TextClassification extends extension(details, "legacySuppor
     const ys = tf.oneHot(
       tf.tensor1d(samples.labels.map((a) => labels.findIndex(e => e === a)), 'int32'), length);
 
-    let trainingData: Tensor2D;
+    let trainingData: tf.Tensor2D;
     try {
-      const model = await encoder.load();
-      trainingData = await model.embed(samples.sentences) as unknown as Tensor2D;
+      const model = await loadEncoder();
+      trainingData = await model.embed(samples.sentences) as unknown as tf.Tensor2D;
     }
     catch (error) {
       console.error('Fit Error:', error);
