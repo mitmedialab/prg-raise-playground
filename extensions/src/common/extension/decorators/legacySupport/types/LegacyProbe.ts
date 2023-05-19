@@ -1,7 +1,7 @@
 import { ArgumentType, BlockType } from "$common/types/enums";
 import { ExtensionMetadata, ExtensionBlockMetadata, ValueOf, TypeByArgumentType, ExtensionMenuItems, ReturnTypeByBlockType, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters } from "$common/types";
 import { ObjValueTuple, TuplifyUnion } from "./TsMagic";
-import BlockUtility from "$scratch-vm/engine/block-utility";
+import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 
 /**
  * Types to assist in extracting information from the return type of the old 'getInfo' method
@@ -87,13 +87,8 @@ type ArgsToMenusArray<T extends unknown[], TData extends ExtensionMetadata> = T 
   : T;
 
 export type LegacyMethods<T extends ExtensionMetadata> = {
-  [k in Opcodes<T>]: (...args: OpArgs<T, k>) => OpReturn<T, k>;
+  [k in Opcodes<T>]: (...args: (OpArgs<T, k> | [...OpArgs<T, k>, BlockUtility])) => OpReturn<T, k>;
 };
-
-/*
-export type LegacyMethodsWithBlockUtilities<T extends ExtensionMetadata> = {
-  [k in Opcodes<T>]: (...args: [OpArgs<T, k>, BlockUtility]) => OpReturn<T, k>;
-};*/
 
 export type Menus = ExtensionMetadata["menus"];
 export type Items = ExtensionMenuItems["items"];
