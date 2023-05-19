@@ -1,7 +1,7 @@
 /// <reference types="dom-speech-recognition" />
 import { Environment, extension, ExtensionMenuDisplayDetails, block, wrapClamp, fetchWithTimeout, RuntimeEvent } from "$common";
 import type BlockUtility from "$scratch-vm/engine/block-utility";
-import { legacyFullSupport, info, legacyIncrementalSupport } from "./legacy";
+import { legacyFullSupport, info, } from "./legacy";
 import { getState, setState, tryCopyStateToClone } from "./state";
 import { getSynthesisURL } from "./services/synthesis";
 import timer from "./timer";
@@ -12,7 +12,7 @@ import encoder from '@tensorflow-models/universal-sentence-encoder';
 import tf, { Tensor2D } from '@tensorflow/tfjs';
 import { getTranslationToEnglish } from "./services/translation";
 
-const { legacyBlock, ReservedNames } = legacyFullSupport.for<TextClassification>();
+const { legacyBlock, } = legacyFullSupport.for<TextClassification>();
 const { toxicitylabels: { items: toxicityLabelItems }, voices: { items: voiceItems } } = info.menus;
 
 const details: ExtensionMenuDisplayDetails = { name: "Text Classification" };
@@ -58,13 +58,14 @@ export default class TextClassification extends extension(details, "legacySuppor
       1: { getItems: () => self.labels }
     }
   }))
-  ifTextMatchesClass(text: string, className: string) {
-    return true;
+  async ifTextMatchesClass(text: string, className: string) {
+    const predictionState = await this.getEmbeddings(text);
+    return predictionState && predictionState === className;
   }
 
   @legacyBlock.getModelPrediction()
-  getModelPrediction(text: string) {
-    return "";
+  async getModelPrediction(text: string) {
+    return await this.getEmbeddings(text);
   }
 
   @legacyBlock.getModelConfidence()
@@ -306,5 +307,58 @@ export default class TextClassification extends extension(details, "legacySuppor
 
     console.log('Final accuracy', info);
     this.runtime.emit(RuntimeEvent.Say, this.runtime.executableTargets[1], 'say', 'The model is ready');
+  }
+
+  private async getEmbeddings(text) {
+    const newText = await getTranslationToEnglish(text); //translates text from any language to english
+    if (this.labels.length === 0 || !this.labels[0]) return;
+
+    await this.predictScore(newText);
+    return this.prediction.class;
+
+  }
+
+  private uiEventsTODO() {
+    /*
+    // Listen for model editing events emitted by the text modal
+    this.runtime.on('NEW_EXAMPLES', (examples, label) => {
+      this.newExamples(examples, label);
+    });
+    this.runtime.on('NEW_LABEL', (label) => {
+      this.newLabel(label);
+    });
+    this.runtime.on('DELETE_EXAMPLE', (label, exampleNum) => {
+      this.deleteExample(label, exampleNum);
+    });
+    this.runtime.on('RENAME_LABEL', (oldName, newName) => {
+      this.renameLabel(oldName, newName);
+    });
+    this.runtime.on('DELETE_LABEL', (label) => {
+      this.clearAllWithLabel({ LABEL: label });
+    });
+    this.runtime.on('CLEAR_ALL_LABELS', () => {
+      if (!this.labelListEmpty && confirm('Are you sure you want to clear all labels?')) {    //confirm with alert dialogue before clearing the model
+        let labels = [...this.labelList];
+        for (var i = 0; i < labels.length; i++) {
+          this.clearAllWithLabel({ LABEL: labels[i] });
+        }
+        //this.clearAll(); this crashed Scratch for some reason
+      }
+    });
+
+    //Listen for model editing events emitted by the classifier modal
+    this.runtime.on('EXPORT_CLASSIFIER', () => {
+      this.exportClassifier();
+    });
+    this.runtime.on('LOAD_CLASSIFIER', () => {
+      console.log("load");
+      this.loadClassifier();
+
+    });
+
+    this.runtime.on('DONE', () => {
+      console.log("DONE");
+      this.buildCustomDeepModel();
+    });*/
   }
 }

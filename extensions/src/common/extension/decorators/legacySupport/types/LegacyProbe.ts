@@ -25,7 +25,7 @@ export type OpArgs<T extends ExtensionMetadata, K extends Opcodes<T>> = ArgsArra
 export type OpArgMenus<T extends ExtensionMetadata, K extends Opcodes<T>> = ArgsToMenusArray<ObjValueTuple<Arguments<T["blocks"], K>[keyof Arguments<T["blocks"], K>]>, T>;
 
 export type BlockType<T extends ExtensionMetadata, K extends Opcodes<T>> = Types<T["blocks"], K>[keyof Types<T["blocks"], K>] extends ValueOf<typeof BlockType> ? Types<T["blocks"], K>[keyof Types<T["blocks"], K>] : never;
-export type OpReturn<T extends ExtensionMetadata, K extends Opcodes<T>, TBlockType extends BlockType<T, K> = BlockType<T, K>> = ReturnTypeByBlockType<TBlockType>;
+export type OpReturn<T extends ExtensionMetadata, K extends Opcodes<T>, TBlockType extends BlockType<T, K> = BlockType<T, K>> = ReturnTypeByBlockType<TBlockType> | Promise<ReturnTypeByBlockType<TBlockType>>;
 
 export type ReservedMenuNames<T extends ExtensionMetadata> = ValueOf<{
   [Op in Opcodes<T>]: ValueOf<{

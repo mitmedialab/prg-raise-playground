@@ -409,8 +409,8 @@ class Scratch3TextClassificationBlocks {
                     blockType: BlockType.BUTTON,
                     text: 'Load / Save Model'
                 },
-
                 {
+                    // DONE
                     opcode: 'ifTextMatchesClass',
                     text: formatMessage({
                         id: 'textClassification.ifTextMatchesClass',
@@ -431,6 +431,7 @@ class Scratch3TextClassificationBlocks {
                     }
                 },
                 {
+                    // Done
                     opcode: 'getModelPrediction',
                     text: formatMessage({
                         id: 'textClassification.getModelPrediction',
@@ -446,6 +447,7 @@ class Scratch3TextClassificationBlocks {
                     },
                 },
                 {
+                    //Done
                     opcode: 'getModelConfidence',
                     text: formatMessage({
                         id: 'textClassification.getModelConfidence',
