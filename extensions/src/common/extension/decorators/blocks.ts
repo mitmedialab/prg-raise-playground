@@ -1,5 +1,5 @@
 import type BlockUtility from "$scratch-vm/engine/block-utility";
-import { TypedMethodDecorator } from ".";
+import { TypedClassDecorator, TypedGetterDecorator, TypedMethodDecorator } from ".";
 import { BlockType } from "$common/types/enums";
 import { BlockMetadata } from "$common/types";
 import { getImplementationName } from "../mixins/required/scratchInfo/index";
@@ -85,4 +85,22 @@ export function buttonBlock<
     text,
     type: BlockType.Button
   });
+}
+
+export function getterBlock<This extends ExtensionInstance, TReturn>
+  (details: { property: string }): TypedGetterDecorator<This, TReturn> {
+  type Fn = () => TReturn;
+  return function (this: This, target: (this: This) => TReturn, context: ClassGetterDecoratorContext<This, TReturn>) {
+    console.log(target.name);
+    const opcode = target.name.replace("get ", "__getter__");
+    const internalFuncName = getImplementationName(opcode);
+    context.addInitializer(function () {
+      this[opcode] = () => target.call(this);
+      this.pushBlock(opcode, {
+        type: "reporter",
+        text: `Get ${details.property}`,
+      }, this[opcode])
+    });
+    return (function () { return this[internalFuncName].call(this) as TReturn }) as Function as Fn;
+  }
 }
