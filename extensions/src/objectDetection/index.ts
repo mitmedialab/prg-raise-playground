@@ -22,11 +22,6 @@ export default class objectDetection extends extension(details, "video", "drawab
   continuous: boolean = false;
 
   /**
-   * Dimensions of the video frame
-   */
-  DIMENSIONS = [480, 360];
-
-  /**
    * The frequency at which the detector will generate new detections
    */
   processFreq: number = 100;
@@ -57,7 +52,7 @@ export default class objectDetection extends extension(details, "video", "drawab
   async init() {
     this.enableVideo()
     this.detector = await initializeObjectDetector();
-    this.imageHelper = getImageHelper(this.DIMENSIONS[0], this.DIMENSIONS[1]);
+    this.imageHelper = getImageHelper(this.videoDimensions.width, this.videoDimensions.height);
   }
 
   /**
@@ -124,12 +119,14 @@ export default class objectDetection extends extension(details, "video", "drawab
       type: "number",
       defaultValue: 5,
       handler: (x) => {
-        return Math.min(Math.max(0, x), 20);
+        return isNaN(x) ? 5 : Math.min(Math.max(0, x), 50);
       }
     }
   })
   setThickness(thickness: number) {
-    this.thickness = thickness;
+
+    // temporary solution until handler fix
+    this.thickness = isNaN(thickness) ? 5 : Math.min(Math.max(0, thickness), 50);
   }
 
   @block({
