@@ -30,6 +30,11 @@ export default function <T extends MinimalExtensionConstructor>(Ctor: T) {
     };
 
     /**
+     * Dimensions of the video frame
+     */
+    videoDimensions = { width: 480, height: 360 } as const;
+
+    /**
      * Access the most recent frame captured by the web cam
      * @param {"image" | "canvas"} format 
      * @returns 
