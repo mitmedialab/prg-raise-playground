@@ -1,4 +1,4 @@
-import { FilesetResolver as FilesetResolverClass, ObjectDetector as ObjectDetectorClass } from "@mediapipe/tasks-vision";
+import type { FilesetResolver as FilesetResolverClass, ObjectDetector as ObjectDetectorClass } from "@mediapipe/tasks-vision";
 
 export const getImageHelper = (width, height) => {
   const canvas = document.body.appendChild(document.createElement("canvas"));
@@ -20,10 +20,7 @@ export const getImageHelper = (width, height) => {
       context.clearRect(0, 0, width, height);
       context.fillStyle = color;
       for (let detection of detections) {
-        const x = detection.boundingBox.originX;
-        const y = detection.boundingBox.originY;
-        const width = detection.boundingBox.width;
-        const height = detection.boundingBox.height;
+        const { originX: x, originY: y, width, height } = detection.boundingBox;
         context.fillRect(x, y, width, height);
         context.clearRect(x + thickness, y + thickness, width - 2 * thickness, height - 2 * thickness);
         const text = detection.categories[0].categoryName + " - with " +

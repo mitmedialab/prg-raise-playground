@@ -1,5 +1,5 @@
 import { ArgumentType, BlockType, ExtensionMenuDisplayDetails, extension, block, untilTimePassed, rgbToHex, RGBObject } from "$common";
-import { ObjectDetector as ObjectDetectorClass } from "@mediapipe/tasks-vision";
+import type { ObjectDetector as ObjectDetectorClass } from "@mediapipe/tasks-vision";
 import { initializeObjectDetector, getImageHelper } from './utils';
 
 const details: ExtensionMenuDisplayDetails = {
@@ -19,7 +19,7 @@ export default class objectDetection extends extension(details, "video", "drawab
   /**
    * Tells whether the continuous detection should be on/off
    */
-  continuous: boolean;
+  continuous: boolean = false;
 
   /**
    * Dimensions of the video frame
@@ -29,7 +29,7 @@ export default class objectDetection extends extension(details, "video", "drawab
   /**
    * The frequency at which the detector will generate new detections
    */
-  processFreq: number;
+  processFreq: number = 100;
 
   /**
    * Helper for creating ImageData objects (used to create drawables)
@@ -44,24 +44,20 @@ export default class objectDetection extends extension(details, "video", "drawab
   /**
    * The color of the detection box
    */
-  color: string;
+  color: string = 'white';
 
   /**
    * The thickness of the detection box
    */
-  thickness: number;
+  thickness: number = 5;
 
   /**
    * Initializes the extension with standard values for the extension's class attributes.
    */
   async init() {
     this.enableVideo()
-    this.continuous = false;
     this.detector = await initializeObjectDetector();
     this.imageHelper = getImageHelper(this.DIMENSIONS[0], this.DIMENSIONS[1]);
-    this.color = 'white';
-    this.thickness = 5;
-    this.processFreq = 100;
   }
 
   /**
@@ -106,7 +102,7 @@ export default class objectDetection extends extension(details, "video", "drawab
       type: "number",
       options: [60, 30, 10, 2, 1],
       defaultValue: 10
-    } as const
+    }
   })
   setFrameRate(delay: number) {
     this.processFreq = 1000 / delay;
@@ -151,7 +147,7 @@ export default class objectDetection extends extension(details, "video", "drawab
 
   @block({
     type: BlockType.Command,
-    text: (state) => `Toggle continuous detection ${state}`,
+    text: (state) => `Turn continuous detection ${state}`,
     arg: { type: ArgumentType.Boolean, options: [{ text: 'on', value: true }, { text: 'off', value: false }] }
   })
   async continuouslyDetectObjects(state) {
