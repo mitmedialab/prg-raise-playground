@@ -1,4 +1,4 @@
-import { hideElementsOfClass } from "$common";
+import { hideElementsWithClass } from "$common";
 
 /**
  * Remove UI elements that aren't related to the block programming workspace.
@@ -10,7 +10,7 @@ export const hideNonBlocklyElements = () => [
     "react-tabs_react-tabs__tab-list_17Wee",
     "backpack_backpack-container_2_wGr",
     "gui_extension-button-container_b4rCs"
-].forEach(hideElementsOfClass);
+].forEach(hideElementsWithClass);
 
 /**
  * Update the Blockly worspace wrapper to stretch the full size of its container. 
