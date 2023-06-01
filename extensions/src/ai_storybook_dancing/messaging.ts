@@ -1,19 +1,18 @@
 import { isString } from "$common";
 
-export const setUpMessagePassing = () => {
-    window.onmessage = function (e) {
-        // todo
-    };
-}
+const identifier = "ai-storybook-dancing";
+
+export const announce = (content: "ready") => window.top.postMessage({ identifier, source: "blocks", content }, '*');
 
 export const requestDanceMove = (move: "hop") =>
-    window.top.postMessage({ destination: "unity", input: move, method: "Dance" }, '*')
+    window.top.postMessage({ identifier, destination: "unity", input: move, method: "Dance" }, '*')
 
 export const untilMessageReceived = (message: string) => new Promise<void>(resolve => {
     const handler = ({ data }: MessageEvent) => {
+        console.log(`[RAISE Playground ('${message}') listener]\n${JSON.stringify(data, Object.keys(data).sort(), 3)}`)
         if (isString(data)) return;
-        if (data.type !== "blocks") return;
-        if (data.input !== message) return;
+        const { identifier: id, destination, content } = data;
+        if (id !== identifier || destination !== "blocks" || content !== message) return;
         removeEventListener("message", handler);
         resolve();
     };

@@ -1,7 +1,7 @@
 import { Environment, ExtensionMenuDisplayDetails, extension, block, SaveDataHandler, RuntimeEvent, } from "$common";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import { hideNonBlocklyElements, stretchWorkspaceToScreen } from "./layout";
-import { requestDanceMove, setUpMessagePassing, untilMessageReceived } from "./messaging";
+import { announce, requestDanceMove, untilMessageReceived } from "./messaging";
 
 const details: ExtensionMenuDisplayDetails = { name: "Dancing Activity for AI Storybook" };
 
@@ -16,8 +16,7 @@ export default class ExtensionNameGoesHere extends extension(details, "blockly",
   async init(env: Environment) {
     hideNonBlocklyElements();
     stretchWorkspaceToScreen();
-    setUpMessagePassing();
-    env.runtime.start();
+    announce("ready");
   }
 
   /**
