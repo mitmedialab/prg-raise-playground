@@ -1,4 +1,5 @@
 import { ArgumentType, BlockType, Environment, ExtensionMenuDisplayDetails, Language, Menu, SaveDataHandler, block, buttonBlock, extension, tryCastToArgumentType } from "$common";
+import jibo from "./jibo.png";
 
 const details: ExtensionMenuDisplayDetails = {
   name: "Simple Typescript Extension",
@@ -60,5 +61,22 @@ export default class SimpleTypescript extends extension(details, "ui", "customSa
   @buttonBlock("Show colors")
   colorUI() {
     this.openUI("Palette");
+  }
+
+  @block({
+    type: BlockType.Command,
+    text: (x, y, z) => `# ${x} ${y} # ${z}`,
+    args: [
+      "number",
+      {
+        type: "image",
+        uri: jibo,
+        alt: "Picture of Jibo",
+        flipRTL: true
+      },
+      "number"]
+  })
+  imageBlock(a: number, x: "inline image", b: number) {
+
   }
 }

@@ -12,5 +12,9 @@
     "noErrorTruncation": true,
     "strictPropertyInitialization": false,
   },
-  "include": [".**/*.ts", "**/*.ts"],
+  "include": [
+    ".**/*.ts",
+    "**/*.ts",
+    "./declaration.d.ts"
+  ],
 }
