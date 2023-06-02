@@ -5,7 +5,7 @@ import { announce, requestDanceMove, untilMessageReceived } from "./messaging";
 
 const details: ExtensionMenuDisplayDetails = { name: "Dancing Activity for AI Storybook" };
 
-const dance = async (move: "hop") => {
+const dance = async (move: string = "hop") => {
   requestDanceMove(move);
   await untilMessageReceived(`end ${move}`);
 }
@@ -41,6 +41,34 @@ export default class ExtensionNameGoesHere extends extension(details, "blockly",
   })
   async hop(util: BlockUtility) {
     await dance("hop");
+  }
+
+  @block({
+    text: "Step left",
+    type: "command"
+  })
+  async step_left() {
+    await dance("swivel left");
+  }
+
+  @block({
+    text: "Step right",
+    type: "command"
+  })
+  async step_right() {
+    await dance("swivel right");
+  }
+
+  @block({
+    text: (direction: string) => `Spin ${direction}`,
+    type: "command",
+    arg: {
+      type: 'string',
+      options: ['left', 'right']
+    }
+  })
+  async spin(direction: string) {
+    await dance("swivel "+direction);
   }
 
   @block({

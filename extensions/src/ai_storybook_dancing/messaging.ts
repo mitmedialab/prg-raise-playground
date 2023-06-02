@@ -4,7 +4,7 @@ const identifier = "ai-storybook-dancing";
 
 export const announce = (content: "ready") => window.top.postMessage({ identifier, source: "blocks", content }, '*');
 
-export const requestDanceMove = (move: "hop") =>
+export const requestDanceMove = (move: string = "hop") =>
     window.top.postMessage({ identifier, destination: "unity", input: move, method: "Dance" }, '*')
 
 export const untilMessageReceived = (message: string) => new Promise<void>(resolve => {
