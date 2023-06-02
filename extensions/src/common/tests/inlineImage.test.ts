@@ -1,6 +1,7 @@
 import { extension } from "$common/extension";
 import { block } from "$common/extension/decorators/blocks";
 import { ArgumentType, Environment, ExtensionBlockMetadata, InlineImage } from "$common/types";
+import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import { createTestSuite, imageMock } from "$testing";
 import mocked from "./nonExistentFile.png";
 
@@ -17,7 +18,7 @@ class InlineImageTestExtension extends extension({ name: "Dummy" }) {
             alt: "this is a test image",
         }
     })
-    singleArg(arg: "inline image") {
+    singleArg(arg: "inline image", util: BlockUtility) {
 
     }
 
@@ -36,7 +37,7 @@ class InlineImageTestExtension extends extension({ name: "Dummy" }) {
                 type: ArgumentType.String,
             }]
     })
-    multiArg(x: number, y: "inline image", z: string) {
+    multiArg(x: number, y: "inline image", z: string, util: BlockUtility) {
     }
 }
 

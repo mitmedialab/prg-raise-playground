@@ -15,7 +15,7 @@ import { ExtensionIntanceWithFunctionality } from "../..";
 
 export const getImplementationName = (opcode: string) => `internal_${opcode}`;
 
-const inlineImageAccessError = "ERROR: This argument represents and inline image and should not be accessed.";
+const inlineImageAccessError = "ERROR: This argument represents an inline image and should not be accessed.";
 
 /**
  * Wraps a blocks operation so that the arguments passed from Scratch are first extracted and then passed as indices in a parameter array.
