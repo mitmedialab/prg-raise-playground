@@ -15,6 +15,8 @@ import { ExtensionIntanceWithFunctionality } from "../..";
 
 export const getImplementationName = (opcode: string) => `internal_${opcode}`;
 
+const inlineImageAccessError = "ERROR: This argument represents and inline image and should not be accessed.";
+
 /**
  * Wraps a blocks operation so that the arguments passed from Scratch are first extracted and then passed as indices in a parameter array.
  * @param _this What will be bound to the 'this' context of the underlying operation
@@ -29,6 +31,7 @@ export const wrapOperation = <T extends MinimalExtensionInstance>(
 ) => _this.supports("customArguments")
     ? function (this: ExtensionIntanceWithFunctionality<["customArguments"]>, argsFromScratch: Record<string, any>, blockUtility: BlockUtility) {
       const castedArguments = args.map(({ name, type, handler }) => {
+        if (type === ArgumentType.Image) return inlineImageAccessError;
         const param = argsFromScratch[name];
         switch (type) {
           case ArgumentType.Custom:
@@ -43,7 +46,9 @@ export const wrapOperation = <T extends MinimalExtensionInstance>(
     }
     : function (this: T, argsFromScratch: Record<string, any>, blockUtility: BlockUtility) {
       const castedArguments = args.map(({ name, type, handler }) =>
-        castToType(type, handler.call(_this, argsFromScratch[name]))
+        type === ArgumentType.Image
+          ? inlineImageAccessError
+          : castToType(type, handler.call(_this, argsFromScratch[name]))
       );
       return operation.call(_this, ...castedArguments, blockUtility);
     }

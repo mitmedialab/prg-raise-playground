@@ -14,6 +14,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import { terser } from "rollup-plugin-terser";
 import css from 'rollup-plugin-css-only';
 import json from '@rollup/plugin-json';
+import image from '@rollup/plugin-image';
 import nodePolyfills from 'rollup-plugin-polyfill-node';
 import babel from "@rollup/plugin-babel";
 import chalk from "chalk";
@@ -79,6 +80,7 @@ export const getThirdPartyPlugins = (customizations?: { tsTransformers?: Program
     babelHelpers: "bundled",
   }),
   css(),
+  image(),
   terser(),
 ];
 

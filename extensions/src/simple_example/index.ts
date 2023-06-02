@@ -1,5 +1,6 @@
 import { ArgumentType, BlockType, Environment, ExtensionMenuDisplayDetails, Language, Menu, SaveDataHandler, block, buttonBlock, extension, tryCastToArgumentType } from "$common";
 import jibo from "./jibo.png";
+import five from "./five.png";
 
 const details: ExtensionMenuDisplayDetails = {
   name: "Simple Typescript Extension",
@@ -65,18 +66,27 @@ export default class SimpleTypescript extends extension(details, "ui", "customSa
 
   @block({
     type: BlockType.Command,
-    text: (x, y, z) => `# ${x} ${y} # ${z}`,
-    args: [
-      "number",
-      {
-        type: "image",
-        uri: jibo,
-        alt: "Picture of Jibo",
-        flipRTL: true
-      },
-      "number"]
+    text: (jibo) => `This is what jibo looks like: ${jibo}`,
+    arg: {
+      type: "image",
+      uri: jibo,
+      alt: "Picture of Jibo",
+      flipRTL: true
+    }
   })
-  imageBlock(a: number, x: "inline image", b: number) {
+  imageBlock(jibo: "inline image") {
+  }
 
+  @block({
+    type: "reporter",
+    text: (lhs, five, rhs) => `${lhs} + ${five} - ${rhs}`,
+    args: [
+      { type: "number", defaultValue: 1 },
+      { type: "image", uri: five, alt: "golden five" },
+      "number"
+    ]
+  })
+  addFive(lhs: number, five: "inline image", rhs: number) {
+    return lhs + 5 - rhs;
   }
 }
