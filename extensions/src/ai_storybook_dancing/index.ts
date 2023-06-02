@@ -12,7 +12,7 @@ const dance = async (move: string = "hop") => {
 
 let flipFlopper = false;
 
-export default class ExtensionNameGoesHere extends extension(details, "blockly", "customSaveData") {
+export default class AiStorybookDancing extends extension(details, "blockly", "customSaveData") {
   async init(env: Environment) {
     hideNonBlocklyElements();
     stretchWorkspaceToScreen();
@@ -30,7 +30,7 @@ export default class ExtensionNameGoesHere extends extension(details, "blockly",
   }
 
   protected override saveDataHandler = new SaveDataHandler({
-    Extension: ExtensionNameGoesHere,
+    Extension: AiStorybookDancing,
     onSave: () => ({ hackToLoadExtensionEvenIfNoBlocksInProject: true }),
     onLoad: () => { },
   });
