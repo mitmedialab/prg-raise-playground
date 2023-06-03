@@ -47,7 +47,7 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     text: "Step left",
     type: "command"
   })
-  async step_left() {
+  async stepLeft() {
     await dance("swivel left");
   }
 
@@ -55,7 +55,7 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     text: "Step right",
     type: "command"
   })
-  async step_right() {
+  async stepRight() {
     await dance("swivel right");
   }
 
@@ -68,7 +68,7 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     }
   })
   async spin(direction: string) {
-    await dance("swivel "+direction);
+    await dance("swivel " + direction);
   }
 
   @block({
