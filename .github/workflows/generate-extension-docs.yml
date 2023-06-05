@@ -25,7 +25,7 @@ jobs:
       run: |
         git config --local user.email ""
         git config --local user.name "GitHub Action"
-        git add extensions/documentation/README.md
+        git add extensions/README.md
         git commit -m "[skip ci] re-generate extension documentation"
     - name: Push
       run: git push
