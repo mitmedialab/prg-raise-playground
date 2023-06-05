@@ -1,4 +1,4 @@
-import { Argument, ArgumentType, BlockMetadata, BlockOperation, ExtensionArgumentMetadata, Menu, MultipleArgsBlock, OneArgBlock, ValidKey, ValueOf, VerboseArgument } from "$common/types";
+import { Argument, ArgumentType, BlockMetadata, BlockOperation, ExtensionArgumentMetadata, InlineImage, Menu, MultipleArgsBlock, OneArgBlock, ValidKey, ValueOf, VerboseArgument } from "$common/types";
 import { assertSameLength, isPrimitive, isString } from "$common/utils";
 import { extractHandlers } from "./handlers";
 import { setMenu } from "./menus";
@@ -42,6 +42,8 @@ export const convertToArgumentInfo = (opcode: string, args: readonly Argument<an
   return Object.fromEntries(
     args
       .map((element, index) => {
+        if (isInlineImage(element)) return { ...element, dataURI: element.uri };
+
         const entry = {} as ExtensionArgumentMetadata;
         entry.type = getArgumentType(element);
 
@@ -71,3 +73,5 @@ const setDefaultValue = (entry: ExtensionArgumentMetadata, opcode: string, index
   if (defaultValue === undefined) return;
   entry.defaultValue = getDefaultValue(defaultValue, opcode, index)
 }
+
+const isInlineImage = (arg: Argument<any>): arg is InlineImage => !isString(arg) && arg.type === ArgumentType.Image;

@@ -10,5 +10,10 @@
     "skipLibCheck": true,
     "ignoreDeprecations": "5.0"
   },
-  "include": [".**/*.ts", "**/*.ts", "jest.config.js"]
+  "include": [
+    ".**/*.ts",
+    "**/*.ts",
+    "jest.config.js",
+    "../src/declaration.d.ts"
+  ]
 }
