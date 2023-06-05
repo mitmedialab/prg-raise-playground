@@ -60,15 +60,15 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
   }
 
   @block({
-    text: (direction: string) => `Spin ${direction}`,
+    text: (direction: 'left' | 'right') => `Spin ${direction}`,
     type: "command",
     arg: {
       type: 'string',
       options: ['left', 'right']
     }
   })
-  async spin(direction: string) {
-    await dance(`Spin ${direction}` as DanceMove);
+  async spin(direction: 'left' | 'right') {
+    await dance(`spin ${direction}`);
   }
 
   @block({
