@@ -13,9 +13,33 @@ export type VerboseArgument<T> = {
 export type InlineImageSpecifier = "inline image";
 
 export type InlineImage = {
+  /**
+   * This is a special type of argument that represents an inline image.
+   */
   type: typeof ArgumentType.Image;
+  /**
+   * The URI of the image. This can be a relative path to the image file, or a data URI.
+   * 
+   * The most straightforward way is to import a file as if it was a code file, and use the default export as the URI.
+   * @example
+   * // At top of file
+   * import exampleImage from "./exampleImage.png";
+   * 
+   * // In block definition
+   * {
+   *   type: "image",
+   *   uri: exampleImage,
+   * }
+   *
+   */
   uri: string,
+  /**
+   * The description of the image for screen readers.
+   */
   alt: string,
+  /**
+   * Whether the image should be flipped when the user's language is right-to-left.
+   */
   flipRTL?: boolean
 }
 

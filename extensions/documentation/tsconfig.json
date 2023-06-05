@@ -10,5 +10,9 @@
     "skipLibCheck": true,
     "ignoreDeprecations": "5.0"
   },
-  "include": [".**/*.ts", "**/*.ts"],
+  "include": [
+    ".**/*.ts",
+    "**/*.ts",
+    "../src/declaration.d.ts"
+  ],
 }
