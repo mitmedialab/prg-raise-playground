@@ -1,18 +1,18 @@
 import { Environment, ExtensionMenuDisplayDetails, extension, block, SaveDataHandler, RuntimeEvent, } from "$common";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import { hideNonBlocklyElements, stretchWorkspaceToScreen } from "./layout";
-import { announce, requestDanceMove, untilMessageReceived } from "./messaging";
+import { announce, requestDanceMove, untilMessageReceived, type DanceMove } from "./messaging";
 
 const details: ExtensionMenuDisplayDetails = { name: "Dancing Activity for AI Storybook" };
 
-const dance = async (move: "hop") => {
+const dance = async (move: DanceMove) => {
   requestDanceMove(move);
   await untilMessageReceived(`end ${move}`);
 }
 
 let flipFlopper = false;
 
-export default class ExtensionNameGoesHere extends extension(details, "blockly", "customSaveData") {
+export default class AiStorybookDancing extends extension(details, "blockly", "customSaveData") {
   async init(env: Environment) {
     hideNonBlocklyElements();
     stretchWorkspaceToScreen();
@@ -30,7 +30,7 @@ export default class ExtensionNameGoesHere extends extension(details, "blockly",
   }
 
   protected override saveDataHandler = new SaveDataHandler({
-    Extension: ExtensionNameGoesHere,
+    Extension: AiStorybookDancing,
     onSave: () => ({ hackToLoadExtensionEvenIfNoBlocksInProject: true }),
     onLoad: () => { },
   });
@@ -41,6 +41,34 @@ export default class ExtensionNameGoesHere extends extension(details, "blockly",
   })
   async hop(util: BlockUtility) {
     await dance("hop");
+  }
+
+  @block({
+    text: "Step left",
+    type: "command"
+  })
+  async stepLeft() {
+    await dance("swivel left");
+  }
+
+  @block({
+    text: "Step right",
+    type: "command"
+  })
+  async stepRight() {
+    await dance("swivel right");
+  }
+
+  @block({
+    text: (direction: 'left' | 'right') => `Spin ${direction}`,
+    type: "command",
+    arg: {
+      type: 'string',
+      options: ['left', 'right']
+    }
+  })
+  async spin(direction: 'left' | 'right') {
+    await dance(`spin ${direction}`);
   }
 
   @block({
