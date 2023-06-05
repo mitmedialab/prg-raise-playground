@@ -1,11 +1,11 @@
 import { Environment, ExtensionMenuDisplayDetails, extension, block, SaveDataHandler, RuntimeEvent, } from "$common";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import { hideNonBlocklyElements, stretchWorkspaceToScreen } from "./layout";
-import { announce, requestDanceMove, untilMessageReceived } from "./messaging";
+import { announce, requestDanceMove, untilMessageReceived, type DanceMove } from "./messaging";
 
 const details: ExtensionMenuDisplayDetails = { name: "Dancing Activity for AI Storybook" };
 
-const dance = async (move: string = "hop") => {
+const dance = async (move: DanceMove) => {
   requestDanceMove(move);
   await untilMessageReceived(`end ${move}`);
 }
@@ -68,7 +68,7 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     }
   })
   async spin(direction: string) {
-    await dance("swivel " + direction);
+    await dance(`Spin ${direction}` as DanceMove);
   }
 
   @block({
