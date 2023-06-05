@@ -8,8 +8,9 @@ import fs from "fs";
 import { executeAndSquashWarnings, getEngineFile } from "./utils";
 import { BlockRunner } from "./BlockRunner";
 import testable from "./mixins/testable";
+import imageMock from "./mocks/image";
 
-export { describe, expect, test };
+export { describe, expect, test, imageMock };
 
 export const testID = "extensionUnderTest";
 export const testName = "Extension Under Test";

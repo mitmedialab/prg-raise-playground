@@ -20,7 +20,8 @@ This document will be most helpful for people doing more complex development, li
 6. [Saving Custom Data for an Extension](#saving-custom-data-for-an-extension)
 7. [Making use of the Block Utility](#making-use-of-the-block-utility)
 8. [Adding Custom Arguments](#adding-custom-arguments)
-9. [Reference](#reference)
+9. [Adding inline images to the text of blocks](#adding-inline-images-to-the-text-of-blocks)
+10. [Reference](#reference)
 
 ## Anatomy of an Extension Directory
 
@@ -1348,6 +1349,59 @@ Then, we modify the UI (Svelte) component we created earlier to match our block 
 
 > Included links:
 > * https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extensions#creating-ui-for-extensions
+
+
+# Adding inline images to the text of blocks
+
+> NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
+If you want to edit it, please go to [extensions/documentation/src/inlineImages/README.md](documentation/src/inlineImages/README.md)
+
+As noted in [Scratch's extension documentation](https://github.com/scratchfoundation/scratch-vm/blob/develop/docs/extensions.md#adding-an-inline-image), Blocks support arguments that can display images inline within their text display.
+
+We can make use of this feature within the framework by adding an extra argument of type `"inline image"` to our extension's method, and then seperately add an `arg` (or `args`) entry within the associated `@block` decorator invocation.
+
+See the below example (which assumes that a file `myPic.png` is located in the same directory as our code):
+
+```ts
+
+import { Environment, block, extension } from "$common";
+// We import our image as if it was a code file
+import myPic from "./myPic.png";
+
+export default class ExampleExtensionWithInlineImages extends extension({
+    name: "This is an example extension with inline images",
+}) {
+    override init(env: Environment) { }
+
+    @block({
+        type: "command",
+        text: (image) => `Here's an inline image: ${image}`,
+        arg: {
+            type: "image",
+            uri: myPic,
+            alt: "this is a test image", // description of the image for screen readers
+            flipRTL: true,
+        }
+    })
+    methodWithOnlyInlineImage(image: "inline image") {
+        // NOTE: The `image` argument should not be used
+    }
+
+    @block({
+        type: "command",
+        text: (someNumber, image, someString) => `Here's a number ${someNumber} and picture ${image} and string ${someString}}`,
+        args: [
+            { type: "number" },
+            { type: "image", uri: myPic, alt: "this is a test image", flipRTL: true },
+            "string"
+        ]
+    })
+    methodWithInlineImageAndOtherArguments(someNumber: number, image: "inline image", someString: string) {
+        // NOTE: The `image` argument should not be used
+    }
+}
+
+```
 
 
 ## Reference
