@@ -1,0 +1,27 @@
+{
+  "name": "teachable-machine-extension",
+  "version": "1.0.0",
+  "description": "An extension created using the PRG AI Blocks framework",
+  "main": "index.ts",
+  "scripts": {
+    "directory": "echo teachableMachine",
+    "test": "npm run test --prefix ../../ -- teachableMachine/index.test.ts",
+    "dev": "npm run dev --prefix ../../../ -- only=teachableMachine"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@teachablemachine/image": "^0.8.5",
+    "@teachablemachine/pose": "^0.8.6",
+    "@tensorflow/tfjs": "^1.5.1",
+    "@tensorflow-models/speech-commands": "0.4.2"
+  },
+  "overrides": {
+    "@teachablemachine/image": {
+      "@tensorflow/tfjs": "$@tensorflow/tfjs"
+    },
+    "@teachablemachine/pose": {
+      "@tensorflow/tfjs": "$@tensorflow/tfjs"
+    }
+  }
+}

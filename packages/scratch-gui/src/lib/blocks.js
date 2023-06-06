@@ -1,4 +1,5 @@
 import ScratchBlocks from 'scratch-blocks';
+import { overridesForCustomArgumentSupport } from './customBlockOverrides';
 
 /**
  * Connect scratch blocks with the vm
@@ -6,7 +7,6 @@ import ScratchBlocks from 'scratch-blocks';
  * @return {ScratchBlocks} ScratchBlocks connected with the vm
  */
 export default function (vm) {
-
     const jsonForMenuBlock = function (name, menuOptionsFn, colors, start) {
         return {
             message0: '%1',
@@ -341,5 +341,6 @@ export default function (vm) {
         return true;
     };
 
+    overridesForCustomArgumentSupport(ScratchBlocks, vm);
     return ScratchBlocks;
 }

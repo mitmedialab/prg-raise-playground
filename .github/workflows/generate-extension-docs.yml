@@ -1,0 +1,31 @@
+name: Generate Extension Documentation
+
+on: [push]
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.17.1]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Initialize
+      run: npm run init
+    - name: Generate
+      run: npm run document:extensions
+    - name: Commit (without CI)
+      run: |
+        git config --local user.email ""
+        git config --local user.name "GitHub Action"
+        git add extensions/README.md
+        git commit -m "[skip ci] re-generate extension documentation"
+    - name: Push
+      run: git push
