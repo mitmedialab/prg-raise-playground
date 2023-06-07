@@ -91,7 +91,7 @@ export default {
 
   // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
   moduleNameMapper: {
-    "^.+\\.(jpg|jpeg|png)$": path.resolve(".", "mocks", "image.ts"),
+    "^.+\\.(jpg|jpeg|png|gif|webp|svg)$": path.resolve(".", "mocks", "image.ts"),
     ...pathsToModuleNameMapper(paths, { prefix: pathsBase }),
   },
 
