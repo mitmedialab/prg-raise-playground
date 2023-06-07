@@ -81,15 +81,11 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     const thisBlock = util.thread.topBlock;
     const nextBlock = util.thread.blockContainer.getNextBlock(thisBlock);
 
-    if (nextBlock && !playingMusic){
-      await playMusic(true);
-      playingMusic = true;
+    if (!!nextBlock != playingMusic){
+      await playMusic(!!nextBlock)
+      playingMusic = !!nextBlock
     }
-    else if (!nextBlock){
-      await playMusic(false);
-      playingMusic = false;
-    }
-    
+  
     return this.runContinuously;
   }
 }
