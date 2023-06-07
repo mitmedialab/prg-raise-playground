@@ -22,7 +22,7 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     hideNonBlocklyElements();
     stretchWorkspaceToScreen();
     const workspace = this.blockly.getMainWorkspace();
-    workspace.zoom(0, 0, 2);
+    workspace.zoom(0, 0, 3.5);
     announce("ready");
   }
 
@@ -92,8 +92,8 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     {
       type: "custom",
       options:
-        [{ text: "↩️", value: "left" }, // TODO: Find better symbols for spinning
-        { text: "↪️", value: "right" }]
+        [{ text: "↩️↻↷↻⤾⥁", value: "left" }, // TODO: Find better symbols for spinning
+        { text: "↪️↺↶↺⤿⥀", value: "right" }]
     }],
   })
   async spin(spin: "inline image", direction: 'left' | 'right') {
