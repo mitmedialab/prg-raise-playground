@@ -6,7 +6,10 @@ export const announce = (content: "ready") => window.top.postMessage({ identifie
 
 export type DanceMove =  "hop" | "swivel left" | "swivel right" | "spin left" | "spin right";
 export const requestDanceMove = (move: DanceMove) =>
-    window.top.postMessage({ identifier, destination: "unity", input: move, method: "Dance" }, '*')
+    window.top.postMessage({ identifier, destination: "unity", input: move, method: "Dance" }, '*');
+
+export const playMusic = (playing: boolean) => 
+    window.top.postMessage({identifier, destination: "unity", input: playing, method: "PlayMusic"});
 
 export const untilMessageReceived = (message: string) => new Promise<void>(resolve => {
     const handler = ({ data }: MessageEvent) => {

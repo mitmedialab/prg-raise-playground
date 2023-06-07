@@ -1,7 +1,7 @@
 import { Environment, ExtensionMenuDisplayDetails, extension, block, SaveDataHandler, RuntimeEvent, } from "$common";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import { hideNonBlocklyElements, stretchWorkspaceToScreen } from "./layout";
-import { announce, requestDanceMove, untilMessageReceived, type DanceMove } from "./messaging";
+import { announce, requestDanceMove, untilMessageReceived, type DanceMove, playMusic } from "./messaging";
 
 const details: ExtensionMenuDisplayDetails = { name: "Dancing Activity for AI Storybook" };
 
@@ -11,6 +11,7 @@ const dance = async (move: DanceMove) => {
 }
 
 let flipFlopper = false;
+let playingMusic = false;
 
 export default class AiStorybookDancing extends extension(details, "blockly", "customSaveData") {
   async init(env: Environment) {
@@ -75,12 +76,20 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     text: "Tell doodlebot to dance",
     type: "hat"
   })
-  entry(util: BlockUtility) {
+  async entry(util: BlockUtility) {
 
-    // Todo: use `util` to identify if there are any scripts attached to this block.
-    // If so: (and the music isn't already playing) start the music
-    // If not: (and the music is playing) stop the music
+    const thisBlock = util.thread.topBlock;
+    const nextBlock = util.thread.blockContainer.getNextBlock(thisBlock);
 
+    if (nextBlock && !playingMusic){
+      await playMusic(true);
+      playingMusic = true;
+    }
+    else if (!nextBlock){
+      await playMusic(false);
+      playingMusic = false;
+    }
+    
     return this.runContinuously;
   }
 }
