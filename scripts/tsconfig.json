@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "noImplicitAny": false,
+    "esModuleInterop": true,
+    "watch": false
+  },
+  "include": ["./**/*.ts"]
+}

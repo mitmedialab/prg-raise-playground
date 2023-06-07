@@ -45,9 +45,9 @@ declare class RenderedTarget extends Target {
     constructor(sprite: Sprite, runtime: Runtime);
     /**
      * Reference to the sprite that this is a render of.
-     * @type {!Sprite}
+     * @type {!import("./sprite")}
      */
-    sprite: Sprite;
+    sprite: import("./sprite");
     /**
      * Reference to the global renderer for this VM, if one exists.
      * @type {?RenderWebGL}

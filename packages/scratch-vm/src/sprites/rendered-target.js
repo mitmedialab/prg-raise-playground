@@ -20,7 +20,7 @@ class RenderedTarget extends Target {
 
         /**
          * Reference to the sprite that this is a render of.
-         * @type {!Sprite}
+         * @type {!import("./sprite")}
          */
         this.sprite = sprite;
         /**

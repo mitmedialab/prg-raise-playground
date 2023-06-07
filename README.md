@@ -9,25 +9,8 @@ It's a fullblown [fork](https://en.wikipedia.org/wiki/Fork_(software_development
 Looking for the old documentation (<= Sept. 2022)? Head [here](./BACKGROUND.md).
 
 ## 📖 Table of Contents
-- [Quick Start](#-quick-start)
-    - [Project setup](#-project-setup)
-    - [Making an extension](#-making-an-extension)
-        - [Advanced](#-advanced)
-    - [Running an extension](#-running-an-extension)
-    - [Committing, pushing, and deploying an extension](#-committing-pushing-and-deploying-an-extension)
-- [How to program an extension](#-how-to-program-an-extension)
-    - [*"I have an `index.ts` file.. now what?"*](#i-have-an-indexts-file-now-what)
-    - [From 0 to Extension](#-from-0-to-extension)
-    - [Adding UI](#-adding-ui)
-    - [Porting an Extension to Typescript](#-porting-an-extension-to-typescript)
-- [Project Dependencies](#%EF%B8%8F-dependencies)
-    - [Git](#git)
-    - [Node](#node)
-    - [NPM](#NPM)
-    - [VS Code](#vs-code-recommended) 
-    - [Svelte (if you're developing UI)](#svelte-only-if-you-are-developing-ui)
-- [Troubleshooting](#-Troubleshooting)
-    - [webpack: command not found](#webpack-command-not-found)
+
+[Click on the ⁝≡ icon above](https://github.blog/changelog/2021-04-13-table-of-contents-support-in-markdown-files/)
 
 ## ⚡ Quick Start
 
@@ -37,6 +20,7 @@ This section contains concise explanations on how to accomplish something (often
 
 Assuming you have...
 - Git installed (if not, jump to: [Git](#Git))
+- **_(Windows only)_** WSL setup (if not, jump to: [Windows Setup](#windows-only))
 - Node <=16 is installed (if not, jump to: [Node](#Node))
 - NPM >= 8.3.0 installed (if not, jump to: [NPM](#NPM))
 - VS Code installed with Typescript Extension added (if not, jump to: [Vs Code](#VS-Code-(Recommended)))
@@ -75,8 +59,7 @@ cd prg-extension-boilerplate/ # If not already there
 
 git checkout dev
 git pull # Update branch with any remote changes
-git checkout -b <my branch> # Checkout your 'feature' branch, e.g. git checkout -b my_awesome_extension
-# For example: git checkout -b new_rad_extension
+git checkout -b <my branch> # Checkout your 'feature' branch, e.g. git checkout -b new_rad_extension
 
 npm run new:extension <folder to contain extension>
 # For example: npm run new:extension my_awesome_extension
@@ -101,9 +84,14 @@ After you've [made your extension](#-making-an-extension), run the following com
 cd prg-extension-boilerplate/ # If not already there
 # Change directory (cd) to prg-extension-boilerplate/ 
 
-npm run dev
+npm run dev only=<folder name of extension>
+# For example: npm run dev only=my_awesome_extension
 # Start a development server to view your extension and reload it as you make changes
 # This command will take ~20s to startup and serve everything to http://localhost:8601/
+
+# Alternatively, serve all the currently implemented extensions
+npm run dev
+# NOTE: This will be more intensive on your computer
 ```
 
 Then, after navigating to http://localhost:8601/, follow the 'Adding Extensions' guidance in the [official extension documentation](https://en.scratch-wiki.info/wiki/Extension) to add your extension to the workspace. 
@@ -112,7 +100,60 @@ As long as the development server is running (meaning the `npm run dev` command 
 
 ### 📦 Committing, pushing, and deploying an extension 
 
-... Coming soon ...
+If you followed the steps outlined in [Making an Extension](#🔨-making-an-extension), you should have created a new branch off of the `dev` branch where you implemented your extension. 
+
+#### Automatic Deployment to Temperorary URL
+
+Whenever you [push]() on this new branch, a [github action]() will automatically deploy your extension to a URL corresponding to your branch name. 
+
+For example, if my branch is called `myNewExtension`, whenever I succesfully push up code on this branch, I should be able to see my changes at: https://playground.raise.mit.edu/myNewExtension/
+
+> NOTE: The github action(s) that manages deployment can take anywhere from 10 - 30 minutes. View the status of actions in the repo's [Actions tab](https://github.com/mitmedialab/prg-extension-boilerplate/actions). In order for your site to be succesfully deployed, both an action titled with your commmit message and one after it titled ***pages build and deployment*** must complete succesfully. 
+
+Though this branch-specific URL can be very helpful for sharing your extension quickly, we **require** that you don't use this URL for _official_ purposes -- instead you should follow the instructions in [Integrating Your Extension into the main Branch](#integrating-your-extension-into-the-main-branch) if you want to share extension as part of a curricullum, to an outside organization, etc. 
+
+So this means you can use your branch-specific URL to share your extension with colleagues, get feedback, and quickly iterate on your extension. However, if you want to share your extension externally, especially with students, it must first be integrated into the `main` branch, and then you can direct them to: https://playground.raise.mit.edu/main/
+
+#### Integrating Your Extension into the `main` Branch
+
+The extensions pushed into the `main` branch should represent all of the extensions PRG officially supports, and thus what PRG is committed to maintaining now and into the future. 
+
+Thus, you should only _officially_ share extensions via the `main` branch and corresponding [main site](https://playground.raise.mit.edu/main/) (https://playground.raise.mit.edu/main/). In other words, if an outside party (student, teacher, organization, etc.) reports a bug about an extension (or the platform), they should be doing so based on their usage of the main site -- not a branch-specific site that no other team members know about. 
+
+By adhering to this practice, as well as a regimented process for [merging](https://git-scm.com/docs/git-merge) changes to the `dev` and `main` branches, we can ensure both the best experinece for our users and the least amount of headache for us as developers / maintainers.
+
+Here's the process for getting your extension into the `main` branch and deployed to https://playground.raise.mit.edu/main/:
+
+1. Get your development branch current with the `dev` branch
+    ```bash
+    cd prg-extension-boilerplate/ # Change directory (cd) to prg-extension-boilerplate/, if not already there
+
+    git checkout <your branch name> # Checkout your brnahc, if not already checked out
+
+    git pull # Fetch the latest changes from all remote branches. 
+    # NOTE: using `git fetch` would do the same, but it's yet another git command to remember...
+
+    git merge origin/dev # Merge the latest changes from the remote (i.e. origin) dev branch into your development branch
+    ```
+2. Create a Pull Request (PR) from your branch into `dev`
+    1. Go to the [Pull Requests tab](https://github.com/mitmedialab/prg-extension-boilerplate/pulls)
+    2. Click **New Pull Request** 
+    3. Set _base_ to `dev` and _compare_ to the name of your branch
+        - The flow should look like: `dev` <-- `<your branch>`
+    4. Select **Create Pull Request** 
+        - Do this enough times so that the pull request is actually created -- github's UI seems to be a little redunant
+3. Set [pmalacho-mit](https://github.com/pmalacho-mit) (Parker Malachowsky) as the reviewer of the PR
+    - NOTE: If anyone's interested in being a reviewer please also talk to Parker and he will add you above.
+4. Work with your reviewer to get your PR approved, and then **YOUR REVIEWER** will merge your PR and your changes will go into `dev` 🎉🎉🎉.  In this way, you and the reviewer are equally responsible for keeping the `dev` branch bug-free. 
+    - Your reviewer will review your code, test your extension, and leave comments for you to respond to.
+    - You can speed up the review process by doing the following:
+        - Writing readable code and leaving necessary (but [_only necessary_](https://levelup.gitconnected.com/please-dont-comment-your-code-d0830785bdc9)) comments
+            - Use [JSDoc comments](https://jsdoc.app/about-getting-started.html) where possible (e.g. on functions, classes, method parameters, etc.)
+        - [Writing tests for your extension]() (coming soon)
+        - [Creating tutorials for your extension]() (coming soon)
+5. Once your code is in `dev`, your work is done! The code base's maintainer (Parker, at this time) will then semiweekly merge the `dev` branch into the `main` branch.
+6. Once Parker has notified you that your changes are live, you can direct your audience to the deployed `main` branch: https://playground.raise.mit.edu/main/
+    - Check out the [URL Parameters]() section to see how you can customize this link to automatically add your extension, tutorials, demo project, etc. when the page is loaded. 
 
 ## 🔎 How to program an extension
 
@@ -147,266 +188,21 @@ Probably will have:
 
 ### 🎨 Adding UI
 
-To develop UI for your extension, we ask that you implement an interface that will be rendered in a [modal](https://blog.hubspot.com/website/modal-web-design) / pop-up.
+An exciting feature of PRG's work to expand the Scratch Extension workflow is that you can easily create custom UIs for your extensions. 
 
-We currently require you to implement this interface in the [Svelte front-end framework](https://svelte.dev/). Hop down to the [Svelte dependency](#svelte-only-if-you-are-developing-ui) to configure your development environment, understand why we chose svelte, and start learning the ropes.
+We require you to implement this interface in the [Svelte front-end framework](https://svelte.dev/). Hop down to the [Svelte dependency](#svelte-only-if-you-are-developing-ui) to configure your development environment, understand why we chose svelte, and start learning the ropes.
 
-#### Generate Svelte File
-
-To generate a new svelte file, run the following command:
-
-```bash
-npm run add:ui <extension folder>
-# For example: npm run add:ui myExtension
-```
-
-If succesful, the above command will point you to a generated file with the `.svelte` file-extension that lives inside of your extension's directory.
-
-Feel free to change the name of this file to match it's intended usage, e.g. `Editor.svelte` or `AddItem.svelte` (**NOTE:** The convention is to use [Pascal Case](https://www.theserverside.com/definition/Pascal-case) to name svelte files, so they often start with a capital letter (unlike `.js` or `.ts` files)).
-
-#### Open UI Using a Button
-
-The most common (and recommended) way to open UI(s) via your extension is to (1) implement a `ButtonBlock` and (2) invoke the Extension function `openUI` within the blocks `operation` (which will be called when the button is clicked).
-
-To do so, first declare a `ButtonBlock`, e.g.:
-
-```ts
-import { ButtonBlock } from "../../typescript-support/types";
-
-type Blocks = {
-    otherBlock: () => void;
-    someButton: ButtonBlock;
-}
-
-class ExampleExtension extends Extension<Details, Blocks> {
-    ...
-}
-
-```
-
-Next, implement the `ButtonBlock` definition inside of the object returned by the `defineBlocks` function. As usual, the defintion of the `ButtonBlock` is a function that returns an object containing all of the details needed to define the block. 
-
-Most importantly, within the `operation` function of the block's definition, the function `openUI` should be invoked (which is implemented on the base `Extension` class, and can therefore be invoked using the reference to the Extension passed as the only argument to the block definition function, i.e. `self` below).
-
-For example:
-```ts
-class ExampleExtension extends Extension<Details, Blocks> {
-    ...
-    defineBlocks(): ExampleExtension["BlockDefinitions"] {
-        return {
-            ...,
-            someButton: (self: ExampleExtension) => ({
-                type: BlockType.Button,
-                text: `Button Text Goes Here`,
-                operation: () => self.openUI("SvelteFileName", "Title of Window")
-            })
-        }
-    }
-}
-
-```
-
-The first argument is the name of the `.svelte` file in which your UI is implemented -- this name must match your filename exactly (but you can omit the `.svelte` extension).
-
-The second argument is the title that will display at the top of the modal window. If omitted, this will default to the name of your extension.
-
-### 🔀 Porting an Extension to Typescript
-
-*Want to move your vanilla-JS extension to our Typescript framework and reap the benefits of type safety and code generation?* **Great!**
-
-Please check out the below example to get a good idea of what this would look like:
-
-#### Vanilla JS
-
-Below is a sample, vanilla JS extension based on the final example provided in the [Scratch Extensions document](https://github.com/LLK/scratch-vm/blob/develop/docs/extensions.md). 
-
-What's not captured in the below example is all the additional work necessary to get the extension to show up, which includes:
-- Updating [extension library jsx](https://github.com/mitmedialab/prg-extension-boilerplate/blob/5ec7cca7e1827da49c2faaf173706fc19874a3a1/packages/scratch-gui/src/lib/libraries/extensions/index.jsx#L71)
-- Updating [extension manager](https://github.com/mitmedialab/prg-extension-boilerplate/blob/5ec7cca7e1827da49c2faaf173706fc19874a3a1/packages/scratch-vm/src/extension-support/extension-manager.js#L11) to support this extension 
-
-Every step of this process is not typesafe, and thus very error prone.
-
-```js
-const ArgumentType = require('../../extension-support/argument-type');
-const BlockType = require('../../extension-support/block-type');
-const TargetType = require('../../extension-support/target-type');
-const formatMessage = require('format-message');
-
-class SomeBlocks {
-    constructor (runtime) {
-        this.runtime = runtime;
-    }
-
-    /**
-     * @return {object} This extension's metadata.
-     */
-    getInfo () {
-        return {
-            id: 'someBlocks',
-
-            // Core extensions only: override the default extension block colors.
-            color1: '#FF8C1A',
-            color2: '#DB6E00',
-            
-            name: formatMessage({
-                id: 'extensionName',
-                defaultMessage: 'Some Blocks',
-                description: 'The name of the "Some Blocks" extension'
-            }),
-
-            blockIconURI: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAFCAAAAACyOJm3AAAAFklEQVQYV2P4DwMMEMgAI/+DEUIMBgAEWB7i7uidhAAAAABJRU5ErkJggg==',
-            menuIconURI: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAFCAAAAACyOJm3AAAAFklEQVQYV2P4DwMMEMgAI/+DEUIMBgAEWB7i7uidhAAAAABJRU5ErkJggg==',
-
-            blocks: [
-                {
-                    opcode: 'myReporter', 
-                    blockType: BlockType.REPORTER,
-                    branchCount: 0,
-                    terminal: true,
-                    blockAllThreads: false,
-                    text: formatMessage({
-                        id: 'myReporter',
-                        defaultMessage: 'letter [LETTER_NUM] of [TEXT]',
-                        description: 'Label on the "myReporter" block'
-                    }),
-                    arguments: {
-                        LETTER_NUM: {
-                            type: ArgumentType.NUMBER,
-                            default: 1
-                        },
-                        TEXT: {
-                            type: ArgumentType.STRING,
-                            default: formatMessage({
-                                id: 'myReporter.TEXT_default',
-                                defaultMessage: 'text',
-                                description: 'Default for "TEXT" argument of "someBlocks.myReporter"'
-                            }),
-                            menu: 'menuA'
-                        }
-                    },
-
-                    func: 'myReporter',
-                    filter: [TargetType.SPRITE]
-                }
-            ],
-            menus: {
-                menuA: [
-                    {
-                        value: 'itemId1',
-                        text: formatMessage({
-                            id: 'menuA_item1',
-                            defaultMessage: 'Item One',
-                            description: 'Label for item 1 of menu A in "Some Blocks" extension'
-                        })
-                    },
-                    'itemId2'
-                ]
-            },
-        };
-    };
-    
-    myReporter (args) {
-        const message = formatMessage({
-            id: 'myReporter.result',
-            defaultMessage: 'Letter {LETTER_NUM} of {TEXT} is {LETTER}.',
-            description: 'The text template for the "myReporter" block result'
-        });
-
-        const result = args.TEXT.charAt(args.LETTER_NUM);
-
-        return message.format({
-            LETTER_NUM: args.LETTER_NUM,
-            TEXT: args.TEXT,
-            LETTER: result
-        });
-    };
-}
-```
-
-#### Typescript Extension Framework
-
-Things to note:
-- The `Details` type object encodes how the extension will be displayed in the extensions menu
-    - No more editing [any jsx](https://github.com/mitmedialab/prg-extension-boilerplate/blob/5ec7cca7e1827da49c2faaf173706fc19874a3a1/packages/scratch-gui/src/lib/libraries/extensions/index.jsx#L71) to specify how your extension should display in the Extensions Menu
-    - Now your image assets related to your extension should reside in the same place as your implementation (i.e. in the same directory as the `index.ts` file)
-- Any index.ts file within a subfolder of the [extensions directory](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/packages/scratch-vm/src/extensions) will be assumed to implement an extension
-    - This means there's no need to specify your extension in the [extension-manager](https://github.com/mitmedialab/prg-extension-boilerplate/blob/5ec7cca7e1827da49c2faaf173706fc19874a3a1/packages/scratch-vm/src/extension-support/extension-manager.js#L11)
-- All Block text is automatically formatted for translation
-    - How to actually specify these translations is coming soon! 
-    - Translations for extensions are not actually supported via Scratch out of the box, so enabling this for all extensions is a win for the Typescript Framework!
-- Fields not yet supported (but will be for official release):
-    - [filter](https://github.com/mitmedialab/prg-extension-boilerplate/issues/163)
-    - [branchCount](https://github.com/mitmedialab/prg-extension-boilerplate/issues/168)
-
-```ts
-import Runtime from "../../engine/runtime";
-import { ArgumentType, BlockType } from "../../typescript-support/enums";
-import { Extension } from "../../typescript-support/Extension";
-import { Environment } from "../../typescript-support/types";
-import defineTranslations from "./translations";
-import formatMessage = require('format-message');
-
-type Details = {
-  name: "Some Blocks",
-  description: "A demonstration of some blocks",
-  iconURL: "example.png", // Relative path to image file (which you need to add, likely at the same level as the index.ts file) -- Used for extensions menu, but NOT 'menuIconURI'
-  insetIconURL: "inset.png" // Relative path to image file (which you need to add, likely at the same level as the index.ts file) -- Will automatically be used as the blockIconURI
-};
-
-class SomeBlocks extends Extension<Details, {
-  myReporter: (text: string, letterNum: number) => string;
-}> {
-
-  runtime: Runtime;
-
-  init(env: Environment) {
-    this.runtime = env.runtime;
-  }
-
-  defineBlocks(): SomeBlocks["BlockDefinitions"] {
-    return {
-      myReporter: (self: SomeBlocks) => ({
-        type: BlockType.Reporter,
-        args: [
-          { 
-            type: ArgumentType.String, 
-            defaultValue: 'text', 
-            options: [
-                { text: 'Item One', value: 'itemId1' }, 
-                'itemId2'
-            ] 
-          },
-          { type: ArgumentType.Number, defaultValue: 1 }
-        ],
-        text: (text, letterNum) => `letter ${letterNum} of ${text}'`,
-        operation: (text, letterNum, util) => {
-
-          const message = formatMessage({
-            id: 'myReporter.result',
-            default: 'Letter {letterNum} of {text} is {result}.',
-            description: 'The text template for the "myReporter" block result'
-          });
-
-          const result = text.charAt(letterNum);
-          
-          // This doesn't actually work/compile -- perhaps the formatMessage API changed since the Scratch example was made
-          return message.format({ text, letterNum, result });
-        }
-      })
-    }
-  }
-
-  defineTranslations = defineTranslations;
-}
-
-export = SomeBlocks;
-```
+Then, head over to the [Extension specific section on adding / developing UI](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/extensions/README.md#creating-ui-for-extensions).
 
 ## ⛓️ Dependencies
 
 Not interested in setting up your local environemnt? 
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev)
+
+### Windows Only
+
+Please setup and perform all commands through [Node on Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/dev-environment/javascript/nodejs-on-wsl).
 
 ### Git
 
@@ -418,7 +214,7 @@ Like many web development projects, this project requires [node](https://nodejs.
 
 Also, [due to a Webpack 4 issue](https://github.com/webpack/webpack/issues/14532), we require a node version <=16.
 
-Please follow [these instructions](https://nodejs.org/en/download/) to install a suitable version of Node on your machine.
+Please locate the [latest v16 release](https://nodejs.org/en/blog/release) and install a suitable version for your operating system.
 
 #### Maintainer Note (9/15/22)
 
