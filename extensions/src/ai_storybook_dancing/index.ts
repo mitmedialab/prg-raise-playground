@@ -17,25 +17,13 @@ const dance = async (move: DanceMove) => {
 let flipFlopper = false;
 
 export default class AiStorybookDancing extends extension(details, "blockly", "customSaveData") {
-  
+
   async init(env: Environment) {
     hideNonBlocklyElements();
     stretchWorkspaceToScreen();
-
     const workspace = this.blockly.getMainWorkspace();
-    // workspace.options.zoomOptions.startScale = 1.2;
-
-    // const w = this.blockly.Mutator.prototype.getWorkspace();
-    // console.log(w);
-    // const rect = w.zoomControls_.getBoundingRectangle();
-    // w.zoom(50, 50, 3);
-
-    // workspace.options.zoomOptions.minScale = 1.2;
-    // workspace.options.zoomOptions.maxScale = 1.2;
-
+    workspace.zoom(0, 0, 2);
     announce("ready");
-
-    this.blockly.getMainWorkspace().zoom(0, 0, 2);
   }
 
   /**
@@ -104,8 +92,8 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     {
       type: "custom",
       options:
-        [{ text: "↻", value: "left" }, // TODO: Find better symbols for spinning
-        { text: "↺", value: "right" }]
+        [{ text: "↩️", value: "left" }, // TODO: Find better symbols for spinning
+        { text: "↪️", value: "right" }]
     }],
   })
   async spin(spin: "inline image", direction: 'left' | 'right') {
