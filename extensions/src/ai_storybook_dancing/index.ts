@@ -34,6 +34,8 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     // workspace.options.zoomOptions.maxScale = 1.2;
 
     announce("ready");
+
+    this.blockly.getMainWorkspace().zoom(0, 0, 2);
   }
 
   /**

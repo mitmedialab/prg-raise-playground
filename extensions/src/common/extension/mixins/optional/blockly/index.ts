@@ -1,15 +1,16 @@
 import { MinimalExtensionConstructor } from "../../required";
 import type * as Blockly from "blockly";
 
-type Getters =
+type Methods =
   {
     getMainWorkspace(): Blockly.Workspace & {
       getToolbox(): Blockly.Toolbox;
       getFlyout(): Blockly.Flyout;
+      zoom: Blockly.WorkspaceSvg["zoom"];
     }
   }
 
-type MinimalBlockly = Pick<typeof Blockly, keyof Getters | "Xml" | "Mutator" | "Msg">
+type MinimalBlockly = Omit<typeof Blockly, keyof Methods>
 
 /**
  * Mixin the ability to manipulate the Blockly workspace
@@ -19,7 +20,7 @@ type MinimalBlockly = Pick<typeof Blockly, keyof Getters | "Xml" | "Mutator" | "
  */
 export default function <T extends MinimalExtensionConstructor>(Ctor: T) {
   abstract class ExtensionWithUISupport extends Ctor {
-    blockly: MinimalBlockly & Getters = window["Blockly"];
+    blockly: MinimalBlockly & Methods = window["Blockly"];
   }
 
   return ExtensionWithUISupport;
