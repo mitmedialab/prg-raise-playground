@@ -5,7 +5,7 @@ import { announce, requestDanceMove, untilMessageReceived, type DanceMove } from
 import hop from "./inlineImages/hop.png";
 import stepLeft from "./inlineImages/left.png";
 import stepRight from "./inlineImages/right.png";
-import spinLeft from "./inlineImages/spin-left.png"; // TODO: Change to a generic spin image?
+import spinLeft from "./inlineImages/spin-left.png";
 import spinRight from "./inlineImages/spin-right.png";
 
 const details: ExtensionMenuDisplayDetails = { name: "Dancing Activity for AI Storybook" };
@@ -107,25 +107,6 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
   async spinRight(spinRight: "inline image") {
     await dance("spin right");
   }
-
-  // @block({
-  //   text: (spin, direction: 'left' | 'right') => `${spin} ${direction}`,
-  //   type: "command",
-  //   args: [{
-  //     type: "image",
-  //     uri: spin,
-  //     alt: "Spin"
-  //   },
-  //   {
-  //     type: "custom",
-  //     options:
-  //       [{ text: "↩️↻↷↻⤾⥁", value: "left" }, // TODO: Find better symbols for spinning
-  //       { text: "↪️↺↶↺⤿⥀", value: "right" }]
-  //   }],
-  // })
-  // async spin(spin: "inline image", direction: 'left' | 'right') {
-  //   await dance(`spin ${direction}`);
-  // }
 
   @block({
     text: "Tell doodlebot to dance",
