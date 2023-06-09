@@ -9,7 +9,8 @@ export const hideNonBlocklyElements = () => [
     "gui_stage-and-target-wrapper_69KBf",
     "react-tabs_react-tabs__tab-list_17Wee",
     "backpack_backpack-container_2_wGr",
-    "gui_extension-button-container_b4rCs"
+    "gui_extension-button-container_b4rCs",
+    "blocklyZoom"
 ].forEach(hideElementsWithClass);
 
 /**
