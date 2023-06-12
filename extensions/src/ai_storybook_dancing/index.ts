@@ -1,7 +1,7 @@
 import { Environment, ExtensionMenuDisplayDetails, extension, block, SaveDataHandler, RuntimeEvent, ArgumentType, } from "$common";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import { hideNonBlocklyElements, stretchWorkspaceToScreen } from "./layout";
-import { announce, requestDanceMove, untilMessageReceived, type DanceMove } from "./messaging";
+import { announce, requestDanceMove, requestMusic, untilMessageReceived, type DanceMove, type MusicState} from "./messaging";
 import hop from "./inlineImages/hop.png";
 import stepLeft from "./inlineImages/left.png";
 import stepRight from "./inlineImages/right.png";
@@ -15,7 +15,13 @@ const dance = async (move: DanceMove) => {
   await untilMessageReceived(`end ${move}`);
 }
 
+const music = async (state: MusicState) => {
+  requestMusic(state);
+}
+
 let flipFlopper = false;
+
+
 
 export default class AiStorybookDancing extends extension(details, "blockly", "customSaveData") {
 
@@ -35,6 +41,15 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
   get runContinuously() {
     flipFlopper = !flipFlopper;
     return flipFlopper;
+  }
+
+  hatChecker(){
+    while (true){
+      blockID
+
+
+
+    }
   }
 
   protected override saveDataHandler = new SaveDataHandler({
@@ -117,6 +132,8 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     // Todo: use `util` to identify if there are any scripts attached to this block.
     // If so: (and the music isn't already playing) start the music
     // If not: (and the music is playing) stop the music
+
+    console.log
 
     return this.runContinuously;
   }
