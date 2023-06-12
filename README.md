@@ -212,7 +212,7 @@ Like many web development projects, this project requires [node](https://nodejs.
 
 Also, [due to a Webpack 4 issue](https://github.com/webpack/webpack/issues/14532), we require a node version <=16.
 
-Please locate the [latest v16 release](https://nodejs.org/en/blog/release) and install a suitable version for your operating system.
+Please locate the [latest v16 release](https://nodejs.org/en/blog/release) and install a suitable version for your operating system. If you already have node and need to downgrade to a version <= 16, please see these [instructions for downgrading node](https://www.educative.io/answers/how-to-downgrade-node-version).
 
 #### Maintainer Note (9/15/22)
 
