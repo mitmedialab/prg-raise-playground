@@ -1,4 +1,4 @@
-import { Environment, ExtensionMenuDisplayDetails, extension, block, SaveDataHandler, RuntimeEvent, ArgumentType, } from "$common";
+import { Environment, ExtensionMenuDisplayDetails, extension, block, SaveDataHandler, RuntimeEvent, ArgumentType} from "$common";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import { hideNonBlocklyElements, stretchWorkspaceToScreen } from "./layout";
 import { announce, requestDanceMove, requestMusic, untilMessageReceived, type DanceMove, type MusicState } from "./messaging";
@@ -13,8 +13,6 @@ const details: ExtensionMenuDisplayDetails = { name: "Dancing Activity for AI St
 let flipFlopper = false;
 let musicPlayingLoop = false;
 let musicPlayingSingle = false;
-let currentBlockID: string;
-let terminalBlockID: string;
 
 const dance = async (move: DanceMove) => {
   requestDanceMove(move);
@@ -22,23 +20,17 @@ const dance = async (move: DanceMove) => {
 }
 
 async function blockSequence(move: DanceMove, util: BlockUtility) {
+
+  const currentBlockID = util.thread.stack[0];
+
   if (!musicPlayingLoop && !musicPlayingSingle) {
     requestMusic("on");
     musicPlayingSingle = true;
-
-    currentBlockID = util.thread.stack[0];
-    terminalBlockID = currentBlockID;
-    while (true) {
-      let temp = util.thread.blockContainer.getNextBlock(terminalBlockID);
-      if (!temp) break;
-      terminalBlockID = temp;
-    }
   }
 
-  currentBlockID = util.thread.stack[0];
   await dance(move);
-
-  if (musicPlayingSingle && (currentBlockID == terminalBlockID)) {
+  
+  if (musicPlayingSingle && !util.thread.blockContainer.getNextBlock(currentBlockID)) {
     requestMusic("off");
     musicPlayingSingle = false;
   }
@@ -142,12 +134,7 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
   })
   entry(util: BlockUtility) {
 
-    // Todo: use `util` to identify if there are any scripts attached to this block.
-    // If so: (and the music isn't already playing) start the music
-    // If not: (and the music is playing) stop the music
-
     const hatID = util.thread.topBlock;
-    currentBlockID = hatID;
     const hasChildren = !!util.thread.blockContainer.getNextBlock(hatID);
 
     if (hasChildren && !musicPlayingLoop) {
