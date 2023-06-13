@@ -21,29 +21,25 @@ const dance = async (move: DanceMove) => {
   await untilMessageReceived(`end ${move}`);
 }
 
-const music = (state: MusicState) => {
-  requestMusic(state);
-}
-
 async function blockSequence(move: DanceMove, util: BlockUtility) {
   if (!musicPlayingLoop && !musicPlayingSingle) {
-    music("on");
+    requestMusic("on");
     musicPlayingSingle = true;
-  
+
     currentBlockID = util.thread.stack[0];
     terminalBlockID = currentBlockID;
-    while(true){
+    while (true) {
       let temp = util.thread.blockContainer.getNextBlock(terminalBlockID);
       if (!temp) break;
       terminalBlockID = temp;
     }
   }
-  
+
   currentBlockID = util.thread.stack[0];
   await dance(move);
 
   if (musicPlayingSingle && (currentBlockID == terminalBlockID)) {
-    music("off");
+    requestMusic("off");
     musicPlayingSingle = false;
   }
 }
@@ -155,10 +151,10 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     const hasChildren = !!util.thread.blockContainer.getNextBlock(hatID);
 
     if (hasChildren && !musicPlayingLoop) {
-      music("on");
+      requestMusic("on");
     }
     else if (!hasChildren && musicPlayingLoop) {
-      music("off")
+      requestMusic("off");
     }
     musicPlayingLoop = hasChildren;
 
