@@ -4,7 +4,7 @@ import Runtime from "../../../packages/scratch-vm/src/engine/runtime";
 import EventEmitter from "events";
 
 import { ArgumentType, BlockType, color } from "$common";
-import { Environment, BlockDefinitions, ButtonBlock, MenuItem } from "$common";
+import { Environment, BlockDefinitions, MenuItem } from "$common";
 import { Extension } from "$common";
 
 import ROSLIB from "roslib";
@@ -16,7 +16,7 @@ type RGB = {
   y: number;
   z: number;
 };
-type ColorDef = {
+type ColorType = {
   name: string;
   value: RGB;
 };
@@ -32,7 +32,7 @@ const enum Color {
   Random,
 }
 
-export const colorDefByColor: Record<Color, ColorDef> = {
+export const colorDef: Record<Color, ColorType> = {
   [Color.Red]: {
     name: "red",
     value: { x: 255, y: 0, z: 0 },
@@ -67,7 +67,7 @@ export const colorDefByColor: Record<Color, ColorDef> = {
   },
 };
 
-type DanceDef = {
+type AnimType = {
   name: string;
   file: string;
 };
@@ -94,7 +94,7 @@ const enum Dance {
   Disco,
 }
 
-const danceDefByDance: Record<Dance, DanceDef> = {
+const danceDef: Record<Dance, AnimType> = {
   [Dance.BackStep]: {
     name: "BackStep",
     file: "Dances/Back_Stepper_01_01.keys",
@@ -173,12 +173,7 @@ const danceDefByDance: Record<Dance, DanceDef> = {
   },
 };
 
-type EmojiDef = {
-  name: string;
-  file: string;
-};
-
-const enum Emoji {
+export const enum Emoji {
   Embarassed,
   Frustrated,
   Laugh,
@@ -195,7 +190,7 @@ const enum Emoji {
   Success,
 }
 
-export const emojiDefByEmoji: Record<Emoji, EmojiDef> = {
+export const emojiDef: Record<Emoji, AnimType> = {
   [Emoji.Embarassed]: {
     name: "embarassed",
     file: "Misc/embarassed_01_02.keys",
@@ -254,13 +249,7 @@ export const emojiDefByEmoji: Record<Emoji, EmojiDef> = {
   },
 };
 
-type IconDef = {
-  name: string;
-  icon: string;
-  file: string;
-};
-
-const enum Icon {
+export const enum Icon {
   Airplane,
   Apple,
   Art,
@@ -280,97 +269,80 @@ const enum Icon {
   VideoGame,
 }
 
-export const iconDefByIcon: Record<Icon, IconDef> = {
+export const iconDef: Record<Icon, AnimType> = {
   [Icon.Airplane]: {
     name: "airplane",
-    icon: "✈️",
     file: "Emoji/Emoji_Airplane_01_01.keys",
   },
   [Icon.Apple]: {
     name: "apple",
-    icon: "🍎",
     file: "Emoji/Emoji_AppleRed_01_01.keys",
   },
   [Icon.Art]: {
     name: "art",
-    icon: "🎨",
     file: "Emoji/Emoji_Art_01_01.keys",
   },
   [Icon.Bowling]: {
     name: "bowling",
-    icon: "🎳",
     file: "Emoji/Emoji_Bowling.keys",
   },
   [Icon.Correct]: {
     name: "correct",
-    icon: "✅",
     file: "Emoji/Emoji_Checkmark_01_01.keys",
   },
   [Icon.Exclamation]: {
     name: "exclamation",
-    icon: "❕",
     file: "Emoji/Emoji_ExclamationYellow.keys",
   },
   [Icon.Football]: {
     name: "football",
-    icon: "🏈",
     file: "Emoji/Emoji_Football_01_01.keys",
   },
   [Icon.Heart]: {
     name: "heart",
-    icon: "❤️",
     file: "Emoji/Emoji_HeartArrow_01_01.keys",
   },
   [Icon.Magic]: {
     name: "magic",
-    icon: "🪄",
     file: "Emoji/Emoji_Magic_01_02.keys",
   },
   [Icon.Ocean]: {
     name: "ocean",
-    icon: "🌊",
     file: "Emoji/Emoji_Ocean_01_01.keys",
   },
   [Icon.Penguin]: {
     name: "penguin",
-    icon: "🐧",
     file: "Emoji/Emoji_Penguin_01_01.keys",
   },
   [Icon.Rainbow]: {
     name: "rainbow",
-    icon: "🌈",
     file: "Emoji/Emoji_Rainbow_01_01.keys",
   },
   [Icon.Robot]: {
     name: "robot",
-    icon: "🤖",
     file: "Emoji/Emoji_Robot_01_01.keys",
   },
   [Icon.Rocket]: {
     name: "rocket",
-    icon: "🚀",
     file: "Emoji/Emoji_Rocket_01_01.keys",
   },
   [Icon.Snowflake]: {
     name: "snowflake",
-    icon: "❄️",
     file: "Emoji/Emoji_Snowflake_01_01.keys",
   },
   [Icon.Taco]: {
     name: "taco",
-    icon: "🌮",
     file: "Emoji/Emoji_Taco_01_01.keys",
   },
   [Icon.VideoGame]: {
     name: "video game",
-    icon: "🎮",
     file: "Emoji/Emoji_VideoGame_01_01.keys",
   },
 };
 
 type Details = {
   name: "Jibo";
-  description: "jibo blocks";
+  description: "Program your favorite social robot.";
   iconURL: "jibo_icon.png";
   insetIconURL: "jibo_inset_icon.png";
 };
@@ -379,18 +351,14 @@ type Blocks = {
   JiboTTS: (text: string) => void;
   JiboAsk: (text: string) => void;
   JiboListen: () => any;
-  // TODO come back and finish emoji, icon, and led
-  //JiboEmoji: (akey: Emoji) => void;
-  //JiboIcon: (akey: Icon) => void;
+  JiboEmoji: (akey: Emoji) => void;
+  JiboIcon: (akey: Icon) => void;
   JiboDance: (dkey: Dance) => void;
   JiboLED: (arg: Color) => void;
   JiboLook: (x_angle: string, y_angle: string, z_angle: string) => void;
   JiboMultitask: () => void;
   JiboEnd: () => void;
 };
-
-// type EmojiArgument = { name: string };
-// type ColorArgument = { color: string }
 
 export default class Scratch3Jibo extends Extension<Details, Blocks> {
   // runtime: Runtime;
@@ -411,10 +379,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   tts: any;
   animation_list: string[];
   getAnimationList: () => MenuItem<string>[];
-  colors: MenuItem<Color>[];
   dances: MenuItem<Dance>[];
-  emojis: MenuItem<Emoji>[];
-  icons: MenuItem<Icon>[];
 
   init(env: Environment) {
     this.text = "Hello! I'm Jibo!";
@@ -423,21 +388,8 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     this.prevTasks = [];
     this.multitask_msg = {};
     this.busy = false;
-
-    this.colors = Object.entries(colorDefByColor).map(([color, def]) => ({
-      value: parseInt(color),
-      text: def.name,
-    }));
-    this.dances = Object.entries(danceDefByDance).map(([dance, def]) => ({
+    this.dances = Object.entries(danceDef).map(([dance, def]) => ({
       value: parseInt(dance),
-      text: def.name,
-    }));
-    this.emojis = Object.entries(emojiDefByEmoji).map(([emoji, def]) => ({
-      value: parseInt(emoji),
-      text: def.name,
-    }));
-    this.icons = Object.entries(iconDefByIcon).map(([icon, def]) => ({
-      value: parseInt(icon),
       text: def.name,
     }));
 
@@ -530,56 +482,47 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           type: ArgumentType.Number,
           options: self.dances,
         },
-        text: (dname) => `set Jibo Dance to ${dname}`,
+        text: (dname) => `set Jibo dance to ${dname}`,
         operation: (dkey: Dance) => {
           this.JiboDance(dkey);
         },
       }),
-      /*JiboEmoji: (self: Scratch3Jibo) => ({
+      JiboEmoji: (self: Scratch3Jibo) => ({
         type: BlockType.Command,
-        text: (arg) => `Set Jibo Emoji to ${arg}`,
         arg: this.makeCustomArgument({
           component: "EmojiArgument",
           initial: {
-            value: "Celebrate",
-            text: "Celebrate",
+            value: Emoji.Happy,
+            text: "happy",
           },
         }),
-        operation: (akey) => this.JiboEmoji(akey),
+        text: (aname) => `set Jibo emoji to ${aname}`,
+        operation: (akey: Emoji) => this.JiboEmoji(akey),
       }),
       JiboIcon: (self: Scratch3Jibo) => ({
         type: BlockType.Command,
-        text: (arg) => `Set Jibo icon to ${arg}`,
         arg: this.makeCustomArgument({
           component: "IconArgument",
           initial: {
-            value: "Taco",
-            text: "Taco",
+            value: Icon.Taco,
+            text: "taco",
           },
         }),
-        operation: (akey) => this.JiboIcon(akey),
+        text: (aname) => `set Jibo icon to ${aname}`,
+        operation: (akey: Icon) => this.JiboIcon(akey),
       }),
-      
-       type: BlockType.Command,
-        arg: self.makeCustomArgument({
-          component: "AnimalArgument",
-          initial: { value: Animal.Leopard, text: nameByAnimal[Animal.Leopard] }
-        }),
-        text: (animal) => `Add ${animal} to collection`,
-        operation: (animal) => {
-          this.addAnimalToCollection(animal);
-          this.openUI("Alert");
-        },
-      */
       JiboLED: (self: Scratch3Jibo) => ({
         type: BlockType.Command,
         arg: this.makeCustomArgument({
           component: "ColorArgument",
-          initial: { value: Color.Red, text: colorDefByColor[Color.Red].name },
+          initial: {
+            value: Color.Blue,
+            text: "blue",
+          },
         }),
         text: (cname) => `set Jibo LED to ${cname}`,
         operation: (cval: Color) => {
-          this.JiboLED(cval as Color);
+          this.JiboLED(cval);
         },
       }),
       JiboLook: (self: Scratch3Jibo) => ({
@@ -808,15 +751,15 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   }
 
   JiboLED(color: Color) {
-    let ledName = colorDefByColor[color].name;
-    let ledValue = colorDefByColor[color].value;
+    let ledName = colorDef[color].name;
+    let ledValue = colorDef[color].value;
 
     if (ledName == "random") {
       const randomColorIdx = Math.floor(
-        Math.random() * (Object.keys(colorDefByColor).length - 1)
+        Math.random() * (Object.keys(colorDef).length - 1)
       );
-      const randomColor = Object.keys(colorDefByColor)[randomColorIdx];
-      ledValue = colorDefByColor[randomColor].value;
+      const randomColor = Object.keys(colorDef)[randomColorIdx];
+      ledValue = colorDef[randomColor].value;
     }
 
     if (this.multitask) {
@@ -894,25 +837,23 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     this.JiboPublish(jibo_msg);
   }
 
-  async JiboEmoji(akey: string) {
-    console.log(akey);
-    const animation_key = this.emojis[akey];
+  async JiboEmoji(akey: Emoji) {
+    const animation_key = emojiDef[akey].file;
     await this.JiboAnim(animation_key);
   }
 
-  async JiboIcon(akey: string) {
-    const animation_key = this.icons[akey];
+  async JiboIcon(akey: Icon) {
+    const animation_key = iconDef[akey].file;
     await this.JiboAnim(animation_key);
   }
 
   async JiboDance(dkey: Dance) {
-    const dance_file = danceDefByDance[dkey].file;
+    const dance_file = danceDef[dkey].file;
     await this.JiboAnim(dance_file);
   }
 
   async JiboAnim(animation_key: string) {
-    // log.log(animation_key);
-
+    // console.log(animation_key); // debug statement
     var jibo_msg = {
       do_motion: true,
       do_tts: false,
@@ -923,26 +864,12 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
     await this.JiboPublish({ do_anim_transition: true, anim_transition: 0 });
 
-    /* // wait for command to compelte
+    /* // wait for command to complete
         return new Promise((resolve) => {
             this.jiboEvent.once("command.complete", async () => {
                 resolve();
             });
         });*/
-  }
-
-  async customAnim() {
-    const animation_key = this.emojis[this.animName];
-    var jibo_msg = {
-      do_motion: true,
-      do_tts: true,
-      tts_text: this.text,
-      motion: animation_key,
-    };
-
-    await this.JiboPublish(jibo_msg);
-
-    await this.JiboPublish({ do_anim_transition: true, anim_transition: 0 });
   }
 
   // async JiboAudio(args) {
@@ -1044,17 +971,6 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         resolve(message.transcription);
       });
     });
-  }
-
-  hexToRgb(hex: any) {
-    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result
-      ? {
-          x: parseInt(result[1], 16),
-          y: parseInt(result[2], 16),
-          z: parseInt(result[3], 16),
-        }
-      : null;
   }
 
   addAnimationToList(anim: string) {
