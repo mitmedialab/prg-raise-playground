@@ -1,7 +1,7 @@
-import { Environment, ExtensionMenuDisplayDetails, extension, block, SaveDataHandler, RuntimeEvent, ArgumentType, } from "$common";
+import { Environment, ExtensionMenuDisplayDetails, extension, block, SaveDataHandler, RuntimeEvent, ArgumentType} from "$common";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import { hideNonBlocklyElements, stretchWorkspaceToScreen } from "./layout";
-import { announce, requestDanceMove, untilMessageReceived, type DanceMove } from "./messaging";
+import { announce, requestDanceMove, requestMusic, untilMessageReceived, type DanceMove, type MusicState } from "./messaging";
 import hop from "./inlineImages/hop.png";
 import stepLeft from "./inlineImages/left.png";
 import stepRight from "./inlineImages/right.png";
@@ -10,12 +10,31 @@ import spinRight from "./inlineImages/spin-right.png";
 
 const details: ExtensionMenuDisplayDetails = { name: "Dancing Activity for AI Storybook" };
 
+let flipFlopper = false;
+let musicPlayingLoop = false;
+let musicPlayingSingle = false;
+
 const dance = async (move: DanceMove) => {
   requestDanceMove(move);
   await untilMessageReceived(`end ${move}`);
 }
 
-let flipFlopper = false;
+async function blockSequence(move: DanceMove, util: BlockUtility) {
+
+  const currentBlockID = util.thread.stack[0];
+
+  if (!musicPlayingLoop && !musicPlayingSingle) {
+    requestMusic("on");
+    musicPlayingSingle = true;
+  }
+
+  await dance(move);
+  
+  if (musicPlayingSingle && !util.thread.blockContainer.getNextBlock(currentBlockID)) {
+    requestMusic("off");
+    musicPlayingSingle = false;
+  }
+}
 
 export default class AiStorybookDancing extends extension(details, "blockly", "customSaveData") {
 
@@ -52,8 +71,8 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     },
     type: "command"
   })
-  async hop(hop: "inline image") {
-    await dance("hop");
+  async hop(hop: "inline image", util: BlockUtility) {
+    await blockSequence("hop", util);
   }
 
   @block({
@@ -65,8 +84,8 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     },
     type: "command"
   })
-  async stepLeft(stepLeft: "inline image") {
-    await dance("swivel left");
+  async stepLeft(stepLeft: "inline image", util: BlockUtility) {
+    await blockSequence("swivel left", util);
   }
 
   @block({
@@ -78,8 +97,8 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     },
     type: "command"
   })
-  async stepRight(stepRight: "inline image") {
-    await dance("swivel right");
+  async stepRight(stepRight: "inline image", util: BlockUtility) {
+    await blockSequence("swivel right", util);
   }
 
   @block({
@@ -91,8 +110,8 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     },
     type: "command"
   })
-  async spinLeft(spinLeft: "inline image") {
-    await dance("spin left");
+  async spinLeft(spinLeft: "inline image", util: BlockUtility) {
+    await blockSequence("spin left", util);
   }
 
   @block({
@@ -104,9 +123,10 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     },
     type: "command"
   })
-  async spinRight(spinRight: "inline image") {
-    await dance("spin right");
+  async spinRight(spinRight: "inline image", util: BlockUtility) {
+    await blockSequence("spin right", util);
   }
+
 
   @block({
     text: "Tell doodlebot to dance",
@@ -114,9 +134,16 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
   })
   entry(util: BlockUtility) {
 
-    // Todo: use `util` to identify if there are any scripts attached to this block.
-    // If so: (and the music isn't already playing) start the music
-    // If not: (and the music is playing) stop the music
+    const hatID = util.thread.topBlock;
+    const hasChildren = !!util.thread.blockContainer.getNextBlock(hatID);
+
+    if (hasChildren && !musicPlayingLoop) {
+      requestMusic("on");
+    }
+    else if (!hasChildren && musicPlayingLoop) {
+      requestMusic("off");
+    }
+    musicPlayingLoop = hasChildren;
 
     return this.runContinuously;
   }
