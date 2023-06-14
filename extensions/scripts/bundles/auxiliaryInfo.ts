@@ -20,8 +20,8 @@ export const setAuxiliaryInfoForExtension = (info: BundleInfo) => {
 }
 
 const convertToParams = ({ menuDetails, directory, id }: BundleInfo): AuxiliaryExtensionInfoParams => {
-  const { name } = menuDetails;
-  const blockIconURI = getBlockIconURI(menuDetails, directory);
+  const { name, noBlockIcon } = menuDetails;
+  const blockIconURI = noBlockIcon ? null : getBlockIconURI(menuDetails, directory);
   return [name, id, blockIconURI];
 }
 
