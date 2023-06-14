@@ -31,7 +31,7 @@ Assume we have the following extension:
 
 [](./extension.ts?export=x)
 
-When implementing the `defineBlocks` function, we can then treat the argument of our block function as a custom argument like so:
+When invoking the `@block` decorator function on our method that uses a custom argument, we can define the `arg` field like so:
 
 [](./index.ts?export=x)
 

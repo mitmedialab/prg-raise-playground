@@ -3,21 +3,27 @@ import chalk from 'chalk';
 import { watch, type RollupOptions, type OutputOptions } from "rollup";
 import { commonDirectory } from "./fileSystem";
 
-export const watchAllFilesInDirectoryAndCommon = ({ directory, name }: { directory: string, name: string }, options: RollupOptions, output: OutputOptions) => {
-  const watcher = watch({
-    ...options,
-    output: [output],
-    watch: { include: [path.join(directory, "**", "*"), path.join(commonDirectory, "**", "*")] }
-  });
-
-  watcher.on('event', (event) => {
-    const prefix = "[rollup]";
-    event.code === "ERROR"
-      ? console.error(chalk.bgRed(`${prefix} ${name}:`) + chalk.red(`${event.error}`))
-      : console.log(chalk.bgGreen(`${prefix} ${name}:`) + chalk.cyan(` ${event.code}`));
-    if (event.code === "BUNDLE_END") event.result?.close();
-  });
-};
-
 export const runOncePerBundling = (): { check: () => boolean, internal?: any } =>
   ({ internal: 0, check() { return 0 === (this.internal++ as number) } });
+
+export const hackToFilterOutUnhelpfulRollupLogs = async () => {
+  const warn = console.warn;
+
+  const toFilter = new Set([
+    "@rollup/plugin-typescript TS1005: ',' expected.",
+    "@rollup/plugin-typescript TS1005: ';' expected.",
+    "@rollup/plugin-typescript TS1005: '>' expected.",
+    "@rollup/plugin-typescript TS1005: ')' expected.",
+    "@rollup/plugin-typescript TS1109: Expression expected.",
+    "@rollup/plugin-typescript TS1128: Declaration or statement expected.",
+    "@rollup/plugin-typescript TS1144: '{' or ';' expected.",
+    "@rollup/plugin-typescript TS1434: Unexpected keyword or identifier.",
+    "@rollup/plugin-typescript TS1011: An element access expression should take an argument.",
+    "@rollup/plugin-typescript TS1442: Expected '=' for property initializer."
+  ]);
+
+  console.warn = function (...params: any[]) {
+    if (toFilter.has(params[0])) return;
+    warn(...params);
+  }
+}

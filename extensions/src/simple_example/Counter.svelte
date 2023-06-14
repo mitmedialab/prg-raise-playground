@@ -3,7 +3,7 @@
   import { activeClass, px, color } from "$common";
 
   // svelte-ignore unused-export-let
-  export let extension: any;
+  export let extension: Extension;
   // svelte-ignore unused-export-let
   export let close: () => void;
 

@@ -5,6 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "directory": "echo simple_example",
+    "dev": "npm run dev --prefix ../../../ -- only=simple_example",
     "test": "npm run test --prefix ../../ -- simple_example/index.test.ts"
   },
   "author": "",

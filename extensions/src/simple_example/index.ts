@@ -1,33 +1,34 @@
-import { ArgumentType, BlockType, Language, Extension, ButtonBlock, Environment, SaveDataHandler } from "$common";
+import { ArgumentType, BlockType, Environment, ExtensionMenuDisplayDetails, Language, Menu, SaveDataHandler, block, buttonBlock, extension, tryCastToArgumentType } from "$common";
+import jibo from "./jibo.png";
+import five from "./five.png";
 
-type Details = {
-  name: "Super Simple Typescript Extension!",
+const details: ExtensionMenuDisplayDetails = {
+  name: "Simple Typescript Extension",
   description: "Skeleton for a typescript extension",
-  iconURL: "",
-  insetIconURL: "",
-  implementationLanguage: typeof Language.English,
+  implementationLanguage: Language.English,
   [Language.Español]: {
     name: "Extensión simple Typescript",
     description: "Ejemplo de una extensión simple usando Typescript"
   }
-};
+}
 
-export default class SimpleTypescript extends Extension<Details, {
-  log: (msg: string) => void;
-  dummyUI: ButtonBlock;
-  counterUI: ButtonBlock;
-  colorUI: ButtonBlock;
-}> {
+export default class SimpleTypescript extends extension(details, "ui", "customSaveData") {
   count: number = 0;
 
-  saveDataHandler = new SaveDataHandler({
+  logOptions: Menu<string> = {
+    items: ['1', 'two', 'three'],
+    acceptsReporters: true,
+    handler: (x: any) => tryCastToArgumentType(ArgumentType.String, x, () => {
+      alert(`Unsopported input: ${x}`);
+      return "";
+    })
+  }
+
+  override saveDataHandler = new SaveDataHandler({
     Extension: SimpleTypescript,
     onSave: ({ count }) => ({ count }),
     onLoad: (self, { count }) => self.count = count
   });
-
-  init(env: Environment) {
-  }
 
   increment() {
     this.count++;
@@ -37,39 +38,55 @@ export default class SimpleTypescript extends Extension<Details, {
     this.count += amount;
   }
 
-  defineBlocks(): SimpleTypescript["BlockDefinitions"] {
-    return {
-      log: {
-        type: BlockType.Command,
-        arg: {
-          type: ArgumentType.String,
-          options: {
-            items: ['1', 'two', 'three'],
-            acceptsReporters: true,
-            handler: (x: any) => Extension.TryCastToArgumentType(ArgumentType.String, x, () => {
-              alert(`Unsopported input: ${x}`);
-              return "";
-            })
-          }
-        },
-        text: (msg) => `Log ${msg} to the console`,
-        operation: (msg) => console.log(msg)
-      },
-      dummyUI: {
-        type: BlockType.Button,
-        text: `Dummy UI`,
-        operation: () => this.openUI("Dummy", "Howdy")
-      },
-      counterUI: {
-        type: BlockType.Button,
-        text: "Open Counter",
-        operation: () => this.openUI("Counter", "Pretty cool, right?")
-      },
-      colorUI: {
-        type: BlockType.Button,
-        text: "Show colors",
-        operation: () => this.openUI("Palette")
-      }
+  init(env: Environment) { }
+
+  @block((self) => ({
+    type: BlockType.Command,
+    text: (msg) => `Log ${msg} to the console`,
+    arg: { type: ArgumentType.String, options: self.logOptions }
+  }))
+  log(msg: string) {
+    console.log(msg);
+  }
+
+  @block({ type: BlockType.Button, text: `Dummy UI` })
+  dummyUI() {
+    this.openUI("Dummy", "Howdy");
+  }
+
+  @block({ type: BlockType.Button, text: "Open Counter" })
+  counterUI() {
+    this.openUI("Counter", "Pretty cool, right?");
+  }
+
+  @buttonBlock("Show colors")
+  colorUI() {
+    this.openUI("Palette");
+  }
+
+  @block({
+    type: BlockType.Command,
+    text: (jibo) => `This is what jibo looks like: ${jibo}`,
+    arg: {
+      type: "image",
+      uri: jibo,
+      alt: "Picture of Jibo",
+      flipRTL: true
     }
+  })
+  imageBlock(jibo: "inline image") {
+  }
+
+  @block({
+    type: "reporter",
+    text: (lhs, five, rhs) => `${lhs} + ${five} - ${rhs}`,
+    args: [
+      { type: "number", defaultValue: 1 },
+      { type: "image", uri: five, alt: "golden five" },
+      "number"
+    ]
+  })
+  addFive(lhs: number, five: "inline image", rhs: number) {
+    return lhs + 5 - rhs;
   }
 }

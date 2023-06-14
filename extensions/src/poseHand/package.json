@@ -1,0 +1,15 @@
+{
+  "name": "pose-hand-extension",
+  "version": "1.0.0",
+  "description": "An extension created using the PRG AI Blocks framework",
+  "main": "index.ts",
+  "scripts": {
+    "directory": "echo poseHand",
+    "test": "npm run test --prefix ../../ -- poseHand/index.test.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@tensorflow-models/handpose": "^0.0.3"
+  }
+}

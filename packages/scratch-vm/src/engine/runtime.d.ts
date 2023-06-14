@@ -1009,6 +1009,15 @@ declare class Runtime extends EventEmitter {
      */
     updateCurrentMSecs(): void;
     currentMSecs: number;
+    /**
+     * Get a refernce to the extension manager
+     * @returns {import("../extension-support/extension-manager")}
+     */
+    getExtensionManager(): import("../extension-support/extension-manager");
+    /**
+     * Loads a costume asset in
+     */
+    addCostume(costume: any): Promise<any>;
 }
 declare namespace Runtime {
     export { CloudDataManager };

@@ -8,15 +8,6 @@ import { FormattedMessage } from 'react-intl';
 import textClassificationBlocksIconURL from './text_classification/text-classification-blocks.png';
 import textClassificationBlocksInsetIconURL from './text_classification/text-classification-blocks-small.svg';
 
-import poseBodyBlocksIconURL from './posenet/pose-body.png';
-import poseHandBlocksIconURL from './posenet/pose-hand.png';
-import poseFaceBlocksIconURL from './posenet/pose-face.png';
-import teachableMachineBlocksIconURL from './teachable-machine-blocks/teachable-machine-blocks.png';
-import teachableMachineBlocksInsetIconURL from './teachable-machine-blocks/teachable-machine-blocks-small.svg';
-
-import jiboRobotIconURL from './jibo_ext/jibo_ext.png';
-import jiboRobotInsetIconURL from './jibo_ext/jibo_small.png';
-
 import arduinoRobotIconURL from './arduino_extension/arduino_extension.png';
 import arduinoRobotInsetIconURL from './arduino_extension/arduino_small.svg';
 
@@ -33,11 +24,6 @@ import penInsetIconURL from './pen/pen-small.svg';
 
 import videoSensingIconURL from './videoSensing/video-sensing.png';
 import videoSensingInsetIconURL from './videoSensing/video-sensing-small.svg';
-
-// import posenetIconURL from './posenet/video-sensing.png';
-import poseHandInsetIconURL from './posenet/pose-hand-small-3.svg';
-import poseFaceInsetIconURL from './posenet/pose-face-small.svg';
-import poseBodyInsetIconURL from './posenet/pose-body-small.svg';
 
 import text2speechIconURL from './text2speech/text2speech.png';
 import text2speechInsetIconURL from './text2speech/text2speech-small.svg';
@@ -82,26 +68,6 @@ export default [
     {
         name: (
             <FormattedMessage
-                defaultMessage="Teachable Machine"
-                description="Teachable Machine name"
-                id="gui.extension.teachable-machine.name"
-            />
-        ),
-        extensionId: 'teachableMachine',
-        iconURL: teachableMachineBlocksIconURL,
-        insetIconURL: teachableMachineBlocksInsetIconURL,
-        description: (
-            <FormattedMessage
-                defaultMessage="Use your Teachable Machine models in your Scratch project!"
-                description="Teachable Machine Description"
-                id="gui.extension.teachable-machine.description"
-            />
-        ),
-        featured: true
-    },
-    {
-        name: (
-            <FormattedMessage
                 defaultMessage="Text Classification"
                 description="Text Classification name"
                 id="gui.extension.text-classification.name"
@@ -140,49 +106,7 @@ export default [
     //     featured: true
     // },
     {
-        name: "Hand Sensing",
-        extensionId: 'poseHand',
-        iconURL: poseHandBlocksIconURL,
-        insetIconURL: poseHandInsetIconURL,
-        description: (
-            <FormattedMessage
-                defaultMessage="Sense hand movement with the camera."
-                description="PoseNet Description"
-                id="gui.extension.pose_hand.description"
-            />
-        ),
-        featured: true
-    },
-    {
-        name: "Face Sensing",
-        extensionId: 'poseFace',
-        iconURL: poseFaceBlocksIconURL,
-        insetIconURL: poseFaceInsetIconURL,
-        description: (
-            <FormattedMessage
-                defaultMessage="Sense face movement with the camera."
-                description="PoseNet Description"
-                id="gui.extension.pose_face.description"
-            />
-        ),
-        featured: true
-    },
-    {
-        name: "Body Sensing",
-        extensionId: 'poseBody',
-        iconURL: poseBodyBlocksIconURL,
-        insetIconURL: poseBodyInsetIconURL,
-        description: (
-            <FormattedMessage
-                defaultMessage="Sense body position with the camera."
-                description="PoseNet Description"
-                id="gui.extension.pose_body.description"
-            />
-        ),
-        featured: true
-    },
-    {
-         name: (
+        name: (
             <FormattedMessage
                 defaultMessage="PRG Microbit Robot"
                 description="Name for the 'Microbit Robot' Extension"
@@ -202,7 +126,7 @@ export default [
         featured: true
     },
     {
-         name: (
+        name: (
             <FormattedMessage
                 defaultMessage="PRG Gizmo Robot"
                 description="Name for the 'Gizmo Robot' Extension"
@@ -220,8 +144,8 @@ export default [
             />
         ),
         featured: true
-    },{
-         name: (
+    }, {
+        name: (
             <FormattedMessage
                 defaultMessage="PRG Arduino Robot"
                 description="Name for the 'Arduino Robot' Extension"

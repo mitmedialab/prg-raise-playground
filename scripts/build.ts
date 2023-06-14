@@ -3,7 +3,7 @@ import path from "path";
 import fs from "fs";
 import { Message, Conditon } from './comms';
 import { extensionsFolder, packages, root } from './paths';
-import { processArgs } from './processArgs';
+import { flagByOption, processOptions } from './buildOptions';
 
 const { gui } = packages;
 
@@ -12,7 +12,7 @@ const convertToArgs = (args: Record<string, any>) => Object.entries(args).map(([
 const convertToFlags = (args: Record<string, string>) => Object.entries(args).map(([flag, value]) => [`--${flag}`, value]).flat();
 const asFlags = (...names: string[]) => names.map(name => "--" + name);
 
-const { watch } = processArgs({ watch: "watch" }, { watch: true });
+const { watch, specifiedDir, individually, ...args } = processOptions();
 
 const [guiBuildDir, rootBuildDir] = [gui, root].map(dir => path.join(dir, "build"));
 
@@ -27,7 +27,8 @@ const copyOverBuild = () => fs.existsSync(guiBuildDir)
 const extensionsScripts = path.join(extensionsFolder, "scripts");
 const bundleExtensionsScript = path.join(extensionsScripts, "bundle.ts");
 
-const bundleExtensions = fork(bundleExtensionsScript, convertToArgs({ watch }));
+const bundleArgs = { watch, [flagByOption.specifiedDir]: specifiedDir, [flagByOption.individually]: individually };
+const bundleExtensions = fork(bundleExtensionsScript, convertToArgs(bundleArgs));
 
 const childProcesses: Record<string, ChildProcess> = {
   bundleExtensions,
