@@ -413,8 +413,6 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
     this.RosConnect({ rosIP: "localhost" });
 
-    var self = this;
-
     this.getAnimationList = () =>
       this.animation_list.map((anim) => ({
         text: anim,
@@ -460,7 +458,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           defaultValue: "Hello, I am Jibo",
         },
         text: (text: string) => `say ${text}`,
-        operation: (text: string) => self.jiboTTSFn(this, text),
+        operation: (text: string) => self.jiboTTSFn(text),
       }),
       JiboAsk: (self: Scratch3Jibo) => ({
         type: BlockType.Command,
@@ -608,7 +606,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           self.connected = true;
           // send jibo welcome message
           let welcomeText = `Hello there. Welcome to A.I. Blocks.`;
-          self.jiboTTSFn(self, welcomeText);
+          self.jiboTTSFn(welcomeText);
         };
       };
       let connect_cb = connect_cb_factory(this);
@@ -655,34 +653,34 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   }
 
   // TODO remove the self variable here
-  async jiboTTSFn(self: Scratch3Jibo, text: string) {
+  async jiboTTSFn(text: string) {
     // log.log(text);
 
-    console.log("multitask: " + self.multitask);
+    console.log("multitask: " + this.multitask);
 
-    if (self.multitask) {
+    if (this.multitask) {
       console.log(this.prevTasks);
-      if (self.prevTasks.includes("tts") || self.prevTasks.includes("emote")) {
-        self.prevTasks.length = 0;
+      if (this.prevTasks.includes("tts") || this.prevTasks.includes("emote")) {
+        this.prevTasks.length = 0;
         console.log("performing");
         console.log(this.multitask_msg);
 
-        while (self.busy) {
+        while (this.busy) {
           console.log("hello");
         }
-        self.busy = true;
-        await self.JiboPublish(self.multitask_msg);
-        self.busy = false;
+        this.busy = true;
+        await this.JiboPublish(this.multitask_msg);
+        this.busy = false;
 
-        self.multitask_msg = {};
+        this.multitask_msg = {};
       }
 
-      self.multitask_msg["do_tts"] = true;
-      self.multitask_msg["tts_text"] = text;
-      self.multitask_msg["volume"] = parseFloat(self.jbVolume);
+      this.multitask_msg["do_tts"] = true;
+      this.multitask_msg["tts_text"] = text;
+      this.multitask_msg["volume"] = parseFloat(this.jbVolume);
 
-      self.prevTasks.push("tts");
-      console.log(self.multitask_msg);
+      this.prevTasks.push("tts");
+      console.log(this.multitask_msg);
       return;
     }
 
@@ -704,9 +702,9 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
     // });
 
-    while (self.busy) {
-      console.log(self.busy);
-      this.checkBusy(self);
+    while (this.busy) {
+      console.log(this.busy);
+      this.checkBusy(this);
     }
 
     // console.log("before while: " + this.busy)
@@ -736,7 +734,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
     // this.busy = true;
     // console.log("before publishing")
-    await self.JiboPublish(jibo_msg);
+    await this.JiboPublish(jibo_msg);
     // console.log("after publishing")
 
     // var rep = true;
@@ -752,7 +750,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
   async jiboAskFn(text: string) {
     // say question
-    await this.jiboTTSFn(this, text);
+    await this.jiboTTSFn(text);
 
     // listen for answer
     this.JiboASR_request();
@@ -770,7 +768,8 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
     if (ledName == "random") {
       const randomColorIdx = Math.floor(
-        Math.random() * (Object.keys(colorDef).length - 1)
+        // exclude random and off
+        Math.random() * (Object.keys(colorDef).length - 2)
       );
       const randomColor = Object.keys(colorDef)[randomColorIdx];
       ledValue = colorDef[randomColor].value;

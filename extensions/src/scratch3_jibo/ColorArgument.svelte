@@ -89,8 +89,4 @@
     border: 1px solid;
     border-radius: 2px;
   } */
-  .cell {
-    border: 1px solid;
-    border-radius: 2px;
-  }
 </style>
