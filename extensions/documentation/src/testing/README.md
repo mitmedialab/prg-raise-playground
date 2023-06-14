@@ -11,13 +11,6 @@ The below examples will test the below extension:
 
 [](./index.ts?export=defineExtension)
 
-<details>
-<summary>To save space, the block definitions are hidden, but you can open this if you need to see them:</summary>
-
-[](./index.ts?export=defineBlocks)
-
-</details>
-
 ### Anatomy of a test
 
 Extension test suites will make use of the `createTestSuite` utility function implemented in [extensions/testing/index.ts]() (available under the alias `$testing`).
@@ -32,9 +25,9 @@ As is clear from the second argument of the createTestSuite function, there are 
 
 Specifically for extensions, [unit tests](https://en.wikipedia.org/wiki/Unit_testing) test the operation of a single block.
 
-A unit test for a block is defined as an entry in the unitTests object whose key is the name of the block (as defined in the second generic parameter of the Extension class -- for example, this means either `exampleReporter`, `exampleCommand`, or `exampleButtonThatOpensUI`).
+A unit test for a block is defined as an entry in the unitTests object whose key is the name of the block method of the Extension class (for the above example, this means either `exampleReporter`, `exampleCommand`, or `exampleButtonThatOpensUI`).
 
-The values will either be (1) an object of a certain type, (2) a function that returns an object of that certain type, or (3) an array of either. The object type can have the keys outlined below:
+The values will either be (1) an _object of a certain type_, (2) a function that returns an object of that certain type, or (3) an array of either. The _object of a certain type_ can have the keys outlined below:
 
 #### Simple Example
 
@@ -65,7 +58,7 @@ See [their documentation](https://testing-library.com/docs/) for a complete guid
 
 ### Integration Test
 
-Specifically for extensions, [integration tests]() test either the operations of multiple blocks or how one extension interacts with another.
+Specifically for extensions, [integration tests](https://en.wikipedia.org/wiki/Integration_testing) test either the operations of multiple blocks or how one extension interacts with another.
 
 They are implemented as functions as you can see below:
 

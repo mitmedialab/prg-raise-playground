@@ -1,9 +1,9 @@
 <script lang="ts">
-  import type Extension from ".";
   import { activeClass, color as uiColors } from "$common";
+  import Extension from ".";
 
   // svelte-ignore unused-export-let
-  export let extension: any;
+  export let extension: Extension;
   // svelte-ignore unused-export-let
   export let close: () => void;
 

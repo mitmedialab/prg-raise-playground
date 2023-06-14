@@ -14,6 +14,7 @@ createTestSuite({ Extension, __dirname },
         };
 
         return {
+          name: "Ensure log is called",
           input,
           after: () => {
             expect(count).toBe(1);
@@ -30,6 +31,7 @@ createTestSuite({ Extension, __dirname },
         }
       },
       counterUI: {
+        name: "Test all counter buttons",
         async after({ extension, ui: { findByText }, testHelper: { expect, fireEvent, updateHTMLInputValue } }) {
           const texts = ["Add 1", "Add", "Reset"];
           const buttons = await Promise.all(texts.map(text => findByText(text)));

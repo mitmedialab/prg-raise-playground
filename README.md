@@ -20,11 +20,14 @@ This section contains concise explanations on how to accomplish something (often
 
 Assuming you have...
 - Git installed (if not, jump to: [Git](#Git))
+- **_(Windows only)_** WSL setup (if not, jump to: [Windows Setup](#windows-only))
 - Node <=16 is installed (if not, jump to: [Node](#Node))
 - NPM >= 8.3.0 installed (if not, jump to: [NPM](#NPM))
 - VS Code installed with Typescript Extension added (if not, jump to: [Vs Code](#VS-Code-(Recommended)))
 
 Run the following from the command line:
+
+(**NOTE:** If using gitpod, this all will be done for you on startup)
 
 ```shell script
 git clone git@github.com:mitmedialab/prg-extension-boilerplate.git
@@ -56,8 +59,7 @@ cd prg-extension-boilerplate/ # If not already there
 
 git checkout dev
 git pull # Update branch with any remote changes
-git checkout -b <my branch> # Checkout your 'feature' branch, e.g. git checkout -b my_awesome_extension
-# For example: git checkout -b new_rad_extension
+git checkout -b <my branch> # Checkout your 'feature' branch, e.g. git checkout -b new_rad_extension
 
 npm run new:extension <folder to contain extension>
 # For example: npm run new:extension my_awesome_extension
@@ -82,9 +84,14 @@ After you've [made your extension](#-making-an-extension), run the following com
 cd prg-extension-boilerplate/ # If not already there
 # Change directory (cd) to prg-extension-boilerplate/ 
 
-npm run dev
+npm run dev only=<folder name of extension>
+# For example: npm run dev only=my_awesome_extension
 # Start a development server to view your extension and reload it as you make changes
 # This command will take ~20s to startup and serve everything to http://localhost:8601/
+
+# Alternatively, serve all the currently implemented extensions
+npm run dev
+# NOTE: This will be more intensive on your computer
 ```
 
 Then, after navigating to http://localhost:8601/, follow the 'Adding Extensions' guidance in the [official extension documentation](https://en.scratch-wiki.info/wiki/Extension) to add your extension to the workspace. 
@@ -160,7 +167,7 @@ Also, try hovering over fields to view their documentation (typically a [summary
 
 ![Gif of video hovering over fields to peak documentation](/assets/hover.gif)
 
-Still stuck? Check out our [From 0 to Extension guide](#-from-0-to-extension) and/or contact more experienced Scratch developers, like [Parker](https://github.com/pmalacho-mit) or [Randi](https://github.com/randi-c-dubs)
+Still stuck? Check out our [From 0 to Extension guide](#-from-0-to-extension) and/or contact more experienced extension developers, like [Parker](https://github.com/pmalacho-mit) or [Randi](https://github.com/randi-c-dubs)
 
 ### 🪜 From 0 to Extension
 
@@ -169,7 +176,7 @@ Still stuck? Check out our [From 0 to Extension guide](#-from-0-to-extension) an
 Currently, depending on what's new to you, here are some recommendations:
 - ***New to Javascript and Typescript?*** Follow this [javascript tutorial](https://www.w3schools.com/js/) and then check out the [Typescript handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
 - ***Know javascript but new to Typescript?*** Check out the [Typescript handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
-- ***Know javascript/typescript but never made an extension before?*** Nice! The documentation of the template `index.ts` should be enough to get you started (and if not, please give that feedback)
+- ***Know javascript/typescript but never made an extension before?*** Nice! The documentation of the template `index.ts` should be enough to get you started (and if not, please give us that feedback)
 - ***New to the extension framework (but had developed extensions in the past)?*** The [Porting an extension to Typescript guide](#-porting-an-extension-to-typescript) is likely for you!
 
 Probably will have:
@@ -193,6 +200,10 @@ Not interested in setting up your local environemnt?
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev)
 
+### Windows Only
+
+Please setup and perform all commands through [Node on Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/dev-environment/javascript/nodejs-on-wsl).
+
 ### Git
 
 Please [install git](https://git-scm.com/downloads), which helps us with [source control](https://git-scm.com/book/en/v2/Getting-Started-About-Version-Control) -- basically, how we preserve and share (changes to) the code. 
@@ -203,7 +214,7 @@ Like many web development projects, this project requires [node](https://nodejs.
 
 Also, [due to a Webpack 4 issue](https://github.com/webpack/webpack/issues/14532), we require a node version <=16.
 
-Please follow [these instructions](https://nodejs.org/en/download/) to install a suitable version of Node on your machine.
+Please locate the [latest v16 release](https://nodejs.org/en/blog/release) and install a suitable version for your operating system. If you already have node and need to downgrade to a version <= 16, please see these [instructions for downgrading node](https://www.educative.io/answers/how-to-downgrade-node-version).
 
 #### Maintainer Note (9/15/22)
 

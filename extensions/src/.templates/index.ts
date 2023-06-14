@@ -1,20 +1,7 @@
-import { Extension, Environment } from "$common";
+import { Environment, extension, ExtensionMenuDisplayDetails, block } from "$common";
 
-type Details = {
-  name: "",
-  description: "",
-  iconURL: "",
-  insetIconURL: ""
-};
+const details: ExtensionMenuDisplayDetails = { name: "" };
 
-export default class _ extends Extension<Details, {
-  // Blocks
-}> {
-  init(env: Environment) { }
-
-  defineBlocks(): _["BlockDefinitions"] {
-    return {
-
-    }
-  }
+export default class _ extends extension(details) {
+  init(env: Environment): void { }
 }
