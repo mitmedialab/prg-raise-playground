@@ -260,8 +260,8 @@ export enum Icon {
   Apple,
   Art,
   Bowling,
-  Correct,
-  Exclamation,
+  Checkmark,
+  ExclamationPoint,
   Football,
   Heart,
   Magic,
@@ -292,12 +292,12 @@ export const iconDef: Record<Icon, AnimType> = {
     name: "bowling",
     file: "Emoji/Emoji_Bowling.keys",
   },
-  [Icon.Correct]: {
-    name: "correct",
+  [Icon.Checkmark]: {
+    name: "checkmark",
     file: "Emoji/Emoji_Checkmark_01_01.keys",
   },
-  [Icon.Exclamation]: {
-    name: "exclamation",
+  [Icon.ExclamationPoint]: {
+    name: "exclamation point",
     file: "Emoji/Emoji_ExclamationYellow.keys",
   },
   [Icon.Football]: {
@@ -485,7 +485,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           type: ArgumentType.Number,
           options: self.dances,
         },
-        text: (dname) => `set Jibo dance to ${dname}`,
+        text: (dname) => `play dance ${dname}`,
         operation: async (dance: Dance) => {
           const akey = danceDef[dance].file;
           await self.jiboAnimFn(akey);
@@ -500,7 +500,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
             text: "happy",
           },
         }),
-        text: (aname) => `set Jibo emoji to ${aname}`,
+        text: (aname) => `play ${aname} emotion`,
         operation: async (anim: Emoji) => {
           const akey = emojiDef[anim].file;
           await self.jiboAnimFn(akey);
@@ -515,7 +515,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
             text: "taco",
           },
         }),
-        text: (aname) => `set Jibo icon to ${aname}`,
+        text: (aname) => `show ${aname} icon`,
         operation: async (icon: Icon) => {
           const akey = iconDef[icon].file;
           await self.jiboAnimFn(akey);
@@ -530,7 +530,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
             text: "blue",
           },
         }),
-        text: (cname) => `set Jibo LED to ${cname}`,
+        text: (cname) => `set LED ring to ${cname}`,
         operation: (cval: Color) => {
           self.jiboLEDFn(cval);
         },
@@ -552,7 +552,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           },
         ],
         text: (x_angle: string, y_angle: string, z_angle: string) =>
-          `set Jibo Look at ${x_angle}, ${y_angle}, ${z_angle}`,
+          `look at ${x_angle}, ${y_angle}, ${z_angle}`,
         operation: (x_angle: string, y_angle: string, z_angle: string) =>
           self.jiboLookFn(x_angle, y_angle, z_angle),
       }),
@@ -605,7 +605,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         return function () {
           self.connected = true;
           // send jibo welcome message
-          let welcomeText = `Hello there. Welcome to A.I. Blocks.`;
+          let welcomeText = `Hello there. I am ready for you to program me.`;
           self.jiboTTSFn(welcomeText);
         };
       };
