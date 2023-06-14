@@ -56,12 +56,6 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     return flipFlopper;
   }
 
-  protected override saveDataHandler = new SaveDataHandler({
-    Extension: AiStorybookDancing,
-    onSave: () => ({ hackToLoadExtensionEvenIfNoBlocksInProject: true }),
-    onLoad: () => { },
-  });
-
   @block({
     text: (hop) => `${hop}`,
     arg: {
