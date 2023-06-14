@@ -51,7 +51,15 @@ export abstract class ConstructableExtension {
    * @param id The ID of this extension.
    * @param blockIconURI
    */
-  constructor(readonly runtime: Runtime, readonly name: string, readonly id: string, readonly blockIconURI: string) {
+  constructor(
+    readonly runtime: Runtime,
+    readonly name: string,
+    readonly id: string,
+    readonly blockIconURI: string,
+    readonly blockColor: string,
+    readonly menuColor: string,
+    readonly menuSelectColor: string
+  ) {
   }
 }
 
