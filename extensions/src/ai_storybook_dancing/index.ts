@@ -21,7 +21,10 @@ const dance = async (move: DanceMove) => {
 
 async function blockSequence(move: DanceMove, util: BlockUtility) {
 
+  const topBlockID = util.thread.topBlock;
   const currentBlockID = util.thread.stack[0];
+
+  if (topBlockID == currentBlockID) return;
 
   if (!musicPlayingLoop && !musicPlayingSingle) {
     requestMusic("on");
