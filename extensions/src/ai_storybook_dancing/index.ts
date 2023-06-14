@@ -12,7 +12,7 @@ const details: ExtensionMenuDisplayDetails = { name: "Dancing Activity for AI St
 
 let flipFlopper = false;
 let musicPlayingLoop = false;
-let musicPlayingSingle = false;
+let hatBlockID;
 
 const dance = async (move: DanceMove) => {
   requestDanceMove(move);
@@ -20,22 +20,19 @@ const dance = async (move: DanceMove) => {
 }
 
 async function blockSequence(move: DanceMove, util: BlockUtility) {
-
+  assignHatBlockID(util);
   const topBlockID = util.thread.topBlock;
-  const currentBlockID = util.thread.stack[0];
 
-  if (topBlockID == currentBlockID) return;
-  
-  if (!musicPlayingLoop && !musicPlayingSingle) {
-    requestMusic("on");
-    musicPlayingSingle = true;
-  }
-
+  if (topBlockID != hatBlockID) return;
   await dance(move);
-  
-  if (musicPlayingSingle && !util.thread.blockContainer.getNextBlock(currentBlockID)) {
-    requestMusic("off");
-    musicPlayingSingle = false;
+}
+
+function assignHatBlockID(util: BlockUtility){
+  if (hatBlockID) return;
+  const blocks = util.thread.blockContainer._blocks
+  for (const blockID in blocks) {
+    if (!blocks[blockID].opcode.endsWith('entry')) continue;
+    hatBlockID = blockID;
   }
 }
 
@@ -137,15 +134,11 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
   })
   entry(util: BlockUtility) {
 
-    const hatID = util.thread.topBlock;
-    const hasChildren = !!util.thread.blockContainer.getNextBlock(hatID);
+    assignHatBlockID(util);
+    const hasChildren = !!util.thread.blockContainer.getNextBlock(hatBlockID);
 
-    if (hasChildren && !musicPlayingLoop) {
-      requestMusic("on");
-    }
-    else if (!hasChildren && musicPlayingLoop) {
-      requestMusic("off");
-    }
+    if (hasChildren && !musicPlayingLoop) requestMusic("on");
+    else if (!hasChildren && musicPlayingLoop) requestMusic("off");
     musicPlayingLoop = hasChildren;
 
     return this.runContinuously;
