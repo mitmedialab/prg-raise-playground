@@ -21,6 +21,7 @@ type ColorType = {
   value: RGB;
 };
 
+// TODO remove the const enums throughout this file, https://github.com/mitmedialab/prg-extension-boilerplate/blob/dev/extensions/src/common/types/enums.ts#L136
 const enum Color {
   Red,
   Yellow,
@@ -30,6 +31,7 @@ const enum Color {
   Magenta,
   White,
   Random,
+  Off,
 }
 
 export const colorDef: Record<Color, ColorType> = {
@@ -64,6 +66,10 @@ export const colorDef: Record<Color, ColorType> = {
   [Color.Random]: {
     name: "random",
     value: { x: -1, y: -1, z: -1 },
+  },
+  [Color.Off]: {
+    name: "off",
+    value: { x: 0, y: 0, z: 0 },
   },
 };
 
@@ -454,7 +460,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           defaultValue: "Hello, I am Jibo",
         },
         text: (text: string) => `say ${text}`,
-        operation: (text: string) => this.JiboTTS(this, text),
+        operation: (text: string) => self.jiboTTSFn(this, text),
       }),
       JiboAsk: (self: Scratch3Jibo) => ({
         type: BlockType.Command,
@@ -463,17 +469,17 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           defaultValue: "How are you?",
         },
         text: (text: string) => `ask ${text} and wait`,
-        operation: (text: string) => this.JiboAsk(text),
+        operation: (text: string) => self.jiboAskFn(text),
       }),
       JiboListen: (self: Scratch3Jibo) => ({
         type: BlockType.Reporter,
         text: `answer`,
-        operation: () => this.JiboListen(),
+        operation: () => self.jiboListenFn(),
       }),
-      // JiboState: (self: Scratch3Jibo) => ({
+      // JiboState: () => ({ // helpful for debugging
       //     type:BlockType.Command,
       //     text: `read state`,
-      //     operation: () => this.JiboState()
+      //     operation: () => self.JiboState()
       // }),
       JiboDance: (self: Scratch3Jibo) => ({
         type: BlockType.Command,
@@ -482,8 +488,9 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           options: self.dances,
         },
         text: (dname) => `set Jibo dance to ${dname}`,
-        operation: (dkey: Dance) => {
-          this.JiboDance(dkey);
+        operation: async (dance: Dance) => {
+          const akey = danceDef[dance].file;
+          await self.jiboAnimFn(akey);
         },
       }),
       JiboEmoji: (self: Scratch3Jibo) => ({
@@ -496,7 +503,10 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           },
         }),
         text: (aname) => `set Jibo emoji to ${aname}`,
-        operation: (akey: Emoji) => this.JiboEmoji(akey),
+        operation: async (anim: Emoji) => {
+          const akey = emojiDef[anim].file;
+          await self.jiboAnimFn(akey);
+        },
       }),
       JiboIcon: (self: Scratch3Jibo) => ({
         type: BlockType.Command,
@@ -508,7 +518,10 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           },
         }),
         text: (aname) => `set Jibo icon to ${aname}`,
-        operation: (akey: Icon) => this.JiboIcon(akey),
+        operation: async (icon: Icon) => {
+          const akey = iconDef[icon].file;
+          await self.jiboAnimFn(akey);
+        }
       }),
       JiboLED: (self: Scratch3Jibo) => ({
         type: BlockType.Command,
@@ -521,7 +534,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         }),
         text: (cname) => `set Jibo LED to ${cname}`,
         operation: (cval: Color) => {
-          this.JiboLED(cval);
+          self.jiboLEDFn(cval);
         },
       }),
       JiboLook: (self: Scratch3Jibo) => ({
@@ -543,13 +556,13 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         text: (x_angle: string, y_angle: string, z_angle: string) =>
           `set Jibo Look at ${x_angle}, ${y_angle}, ${z_angle}`,
         operation: (x_angle: string, y_angle: string, z_angle: string) =>
-          this.JiboLook(x_angle, y_angle, z_angle),
+          self.jiboLookFn(x_angle, y_angle, z_angle),
       }),
       JiboMultitask: (self: Scratch3Jibo) => ({
         type: BlockType.Command,
         text: `start multitask`,
         operation: () => {
-          this.multitask = true;
+          self.multitask = true;
           console.log("starting multitask");
         },
       }),
@@ -557,11 +570,11 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         type: BlockType.Command,
         text: `end multitask`,
         operation: () => {
-          console.log(this.multitask_msg);
-          this.JiboPublish(this.multitask_msg);
-          this.multitask = false;
-          this.multitask_msg = {};
-          this.prevTasks.length = 0;
+          // console.log(self.multitask_msg); // debug
+          self.JiboPublish(self.multitask_msg);
+          self.multitask = false;
+          self.multitask_msg = {};
+          self.prevTasks.length = 0;
           console.log("ending multitask");
         },
       }),
@@ -590,11 +603,12 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
       });
 
       // If connection is successful
-      let connect_cb_factory = function (x: any) {
+      let connect_cb_factory = function (self: Scratch3Jibo) {
         return function () {
-          x.connected = true;
+          self.connected = true;
           // send jibo welcome message
-          x.JiboTTS({ TEXT: "Hello there. Welcome to A.I. Blocks." });
+          let welcomeText = `Hello there. Welcome to A.I. Blocks.`;
+          self.jiboTTSFn(self, welcomeText);
         };
       };
       let connect_cb = connect_cb_factory(this);
@@ -604,9 +618,9 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
       });
 
       // If connection fails
-      let error_cb_factory = function (x: any) {
+      let error_cb_factory = function (self: Scratch3Jibo) {
         return function () {
-          x.failed = true;
+          self.failed = true;
         };
       };
       let error_cb = error_cb_factory(this);
@@ -616,9 +630,9 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
       });
 
       // If connection ends
-      let disconnect_cb_factory = function (x: any) {
+      let disconnect_cb_factory = function (self: Scratch3Jibo) {
         return function () {
-          x.connected = false;
+          self.connected = false;
         };
       };
       let disconnect_cb = disconnect_cb_factory(this);
@@ -640,7 +654,8 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     return this.connected;
   }
 
-  async JiboTTS(self: Scratch3Jibo, text: string) {
+  // TODO remove the self variable here
+  async jiboTTSFn(self: Scratch3Jibo, text: string) {
     // log.log(text);
 
     console.log("multitask: " + self.multitask);
@@ -735,9 +750,9 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     return;
   }
 
-  async JiboAsk(text: string) {
+  async jiboAskFn(text: string) {
     // say question
-    await this.JiboTTS(this, text);
+    await this.jiboTTSFn(this, text);
 
     // listen for answer
     this.JiboASR_request();
@@ -745,11 +760,11 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     // wait for sensor to return
     this.asr_out = await this.JiboASR_reseive();
   }
-  async JiboListen() {
+  async jiboListenFn() {
     return this.asr_out;
   }
 
-  JiboLED(color: Color) {
+  jiboLEDFn(color: Color) {
     let ledName = colorDef[color].name;
     let ledValue = colorDef[color].value;
 
@@ -782,14 +797,6 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     this.JiboPublish(jibo_msg);
   }
 
-  async JiboLEDOff() {
-    var jibo_msg = {
-      do_led: true,
-      led_color: { x: 0, y: 0, z: 0 },
-    };
-    await this.JiboPublish(jibo_msg);
-  }
-
   // JiboVolume (args) {
   //     const Volume = Cast.toString(args.VOL);
   //     log.log(parseFloat(Volume));
@@ -802,7 +809,8 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   //     this.JiboPublish(jibo_msg);
   // }
 
-  JiboLook(X: string, Y: string, Z: string) {
+  // TODO make this better - like look up down left right, etc.
+  jiboLookFn(X: string, Y: string, Z: string) {
     if (this.multitask) {
       if (
         this.prevTasks.includes("look") ||
@@ -836,22 +844,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     this.JiboPublish(jibo_msg);
   }
 
-  async JiboEmoji(akey: Emoji) {
-    const animation_key = emojiDef[akey].file;
-    await this.JiboAnim(animation_key);
-  }
-
-  async JiboIcon(akey: Icon) {
-    const animation_key = iconDef[akey].file;
-    await this.JiboAnim(animation_key);
-  }
-
-  async JiboDance(dkey: Dance) {
-    const dance_file = danceDef[dkey].file;
-    await this.JiboAnim(dance_file);
-  }
-
-  async JiboAnim(animation_key: string) {
+  async jiboAnimFn(animation_key: string) {
     // console.log(animation_key); // debug statement
     var jibo_msg = {
       do_motion: true,
@@ -885,7 +878,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   //     await this.JiboPublish(jibo_msg);
   // }
 
-  async JiboMultitask() {
+  /*async JiboMultitask() {
     var jibo_msg = {
       do_led: true,
       led_color: { x: 0, y: 255, z: 255 },
@@ -902,7 +895,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     };
     await this.JiboPublish(jibo_msg);
     return "done";
-  }
+  }*/
 
   async JiboPublish(msg: any) {
     if (!this.connected) {
