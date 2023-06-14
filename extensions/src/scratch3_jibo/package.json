@@ -5,6 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "directory": "echo scratch3_jibo",
+    "dev": "npm run dev --prefix ../../../ -- only=scratch3_jibo",
     "test": "npm run test --prefix ../../ -- scratch3_jibo/index.test.ts"
   },
   "author": "",

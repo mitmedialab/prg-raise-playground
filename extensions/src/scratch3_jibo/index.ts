@@ -173,7 +173,7 @@ const danceDef: Record<Dance, AnimType> = {
   },
 };
 
-export const enum Emoji {
+export enum Emoji {
   Embarassed,
   Frustrated,
   Laugh,
@@ -249,7 +249,7 @@ export const emojiDef: Record<Emoji, AnimType> = {
   },
 };
 
-export const enum Icon {
+export enum Icon {
   Airplane,
   Apple,
   Art,
@@ -393,7 +393,6 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
       text: def.name,
     }));
 
-    this.runtime = env.runtime;
     this.runtime.registerPeripheralExtension(EXTENSION_ID, this);
     this.runtime.connectPeripheral(EXTENSION_ID, 0);
 
@@ -573,8 +572,8 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   connect() {
     console.log("this.connect");
   }
-  disconnect() {}
-  scan() {}
+  disconnect() { }
+  scan() { }
   isConnected() {
     console.log("isConnected status: " + this.connected);
     return this.connected;
