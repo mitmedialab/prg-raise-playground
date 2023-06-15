@@ -1,36 +1,33 @@
 import { ArgumentType, BlockType, RGBObject, MenuItem, copyTo, SaveDataHandler, block, buttonBlock, extension } from "$common";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 
-const enum MatrixDimension {
-  Row,
-  Column,
-  Both
-}
+const MatrixDimension = {
+  Row: 0,
+  Column: 1,
+  Both: 2
+} as const;
 
-export const enum Animal {
-  Leopard,
-  Tiger,
-  Gorilla,
-  Monkey,
-  Pig
-}
+type DimensionName = keyof typeof MatrixDimension;
+type Dimensionvalue = typeof MatrixDimension[DimensionName];
 
 
-export const nameByAnimal: Record<Animal, string> = {
-  [Animal.Leopard]: 'leopard',
-  [Animal.Tiger]: 'tiger',
-  [Animal.Gorilla]: 'gorilla',
-  [Animal.Monkey]: 'monkey',
-  [Animal.Pig]: 'pig',
-}
+export const nameByAnimal = {
+  Leopard: 'leopard',
+  Tiger: 'tiger',
+  Gorilla: 'gorilla',
+  Monkey: 'monkey',
+  Pig: 'pig',
+} as const;
 
-export const emojiByAnimal: Record<Animal, string> = {
-  [Animal.Leopard]: '🐆',
-  [Animal.Tiger]: '🐅',
-  [Animal.Gorilla]: '🦍',
-  [Animal.Monkey]: '🐒',
-  [Animal.Pig]: '🐖',
-}
+export type Animal = keyof typeof nameByAnimal;
+
+export const emojiByAnimal = {
+  Leopard: '🐆',
+  Tiger: '🐅',
+  Gorilla: '🦍',
+  Monkey: '🐒',
+  Pig: '🐖',
+} satisfies Record<Animal, string>;
 
 export default class TypeScriptFrameworkExample extends extension(
   {
@@ -45,7 +42,7 @@ export default class TypeScriptFrameworkExample extends extension(
 ) {
   lhsOptions: number[];
   animals: MenuItem<Animal>[];
-  collection: Animal[] = [Animal.Gorilla];
+  collection: Animal[] = ["Gorilla"];
   getAnimalCollection: () => MenuItem<Animal>[];
 
   getAnimalCollectionEmojis() { return this.collection.map(animal => emojiByAnimal[animal]) }
@@ -63,7 +60,7 @@ export default class TypeScriptFrameworkExample extends extension(
   init() {
     this.lhsOptions = [3, 4, 5];
     this.animals = Object.entries(emojiByAnimal).map(([animal, emoji]) => ({
-      value: parseInt(animal), text: emoji
+      value: animal as Animal, text: emoji
     }));
 
 
@@ -125,7 +122,7 @@ export default class TypeScriptFrameworkExample extends extension(
       }],
     text: (matrix, dimension) => `Sum ${dimension} of ${matrix}`,
   })
-  sumMatrix(matrix: boolean[][], dimension: MatrixDimension) {
+  sumMatrix(matrix: boolean[][], dimension: Dimensionvalue) {
     switch (dimension) {
       case MatrixDimension.Row:
         return matrix.map(row => row.reduce((count, current) => count + Number(current), 0)).join("\n");
@@ -174,21 +171,21 @@ export default class TypeScriptFrameworkExample extends extension(
     text: (animal) => `This is a ${animal}`,
     arg:
     {
-      type: ArgumentType.Number,
+      type: ArgumentType.String,
       options: {
         items: self.animals,
         acceptsReporters: true,
         handler: (input) => {
           switch (input) {
-            case `${Animal.Leopard}`:
-            case `${Animal.Tiger}`:
-            case `${Animal.Gorilla}`:
-            case `${Animal.Monkey}`:
-            case `${Animal.Pig}`:
+            case "Leopard":
+            case "Tiger":
+            case "Gorilla":
+            case "Monkey":
+            case "Pig":
               return input as any as Animal;
             default:
               alert(`You silly goose! ${input} is not an animal.`);
-              return Animal.Leopard;
+              return "Leopard";
           }
         }
       }
@@ -200,20 +197,20 @@ export default class TypeScriptFrameworkExample extends extension(
 
   @block((self) => ({
     type: BlockType.Reporter,
-    arg: { type: ArgumentType.Number, options: self.animals },
+    arg: { type: ArgumentType.String, options: self.animals },
     text: (animal) => `Where does the ${animal} live?`,
   }))
   animalHabit(animal: Animal) {
     switch (animal) {
-      case Animal.Leopard:
+      case "Leopard":
         return 'Africa and Asia';
-      case Animal.Tiger:
+      case "Tiger":
         return 'Asia';
-      case Animal.Gorilla:
+      case "Gorilla":
         return 'Africa';
-      case Animal.Monkey:
+      case "Monkey":
         return 'Africa, Asia, and South America';
-      case Animal.Pig:
+      case "Pig":
         return 'Almost everywhere (except Antartica)';
     }
   }
@@ -222,7 +219,7 @@ export default class TypeScriptFrameworkExample extends extension(
     type: BlockType.Command,
     arg: self.makeCustomArgument({
       component: "AnimalArgument",
-      initial: { value: Animal.Leopard, text: nameByAnimal[Animal.Leopard] }
+      initial: { value: "Leopard" as Animal, text: nameByAnimal["Leopard"] }
     }),
     text: (animal) => `Add ${animal} to collection`,
   }))
@@ -233,7 +230,7 @@ export default class TypeScriptFrameworkExample extends extension(
 
   @block((self) => ({
     type: BlockType.Reporter,
-    arg: { type: ArgumentType.Number, options: self.getAnimalCollection },
+    arg: { type: ArgumentType.String, options: self.getAnimalCollection },
     text: (animal) => `Animals in collection: ${animal}`,
   }))
   chooseBetweenAnimals(animal: Animal) {
