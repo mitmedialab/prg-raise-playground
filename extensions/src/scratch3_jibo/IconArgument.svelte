@@ -1,15 +1,15 @@
 <script lang="ts">
-  import Extension, { iconDef, Icon } from ".";
+  import Extension, { Icon, IconType } from ".";
   import { ParameterOf, ArgumentEntry, ArgumentEntrySetter } from "$common";
 
-  const iconImgs: Record<Icon, string> = {
+  const iconImgs: Record<IconType, string> = {
     [Icon.Airplane]: "https://cdn.emojidex.com/emoji/seal/airplane.png?1499688727",
     [Icon.Apple]:
       "https://images.emojiterra.com/google/noto-emoji/v2.034/512px/1f34e.png",
     [Icon.Art]: "https://images.emojiterra.com/google/noto-emoji/v2.034/512px/1f3a8.png",
     [Icon.Bowling]: "https://images.emojiterra.com/google/android-pie/512px/1f3b3.png",
-    [Icon.Correct]: "https://images.emojiterra.com/openmoji/v13.1/512px/2705.png",
-    [Icon.Exclamation]:
+    [Icon.Checkmark]: "https://images.emojiterra.com/openmoji/v13.1/512px/2705.png",
+    [Icon.ExclamationPoint]:
       "https://emojis.wiki/emoji-pics/messenger/exclamation-mark-messenger.png",
     [Icon.Football]:
       "https://images.emojiterra.com/google/noto-emoji/v2.034/512px/1f3c8.png",
@@ -36,7 +36,7 @@
    * The second parameter is the name of the block function this argument belongs to.
    * The third parameter is the index of the argument (i.e. is the functions 2nd argument? Then it's index would be 1)
    */
-  type Value = ParameterOf<Extension, "JiboEmoji", 0>;
+  type Value = ParameterOf<Extension, "JiboEmote", 0>;
 
   /**
    * This function can be used to set the value of your custom argument.
@@ -65,18 +65,18 @@
   export let extension: Extension;
 
   let value = current.value;
-  $: text = iconDef[value].name;
+  $: text = Icon[value];
 
   $: setter({ value, text });
 </script>
 
 <div id="grid">
-  {#each Object.keys(iconDef) as icon}
+  {#each Object.keys(Icon) as icon}
     <button 
-      disabled={value == parseInt(icon)}
-      on:click={() => value = parseInt(icon)}>
+      disabled={value == icon}
+      on:click={() => value = icon}>
       <div class="cell">
-        <img class="icon" src={iconImgs[icon]} alt={iconDef[icon].name} />
+        <img class="icon" src={iconImgs[Icon[icon]]} alt={icon} />
       </div>
     </button>
   {/each}

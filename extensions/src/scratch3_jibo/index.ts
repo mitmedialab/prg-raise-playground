@@ -16,332 +16,276 @@ type RGB = {
   y: number;
   z: number;
 };
-type ColorType = {
-  name: string;
+
+// TODO remove the const enums throughout this file, https://github.com/mitmedialab/prg-extension-boilerplate/blob/dev/extensions/src/common/types/enums.ts#L136
+// https://dev.to/ivanzm123/dont-use-enums-in-typescript-they-are-very-dangerous-57bh
+export const Color = {
+  Red: `red`,
+  Yellow: `yellow`,
+  Green: `green`,
+  Cyan: `cyan`,
+  Blue: `blue`,
+  Magenta: `magenta`,
+  White: `white`,
+  Random: `random`,
+  Off: `off`,
+} as const;
+type ColorType = typeof Color[keyof typeof Color];
+type ColorDefType = {
   value: RGB;
 };
 
-// TODO remove the const enums throughout this file, https://github.com/mitmedialab/prg-extension-boilerplate/blob/dev/extensions/src/common/types/enums.ts#L136
-const enum Color {
-  Red,
-  Yellow,
-  Green,
-  Cyan,
-  Blue,
-  Magenta,
-  White,
-  Random,
-  Off,
-}
-
-export const colorDef: Record<Color, ColorType> = {
+const colorDef: Record<ColorType, ColorDefType> = {
   [Color.Red]: {
-    name: "red",
     value: { x: 255, y: 0, z: 0 },
   },
   [Color.Yellow]: {
-    name: "yellow",
     value: { x: 255, y: 69, z: 0 },
   },
   [Color.Green]: {
-    name: "green",
     value: { x: 0, y: 167, z: 0 },
   },
   [Color.Cyan]: {
-    name: "cyan",
     value: { x: 0, y: 167, z: 48 },
   },
   [Color.Blue]: {
-    name: "blue",
     value: { x: 0, y: 0, z: 255 },
   },
   [Color.Magenta]: {
-    name: "magenta",
     value: { x: 255, y: 0, z: 163 },
   },
   [Color.White]: {
-    name: "white",
     value: { x: 255, y: 255, z: 255 },
   },
   [Color.Random]: {
-    name: "random",
     value: { x: -1, y: -1, z: -1 },
   },
   [Color.Off]: {
-    name: "off",
     value: { x: 0, y: 0, z: 0 },
   },
 };
 
-type AnimType = {
-  name: string;
+type AnimFileType = {
   file: string;
 };
 
-const enum Dance {
-  BackStep,
-  Carlton,
-  Celebrate,
-  Clockworker,
-  Doughkneader,
-  Footstomper,
-  HappyDance,
-  Headbanger,
-  Headdipper,
-  Pigeon,
-  SlowDance,
-  RobotDance,
-  RockingChair,
-  Roxbury,
-  Samba,
-  Seaweed,
-  Slideshow,
-  Waltz,
-  Disco,
-}
+const Dance = {
+  BackStep: "Back Step",
+  Carlton: "Carlton",
+  Celebrate: "Celebration",
+  Clockworker: "Clockworker",
+  Doughkneader: "Doughkneader",
+  Footstomper: "Footstomper",
+  HappyDance: "Happy",
+  Headbanger: "Headbanger",
+  Headdipper: "Headdipper",
+  Pigeon: "Pigeon",
+  SlowDance: "Prom",
+  RobotDance: "The Robot",
+  RockingChair: "Rocking Chair",
+  Roxbury: "Roxbury",
+  Samba: "Samba",
+  Seaweed: "Seaweed",
+  Slideshow: "Slideshow",
+  Waltz: "Waltz",
+  Disco: "Disco",
+} as const;
+type DanceType = typeof Dance[keyof typeof Dance];
 
-const danceDef: Record<Dance, AnimType> = {
+const danceFiles: Record<DanceType, AnimFileType> = {
   [Dance.BackStep]: {
-    name: "BackStep",
     file: "Dances/Back_Stepper_01_01.keys",
   },
   [Dance.Carlton]: {
-    name: "Carlton",
     file: "Dances/Carlton_01_01.keys",
   },
   [Dance.Celebrate]: {
-    name: "Celebrate",
     file: "Dances/Celebrate_01.keys",
   },
   [Dance.Clockworker]: {
-    name: "Clockworker",
     file: "Dances/Clockworker_01_01.keys",
   },
   [Dance.Doughkneader]: {
-    name: "Doughkneader",
     file: "Dances/Doughkneader_01_01.keys",
   },
   [Dance.Footstomper]: {
-    name: "Footstomper",
     file: "Dances/Footstomper_01_01.keys",
   },
   [Dance.HappyDance]: {
-    name: "Happy",
     file: "Dances/Happy_Lucky_01_01.keys",
   },
   [Dance.Headbanger]: {
-    name: "Headbanger",
     file: "Dances/Headbanger_01_01.keys",
   },
   [Dance.Headdipper]: {
-    name: "Headdipper",
     file: "Dances/Headdipper_01_01.keys",
   },
   [Dance.Pigeon]: {
-    name: "Pigeon",
     file: "Dances/Pigeon_01_01.keys",
   },
   [Dance.SlowDance]: {
-    name: "Slow",
     file: "Dances/Prom_Night_01_01.keys",
   },
   [Dance.RobotDance]: {
-    name: "Robot",
     file: "Dances/Robotic_01_01.keys",
   },
   [Dance.RockingChair]: {
-    name: "Rocking Chair",
     file: "Dances/Rocking_Chair_01.keys",
   },
   [Dance.Roxbury]: {
-    name: "Roxbury",
     file: "Dances/Roxbury_01_01.keys",
   },
   [Dance.Samba]: {
-    name: "Samba",
     file: "Dances/Samba_01_01.keys",
   },
   [Dance.Seaweed]: {
-    name: "Seaweed",
     file: "Dances/Seaweed_01_01.keys",
   },
   [Dance.Slideshow]: {
-    name: "Slideshow",
     file: "Dances/SlideshowDance_01_01.keys",
   },
   [Dance.Waltz]: {
-    name: "Waltz",
     file: "Dances/Waltz_01_01.keys",
   },
   [Dance.Disco]: {
-    name: "Disco",
     file: "Dances/dance_disco_00.keys",
   },
 };
 
-export enum Emoji {
-  Embarassed,
-  Frustrated,
-  Laugh,
-  Sad,
-  Thinking,
-  Happy,
-  SadEyes,
-  Interested,
-  Curious,
-  No,
-  Yes,
-  Puzzled,
-  Relieved,
-  Success,
-}
+export const Emotion  = {
+  Embarassed: `embarassed`,
+  Frustrated: `frustrated`,
+  Laugh: `laughing`,
+  Sad: `sad`,
+  Thinking: `thinking`,
+  Happy: `happy`,
+  SadEyes: `sad eyes`,
+  Interested: `interested`,
+  Curious: `curious`,
+  No: `no`,
+  Yes: `yes`,
+  Puzzled: `puzzled`,
+  Relieved: `relieved`,
+  Success: `success`,
+} as const;
+export type EmotionType = typeof Emotion[keyof typeof Emotion];
 
-export const emojiDef: Record<Emoji, AnimType> = {
-  [Emoji.Embarassed]: {
-    name: "embarassed",
+const emotionFiles: Record<EmotionType, AnimFileType> = {
+  [Emotion.Embarassed]: {
     file: "Misc/embarassed_01_02.keys",
   },
-  [Emoji.Frustrated]: {
-    name: "frustrated",
+  [Emotion.Frustrated]: {
     file: "Misc/Frustrated_01_04.keys",
   },
-  [Emoji.Laugh]: {
-    name: "laugh",
+  [Emotion.Laugh]: {
     file: "Misc/Laughter_01_03.keys",
   },
-  [Emoji.Sad]: {
-    name: "sad",
+  [Emotion.Sad]: {
     file: "Misc/Sad_03.keys",
   },
-  [Emoji.Thinking]: {
-    name: "thinking",
+  [Emotion.Thinking]: {
     file: "Misc/thinking_08.keys",
   },
-  [Emoji.Happy]: {
-    name: "happy",
+  [Emotion.Happy]: {
     file: "Misc/Eye_to_Happy_02.keys",
   },
-  [Emoji.SadEyes]: {
-    name: "sad eyes",
+  [Emotion.SadEyes]: {
     file: "Misc/Eye_Sad_03_02.keys",
   },
-  [Emoji.Interested]: {
-    name: "interested",
+  [Emotion.Interested]: {
     file: "Misc/interested_01.keys",
   },
-  [Emoji.Curious]: {
-    name: "curious",
+  [Emotion.Curious]: {
     file: "Misc/Question_01_02.keys",
   },
-  [Emoji.No]: {
-    name: "no",
+  [Emotion.No]: {
     file: "Misc/no_4.keys",
   },
-  [Emoji.Yes]: {
-    name: "yes",
+  [Emotion.Yes]: {
     file: "Misc/yep_02.keys",
   },
-  [Emoji.Puzzled]: {
-    name: "puzzled",
+  [Emotion.Puzzled]: {
     file: "Misc/puzzled_01_02.keys",
   },
-  [Emoji.Relieved]: {
-    name: "relieved",
+  [Emotion.Relieved]: {
     file: "Misc/relieved_01.keys",
   },
-  [Emoji.Success]: {
-    name: "success",
+  [Emotion.Success]: {
     file: "Misc/success_02.keys",
   },
 };
 
-export enum Icon {
-  Airplane,
-  Apple,
-  Art,
-  Bowling,
-  Checkmark,
-  ExclamationPoint,
-  Football,
-  Heart,
-  Magic,
-  Ocean,
-  Penguin,
-  Rainbow,
-  Robot,
-  Rocket,
-  Snowflake,
-  Taco,
-  VideoGame,
-}
+export const Icon = {
+  Airplane: `airplane`,
+  Apple: `apple`,
+  Art: `art`,
+  Bowling: `bowling`,
+  Checkmark: `checkmark`,
+  ExclamationPoint: `exclamation point`,
+  Football: `football`,
+  Heart: `heart`,
+  Magic: `magic`,
+  Ocean: `ocean`,
+  Penguin: `penguin`,
+  Rainbow: `rainbow`,
+  Robot: `robot`,
+  Rocket: `rocket`,
+  Snowflake: `snowflake`,
+  Taco: `taco`,
+  VideoGame: `video game`,
+} as const;
+export type IconType = typeof Icon[keyof typeof Icon];
 
-export const iconDef: Record<Icon, AnimType> = {
+const iconFiles: Record<IconType, AnimFileType> = {
   [Icon.Airplane]: {
-    name: "airplane",
     file: "Emoji/Emoji_Airplane_01_01.keys",
   },
   [Icon.Apple]: {
-    name: "apple",
     file: "Emoji/Emoji_AppleRed_01_01.keys",
   },
   [Icon.Art]: {
-    name: "art",
     file: "Emoji/Emoji_Art_01_01.keys",
   },
   [Icon.Bowling]: {
-    name: "bowling",
     file: "Emoji/Emoji_Bowling.keys",
   },
   [Icon.Checkmark]: {
-    name: "checkmark",
     file: "Emoji/Emoji_Checkmark_01_01.keys",
   },
   [Icon.ExclamationPoint]: {
-    name: "exclamation point",
     file: "Emoji/Emoji_ExclamationYellow.keys",
   },
   [Icon.Football]: {
-    name: "football",
     file: "Emoji/Emoji_Football_01_01.keys",
   },
   [Icon.Heart]: {
-    name: "heart",
     file: "Emoji/Emoji_HeartArrow_01_01.keys",
   },
   [Icon.Magic]: {
-    name: "magic",
     file: "Emoji/Emoji_Magic_01_02.keys",
   },
   [Icon.Ocean]: {
-    name: "ocean",
     file: "Emoji/Emoji_Ocean_01_01.keys",
   },
   [Icon.Penguin]: {
-    name: "penguin",
     file: "Emoji/Emoji_Penguin_01_01.keys",
   },
   [Icon.Rainbow]: {
-    name: "rainbow",
     file: "Emoji/Emoji_Rainbow_01_01.keys",
   },
   [Icon.Robot]: {
-    name: "robot",
     file: "Emoji/Emoji_Robot_01_01.keys",
   },
   [Icon.Rocket]: {
-    name: "rocket",
     file: "Emoji/Emoji_Rocket_01_01.keys",
   },
   [Icon.Snowflake]: {
-    name: "snowflake",
     file: "Emoji/Emoji_Snowflake_01_01.keys",
   },
   [Icon.Taco]: {
-    name: "taco",
     file: "Emoji/Emoji_Taco_01_01.keys",
   },
   [Icon.VideoGame]: {
-    name: "video game",
     file: "Emoji/Emoji_VideoGame_01_01.keys",
   },
 };
@@ -357,10 +301,10 @@ type Blocks = {
   JiboTTS: (text: string) => void;
   JiboAsk: (text: string) => void;
   JiboListen: () => any;
-  JiboEmoji: (akey: Emoji) => void;
-  JiboIcon: (akey: Icon) => void;
-  JiboDance: (dkey: Dance) => void;
-  JiboLED: (arg: Color) => void;
+  JiboEmote: (emotion: string) => void;
+  JiboIcon: (icon: string) => void;
+  JiboDance: (dance: string) => void;
+  JiboLED: (color: string) => void;
   JiboLook: (x_angle: string, y_angle: string, z_angle: string) => void;
   JiboMultitask: () => void;
   JiboEnd: () => void;
@@ -375,7 +319,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   jbVolume: string;
   asr_out: any;
   jiboEvent: EventEmitter;
-  emoji: string;
+te: string;
   text: string;
   animName: string;
   multitask: boolean;
@@ -385,7 +329,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   tts: any;
   animation_list: string[];
   getAnimationList: () => MenuItem<string>[];
-  dances: MenuItem<Dance>[];
+  dances: MenuItem<string>[];
 
   init(env: Environment) {
     this.text = "Hello! I'm Jibo!";
@@ -394,11 +338,10 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     this.prevTasks = [];
     this.multitask_msg = {};
     this.busy = false;
-    this.dances = Object.entries(danceDef).map(([dance, def]) => ({
-      value: parseInt(dance),
-      text: def.name,
+    this.dances = Object.entries(Dance).map(([dance, def]) => ({
+      value: dance,
+      text: Dance[dance],
     }));
-
     this.runtime.registerPeripheralExtension(EXTENSION_ID, this);
     this.runtime.connectPeripheral(EXTENSION_ID, 0);
 
@@ -482,27 +425,27 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
       JiboDance: (self: Scratch3Jibo) => ({
         type: BlockType.Command,
         arg: {
-          type: ArgumentType.Number,
+          type: ArgumentType.String,
           options: self.dances,
         },
-        text: (dname) => `play dance ${dname}`,
-        operation: async (dance: Dance) => {
-          const akey = danceDef[dance].file;
+        text: (dname) => `play ${dname} dance`,
+        operation: async (dance: DanceType) => {
+          const akey = danceFiles[dance].file;
           await self.jiboAnimFn(akey);
         },
       }),
-      JiboEmoji: (self: Scratch3Jibo) => ({
+      JiboEmote: (self: Scratch3Jibo) => ({
         type: BlockType.Command,
         arg: this.makeCustomArgument({
           component: "EmojiArgument",
           initial: {
-            value: Emoji.Happy,
+            value: Emotion.Happy,
             text: "happy",
           },
         }),
         text: (aname) => `play ${aname} emotion`,
-        operation: async (anim: Emoji) => {
-          const akey = emojiDef[anim].file;
+        operation: async (anim: EmotionType) => {
+          const akey = emotionFiles[anim].file;
           await self.jiboAnimFn(akey);
         },
       }),
@@ -516,8 +459,8 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           },
         }),
         text: (aname) => `show ${aname} icon`,
-        operation: async (icon: Icon) => {
-          const akey = iconDef[icon].file;
+        operation: async (icon: IconType) => {
+          const akey = iconFiles[icon].file;
           await self.jiboAnimFn(akey);
         }
       }),
@@ -531,8 +474,8 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           },
         }),
         text: (cname) => `set LED ring to ${cname}`,
-        operation: (cval: Color) => {
-          self.jiboLEDFn(cval);
+        operation: (color: ColorType) => {
+          self.jiboLEDFn(color);
         },
       }),
       JiboLook: (self: Scratch3Jibo) => ({
@@ -762,7 +705,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     return this.asr_out;
   }
 
-  jiboLEDFn(color: Color) {
+  jiboLEDFn(color: string) {
     let ledName = colorDef[color].name;
     let ledValue = colorDef[color].value;
 

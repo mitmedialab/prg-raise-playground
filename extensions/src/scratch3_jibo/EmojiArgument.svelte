@@ -1,33 +1,33 @@
 <script lang="ts">
-  import Extension, { emojiDef, Emoji } from ".";
+  import Extension, { Emotion, EmotionType } from ".";
   import { ParameterOf, ArgumentEntry, ArgumentEntrySetter } from "$common";
 
-  const emojiImgs: Record<Emoji, string> = {
-    [Emoji.Curious]:
+  const emojiImgs: Record<EmotionType, string> = {
+    [Emotion.Curious]:
       "https://em-content.zobj.net/thumbs/144/apple/325/face-with-raised-eyebrow_1f928.png",
-    [Emoji.Embarassed]:
+    [Emotion.Embarassed]:
       "https://em-content.zobj.net/thumbs/144/apple/325/face-with-hand-over-mouth_1f92d.png",
-    [Emoji.Frustrated]:
+    [Emotion.Frustrated]:
       "https://em-content.zobj.net/thumbs/144/apple/325/confounded-face_1f616.png",
-    [Emoji.Happy]:
+    [Emotion.Happy]:
       "https://em-content.zobj.net/thumbs/144/apple/325/grinning-face_1f600.png",
-    [Emoji.Interested]:
+    [Emotion.Interested]:
       "https://em-content.zobj.net/thumbs/144/apple/325/star-struck_1f929.png",
-    [Emoji.Laugh]:
+    [Emotion.Laugh]:
       "https://em-content.zobj.net/thumbs/144/apple/325/face-with-tears-of-joy_1f602.png",
-    [Emoji.No]: "https://em-content.zobj.net/thumbs/144/apple/325/thumbs-down_1f44e.png",
-    [Emoji.Puzzled]:
+    [Emotion.No]: "https://em-content.zobj.net/thumbs/144/apple/325/thumbs-down_1f44e.png",
+    [Emotion.Puzzled]:
       "https://em-content.zobj.net/thumbs/144/apple/325/face-with-diagonal-mouth_1fae4.png",
-    [Emoji.Relieved]:
+    [Emotion.Relieved]:
       "https://em-content.zobj.net/thumbs/144/apple/325/relieved-face_1f60c.png",
-    [Emoji.Sad]: "https://em-content.zobj.net/thumbs/144/apple/325/slightly-frowning-face_1f641.png",
-    [Emoji.SadEyes]:
+    [Emotion.Sad]: "https://em-content.zobj.net/thumbs/144/apple/325/slightly-frowning-face_1f641.png",
+    [Emotion.SadEyes]:
       "https://em-content.zobj.net/thumbs/144/apple/325/pleading-face_1f97a.png",
-    [Emoji.Success]:
+    [Emotion.Success]:
       "https://em-content.zobj.net/thumbs/240/apple/325/check-mark-button_2705.png",
-    [Emoji.Thinking]:
+    [Emotion.Thinking]:
       "https://em-content.zobj.net/thumbs/144/apple/325/thinking-face_1f914.png",
-    [Emoji.Yes]: "https://em-content.zobj.net/thumbs/144/apple/325/thumbs-up_1f44d.png",
+    [Emotion.Yes]: "https://em-content.zobj.net/thumbs/144/apple/325/thumbs-up_1f44d.png",
   };
 
   /**
@@ -65,22 +65,22 @@
   export let extension: Extension;
 
   let value = current.value;
-  $: text = emojiDef[value].name;
+  $: text = Emotion[value];
 
   $: setter({ value, text });
 </script>
 
 <div id="grid">
-  {#each Object.keys(emojiDef) as emoji}
+  {#each Object.keys(Emotion) as emotion}
     <button
-      disabled={value == parseInt(emoji)}
-      on:click={() => (value = parseInt(emoji))}
+      disabled={value == emotion}
+      on:click={() => (value = emotion)}
     >
       <div class="cell">
         <img
           class="emoji"
-          src={emojiImgs[emoji]}
-          alt={emojiDef[emoji].name}
+          src={emojiImgs[Emotion[emotion]]}
+          alt={Emotion[emotion]}
         />
       </div>
     </button>

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Extension, { colorDef } from ".";
+  import Extension, { Color } from ".";
   import {
     ParameterOf,
     ArgumentEntry,
@@ -43,20 +43,20 @@
   export let extension: Extension;
 
   let value = current.value;
-  $: text = colorDef[value].name;
+  $: text = Color[value];
 
   $: setter({ value, text });
 </script>
 
 <div id="grid">
-  {#each Object.keys(colorDef) as color}
+  {#each Object.keys(Color) as color}
     <button
       class="colorButton color"
-      disabled={value == parseInt(color)}
-      style="--color: {colorDef[color].name}"
-      on:click={() => value = parseInt(color)}
+      style="--color: {Color[color]}"
+      disabled={value == color}
+      on:click={() => (value = color)}
     >
-      {colorDef[color].name}
+      {Color[color]}
     </button>
   {/each}
 </div>
