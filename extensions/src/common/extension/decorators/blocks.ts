@@ -1,7 +1,7 @@
 import type BlockUtility from "$scratch-vm/engine/block-utility";
-import { TypedClassDecorator, TypedGetterDecorator, TypedMethodDecorator } from ".";
+import { TypedClassDecorator, TypedGetterDecorator, TypedMethodDecorator, TypedSetterDecorator } from ".";
 import { BlockType } from "$common/types/enums";
-import { BlockMetadata } from "$common/types";
+import { BlockMetadata, ArgumentType, ScratchArgument } from "$common/types";
 import { getImplementationName } from "../mixins/required/scratchInfo/index";
 import { ExtensionInstance } from "..";
 
@@ -52,11 +52,11 @@ export function block<
   return function (this: This, target: (this: This, ...args: Args) => Return, context: ClassMethodDecoratorContext<This, Fn>) {
     const opcode = target.name;
     const internalFuncName = getImplementationName(opcode);
+    // check if blockInfo is an object: if so, that block can be used for codegen
     context.addInitializer(function () { this.pushBlock(opcode, blockInfoOrGetter, target) });
     return (function () { return this[internalFuncName].call(this, ...arguments) }) as Function as Fn;
   };
 }
-
 
 type BlockFromArgsAndReturn<Args extends any[], Return> = Args extends [...infer R extends any[], BlockUtility]
   ? BlockMetadata<(...args: R) => Return> : BlockMetadata<(...args: Args) => Return>;
@@ -87,20 +87,33 @@ export function buttonBlock<
   });
 }
 
+export type PropertyBlockDetails<T> = { property: string, type: ScratchArgument<T> };
+
 export function getterBlock<This extends ExtensionInstance, TReturn>
-  (details: { property: string }): TypedGetterDecorator<This, TReturn> {
+  (details: PropertyBlockDetails<TReturn>): TypedGetterDecorator<This, TReturn> {
   type Fn = () => TReturn;
   return function (this: This, target: (this: This) => TReturn, context: ClassGetterDecoratorContext<This, TReturn>) {
-    console.log(target.name);
     const opcode = target.name.replace("get ", "__getter__");
     const internalFuncName = getImplementationName(opcode);
     context.addInitializer(function () {
       this[opcode] = () => target.call(this);
-      this.pushBlock(opcode, {
-        type: "reporter",
-        text: `Get ${details.property}`,
-      }, this[opcode])
+      const text = `Get ${details.property}`;
+      this.pushBlock(opcode, { type: "reporter", text }, this[opcode])
     });
-    return (function () { return this[internalFuncName].call(this) as TReturn }) as Function as Fn;
+    return (function () { return this[internalFuncName].call(this) as TReturn });
+  }
+}
+
+export function setterBlock<This extends ExtensionInstance, TValue>
+  (details: PropertyBlockDetails<TValue>): TypedSetterDecorator<ExtensionInstance, TValue> {
+  return function (this: This, target: (this: This, value: TValue) => void, context: ClassSetterDecoratorContext<This, TValue>) {
+    const opcode = target.name.replace("set ", "__setter__");
+    const internalFuncName = getImplementationName(opcode);
+    context.addInitializer(function () {
+      this[opcode] = () => target.call(this);
+      const text = `Set ${details.property}`;
+      this.pushBlock(opcode, { type: "command", text }, this[opcode])
+    });
+    return (function (value: TValue) { return this[internalFuncName].call(this, value as TValue) });
   }
 }
