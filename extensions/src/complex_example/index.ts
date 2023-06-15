@@ -10,7 +10,6 @@ const MatrixDimension = {
 type DimensionName = keyof typeof MatrixDimension;
 type Dimensionvalue = typeof MatrixDimension[DimensionName];
 
-
 export const nameByAnimal = {
   Leopard: 'leopard',
   Tiger: 'tiger',
