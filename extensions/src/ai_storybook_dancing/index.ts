@@ -7,8 +7,9 @@ import stepLeft from "./inlineImages/left.png";
 import stepRight from "./inlineImages/right.png";
 import spinLeft from "./inlineImages/spin-left.png";
 import spinRight from "./inlineImages/spin-right.png";
+import { convertToArgumentInfo } from "$common/extension/mixins/required/scratchInfo/args";
 
-const details: ExtensionMenuDisplayDetails = { name: "Dancing Activity for AI Storybook" };
+const details: ExtensionMenuDisplayDetails = { name: "Dancing Activity for AI Storybook", noBlockIcon: true };
 
 let flipFlopper = false;
 let musicPlayingLoop = false;
@@ -123,7 +124,7 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
 
 
   @block({
-    text: "Tell doodlebot to dance",
+    text: " ", // Maybe add a symbol in the future?
     type: "hat"
   })
   entry(util: BlockUtility) {
