@@ -37,6 +37,9 @@ async function blockSequence(move: DanceMove, util: BlockUtility) {
   }
 }
 
+// function 
+
+
 export default class AiStorybookDancing extends extension(details, "blockly", "customSaveData") {
 
   async init(env: Environment) {
@@ -44,6 +47,10 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     stretchWorkspaceToScreen();
     const workspace = this.blockly.getMainWorkspace();
     workspace.zoom(0, 0, 3.5);
+    // let domElt = this.blockly.Xml.workspaceToDom(workspace);
+    // this.blockly.Css.inject
+    
+    this.runtime.on(RuntimeEvent.ProjectLoaded, whenProjectLoads);
     announce("ready");
   }
 
@@ -67,7 +74,8 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     type: "command"
   })
   async hop(hop: "inline image", util: BlockUtility) {
-    await blockSequence("hop", util);
+    console.log(document.querySelectorAll(".blocklyDraggable g image"));
+    // await blockSequence("hop", util);
   }
 
   @block({

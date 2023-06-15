@@ -1,4 +1,4 @@
-import { hideElementsWithClass } from "$common";
+import { block, hideElementsWithClass } from "$common";
 
 /**
  * Remove UI elements that aren't related to the block programming workspace.
@@ -14,11 +14,22 @@ export const hideNonBlocklyElements = () => [
 ].forEach(hideElementsWithClass);
 
 /**
- * Update the Blockly worspace wrapper to stretch the full size of its container. 
+ * Update the Blockly workspace wrapper to stretch the full size of its container. 
  */
 export const stretchWorkspaceToScreen = () => {
     const wrapper = document.getElementsByClassName('gui_body-wrapper_-N0sA')[0] as HTMLDivElement;
     wrapper.style.height = "100%";
 
     window.dispatchEvent(new Event('resize'));
+}
+
+export const changeInlineImageSizes = () => {
+    const blocklyDraggables = document.getElementsByClassName("blocklyDraggable")[0];
+    const image = document.querySelectorAll(".blocklyDraggable g image");
+
+    // blocklyDraggables.
+    document.getEle
+    
+    
+    // blocklyDraggables.style.
 }
