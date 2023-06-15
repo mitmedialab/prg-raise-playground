@@ -70,6 +70,7 @@ export type ExtensionMenuDisplayDetails = {
    * ```
    */
   insetIconURL?: string;
+  noBlockIcon?: true;
   internetConnectionRequired?: boolean;
   collaborator?: string;
   bluetoothRequired?: boolean;
