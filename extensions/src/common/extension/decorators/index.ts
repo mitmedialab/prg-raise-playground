@@ -11,7 +11,7 @@ export type TypedMethodDecorator<
 > = (target: Fn, context: ClassMethodDecoratorContext<This, Fn>) => Fn;
 
 export type TypedSetterDecorator<This, TValue> =
-  (target: (value: TValue) => void, context: ClassSetterDecoratorContext<This, TValue>) => (value: TValue) => void;
+  (target: (value: TValue) => void, context: ClassSetterDecoratorContext<This, TValue>) => void;
 
 export type TypedGetterDecorator<This, Return> =
-  (target: () => Return, context: ClassGetterDecoratorContext<This, Return>) => () => Return;
+  (target: () => Return, context: ClassGetterDecoratorContext<This, Return>) => void;

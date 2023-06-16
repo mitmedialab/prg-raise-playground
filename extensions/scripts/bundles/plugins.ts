@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { FrameworkID, untilCondition, registerExtensionDefinitionCallback } from "$common";
+import { FrameworkID, untilCondition, extensionBundleEvent, blockBundleEvent } from "$common";
 import { type Plugin } from "rollup";
 import { appendToRootDetailsFile, populateMenuFileForExtension } from "../extensionsMenu";
 import { exportAllFromModule, toNamedDefaultExport } from "../utils/importExport";
@@ -192,11 +192,21 @@ export const finalizeConfigurableExtensionBundle = (info: BundleInfo): Plugin =>
   const executeBundleAndExtractMenuDetails = async () => {
     const framework = await frameworkBundle.content;
     let success = false;
-    registerExtensionDefinitionCallback(function (details) {
+
+    extensionBundleEvent.registerCallback(function (details, removeSelf) {
+      if (!details) return;
       for (const key in details) menuDetails[key] = details[key];
       success = true;
+      removeSelf();
     });
+
+    blockBundleEvent.registerCallback(function (x) {
+      if (menuDetails.generateAppInventorBinding) console.log(x); // do something
+    });
+
     eval(framework + "\n" + fs.readFileSync(bundleDestination, "utf-8"));
+
+    blockBundleEvent.removeCallback();
     if (!success) throw new Error(`No extension registered for '${name}'. Did you forget to use the extension decorator?`);
   }
 

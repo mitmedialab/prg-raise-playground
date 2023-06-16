@@ -1,9 +1,22 @@
 import type BlockUtility from "$scratch-vm/engine/block-utility";
 import { TypedClassDecorator, TypedGetterDecorator, TypedMethodDecorator, TypedSetterDecorator } from ".";
 import { BlockType } from "$common/types/enums";
-import { BlockMetadata, ArgumentType, ScratchArgument } from "$common/types";
+import { BlockMetadata, ArgumentType, ScratchArgument, Argument, TypeByArgumentType } from "$common/types";
 import { getImplementationName } from "../mixins/required/scratchInfo/index";
 import { ExtensionInstance } from "..";
+import { isFunction, isString, tryCreateBundleTimeEvent } from "$common/utils";
+import { extractArgs } from "../mixins/required/scratchInfo/args";
+
+type BlockFunctionMetadata = {
+  methodName: string,
+  scratchType: string,
+  args: string[],
+  returns: string,
+}
+
+export const blockBundleEvent = tryCreateBundleTimeEvent<BlockFunctionMetadata>("blocks");
+
+
 
 /**
  * This a decorator function that should be associated with methods of your Extension class, all in order to turn your class methods
@@ -52,14 +65,21 @@ export function block<
   return function (this: This, target: (this: This, ...args: Args) => Return, context: ClassMethodDecoratorContext<This, Fn>) {
     const opcode = target.name;
     const internalFuncName = getImplementationName(opcode);
-    // check if blockInfo is an object: if so, that block can be used for codegen
     context.addInitializer(function () { this.pushBlock(opcode, blockInfoOrGetter, target) });
+
+    if (!isFunction(blockInfoOrGetter)) {
+      const { type } = blockInfoOrGetter;
+      blockBundleEvent?.fire({
+        methodName: opcode,
+        args: extractArgs(blockInfoOrGetter).map(a => isString(a) ? a : a.type),
+        returns: type === "command" ? "void" : type === "Boolean" ? "bool" : "any", // is 'any' an issue
+        scratchType: blockInfoOrGetter.type
+      });
+    }
+
     return (function () { return this[internalFuncName].call(this, ...arguments) }) as Function as Fn;
   };
 }
-
-type BlockFromArgsAndReturn<Args extends any[], Return> = Args extends [...infer R extends any[], BlockUtility]
-  ? BlockMetadata<(...args: R) => Return> : BlockMetadata<(...args: Args) => Return>;
 
 /**
  * This is a short-hand for invoking the block command when your `blockType` is button
@@ -91,16 +111,22 @@ export type PropertyBlockDetails<T> = { property: string, type: ScratchArgument<
 
 export function getterBlock<This extends ExtensionInstance, TReturn>
   (details: PropertyBlockDetails<TReturn>): TypedGetterDecorator<This, TReturn> {
-  type Fn = () => TReturn;
   return function (this: This, target: (this: This) => TReturn, context: ClassGetterDecoratorContext<This, TReturn>) {
     const opcode = target.name.replace("get ", "__getter__");
     const internalFuncName = getImplementationName(opcode);
+
     context.addInitializer(function () {
-      this[opcode] = () => target.call(this);
+      this[opcode] = (_, util) => this[internalFuncName].call(this, null, util);;
       const text = `Get ${details.property}`;
-      this.pushBlock(opcode, { type: "reporter", text }, this[opcode])
+      this.pushBlock(opcode, { type: "reporter", text }, target);
     });
-    return (function () { return this[internalFuncName].call(this) as TReturn });
+
+    blockBundleEvent?.fire({
+      methodName: opcode,
+      args: [],
+      returns: details.type,
+      scratchType: "reporter"
+    });
   }
 }
 
@@ -109,11 +135,21 @@ export function setterBlock<This extends ExtensionInstance, TValue>
   return function (this: This, target: (this: This, value: TValue) => void, context: ClassSetterDecoratorContext<This, TValue>) {
     const opcode = target.name.replace("set ", "__setter__");
     const internalFuncName = getImplementationName(opcode);
+
     context.addInitializer(function () {
-      this[opcode] = () => target.call(this);
-      const text = `Set ${details.property}`;
-      this.pushBlock(opcode, { type: "command", text }, this[opcode])
+      this[opcode] = (args, util) => this[internalFuncName].call(this, args, util);
+      const text = (value: TValue) => `Set ${details.property} to ${value}`;
+      const arg = details.type as Argument<TValue>;
+      type Fn = (this: This, value: any, util: BlockUtility) => void;
+      const blockInfo = { type: BlockType.Command, text, arg } as BlockMetadata<Fn>;
+      this.pushBlock<Fn>(opcode, blockInfo, target);
     });
-    return (function (value: TValue) { return this[internalFuncName].call(this, value as TValue) });
+
+    blockBundleEvent?.fire({
+      methodName: opcode,
+      args: [details.type],
+      returns: "void",
+      scratchType: "command"
+    });
   }
 }

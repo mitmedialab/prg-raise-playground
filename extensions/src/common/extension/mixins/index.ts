@@ -1,6 +1,7 @@
 import { AbstractConstructor } from "$common/types";
 import addCostumes from "./optional/addCostumes/index";
 import customArguments from "./optional/customArguments/index";
+import appInventor from "./optional/appInventor/index";
 import customSaveData from "./optional/customSaveData";
 import drawable from "./optional/drawable";
 import legacySupport from "./optional/legacySupport";
@@ -22,6 +23,7 @@ export const optionalMixins = {
   legacySupport,
   setTransparencyBlock,
   toggleVideoBlock,
+  appInventor
 } as const satisfies OptionalMixins satisfies Record<string, Mixin<unknown>>;
 
 export type OptionalMixins<T extends MinimalExtensionConstructor = MinimalExtensionConstructor> = {
@@ -33,7 +35,8 @@ export type OptionalMixins<T extends MinimalExtensionConstructor = MinimalExtens
   addCostumes: typeof addCostumes<T>,
   legacySupport: typeof legacySupport<T>,
   setTransparencyBlock: typeof setTransparencyBlock<T>,
-  toggleVideoBlock: typeof toggleVideoBlock<T>
+  toggleVideoBlock: typeof toggleVideoBlock<T>,
+  appInventor: typeof appInventor<T>
 }
 
 export type MixinName = keyof typeof optionalMixins;

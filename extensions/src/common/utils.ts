@@ -202,3 +202,31 @@ function rgbToDecimal(rgb: RGBObject) {
 export const rgbToHex = (rgb: RGBObject) => {
   return decimalToHex(rgbToDecimal(rgb));
 }
+
+type BundleEventHandlers<Payload> = {
+  registerCallback: ((callback: (details: Payload, removeSelf: () => void) => void) => void),
+  removeCallback: (() => void),
+  fire: ((details: Payload) => void)
+}
+
+/**
+ * 
+ * **NOTE:** This function returns a non-null value only in NodeJS environments.
+ * @param identifier 
+ * @returns 
+ */
+export const tryCreateBundleTimeEvent = <Payload>(identifier: string): null | BundleEventHandlers<Payload> => {
+  const environment = typeof window === 'undefined' ? "node" : "browser";
+
+  if (environment !== "node") return null;
+
+  const key = `Bundle Time Event: ${identifier}`;
+
+  const removeCallback = () => delete global[key];
+
+  return {
+    registerCallback: (callback) => global[key] = callback,
+    fire: (details: Payload) => global?.[key]?.(details, removeCallback),
+    removeCallback
+  };
+}
