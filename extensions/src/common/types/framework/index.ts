@@ -70,12 +70,31 @@ export type ExtensionMenuDisplayDetails = {
    * ```
    */
   insetIconURL?: string;
-  /**
+  /** 
    * This field disables the inset icon that appears on the edge of each of your extension's blocks.
    * 
    * This field can only be set to true and should not be defined if you wish to keep the inset icon on your extension's blocks.
    */
   noBlockIcon?: true;
+  /**
+   * The overal color of the blocks in your extension.
+   * Express as a hash code (e.g. #ff0000)
+   */
+  blockColor?: string;
+  /**
+   * The colors of the menus in your extension.
+   * Express as a hash code (e.g. #ff0000)
+   * 
+   * **NOTE: In order for this setting to be respected, `blockColor` must also be defined**
+   */
+  menuColor?: string;
+  /**
+   * The color of the menu slots when a menu is clicked on.
+   * Express as a hash code (e.g. #ff0000)
+   * 
+   * **NOTE: In order for this setting to be respected, `blockColor` must also be defined**
+   */
+  menuSelectColor?: string;
   internetConnectionRequired?: boolean;
   collaborator?: string;
   bluetoothRequired?: boolean;
@@ -90,4 +109,4 @@ export type ExtensionMenuDisplayDetails = {
   hidden?: boolean;
   disabled?: boolean;
   implementationLanguage?: ValueOf<typeof Language>;
-} & Partial<Record<ValueOf<typeof Language>, { name: string, description: string }>>
+} & Partial<Record<ValueOf<typeof Language>, { name: string, description: string }>>;
