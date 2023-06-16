@@ -63,6 +63,7 @@ export function block<
   return function (this: This, target: (this: This, ...args: Args) => Return, context: ClassMethodDecoratorContext<This, Fn>) {
     const opcode = target.name;
     const internalFuncName = getImplementationName(opcode);
+    // could add check for if this block is meant for scratch
     context.addInitializer(function () { this.pushBlock(opcode, blockInfoOrGetter, target) });
 
     const isProbableAtBundleTime = !isFunction(blockInfoOrGetter);
@@ -71,7 +72,8 @@ export function block<
       blockBundleEvent?.fire({
         methodName: opcode,
         args: extractArgs(blockInfoOrGetter).map(a => isString(a) ? a : a.type),
-        returns: type === "command" ? "void" : type === "Boolean" ? "bool" : "any", // is 'any' an issue
+        // is 'any' an issue? Likely!
+        returns: type === "command" ? "void" : type === "Boolean" ? "bool" : "any",
         scratchType: blockInfoOrGetter.type
       });
     }

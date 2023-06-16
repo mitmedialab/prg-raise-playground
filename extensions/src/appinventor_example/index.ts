@@ -1,6 +1,9 @@
 import { Environment, extension, ExtensionMenuDisplayDetails, block, ArgumentType, BlockType, getterBlock, PropertyBlockDetails, setterBlock, Matrix } from "$common";
 
-const details: ExtensionMenuDisplayDetails = { name: "App Inventor Example", generateAppInventorBinding: true };
+const details: ExtensionMenuDisplayDetails = {
+  name: "App Inventor Example",
+  generateAppInventorBinding: true
+};
 
 const heightProperty: PropertyBlockDetails<number> = { property: "Height", type: ArgumentType.Number };
 

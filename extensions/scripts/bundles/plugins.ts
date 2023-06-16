@@ -200,11 +200,18 @@ export const finalizeConfigurableExtensionBundle = (info: BundleInfo): Plugin =>
       removeSelf();
     });
 
-    blockBundleEvent.registerCallback(function (x) {
-      if (menuDetails.generateAppInventorBinding) console.log(x); // do something
+    // maybe create an object here for collecting AppInventor info
+
+    blockBundleEvent.registerCallback(function (metadata) {
+      if (!menuDetails.generateAppInventorBinding) return;
+      console.log(metadata); // build up all info needed for AppInventor code gen
     });
 
     eval(framework + "\n" + fs.readFileSync(bundleDestination, "utf-8"));
+
+    if (menuDetails.generateAppInventorBinding) { } // do something
+    // post processing step to generate code
+    // generate javascript glue code, and (Java) AppInvetor Extension
 
     blockBundleEvent.removeCallback();
     if (!success) throw new Error(`No extension registered for '${name}'. Did you forget to use the extension decorator?`);
