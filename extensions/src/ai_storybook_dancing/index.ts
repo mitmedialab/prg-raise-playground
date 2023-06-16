@@ -1,6 +1,6 @@
 import { Environment, ExtensionMenuDisplayDetails, extension, block, SaveDataHandler, RuntimeEvent, ArgumentType} from "$common";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
-import { hideNonBlocklyElements, stretchWorkspaceToScreen } from "./layout";
+import { hideNonBlocklyElements, stretchWorkspaceToScreen, changeInlineImageSizes } from "./layout";
 import { announce, requestDanceMove, requestMusic, untilMessageReceived, type DanceMove, type MusicState } from "./messaging";
 import hop from "./inlineImages/hop.png";
 import stepLeft from "./inlineImages/left.png";
@@ -37,7 +37,9 @@ async function blockSequence(move: DanceMove, util: BlockUtility) {
   }
 }
 
-// function 
+function whenStorybookLoads(){
+  changeInlineImageSizes()
+}
 
 
 export default class AiStorybookDancing extends extension(details, "blockly", "customSaveData") {
@@ -47,10 +49,7 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     stretchWorkspaceToScreen();
     const workspace = this.blockly.getMainWorkspace();
     workspace.zoom(0, 0, 3.5);
-    // let domElt = this.blockly.Xml.workspaceToDom(workspace);
-    // this.blockly.Css.inject
-    
-    this.runtime.on(RuntimeEvent.ProjectLoaded, whenProjectLoads);
+    this.runtime.on(RuntimeEvent.ProjectLoaded, whenStorybookLoads);
     announce("ready");
   }
 
@@ -74,7 +73,7 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     type: "command"
   })
   async hop(hop: "inline image", util: BlockUtility) {
-    console.log(document.querySelectorAll(".blocklyDraggable g image"));
+    changeInlineImageSizes();
     // await blockSequence("hop", util);
   }
 

@@ -24,12 +24,11 @@ export const stretchWorkspaceToScreen = () => {
 }
 
 export const changeInlineImageSizes = () => {
-    const blocklyDraggables = document.getElementsByClassName("blocklyDraggable")[0];
-    const image = document.querySelectorAll(".blocklyDraggable g image");
-
-    // blocklyDraggables.
-    document.getEle
-    
-    
-    // blocklyDraggables.style.
+    const allImages = document.querySelectorAll(".blocklyDraggable g image");
+    for (const image in allImages) {
+        if (!allImages[image].getAttribute("xlink:href").startsWith("data")) continue;
+        allImages[image].setAttribute("height", "30");
+        allImages[image].setAttribute("width", "30");
+        allImages[image].parentElement.setAttribute("transform", "translate(16, 12)");
+    }
 }
