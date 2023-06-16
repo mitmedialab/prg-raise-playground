@@ -1,6 +1,6 @@
-import { Environment, ExtensionMenuDisplayDetails, extension, block, SaveDataHandler, RuntimeEvent, ArgumentType} from "$common";
+import { Environment, ExtensionMenuDisplayDetails, extension, block, SaveDataHandler, RuntimeEvent, ArgumentType } from "$common";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
-import { hideNonBlocklyElements, stretchWorkspaceToScreen, changeInlineImageSizes } from "./layout";
+import { hideNonBlocklyElements, stretchWorkspaceToScreen, fixInlineImages } from "./layout";
 import { announce, requestDanceMove, requestMusic, untilMessageReceived, type DanceMove, type MusicState } from "./messaging";
 import hop from "./inlineImages/hop.png";
 import stepLeft from "./inlineImages/left.png";
@@ -21,16 +21,14 @@ const dance = async (move: DanceMove) => {
 }
 
 async function blockSequence(move: DanceMove, util: BlockUtility) {
-  assignHatBlockID(util);
   const topBlockID = util.thread.topBlock;
-
   if (topBlockID != hatBlockID) return;
   await dance(move);
+  // console.log('dance');
 }
 
-function assignHatBlockID(util: BlockUtility){
-  if (hatBlockID) return;
-  const blocks = util.thread.blockContainer._blocks
+function assignHatBlockID(util: BlockUtility) {
+  const blocks = util.thread.blockContainer._blocks;
   for (const blockID in blocks) {
     const hatOpcode: keyof AiStorybookDancing = "entry";
     if (!blocks[blockID].opcode.endsWith(hatOpcode)) continue;
@@ -39,10 +37,10 @@ function assignHatBlockID(util: BlockUtility){
   }
 }
 
-function whenStorybookLoads(){
-  changeInlineImageSizes()
+function executeWhenStorybookLoads(util: BlockUtility) {
+  assignHatBlockID(util);
+  fixInlineImages();
 }
-
 
 export default class AiStorybookDancing extends extension(details, "blockly", "customSaveData") {
 
@@ -51,7 +49,6 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     stretchWorkspaceToScreen();
     const workspace = this.blockly.getMainWorkspace();
     workspace.zoom(0, 0, 3.5);
-    this.runtime.on(RuntimeEvent.ProjectLoaded, whenStorybookLoads);
     announce("ready");
   }
 
@@ -75,8 +72,7 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     type: "command"
   })
   async hop(hop: "inline image", util: BlockUtility) {
-    changeInlineImageSizes();
-    // await blockSequence("hop", util);
+    await blockSequence("hop", util);
   }
 
   @block({
@@ -138,7 +134,8 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
   })
   entry(util: BlockUtility) {
 
-    assignHatBlockID(util);
+    if (!hatBlockID) executeWhenStorybookLoads(util);
+
     const hasChildren = !!util.thread.blockContainer.getNextBlock(hatBlockID);
 
     if (hasChildren && !musicPlayingLoop) requestMusic("on");

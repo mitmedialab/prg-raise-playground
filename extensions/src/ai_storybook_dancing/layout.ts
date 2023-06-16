@@ -23,12 +23,16 @@ export const stretchWorkspaceToScreen = () => {
     window.dispatchEvent(new Event('resize'));
 }
 
-export const changeInlineImageSizes = () => {
+/**
+ * Updates the inline images to have the desired dimensions and positioning within the blocks.
+ */
+export const fixInlineImages = () => {
     const allImages = document.querySelectorAll(".blocklyDraggable g image");
-    for (const image in allImages) {
-        if (!allImages[image].getAttribute("xlink:href").startsWith("data")) continue;
-        allImages[image].setAttribute("height", "30");
-        allImages[image].setAttribute("width", "30");
-        allImages[image].parentElement.setAttribute("transform", "translate(16, 12)");
+    for (const key in allImages) {
+        let image: Element = allImages[key];
+        if (!image.getAttribute("xlink:href").startsWith("data")) continue;
+        image.setAttribute("height", "30");
+        image.setAttribute("width", "30");
+        image.parentElement.setAttribute("transform", "translate(16, 12)");
     }
 }
