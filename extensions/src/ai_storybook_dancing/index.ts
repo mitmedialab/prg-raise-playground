@@ -31,8 +31,10 @@ function assignHatBlockID(util: BlockUtility){
   if (hatBlockID) return;
   const blocks = util.thread.blockContainer._blocks
   for (const blockID in blocks) {
-    if (!blocks[blockID].opcode.endsWith('entry')) continue;
+    const hatOpcode: keyof AiStorybookDancing = "entry";
+    if (!blocks[blockID].opcode.endsWith(hatOpcode)) continue;
     hatBlockID = blockID;
+    break;
   }
 }
 
