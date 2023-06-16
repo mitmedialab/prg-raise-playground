@@ -1,4 +1,4 @@
-import { Environment, extension, ExtensionMenuDisplayDetails, block, ArgumentType, BlockType, getterBlock, PropertyBlockDetails, setterBlock } from "$common";
+import { Environment, extension, ExtensionMenuDisplayDetails, block, ArgumentType, BlockType, getterBlock, PropertyBlockDetails, setterBlock, Matrix } from "$common";
 
 const details: ExtensionMenuDisplayDetails = { name: "App Inventor Example", generateAppInventorBinding: true };
 
@@ -18,5 +18,14 @@ export default class _ extends extension(details, "appInventor") {
   @setterBlock(heightProperty)
   set some_property(value: number) {
     this.field = value;
+  }
+
+  @block({
+    text: (x, y, z) => `${x} ${y} ${z}`,
+    args: ["number", "string", "matrix"],
+    type: "reporter"
+  })
+  dummy(x: number, y: string, z: Matrix): number {
+    return 0;
   }
 }

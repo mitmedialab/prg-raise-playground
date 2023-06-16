@@ -16,8 +16,6 @@ type BlockFunctionMetadata = {
 
 export const blockBundleEvent = tryCreateBundleTimeEvent<BlockFunctionMetadata>("blocks");
 
-
-
 /**
  * This a decorator function that should be associated with methods of your Extension class, all in order to turn your class methods
  * into Blocks that can be executed in the Block Programming Environment.
@@ -67,7 +65,8 @@ export function block<
     const internalFuncName = getImplementationName(opcode);
     context.addInitializer(function () { this.pushBlock(opcode, blockInfoOrGetter, target) });
 
-    if (!isFunction(blockInfoOrGetter)) {
+    const isProbableAtBundleTime = !isFunction(blockInfoOrGetter);
+    if (isProbableAtBundleTime) {
       const { type } = blockInfoOrGetter;
       blockBundleEvent?.fire({
         methodName: opcode,
@@ -77,7 +76,7 @@ export function block<
       });
     }
 
-    return (function () { return this[internalFuncName].call(this, ...arguments) }) as Function as Fn;
+    return (function () { return this[internalFuncName].call(this, ...arguments) });
   };
 }
 
