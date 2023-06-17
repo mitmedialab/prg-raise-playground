@@ -1,19 +1,16 @@
 import ts from "typescript";
 import assert from "assert";
-import { ExtensionMenuDisplayDetails, KeysWithValuesOfType, identity } from "$common";
+import { ExtensionMenuDisplayDetails, KeysWithValuesOfType, getAccessorPrefix, identity, setAccessorPrefix } from "$common";
 import { BundleInfo, ProgramBasedTransformer } from "scripts/bundles";
 
 type MenuText = KeysWithValuesOfType<ExtensionMenuDisplayDetails, string>;
 type MenuFlag = KeysWithValuesOfType<ExtensionMenuDisplayDetails, boolean>;
 const requiredKeys: (MenuText | MenuFlag)[] = ["name", "description", "iconURL", "insetIconURL"];
 
-type MethodTypeInformation = { parameterTypes: ts.Type[], returnType: ts.Type };
-export const methodsByExtension = new Map<string, Map<string, MethodTypeInformation>>();
+type MethodTypeInformation = { parameterTypes: (readonly [string, ts.Type])[], returnType: ts.Type, typeChecker: ts.TypeChecker };
+const methodsByExtension = new Map<string, Map<string, MethodTypeInformation>>();
 
-const identityTransformation: ReturnType<ProgramBasedTransformer> = () => ({
-  transformSourceFile: identity,
-  transformBundle: identity,
-});
+export const getMethodsForExtension = ({ id }: BundleInfo) => methodsByExtension.get(id);
 
 export const populateDisplayMenuDetailsTransformer = (info: BundleInfo): ProgramBasedTransformer =>
   (program: ts.Program) => {
@@ -25,37 +22,31 @@ export const populateDisplayMenuDetailsTransformer = (info: BundleInfo): Program
 export const extractMethodTypesFromExtension = (info: BundleInfo): ProgramBasedTransformer =>
   (program: ts.Program) => {
     const { type, checker, node } = probeExtensionProgram(info, program);
+    const properties = checker.getPropertiesOfType(type);
+    const nameAndTypeFromParameter = (parameter: ts.Symbol) =>
+      [parameter.name, checker.getTypeOfSymbolAtLocation(parameter, parameter.valueDeclaration)] as const;
 
-    const methods = checker.getPropertiesOfType(type)
-      .filter(property => property.flags & ts.SymbolFlags.Method)
+    const methods = properties
       .map(property => {
         const { name } = property;
         const propertyType = checker.getTypeOfSymbolAtLocation(property, node);
-        const callSignature = propertyType.getCallSignatures()?.[0]; // only the first? is this for overloads?
-        const parameterTypes = callSignature?.parameters?.map(parameter => checker.getTypeOfSymbolAtLocation(parameter, parameter.valueDeclaration));
-        const returnType = callSignature ? checker.getReturnTypeOfSignature(callSignature) : null;
-        // TODO: Reduce types down to their most primitive form (strings, numbers, booleans, arrays, & objects)
-        return { name, parameterTypes, returnType };
+        const entries = new Array<MethodTypeInformation & { name: string }>();
+        if (isGetter(property))
+          entries.push({ name: `${getAccessorPrefix}${name}`, parameterTypes: [], returnType: propertyType, typeChecker: checker });
+        if (isSetter(property))
+          entries.push({ name: `${setAccessorPrefix}${name}`, parameterTypes: [["value", propertyType]], returnType: null, typeChecker: checker });
+        if (isMethod(property)) {
+          const callSignature = propertyType.getCallSignatures()?.[0]; // Only the first? Are multiple signatures for overloads?
+          const parameterTypes = callSignature.parameters?.map(nameAndTypeFromParameter);
+          const returnType = checker.getReturnTypeOfSignature(callSignature);
+          entries.push({ name, parameterTypes, returnType, typeChecker: checker });
+        }
+        return entries;
       })
+      .flat()
       .reduce((map, { name, ...types }) => map.set(name, types), new Map<string, MethodTypeInformation>());
 
-    checker.getPropertiesOfType(type).filter(property => property.flags & ts.SymbolFlags.GetAccessor)
-      .forEach(property => {
-        const { name } = property;
-        const propertyType = checker.getTypeOfSymbolAtLocation(property, node);
-        methods.set(`__getter__${name}`, { parameterTypes: [], returnType: propertyType });
-      });
-
-    checker.getPropertiesOfType(type).filter(property => property.flags & ts.SymbolFlags.SetAccessor)
-      .forEach(property => {
-        const { name } = property;
-        const propertyType = checker.getTypeOfSymbolAtLocation(property, node);
-        const parameterTypes = [propertyType];
-        methods.set(`__setter__${name}`, { parameterTypes, returnType: null });
-      });
-
     methodsByExtension.set(info.id, methods);
-    console.log(methodsByExtension);
     return identityTransformation;
   }
 
@@ -75,6 +66,14 @@ const probeExtensionProgram = ({ indexFile }: BundleInfo, program: ts.Program) =
   return container;
 }
 
+const identityTransformation: ReturnType<ProgramBasedTransformer> = () => ({
+  transformSourceFile: identity,
+  transformBundle: identity,
+});
+
+const isGetter = ({ flags }: ts.Symbol) => flags & ts.SymbolFlags.GetAccessor;
+const isSetter = ({ flags }: ts.Symbol) => flags & ts.SymbolFlags.SetAccessor;
+const isMethod = ({ flags }: ts.Symbol) => flags & ts.SymbolFlags.Method;
 const typeReferenceKey: keyof Omit<ts.TypeReference, keyof ts.Type> = "target";
 const isTypeReference = (type: ts.Type): type is ts.TypeReference => typeReferenceKey in type;
 const tryParseJSON = (text: string) => { try { return JSON.parse(text) } catch { return undefined } }

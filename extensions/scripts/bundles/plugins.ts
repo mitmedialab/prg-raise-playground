@@ -15,7 +15,7 @@ import chalk from "chalk";
 import { runOncePerBundling } from "../utils/rollupHelper";
 import { sendToParent } from "$root/scripts/comms";
 import { setAuxiliaryInfoForExtension } from "./auxiliaryInfo";
-import { methodsByExtension } from "scripts/typeProbing";
+import { getMethodsForExtension } from "scripts/typeProbing";
 
 export const clearDestinationDirectories = (): Plugin => {
   const runner = runOncePerBundling();
@@ -207,8 +207,13 @@ export const finalizeConfigurableExtensionBundle = (info: BundleInfo): Plugin =>
       if (!menuDetails.generateAppInventorBinding) return;
       console.log(metadata); // build up all info needed for AppInventor code gen
 
-      // Example of using TS types
-      const { parameterTypes, returnType } = methodsByExtension.get(info.id).get(metadata.methodName);
+      // Utilizing type information
+      const { methodName } = metadata;
+      const methodTypes = getMethodsForExtension(info);
+      const { parameterTypes, returnType, typeChecker } = methodTypes.get(metadata.methodName);
+      const parameters = parameterTypes.map(([name, type]) => `${name}: ${typeChecker.typeToString(type)}`).join(", ");
+      const signature = `${methodName}: (${parameters}) => ${typeChecker.typeToString(returnType)}`;
+      console.log(signature);
     });
 
     eval(framework + "\n" + fs.readFileSync(bundleDestination, "utf-8"));

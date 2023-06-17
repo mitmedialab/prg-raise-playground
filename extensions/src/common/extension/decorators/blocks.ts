@@ -16,6 +16,9 @@ type BlockFunctionMetadata = {
 
 export const blockBundleEvent = tryCreateBundleTimeEvent<BlockFunctionMetadata>("blocks");
 
+export const getAccessorPrefix = "__getter__";
+export const setAccessorPrefix = "__setter__";
+
 /**
  * This a decorator function that should be associated with methods of your Extension class, all in order to turn your class methods
  * into Blocks that can be executed in the Block Programming Environment.
@@ -113,7 +116,7 @@ export type PropertyBlockDetails<T> = { property: string, type: ScratchArgument<
 export function getterBlock<This extends ExtensionInstance, TReturn>
   (details: PropertyBlockDetails<TReturn>): TypedGetterDecorator<This, TReturn> {
   return function (this: This, target: (this: This) => TReturn, context: ClassGetterDecoratorContext<This, TReturn>) {
-    const opcode = target.name.replace("get ", "__getter__");
+    const opcode = target.name.replace("get ", getAccessorPrefix);
     const internalFuncName = getImplementationName(opcode);
 
     context.addInitializer(function () {
@@ -134,7 +137,7 @@ export function getterBlock<This extends ExtensionInstance, TReturn>
 export function setterBlock<This extends ExtensionInstance, TValue>
   (details: PropertyBlockDetails<TValue>): TypedSetterDecorator<ExtensionInstance, TValue> {
   return function (this: This, target: (this: This, value: TValue) => void, context: ClassSetterDecoratorContext<This, TValue>) {
-    const opcode = target.name.replace("set ", "__setter__");
+    const opcode = target.name.replace("set ", setAccessorPrefix);
     const internalFuncName = getImplementationName(opcode);
 
     context.addInitializer(function () {
