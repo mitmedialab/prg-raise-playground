@@ -1,7 +1,8 @@
 import ts from "typescript";
 import assert from "assert";
-import { ExtensionMenuDisplayDetails, KeysWithValuesOfType, getAccessorPrefix, identity, setAccessorPrefix } from "$common";
+import { ExtensionInstance, ExtensionMenuDisplayDetails, KeysWithValuesOfType, ScratchExtension, getAccessorPrefix, identity, setAccessorPrefix } from "$common";
 import { BundleInfo, ProgramBasedTransformer } from "scripts/bundles";
+import type appInventor from "$common/extension/mixins/optional/appInventor";
 
 type MenuText = KeysWithValuesOfType<ExtensionMenuDisplayDetails, string>;
 type MenuFlag = KeysWithValuesOfType<ExtensionMenuDisplayDetails, boolean>;
@@ -23,6 +24,13 @@ export const extractMethodTypesFromExtension = (info: BundleInfo): ProgramBasedT
   (program: ts.Program) => {
     const { type, checker, node } = probeExtensionProgram(info, program);
     const properties = checker.getPropertiesOfType(type);
+
+    /**
+     * TODO: Could use this short-circuit if we drop the `generateAppInventorBindingFlag` MenuDetails proprety, 
+     * and instead relied on the presence of the mixin to indicate wether app inventor bindings should be generated.
+     */
+    // if (!shouldProbeExtensionMethods(properties)) return identityTransformation;
+
     const nameAndTypeFromParameter = (parameter: ts.Symbol) =>
       [parameter.name, checker.getTypeOfSymbolAtLocation(parameter, parameter.valueDeclaration)] as const;
 
@@ -65,6 +73,13 @@ const probeExtensionProgram = ({ indexFile }: BundleInfo, program: ts.Program) =
   if (!container.base) throw new Error("Unable to locate base extension type");
   return container;
 }
+
+const shouldProbeExtensionMethods = (properties: ts.Symbol[]) => {
+  const propertyNames = properties.map(({ name }) => name);
+  type AppInventorExtension = InstanceType<ReturnType<typeof appInventor>>
+  const appInventorKey: Exclude<keyof AppInventorExtension, keyof ExtensionInstance> = "withinAppInventor";
+  return propertyNames.includes(appInventorKey);
+};
 
 const identityTransformation: ReturnType<ProgramBasedTransformer> = () => ({
   transformSourceFile: identity,
