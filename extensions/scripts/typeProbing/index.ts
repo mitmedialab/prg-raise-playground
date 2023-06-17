@@ -27,9 +27,6 @@ export const extractMethodTypesFromExtension = (info: BundleInfo): ProgramBasedT
 
     if (!shouldProbeExtensionMethods(properties)) return identityTransformation;
 
-    const nameAndTypeFromParameter = (parameter: ts.Symbol) =>
-      [parameter.name, checker.getTypeOfSymbolAtLocation(parameter, parameter.valueDeclaration)] as const;
-
     const methods = properties
       .map(property => {
         const { name } = property;
@@ -41,7 +38,10 @@ export const extractMethodTypesFromExtension = (info: BundleInfo): ProgramBasedT
           entries.push({ name: `${setAccessorPrefix}${name}`, parameterTypes: [["value", propertyType]], returnType: null, typeChecker: checker });
         if (isMethod(property)) {
           const callSignature = propertyType.getCallSignatures()?.[0]; // Only the first? Are multiple signatures for overloads?
-          const parameterTypes = callSignature.parameters?.map(nameAndTypeFromParameter);
+          const parameterTypes = callSignature.parameters?.map(parameter => {
+            const { name, valueDeclaration } = parameter;
+            return [name, checker.getTypeOfSymbolAtLocation(parameter, valueDeclaration)] as const
+          });
           const returnType = checker.getReturnTypeOfSignature(callSignature);
           entries.push({ name, parameterTypes, returnType, typeChecker: checker });
         }
