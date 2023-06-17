@@ -6,7 +6,7 @@ import { ExtensionMenuDisplayDetails, Writeable } from "$common/types";
 import { tryCaptureDependencies } from "./mixins/dependencies";
 import { tryCreateBundleTimeEvent } from "$common/utils";
 
-export const extensionBundleEvent = tryCreateBundleTimeEvent<ExtensionMenuDisplayDetails>("extension");
+export const extensionBundleEvent = tryCreateBundleTimeEvent<{ details: ExtensionMenuDisplayDetails, addOns: MixinName[] }>("extension");
 
 /**
  * Creates the base class that your Extension should 'extend' which is compatible with your request. 
@@ -47,7 +47,7 @@ export const extension = <const TSupported extends readonly MixinName[]>(
   ...addOns: Writeable<TSupported>
 ): ExtensionWithFunctionality<[...TSupported]> & typeof ExtensionBase => {
 
-  extensionBundleEvent?.fire(details);
+  extensionBundleEvent?.fire({ details, addOns });
 
   const Base = scratchInfo(supported(ExtensionBase, addOns)) as ExtensionWithFunctionality<[...TSupported]>;
 

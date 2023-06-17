@@ -25,11 +25,7 @@ export const extractMethodTypesFromExtension = (info: BundleInfo): ProgramBasedT
     const { type, checker, node } = probeExtensionProgram(info, program);
     const properties = checker.getPropertiesOfType(type);
 
-    /**
-     * TODO: Could use this short-circuit if we drop the `generateAppInventorBindingFlag` MenuDetails proprety, 
-     * and instead relied on the presence of the mixin to indicate wether app inventor bindings should be generated.
-     */
-    // if (!shouldProbeExtensionMethods(properties)) return identityTransformation;
+    if (!shouldProbeExtensionMethods(properties)) return identityTransformation;
 
     const nameAndTypeFromParameter = (parameter: ts.Symbol) =>
       [parameter.name, checker.getTypeOfSymbolAtLocation(parameter, parameter.valueDeclaration)] as const;
