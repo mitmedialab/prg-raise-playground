@@ -85,7 +85,10 @@ export default function (Ctor: CustomizableExtensionConstructor) {
       if (!this.info) {
         const { id, name, blockIconURI } = this;
         const blocks = Array.from(this.blockMap.entries()).map(entry => this.convertToInfo(entry));
-        this.info = { id, blocks, name, blockIconURI, menus: this.collectMenus() };
+        const color1 = this.blockColor;
+        const color2 = this.menuColor;
+        const color3 = this.menuSelectColor;
+        this.info = { id, blocks, name, blockIconURI, menus: this.collectMenus(), color1, color2, color3 };
       }
       return this.info;
     }

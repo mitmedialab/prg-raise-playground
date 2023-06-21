@@ -9,7 +9,10 @@ const details: ExtensionMenuDisplayDetails = {
   [Language.Español]: {
     name: "Extensión simple Typescript",
     description: "Ejemplo de una extensión simple usando Typescript"
-  }
+  },
+  blockColor: "#822fbd",
+  menuColor: "#4ed422",
+  menuSelectColor: "#9e0d2c"
 }
 
 export default class SimpleTypescript extends extension(details, "ui", "customSaveData") {
