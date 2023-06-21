@@ -9,7 +9,7 @@ import spinLeft from "./inlineImages/spin-left.png";
 import spinRight from "./inlineImages/spin-right.png";
 import { convertToArgumentInfo } from "$common/extension/mixins/required/scratchInfo/args";
 
-const details: ExtensionMenuDisplayDetails = { name: "Dancing Activity for AI Storybook", noBlockIcon: true, blockColor: "#2e6535"};
+const details: ExtensionMenuDisplayDetails = { name: "Dancing Activity for AI Storybook", noBlockIcon: true, blockColor: "#2e6535", menuSelectColor: "#74a260"};
 
 let flipFlopper = false;
 let musicPlayingLoop = false;
