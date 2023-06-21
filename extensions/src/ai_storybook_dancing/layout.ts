@@ -39,6 +39,7 @@ export const fixInlineImages = () => {
         image.setAttribute("height", "30");
         image.setAttribute("width", "30");
         const [x, y] = extractTransform(image);
-        image.setAttribute("transform", `translate(${x / 2}, ${y / 2})`);
+        const ratio = 1 / 3;
+        image.setAttribute("transform", `translate(${x * ratio + 7}, ${y * ratio})`);
     }
 }

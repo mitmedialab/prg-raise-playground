@@ -9,7 +9,7 @@ import spinLeft from "./inlineImages/spin-left.png";
 import spinRight from "./inlineImages/spin-right.png";
 import { convertToArgumentInfo } from "$common/extension/mixins/required/scratchInfo/args";
 
-const details: ExtensionMenuDisplayDetails = { name: "Dancing Activity for AI Storybook", noBlockIcon: true };
+const details: ExtensionMenuDisplayDetails = { name: "Dancing Activity for AI Storybook", noBlockIcon: true, blockColor: "#2e6535"};
 
 let flipFlopper = false;
 let musicPlayingLoop = false;
@@ -24,7 +24,6 @@ async function blockSequence(move: DanceMove, util: BlockUtility) {
   const topBlockID = util.thread.topBlock;
   if (topBlockID != hatBlockID) return;
   await dance(move);
-  // console.log('dance');
 }
 
 function assignHatBlockID(util: BlockUtility) {

@@ -193,6 +193,7 @@ export const finalizeConfigurableExtensionBundle = (info: BundleInfo): Plugin =>
     const framework = await frameworkBundle.content;
     let success = false;
     registerExtensionDefinitionCallback(function (details) {
+      for (const key in menuDetails) delete menuDetails[key];
       for (const key in details) menuDetails[key] = details[key];
       success = true;
     });
