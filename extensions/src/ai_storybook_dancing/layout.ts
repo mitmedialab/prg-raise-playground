@@ -23,16 +23,22 @@ export const stretchWorkspaceToScreen = () => {
     window.dispatchEvent(new Event('resize'));
 }
 
+const extractTransform = (image: Element) =>
+    image.parentElement.getAttribute("transform")
+        .replace("translate(", "")
+        .replace(")", "")
+        .split(",").map(Number);
+
 /**
  * Updates the inline images to have the desired dimensions and positioning within the blocks.
  */
 export const fixInlineImages = () => {
     const allImages = document.querySelectorAll(".blocklyDraggable g image");
-    for (const key in allImages) {
-        let image: Element = allImages[key];
+    for (const image of allImages) {
         if (!image.getAttribute("xlink:href").startsWith("data")) continue;
         image.setAttribute("height", "30");
         image.setAttribute("width", "30");
-        image.parentElement.setAttribute("transform", "translate(16, 12)");
+        const [x, y] = extractTransform(image);
+        image.setAttribute("transform", `translate(${x / 2}, ${y / 2})`);
     }
 }
