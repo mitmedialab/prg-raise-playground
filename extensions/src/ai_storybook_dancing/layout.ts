@@ -32,7 +32,7 @@ export const fixInlineImages = () => {
         if (!image.getAttribute("xlink:href").startsWith("data")) continue;
         image.setAttribute("height", "45");
         image.setAttribute("width", "45");
-        image.setAttribute("transform", `translate(${0}, ${-8})`);
+        image.setAttribute("transform", `translate(${0}, ${-6})`);
     }
 }
 
