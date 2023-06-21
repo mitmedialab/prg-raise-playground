@@ -1,19 +1,25 @@
 import { Environment, ExtensionMenuDisplayDetails, extension, block, SaveDataHandler, RuntimeEvent, ArgumentType } from "$common";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
-import { hideNonBlocklyElements, stretchWorkspaceToScreen, fixInlineImages } from "./layout";
+import { hideNonBlocklyElements, stretchWorkspaceToScreen, fixInlineImages, fixHatImage } from "./layout";
 import { announce, requestDanceMove, requestMusic, untilMessageReceived, type DanceMove, type MusicState } from "./messaging";
 import hop from "./inlineImages/hop.png";
 import stepLeft from "./inlineImages/left.png";
 import stepRight from "./inlineImages/right.png";
 import spinLeft from "./inlineImages/spin-left.png";
 import spinRight from "./inlineImages/spin-right.png";
-import { convertToArgumentInfo } from "$common/extension/mixins/required/scratchInfo/args";
+import start from "./inlineImages/start.png";
 
-const details: ExtensionMenuDisplayDetails = { name: "Dancing Activity for AI Storybook", noBlockIcon: true, blockColor: "#2e6535", menuSelectColor: "#74a260"};
+
+const details: ExtensionMenuDisplayDetails = {
+  name: "Dancing Activity for AI Storybook",
+  noBlockIcon: true,
+  blockColor: "#faa302",
+  menuSelectColor: "#d99c57"
+};
 
 let flipFlopper = false;
 let musicPlayingLoop = false;
-let hatBlockID;
+let hatBlockID: string;
 
 const dance = async (move: DanceMove) => {
   requestDanceMove(move);
@@ -39,6 +45,7 @@ function assignHatBlockID(util: BlockUtility) {
 function executeWhenStorybookLoads(util: BlockUtility) {
   assignHatBlockID(util);
   fixInlineImages();
+  fixHatImage(hatBlockID);
 }
 
 export default class AiStorybookDancing extends extension(details, "blockly", "customSaveData") {
@@ -128,10 +135,15 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
 
 
   @block({
-    text: " ", // Maybe add a symbol in the future?
-    type: "hat"
+    text: (image) => `${image}`, // Maybe add a symbol in the future?
+    type: "hat",
+    arg: {
+      type: "image",
+      uri: start,
+      alt: "Start icon"
+    }
   })
-  entry(util: BlockUtility) {
+  entry(image: "inline image", util: BlockUtility) {
 
     if (!hatBlockID) executeWhenStorybookLoads(util);
 

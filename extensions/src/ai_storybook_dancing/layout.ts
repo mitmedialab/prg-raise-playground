@@ -23,12 +23,6 @@ export const stretchWorkspaceToScreen = () => {
     window.dispatchEvent(new Event('resize'));
 }
 
-const extractTransform = (image: Element) =>
-    image.parentElement.getAttribute("transform")
-        .replace("translate(", "")
-        .replace(")", "")
-        .split(",").map(Number);
-
 /**
  * Updates the inline images to have the desired dimensions and positioning within the blocks.
  */
@@ -36,10 +30,15 @@ export const fixInlineImages = () => {
     const allImages = document.querySelectorAll(".blocklyDraggable g image");
     for (const image of allImages) {
         if (!image.getAttribute("xlink:href").startsWith("data")) continue;
-        image.setAttribute("height", "30");
-        image.setAttribute("width", "30");
-        const [x, y] = extractTransform(image);
-        const ratio = 1 / 3;
-        image.setAttribute("transform", `translate(${x * ratio + 7}, ${y * ratio})`);
+        image.setAttribute("height", "45");
+        image.setAttribute("width", "45");
+        image.setAttribute("transform", `translate(${0}, ${-8})`);
     }
+}
+
+export const fixHatImage = (hatID: string) => {
+    const hatBlock = document.querySelectorAll(`[data-id='${hatID}']`);
+    const image = hatBlock[0].querySelector("g image");
+    image.setAttribute("transform", `translate(${24}, ${-15})`);
+
 }
