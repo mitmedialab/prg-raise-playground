@@ -2,9 +2,22 @@ import { ArgumentType, BlockType, color } from "$common";
 import { Environment, BlockDefinitions, MenuItem } from "$common";
 import { Extension } from "$common";
 
+import type BlockUtility from "$scratch-vm/engine/block-utility";
+import Target from "$scratch-vm/engine/target";
 import ROSLIB from "roslib";
 
+import jiboBodyBlack from "./virtualJibo/jiboBody/black.png"
+import jiboBodyRed from "./virtualJibo/jiboBody/red.png"
+import jiboBodyYellow from "./virtualJibo/jiboBody/yellow.png"
+import jiboBodyGreen from "./virtualJibo/jiboBody/green.png"
+import jiboBodyCyan from "./virtualJibo/jiboBody/cyan.png"
+import jiboBodyBlue from "./virtualJibo/jiboBody/blue.png"
+import jiboBodyMagenta from "./virtualJibo/jiboBody/magenta.png"
+import jiboBodyWhite from "./virtualJibo/jiboBody/white.png"
+
 const EXTENSION_ID = "jibo";
+const JIBO_BODY = "jibo-body";
+const JIBO_EYE = "jibo-eye";
 
 type RGB = {
   x: number;
@@ -26,35 +39,45 @@ export const Color = {
 type ColorType = typeof Color[keyof typeof Color];
 type ColorDefType = {
   value: RGB;
+  imageData: string;
 };
 
 const colorDef: Record<ColorType, ColorDefType> = {
   [Color.Red]: {
     value: { x: 255, y: 0, z: 0 },
+    imageData: jiboBodyRed,
   },
   [Color.Yellow]: {
     value: { x: 255, y: 69, z: 0 },
+    imageData: jiboBodyYellow,
   },
   [Color.Green]: {
     value: { x: 0, y: 167, z: 0 },
+    imageData: jiboBodyGreen,
   },
   [Color.Cyan]: {
     value: { x: 0, y: 167, z: 48 },
+    imageData: jiboBodyCyan,
   },
   [Color.Blue]: {
     value: { x: 0, y: 0, z: 255 },
+    imageData: jiboBodyBlue,
   },
   [Color.Magenta]: {
     value: { x: 255, y: 0, z: 163 },
+    imageData: jiboBodyMagenta,
   },
   [Color.White]: {
     value: { x: 255, y: 255, z: 255 },
+    imageData: jiboBodyWhite,
   },
   [Color.Random]: {
     value: { x: -1, y: -1, z: -1 },
+    imageData: ""
   },
   [Color.Off]: {
     value: { x: 0, y: 0, z: 0 },
+    imageData: jiboBodyBlack,
   },
 };
 
@@ -145,7 +168,7 @@ const danceFiles: Record<DanceType, AnimFileType> = {
   },
 };
 
-export const Emotion  = {
+export const Emotion = {
   Embarassed: `embarassed`,
   Frustrated: `frustrated`,
   Laugh: `laughing`,
@@ -451,7 +474,8 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           },
         }),
         text: (cname) => `set LED ring to ${cname}`,
-        operation: (color: ColorType) => {
+        operation: (color: ColorType, { target }: BlockUtility)  => {
+          this.virtualJiboLEDFn(color, target);
           this.jiboLEDFn(color);
         },
       }),
@@ -619,7 +643,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
     while (this.busy) {
       console.log(this.busy);
-      this.checkBusy(this);
+      this.checkBusy();
     }
 
     // console.log("before while: " + this.busy)
@@ -654,11 +678,56 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     return this.asr_out;
   }
 
+  setSpriteCostume(target: Target, name: string, image: ImageData) {
+    // try to set the costume of the target by name
+    let foundCostume = this.setCostumeByName(target, name);
+
+    if (!foundCostume) {
+      console.log("Did not find the costume we wanted. Adding new one");
+      // if not, add and set the costume
+      this.addCostume(target, image, "add and set", name);
+    }
+  }
+  /* update the appearance of virtual Jibo's LED*/
+  virtualJiboLEDFn(color: string, currentTarget: Target) {
+    // find the jibo-body sprite to edit
+    let spriteTarget;
+    if (currentTarget.getName().startsWith(JIBO_BODY)) {
+      // first see if the current target is a Jibo body
+      // if so, assume this is the one we want to edit
+      spriteTarget = currentTarget;
+    } else if (currentTarget.getName().startsWith(JIBO_EYE)) {
+      // next see if this is a Jibo eye, and select the corresponding jibo body (same suffix)
+      let jiboEyeName = currentTarget.getName();
+      let suffix = jiboEyeName.substring(jiboEyeName.indexOf(JIBO_EYE) + JIBO_EYE.length);
+      let matches = this.runtime.targets.filter((target) => target.getName().startsWith(JIBO_BODY + suffix));
+      if (matches.length > 0) spriteTarget = matches[0];
+    } else {
+      // otherwise, pick the first Jibo body you see
+      let matches = this.runtime.targets.filter((target) => target.getName().startsWith(JIBO_BODY));
+      if (matches.length > 0) spriteTarget = matches[0];
+    }
+
+    if (spriteTarget) {
+      // change the Sprite costume
+      if (color == "random") {
+        const randomColorIdx = Math.floor(
+          // exclude random and off
+          Math.random() * (Object.keys(colorDef).length - 2)
+        );
+        color = Object.keys(colorDef)[randomColorIdx];
+      }
+
+      let image = colorDef[color].imageData;
+      this.setSpriteCostume(spriteTarget, color, image);
+    } else {
+      console.log("No Jibo body found");
+    }
+  }
   jiboLEDFn(color: string) {
-    let ledName = colorDef[color].name;
     let ledValue = colorDef[color].value;
 
-    if (ledName == "random") {
+    if (color == "random") {
       const randomColorIdx = Math.floor(
         // exclude random and off
         Math.random() * (Object.keys(colorDef).length - 2)
@@ -678,7 +747,6 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
       this.multitask_msg["do_led"] = true;
       this.multitask_msg["led_color"] = ledValue;
       this.prevTasks.push("led");
-      return;
     }
 
     var jibo_msg = {

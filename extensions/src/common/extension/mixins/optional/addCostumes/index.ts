@@ -29,7 +29,7 @@ export default function <T extends MinimalExtensionConstructor>(Ctor: T) {
      * @param {string?} name optional name to attach to the costume
      */
     async addCostume(target: Target, image: ImageData, action: "add only" | "add and set", name?: string) {
-      if (!isRenderedTarget(target)) return console.warn("Costume could not be added is the supplied target wasn't a rendered target");
+      if (!isRenderedTarget(target)) return console.warn("Costume could not be added as the supplied target wasn't a rendered target");
 
       name ??= `${this.id}_generated_${Date.now()}`;
       bitmapAdapter ??= new MockBitmapAdapter();
@@ -51,6 +51,25 @@ export default function <T extends MinimalExtensionConstructor>(Ctor: T) {
 
       target.addCostume(costume, length);
       if (action === "add and set") target.setCostume(length);
+    }
+
+    /**
+     * Add a costume to the current sprite based on same image data
+     * @param {RenderedTarget} target (e.g. `util.target`)
+     * @param {string?} name costume name to look for
+     */
+    setCostumeByName(target: Target, name: string): boolean {
+      if (!isRenderedTarget(target)) {
+        console.warn("Costume could not be set as the supplied target wasn't a rendered target");
+        return false;
+      }
+
+      let costumeIdx = target.getCostumeIndexByName(name);
+      if (costumeIdx >= 0) {
+        target.setCostume(costumeIdx);
+        return true;
+      }
+      return false;
     }
 
   }

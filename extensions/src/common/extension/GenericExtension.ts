@@ -41,7 +41,7 @@ import { getImplementationName } from "./mixins/required/scratchInfo/index";
 export abstract class Extension<
   MenuDetails extends ExtensionMenuDisplayDetails,
   Blocks extends ExtensionBlocks
-> extends extension(undefined, "ui", "customSaveData", "customArguments") {
+> extends extension(undefined, "ui", "customSaveData", "customArguments", "addCostumes") {
 
   readonly BlockFunctions: Blocks;
   readonly BlockDefinitions: BlockDefinitions<typeof this>;
