@@ -1,8 +1,3 @@
-import Runtime from "../../../packages/scratch-vm/src/engine/runtime";
-// import Cast from "../../../packages/scratch-vm/src/util/cast";
-// import log from "../../../packages/scratch-vm/src/util/log";
-import EventEmitter from "events";
-
 import { ArgumentType, BlockType, color } from "$common";
 import { Environment, BlockDefinitions, MenuItem } from "$common";
 import { Extension } from "$common";
@@ -17,8 +12,6 @@ type RGB = {
   z: number;
 };
 
-// TODO remove the const enums throughout this file, https://github.com/mitmedialab/prg-extension-boilerplate/blob/dev/extensions/src/common/types/enums.ts#L136
-// https://dev.to/ivanzm123/dont-use-enums-in-typescript-they-are-very-dangerous-57bh
 export const Color = {
   Red: `red`,
   Yellow: `yellow`,
@@ -312,16 +305,12 @@ type Blocks = {
 
 export default class Scratch3Jibo extends Extension<Details, Blocks> {
   // runtime: Runtime;
-  ros: any; // TODO
+  ros: ROSLIB.Ros;
   connected: boolean;
   failed: boolean;
   rosbridgeIP: string;
   jbVolume: string;
-  asr_out: any;
-  jiboEvent: EventEmitter;
-te: string;
-  text: string;
-  animName: string;
+  asr_out: string;
   multitask: boolean;
   prevTasks: any;
   multitask_msg: any;
@@ -332,8 +321,6 @@ te: string;
   dances: MenuItem<string>[];
 
   init(env: Environment) {
-    this.text = "Hello! I'm Jibo!";
-    this.animName = "My Animation";
     this.multitask = false;
     this.prevTasks = [];
     this.multitask_msg = {};
@@ -351,10 +338,8 @@ te: string;
     this.rosbridgeIP = "ws://localhost:9090"; // rosbridgeIP option includes port
     this.jbVolume = "60";
     this.asr_out = "";
-    this.jiboEvent = new EventEmitter();
-    this.tts = [];
 
-    this.RosConnect({ rosIP: "localhost" });
+    this.RosConnect("localhost");
 
     this.getAnimationList = () =>
       this.animation_list.map((anim) => ({
@@ -362,12 +347,6 @@ te: string;
         value: anim,
       }));
 
-    //   setInterval((() => {
-    //     this.checkBusy(self);
-    //     console.log("busy: " + this.busy);
-    //     console.log(this.animation_list)
-    //     console.log(this.getAnimationList())
-    // }), 100);
   }
 
   checkBusy(self: Scratch3Jibo) {
@@ -378,10 +357,8 @@ te: string;
       messageType: "jibo_msgs/JiboState",
     });
 
-    state_listener.subscribe(function (message: any) {
+    state_listener.subscribe((message: any) => {
       // console.log('Received message on ' + state_listener.name + ': ');
-      // console.log("check: " + message.is_playing_sound);
-      // console.log(message)
       self.busy = message.is_playing_sound;
       // console.log("in check, busy: " + this.busy)
       state_listener.unsubscribe();
@@ -533,10 +510,8 @@ te: string;
     return this.connected;
   }
 
-  RosConnect(args: { rosIP: any }) {
-    const rosIP = args.rosIP.toString();
+  RosConnect(rosIP: string) {
     this.rosbridgeIP = "ws://" + rosIP + ":9090";
-    // log.log("ROS: Attempting to connect to rosbridge at " + this.rosbridgeIP);
 
     if (!this.connected) {
       this.ros = new ROSLIB.Ros({
@@ -544,8 +519,8 @@ te: string;
       });
 
       // If connection is successful
-      let connect_cb_factory = function (self: Scratch3Jibo) {
-        return function () {
+      let connect_cb_factory = (self: Scratch3Jibo) => {
+        return () => {
           self.connected = true;
           // send jibo welcome message
           let welcomeText = `Hello there. I am ready for you to program me.`;
@@ -553,31 +528,30 @@ te: string;
         };
       };
       let connect_cb = connect_cb_factory(this);
-      this.ros.on("connection", function () {
+      this.ros.on("connection", () => {
         connect_cb();
         // log.info('ROS: Connected to websocket server.');
       });
 
       // If connection fails
-      let error_cb_factory = function (self: Scratch3Jibo) {
-        return function () {
+      let error_cb_factory = (self: Scratch3Jibo) => {
+        return () => {
           self.failed = true;
         };
       };
       let error_cb = error_cb_factory(this);
-      this.ros.on("error", function (error: any) {
+      this.ros.on("error", (error: string) => {
         error_cb();
-        // log.error('ROS: Error connecting to websocket server: ', error);
       });
 
       // If connection ends
-      let disconnect_cb_factory = function (self: Scratch3Jibo) {
-        return function () {
+      let disconnect_cb_factory = (self: Scratch3Jibo) => {
+        return () => {
           self.connected = false;
         };
       };
       let disconnect_cb = disconnect_cb_factory(this);
-      this.ros.on("close", function () {
+      this.ros.on("close", () => {
         disconnect_cb();
         // log.info('ROS: Connection to websocket server closed.');
       });
@@ -595,9 +569,7 @@ te: string;
     return this.connected;
   }
 
-  // TODO remove the self variable here
   async jiboTTSFn(text: string) {
-    // log.log(text);
 
     console.log("multitask: " + this.multitask);
 
@@ -665,30 +637,7 @@ te: string;
       volume: parseFloat(this.jbVolume),
     };
 
-    // this.tts.push(jibo_msg);
-    // console.log(this.tts)
-
-    // while (this.tts.length != 0 && !this.busy) {
-    //     console.log(this.tts)
-    //     this.busy = true;
-    //     await this.JiboPublish(this.tts.shift())
-    //     this.busy = false;
-    // }
-
-    // this.busy = true;
-    // console.log("before publishing")
     await this.JiboPublish(jibo_msg);
-    // console.log("after publishing")
-
-    // var rep = true;
-    // while (rep) {
-    //     this.JiboPublish(jibo_msg).then(() => {
-    //         rep = false;
-    //         console.log(rep);
-    //     }
-    //     )
-    // }
-    return;
   }
 
   async jiboAskFn(text: string) {
@@ -741,7 +690,6 @@ te: string;
 
   // JiboVolume (args) {
   //     const Volume = Cast.toString(args.VOL);
-  //     log.log(parseFloat(Volume));
   //     this.jbVolume = parseFloat(Volume);
 
   //     var jibo_msg ={
@@ -797,18 +745,10 @@ te: string;
     await this.JiboPublish(jibo_msg);
 
     await this.JiboPublish({ do_anim_transition: true, anim_transition: 0 });
-
-    /* // wait for command to complete
-        return new Promise((resolve) => {
-            this.jiboEvent.once("command.complete", async () => {
-                resolve();
-            });
-        });*/
   }
 
   // async JiboAudio(args) {
   //     const audio_key = Cast.toString(args.VKEY);
-  //     log.log(audio_key);
 
   //     var jibo_msg ={
   //         "do_motion":false,
@@ -849,7 +789,6 @@ te: string;
       name: "/jibo",
       messageType: "jibo_msgs/JiboAction",
     });
-    // console.log(msg);
     var jibo_msg = new ROSLIB.Message(msg);
     cmdVel.publish(jibo_msg);
     await new Promise((r) => setTimeout(r, 500));
@@ -867,12 +806,10 @@ te: string;
       messageType: "jibo_msgs/JiboState",
     });
 
-    state_listener.subscribe(function (message: any) {
+    state_listener.subscribe((message: ROSLIB.Message) => {
       console.log("Received message on " + state_listener.name + ": ");
       console.log(message);
       state_listener.unsubscribe();
-
-      //this.jiboEvent.emit('command.complete');
     });
   }
   JiboASR_request() {
@@ -890,24 +827,19 @@ te: string;
   }
 
   async JiboASR_reseive() {
-    return new Promise((resolve) => {
+    return new Promise<string>((resolve) => {
       var asr_listener = new ROSLIB.Topic({
         ros: this.ros,
         name: "/jibo_asr_result",
         messageType: "jibo_msgs/JiboAsrResult",
       });
 
-      asr_listener.subscribe(function (message: { transcription: unknown }) {
+      asr_listener.subscribe((message: { transcription: string }) => {
         console.log("Received message on " + asr_listener.name + ": ");
         console.log(message);
         asr_listener.unsubscribe();
-        //this.asr_out = message.transcription;
         resolve(message.transcription);
       });
     });
-  }
-
-  addAnimationToList(anim: string) {
-    return this.animation_list.push(anim);
   }
 }
