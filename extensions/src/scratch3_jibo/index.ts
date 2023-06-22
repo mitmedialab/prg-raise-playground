@@ -349,7 +349,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
   }
 
-  checkBusy(self: Scratch3Jibo) {
+  checkBusy() {
     // checking state
     var state_listener = new ROSLIB.Topic({
       ros: this.ros,
@@ -359,7 +359,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
     state_listener.subscribe((message: any) => {
       // console.log('Received message on ' + state_listener.name + ': ');
-      self.busy = message.is_playing_sound;
+      this.busy = message.is_playing_sound;
       // console.log("in check, busy: " + this.busy)
       state_listener.unsubscribe();
     });
@@ -371,47 +371,47 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
   defineBlocks(): BlockDefinitions<Scratch3Jibo> {
     return {
-      JiboTTS: (self: Scratch3Jibo) => ({
+      JiboTTS: () => ({
         type: BlockType.Command,
         arg: {
           type: ArgumentType.String,
           defaultValue: "Hello, I am Jibo",
         },
         text: (text: string) => `say ${text}`,
-        operation: (text: string) => self.jiboTTSFn(text),
+        operation: (text: string) => this.jiboTTSFn(text),
       }),
-      JiboAsk: (self: Scratch3Jibo) => ({
+      JiboAsk: () => ({
         type: BlockType.Command,
         arg: {
           type: ArgumentType.String,
           defaultValue: "How are you?",
         },
         text: (text: string) => `ask ${text} and wait`,
-        operation: (text: string) => self.jiboAskFn(text),
+        operation: (text: string) => this.jiboAskFn(text),
       }),
-      JiboListen: (self: Scratch3Jibo) => ({
+      JiboListen: () => ({
         type: BlockType.Reporter,
         text: `answer`,
-        operation: () => self.jiboListenFn(),
+        operation: () => this.jiboListenFn(),
       }),
       // JiboState: () => ({ // helpful for debugging
       //     type:BlockType.Command,
       //     text: `read state`,
       //     operation: () => self.JiboState()
       // }),
-      JiboDance: (self: Scratch3Jibo) => ({
+      JiboDance: () => ({
         type: BlockType.Command,
         arg: {
           type: ArgumentType.String,
-          options: self.dances,
+          options: this.dances,
         },
         text: (dname) => `play ${dname} dance`,
         operation: async (dance: DanceType) => {
           const akey = danceFiles[dance].file;
-          await self.jiboAnimFn(akey);
+          await this.jiboAnimFn(akey);
         },
       }),
-      JiboEmote: (self: Scratch3Jibo) => ({
+      JiboEmote: () => ({
         type: BlockType.Command,
         arg: this.makeCustomArgument({
           component: "EmojiArgument",
@@ -423,10 +423,10 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         text: (aname) => `play ${aname} emotion`,
         operation: async (anim: EmotionType) => {
           const akey = emotionFiles[anim].file;
-          await self.jiboAnimFn(akey);
+          await this.jiboAnimFn(akey);
         },
       }),
-      JiboIcon: (self: Scratch3Jibo) => ({
+      JiboIcon: () => ({
         type: BlockType.Command,
         arg: this.makeCustomArgument({
           component: "IconArgument",
@@ -438,10 +438,10 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         text: (aname) => `show ${aname} icon`,
         operation: async (icon: IconType) => {
           const akey = iconFiles[icon].file;
-          await self.jiboAnimFn(akey);
+          await this.jiboAnimFn(akey);
         }
       }),
-      JiboLED: (self: Scratch3Jibo) => ({
+      JiboLED: () => ({
         type: BlockType.Command,
         arg: this.makeCustomArgument({
           component: "ColorArgument",
@@ -452,7 +452,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         }),
         text: (cname) => `set LED ring to ${cname}`,
         operation: (color: ColorType) => {
-          self.jiboLEDFn(color);
+          this.jiboLEDFn(color);
         },
       }),
       JiboLook: (self: Scratch3Jibo) => ({
@@ -476,23 +476,23 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         operation: (x_angle: string, y_angle: string, z_angle: string) =>
           self.jiboLookFn(x_angle, y_angle, z_angle),
       }),
-      JiboMultitask: (self: Scratch3Jibo) => ({
+      JiboMultitask: () => ({
         type: BlockType.Command,
         text: `start multitask`,
         operation: () => {
-          self.multitask = true;
+          this.multitask = true;
           console.log("starting multitask");
         },
       }),
-      JiboEnd: (self: Scratch3Jibo) => ({
+      JiboEnd: () => ({
         type: BlockType.Command,
         text: `end multitask`,
         operation: () => {
           // console.log(self.multitask_msg); // debug
-          self.JiboPublish(self.multitask_msg);
-          self.multitask = false;
-          self.multitask_msg = {};
-          self.prevTasks.length = 0;
+          this.JiboPublish(this.multitask_msg);
+          this.multitask = false;
+          this.multitask_msg = {};
+          this.prevTasks.length = 0;
           console.log("ending multitask");
         },
       }),
