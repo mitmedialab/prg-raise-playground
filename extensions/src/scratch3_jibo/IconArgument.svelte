@@ -64,8 +64,8 @@
   // svelte-ignore unused-export-let
   export let extension: Extension;
 
-  let value = current.value;
-  $: text = Icon[value];
+  let value = Icon[current.value];
+  $: text = value;
 
   $: setter({ value, text });
 </script>
@@ -73,8 +73,8 @@
 <div id="grid">
   {#each Object.keys(Icon) as icon}
     <button 
-      disabled={value == icon}
-      on:click={() => value = icon}>
+      disabled={value == Icon[icon]}
+      on:click={() => value = Icon[icon]}>
       <div class="cell">
         <img class="icon" src={iconImgs[Icon[icon]]} alt={icon} />
       </div>

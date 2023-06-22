@@ -64,8 +64,8 @@
   // svelte-ignore unused-export-let
   export let extension: Extension;
 
-  let value = current.value;
-  $: text = Emotion[value];
+  let value = Emotion[current.value];
+  $: text = value;
 
   $: setter({ value, text });
 </script>
@@ -73,8 +73,8 @@
 <div id="grid">
   {#each Object.keys(Emotion) as emotion}
     <button
-      disabled={value == emotion}
-      on:click={() => (value = emotion)}
+      disabled={value == Emotion[emotion]}
+      on:click={() => (value = Emotion[emotion])}
     >
       <div class="cell">
         <img
