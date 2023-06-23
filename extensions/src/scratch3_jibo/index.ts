@@ -2,14 +2,22 @@ import Runtime from "../../../packages/scratch-vm/src/engine/runtime";
 // import Cast from "../../../packages/scratch-vm/src/util/cast";
 // import log from "../../../packages/scratch-vm/src/util/log";
 import EventEmitter from "events";
+// firebase
+import database from './firebase';
 
 import { ArgumentType, BlockType, color } from "$common";
+import { block, buttonBlock, extension } from "$common";
 import { Environment, BlockDefinitions, MenuItem } from "$common";
 import { Extension } from "$common";
 
 import ROSLIB from "roslib";
 
 const EXTENSION_ID = "jibo";
+
+// jibo's name
+// opal-sage-victor-valley
+var jiboName: string = "";
+// var databaseRef = database.ref("Jibo-Name/" + jiboName);
 
 type RGB = {
   x: number;
@@ -152,7 +160,7 @@ const danceFiles: Record<DanceType, AnimFileType> = {
   },
 };
 
-export const Emotion  = {
+export const Emotion = {
   Embarassed: `embarassed`,
   Frustrated: `frustrated`,
   Laugh: `laughing`,
@@ -298,6 +306,7 @@ type Details = {
 };
 
 type Blocks = {
+  JiboButton: () => void;
   JiboTTS: (text: string) => void;
   JiboAsk: (text: string) => void;
   JiboListen: () => any;
@@ -310,6 +319,47 @@ type Blocks = {
   JiboEnd: () => void;
 };
 
+var defaultJiboMsg = {
+  anim_transition: 0,
+  attention_mode: 1,
+  audio_filename: "",
+  do_anim_transition: false,
+  do_attention_mode: false,
+  do_led: false,
+  do_lookat: false,
+  do_motion: false,
+  do_sound_playback: false,
+  do_tts: false,
+  do_volume: false,
+  led_color: [0, 100, 0], //red, green, blue
+  lookat: [0, 0, 0], //x, y, z
+  motion: "",
+  tts_duration_stretch: 0,
+  tts_pitch: 0,
+  tts_text: "",
+  volume: 0,
+};
+
+export function setJiboName(name: string): void {
+  database.ref("Jibo-Name/" + name).push(defaultJiboMsg);
+  jiboName = name;
+  console.log(`Hello, I am a new jibo and my name is ${name}!`);
+}
+
+function setJiboMsg(jibo_msg: any): void {
+  database.ref("Jibo-Name/" + jiboName)
+    .push({ ...jibo_msg })
+    .then(function () {
+      console.log("New record for '" + jiboName + "' created successfully.");
+    })
+    .catch(function (error) {
+      console.error(
+        "Error creating new record for '" + jiboName + "' :",
+        error
+      );
+    });
+}
+
 export default class Scratch3Jibo extends Extension<Details, Blocks> {
   // runtime: Runtime;
   ros: any; // TODO
@@ -319,7 +369,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   jbVolume: string;
   asr_out: any;
   jiboEvent: EventEmitter;
-te: string;
+  te: string;
   text: string;
   animName: string;
   multitask: boolean;
@@ -392,8 +442,19 @@ te: string;
     return undefined;
   }
 
+
+
   defineBlocks(): BlockDefinitions<Scratch3Jibo> {
     return {
+      JiboButton: (self: Scratch3Jibo) => ({
+        type: BlockType.Button,
+        arg: {
+          type: ArgumentType.String,
+          defaultValue: "Jibo's name here",
+        },
+        text: () => `Enter Jibo's name`,
+        operation: () => self.openUI("jiboNameModal", "My Jibo"),
+      }),
       JiboTTS: (self: Scratch3Jibo) => ({
         type: BlockType.Command,
         arg: {
@@ -665,6 +726,10 @@ te: string;
       volume: parseFloat(this.jbVolume),
     };
 
+    // write to firebase
+    setJiboMsg(jibo_msg);
+    // taz test firebase
+
     // this.tts.push(jibo_msg);
     // console.log(this.tts)
 
@@ -677,7 +742,9 @@ te: string;
 
     // this.busy = true;
     // console.log("before publishing")
+
     await this.JiboPublish(jibo_msg);
+
     // console.log("after publishing")
 
     // var rep = true;
