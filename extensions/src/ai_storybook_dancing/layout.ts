@@ -1,4 +1,6 @@
 import { block, hideElementsWithClass } from "$common";
+import AiStorybookDancing from ".";
+import BlockIDs from "./BlockIDs";
 
 /**
  * Remove UI elements that aren't related to the block programming workspace.
@@ -40,5 +42,19 @@ export const fixHatImage = (hatID: string) => {
     const hatBlock = document.querySelectorAll(`[data-id='${hatID}']`);
     const image = hatBlock[0].querySelector("g image");
     image.setAttribute("transform", `translate(${24}, ${-15})`);
+}
 
+export const populateSVGElements = (blockIDs: BlockIDs) => {
+    for (const element of document.getElementsByTagName("g"))
+        blockIDs.setElement(element.getAttribute("data-id"), element);
+}
+
+export const highlight = (block: keyof AiStorybookDancing, blockIDs: BlockIDs) => {
+    const element = blockIDs.getElement(block);
+    element.setAttribute("stroke", "#faf202");
+    element.setAttribute("fill-opacity", "0.7");
+    return () => {
+        element.setAttribute("stroke", "#d99c57");
+        element.setAttribute("fill-opacity", "1");
+    }
 }

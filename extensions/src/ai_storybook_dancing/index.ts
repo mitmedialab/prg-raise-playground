@@ -1,6 +1,6 @@
 import { Environment, ExtensionMenuDisplayDetails, extension, block, SaveDataHandler, RuntimeEvent, ArgumentType } from "$common";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
-import { hideNonBlocklyElements, stretchWorkspaceToScreen, fixInlineImages, fixHatImage } from "./layout";
+import { hideNonBlocklyElements, stretchWorkspaceToScreen, fixInlineImages, fixHatImage, populateSVGElements, highlight } from "./layout";
 import { announce, requestDanceMove, requestMusic, untilMessageReceived, type DanceMove, type MusicState } from "./messaging";
 import hop from "./inlineImages/hop.png";
 import stepLeft from "./inlineImages/left.png";
@@ -8,7 +8,7 @@ import stepRight from "./inlineImages/right.png";
 import spinLeft from "./inlineImages/spin-left.png";
 import spinRight from "./inlineImages/spin-right.png";
 import start from "./inlineImages/start.png";
-
+import BlockIDs from "./BlockIDs";
 
 const details: ExtensionMenuDisplayDetails = {
   name: "Dancing Activity for AI Storybook",
@@ -17,38 +17,65 @@ const details: ExtensionMenuDisplayDetails = {
   menuSelectColor: "#d99c57"
 };
 
-let flipFlopper = false;
-let musicPlayingLoop = false;
-let hatBlockID: string;
+let musicPlaying = false;
+let hatShouldExecute = false;
+let overrideHatShouldExecute = false;
+let executionStateChange = false;
+
+const blockByDanceMove = {
+  "hop": "hop",
+  "swivel left": "stepLeft",
+  "swivel right": "stepRight",
+  "spin left": "spinLeft",
+  "spin right": "spinRight"
+} satisfies Record<DanceMove, keyof AiStorybookDancing>;
 
 const dance = async (move: DanceMove) => {
   requestDanceMove(move);
   await untilMessageReceived(`end ${move}`);
 }
 
-async function blockSequence(move: DanceMove, util: BlockUtility) {
-  const topBlockID = util.thread.topBlock;
-  if (topBlockID != hatBlockID) return;
+async function blockSequence(move: DanceMove, blockIDs: BlockIDs, util: BlockUtility) {
+  const { topBlock, blockContainer } = util.thread;
+  if (topBlock != blockIDs.get("entry")) return;
+  const block = blockByDanceMove[move];
+  const isFirtSibling = blockContainer.getNextBlock(topBlock) === blockIDs.get(block);
+  if (!hatShouldExecute && !isFirtSibling) return;
+  else if (!hatShouldExecute) overrideHatShouldExecute = true;
+  const unhighlight = highlight(block, blockIDs);
   await dance(move);
+  unhighlight();
+  if (!hatShouldExecute) executionStateChange = true;
 }
 
-function assignHatBlockID(util: BlockUtility) {
-  const blocks = util.thread.blockContainer._blocks;
-  for (const blockID in blocks) {
-    const hatOpcode: keyof AiStorybookDancing = "entry";
-    if (!blocks[blockID].opcode.endsWith(hatOpcode)) continue;
-    hatBlockID = blockID;
-    break;
-  }
-}
-
-function executeWhenStorybookLoads(util: BlockUtility) {
-  assignHatBlockID(util);
+function onFirstExecution(blockIDs: BlockIDs) {
   fixInlineImages();
-  fixHatImage(hatBlockID);
+  fixHatImage(blockIDs.get("entry"));
+  populateSVGElements(blockIDs);
+}
+
+function getHatChildren(hatBlockID: string, { thread: { blockContainer } }: BlockUtility) {
+  let previous = hatBlockID;
+  let children = [];
+  while ((previous = blockContainer.getNextBlock(previous))) children.push(previous);
+  return children;
+}
+
+function music(doPlay: boolean) {
+  if (doPlay && !musicPlaying && !executionStateChange) {
+    musicPlaying = true;
+    requestMusic("on");
+  }
+  else if (!doPlay && musicPlaying) {
+    musicPlaying = false;
+    requestMusic("off");
+  }
+  executionStateChange = false;
 }
 
 export default class AiStorybookDancing extends extension(details, "blockly", "customSaveData") {
+  private blockIDs: BlockIDs;
+  private previousHatChildren: string;
 
   async init(env: Environment) {
     hideNonBlocklyElements();
@@ -56,16 +83,6 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     const workspace = this.blockly.getMainWorkspace();
     workspace.zoom(0, 0, 3.5);
     announce("ready");
-  }
-
-  /**
-   * As noted in the extension documentation: 
-   * "[A hat] starts a stack if its value changes from falsy to truthy ('edge triggered')"
-   * so this property continuously flips between true and false to trigger a hat block continuously.
-   */
-  get runContinuously() {
-    flipFlopper = !flipFlopper;
-    return flipFlopper;
   }
 
   @block({
@@ -78,7 +95,7 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     type: "command"
   })
   async hop(hop: "inline image", util: BlockUtility) {
-    await blockSequence("hop", util);
+    await blockSequence("hop", this.blockIDs, util);
   }
 
   @block({
@@ -91,7 +108,7 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     type: "command"
   })
   async stepLeft(stepLeft: "inline image", util: BlockUtility) {
-    await blockSequence("swivel left", util);
+    await blockSequence("swivel left", this.blockIDs, util);
   }
 
   @block({
@@ -104,7 +121,7 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     type: "command"
   })
   async stepRight(stepRight: "inline image", util: BlockUtility) {
-    await blockSequence("swivel right", util);
+    await blockSequence("swivel right", this.blockIDs, util);
   }
 
   @block({
@@ -117,7 +134,7 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     type: "command"
   })
   async spinLeft(spinLeft: "inline image", util: BlockUtility) {
-    await blockSequence("spin left", util);
+    await blockSequence("spin left", this.blockIDs, util);
   }
 
   @block({
@@ -130,7 +147,7 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     type: "command"
   })
   async spinRight(spinRight: "inline image", util: BlockUtility) {
-    await blockSequence("spin right", util);
+    await blockSequence("spin right", this.blockIDs, util);
   }
 
 
@@ -144,15 +161,16 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     }
   })
   entry(image: "inline image", util: BlockUtility) {
-
-    if (!hatBlockID) executeWhenStorybookLoads(util);
-
-    const hasChildren = !!util.thread.blockContainer.getNextBlock(hatBlockID);
-
-    if (hasChildren && !musicPlayingLoop) requestMusic("on");
-    else if (!hasChildren && musicPlayingLoop) requestMusic("off");
-    musicPlayingLoop = hasChildren;
-
-    return this.runContinuously;
+    if (!this.blockIDs) {
+      this.blockIDs = new BlockIDs(this, util);
+      onFirstExecution(this.blockIDs);
+    }
+    const children = getHatChildren(this.blockIDs.get("entry"), util);
+    const serialized = JSON.stringify(children);
+    hatShouldExecute = overrideHatShouldExecute || (children.length > 0 && this.previousHatChildren !== serialized);
+    this.previousHatChildren = serialized;
+    hatShouldExecute ? music(true) : music(false);
+    overrideHatShouldExecute = false;
+    return hatShouldExecute;
   }
 }
