@@ -21,9 +21,7 @@ jobs:
       run: npm run init
     - name: Generate
       run: npm run document:extensions
-    - name: Commit (without CI) and Push (if changes)
-      run: |
-        git config --local user.email ""
-        git config --local user.name "GitHub Action"
-        git add extensions/README.md
-        git diff-index --quiet HEAD || git commit -m "[skip ci] re-generate extension documentation" && git push
+    - uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: '[skip ci] re-generate extension documentation'
+        file_pattern: 'extensions/README.md'
