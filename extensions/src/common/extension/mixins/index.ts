@@ -5,6 +5,7 @@ import customSaveData from "./configurable/customSaveData";
 import drawable from "./configurable/drawable";
 import legacySupport from "./configurable/legacySupport";
 import ui from "./configurable/ui";
+import indicators from "./configurable/indicators";
 import video from "./configurable/video";
 import setTransparencyBlock from "./configurable/blocks/setVideoTransparency";
 import toggleVideoBlock from "./configurable/blocks/toggleVideoState";
@@ -22,6 +23,7 @@ export const optionalMixins = {
   legacySupport,
   setTransparencyBlock,
   toggleVideoBlock,
+  indicators
 } as const satisfies OptionalMixins satisfies Record<string, Mixin<unknown>>;
 
 export type OptionalMixins<T extends MinimalExtensionConstructor = MinimalExtensionConstructor> = {
@@ -33,7 +35,8 @@ export type OptionalMixins<T extends MinimalExtensionConstructor = MinimalExtens
   addCostumes: typeof addCostumes<T>,
   legacySupport: typeof legacySupport<T>,
   setTransparencyBlock: typeof setTransparencyBlock<T>,
-  toggleVideoBlock: typeof toggleVideoBlock<T>
+  toggleVideoBlock: typeof toggleVideoBlock<T>,
+  indicators: typeof indicators<T>
 }
 
 export type MixinName = keyof typeof optionalMixins;
@@ -49,4 +52,4 @@ export type ExtensionWithFunctionality<TSupported extends MixinName[], TBase ext
   /** Base case */
   : TBase;
 
-export type ExtensionIntanceWithFunctionality<TSupported extends MixinName[]> = InstanceType<ExtensionWithFunctionality<TSupported>>;
+export type ExtensionInstanceWithFunctionality<TSupported extends MixinName[]> = InstanceType<ExtensionWithFunctionality<TSupported>>;

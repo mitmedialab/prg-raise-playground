@@ -1,18 +1,23 @@
-import { indicateOnCategoryLabel } from ".";
+import { ExtensionInstanceWithFunctionality } from "../..";
+
+export const isSvgGroup = (element: Element): element is SVGGElement => element.nodeName === "g";
+export const isSvgText = (element: Element): element is SVGTextElement => element.nodeName === "text";
+
+type AlertType = Parameters<ExtensionInstanceWithFunctionality<["indicators"]>["indicate"]>[0]["type"];
 
 const fills = {
-  succes: "#5ACA75",
+  success: "#5ACA75",
   warning: "#FF8f39",
-  error: "#F48989"
-} as const;
+  error: "#db1f1f"
+} satisfies Record<AlertType, string>;
 
 const textColor = {
-  succes: "white",
+  success: "white",
   warning: "white",
   error: "white"
-} as const;
+} satisfies Record<AlertType, string>;
 
-export async function openAlert(container: SVGGElement, msg: string, type: Parameters<typeof indicateOnCategoryLabel>[2]) {
+export async function openAlert(container: SVGGElement, msg: string, type: AlertType) {
   const elements = createElements();
   const [rect, triangle, text] = elements;
 
@@ -24,8 +29,14 @@ export async function openAlert(container: SVGGElement, msg: string, type: Param
 
   applyAttributes(triangle, { points: equilateralTrianglePoints, fill });
 
-  applyAttributes(text, { x: x + padding / 2, y, class: "blocklyFlyoutLabelText" });
-  setStyles(text, { fill: "yellow" });
+  applyAttributes(text, {
+    x: x + padding / 2,
+    y,
+    fill: color,
+    "font-weight": "bold",
+    "font-size": "14pt",
+    "font-family": "\"Helvetica Neue\", Helvetica, Arial, sans-serif;"
+  });
 
   text.innerHTML = msg;
 
@@ -44,12 +55,6 @@ export async function openAlert(container: SVGGElement, msg: string, type: Param
 const applyAttributes = <T extends Record<string, any>>(element: Element, attributes: T) => {
   for (const key in attributes) {
     element.setAttribute(key, `${attributes[key]}`);
-  }
-}
-
-const setStyles = <T extends { [k in keyof CSSStyleDeclaration]?: any }>(element: Element, attributes: T) => {
-  for (const key in attributes) {
-    element[key] = `${attributes[key]} !important`;
   }
 }
 
