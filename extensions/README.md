@@ -18,7 +18,7 @@ This document will be most helpful for people doing more complex development, li
 4. [Creating UI for Extensions](#creating-ui-for-extensions)
 5. [Porting an Extension to use our Framework & Typescript](#porting-an-extension-to-use-our-framework--typescript)
 6. [Saving Custom Data for an Extension](#saving-custom-data-for-an-extension)
-7. [Making use of the Block Utility](#making-use-of-the-block-utility)
+7. [Making use of the Block Utility & Block ID](#making-use-of-the-block-utility--block-id)
 8. [Adding Custom Arguments](#adding-custom-arguments)
 9. [Adding inline images to the text of blocks](#adding-inline-images-to-the-text-of-blocks)
 10. [Reference](#reference)
@@ -1180,12 +1180,38 @@ export default class SaveLoadExample extends extension({ name }, "customSaveData
 ```
 
 
-## Making use of the Block Utility
+## Making use of the Block Utility & Block ID
 
 > NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
 If you want to edit it, please go to [extensions/documentation/src/blockUtility/README.md](documentation/src/blockUtility/README.md)
 
-... Coming soon ...
+The Scratch runtime will pass a `BlockUtility` object to every block method when it is executed. 
+
+This can help you do things like:
+- ...TBD...
+
+### Block ID
+
+PRG has added an additional property to the `BlockUtility`, the `blockID` field, which allows you to uniquely associate an invocation of your block method with a block in the user's environment. Access it as demonstrated below:
+
+```ts
+import { BlockUtilityWithID, Environment, block, extension } from "$common";
+
+export default class extends extension({ name: "Block Utility example" }) {
+    override init(env: Environment) { }
+
+    @block({
+        type: "command",
+        text: (someArgument) => `Block text with ${someArgument}`,
+        arg: "number"
+    })
+    exampleBlockMethod(someArgument: number, util: BlockUtilityWithID) {
+        const { blockID } = util;
+        console.log(`My ID is: ${blockID}`)
+    }
+}
+```
+
 
 ## Adding Custom Arguments
 
