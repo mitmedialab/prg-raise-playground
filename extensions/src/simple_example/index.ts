@@ -1,4 +1,4 @@
-import { ArgumentType, BlockType, Environment, ExtensionMenuDisplayDetails, Language, Menu, SaveDataHandler, block, buttonBlock, extension, tryCastToArgumentType } from "$common";
+import { ArgumentType, BlockType, BlockUtilityWithID, Environment, ExtensionMenuDisplayDetails, Language, Menu, SaveDataHandler, block, buttonBlock, extension, tryCastToArgumentType } from "$common";
 import jibo from "./jibo.png";
 import five from "./five.png";
 
@@ -89,7 +89,8 @@ export default class SimpleTypescript extends extension(details, "ui", "customSa
       "number"
     ]
   })
-  addFive(lhs: number, five: "inline image", rhs: number) {
+  addFive(lhs: number, five: "inline image", rhs: number, { blockID }: BlockUtilityWithID) {
+    console.log(blockID);
     return lhs + 5 - rhs;
   }
 }
