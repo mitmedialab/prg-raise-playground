@@ -1,6 +1,6 @@
 import { block } from "$common/extension/decorators/blocks";
 import { withDependencies } from "../../dependencies";
-import { MinimalExtensionConstructor } from "../../required";
+import { MinimalExtensionConstructor } from "../../base";
 import video from "../video";
 
 /**

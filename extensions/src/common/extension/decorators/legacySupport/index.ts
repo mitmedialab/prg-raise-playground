@@ -1,4 +1,4 @@
-import { legacySupportWithInfoArgument } from "$common/extension/mixins/optional/legacySupport";
+import { legacySupportWithInfoArgument } from "$common/extension/mixins/configurable/legacySupport";
 import { ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuItems, BlockOperation, Argument, ExtensionMenuMetadata, ExtensionDynamicMenu, Menu, DynamicMenuThatAcceptsReporters, BaseGenericExtension, VerboseArgument, DefineBlock, AbstractConstructor, NonAbstractConstructor, BlockMetadata } from "$common/types";
 import { isFunction, isString } from "$common/utils";
 import { block } from "../blocks";

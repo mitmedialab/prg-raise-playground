@@ -1,6 +1,6 @@
 import { BaseGenericExtension, NonAbstractConstructor } from "$common/types";
-import { MinimalExtensionConstructor } from "../required";
-import { ExtensionIntanceWithFunctionality } from "..";
+import { MinimalExtensionConstructor } from "../base";
+import { ExtensionInstanceWithFunctionality } from "..";
 
 /**
  * WARNING! If you change this key, it will affect already saved projects.
@@ -25,7 +25,7 @@ export const saveDataKey = "customSaveDataPerExtension" as const;
  * })
  * @todo Remove the `BaseGenericExtension` Generic Type restraint once Generic Extensions are no longer supported
  */
-export class SaveDataHandler<T extends BaseGenericExtension | ExtensionIntanceWithFunctionality<["customSaveData"]>, TData> {
+export class SaveDataHandler<T extends BaseGenericExtension | ExtensionInstanceWithFunctionality<["customSaveData"]>, TData> {
   constructor(public hooks: {
     // @ts-ignore
     Extension: NonAbstractConstructor<T>,
