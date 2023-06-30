@@ -1,67 +1,17 @@
-import { ArgumentType, BlockType } from "$common/enums";
-import { SerializedBlockData, extractLegacySupportFromOldGetInfo } from "$common/portHelper";
-import { BaseExtension, Block, DefineBlock, ExtensionBlockMetadata, ExtensionMetadata } from "$common/types";
-import { describe, expect, test } from "$testing";
+import { extension } from "$common/extension";
+import { Extension } from "$common/extension/GenericExtension";
+import { legacy } from "$common/extension/decorators/legacySupport";
+import { BlockDefinitions, Environment, NonAbstractConstructor, ArgumentType, BlockType, ExtensionMetadata } from "$common/types";
+import { createTestSuite, testID } from "$testing";
+import { DefaultDisplayDetails } from "$testing/defaults";
 
-type WithName<T> = T & { name: string };
-
-const toMenuEntry = <T>(arr: T[]) => arr.map(item => ({ text: `${item}`, value: item }));
-
-const nameShouldBeAddedToBlockTest = <T>(newBlock: T, oldBlock: ExtensionBlockMetadata) =>
-  test("Name should be be added to block: " + oldBlock.opcode, () => {
-    expect((newBlock as WithName<T>).name).toBe(oldBlock.opcode);
-  });
-
-type MultiArgBlockFunction = (...args: [any, any, ...any[]]) => void
-
-const nameShouldBeAddedToArgsTest = <T>(newBlock: T, oldBlock: ExtensionBlockMetadata) =>
-  test("Name should be be added to block: " + oldBlock.opcode, () => {
-    const keys = Object.keys(oldBlock.arguments);
-    (newBlock as Block<BaseExtension, MultiArgBlockFunction>).args
-      .map(arg => (arg as WithName<typeof arg>).name)
-      .forEach((name, index) => expect(name).toBe(keys[index]))
-  });
-
-describe("No menus", () => {
-  const legacy = extractLegacySupportFromOldGetInfo({
-    blocks: [{
-      blockType: BlockType.Command,
-      opcode: "multiArgumentsNoMenus",
-      text: "Dummy",
-      arguments: {
-        ARG_0: {
-          type: ArgumentType.String
-        },
-        ARG_1: {
-          type: ArgumentType.Number
-        },
-        ARG_2: {
-          type: ArgumentType.Color
-        },
-      }
-    }]
-  } as const);
-
-  const modernBlockDefinition = legacy.multiArgumentsNoMenus({
-    type: BlockType.Command,
-    args: [
-      { type: ArgumentType.String },
-      { type: ArgumentType.Number, options: [1, 2] },
-      { type: ArgumentType.Color, defaultValue: { r: 1, g: 1, b: 1 } }
-    ]
-  });
-
-  nameShouldBeAddedToBlockTest(modernBlockDefinition, legacy.legacyBlocksForTests.multiArgumentsNoMenus);
-  nameShouldBeAddedToArgsTest(modernBlockDefinition, legacy.legacyBlocksForTests.multiArgumentsNoMenus);
-});
-
-describe("With menus", () => {
-
-  const legacy = extractLegacySupportFromOldGetInfo({
-    blocks: [{
+const info = {
+  id: testID,
+  blocks: [
+    {
       blockType: BlockType.Reporter,
       opcode: "multiArgumentsWithMenus",
-      text: "Dummy",
+      text: "Dummy [ARG_0] and [ARG_1] also [ARG_2]",
       arguments: {
         ARG_0: {
           type: ArgumentType.Number,
@@ -72,96 +22,113 @@ describe("With menus", () => {
           menu: "valueOnly"
         },
         ARG_2: {
-          type: ArgumentType.Color,
-          menu: "notDefined"
-        },
-        ARG_3: {
-          type: ArgumentType.Angle,
-          menu: "empty"
-        },
-        ARG_5: {
-          type: ArgumentType.Number,
-          menu: "missing"
-        },
-        ARG_6: {
           type: ArgumentType.Number,
           menu: "expressedAsEntries"
         }
       },
-    } as const],
-    menus: {
-      textAndValue: {
-        acceptReporters: false,
-        items: [{ text: "0", value: 0 }, { text: "1", value: 1 }, { text: "2", value: 2 }]
-      },
-      valueOnly: {
-        acceptReporters: false,
-        // Must be strings to provide value only
-        items: ["0", "1", "2"]
-      },
-      notDefined: {
-        acceptReporters: false,
-        items: undefined
-      },
-      empty: {
-        acceptReporters: false,
-        items: []
-      },
-      expressedAsEntries: {
-        acceptReporters: false,
-        items: [{ text: "0", value: 0 }, { text: "1", value: 1 }]
+    },
+  ],
+  menus: {
+    textAndValue: {
+      acceptReporters: false,
+      items: [{ text: "0", value: 0 }, { text: "1", value: 1 }, { text: "2", value: 2 }]
+    },
+    valueOnly: {
+      acceptReporters: true,
+      // Must be strings to provide value only
+      items: "ee"
+    },
+    expressedAsEntries: {
+      acceptReporters: true,
+      items: [{ text: "0", value: 0 }, { text: "1", value: 1 }]
+    }
+  }
+} as const;
+
+const { legacyExtension, legacyDefinition, ReservedNames } = legacy(info).for<GenericExtension>();
+
+const createArgumentMethods = <T extends GenericExtension | ConfigurableExtension>(self: T) => ({
+  argumentMethods: {
+    1: { getItems: () => ["#"], handler: self.handle },
+    2: {
+      handler: (x: any) => {
+        self.toHandle.push(x);
+        return parseInt(`${x}`) ?? 0;
       }
     }
-  } as const);
-
-  const modernBlockDefinition = legacy.multiArgumentsWithMenus({
-    type: BlockType.Reporter,
-    args: [
-      { type: ArgumentType.Number, options: toMenuEntry([0, 1, 2]) },
-      { type: ArgumentType.String, options: ["0", "1", "2"] },
-      { type: ArgumentType.Color, options: toMenuEntry([{ r: 1, g: 2, b: 3 }]) },
-      { type: ArgumentType.Angle, options: toMenuEntry([0, 1, 2]) },
-      { type: ArgumentType.Number, options: [0, 2] },
-      { type: ArgumentType.Number, options: [0, 1] }
-    ]
-  });
-
-  const oldBlock = legacy.legacyBlocksForTests.multiArgumentsWithMenus;
-  nameShouldBeAddedToBlockTest(modernBlockDefinition, oldBlock);
-  nameShouldBeAddedToArgsTest(modernBlockDefinition, oldBlock);
+  },
 })
 
-describe("Arguments mismatch", () => {
-  const legacy = extractLegacySupportFromOldGetInfo({
-    blocks: [
-      {
-        opcode: "testCase",
-        blockType: "command",
-        text: "Dummy",
-        arguments: {
-          ARG_0: {
-            type: "string",
-            menu: "mismatch"
-          }
+@legacyExtension()
+class GenericExtension extends Extension<DefaultDisplayDetails, {
+  multiArgumentsWithMenus: (args_0: number, args_1: string, args_2: number) => string,
+}> {
+
+  toHandle: any = [];
+
+  handle(x: unknown) {
+    this.toHandle.push(x);
+    return `${x}`;
+  }
+
+  defineBlocks(): BlockDefinitions<GenericExtension> {
+    return {
+      multiArgumentsWithMenus: legacyDefinition.multiArgumentsWithMenus((self) => ({
+        ...createArgumentMethods(self),
+        operation: (x, y, z, util) => "Hi" + x + y + z,
+      }))
+
+    }
+  }
+
+  init(env: Environment): void { }
+}
+
+
+const { legacyBlock } = legacy(info).for<ConfigurableExtension>();
+
+class ConfigurableExtension extends extension({ name: "" }, "legacySupport") {
+  protected getLegacyInfo() { return info }
+
+  init(env: Environment): void { }
+
+  toHandle: any = [];
+
+  handle(x: unknown) {
+    this.toHandle.push(x);
+    return `${x}`;
+  }
+
+  @legacyBlock.multiArgumentsWithMenus(createArgumentMethods<ConfigurableExtension>)
+  multiArgumentsWithMenus(args_0: number, args_1: string, args_2: number) {
+    return "Hi" + args_0 + args_1 + args_2;
+  }
+}
+
+const makeTestSuite = (Extension: NonAbstractConstructor<GenericExtension | ConfigurableExtension>) => {
+  createTestSuite({ Extension, __dirname }, {
+    unitTests: {
+      multiArgumentsWithMenus: () => {
+        const input = [100, "Hooo", 100] as const;
+        return {
+          input,
+          expected: `Hi${input.join("")}`,
+          after: (({ extension, testHelper: { expect } }) => {
+            expect(extension.toHandle).toContain(input[1]);
+            expect(extension.toHandle).toContain(input[2]);
+          })
         }
       }
-    ],
-    menus: {
-      mismatch: {
-        items: ["a", "b", "c"],
-        acceptReporters: false,
+    },
+    integrationTests: {
+      checkDynamicMenu: ({ extension, testHelper: { expect } }) => {
+        const dynamicMenuName = info.menus.valueOnly.items;
+        expect(extension[dynamicMenuName]).toBeDefined();
+        expect(extension[dynamicMenuName]()).toEqual(["#"]);
       }
     }
-  } as const);
+  })
+}
 
-  test("Block definition causes error", () => {
-    expect(() => legacy.testCase({
-      type: BlockType.Command,
-      arg: {
-        type: ArgumentType.String,
-        options: ["x", "y", "z"]
-      }
-    })).toThrow();
-  });
-
-})
+makeTestSuite(GenericExtension);
+makeTestSuite(ConfigurableExtension);

@@ -2,7 +2,7 @@ import { copyFileSync, existsSync, writeFileSync, mkdirSync, readFileSync } from
 import path = require("path");
 import { ExtensionMenuDisplayDetails } from "$common";
 import MenuDetailItem from "./MenuDetailItem";
-import { BundleInfo } from "scripts/bundle";
+import { BundleInfo } from "../bundles";
 import { importStatement } from "scripts/utils/importExport";
 import { generatedDetailsFileName, generatedMenuDetailsDirectory, getMenuDetailsAssetsFile, menuDetailsRootFile, prgLogo, raiseLogo } from "scripts/utils/fileSystem";
 import { PathToIcons, copyIconsToAssetsDirectory } from "./icons";

@@ -6,9 +6,9 @@ const { tryInitExtension, tryGetExtensionConstructorFromBundle, tryGetAuxiliaryO
 const { customArgumentCheck } = require('../dist/globals');
 
 const tryRetrieveExtensionConstructor = async (extensionId) =>
-    await extensionId in builtinExtensions 
-    ? builtinExtensions[extensionId]() 
-    : tryGetExtensionConstructorFromBundle(extensionId);
+    await extensionId in builtinExtensions
+        ? builtinExtensions[extensionId]()
+        : tryGetExtensionConstructorFromBundle(extensionId);
 
 // These extensions are currently built into the VM repository but should not be loaded at startup.
 // TODO: move these out into a separate repository?
@@ -34,11 +34,7 @@ const builtinExtensions = {
     arduinoRobot: () => require('../extensions/scratch3_arduinobot'),
     gizmoRobot: () => require('../extensions/scratch3_gizmo'),
     microbitRobot: () => require('../extensions/scratch3_microbot'),
-    teachableMachine: () => require('../extensions/scratch3_teachable_machine'),
     textClassification: () => require('../extensions/scratch3_text_classification'),
-    poseFace: () => require('../extensions/scratch3_pose_face'),
-    poseHand: () => require('../extensions/scratch3_pose_hand'),
-    poseBody: () => require('../extensions/scratch3_pose_body')
 };
 
 /**
@@ -143,7 +139,7 @@ class ExtensionManager {
         }
 
         const extensionInstance = new extension(this.runtime);
-        tryInitExtension(extensionInstance);
+        await tryInitExtension(extensionInstance);
         const serviceName = this._registerInternalExtension(extensionInstance);
         this._loadedExtensions.set(extensionId, serviceName);
     }
@@ -164,12 +160,12 @@ class ExtensionManager {
                 return;
             }
             const extensionInstance = new extension(this.runtime);
-            tryInitExtension(extensionInstance);
+            await tryInitExtension(extensionInstance);
             const serviceName = this._registerInternalExtension(extensionInstance);
             this._loadedExtensions.set(extensionURL, serviceName);
             return;
         }
-        
+
         return new Promise((resolve, reject) => {
             // If we `require` this at the global level it breaks non-webpack targets, including tests
             const ExtensionWorker = require('worker-loader?name=extension-worker.js!./extension-worker');
@@ -182,7 +178,7 @@ class ExtensionManager {
     /** Begin PRG Additions */
     getLoadedExtensionIDs() { return Array.from(this._loadedExtensions.keys()) }
     getExtensionInstance(id) { return this._loadedExtensions.has(id) ? dispatch.services[this._loadedExtensions.get(id)] : undefined }
-    getAuxiliaryObject (extensionID, name) { return tryGetAuxiliaryObjectFromLoadedBundle(extensionID, name) };
+    getAuxiliaryObject(extensionID, name) { return tryGetAuxiliaryObjectFromLoadedBundle(extensionID, name) };
     /** END PRG Additions */
 
     /**

@@ -6,10 +6,11 @@ import Simple from "$src/simple_example";
 createTestSuite({ Extension, __dirname }, {
   unitTests: {
     add: { input: [4, 8], expected: 12 },
-    addAnimalToCollection: ({ expect }) => {
+    addAnimalToCollectionAndAlert: ({ expect }) => {
       let startingCount: number;
       const input = Animal.Tiger;
       return {
+        name: "Confirm animal is in collection after addAnimal",
         input,
         before: ({ extension: { collection } }) => { startingCount = collection.length },
         after: ({ extension: { collection } }) => {
@@ -21,6 +22,7 @@ createTestSuite({ Extension, __dirname }, {
       }
     },
     selectAngle: {
+      name: "Ensure angle matches",
       input: 3,
       expected: 3,
       after({ result, testHelper: { expect } }) { expect(result).toBe(3) }

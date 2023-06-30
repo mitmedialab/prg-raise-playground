@@ -3,6 +3,7 @@
  * https://jestjs.io/docs/configuration
  */
 import { pathsToModuleNameMapper } from 'ts-jest';
+
 // In the following statement, replace `./tsconfig` with the path to your `tsconfig` file
 // which contains the path mapping (ie the `compilerOptions.paths` option):
 import path from "path";
@@ -89,7 +90,10 @@ export default {
   moduleFileExtensions: ['js', 'ts', 'svelte'],
 
   // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
-  moduleNameMapper: pathsToModuleNameMapper(paths, { prefix: pathsBase }),
+  moduleNameMapper: {
+    "^.+\\.(jpg|jpeg|png|gif|webp|svg)$": path.resolve(".", "mocks", "image.ts"),
+    ...pathsToModuleNameMapper(paths, { prefix: pathsBase }),
+  },
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
   // modulePathIgnorePatterns: [],

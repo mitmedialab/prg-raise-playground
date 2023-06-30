@@ -20,6 +20,17 @@ Below are the files you should always find within an extension's directory:
 - `package.json`
     - Each extension is treated as it's own package and thus has it's own [package.json](https://docs.npmjs.com/cli/v9/configuring-npm/package-json) file. 
         - This makes it easy to handle cases when two extensions want to use different versions of the same [npm package](https://www.npmjs.com/). 
+        - An extension's `package.json` file also includes [npm scripts](https://docs.npmjs.com/cli/v9/using-npm/scripts) that execute scripts from the [root package.json]() with the exension's folder as an argument. This makes executing certain commands a little easier.
+            - For example, if your extension folder is `myExtension`, you can do the following:
+                ```
+                cd extensions/myExtension # only do this once
+                npm run dev 
+                ```
+             - Instead of running the following from the root of the project every time:
+                ```
+                npm run dev only=myExtension
+                ```
+            - Inspect the `package.json` file to see all augmented scripts.
 
 ### Auxiliary Files
 

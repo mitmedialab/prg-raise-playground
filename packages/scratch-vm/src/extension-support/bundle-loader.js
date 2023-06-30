@@ -1,109 +1,95 @@
-/* 
-Unfortunately, the bundling of the scratch-vm prevents this import from working correctly
-(likely because it is 'symlinked' in the scratch-gui's node_modules, so this relative path ends up being incorrect).
-The import is preserved to make it easy to ensure the defined value of 'FrameworkID' matches thex exported one.
-Anyone can feel free to try and get this working, but it's not worth pulling your hair out over.
-*/
-//import {FrameworkID} from "../../../../extensions/dist/globals";
-
-const FrameworkID = "ExtensionFramework";
-
-const constructors = new Map();
-const auxiliarObjects = new Map();
-
-export const tryInitExtension = (extension) => {
-  const extensionInit = "internal_init";
-  if (extensionInit in extension) extension[extensionInit]();
-}
+import { FrameworkID, AuxiliaryExtensionInfo } from "../dist/globals";
 
 /**
- * 
- * @param {{timeout: boolean, arg: T, test: T}} conditionObj 
- * @param {*} timeout 
- * @param {*} updateFrequency 
+ * Initialize an extension (if it supports the PRG Framework strategy of initialization)
+ * @param {Extension} extension 
  * @returns 
  */
-const waitForCondition = async (conditionObj, timeout = 3000, updateFrequency = 100) => {
-  const start_time = new Date().getTime()
-  while (true) {
-      if (conditionObj.arg == conditionObj.test) return conditionObj.timeout = false;
-      if (new Date().getTime() > start_time + timeout) return conditionObj.timeout = true;
-      await new Promise(resolve => setTimeout(resolve, updateFrequency));
-  }
-}
+export const tryInitExtension = (extension) =>
+  extensionInit in extension
+    ? Promise.resolve(extension[extensionInit]())
+    : Promise.resolve();
 
 /**
-* 
-* @param {string} endpoint 
-* @param {() => void} onLoad 
-* @param {() => void} onError 
-*/
-const importStaticScript = async(endpoint, onLoad, onError) => {
-  var scriptTag = document.createElement('script');
-  scriptTag.src = `${location.href.split("?")[0]}/static/${endpoint}`;
-  let condition = { test: true, arg: false, timeout: false };
-  scriptTag.onload = () => {
-      onLoad();
-      condition.arg = true;
-  };
-  scriptTag.onerror = () => {
-      onError();
-      throw new Error(`Error loading endpoint: ${endpoint}`)
-  };        
-  document.body.appendChild(scriptTag);
-  await waitForCondition(condition);
-  if (condition.timeout) throw new Error(`Timed out loading endpoint: ${endpoint}`)
-}
-
-const getFrameworkObject = () => window[FrameworkID];
-const onFrameworkLoad = () => getFrameworkObject() 
-  ? console.log("Extension Framework succesfully loaded!")
-  : console.error("Could not find Extension Framework object after loading script");
-
-const onFrameworkError = () => { throw new Error("Could not load Extension Framework") };
-
-const getEndPoint = (filename) => `extension-bundles/${filename}.js`;
-
-const tryImportExtensionBundle = async (id, onLoad, onError, error = false) => {
-  try {
-      if (!getFrameworkObject()) await importStaticScript(getEndPoint(FrameworkID), onFrameworkLoad, onFrameworkError);
-      await importStaticScript(getEndPoint(id), onLoad, onError);
-      return true;
-  }
-  catch(e) {
-      error ? console.error(e) : console.log(e);
-      return false;
-  }
-}
-
+ * Try to retrieve the constructor of an Extension loaded from an external bundle
+ * @param {string} id ID of Extension (bundle) to load
+ * @returns {Constructor<Extension>}
+ */
 export const tryGetExtensionConstructorFromBundle = async (id) => {
   if (constructors.has(id)) return constructors.get(id);
 
-  const success = await tryImportExtensionBundle(id, 
-    () => {
-      const bundle = window[id];
-      const {Extension, ...UI} = bundle;
-      constructors.set(id, Extension);
-      auxiliarObjects.set(id, UI);
-    }, 
-    () => {
-      console.log(`Unable to load bundle for ${id}`);
-  });
+  const success = await tryImportExtensionBundle(id,
+    {
+      onLoad: function () {
+        const { Extension, ...aux } = window[id];
+        constructors.set(id, class extends Extension {
+          constructor(runtime) { super(runtime, ...window[AuxiliaryExtensionInfo][id]) }
+        });
+        auxiliarObjects.set(id, aux);
+      },
+      onError: () => console.log(`Unable to load bundle for ${id}`)
+    }
+  );
+
   return success ? constructors.get(id) : undefined;
 }
 
+/**
+ * Try to retrieve external objects loaded with a given Extension bundle
+ * @param {*} id 
+ * @param {*} name 
+ * @returns 
+ */
 export const tryGetAuxiliaryObjectFromLoadedBundle = (id, name) => {
-  if (!auxiliarObjects.has(id)){
-    console.error("Tried to access auxiliar constructor of an extension bundle that wasn't already loaded.");
-    return undefined;
-  } 
-
+  if (!auxiliarObjects.has(id)) return notLoadedError();
   const auxiliarContainer = auxiliarObjects.get(id);
-
-  if(!(name in auxiliarContainer)) {
-    console.error(`The requested object '${name}' was not loaded with extension ${id}`);
-    return undefined;
-  }
-
-  return auxiliarContainer[name];
+  return (name in auxiliarContainer) ? auxiliarContainer[name] : unknownPropertyError();
 }
+
+const extensionInit = "internal_init";
+const constructors = new Map();
+const auxiliarObjects = new Map();
+
+const untilScriptLoaded = (endpoint, { onLoad, onError }) => {
+  var scriptTag = document.createElement('script');
+  scriptTag.src = `${location.href.split("?")[0]}/static/${endpoint}`;
+  return new Promise((resolve, reject) => {
+    scriptTag.onload = () => resolve(onLoad());
+    scriptTag.onerror = () => reject(onError())
+    document.body.appendChild(scriptTag);
+  });
+}
+
+const getEndPoint = (filename) => `extension-bundles/${filename}.js`;
+
+const getCommonObject = (id) => window[id];
+
+const validateCommonObject = (id) => getCommonObject(id)
+  ? console.log(`'${id}' succesfully loaded!`)
+  : console.error(`Could not find '${id}' object after loading script`);
+
+const untilCommonObjects = (...IDs) => Promise.all(
+  IDs.map(id => getCommonObject(id)
+    ? Promise.resolve()
+    : untilScriptLoaded(getEndPoint(id),
+      {
+        onLoad: () => validateCommonObject(id),
+        onError: () => { throw new Error(`Could not load ${id}`) }
+      }
+    ))
+);
+
+const tryImportExtensionBundle = async (id, callbacks) => {
+  try {
+    await untilCommonObjects(FrameworkID, AuxiliaryExtensionInfo);
+    await untilScriptLoaded(getEndPoint(id), callbacks);
+    return true;
+  }
+  catch (e) {
+    console.error(e);
+    return false;
+  }
+}
+
+const notLoadedError = () => console.error("Tried to access auxiliar constructor of an extension bundle that wasn't already loaded.");
+const unknownPropertyError = (name, id) => console.error(`The requested object '${name}' was not loaded with extension ${id}`);

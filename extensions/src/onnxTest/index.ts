@@ -1,24 +1,25 @@
 import { BlockType, Extension, Environment, } from "$common";
+import { validGenericExtension } from "$common/extension/decorators/validators";
 import { OnnxRuntime } from "$common/onnx";
 
 type Details = {
   name: "Onnx Example",
   description: "A demonstration that an onnx model can be used (not exciting, nor educationally valuable)",
   iconURL: "",
-  insetIconURL: " "
+  insetIconURL: ""
 };
 
 
 type Blocks = {
-  test: () => void
+  test: () => void,
 }
 
+@validGenericExtension()
 export default class ExtensionNameGoesHere extends Extension<Details, Blocks> {
-  private onnxRuntime: Awaited<OnnxRuntime["runtime"]>;
+  onnx: Awaited<OnnxRuntime["runtime"]>;
 
   async init(env: Environment) {
-    const onnx = new OnnxRuntime();
-    this.onnxRuntime = await onnx.runtime;
+    this.onnx = await new OnnxRuntime().runtime;
   }
 
   defineBlocks(): ExtensionNameGoesHere["BlockDefinitions"] {
@@ -29,10 +30,10 @@ export default class ExtensionNameGoesHere extends Extension<Details, Blocks> {
         text: "eee",
         operation: async () => {
           try {
-            const { InferenceSession, Tensor } = await this.onnxRuntime;
+            const { InferenceSession, Tensor } = this.onnx;
 
             // create a new session and load the specific model.
-            // 
+            //
             // the model in this example contains a single MatMul node
             // it has 2 inputs: 'a'(float32, 3x4) and 'b'(float32, 4x3)
             // it has 1 output: 'c'(float32, 3x3)
