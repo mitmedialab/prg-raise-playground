@@ -11,11 +11,12 @@ const fills = {
   error: "#db1f1f"
 } satisfies Record<AlertType, string>;
 
-const textColor = {
-  success: "white",
-  warning: "white",
-  error: "white"
-} satisfies Record<AlertType, string>;
+const textAttributes = {
+  fill: "white",
+  "font-weight": "bold",
+  "font-size": "14pt",
+  "font-family": "\"Helvetica Neue\", Helvetica, Arial, sans-serif;"
+}
 
 export async function openAlert(container: SVGGElement, msg: string, type: AlertType) {
   const elements = createElements();
@@ -25,24 +26,16 @@ export async function openAlert(container: SVGGElement, msg: string, type: Alert
   const y = 55;
   const x = 0;
   const fill = fills[type];
-  const color = textColor[type];
 
   applyAttributes(triangle, { points: equilateralTrianglePoints, fill });
-
-  applyAttributes(text, {
-    x: x + padding / 2,
-    y,
-    fill: color,
-    "font-weight": "bold",
-    "font-size": "14pt",
-    "font-family": "\"Helvetica Neue\", Helvetica, Arial, sans-serif;"
-  });
+  applyAttributes(text, { x: x + padding / 2, y });
+  applyAttributes(text, textAttributes);
 
   text.innerHTML = msg;
 
   elements.forEach(el => container.appendChild(el));
 
-  await Promise.resolve();
+  await Promise.resolve(); // await for elements to render (is there a better way?)
 
   const { width, height } = text.getBBox();
   applyAttributes(rect, { x, width: width + padding, height: height + padding, y: y - height, fill, rx: 5 });

@@ -1,6 +1,38 @@
 import { MinimalExtensionConstructor } from "../../base";
 import { isSvgGroup, isSvgText, openAlert } from "./svgAlert";
 
+/**
+ * Mixin the ability for extensions to add an indicator message to the workspace.
+ * @param Ctor 
+ * @returns 
+ * @see https://www.typescriptlang.org/docs/handbook/mixins.html
+ */
+export default function <T extends MinimalExtensionConstructor>(Ctor: T) {
+  abstract class ExtensionThatIndicates extends Ctor {
+    /**
+     * Add an indicator message to the workspace.
+     * @param param0 Details
+     * - `position`: Where to place the indicator. Currently only "category" is supported, which places the message immediately below the extensions name.
+     * - `msg`: The message to display.
+     * - `type`: The type of indicator to display. Currently "success", "warning" and "error", which effect the color of the indicator.
+     * @returns 
+     */
+    async indicate({ position, msg, type }: { position: "category", msg: string, type: "success" | "warning" | "error" }) {
+
+      const elements = position === "category"
+        ? getCategoryElements(this.name)
+        : { error: "Unsupported indicator position" };
+
+      if ("error" in elements) throw new Error(elements.error);
+      const { container } = elements;
+      const alert = await openAlert(container, msg, type);
+      return alert;
+    }
+  }
+
+  return ExtensionThatIndicates;
+}
+
 const topLevelClass = "blocklyFlyout";
 const containerClass = "blocklyFlyoutLabel categoryLabel";
 const textClass = "blocklyFlyoutLabelText";
@@ -16,29 +48,4 @@ const getCategoryElements = (text: string): { error: string } | { container: SVG
     }
   }
   return { error: "No title found matching given name" };
-}
-
-
-/**
- * Mixin the ability for extensions to open up UI at-will
- * @param Ctor 
- * @returns 
- * @see https://www.typescriptlang.org/docs/handbook/mixins.html
- */
-export default function <T extends MinimalExtensionConstructor>(Ctor: T) {
-  abstract class ExtensionThatIndicates extends Ctor {
-    async indicate({ position, msg, type }: { position: "category", msg: string, type: "success" | "warning" | "error" }) {
-
-      const elements = position === "category"
-        ? getCategoryElements(this.name)
-        : { error: "Unsupported indicator position" };
-
-      if ("error" in elements) throw new Error(elements.error);
-      const { container } = elements;
-      const alert = await openAlert(container, msg, type);
-      return alert;
-    }
-  }
-
-  return ExtensionThatIndicates;
 }
