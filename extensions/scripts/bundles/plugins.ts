@@ -78,7 +78,7 @@ export const transpileExtensionGlobals = (): Plugin => {
       if (!runner.check()) return;
       const filename = "globals.ts";
       const pathToFile = path.join(commonDirectory, filename);
-      const { options, host } = getSrcCompilerHost();
+      const { options, host } = getSrcCompilerHost({ module: ts.ModuleKind.CommonJS });
 
       const outDir = path.join(extensionsFolder, "dist");
       const outFile = path.join(outDir, tsToJs(filename));

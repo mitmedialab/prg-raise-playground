@@ -4,7 +4,7 @@ import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import { buildKeyBlockMap } from "$testing";
 import testable from "./mixins/testable";
 import { BlockKey, InputArray, KeyToBlockIndexMap, RenderedUI, RuntimeForTest, Testable, ReportedValue } from "./types";
-import { getEngineFile } from "./utils";
+import { extensionConstructorArgs, getEngineFile } from "./utils";
 
 export class BlockRunner<T extends ExtensionInstance> {
   private blockData: ExtensionBlockMetadata[];
@@ -47,9 +47,8 @@ export class BlockRunner<T extends ExtensionInstance> {
 
   createCompanion<TCompanion extends ExtensionInstance>(constructor: NonAbstractConstructor<TCompanion>) {
     const { instance: { runtime } } = this;
-    const args: ExtensionConstructorParams = [runtime, "", "", ""];
     const TestClass = testable(constructor);
-    const companion = new TestClass(...args);
+    const companion = new TestClass(...extensionConstructorArgs(runtime));
     companion.initialize();
 
     return new BlockRunner<TCompanion>(buildKeyBlockMap(companion), companion as Testable<TCompanion>);
