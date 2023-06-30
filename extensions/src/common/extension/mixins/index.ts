@@ -1,14 +1,14 @@
 import { AbstractConstructor } from "$common/types";
-import addCostumes from "./optional/addCostumes/index";
-import customArguments from "./optional/customArguments/index";
-import customSaveData from "./optional/customSaveData";
-import drawable from "./optional/drawable";
-import legacySupport from "./optional/legacySupport";
-import ui from "./optional/ui";
-import video from "./optional/video";
-import setTransparencyBlock from "./optional/blocks/setVideoTransparency";
-import toggleVideoBlock from "./optional/blocks/toggleVideoState";
-import { MinimalExtensionConstructor } from "./required";
+import addCostumes from "./configurable/addCostumes/index";
+import customArguments from "./configurable/customArguments/index";
+import customSaveData from "./configurable/customSaveData";
+import drawable from "./configurable/drawable";
+import legacySupport from "./configurable/legacySupport";
+import ui from "./configurable/ui";
+import video from "./configurable/video";
+import setTransparencyBlock from "./configurable/blocks/setVideoTransparency";
+import toggleVideoBlock from "./configurable/blocks/toggleVideoState";
+import { MinimalExtensionConstructor } from "./base";
 
 export type Mixin<T> = (Ctor: MinimalExtensionConstructor) => AbstractConstructor<T>;
 

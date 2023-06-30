@@ -1,5 +1,5 @@
 import { BaseGenericExtension, NonAbstractConstructor } from "$common/types";
-import { MinimalExtensionConstructor } from "../required";
+import { MinimalExtensionConstructor } from "../base";
 import { ExtensionIntanceWithFunctionality } from "..";
 
 /**

@@ -1,6 +1,6 @@
 import type RenderedTarget from "$scratch-vm/sprites/rendered-target";
 import Target from "$scratch-vm/engine/target";
-import { MinimalExtensionConstructor } from "../../required";
+import { MinimalExtensionConstructor } from "../../base";
 import MockBitmapAdapter from "./MockBitmapAdapter";
 import { getUrlHelper } from "./utils";
 

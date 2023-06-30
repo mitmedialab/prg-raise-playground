@@ -1,5 +1,5 @@
 import { StageLayering, ValueOf } from "$common/types";
-import { MinimalExtensionConstructor } from "../required";
+import { MinimalExtensionConstructor } from "../base";
 
 type Handle = number;
 
