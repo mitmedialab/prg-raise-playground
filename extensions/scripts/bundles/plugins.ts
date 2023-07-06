@@ -15,6 +15,8 @@ import chalk from "chalk";
 import { runOncePerBundling } from "../utils/rollupHelper";
 import { sendToParent } from "$root/scripts/comms";
 import { setAuxiliaryInfoForExtension } from "./auxiliaryInfo";
+import { getMethodsForExtension } from "scripts/typeProbing";
+import { MixinName } from "$common/extension/mixins";
 
 export const clearDestinationDirectories = (): Plugin => {
   const runner = runOncePerBundling();
@@ -192,10 +194,14 @@ export const finalizeConfigurableExtensionBundle = (info: BundleInfo): Plugin =>
   const executeBundleAndExtractMenuDetails = async () => {
     const framework = await frameworkBundle.content;
     let success = false;
+    const supports: { [k in MixinName]?: boolean } = {};
+    let methodTypes: ReturnType<typeof getMethodsForExtension>;
 
-    extensionBundleEvent.registerCallback(function (details, removeSelf) {
-      if (!details) return;
+    extensionBundleEvent.registerCallback(function (extensionInfo, removeSelf) {
+      if (!extensionInfo || !extensionInfo.details) return;
+      const { details, addOns } = extensionInfo;
       for (const key in details) menuDetails[key] = details[key];
+      for (const addOn of addOns) supports[addOn] = true;
       success = true;
       removeSelf();
     });
@@ -203,15 +209,24 @@ export const finalizeConfigurableExtensionBundle = (info: BundleInfo): Plugin =>
     // maybe create an object here for collecting AppInventor info
 
     blockBundleEvent.registerCallback(function (metadata) {
-      if (!menuDetails.generateAppInventorBinding) return;
+      if (!supports.appInventor) return;
       console.log(metadata); // build up all info needed for AppInventor code gen
+
+      // Utilizing type information
+      methodTypes ??= getMethodsForExtension(info);
+      const { methodName } = metadata;
+      const { parameterTypes, returnType, typeChecker } = methodTypes.get(metadata.methodName);
+      const parameters = parameterTypes.map(([name, type]) => `${name}: ${typeChecker.typeToString(type)}`).join(", ");
+      const signature = `${methodName}: (${parameters}) => ${typeChecker.typeToString(returnType)}`;
+      console.log(signature);
     });
 
     eval(framework + "\n" + fs.readFileSync(bundleDestination, "utf-8"));
 
-    if (menuDetails.generateAppInventorBinding) { } // do something
-    // post processing step to generate code
-    // generate javascript glue code, and (Java) AppInvetor Extension
+    if (supports.appInventor) {
+      // post processing step to generate code
+      // generate javascript glue code, and (Java) AppInvetor Extension
+    }
 
     blockBundleEvent.removeCallback();
     if (!success) throw new Error(`No extension registered for '${name}'. Did you forget to use the extension decorator?`);

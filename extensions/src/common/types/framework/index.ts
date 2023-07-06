@@ -84,5 +84,4 @@ export type ExtensionMenuDisplayDetails = {
   hidden?: boolean;
   disabled?: boolean;
   implementationLanguage?: ValueOf<typeof Language>;
-  generateAppInventorBinding?: true,
 } & Partial<Record<ValueOf<typeof Language>, { name: string, description: string }>>

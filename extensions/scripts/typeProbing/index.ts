@@ -1,104 +1,115 @@
 import ts from "typescript";
 import assert from "assert";
-import { ExtensionMenuDisplayDetails, KeysWithValuesOfType, UnionToTuple, Language, identity } from "$common";
+import { ExtensionInstance, ExtensionMenuDisplayDetails, KeysWithValuesOfType, ScratchExtension, getAccessorPrefix, identity, setAccessorPrefix } from "$common";
 import { BundleInfo, ProgramBasedTransformer } from "scripts/bundles";
+import type appInventor from "$common/extension/mixins/optional/appInventor";
 
 type MenuText = KeysWithValuesOfType<ExtensionMenuDisplayDetails, string>;
-type AllMenuText = UnionToTuple<MenuText>;
-
 type MenuFlag = KeysWithValuesOfType<ExtensionMenuDisplayDetails, boolean>;
-type AllMenuFlags = UnionToTuple<MenuFlag>;
-
-//@ts-ignore 
-const menuDetailTextKeys: AllMenuText = ["name", "description", "iconURL", "insetIconURL", "collaborator", "connectionIconURL", "connectionSmallIconURL", "connectionTipIconURL", "connectingMessage", "helpLink", "implementationLanguage"];
-//@ts-ignore
-const menuDetailFlagKeys: AllMenuFlags = ["internetConnectionRequired", "bluetoothRequired", "launchPeripheralConnectionFlow", "useAutoScan", "featured", "hidden", "disabled"];
-//@ts-ignore
 const requiredKeys: (MenuText | MenuFlag)[] = ["name", "description", "iconURL", "insetIconURL"];
+
+type MethodTypeInformation = { parameterTypes: (readonly [string, ts.Type])[], returnType: ts.Type, typeChecker: ts.TypeChecker };
+const methodsByExtension = new Map<string, Map<string, MethodTypeInformation>>();
+
+export const getMethodsForExtension = ({ id }: BundleInfo) => methodsByExtension.get(id);
 
 export const populateDisplayMenuDetailsTransformer = (info: BundleInfo): ProgramBasedTransformer =>
   (program: ts.Program) => {
     extractExtensionDisplayMenuDetails(info, program)
       .forEach((value, key) => info.menuDetails[key] = value);
-    return () => ({
-      transformSourceFile: identity,
-      transformBundle: identity,
-    })
+    return identityTransformation;
   }
 
-const extractExtensionType = (derived: ts.Type, checker: ts.TypeChecker) =>
-  checker.getTypeFromTypeNode((derived.symbol.declarations[0] as ts.ClassLikeDeclarationBase).heritageClauses[0].types[0]);
+export const extractMethodTypesFromExtension = (info: BundleInfo): ProgramBasedTransformer =>
+  (program: ts.Program) => {
+    const { type, checker, node } = probeExtensionProgram(info, program);
+    const properties = checker.getPropertiesOfType(type);
 
-/**
- * Leveraging the official type:
- * https://github.com/microsoft/TypeScript/blob/86f811440484f6a91e3d2a5ddaeb05eed8bf95cc/src/compiler/types.ts#L6338
- */
-interface TypeReferenceWithInternalField extends ts.TypeReference {
-  /** @internal */
-  resolvedTypeArguments?: readonly ts.Type[];  // Resolved type reference type arguments
-}
+    if (!shouldProbeExtensionMethods(properties)) return identityTransformation;
 
-const getPropertyMembers = (extensionType: ts.Type) =>
-  ((extensionType as TypeReferenceWithInternalField).resolvedTypeArguments[0].symbol.declarations[0] as ts.TypeLiteralNode).members.map(e => e as ts.PropertySignature);
+    const methods = properties
+      .map(property => {
+        const { name } = property;
+        const propertyType = checker.getTypeOfSymbolAtLocation(property, node);
+        const entries = new Array<MethodTypeInformation & { name: string }>();
+        if (isGetter(property))
+          entries.push({ name: `${getAccessorPrefix}${name}`, parameterTypes: [], returnType: propertyType, typeChecker: checker });
+        if (isSetter(property))
+          entries.push({ name: `${setAccessorPrefix}${name}`, parameterTypes: [["value", propertyType]], returnType: null, typeChecker: checker });
+        if (isMethod(property)) {
+          const callSignature = propertyType.getCallSignatures()?.[0]; // Only the first? Are multiple signatures for overloads?
+          const parameterTypes = callSignature.parameters?.map(parameter => {
+            const { name, valueDeclaration } = parameter;
+            return [name, checker.getTypeOfSymbolAtLocation(parameter, valueDeclaration)] as const
+          });
+          const returnType = checker.getReturnTypeOfSignature(callSignature);
+          entries.push({ name, parameterTypes, returnType, typeChecker: checker });
+        }
+        return entries;
+      })
+      .flat()
+      .reduce((map, { name, ...types }) => map.set(name, types), new Map<string, MethodTypeInformation>());
 
-const extractExpressionFromComputedProperyName = (name: ts.ComputedPropertyName) => {
-  const text = name.getText();
-  const lastIndex = text.length - 1;
-  if (text[0] !== "[" || text[lastIndex] !== "]") throw Error("Un expected computed property format: " + text);
-  return text.substring(1, lastIndex);
-}
+    methodsByExtension.set(info.id, methods);
+    return identityTransformation;
+  }
 
-const getNameForProperty = ({ name }: ts.PropertySignature) => {
-  if (ts.isIdentifier(name)) return name.text;
-  if (ts.isComputedPropertyName(name)) {
-    const expression = extractExpressionFromComputedProperyName(name);
-    return tryTreatAsLanguage(expression) ?? expression;
-  };
-  return "Error -- Couldn't extract name.";
-}
-
-const tryParseAsJSON = (type: ts.TypeNode) => {
-  try { return JSON.parse(type.getText()) }
-  catch { return undefined }
-}
-
-const returnFromIIFE = (text: string) => `(() => (${text}))()`;
-
-const tryTreatAsObject = (type: ts.TypeNode) => {
-  try { return eval(returnFromIIFE(type.getText())) }
-  catch { return undefined }
-}
-
-const tryTreatAsLanguage = (text: string) => {
-  const elements = text.replace("typeof ", "").split(".");
-  if (elements.length !== 2) return undefined;
-  const key = elements[1];
-  return Language[key];
-}
-
-const getValueForProperty = ({ type }: ts.PropertySignature, typeChecker: ts.TypeChecker) => {
-  const resolvedType = typeChecker.getTypeFromTypeNode(type);
-  if (resolvedType.isLiteral()) return resolvedType.value;
-  return tryParseAsJSON(type) ?? tryTreatAsObject(type) ?? tryTreatAsLanguage(type.getText()) ?? "Error -- couldn't extract value";
-}
-
-const extractExtensionDisplayMenuDetails = ({ indexFile }: BundleInfo, program: ts.Program) => {
+const probeExtensionProgram = ({ indexFile }: BundleInfo, program: ts.Program) => {
   const checker = program.getTypeChecker();
-
-  let details: Map<string, any> & ExtensionMenuDisplayDetails;
+  const container = { checker, type: null as ts.InterfaceType, node: null as ts.Node, base: null as ts.BaseType };
   ts.forEachChild(program.getSourceFile(indexFile), child => {
     if (child.kind !== ts.SyntaxKind.ClassDeclaration) return;
     const type = checker.getTypeAtLocation(child);
-    if (type?.symbol?.name !== "default") return;
-    const extensionType = extractExtensionType(type, checker);
-    const properties = getPropertyMembers(extensionType);
-    details = properties.reduce((map, property) =>
-      map.set(getNameForProperty(property), getValueForProperty(property, checker)),
-      new Map() as typeof details
-    );
+    if (!type.isClass() || type?.symbol?.name !== "default") return;
+    container.type = type;
+    container.node = child;
+    container.base = checker.getBaseTypes(type)[0];
   });
+  if (!container.type) throw new Error("Unable to locate extension type");
+  if (!container.base) throw new Error("Unable to locate base extension type");
+  return container;
+}
 
-  if (!details) throw new Error("Unable to extract details");
+const shouldProbeExtensionMethods = (properties: ts.Symbol[]) => {
+  const propertyNames = properties.map(({ name }) => name);
+  type AppInventorExtension = InstanceType<ReturnType<typeof appInventor>>
+  const appInventorKey: Exclude<keyof AppInventorExtension, keyof ExtensionInstance> = "withinAppInventor";
+  return propertyNames.includes(appInventorKey);
+};
+
+const identityTransformation: ReturnType<ProgramBasedTransformer> = () => ({
+  transformSourceFile: identity,
+  transformBundle: identity,
+});
+
+const isGetter = ({ flags }: ts.Symbol) => flags & ts.SymbolFlags.GetAccessor;
+const isSetter = ({ flags }: ts.Symbol) => flags & ts.SymbolFlags.SetAccessor;
+const isMethod = ({ flags }: ts.Symbol) => flags & ts.SymbolFlags.Method;
+const typeReferenceKey: keyof Omit<ts.TypeReference, keyof ts.Type> = "target";
+const isTypeReference = (type: ts.Type): type is ts.TypeReference => typeReferenceKey in type;
+const tryParseJSON = (text: string) => { try { return JSON.parse(text) } catch { return undefined } }
+const tryEvaluate = (text: string) => {
+  const cleaned = text.replaceAll(";", ",");
+  const iife = `(() => (${cleaned}))()`;
+  try { return eval(iife) } catch { return undefined }
+}
+
+const extractExtensionDisplayMenuDetails = (info: BundleInfo, program: ts.Program) => {
+  let details: Map<string, any> & ExtensionMenuDisplayDetails;
+  const { checker, node, base } = probeExtensionProgram(info, program);
+
+  if (!isTypeReference(base)) throw new Error("Unexpected base type");
+
+  details = base.typeArguments[0]
+    .getProperties()
+    .map(property => {
+      const { name } = property;
+      const type = checker.getTypeOfSymbolAtLocation(property, node);
+      if (type.isLiteral()) return { name, value: type.value };
+      const text = checker.typeToString(type);
+      return { name, value: tryParseJSON(text) ?? tryEvaluate(text) ?? `Error parsing value: ${text}` }
+    })
+    .reduce((map, { name, value }) => map.set(name, value), new Map() as typeof details);
 
   requiredKeys.forEach(key => assert(details.has(key), new Error(`Required key '${key}' not found`)));
   return details;

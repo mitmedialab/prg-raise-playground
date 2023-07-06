@@ -2,7 +2,6 @@ import { Environment, extension, ExtensionMenuDisplayDetails, block, ArgumentTyp
 
 const details: ExtensionMenuDisplayDetails = {
   name: "App Inventor Example",
-  generateAppInventorBinding: true
 };
 
 const heightProperty: PropertyBlockDetails<number> = { property: "Height", type: ArgumentType.Number };
