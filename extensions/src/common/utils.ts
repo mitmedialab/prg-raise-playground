@@ -203,9 +203,10 @@ export const rgbToHex = (rgb: RGBObject) => {
   return decimalToHex(rgbToDecimal(rgb));
 }
 
+type BundleEventCallback<Payload> = (details: Payload, removeSelf: () => void) => void;
+
 type BundleEventHandlers<Payload> = {
-  registerCallback: ((callback: (details: Payload, removeSelf: () => void) => void) => () => void),
-  removeAllCallbacks: (() => void),
+  registerCallback: ((callback: BundleEventCallback<Payload>) => () => void),
   fire: ((details: Payload) => void)
 }
 
@@ -229,10 +230,10 @@ export const tryCreateBundleTimeEvent = <Payload>(identifier: string): null | Bu
       return () => delete global?.[key]?.[id];
     },
     fire: (details: Payload) => {
-      const container = global?.[key];
+      const container = global?.[key] as Record<symbol, BundleEventCallback<Payload>>;
       if (!container) return;
-      for (const id in container) container[id]?.(details, () => delete container?.[id]);
+      const callbackIDs = Object.getOwnPropertySymbols(container);
+      for (const id of callbackIDs) container[id]?.(details, () => delete container?.[id]);
     },
-    removeAllCallbacks: () => delete global?.[key]
   };
 }

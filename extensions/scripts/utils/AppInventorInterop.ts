@@ -2,6 +2,8 @@ import { blockBundleEvent, extensionBundleEvent } from "$common";
 import { BundleInfo } from "scripts/bundles";
 import { getMethodsForExtension } from "scripts/typeProbing";
 
+const prefix = `[App Inventor Interop]`;
+
 export default class {
     private methodTypes: ReturnType<typeof getMethodsForExtension>;
     private signatures = new Array<string>();
@@ -23,7 +25,7 @@ export default class {
                 const parameters = parameterTypes.map(([name, type]) => `${name}: ${typeChecker.typeToString(type)}`).join(", ");
                 const signature = `${methodName}: (${parameters}) => ${typeChecker.typeToString(returnType)}`;
                 this.signatures.push(signature);
-                console.log(`Collected signature for ${methodName}`);
+                console.log(`${prefix} Collected signature for: '${methodName}'`);
             })
         );
     }
@@ -36,6 +38,6 @@ export default class {
     tryGenerate() {
         this.cleanup?.forEach(c => c());
         if (!this.supported) return;
-        console.log(`All signatures: \n ${JSON.stringify(this.signatures, null, 2)})}`);
+        console.log(`${prefix} All signatures:\n${JSON.stringify(this.signatures, null, 2)}`);
     }
 }

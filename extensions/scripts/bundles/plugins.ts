@@ -195,7 +195,6 @@ export const finalizeConfigurableExtensionBundle = (info: BundleInfo): Plugin =>
     let success = false;
 
     extensionBundleEvent.registerCallback(function (extensionInfo, removeSelf) {
-      if (!extensionInfo || !extensionInfo.details) return;
       const { details } = extensionInfo;
       for (const key in menuDetails) delete menuDetails[key]; // clear out any previous menu details
       for (const key in details) menuDetails[key] = details[key];
@@ -209,7 +208,7 @@ export const finalizeConfigurableExtensionBundle = (info: BundleInfo): Plugin =>
 
     appInventorInterop.tryGenerate();
 
-    if (!success) throw new Error(`No extension registered for '${name}'. Did you forget to use the extension decorator?`);
+    if (!success) throw new Error(`No extension registered for '${name}'. Check your usage of the 'extension(...)' function.`);
   }
 
   const runner = runOncePerBundling();

@@ -2,7 +2,7 @@ import ts from "typescript";
 import assert from "assert";
 import { ExtensionInstance, ExtensionMenuDisplayDetails, KeysWithValuesOfType, ScratchExtension, getAccessorPrefix, identity, setAccessorPrefix } from "$common";
 import { BundleInfo, ProgramBasedTransformer } from "scripts/bundles";
-import type appInventor from "$common/extension/mixins/optional/appInventor";
+import type appInventor from "$common/extension/mixins/configurable/appInventor";
 
 type MenuText = KeysWithValuesOfType<ExtensionMenuDisplayDetails, string>;
 type MenuFlag = KeysWithValuesOfType<ExtensionMenuDisplayDetails, boolean>;

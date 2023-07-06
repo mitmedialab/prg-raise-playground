@@ -47,7 +47,7 @@ export const extension = <const TSupported extends readonly MixinName[]>(
   ...addOns: Writeable<TSupported>
 ): ExtensionWithFunctionality<[...TSupported]> & typeof ExtensionBase => {
 
-  extensionBundleEvent?.fire({ details, addOns });
+  if (details) extensionBundleEvent?.fire({ details, addOns });
 
   const Base = scratchInfo(supported(ExtensionBase, addOns)) as ExtensionWithFunctionality<[...TSupported]>;
 
