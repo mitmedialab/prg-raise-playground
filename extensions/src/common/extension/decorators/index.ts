@@ -9,3 +9,9 @@ export type TypedMethodDecorator<
   Return,
   Fn extends (...args: Args) => Return
 > = (target: Fn, context: ClassMethodDecoratorContext<This, Fn>) => Fn;
+
+export type TypedSetterDecorator<This, TValue> =
+  (target: (value: TValue) => void, context: ClassSetterDecoratorContext<This, TValue>) => void;
+
+export type TypedGetterDecorator<This, Return> =
+  (target: () => Return, context: ClassGetterDecoratorContext<This, Return>) => void;
