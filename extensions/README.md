@@ -18,10 +18,11 @@ This document will be most helpful for people doing more complex development, li
 4. [Creating UI for Extensions](#creating-ui-for-extensions)
 5. [Porting an Extension to use our Framework & Typescript](#porting-an-extension-to-use-our-framework--typescript)
 6. [Saving Custom Data for an Extension](#saving-custom-data-for-an-extension)
-7. [Making use of the Block Utility & Block ID](#making-use-of-the-block-utility--block-id)
-8. [Adding Custom Arguments](#adding-custom-arguments)
-9. [Adding inline images to the text of blocks](#adding-inline-images-to-the-text-of-blocks)
-10. [Reference](#reference)
+7. [App Inventor Cross-Compilation / Interoperability](#app-inventor-crosscompilation--interoperability)
+8. [Making use of the Block Utility & Block ID](#making-use-of-the-block-utility--block-id)
+9. [Adding Custom Arguments](#adding-custom-arguments)
+10. [Adding inline images to the text of blocks](#adding-inline-images-to-the-text-of-blocks)
+11. [Reference](#reference)
 
 ## Anatomy of an Extension Directory
 
@@ -1177,6 +1178,48 @@ export default class SaveLoadExample extends extension({ name }, "customSaveData
   defineBlocks = notRelevantToExample;
 }
 
+```
+
+
+## App Inventor Cross-Compilation / Interoperability
+
+> NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
+If you want to edit it, please go to [extensions/documentation/src/appInventor/README.md](documentation/src/appInventor/README.md)
+
+This effort is a work in progress and not ready to use. 
+
+Please contact @pmalacho-mit (Parker Malachowsky) if you're interested in this work!
+
+```ts
+import { Environment, extension, block, getterBlock, PropertyBlockDetails, setterBlock, Matrix } from "$common";
+
+const heightProperty: PropertyBlockDetails<number> = { name: "Height", type: "number" };
+
+export default class extends extension({ name: "App Inventor Example" }, "appInventor") {
+  init(env: Environment): void { }
+
+  field = 0;
+
+  @getterBlock(heightProperty)
+  get some_property(): number {
+    if (this.withinAppInventor) console.log("RAISE Blocks + App Inventor = <3");
+    return this.field;
+  }
+
+  @setterBlock(heightProperty)
+  set some_property(value: number) {
+    this.field = value;
+  }
+
+  @block({
+    text: (x, y, z) => `${x} ${y} ${z}`,
+    args: ["number", "string", "matrix"],
+    type: "reporter"
+  })
+  dummy(x: number, y: string, z: Matrix): number {
+    return 0;
+  }
+}
 ```
 
 
