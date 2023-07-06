@@ -204,8 +204,8 @@ export const rgbToHex = (rgb: RGBObject) => {
 }
 
 type BundleEventHandlers<Payload> = {
-  registerCallback: ((callback: (details: Payload, removeSelf: () => void) => void) => void),
-  removeCallback: (() => void),
+  registerCallback: ((callback: (details: Payload, removeSelf: () => void) => void) => () => void),
+  removeAllCallbacks: (() => void),
   fire: ((details: Payload) => void)
 }
 
@@ -221,12 +221,18 @@ export const tryCreateBundleTimeEvent = <Payload>(identifier: string): null | Bu
   if (environment !== "node") return null;
 
   const key = `Bundle Time Event: ${identifier}`;
-
-  const removeCallback = () => delete global[key];
-
   return {
-    registerCallback: (callback) => global[key] = callback,
-    fire: (details: Payload) => global?.[key]?.(details, removeCallback),
-    removeCallback
+    registerCallback: (callback) => {
+      global[key] ??= {};
+      const id = Symbol(key);
+      global[key][id] = callback;
+      return () => delete global?.[key]?.[id];
+    },
+    fire: (details: Payload) => {
+      const container = global?.[key];
+      if (!container) return;
+      for (const id in container) container[id]?.(details, () => delete container?.[id]);
+    },
+    removeAllCallbacks: () => delete global?.[key]
   };
 }

@@ -1,4 +1,4 @@
-import { ExtensionIntanceWithFunctionality, MixinName, optionalMixins } from "..";
+import { ExtensionInstanceWithFunctionality, MixinName, optionalMixins } from "..";
 import { ExtensionBaseConstructor } from "../../ExtensionBase";
 
 /**
@@ -10,7 +10,7 @@ import { ExtensionBaseConstructor } from "../../ExtensionBase";
 export default function (Ctor: ExtensionBaseConstructor, supported: string[]) {
   abstract class ExtensionWithConfigurableSupport extends Ctor {
 
-    supports<const TKey extends MixinName>(mixinName: TKey): this is typeof this & ExtensionIntanceWithFunctionality<[TKey]> {
+    supports<const TKey extends MixinName>(mixinName: TKey): this is typeof this & ExtensionInstanceWithFunctionality<[TKey]> {
       return supported.includes(mixinName);
     }
   }

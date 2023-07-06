@@ -1,7 +1,7 @@
 import { ExtensionWithFunctionality, MixinName, optionalMixins } from "./mixins/index";
 import { ExtensionBase } from "./ExtensionBase";
-import scratchInfo from "./mixins/required/scratchInfo";
-import supported from "./mixins/required/supported";
+import scratchInfo from "./mixins/base/scratchInfo";
+import supported from "./mixins/base/supported";
 import { ExtensionMenuDisplayDetails, Writeable } from "$common/types";
 import { tryCaptureDependencies } from "./mixins/dependencies";
 import { tryCreateBundleTimeEvent } from "$common/utils";

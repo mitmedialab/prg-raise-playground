@@ -88,6 +88,10 @@ export interface ExtensionMetadata {
 
   /** Map of menu name to metadata for each of this extension's menus. */
   menus?: Record<string, ExtensionMenuMetadata> | undefined;
+
+  color1?: string;
+  color2?: string;
+  color3?: string;
 }
 
 /** All the metadata needed to register an extension block. */

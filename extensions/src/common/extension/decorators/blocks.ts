@@ -1,11 +1,11 @@
 import type BlockUtility from "$scratch-vm/engine/block-utility";
 import { TypedClassDecorator, TypedGetterDecorator, TypedMethodDecorator, TypedSetterDecorator } from ".";
 import { BlockType } from "$common/types/enums";
-import { BlockMetadata, ArgumentType, ScratchArgument, Argument, TypeByArgumentType } from "$common/types";
-import { getImplementationName } from "../mixins/required/scratchInfo/index";
+import { BlockMetadata, ScratchArgument, Argument } from "$common/types";
+import { getImplementationName } from "../mixins/base/scratchInfo/index";
 import { ExtensionInstance } from "..";
 import { isFunction, isString, tryCreateBundleTimeEvent } from "$common/utils";
-import { extractArgs } from "../mixins/required/scratchInfo/args";
+import { extractArgs } from "../mixins/base/scratchInfo/args";
 
 type BlockFunctionMetadata = {
   methodName: string,

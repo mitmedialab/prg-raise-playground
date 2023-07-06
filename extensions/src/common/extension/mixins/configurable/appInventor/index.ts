@@ -1,4 +1,4 @@
-import { MinimalExtensionConstructor } from "../../required";
+import { MinimalExtensionConstructor } from "../../base";
 
 /**
  * Mixin the ability for extensions to open up UI at-will

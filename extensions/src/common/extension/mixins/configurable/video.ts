@@ -1,5 +1,5 @@
 import type Video from "$scratch-vm/io/video";
-import { MinimalExtensionConstructor } from "../required";
+import { MinimalExtensionConstructor } from "../base";
 
 const Format = {
   image: "image-data",
@@ -28,6 +28,11 @@ export default function <T extends MinimalExtensionConstructor>(Ctor: T) {
       this.videoDevice ??= this.runtime.ioDevices?.video;
       return this.videoDevice;
     };
+
+    /**
+     * Dimensions of the video frame
+     */
+    videoDimensions = { width: 480, height: 360 } as const;
 
     /**
      * Access the most recent frame captured by the web cam

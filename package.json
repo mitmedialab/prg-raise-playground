@@ -19,7 +19,8 @@
     "add:package": "npm run ts:node:extensions -- ./extensions/scripts/factories/package.ts",
     "rebuild:blocks": "npm run prepublish --prefix ./packages/scratch-blocks && npm run dev",
     "test:extensions": "npm run test --prefix ./extensions/",
-    "edocument": "npm run document --prefix ./extensions/",
+    "document:extensions": "npm run document --prefix ./extensions/",
+    "edocument": "npm run document:extensions",
     "etest": "npm run test:extensions"
   },
   "devDependencies": {

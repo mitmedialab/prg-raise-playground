@@ -1,5 +1,5 @@
 import { castToType } from "$common/cast";
-import CustomArgumentManager from "$common/extension/mixins/optional/customArguments/CustomArgumentManager";
+import CustomArgumentManager from "$common/extension/mixins/configurable/customArguments/CustomArgumentManager";
 import { ArgumentType, BlockType } from "$common/types/enums";
 import { BlockOperation, ValueOf, Menu, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, DynamicMenu, BlockMetadata, } from "$common/types";
 import { registerButtonCallback } from "$common/ui";
@@ -11,9 +11,11 @@ import { BlockDefinition, getButtonID, isBlockGetter } from "./util";
 import { convertToArgumentInfo, extractArgs, zipArgs } from "./args";
 import { convertToDisplayText } from "./text";
 import { CustomizableExtensionConstructor, MinimalExtensionInstance, } from "..";
-import { ExtensionIntanceWithFunctionality } from "../..";
+import { ExtensionInstanceWithFunctionality } from "../..";
 
 export const getImplementationName = (opcode: string) => `internal_${opcode}`;
+
+const inlineImageAccessError = "ERROR: This argument represents an inline image and should not be accessed.";
 
 /**
  * Wraps a blocks operation so that the arguments passed from Scratch are first extracted and then passed as indices in a parameter array.
@@ -27,8 +29,9 @@ export const wrapOperation = <T extends MinimalExtensionInstance>(
   operation: BlockOperation,
   args: { name: string, type: ValueOf<typeof ArgumentType>, handler: Handler }[]
 ) => _this.supports("customArguments")
-    ? function (this: ExtensionIntanceWithFunctionality<["customArguments"]>, argsFromScratch: Record<string, any>, blockUtility: BlockUtility) {
+    ? function (this: ExtensionInstanceWithFunctionality<["customArguments"]>, argsFromScratch: Record<string, any>, blockUtility: BlockUtility) {
       const castedArguments = args.map(({ name, type, handler }) => {
+        if (type === ArgumentType.Image) return inlineImageAccessError;
         const param = argsFromScratch[name];
         switch (type) {
           case ArgumentType.Custom:
@@ -43,7 +46,9 @@ export const wrapOperation = <T extends MinimalExtensionInstance>(
     }
     : function (this: T, argsFromScratch: Record<string, any>, blockUtility: BlockUtility) {
       const castedArguments = args.map(({ name, type, handler }) =>
-        castToType(type, handler.call(_this, argsFromScratch[name]))
+        type === ArgumentType.Image
+          ? inlineImageAccessError
+          : castToType(type, handler.call(_this, argsFromScratch[name]))
       );
       return operation.call(_this, ...castedArguments, blockUtility);
     }
@@ -80,7 +85,10 @@ export default function (Ctor: CustomizableExtensionConstructor) {
       if (!this.info) {
         const { id, name, blockIconURI } = this;
         const blocks = Array.from(this.blockMap.entries()).map(entry => this.convertToInfo(entry));
-        this.info = { id, blocks, name, blockIconURI, menus: this.collectMenus() };
+        const color1 = this.blockColor;
+        const color2 = this.menuColor;
+        const color3 = this.menuSelectColor;
+        this.info = { id, blocks, name, blockIconURI, menus: this.collectMenus(), color1, color2, color3 };
       }
       return this.info;
     }

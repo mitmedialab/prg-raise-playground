@@ -15,8 +15,7 @@ import chalk from "chalk";
 import { runOncePerBundling } from "../utils/rollupHelper";
 import { sendToParent } from "$root/scripts/comms";
 import { setAuxiliaryInfoForExtension } from "./auxiliaryInfo";
-import { getMethodsForExtension } from "scripts/typeProbing";
-import { MixinName } from "$common/extension/mixins";
+import AppInventorInterop from "scripts/utils/AppInventorInterop";
 
 export const clearDestinationDirectories = (): Plugin => {
   const runner = runOncePerBundling();
@@ -80,7 +79,7 @@ export const transpileExtensionGlobals = (): Plugin => {
       if (!runner.check()) return;
       const filename = "globals.ts";
       const pathToFile = path.join(commonDirectory, filename);
-      const { options, host } = getSrcCompilerHost();
+      const { options, host } = getSrcCompilerHost({ module: ts.ModuleKind.CommonJS });
 
       const outDir = path.join(extensionsFolder, "dist");
       const outFile = path.join(outDir, tsToJs(filename));
@@ -194,41 +193,22 @@ export const finalizeConfigurableExtensionBundle = (info: BundleInfo): Plugin =>
   const executeBundleAndExtractMenuDetails = async () => {
     const framework = await frameworkBundle.content;
     let success = false;
-    const supports: { [k in MixinName]?: boolean } = {};
-    let methodTypes: ReturnType<typeof getMethodsForExtension>;
 
     extensionBundleEvent.registerCallback(function (extensionInfo, removeSelf) {
       if (!extensionInfo || !extensionInfo.details) return;
-      const { details, addOns } = extensionInfo;
+      const { details } = extensionInfo;
+      for (const key in menuDetails) delete menuDetails[key]; // clear out any previous menu details
       for (const key in details) menuDetails[key] = details[key];
-      for (const addOn of addOns) supports[addOn] = true;
       success = true;
       removeSelf();
     });
 
-    // maybe create an object here for collecting AppInventor info
-
-    blockBundleEvent.registerCallback(function (metadata) {
-      if (!supports.appInventor) return;
-      console.log(metadata); // build up all info needed for AppInventor code gen
-
-      // Utilizing type information
-      methodTypes ??= getMethodsForExtension(info);
-      const { methodName } = metadata;
-      const { parameterTypes, returnType, typeChecker } = methodTypes.get(metadata.methodName);
-      const parameters = parameterTypes.map(([name, type]) => `${name}: ${typeChecker.typeToString(type)}`).join(", ");
-      const signature = `${methodName}: (${parameters}) => ${typeChecker.typeToString(returnType)}`;
-      console.log(signature);
-    });
+    const appInventorInterop = new AppInventorInterop(info);
 
     eval(framework + "\n" + fs.readFileSync(bundleDestination, "utf-8"));
 
-    if (supports.appInventor) {
-      // post processing step to generate code
-      // generate javascript glue code, and (Java) AppInvetor Extension
-    }
+    appInventorInterop.tryGenerate();
 
-    blockBundleEvent.removeCallback();
     if (!success) throw new Error(`No extension registered for '${name}'. Did you forget to use the extension decorator?`);
   }
 
