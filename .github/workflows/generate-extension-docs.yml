@@ -23,5 +23,5 @@ jobs:
       run: npm run document:extensions
     - uses: stefanzweifel/git-auto-commit-action@v4
       with:
-        commit_message: '[skip ci] re-generate extension documentation'
+        commit_message: 're-generate extension documentation\n\nskip-checks:true'
         file_pattern: 'extensions/README.md'
