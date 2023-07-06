@@ -23,7 +23,8 @@ export default class teachableMachine extends extension({
   name: "Teachable Machine",
   description: "Use your Teachable Machine models in your Scratch project!",
   iconURL: "teachable-machine-blocks.png",
-  insetIconURL: "teachable-machine-blocks-small.svg"
+  insetIconURL: "teachable-machine-blocks-small.svg",
+  tags: ["Dancing with AI", "Made by PRG"]
 }) {
 
   lastUpdate: number;

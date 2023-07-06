@@ -7,6 +7,7 @@ import { ExtensionBlocks } from "./blocks";
 import { Language } from "../enums";
 import { MethodNames, ValueOf } from "../utils";
 import { ExtensionInstance } from "$common/extension";
+import { Tag } from "./tags";
 
 export type BaseGenericExtension = Extension<ExtensionMenuDisplayDetails, ExtensionBlocks>;
 
@@ -99,6 +100,10 @@ export type ExtensionMenuDisplayDetails = {
    * **NOTE: In order for this setting to be respected, `blockColor` must also be defined**
    */
   menuSelectColor?: string;
+  /**
+   * Associate certain tags with this extension so that it can be easily located within the extensions menu
+   */
+  tags?: Tag[];
   internetConnectionRequired?: boolean;
   collaborator?: string;
   bluetoothRequired?: boolean;

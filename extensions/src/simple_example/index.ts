@@ -12,7 +12,8 @@ const details: ExtensionMenuDisplayDetails = {
   },
   blockColor: "#822fbd",
   menuColor: "#4ed422",
-  menuSelectColor: "#9e0d2c"
+  menuSelectColor: "#9e0d2c",
+  tags: ["PRG Internal"],
 }
 
 export default class SimpleTypescript extends extension(details, "ui", "customSaveData", "indicators") {

@@ -2,7 +2,7 @@ import { Environment, extension, block, getterBlock, PropertyBlockDetails, sette
 
 const heightProperty: PropertyBlockDetails<number> = { name: "Height", type: "number" };
 
-export default class extends extension({ name: "App Inventor Example" }, "appInventor") {
+export default class extends extension({ name: "App Inventor Example", tags: ["PRG Internal"] }, "appInventor") {
   init(env: Environment): void { }
 
   field = 0;
