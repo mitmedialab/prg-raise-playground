@@ -1,12 +1,8 @@
-import { Environment, extension, ExtensionMenuDisplayDetails, block, ArgumentType, BlockType, getterBlock, PropertyBlockDetails, setterBlock, Matrix } from "$common";
+import { Environment, extension, block, getterBlock, PropertyBlockDetails, setterBlock, Matrix } from "$common";
 
-const details: ExtensionMenuDisplayDetails = {
-  name: "App Inventor Example",
-};
+const heightProperty: PropertyBlockDetails<number> = { name: "Height", type: "number" };
 
-const heightProperty: PropertyBlockDetails<number> = { property: "Height", type: ArgumentType.Number };
-
-export default class _ extends extension(details, "appInventor") {
+export default class extends extension({ name: "App Inventor Example" }, "appInventor") {
   init(env: Environment): void { }
 
   field = 0;

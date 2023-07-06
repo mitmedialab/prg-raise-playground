@@ -103,7 +103,7 @@ export const extractSnippet = async ({ pathToREADME, match }: ParseMatch): Promi
   const pathToFile = path.resolve(dir, file);
 
   if (!fs.existsSync(pathToFile)) {
-    error(chalk.red(`Could not resolve file: ${file}`));
+    error(chalk.red(`Could not locate file: ${file} \n\t- resolved location: ${pathToFile}`));
     return { kind: "snippet", failure: true };
   }
 

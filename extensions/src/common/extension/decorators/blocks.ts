@@ -86,7 +86,7 @@ export function block<
 }
 
 /**
- * This is a short-hand for invoking the block command when your `blockType` is button
+ * This is a short-hand for invoking the block decorator when your `blockType` is button
  * @param text 
  * @returns 
  * @see {@link block} 
@@ -111,8 +111,26 @@ export function buttonBlock<
   });
 }
 
-export type PropertyBlockDetails<T> = { property: string, type: ScratchArgument<T> };
+export type PropertyBlockDetails<T> = {
+  /** 
+   * The name of the property, which is both displayed to the user and used to associate the getter and setter blocks.
+   * 
+   * **NOTE:** Associated getter and setter blocks should use the same `name`. Thus, it is best practice to define this name as a constant. 
+  */
+  name: string,
+  /**
+   * The type of property 
+   */
+  type: ScratchArgument<T>
+};
 
+/**
+ * A block decorator for creating a reporer block out of a `get` accessor / "getter" property.
+ * 
+ * @see https://www.typescriptlang.org/docs/handbook/classes.html#accessors 
+ * @param details 
+ * @returns 
+ */
 export function getterBlock<This extends ExtensionInstance, TReturn>
   (details: PropertyBlockDetails<TReturn>): TypedGetterDecorator<This, TReturn> {
   return function (this: This, target: (this: This) => TReturn, context: ClassGetterDecoratorContext<This, TReturn>) {
@@ -121,7 +139,7 @@ export function getterBlock<This extends ExtensionInstance, TReturn>
 
     context.addInitializer(function () {
       this[opcode] = (_, util) => this[internalFuncName].call(this, null, util);;
-      const text = `Get ${details.property}`;
+      const text = `Get ${details.name}`;
       this.pushBlock(opcode, { type: "reporter", text }, target);
     });
 
@@ -134,6 +152,12 @@ export function getterBlock<This extends ExtensionInstance, TReturn>
   }
 }
 
+/**
+ * A block decorator for creating a command block out of a `set` accessor / "setter" property.
+ * 
+ * @param details 
+ * @returns 
+ */
 export function setterBlock<This extends ExtensionInstance, TValue>
   (details: PropertyBlockDetails<TValue>): TypedSetterDecorator<ExtensionInstance, TValue> {
   return function (this: This, target: (this: This, value: TValue) => void, context: ClassSetterDecoratorContext<This, TValue>) {
@@ -142,7 +166,7 @@ export function setterBlock<This extends ExtensionInstance, TValue>
 
     context.addInitializer(function () {
       this[opcode] = (args, util) => this[internalFuncName].call(this, args, util);
-      const text = (value: TValue) => `Set ${details.property} to ${value}`;
+      const text = (value: TValue) => `Set ${details.name} to ${value}`;
       const arg = details.type as Argument<TValue>;
       type Fn = (this: This, value: any, util: BlockUtility) => void;
       const blockInfo = { type: BlockType.Command, text, arg } as BlockMetadata<Fn>;
