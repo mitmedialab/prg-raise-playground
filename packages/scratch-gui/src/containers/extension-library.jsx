@@ -2,7 +2,7 @@ import bindAll from 'lodash.bindall';
 import PropTypes from 'prop-types';
 import React from 'react';
 import VM from 'scratch-vm';
-import {addLocaleData, defineMessages, injectIntl, intlShape} from 'react-intl';
+import { addLocaleData, defineMessages, injectIntl, intlShape } from 'react-intl';
 
 import extensionLibraryContent from '../lib/libraries/extensions/index.jsx';
 
@@ -23,8 +23,19 @@ const messages = defineMessages({
     }
 });
 
+const makeTag = (tag) => ({
+    tag,
+    intlLabel: {
+        defaultMessage: tag,
+        description: `${tag} -- Tag for filtering a library for everything`,
+        id: `gui.extensionTags.${tag}`
+    }
+})
+
+const tags = [makeTag("MIT PRG"), makeTag("Dancing with AI"), makeTag("PRG Internal"), makeTag("Scratch Built In")]
+
 class ExtensionLibrary extends React.PureComponent {
-    constructor (props) {
+    constructor(props) {
         super(props);
         bindAll(this, [
             'handleItemSelect'
@@ -39,7 +50,7 @@ class ExtensionLibrary extends React.PureComponent {
             });
         });
     }
-    handleItemSelect (item) {
+    handleItemSelect(item) {
         const id = item.extensionId;
         let url = item.extensionURL ? item.extensionURL : id;
         if (!item.disabled && !id) {
@@ -56,7 +67,7 @@ class ExtensionLibrary extends React.PureComponent {
             }
         }
     }
-    render () {
+    render() {
         const extensionLibraryThumbnailData = extensionLibraryContent.map(extension => ({
             rawURL: extension.iconURL || extensionIcon,
             ...extension
@@ -64,7 +75,8 @@ class ExtensionLibrary extends React.PureComponent {
         return (
             <LibraryComponent
                 data={extensionLibraryThumbnailData}
-                filterable={false}
+                filterable={true}
+                tags={tags}
                 id="extensionLibrary"
                 title={this.props.intl.formatMessage(messages.extensionTitle)}
                 visible={this.props.visible}
