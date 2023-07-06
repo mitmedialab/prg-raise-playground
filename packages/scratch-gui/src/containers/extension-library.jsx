@@ -64,13 +64,13 @@ class ExtensionLibrary extends React.PureComponent {
     }
     render() {
         const extensionLibraryThumbnailData = extensionLibraryContent
-            .map(({ iconURL, extensionId, ...rest }) => {
+            .map(({ iconURL, extensionId, tags, ...rest }) => {
                 const uniqueURL = iconURL ? `${iconURL}?key=${extensionId}` : extensionIcon;
-                return { rawURL: uniqueURL, iconURL: uniqueURL, extensionId, ...rest };
+                return { rawURL: uniqueURL, iconURL: uniqueURL, extensionId, tags: tags ?? [], ...rest };
             })
             .sort((a, b) => {
-                if (a.tags?.includes('PRG Internal')) return 1;
-                if (b.tags?.includes('PRG Internal')) return -1;
+                if (a.tags?.includes('PRG Internal') || a.tags?.length === 0) return 1;
+                if (b.tags?.includes('PRG Internal') || b.tags?.length === 0) return -1;
                 return 0;
             })
 
