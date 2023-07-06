@@ -202,3 +202,61 @@ function rgbToDecimal(rgb: RGBObject) {
 export const rgbToHex = (rgb: RGBObject) => {
   return decimalToHex(rgbToDecimal(rgb));
 }
+
+/**
+ * Create an event (within extension framework code, i.e. `extensions/src`) that can be subscribed to at _bundling time_. 
+ * 
+ * As a mental short-hand, you can think of this as a macro-esque mechanism.
+ * 
+ * @see macro-link Macros
+ * 
+ * @description
+ * This **_works_** as it tries to create an object in the global scope, which is interacted with both from bundling-related code, 
+ * as well as the extension framework code 
+ * (as long as that code is executed at the _top-level_, and the runtime is NodeJS, not the browser). 
+ * 
+ * The reason why it's important the framework-based code is _top-level_ is because the framework sourcecode will actually be evaluated at _bundle time_, 
+ * meaning all _top-level_ expressions will be executed. 
+ * 
+ * This allows for the desired event mechanism: 
+ * > 1. Bundling-related code associates callbacks with a certain event (an entry to an object in global scope), 
+ * > 2. Framework code tries to fire the callbacks of a given event (when it is executed after step 1)
+ * 
+ * @see top-level Top-level Code
+
+ * **NOTE:** This function returns a non-null value only in NodeJS environments.
+ * @param identifier 
+ * @returns 
+ */
+export const tryCreateBundleTimeEvent = <Payload>(identifier: string) => {
+  const environment = typeof window === 'undefined' ? "node" : "browser";
+
+  if (environment !== "node") return null;
+
+  const key = `Bundle Time Event: ${identifier}`;
+
+  type Unregister = () => void;
+  type Callback = (details: Payload, removeSelf: Unregister) => void;
+  type Register = (callback: Callback) => Unregister;
+  type Callbacks = Record<symbol, Callback>;
+
+  const get = () => {
+    global[key] ??= {};
+    return global[key] as Callbacks;
+  }
+
+  const registerCallback: Register = (callback) => {
+    const id = Symbol(key);
+    get()[id] = callback;
+    return () => delete get()?.[id];
+  };
+
+  type Fire = (details: Payload) => void;
+
+  const fire: Fire = (details) => {
+    const callbackIDs = Object.getOwnPropertySymbols(get());
+    for (const id of callbackIDs) get()[id]?.(details, () => delete get()?.[id]);
+  };
+
+  return { registerCallback, fire };
+}

@@ -4,13 +4,9 @@ import scratchInfo from "./mixins/base/scratchInfo";
 import supported from "./mixins/base/supported";
 import { ExtensionMenuDisplayDetails, Writeable } from "$common/types";
 import { tryCaptureDependencies } from "./mixins/dependencies";
+import { tryCreateBundleTimeEvent } from "$common/utils";
 
-const registerDetailsIdentifier = "__registerMenuDetials";
-
-const tryAnnounceDetails = (details: ExtensionMenuDisplayDetails) => {
-  const isNode = typeof window === 'undefined';
-  if (isNode) global?.[registerDetailsIdentifier]?.(details);
-}
+export const extensionBundleEvent = tryCreateBundleTimeEvent<{ details: ExtensionMenuDisplayDetails, addOns: MixinName[] }>("extension");
 
 /**
  * Creates the base class that your Extension should 'extend' which is compatible with your request. 
@@ -51,7 +47,7 @@ export const extension = <const TSupported extends readonly MixinName[]>(
   ...addOns: Writeable<TSupported>
 ): ExtensionWithFunctionality<[...TSupported]> & typeof ExtensionBase => {
 
-  tryAnnounceDetails(details);
+  if (details) extensionBundleEvent?.fire({ details, addOns });
 
   const Base = scratchInfo(supported(ExtensionBase, addOns)) as ExtensionWithFunctionality<[...TSupported]>;
 
@@ -82,13 +78,6 @@ const recursivelyApplyMixinsAndDependencies = <const TSupported extends readonly
 
   return { Result, allSupported: alreadyAdded }
 }
-
-export const registerExtensionDefinitionCallback = (callback: (details: ExtensionMenuDisplayDetails) => void) =>
-  global[registerDetailsIdentifier] = (details) => {
-    if (!details) return;
-    callback(details);
-    delete global[registerDetailsIdentifier];
-  };
 
 export type ExtensionConstructor<TSupported extends MixinName[] = []> = ReturnType<typeof extension<TSupported>>;
 export type ExtensionInstance<TSupported extends MixinName[] = []> = InstanceType<ExtensionConstructor<TSupported>>;
