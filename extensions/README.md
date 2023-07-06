@@ -1186,7 +1186,7 @@ export default class SaveLoadExample extends extension({ name }, "customSaveData
 > NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
 If you want to edit it, please go to [extensions/documentation/src/appInventor/README.md](documentation/src/appInventor/README.md)
 
-This effort is a work in progress and not ready to use. 
+This effort is a work in progress and **_not_** ready to use. 
 
 Please contact @pmalacho-mit (Parker Malachowsky) if you're interested in this work!
 
