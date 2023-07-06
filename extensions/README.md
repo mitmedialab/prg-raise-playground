@@ -21,8 +21,9 @@ This document will be most helpful for people doing more complex development, li
 7. [App Inventor Cross-Compilation / Interoperability](#app-inventor-crosscompilation--interoperability)
 8. [Making use of the Block Utility & Block ID](#making-use-of-the-block-utility--block-id)
 9. [Adding Custom Arguments](#adding-custom-arguments)
-10. [Adding inline images to the text of blocks](#adding-inline-images-to-the-text-of-blocks)
-11. [Reference](#reference)
+10. [Extension Menu Tags / Categories](#extension-menu-tags--categories)
+11. [Adding inline images to the text of blocks](#adding-inline-images-to-the-text-of-blocks)
+12. [Reference](#reference)
 
 ## Anatomy of an Extension Directory
 
@@ -1419,6 +1420,31 @@ Then, we modify the UI (Svelte) component we created earlier to match our block 
 > Included links:
 > * https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extensions#creating-ui-for-extensions
 
+
+## Extension Menu Tags / Categories
+
+> NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
+If you want to edit it, please go to [extensions/documentation/src/extensionMenuTags/README.md](documentation/src/extensionMenuTags/README.md)
+
+Extensions can be associated with certain `tags` (or categories), which are visible in the [Extensions Menu](https://en.scratch-wiki.info/wiki/Extension#Adding_Extensions) and allow users to more easily find the extensions they are looking for.
+
+`tags` are be specified within the first "details" argument of the `extension(...)` factory function invocation, like so:
+
+```ts
+import { extension } from "$common";
+
+export default class TagsExample extends extension(
+    {
+        name: "A demonstration of using tags to categorize extensions",
+        tags: ["Made by PRG"]
+    }
+) {
+    init() { /* ignore */ }
+}
+```
+
+
+To add define new `tags`, add an additional string literal to the [Tag type]().
 
 # Adding inline images to the text of blocks
 
