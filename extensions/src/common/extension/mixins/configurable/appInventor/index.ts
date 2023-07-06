@@ -1,7 +1,8 @@
 import { MinimalExtensionConstructor } from "../../base";
 
 /**
- * Mixin the ability for extensions to open up UI at-will
+ * Mixin the ability for an extension to be treated as a cross-platform extension, 
+ * spanning both the RAISE Playground and App Inventor.
  * @param Ctor 
  * @returns 
  * @see https://www.typescriptlang.org/docs/handbook/mixins.html
@@ -9,7 +10,7 @@ import { MinimalExtensionConstructor } from "../../base";
 export default function <T extends MinimalExtensionConstructor>(Ctor: T) {
     abstract class ExtensionWithAppInventorInterop extends Ctor {
         get withinAppInventor() {
-            return false; // Is there a way to do this?
+            return false; // TODO: Determine what/if there is a way to do this.?
         }
     }
 

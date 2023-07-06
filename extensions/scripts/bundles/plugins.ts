@@ -15,7 +15,7 @@ import chalk from "chalk";
 import { runOncePerBundling } from "../utils/rollupHelper";
 import { sendToParent } from "$root/scripts/comms";
 import { setAuxiliaryInfoForExtension } from "./auxiliaryInfo";
-import AppInventorInterop from "scripts/utils/AppInventorInterop";
+import { getAppInventorGenerator } from "scripts/utils/interop";
 
 export const clearDestinationDirectories = (): Plugin => {
   const runner = runOncePerBundling();
@@ -196,19 +196,18 @@ export const finalizeConfigurableExtensionBundle = (info: BundleInfo): Plugin =>
 
     extensionBundleEvent.registerCallback(function (extensionInfo, removeSelf) {
       const { details } = extensionInfo;
-      for (const key in menuDetails) delete menuDetails[key]; // clear out any previous menu details
+      for (const key in menuDetails) delete menuDetails[key];
       for (const key in details) menuDetails[key] = details[key];
       success = true;
       removeSelf();
     });
 
-    const appInventorInterop = new AppInventorInterop(info);
+    const generateAppInventor = getAppInventorGenerator(info);
 
     eval(framework + "\n" + fs.readFileSync(bundleDestination, "utf-8"));
+    if (!success) throw new Error(`No extension registered for '${name}'. Check your usage of the 'extension(...)' factory function.`);
 
-    appInventorInterop.tryGenerate();
-
-    if (!success) throw new Error(`No extension registered for '${name}'. Check your usage of the 'extension(...)' function.`);
+    generateAppInventor();
   }
 
   const runner = runOncePerBundling();
