@@ -1,5 +1,5 @@
 import type Video from "$scratch-vm/io/video";
-import { MinimalExtensionConstructor } from "../required";
+import { MinimalExtensionConstructor } from "../base";
 
 const Format = {
   image: "image-data",

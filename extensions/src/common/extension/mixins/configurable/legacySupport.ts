@@ -2,8 +2,8 @@ import { ExtensionInstance } from "$common/extension";
 import { AbstractConstructor, ExtensionArgumentMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, ExtensionMetadata } from "$common/types";
 import { isString, set } from "$common/utils";
 import { isDynamicMenu, parseText } from "../../decorators/legacySupport/index";
-import { MinimalExtensionConstructor } from "../required";
-import { getImplementationName, wrapOperation } from "../required/scratchInfo/index";
+import { MinimalExtensionConstructor } from "../base";
+import { getImplementationName, wrapOperation } from "../base/scratchInfo/index";
 
 type WrappedOperation = ReturnType<typeof wrapOperation>;
 type WrappedOperationParams = Parameters<WrappedOperation>;
