@@ -1,14 +1,10 @@
-import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, extension } from "$common";
+import { Environment, extension } from "$common";
 import tmImage from '@teachablemachine/image';
 import tmPose from '@teachablemachine/pose';
 import { create } from '@tensorflow-models/speech-commands';
+import { legacyFullSupport, } from "./legacy";
 
-import { legacyFullSupport, info } from "./legacy";
-
-const { legacyExtension, legacyDefinition } = legacyFullSupport.for<teachableMachine>();
-
-// TODO: Implement indictator (Peripheral Stuff) to show if the model is loaded or not
-
+const { legacyExtension, legacyBlock } = legacyFullSupport.for<teachableMachine>();
 const VideoState = {
   /** Video turned off. */
   OFF: 'off',
@@ -18,25 +14,17 @@ const VideoState = {
   ON_FLIPPED: 'on-flipped',
 } as const;
 
-type Details = {
+const dynamicClassMenu = (self: teachableMachine) => ({
+  argumentMethods: { 0: { getItems: () => self.getClasses() } }
+})
+
+@legacyExtension()
+export default class teachableMachine extends extension({
   name: "Teachable Machine",
   description: "Use your Teachable Machine models in your Scratch project!",
   iconURL: "teachable-machine-blocks.png",
   insetIconURL: "teachable-machine-blocks-small.svg"
-};
-
-type Blocks = {
-  useModelBlock(url: string): void;
-  whenModelMatches(state: string): boolean;
-  modelPrediction(): string;
-  modelMatches(state: string): boolean;
-  classConfidence(state: string): number;
-  videoToggle(state: string): void;
-  setVideoTransparency(state: number): void;
-}
-
-@legacyExtension()
-export default class teachableMachine extends Extension<Details, Blocks> {
+}) {
 
   lastUpdate: number;
   maxConfidence: number;
@@ -321,83 +309,46 @@ export default class teachableMachine extends Extension<Details, Blocks> {
     this.runtime.ioDevices.video.setPreviewGhost(trans);
   }
 
-  defineBlocks(): teachableMachine["BlockDefinitions"] {
+  @legacyBlock.useModelBlock()
+  useModelBlock(url: string) {
+    this.useModel(url);
+  }
 
-    this.setTransparency(50);
-    this.toggleVideo(VideoState.ON);
+  @legacyBlock.whenModelMatches(dynamicClassMenu)
+  whenModelMatches(state: string) {
+    return this.model_match(state);
+  }
 
-    const useModelBlock = legacyDefinition.useModelBlock({
-      operation: (url) => {
-        this.useModel(url);
+  @legacyBlock.modelPrediction()
+  modelPrediction() {
+    return this.getModelPrediction();
+  }
+
+  @legacyBlock.modelMatches(dynamicClassMenu)
+  modelMatches(state: string) {
+    return this.model_match(state);
+  }
+
+  @legacyBlock.classConfidence(dynamicClassMenu)
+  classConfidence(state: string) {
+    return this.getClassConfidence(state);
+  }
+
+  @legacyBlock.videoToggle({
+    argumentMethods: {
+      0: {
+        handler: (video_state: string) => {
+          return ['on', 'off', 'on-flipped'].includes(video_state) ? video_state : VideoState.ON;
+        },
       }
-    });
-
-    const whenModelMatches = legacyDefinition.whenModelMatches({
-      operation: (state) => {
-        return this.model_match(state);
-      },
-      argumentMethods: {
-        0: {
-          getItems: () => this.getClasses()
-        }
-      }
-    });
-
-    const modelPrediction = legacyDefinition.modelPrediction({
-      operation: () => {
-        return this.getModelPrediction();
-      }
-    });
-
-    const modelMatches = legacyDefinition.modelMatches({
-      operation: (state) => {
-        return this.model_match(state);
-      },
-      argumentMethods: {
-        0: {
-          getItems: () => this.getClasses()
-        }
-      }
-    });
-
-    const classConfidence = legacyDefinition.classConfidence({
-      operation: (state) => {
-        return this.getClassConfidence(state);
-      },
-      argumentMethods: {
-        0: {
-          getItems: () => this.getClasses()
-        }
-      }
-    });
-
-    const videoToggle = legacyDefinition.videoToggle({
-      operation: (video_state) => {
-        this.toggleVideo(video_state);
-      },
-      argumentMethods: {
-        0: {
-          handler: (video_state: string) => {
-            return ['on', 'off', 'on-flipped'].includes(video_state) ? video_state : VideoState.ON;
-          },
-        }
-      }
-    });
-
-    const setVideoTransparency = legacyDefinition.setVideoTransparency({
-      operation: (transparency: number) => {
-        this.setTransparency(transparency);
-      }
-    });
-
-    return {
-      useModelBlock,
-      whenModelMatches,
-      modelPrediction,
-      modelMatches,
-      classConfidence,
-      videoToggle,
-      setVideoTransparency,
     }
+  })
+  videoToggle(state: string) {
+    this.toggleVideo(state);
+  }
+
+  @legacyBlock.setVideoTransparency()
+  setVideoTransparency(transparency: number) {
+    this.setTransparency(transparency);
   }
 }
