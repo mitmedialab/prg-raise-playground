@@ -32,11 +32,22 @@ export const extractMethodTypesFromExtension = (info: BundleInfo): ProgramBasedT
         const { name } = property;
         const propertyType = checker.getTypeOfSymbolAtLocation(property, node);
         const entries = new Array<MethodTypeInformation & { name: string }>();
-        if (isGetter(property))
-          entries.push({ name: `${getAccessorPrefix}${name}`, parameterTypes: [], returnType: propertyType, typeChecker: checker });
-        if (isSetter(property))
-          entries.push({ name: `${setAccessorPrefix}${name}`, parameterTypes: [["value", propertyType]], returnType: null, typeChecker: checker });
-        if (isMethod(property)) {
+
+        if (match(property, ts.SymbolFlags.GetAccessor)) entries.push({
+          name: `${getAccessorPrefix}${name}`,
+          parameterTypes: [],
+          returnType: propertyType,
+          typeChecker: checker
+        });
+
+        if (match(property, ts.SymbolFlags.SetAccessor)) entries.push({
+          name: `${setAccessorPrefix}${name}`,
+          parameterTypes: [["value", propertyType]],
+          returnType: null,
+          typeChecker: checker
+        });
+
+        if (match(property, ts.SymbolFlags.Method)) {
           const callSignature = propertyType.getCallSignatures()?.[0]; // Only the first? Are multiple signatures for overloads?
           const parameterTypes = callSignature.parameters?.map(parameter => {
             const { name, valueDeclaration } = parameter;
@@ -72,7 +83,7 @@ const probeExtensionProgram = ({ indexFile }: BundleInfo, program: ts.Program) =
 
 const shouldProbeExtensionMethods = (properties: ts.Symbol[]) => {
   const propertyNames = properties.map(({ name }) => name);
-  type AppInventorExtension = InstanceType<ReturnType<typeof appInventor>>
+  type AppInventorExtension = InstanceType<ReturnType<typeof appInventor>>;
   const appInventorKey: Exclude<keyof AppInventorExtension, keyof ExtensionInstance> = "withinAppInventor";
   return propertyNames.includes(appInventorKey);
 };
@@ -82,12 +93,13 @@ const identityTransformation: ReturnType<ProgramBasedTransformer> = () => ({
   transformBundle: identity,
 });
 
-const isGetter = ({ flags }: ts.Symbol) => flags & ts.SymbolFlags.GetAccessor;
-const isSetter = ({ flags }: ts.Symbol) => flags & ts.SymbolFlags.SetAccessor;
-const isMethod = ({ flags }: ts.Symbol) => flags & ts.SymbolFlags.Method;
+const match = ({ flags }: ts.Symbol, query: ts.SymbolFlags) => flags & query;
+
 const typeReferenceKey: keyof Omit<ts.TypeReference, keyof ts.Type> = "target";
 const isTypeReference = (type: ts.Type): type is ts.TypeReference => typeReferenceKey in type;
+
 const tryParseJSON = (text: string) => { try { return JSON.parse(text) } catch { return undefined } }
+
 const tryEvaluate = (text: string) => {
   const cleaned = text.replaceAll(";", ",");
   const iife = `(() => (${cleaned}))()`;

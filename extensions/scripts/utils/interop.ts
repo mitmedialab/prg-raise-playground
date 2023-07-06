@@ -2,13 +2,13 @@ import { blockBundleEvent, extensionBundleEvent } from "$common";
 import { BundleInfo } from "scripts/bundles";
 import { getMethodsForExtension } from "scripts/typeProbing";
 
-const prefix = `[App Inventor Interop]`;
-
 /**
  * This method assists with extracting details from extensions (at _bundle time_) 
  * that indicate they should be "cross-compiled" to App Inventor extensions.
  */
 export const getAppInventorGenerator = (info: BundleInfo) => {
+    const prefix = `[App Inventor Interop]`;
+
     let methodTypes: ReturnType<typeof getMethodsForExtension>;
     let supported = false;
 
