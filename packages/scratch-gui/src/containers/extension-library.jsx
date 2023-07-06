@@ -23,16 +23,11 @@ const messages = defineMessages({
     }
 });
 
-const makeTag = (tag) => ({
-    tag,
-    intlLabel: {
-        defaultMessage: tag,
-        description: `${tag} -- Tag for filtering a library for everything`,
-        id: `gui.extensionTags.${tag}`
-    }
-})
-
-const tags = [makeTag("MIT PRG"), makeTag("Dancing with AI"), makeTag("PRG Internal"), makeTag("Scratch Built In")]
+const makeTranslationLabel = (tag) => ({
+    defaultMessage: tag,
+    description: `${tag} -- Tag for filtering a library for everything`,
+    id: `gui.extensionTags.${tag}`
+});
 
 class ExtensionLibrary extends React.PureComponent {
     constructor(props) {
@@ -68,10 +63,20 @@ class ExtensionLibrary extends React.PureComponent {
         }
     }
     render() {
-        const extensionLibraryThumbnailData = extensionLibraryContent.map(extension => ({
-            rawURL: extension.iconURL || extensionIcon,
-            ...extension
-        }));
+        const extensionLibraryThumbnailData = extensionLibraryContent
+            .map(({ iconURL, extensionId, ...rest }) => {
+                const uniqueURL = iconURL ? `${iconURL}?key=${extensionId}` : extensionIcon;
+                return { rawURL: uniqueURL, iconURL: uniqueURL, extensionId, ...rest };
+            })
+            .sort((a, b) => {
+                if (a.tags?.includes('PRG Internal')) return 1;
+                if (b.tags?.includes('PRG Internal')) return -1;
+                return 0;
+            })
+
+        const uniqueTags = Array.from(new Set(extensionLibraryThumbnailData.map(({ tags }) => tags).flat()));
+        const tags = uniqueTags.map(tag => ({ tag, intlLabel: makeTranslationLabel(tag) }));
+
         return (
             <LibraryComponent
                 data={extensionLibraryThumbnailData}

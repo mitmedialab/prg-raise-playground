@@ -6,7 +6,8 @@ type Details = {
   name: "Onnx Example",
   description: "A demonstration that an onnx model can be used (not exciting, nor educationally valuable)",
   iconURL: "",
-  insetIconURL: ""
+  insetIconURL: "",
+  tags: ["PRG Internal"]
 };
 
 

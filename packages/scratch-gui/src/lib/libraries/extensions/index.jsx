@@ -84,7 +84,7 @@ export default [
             />
         ),
         featured: true,
-        tags: ["MIT PRG"]
+        tags: ["Made by PRG"]
 
     },
     {
@@ -106,7 +106,7 @@ export default [
             />
         ),
         featured: true,
-        tags: ["MIT PRG"]
+        tags: ["Made by PRG"]
     },
     {
         name: (
@@ -127,7 +127,7 @@ export default [
             />
         ),
         featured: true,
-        tags: ["MIT PRG"]
+        tags: ["Made by PRG"]
     }, {
         name: (
             <FormattedMessage
@@ -147,7 +147,7 @@ export default [
             />
         ),
         featured: true,
-        tags: ["MIT PRG"]
+        tags: ["Made by PRG"]
     }, //*/ // RANDI Removing extensions I don't want students to play with
     {
         name: (
@@ -168,7 +168,7 @@ export default [
             />
         ),
         featured: true,
-        tags: ["Built In"]
+        tags: ["Made by Scratch"]
     },
     {
         name: (
@@ -189,7 +189,7 @@ export default [
             />
         ),
         featured: true,
-        tags: ["Built In"]
+        tags: ["Made by Scratch"]
     },
     {
         name: (
@@ -210,7 +210,7 @@ export default [
             />
         ),
         featured: true,
-        tags: ["Built In"]
+        tags: ["Made by Scratch"]
     },
     {
         name: (
@@ -233,7 +233,7 @@ export default [
         ),
         featured: true,
         internetConnectionRequired: true,
-        tags: ["Built In"]
+        tags: ["Made by Scratch"]
     },
     {
         name: (
@@ -256,7 +256,7 @@ export default [
         ),
         featured: true,
         internetConnectionRequired: true,
-        tags: ["Built In"]
+        tags: ["Made by Scratch"]
     },
     {
         name: 'Makey Makey',
@@ -272,7 +272,7 @@ export default [
             />
         ),
         featured: true,
-        tags: ["Built In"]
+        tags: ["Made by Scratch"]
     },
     {
         name: 'micro:bit',
@@ -303,7 +303,7 @@ export default [
             />
         ),
         helpLink: 'https://scratch.mit.edu/microbit',
-        tags: ["Built In"]
+        tags: ["Made by Scratch"]
     },
     {
         name: 'LEGO MINDSTORMS EV3',
@@ -334,7 +334,7 @@ export default [
             />
         ),
         helpLink: 'https://scratch.mit.edu/ev3',
-        tags: ["Built In"]
+        tags: ["Made by Scratch"]
     },
     {
         name: 'LEGO BOOST',
@@ -366,7 +366,7 @@ export default [
             />
         ),
         helpLink: 'https://scratch.mit.edu/boost',
-        tags: ["Built In"]
+        tags: ["Made by Scratch"]
     },
     {
         name: 'LEGO Education WeDo 2.0',
@@ -398,7 +398,7 @@ export default [
             />
         ),
         helpLink: 'https://scratch.mit.edu/wedo',
-        tags: ["Built In"]
+        tags: ["Made by Scratch"]
     },
     {
         name: 'Go Direct Force & Acceleration',
@@ -429,6 +429,6 @@ export default [
             />
         ),
         helpLink: 'https://scratch.mit.edu/vernier',
-        tags: ["Built In"]
+        tags: ["Made by Scratch"]
     },
 ];

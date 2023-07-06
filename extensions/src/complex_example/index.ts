@@ -38,6 +38,7 @@ export default class TypeScriptFrameworkExample extends extension(
     description: "Demonstrating how typescript can be used to write a realistic extension",
     iconURL: "Typescript_logo.png",
     insetIconURL: "typescript-logo.svg",
+    tags: ["PRG Internal"]
   },
   "ui",
   "customSaveData",
