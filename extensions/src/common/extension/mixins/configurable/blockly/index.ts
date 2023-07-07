@@ -1,4 +1,4 @@
-import { MinimalExtensionConstructor } from "../../required";
+import { MinimalExtensionConstructor } from "../../base";
 import type * as Blockly from "blockly";
 
 type Methods =
