@@ -166,7 +166,7 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     const serialized = JSON.stringify(children);
     hatShouldExecute = overrideHatShouldExecute || (children.length > 0 && this.previousHatChildren !== serialized);
     this.previousHatChildren = serialized;
-    hatShouldExecute ? music(true) : music(false);
+    music(hatShouldExecute);
     overrideHatShouldExecute = false;
     return hatShouldExecute;
   }
