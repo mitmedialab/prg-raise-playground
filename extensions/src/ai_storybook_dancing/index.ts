@@ -1,6 +1,6 @@
-import { Environment, ExtensionMenuDisplayDetails, extension, block, SaveDataHandler, RuntimeEvent, ArgumentType } from "$common";
+import { Environment, ExtensionMenuDisplayDetails, extension, block, SaveDataHandler, RuntimeEvent, ArgumentType, BlockUtilityWithID } from "$common";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
-import { hideNonBlocklyElements, stretchWorkspaceToScreen, fixInlineImages, fixHatImage, populateSVGElements, highlight } from "./layout";
+import { hideNonBlocklyElements, stretchWorkspaceToScreen, fixInlineImages, fixHatImage, highlight } from "./layout";
 import { announce, requestDanceMove, requestMusic, untilMessageReceived, type DanceMove, type MusicState } from "./messaging";
 import hop from "./inlineImages/hop.png";
 import stepLeft from "./inlineImages/left.png";
@@ -8,7 +8,6 @@ import stepRight from "./inlineImages/right.png";
 import spinLeft from "./inlineImages/spin-left.png";
 import spinRight from "./inlineImages/spin-right.png";
 import start from "./inlineImages/start.png";
-import BlockIDs from "./BlockIDs";
 
 const details: ExtensionMenuDisplayDetails = {
   name: "Dancing Activity for AI Storybook",
@@ -22,36 +21,32 @@ let hatShouldExecute = false;
 let overrideHatShouldExecute = false;
 let executionStateChange = false;
 
-const blockByDanceMove = {
-  "hop": "hop",
-  "swivel left": "stepLeft",
-  "swivel right": "stepRight",
-  "spin left": "spinLeft",
-  "spin right": "spinRight"
-} satisfies Record<DanceMove, keyof AiStorybookDancing>;
+const idByBlock = new Map<keyof AiStorybookDancing, string>();
+const setID = (block: keyof AiStorybookDancing, { blockID }: BlockUtilityWithID) => idByBlock.set(block, blockID);
+const getID = (block: keyof AiStorybookDancing) => idByBlock.get(block);
 
 const dance = async (move: DanceMove) => {
   requestDanceMove(move);
   await untilMessageReceived(`end ${move}`);
 }
 
-async function blockSequence(move: DanceMove, blockIDs: BlockIDs, util: BlockUtility) {
-  const { topBlock, blockContainer } = util.thread;
-  if (topBlock != blockIDs.get("entry")) return;
-  const block = blockByDanceMove[move];
-  const isFirtSibling = blockContainer.getNextBlock(topBlock) === blockIDs.get(block);
+async function blockSequence(move: DanceMove, { thread: { topBlock, blockContainer }, blockID }: BlockUtilityWithID) {
+  if (topBlock != getID("entry")) return;
+  const isFirtSibling = blockContainer.getNextBlock(topBlock) === blockID;
   if (!hatShouldExecute && !isFirtSibling) return;
   else if (!hatShouldExecute) overrideHatShouldExecute = true;
-  const unhighlight = highlight(block, blockIDs);
+  const unhighlight = highlight(blockID);
   await dance(move);
   unhighlight();
   if (!hatShouldExecute) executionStateChange = true;
 }
 
-function onFirstExecution(blockIDs: BlockIDs) {
+let executed = false;
+function setup() {
+  if (executed) return;
   fixInlineImages();
-  fixHatImage(blockIDs.get("entry"));
-  populateSVGElements(blockIDs);
+  fixHatImage(getID("entry"));
+  executed = true;
 }
 
 function getHatChildren(hatBlockID: string, { thread: { blockContainer } }: BlockUtility) {
@@ -74,7 +69,6 @@ function music(doPlay: boolean) {
 }
 
 export default class AiStorybookDancing extends extension(details, "blockly", "customSaveData") {
-  private blockIDs: BlockIDs;
   private previousHatChildren: string;
 
   async init(env: Environment) {
@@ -94,8 +88,9 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     },
     type: "command"
   })
-  async hop(hop: "inline image", util: BlockUtility) {
-    await blockSequence("hop", this.blockIDs, util);
+  async hop(hop: "inline image", util: BlockUtilityWithID) {
+    setID("hop", util);
+    await blockSequence("hop", util);
   }
 
   @block({
@@ -107,8 +102,9 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     },
     type: "command"
   })
-  async stepLeft(stepLeft: "inline image", util: BlockUtility) {
-    await blockSequence("swivel left", this.blockIDs, util);
+  async stepLeft(stepLeft: "inline image", util: BlockUtilityWithID) {
+    setID("stepLeft", util);
+    await blockSequence("swivel left", util);
   }
 
   @block({
@@ -120,8 +116,9 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     },
     type: "command"
   })
-  async stepRight(stepRight: "inline image", util: BlockUtility) {
-    await blockSequence("swivel right", this.blockIDs, util);
+  async stepRight(stepRight: "inline image", util: BlockUtilityWithID) {
+    setID("stepRight", util);
+    await blockSequence("swivel right", util);
   }
 
   @block({
@@ -133,8 +130,9 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     },
     type: "command"
   })
-  async spinLeft(spinLeft: "inline image", util: BlockUtility) {
-    await blockSequence("spin left", this.blockIDs, util);
+  async spinLeft(spinLeft: "inline image", util: BlockUtilityWithID) {
+    setID("spinLeft", util);
+    await blockSequence("spin left", util);
   }
 
   @block({
@@ -146,8 +144,9 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     },
     type: "command"
   })
-  async spinRight(spinRight: "inline image", util: BlockUtility) {
-    await blockSequence("spin right", this.blockIDs, util);
+  async spinRight(spinRight: "inline image", util: BlockUtilityWithID) {
+    setID("spinRight", util);
+    await blockSequence("spin right", util);
   }
 
 
@@ -160,12 +159,10 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
       alt: "Start icon"
     }
   })
-  entry(image: "inline image", util: BlockUtility) {
-    if (!this.blockIDs) {
-      this.blockIDs = new BlockIDs(this, util);
-      onFirstExecution(this.blockIDs);
-    }
-    const children = getHatChildren(this.blockIDs.get("entry"), util);
+  entry(image: "inline image", util: BlockUtilityWithID) {
+    setID("entry", util);
+    setup();
+    const children = getHatChildren(getID("entry"), util);
     const serialized = JSON.stringify(children);
     hatShouldExecute = overrideHatShouldExecute || (children.length > 0 && this.previousHatChildren !== serialized);
     this.previousHatChildren = serialized;
