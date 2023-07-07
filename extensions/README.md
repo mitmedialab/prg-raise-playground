@@ -18,10 +18,12 @@ This document will be most helpful for people doing more complex development, li
 4. [Creating UI for Extensions](#creating-ui-for-extensions)
 5. [Porting an Extension to use our Framework & Typescript](#porting-an-extension-to-use-our-framework--typescript)
 6. [Saving Custom Data for an Extension](#saving-custom-data-for-an-extension)
-7. [Making use of the Block Utility](#making-use-of-the-block-utility)
-8. [Adding Custom Arguments](#adding-custom-arguments)
-9. [Adding inline images to the text of blocks](#adding-inline-images-to-the-text-of-blocks)
-10. [Reference](#reference)
+7. [App Inventor Cross-Compilation / Interoperability](#app-inventor-crosscompilation--interoperability)
+8. [Making use of the Block Utility & Block ID](#making-use-of-the-block-utility--block-id)
+9. [Adding Custom Arguments](#adding-custom-arguments)
+10. [Extension Menu Tags / Categories](#extension-menu-tags--categories)
+11. [Adding inline images to the text of blocks](#adding-inline-images-to-the-text-of-blocks)
+12. [Reference](#reference)
 
 ## Anatomy of an Extension Directory
 
@@ -1180,12 +1182,80 @@ export default class SaveLoadExample extends extension({ name }, "customSaveData
 ```
 
 
-## Making use of the Block Utility
+## App Inventor Cross-Compilation / Interoperability
+
+> NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
+If you want to edit it, please go to [extensions/documentation/src/appInventor/README.md](documentation/src/appInventor/README.md)
+
+This effort is a work in progress and **_not_** ready to use. 
+
+Please contact @pmalacho-mit (Parker Malachowsky) if you're interested in this work!
+
+```ts
+import { Environment, extension, block, getterBlock, PropertyBlockDetails, setterBlock, Matrix } from "$common";
+
+const heightProperty: PropertyBlockDetails<number> = { name: "Height", type: "number" };
+
+export default class extends extension({ name: "App Inventor Example", tags: ["PRG Internal"] }, "appInventor") {
+  init(env: Environment): void { }
+
+  field = 0;
+
+  @getterBlock(heightProperty)
+  get some_property(): number {
+    if (this.withinAppInventor) console.log("RAISE Blocks + App Inventor = <3");
+    return this.field;
+  }
+
+  @setterBlock(heightProperty)
+  set some_property(value: number) {
+    this.field = value;
+  }
+
+  @block({
+    text: (x, y, z) => `${x} ${y} ${z}`,
+    args: ["number", "string", "matrix"],
+    type: "reporter"
+  })
+  dummy(x: number, y: string, z: Matrix): number {
+    return 0;
+  }
+}
+```
+
+
+## Making use of the Block Utility & Block ID
 
 > NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
 If you want to edit it, please go to [extensions/documentation/src/blockUtility/README.md](documentation/src/blockUtility/README.md)
 
-... Coming soon ...
+The Scratch runtime will pass a `BlockUtility` object to every block method when it is executed. 
+
+This can help you do things like:
+- ...TBD...
+
+### Block ID
+
+PRG has added an additional property to the `BlockUtility`, the `blockID` field, which allows you to uniquely associate an invocation of your block method with a block in the user's environment. Access it as demonstrated below:
+
+```ts
+import { BlockUtilityWithID, Environment, block, extension } from "$common";
+
+export default class extends extension({ name: "Block Utility example" }) {
+    override init(env: Environment) { }
+
+    @block({
+        type: "command",
+        text: (someArgument) => `Block text with ${someArgument}`,
+        arg: "number"
+    })
+    exampleBlockMethod(someArgument: number, util: BlockUtilityWithID) {
+        const { blockID } = util;
+        console.log(`My ID is: ${blockID}`)
+    }
+}
+```
+
 
 ## Adding Custom Arguments
 
@@ -1350,6 +1420,31 @@ Then, we modify the UI (Svelte) component we created earlier to match our block 
 > Included links:
 > * https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extensions#creating-ui-for-extensions
 
+
+## Extension Menu Tags / Categories
+
+> NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
+If you want to edit it, please go to [extensions/documentation/src/extensionMenuTags/README.md](documentation/src/extensionMenuTags/README.md)
+
+Extensions can be associated with certain `tags` (or categories), which are visible in the [Extensions Menu](https://en.scratch-wiki.info/wiki/Extension#Adding_Extensions) and allow users to more easily find the extensions they are looking for.
+
+`tags` are be specified within the first "details" argument of the `extension(...)` factory function invocation, like so:
+
+```ts
+import { extension } from "$common";
+
+export default class TagsExample extends extension(
+    {
+        name: "A demonstration of using tags to categorize extensions",
+        tags: ["Made by PRG"]
+    }
+) {
+    init() { /* ignore */ }
+}
+```
+
+
+To add define new `tags`, add an additional string literal to the [Tag type]().
 
 # Adding inline images to the text of blocks
 

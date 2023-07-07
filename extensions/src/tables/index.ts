@@ -8,7 +8,8 @@ type Details = {
   name: "Tables",
   description: "Make and use tables with rows and columns",
   iconURL: "tables.png",
-  insetIconURL: "tables.svg"
+  insetIconURL: "tables.svg",
+  tags: ["Made by PRG"]
 };
 
 type Blocks = {
