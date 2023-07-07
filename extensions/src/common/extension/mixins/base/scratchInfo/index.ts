@@ -1,5 +1,5 @@
 import { castToType } from "$common/cast";
-import CustomArgumentManager from "$common/extension/mixins/optional/customArguments/CustomArgumentManager";
+import CustomArgumentManager from "$common/extension/mixins/configurable/customArguments/CustomArgumentManager";
 import { ArgumentType, BlockType } from "$common/types/enums";
 import { BlockOperation, ValueOf, Menu, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, DynamicMenu, BlockMetadata, } from "$common/types";
 import { registerButtonCallback } from "$common/ui";
@@ -11,7 +11,7 @@ import { BlockDefinition, getButtonID, isBlockGetter } from "./util";
 import { convertToArgumentInfo, extractArgs, zipArgs } from "./args";
 import { convertToDisplayText } from "./text";
 import { CustomizableExtensionConstructor, MinimalExtensionInstance, } from "..";
-import { ExtensionIntanceWithFunctionality } from "../..";
+import { ExtensionInstanceWithFunctionality } from "../..";
 
 export const getImplementationName = (opcode: string) => `internal_${opcode}`;
 
@@ -29,7 +29,7 @@ export const wrapOperation = <T extends MinimalExtensionInstance>(
   operation: BlockOperation,
   args: { name: string, type: ValueOf<typeof ArgumentType>, handler: Handler }[]
 ) => _this.supports("customArguments")
-    ? function (this: ExtensionIntanceWithFunctionality<["customArguments"]>, argsFromScratch: Record<string, any>, blockUtility: BlockUtility) {
+    ? function (this: ExtensionInstanceWithFunctionality<["customArguments"]>, argsFromScratch: Record<string, any>, blockUtility: BlockUtility) {
       const castedArguments = args.map(({ name, type, handler }) => {
         if (type === ArgumentType.Image) return inlineImageAccessError;
         const param = argsFromScratch[name];

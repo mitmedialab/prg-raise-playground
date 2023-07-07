@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { FrameworkID, untilCondition, registerExtensionDefinitionCallback } from "$common";
+import { FrameworkID, untilCondition, extensionBundleEvent, blockBundleEvent } from "$common";
 import { type Plugin } from "rollup";
 import { appendToRootDetailsFile, populateMenuFileForExtension } from "../extensionsMenu";
 import { exportAllFromModule, toNamedDefaultExport } from "../utils/importExport";
@@ -15,6 +15,7 @@ import chalk from "chalk";
 import { runOncePerBundling } from "../utils/rollupHelper";
 import { sendToParent } from "$root/scripts/comms";
 import { setAuxiliaryInfoForExtension } from "./auxiliaryInfo";
+import { getAppInventorGenerator } from "scripts/utils/interop";
 
 export const clearDestinationDirectories = (): Plugin => {
   const runner = runOncePerBundling();
@@ -78,7 +79,7 @@ export const transpileExtensionGlobals = (): Plugin => {
       if (!runner.check()) return;
       const filename = "globals.ts";
       const pathToFile = path.join(commonDirectory, filename);
-      const { options, host } = getSrcCompilerHost();
+      const { options, host } = getSrcCompilerHost({ module: ts.ModuleKind.CommonJS });
 
       const outDir = path.join(extensionsFolder, "dist");
       const outFile = path.join(outDir, tsToJs(filename));
@@ -192,13 +193,21 @@ export const finalizeConfigurableExtensionBundle = (info: BundleInfo): Plugin =>
   const executeBundleAndExtractMenuDetails = async () => {
     const framework = await frameworkBundle.content;
     let success = false;
-    registerExtensionDefinitionCallback(function (details) {
+
+    extensionBundleEvent.registerCallback(function (extensionInfo, removeSelf) {
+      const { details } = extensionInfo;
       for (const key in menuDetails) delete menuDetails[key];
       for (const key in details) menuDetails[key] = details[key];
       success = true;
+      removeSelf();
     });
+
+    const generateAppInventor = getAppInventorGenerator(info);
+
     eval(framework + "\n" + fs.readFileSync(bundleDestination, "utf-8"));
-    if (!success) throw new Error(`No extension registered for '${name}'. Did you forget to use the extension decorator?`);
+    if (!success) throw new Error(`No extension registered for '${name}'. Check your usage of the 'extension(...)' factory function.`);
+
+    generateAppInventor();
   }
 
   const runner = runOncePerBundling();

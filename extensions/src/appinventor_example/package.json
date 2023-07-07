@@ -1,0 +1,15 @@
+{
+  "name": "appinventor_example-extension",
+  "version": "1.0.0",
+  "description": "An extension created using the PRG AI Blocks framework",
+  "main": "index.ts",
+  "scripts": {
+    "directory": "echo appinventor_example",
+    "test": "npm run test --prefix ../../ -- appinventor_example/index.test.ts",
+    "dev": "npm run dev --prefix ../../../ -- only=appinventor_example",
+    "add:ui": "npm run add:ui --prefix ../../../  -- appinventor_example",
+    "add:arg": "npm run --prefix ../../../-- appinventor_example"
+  },
+  "author": "",
+  "license": "ISC"
+}

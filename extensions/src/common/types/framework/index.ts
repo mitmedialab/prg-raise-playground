@@ -1,12 +1,17 @@
 import { Extension } from "$common/extension/GenericExtension";
 import type ExtensionManager from "$scratch-vm/extension-support/extension-manager";
 import type Runtime from "$scratch-vm/engine/runtime";
+import type BlockUtility from "$scratch-vm/engine/block-utility";
+import type { blockIDKey } from "../../globals";
 import { ExtensionBlocks } from "./blocks";
 import { Language } from "../enums";
 import { MethodNames, ValueOf } from "../utils";
 import { ExtensionInstance } from "$common/extension";
+import { Tag } from "./tags";
 
 export type BaseGenericExtension = Extension<ExtensionMenuDisplayDetails, ExtensionBlocks>;
+
+export type BlockUtilityWithID = BlockUtility & { [blockIDKey]: string };
 
 /**
  * @summary An object passed to extensions on initialization. 
@@ -95,6 +100,10 @@ export type ExtensionMenuDisplayDetails = {
    * **NOTE: In order for this setting to be respected, `blockColor` must also be defined**
    */
   menuSelectColor?: string;
+  /**
+   * Associate certain tags with this extension so that it can be easily located within the extensions menu
+   */
+  tags?: Tag[];
   internetConnectionRequired?: boolean;
   collaborator?: string;
   bluetoothRequired?: boolean;

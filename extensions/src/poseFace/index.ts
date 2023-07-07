@@ -35,7 +35,8 @@ type Details = {
   name: "Face Sensing",
   description: "Sense face movement with the camera.",
   iconURL: "pose-face.png",
-  insetIconURL: "pose-face-small.svg"
+  insetIconURL: "pose-face-small.svg",
+  tags: ["Dancing with AI", "Made by PRG"]
 };
 
 /**

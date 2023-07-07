@@ -1,4 +1,4 @@
-import type BlockUtility from "$scratch-vm/engine/block-utility";
+import { BlockUtilityWithID } from ".";
 import { ArgumentType } from "../enums";
 import { ValueOf } from "../utils";
 import { BlockOperation } from "./blocks";
@@ -81,4 +81,4 @@ export type ToArguments<T extends any[]> =
   ? readonly [Argument<Head>, ...ToArguments<Tail>]
   : [];
 
-export type ParamsAndUtility<T extends BlockOperation> = [...params: Parameters<T>, util: BlockUtility];
+export type ParamsAndUtility<T extends BlockOperation> = [...params: Parameters<T>, util: BlockUtilityWithID];
