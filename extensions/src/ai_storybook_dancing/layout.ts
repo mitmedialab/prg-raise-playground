@@ -1,4 +1,4 @@
-import { block, hideElementsWithClass } from "$common";
+import { hideElementsWithClass } from "$common";
 
 /**
  * Remove UI elements that aren't related to the block programming workspace.
@@ -40,5 +40,28 @@ export const fixHatImage = (hatID: string) => {
     const hatBlock = document.querySelectorAll(`[data-id='${hatID}']`);
     const image = hatBlock[0].querySelector("g image");
     image.setAttribute("transform", `translate(${24}, ${-15})`);
+}
 
+const map = new Map<string, SVGPathElement>();
+
+const getSvgElementForID = (id: string) => {
+    if (map.has(id)) return map.get(id);
+
+    for (const element of document.getElementsByTagName("g")) {
+        const elementID = element.getAttribute("data-id");
+        if (id !== elementID) continue;
+        const svgElement = element.getElementsByTagName("path")[0];
+        map.set(id, svgElement);
+        return svgElement;
+    }
+}
+
+export const highlight = (id: string) => {
+    const element = getSvgElementForID(id);
+    element.setAttribute("stroke", "#faf202");
+    element.setAttribute("fill-opacity", "0.7");
+    return () => {
+        element.setAttribute("stroke", "#d99c57");
+        element.setAttribute("fill-opacity", "1");
+    }
 }
