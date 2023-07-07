@@ -1,34 +1,18 @@
-import { Environment, ExtensionMenuDisplayDetails, extension, block, SaveDataHandler, RuntimeEvent, ArgumentType, BlockUtilityWithID } from "$common";
-import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
-import { hideNonBlocklyElements, stretchWorkspaceToScreen, fixInlineImages, fixHatImage, highlight } from "./layout";
-import { announce, requestDanceMove, requestMusic, untilMessageReceived, type DanceMove, type MusicState } from "./messaging";
+import { Environment, ExtensionMenuDisplayDetails, extension, block, BlockUtilityWithID } from "$common";
+import { hideNonBlocklyElements, stretchWorkspaceToScreen, highlight } from "./layout";
+import { announce, requestMusic, type DanceMove, } from "./messaging";
 import hop from "./inlineImages/hop.png";
 import stepLeft from "./inlineImages/left.png";
 import stepRight from "./inlineImages/right.png";
 import spinLeft from "./inlineImages/spin-left.png";
 import spinRight from "./inlineImages/spin-right.png";
 import start from "./inlineImages/start.png";
-
-const details: ExtensionMenuDisplayDetails = {
-  name: "Dancing Activity for AI Storybook",
-  noBlockIcon: true,
-  blockColor: "#faa302",
-  menuSelectColor: "#d99c57"
-};
+import { dance, getHatChildren, getID, setID, setup } from "./utils";
 
 let musicPlaying = false;
 let hatShouldExecute = false;
 let overrideHatShouldExecute = false;
 let executionStateChange = false;
-
-const idByBlock = new Map<keyof AiStorybookDancing, string>();
-const setID = (block: keyof AiStorybookDancing, { blockID }: BlockUtilityWithID) => idByBlock.set(block, blockID);
-const getID = (block: keyof AiStorybookDancing) => idByBlock.get(block);
-
-const dance = async (move: DanceMove) => {
-  requestDanceMove(move);
-  await untilMessageReceived(`end ${move}`);
-}
 
 async function blockSequence(move: DanceMove, { thread: { topBlock, blockContainer }, blockID }: BlockUtilityWithID) {
   if (topBlock != getID("entry")) return;
@@ -39,21 +23,6 @@ async function blockSequence(move: DanceMove, { thread: { topBlock, blockContain
   await dance(move);
   unhighlight();
   if (!hatShouldExecute) executionStateChange = true;
-}
-
-let executed = false;
-function setup() {
-  if (executed) return;
-  fixInlineImages();
-  fixHatImage(getID("entry"));
-  executed = true;
-}
-
-function getHatChildren(hatBlockID: string, { thread: { blockContainer } }: BlockUtility) {
-  let previous = hatBlockID;
-  let children = [];
-  while ((previous = blockContainer.getNextBlock(previous))) children.push(previous);
-  return children;
 }
 
 function music(doPlay: boolean) {
@@ -67,6 +36,13 @@ function music(doPlay: boolean) {
   }
   executionStateChange = false;
 }
+
+const details: ExtensionMenuDisplayDetails = {
+  name: "Dancing Activity for AI Storybook",
+  noBlockIcon: true,
+  blockColor: "#faa302",
+  menuSelectColor: "#d99c57"
+};
 
 export default class AiStorybookDancing extends extension(details, "blockly", "customSaveData") {
   private previousHatChildren: string;
