@@ -37,65 +37,115 @@ const EXTENSION_ID = "jibo";
 const JIBO_BODY = "jibo-body";
 const JIBO_EYE = "jibo-eye";
 
+const DEFAULT_JIBO_BODY = {
+  x: 4,
+  y: -9,
+  size: 100,
+  direction: 90,
+}
+
+const DEFAULT_JIBO_EYE = {
+  x: 1,
+  y: 75,
+  size: 35,
+  direction: 90,
+}
+
 type RGB = {
   x: number;
   y: number;
   z: number;
 };
-
 export const Color = {
-  Red: `red`,
-  Yellow: `yellow`,
-  Green: `green`,
-  Cyan: `cyan`,
-  Blue: `blue`,
-  Magenta: `magenta`,
-  White: `white`,
-  Random: `random`,
-  Off: `off`,
+  red: `red`, 
+  yellow: `yellow`,
+  green: `green`,
+  cyan: `cyan`,
+  blue: `blue`,
+  magenta: `magenta`,
+  white: `white`,
+  random: `random`,
+  off: `off`,
 } as const;
 type ColorType = typeof Color[keyof typeof Color];
 type ColorDefType = {
   value: RGB;
   imageData: string;
 };
-
 const colorDef: Record<ColorType, ColorDefType> = {
-  [Color.Red]: {
+  [Color.red]: {
     value: { x: 255, y: 0, z: 0 },
     imageData: jiboBodyRed,
   },
-  [Color.Yellow]: {
+  [Color.yellow]: {
     value: { x: 255, y: 69, z: 0 },
     imageData: jiboBodyYellow,
   },
-  [Color.Green]: {
+  [Color.green]: {
     value: { x: 0, y: 167, z: 0 },
     imageData: jiboBodyGreen,
   },
-  [Color.Cyan]: {
+  [Color.cyan]: {
     value: { x: 0, y: 167, z: 48 },
     imageData: jiboBodyCyan,
   },
-  [Color.Blue]: {
+  [Color.blue]: {
     value: { x: 0, y: 0, z: 255 },
     imageData: jiboBodyBlue,
   },
-  [Color.Magenta]: {
+  [Color.magenta]: {
     value: { x: 255, y: 0, z: 163 },
     imageData: jiboBodyMagenta,
   },
-  [Color.White]: {
+  [Color.white]: {
     value: { x: 255, y: 255, z: 255 },
     imageData: jiboBodyWhite,
   },
-  [Color.Random]: {
+  [Color.random]: {
     value: { x: -1, y: -1, z: -1 },
     imageData: ""
   },
-  [Color.Off]: {
+  [Color.off]: {
     value: { x: 0, y: 0, z: 0 },
     imageData: jiboBodyBlack,
+  },
+};
+
+type Coords = {
+  x: number;
+  y: number;
+  z: number;
+};
+export const Direction = {
+  up: `up`,
+  down: `down`,
+  right: `right`,
+  left: `left`,
+  forward: `forward`,
+  backward: `backward`,
+} as const;
+type DirType = typeof Direction[keyof typeof Direction];
+type DirDefType = {
+  value: Coords;
+};
+const directionDef: Record<DirType, DirDefType> = {
+  [Direction.up]: {
+    value: { x: 500, y: 100, z: 500 },
+  },
+  [Direction.down]: {
+    value: { x: 500, y: 100, z: -500 },
+  },
+  [Direction.left]: {
+    value: { x: 100, y: 500, z: 100 },
+  },
+  [Direction.right]: {
+    value: { x: 100, y: -500, z: 100 },
+  },
+  [Direction.forward]: {
+    value: { x: 500, y: 100, z: 100 },
+  },
+  [Direction.backward]: {
+    value: { x: -500, y: 100, z: 100 },
   },
 };
 
@@ -105,19 +155,19 @@ type AnimFileType = {
 };
 
 const Dance = {
-  BackStep: "Back Step",
+  BackStep: "BackStep",
   Carlton: "Carlton",
   Celebrate: "Celebration",
   Clockworker: "Clockworker",
   Doughkneader: "Doughkneader",
   Footstomper: "Footstomper",
-  HappyDance: "Happy",
+  HappyDance: "HappyDance",
   Headbanger: "Headbanger",
   Headdipper: "Headdipper",
   Pigeon: "Pigeon",
   SlowDance: "Prom",
-  RobotDance: "The Robot",
-  RockingChair: "Rocking Chair",
+  TheRobot: "TheRobot",
+  RockingChair: "RockingChair",
   Roxbury: "Roxbury",
   Samba: "Samba",
   Seaweed: "Seaweed",
@@ -126,7 +176,6 @@ const Dance = {
   Disco: "Disco",
 } as const;
 type DanceType = typeof Dance[keyof typeof Dance];
-
 const danceFiles: Record<DanceType, AnimFileType> = {
   [Dance.BackStep]: {
     file: "Dances/Back_Stepper_01_01.keys",
@@ -172,7 +221,7 @@ const danceFiles: Record<DanceType, AnimFileType> = {
     file: "Dances/Prom_Night_01_01.keys",
     imageData: "",
   },
-  [Dance.RobotDance]: {
+  [Dance.TheRobot]: {
     file: "Dances/Robotic_01_01.keys",
     imageData: "",
   },
@@ -207,45 +256,45 @@ const danceFiles: Record<DanceType, AnimFileType> = {
 };
 
 export const Emotion = {
-  Embarassed: `embarassed`,
-  Frustrated: `frustrated`,
-  Laugh: `laughing`,
-  Sad: `sad`,
-  Thinking: `thinking`,
-  Happy: `happy`,
-  SadEyes: `sad eyes`,
-  Interested: `interested`,
-  Curious: `curious`,
-  No: `no`,
-  Yes: `yes`,
-  Puzzled: `puzzled`,
-  Relieved: `relieved`,
-  Success: `success`,
+  embarassed: `embarassed`,
+  frustrated: `frustrated`,
+  laugh: `laughing`,
+  sad: `sad`,
+  thinking: `thinking`,
+  happy: `happy`,
+  SadEyes: `SadEyes`,
+  interested: `interested`,
+  curious: `curious`,
+  no: `no`,
+  yes: `yes`,
+  puzzled: `puzzled`,
+  relieved: `relieved`,
+  success: `success`,
 } as const;
 export type EmotionType = typeof Emotion[keyof typeof Emotion];
 
 const emotionFiles: Record<EmotionType, AnimFileType> = {
-  [Emotion.Embarassed]: {
+  [Emotion.embarassed]: {
     file: "Misc/embarassed_01_02.keys",
     imageData: "",
   },
-  [Emotion.Frustrated]: {
+  [Emotion.frustrated]: {
     file: "Misc/Frustrated_01_04.keys",
     imageData: "",
   },
-  [Emotion.Laugh]: {
+  [Emotion.laugh]: {
     file: "Misc/Laughter_01_03.keys",
     imageData: "",
   },
-  [Emotion.Sad]: {
+  [Emotion.sad]: {
     file: "Misc/Sad_03.keys",
     imageData: "",
   },
-  [Emotion.Thinking]: {
+  [Emotion.thinking]: {
     file: "Misc/thinking_08.keys",
     imageData: "",
   },
-  [Emotion.Happy]: {
+  [Emotion.happy]: {
     file: "Misc/Eye_to_Happy_02.keys",
     imageData: "",
   },
@@ -253,75 +302,75 @@ const emotionFiles: Record<EmotionType, AnimFileType> = {
     file: "Misc/Eye_Sad_03_02.keys",
     imageData: "",
   },
-  [Emotion.Interested]: {
+  [Emotion.interested]: {
     file: "Misc/interested_01.keys",
     imageData: "",
   },
-  [Emotion.Curious]: {
+  [Emotion.curious]: {
     file: "Misc/Question_01_02.keys",
     imageData: "",
   },
-  [Emotion.No]: {
+  [Emotion.no]: {
     file: "Misc/no_4.keys",
     imageData: "",
   },
-  [Emotion.Yes]: {
+  [Emotion.yes]: {
     file: "Misc/yep_02.keys",
     imageData: "",
   },
-  [Emotion.Puzzled]: {
+  [Emotion.puzzled]: {
     file: "Misc/puzzled_01_02.keys",
     imageData: "",
   },
-  [Emotion.Relieved]: {
+  [Emotion.relieved]: {
     file: "Misc/relieved_01.keys",
     imageData: "",
   },
-  [Emotion.Success]: {
+  [Emotion.success]: {
     file: "Misc/success_02.keys",
     imageData: "",
   },
 };
 
 export const Icon = {
-  Airplane: `airplane`,
-  Apple: `apple`,
-  Art: `art`,
-  Bowling: `bowling`,
-  Checkmark: `checkmark`,
-  ExclamationPoint: `exclamation point`,
-  Football: `football`,
-  Heart: `heart`,
-  Magic: `magic`,
-  Ocean: `ocean`,
-  Penguin: `penguin`,
-  Rainbow: `rainbow`,
-  Robot: `robot`,
-  Rocket: `rocket`,
-  Snowflake: `snowflake`,
-  Taco: `taco`,
-  VideoGame: `video game`,
+  airplane: `airplane`,
+  apple: `apple`,
+  art: `art`,
+  bowling: `bowling`,
+  checkmark: `checkmark`,
+  ExclamationPoint: `ExclamationPoint`,
+  football: `football`,
+  heart: `heart`,
+  magic: `magic`,
+  ocean: `ocean`,
+  penguin: `penguin`,
+  rainbow: `rainbow`,
+  robot: `robot`,
+  rocket: `rocket`,
+  snowflake: `snowflake`,
+  taco: `taco`,
+  VideoGame: `VideoGame`,
 } as const;
 export type IconType = typeof Icon[keyof typeof Icon];
 
 const iconFiles: Record<IconType, AnimFileType> = {
-  [Icon.Airplane]: {
+  [Icon.airplane]: {
     file: "Emoji/Emoji_Airplane_01_01.keys",
     imageData: jiboEyeAirplane,
   },
-  [Icon.Apple]: {
+  [Icon.apple]: {
     file: "Emoji/Emoji_AppleRed_01_01.keys",
     imageData: jiboEyeApple,
   },
-  [Icon.Art]: {
+  [Icon.art]: {
     file: "Emoji/Emoji_Art_01_01.keys",
     imageData: jiboEyeArt,
   },
-  [Icon.Bowling]: {
+  [Icon.bowling]: {
     file: "Emoji/Emoji_Bowling.keys",
     imageData: jiboEyeBowling,
   },
-  [Icon.Checkmark]: {
+  [Icon.checkmark]: {
     file: "Emoji/Emoji_Checkmark_01_01.keys",
     imageData: jiboEyeCheckmark,
   },
@@ -329,43 +378,43 @@ const iconFiles: Record<IconType, AnimFileType> = {
     file: "Emoji/Emoji_ExclamationYellow.keys",
     imageData: jiboEyeExclamation,
   },
-  [Icon.Football]: {
+  [Icon.football]: {
     file: "Emoji/Emoji_Football_01_01.keys",
     imageData: jiboEyeFootball,
   },
-  [Icon.Heart]: {
+  [Icon.heart]: {
     file: "Emoji/Emoji_HeartArrow_01_01.keys",
     imageData: jiboEyeHeart,
   },
-  [Icon.Magic]: {
+  [Icon.magic]: {
     file: "Emoji/Emoji_Magic_01_02.keys",
     imageData: jiboEyeMagic,
   },
-  [Icon.Ocean]: {
+  [Icon.ocean]: {
     file: "Emoji/Emoji_Ocean_01_01.keys",
     imageData: jiboEyeOcean,
   },
-  [Icon.Penguin]: {
+  [Icon.penguin]: {
     file: "Emoji/Emoji_Penguin_01_01.keys",
     imageData: jiboEyePenguin,
   },
-  [Icon.Rainbow]: {
+  [Icon.rainbow]: {
     file: "Emoji/Emoji_Rainbow_01_01.keys",
     imageData: jiboEyeRainbow,
   },
-  [Icon.Robot]: {
+  [Icon.robot]: {
     file: "Emoji/Emoji_Robot_01_01.keys",
     imageData: jiboEyeRobot,
   },
-  [Icon.Rocket]: {
+  [Icon.rocket]: {
     file: "Emoji/Emoji_Rocket_01_01.keys",
     imageData: jiboEyeRocket,
   },
-  [Icon.Snowflake]: {
+  [Icon.snowflake]: {
     file: "Emoji/Emoji_Snowflake_01_01.keys",
     imageData: jiboEyeSnowflake,
   },
-  [Icon.Taco]: {
+  [Icon.taco]: {
     file: "Emoji/Emoji_Taco_01_01.keys",
     imageData: jiboEyeTaco,
   },
@@ -386,13 +435,11 @@ type Blocks = {
   JiboTTS: (text: string) => void;
   JiboAsk: (text: string) => void;
   JiboListen: () => any;
+  JiboDance: (dance: string) => void;
   JiboEmote: (emotion: string) => void;
   JiboIcon: (icon: string) => void;
-  JiboDance: (dance: string) => void;
   JiboLED: (color: string) => void;
-  JiboLook: (x_angle: string, y_angle: string, z_angle: string) => void;
-  JiboMultitask: () => void;
-  JiboEnd: () => void;
+  JiboLook: (dir: string) => void; // (x_angle: string, y_angle: string, z_angle: string) => void;
 };
 
 export default class Scratch3Jibo extends Extension<Details, Blocks> {
@@ -403,23 +450,37 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   rosbridgeIP: string;
   jbVolume: string;
   asr_out: string;
-  multitask: boolean;
-  prevTasks: any;
-  multitask_msg: any;
   busy: boolean;
   tts: any;
   animation_list: string[];
   getAnimationList: () => MenuItem<string>[];
+  colors: MenuItem<string>[];
   dances: MenuItem<string>[];
+  dirs: MenuItem<string>[];
+  emotions: MenuItem<string>[];
+  icons: MenuItem<string>[];
 
   init(env: Environment) {
-    this.multitask = false;
-    this.prevTasks = [];
-    this.multitask_msg = {};
     this.busy = false;
-    this.dances = Object.entries(Dance).map(([dance, def]) => ({
+    this.colors = Object.entries(Color).map(([color]) => ({
+      value: color,
+      text: Color[color],
+    }));
+    this.dances = Object.entries(Dance).map(([dance]) => ({
       value: dance,
       text: Dance[dance],
+    }));
+    this.dirs = Object.entries(Direction).map(([direction]) => ({
+      value: direction,
+      text: Direction[direction],
+    }));
+    this.emotions = Object.entries(Emotion).map(([emotion]) => ({
+      value: emotion,
+      text: Emotion[emotion],
+    }));
+    this.icons = Object.entries(Icon).map(([icon]) => ({
+      value: icon,
+      text: Icon[icon],
     }));
     this.runtime.registerPeripheralExtension(EXTENSION_ID, this);
     this.runtime.connectPeripheral(EXTENSION_ID, 0);
@@ -515,13 +576,10 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
       }),
       JiboEmote: () => ({
         type: BlockType.Command,
-        arg: this.makeCustomArgument({
-          component: "EmojiArgument",
-          initial: {
-            value: Emotion.Happy,
-            text: "happy",
-          },
-        }),
+        arg: {
+          type: ArgumentType.String,
+          options: this.emotions,
+        },
         text: (aname) => `play ${aname} emotion`,
         operation: async (anim: EmotionType) => {
           const akey = emotionFiles[anim].file;
@@ -530,13 +588,10 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
       }),
       JiboIcon: () => ({
         type: BlockType.Command,
-        arg: this.makeCustomArgument({
-          component: "IconArgument",
-          initial: {
-            value: Icon.Taco,
-            text: "taco",
-          },
-        }),
+        arg: {
+          type: ArgumentType.String,
+          options: this.icons,
+        },
         text: (aname) => `show ${aname} icon`,
         operation: async (icon: IconType, { target }: BlockUtility) => {
           this.virtualJiboAnimFn(icon, "icon", target);
@@ -546,58 +601,25 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
       }),
       JiboLED: () => ({
         type: BlockType.Command,
-        arg: this.makeCustomArgument({
-          component: "ColorArgument",
-          initial: {
-            value: Color.Blue,
-            text: "blue",
-          },
-        }),
+        arg: {
+          type: ArgumentType.String,
+          options: this.colors,
+        },
         text: (cname) => `set LED ring to ${cname}`,
-        operation: (color: ColorType, { target }: BlockUtility) => {
+        operation: async (color: ColorType, { target }: BlockUtility) => {
           this.virtualJiboLEDFn(color, target);
-          this.jiboLEDFn(color);
+          await this.jiboLEDFn(color);
         },
       }),
-      JiboLook: (self: Scratch3Jibo) => ({
+      JiboLook: () => ({
         type: BlockType.Command,
-        args: [
-          {
-            type: ArgumentType.String,
-            defaultValue: "0",
-          },
-          {
-            type: ArgumentType.String,
-            defaultValue: "0",
-          },
-          {
-            type: ArgumentType.String,
-            defaultValue: "0",
-          },
-        ],
-        text: (x_angle: string, y_angle: string, z_angle: string) =>
-          `look at ${x_angle}, ${y_angle}, ${z_angle}`,
-        operation: (x_angle: string, y_angle: string, z_angle: string) =>
-          self.jiboLookFn(x_angle, y_angle, z_angle),
-      }),
-      JiboMultitask: () => ({
-        type: BlockType.Command,
-        text: `start multitask`,
-        operation: () => {
-          this.multitask = true;
-          console.log("starting multitask");
+        arg: {
+          type: ArgumentType.String,
+          options: this.dirs,
         },
-      }),
-      JiboEnd: () => ({
-        type: BlockType.Command,
-        text: `end multitask`,
-        operation: () => {
-          // console.log(self.multitask_msg); // debug
-          this.JiboPublish(this.multitask_msg);
-          this.multitask = false;
-          this.multitask_msg = {};
-          this.prevTasks.length = 0;
-          console.log("ending multitask");
+        text: (dname) => `look ${dname}`,
+        operation: async (dir: DirType) => {
+          await this.jiboLookFn(dir);
         },
       }),
     };
@@ -701,34 +723,6 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     }
   }
   async jiboTTSFn(text: string) {
-    console.log("multitask: " + this.multitask);
-
-    if (this.multitask) {
-      console.log(this.prevTasks);
-      if (this.prevTasks.includes("tts") || this.prevTasks.includes("emote")) {
-        this.prevTasks.length = 0;
-        console.log("performing");
-        console.log(this.multitask_msg);
-
-        while (this.busy) {
-          console.log("hello");
-        }
-        this.busy = true;
-        await this.JiboPublish(this.multitask_msg);
-        this.busy = false;
-
-        this.multitask_msg = {};
-      }
-
-      this.multitask_msg["do_tts"] = true;
-      this.multitask_msg["tts_text"] = text;
-      this.multitask_msg["volume"] = parseFloat(this.jbVolume);
-
-      this.prevTasks.push("tts");
-      console.log(this.multitask_msg);
-      return;
-    }
-
     while (this.busy) {
       console.log(this.busy);
       this.checkBusy();
@@ -801,12 +795,18 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
       let imageDataURI = colorDef[color].imageData;
       this.setSpriteCostume(spriteTarget, color, imageDataURI);
+
+      // TODO reset Jibo body location, size, and position
+      spriteTarget.setXY(DEFAULT_JIBO_BODY.x, DEFAULT_JIBO_BODY.y);
+      spriteTarget.setDirection(DEFAULT_JIBO_BODY.direction);
+      spriteTarget.setSize(DEFAULT_JIBO_BODY.size);
+
     } else {
       console.log("No Jibo body found");
     }
   }
   /* send command to Jibo to update its LED */
-  jiboLEDFn(color: string) {
+  async jiboLEDFn(color: string) {
     let ledValue = colorDef[color].value;
 
     if (color == "random") {
@@ -818,24 +818,11 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
       ledValue = colorDef[randomColor].value;
     }
 
-    if (this.multitask) {
-      if (this.prevTasks.includes("led")) {
-        this.prevTasks.length = 0;
-        console.log("performing");
-        console.log(this.multitask_msg);
-        this.JiboPublish(this.multitask_msg);
-        this.multitask_msg = {};
-      }
-      this.multitask_msg["do_led"] = true;
-      this.multitask_msg["led_color"] = ledValue;
-      this.prevTasks.push("led");
-    }
-
     var jibo_msg = {
       do_led: true,
       led_color: ledValue,
     };
-    this.JiboPublish(jibo_msg);
+    await this.JiboPublish(jibo_msg);
   }
 
   // JiboVolume (args) {
@@ -849,39 +836,17 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   //     this.JiboPublish(jibo_msg);
   // }
 
-  // TODO make this better - like look up down left right, etc.
-  jiboLookFn(X: string, Y: string, Z: string) {
-    if (this.multitask) {
-      if (
-        this.prevTasks.includes("look") ||
-        this.prevTasks.includes("emote") ||
-        this.prevTasks.includes("emoji")
-      ) {
-        console.log("performing");
-        console.log(this.multitask_msg);
-        this.JiboPublish(this.multitask_msg);
-        this.prevTasks.length = 0;
-        this.multitask_msg = {};
-      }
-      this.multitask_msg["do_lookat"] = true;
-      this.multitask["lookat"] = {
-        x: parseFloat(X),
-        y: parseFloat(Y),
-        z: parseFloat(Z),
-      };
-      this.prevTasks.push("look");
-      return;
-    }
-
-    var jibo_msg = {
+  async jiboLookFn(dir: string) {
+    let coords = directionDef[dir].value;
+    let jibo_msg = {
       do_lookat: true,
       lookat: {
-        x: parseFloat(X),
-        y: parseFloat(Y),
-        z: parseFloat(Z),
+        x: coords.x,
+        y: coords.y,
+        z: coords.z,
       },
     };
-    this.JiboPublish(jibo_msg);
+    await this.JiboPublish(jibo_msg);
   }
 
   /* update the appearance of virtual Jibo's eye */
@@ -911,7 +876,12 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
       else if (commandType == "emotion") imageDataURI = emotionFiles[animation].imageData;
       else if (commandType == "icon") imageDataURI = iconFiles[animation].imageData;
 
+      // TODO do transition animation to change sprite icon
       this.setSpriteCostume(spriteTarget, animation, imageDataURI);
+      spriteTarget.setXY(DEFAULT_JIBO_EYE.x, DEFAULT_JIBO_EYE.y);
+      spriteTarget.setDirection(DEFAULT_JIBO_EYE.direction);
+      spriteTarget.setSize(DEFAULT_JIBO_EYE.size);
+
     } else {
       console.log("No Jibo eye found");
     }
@@ -941,25 +911,6 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   //         };
   //     await this.JiboPublish(jibo_msg);
   // }
-
-  /*async JiboMultitask() {
-    var jibo_msg = {
-      do_led: true,
-      led_color: { x: 0, y: 255, z: 255 },
-      do_motion: true,
-      motion: "Emoji/Emoji_HeartArrow_01_01.keys", // "Misc/Laughter_01_03.keys", //"Dances/dance_disco_00.keys",
-      // "do_tts": true,
-      // "tts_text": "Hello, I am Jibo.",
-      do_lookat: true,
-      lookat: {
-        x: 100,
-        y: 100,
-        z: 100,
-      },
-    };
-    await this.JiboPublish(jibo_msg);
-    return "done";
-  }*/
 
   async JiboPublish(msg: any) {
     if (!this.connected) {
