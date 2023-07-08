@@ -4,12 +4,12 @@ export = BlockType;
  */
 type BlockType = string;
 declare namespace BlockType {
-    const BOOLEAN: string;
-    const BUTTON: string;
-    const COMMAND: string;
-    const CONDITIONAL: string;
-    const EVENT: string;
-    const HAT: string;
-    const LOOP: string;
-    const REPORTER: string;
+    let BOOLEAN: string;
+    let BUTTON: string;
+    let COMMAND: string;
+    let CONDITIONAL: string;
+    let EVENT: string;
+    let HAT: string;
+    let LOOP: string;
+    let REPORTER: string;
 }
