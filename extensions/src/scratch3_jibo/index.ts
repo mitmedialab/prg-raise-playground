@@ -4,6 +4,8 @@ import { Extension } from "$common";
 
 import type BlockUtility from "$scratch-vm/engine/block-utility";
 import Target from "$scratch-vm/engine/target";
+import SensingBlocks from "$scratch-vm/blocks/scratch3_sensing.js";
+import Text2Speech from "$scratch-vm/extensions/scratch3_text2speech/index.js";
 import ROSLIB from "roslib";
 
 import jiboBodyBlack from "./virtualJibo/jiboBody/black.png";
@@ -44,6 +46,7 @@ const DEFAULT_JIBO_BODY = {
   direction: 90,
 }
 
+// TODO make Jibo eye relative to body
 const DEFAULT_JIBO_EYE = {
   x: 1,
   y: 75,
@@ -56,6 +59,7 @@ type RGB = {
   y: number;
   z: number;
 };
+// TODO fix these weirdly redundant enums
 export const Color = {
   red: `red`, 
   yellow: `yellow`,
@@ -153,7 +157,6 @@ type AnimFileType = {
   file: string;
   imageData: string;
 };
-
 const Dance = {
   BackStep: "BackStep",
   Carlton: "Carlton",
@@ -161,13 +164,13 @@ const Dance = {
   Clockworker: "Clockworker",
   Doughkneader: "Doughkneader",
   Footstomper: "Footstomper",
-  HappyDance: "HappyDance",
+  HappyDance: "Happy",
   Headbanger: "Headbanger",
   Headdipper: "Headdipper",
   Pigeon: "Pigeon",
   SlowDance: "Prom",
-  TheRobot: "TheRobot",
-  RockingChair: "RockingChair",
+  RobotDance: "The Robot",
+  RockingChair: "Rocking Chair",
   Roxbury: "Roxbury",
   Samba: "Samba",
   Seaweed: "Seaweed",
@@ -176,6 +179,7 @@ const Dance = {
   Disco: "Disco",
 } as const;
 type DanceType = typeof Dance[keyof typeof Dance];
+// TODO decide what to do for virtual Jibo dances
 const danceFiles: Record<DanceType, AnimFileType> = {
   [Dance.BackStep]: {
     file: "Dances/Back_Stepper_01_01.keys",
@@ -221,7 +225,7 @@ const danceFiles: Record<DanceType, AnimFileType> = {
     file: "Dances/Prom_Night_01_01.keys",
     imageData: "",
   },
-  [Dance.TheRobot]: {
+  [Dance.RobotDance]: {
     file: "Dances/Robotic_01_01.keys",
     imageData: "",
   },
@@ -272,7 +276,7 @@ export const Emotion = {
   success: `success`,
 } as const;
 export type EmotionType = typeof Emotion[keyof typeof Emotion];
-
+// TODO find emoji images for virtual Jibo
 const emotionFiles: Record<EmotionType, AnimFileType> = {
   [Emotion.embarassed]: {
     file: "Misc/embarassed_01_02.keys",
@@ -338,7 +342,7 @@ export const Icon = {
   art: `art`,
   bowling: `bowling`,
   checkmark: `checkmark`,
-  ExclamationPoint: `ExclamationPoint`,
+  ExclamationPoint: `exclamation point`,
   football: `football`,
   heart: `heart`,
   magic: `magic`,
@@ -349,10 +353,9 @@ export const Icon = {
   rocket: `rocket`,
   snowflake: `snowflake`,
   taco: `taco`,
-  VideoGame: `VideoGame`,
+  VideoGame: `video game`,
 } as const;
 export type IconType = typeof Icon[keyof typeof Icon];
-
 const iconFiles: Record<IconType, AnimFileType> = {
   [Icon.airplane]: {
     file: "Emoji/Emoji_Airplane_01_01.keys",
@@ -452,8 +455,6 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   asr_out: string;
   busy: boolean;
   tts: any;
-  animation_list: string[];
-  getAnimationList: () => MenuItem<string>[];
   colors: MenuItem<string>[];
   dances: MenuItem<string>[];
   dirs: MenuItem<string>[];
@@ -463,24 +464,24 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   init(env: Environment) {
     this.busy = false;
     this.colors = Object.entries(Color).map(([color]) => ({
-      value: color,
       text: Color[color],
+      value: Color[color],
     }));
     this.dances = Object.entries(Dance).map(([dance]) => ({
-      value: dance,
       text: Dance[dance],
+      value: Dance[dance],
     }));
     this.dirs = Object.entries(Direction).map(([direction]) => ({
-      value: direction,
       text: Direction[direction],
+      value: Direction[direction],
     }));
     this.emotions = Object.entries(Emotion).map(([emotion]) => ({
-      value: emotion,
       text: Emotion[emotion],
+      value: Emotion[emotion],
     }));
     this.icons = Object.entries(Icon).map(([icon]) => ({
-      value: icon,
       text: Icon[icon],
+      value: Icon[icon],
     }));
     this.runtime.registerPeripheralExtension(EXTENSION_ID, this);
     this.runtime.connectPeripheral(EXTENSION_ID, 0);
@@ -493,13 +494,6 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     this.asr_out = "";
 
     this.RosConnect("localhost");
-
-    this.getAnimationList = () =>
-      this.animation_list.map((anim) => ({
-        text: anim,
-        value: anim,
-      }));
-
   }
 
   checkBusy() {
@@ -532,10 +526,8 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         },
         text: (text: string) => `say ${text}`,
         operation: async (text: string, { target }: BlockUtility) => {
-          this.virtualJiboSayFn(text, target);
+          await this.virtualJiboSayFn(text, target);
           await this.jiboTTSFn(text);
-          // TODO if ROS not connected, speak the text as well as displaying it
-          this.virtualJiboSayFn("", target);
         }
       }),
       JiboAsk: () => ({
@@ -548,8 +540,6 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         operation: async (text: string, { target }: BlockUtility) => {
           this.virtualJiboSayFn(text, target);
           await this.jiboAskFn(text);
-          // TODO if ROS not connected, ask the question on the stage
-          this.virtualJiboSayFn("", target);
         }
       }),
       JiboListen: () => ({
@@ -695,32 +685,48 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     return this.connected;
   }
 
-  /* update the appearance of virtual Jibo's LED*/
-  virtualJiboSayFn(text: string, currentTarget: Target) {
-    // find the jibo-body sprite to make speak
-    let spriteTarget;
-    if (currentTarget.getName().startsWith(JIBO_BODY)) {
-      // first see if the current target is a Jibo body
-      // if so, assume this is the one we want to edit
-      spriteTarget = currentTarget;
-    } else if (currentTarget.getName().startsWith(JIBO_EYE)) {
-      // next see if this is a Jibo eye, and select the corresponding jibo body (same suffix)
-      let jiboEyeName = currentTarget.getName();
-      let suffix = jiboEyeName.substring(jiboEyeName.indexOf(JIBO_EYE) + JIBO_EYE.length);
-      let matches = this.runtime.targets.filter((target) => target.getName().startsWith(JIBO_BODY + suffix));
-      if (matches.length > 0) spriteTarget = matches[0];
-    } else {
-      // otherwise, pick the first Jibo body you see
-      let matches = this.runtime.targets.filter((target) => target.getName().startsWith(JIBO_BODY));
-      if (matches.length > 0) spriteTarget = matches[0];
-    }
+getJiboBodyTarget(currentTarget: Target) {
+  // find the jibo-body sprite to make speak
+  let spriteTarget;
+  if (currentTarget.getName().startsWith(JIBO_BODY)) {
+    // first see if the current target is a Jibo body
+    // if so, assume this is the one we want to edit
+    spriteTarget = currentTarget;
+  } else if (currentTarget.getName().startsWith(JIBO_EYE)) {
+    // next see if this is a Jibo eye, and select the corresponding jibo body (same suffix)
+    let jiboEyeName = currentTarget.getName();
+    let suffix = jiboEyeName.substring(jiboEyeName.indexOf(JIBO_EYE) + JIBO_EYE.length);
+    let matches = this.runtime.targets.filter((target) => target.getName().startsWith(JIBO_BODY + suffix));
+    if (matches.length > 0) spriteTarget = matches[0];
+  } else {
+    // otherwise, pick the first Jibo body you see
+    let matches = this.runtime.targets.filter((target) => target.getName().startsWith(JIBO_BODY));
+    if (matches.length > 0) spriteTarget = matches[0];
+  }
+  return spriteTarget;
+}
 
+  async virtualJiboSayFn(text: string, currentTarget: Target) {
+    let spriteTarget = this.getJiboBodyTarget(currentTarget);
     if (spriteTarget) {
       // emit the say function
       this.runtime.emit('SAY', spriteTarget, 'say', text);
+      // wait for a bit of time
+      let wordCount = text.match(/\S+/g).length;
+      await new Promise((r) => setTimeout(r, 500*wordCount));
+      this.runtime.emit('SAY', spriteTarget, 'say', '');
     } else {
       console.log("No Jibo body found");
     }
+  }
+  stageAnswerReceive() {
+    return new Promise((resolve, reject) => {
+      this.runtime.once('ANSWER', (answer) => {
+        // TODO this introduces a bug with the sensing blocks, improve if possible
+        this.asr_out = answer;
+        resolve(0); 
+      });
+    });
   }
   async jiboTTSFn(text: string) {
     while (this.busy) {
@@ -738,18 +744,23 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
     await this.JiboPublish(jibo_msg);
   }
-
   async jiboAskFn(text: string) {
     // say question
     await this.jiboTTSFn(text);
 
-    // listen for answer
-    this.JiboASR_request();
+    if (this.connected) {
+      // listen for answer
+      this.JiboASR_request();
 
-    // wait for sensor to return
-    this.asr_out = await this.JiboASR_reseive();
+      // wait for ASR to return
+      this.asr_out = await this.JiboASR_reseive();
+    } else {
+      // wait for stage to get answer
+      this.runtime.emit('QUESTION', text);
+      await this.stageAnswerReceive();
+    }
   }
-  async jiboListenFn() {
+  jiboListenFn() {
     return this.asr_out;
   }
 
@@ -796,7 +807,6 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
       let imageDataURI = colorDef[color].imageData;
       this.setSpriteCostume(spriteTarget, color, imageDataURI);
 
-      // TODO reset Jibo body location, size, and position
       spriteTarget.setXY(DEFAULT_JIBO_BODY.x, DEFAULT_JIBO_BODY.y);
       spriteTarget.setDirection(DEFAULT_JIBO_BODY.direction);
       spriteTarget.setSize(DEFAULT_JIBO_BODY.size);
@@ -947,7 +957,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   }
   JiboASR_request() {
     if (!this.connected) {
-      console.log("ROS is not connetced");
+      console.log("ROS is not connected");
       return false;
     }
     var cmdVel = new ROSLIB.Topic({
