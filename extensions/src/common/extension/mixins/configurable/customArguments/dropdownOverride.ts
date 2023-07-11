@@ -1,6 +1,8 @@
 import { ExtensionInstance } from "$common/extension";
 import { untilObject } from "$common/utils";
+import { RuntimeWithCustomArgumentSupport } from ".";
 import { ArgumentEntry, ArgumentEntrySetter } from "./CustomArgumentManager";
+
 
 /** Constructed based on Svelte documentation: https://svelte.dev/docs#run-time-client-side-component-api-creating-a-component */
 type CreateComponentOptions = {
@@ -9,33 +11,33 @@ type CreateComponentOptions = {
   props: {};
 }
 
-export type CustomArgumentUIConstructor = (options: CreateComponentOptions) => void;
-
-export const renderToDropdown = async <T>(
-  compononentConstructor: CustomArgumentUIConstructor,
-  props: {
-    extension: ExtensionInstance,
-    setter: ArgumentEntrySetter<T>,
-    current: ArgumentEntry<T>
-  }
-) => {
-  const dropdownContainerClass = "blocklyDropDownContent";
-  const elements = document.getElementsByClassName(dropdownContainerClass);
-  if (elements.length !== 1) return console.error(`Uh oh! Expected 1 element with class '${dropdownContainerClass}', but found ${elements.length}`);
-  const [target] = elements;
-  const anchor = await untilObject(() => target.children[0]);
-  const component = new compononentConstructor({ target, anchor, props });
-  centerDropdownButton(anchor);
+const findUniqueElementByClass = <T extends Element = Element>(container: Document | Element, className: string) => {
+  const elements = container.getElementsByClassName(className);
+  if (elements.length !== 1) throw new Error(`Uh oh! Expected 1 element with class '${className}', but found ${elements.length}`);
+  return elements[0] as T;
 }
 
-const centerDropdownButton = (container: Element) => {
+export type CustomArgumentUIConstructor = (options: CreateComponentOptions) => void;
+
+type Props<T> = {
+  extension: ExtensionInstance,
+  setter: ArgumentEntrySetter<T>,
+  current: ArgumentEntry<T>
+}
+
+export const renderToDropdown = async <T>(runtime: RuntimeWithCustomArgumentSupport, compononentConstructor: CustomArgumentUIConstructor, props: Props<T>) => {
+  const dropdownContainerClass = "blocklyDropDownContent";
+  const target = findUniqueElementByClass(document, dropdownContainerClass);
+  const anchor = await untilObject(() => target.children[0]);
+  const component = new compononentConstructor({ target, anchor, props });
+  centerDropdownContent(anchor);
+}
+
+const centerDropdownContent = (container: Element) => {
   type ClassAndStyleModification = [string, (syle: CSSStyleDeclaration) => void];
 
-  const findElementAndModifyStyle = ([className, styleMod]: ClassAndStyleModification) => {
-    const elements = container.getElementsByClassName(className);
-    console.assert(elements.length === 1, `Incorrect number of elements found with class: ${className}`);
-    styleMod((elements[0] as HTMLElement).style);
-  };
+  const findElementAndModifyStyle = ([className, styleMod]: ClassAndStyleModification) =>
+    styleMod(findUniqueElementByClass<HTMLElement>(container, className).style);
 
   const elements = [
     [

@@ -2,8 +2,8 @@ const dispatch = require('../dispatch/central-dispatch');
 const log = require('../util/log');
 const maybeFormatMessage = require('../util/maybe-format-message');
 const BlockType = require('./block-type');
-const { tryInitExtension, tryGetExtensionConstructorFromBundle, tryGetAuxiliaryObjectFromLoadedBundle } = require('./bundle-loader');
-const { customArgumentCheck } = require('../dist/globals');
+const { tryInitExtension, tryGetExtensionConstructorFromBundle, tryGetAuxiliaryObjectFromLoadedBundle } = require('./prg/bundle-loader');
+const { tryResolveMenuItemAsCustomArgument } = require('./prg/custom-arguments');
 
 const tryRetrieveExtensionConstructor = async (extensionId) =>
     await extensionId in builtinExtensions
@@ -34,7 +34,6 @@ const builtinExtensions = {
     arduinoRobot: () => require('../extensions/scratch3_arduinobot'),
     gizmoRobot: () => require('../extensions/scratch3_gizmo'),
     microbitRobot: () => require('../extensions/scratch3_microbot'),
-    textClassification: () => require('../extensions/scratch3_text_classification'),
 };
 
 /**
@@ -368,10 +367,8 @@ class ExtensionManager {
         const menuFunc = extensionObject[menuItemFunctionName];
         const menuResult = menuFunc.call(extensionObject, editingTargetID);
 
-        if (extensionObject[customArgumentCheck]?.(menuResult)) {
-            const { runtime, getAuxiliaryObject } = this;
-            return extensionObject.processCustomArgumentHack(runtime, menuResult, getAuxiliaryObject);
-        }
+        const customArgument = tryResolveMenuItemAsCustomArgument(extensionObject, menuResult);
+        if (customArgument) return customArgument;
 
         const menuItems = menuResult.map(
             item => {

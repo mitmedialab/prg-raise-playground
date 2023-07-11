@@ -220,7 +220,7 @@ export default class TypeScriptFrameworkExample extends extension(
   }
 
   @block((self) => ({
-    type: BlockType.Command,
+    type: BlockType.Reporter,
     arg: self.makeCustomArgument({
       component: "AnimalArgument",
       initial: { value: Animal.Leopard, text: nameByAnimal[Animal.Leopard] }
@@ -229,7 +229,8 @@ export default class TypeScriptFrameworkExample extends extension(
   }))
   addAnimalToCollectionAndAlert(animal: Animal) {
     this.addAnimalToCollection(animal);
-    this.openUI("Alert");
+    //this.openUI("Alert");
+    return animal;
   }
 
   @block((self) => ({

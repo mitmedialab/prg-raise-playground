@@ -4,11 +4,13 @@ export const FrameworkID = "ExtensionFramework";
 export const AuxiliaryExtensionInfo = "AuxiliaryExtensionInfo";
 
 export const customArgumentFlag = "internal_IsCustomArgument";
-export const customArgumentCheck = "isCustomArgumentHack";
+export const customArgumentMethod = "tryProcessMenuItemAsCustomArgumentHack";
 export const dropdownStateFlag = "dropdownState";
 export const dropdownEntryFlag = "dropdownEntry";
+export const updateDropdownMethod = "manualDropdownUpdate";
 export const initDropdownState = "init";
 export const openDropdownState = "open";
 export const closeDropdownState = "close";
+export const updateDropdownState = "update";
 
 export const blockIDKey = "blockID";

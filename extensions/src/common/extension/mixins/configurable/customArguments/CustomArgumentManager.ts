@@ -1,17 +1,24 @@
 export type ArgumentEntry<T> = { text: string, value: T };
-export type ArgumentEntrySetter<T> = (entry: ArgumentEntry<T>) => void;
+export type ArgumentEntrySetter<T, TReturn = void> = (entry: ArgumentEntry<T>) => TReturn;
+export type ArgumentID = string;
 
 export default class CustomArgumentManager {
   map: Map<string, ArgumentEntry<any>> = new Map();
-  pending: { id: string, entry: ArgumentEntry<any> } = null;
+  pending: ArgumentID = null;
+
+  setPending(id: ArgumentID) { return (this.pending = id) }
 
   clearPending() { this.pending = null }
-  setPending(update: typeof this.pending) { this.pending = update }
+
+  setEntry(entry: ArgumentEntry<any>) {
+    const id = CustomArgumentManager.GetIdentifier();
+    this.map.set(id, entry);
+    return id;
+  }
 
   add<T>(entry: ArgumentEntry<T>): string {
     const id = CustomArgumentManager.GetIdentifier();
     this.map.set(id, entry);
-    this.clearPending();
     return id;
   }
 
@@ -21,17 +28,16 @@ export default class CustomArgumentManager {
     return id;
   }
 
-  request<T>(): [string, ArgumentEntrySetter<T>] {
+  request<T>(): ArgumentEntrySetter<T, ArgumentID> {
     this.clearPending();
-    const id = CustomArgumentManager.GetIdentifier();
-    return [id, (entry) => this.setPending({ id, entry })];
+    const self = this;
+    return (entry) => self.setPending(self.setEntry(entry));
   }
 
-  tryResolve() {
-    if (!this.pending) return;
-    const { pending: { entry, id } } = this;
-    this.map.set(id, entry);
-    this.clearPending();
+  tryPeek() {
+    const { pending: id } = this;
+    if (!this.pending) return null;
+    const entry = this.getEntry(id);
     return { entry, id };
   }
 
