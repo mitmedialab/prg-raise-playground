@@ -1,52 +1,12 @@
-import CustomArgumentManager, { ArgumentEntry, ArgumentEntrySetter } from "$common/extension/mixins/configurable/customArguments/CustomArgumentManager";
-import { CustomArgumentUIConstructor, renderToDropdown } from "$common/extension/mixins/configurable/customArguments/dropdownOverride";
+import CustomArgumentManager from "$common/extension/mixins/configurable/customArguments/CustomArgumentManager";
+import { renderToDropdown } from "$common/extension/mixins/configurable/customArguments/ui";
 import { ArgumentType } from "$common/types/enums";
-import { openDropdownState, closeDropdownState, initDropdownState, customArgumentFlag, dropdownStateFlag, dropdownEntryFlag, customArgumentMethod, updateDropdownState, updateDropdownMethod } from "$common/globals";
-import { Argument, BaseGenericExtension, Environment, MenuItem } from "$common/types";
+import { customArgumentFlag, dropdownStateFlag, dropdownEntryFlag, customArgumentMethod, } from "$common/globals";
+import { Argument, MenuItem } from "$common/types";
 import { MinimalExtensionConstructor } from "../../base";
 import { withDependencies } from "../../dependencies";
 import customSaveData from "../customSaveData";
-
-export type RuntimeWithCustomArgumentSupport = Environment["runtime"] &
-  { [k in typeof dropdownStateFlag]: typeof openDropdownState | typeof closeDropdownState | typeof initDropdownState | typeof updateDropdownState } &
-  { [k in typeof dropdownEntryFlag]: ArgumentEntry<any> } &
-  { [k in typeof updateDropdownMethod]: (x: any) => void };
-
-type ComponentGetter = (id: string, componentName: string) => CustomArgumentUIConstructor;
-
-const callingContext = {
-  DrowpdownOpen: openDropdownState,
-  DropdownClose: closeDropdownState,
-  Init: initDropdownState,
-  Update: updateDropdownState
-} as const;
-
-type CustomArgumentContainer = Exclude<MenuItem<string>, string>;
-
-const isCustomArgumentContainer = (arr: Array<MenuItem<string>>): arr is [CustomArgumentContainer] => {
-  if (arr.length !== 1) return false;
-  const item = arr[0];
-  if (typeof item !== "object") return false;
-  const { text } = item;
-  return text === customArgumentFlag;
-}
-
-type CustomArgumentRecipe<T> = {
-  /**
-   * The svelte component to render the custom argument UI
-   */
-  component: string,
-  /**
-   * The starting value of the the custom argument (including both its value and text representation)
-   */
-  initial: ArgumentEntry<T>,
-  /**
-   * A function that must be defined if you'd like for your custom argument to accept reporters
-   * @param x 
-   * @returns 
-   */
-  acceptReportersHandler?: (x: any) => ArgumentEntry<T>
-};
+import { ComponentGetter, CustomArgumentRecipe, RuntimeWithCustomArgumentSupport, isCustomArgumentContainer } from "./common";
 
 /**
  * Mixin the ability for extensions to create custom argument types with their own specific UIs
@@ -90,7 +50,6 @@ export default function mixin<T extends MinimalExtensionConstructor>(Ctor: T) {
      */
     private [customArgumentMethod](menuItems: MenuItem<string>[], getComponent: ComponentGetter): (readonly [string, string])[] {
       if (!isCustomArgumentContainer(menuItems)) return null;
-
       const runtime = this.runtime as RuntimeWithCustomArgumentSupport;
       const [{ value }] = menuItems;
 
@@ -99,29 +58,26 @@ export default function mixin<T extends MinimalExtensionConstructor>(Ctor: T) {
       const dropdownContext = runtime[dropdownStateFlag];
 
       switch (dropdownContext) {
-        case callingContext.Init:
+        case "init":
           return argumentManager.getCurrentEntries();
-        case callingContext.DrowpdownOpen: {
+        case "open": {
           const currentEntry = runtime[dropdownEntryFlag];
-          const prevID = currentEntry?.value ?? initialID;
-          const current = argumentManager.getEntry(prevID);
-          const setEntry = argumentManager.request();
-          const setter: ArgumentEntrySetter<T> = (entry) => {
-            const id = setEntry(entry);
-            console.log("set", id);
-            runtime.manualDropdownUpdate(setEntry(entry));
-          }
+          const current = argumentManager.getEntry(currentEntry?.value ?? initialID);
+          const setter = argumentManager.request(runtime);
           renderToDropdown(runtime, getComponent(extensionID, component), { setter, current, extension: this });
-          return [["Close", setEntry(current)]];
+          return [["", ""]];
         }
-        case callingContext.Update:
-        case callingContext.DropdownClose: {
-          const result = argumentManager.tryPeek();
+        case "update": {
+          const result = argumentManager.peek();
+          return [[result.entry.text, result.id]];
+        }
+        case "close": {
+          const result = argumentManager.resolve();
           return result ? [[result.entry.text, result.id]] : argumentManager.getCurrentEntries();
         }
       }
 
-      throw new Error("Error during processing -- Context:" + callingContext);
+      throw new Error("Error during processing -- Context:" + dropdownContext);
     };
 
   }

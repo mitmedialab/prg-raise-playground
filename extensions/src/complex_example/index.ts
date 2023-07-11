@@ -229,7 +229,6 @@ export default class TypeScriptFrameworkExample extends extension(
   }))
   addAnimalToCollectionAndAlert(animal: Animal) {
     this.addAnimalToCollection(animal);
-    //this.openUI("Alert");
     return animal;
   }
 

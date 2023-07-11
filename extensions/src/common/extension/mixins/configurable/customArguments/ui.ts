@@ -1,8 +1,6 @@
 import { ExtensionInstance } from "$common/extension";
 import { untilObject } from "$common/utils";
-import { RuntimeWithCustomArgumentSupport } from ".";
-import { ArgumentEntry, ArgumentEntrySetter } from "./CustomArgumentManager";
-
+import { RuntimeWithCustomArgumentSupport, ArgumentEntry, ArgumentEntrySetter } from "./common";
 
 /** Constructed based on Svelte documentation: https://svelte.dev/docs#run-time-client-side-component-api-creating-a-component */
 type CreateComponentOptions = {
@@ -17,6 +15,8 @@ const findUniqueElementByClass = <T extends Element = Element>(container: Docume
   return elements[0] as T;
 }
 
+const hideText = (element: Element) => (element as HTMLElement).style.display = "none";
+
 export type CustomArgumentUIConstructor = (options: CreateComponentOptions) => void;
 
 type Props<T> = {
@@ -30,28 +30,5 @@ export const renderToDropdown = async <T>(runtime: RuntimeWithCustomArgumentSupp
   const target = findUniqueElementByClass(document, dropdownContainerClass);
   const anchor = await untilObject(() => target.children[0]);
   const component = new compononentConstructor({ target, anchor, props });
-  centerDropdownContent(anchor);
-}
-
-const centerDropdownContent = (container: Element) => {
-  type ClassAndStyleModification = [string, (syle: CSSStyleDeclaration) => void];
-
-  const findElementAndModifyStyle = ([className, styleMod]: ClassAndStyleModification) =>
-    styleMod(findUniqueElementByClass<HTMLElement>(container, className).style);
-
-  const elements = [
-    [
-      "goog-menuitem goog-option",
-      (style) => {
-        style.margin = "auto";
-        style.paddingLeft = style.paddingRight = "0px";
-      }
-    ],
-    [
-      "goog-menuitem-content",
-      (style) => style.textAlign = "center"
-    ]
-  ] satisfies ClassAndStyleModification[];
-
-  elements.forEach(findElementAndModifyStyle);
+  hideText(anchor);
 }

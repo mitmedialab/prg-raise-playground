@@ -13,7 +13,7 @@ export type ReplaceWithBlockFunctionName = never;
 import CustomArgumentManager from "./extension/mixins/configurable/customArguments/CustomArgumentManager";
 export { CustomArgumentManager };
 
-export * from "./extension/mixins/configurable/customArguments/dropdownOverride";
+export * from "./extension/mixins/configurable/customArguments/ui";
 
 export * from "./extension/GenericExtension";
 export * from "./extension/ExtensionBase";

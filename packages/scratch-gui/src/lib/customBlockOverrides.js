@@ -29,7 +29,6 @@ export const overridesForCustomArgumentSupport = (blocks, vm) => {
   }
 
   const executeWithState = (state, dropdown, fn, args) => {
-    console.log(state, args);
     setState(state, dropdown);
     const result = fn.apply(dropdown, args);
     setState(null);

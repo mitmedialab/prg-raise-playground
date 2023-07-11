@@ -1,16 +1,13 @@
-export type ArgumentEntry<T> = { text: string, value: T };
-export type ArgumentEntrySetter<T, TReturn = void> = (entry: ArgumentEntry<T>) => TReturn;
-export type ArgumentID = string;
+import { RuntimeWithCustomArgumentSupport, ArgumentEntry, ArgumentEntrySetter, ArgumentID } from "./common";
 
 export default class CustomArgumentManager {
   map: Map<string, ArgumentEntry<any>> = new Map();
   pending: ArgumentID = null;
 
-  setPending(id: ArgumentID) { return (this.pending = id) }
+  private setPending(id: ArgumentID) { return (this.pending = id) }
+  private clearPending() { this.pending = null }
 
-  clearPending() { this.pending = null }
-
-  setEntry(entry: ArgumentEntry<any>) {
+  private setEntry(entry: ArgumentEntry<any>) {
     const id = CustomArgumentManager.GetIdentifier();
     this.map.set(id, entry);
     return id;
@@ -22,23 +19,21 @@ export default class CustomArgumentManager {
     return id;
   }
 
-  insert<T>(id: string, entry: ArgumentEntry<T>): string {
-    this.map.set(id, entry);
+  request<T>(runtime: RuntimeWithCustomArgumentSupport): ArgumentEntrySetter<T> {
     this.clearPending();
-    return id;
+    return (entry) => runtime.manualDropdownUpdate(this.setPending(this.setEntry(entry)));
   }
 
-  request<T>(): ArgumentEntrySetter<T, ArgumentID> {
-    this.clearPending();
-    const self = this;
-    return (entry) => self.setPending(self.setEntry(entry));
-  }
-
-  tryPeek() {
+  peek() {
     const { pending: id } = this;
-    if (!this.pending) return null;
     const entry = this.getEntry(id);
     return { entry, id };
+  }
+
+  resolve() {
+    const state = this.peek();
+    this.clearPending();
+    return state;
   }
 
   getCurrentEntries() {
