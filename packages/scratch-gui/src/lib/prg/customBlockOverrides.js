@@ -1,4 +1,4 @@
-import { dropdownStateFlag, openDropdownState, closeDropdownState, initDropdownState, updateDropdownState, updateDropdownMethod, dropdownEntryFlag, } from "../dist/globals";
+import { dropdownStateFlag, openDropdownState, closeDropdownState, initDropdownState, updateDropdownState, updateDropdownMethod, dropdownEntryFlag, } from "../../dist/globals";
 
 /**
  * @param {import("scratch-blocks")} blocks
