@@ -1,6 +1,6 @@
 ## Adding Custom Arguments
 
-The Extension Framework allows us to do a lot of cool stuff that would be tricky to do if we were using the [default Scratch Extension workflow]().
+The Extension Framework allows us to do a lot of cool stuff that would be tricky or impossible to do if we were using the [default Scratch Extension workflow]().
 
 One of the coolest is the ability to define custom arguments, which means both:
 - Introducing an arbitrary new type of argument 
