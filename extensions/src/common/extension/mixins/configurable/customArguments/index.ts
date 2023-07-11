@@ -72,7 +72,7 @@ export default function mixin<T extends MinimalExtensionConstructor>(Ctor: T) {
           return [[result.entry.text, result.id]];
         }
         case "close": {
-          const result = argumentManager.resolve();
+          const result = argumentManager.tryResolve();
           return result ? [[result.entry.text, result.id]] : argumentManager.getCurrentEntries();
         }
       }

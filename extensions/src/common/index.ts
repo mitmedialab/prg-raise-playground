@@ -6,7 +6,7 @@ export * from "./IDs";
 export * from "./globals";
 export * from "./extension/mixins/configurable/customSaveData";
 export * from "./cast";
-export type { ArgumentEntry, ArgumentEntrySetter } from "./extension/mixins/configurable/customArguments/CustomArgumentManager";
+export type { ArgumentEntry, ArgumentEntrySetter } from "./extension/mixins/configurable/customArguments/common";
 
 export type ReplaceWithBlockFunctionName = never;
 

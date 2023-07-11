@@ -30,7 +30,8 @@ export default class CustomArgumentManager {
     return { entry, id };
   }
 
-  resolve() {
+  tryResolve() {
+    if (!this.pending) return null;
     const state = this.peek();
     this.clearPending();
     return state;
