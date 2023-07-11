@@ -15,19 +15,22 @@
       "https://em-content.zobj.net/thumbs/144/apple/325/star-struck_1f929.png",
     [Emotion.Laugh]:
       "https://em-content.zobj.net/thumbs/144/apple/325/face-with-tears-of-joy_1f602.png",
-    [Emotion.No]: "https://em-content.zobj.net/thumbs/144/apple/325/thumbs-down_1f44e.png",
+    [Emotion.No]:
+      "https://em-content.zobj.net/thumbs/144/apple/325/thumbs-down_1f44e.png",
     [Emotion.Puzzled]:
       "https://em-content.zobj.net/thumbs/144/apple/325/face-with-diagonal-mouth_1fae4.png",
     [Emotion.Relieved]:
       "https://em-content.zobj.net/thumbs/144/apple/325/relieved-face_1f60c.png",
-    [Emotion.Sad]: "https://em-content.zobj.net/thumbs/144/apple/325/slightly-frowning-face_1f641.png",
+    [Emotion.Sad]:
+      "https://em-content.zobj.net/thumbs/144/apple/325/slightly-frowning-face_1f641.png",
     [Emotion.SadEyes]:
       "https://em-content.zobj.net/thumbs/144/apple/325/pleading-face_1f97a.png",
     [Emotion.Success]:
       "https://em-content.zobj.net/thumbs/240/apple/325/check-mark-button_2705.png",
     [Emotion.Thinking]:
       "https://em-content.zobj.net/thumbs/144/apple/325/thinking-face_1f914.png",
-    [Emotion.Yes]: "https://em-content.zobj.net/thumbs/144/apple/325/thumbs-up_1f44d.png",
+    [Emotion.Yes]:
+      "https://em-content.zobj.net/thumbs/144/apple/325/thumbs-up_1f44d.png",
   };
 
   /**
@@ -72,10 +75,7 @@
 
 <div id="grid">
   {#each Object.keys(Emotion) as emotion}
-    <button
-      disabled={value == emotion}
-      on:click={() => (value = emotion)}
-    >
+    <button disabled={value == emotion} on:click={() => (value = emotion)}>
       <div class="cell">
         <img
           class="emoji"

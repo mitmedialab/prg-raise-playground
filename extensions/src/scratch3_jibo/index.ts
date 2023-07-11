@@ -17,6 +17,7 @@ const EXTENSION_ID = "jibo";
 // jibo's name
 // opal-sage-victor-valley
 var jiboName: string = "";
+var jiboReady: boolean = true;
 // var databaseRef = database.ref("Jibo-Name/" + jiboName);
 
 type RGB = {
@@ -28,15 +29,15 @@ type RGB = {
 // TODO remove the const enums throughout this file, https://github.com/mitmedialab/prg-extension-boilerplate/blob/dev/extensions/src/common/types/enums.ts#L136
 // https://dev.to/ivanzm123/dont-use-enums-in-typescript-they-are-very-dangerous-57bh
 export const Color = {
-  Red: `red`,
-  Yellow: `yellow`,
-  Green: `green`,
-  Cyan: `cyan`,
-  Blue: `blue`,
-  Magenta: `magenta`,
-  White: `white`,
-  Random: `random`,
-  Off: `off`,
+  Red: "Red",
+  Yellow: "Yellow",
+  Green: "Green",
+  Cyan: "Cyan",
+  Blue: "Blue",
+  Magenta: "Magenta",
+  White: "White",
+  Random: "Random",
+  Off: "Off",
 } as const;
 type ColorType = typeof Color[keyof typeof Color];
 type ColorDefType = {
@@ -78,19 +79,19 @@ type AnimFileType = {
 };
 
 const Dance = {
-  BackStep: "Back Step",
+  BackStep: "BackStep",
   Carlton: "Carlton",
-  Celebrate: "Celebration",
+  Celebrate: "Celebrate",
   Clockworker: "Clockworker",
   Doughkneader: "Doughkneader",
   Footstomper: "Footstomper",
-  HappyDance: "Happy",
+  HappyDance: "HappyDance",
   Headbanger: "Headbanger",
   Headdipper: "Headdipper",
   Pigeon: "Pigeon",
-  SlowDance: "Prom",
-  RobotDance: "The Robot",
-  RockingChair: "Rocking Chair",
+  SlowDance: "SlowDance",
+  RobotDance: "RobotDance",
+  RockingChair: "RockingChair",
   Roxbury: "Roxbury",
   Samba: "Samba",
   Seaweed: "Seaweed",
@@ -161,20 +162,20 @@ const danceFiles: Record<DanceType, AnimFileType> = {
 };
 
 export const Emotion = {
-  Embarassed: `embarassed`,
-  Frustrated: `frustrated`,
-  Laugh: `laughing`,
-  Sad: `sad`,
-  Thinking: `thinking`,
-  Happy: `happy`,
-  SadEyes: `sad eyes`,
-  Interested: `interested`,
-  Curious: `curious`,
-  No: `no`,
-  Yes: `yes`,
-  Puzzled: `puzzled`,
-  Relieved: `relieved`,
-  Success: `success`,
+  Embarassed: `Embarassed`,
+  Frustrated: `Frustrated`,
+  Laugh: `Laugh`,
+  Sad: `Sad`,
+  Thinking: `Thinking`,
+  Happy: `Happy`,
+  SadEyes: `SadEyes`,
+  Interested: `Interested`,
+  Curious: `Curious`,
+  No: `No`,
+  Yes: `Yes`,
+  Puzzled: `Puzzled`,
+  Relieved: `Relieved`,
+  Success: `Success`,
 } as const;
 export type EmotionType = typeof Emotion[keyof typeof Emotion];
 
@@ -224,23 +225,23 @@ const emotionFiles: Record<EmotionType, AnimFileType> = {
 };
 
 export const Icon = {
-  Airplane: `airplane`,
-  Apple: `apple`,
-  Art: `art`,
-  Bowling: `bowling`,
-  Checkmark: `checkmark`,
-  ExclamationPoint: `exclamation point`,
-  Football: `football`,
-  Heart: `heart`,
-  Magic: `magic`,
-  Ocean: `ocean`,
-  Penguin: `penguin`,
-  Rainbow: `rainbow`,
-  Robot: `robot`,
-  Rocket: `rocket`,
-  Snowflake: `snowflake`,
-  Taco: `taco`,
-  VideoGame: `video game`,
+  Airplane: `Airplane`,
+  Apple: `Apple`,
+  Art: `Art`,
+  Bowling: `Bowling`,
+  Checkmark: `Checkmark`,
+  ExclamationPoint: `ExclamationPoint`,
+  Football: `Football`,
+  Heart: `Heart`,
+  Magic: `Magic`,
+  Ocean: `Ocean`,
+  Penguin: `Penguin`,
+  Rainbow: `Rainbow`,
+  Robot: `Robot`,
+  Rocket: `Rocket`,
+  Snowflake: `Snowflake`,
+  Taco: `Taco`,
+  VideoGame: `VideoGame`,
 } as const;
 export type IconType = typeof Icon[keyof typeof Icon];
 
@@ -319,7 +320,47 @@ type Blocks = {
   JiboEnd: () => void;
 };
 
-var defaultJiboMsg = {
+var JiboAction = {
+  anim_transition: 0,
+  attention_mode: 1,
+  audio_filename: "",
+  do_anim_transition: false,
+  do_attention_mode: false,
+  do_led: false,
+  do_lookat: false,
+  do_motion: false,
+  do_sound_playback: false,
+  do_tts: false,
+  do_volume: false,
+  led_color: [0, 100, 0], //red, green, blue
+  lookat: [0, 0, 0], //x, y, z
+  motion: "",
+  tts_duration_stretch: 0,
+  tts_pitch: 0,
+  tts_text: "",
+  volume: 0,
+};
+var JiboAsrCommand = {
+  command: 0,
+  heyjibo: false,
+  detectend: false,
+  continuous: false,
+  incremental: false,
+  alternatives: false,
+  rule: "",
+  // stop: 0,
+  // start: 1
+};
+var JiboAsrResult = {
+  transcription: "",
+  confidence: 0,
+  heuristic_score: 0,
+  slotAction: "",
+};
+
+var jibo_event = {
+  readyForNext: true,
+  msg_type: "",
   anim_transition: 0,
   attention_mode: 1,
   audio_filename: "",
@@ -341,24 +382,171 @@ var defaultJiboMsg = {
 };
 
 export function setJiboName(name: string): void {
-  database.ref("Jibo-Name/" + name).push(defaultJiboMsg);
-  jiboName = name;
-  console.log(`Hello, I am a new jibo and my name is ${name}!`);
+  // database.ref("Jibo-Name/" + name).push(JiboAction);
+  // jiboName = name;
+  // console.log(`Hello, I am a new jibo and my name is ${name}!`);
+  // db.ref("Jibo-Name/" + jiboName).push(JiboAction); //.set(jiboMessages); //.push(JiboAction);
+  var jiboNameRef = database.ref("Jibo-Name");
+  jiboNameRef
+    .once("value")
+    .then((snapshot) => {
+      if (snapshot.hasChild(name)) {
+        console.log("'" + name + "' exists.");
+        jiboName = name;
+      } else {
+        // database.ref("Jibo-Name/" + name + "/JiboAction").push(JiboAction);
+        // database.ref("Jibo-Name/" + name + "/JiboAsrCommand").push(JiboAsrCommand);
+        // database.ref("Jibo-Name/" + name + "/JiboAsrResult").push(JiboAsrResult);
+        database.ref("Jibo-Name/" + name).push(jibo_event);
+        jiboName = name;
+        console.log(
+          "'" + name + "' did not exist, and has now been created."
+        );
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+
 }
 
-function setJiboMsg(jibo_msg: any): void {
-  database.ref("Jibo-Name/" + jiboName)
-    .push({ ...jibo_msg })
-    .then(function () {
-      console.log("New record for '" + jiboName + "' created successfully.");
-    })
-    .catch(function (error) {
-      console.error(
-        "Error creating new record for '" + jiboName + "' :",
-        error
-      );
-    });
+function setJiboMsg(jibo_msg: any) {
+  return new Promise((resolve, reject) => {
+    // read the last inserted record to know if jibo is ready for the next message
+    const pathRef = database.ref("Jibo-Name/" + jiboName);
+    var eventKey: any;
+    var eventData: any;
+    pathRef
+      .once("value")
+      .then((snapshot) => {
+        // Loop through the child snapshots of JiboAsrResult
+        console.log("Reading the last thing before inserting the new one");
+        snapshot.forEach((childSnapshot) => {
+          eventKey = childSnapshot.key;
+          eventData = childSnapshot.val();
+        });
+        console.log(eventData);
+        if (eventData.msg_type === "JiboAction" || eventData.msg_type === "") {
+          console.log("ready for next from the last read record is: " + eventData.readyForNext);
+          if (eventData.readyForNext) {
+            // jiboReady = true;
+            // write the message to the database only if jibo is ready
+            if (jiboName != "") {
+              database.ref("Jibo-Name/" + jiboName)
+                .push({ ...jibo_msg })
+                .then(function () {
+                  console.log("New record for '" + jiboName + "' created successfully as: " + jibo_msg.msg_type);
+                })
+                .catch(function (error) {
+                  console.error(
+                    "Error creating new record for '" + jiboName + "' as: " + + jibo_msg.msg_type,
+                    error
+                  );
+                });
+              // Simulating asynchronous behavior with a delay of 1 second
+              setTimeout(() => {
+                resolve(jibo_msg); // Resolve the promise after the delay
+              }, 1000);
+              console.log("Jibo is ready for a new message to be pushed.");
+            }
+            else {
+              console.log("No Jibo Name added.");
+            }
+          }
+          else {
+            console.log("Jibo is NOT ready for a new message to be pushed.");
+
+          }
+        }
+        else {
+          if (jiboName != "") {
+            database.ref("Jibo-Name/" + jiboName)
+              .push({ ...jibo_msg })
+              .then(function () {
+                console.log("New record for '" + jiboName + "' created successfully as: " + jibo_msg.msg_type);
+              })
+              .catch(function (error) {
+                console.error(
+                  "Error creating new record for '" + jiboName + "' as: " + + jibo_msg.msg_type,
+                  error
+                );
+              });
+            // Simulating asynchronous behavior with a delay of 1 second
+            setTimeout(() => {
+              resolve(jibo_msg); // Resolve the promise after the delay
+            }, 1000);
+            console.log("Jibo is ready for a new message to be pushed.");
+          }
+          else {
+            console.log("No Jibo Name added.");
+          }
+        }
+      })
+      .catch((error) => {
+        reject(error);
+        console.error("Error retrieving data: ", error);
+      });
+    // // write the message to the database only if jibo is ready
+    // if (jiboName != "") {
+    //   if (jiboReady) {
+    //     database.ref("Jibo-Name/" + jiboName)
+    //       .push({ ...jibo_msg })
+    //       .then(function () {
+    //         console.log("New record for '" + jiboName + "' created successfully as: " + jibo_msg.msg_type);
+    //       })
+    //       .catch(function (error) {
+    //         console.error(
+    //           "Error creating new record for '" + jiboName + "' as: " + + jibo_msg.msg_type,
+    //           error
+    //         );
+    //       });
+    //     // Simulating asynchronous behavior with a delay of 1 second
+    //     setTimeout(() => {
+    //       resolve(jibo_msg); // Resolve the promise after the delay
+    //     }, 1000);
+    //   }
+    //   else {
+    //     console.log("Jibo is NOT ready for a new message to be pushed.");
+    //   }
+    // }
+    // else {
+    //   console.log("No Jibo Name added.");
+    // }
+  });
 }
+
+// function readAsrAnswer(): any {
+//   interface EventData {
+//     confidence: number;
+//     heuristic_score: number;
+//     slotAction: string;
+//     transcription: string;
+//   }
+//   // var asrAnswer = asrAnswer;
+//   console.log("Now reading");
+//   const pathRef = database.ref("Jibo-Name/" + jiboName + "/JiboAsrResult");
+//   var eventKey: any;
+//   var eventData: any;
+//   pathRef
+//     .once("value")
+//     .then((snapshot) => {
+//       // Loop through the child snapshots of JiboAsrResult
+//       snapshot.forEach((childSnapshot) => {
+//         eventKey = childSnapshot.key;
+//         eventData = childSnapshot.val() as EventData;
+//       });
+//       console.log(eventKey, eventData);
+//       var transcription = eventData.transcription;
+//       console.log("transcription is: " + transcription);
+//       return transcription;
+//       // var transcription = eventData.transcription;
+//       // console.log(transcription);
+//     })
+//     .catch((error) => {
+//       console.error("Error retrieving data:", error);
+//     });
+//   // return asrAnswer;
+// }
 
 export default class Scratch3Jibo extends Extension<Details, Blocks> {
   // runtime: Runtime;
@@ -368,6 +556,9 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   rosbridgeIP: string;
   jbVolume: string;
   asr_out: any;
+  // this var is taz test
+  asr_out_test: any;
+  // this var is taz test
   jiboEvent: EventEmitter;
   te: string;
   text: string;
@@ -401,6 +592,9 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     this.rosbridgeIP = "ws://localhost:9090"; // rosbridgeIP option includes port
     this.jbVolume = "60";
     this.asr_out = "";
+    // taz test
+    this.asr_out_test = "";
+    // taz test
     this.jiboEvent = new EventEmitter();
     this.tts = [];
 
@@ -491,6 +685,8 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         },
         text: (dname) => `play ${dname} dance`,
         operation: async (dance: DanceType) => {
+          console.log("line 610 to know the dance file: " + dance);
+          console.log(JSON.stringify(danceFiles[dance]));
           const akey = danceFiles[dance].file;
           await self.jiboAnimFn(akey);
         },
@@ -506,6 +702,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         }),
         text: (aname) => `play ${aname} emotion`,
         operation: async (anim: EmotionType) => {
+          console.log("line 610 to know the dance file: " + anim);
           const akey = emotionFiles[anim].file;
           await self.jiboAnimFn(akey);
         },
@@ -536,6 +733,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         }),
         text: (cname) => `set LED ring to ${cname}`,
         operation: (color: ColorType) => {
+          console.log("line 654 to know the color: " + color);
           self.jiboLEDFn(color);
         },
       }),
@@ -718,7 +916,32 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     //     i = i + 1;
     // }
 
+    // var jibo_msg = {
+    //   msg_type: "JiboAction",
+    //   anim_transition: 0,
+    //   attention_mode: 1,
+    //   audio_filename: "",
+    //   do_anim_transition: false,
+    //   do_attention_mode: false,
+    //   do_led: false,
+    //   do_lookat: false,
+    //   do_motion: false,
+    //   do_sound_playback: false,
+    //   do_tts: true,
+    //   do_volume: false,
+    //   led_color: [0, 100, 0], //red, green, blue
+    //   lookat: [0, 0, 0], //x, y, z
+    //   motion: "",
+    //   tts_duration_stretch: 0,
+    //   tts_pitch: 0,
+    //   tts_text: text,
+    //   volume: parseFloat(this.jbVolume),
+    // };
+
+
     var jibo_msg = {
+      readyForNext: false,
+      msg_type: "JiboAction",
       do_tts: true,
       tts_text: text,
       do_lookat: false,
@@ -760,23 +983,56 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
   async jiboAskFn(text: string) {
     // say question
-    await this.jiboTTSFn(text);
+    await this.jiboTTSFn(text); // this is working with firebase
+
+    await this.jiboTTSFn(text)
+      .then(() => {
+        // Delay of 2 seconds before sending the next message
+        setTimeout(() => {
+          this.JiboASR_request();
+        }, 2000);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+    // taz test
+    // try {
+    //   this.asr_out_test = await this.getDataFromFirebase();
+    // } catch (error) {
+    //   console.error('Error:', error);
+    // }
+    // taz test
 
     // listen for answer
-    this.JiboASR_request();
+    // this.JiboASR_request(); // TODO: firebase?
 
     // wait for sensor to return
-    this.asr_out = await this.JiboASR_reseive();
+    // this.asr_out = await this.JiboASR_reseive(); // TODO: firebase?
+
+
   }
   async jiboListenFn() {
-    return this.asr_out;
+    // return readAsrAnswer(this.asr_out);
+    // return this.asr_out;
+    // var answer = readAsrAnswer();
+    /////////////////////////////////////////////////////////////////
+    try {
+      this.asr_out_test = await this.getDataFromFirebase();
+      return this.asr_out_test;
+    } catch (error) {
+      console.error('Error:', error);
+      return false;
+    }
+
   }
 
   jiboLEDFn(color: string) {
+    console.dir("The color from inside JiboLEDFn function is: " + color);
     let ledName = colorDef[color].name;
     let ledValue = colorDef[color].value;
+    console.log("The color name is: " + JSON.stringify(ledValue));
 
-    if (ledName == "random") {
+    if (ledName == "Random") {
       const randomColorIdx = Math.floor(
         // exclude random and off
         Math.random() * (Object.keys(colorDef).length - 2)
@@ -800,9 +1056,17 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     }
 
     var jibo_msg = {
+      readyForNext: false,
+      msg_type: "JiboAction",
       do_led: true,
       led_color: ledValue,
     };
+
+
+    // write to firebase
+    setJiboMsg(jibo_msg);
+
+
     this.JiboPublish(jibo_msg);
   }
 
@@ -843,6 +1107,8 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     }
 
     var jibo_msg = {
+      readyForNext: false,
+      msg_type: "JiboAction",
       do_lookat: true,
       lookat: {
         x: parseFloat(X),
@@ -850,17 +1116,27 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         z: parseFloat(Z),
       },
     };
+
+    // write to firebase
+    setJiboMsg(jibo_msg);
+
     this.JiboPublish(jibo_msg);
   }
 
   async jiboAnimFn(animation_key: string) {
-    // console.log(animation_key); // debug statement
+    console.log("the animation file is: " + animation_key); // debug statement
     var jibo_msg = {
+      readyForNext: false,
+      msg_type: "JiboAction",
       do_motion: true,
       do_tts: false,
       do_lookat: false,
       motion: animation_key,
     };
+
+    // write to frebase
+    setJiboMsg(jibo_msg);
+
     await this.JiboPublish(jibo_msg);
 
     await this.JiboPublish({ do_anim_transition: true, anim_transition: 0 });
@@ -943,20 +1219,34 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     });
   }
   JiboASR_request() {
-    if (!this.connected) {
-      console.log("ROS is not connetced");
-      return false;
-    }
-    var cmdVel = new ROSLIB.Topic({
-      ros: this.ros,
-      name: "/jibo_asr_command",
-      messageType: "jibo_msgs/JiboAsrCommand",
-    });
-    var jibo_msg = new ROSLIB.Message({ heyjibo: false, command: 1 });
-    cmdVel.publish(jibo_msg);
+    // if (!this.connected) {
+    //   console.log("ROS is not connetced");
+    //   return false;
+    // }
+    // var cmdVel = new ROSLIB.Topic({
+    //   ros: this.ros,
+    //   name: "/jibo_asr_command",
+    //   messageType: "jibo_msgs/JiboAsrCommand",
+    // });
+    // var jibo_msg = new ROSLIB.Message({ heyjibo: false, command: 1 });
+    var jibo_msg = {
+      msg_type: "JiboAsrCommand",
+      command: 1,
+      heyjibo: false,
+      detectend: false,
+      continuous: false,
+      incremental: false,
+      alternatives: false,
+      rule: "",
+      // stop: 0,
+      // start: 1
+    };
+    setJiboMsg(jibo_msg);
+    console.log("Sent JiboAsrCommand to firebase");
+    // cmdVel.publish(jibo_msg);
   }
 
-  async JiboASR_reseive() {
+  async JiboASR_reseive(): Promise<any> {
     return new Promise((resolve) => {
       var asr_listener = new ROSLIB.Topic({
         ros: this.ros,
@@ -970,8 +1260,111 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         asr_listener.unsubscribe();
         //this.asr_out = message.transcription;
         resolve(message.transcription);
+        // return readAsrAnswer(message.transcription);
       });
     });
+    ////////////////////////////////////////////////////////
+    // return new Promise((resolve, reject) => {
+    //   interface EventData {
+    //     confidence: number;
+    //     heuristic_score: number;
+    //     slotAction: string;
+    //     transcription: string;
+    //   }
+    //   console.log("Now reading the answer from the database: ");
+    //   const pathRef = database.ref("Jibo-Name/" + jiboName);
+    //   var eventKey: any;
+    //   var eventData: any;
+    //   pathRef.limitToLast(1).on('child_changed', (snapshot) => {
+    //     snapshot.forEach((childSnapshot) => {
+    //       eventKey = childSnapshot.key;
+    //       eventData = childSnapshot.val() as EventData;
+    //     });
+    //     if (eventData.msg_type === "JiboAsrResult") {
+    //       // console.log("eventData is: " + JSON.stringify(eventData));
+    //       var transcription = eventData.transcription;
+    //       console.log("The last entered answer is: " + transcription);
+    //       resolve(transcription);
+    //     }
+    //     else {
+    //       reject();
+    //     }
+    //   });
+    //////////////////////////////////////////////////////////////////////
+    //   pathRef
+    //     .once("value")
+    //     .then((snapshot) => {
+    //       // Loop through the child snapshots of JiboAsrResult
+    //       snapshot.forEach((childSnapshot) => {
+    //         eventKey = childSnapshot.key;
+    //         eventData = childSnapshot.val() as EventData;
+    //       });
+    //       if (eventData.msg_type === "JiboAsrResult") {
+    //         // console.log("eventData is: " + JSON.stringify(eventData));
+    //         var transcription = eventData.transcription;
+    //         console.log("The last entered answer is: " + transcription);
+    //         resolve(transcription);
+    //       }
+    //       // console.log(eventKey, eventData);
+    //       // var transcription = eventData.transcription;
+    //       // console.log("transcription is: " + transcription);
+    //       // resolve(transcription);
+    //       // var transcription = eventData.transcription;
+    //       // console.log(transcription);
+    //     })
+    //     .catch((error) => {
+    //       reject(error);
+    //       console.error("Error retrieving data: ", error);
+    //     });
+    // });
+  }
+
+  // taz test new function
+  async readAsrAnswer(): Promise<any> {
+
+    return new Promise((resolve, reject) => {
+      interface EventData {
+        msg_type: string,
+        confidence: number;
+        heuristic_score: number;
+        slotAction: string;
+        transcription: string;
+      }
+      console.log("Now reading the answer from the database: ");
+      const pathRef = database.ref("Jibo-Name/" + jiboName);
+      var eventKey: any;
+      var eventData: any;
+      pathRef
+        .once("value")
+        .then((snapshot) => {
+          // Loop through the child snapshots of JiboAsrResult
+          snapshot.forEach((childSnapshot) => {
+            eventKey = childSnapshot.key;
+            eventData = childSnapshot.val() as EventData;
+          });
+          if (eventData.msg_type === "JiboAsrResult") {
+            // console.log("eventData is: " + JSON.stringify(eventData));
+            var transcription = eventData.transcription;
+            console.log("The last entered answer is: " + transcription);
+            resolve(transcription);
+          }
+        })
+        .catch((error) => {
+          reject(error);
+          console.error("Error retrieving data: ", error);
+        });
+    });
+
+  }
+
+  async getDataFromFirebase(): Promise<any> {
+    try {
+      const value = await this.readAsrAnswer();
+      return value;
+    } catch (error) {
+      console.error('Error:', error);
+      throw error;
+    }
   }
 
   addAnimationToList(anim: string) {
