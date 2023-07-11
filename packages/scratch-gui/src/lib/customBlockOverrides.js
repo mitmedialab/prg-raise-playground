@@ -1,4 +1,4 @@
-import {dropdownStateFlag, openDropdownState, closeDropdownState, initDropdownState, dropdownEntryFlag} from "../dist/globals";
+import { dropdownStateFlag, openDropdownState, closeDropdownState, initDropdownState, updateDropdownState, updateDropdownMethod, dropdownEntryFlag, } from "../dist/globals";
 
 /**
  * @param {import("scratch-blocks")} blocks
@@ -7,34 +7,45 @@ import {dropdownStateFlag, openDropdownState, closeDropdownState, initDropdownSt
  */
 export const overridesForCustomArgumentSupport = (blocks, vm) => {
   const { FieldDropdown } = blocks;
-  const {fromJson, prototype} = FieldDropdown;
-  const {setValue, showEditor_ } = prototype;
+  const { fromJson, prototype } = FieldDropdown;
+  const { setValue, showEditor_ } = prototype;
 
   const { runtime } = vm;
 
+  /**
+   * @type {FieldDropdown}
+   */
+  let currentDropdown = null;
+
   const setState = (state, dropdown) => {
     runtime[dropdownStateFlag] = state;
-    runtime[dropdownEntryFlag] = dropdown ? {text: dropdown.text_, value: dropdown.value_} : undefined;
+    runtime[dropdownEntryFlag] = dropdown ? { text: dropdown.text_, value: dropdown.value_ } : undefined;
+    switch (state) {
+      case openDropdownState:
+        return currentDropdown = dropdown;
+      case closeDropdownState:
+        return currentDropdown = null;
+    }
   }
 
-  const resetAndReturn = (result) => { 
+  const executeWithState = (state, dropdown, fn, args) => {
+    console.log(state, args);
+    setState(state, dropdown);
+    const result = fn.apply(dropdown, args);
     setState(null);
     return result;
-  };
+  }
 
-  FieldDropdown.fromJson = (...args) => {
-      setState(initDropdownState, undefined);
-      const item = resetAndReturn(fromJson(...args));
-      return item;
-  };
+  FieldDropdown.fromJson = (...args) => executeWithState(initDropdownState, undefined, fromJson, args);
 
   FieldDropdown.prototype.setValue = function (...args) {
-    setState(closeDropdownState, this);
-    return resetAndReturn(setValue.bind(this)(...args));
+    return executeWithState(closeDropdownState, this, setValue, args)
   };
 
   FieldDropdown.prototype.showEditor_ = function (...args) {
-    setState(openDropdownState, this);
-    return resetAndReturn(showEditor_.bind(this)(...args));
-  }
+    return executeWithState(openDropdownState, this, showEditor_, args);
+  };
+
+  runtime[updateDropdownMethod] = (...args) => executeWithState(updateDropdownState, currentDropdown, setValue, args);
+
 }
