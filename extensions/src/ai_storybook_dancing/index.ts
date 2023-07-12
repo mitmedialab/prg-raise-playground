@@ -7,13 +7,12 @@ import stepRight from "./inlineImages/right.png";
 import spinLeft from "./inlineImages/spin-left.png";
 import spinRight from "./inlineImages/spin-right.png";
 import start from "./inlineImages/start.png";
-import { dance, getHatChildren, getID, setID, setup } from "./utils";
+import { dance, getHatChildren, getID, isHatChildEmptyLoop, setID, setup } from "./utils";
 
 let musicPlaying = false;
 let hatShouldExecute = false;
 let overrideHatShouldExecute = false;
 let executionStateChange = false;
-
 
 async function blockSequence(move: DanceMove, { thread: { topBlock, blockContainer }, blockID }: BlockUtilityWithID) {
   if (topBlock != getID("entry")) return;
@@ -160,7 +159,12 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
     setup();
     const children = getHatChildren(getID("entry"), util);
     const serialized = JSON.stringify(children);
-    hatShouldExecute = overrideHatShouldExecute || (children.length > 0 && this.previousHatChildren !== serialized);
+    hatShouldExecute = overrideHatShouldExecute ||
+      (
+        children.length > 0 &&
+        this.previousHatChildren !== serialized &&
+        !isHatChildEmptyLoop(this, util, children)
+      );
     this.previousHatChildren = serialized;
     music(hatShouldExecute);
     overrideHatShouldExecute = false;
