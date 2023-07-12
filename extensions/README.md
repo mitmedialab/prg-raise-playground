@@ -1415,6 +1415,25 @@ Then, we modify the UI (Svelte) component we created earlier to match our block 
 > Included links:
 > * https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extensions#creating-ui-for-extensions
 
+### (Advanced) Architecture
+
+If you're solely interested in adding custom arguments to your extension's blocks, you can skip the following section -- all you need is the above sections. 
+
+This section documents / diagrams how the code all works together to enable this functionality.  
+
+To add custom arguments, we unfortunately need to make modifications to each package involved in the RAISE playground (i.e. `extensions`, `packages/scratch-vm`, and `packages/scratch-gui`). 
+
+At the heart of this implementation is co-opting the usage of block argument's (dynamic) menus to render a custom UI (instead of the usual list of menu options).
+
+This works (at a high level) by recognizing the following few things:
+- Block argument menu dropdown's are controlled by Blockly's [FieldDropdown](https://developers.google.com/blockly/reference/js/blockly.fielddropdown_class) class.
+- A specific `FieldDropdown` class, tied to a specific block argument's **_dynamic_** menu, will invoke the method that populates that menu's options at various points during the _lifecycle_ of the field drodpwon
+  - NOTE: The method that populates the menu's options are implemented by you in the 
+  - By _lifecycle_ I mean the different points of interaction with the dynamic me
+
+We do this by overriding a few key functions on Blockly's [FieldDropdown](https://developers.google.com/blockly/reference/js/blockly.fielddropdown_class) class. 
+
+These changes are implemented in [packages/scratch-gui/src/lib/prg/customBlockOverrides.js]().
 
 ## Extension Menu Tags / Categories
 
