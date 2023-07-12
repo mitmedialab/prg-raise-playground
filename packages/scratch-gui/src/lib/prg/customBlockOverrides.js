@@ -1,4 +1,4 @@
-import { dropdownStateFlag, openDropdownState, closeDropdownState, initDropdownState, updateDropdownState, updateDropdownMethod, dropdownEntryFlag, } from "../../dist/globals";
+import { dropdown } from "../../dist/globals";
 
 /**
  * @param {import("scratch-blocks")} blocks
@@ -9,23 +9,19 @@ export const overridesForCustomArgumentSupport = (blocks, vm) => {
   const { FieldDropdown } = blocks;
   const { fromJson, prototype } = FieldDropdown;
   const { setValue, showEditor_ } = prototype;
-
-  const { runtime } = vm;
+  const { state, runtimeKey, runtimeProperties } = dropdown;
+  const shared = vm.runtime[runtimeKey];
+  const { stateKey, entryKey, updateMethodKey } = runtimeProperties;
+  const updateMethod = shared[updateMethodKey];
 
   /**
    * @type {FieldDropdown}
    */
-  let currentDropdown = null;
+  let current = null;
 
   const setState = (state, dropdown) => {
-    runtime[dropdownStateFlag] = state;
-    runtime[dropdownEntryFlag] = dropdown ? { text: dropdown.text_, value: dropdown.value_ } : undefined;
-    switch (state) {
-      case openDropdownState:
-        return currentDropdown = dropdown;
-      case closeDropdownState:
-        return currentDropdown = null;
-    }
+    shared[stateKey] = state;
+    shared[entryKey] = dropdown ? { text: dropdown.text_, value: dropdown.value_ } : undefined;
   }
 
   const executeWithState = (state, dropdown, fn, args) => {
@@ -35,16 +31,11 @@ export const overridesForCustomArgumentSupport = (blocks, vm) => {
     return result;
   }
 
-  FieldDropdown.fromJson = (...args) => executeWithState(initDropdownState, undefined, fromJson, args);
-
-  FieldDropdown.prototype.setValue = function (...args) {
-    return executeWithState(closeDropdownState, this, setValue, args)
-  };
+  FieldDropdown.fromJson = (...args) => executeWithState(state.init, null, fromJson, args);
 
   FieldDropdown.prototype.showEditor_ = function (...args) {
-    return executeWithState(openDropdownState, this, showEditor_, args);
+    return executeWithState(state.open, (current = this), showEditor_, args);
   };
 
-  runtime[updateDropdownMethod] = (...args) => executeWithState(updateDropdownState, currentDropdown, setValue, args);
-
+  shared[updateMethod] = (...args) => executeWithState(state.update, current, setValue, args);
 }

@@ -5,6 +5,21 @@ export const AuxiliaryExtensionInfo = "AuxiliaryExtensionInfo";
 
 export const customArgumentFlag = "internal_IsCustomArgument";
 export const customArgumentMethod = "tryProcessMenuItemAsCustomArgumentHack";
+
+export const dropdown = {
+    runtimeKey: "prgDropdownCustomization",
+    runtimeProperties: {
+        stateKey: "state",
+        entryKey: "entry",
+        updateMethodKey: "update",
+    },
+    state: {
+        open: "open",
+        init: "init",
+        update: "update",
+    },
+} as const;
+
 export const dropdownStateFlag = "dropdownState";
 export const dropdownEntryFlag = "dropdownEntry";
 export const updateDropdownMethod = "manualDropdownUpdate";
