@@ -14,10 +14,13 @@ let hatShouldExecute = false;
 let overrideHatShouldExecute = false;
 let executionStateChange = false;
 
+
 async function blockSequence(move: DanceMove, { thread: { topBlock, blockContainer }, blockID }: BlockUtilityWithID) {
   if (topBlock != getID("entry")) return;
-  const isFirtSibling = blockContainer.getNextBlock(topBlock) === blockID;
-  if (!hatShouldExecute && !isFirtSibling) return;
+  const nextBlock = blockContainer.getNextBlock(topBlock);
+  const isFirtChild = nextBlock === blockID;
+  const isFirstChildOfLoop = !isFirtChild && nextBlock === getID("repeat") && blockContainer.getBranch(nextBlock, 1) === blockID;
+  if (!hatShouldExecute && !(isFirtChild || isFirstChildOfLoop)) return;
   else if (!hatShouldExecute) overrideHatShouldExecute = true;
   const unhighlight = highlight(blockID);
   await dance(move);
@@ -123,6 +126,23 @@ export default class AiStorybookDancing extends extension(details, "blockly", "c
   async spinRight(spinRight: "inline image", util: BlockUtilityWithID) {
     setID("spinRight", util);
     await blockSequence("spin right", util);
+  }
+
+  @block({
+    type: "loop",
+    text: (times) => `Loop ${times} times`,
+    arg:
+    {
+      type: "number",
+      options: [2, 3, 4]
+    }
+  })
+  repeat(times: number, util: BlockUtilityWithID) {
+    setID("repeat", util);
+    const stackFrame = util.stackFrame as { loopCounter?: number };
+    stackFrame.loopCounter ??= times;
+    stackFrame.loopCounter--;
+    if (stackFrame.loopCounter >= 0) util.startBranch(1, true);
   }
 
 
