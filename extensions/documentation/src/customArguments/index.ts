@@ -11,7 +11,7 @@ export default class ExtensionWithCustomArgument extends extension(details, "cus
     type: "command",
     text: (arg) => `Set custom argument ${arg}`,
 
-    /** Invoke the member funtcion `makeCustomArgument` of `self` parameter 
+    /** Invoke the member function `makeCustomArgument` of `self` parameter 
      * (which is an instance of our `ExtensionWithCustomArgument` class).
      * The `makeCustomArgument` function accepts an object with the following fields:
      * - component: The name of the `.svelte` file that should be displayed when this argument is clicked on.
