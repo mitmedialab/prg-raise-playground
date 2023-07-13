@@ -434,7 +434,7 @@ var JiboAsrResult = {
 };
 
 var jibo_event = {
-  readyForNext: true,
+  // readyForNext: true,
   msg_type: "",
   anim_transition: 0,
   attention_mode: 1,
@@ -487,75 +487,76 @@ class FirebaseQueue {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         // firebase push 
-        const pathRef = database.ref("Jibo-Name/" + jiboName);
-        var eventKey: any;
-        var eventData: any;
-        pathRef
-          .once("value")
-          .then((snapshot) => {
-            console.log("Reading the last thing before inserting the new one");
-            snapshot.forEach((childSnapshot) => {
-              eventKey = childSnapshot.key;
-              eventData = childSnapshot.val();
+        // const pathRef = database.ref("Jibo-Name/" + jiboName);
+        // var eventKey: any;
+        // var eventData: any;
+        // pathRef
+        //   .once("value")
+        //   .then((snapshot) => {
+        //     console.log("Reading the last thing before inserting the new one");
+        //     snapshot.forEach((childSnapshot) => {
+        //       eventKey = childSnapshot.key;
+        //       eventData = childSnapshot.val();
+        //     });
+        //     console.log(eventData);
+        //     if (eventData.msg_type === "JiboAction" || eventData.msg_type === "") {
+        //       console.log("ready for next from the last read record is: " + eventData.readyForNext);
+        //       if (eventData.readyForNext) {
+        // write the message to the database only if jibo is ready
+        if (jiboName != "") {
+          database.ref("Jibo-Name/" + jiboName)
+            .push({ ...data })
+            .then(function () {
+              console.log("New record for '" + jiboName + "' created successfully as: " + data.msg_type);
+            })
+            .catch(function (error) {
+              console.error(
+                "Error creating new record for '" + jiboName + "' as: " + + data.msg_type,
+                error
+              );
             });
-            console.log(eventData);
-            if (eventData.msg_type === "JiboAction" || eventData.msg_type === "") {
-              console.log("ready for next from the last read record is: " + eventData.readyForNext);
-              if (eventData.readyForNext) {
-                // write the message to the database only if jibo is ready
-                if (jiboName != "") {
-                  database.ref("Jibo-Name/" + jiboName)
-                    .push({ ...data })
-                    .then(function () {
-                      console.log("New record for '" + jiboName + "' created successfully as: " + data.msg_type);
-                    })
-                    .catch(function (error) {
-                      console.error(
-                        "Error creating new record for '" + jiboName + "' as: " + + data.msg_type,
-                        error
-                      );
-                    });
-                  resolve(data);
-                  console.log("Jibo is ready for a new message to be pushed.");
-                }
-                else {
-                  console.log("No Jibo Name added.");
-                }
-              }
-              else {
-                console.log("Jibo is NOT ready for a new message to be pushed.");
+          resolve(data);
+          // console.log("Jibo is ready for a new message to be pushed.");
+        }
+        else {
+          console.log("No Jibo Name added.");
+        }
+        //   }
+        //   else {
+        //     console.log("Jibo is NOT ready for a new message to be pushed.");
 
-              }
-            }
-            else {
-              if (jiboName != "") {
-                database.ref("Jibo-Name/" + jiboName)
-                  .push({ ...data })
-                  .then(function () {
-                    console.log("New record for '" + jiboName + "' created successfully as: " + data.msg_type);
-                  })
-                  .catch(function (error) {
-                    console.error(
-                      "Error creating new record for '" + jiboName + "' as: " + + data.msg_type,
-                      error
-                    );
-                  });
-                resolve(data);
-                console.log("Jibo is ready for a new message to be pushed.");
-              }
-              else {
-                console.log("No Jibo Name added.");
-              }
-            }
-          })
-          .catch((error) => {
-            reject(error);
-            console.error("Error retrieving data: ", error);
-          });
-        // end of pushing block
-        console.log('Pushing data to Firebase:', data);
-        resolve(data);
-      }, 1000);
+        //   }
+        // }
+        // else {
+        //   if (jiboName != "") {
+        //     database.ref("Jibo-Name/" + jiboName)
+        //       .push({ ...data })
+        //       .then(function () {
+        //         console.log("New record for '" + jiboName + "' created successfully as: " + data.msg_type);
+        //       })
+        //       .catch(function (error) {
+        //         console.error(
+        //           "Error creating new record for '" + jiboName + "' as: " + + data.msg_type,
+        //           error
+        //         );
+        //       });
+        //     resolve(data);
+        //     console.log("Jibo is ready for a new message to be pushed.");
+        //   }
+        //   else {
+        //     console.log("No Jibo Name added.");
+        //   }
+        // }
+        //       }).catch((error) => {
+        //           reject(error);
+        //           console.error("Error retrieving data: ", error);
+        //         });
+        //       // end of pushing block
+        //       console.log('Pushing data to Firebase:', data);
+        //       resolve(data);
+        //     }, 1000);
+        //   });
+      });
     });
   }
 }
@@ -1110,7 +1111,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
 
     var jibo_msg = {
-      readyForNext: false,
+      // readyForNext: false,
       msg_type: "JiboAction",
       do_tts: true,
       tts_text: text,
@@ -1168,7 +1169,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     }
     this.jbVolume = volume;
     var jibo_msg = {
-      readyForNext: false,
+      // readyForNext: false,
       msg_type: "JiboAction",
       do_volume: true,
       volume: parseFloat(volume)
@@ -1246,7 +1247,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     }
 
     var jibo_msg = {
-      readyForNext: false,
+      // readyForNext: false,
       msg_type: "JiboAction",
       do_led: true,
       led_color: ledValue,
@@ -1299,7 +1300,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     }
 
     var jibo_msg = {
-      readyForNext: false,
+      // readyForNext: false,
       msg_type: "JiboAction",
       do_lookat: true,
       lookat: {
@@ -1319,7 +1320,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   async jiboAnimFn(animation_key: string) {
     console.log("the animation file is: " + animation_key); // debug statement
     var jibo_msg = {
-      readyForNext: false,
+      // readyForNext: false,
       msg_type: "JiboAction",
       do_motion: true,
       do_tts: false,
