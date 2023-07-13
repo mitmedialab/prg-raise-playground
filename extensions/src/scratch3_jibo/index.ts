@@ -118,6 +118,13 @@ const Audio = {
   PeekABoo: "PeekABoo",
   Whistle: "Whistle",
   CheckmarkButton: "CheckmarkButton",
+  TurnTakingOff: "TurnTakingOff",
+  TurnTakingOn: "TurnTakingOn",
+  Aww: "Aww",
+  Confirm: "Confirm",
+  Disappointed: "Disappointed",
+  Hello: "Hello",
+  Belly_Dance_00: "Belly_Dance_00",
 } as const;
 type AudioType = typeof Audio[keyof typeof Audio];
 
@@ -169,6 +176,27 @@ const audioFiles: Record<AudioType, AnimFileType> = {
   },
   [Audio.CheckmarkButton]: {
     file: "SFX_Global_CheckmarkButton.m4a",
+  },
+  [Audio.TurnTakingOff]: {
+    file: "SFX_Global_TurnTakingOff.m4a",
+  },
+  [Audio.TurnTakingOn]: {
+    file: "SFX_Global_TurnTakingOn.m4a",
+  },
+  [Audio.Aww]: {
+    file: "SSA_aww.m4a",
+  },
+  [Audio.Confirm]: {
+    file: "SSA_confirm.m4a",
+  },
+  [Audio.Disappointed]: {
+    file: "SSA_disappointed.m4a",
+  },
+  [Audio.Hello]: {
+    file: "SSA_hello.wav",
+  },
+  [Audio.Belly_Dance_00]: {
+    file: "music/music_belly_dance_00.m4a",
   }
 
 }
@@ -433,27 +461,31 @@ var JiboAsrResult = {
   slotAction: "",
 };
 
+var defaultFlag = {
+  msg_type: "default",
+};
+
 var jibo_event = {
   // readyForNext: true,
   msg_type: "",
-  anim_transition: 0,
-  attention_mode: 1,
-  audio_filename: "",
-  do_anim_transition: false,
-  do_attention_mode: false,
-  do_led: false,
-  do_lookat: false,
-  do_motion: false,
-  do_sound_playback: false,
-  do_tts: false,
-  do_volume: false,
-  led_color: [0, 100, 0], //red, green, blue
-  lookat: [0, 0, 0], //x, y, z
-  motion: "",
-  tts_duration_stretch: 0,
-  tts_pitch: 0,
-  tts_text: "",
-  volume: 0,
+  // anim_transition: 0,
+  // attention_mode: 1,
+  // audio_filename: "",
+  // do_anim_transition: false,
+  // do_attention_mode: false,
+  // do_led: false,
+  // do_lookat: false,
+  // do_motion: false,
+  // do_sound_playback: false,
+  // do_tts: false,
+  // do_volume: false,
+  // led_color: [0, 100, 0], //red, green, blue
+  // lookat: [0, 0, 0], //x, y, z
+  // motion: "",
+  // tts_duration_stretch: 0,
+  // tts_pitch: 0,
+  // tts_text: "",
+  // volume: 0,
 };
 
 // tasneem new - queue sata structure
@@ -483,26 +515,11 @@ class FirebaseQueue {
     this.isProcessing = false;
   }
 
-  async pushToFirebase(data: any) {
+  //////////////////////////////// pushToFirebase() (or setJiboMsg()) function WITHOUT FLAG 
+  /* 
+    async pushToFirebase(data: any) {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
-        // firebase push 
-        // const pathRef = database.ref("Jibo-Name/" + jiboName);
-        // var eventKey: any;
-        // var eventData: any;
-        // pathRef
-        //   .once("value")
-        //   .then((snapshot) => {
-        //     console.log("Reading the last thing before inserting the new one");
-        //     snapshot.forEach((childSnapshot) => {
-        //       eventKey = childSnapshot.key;
-        //       eventData = childSnapshot.val();
-        //     });
-        //     console.log(eventData);
-        //     if (eventData.msg_type === "JiboAction" || eventData.msg_type === "") {
-        //       console.log("ready for next from the last read record is: " + eventData.readyForNext);
-        //       if (eventData.readyForNext) {
-        // write the message to the database only if jibo is ready
         if (jiboName != "") {
           database.ref("Jibo-Name/" + jiboName)
             .push({ ...data })
@@ -521,45 +538,150 @@ class FirebaseQueue {
         else {
           console.log("No Jibo Name added.");
         }
-        //   }
-        //   else {
-        //     console.log("Jibo is NOT ready for a new message to be pushed.");
-
-        //   }
-        // }
-        // else {
-        //   if (jiboName != "") {
-        //     database.ref("Jibo-Name/" + jiboName)
-        //       .push({ ...data })
-        //       .then(function () {
-        //         console.log("New record for '" + jiboName + "' created successfully as: " + data.msg_type);
-        //       })
-        //       .catch(function (error) {
-        //         console.error(
-        //           "Error creating new record for '" + jiboName + "' as: " + + data.msg_type,
-        //           error
-        //         );
-        //       });
-        //     resolve(data);
-        //     console.log("Jibo is ready for a new message to be pushed.");
-        //   }
-        //   else {
-        //     console.log("No Jibo Name added.");
-        //   }
-        // }
-        //       }).catch((error) => {
-        //           reject(error);
-        //           console.error("Error retrieving data: ", error);
-        //         });
-        //       // end of pushing block
-        //       console.log('Pushing data to Firebase:', data);
-        //       resolve(data);
-        //     }, 1000);
-        //   });
       });
     });
   }
+  */
+  ////////////////////////////////
+
+
+  //////////////////////////////// pushToFirebase() (or setJiboMsg()) function WITH FLAG
+  async pushToFirebase(data: any) {
+    return new Promise((resolve, reject) => {
+      if (jiboName != "") {
+        const pathRef = database.ref("Jibo-Name/" + jiboName);
+        var eventKey: any;
+        var eventData: any;
+        pathRef
+          .once("value")
+          .then((snapshot) => {
+            console.log("Reading the last thing before inserting the new one");
+            snapshot.forEach((childSnapshot) => {
+              eventKey = childSnapshot.key;
+              eventData = childSnapshot.val();
+            });
+            console.log(eventData);
+            if (eventData.msg_type === "default" || eventData.msg_type === "") {
+              console.log("Jibo is ready for a new message to be pushed.");
+              database.ref("Jibo-Name/" + jiboName)
+                .push({ ...data })
+                .then(function () {
+                  console.log("New record for '" + jiboName + "' created successfully as: " + data.msg_type);
+                  resolve(data);
+                })
+                .catch(function (error) {
+                  console.error(
+                    "Error creating new record for '" + jiboName + "' as: " + + data.msg_type,
+                    error
+                  );
+                  reject("Something went wrong in pushing to db")
+                });
+            }
+            else {
+              console.log("The last record was of type: ");
+              console.log(eventData.msg_type);
+              console.log("Pushing new one immediately");
+              database.ref("Jibo-Name/" + jiboName)
+                .push({ ...data })
+                .then(function () {
+                  console.log("New record for '" + jiboName + "' created successfully as: " + data.msg_type);
+                  resolve(data);
+                })
+                .catch(function (error) {
+                  console.error(
+                    "Error creating new record for '" + jiboName + "' as: " + + data.msg_type,
+                    error
+                  );
+                  reject("Something went wrong in pushing to db")
+                });
+            }
+          });
+      }
+      else {
+        console.log("No Jibo Name added.");
+      }
+    });
+  }
+  ////////////////////////////////
 }
+// firebase push 
+// const pathRef = database.ref("Jibo-Name/" + jiboName);
+// var eventKey: any;
+// var eventData: any;
+// pathRef
+//   .once("value")
+//   .then((snapshot) => {
+//     console.log("Reading the last thing before inserting the new one");
+//     snapshot.forEach((childSnapshot) => {
+//       eventKey = childSnapshot.key;
+//       eventData = childSnapshot.val();
+//     });
+//     console.log(eventData);
+//     if (eventData.msg_type === "JiboAction" || eventData.msg_type === "") {
+//       console.log("ready for next from the last read record is: " + eventData.readyForNext);
+//       if (eventData.readyForNext) {
+// write the message to the database only if jibo is ready
+// if (jiboName != "") {
+//   database.ref("Jibo-Name/" + jiboName)
+//     .push({ ...data })
+//     .then(function () {
+//       console.log("New record for '" + jiboName + "' created successfully as: " + data.msg_type);
+//     })
+//     .catch(function (error) {
+//       console.error(
+//         "Error creating new record for '" + jiboName + "' as: " + + data.msg_type,
+//         error
+//       );
+//     });
+//   resolve(data);
+//   // console.log("Jibo is ready for a new message to be pushed.");
+// }
+// else {
+//   console.log("No Jibo Name added.");
+// }
+//       });
+//     });
+//   }
+// }
+//   }
+//   else {
+//     console.log("Jibo is NOT ready for a new message to be pushed.");
+
+//   }
+// }
+// else {
+//   if (jiboName != "") {
+//     database.ref("Jibo-Name/" + jiboName)
+//       .push({ ...data })
+//       .then(function () {
+//         console.log("New record for '" + jiboName + "' created successfully as: " + data.msg_type);
+//       })
+//       .catch(function (error) {
+//         console.error(
+//           "Error creating new record for '" + jiboName + "' as: " + + data.msg_type,
+//           error
+//         );
+//       });
+//     resolve(data);
+//     console.log("Jibo is ready for a new message to be pushed.");
+//   }
+//   else {
+//     console.log("No Jibo Name added.");
+//   }
+// }
+//       }).catch((error) => {
+//           reject(error);
+//           console.error("Error retrieving data: ", error);
+//         });
+//       // end of pushing block
+//       console.log('Pushing data to Firebase:', data);
+//       resolve(data);
+//     }, 1000);
+//   });
+//       });
+//     });
+//   }
+// }
 const queue = new FirebaseQueue();
 // tasneem new - end of queue stuff
 
@@ -1263,18 +1385,6 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     this.JiboPublish(jibo_msg);
   }
 
-  // JiboVolume (args) {
-  //     const Volume = Cast.toString(args.VOL);
-  //     log.log(parseFloat(Volume));
-  //     this.jbVolume = parseFloat(Volume);
-
-  //     var jibo_msg ={
-  //         "do_volume":true,
-  //         "volume": parseFloat(Volume)
-  //         };
-  //     this.JiboPublish(jibo_msg);
-  // }
-
   // TODO make this better - like look up down left right, etc.
   async jiboLookFn(X: string, Y: string, Z: string) {
     if (this.multitask) {
@@ -1325,7 +1435,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
       do_motion: true,
       do_tts: false,
       do_lookat: false,
-      motion: animation_key,
+      motion: animation_key.toLowerCase(),
     };
 
     // write to frebase
@@ -1343,20 +1453,6 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
             });
         });*/
   }
-
-  // async JiboAudio(args) {
-  //     const audio_key = Cast.toString(args.VKEY);
-  //     log.log(audio_key);
-
-  //     var jibo_msg ={
-  //         "do_motion":false,
-  //         "do_tts":false,
-  //         "do_lookat":false,
-  //         "do_sound_playback":true,
-  //         "audio_filename": audio_key
-  //         };
-  //     await this.JiboPublish(jibo_msg);
-  // }
 
   /*async JiboMultitask() {
     var jibo_msg = {
