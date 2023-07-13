@@ -1,3 +1,4 @@
+import { uuidv4 } from "$common/utils";
 import { RuntimeWithCustomArgumentSupport, ArgumentEntry, ArgumentEntrySetter, ArgumentID } from "./common";
 
 export default class CustomArgumentManager {
@@ -74,6 +75,6 @@ export default class CustomArgumentManager {
   }
 
   static IsIdentifier = (query: string) => query.startsWith(CustomArgumentManager.IdentifierPrefix);
-  private static GetIdentifier = () => CustomArgumentManager.IdentifierPrefix + new Date().getTime().toString();
+  private static GetIdentifier = () => CustomArgumentManager.IdentifierPrefix + uuidv4();
   private static IdentifierPrefix = "__customArg__";
 }

@@ -17,6 +17,7 @@ export const dropdown = {
         open: "open",
         init: "init",
         update: "update",
+        close: "close",
     },
 } as const;
 

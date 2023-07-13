@@ -39,10 +39,3 @@ export type RuntimeWithCustomArgumentSupport = Environment["runtime"] &
     { [k in typeof updateDropdownMethod]: (id: string) => void };
 
 export type ComponentGetter = (id: string, componentName: string) => CustomArgumentUIConstructor;
-
-export const callingContext = {
-    DrowpdownOpen: openDropdownState,
-    DropdownClose: closeDropdownState,
-    Init: initDropdownState,
-    Update: updateDropdownState
-} as const;

@@ -10,9 +10,8 @@ export const overridesForCustomArgumentSupport = (blocks, vm) => {
   const { fromJson, prototype } = FieldDropdown;
   const { setValue, showEditor_ } = prototype;
   const { state, runtimeKey, runtimeProperties } = dropdown;
-  const shared = vm.runtime[runtimeKey];
+  const shared = (vm.runtime[runtimeKey] = {});
   const { stateKey, entryKey, updateMethodKey } = runtimeProperties;
-  const updateMethod = shared[updateMethodKey];
 
   /**
    * @type {FieldDropdown}
@@ -37,5 +36,10 @@ export const overridesForCustomArgumentSupport = (blocks, vm) => {
     return executeWithState(state.open, (current = this), showEditor_, args);
   };
 
-  shared[updateMethod] = (...args) => executeWithState(state.update, current, setValue, args);
+  FieldDropdown.prototype.setValue = function (...args) {
+    current = null;
+    return executeWithState(state.close, this, setValue, args);
+  };
+
+  shared[updateMethodKey] = (...args) => executeWithState(state.update, current, setValue, args);
 }

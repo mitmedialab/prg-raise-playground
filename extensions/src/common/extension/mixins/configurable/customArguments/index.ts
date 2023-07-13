@@ -53,7 +53,7 @@ export default function mixin<T extends MinimalExtensionConstructor>(Ctor: T) {
       const runtime = this.runtime as RuntimeWithCustomArgumentSupport;
       const [{ value }] = menuItems;
 
-      const { id: extensionID, customArgumentManager: argumentManager } = this;
+      const { id: extensionID, argumentManager } = this;
       const { component, id: initialID } = JSON.parse(value) as { component: string, id: string };
       const dropdownContext = runtime[dropdownStateFlag];
 
