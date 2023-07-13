@@ -32,6 +32,7 @@
   export let close: () => void;
 
   function handleSubmit() {
+    inputText = inputText.toLowerCase();
     setJiboName(inputText);
     close();
   }
