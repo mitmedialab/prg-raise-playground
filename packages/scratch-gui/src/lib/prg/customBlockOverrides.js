@@ -10,7 +10,8 @@ export const overridesForCustomArgumentSupport = (blocks, vm) => {
   const { fromJson, prototype } = FieldDropdown;
   const { setValue, showEditor_ } = prototype;
   const { state, runtimeKey, runtimeProperties } = dropdown;
-  const shared = (vm.runtime[runtimeKey] = {});
+  const { runtime } = vm;
+  const shared = (runtime[runtimeKey] = {});
   const { stateKey, entryKey, updateMethodKey } = runtimeProperties;
 
   /**

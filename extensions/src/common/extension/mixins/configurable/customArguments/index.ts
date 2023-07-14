@@ -1,12 +1,12 @@
 import CustomArgumentManager from "$common/extension/mixins/configurable/customArguments/CustomArgumentManager";
-import { renderToDropdown } from "$common/extension/mixins/configurable/customArguments/ui";
 import { ArgumentType } from "$common/types/enums";
-import { customArgumentFlag, dropdownStateFlag, dropdownEntryFlag, customArgumentMethod, } from "$common/globals";
+import { guiDropdownInterop } from "$common/globals";
 import { Argument, MenuItem } from "$common/types";
 import { MinimalExtensionConstructor } from "../../base";
 import { withDependencies } from "../../dependencies";
 import customSaveData from "../customSaveData";
-import { ComponentGetter, CustomArgumentRecipe, RuntimeWithCustomArgumentSupport, isCustomArgumentContainer } from "./common";
+import { ArgumentEntry, ArgumentID, CustomArgumentComponent, CustomArgumentRecipe, RuntimeWithCustomArgumentSupport, renderToDropdown } from "./utils";
+import { ExtensionBase } from "$common/extension/ExtensionBase";
 
 /**
  * Mixin the ability for extensions to create custom argument types with their own specific UIs
@@ -19,10 +19,10 @@ export default function mixin<T extends MinimalExtensionConstructor>(Ctor: T) {
     /**
      * Create a custom argument for one of this block's arguments
      */
-    protected makeCustomArgument = <T>({ component, initial, acceptReportersHandler: handler }: CustomArgumentRecipe<T>): Argument<T> => {
+    protected makeCustomArgument = <T, TExtension extends ExtensionBase>({ component, initial, acceptReportersHandler: handler }: CustomArgumentRecipe<T, TExtension>): Argument<T> => {
       this.argumentManager ??= new CustomArgumentManager();
       const id = this.argumentManager.add(initial);
-      const getItems = () => [{ text: customArgumentFlag, value: JSON.stringify({ component, id }) }];
+      const getItems = () => this.processMenuForCustomArgument(id, component);
       return {
         type: ArgumentType.Custom,
         defaultValue: id,
@@ -48,36 +48,35 @@ export default function mixin<T extends MinimalExtensionConstructor>(Ctor: T) {
      * @param getComponent 
      * @returns 
      */
-    private [customArgumentMethod](menuItems: MenuItem<string>[], getComponent: ComponentGetter): (readonly [string, string])[] {
-      if (!isCustomArgumentContainer(menuItems)) return null;
-      const runtime = this.runtime as RuntimeWithCustomArgumentSupport;
-      const [{ value }] = menuItems;
+    private processMenuForCustomArgument(initialID: ArgumentID, Component: CustomArgumentComponent): (ArgumentEntry<any>)[] {
+      const { runtime, argumentManager } = this;
+      const interop = (runtime as RuntimeWithCustomArgumentSupport)[guiDropdownInterop.runtimeKey];
 
-      const { id: extensionID, argumentManager } = this;
-      const { component, id: initialID } = JSON.parse(value) as { component: string, id: string };
-      const dropdownContext = runtime[dropdownStateFlag];
+      const { state, update, entry } = interop
 
-      switch (dropdownContext) {
+      switch (state) {
         case "init":
           return argumentManager.getCurrentEntries();
         case "open": {
-          const currentEntry = runtime[dropdownEntryFlag];
-          const current = argumentManager.getEntry(currentEntry?.value ?? initialID);
-          const setter = argumentManager.request(runtime);
-          renderToDropdown(runtime, getComponent(extensionID, component), { setter, current, extension: this });
-          return [["", ""]];
+          const id = entry?.value ?? initialID;
+          const current = argumentManager.getEntry(id);
+          const setter = argumentManager.request(update);
+          renderToDropdown(Component, { setter, current, extension: this });
+          return [{ text: current.text, value: id }];
         }
         case "update": {
           const result = argumentManager.peek();
-          return [[result.entry.text, result.id]];
+          return [{ text: result.entry.text, value: result.id }];
         }
         case "close": {
           const result = argumentManager.tryResolve();
-          return result ? [[result.entry.text, result.id]] : argumentManager.getCurrentEntries();
+          return result
+            ? [{ text: result.entry.text, value: result.id }]
+            : argumentManager.getCurrentEntries();
         }
       }
 
-      throw new Error("Error during processing -- Context:" + dropdownContext);
+      throw new Error("Error during processing -- Context:" + state);
     };
 
   }

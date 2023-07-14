@@ -1,5 +1,5 @@
 import { uuidv4 } from "$common/utils";
-import { RuntimeWithCustomArgumentSupport, ArgumentEntry, ArgumentEntrySetter, ArgumentID } from "./common";
+import { RuntimeWithCustomArgumentSupport, ArgumentEntry, ArgumentEntrySetter, ArgumentID } from "./utils";
 
 export default class CustomArgumentManager {
   map: Map<string, ArgumentEntry<any>> = new Map();
@@ -20,9 +20,9 @@ export default class CustomArgumentManager {
     return id;
   }
 
-  request<T>(runtime: RuntimeWithCustomArgumentSupport): ArgumentEntrySetter<T> {
+  request<T>(update: (id: ArgumentID) => void): ArgumentEntrySetter<T> {
     this.clearPending();
-    return (entry) => runtime.manualDropdownUpdate(this.setPending(this.setEntry(entry)));
+    return (entry) => update(this.setPending(this.setEntry(entry)));
   }
 
   peek() {
@@ -41,7 +41,7 @@ export default class CustomArgumentManager {
   getCurrentEntries() {
     return Array.from(this.map.entries())
       .filter(([_, entry]) => entry !== null)
-      .map(([id, { text }]) => [text, id] as const);
+      .map(([id, { text }]) => ({ text, value: id }) as const);
   }
 
   getEntry(id: string) { return this.map.get(id) }

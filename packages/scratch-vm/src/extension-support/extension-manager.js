@@ -368,9 +368,6 @@ class ExtensionManager {
         const menuFunc = extensionObject[menuItemFunctionName];
         const menuResult = menuFunc.call(extensionObject, editingTargetID);
 
-        const customArgument = tryResolveMenuItemAsCustomArgument(extensionObject, menuResult);
-        if (customArgument) return customArgument;
-
         const menuItems = menuResult.map(
             item => {
                 item = maybeFormatMessage(item, extensionMessageContext);
