@@ -2,7 +2,7 @@ import Runtime from "../../../packages/scratch-vm/src/engine/runtime";
 // import Cast from "../../../packages/scratch-vm/src/util/cast";
 // import log from "../../../packages/scratch-vm/src/util/log";
 import EventEmitter from "events";
-// firebase
+
 import database from './firebase';
 
 import { ArgumentType, BlockType, color } from "$common";
@@ -11,13 +11,66 @@ import { Environment, BlockDefinitions, MenuItem } from "$common";
 import { Extension } from "$common";
 
 import ROSLIB from "roslib";
+////////////////////////// Randi's changes - IMPORTS
+import type BlockUtility from "$scratch-vm/engine/block-utility";
+import Target from "$scratch-vm/engine/target";
+import SensingBlocks from "$scratch-vm/blocks/scratch3_sensing.js";
+import Text2Speech from "$scratch-vm/extensions/scratch3_text2speech/index.js";
 
+import jiboBodyBlack from "./virtualJibo/jiboBody/black.png";
+import jiboBodyRed from "./virtualJibo/jiboBody/red.png";
+import jiboBodyYellow from "./virtualJibo/jiboBody/yellow.png";
+import jiboBodyGreen from "./virtualJibo/jiboBody/green.png";
+import jiboBodyCyan from "./virtualJibo/jiboBody/cyan.png";
+import jiboBodyBlue from "./virtualJibo/jiboBody/blue.png";
+import jiboBodyMagenta from "./virtualJibo/jiboBody/magenta.png";
+import jiboBodyWhite from "./virtualJibo/jiboBody/white.png";
+
+import jiboEyeAirplane from "./virtualJibo/jiboEye/Airplane.png";
+import jiboEyeApple from "./virtualJibo/jiboEye/Apple.png";
+import jiboEyeArt from "./virtualJibo/jiboEye/Art.png";
+import jiboEyeBowling from "./virtualJibo/jiboEye/Bowling.png";
+import jiboEyeCheckmark from "./virtualJibo/jiboEye/Checkmark.png";
+import jiboEyeExclamation from "./virtualJibo/jiboEye/Exclamation.png";
+import jiboEyeFootball from "./virtualJibo/jiboEye/Football.png";
+import jiboEyeHeart from "./virtualJibo/jiboEye/Heart.png";
+import jiboEyeMagic from "./virtualJibo/jiboEye/Magic.png";
+import jiboEyeOcean from "./virtualJibo/jiboEye/Ocean.png";
+import jiboEyePenguin from "./virtualJibo/jiboEye/Penguin.png";
+import jiboEyeRainbow from "./virtualJibo/jiboEye/Rainbow.png";
+import jiboEyeRobot from "./virtualJibo/jiboEye/Robot.png";
+import jiboEyeRocket from "./virtualJibo/jiboEye/Rocket.png";
+import jiboEyeSnowflake from "./virtualJibo/jiboEye/Snowflake.png";
+import jiboEyeTaco from "./virtualJibo/jiboEye/Taco.png";
+import jiboEyeVideoGame from "./virtualJibo/jiboEye/VideoGame.png";
+////////////////////////// Randi's changes - IMPORTS END
+
+
+////////////////////////// Randi's changes - CONSTANTS
 const EXTENSION_ID = "jibo";
+const JIBO_BODY = "jibo-body";
+const JIBO_EYE = "jibo-eye";
+
+const DEFAULT_JIBO_BODY = {
+  x: 4,
+  y: -9,
+  size: 100,
+  direction: 90,
+}
+
+// TODO make Jibo eye relative to body
+const DEFAULT_JIBO_EYE = {
+  x: 1,
+  y: 75,
+  size: 35,
+  direction: 90,
+}
+////////////////////////// Randi's changes - CONSTANTS END
 
 // jibo's name
 // opal-sage-victor-valley
 var jiboName: string = "";
-// var databaseRef = database.ref("Jibo-Name/" + jiboName);
+
 
 type RGB = {
   x: number;
@@ -41,40 +94,91 @@ export const Color = {
 type ColorType = typeof Color[keyof typeof Color];
 type ColorDefType = {
   value: RGB;
+  imageData: string; // Randi's
 };
 
 const colorDef: Record<ColorType, ColorDefType> = {
   [Color.Red]: {
     value: { x: 255, y: 0, z: 0 },
+    imageData: jiboBodyRed,
   },
   [Color.Yellow]: {
     value: { x: 255, y: 69, z: 0 },
+    imageData: jiboBodyYellow,
   },
   [Color.Green]: {
     value: { x: 0, y: 167, z: 0 },
+    imageData: jiboBodyGreen,
   },
   [Color.Cyan]: {
     value: { x: 0, y: 167, z: 48 },
+    imageData: jiboBodyCyan,
   },
   [Color.Blue]: {
     value: { x: 0, y: 0, z: 255 },
+    imageData: jiboBodyBlue,
   },
   [Color.Magenta]: {
     value: { x: 255, y: 0, z: 163 },
+    imageData: jiboBodyMagenta,
   },
   [Color.White]: {
     value: { x: 255, y: 255, z: 255 },
+    imageData: jiboBodyWhite,
   },
   [Color.Random]: {
     value: { x: -1, y: -1, z: -1 },
+    imageData: ""
   },
   [Color.Off]: {
     value: { x: 0, y: 0, z: 0 },
+    imageData: jiboBodyBlack,
   },
 };
 
+////////////////////////// Randi's changes
+type Coords = {
+  x: number;
+  y: number;
+  z: number;
+};
+export const Direction = {
+  up: `up`,
+  down: `down`,
+  right: `right`,
+  left: `left`,
+  forward: `forward`,
+  backward: `backward`,
+} as const;
+type DirType = typeof Direction[keyof typeof Direction];
+type DirDefType = {
+  value: Coords;
+};
+const directionDef: Record<DirType, DirDefType> = {
+  [Direction.up]: {
+    value: { x: 500, y: 100, z: 500 },
+  },
+  [Direction.down]: {
+    value: { x: 500, y: 100, z: -500 },
+  },
+  [Direction.left]: {
+    value: { x: 100, y: 500, z: 100 },
+  },
+  [Direction.right]: {
+    value: { x: 100, y: -500, z: 100 },
+  },
+  [Direction.forward]: {
+    value: { x: 500, y: 100, z: 100 },
+  },
+  [Direction.backward]: {
+    value: { x: -500, y: 100, z: 100 },
+  },
+};
+////////////////////////// Randi's changes 
+
 type AnimFileType = {
   file: string;
+  imageData: string; // Randi's
 };
 
 const Dance = {
@@ -131,72 +235,95 @@ type AudioType = typeof Audio[keyof typeof Audio];
 const audioFiles: Record<AudioType, AnimFileType> = {
   [Audio.Bawhoop]: {
     file: "FX_Bawhoop.mp3",
+    imageData: "",
   },
   [Audio.Bleep]: {
     file: "FX_Bleep.mp3",
+    imageData: "",
   },
   [Audio.Blip]: {
     file: "FX_Blip.mp3",
+    imageData: "",
   },
   [Audio.Bloop]: {
     file: "FX_Bloop.mp3",
+    imageData: "",
   },
   [Audio.BootUp]: {
     file: "FX_BootUp.mp3",
+    imageData: "",
   },
   [Audio.Disgusted_01]: {
     file: "FX_Disgusted_01.mp3",
+    imageData: "",
   },
   [Audio.Disgusted_02]: {
     file: "FX_Disgusted_02.mp3",
+    imageData: "",
   },
   [Audio.Disgusted_03]: {
     file: "FX_Disgusted_03.mp3",
+    imageData: "",
   },
   [Audio.DoYouWantToPlay]: {
     file: "FX_DoYouWantToPlay_01.mp3",
+    imageData: "",
   },
   [Audio.FillingUp]: {
     file: "FX_FillingUp_01.mp3",
+    imageData: "",
   },
   [Audio.GoodJob]: {
     file: "FX_GoodJob_01.mp3",
+    imageData: "",
   },
   [Audio.Holyhappiness]: {
     file: "FX_Holyhappiness.mp3",
+    imageData: "",
   },
   [Audio.ImBroken]: {
     file: "FX_ImBroken_01.mp3",
+    imageData: "",
   },
   [Audio.PeekABoo]: {
     file: "FX_PeekABoo_01.mp3",
+    imageData: "",
   },
   [Audio.Whistle]: {
     file: "FX_Whistle.mp3",
+    imageData: "",
   },
   [Audio.CheckmarkButton]: {
     file: "SFX_Global_CheckmarkButton.m4a",
+    imageData: "",
   },
   [Audio.TurnTakingOff]: {
     file: "SFX_Global_TurnTakingOff.m4a",
+    imageData: "",
   },
   [Audio.TurnTakingOn]: {
     file: "SFX_Global_TurnTakingOn.m4a",
+    imageData: "",
   },
   [Audio.Aww]: {
     file: "SSA_aww.m4a",
+    imageData: "",
   },
   [Audio.Confirm]: {
     file: "SSA_confirm.m4a",
+    imageData: "",
   },
   [Audio.Disappointed]: {
     file: "SSA_disappointed.m4a",
+    imageData: "",
   },
   [Audio.Hello]: {
     file: "SSA_hello.wav",
+    imageData: "",
   },
   [Audio.Belly_Dance_00]: {
     file: "music/music_belly_dance_00.m4a",
+    imageData: "",
   }
 
 }
@@ -205,60 +332,79 @@ const audioFiles: Record<AudioType, AnimFileType> = {
 const danceFiles: Record<DanceType, AnimFileType> = {
   [Dance.BackStep]: {
     file: "Dances/Back_Stepper_01_01.keys",
+    imageData: "",
   },
   [Dance.Carlton]: {
     file: "Dances/Carlton_01_01.keys",
+    imageData: "",
   },
   [Dance.Celebrate]: {
     file: "Dances/Celebrate_01.keys",
+    imageData: "",
   },
   [Dance.Clockworker]: {
     file: "Dances/Clockworker_01_01.keys",
+    imageData: "",
   },
   [Dance.Doughkneader]: {
     file: "Dances/Doughkneader_01_01.keys",
+    imageData: "",
   },
   [Dance.Footstomper]: {
     file: "Dances/Footstomper_01_01.keys",
+    imageData: "",
   },
   [Dance.HappyDance]: {
     file: "Dances/Happy_Lucky_01_01.keys",
+    imageData: "",
   },
   [Dance.Headbanger]: {
     file: "Dances/Headbanger_01_01.keys",
+    imageData: "",
   },
   [Dance.Headdipper]: {
     file: "Dances/Headdipper_01_01.keys",
+    imageData: "",
   },
   [Dance.Pigeon]: {
     file: "Dances/Pigeon_01_01.keys",
+    imageData: "",
   },
   [Dance.SlowDance]: {
     file: "Dances/Prom_Night_01_01.keys",
+    imageData: "",
   },
   [Dance.RobotDance]: {
     file: "Dances/Robotic_01_01.keys",
+    imageData: "",
   },
   [Dance.RockingChair]: {
     file: "Dances/Rocking_Chair_01.keys",
+    imageData: "",
   },
   [Dance.Roxbury]: {
     file: "Dances/Roxbury_01_01.keys",
+    imageData: "",
   },
   [Dance.Samba]: {
     file: "Dances/Samba_01_01.keys",
+    imageData: "",
   },
   [Dance.Seaweed]: {
     file: "Dances/Seaweed_01_01.keys",
+    imageData: "",
   },
   [Dance.Slideshow]: {
     file: "Dances/SlideshowDance_01_01.keys",
+    imageData: "",
   },
   [Dance.Waltz]: {
     file: "Dances/Waltz_01_01.keys",
+    imageData: "",
   },
   [Dance.Disco]: {
     file: "Dances/dance_disco_00.keys",
+    imageData: "",
   },
 };
 
@@ -283,45 +429,59 @@ export type EmotionType = typeof Emotion[keyof typeof Emotion];
 const emotionFiles: Record<EmotionType, AnimFileType> = {
   [Emotion.Embarassed]: {
     file: "Misc/embarassed_01_02.keys",
+    imageData: "",
   },
   [Emotion.Frustrated]: {
     file: "Misc/Frustrated_01_04.keys",
+    imageData: "",
   },
   [Emotion.Laugh]: {
     file: "Misc/Laughter_01_03.keys",
+    imageData: "",
   },
   [Emotion.Sad]: {
     file: "Misc/Sad_03.keys",
+    imageData: "",
   },
   [Emotion.Thinking]: {
     file: "Misc/thinking_08.keys",
+    imageData: "",
   },
   [Emotion.Happy]: {
     file: "Misc/Eye_to_Happy_02.keys",
+    imageData: "",
   },
   [Emotion.SadEyes]: {
     file: "Misc/Eye_Sad_03_02.keys",
+    imageData: "",
   },
   [Emotion.Interested]: {
     file: "Misc/interested_01.keys",
+    imageData: "",
   },
   [Emotion.Curious]: {
     file: "Misc/Question_01_02.keys",
+    imageData: "",
   },
   [Emotion.No]: {
     file: "Misc/no_4.keys",
+    imageData: "",
   },
   [Emotion.Yes]: {
     file: "Misc/yep_02.keys",
+    imageData: "",
   },
   [Emotion.Puzzled]: {
     file: "Misc/puzzled_01_02.keys",
+    imageData: "",
   },
   [Emotion.Relieved]: {
     file: "Misc/relieved_01.keys",
+    imageData: "",
   },
   [Emotion.Success]: {
     file: "Misc/success_02.keys",
+    imageData: "",
   },
 };
 
@@ -349,54 +509,71 @@ export type IconType = typeof Icon[keyof typeof Icon];
 const iconFiles: Record<IconType, AnimFileType> = {
   [Icon.Airplane]: {
     file: "Emoji/Emoji_Airplane_01_01.keys",
+    imageData: jiboEyeAirplane,
   },
   [Icon.Apple]: {
     file: "Emoji/Emoji_AppleRed_01_01.keys",
+    imageData: jiboEyeApple,
   },
   [Icon.Art]: {
     file: "Emoji/Emoji_Art_01_01.keys",
+    imageData: jiboEyeArt,
   },
   [Icon.Bowling]: {
     file: "Emoji/Emoji_Bowling.keys",
+    imageData: jiboEyeBowling,
   },
   [Icon.Checkmark]: {
     file: "Emoji/Emoji_Checkmark_01_01.keys",
+    imageData: jiboEyeCheckmark,
   },
   [Icon.ExclamationPoint]: {
     file: "Emoji/Emoji_ExclamationYellow.keys",
+    imageData: jiboEyeExclamation,
   },
   [Icon.Football]: {
     file: "Emoji/Emoji_Football_01_01.keys",
+    imageData: jiboEyeFootball,
   },
   [Icon.Heart]: {
     file: "Emoji/Emoji_HeartArrow_01_01.keys",
+    imageData: jiboEyeHeart,
   },
   [Icon.Magic]: {
     file: "Emoji/Emoji_Magic_01_02.keys",
+    imageData: jiboEyeMagic,
   },
   [Icon.Ocean]: {
     file: "Emoji/Emoji_Ocean_01_01.keys",
+    imageData: jiboEyeOcean,
   },
   [Icon.Penguin]: {
     file: "Emoji/Emoji_Penguin_01_01.keys",
+    imageData: jiboEyePenguin,
   },
   [Icon.Rainbow]: {
     file: "Emoji/Emoji_Rainbow_01_01.keys",
+    imageData: jiboEyeRainbow,
   },
   [Icon.Robot]: {
     file: "Emoji/Emoji_Robot_01_01.keys",
+    imageData: jiboEyeRobot,
   },
   [Icon.Rocket]: {
     file: "Emoji/Emoji_Rocket_01_01.keys",
+    imageData: jiboEyeRocket,
   },
   [Icon.Snowflake]: {
     file: "Emoji/Emoji_Snowflake_01_01.keys",
+    imageData: jiboEyeSnowflake,
   },
   [Icon.Taco]: {
     file: "Emoji/Emoji_Taco_01_01.keys",
+    imageData: jiboEyeTaco,
   },
   [Icon.VideoGame]: {
     file: "Emoji/Emoji_VideoGame_01_01.keys",
+    imageData: jiboEyeVideoGame,
   },
 };
 
@@ -408,7 +585,7 @@ type Details = {
 };
 
 type Blocks = {
-  JiboButton: () => void;
+  JiboButton: () => void; // new jibo's name modal
   JiboTTS: (text: string) => void;
   JiboAsk: (text: string) => void;
   JiboListen: () => any;
@@ -423,6 +600,8 @@ type Blocks = {
   JiboEnd: () => void;
 };
 
+/* JiboAction/JiboAsrCommand/JiboAsrResult/defaultFlag 
+just to know the structure - not used */
 var JiboAction = {
   anim_transition: 0,
   attention_mode: 1,
@@ -466,8 +645,13 @@ var defaultFlag = {
 };
 
 var jibo_event = {
-  // readyForNext: true,
+  tts_text: "Hello there. I am ready for you to program me.",
   msg_type: "",
+  do_tts: true,
+  do_lookat: false,
+  do_motion: false,
+  volume: 60,
+  // readyForNext: true,
   // anim_transition: 0,
   // attention_mode: 1,
   // audio_filename: "",
@@ -488,7 +672,7 @@ var jibo_event = {
   // volume: 0,
 };
 
-// tasneem new - queue sata structure
+// tasneem new - queue data structure
 class FirebaseQueue {
   private queue: any[] = [];
   private isProcessing: boolean = false;
@@ -515,7 +699,7 @@ class FirebaseQueue {
     this.isProcessing = false;
   }
 
-  //////////////////////////////// pushToFirebase() (or setJiboMsg()) function WITHOUT FLAG 
+  //////////////////////////////// KEEP -- pushToFirebase() (or setJiboMsg()) function WITHOUT FLAG 
   /* 
     async pushToFirebase(data: any) {
     return new Promise((resolve, reject) => {
@@ -545,7 +729,7 @@ class FirebaseQueue {
   ////////////////////////////////
 
 
-  //////////////////////////////// pushToFirebase() (or setJiboMsg()) function WITH FLAG
+  //////////////////////////////// KEEP -- pushToFirebase() (or setJiboMsg()) function WITH FLAG
   async pushToFirebase(data: any) {
     return new Promise((resolve, reject) => {
       if (jiboName != "") {
@@ -920,10 +1104,12 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         },
         text: (text: string) => `say ${text}`,
         operation: (text: string) =>
-          // (async () => {
-          //   await self.jiboTTSFn(text)
-          // })(),
-          self.jiboTTSFn(text),
+          async (text: string, { target }: BlockUtility) => // Randi's
+          {
+            await this.virtualJiboSayFn(text, target);
+            await this.jiboTTSFn(text);
+            // self.jiboTTSFn(text), // old
+          }
       }),
       JiboAsk: (self: Scratch3Jibo) => ({
         type: BlockType.Command,
@@ -932,20 +1118,17 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           defaultValue: "How are you?",
         },
         text: (text: string) => `ask ${text} and wait`,
-        operation: (text: string) =>
-          // (async () => {
-          //   await self.jiboAskFn(text)
-          // })(),
-          self.jiboAskFn(text),
+        operation: (text: string) => async (text: string, { target }: BlockUtility) => // Randi's
+        {
+          this.virtualJiboSayFn(text, target);
+          await this.jiboAskFn(text);
+          // self.jiboAskFn(text), // old
+        }
       }),
       JiboListen: (self: Scratch3Jibo) => ({
         type: BlockType.Reporter,
         text: `answer`,
-        operation: () =>
-          // (async () => {
-          //   await self.jiboListenFn()
-          // })(),
-          self.jiboListenFn(),
+        operation: () => self.jiboListenFn(),
       }),
       // JiboState: () => ({ // helpful for debugging
       //     type:BlockType.Command,
@@ -960,7 +1143,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         },
         text: (dname) => `play ${dname} dance`,
         operation: async (dance: DanceType) => {
-          console.log("line 610 to know the dance file: " + dance);
+          console.log("The dance file: " + dance);
           console.log(JSON.stringify(danceFiles[dance]));
           const akey = danceFiles[dance].file;
           await self.jiboAnimFn(akey);
@@ -1008,7 +1191,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         }),
         text: (aname) => `play ${aname} emotion`,
         operation: async (anim: EmotionType) => {
-          console.log("line 610 to know the dance file: " + anim);
+          console.log("The animation file: " + anim);
           const akey = emotionFiles[anim].file;
           await self.jiboAnimFn(akey);
         },
@@ -1039,13 +1222,12 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         }),
         text: (cname) => `set LED ring to ${cname}`,
         operation: (color: ColorType) =>
-          (async () => {
-            await self.jiboLEDFn(color)
-          })(),
-        // {
-        //   console.log("line 654 to know the color: " + color);
-        //   self.jiboLEDFn(color);
-        // },
+          async (color: ColorType, { target }: BlockUtility) => // Randi's
+          {
+            this.virtualJiboLEDFn(color, target);
+            this.jiboLEDFn(color);
+          },
+        // self.jiboLEDFn(color), // old
       }),
       JiboLook: (self: Scratch3Jibo) => ({
         type: BlockType.Command,
@@ -1166,6 +1348,52 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     this.JiboASR_receive();
     return this.connected;
   }
+
+  ////////////////////////// Randi's changes
+  getJiboBodyTarget(currentTarget: Target) {
+    // find the jibo-body sprite to make speak
+    let spriteTarget;
+    if (currentTarget.getName().startsWith(JIBO_BODY)) {
+      // first see if the current target is a Jibo body
+      // if so, assume this is the one we want to edit
+      spriteTarget = currentTarget;
+    } else if (currentTarget.getName().startsWith(JIBO_EYE)) {
+      // next see if this is a Jibo eye, and select the corresponding jibo body (same suffix)
+      let jiboEyeName = currentTarget.getName();
+      let suffix = jiboEyeName.substring(jiboEyeName.indexOf(JIBO_EYE) + JIBO_EYE.length);
+      let matches = this.runtime.targets.filter((target) => target.getName().startsWith(JIBO_BODY + suffix));
+      if (matches.length > 0) spriteTarget = matches[0];
+    } else {
+      // otherwise, pick the first Jibo body you see
+      let matches = this.runtime.targets.filter((target) => target.getName().startsWith(JIBO_BODY));
+      if (matches.length > 0) spriteTarget = matches[0];
+    }
+    return spriteTarget;
+  }
+
+  async virtualJiboSayFn(text: string, currentTarget: Target) {
+    let spriteTarget = this.getJiboBodyTarget(currentTarget);
+    if (spriteTarget) {
+      // emit the say function
+      this.runtime.emit('SAY', spriteTarget, 'say', text);
+      // wait for a bit of time
+      let wordCount = text.match(/\S+/g).length;
+      await new Promise((r) => setTimeout(r, 500 * wordCount));
+      this.runtime.emit('SAY', spriteTarget, 'say', '');
+    } else {
+      console.log("No Jibo body found");
+    }
+  }
+  stageAnswerReceive() {
+    return new Promise((resolve, reject) => {
+      this.runtime.once('ANSWER', (answer) => {
+        // TODO this introduces a bug with the sensing blocks, improve if possible
+        this.asr_out = answer;
+        resolve(0);
+      });
+    });
+  }
+  ////////////////////////// Randi's changes - END
 
   // TODO remove the self variable here
   async jiboTTSFn(text: string) {
@@ -1339,7 +1567,61 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
   }
 
-  jiboLEDFn(color: string) { // I added async
+  ////////////////////////// Randi's changes
+  setSpriteCostume(target: Target, name: string, imageDataURI: string) {
+    // try to set the costume of the target by name
+    let foundCostume = this.setCostumeByName(target, name);
+
+    if (!foundCostume) {
+      console.log("Did not find the costume we wanted. Adding new one");
+      // if not, add and set the costume
+      this.addCostumeBitmap(target, imageDataURI, "add and set", name);
+    }
+  }
+  /* update the appearance of virtual Jibo's LED*/
+  virtualJiboLEDFn(color: string, currentTarget: Target) {
+    // find the jibo-body sprite to edit
+    let spriteTarget;
+    if (currentTarget.getName().startsWith(JIBO_BODY)) {
+      // first see if the current target is a Jibo body
+      // if so, assume this is the one we want to edit
+      spriteTarget = currentTarget;
+    } else if (currentTarget.getName().startsWith(JIBO_EYE)) {
+      // next see if this is a Jibo eye, and select the corresponding jibo body (same suffix)
+      let jiboEyeName = currentTarget.getName();
+      let suffix = jiboEyeName.substring(jiboEyeName.indexOf(JIBO_EYE) + JIBO_EYE.length);
+      let matches = this.runtime.targets.filter((target) => target.getName().startsWith(JIBO_BODY + suffix));
+      if (matches.length > 0) spriteTarget = matches[0];
+    } else {
+      // otherwise, pick the first Jibo body you see
+      let matches = this.runtime.targets.filter((target) => target.getName().startsWith(JIBO_BODY));
+      if (matches.length > 0) spriteTarget = matches[0];
+    }
+
+    if (spriteTarget) {
+      // change the Sprite costume
+      if (color == "random") {
+        const randomColorIdx = Math.floor(
+          // exclude random and off
+          Math.random() * (Object.keys(colorDef).length - 2)
+        );
+        color = Object.keys(colorDef)[randomColorIdx];
+      }
+
+      let imageDataURI = colorDef[color].imageData;
+      this.setSpriteCostume(spriteTarget, color, imageDataURI);
+
+      spriteTarget.setXY(DEFAULT_JIBO_BODY.x, DEFAULT_JIBO_BODY.y);
+      spriteTarget.setDirection(DEFAULT_JIBO_BODY.direction);
+      spriteTarget.setSize(DEFAULT_JIBO_BODY.size);
+
+    } else {
+      console.log("No Jibo body found");
+    }
+  }
+  ////////////////////////// Randi's changes - END
+
+  jiboLEDFn(color: string) {
     console.dir("The color from inside JiboLEDFn function is: " + color);
     let ledName = colorDef[color].name;
     let ledValue = colorDef[color].value;
@@ -1426,6 +1708,46 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
     this.JiboPublish(jibo_msg);
   }
+
+  ////////////////////////// Randi's changes - IMPORTS
+  /* update the appearance of virtual Jibo's eye */
+  virtualJiboAnimFn(animation: string, commandType: string, currentTarget: Target) {
+    // find the jibo-body sprite to edit
+    let spriteTarget;
+    if (currentTarget.getName().startsWith(JIBO_EYE)) {
+      // first see if the current target is a Jibo eye
+      // if so, assume this is the one we want to edit
+      spriteTarget = currentTarget;
+    } else if (currentTarget.getName().startsWith(JIBO_BODY)) {
+      // next see if this is a Jibo body, and select the corresponding jibo eye (same suffix)
+      let jiboBodyName = currentTarget.getName();
+      let suffix = jiboBodyName.substring(jiboBodyName.indexOf(JIBO_BODY) + JIBO_BODY.length);
+      let matches = this.runtime.targets.filter((target) => target.getName().startsWith(JIBO_EYE + suffix));
+      if (matches.length > 0) spriteTarget = matches[0];
+    } else {
+      // otherwise, pick the first Jibo eye you see
+      let matches = this.runtime.targets.filter((target) => target.getName().startsWith(JIBO_EYE));
+      if (matches.length > 0) spriteTarget = matches[0];
+    }
+
+    if (spriteTarget) {
+      // change the Sprite costume 
+      let imageDataURI;
+      if (commandType == "dance") imageDataURI = danceFiles[animation].imageData;
+      else if (commandType == "emotion") imageDataURI = emotionFiles[animation].imageData;
+      else if (commandType == "icon") imageDataURI = iconFiles[animation].imageData;
+
+      // TODO do transition animation to change sprite icon
+      this.setSpriteCostume(spriteTarget, animation, imageDataURI);
+      spriteTarget.setXY(DEFAULT_JIBO_EYE.x, DEFAULT_JIBO_EYE.y);
+      spriteTarget.setDirection(DEFAULT_JIBO_EYE.direction);
+      spriteTarget.setSize(DEFAULT_JIBO_EYE.size);
+
+    } else {
+      console.log("No Jibo eye found");
+    }
+  }
+  ////////////////////////// Randi's changes - END
 
   async jiboAnimFn(animation_key: string) {
     console.log("the animation file is: " + animation_key); // debug statement
