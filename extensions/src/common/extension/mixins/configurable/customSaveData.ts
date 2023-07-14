@@ -90,7 +90,7 @@ export default function mixin<T extends MinimalExtensionConstructor>(Ctor: T) {
       if (!saveData) return;
       saveDataHandler?.hooks.onLoad(this, saveData);
 
-      if (this.supports("customArguments")) this.getOrCreateCustomArgumentManager().loadFrom(saveData);
+      if (this.supports("customArguments")) this.customArgumentManager.loadFrom(saveData);
     }
   }
   return ExtensionWithCustomSaveDataSupport;

@@ -47,7 +47,7 @@ If you're solely interested in adding custom arguments to your extension's block
 
 This section documents how the code all works together to enable this functionality.  
 
-To add custom arguments, we unfortunately need to make modifications to each package involved in the RAISE playground (i.e. `extensions`, `packages/scratch-vm`, and `packages/scratch-gui`).
+To add custom arguments, we unfortunately need to make modifications to multiple packages involved in the RAISE playground (`packages/scratch-gui` in addition to `extensions`).
 
 > This is _unfortunate_ as we aim to keep the Scratch-based packages as similiar to their original sources as possible. This way we can more easily incorporate changes and improvements released by the Scratch team. Thus, even though we are modifying scratch packages, we try keep our changes as small and surgical as possible.
 
@@ -71,13 +71,17 @@ This is the perfect setup for our solution, as:
 
 So at a high-level, this is how our implementation works:
 - Custom arguments are implemented "under the hood" as arguments with a dynamic menu
-- When a developer specifies a custom argument, they provide a svelte file (specifically the name of it) that will be used as the custom argument's UI
+- When a developer specifies a custom argument, they provide a svelte component that will be used as the custom argument's UI
 - The extension framework takes care of providing the `options` function for the internal dynamic menu of the argument, which is responsible for rendering the custom argument's UI to the menu's dropdown when it is clicked on by the user
 
 To get a little more into the details...
 
-Block argument menu dropdown's are controlled by Blockly's [FieldDropdown](https://developers.google.com/blockly/reference/js/blockly.fielddropdown_class) class. A specific `FieldDropdown` class, tied to a specific block argument's **_dynamic_** menu, will invoke the menu's `options` functions at various points during the _lifecycle_ of the field dropdown (like when it is initialized and when it is opened by the user).
+Block argument menu dropdown's are controlled by Blockly's [FieldDropdown](https://developers.google.com/blockly/reference/js/blockly.fielddropdown_class) class. A specific `FieldDropdown` class, tied to a specific block argument's **_dynamic_** menu, will invoke the menu's `options` function at various points during the _lifecycle_ of the field dropdown (like when it is initialized and when it is opened by the user).
 
-We do this by overriding a few key functions on Blockly's [FieldDropdown](https://developers.google.com/blockly/reference/js/blockly.fielddropdown_class) class. 
+Therefore, we override a few key functions on Blockly's [FieldDropdown](https://developers.google.com/blockly/reference/js/blockly.fielddropdown_class) class (implemented in [packages/scratch-gui/src/lib/prg/customBlockOverrides.js]()) in order to collect the information about the dropdown before the dynamic `options` function is invoked. We can then use this information inside of our `options` function, while all other menus will be unnaffected.
 
-These changes are implemented in [packages/scratch-gui/src/lib/prg/customBlockOverrides.js]().
+> Overriding this functionality does ahead overhead to every single dropdown menu, but this _cost_ should be negligible. 
+
+From there, the extension framework handles the rest:
+- The `"customArguments"` add-on handles setting up the dynamic `options` function that maps custom argument inputs from the user to menu options that Scratch can handle (as well as rendering the custom argument UI when the dropdown is first opened)
+- The 

@@ -3,9 +3,10 @@ export const registerButtonCallbackEvent = "REGISTER_BUTTON_CALLBACK_FROM_EXTENS
 export const FrameworkID = "ExtensionFramework";
 export const AuxiliaryExtensionInfo = "AuxiliaryExtensionInfo";
 
-export const customArgumentFlag = "internal_IsCustomArgument";
-export const customArgumentMethod = "tryProcessMenuItemAsCustomArgumentHack";
-
+/**
+ * Literal values that control the interaction between the extension framework and the Scratch GUI,
+ * specifically how dropdowns (tied to dynamic menus) are co-opted to support custom block arguments.
+ */
 export const guiDropdownInterop = {
     runtimeKey: "prgDropdownCustomization",
     runtimeProperties: {

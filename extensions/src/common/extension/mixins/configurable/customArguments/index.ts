@@ -16,12 +16,15 @@ import { ExtensionBase } from "$common/extension/ExtensionBase";
  */
 export default function mixin<T extends MinimalExtensionConstructor>(Ctor: T) {
   abstract class ExtensionWithCustomArgumentSupport extends withDependencies(Ctor, customSaveData) {
+    private argumentManager: CustomArgumentManager = null;
+
     /**
-     * Create a custom argument for one of this block's arguments
+     * Create a custom argument for one of this block's argument. Within the argument object, you must provide:
+     * - `component`: The svelte component to render (import it directly in your file)
+     * - `initial`: The arguments default value (you must provide both the value and the text representation)
      */
     protected makeCustomArgument = <T, TExtension extends ExtensionBase>({ component, initial, acceptReportersHandler: handler }: CustomArgumentRecipe<T, TExtension>): Argument<T> => {
-      this.argumentManager ??= new CustomArgumentManager();
-      const id = this.argumentManager.add(initial);
+      const id = this.customArgumentManager.add(initial);
       const getItems = () => this.processMenuForCustomArgument(id, component);
       return {
         type: ArgumentType.Custom,
@@ -30,24 +33,11 @@ export default function mixin<T extends MinimalExtensionConstructor>(Ctor: T) {
       } as Argument<T>
     }
 
-    protected argumentManager: CustomArgumentManager = null;
-
     public get customArgumentManager(): CustomArgumentManager {
+      this.argumentManager ??= new CustomArgumentManager();
       return this.argumentManager
     }
 
-    public getOrCreateCustomArgumentManager(): CustomArgumentManager {
-      this.argumentManager ??= new CustomArgumentManager();
-      return this.argumentManager;
-    }
-
-    /**
-     * Utilized externally by scratch-vm to process custom arguments
-     * @param runtime NOTE: once we switch to V2, we can remove this and instead use the extension's runtime
-     * @param param1 
-     * @param getComponent 
-     * @returns 
-     */
     private processMenuForCustomArgument(initialID: ArgumentID, Component: CustomArgumentComponent): (ArgumentEntry<any>)[] {
       const { runtime, argumentManager } = this;
       const interop = (runtime as RuntimeWithCustomArgumentSupport)[guiDropdownInterop.runtimeKey];
@@ -55,6 +45,9 @@ export default function mixin<T extends MinimalExtensionConstructor>(Ctor: T) {
       const { state, update, entry } = interop
 
       switch (state) {
+        case "init":
+        case "close":
+          return argumentManager.entries;
         case "open":
           const id = entry?.value ?? initialID;
           const current = argumentManager.getEntry(id);
@@ -63,9 +56,6 @@ export default function mixin<T extends MinimalExtensionConstructor>(Ctor: T) {
           return [{ text: current.text, value: id }];
         case "update":
           return [argumentManager.getCurrent()];
-        case "init":
-        case "close":
-          return argumentManager.entries;
       }
     };
 

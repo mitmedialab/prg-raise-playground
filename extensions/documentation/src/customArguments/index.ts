@@ -4,6 +4,9 @@ import { MyCustomArgument, details } from "./extension";
 
 export const x = codeSnippet();
 
+/** Import our svelte component (reference below) */
+import MyArgUI from "./MyArgUI.svelte";
+
 export default class ExtensionWithCustomArgument extends extension(details, "customArguments") {
   init = notRelevantToExample;
 
@@ -14,7 +17,7 @@ export default class ExtensionWithCustomArgument extends extension(details, "cus
     /** Invoke the member function `makeCustomArgument` of `self` parameter 
      * (which is an instance of our `ExtensionWithCustomArgument` class).
      * The `makeCustomArgument` function accepts an object with the following fields:
-     * - component: The name of the `.svelte` file that should be displayed when this argument is clicked on.
+     * - component: The `svelte` component that should be displayed when this argument is clicked on.
      * - initial: The value that the argument should default to. NOTE that this item has both a 'text' and 'value' field. 
      *  - This is because the value of the custom argument must be able to be represented as a string
      *    and displayed directly in the block once the UI closes.
@@ -22,7 +25,7 @@ export default class ExtensionWithCustomArgument extends extension(details, "cus
      *    representation of that value.
      */
     arg: self.makeCustomArgument({
-      component: "MyArgUI",
+      component: MyArgUI,
       initial: { value: { a: 10, b: "Hello world", c: false }, text: "[10, Hello world, false]", }
     }),
   }))

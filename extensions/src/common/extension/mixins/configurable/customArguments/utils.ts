@@ -1,6 +1,6 @@
 import { ExtensionBase } from "$common/extension/ExtensionBase";
-import { customArgumentFlag, guiDropdownInterop, } from "$common/globals";
-import { Environment, Expand, ExpandRecursively, MenuItem, SvelteComponentConstructor, ValueOf } from "$common/types";
+import { guiDropdownInterop, } from "$common/globals";
+import { Environment, ExpandRecursively, SvelteComponentConstructor, ValueOf } from "$common/types";
 import { untilObject } from "$common/utils";
 
 export type ArgumentEntry<T> = { text: string, value: T };
