@@ -1359,11 +1359,15 @@ Then, we modify the UI (Svelte) component we created earlier to match our block 
 
 Error! This snippet couldn't be located. Please contact the repo maintainer.
 
+
 ### (Advanced) Architecture
 
 If you're solely interested in adding custom arguments to your extension's blocks, you can skip the following section -- all you need is the above information. 
 
-This section documents how the code all works together to enable this functionality.  
+<details>
+<summary>
+You can open this section to learn how the code all works together to enable this functionality.  
+</summary>
 
 To add custom arguments, we unfortunately need to make modifications to multiple packages involved in the RAISE playground (`packages/scratch-gui` in addition to `extensions`).
 
@@ -1402,7 +1406,10 @@ Therefore, we override a few key functions on Blockly's [FieldDropdown](https://
 
 From there, the extension framework handles the rest:
 - The `"customArguments"` add-on handles setting up the dynamic `options` function that maps custom argument inputs from the user to menu options that Scratch can handle (as well as rendering the custom argument UI when the dropdown is first opened)
-- The 
+- Before arguments are passed to their corresponding block methods, the framework checks to see if the value is a custom argument idenitifier, and if so the appropriate _value_ is retrieved and passed to the method instead
+</details>
+
+
 
 ## Extension Menu Tags / Categories
 
