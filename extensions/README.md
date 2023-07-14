@@ -1325,7 +1325,7 @@ export default class ExtensionWithCustomArgument extends extension(details, "cus
     type: "command",
     text: (arg) => `Set custom argument ${arg}`,
 
-    /** Invoke the member funtcion `makeCustomArgument` of `self` parameter 
+    /** Invoke the member function `makeCustomArgument` of `self` parameter 
      * (which is an instance of our `ExtensionWithCustomArgument` class).
      * The `makeCustomArgument` function accepts an object with the following fields:
      * - component: The name of the `.svelte` file that should be displayed when this argument is clicked on.
@@ -1417,19 +1417,40 @@ Then, we modify the UI (Svelte) component we created earlier to match our block 
 
 ### (Advanced) Architecture
 
-If you're solely interested in adding custom arguments to your extension's blocks, you can skip the following section -- all you need is the above sections. 
+If you're solely interested in adding custom arguments to your extension's blocks, you can skip the following section -- all you need is the above information. 
 
-This section documents / diagrams how the code all works together to enable this functionality.  
+This section documents how the code all works together to enable this functionality.  
 
-To add custom arguments, we unfortunately need to make modifications to each package involved in the RAISE playground (i.e. `extensions`, `packages/scratch-vm`, and `packages/scratch-gui`). 
+To add custom arguments, we unfortunately need to make modifications to each package involved in the RAISE playground (i.e. `extensions`, `packages/scratch-vm`, and `packages/scratch-gui`).
 
-At the heart of this implementation is co-opting the usage of block argument's (dynamic) menus to render a custom UI (instead of the usual list of menu options).
+> This is _unfortunate_ as we aim to keep the Scratch-based packages as similiar to their original sources as possible. This way we can more easily incorporate changes and improvements released by the Scratch team. Thus, even though we are modifying scratch packages, we try keep our changes as small and surgical as possible.
 
-This works (at a high level) by recognizing the following few things:
-- Block argument menu dropdown's are controlled by Blockly's [FieldDropdown](https://developers.google.com/blockly/reference/js/blockly.fielddropdown_class) class.
-- A specific `FieldDropdown` class, tied to a specific block argument's **_dynamic_** menu, will invoke the method that populates that menu's options at various points during the _lifecycle_ of the field drodpwon
-  - NOTE: The method that populates the menu's options are implemented by you in the 
-  - By _lifecycle_ I mean the different points of interaction with the dynamic me
+One aspect that makes implementing this functionality tricky is that the UI of blocks is controlled by [scratch-blocks](https://github.com/scratchfoundation/scratch-blocks), which is a package not included in our repository<sup>1</sup>, so making modifications to it (perhaps at runtime) would be very difficult to maintain. Therefore, we opt for a solution that requires no changes to `scratch-blocks`.
+
+><sup>1</sup> `scratch-blocks` used to be included in this repo and linked using [lerna](https://lerna.js.org/), however we had no local changes to it and thus it made more sense to rely on the [npm package](https://www.npmjs.com/package/scratch-blocks) instead. Re-adding the package to accomplish this functionality was considered, but ultimately deemed undesirable as we want to avoid modifications to Scratch sources (see above) and it appeared very difficult to create argument UI in `scratch-blocks, especially for abitrary data types.
+
+At the heart of this implementation is co-opting the usage of block argument's dynamic menus. When an argument with a menu is clicked on, it will render the list of menu options to a dropdown. When that argument's menu is **_dynamic_**, it will receive the list of options to display by invoking a function. 
+
+> In the extension framework, an argument with a dynamic menu looks like:
+>```ts
+>arg: {
+>  type: "number",
+>  options: () => ["option A", "option B"] // for example
+>}
+>```
+
+This is the perfect setup for our solution, as:
+- The dropdown that is opened on a menu click offers a perfect surface for rendering a custom argument UI to
+- The invocation of a dynamic menu's function enables us to know when a dropdown is opened, and thus when we should render the custom argument's UI
+
+So at a high-level, this is how our implementation works:
+- Custom arguments are implemented "under the hood" as arguments with a dynamic menu
+- When a developer specifies a custom argument, they provide a svelte file (specifically the name of it) that will be used as the custom argument's UI
+- The extension framework takes care of providing the `options` function for the internal dynamic menu of the argument, which is responsible for rendering the custom argument's UI to the menu's dropdown when it is clicked on by the user
+
+To get a little more into the details...
+
+Block argument menu dropdown's are controlled by Blockly's [FieldDropdown](https://developers.google.com/blockly/reference/js/blockly.fielddropdown_class) class. A specific `FieldDropdown` class, tied to a specific block argument's **_dynamic_** menu, will invoke the menu's `options` functions at various points during the _lifecycle_ of the field dropdown (like when it is initialized and when it is opened by the user).
 
 We do this by overriding a few key functions on Blockly's [FieldDropdown](https://developers.google.com/blockly/reference/js/blockly.fielddropdown_class) class. 
 
