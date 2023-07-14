@@ -1,7 +1,7 @@
 import CustomArgumentManager from "$common/extension/mixins/configurable/customArguments/CustomArgumentManager";
 import { ArgumentType } from "$common/types/enums";
 import { guiDropdownInterop } from "$common/globals";
-import { Argument } from "$common/types";
+import { Argument, Expand } from "$common/types";
 import { MinimalExtensionConstructor } from "../../base";
 import { withDependencies } from "../../dependencies";
 import customSaveData from "../customSaveData";
@@ -23,7 +23,7 @@ export default function mixin<T extends MinimalExtensionConstructor>(Ctor: T) {
      * - `component`: The svelte component to render (import it directly in your file)
      * - `initial`: The arguments default value (you must provide both the value and the text representation)
      */
-    protected makeCustomArgument = <T, TExtension extends ExtensionBase>({ component, initial, acceptReportersHandler: handler }: CustomArgumentRecipe<T, TExtension>): Argument<T> => {
+    protected makeCustomArgument = <T, TExtension extends ExtensionBase>({ component, initial, acceptReportersHandler: handler }: Expand<CustomArgumentRecipe<T, TExtension>>): Argument<T> => {
       const id = this.customArgumentManager.add(initial);
       const getItems = () => this.processMenuForCustomArgument(id, component);
       return {
