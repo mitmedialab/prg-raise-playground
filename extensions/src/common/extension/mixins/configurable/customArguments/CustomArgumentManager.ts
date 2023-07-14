@@ -1,57 +1,50 @@
 import { uuidv4 } from "$common/utils";
-import { RuntimeWithCustomArgumentSupport, ArgumentEntry, ArgumentEntrySetter, ArgumentID } from "./utils";
+import { ArgumentEntry, ArgumentEntrySetter, ArgumentID } from "./utils";
+
+const entries: ArgumentEntry<any>[] = [];
 
 export default class CustomArgumentManager {
-  map: Map<string, ArgumentEntry<any>> = new Map();
-  pending: ArgumentID = null;
+  private valueLookup: Map<string, ArgumentEntry<any>> = new Map();
+  private idLookup: Map<string, string> = new Map();
+  private current: ArgumentID = null;
+  private setCurrent(id: ArgumentID) { return (this.current = id) }
 
-  private setPending(id: ArgumentID) { return (this.pending = id) }
-  private clearPending() { this.pending = null }
-
-  private setEntry(entry: ArgumentEntry<any>) {
-    const id = CustomArgumentManager.GetIdentifier();
-    this.map.set(id, entry);
-    return id;
-  }
+  get entries() { return entries }
 
   add<T>(entry: ArgumentEntry<T>): string {
+    const serialized = JSON.stringify(entry);
+    const cached = this.idLookup.get(serialized);
+    if (cached) return cached;
     const id = CustomArgumentManager.GetIdentifier();
-    this.map.set(id, entry);
+    this.valueLookup.set(id, entry);
+    this.idLookup.set(serialized, id);
+    entries.push({ text: entry.text, value: id });
     return id;
   }
 
-  request<T>(update: (id: ArgumentID) => void): ArgumentEntrySetter<T> {
-    this.clearPending();
-    return (entry) => update(this.setPending(this.setEntry(entry)));
+  setEntry<T>(entry: ArgumentEntry<T>) {
+    const serialized = JSON.stringify(entry);
+    return this.idLookup.get(serialized) ?? this.add(entry);
   }
 
-  peek() {
-    const { pending: id } = this;
-    const entry = this.getEntry(id);
-    return { entry, id };
+  request<T>(id: ArgumentID, update: (id: ArgumentID) => void): ArgumentEntrySetter<T> {
+    this.setCurrent(id);
+    return (entry) => update(this.setCurrent(this.setEntry(entry)));
   }
 
-  tryResolve() {
-    if (!this.pending) return null;
-    const state = this.peek();
-    this.clearPending();
-    return state;
+  getCurrent() {
+    const { current: id } = this;
+    return { text: this.getEntry(id).text, value: id };
   }
 
-  getCurrentEntries() {
-    return Array.from(this.map.entries())
-      .filter(([_, entry]) => entry !== null)
-      .map(([id, { text }]) => ({ text, value: id }) as const);
-  }
-
-  getEntry(id: string) { return this.map.get(id) }
+  getEntry(id: string) { return this.valueLookup.get(id) }
 
   static SaveKey = "internal_customArgumentsSaveData" as const;
 
-  requiresSave() { this.map.size > 0 }
+  requiresSave() { this.valueLookup.size > 0 }
 
   saveTo(obj: object) {
-    const entries = Array.from(this.map.entries())
+    const entries = Array.from(this.valueLookup.entries())
       .filter(([_, entry]) => entry !== null)
       .map(([id, entry]) => ({ id, entry }));
     if (entries.length === 0) return;
@@ -60,7 +53,7 @@ export default class CustomArgumentManager {
 
   loadFrom(obj: Record<typeof CustomArgumentManager["SaveKey"], { id: string, entry: ArgumentEntry<any> }[]>) {
     obj[CustomArgumentManager.SaveKey]?.forEach(({ id, entry }) => {
-      this.map.set(id, entry);
+      this.valueLookup.set(id, entry);
     });
   }
 
@@ -77,4 +70,5 @@ export default class CustomArgumentManager {
   static IsIdentifier = (query: string) => query.startsWith(CustomArgumentManager.IdentifierPrefix);
   private static GetIdentifier = () => CustomArgumentManager.IdentifierPrefix + uuidv4();
   private static IdentifierPrefix = "__customArg__";
+  private static DeepEquals
 }

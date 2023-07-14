@@ -1,7 +1,7 @@
 import CustomArgumentManager from "$common/extension/mixins/configurable/customArguments/CustomArgumentManager";
 import { ArgumentType } from "$common/types/enums";
 import { guiDropdownInterop } from "$common/globals";
-import { Argument, MenuItem } from "$common/types";
+import { Argument } from "$common/types";
 import { MinimalExtensionConstructor } from "../../base";
 import { withDependencies } from "../../dependencies";
 import customSaveData from "../customSaveData";
@@ -55,28 +55,18 @@ export default function mixin<T extends MinimalExtensionConstructor>(Ctor: T) {
       const { state, update, entry } = interop
 
       switch (state) {
-        case "init":
-          return argumentManager.getCurrentEntries();
-        case "open": {
+        case "open":
           const id = entry?.value ?? initialID;
           const current = argumentManager.getEntry(id);
-          const setter = argumentManager.request(update);
+          const setter = argumentManager.request(id, update);
           renderToDropdown(Component, { setter, current, extension: this });
           return [{ text: current.text, value: id }];
-        }
-        case "update": {
-          const result = argumentManager.peek();
-          return [{ text: result.entry.text, value: result.id }];
-        }
-        case "close": {
-          const result = argumentManager.tryResolve();
-          return result
-            ? [{ text: result.entry.text, value: result.id }]
-            : argumentManager.getCurrentEntries();
-        }
+        case "update":
+          return [argumentManager.getCurrent()];
+        case "init":
+        case "close":
+          return argumentManager.entries;
       }
-
-      throw new Error("Error during processing -- Context:" + state);
     };
 
   }

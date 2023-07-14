@@ -1,4 +1,4 @@
-import { dropdown } from "../../dist/globals";
+import { guiDropdownInterop } from "../../dist/globals";
 
 /**
  * @param {import("scratch-blocks")} blocks
@@ -9,7 +9,7 @@ export const overridesForCustomArgumentSupport = (blocks, vm) => {
   const { FieldDropdown } = blocks;
   const { fromJson, prototype } = FieldDropdown;
   const { setValue, showEditor_ } = prototype;
-  const { state, runtimeKey, runtimeProperties } = dropdown;
+  const { state, runtimeKey, runtimeProperties } = guiDropdownInterop;
   const { runtime } = vm;
   const shared = (runtime[runtimeKey] = {});
   const { stateKey, entryKey, updateMethodKey } = runtimeProperties;

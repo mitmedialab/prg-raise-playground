@@ -3,7 +3,6 @@ const log = require('../util/log');
 const maybeFormatMessage = require('../util/maybe-format-message');
 const BlockType = require('./block-type');
 const { tryInitExtension, tryGetExtensionConstructorFromBundle, tryGetAuxiliaryObjectFromLoadedBundle } = require('./prg/bundle-loader');
-const { tryResolveMenuItemAsCustomArgument } = require('./prg/custom-arguments');
 
 const tryRetrieveExtensionConstructor = async (extensionId) =>
     await extensionId in builtinExtensions
