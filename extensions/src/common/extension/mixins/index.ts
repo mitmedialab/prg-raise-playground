@@ -11,6 +11,7 @@ import setTransparencyBlock from "./configurable/blocks/setVideoTransparency";
 import toggleVideoBlock from "./configurable/blocks/toggleVideoState";
 import appInventor from "./configurable/appInventor/index";
 import { MinimalExtensionConstructor } from "./base";
+import blockly from "./configurable/blockly";
 
 export type Mixin<T> = (Ctor: MinimalExtensionConstructor) => AbstractConstructor<T>;
 
@@ -24,6 +25,7 @@ export const optionalMixins = {
   legacySupport,
   setTransparencyBlock,
   toggleVideoBlock,
+  blockly,
   appInventor,
   indicators,
 } as const satisfies OptionalMixins satisfies Record<string, Mixin<unknown>>;
@@ -38,6 +40,7 @@ export type OptionalMixins<T extends MinimalExtensionConstructor = MinimalExtens
   legacySupport: typeof legacySupport<T>,
   setTransparencyBlock: typeof setTransparencyBlock<T>,
   toggleVideoBlock: typeof toggleVideoBlock<T>,
+  blockly: typeof blockly<T>,
   appInventor: typeof appInventor<T>,
   indicators: typeof indicators<T>,
 }

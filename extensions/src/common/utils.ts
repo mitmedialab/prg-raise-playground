@@ -204,6 +204,15 @@ export const rgbToHex = (rgb: RGBObject) => {
 }
 
 /**
+ * Hide all elements in the HTML document that have a given class
+ * @param className 
+ */
+export const hideElementsWithClass = (className: string) => {
+  for (const element of document.getElementsByClassName(className))
+    element.setAttribute("style", "display: none;");
+}
+
+/**
  * Create an event (within extension framework code, i.e. `extensions/src`) that can be subscribed to at _bundling time_. 
  * 
  * As a mental short-hand, you can think of this as a macro-esque mechanism.
