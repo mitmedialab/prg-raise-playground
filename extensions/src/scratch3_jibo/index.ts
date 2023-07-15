@@ -1437,7 +1437,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
       do_sound_playback: false,
       do_tts: false,
       do_lookat: false,
-      motion: animation_key.toLowerCase(),
+      motion: animation_key,
     };
 
     // write to frebase
