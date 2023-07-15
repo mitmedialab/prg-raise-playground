@@ -978,7 +978,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           console.log("The audio file: " + audio);
           console.log(JSON.stringify(audioFiles[audio]));
           const audiokey = audioFiles[audio].file;
-          await self.jiboAnimFn(audiokey);
+          await self.jiboAudioFn(audiokey);
         },
       }),
       // new audio block end
@@ -1239,6 +1239,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
       tts_text: text,
       do_lookat: false,
       do_motion: false,
+      do_sound_playback: false,
       volume: parseFloat(this.jbVolume),
     };
 
@@ -1433,9 +1434,38 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
       // readyForNext: false,
       msg_type: "JiboAction",
       do_motion: true,
+      do_sound_playback: false,
       do_tts: false,
       do_lookat: false,
       motion: animation_key.toLowerCase(),
+    };
+
+    // write to frebase
+    queue.addToQueue(jibo_msg);
+    // setJiboMsg(jibo_msg);
+
+    await this.JiboPublish(jibo_msg);
+
+    await this.JiboPublish({ do_anim_transition: true, anim_transition: 0 });
+
+    /* // wait for command to complete
+        return new Promise((resolve) => {
+            this.jiboEvent.once("command.complete", async () => {
+                resolve();
+            });
+        });*/
+  }
+
+  async jiboAudioFn(audio_file: string) {
+    console.log("the audio file is: " + audio_file); // debug statement
+    var jibo_msg = {
+      // readyForNext: false,
+      msg_type: "JiboAction",
+      do_motion: false,
+      do_sound_playback: true,
+      do_tts: false,
+      do_lookat: false,
+      audio_filename: audio_file,
     };
 
     // write to frebase
