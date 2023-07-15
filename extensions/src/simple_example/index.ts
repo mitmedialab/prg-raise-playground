@@ -50,16 +50,26 @@ export default class SimpleTypescript extends extension(details, "ui", "customSa
     text: (msg) => `Indicate and log a ${msg} to the console`,
     arg: { type: ArgumentType.String, options: self.logOptions }
   }))
-  async log(value: string) {
+  log(value: string) {
     console.log(value);
-    for (const type of ["success", "warning", "error"] as const) {
-      const position = "category";
-      const msg = `This is a ${type} indicator for ${value}!`;
-      const [{ close }] = await Promise.all([
-        this.indicate({ position, type, msg }), untilTimePassed(400)
-      ]);
-      close();
-    }
+  }
+
+  @block({
+    type: "command",
+    args: [
+      { type: "string", defaultValue: "Howdy!" },
+      { type: "string", options: ["error", "success", "warning"] },
+      { type: "number", options: [1, 3, 5] }
+    ],
+    text: (msg, type, time) => `Indicate '${msg}' as ${type} for ${time} seconds`,
+  })
+  async indicateMessage(value: string, type: typeof this.IndicatorType, time: number) {
+    const position = "category";
+    const msg = `This is a ${type} indicator for ${value}!`;
+    const [{ close }] = await Promise.all([
+      this.indicate({ position, type, msg }), untilTimePassed(time * 1000)
+    ]);
+    close();
   }
 
   @block({ type: BlockType.Button, text: `Dummy UI` })

@@ -3,12 +3,23 @@ export const registerButtonCallbackEvent = "REGISTER_BUTTON_CALLBACK_FROM_EXTENS
 export const FrameworkID = "ExtensionFramework";
 export const AuxiliaryExtensionInfo = "AuxiliaryExtensionInfo";
 
-export const customArgumentFlag = "internal_IsCustomArgument";
-export const customArgumentCheck = "isCustomArgumentHack";
-export const dropdownStateFlag = "dropdownState";
-export const dropdownEntryFlag = "dropdownEntry";
-export const initDropdownState = "init";
-export const openDropdownState = "open";
-export const closeDropdownState = "close";
+/**
+ * Literal values that control the interaction between the extension framework and the Scratch GUI,
+ * specifically how dropdowns (tied to dynamic menus) are co-opted to support custom block arguments.
+ */
+export const guiDropdownInterop = {
+    runtimeKey: "prgDropdownCustomization",
+    runtimeProperties: {
+        stateKey: "state",
+        entryKey: "entry",
+        updateMethodKey: "update",
+    },
+    state: {
+        open: "open",
+        init: "init",
+        update: "update",
+        close: "close",
+    },
+} as const;
 
 export const blockIDKey = "blockID";

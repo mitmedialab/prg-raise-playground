@@ -9,6 +9,8 @@ import { isSvgGroup, isSvgText, openAlert } from "./svgAlert";
  */
 export default function <T extends MinimalExtensionConstructor>(Ctor: T) {
   abstract class ExtensionThatIndicates extends Ctor {
+    readonly IndicatorType: "success" | "warning" | "error";
+
     /**
      * Add an indicator message to the workspace.
      * @param param0 Details
@@ -17,7 +19,7 @@ export default function <T extends MinimalExtensionConstructor>(Ctor: T) {
      * - `type`: The type of indicator to display. Currently "success", "warning" and "error", which effect the color of the indicator.
      * @returns 
      */
-    async indicate({ position, msg, type }: { position: "category", msg: string, type: "success" | "warning" | "error" }) {
+    async indicate({ position, msg, type }: { position: "category", msg: string, type: ExtensionThatIndicates["IndicatorType"] }) {
 
       const elements = position === "category"
         ? getCategoryElements(this.name)

@@ -1,7 +1,7 @@
 import { extension } from "$common/extension";
 import { block } from "$common/extension/decorators/blocks";
-import CustomArgumentManager from "$common/extension/mixins/optional/customArguments/CustomArgumentManager";
-import customSaveData, { saveDataKey } from "$common/extension/mixins/optional/customSaveData";
+import CustomArgumentManager from "$common/extension/mixins/configurable/customArguments/CustomArgumentManager";
+import customSaveData, { saveDataKey } from "$common/extension/mixins/configurable/customSaveData";
 import { Environment } from "$common/types";
 import { createTestSuite, testID } from "$testing";
 
@@ -13,7 +13,7 @@ class ExtensionWithCustomArguments extends extension({ name: "" }, "customArgume
   @block((self) => ({
     type: "command",
     text: (x) => "",
-    arg: self.makeCustomArgument({ component: "", initial })
+    arg: self.makeCustomArgument({ component: null, initial })
   }))
   dummy(dummy: typeof initial["value"]) {
   }

@@ -1,5 +1,6 @@
 import { ArgumentType, BlockType, RGBObject, MenuItem, copyTo, SaveDataHandler, block, buttonBlock, extension } from "$common";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
+import AnimalArgument from "./AnimalArgument.svelte";
 
 const enum MatrixDimension {
   Row,
@@ -222,7 +223,7 @@ export default class TypeScriptFrameworkExample extends extension(
   @block((self) => ({
     type: BlockType.Command,
     arg: self.makeCustomArgument({
-      component: "AnimalArgument",
+      component: AnimalArgument,
       initial: { value: Animal.Leopard, text: nameByAnimal[Animal.Leopard] }
     }),
     text: (animal) => `Add ${animal} to collection`,

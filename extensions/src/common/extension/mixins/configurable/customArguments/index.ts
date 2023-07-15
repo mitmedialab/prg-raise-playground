@@ -1,20 +1,12 @@
-import type Runtime from "$scratch-vm/engine/runtime";
-import CustomArgumentManager, { ArgumentEntry } from "$common/extension/mixins/configurable/customArguments/CustomArgumentManager";
-import { CustomArgumentUIConstructor, renderToDropdown } from "$common/extension/mixins/configurable/customArguments/dropdownOverride";
+import CustomArgumentManager from "$common/extension/mixins/configurable/customArguments/CustomArgumentManager";
 import { ArgumentType } from "$common/types/enums";
-import { openDropdownState, closeDropdownState, initDropdownState, customArgumentFlag, customArgumentCheck, dropdownStateFlag, dropdownEntryFlag } from "$common/globals";
-import { Argument, BaseGenericExtension } from "$common/types";
+import { guiDropdownInterop } from "$common/globals";
+import { Argument, Expand } from "$common/types";
 import { MinimalExtensionConstructor } from "../../base";
 import { withDependencies } from "../../dependencies";
 import customSaveData from "../customSaveData";
-
-type ComponentGetter = (id: string, componentName: string) => CustomArgumentUIConstructor;
-
-const callingContext = {
-  DrowpdownOpen: openDropdownState,
-  DropdownClose: closeDropdownState,
-  Init: initDropdownState,
-} as const;
+import { ArgumentEntry, ArgumentID, CustomArgumentComponent, CustomArgumentRecipe, RuntimeWithCustomArgumentSupport, renderToDropdown } from "./utils";
+import { ExtensionBase } from "$common/extension/ExtensionBase";
 
 /**
  * Mixin the ability for extensions to create custom argument types with their own specific UIs
@@ -24,18 +16,16 @@ const callingContext = {
  */
 export default function mixin<T extends MinimalExtensionConstructor>(Ctor: T) {
   abstract class ExtensionWithCustomArgumentSupport extends withDependencies(Ctor, customSaveData) {
+    private argumentManager: CustomArgumentManager = null;
+
     /**
-     * Create a custom argument for one of this block's arguments
-     * @param param0 
-     * - component: The svelte component to render the custom argument UI
-     * - initial: The starting value of the the custom argument (including both its value and text representation)
-     * - acceptReportersHandler: A function that must be defined if you'd like for your custom argument to accept reporters
-     * @returns 
+     * Create a custom argument for one of this block's argument. Within the argument object, you must provide:
+     * - `component`: The svelte component to render (import it directly in your file)
+     * - `initial`: The arguments default value (you must provide both the value and the text representation)
      */
-    protected makeCustomArgument = <T>({ component, initial, acceptReportersHandler: handler }: { component: string, initial: ArgumentEntry<T>, acceptReportersHandler?: (x: any) => ArgumentEntry<T> }): Argument<T> => {
-      this.argumentManager ??= new CustomArgumentManager();
-      const id = this.argumentManager.add(initial);
-      const getItems = () => [{ text: customArgumentFlag, value: JSON.stringify({ component, id }) }];
+    protected makeCustomArgument = <T, TExtension extends ExtensionBase>({ component, initial, acceptReportersHandler: handler }: Expand<CustomArgumentRecipe<T, TExtension>>): Argument<T> => {
+      const id = this.customArgumentManager.add(initial);
+      const getItems = () => this.processMenuForCustomArgument(id, component);
       return {
         type: ArgumentType.Custom,
         defaultValue: id,
@@ -43,60 +33,30 @@ export default function mixin<T extends MinimalExtensionConstructor>(Ctor: T) {
       } as Argument<T>
     }
 
-    protected argumentManager: CustomArgumentManager = null;
-
     public get customArgumentManager(): CustomArgumentManager {
+      this.argumentManager ??= new CustomArgumentManager();
       return this.argumentManager
     }
 
-    public getOrCreateCustomArgumentManager(): CustomArgumentManager {
-      this.argumentManager ??= new CustomArgumentManager();
-      return this.argumentManager;
-    }
+    private processMenuForCustomArgument(initialID: ArgumentID, Component: CustomArgumentComponent): (ArgumentEntry<any>)[] {
+      const { runtime, argumentManager } = this;
+      const interop = (runtime as RuntimeWithCustomArgumentSupport)[guiDropdownInterop.runtimeKey];
 
-    /**
-     * Utilized externally by scratch-vm to check if a given argument should be treated as a 'custom argument'.
-     * Checks if the value returned by a dyanmic menu indicates that it should be treated as a 'custom argument'
-     */
-    private [customArgumentCheck](arr: Array<string | { text: string }>) {
-      if (arr.length !== 1) return false;
-      const item = arr[0];
-      if (typeof item !== "object") return false;
-      const { text } = item;
-      return text === customArgumentFlag;
-    };
+      const { state, update, entry } = interop
 
-    /**
-     * Utilized externally by scratch-vm to process custom arguments
-     * @param runtime NOTE: once we switch to V2, we can remove this and instead use the extension's runtime
-     * @param param1 
-     * @param getComponent 
-     * @returns 
-     */
-    private processCustomArgumentHack(runtime: Runtime, [{ value }]: { value: string }[], getComponent: ComponentGetter): (readonly [string, string])[] {
-
-      const { id: extensionID, customArgumentManager: argumentManager } = this;
-      const { component, id: initialID } = JSON.parse(value) as { component: string, id: string };
-      const context = runtime[dropdownStateFlag];
-
-      switch (context) {
-        case callingContext.Init:
-          return argumentManager.getCurrentEntries();
-        case callingContext.DropdownClose: {
-          const result = argumentManager.tryResolve();
-          return result ? [[result.entry.text, result.id]] : argumentManager.getCurrentEntries();
-        }
-        case callingContext.DrowpdownOpen: {
-          const currentEntry = runtime[dropdownEntryFlag] as ArgumentEntry<any>;
-          const prevID = currentEntry?.value ?? initialID;
-          const current = argumentManager.getEntry(prevID);
-          const [id, setEntry] = argumentManager.request();
-          renderToDropdown(getComponent(extensionID, component), { setter: setEntry, current, extension: this as any as BaseGenericExtension });
-          return [["Apply", id]];
-        }
+      switch (state) {
+        case "init":
+        case "close":
+          return argumentManager.entries;
+        case "open":
+          const id = entry?.value ?? initialID;
+          const current = argumentManager.getEntry(id);
+          const setter = argumentManager.request(id, update);
+          renderToDropdown(Component, { setter, current, extension: this });
+          return [{ text: current.text, value: id }];
+        case "update":
+          return [argumentManager.getCurrent()];
       }
-
-      throw new Error("Error during processing -- Context:" + callingContext);
     };
 
   }
