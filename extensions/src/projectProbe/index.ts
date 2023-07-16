@@ -5,7 +5,8 @@ import JSZip from "jszip";
 
 const details: ExtensionMenuDisplayDetails = {
   name: "Project Probe",
-  description: "(INTERNAL) An extension for probing the contents of .sb3 files"
+  description: "(INTERNAL) An extension for probing the contents of .sb3 files",
+  tags: ["PRG Internal"]
 };
 
 export default class _ extends extension(details, "ui") {

@@ -1,4 +1,4 @@
-import { FrameworkID, AuxiliaryExtensionInfo } from "../dist/globals";
+import { FrameworkID, AuxiliaryExtensionInfo } from "../../dist/globals";
 
 /**
  * Initialize an extension (if it supports the PRG Framework strategy of initialization)

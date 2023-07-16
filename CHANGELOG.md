@@ -4,7 +4,46 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## 2023-03-25 (pending)
+## 2023-07-14
+
+### Changed
+- Custom Argument UI now support updating the value of the argument whenever it's `setter` is called (instead of having to explicitly click "Apply")
+  - This is a lot more intuitive and really how it should've been implemented from the beginning (it just didn't occur to me how) -- these changes also bring some serious cleanup and simplification of the custom argument code to hopefully make maintenance easier in the future
+  - In the process of implemeting this, we were able to remove the need for any changes to the `scratch-vm` to make custom arguments work
+  - **BREAKING CHANGE:** If you're a developer who uses custom arguments in their extension, you will have to change how you specify the `component` to associate with your custom argument. Instead of specifying the name of the svelte file to load (in a string), you'll actually now import the svelte component directly:
+    - Before:
+    ```ts
+    arg: self.makeCustomArgument({
+      component: "MyArgUI",
+      initial: { value: { a: 10, b: "Hello world", c: false }, text: "[10, Hello world, false]", }
+    }),
+    ```
+    - Now:
+    ```ts
+    // At top of file
+    import MyArgUI from "./MyArgUI.svelte"
+
+    // Within block definition 
+    arg: self.makeCustomArgument({
+      component: MyArgUI,
+      initial: { value: { a: 10, b: "Hello world", c: false }, text: "[10, Hello world, false]", }
+    }),
+    ```
+
+## 2023-03 - 2023-06 (backfill)
+
+### Added
+- Support for changing the color of blocks. (docs coming soon -- ping @pmalacho-mit if you need 'em and can't find em)
+- Support for inline image arguments. [See docs](https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extensions#adding-inline-images-to-the-text-of-blocks)
+- Support for indicators (docs coming soon --  ping @pmalacho-mit if you need 'em and can't find em))
+- Support for accessing block's ID form `BlockUtility`. [See docs](https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extensions#block-id)
+- Ability to tag extensions to control how they are sorted in the extensions menu: [See docs](https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extensions#extension-menu-tags--categories)
+
+### Changed
+
+- Teachable machine extension is now a `configurable` extension (as opposed to a `generic` extension (the old way of doing things))
+
+## 2023-03-25
 
 ### Changed
 

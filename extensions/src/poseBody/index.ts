@@ -28,7 +28,8 @@ type Details = {
   name: "Body Sensing",
   description: "Sense body position with the camera.",
   iconURL: "pose-body.png",
-  insetIconURL: "pose-body-small.svg"
+  insetIconURL: "pose-body-small.svg",
+  tags: ["Dancing with AI", "Made by PRG"]
 };
 
 /**

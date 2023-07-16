@@ -1,4 +1,4 @@
-import { ArgumentType, BlockType, Environment, ExtensionMenuDisplayDetails, Language, Menu, SaveDataHandler, block, buttonBlock, extension, tryCastToArgumentType } from "$common";
+import { ArgumentType, BlockType, BlockUtilityWithID, Environment, ExtensionMenuDisplayDetails, Language, Menu, SaveDataHandler, block, buttonBlock, extension, tryCastToArgumentType, untilTimePassed } from "$common";
 import jibo from "./jibo.png";
 import five from "./five.png";
 
@@ -9,10 +9,14 @@ const details: ExtensionMenuDisplayDetails = {
   [Language.Español]: {
     name: "Extensión simple Typescript",
     description: "Ejemplo de una extensión simple usando Typescript"
-  }
+  },
+  blockColor: "#822fbd",
+  menuColor: "#4ed422",
+  menuSelectColor: "#9e0d2c",
+  tags: ["PRG Internal"],
 }
 
-export default class SimpleTypescript extends extension(details, "ui", "customSaveData") {
+export default class SimpleTypescript extends extension(details, "ui", "customSaveData", "indicators") {
   count: number = 0;
 
   logOptions: Menu<string> = {
@@ -38,15 +42,34 @@ export default class SimpleTypescript extends extension(details, "ui", "customSa
     this.count += amount;
   }
 
-  init(env: Environment) { }
+  async init(env: Environment) {
+  }
 
   @block((self) => ({
     type: BlockType.Command,
-    text: (msg) => `Log ${msg} to the console`,
+    text: (msg) => `Indicate and log a ${msg} to the console`,
     arg: { type: ArgumentType.String, options: self.logOptions }
   }))
-  log(msg: string) {
-    console.log(msg);
+  log(value: string) {
+    console.log(value);
+  }
+
+  @block({
+    type: "command",
+    args: [
+      { type: "string", defaultValue: "Howdy!" },
+      { type: "string", options: ["error", "success", "warning"] },
+      { type: "number", options: [1, 3, 5] }
+    ],
+    text: (msg, type, time) => `Indicate '${msg}' as ${type} for ${time} seconds`,
+  })
+  async indicateMessage(value: string, type: typeof this.IndicatorType, time: number) {
+    const position = "category";
+    const msg = `This is a ${type} indicator for ${value}!`;
+    const [{ close }] = await Promise.all([
+      this.indicate({ position, type, msg }), untilTimePassed(time * 1000)
+    ]);
+    close();
   }
 
   @block({ type: BlockType.Button, text: `Dummy UI` })
@@ -86,7 +109,8 @@ export default class SimpleTypescript extends extension(details, "ui", "customSa
       "number"
     ]
   })
-  addFive(lhs: number, five: "inline image", rhs: number) {
+  addFive(lhs: number, five: "inline image", rhs: number, { blockID }: BlockUtilityWithID) {
+    console.log(blockID);
     return lhs + 5 - rhs;
   }
 }

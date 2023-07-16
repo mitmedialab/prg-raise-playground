@@ -68,10 +68,10 @@ declare class Blocks {
          * actively monitored.
          * @type {Array<{blockId: string, target: import("./target")}>}
          */
-        _monitored: Array<{
+        _monitored: {
             blockId: string;
             target: import("./target");
-        }>;
+        }[];
         /**
          * A cache of hat opcodes to collection of theads to execute.
          * @type {Object.<string, object>}
