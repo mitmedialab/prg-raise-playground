@@ -440,9 +440,10 @@ const iconFiles: Record<IconType, AnimFileType> = {
 
 type Details = {
   name: "Jibo";
-  description: "Program your favorite social robot.";
+  description: "Program your favorite social robot, Jibo. This extension works with a physical or virtual Jibo.";
   iconURL: "jibo_icon.png";
   insetIconURL: "jibo_inset_icon.png";
+  tags: ["Made by PRG"];
 };
 
 type Blocks = {
@@ -482,33 +483,8 @@ var jibo_event = {
   // volume: 0,
 };
 
-// tasneem new - queue sata structure
+// tasneem new - queue data structure
 class FirebaseQueue {
-  private queue: any[] = [];
-  private isProcessing: boolean = false;
-
-  addToQueue(data: any) {
-    this.queue.push(data);
-    if (!this.isProcessing) {
-      this.processQueue();
-    }
-  }
-
-  async processQueue() {
-    this.isProcessing = true;
-    while (this.queue.length > 0) {
-      const data = this.queue[0]; // first element in the queue
-      try {
-        await this.pushToFirebase(data); // Push to db
-        this.queue.shift(); // Remove from the queue
-      } catch (error) {
-        console.error('Error pushing data to Firebase:', error);
-        break;
-      }
-    }
-    this.isProcessing = false;
-  }
-
   //////////////////////////////// pushToFirebase() (or setJiboMsg()) function WITHOUT FLAG 
   /* 
     async pushToFirebase(data: any) {
@@ -540,61 +516,71 @@ class FirebaseQueue {
 
 
   //////////////////////////////// pushToFirebase() (or setJiboMsg()) function WITH FLAG
-  async pushToFirebase(data: any) {
+  /*
+    timedFinish sets a limit on how long a function can take to execute before the code continues
+    this is to handle functions that happen so quickly that they don't reliably send the "done" signal in the correct order 
+  */
+  async timedFinish(timeoutFn: () => Promise<void>): Promise<void> {
+    const requests = [
+      timeoutFn(),
+      queue.animFinished(),
+    ];
+    return Promise.race(requests);
+  }
+  
+  async ASR_received(): Promise<any> {
     return new Promise((resolve, reject) => {
-      if (jiboName != "") {
-        const pathRef = database.ref("Jibo-Name/" + jiboName);
-        var eventKey: any;
-        var eventData: any;
-        pathRef
-          .once("value")
-          .then((snapshot) => {
-            console.log("Reading the last thing before inserting the new one");
-            snapshot.forEach((childSnapshot) => {
-              eventKey = childSnapshot.key;
-              eventData = childSnapshot.val();
-            });
-            console.log(eventData);
-            if (eventData.msg_type === "default" || eventData.msg_type === "") {
-              console.log("Jibo is ready for a new message to be pushed.");
-              database.ref("Jibo-Name/" + jiboName)
-                .push({ ...data })
-                .then(function () {
-                  console.log("New record for '" + jiboName + "' created successfully as: " + data.msg_type);
-                  resolve(data);
-                })
-                .catch(function (error) {
-                  console.error(
-                    "Error creating new record for '" + jiboName + "' as: " + + data.msg_type,
-                    error
-                  );
-                  reject("Something went wrong in pushing to db")
-                });
-            }
-            else {
-              console.log("The last record was of type: ");
-              console.log(eventData.msg_type);
-              console.log("Pushing new one immediately");
-              database.ref("Jibo-Name/" + jiboName)
-                .push({ ...data })
-                .then(function () {
-                  console.log("New record for '" + jiboName + "' created successfully as: " + data.msg_type);
-                  resolve(data);
-                })
-                .catch(function (error) {
-                  console.error(
-                    "Error creating new record for '" + jiboName + "' as: " + + data.msg_type,
-                    error
-                  );
-                  reject("Something went wrong in pushing to db")
-                });
-            }
-          });
-      }
-      else {
-        console.log("No Jibo Name added.");
-      }
+      console.log("Waiting to hear from JiboAsrEvent");
+      const pathRef = database.ref("Jibo-Name/" + jiboName);
+      var eventKey: any;
+      var eventData: any;
+      pathRef.on("value", (snapshot) => {
+        // Loop through the child snapshots of JiboAsrResult
+        snapshot.forEach((childSnapshot) => {
+          eventKey = childSnapshot.key;
+          eventData = childSnapshot.val();
+        });
+        if (eventData.msg_type === "JiboAsrResult") {
+          pathRef.off();
+          // console.log("eventData is: " + JSON.stringify(eventData));
+          var transcription = eventData.transcription;
+          console.log("Jibo heard: " + transcription);
+          resolve(transcription);
+        }
+      });
     });
+  }
+  async animFinished(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      console.log("Waiting for default message from database");
+      const pathRef = database.ref("Jibo-Name/" + jiboName);
+      var eventKey: any;
+      var eventData: any;
+      pathRef.on("value", (snapshot) => {
+        // Loop through the child snapshots of JiboAsrResult
+        snapshot.forEach((childSnapshot) => {
+          eventKey = childSnapshot.key;
+          eventData = childSnapshot.val();
+        });
+        console.log("last event is");
+        console.log(eventData);
+        if (eventData.msg_type === "default") {
+          pathRef.off();
+          resolve();
+        }
+      });
+    });
+  }
+
+  async pushToFirebase(data: any, awaitFn: () => Promise<void>) {
+    if (jiboName != "") {
+      database.ref("Jibo-Name/" + jiboName).push({ ...data });
+      await new Promise<void>((r) => { setTimeout(r, 500); }); // wait a bit before proceeding
+      await awaitFn();
+    }
+    else {
+      console.log("No Jibo Name added.");
+    }
   }
   ////////////////////////////////
 }
@@ -682,8 +668,7 @@ const queue = new FirebaseQueue();
 export function setJiboName(name: string): void {
   var jiboNameRef = database.ref("Jibo-Name");
   jiboNameRef
-    .once("value")
-    .then((snapshot) => {
+    .once("value", (snapshot) => {
       localStorage.setItem("prevJiboName", name);
       if (snapshot.hasChild(name)) {
         console.log("'" + name + "' exists.");
@@ -695,9 +680,6 @@ export function setJiboName(name: string): void {
           "'" + name + "' did not exist, and has now been created."
         );
       }
-    })
-    .catch((error) => {
-      console.error(error);
     });
 }
 ///////////////////////////////// KEEP THIS FUNCTION! /////////////////////////////////
@@ -899,9 +881,6 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         },
         text: (text: string) => `say ${text}`,
         operation: (text: string) =>
-          // (async () => {
-          //   await self.jiboTTSFn(text)
-          // })(),
           this.jiboTTSFn(text),
       }),
       JiboAsk: () => ({
@@ -912,18 +891,12 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         },
         text: (text: string) => `ask ${text} and wait`,
         operation: (text: string) =>
-          // (async () => {
-          //   await self.jiboAskFn(text)
-          // })(),
           this.jiboAskFn(text),
       }),
       JiboListen: () => ({
         type: BlockType.Reporter,
         text: `answer`,
         operation: () =>
-          // (async () => {
-          //   await self.jiboListenFn()
-          // })(),
           this.jiboListenFn(),
       }),
       // JiboState: () => ({ // helpful for debugging
@@ -939,13 +912,10 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         },
         text: (dname) => `play ${dname} dance`,
         operation: async (dance: DanceType) => {
-          console.log("line 610 to know the dance file: " + dance);
-          console.log(JSON.stringify(danceFiles[dance]));
           const akey = danceFiles[dance].file;
-          await this.jiboAnimFn(akey);
+          await this.jiboDanceFn(akey);
         },
       }),
-      // new audio block start
       JiboAudio: () => ({
         type: BlockType.Command,
         arg: {
@@ -954,13 +924,10 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         },
         text: (audioname) => `play ${audioname} audio`,
         operation: async (audio: AudioType) => {
-          console.log("The audio file: " + audio);
-          console.log(JSON.stringify(audioFiles[audio]));
           const audiokey = audioFiles[audio].file;
           await this.jiboAudioFn(audiokey);
         },
       }),
-      // new audio block end
       /* Jibo block still does not work
       // new volume block start
       JiboVolume: () => ({
@@ -986,7 +953,6 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         }),
         text: (aname) => `play ${aname} emotion`,
         operation: async (anim: EmotionType) => {
-          console.log("line 610 to know the dance file: " + anim);
           const akey = emotionFiles[anim].file;
           await this.jiboAnimFn(akey);
         },
@@ -1012,18 +978,13 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           component: ColorArgUI,
           initial: {
             value: Color.Blue,
-            text: "blue",
+            text: "Blue",
           },
         }),
         text: (cname) => `set LED ring to ${cname}`,
-        operation: (color: ColorType) =>
-          (async () => {
-            await this.jiboLEDFn(color)
-          })(),
-        // {
-        //   console.log("line 654 to know the color: " + color);
-        //   self.jiboLEDFn(color);
-        // },
+        operation: async (color: ColorType) => {
+          await this.jiboLEDFn(color);
+        }
       }),
       JiboLook: () => ({
         type: BlockType.Command,
@@ -1114,36 +1075,6 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
   // TODO remove the self variable here
   async jiboTTSFn(text: string) {
-    // // checking state
-    // var state_listener = new ROSLIB.Topic({
-    //     ros : this.ros,
-    //     name : '/jibo_state',
-    //     messageType : 'jibo_msgs/JiboState'
-    // });
-
-    // // call a promise that doesn't resolve
-
-    // state_listener.subscribe(function(message: any) {
-
-    //     console.log('Received message on ' + state_listener.name + ': ');
-    //     console.log("in tts: " + message.is_playing_sound);
-    //     console.log(message)
-    //     state_listener.unsubscribe();
-
-    // });
-
-    while (this.busy) {
-      console.log(this.busy);
-      this.checkBusy(this);
-    }
-
-    // console.log("before while: " + this.busy)
-    // var i = 0;
-    // while (this.busy && i <= 10000) {
-    //     console.log("busy")
-    //     i = i + 1;
-    // }
-
     var jibo_msg = {
       // readyForNext: false,
       msg_type: "JiboAction",
@@ -1156,90 +1087,29 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     };
 
     // write to firebase
-    // await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulated delay of 1 second
-    queue.addToQueue(jibo_msg);
-    // setJiboMsg(jibo_msg);
-
-    // this.tts.push(jibo_msg);
-    // console.log(this.tts)
-
-    // while (this.tts.length != 0 && !this.busy) {
-    //     console.log(this.tts)
-    //     this.busy = true;
-    //     await this.JiboPublish(this.tts.shift())
-    //     this.busy = false;
-    // }
-
-    // this.busy = true;
-    // console.log("before publishing")
+    await queue.pushToFirebase(jibo_msg, queue.animFinished);
 
     await this.JiboPublish(jibo_msg);
-
-    // console.log("after publishing")
-
-    // var rep = true;
-    // while (rep) {
-    //     this.JiboPublish(jibo_msg).then(() => {
-    //         rep = false;
-    //         console.log(rep);
-    //     }
-    //     )
-    // }
-    return;
   }
 
+  // TODO figure out why Jibo seems to ignore this value
   async jiboVolumeFn(volume: string) {
+    // update Jibo's volume
     this.jbVolume = volume;
-    var jibo_msg = {
-      // readyForNext: false,
-      msg_type: "JiboAction",
-      do_volume: true,
-      volume: parseFloat(volume)
-    };
-    // write to firebase
-    // await new Promise((resolve) => setTimeout(resolve, 3000)); // Simulated delay of 3 seconds
-    queue.addToQueue(jibo_msg);
-    // setJiboMsg(jibo_msg);
-
-    this.JiboPublish(jibo_msg);
   }
 
   async jiboAskFn(text: string) {
     // say question
-    // this.jiboTTSFn(text); // this is working with firebase
-
-    await this.jiboTTSFn(text)
-      .then(() => {
-        // Delay of 2 seconds before sending the next message
-        setTimeout(() => {
-          this.JiboASR_request();
-        }, 2000);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-
-    // listen for answer
-    // await new Promise((resolve) => setTimeout(resolve, 3000)); // Simulated delay of 3 seconds
-    // this.JiboASR_request();
+    await this.jiboTTSFn(text);
 
     // wait for sensor to return
-    // this.asr_out = await this.JiboASR_receive(); 
+    this.asr_out = await queue.ASR_received();
   }
   async jiboListenFn() {
-    // return this.asr_out;
-    /////////////////////////////////////////////////////////////////
-    try {
-      this.asr_out = await this.getDataFromFirebase();
-      return this.asr_out;
-    } catch (error) {
-      console.error('Error:', error);
-      return false;
-    }
-
+    return this.asr_out;
   }
 
-  jiboLEDFn(color: string) { // I added async
+  async jiboLEDFn(color: string) { // I added async
     let ledValue = colorDef[color].value;
 
     if (color === "Random") {
@@ -1260,14 +1130,16 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     };
 
     // write to firebase
-    // await new Promise((resolve) => setTimeout(resolve, 3000)); // Simulated delay of 3 seconds
-    queue.addToQueue(jibo_msg);
-    // setJiboMsg(jibo_msg);
+    var timer = () => new Promise<void>((resolve, reject) => {
+      setTimeout(resolve, 500);
+    });
+    // does this reliably send the "done" command?
+    await queue.pushToFirebase(jibo_msg, () => queue.timedFinish(timer)); // delay a bit before next command
 
-
-    this.JiboPublish(jibo_msg);
+    await this.JiboPublish(jibo_msg);
   }
 
+  // there is no message when the look finishes. Just using a set time to finish block
   async jiboLookFn(dir: string) {
     let coords = directionDef[dir].value;
     let jibo_msg = {
@@ -1280,10 +1152,13 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     };
 
     // write to firebase
-    queue.addToQueue(jibo_msg);
-    // setJiboMsg(jibo_msg);
+    var timer = () => new Promise<void>((resolve, reject) => {
+      setTimeout(resolve, 3000);
+      console.log("look over");
+    });
+    await queue.pushToFirebase(jibo_msg, timer); // delay a bit before next command
 
-    this.JiboPublish(jibo_msg);
+    await this.JiboPublish(jibo_msg);
   }
 
   async jiboAnimFn(animation_key: string) {
@@ -1292,30 +1167,30 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
       // readyForNext: false,
       msg_type: "JiboAction",
       do_motion: true,
-      do_sound_playback: false,
+      do_sound_playback: true,
       do_tts: false,
       do_lookat: false,
       motion: animation_key,
     };
 
-    // write to frebase
-    queue.addToQueue(jibo_msg);
-    queue.addToQueue({
+    // write to firebase
+    await queue.pushToFirebase(jibo_msg, queue.animFinished); // delay a before next command
+    
+    await this.JiboPublish(jibo_msg);
+  }
+
+  async jiboDanceFn(animation_key: string) {
+    this.jiboAnimFn(animation_key);
+    // transition back to neutral
+    var timer = () => new Promise<void>((resolve, reject) => {
+      setTimeout(resolve, 100);
+    });
+    await queue.pushToFirebase({
       do_anim_transition: true,
       anim_transition: 0
-    });
-    // setJiboMsg(jibo_msg);
-
-    await this.JiboPublish(jibo_msg);
+    }, timer);
 
     await this.JiboPublish({ do_anim_transition: true, anim_transition: 0 });
-
-    /* // wait for command to complete
-        return new Promise((resolve) => {
-            this.jiboEvent.once("command.complete", async () => {
-                resolve();
-            });
-        });*/
   }
 
   async jiboAudioFn(audio_file: string) {
@@ -1330,20 +1205,10 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
       audio_filename: audio_file,
     };
 
-    // write to frebase
-    queue.addToQueue(jibo_msg);
-    // setJiboMsg(jibo_msg);
+    // write to firebase
+    await queue.pushToFirebase(jibo_msg, queue.animFinished);
 
     await this.JiboPublish(jibo_msg);
-
-    await this.JiboPublish({ do_anim_transition: true, anim_transition: 0 });
-
-    /* // wait for command to complete
-        return new Promise((resolve) => {
-            this.jiboEvent.once("command.complete", async () => {
-                resolve();
-            });
-        });*/
   }
 
   async JiboPublish(msg: any) {
@@ -1402,13 +1267,12 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
       incremental: false,
       alternatives: false,
       rule: "",
-      // stop: 0,
-      // start: 1
     };
-    // setJiboMsg(jibo_msg);
-    // await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulated delay of 1 second
-    queue.addToQueue(jibo_msg);
-    console.log("Sent JiboAsrCommand to firebase");
+
+    var timer = () => new Promise<void>((resolve, reject) => {
+      setTimeout(resolve, 500);
+    });
+    await queue.pushToFirebase(jibo_msg, timer); // delay a bit before next command
     // cmdVel.publish(jibo_msg);
   }
 
@@ -1430,55 +1294,5 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
       });
     });
 
-  }
-
-  // taz test new function
-  async readAsrAnswer(): Promise<any> {
-
-    return new Promise((resolve, reject) => {
-      interface EventData {
-        msg_type: string,
-        confidence: number;
-        heuristic_score: number;
-        slotAction: string;
-        transcription: string;
-      }
-      console.log("Now reading the answer from the database: ");
-      const pathRef = database.ref("Jibo-Name/" + jiboName);
-      var eventKey: any;
-      var eventData: any;
-      pathRef
-        .once("value")
-        .then((snapshot) => {
-          // Loop through the child snapshots of JiboAsrResult
-          snapshot.forEach((childSnapshot) => {
-            eventKey = childSnapshot.key;
-            eventData = childSnapshot.val() as EventData;
-          });
-          if (eventData.msg_type === "JiboAsrResult") {
-            // console.log("eventData is: " + JSON.stringify(eventData));
-            var transcription = eventData.transcription;
-            console.log("The last entered answer is: " + transcription);
-            resolve(transcription);
-          }
-        })
-        .catch((error) => {
-          reject(error);
-          console.error("Error retrieving data: ", error);
-        });
-    });
-
-  }
-
-  async getDataFromFirebase(): Promise<any> {
-    try {
-      const value = await this.readAsrAnswer();
-      console.log("Got value from firebase");
-      console.log(value);
-      return value;
-    } catch (error) {
-      console.error('Error:', error);
-      throw error;
-    }
   }
 }
