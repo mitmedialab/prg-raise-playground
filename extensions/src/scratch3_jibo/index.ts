@@ -1101,6 +1101,8 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   async jiboAskFn(text: string) {
     // say question
     await this.jiboTTSFn(text);
+    // making the ASR request
+    await this.JiboASR_request();
 
     // wait for sensor to return
     this.asr_out = await queue.ASR_received();
@@ -1270,7 +1272,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     };
 
     var timer = () => new Promise<void>((resolve, reject) => {
-      setTimeout(resolve, 500);
+      setTimeout(resolve, 100);
     });
     await queue.pushToFirebase(jibo_msg, timer); // delay a bit before next command
     // cmdVel.publish(jibo_msg);
