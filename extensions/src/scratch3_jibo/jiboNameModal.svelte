@@ -18,7 +18,7 @@
   export let extension: Extension;
 
   // my variablees
-  let inputText = "";
+  let inputText = localStorage.getItem("prevJiboName") ? localStorage.getItem("prevJiboName") : "";
 
   /**
    * @summary Use this to close the modal / pop-up that contains this UI.

@@ -684,6 +684,7 @@ export function setJiboName(name: string): void {
   jiboNameRef
     .once("value")
     .then((snapshot) => {
+      localStorage.setItem("prevJiboName", name);
       if (snapshot.hasChild(name)) {
         console.log("'" + name + "' exists.");
         jiboName = name;
@@ -1282,7 +1283,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     queue.addToQueue(jibo_msg);
     // setJiboMsg(jibo_msg);
 
-    await this.JiboPublish(jibo_msg);
+    this.JiboPublish(jibo_msg);
   }
 
   async jiboAnimFn(animation_key: string) {
@@ -1299,6 +1300,10 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
     // write to frebase
     queue.addToQueue(jibo_msg);
+    queue.addToQueue({
+      do_anim_transition: true,
+      anim_transition: 0
+    });
     // setJiboMsg(jibo_msg);
 
     await this.JiboPublish(jibo_msg);
