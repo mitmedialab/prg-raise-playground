@@ -1,14 +1,15 @@
-import Runtime from "../../../packages/scratch-vm/src/engine/runtime";
-// import Cast from "../../../packages/scratch-vm/src/util/cast";
-// import log from "../../../packages/scratch-vm/src/util/log";
 import EventEmitter from "events";
 // firebase
 import database from './firebase';
 
 import { ArgumentType, BlockType, color } from "$common";
-import { block, buttonBlock, extension } from "$common";
 import { Environment, BlockDefinitions, MenuItem } from "$common";
 import { Extension } from "$common";
+
+/** Import our svelte components */
+import ColorArgUI from "./ColorArgument.svelte";
+import EmojiArgUI from "./EmojiArgument.svelte";
+import IconArgUI from "./IconArgument.svelte";
 
 import ROSLIB from "roslib";
 
@@ -73,10 +74,47 @@ const colorDef: Record<ColorType, ColorDefType> = {
   },
 };
 
+type Coords = {
+  x: number;
+  y: number;
+  z: number;
+};
+export const Direction = {
+  up: `up`,
+  down: `down`,
+  right: `right`,
+  left: `left`,
+  forward: `forward`,
+  backward: `backward`,
+} as const;
+type DirType = typeof Direction[keyof typeof Direction];
+type DirDefType = {
+  value: Coords;
+};
+const directionDef: Record<DirType, DirDefType> = {
+  [Direction.up]: {
+    value: { x: 500, y: 100, z: 500 },
+  },
+  [Direction.down]: {
+    value: { x: 500, y: 100, z: -500 },
+  },
+  [Direction.left]: {
+    value: { x: 100, y: 500, z: 100 },
+  },
+  [Direction.right]: {
+    value: { x: 100, y: -500, z: 100 },
+  },
+  [Direction.forward]: {
+    value: { x: 500, y: 100, z: 100 },
+  },
+  [Direction.backward]: {
+    value: { x: -500, y: 100, z: 100 },
+  },
+};
+
 type AnimFileType = {
   file: string;
 };
-
 const Dance = {
   BackStep: "BackStep",
   Carlton: "Carlton",
@@ -416,53 +454,9 @@ type Blocks = {
   JiboIcon: (icon: string) => void;
   JiboDance: (dance: string) => void;
   JiboAudio: (audio: string) => void; // new audio block
-  JiboVolume: (text: string) => void; // new volume block
+  //JiboVolume: (text: string) => void; // new volume block
   JiboLED: (color: string) => void;
-  JiboLook: (x_angle: string, y_angle: string, z_angle: string) => void;
-  JiboMultitask: () => void;
-  JiboEnd: () => void;
-};
-
-var JiboAction = {
-  anim_transition: 0,
-  attention_mode: 1,
-  audio_filename: "",
-  do_anim_transition: false,
-  do_attention_mode: false,
-  do_led: false,
-  do_lookat: false,
-  do_motion: false,
-  do_sound_playback: false,
-  do_tts: false,
-  do_volume: false,
-  led_color: [0, 100, 0], //red, green, blue
-  lookat: [0, 0, 0], //x, y, z
-  motion: "",
-  tts_duration_stretch: 0,
-  tts_pitch: 0,
-  tts_text: "",
-  volume: 0,
-};
-var JiboAsrCommand = {
-  command: 0,
-  heyjibo: false,
-  detectend: false,
-  continuous: false,
-  incremental: false,
-  alternatives: false,
-  rule: "",
-  // stop: 0,
-  // start: 1
-};
-var JiboAsrResult = {
-  transcription: "",
-  confidence: 0,
-  heuristic_score: 0,
-  slotAction: "",
-};
-
-var defaultFlag = {
-  msg_type: "default",
+  JiboLook: (dir: string) => void; // (x_angle: string, y_angle: string, z_angle: string) => void;
 };
 
 var jibo_event = {
@@ -824,26 +818,23 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   te: string;
   text: string;
   animName: string;
-  multitask: boolean;
-  prevTasks: any;
-  multitask_msg: any;
   busy: boolean;
   tts: any;
-  animation_list: string[];
-  getAnimationList: () => MenuItem<string>[];
   dances: MenuItem<string>[];
+  dirs: MenuItem<string>[];
   audios: MenuItem<string>[]; // new
 
-  init(env: Environment) {
+  init() {
     this.text = "Hello! I'm Jibo!";
     this.animName = "My Animation";
-    this.multitask = false;
-    this.prevTasks = [];
-    this.multitask_msg = {};
     this.busy = false;
     this.dances = Object.entries(Dance).map(([dance, def]) => ({
       value: dance,
       text: Dance[dance],
+    }));
+    this.dirs = Object.entries(Direction).map(([direction]) => ({
+      text: Direction[direction],
+      value: Direction[direction],
     }));
     this.audios = Object.entries(Audio).map(([audio, def]) => ({ // new
       value: audio,
@@ -862,19 +853,6 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     this.tts = [];
 
     this.RosConnect({ rosIP: "localhost" });
-
-    this.getAnimationList = () =>
-      this.animation_list.map((anim) => ({
-        text: anim,
-        value: anim,
-      }));
-
-    //   setInterval((() => {
-    //     this.checkBusy(self);
-    //     console.log("busy: " + this.busy);
-    //     console.log(this.animation_list)
-    //     console.log(this.getAnimationList())
-    // }), 100);
   }
 
   checkBusy(self: Scratch3Jibo) {
@@ -903,16 +881,16 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
   defineBlocks(): BlockDefinitions<Scratch3Jibo> {
     return {
-      JiboButton: (self: Scratch3Jibo) => ({
+      JiboButton: () => ({
         type: BlockType.Button,
         arg: {
           type: ArgumentType.String,
           defaultValue: "Jibo's name here",
         },
         text: () => `Enter Jibo's name`,
-        operation: () => self.openUI("jiboNameModal", "My Jibo"),
+        operation: () => this.openUI("jiboNameModal", "My Jibo"),
       }),
-      JiboTTS: (self: Scratch3Jibo) => ({
+      JiboTTS: () => ({
         type: BlockType.Command,
         arg: {
           type: ArgumentType.String,
@@ -923,9 +901,9 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           // (async () => {
           //   await self.jiboTTSFn(text)
           // })(),
-          self.jiboTTSFn(text),
+          this.jiboTTSFn(text),
       }),
-      JiboAsk: (self: Scratch3Jibo) => ({
+      JiboAsk: () => ({
         type: BlockType.Command,
         arg: {
           type: ArgumentType.String,
@@ -936,54 +914,55 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           // (async () => {
           //   await self.jiboAskFn(text)
           // })(),
-          self.jiboAskFn(text),
+          this.jiboAskFn(text),
       }),
-      JiboListen: (self: Scratch3Jibo) => ({
+      JiboListen: () => ({
         type: BlockType.Reporter,
         text: `answer`,
         operation: () =>
           // (async () => {
           //   await self.jiboListenFn()
           // })(),
-          self.jiboListenFn(),
+          this.jiboListenFn(),
       }),
       // JiboState: () => ({ // helpful for debugging
       //     type:BlockType.Command,
       //     text: `read state`,
       //     operation: () => self.JiboState()
       // }),
-      JiboDance: (self: Scratch3Jibo) => ({
+      JiboDance: () => ({
         type: BlockType.Command,
         arg: {
           type: ArgumentType.String,
-          options: self.dances,
+          options: this.dances,
         },
         text: (dname) => `play ${dname} dance`,
         operation: async (dance: DanceType) => {
           console.log("line 610 to know the dance file: " + dance);
           console.log(JSON.stringify(danceFiles[dance]));
           const akey = danceFiles[dance].file;
-          await self.jiboAnimFn(akey);
+          await this.jiboAnimFn(akey);
         },
       }),
       // new audio block start
-      JiboAudio: (self: Scratch3Jibo) => ({
+      JiboAudio: () => ({
         type: BlockType.Command,
         arg: {
           type: ArgumentType.String,
-          options: self.audios,
+          options: this.audios,
         },
         text: (audioname) => `play ${audioname} audio`,
         operation: async (audio: AudioType) => {
           console.log("The audio file: " + audio);
           console.log(JSON.stringify(audioFiles[audio]));
           const audiokey = audioFiles[audio].file;
-          await self.jiboAudioFn(audiokey);
+          await this.jiboAudioFn(audiokey);
         },
       }),
       // new audio block end
+      /* Jibo block still does not work
       // new volume block start
-      JiboVolume: (self: Scratch3Jibo) => ({
+      JiboVolume: () => ({
         type: BlockType.Command,
         arg: {
           type: ArgumentType.String,
@@ -991,16 +970,14 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         },
         text: (volume: string) => `set volume to ${volume}`,
         operation: (volume: string) =>
-          // (async () => {
-          //   await self.jiboVolumeFn(volume)
-          // })(),
-          self.jiboVolumeFn(volume),
+          this.jiboVolumeFn(volume),
       }),
       // new volume block end
-      JiboEmote: (self: Scratch3Jibo) => ({
+      */
+      JiboEmote: () => ({
         type: BlockType.Command,
         arg: this.makeCustomArgument({
-          component: "EmojiArgument",
+          component: EmojiArgUI,
           initial: {
             value: Emotion.Happy,
             text: "happy",
@@ -1010,13 +987,13 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         operation: async (anim: EmotionType) => {
           console.log("line 610 to know the dance file: " + anim);
           const akey = emotionFiles[anim].file;
-          await self.jiboAnimFn(akey);
+          await this.jiboAnimFn(akey);
         },
       }),
-      JiboIcon: (self: Scratch3Jibo) => ({
+      JiboIcon: () => ({
         type: BlockType.Command,
         arg: this.makeCustomArgument({
-          component: "IconArgument",
+          component: IconArgUI,
           initial: {
             value: Icon.Taco,
             text: "taco",
@@ -1025,13 +1002,13 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         text: (aname) => `show ${aname} icon`,
         operation: async (icon: IconType) => {
           const akey = iconFiles[icon].file;
-          await self.jiboAnimFn(akey);
+          await this.jiboAnimFn(akey);
         }
       }),
-      JiboLED: (self: Scratch3Jibo) => ({
+      JiboLED: () => ({
         type: BlockType.Command,
         arg: this.makeCustomArgument({
-          component: "ColorArgument",
+          component: ColorArgUI,
           initial: {
             value: Color.Blue,
             text: "blue",
@@ -1040,55 +1017,22 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         text: (cname) => `set LED ring to ${cname}`,
         operation: (color: ColorType) =>
           (async () => {
-            await self.jiboLEDFn(color)
+            await this.jiboLEDFn(color)
           })(),
         // {
         //   console.log("line 654 to know the color: " + color);
         //   self.jiboLEDFn(color);
         // },
       }),
-      JiboLook: (self: Scratch3Jibo) => ({
+      JiboLook: () => ({
         type: BlockType.Command,
-        args: [
-          {
-            type: ArgumentType.String,
-            defaultValue: "0",
-          },
-          {
-            type: ArgumentType.String,
-            defaultValue: "0",
-          },
-          {
-            type: ArgumentType.String,
-            defaultValue: "0",
-          },
-        ],
-        text: (x_angle: string, y_angle: string, z_angle: string) =>
-          `look at ${x_angle}, ${y_angle}, ${z_angle}`,
-        operation: (x_angle: string, y_angle: string, z_angle: string) =>
-          // (async () => {
-          //   await self.jiboLookFn(x_angle, y_angle, z_angle)
-          // })(),
-          self.jiboLookFn(x_angle, y_angle, z_angle),
-      }),
-      JiboMultitask: (self: Scratch3Jibo) => ({
-        type: BlockType.Command,
-        text: `start multitask`,
-        operation: () => {
-          self.multitask = true;
-          console.log("starting multitask");
+        arg: {
+          type: ArgumentType.String,
+          options: this.dirs,
         },
-      }),
-      JiboEnd: (self: Scratch3Jibo) => ({
-        type: BlockType.Command,
-        text: `end multitask`,
-        operation: () => {
-          // console.log(self.multitask_msg); // debug
-          self.JiboPublish(self.multitask_msg);
-          self.multitask = false;
-          self.multitask_msg = {};
-          self.prevTasks.length = 0;
-          console.log("ending multitask");
+        text: (dname) => `look ${dname}`,
+        operation: async (dir: DirType) => {
+          await this.jiboLookFn(dir);
         },
       }),
     };
@@ -1169,36 +1113,6 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
   // TODO remove the self variable here
   async jiboTTSFn(text: string) {
-    // log.log(text);
-
-    console.log("multitask: " + this.multitask);
-
-    if (this.multitask) {
-      console.log(this.prevTasks);
-      if (this.prevTasks.includes("tts") || this.prevTasks.includes("emote")) {
-        this.prevTasks.length = 0;
-        console.log("performing");
-        console.log(this.multitask_msg);
-
-        while (this.busy) {
-          console.log("hello");
-        }
-        this.busy = true;
-        await this.JiboPublish(this.multitask_msg);
-        this.busy = false;
-
-        this.multitask_msg = {};
-      }
-
-      this.multitask_msg["do_tts"] = false;
-      this.multitask_msg["tts_text"] = text;
-      this.multitask_msg["volume"] = parseFloat(this.jbVolume);
-
-      this.prevTasks.push("tts");
-      console.log(this.multitask_msg);
-      return;
-    }
-
     // // checking state
     // var state_listener = new ROSLIB.Topic({
     //     ros : this.ros,
@@ -1228,9 +1142,6 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     //     console.log("busy")
     //     i = i + 1;
     // }
-
-
-
 
     var jibo_msg = {
       // readyForNext: false,
@@ -1277,19 +1188,6 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   }
 
   async jiboVolumeFn(volume: string) {
-    if (this.multitask) {
-      if (this.prevTasks.includes("volume")) {
-        this.prevTasks.length = 0;
-        console.log("performing");
-        console.log(this.multitask_msg);
-        this.JiboPublish(this.multitask_msg);
-        this.multitask_msg = {};
-      }
-      this.multitask_msg["do_volume"] = true;
-      this.multitask_msg["volume"] = parseFloat(volume);
-      this.prevTasks.push("volume");
-      return;
-    }
     this.jbVolume = volume;
     var jibo_msg = {
       // readyForNext: false,
@@ -1341,12 +1239,9 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   }
 
   jiboLEDFn(color: string) { // I added async
-    console.dir("The color from inside JiboLEDFn function is: " + color);
-    let ledName = colorDef[color].name;
     let ledValue = colorDef[color].value;
-    console.log("The color name is: " + JSON.stringify(ledValue));
 
-    if (ledName == "Random") {
+    if (color === "Random") {
       const randomColorIdx = Math.floor(
         // exclude random and off
         Math.random() * (Object.keys(colorDef).length - 2)
@@ -1355,27 +1250,13 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
       ledValue = colorDef[randomColor].value;
     }
 
-    if (this.multitask) {
-      if (this.prevTasks.includes("led")) {
-        this.prevTasks.length = 0;
-        console.log("performing");
-        console.log(this.multitask_msg);
-        this.JiboPublish(this.multitask_msg);
-        this.multitask_msg = {};
-      }
-      this.multitask_msg["do_led"] = true;
-      this.multitask_msg["led_color"] = ledValue;
-      this.prevTasks.push("led");
-      return;
-    }
-
+    // must be "var" does not work with "let"
     var jibo_msg = {
       // readyForNext: false,
       msg_type: "JiboAction",
       do_led: true,
       led_color: ledValue,
     };
-
 
     // write to firebase
     // await new Promise((resolve) => setTimeout(resolve, 3000)); // Simulated delay of 3 seconds
@@ -1386,38 +1267,14 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     this.JiboPublish(jibo_msg);
   }
 
-  // TODO make this better - like look up down left right, etc.
-  async jiboLookFn(X: string, Y: string, Z: string) {
-    if (this.multitask) {
-      if (
-        this.prevTasks.includes("look") ||
-        this.prevTasks.includes("emote") ||
-        this.prevTasks.includes("emoji")
-      ) {
-        console.log("performing");
-        console.log(this.multitask_msg);
-        this.JiboPublish(this.multitask_msg);
-        this.prevTasks.length = 0;
-        this.multitask_msg = {};
-      }
-      this.multitask_msg["do_lookat"] = true;
-      this.multitask["lookat"] = {
-        x: parseFloat(X),
-        y: parseFloat(Y),
-        z: parseFloat(Z),
-      };
-      this.prevTasks.push("look");
-      return;
-    }
-
-    var jibo_msg = {
-      // readyForNext: false,
-      msg_type: "JiboAction",
+  async jiboLookFn(dir: string) {
+    let coords = directionDef[dir].value;
+    let jibo_msg = {
       do_lookat: true,
       lookat: {
-        x: parseFloat(X),
-        y: parseFloat(Y),
-        z: parseFloat(Z),
+        x: coords.x,
+        y: coords.y,
+        z: coords.z,
       },
     };
 
@@ -1425,7 +1282,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     queue.addToQueue(jibo_msg);
     // setJiboMsg(jibo_msg);
 
-    this.JiboPublish(jibo_msg);
+    await this.JiboPublish(jibo_msg);
   }
 
   async jiboAnimFn(animation_key: string) {
@@ -1483,25 +1340,6 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
             });
         });*/
   }
-
-  /*async JiboMultitask() {
-    var jibo_msg = {
-      do_led: true,
-      led_color: { x: 0, y: 255, z: 255 },
-      do_motion: true,
-      motion: "Emoji/Emoji_HeartArrow_01_01.keys", // "Misc/Laughter_01_03.keys", //"Dances/dance_disco_00.keys",
-      // "do_tts": true,
-      // "tts_text": "Hello, I am Jibo.",
-      do_lookat: true,
-      lookat: {
-        x: 100,
-        y: 100,
-        z: 100,
-      },
-    };
-    await this.JiboPublish(jibo_msg);
-    return "done";
-  }*/
 
   async JiboPublish(msg: any) {
     if (!this.connected) {
@@ -1630,14 +1468,12 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   async getDataFromFirebase(): Promise<any> {
     try {
       const value = await this.readAsrAnswer();
+      console.log("Got value from firebase");
+      console.log(value);
       return value;
     } catch (error) {
       console.error('Error:', error);
       throw error;
     }
-  }
-
-  addAnimationToList(anim: string) {
-    return this.animation_list.push(anim);
   }
 }
