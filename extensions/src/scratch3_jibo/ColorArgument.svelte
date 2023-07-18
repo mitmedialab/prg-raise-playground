@@ -42,8 +42,8 @@
 
   export let extension: Extension;
 
-  let value = current.value;
-  $: text = Color[value];
+  let value = Color[current.value];
+  $: text = value;
 
   $: setter({ value, text });
 </script>
@@ -53,8 +53,8 @@
     <button
       class="colorButton color"
       style="--color: {Color[color]}"
-      disabled={value == color}
-      on:click={() => (value = color)}
+      disabled={value == Color[color]}
+      on:click={() => (value = Color[color])}
     >
       {Color[color]}
     </button>
