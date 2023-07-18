@@ -16,7 +16,6 @@ import ROSLIB from "roslib";
 const EXTENSION_ID = "jibo";
 
 // jibo's name
-// opal-sage-victor-valley
 var jiboName: string = "";
 // var databaseRef = database.ref("Jibo-Name/" + jiboName);
 
@@ -26,18 +25,16 @@ type RGB = {
   z: number;
 };
 
-// TODO remove the const enums throughout this file, https://github.com/mitmedialab/prg-extension-boilerplate/blob/dev/extensions/src/common/types/enums.ts#L136
-// https://dev.to/ivanzm123/dont-use-enums-in-typescript-they-are-very-dangerous-57bh
 export const Color = {
-  Red: "Red",
-  Yellow: "Yellow",
-  Green: "Green",
-  Cyan: "Cyan",
-  Blue: "Blue",
-  Magenta: "Magenta",
-  White: "White",
-  Random: "Random",
-  Off: "Off",
+  Red: "red",
+  Yellow: "yellow",
+  Green: "green",
+  Cyan: "cyan",
+  Blue: "blue",
+  Magenta: "magenta",
+  White: "white",
+  Random: "random",
+  Off: "off",
 } as const;
 type ColorType = typeof Color[keyof typeof Color];
 type ColorDefType = {
@@ -116,23 +113,12 @@ type AnimFileType = {
   file: string;
 };
 const Dance = {
-  BackStep: "BackStep",
-  Carlton: "Carlton",
   Celebrate: "Celebrate",
-  Clockworker: "Clockworker",
-  Doughkneader: "Doughkneader",
-  Footstomper: "Footstomper",
-  HappyDance: "HappyDance",
-  Headbanger: "Headbanger",
-  Headdipper: "Headdipper",
-  Pigeon: "Pigeon",
-  SlowDance: "SlowDance",
-  RobotDance: "RobotDance",
-  RockingChair: "RockingChair",
-  Roxbury: "Roxbury",
-  Samba: "Samba",
-  Seaweed: "Seaweed",
-  Slideshow: "Slideshow",
+  CircuitSaver: "Techno",
+  HappyDance: "Happy Dance",
+  SlowDance: "Slow Dance",
+  RobotDance: "The Robot",
+  Twerk: "Twerk",
   Waltz: "Waltz",
   Disco: "Disco",
 } as const;
@@ -145,24 +131,21 @@ const Audio = {
   Blip: "Blip",
   Bloop: "Bloop",
   BootUp: "BootUp",
-  Disgusted_01: "Disgusted_01",
-  Disgusted_02: "Disgusted_02",
-  Disgusted_03: "Disgusted_03",
-  DoYouWantToPlay: "DoYouWantToPlay",
-  FillingUp: "FillingUp",
-  GoodJob: "GoodJob",
-  Holyhappiness: "Holyhappiness",
-  ImBroken: "ImBroken",
-  PeekABoo: "PeekABoo",
+  DoYouWantToPlay: "Do You Want To Play",
+  FillingUp: "Filling Up",
+  PowerOn: "Power On",
+  Holyhappiness: "Holy happiness",
+  ImBroken: "I'm Broken",
+  PeekABoo: "Peek-A-Boo",
   Whistle: "Whistle",
-  CheckmarkButton: "CheckmarkButton",
-  TurnTakingOff: "TurnTakingOff",
-  TurnTakingOn: "TurnTakingOn",
+  CheckmarkButton: "Checkmark",
+  TurnTakingOff: "Turn Taking Off",
+  TurnTakingOn: "Turn Taking On",
   Aww: "Aww",
   Confirm: "Confirm",
   Disappointed: "Disappointed",
   Hello: "Hello",
-  Belly_Dance_00: "Belly_Dance_00",
+  Belly_Dance_00: "Belly Dance",
 } as const;
 type AudioType = typeof Audio[keyof typeof Audio];
 
@@ -182,22 +165,13 @@ const audioFiles: Record<AudioType, AnimFileType> = {
   [Audio.BootUp]: {
     file: "FX_BootUp.mp3",
   },
-  [Audio.Disgusted_01]: {
-    file: "FX_Disgusted_01.mp3",
-  },
-  [Audio.Disgusted_02]: {
-    file: "FX_Disgusted_02.mp3",
-  },
-  [Audio.Disgusted_03]: {
-    file: "FX_Disgusted_03.mp3",
-  },
   [Audio.DoYouWantToPlay]: {
     file: "FX_DoYouWantToPlay_01.mp3",
   },
   [Audio.FillingUp]: {
     file: "FX_FillingUp_01.mp3",
   },
-  [Audio.GoodJob]: {
+  [Audio.PowerOn]: {
     file: "FX_GoodJob_01.mp3",
   },
   [Audio.Holyhappiness]: {
@@ -235,41 +209,18 @@ const audioFiles: Record<AudioType, AnimFileType> = {
   },
   [Audio.Belly_Dance_00]: {
     file: "music/music_belly_dance_00.m4a",
-  }
-
-}
-// tasneem new audio files end
+  },
+};
 
 const danceFiles: Record<DanceType, AnimFileType> = {
-  [Dance.BackStep]: {
-    file: "Dances/Back_Stepper_01_01.keys",
-  },
-  [Dance.Carlton]: {
-    file: "Dances/Carlton_01_01.keys",
-  },
   [Dance.Celebrate]: {
     file: "Dances/Celebrate_01.keys",
   },
-  [Dance.Clockworker]: {
-    file: "Dances/Clockworker_01_01.keys",
-  },
-  [Dance.Doughkneader]: {
-    file: "Dances/Doughkneader_01_01.keys",
-  },
-  [Dance.Footstomper]: {
-    file: "Dances/Footstomper_01_01.keys",
+  [Dance.CircuitSaver]: {
+    file: "Dances/dance_circuit_saver_00.keys",
   },
   [Dance.HappyDance]: {
     file: "Dances/Happy_Lucky_01_01.keys",
-  },
-  [Dance.Headbanger]: {
-    file: "Dances/Headbanger_01_01.keys",
-  },
-  [Dance.Headdipper]: {
-    file: "Dances/Headdipper_01_01.keys",
-  },
-  [Dance.Pigeon]: {
-    file: "Dances/Pigeon_01_01.keys",
   },
   [Dance.SlowDance]: {
     file: "Dances/Prom_Night_01_01.keys",
@@ -277,20 +228,8 @@ const danceFiles: Record<DanceType, AnimFileType> = {
   [Dance.RobotDance]: {
     file: "Dances/Robotic_01_01.keys",
   },
-  [Dance.RockingChair]: {
-    file: "Dances/Rocking_Chair_01.keys",
-  },
-  [Dance.Roxbury]: {
-    file: "Dances/Roxbury_01_01.keys",
-  },
-  [Dance.Samba]: {
-    file: "Dances/Samba_01_01.keys",
-  },
-  [Dance.Seaweed]: {
-    file: "Dances/Seaweed_01_01.keys",
-  },
-  [Dance.Slideshow]: {
-    file: "Dances/SlideshowDance_01_01.keys",
+  [Dance.Twerk]: {
+    file: "Dances/Twerking_01.keys",
   },
   [Dance.Waltz]: {
     file: "Dances/Waltz_01_01.keys",
@@ -483,43 +422,7 @@ var jibo_event = {
   // volume: 0,
 };
 
-// tasneem new - queue data structure
 class FirebaseQueue {
-  //////////////////////////////// pushToFirebase() (or setJiboMsg()) function WITHOUT FLAG 
-  /* 
-    async pushToFirebase(data: any) {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        if (jiboName != "") {
-          database.ref("Jibo-Name/" + jiboName)
-            .push({ ...data })
-            .then(function () {
-              console.log("New record for '" + jiboName + "' created successfully as: " + data.msg_type);
-            })
-            .catch(function (error) {
-              console.error(
-                "Error creating new record for '" + jiboName + "' as: " + + data.msg_type,
-                error
-              );
-            });
-          resolve(data);
-          // console.log("Jibo is ready for a new message to be pushed.");
-        }
-        else {
-          console.log("No Jibo Name added.");
-        }
-      });
-    });
-  }
-  */
-  ////////////////////////////////
-
-
-  //////////////////////////////// pushToFirebase() (or setJiboMsg()) function WITH FLAG
-  /*
-    timedFinish sets a limit on how long a function can take to execute before the code continues
-    this is to handle functions that happen so quickly that they don't reliably send the "done" signal in the correct order 
-  */
   async timedFinish(timeoutFn: () => Promise<void>): Promise<void> {
     const requests = [
       timeoutFn(),
@@ -582,88 +485,8 @@ class FirebaseQueue {
       console.log("No Jibo Name added.");
     }
   }
-  ////////////////////////////////
 }
-// firebase push 
-// const pathRef = database.ref("Jibo-Name/" + jiboName);
-// var eventKey: any;
-// var eventData: any;
-// pathRef
-//   .once("value")
-//   .then((snapshot) => {
-//     console.log("Reading the last thing before inserting the new one");
-//     snapshot.forEach((childSnapshot) => {
-//       eventKey = childSnapshot.key;
-//       eventData = childSnapshot.val();
-//     });
-//     console.log(eventData);
-//     if (eventData.msg_type === "JiboAction" || eventData.msg_type === "") {
-//       console.log("ready for next from the last read record is: " + eventData.readyForNext);
-//       if (eventData.readyForNext) {
-// write the message to the database only if jibo is ready
-// if (jiboName != "") {
-//   database.ref("Jibo-Name/" + jiboName)
-//     .push({ ...data })
-//     .then(function () {
-//       console.log("New record for '" + jiboName + "' created successfully as: " + data.msg_type);
-//     })
-//     .catch(function (error) {
-//       console.error(
-//         "Error creating new record for '" + jiboName + "' as: " + + data.msg_type,
-//         error
-//       );
-//     });
-//   resolve(data);
-//   // console.log("Jibo is ready for a new message to be pushed.");
-// }
-// else {
-//   console.log("No Jibo Name added.");
-// }
-//       });
-//     });
-//   }
-// }
-//   }
-//   else {
-//     console.log("Jibo is NOT ready for a new message to be pushed.");
-
-//   }
-// }
-// else {
-//   if (jiboName != "") {
-//     database.ref("Jibo-Name/" + jiboName)
-//       .push({ ...data })
-//       .then(function () {
-//         console.log("New record for '" + jiboName + "' created successfully as: " + data.msg_type);
-//       })
-//       .catch(function (error) {
-//         console.error(
-//           "Error creating new record for '" + jiboName + "' as: " + + data.msg_type,
-//           error
-//         );
-//       });
-//     resolve(data);
-//     console.log("Jibo is ready for a new message to be pushed.");
-//   }
-//   else {
-//     console.log("No Jibo Name added.");
-//   }
-// }
-//       }).catch((error) => {
-//           reject(error);
-//           console.error("Error retrieving data: ", error);
-//         });
-//       // end of pushing block
-//       console.log('Pushing data to Firebase:', data);
-//       resolve(data);
-//     }, 1000);
-//   });
-//       });
-//     });
-//   }
-// }
 const queue = new FirebaseQueue();
-// tasneem new - end of queue stuff
 
 export function setJiboName(name: string): void {
   var jiboNameRef = database.ref("Jibo-Name");
@@ -682,145 +505,29 @@ export function setJiboName(name: string): void {
       }
     });
 }
-///////////////////////////////// KEEP THIS FUNCTION! /////////////////////////////////
-// function setJiboMsg(jibo_msg: any) {
-//   return new Promise((resolve, reject) => {
-//     // read the last inserted record to know if jibo is ready for the next message
-//     const pathRef = database.ref("Jibo-Name/" + jiboName);
-//     var eventKey: any;
-//     var eventData: any;
-//     pathRef
-//       .once("value")
-//       .then((snapshot) => {
-//         // Loop through the child snapshots of JiboAsrResult
-//         console.log("Reading the last thing before inserting the new one");
-//         snapshot.forEach((childSnapshot) => {
-//           eventKey = childSnapshot.key;
-//           eventData = childSnapshot.val();
-//         });
-//         console.log(eventData);
-//         if (eventData.msg_type === "JiboAction" || eventData.msg_type === "") {
-//           console.log("ready for next from the last read record is: " + eventData.readyForNext);
-//           if (eventData.readyForNext) {
-//             // jiboReady = true;
-//             // write the message to the database only if jibo is ready
-//             if (jiboName != "") {
-//               database.ref("Jibo-Name/" + jiboName)
-//                 .push({ ...jibo_msg })
-//                 .then(function () {
-//                   console.log("New record for '" + jiboName + "' created successfully as: " + jibo_msg.msg_type);
-//                 })
-//                 .catch(function (error) {
-//                   console.error(
-//                     "Error creating new record for '" + jiboName + "' as: " + + jibo_msg.msg_type,
-//                     error
-//                   );
-//                 });
-//               // Simulating asynchronous behavior with a delay of 1 second
-//               setTimeout(() => {
-//                 resolve(jibo_msg); // Resolve the promise after the delay
-//               }, 1000);
-//               console.log("Jibo is ready for a new message to be pushed.");
-//             }
-//             else {
-//               console.log("No Jibo Name added.");
-//             }
-//           }
-//           else {
-//             console.log("Jibo is NOT ready for a new message to be pushed.");
-
-//           }
-//         }
-//         else {
-//           if (jiboName != "") {
-//             database.ref("Jibo-Name/" + jiboName)
-//               .push({ ...jibo_msg })
-//               .then(function () {
-//                 console.log("New record for '" + jiboName + "' created successfully as: " + jibo_msg.msg_type);
-//               })
-//               .catch(function (error) {
-//                 console.error(
-//                   "Error creating new record for '" + jiboName + "' as: " + + jibo_msg.msg_type,
-//                   error
-//                 );
-//               });
-//             // Simulating asynchronous behavior with a delay of 1 second
-//             setTimeout(() => {
-//               resolve(jibo_msg); // Resolve the promise after the delay
-//             }, 1000);
-//             console.log("Jibo is ready for a new message to be pushed.");
-//           }
-//           else {
-//             console.log("No Jibo Name added.");
-//           }
-//         }
-//       })
-//       .catch((error) => {
-//         reject(error);
-//         console.error("Error retrieving data: ", error);
-//       });
-//     // // write the message to the database only if jibo is ready
-//     // if (jiboName != "") {
-//     //   if (jiboReady) {
-//     //     database.ref("Jibo-Name/" + jiboName)
-//     //       .push({ ...jibo_msg })
-//     //       .then(function () {
-//     //         console.log("New record for '" + jiboName + "' created successfully as: " + jibo_msg.msg_type);
-//     //       })
-//     //       .catch(function (error) {
-//     //         console.error(
-//     //           "Error creating new record for '" + jiboName + "' as: " + + jibo_msg.msg_type,
-//     //           error
-//     //         );
-//     //       });
-//     //     // Simulating asynchronous behavior with a delay of 1 second
-//     //     setTimeout(() => {
-//     //       resolve(jibo_msg); // Resolve the promise after the delay
-//     //     }, 1000);
-//     //   }
-//     //   else {
-//     //     console.log("Jibo is NOT ready for a new message to be pushed.");
-//     //   }
-//     // }
-//     // else {
-//     //   console.log("No Jibo Name added.");
-//     // }
-//   });
-// }
-///////////////////////////////// KEEP THIS FUNCTION! /////////////////////////////////
 
 export default class Scratch3Jibo extends Extension<Details, Blocks> {
   // runtime: Runtime;
   ros: any; // TODO
   connected: boolean;
-  failed: boolean;
   rosbridgeIP: string;
   jbVolume: string;
   asr_out: any;
-  jiboEvent: EventEmitter;
-  te: string;
-  text: string;
-  animName: string;
-  busy: boolean;
-  tts: any;
   dances: MenuItem<string>[];
   dirs: MenuItem<string>[];
   audios: MenuItem<string>[]; // new
 
   init() {
-    this.text = "Hello! I'm Jibo!";
-    this.animName = "My Animation";
-    this.busy = false;
     this.dances = Object.entries(Dance).map(([dance, def]) => ({
-      value: dance,
       text: Dance[dance],
+      value: Dance[dance],
     }));
     this.dirs = Object.entries(Direction).map(([direction]) => ({
       text: Direction[direction],
       value: Direction[direction],
     }));
     this.audios = Object.entries(Audio).map(([audio, def]) => ({ // new
-      value: audio,
+      value: Audio[audio],
       text: Audio[audio],
     }));
     this.runtime.registerPeripheralExtension(EXTENSION_ID, this);
@@ -828,12 +535,9 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
     this.ros = null;
     this.connected = false;
-    this.failed = false;
     this.rosbridgeIP = "ws://localhost:9090"; // rosbridgeIP option includes port
     this.jbVolume = "60";
     this.asr_out = "";
-    this.jiboEvent = new EventEmitter();
-    this.tts = [];
 
     this.RosConnect({ rosIP: "localhost" });
   }
@@ -847,11 +551,6 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     });
 
     state_listener.subscribe(function (message: any) {
-      // console.log('Received message on ' + state_listener.name + ': ');
-      // console.log("check: " + message.is_playing_sound);
-      // console.log(message)
-      self.busy = message.is_playing_sound;
-      // console.log("in check, busy: " + this.busy)
       state_listener.unsubscribe();
     });
   }
@@ -870,8 +569,8 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           type: ArgumentType.String,
           defaultValue: "Jibo's name here",
         },
-        text: () => `Enter Jibo's name`,
-        operation: () => this.openUI("jiboNameModal", "My Jibo"),
+        text: () => `Connect Jibo`,
+        operation: () => this.openUI("jiboNameModal", "Connect Jibo"),
       }),
       JiboTTS: () => ({
         type: BlockType.Command,
@@ -978,7 +677,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           component: ColorArgUI,
           initial: {
             value: Color.Blue,
-            text: "Blue",
+            text: "blue",
           },
         }),
         text: (cname) => `set LED ring to ${cname}`,
@@ -1037,12 +736,13 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
       });
 
       // If connection fails
-      let error_cb_factory = function (self: Scratch3Jibo) {
-        return function () {
-          self.failed = true;
+      let error_cb_factory = function () {
+        return function (self: Scratch3Jibo) {
+          self.connected = false;
+          console.log("ROS connection failed");
         };
       };
-      let error_cb = error_cb_factory(this);
+      let error_cb = error_cb_factory();
       this.ros.on("error", function (error: any) {
         error_cb();
         // log.error('ROS: Error connecting to websocket server: ', error);
@@ -1111,10 +811,10 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     return this.asr_out;
   }
 
-  async jiboLEDFn(color: string) { // I added async
+  async jiboLEDFn(color: string) {
     let ledValue = colorDef[color].value;
 
-    if (color === "Random") {
+    if (color === "random") {
       const randomColorIdx = Math.floor(
         // exclude random and off
         Math.random() * (Object.keys(colorDef).length - 2)
@@ -1135,8 +835,9 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     var timer = () => new Promise<void>((resolve, reject) => {
       setTimeout(resolve, 500);
     });
-    // does this reliably send the "done" command?
-    await queue.pushToFirebase(jibo_msg, () => queue.timedFinish(timer)); // delay a bit before next command
+    await queue.pushToFirebase(jibo_msg, 
+      () => queue.timedFinish(timer)
+    ); // set 500ms time limit on led command
 
     await this.JiboPublish(jibo_msg);
   }
@@ -1156,7 +857,6 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     // write to firebase
     var timer = () => new Promise<void>((resolve, reject) => {
       setTimeout(resolve, 3000);
-      console.log("look over");
     });
     await queue.pushToFirebase(jibo_msg, timer); // delay a bit before next command
 
@@ -1182,10 +882,10 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   }
 
   async jiboDanceFn(animation_key: string) {
-    this.jiboAnimFn(animation_key);
+    await this.jiboAnimFn(animation_key);
     // transition back to neutral
     var timer = () => new Promise<void>((resolve, reject) => {
-      setTimeout(resolve, 100);
+      setTimeout(resolve, 500);
     });
     await queue.pushToFirebase({
       do_anim_transition: true,
@@ -1245,8 +945,6 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
       console.log("Received message on " + state_listener.name + ": ");
       console.log(message);
       state_listener.unsubscribe();
-
-      //this.jiboEvent.emit('command.complete');
     });
   }
   async JiboASR_request() {
@@ -1272,7 +970,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     };
 
     var timer = () => new Promise<void>((resolve, reject) => {
-      setTimeout(resolve, 100);
+      setTimeout(resolve, 500);
     });
     await queue.pushToFirebase(jibo_msg, timer); // delay a bit before next command
     // cmdVel.publish(jibo_msg);
