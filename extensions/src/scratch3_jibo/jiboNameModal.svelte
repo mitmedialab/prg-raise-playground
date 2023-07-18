@@ -3,6 +3,7 @@
   import { ReactiveInvoke, reactiveInvoke, activeClass, color } from "$common";
   // my imports
   import { setJiboName } from "./index";
+  import _ from "$src/.templates/generic";
 
   /**
    * @summary This is a reference to the instance of your extension.
@@ -17,8 +18,9 @@
 
   export let extension: Extension;
 
-  // my variablees
+  // my variables
   let inputText = localStorage.getItem("prevJiboName") ? localStorage.getItem("prevJiboName") : "";
+  let errorVisible = false;
 
   /**
    * @summary Use this to close the modal / pop-up that contains this UI.
@@ -31,10 +33,25 @@
   // svelte-ignore unused-export-let
   export let close: () => void;
 
+  function validJiboName(jiboName: string) {
+    if (jiboName && jiboName != "") {
+      let regExp = /[A-Za-z]+-[A-Za-z]+-[A-Za-z]+-[A-Za-z]+/gm;
+      if (jiboName.match(regExp))
+        return true;
+    }
+    // console.log("Invalid jibo name");
+    return false;
+  }
   function handleSubmit() {
-    inputText = inputText.toLowerCase();
-    setJiboName(inputText);
-    close();
+    if (validJiboName(inputText)) {
+      inputText = inputText.toLowerCase();
+      inputText = inputText.trim();
+      setJiboName(inputText);
+      errorVisible = true;
+      close();
+    } else {
+      errorVisible = true;
+    }
   }
 
   /**
@@ -67,7 +84,12 @@
 >
   <h5>Please enter Jibo's name below:</h5>
   <input type="text" bind:value={inputText} placeholder="jibo..." />
-  <!-- <h2>I am {extension.name}.</h2> -->
+  {#if errorVisible}
+    <p
+      class="errorMsg">
+        Jibo's name should be four words separated by dashes. For example: robot-explore-circuit-play.
+    </p>
+  {/if}
 
   <button on:click={handleSubmit}>Submit</button>
   <!-- <button on:click={(event) => invoke("setText" , inputText)}>Submit</button> -->
@@ -77,5 +99,9 @@
   .container {
     text-align: center;
     padding: 30px;
+  }
+  .errorMsg {
+    color: red;
+    font-size: 0.67em;
   }
 </style>
