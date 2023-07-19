@@ -1,4 +1,4 @@
-import { Argument, ArgumentType, BlockMetadata, BlockOperation, ExtensionArgumentMetadata, InlineImage, Menu, MultipleArgsBlock, OneArgBlock, ValidKey, ValueOf, VerboseArgument } from "$common/types";
+import { Argument, ArgumentType, Arguments, BlockMetadata, BlockOperation, ExtensionArgumentMetadata, InlineImage, Menu, MultipleArgsBlock, OneArgBlock, ValidKey, ValueOf, VerboseArgument } from "$common/types";
 import { assertSameLength, isPrimitive, isString } from "$common/utils";
 import { extractHandlers } from "./handlers";
 import { setMenu } from "./menus";
@@ -14,9 +14,9 @@ const getArgumentType = <T>(arg: Argument<T>): ValueOf<typeof ArgumentType> =>
  * @param block 
  * @returns An array of 0, 1, or 2+ args
  */
-export const extractArgs = (block: BlockMetadata<BlockOperation>) => {
-  const argKey: ValidKey<OneArgBlock> = "arg";
-  const argsKey: ValidKey<MultipleArgsBlock> = "args";
+export const extractArgs = (block: BlockMetadata<BlockOperation>): readonly Argument<unknown>[] => {
+  const argKey: ValidKey<Arguments<[unknown]>> = "arg";
+  const argsKey: ValidKey<Arguments<[unknown, unknown]>> = "args";
   if (argKey in block && block[argKey]) return [(block as OneArgBlock).arg];
   if (argsKey in block && (block[argsKey]?.length ?? 0) > 0) return (block as MultipleArgsBlock).args;
   return [];
@@ -28,7 +28,7 @@ export const extractArgs = (block: BlockMetadata<BlockOperation>) => {
  * @param names 
  * @returns 
  */
-export const zipArgs = (args: readonly Argument<any>[], names?: string[]) => {
+export const zipArgs = (args: readonly Argument<unknown>[], names?: string[]) => {
   const types = args.map(getArgumentType);
   const handlers = extractHandlers(args);
   names ??= types.map((_, index) => getArgName(index));
@@ -49,7 +49,7 @@ export const convertToArgumentInfo = (opcode: string, args: readonly Argument<an
 
         if (isPrimitive(element)) return entry;
 
-        const { defaultValue, options } = element as VerboseArgument<any>;
+        const { defaultValue, options } = element as VerboseArgument<unknown>;
 
         setDefaultValue(entry, opcode, index, defaultValue);
         setMenu(entry, options, menus);

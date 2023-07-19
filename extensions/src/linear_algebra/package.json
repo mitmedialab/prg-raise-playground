@@ -1,0 +1,15 @@
+{
+  "name": "linear_algebra-extension",
+  "version": "1.0.0",
+  "description": "An extension created using the PRG AI Blocks framework",
+  "main": "index.ts",
+  "scripts": {
+    "directory": "echo linear_algebra",
+    "test": "npm run test --prefix ../../ -- linear_algebra/index.test.ts",
+    "dev": "npm run dev --prefix ../../../ -- only=linear_algebra",
+    "add:ui": "npm run add:ui --prefix ../../../  -- linear_algebra",
+    "add:arg": "npm run --prefix ../../../-- linear_algebra"
+  },
+  "author": "",
+  "license": "ISC"
+}

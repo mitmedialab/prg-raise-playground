@@ -1,12 +1,17 @@
 import CustomArgumentManager from "$common/extension/mixins/configurable/customArguments/CustomArgumentManager";
 import { ArgumentType } from "$common/types/enums";
 import { guiDropdownInterop } from "$common/globals";
-import { Argument, Expand } from "$common/types";
+import { Argument, CustomArgument, Expand } from "$common/types";
 import { MinimalExtensionConstructor } from "../../base";
 import { withDependencies } from "../../dependencies";
 import customSaveData from "../customSaveData";
 import { ArgumentEntry, ArgumentID, CustomArgumentComponent, CustomArgumentRecipe, RuntimeWithCustomArgumentSupport, renderToDropdown } from "./utils";
 import { ExtensionBase } from "$common/extension/ExtensionBase";
+import { isString } from "$common/utils";
+import { ExtensionInstanceWithFunctionality } from "../..";
+
+const isCustomArgument = (arg: Argument<unknown>): arg is CustomArgument<unknown, ExtensionInstanceWithFunctionality<["customArguments"]>> =>
+  !isString(arg) && arg.type === 'custom';
 
 /**
  * Mixin the ability for extensions to create custom argument types with their own specific UIs
@@ -17,6 +22,31 @@ import { ExtensionBase } from "$common/extension/ExtensionBase";
 export default function mixin<T extends MinimalExtensionConstructor>(Ctor: T) {
   abstract class ExtensionWithCustomArgumentSupport extends withDependencies(Ctor, customSaveData) {
     private argumentManager: CustomArgumentManager = null;
+
+    constructor(...args: any[]) {
+      super(...args);
+      const _this = this;
+      this.addModifier("args", (args) => {
+        return args.map(arg => {
+          if (!isCustomArgument(arg)) return arg;
+          const { component, defaultEntry, acceptReportersHandler } = arg;
+          const id = this.customArgumentManager.add(defaultEntry);
+          const getItems = () => this.processMenuForCustomArgument(id, component);
+          const resolve = (param: any) => {
+            const isIdentifier = isString(param) && CustomArgumentManager.IsIdentifier(param);
+            const value = isIdentifier ? this.customArgumentManager.getEntry(param).value : param;
+            return acceptReportersHandler.call(_this, value);
+          }
+          return {
+            type: ArgumentType.Custom,
+            defaultValue: id,
+            options: acceptReportersHandler === undefined
+              ? getItems
+              : { acceptsReports: true, getItems, handler: acceptReportersHandler },
+          } as Argument<unknown>
+        });
+      })
+    }
 
     /**
      * Create a custom argument for one of this block's argument. Within the argument object, you must provide:

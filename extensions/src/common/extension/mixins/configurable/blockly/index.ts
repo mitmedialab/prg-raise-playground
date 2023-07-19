@@ -7,9 +7,11 @@ type Methods =
       getToolbox(): Blockly.Toolbox;
       getFlyout(): Blockly.Flyout;
       zoom: Blockly.WorkspaceSvg["zoom"];
+      reportValue(blockID: string, serializedValue: string);
     }
   }
 
+export type BlockSvg = Blockly.BlockSvg;
 type MinimalBlockly = Omit<typeof Blockly, keyof Methods>
 
 /**

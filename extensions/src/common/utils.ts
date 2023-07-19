@@ -159,7 +159,7 @@ export const untilExternalGlobalVariableLoaded = async <T>(url: string, globalVa
  * @param args 
  * @returns 
  */
-export const typesafeCall = <Args extends any[], Return, This, Fn extends (this: This, ...args: Args) => Return>(fn: Fn, _this: This, ...args: Args) => fn.call(_this, ...args) as Return;
+export const typesafeCall = <Args extends any[], TReturn, This, Fn extends (this: This, ...args: Args) => TReturn>(fn: Fn, _this: This, ...args: Args) => fn.call(_this, ...args) as TReturn;
 
 export const set = <T extends object, K extends keyof T>(container: T, key: K, value: T[K]) => {
   container[key] = value;

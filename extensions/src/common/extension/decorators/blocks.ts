@@ -60,7 +60,7 @@ export function block<
   const TRemoveUtil extends any[] = Args extends [...infer R extends any[], BlockUtility] ? R : Args,
 >
   (
-    blockInfoOrGetter: (BlockMetadata<(...args: TRemoveUtil) => Return> | ((this: This, self: This) => BlockMetadata<(...args: TRemoveUtil) => Return>))
+    blockInfoOrGetter: (BlockMetadata<(...args: TRemoveUtil) => Return, This> | ((this: This, self: This) => BlockMetadata<(...args: TRemoveUtil) => Return, This>))
   ): TypedMethodDecorator<This, Args, Return, (...args: Args) => Return> {
 
   return function (this: This, target: (this: This, ...args: Args) => Return, context: ClassMethodDecoratorContext<This, Fn>) {

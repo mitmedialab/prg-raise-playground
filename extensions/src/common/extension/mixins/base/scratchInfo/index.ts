@@ -1,9 +1,9 @@
 import { castToType } from "$common/cast";
 import CustomArgumentManager from "$common/extension/mixins/configurable/customArguments/CustomArgumentManager";
 import { ArgumentType, BlockType } from "$common/types/enums";
-import { BlockOperation, ValueOf, Menu, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, DynamicMenu, BlockMetadata, } from "$common/types";
+import { BlockOperation, ValueOf, Menu, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, DynamicMenu, BlockMetadata, Argument, } from "$common/types";
 import { registerButtonCallback } from "$common/ui";
-import { isString, typesafeCall, } from "$common/utils";
+import { isString, } from "$common/utils";
 import type BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import { menuProbe, asStaticMenu, getMenuName, convertMenuItemsToString } from "./menus";
 import { Handler } from "./handlers";
@@ -53,6 +53,7 @@ export const wrapOperation = <T extends MinimalExtensionInstance>(
       return operation.call(_this, ...castedArguments, blockUtility);
     }
 
+
 /**
  * Mixin the ability for extension's to:
  * - build up block definitions incrementally (through the use of `pushBlock`)
@@ -63,12 +64,26 @@ export const wrapOperation = <T extends MinimalExtensionInstance>(
  */
 export default function (Ctor: CustomizableExtensionConstructor) {
   type BlockEntry = { definition: BlockDefinition<ScratchExtension, BlockOperation>, operation: BlockOperation };
+  type Block = BlockMetadata<BlockOperation, ScratchExtension>;
   type BlockMap = Map<string, BlockEntry>;
+  type Modifiers = ScratchExtension["modifiers"];
+  type Modifier<TType extends keyof Modifiers> = Modifiers[TType][number];
+
   abstract class ScratchExtension extends Ctor {
     private readonly blockMap: BlockMap = new Map();
-
     private readonly menus: Menu<any>[] = [];
     private info: ExtensionMetadata;
+
+    private modifiers: {
+      block?: ((opcode: string, metadata: Block) => Block)[],
+      args?: ((args: readonly Argument<unknown>[]) => readonly Argument<unknown>[])[]
+    };
+
+    protected addModifier<TType extends keyof Modifiers>(type: TType, modifier: Modifier<TType>) {
+      this.modifiers ??= {};
+      this.modifiers[type] ??= [];
+      this.modifiers[type].push(modifier as any);
+    }
 
     /**
      * Add a block 
@@ -76,7 +91,7 @@ export default function (Ctor: CustomizableExtensionConstructor) {
      * @param definition 
      * @param operation 
      */
-    pushBlock<Fn extends BlockOperation>(opcode: string, definition: BlockDefinition<any, Fn>, operation: BlockOperation) {
+    pushBlock<Fn extends BlockOperation>(opcode: string, definition: BlockDefinition<MinimalExtensionInstance, Fn>, operation: BlockOperation) {
       if (this.blockMap.has(opcode)) throw new Error(`Attempt to push block with opcode ${opcode}, but it was already set. This is assumed to be a mistake.`)
       this.blockMap.set(opcode, { definition, operation });
     }
@@ -93,19 +108,25 @@ export default function (Ctor: CustomizableExtensionConstructor) {
       return this.info;
     }
 
+
+    private resolveBlock(opcode: string, { definition }: BlockEntry): Block {
+      const raw: Block = isBlockGetter(definition) ? definition.call(this, this) : definition;
+      return this.modifiers?.block?.reduce((acc, callback) => callback(opcode, acc), raw) ?? raw;
+    }
+
+    private resolveArgs(block: Block) {
+      const raw = extractArgs(block);
+      return this.modifiers?.args?.reduce((acc, callback) => callback(acc), raw) ?? raw;
+    }
+
     private convertToInfo(details: [opcode: string, entry: BlockEntry]) {
       const [opcode, entry] = details;
-      const { definition, operation } = entry;
+      const { operation } = entry;
 
-      // Utilize explicit casting to appease test framework's typechecker
-      const block = isBlockGetter(definition)
-        ? typesafeCall(definition, this, this) as BlockMetadata<BlockOperation>
-        : definition as BlockMetadata<BlockOperation>;
+      const block = this.resolveBlock(opcode, entry);
+      const args = this.resolveArgs(block);
 
       const { type, text } = block;
-
-      const args = extractArgs(block);
-
       const { id, runtime, menus } = this;
 
       const displayText = convertToDisplayText(opcode, text, args);

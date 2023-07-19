@@ -1,4 +1,5 @@
 import { ArgumentType, BlockType, RGBObject, MenuItem, copyTo, SaveDataHandler, block, buttonBlock, extension } from "$common";
+import { ExtensionInstanceWithFunctionality, ExtensionWithFunctionality } from "$common/extension/mixins";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import AnimalArgument from "./AnimalArgument.svelte";
 
@@ -43,7 +44,8 @@ export default class TypeScriptFrameworkExample extends extension(
   },
   "ui",
   "customSaveData",
-  "customArguments"
+  "customArguments",
+  "customReportValue"
 ) {
   lhsOptions: number[];
   animals: MenuItem<Animal>[];
@@ -277,3 +279,8 @@ export default class TypeScriptFrameworkExample extends extension(
     return left * right;
   }
 }
+
+
+type z<T extends ExtensionInstanceWithFunctionality<["customReportValue"]>> = true;
+
+type y = z<TypeScriptFrameworkExample>;

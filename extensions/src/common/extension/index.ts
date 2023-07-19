@@ -71,9 +71,13 @@ const recursivelyApplyMixinsAndDependencies = <const TSupported extends readonly
     .map(key => optionalMixins[key])
     .reduce((acc, mixin) => {
       const { dependencies, MixedIn } = tryCaptureDependencies(() => mixin(acc));
-      return !dependencies
+      if (!dependencies) return MixedIn;
+      type Parent = ExtensionWithFunctionality<[...typeof dependencies]>;
+      const { Result } = recursivelyApplyMixinsAndDependencies(acc as Parent, dependencies, alreadyAdded);
+      return mixin(Result) as typeof MixedIn;
+      /*return !dependencies
         ? MixedIn
-        : recursivelyApplyMixinsAndDependencies(MixedIn, dependencies, alreadyAdded).Result as typeof MixedIn;
+        : recursivelyApplyMixinsAndDependencies(MixedIn, dependencies, alreadyAdded).Result as typeof MixedIn;*/
     }, Base);
 
   return { Result, allSupported: alreadyAdded }

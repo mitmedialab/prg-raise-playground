@@ -4,6 +4,7 @@ import { isFunction, isString } from "$common/utils";
 import { block } from "../blocks";
 import { ArgumentMethods, BlockDecorators, BlockDefinitions, BlockEntry, BlockMap, LegacyExtension, LegacyExtensionDecorator, LegacySupport, ObjectOrGetter } from "./types";
 import { ExtensionInstance } from "$common/extension";
+import { ExtensionBase } from "$common/extension/ExtensionBase";
 
 /**
  * 
@@ -70,6 +71,7 @@ export const legacy = <
 const createBlockDefiner = <TExtension extends ExtensionInstance & BaseGenericExtension>(entry: BlockEntry) =>
   (objOrGetter: ObjectOrGetter<{ opertation: BlockOperation } & Partial<ArgumentMethods<any, any>>, TExtension>) =>
     ((extension: TExtension) => {
+      // @ts-ignore
       const { operation, argumentMethods } = isFunction(objOrGetter) ? objOrGetter.call(extension, extension) : objOrGetter;
       if (argumentMethods) attachArgumentMethods(entry, argumentMethods, extension);
       return { ...entry, operation }
@@ -80,16 +82,16 @@ const createBlockDefiner = <TExtension extends ExtensionInstance & BaseGenericEx
  * @param entry 
  * @returns 
  */
-const createBlockDecorator = <TExtension extends ExtensionInstance>(entry: BlockEntry) =>
+const createBlockDecorator = <TExtension extends ExtensionInstance & ExtensionBase>(entry: BlockEntry) =>
   (...params: ([ObjectOrGetter<ArgumentMethods<any, any>, TExtension>] | [])) => {
-    if (params.length === 0 || !params[0]) return block<TExtension, any[], any, any>(entry as BlockMetadata<any>);
+    if (params.length === 0 || !params[0]) return block<TExtension, any[], any, any>(entry as BlockMetadata<any, TExtension>);
     const objOrGetter = params[0];
-    return block<TExtension, any[], any, any>((extension: TExtension) => {
+    return block<TExtension, any[], any, (...args: any[]) => void>((extension: TExtension) => {
       const { argumentMethods } = isFunction(objOrGetter)
         ? objOrGetter.call(extension, extension) : objOrGetter;
 
       attachArgumentMethods(entry, argumentMethods, extension);
-      return entry as BlockMetadata<any>;
+      return entry as BlockMetadata<any, TExtension>;
     });
   }
 
@@ -109,6 +111,7 @@ const attachArgumentMethods = (
       Object.entries(methods)
         .filter(([_, method]) => method !== undefined)
         .map(([key, method]) => [key, method.bind(extension)])
+        // @ts-ignore
         .forEach(([key, method]) => tryUpdateKey(arg, key, method)))
 }
 

@@ -1,4 +1,7 @@
-import { BlockUtilityWithID } from ".";
+import { ExtensionInstance } from "$common/extension";
+import { ExtensionInstanceWithFunctionality, MixinName } from "$common/extension/mixins";
+import { MinimalExtensionInstance } from "$common/extension/mixins/base";
+import { BlockUtilityWithID, ExtensionUI } from ".";
 import { ArgumentType } from "../enums";
 import { ValueOf } from "../utils";
 import { BlockOperation } from "./blocks";
@@ -43,6 +46,19 @@ export type InlineImage = {
   flipRTL?: boolean
 }
 
+export type ArgumentEntry<T> = { text: string, value: T };
+export type ArgumentEntrySetter<T, TReturn = void> = (entry: ArgumentEntry<T>) => TReturn;
+export type CustomArgumentUI<T, Extension extends MinimalExtensionInstance> = ExtensionUI<Extension, { setter: ArgumentEntrySetter<T>, current: ArgumentEntry<T> }>;
+export type CustomArgument<T, Extension extends ExtensionInstance = MinimalExtensionInstance> =
+  Extension extends ExtensionInstanceWithFunctionality<["customArguments"]>
+  ? {
+    type: typeof ArgumentType.Custom;
+    component: CustomArgumentUI<T, Extension>,
+    defaultEntry: ArgumentEntry<T>;
+    acceptReportersHandler?: (x: any) => ArgumentEntry<T>;
+  }
+  : `ERROR: This looks like a custom argument. Your extension must be configured with the ${MixinName & "customArguments"} addon to use custom arguments.`
+
 export type Argument<T> = VerboseArgument<T> | ScratchArgument<T>;
 
 export type RGBObject = { r: number, g: number, b: number };
@@ -74,11 +90,17 @@ export type ScratchArgument<T> =
   T extends boolean ? (typeof ArgumentType.Boolean | typeof ArgumentType.Custom) :
   (typeof ArgumentType.Custom);
 
-export type ToArguments<T extends any[]> =
+export type ToArguments<T extends any[], Extension extends MinimalExtensionInstance = MinimalExtensionInstance> =
   T extends [infer _ extends InlineImageSpecifier, ...infer Tail]
-  ? readonly [InlineImage, ...ToArguments<Tail>]
+  ? readonly [InlineImage, ...ToArguments<Tail, Extension>]
+  : T extends [infer Head extends unknown, ...infer Tail]
+  ? readonly [Argument<Head>, ...ToArguments<Tail, Extension>]
   : T extends [infer Head, ...infer Tail]
-  ? readonly [Argument<Head>, ...ToArguments<Tail>]
+  ? ScratchArgument<Head> extends typeof ArgumentType.Custom
+  ? readonly [CustomArgument<Head, Extension>, ...ToArguments<Tail, Extension>]
+  : readonly [Argument<Head>, ...ToArguments<Tail, Extension>]
+  : T extends [infer Head, ...infer Tail]
+  ? readonly [Argument<Head>, ...ToArguments<Tail, Extension>]
   : [];
 
 export type ParamsAndUtility<T extends BlockOperation> = [...params: Parameters<T>, util: BlockUtilityWithID];

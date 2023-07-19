@@ -8,10 +8,17 @@ import { Language } from "../enums";
 import { MethodNames, ValueOf } from "../utils";
 import { ExtensionInstance } from "$common/extension";
 import { Tag } from "./tags";
+import { SvelteComponentConstructor } from "..";
+import { MinimalExtensionInstance } from "$common/extension/mixins/base";
 
 export type BaseGenericExtension = Extension<ExtensionMenuDisplayDetails, ExtensionBlocks>;
 
 export type BlockUtilityWithID = BlockUtility & { [blockIDKey]: string };
+
+export type ExtensionUI<
+  Extension extends MinimalExtensionInstance = MinimalExtensionInstance,
+  TProps extends Record<string, any> = {}
+> = SvelteComponentConstructor<{ extension: Extension } & TProps>
 
 /**
  * @summary An object passed to extensions on initialization. 
@@ -37,6 +44,11 @@ export type ParameterOf<
   TBlockKey extends Opocde<TExtension>,
   TIndex extends number,
 > = Parameters<TExtension extends Extension<any, any> ? TExtension["BlockFunctions"][TBlockKey] : TExtension[TBlockKey]>[TIndex];
+
+export type ReturnOf<
+  TExtension extends ExtensionInstance,
+  TBlockKey extends Opocde<TExtension>,
+> = Awaited<ReturnType<TExtension extends Extension<any, any> ? TExtension["BlockFunctions"][TBlockKey] : TExtension[TBlockKey]>>;
 
 /**
  * How an extension should display in the extensions menu.

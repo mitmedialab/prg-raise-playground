@@ -1,5 +1,9 @@
+import { ExtensionBase } from "$common/extension/ExtensionBase";
+import { ExtensionInstanceWithFunctionality, MixinName, } from "$common/extension/mixins";
+import { MinimalExtensionInstance } from "$common/extension/mixins/base";
 import type BlockUtility from "$scratch-vm/engine/block-utility";
-import { BaseGenericExtension } from ".";
+import { BaseGenericExtension, ExtensionUI } from ".";
+import { SvelteComponentConstructor } from "..";
 import { BlockType } from "../enums";
 import { NonEmptyArray, ValueOf } from "../utils";
 import { ParamsAndUtility, ToArguments } from "./arguments";
@@ -9,8 +13,9 @@ export type ButtonBlock = () => InternalButtonKey;
 
 export type BlockMetadata<
   Fn extends BlockOperation,
-  TParameters extends any[] = Parameters<Fn> extends [...infer R, BlockUtility] ? R : Parameters<Fn>
-> = Type<ReturnType<Fn>> & Text<TParameters> & Arguments<TParameters>;
+  Extension extends MinimalExtensionInstance = MinimalExtensionInstance,
+  TParameters extends any[] = Parameters<Fn> extends [...infer R, BlockUtility] ? R : Parameters<Fn>,
+> = Type<ReturnType<Fn>> & Text<TParameters> & Arguments<TParameters, Extension> & CustomReportValue<Extension, ReturnType<Fn>>;
 
 export type Block<TExt extends BaseGenericExtension, TOp extends BlockOperation> = BlockMetadata<TOp> & Operation<TExt, TOp>;
 
@@ -84,7 +89,7 @@ type Text<TParameters extends any[]> = {
   text: TParameters extends NonEmptyArray<any> ? (...params: TParameters) => string : string;
 }
 
-type Arguments<TParameters extends any[]> =
+export type Arguments<TParameters extends any[], Extension extends MinimalExtensionInstance = MinimalExtensionInstance> =
   TParameters extends [] | [BlockUtility] ? {
     /**
      * @description The args field should not be defined for blocks that take no arguments
@@ -166,7 +171,7 @@ type Arguments<TParameters extends any[]> =
      *  }
      * }
      */
-    arg: ToArguments<TParameters>[0];
+    arg: ToArguments<TParameters, Extension>[0];
   }
   : {
     /**
@@ -238,7 +243,7 @@ type Arguments<TParameters extends any[]> =
      *  } 
      * ]
      */
-    args: ToArguments<TParameters>;
+    args: ToArguments<TParameters, Extension>;
   };
 
 
@@ -274,6 +279,16 @@ type Operation<TExt extends BaseGenericExtension, TOp extends BlockOperation> = 
  */
   operation: (this: TExt, ...params: TOp extends ButtonBlock ? Parameters<TOp> : ParamsAndUtility<TOp>) => TOp extends ButtonBlock ? void : ReturnType<TOp>;
 }
+
+type CustomReportValue<TThis extends ExtensionBase, TReturn> = {
+  reportValueUI?:
+  TThis extends ExtensionInstanceWithFunctionality<["customReportValue"]>
+  ? TReturn extends void | Promise<void>
+  ? `ERROR: Only blocks that return a value can specify a ${keyof CustomReportValue<any, any>}`
+  : ExtensionUI<TThis, { value: TReturn }>
+  : `ERROR: Your extension must be configured with the '${MixinName & "customReportValue"}' addon to specify a ${keyof CustomReportValue<any, any>}`;
+}
+
 
 export type ReturnTypeByBlockType<T extends ValueOf<typeof BlockType>> =
   T extends typeof BlockType.Boolean
@@ -325,8 +340,8 @@ export type BlocksInfo<T extends BaseGenericExtension> = {
 
 export type BlockInfo<TExtension extends BaseGenericExtension, TKey extends keyof BlocksInfo<TExtension>> = BlocksInfo<TExtension>[TKey];
 
-export type NoArgsBlock = BlockMetadata<() => any>;
-export type OneArgBlock = BlockMetadata<(arg: any, utility: BlockUtility) => any, [string]>;
-export type MultipleArgsBlock = BlockMetadata<(arg1: any, arg2: any, utility: BlockUtility) => any>;
-export type WithArgsBlock = BlockMetadata<(...args: any[]) => any>;
+export type NoArgsBlock = BlockMetadata<() => unknown>;
+export type OneArgBlock = BlockMetadata<(arg: unknown, utility: BlockUtility) => any, MinimalExtensionInstance, [unknown]>;
+export type MultipleArgsBlock = BlockMetadata<(arg1: unknown, arg2: unknown, utility: BlockUtility) => any>;
+export type WithArgsBlock = BlockMetadata<(...args: unknown[]) => any>;
 export type AnyBlock = NoArgsBlock | OneArgBlock | MultipleArgsBlock;
