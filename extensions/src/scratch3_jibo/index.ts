@@ -5,6 +5,7 @@ import { ArgumentType, BlockType } from "$common";
 import { BlockDefinitions, MenuItem } from "$common";
 import { Extension } from "$common";
 
+import VirtualJibo from "./virtualJibo/virtualJibo";
 import { Color, ColorType, colorDef } from "./jiboUtils/ColorDef";
 import { Direction, DirType, directionDef } from "./jiboUtils/LookAtDef";
 import { 
@@ -20,6 +21,7 @@ import EmojiArgUI from "./EmojiArgument.svelte";
 import IconArgUI from "./IconArgument.svelte";
 
 import ROSLIB from "roslib";
+import BlockUtility from '$root/packages/scratch-vm/src/engine/block-utility';
 
 const EXTENSION_ID = "jibo";
 
@@ -28,11 +30,11 @@ var jiboName: string = "";
 // var databaseRef = database.ref("Jibo-Name/" + jiboName);
 
 type Details = {
-  name: "Jibo";
-  description: "Program your favorite social robot, Jibo. This extension works with a physical or virtual Jibo.";
-  iconURL: "jibo_icon.png";
-  insetIconURL: "jibo_inset_icon.png";
-  tags: ["Made by PRG"];
+  name: "Jibo",
+  description: "Program your favorite social robot, Jibo. This extension works with a physical or virtual Jibo.",
+  iconURL: "jibo_icon.png",
+  insetIconURL: "jibo_inset_icon.png",
+  tags: ["Made by PRG"],
 };
 
 type Blocks = {
@@ -165,6 +167,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   dances: MenuItem<string>[];
   dirs: MenuItem<string>[];
   audios: MenuItem<string>[]; // new
+  virtualJibo: VirtualJibo;
 
   init() {
     this.dances = Object.entries(Dance).map(([dance, def]) => ({
@@ -189,6 +192,9 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     this.asr_out = "";
 
     this.RosConnect({ rosIP: "localhost" });
+
+    this.virtualJibo = new VirtualJibo();
+    this.virtualJibo.init(this.runtime);
   }
 
   checkBusy(self: Scratch3Jibo) {
@@ -212,7 +218,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
   defineBlocks(): BlockDefinitions<Scratch3Jibo> {
     return {
-      JiboButton: () => ({
+      JiboButton: (self: Scratch3Jibo) => ({
         type: BlockType.Button,
         arg: {
           type: ArgumentType.String,
@@ -228,8 +234,10 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           defaultValue: "Hello, I am Jibo",
         },
         text: (text: string) => `say ${text}`,
-        operation: (text: string) =>
-          this.jiboTTSFn(text),
+        operation: async (text: string,  { target }: BlockUtility) => {
+          await this.virtualJibo.say(text, target);
+          await this.jiboTTSFn(text);
+        }
       }),
       JiboAsk: () => ({
         type: BlockType.Command,
@@ -238,8 +246,8 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           defaultValue: "How are you?",
         },
         text: (text: string) => `ask ${text} and wait`,
-        operation: (text: string) =>
-          this.jiboAskFn(text),
+        operation: async (text: string) =>
+          await this.jiboAskFn(text),
       }),
       JiboListen: () => ({
         type: BlockType.Reporter,
@@ -315,7 +323,8 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           },
         }),
         text: (aname) => `show ${aname} icon`,
-        operation: async (icon: IconType) => {
+        operation: async (icon: IconType, { target }: BlockUtility) => {
+          this.virtualJibo.anim(icon, "icon", target);
           const akey = iconFiles[icon].file;
           await this.jiboAnimFn(akey, 1000);
         }
@@ -330,7 +339,8 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           },
         }),
         text: (cname) => `set LED ring to ${cname}`,
-        operation: async (color: ColorType) => {
+        operation: async (color: ColorType, { target }: BlockUtility) => {
+          this.virtualJibo.setLED(color, target);
           await this.jiboLEDFn(color);
         }
       }),
@@ -565,7 +575,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
   async JiboPublish(msg: any) {
     if (!this.connected) {
-      console.log("ROS is not connetced");
+      console.log("ROS is not connected");
       return false;
     }
     var cmdVel = new ROSLIB.Topic({
