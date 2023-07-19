@@ -1,5 +1,6 @@
 <script lang="ts">
-  import Extension, { Icon, IconType } from ".";
+  import Extension from ".";
+  import { Icon, IconType } from "./jiboUtils/AnimDef";
   import { ParameterOf, ArgumentEntry, ArgumentEntrySetter } from "$common";
 
   const iconImgs: Record<IconType, string> = {

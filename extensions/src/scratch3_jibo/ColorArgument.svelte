@@ -1,5 +1,6 @@
 <script lang="ts">
-  import Extension, { Color } from ".";
+  import Extension from ".";
+  import { Color } from "./jiboUtils/ColorDef";
   import {
     ParameterOf,
     ArgumentEntry,

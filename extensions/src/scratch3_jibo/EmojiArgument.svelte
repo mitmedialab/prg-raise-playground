@@ -1,5 +1,7 @@
 <script lang="ts">
-  import Extension, { Emotion, EmotionType } from ".";
+  
+  import Extension from ".";
+  import { Emotion, EmotionType } from "./jiboUtils/AnimDef";
   import { ParameterOf, ArgumentEntry, ArgumentEntrySetter } from "$common";
 
   const emojiImgs: Record<EmotionType, string> = {
