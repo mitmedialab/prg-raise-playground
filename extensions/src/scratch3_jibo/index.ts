@@ -261,7 +261,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         text: (dname) => `play ${dname} dance`,
         operation: async (dance: DanceType) => {
           const akey = danceFiles[dance].file;
-          await this.jiboDanceFn(akey);
+          await this.jiboDanceFn(akey, 5000);
         },
       }),
       JiboAudio: () => ({
@@ -296,13 +296,13 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           component: EmojiArgUI,
           initial: {
             value: Emotion.Happy,
-            text: "happy",
+            text: "Happy",
           },
         }),
         text: (aname) => `play ${aname} emotion`,
         operation: async (anim: EmotionType) => {
           const akey = emotionFiles[anim].file;
-          await this.jiboAnimFn(akey);
+          await this.jiboAnimFn(akey, 1000);
         },
       }),
       JiboIcon: () => ({
@@ -317,7 +317,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         text: (aname) => `show ${aname} icon`,
         operation: async (icon: IconType) => {
           const akey = iconFiles[icon].file;
-          await this.jiboAnimFn(akey);
+          await this.jiboAnimFn(akey, 1000);
         }
       }),
       JiboLED: () => ({
@@ -392,8 +392,8 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         };
       };
       let error_cb = error_cb_factory();
-      this.ros.on("error", function (error: any) {
-        error_cb();
+      this.ros.on("error", function (self: Scratch3Jibo, error: any) {
+        error_cb(self);
         // log.error('ROS: Error connecting to websocket server: ', error);
       });
 
@@ -510,7 +510,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     await this.JiboPublish(jibo_msg);
   }
 
-  async jiboAnimFn(animation_key: string) {
+  async jiboAnimFn(animation_key: string, delay: number) {
     console.log("the animation file is: " + animation_key); // debug statement
     var jibo_msg = {
       // readyForNext: false,
@@ -523,16 +523,16 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     };
 
     // write to firebase
-    var timer = () => new Promise<void>((resolve, reject) => {
-      setTimeout(resolve, 5000); // using timer because animFinished does not seem to be reliable
+    var timer = (delay) => new Promise<void>((resolve, reject) => {
+      setTimeout(resolve, delay); // using timer because animFinished does not seem to be reliable
     });
-    await queue.pushToFirebase(jibo_msg, timer); // delay before next command
+    await queue.pushToFirebase(jibo_msg, timer.bind(delay)); // delay before next command
     
     await this.JiboPublish(jibo_msg);
   }
 
-  async jiboDanceFn(animation_key: string) {
-    await this.jiboAnimFn(animation_key);
+  async jiboDanceFn(animation_key: string, delay: number) {
+    await this.jiboAnimFn(animation_key, delay);
     // transition back to neutral
     var timer = () => new Promise<void>((resolve, reject) => {
       setTimeout(resolve, 500);
