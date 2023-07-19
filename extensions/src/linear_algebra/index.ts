@@ -33,6 +33,7 @@ export default class ExtensionNameGoesHere extends extension(details, "customArg
     reportValueUI: CustomReportUI
   })
   exampleReporter(a: Matrix<2>, b: Matrix<2>) {
+    console.log(a);
     return a;
   }
 }

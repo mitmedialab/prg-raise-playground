@@ -28,30 +28,12 @@ export const wrapOperation = <T extends MinimalExtensionInstance>(
   _this: T,
   operation: BlockOperation,
   args: { name: string, type: ValueOf<typeof ArgumentType>, handler: Handler }[]
-) => _this.supports("customArguments")
-    ? function (this: ExtensionInstanceWithFunctionality<["customArguments"]>, argsFromScratch: Record<string, any>, blockUtility: BlockUtility) {
-      const castedArguments = args.map(({ name, type, handler }) => {
-        if (type === ArgumentType.Image) return inlineImageAccessError;
-        const param = argsFromScratch[name];
-        switch (type) {
-          case ArgumentType.Custom:
-            const isIdentifier = isString(param) && CustomArgumentManager.IsIdentifier(param);
-            const value = isIdentifier ? this.customArgumentManager.getEntry(param).value : param;
-            return handler.call(_this, value);
-          default:
-            return castToType(type, handler.call(_this, param));
-        }
-      });
-      return operation.call(_this, ...castedArguments, blockUtility);
-    }
-    : function (this: T, argsFromScratch: Record<string, any>, blockUtility: BlockUtility) {
-      const castedArguments = args.map(({ name, type, handler }) =>
-        type === ArgumentType.Image
-          ? inlineImageAccessError
-          : castToType(type, handler.call(_this, argsFromScratch[name]))
-      );
-      return operation.call(_this, ...castedArguments, blockUtility);
-    }
+) => function (this: T, argsFromScratch: Record<string, any>, blockUtility: BlockUtility) {
+  const castedArguments = args.map(({ name, type, handler }) =>
+    castToType(type, handler.call(_this, argsFromScratch[name]))
+  );
+  return operation.call(_this, ...castedArguments, blockUtility);
+}
 
 
 /**

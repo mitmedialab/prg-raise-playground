@@ -18,6 +18,10 @@ export const castToType = (argumentType: ValueOf<typeof ArgumentType>, value: an
       return toMatrix(value);
     case ArgumentType.Color:
       return Cast.toRgbColorObject(value) as RGBObject;
+    case ArgumentType.Custom:
+      return value;
+    case ArgumentType.Image:
+      return "ERROR: This argument represents an inline image and should not be accessed.";
     default:
       throw new Error(`Method not implemented for value of ${value} and type ${argumentType}`);
   }

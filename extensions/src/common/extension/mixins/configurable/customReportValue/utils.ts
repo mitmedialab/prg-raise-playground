@@ -22,5 +22,5 @@ export const getIdentifiersFromBlock = ({ type }: Block): [extensionID: Extensio
     type.split("_") as [ExtensionID, BlockOpcode];
 
 // Helpful pieces of scratch-blocks code:
-// reportValue: https://github.com/scratchfoundation/scratch-blocks/blob/develop/core/dropdowndiv.js#L186
+// reportValue: https://github.com/scratchfoundation/scratch-blocks/blob/develop/core/workspace_svg.js#L979
 // showPositionedByBlock: https://github.com/scratchfoundation/scratch-blocks/blob/develop/core/dropdowndiv.js#L186

@@ -1,7 +1,7 @@
 import CustomArgumentManager from "$common/extension/mixins/configurable/customArguments/CustomArgumentManager";
 import { ArgumentType } from "$common/types/enums";
 import { guiDropdownInterop } from "$common/globals";
-import { Argument, CustomArgument, Expand } from "$common/types";
+import { Argument, CustomArgument, DynamicMenuThatAcceptsReporters, Expand } from "$common/types";
 import { MinimalExtensionConstructor } from "../../base";
 import { withDependencies } from "../../dependencies";
 import customSaveData from "../customSaveData";
@@ -10,8 +10,19 @@ import { ExtensionBase } from "$common/extension/ExtensionBase";
 import { isString } from "$common/utils";
 import { ExtensionInstanceWithFunctionality } from "../..";
 
-const isCustomArgument = (arg: Argument<unknown>): arg is CustomArgument<unknown, ExtensionInstanceWithFunctionality<["customArguments"]>> =>
+type SupportedExtension = ExtensionInstanceWithFunctionality<["customArguments"]>;
+const isCustomArgument = (arg: Argument<unknown>): arg is CustomArgument<unknown, SupportedExtension> =>
   !isString(arg) && arg.type === 'custom';
+
+const getMethods = (extension: SupportedExtension, id: string, { component, acceptReportersHandler }: CustomArgument<unknown, SupportedExtension>) => {
+  const getItems = () => extension["processMenuForCustomArgument"](id, component);
+  const resolveArgument = (param: any): unknown => {
+    const isIdentifier = isString(param) && CustomArgumentManager.IsIdentifier(param);
+    const value = isIdentifier ? extension.customArgumentManager.getEntry(param).value : param;
+    return acceptReportersHandler?.call(extension, value) ?? value;
+  }
+  return { getItems, handler: resolveArgument };
+}
 
 /**
  * Mixin the ability for extensions to create custom argument types with their own specific UIs
@@ -29,21 +40,12 @@ export default function mixin<T extends MinimalExtensionConstructor>(Ctor: T) {
       this.addModifier("args", (args) => {
         return args.map(arg => {
           if (!isCustomArgument(arg)) return arg;
-          const { component, defaultEntry, acceptReportersHandler } = arg;
+          const { defaultEntry, acceptReportersHandler } = arg;
           const id = this.customArgumentManager.add(defaultEntry);
-          const getItems = () => this.processMenuForCustomArgument(id, component);
-          const resolve = (param: any) => {
-            const isIdentifier = isString(param) && CustomArgumentManager.IsIdentifier(param);
-            const value = isIdentifier ? this.customArgumentManager.getEntry(param).value : param;
-            return acceptReportersHandler.call(_this, value);
-          }
-          return {
-            type: ArgumentType.Custom,
-            defaultValue: id,
-            options: acceptReportersHandler === undefined
-              ? getItems
-              : { acceptsReports: true, getItems, handler: acceptReportersHandler },
-          } as Argument<unknown>
+          const { getItems, handler } = getMethods(_this, id, arg);
+          const acceptsReporters = Boolean(acceptReportersHandler) as true; // Hack
+          const options: DynamicMenuThatAcceptsReporters<unknown> = { acceptsReporters, getItems, handler }
+          return { type: ArgumentType.Custom, defaultValue: id, options } as Argument<unknown>
         });
       })
     }
