@@ -76,7 +76,7 @@ class FirebaseQueue {
   async timedFinish(timeoutFn: () => Promise<void>): Promise<void> {
     const requests = [
       timeoutFn(),
-      queue.animFinished(),
+      this.animFinished(),
     ];
     return Promise.race(requests);
   }
@@ -128,7 +128,7 @@ class FirebaseQueue {
   async pushToFirebase(data: any, awaitFn: () => Promise<void>) {
     if (jiboName != "") {
       database.ref("Jibo-Name/" + jiboName).push({ ...data });
-      await new Promise<void>((r) => { setTimeout(r, 500); }); // wait a bit before proceeding
+      await new Promise(r => setTimeout(r, 2000)); // wait a bit before proceeding
       await awaitFn();
     }
     else {
@@ -157,7 +157,6 @@ export function setJiboName(name: string): void {
 }
 
 export default class Scratch3Jibo extends Extension<Details, Blocks> {
-  // runtime: Runtime;
   ros: any; // TODO
   connected: boolean;
   rosbridgeIP: string;
@@ -423,7 +422,6 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     return this.connected;
   }
 
-  // TODO remove the self variable here
   async jiboTTSFn(text: string) {
     var jibo_msg = {
       // readyForNext: false,
@@ -505,9 +503,9 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
     // write to firebase
     var timer = () => new Promise<void>((resolve, reject) => {
-      setTimeout(resolve, 3000);
+      setTimeout(resolve, 1000); // wait a second for movement to complete
     });
-    await queue.pushToFirebase(jibo_msg, timer); // delay a bit before next command
+    await queue.pushToFirebase(jibo_msg, timer)
 
     await this.JiboPublish(jibo_msg);
   }
@@ -518,14 +516,17 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
       // readyForNext: false,
       msg_type: "JiboAction",
       do_motion: true,
-      do_sound_playback: true,
+      do_sound_playback: false,
       do_tts: false,
       do_lookat: false,
       motion: animation_key,
     };
 
     // write to firebase
-    await queue.pushToFirebase(jibo_msg, queue.animFinished); // delay a before next command
+    var timer = () => new Promise<void>((resolve, reject) => {
+      setTimeout(resolve, 5000); // using timer because animFinished does not seem to be reliable
+    });
+    await queue.pushToFirebase(jibo_msg, timer); // delay before next command
     
     await this.JiboPublish(jibo_msg);
   }
