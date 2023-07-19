@@ -41,27 +41,21 @@ export const danceFiles: Record<DanceType, AnimFileType> = {
 };
 
 export const Emotion = {
-    Embarassed: `Embarassed`,
     Frustrated: `Frustrated`,
     Laugh: `Laugh`,
     Sad: `Sad`,
     Thinking: `Thinking`,
     Happy: `Happy`,
     SadEyes: `SadEyes`,
-    Interested: `Interested`,
     Curious: `Curious`,
     No: `No`,
     Yes: `Yes`,
     Puzzled: `Puzzled`,
-    Relieved: `Relieved`,
     Success: `Success`,
 } as const;
 export type EmotionType = typeof Emotion[keyof typeof Emotion];
 
 export const emotionFiles: Record<EmotionType, AnimFileType> = {
-    [Emotion.Embarassed]: {
-        file: "Misc/embarassed_01_02.keys",
-    },
     [Emotion.Frustrated]: {
         file: "Misc/Frustrated_01_04.keys",
     },
@@ -80,9 +74,6 @@ export const emotionFiles: Record<EmotionType, AnimFileType> = {
     [Emotion.SadEyes]: {
         file: "Misc/Eye_Sad_03_02.keys",
     },
-    [Emotion.Interested]: {
-        file: "Misc/interested_01.keys",
-    },
     [Emotion.Curious]: {
         file: "Misc/Question_01_02.keys",
     },
@@ -94,9 +85,6 @@ export const emotionFiles: Record<EmotionType, AnimFileType> = {
     },
     [Emotion.Puzzled]: {
         file: "Misc/puzzled_01_02.keys",
-    },
-    [Emotion.Relieved]: {
-        file: "Misc/relieved_01.keys",
     },
     [Emotion.Success]: {
         file: "Misc/success_02.keys",
