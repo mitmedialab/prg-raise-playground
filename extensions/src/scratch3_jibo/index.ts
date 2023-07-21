@@ -16,9 +16,9 @@ import {
 } from "./jiboUtils/AnimDef";
 
 /** Import our svelte components */
-import ColorArgUI from "./ColorArgument.svelte";
-import EmojiArgUI from "./EmojiArgument.svelte";
-import IconArgUI from "./IconArgument.svelte";
+//import ColorArgUI from "./ColorArgument.svelte";
+//import EmojiArgUI from "./EmojiArgument.svelte";
+//import IconArgUI from "./IconArgument.svelte";
 
 import ROSLIB from "roslib";
 import BlockUtility from '$root/packages/scratch-vm/src/engine/block-utility';
@@ -395,15 +395,14 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
       });
 
       // If connection fails
-      let error_cb_factory = function () {
-        return function (self: Scratch3Jibo) {
+      let error_cb_factory = function (self: Scratch3Jibo) {
+        return function () {
           self.connected = false;
-          console.log("ROS connection failed");
         };
       };
-      let error_cb = error_cb_factory();
-      this.ros.on("error", function (self: Scratch3Jibo, error: any) {
-        error_cb(self);
+      let error_cb = error_cb_factory(this);
+      this.ros.on("error", function (error: any) {
+        error_cb();
         // log.error('ROS: Error connecting to websocket server: ', error);
       });
 
