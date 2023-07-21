@@ -85,7 +85,52 @@ export default [
         ),
         featured: true,
         tags: ["Made by PRG"]
-
+    },
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="Text to Speech"
+                description="Name for the Text to Speech extension"
+                id="gui.extension.text2speech.name"
+            />
+        ),
+        extensionId: 'text2speech',
+        collaborator: 'Amazon Web Services',
+        iconURL: text2speechIconURL,
+        insetIconURL: text2speechInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Make your projects talk."
+                description="Description for the Text to speech extension"
+                id="gui.extension.text2speech.description"
+            />
+        ),
+        featured: true,
+        internetConnectionRequired: true,
+        tags: ["Made by Scratch"]
+    },
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="Translate"
+                description="Name for the Translate extension"
+                id="gui.extension.translate.name"
+            />
+        ),
+        extensionId: 'translate',
+        collaborator: 'Google',
+        iconURL: translateIconURL,
+        insetIconURL: translateInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Translate text into many languages."
+                description="Description for the Translate extension"
+                id="gui.extension.translate.description"
+            />
+        ),
+        featured: true,
+        internetConnectionRequired: true,
+        tags: ["Made by Scratch"]
     },
     // {
     //     name: (
@@ -107,7 +152,7 @@ export default [
     //     ),
     //     featured: true
     // },
-    {
+    /* {
         name: (
             <FormattedMessage
                 defaultMessage="PRG Microbit Robot"
@@ -168,7 +213,7 @@ export default [
         ),
         featured: true,
         tags: ["Made by PRG"]
-    }, //*/ // RANDI Removing extensions I don't want students to play with
+    },*/ //*/ // RANDI Removing extensions I don't want students to play with
     {
         name: (
             <FormattedMessage
@@ -230,52 +275,6 @@ export default [
             />
         ),
         featured: true,
-        tags: ["Made by Scratch"]
-    },
-    {
-        name: (
-            <FormattedMessage
-                defaultMessage="Text to Speech"
-                description="Name for the Text to Speech extension"
-                id="gui.extension.text2speech.name"
-            />
-        ),
-        extensionId: 'text2speech',
-        collaborator: 'Amazon Web Services',
-        iconURL: text2speechIconURL,
-        insetIconURL: text2speechInsetIconURL,
-        description: (
-            <FormattedMessage
-                defaultMessage="Make your projects talk."
-                description="Description for the Text to speech extension"
-                id="gui.extension.text2speech.description"
-            />
-        ),
-        featured: true,
-        internetConnectionRequired: true,
-        tags: ["Made by Scratch"]
-    },
-    {
-        name: (
-            <FormattedMessage
-                defaultMessage="Translate"
-                description="Name for the Translate extension"
-                id="gui.extension.translate.name"
-            />
-        ),
-        extensionId: 'translate',
-        collaborator: 'Google',
-        iconURL: translateIconURL,
-        insetIconURL: translateInsetIconURL,
-        description: (
-            <FormattedMessage
-                defaultMessage="Translate text into many languages."
-                description="Description for the Translate extension"
-                id="gui.extension.translate.description"
-            />
-        ),
-        featured: true,
-        internetConnectionRequired: true,
         tags: ["Made by Scratch"]
     },
     {
