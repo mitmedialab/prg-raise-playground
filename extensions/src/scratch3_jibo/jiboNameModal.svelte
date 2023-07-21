@@ -3,7 +3,6 @@
   import { ReactiveInvoke, reactiveInvoke, activeClass, color } from "$common";
   // my imports
   import { setJiboName } from "./index";
-  import _ from "$src/.templates/generic";
 
   /**
    * @summary This is a reference to the instance of your extension.

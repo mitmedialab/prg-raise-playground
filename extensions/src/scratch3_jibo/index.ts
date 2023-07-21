@@ -16,9 +16,9 @@ import {
 } from "./jiboUtils/AnimDef";
 
 /** Import our svelte components */
-//import ColorArgUI from "./ColorArgument.svelte";
-//import EmojiArgUI from "./EmojiArgument.svelte";
-//import IconArgUI from "./IconArgument.svelte";
+import ColorArgUI from "./ColorArgument.svelte";
+import EmojiArgUI from "./EmojiArgument.svelte";
+import IconArgUI from "./IconArgument.svelte";
 
 import ROSLIB from "roslib";
 import BlockUtility from '$root/packages/scratch-vm/src/engine/block-utility';
