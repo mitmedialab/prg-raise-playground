@@ -4,18 +4,9 @@ import bindAll from 'lodash.bindall';
 import {defineMessages, intlShape, injectIntl} from 'react-intl';
 import VM from 'scratch-vm';
 
-import AssetPanel from '../components/asset-panel/asset-panel.jsx';
-import soundIcon from '../components/asset-panel/icon--sound.svg';
-import soundIconRtl from '../components/asset-panel/icon--sound-rtl.svg';
-import addSoundFromLibraryIcon from '../components/asset-panel/icon--add-sound-lib.svg';
-import addSoundFromRecordingIcon from '../components/asset-panel/icon--add-sound-record.svg';
-import fileUploadIcon from '../components/action-menu/icon--file-upload.svg';
-import surpriseIcon from '../components/action-menu/icon--surprise.svg';
-import searchIcon from '../components/action-menu/icon--search.svg';
+import ProgressBarExample from '../components/progress-bar/progress-bar.jsx';
+import progressIcon from '../components/asset-panel/icon--sound-rtl.svg';
 
-import RecordModal from './record-modal.jsx';
-import SoundEditor from './sound-editor.jsx';
-import SoundLibrary from './sound-library.jsx';
 
 import soundLibraryContent from '../lib/libraries/sounds.json';
 import {handleFileUpload, soundUpload} from '../lib/file-uploader.js';
@@ -34,13 +25,13 @@ import {
 import {
     activateTab,
     COSTUMES_TAB_INDEX,
-    PROGRESS_TAB_INDEX
+    SOUNDS_TAB_INDEX
 } from '../reducers/editor-tab';
 
 import {setRestore} from '../reducers/restore-deletion';
 import {showStandardAlert, closeAlertWithId} from '../reducers/alerts';
 
-class SoundTab extends React.Component {
+class ProgressTab extends React.Component {
     constructor (props) {
         super(props);
         bindAll(this, [
@@ -56,6 +47,7 @@ class SoundTab extends React.Component {
             'setFileInput'
         ]);
         this.state = {selectedSoundIndex: 0};
+        console.log(this.props.vm.runtime.modelData);
     }
 
     componentWillReceiveProps (nextProps) {
@@ -171,6 +163,7 @@ class SoundTab extends React.Component {
         this.fileInput = input;
     }
 
+
     render () {
         const {
             dispatchUpdateRestore, // eslint-disable-line no-unused-vars
@@ -189,100 +182,27 @@ class SoundTab extends React.Component {
 
         const sounds = sprite.sounds ? sprite.sounds.map(sound => (
             {
-                url: isRtl ? soundIconRtl : soundIcon,
+                url: isRtl ? progressIcon : progressIcon,
                 name: sound.name,
                 details: (sound.sampleCount / sound.rate).toFixed(2),
                 dragPayload: sound
             }
         )) : [];
 
-        const messages = defineMessages({
-            fileUploadSound: {
-                defaultMessage: 'Upload Sound',
-                description: 'Button to upload sound from file in the editor tab',
-                id: 'gui.soundTab.fileUploadSound'
-            },
-            surpriseSound: {
-                defaultMessage: 'Surprise',
-                description: 'Button to get a random sound in the editor tab',
-                id: 'gui.soundTab.surpriseSound'
-            },
-            recordSound: {
-                defaultMessage: 'Record',
-                description: 'Button to record a sound in the editor tab',
-                id: 'gui.soundTab.recordSound'
-            },
-            addSound: {
-                defaultMessage: 'Choose a Sound',
-                description: 'Button to add a sound in the editor tab',
-                id: 'gui.soundTab.addSoundFromLibrary'
-            }
-        });
 
         return (
-            <AssetPanel
-                buttons={[{
-                    title: intl.formatMessage(messages.addSound),
-                    img: addSoundFromLibraryIcon,
-                    onClick: onNewSoundFromLibraryClick
-                }, {
-                    title: intl.formatMessage(messages.fileUploadSound),
-                    img: fileUploadIcon,
-                    onClick: this.handleFileUploadClick,
-                    fileAccept: '.wav, .mp3',
-                    fileChange: this.handleSoundUpload,
-                    fileInput: this.setFileInput,
-                    fileMultiple: true
-                }, {
-                    title: intl.formatMessage(messages.surpriseSound),
-                    img: surpriseIcon,
-                    onClick: this.handleSurpriseSound
-                }, {
-                    title: intl.formatMessage(messages.recordSound),
-                    img: addSoundFromRecordingIcon,
-                    onClick: onNewSoundFromRecordingClick
-                }, {
-                    title: intl.formatMessage(messages.addSound),
-                    img: searchIcon,
-                    onClick: onNewSoundFromLibraryClick
-                }]}
-                dragType={DragConstants.SOUND}
-                isRtl={isRtl}
-                items={sounds}
-                selectedItemIndex={this.state.selectedSoundIndex}
-                onDeleteClick={this.handleDeleteSound}
-                onDrop={this.handleDrop}
-                onDuplicateClick={this.handleDuplicateSound}
-                onExportClick={this.handleExportSound}
-                onItemClick={this.handleSelectSound}
-            >
-                {sprite.sounds && sprite.sounds[this.state.selectedSoundIndex] ? (
-                    <SoundEditor soundIndex={this.state.selectedSoundIndex} />
-                ) : null}
-                {this.props.soundRecorderVisible ? (
-                    <RecordModal
-                        onNewSound={this.handleNewSound}
-                    />
-                ) : null}
-                {this.props.soundLibraryVisible ? (
-                    <SoundLibrary
-                        vm={this.props.vm}
-                        onNewSound={this.handleNewSound}
-                        onRequestClose={this.props.onRequestCloseSoundLibrary}
-                    />
-                ) : null}
-            </AssetPanel>
+            <ProgressBarExample> the_data={this.props.vm.runtime.modelData}, {this.props.vm.runtime}</ProgressBarExample>
         );
     }
 }
 
-SoundTab.propTypes = {
+ProgressTab.propTypes = {
     dispatchUpdateRestore: PropTypes.func,
     editingTarget: PropTypes.string,
     intl: intlShape,
     isRtl: PropTypes.bool,
     onActivateCostumesTab: PropTypes.func.isRequired,
-    onActivateProgressTab: PropTypes.func.isRequired,
+    onActivateSoundsTab: PropTypes.func.isRequired,
     onCloseImporting: PropTypes.func.isRequired,
     onNewSoundFromLibraryClick: PropTypes.func.isRequired,
     onNewSoundFromRecordingClick: PropTypes.func.isRequired,
@@ -316,7 +236,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
     onActivateCostumesTab: () => dispatch(activateTab(COSTUMES_TAB_INDEX)),
-    onActivateProgressTab: () => dispatch(activateTab(PROGRESS_TAB_INDEX)),
+    onActivateSoundsTab: () => dispatch(activateTab(SOUNDS_TAB_INDEX)),
     onNewSoundFromLibraryClick: e => {
         e.preventDefault();
         dispatch(openSoundLibrary());
@@ -334,9 +254,9 @@ const mapDispatchToProps = dispatch => ({
     onShowImporting: () => dispatch(showStandardAlert('importingAsset'))
 });
 
-export default errorBoundaryHOC('Sound Tab')(
+export default errorBoundaryHOC('Progress Tab')(
     injectIntl(connect(
         mapStateToProps,
         mapDispatchToProps
-    )(SoundTab))
+    )(ProgressTab))
 );
