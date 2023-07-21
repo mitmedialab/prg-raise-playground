@@ -56,13 +56,13 @@
     "@vernier/godirect": "1.5.0",
     "arraybuffer-loader": "^1.0.6",
     "atob": "2.1.2",
-    "btoa": "1.2.1",
-    "roslib": "^1.2.0", 
     "babel-polyfill": "^6.26.0",
+    "btoa": "1.2.1",
     "canvas": "^2.8.0",
     "canvas-toBlob": "1.0.0",
     "decode-html": "2.0.0",
     "diff-match-patch": "1.0.4",
+    "en-pos": "^1.0.16",
     "format-message": "6.2.1",
     "format-message-parse": "^6.2.4",
     "htmlparser2": "3.10.0",
@@ -71,6 +71,7 @@
     "mime-types": "^2.1.35",
     "minilog": "3.1.0",
     "nets": "3.2.0",
+    "roslib": "^1.2.0",
     "scratch-parser": "5.0.0",
     "scratch-sb1-converter": "0.2.7",
     "scratch-translate-extension-languages": "0.0.20191118205314",
@@ -78,6 +79,7 @@
     "socket.io-client": "2.0.4",
     "stacktrace-js": "^2.0.2",
     "text-encoding": "0.7.0",
+    "words-to-numbers": "^1.5.1",
     "worker-loader": "^1.1.1"
   },
   "devDependencies": {
@@ -130,11 +132,11 @@
     "stats.js": "^0.17.0",
     "tap": "16.2.0",
     "tiny-worker": "2.3.0",
+    "typescript": "latest",
     "uglifyjs-webpack-plugin": "1.2.7",
     "webpack": "4.46.0",
     "webpack-cli": "3.1.0",
-    "webpack-dev-server": "3.11.2",
-    "typescript": "latest"
+    "webpack-dev-server": "3.11.2"
   },
   "overrides": {
     "@teachablemachine/image": {
