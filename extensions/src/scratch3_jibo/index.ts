@@ -235,8 +235,9 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         },
         text: (text: string) => `say ${text}`,
         operation: async (text: string,  { target }: BlockUtility) => {
-          await this.virtualJibo.say(text, target);
-          await this.jiboTTSFn(text);
+          let virtualJ = this.virtualJibo.say(text, target);
+          let physicalJ = this.jiboTTSFn(text);
+          await Promise.all([virtualJ, physicalJ]);
         }
       }),
       JiboAsk: () => ({
@@ -246,8 +247,15 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           defaultValue: "How are you?",
         },
         text: (text: string) => `ask ${text} and wait`,
-        operation: async (text: string) =>
-          await this.jiboAskFn(text),
+        operation: async (text: string, { target }: BlockUtility) => {
+          let virtualJ = this.virtualJibo.say(text, target);;
+          let awaitResponse;
+          // TODO test
+          if (jiboName === "") awaitResponse = this.virtualJibo.ask(text);
+          else awaitResponse = this.jiboAskFn(text);
+        
+          await Promise.all([virtualJ, awaitResponse]);
+        }
       }),
       JiboListen: () => ({
         type: BlockType.Reporter,
@@ -465,6 +473,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     this.asr_out = await queue.ASR_received();
   }
   async jiboListenFn() {
+    if (jiboName === "") return this.virtualJibo.answer;
     return this.asr_out;
   }
 

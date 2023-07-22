@@ -186,10 +186,11 @@ const iconFiles: Record<IconType, AnimFileType> = {
 
 export default class Scratch3VirtualJibo {
     runtime: Runtime;
+    answer: string;
 
     init(runtime: Runtime) {
-        console.log("virtual Jibo init");
         this.runtime = runtime;
+        this.answer = "";
     }
 
     resetJiboBodyTarget(target: Target) {
@@ -211,7 +212,7 @@ export default class Scratch3VirtualJibo {
         }
     }
     getJiboBodyTarget(currentTarget: Target) {
-        // find the jibo-body sprite to make speak
+        // find the jibo-body sprite
         let spriteTarget;
         if (currentTarget.getName().startsWith(JIBO_BODY)) {
             // first see if the current target is a Jibo body
@@ -230,6 +231,26 @@ export default class Scratch3VirtualJibo {
         }
         return spriteTarget;
     }
+    getJiboEyeTarget(currentTarget: Target) {
+        // find the jibo-eye sprite
+        let spriteTarget;
+        if (currentTarget.getName().startsWith(JIBO_EYE)) {
+            // first see if the current target is a Jibo eye
+            // if so, assume this is the one we want to edit
+            spriteTarget = currentTarget;
+        } else if (currentTarget.getName().startsWith(JIBO_BODY)) {
+            // next see if this is a Jibo body, and select the corresponding jibo eye (same suffix)
+            let jiboBodyName = currentTarget.getName();
+            let suffix = jiboBodyName.substring(jiboBodyName.indexOf(JIBO_BODY) + JIBO_BODY.length);
+            let matches = this.runtime.targets.filter((target) => target.getName().startsWith(JIBO_EYE + suffix));
+            if (matches.length > 0) spriteTarget = matches[0];
+        } else {
+            // otherwise, pick the first Jibo eye you see
+            let matches = this.runtime.targets.filter((target) => target.getName().startsWith(JIBO_EYE));
+            if (matches.length > 0) spriteTarget = matches[0];
+        }
+        return spriteTarget;
+    }
 
     async say(text: string, currentTarget: Target) {
         let spriteTarget = this.getJiboBodyTarget(currentTarget);
@@ -244,8 +265,13 @@ export default class Scratch3VirtualJibo {
             console.log("No Jibo body found");
         }
     }
+    async ask(text: string) {
+      // wait for stage to get answer
+      this.runtime.emit('QUESTION', text);
+      this.answer = await this.answer_receive();
+    }
     answer_receive() {
-        return new Promise((resolve, reject) => {
+        return new Promise<string>((resolve, reject) => {
             this.runtime.once('ANSWER', (answer) => {
                 // TODO this introduces a bug with the sensing blocks, improve if possible
                 resolve(answer);
@@ -255,24 +281,8 @@ export default class Scratch3VirtualJibo {
 
     /* update the appearance of virtual Jibo's LED*/
     setLED(color: string, currentTarget: Target) {
-        // find the jibo-body sprite to edit
-        let spriteTarget;
-        if (currentTarget.getName().startsWith(JIBO_BODY)) {
-            // first see if the current target is a Jibo body
-            // if so, assume this is the one we want to edit
-            spriteTarget = currentTarget;
-        } else if (currentTarget.getName().startsWith(JIBO_EYE)) {
-            // next see if this is a Jibo eye, and select the corresponding jibo body (same suffix)
-            let jiboEyeName = currentTarget.getName();
-            let suffix = jiboEyeName.substring(jiboEyeName.indexOf(JIBO_EYE) + JIBO_EYE.length);
-            let matches = this.runtime.targets.filter((target) => target.getName().startsWith(JIBO_BODY + suffix));
-            if (matches.length > 0) spriteTarget = matches[0];
-        } else {
-            // otherwise, pick the first Jibo body you see
-            let matches = this.runtime.targets.filter((target) => target.getName().startsWith(JIBO_BODY));
-            if (matches.length > 0) spriteTarget = matches[0];
-        }
-
+        // find the jibo-body sprite to edit 
+        let spriteTarget = this.getJiboBodyTarget(currentTarget);
         if (spriteTarget) {
             // change the Sprite costume
             if (color == "random") {
@@ -296,23 +306,8 @@ export default class Scratch3VirtualJibo {
     }
 
     anim(animation: string, commandType: string, currentTarget: Target) {
-        // find the jibo-body sprite to edit
-        let spriteTarget;
-        if (currentTarget.getName().startsWith(JIBO_EYE)) {
-            // first see if the current target is a Jibo eye
-            // if so, assume this is the one we want to edit
-            spriteTarget = currentTarget;
-        } else if (currentTarget.getName().startsWith(JIBO_BODY)) {
-            // next see if this is a Jibo body, and select the corresponding jibo eye (same suffix)
-            let jiboBodyName = currentTarget.getName();
-            let suffix = jiboBodyName.substring(jiboBodyName.indexOf(JIBO_BODY) + JIBO_BODY.length);
-            let matches = this.runtime.targets.filter((target) => target.getName().startsWith(JIBO_EYE + suffix));
-            if (matches.length > 0) spriteTarget = matches[0];
-        } else {
-            // otherwise, pick the first Jibo eye you see
-            let matches = this.runtime.targets.filter((target) => target.getName().startsWith(JIBO_EYE));
-            if (matches.length > 0) spriteTarget = matches[0];
-        }
+        // find the jibo-eye sprite to edit
+        let spriteTarget = this.getJiboEyeTarget(currentTarget);
 
         if (spriteTarget) {
             // change the Sprite costume 
@@ -337,14 +332,14 @@ export default class Scratch3VirtualJibo {
     // until I figure out a better way
 
     /**
- * Add a costume to the current sprite based on some image data
- * @param {RenderedTarget} target (e.g. `util.target`)
- * @param {ImageData} image What image to use to create the costume
- * @param {"add only" | "add and set"} action What action should be applied
- * - **_add only_**: generates the costume and append it it to the sprite's costume library
- * - **_add and set_**: Both generate the costume (adding it to the sprite's costume library) and set it as the sprite's current costume
- * @param {string?} name optional name to attach to the costume
- */
+     * Add a costume to the current sprite based on some image data
+     * @param {RenderedTarget} target (e.g. `util.target`)
+     * @param {ImageData} image What image to use to create the costume
+     * @param {"add only" | "add and set"} action What action should be applied
+     * - **_add only_**: generates the costume and append it it to the sprite's costume library
+     * - **_add and set_**: Both generate the costume (adding it to the sprite's costume library) and set it as the sprite's current costume
+     * @param {string?} name optional name to attach to the costume
+     */
     async addCostume(target: Target, image: ImageData, action: "add only" | "add and set", name?: string) {
         if (!isRenderedTarget(target)) return console.warn("Costume could not be added as the supplied target wasn't a rendered target");
 
