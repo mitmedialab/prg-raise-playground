@@ -360,8 +360,10 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           options: this.dirs,
         },
         text: (dname) => `look ${dname}`,
-        operation: async (dir: DirType) => {
-          await this.jiboLookFn(dir);
+        operation: async (dir: DirType, { target }: BlockUtility) => {
+          let virtualJ = this.virtualJibo.lookAt(dir, target);
+          let physicalJ = this.jiboLookFn(dir);
+          await Promise.all([virtualJ, physicalJ]);
         },
       }),
     };

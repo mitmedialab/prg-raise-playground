@@ -63,6 +63,31 @@ const DEFAULT_JIBO_EYE = {
     diconSize: .35,
 }
 
+type Coords = {
+    dx: number;
+    dy: number;
+};
+type DirDefType = {
+    value: Coords;
+};
+const directionDef: Record<DirType, DirDefType> = {
+    [Direction.up]: {
+        value: { dx: 0, dy: 1 },
+    },
+    [Direction.down]: {
+        value: { dx: 0, dy: 0.45 },
+    },
+    [Direction.left]: {
+        value: { dx: 0.45, dy: 0.76 },
+    },
+    [Direction.right]: {
+        value: { dx: -0.45, dy: 0.76 },
+    },
+    [Direction.forward]: {
+        value: { dx: 0, dy: 0.76 },
+    },
+};
+
 type ImageDefType = {
     imageData: string;
 };
@@ -115,34 +140,6 @@ const colorDef: Record<ColorType, ImageDefType> = {
     },
     [Color.Off]: {
         imageData: jiboBodyBlack,
-    },
-};
-
-type Coords = {
-    x: number;
-    y: number;
-};
-type DirDefType = {
-    value: Coords;
-};
-const directionDef: Record<DirType, DirDefType> = {
-    [Direction.up]: {
-        value: { x: 500, y: 100 },
-    },
-    [Direction.down]: {
-        value: { x: 500, y: 100 },
-    },
-    [Direction.left]: {
-        value: { x: 100, y: 500 },
-    },
-    [Direction.right]: {
-        value: { x: 100, y: -500 },
-    },
-    [Direction.forward]: {
-        value: { x: 500, y: 100 },
-    },
-    [Direction.backward]: {
-        value: { x: -500, y: 100 },
     },
 };
 
@@ -376,27 +373,44 @@ export default class Scratch3VirtualJibo {
         // find the jibo-eye sprite to edit
         let spriteTarget = this.getJiboEyeTarget(currentTarget);
         if (!isRenderedTarget(spriteTarget)) {
+            console.warn("No rendered jibo-eye target could be found");
+            return false;
+        }
+
+        // change the Sprite costume 
+        let imageDataURI;
+        //if (commandType == "dance") imageDataURI = danceFiles[animation].imageData;
+        //else if (commandType == "emotion") imageDataURI = emotionFiles[animation].imageData;
+        if (commandType == "icon") {
+            imageDataURI = iconFiles[animation].imageData;
+            await this.jumpTransition(spriteTarget, animation, imageDataURI);
+            await new Promise((r) => setTimeout(r, 3000));
+            await this.jumpTransition(spriteTarget, "Eye1", jiboEyeDef["Eye1"].imageData);
+            // finish a blink
+            await this.blink(spriteTarget);
+        }
+    }
+    async lookAt(direction: string, currentTarget: Target) {
+        // find the jibo-body and jibo-eye sprites to edit
+        let eyeTarget = this.getJiboEyeTarget(currentTarget);
+        let bodyTarget = this.getJiboBodyTarget(currentTarget);
+        if (!isRenderedTarget(eyeTarget)|| !(isRenderedTarget(bodyTarget))) {
             console.warn("Eye could not be reset as the supplied target wasn't a rendered target");
             return false;
         }
 
-        if (spriteTarget) {
-            // change the Sprite costume 
-            let imageDataURI;
-            //if (commandType == "dance") imageDataURI = danceFiles[animation].imageData;
-            //else if (commandType == "emotion") imageDataURI = emotionFiles[animation].imageData;
-            if (commandType == "icon") {
-                imageDataURI = iconFiles[animation].imageData;
-                await this.jumpTransition(spriteTarget, animation, imageDataURI);
-                await new Promise((r) => setTimeout(r, 3000));
-                await this.jumpTransition(spriteTarget, "Eye1", jiboEyeDef["Eye1"].imageData);
-                // finish a blink
-                await this.blink(spriteTarget);
-            }
-
-
-        } else {
-            console.log("No Jibo eye found");
+        let coords = directionDef[direction].value;
+        let newX = bodyTarget.x + coords.dx * bodyTarget.size;
+        let newY = bodyTarget.y + coords.dy * bodyTarget.size;
+        let xStepSize = (newX - eyeTarget.x) / 10;
+        let yStepSize = (newY - eyeTarget.y) / 10;
+        for (let i=0; i<10; i++) {
+            eyeTarget.setXY(
+                eyeTarget.x + xStepSize,
+                eyeTarget.y + yStepSize,
+                null
+            );
+            await new Promise((r) => setTimeout(r, 50));
         }
     }
 

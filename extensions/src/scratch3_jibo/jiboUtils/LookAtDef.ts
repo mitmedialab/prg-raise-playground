@@ -10,7 +10,7 @@ export const Direction = {
     right: `right`,
     left: `left`,
     forward: `forward`,
-    backward: `backward`,
+    //backward: `backward`,
 } as const;
 export type DirType = typeof Direction[keyof typeof Direction];
 type DirDefType = {
@@ -32,7 +32,7 @@ export const directionDef: Record<DirType, DirDefType> = {
     [Direction.forward]: {
         value: { x: 500, y: 100, z: 100 },
     },
-    [Direction.backward]: {
+    /*[Direction.backward]: {
         value: { x: -500, y: 100, z: 100 },
-    },
+    },*/
 };
