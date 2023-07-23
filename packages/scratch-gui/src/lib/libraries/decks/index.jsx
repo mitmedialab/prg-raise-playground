@@ -3,6 +3,15 @@ import {FormattedMessage} from 'react-intl';
 
 // Tutorial thumbnails: Avoid using any text that would need to be
 // translated in thumbnails.
+// TextClassifier
+import textClassifierIntro from './thumbnails/text-classifier.png';
+
+// ProgressBar
+import progressTabIntro from './thumbnails/progress-tab.png';
+
+// Jibo Blocks
+import jiboBlocksIntro from './thumbnails/jibo-blocks.png';
+
 // Intro
 import libraryIntro from './thumbnails/getting-started.jpg';
 
@@ -63,6 +72,221 @@ import moveArrowKeysThumb from './thumbnails/move-arrow-keys.jpg';
 import spinThumb from './thumbnails/spin.jpg';
 
 export default {
+    'jibo-blocks-intro': {
+        name: (
+            <FormattedMessage
+                defaultMessage="Program Jibo"
+                description="Name for the 'Jibo Blocks' how-to"
+                id="gui.howtos.jibo-blocks-intro.name"
+            />
+        ),
+        tags: ['jibo'],
+        img: jiboBlocksIntro,
+        steps: [{
+            title: (
+                <FormattedMessage
+                    defaultMessage="How to program Jibo"
+                    description="Intro for 'Jibo blocks' tutorial"
+                    id="gui.howtos.jibo-blocks-intro.intro"
+                />
+            ),
+            image: 'jiboBlocksIntro'
+        },{
+            title: (
+                <FormattedMessage
+                    defaultMessage="Use 'say' blocks to make Jibo talk"
+                    description="Step for Jibo blocks"
+                    id="gui.howtos.jibo-blocks-intro.say"
+                />
+            ),
+            image: 'jiboBlocksSay'
+        }, {
+            title: (
+                <FormattedMessage
+                    defaultMessage="Use the green flag to trigger Jibo movements"
+                    description="Example of using the green flag trigger block"
+                    id="gui.howtos.jibo-blocks-intro.gf"
+                />
+            ),
+            image: 'jiboBlocksGF'
+        }, {
+            title: (
+                <FormattedMessage
+                    defaultMessage="Use wait blocks from the 'Control' category to add pauses"
+                    description="Example of using wait blocks to control speech"
+                    id="gui.howtos.jibo-blocks-intro.wait"
+                />
+            ),
+            image: 'jiboBlocksWait'
+        }, {
+            title: (
+                <FormattedMessage
+                    defaultMessage="You can make icons appear on Jibo's screen"
+                    description="Example of using Jibo icons"
+                    id="gui.howtos.jibo-blocks-intro.icon"
+                />
+            ),
+            image: 'jiboBlocksIcon'
+        }, {
+            title: (
+                <FormattedMessage
+                    defaultMessage="Use LED ring blocks to make Jibo glow"
+                    description="Example of controlling the LED ring"
+                    id="gui.howtos.jibo-blocks-intro.ledRing"
+                />
+            ),
+            image: 'jiboBlocksLEDRing'
+        }, {
+            deckIds: [
+                'Make-Music',
+            ]
+        }
+        ],
+        urlId: 'jiboBlocks'
+    },
+
+
+    'text-classifier-intro': {
+        name: (
+            <FormattedMessage
+                defaultMessage="Make a Text Classifier"
+                description="Name for the 'Text Classifier' how-to"
+                id="gui.howtos.text-classifier-intro.name"
+            />
+        ),
+        tags: ['classification'],
+        img: textClassifierIntro,
+        steps: [{
+            title: (
+                <FormattedMessage
+                    defaultMessage="How to create a text classifier"
+                    description="Intro for 'Text classifier' tutorial"
+                    id="gui.howtos.text-classifer.intro"
+                />
+            ),
+            image: 'textClassifierIntro'
+        },{
+            title: (
+                <FormattedMessage
+                    defaultMessage="Use text matches blocks in conditionals"
+                    description="Step for text matches blocks"
+                    id="gui.howtos.text-classifer.matches"
+                />
+            ),
+            image: 'textClassifierMatches'
+        }, {
+            title: (
+                <FormattedMessage
+                    defaultMessage="Use confidence blocks in embedded conditionals"
+                    description="Step for using confidence blocks"
+                    id="gui.howtos.text-classifer.confidence"
+                />
+            ),
+            image: 'textClassifierConfidence'
+        }, {
+            title: (
+                <FormattedMessage
+                    defaultMessage="Open the model editor"
+                    description="Step for opening edit model modal"
+                    id="gui.howtos.text-classifer.edit-model"
+                />
+            ),
+            image: 'textClassifierEditModel'
+        }, {
+            title: (
+                <FormattedMessage
+                    defaultMessage="Add class labels and examples to your model"
+                    description="Step for adding labels and examples"
+                    id="gui.howtos.text-classifer.add"
+                />
+            ),
+            image: 'textClassifierAdd'
+        }, {
+            title: (
+                <FormattedMessage
+                    defaultMessage="Add multiple examples to make a strong classifier"
+                    description="Step for completing the model"
+                    id="gui.howtos.text-classiferexamples"
+                />
+            ),
+            image: 'textClassifierExamples'
+        }, {
+            deckIds: [
+                'ai-progress-tab'
+            ]
+        }
+        ],
+        urlId: 'textClassifier'
+    },
+
+    'ai-progress-tab': {
+        name: (
+            <FormattedMessage
+                defaultMessage="Tips for Making a Text Classifier"
+                description="Name for the 'Progress Tab' how-to"
+                id="gui.howtos.progress-tab-intro.name"
+            />
+        ),
+        tags: ['classification', 'progress'],
+        img: progressTabIntro,
+        steps: [{
+            title: (
+                <FormattedMessage
+                    defaultMessage="Check your work using the progress tab"
+                    description="Intro for 'Progress Tab' tutorial"
+                    id="gui.howtos.progress-tab.intro"
+                />
+            ),
+            image: 'progressTabIntro'
+        },{
+            title: (
+                <FormattedMessage
+                    defaultMessage="Make at least two classes"
+                    description="First piece of advice for text classifiers"
+                    id="gui.howtos.progress-tab.classes"
+                />
+            ),
+            image: 'progressTabClasses'
+        }, {
+            title: (
+                <FormattedMessage
+                    defaultMessage="Have at least 5 examples in each class"
+                    description="Second piece of advice for text classifiers"
+                    id="gui.howtos.progress-tab.examples"
+                />
+            ),
+            image: 'progressTabExamples'
+        }, {
+            title: (
+                <FormattedMessage
+                    defaultMessage="Make sure that the number of examples for each class is balanced"
+                    description="Third piece of advice for text classifiers"
+                    id="gui.howtos.progress-tab.balance"
+                />
+            ),
+            image: 'progressTabBalance'
+        }, {
+            title: (
+                <FormattedMessage
+                    defaultMessage="Use at least four text classification blocks"
+                    description="Fourth piece of advice for text classifiers"
+                    id="gui.howtos.progress-tab.blocks"
+                />
+            ),
+            image: 'progressTabBlocks'
+        }, {
+            title: (
+                <FormattedMessage
+                    defaultMessage="Use embedded conditionals in your code"
+                    description="Fifth piece of advice for text classifiers"
+                    id="gui.howtos.progress-tab.embedded"
+                />
+            ),
+            image: 'progressTabEmbedded'
+        }
+        ],
+        urlId: 'progressTab'
+    },
 
     'intro-move-sayhello': {
         name: (
