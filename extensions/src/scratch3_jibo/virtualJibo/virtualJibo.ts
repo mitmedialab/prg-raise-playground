@@ -38,6 +38,17 @@ import jiboEyeRocket from "./jiboEye/Rocket.png";
 import jiboEyeSnowflake from "./jiboEye/Snowflake.png";
 import jiboEyeTaco from "./jiboEye/Taco.png";
 import jiboEyeVideoGame from "./jiboEye/Videogame.png";
+import jiboEyeCurious from "./jiboEye/Curious.png";
+import jiboEyeFrustrated from "./jiboEye/Frustrated.png";
+import jiboEyeHappy from "./jiboEye/Happy.png";
+import jiboEyeLaugh from "./jiboEye/Laugh.png";
+import jiboEyeNo from "./jiboEye/No.png";
+import jiboEyePuzzled from "./jiboEye/Puzzled.png";
+import jiboEyeSad from "./jiboEye/Sad.png";
+import jiboEyeSadEyes from "./jiboEye/SadEyes.png";
+import jiboEyeSuccess from "./jiboEye/Success.png";
+import jiboEyeThinking from "./jiboEye/Thinking.png";
+import jiboEyeYes from "./jiboEye/Yes.png";
 
 import jiboEye1 from "./jiboEye/Eye1.svg";
 import jiboEye2 from "./jiboEye/Eye2.svg";
@@ -146,7 +157,40 @@ const colorDef: Record<ColorType, ImageDefType> = {
 type AnimFileType = {
     imageData: string;
 };
-const iconFiles: Record<IconType, ImageDefType> = {
+const iconFiles: Record<EmotionType|IconType, ImageDefType> = {
+    [Emotion.Curious]: {
+        imageData: jiboEyeCurious,
+    },
+    [Emotion.Frustrated]: {
+        imageData: jiboEyeFrustrated,
+    },
+    [Emotion.Happy]: {
+        imageData: jiboEyeHappy,
+    },
+    [Emotion.Laugh]: {
+        imageData: jiboEyeLaugh,
+    },
+    [Emotion.No]: {
+        imageData: jiboEyeNo,
+    },
+    [Emotion.Puzzled]: {
+        imageData: jiboEyePuzzled,
+    },
+    [Emotion.Sad]: {
+        imageData: jiboEyeSad,
+    },
+    [Emotion.SadEyes]: {
+        imageData: jiboEyeSadEyes,
+    },
+    [Emotion.Success]: {
+        imageData: jiboEyeSuccess,
+    },
+    [Emotion.Thinking]: {
+        imageData: jiboEyeThinking,
+    },
+    [Emotion.Yes]: {
+        imageData: jiboEyeYes,
+    },
     [Icon.Airplane]: {
         imageData: jiboEyeAirplane,
     },
@@ -209,7 +253,7 @@ export default class Scratch3VirtualJibo {
         this.answer = "";
     }
 
-    resetJiboEyeTarget(target: Target, type: string ="eye") {
+    resetJiboEyeTarget(target: Target, type: string = "eye") {
         let bodyTarget = this.getJiboBodyTarget(target);
         let eyeTarget = this.getJiboEyeTarget(target);
 
@@ -219,7 +263,7 @@ export default class Scratch3VirtualJibo {
         }
 
         if (eyeTarget) {
-            let mult = type === "eye" ? 
+            let mult = type === "eye" ?
                 1 :
                 DEFAULT_JIBO_EYE.diconSize / DEFAULT_JIBO_EYE.dsize;
             let newX = bodyTarget.x + DEFAULT_JIBO_EYE.dx * bodyTarget.size;
@@ -295,9 +339,9 @@ export default class Scratch3VirtualJibo {
         }
     }
     async ask(text: string) {
-      // wait for stage to get answer
-      this.runtime.emit('QUESTION', text);
-      this.answer = await this.answer_receive();
+        // wait for stage to get answer
+        this.runtime.emit('QUESTION', text);
+        this.answer = await this.answer_receive();
     }
     answer_receive(): Promise<string> {
         return new Promise<string>((resolve, reject) => {
@@ -331,7 +375,7 @@ export default class Scratch3VirtualJibo {
 
     async blink(jiboEye: Target) {
         this.resetJiboEyeTarget(jiboEye);
-        for (let i=0; i<JIBO_EYE_ANIM.length; i++) {
+        for (let i = 0; i < JIBO_EYE_ANIM.length; i++) {
             let costumeName = JIBO_EYE_ANIM[i];
             let imageData = jiboEyeDef[costumeName].imageData;
             await this.setSpriteCostume(jiboEye, costumeName, imageData);
@@ -346,25 +390,25 @@ export default class Scratch3VirtualJibo {
         }
 
         // move up 5 loops
-        for (let i=0; i<5; i++) {
+        for (let i = 0; i < 5; i++) {
             jiboEye.setXY(jiboEye.x, jiboEye.y + 5, null)
             await new Promise((r) => setTimeout(r, 50));
         }
         // move eye down 7 loops
-        for (let i=0; i<7; i++) {
+        for (let i = 0; i < 7; i++) {
             jiboEye.setXY(jiboEye.x, jiboEye.y - 5, null)
             await new Promise((r) => setTimeout(r, 50));
         }
         // switch costume
-        this.resetJiboEyeTarget(jiboEye, type);
         await this.setSpriteCostume(jiboEye, newAnim, imageData);
+        this.resetJiboEyeTarget(jiboEye, type);
         // move up 4 loops
-        for (let i=0; i<4; i++) {
+        for (let i = 0; i < 4; i++) {
             jiboEye.setXY(jiboEye.x, jiboEye.y + 5, null)
             await new Promise((r) => setTimeout(r, 50));
         }
         // move down 2 loops
-        for (let i=0; i<2; i++) {
+        for (let i = 0; i < 2; i++) {
             jiboEye.setXY(jiboEye.x, jiboEye.y - 5, null)
             await new Promise((r) => setTimeout(r, 50));
         }
@@ -380,8 +424,7 @@ export default class Scratch3VirtualJibo {
         // change the Sprite costume 
         let imageDataURI;
         //if (commandType == "dance") imageDataURI = danceFiles[animation].imageData;
-        //else if (commandType == "emotion") imageDataURI = emotionFiles[animation].imageData;
-        if (commandType == "icon") {
+        if (commandType == "emotion" || commandType == "icon") {
             imageDataURI = iconFiles[animation].imageData;
             await this.jumpTransition(spriteTarget, animation, imageDataURI);
             await new Promise((r) => setTimeout(r, 3000));
@@ -394,7 +437,7 @@ export default class Scratch3VirtualJibo {
         // find the jibo-body and jibo-eye sprites to edit
         let eyeTarget = this.getJiboEyeTarget(currentTarget);
         let bodyTarget = this.getJiboBodyTarget(currentTarget);
-        if (!isRenderedTarget(eyeTarget)|| !(isRenderedTarget(bodyTarget))) {
+        if (!isRenderedTarget(eyeTarget) || !(isRenderedTarget(bodyTarget))) {
             console.warn("Eye could not be reset as the supplied target wasn't a rendered target");
             return false;
         }
@@ -404,7 +447,7 @@ export default class Scratch3VirtualJibo {
         let newY = bodyTarget.y + coords.dy * bodyTarget.size;
         let xStepSize = (newX - eyeTarget.x) / 10;
         let yStepSize = (newY - eyeTarget.y) / 10;
-        for (let i=0; i<10; i++) {
+        for (let i = 0; i < 10; i++) {
             eyeTarget.setXY(
                 eyeTarget.x + xStepSize,
                 eyeTarget.y + yStepSize,

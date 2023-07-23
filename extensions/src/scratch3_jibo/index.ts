@@ -316,9 +316,11 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           },
         }),
         text: (aname) => `play ${aname} emotion`,
-        operation: async (anim: EmotionType) => {
+        operation: async (anim: EmotionType, { target }: BlockUtility) => {
+          let virtualJ = this.virtualJibo.anim(anim, "emotion", target);
           const akey = emotionFiles[anim].file;
-          await this.jiboAnimFn(akey, 1000);
+          let physicalJ = this.jiboAnimFn(akey, 1000);
+          await Promise.all([virtualJ, physicalJ]);
         },
       }),
       JiboIcon: () => ({
@@ -349,8 +351,9 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         }),
         text: (cname) => `set LED ring to ${cname}`,
         operation: async (color: ColorType, { target }: BlockUtility) => {
-          this.virtualJibo.setLED(color, target);
-          await this.jiboLEDFn(color);
+          let virtualJ = this.virtualJibo.setLED(color, target);
+          let physicalJ = this.jiboLEDFn(color);
+          await Promise.all([virtualJ, physicalJ]);
         }
       }),
       JiboLook: () => ({
