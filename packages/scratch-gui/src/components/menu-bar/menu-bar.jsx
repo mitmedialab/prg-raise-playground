@@ -698,14 +698,14 @@ class MenuBar extends React.Component {
                         </div>) :
                         null
                     }
-                    <Divider className={classNames(styles.divider)} />
+                    {/*<Divider className={classNames(styles.divider)} />
                     <a
                         className={classNames(styles.menuBarItem, styles.hoverable, styles.blankLink)}
                         href="https://teachablemachine.withgoogle.com/train"
                         target="_blank"
                     >
                         Teachable Machine
-                    </a>
+                    </a>*/}
                     <Divider className={classNames(styles.divider)} />
                     {this.props.canEditTitle ? (
                         <div className={classNames(styles.menuBarItem, styles.growable)}>
