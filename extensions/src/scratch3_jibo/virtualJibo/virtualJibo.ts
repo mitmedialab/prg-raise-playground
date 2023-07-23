@@ -1,4 +1,7 @@
 import Target from "$scratch-vm/engine/target";
+import type RenderedTarget from "$scratch-vm/sprites/rendered-target";
+import MockBitmapAdapter from "$common/extension/mixins/optional/addCostumes/MockBitmapAdapter";
+import { getUrlHelper } from "$common/extension/mixins/optional/addCostumes/utils";
 
 import { Color, ColorType } from "../jiboUtils/ColorDef";
 import { Direction, DirType } from "../jiboUtils/LookAtDef";
@@ -35,12 +38,14 @@ import jiboEyeRocket from "./jiboEye/Rocket.png";
 import jiboEyeSnowflake from "./jiboEye/Snowflake.png";
 import jiboEyeTaco from "./jiboEye/Taco.png";
 import jiboEyeVideoGame from "./jiboEye/Videogame.png";
+
+import jiboEye1 from "./jiboEye/Eye1.svg";
+import jiboEye2 from "./jiboEye/Eye2.svg";
+import jiboEye3 from "./jiboEye/Eye3.svg";
+import jiboEye4 from "./jiboEye/Eye4.svg";
+import jiboEye5 from "./jiboEye/Eye5.svg";
+
 import Runtime from "$root/packages/scratch-vm/src/engine/runtime";
-
-
-import type RenderedTarget from "$scratch-vm/sprites/rendered-target";
-import MockBitmapAdapter from "$common/extension/mixins/optional/addCostumes/MockBitmapAdapter";
-import { getUrlHelper } from "$common/extension/mixins/optional/addCostumes/utils";
 
 let bitmapAdapter: MockBitmapAdapter;
 let urlHelper: ReturnType<typeof getUrlHelper>;
@@ -51,25 +56,39 @@ const isRenderedTarget = (target: Target | RenderedTarget): target is RenderedTa
 const JIBO_BODY = "jibo-body";
 const JIBO_EYE = "jibo-eye";
 
-const DEFAULT_JIBO_BODY = {
-    x: 4,
-    y: -9,
-    size: 100,
-    direction: 90,
-}
-
-// TODO make Jibo eye relative to body
 const DEFAULT_JIBO_EYE = {
-    x: 1,
-    y: 75,
-    size: 35,
-    direction: 90,
+    dx: 0, // jibo eye = jibo body + dx * jibo body size
+    dy: .76, // jibo eye = (jibo body) + dy * jibo body size
+    dsize: .65, // jibo eye = jibo body * dsize
+    diconSize: .35,
 }
 
-type ColorDefType = {
+type ImageDefType = {
     imageData: string;
 };
-const colorDef: Record<ColorType, ColorDefType> = {
+
+const jiboEyeDef: Record<string, ImageDefType> = {
+    "Eye1": {
+        imageData: jiboEye1,
+    },
+    "Eye2": {
+        imageData: jiboEye2,
+    },
+    "Eye3": {
+        imageData: jiboEye3,
+    },
+    "Eye4": {
+        imageData: jiboEye4,
+    },
+    "Eye5": {
+        imageData: jiboEye5,
+    },
+};
+const JIBO_EYE_ANIM = [
+    "Eye1", "Eye2", "Eye2", "Eye3", "Eye4", "Eye5", "Eye3", "Eye2", "Eye1"
+];
+
+const colorDef: Record<ColorType, ImageDefType> = {
     [Color.Red]: {
         imageData: jiboBodyRed,
     },
@@ -130,7 +149,7 @@ const directionDef: Record<DirType, DirDefType> = {
 type AnimFileType = {
     imageData: string;
 };
-const iconFiles: Record<IconType, AnimFileType> = {
+const iconFiles: Record<IconType, ImageDefType> = {
     [Icon.Airplane]: {
         imageData: jiboEyeAirplane,
     },
@@ -193,25 +212,38 @@ export default class Scratch3VirtualJibo {
         this.answer = "";
     }
 
-    resetJiboBodyTarget(target: Target) {
-        let spriteTarget = this.getJiboBodyTarget(target);
-        if (spriteTarget) {
-            spriteTarget.setXY(DEFAULT_JIBO_BODY.x, DEFAULT_JIBO_BODY.y);
-            spriteTarget.setDirection(DEFAULT_JIBO_BODY.direction);
-            spriteTarget.setSize(DEFAULT_JIBO_BODY.size);
+    resetJiboEyeTarget(target: Target, type: string ="eye") {
+        let bodyTarget = this.getJiboBodyTarget(target);
+        let eyeTarget = this.getJiboEyeTarget(target);
+
+        if (!isRenderedTarget(bodyTarget) || !isRenderedTarget(eyeTarget)) {
+            console.warn("Eye could not be reset as the supplied target didn't lead to rendered eye and body targets");
+            return false;
+        }
+
+        if (eyeTarget) {
+            let mult = type === "eye" ? 
+                1 :
+                DEFAULT_JIBO_EYE.diconSize / DEFAULT_JIBO_EYE.dsize;
+            let newX = bodyTarget.x + DEFAULT_JIBO_EYE.dx * bodyTarget.size;
+            let newY = bodyTarget.y + DEFAULT_JIBO_EYE.dy * bodyTarget.size;
+            let newSize = bodyTarget.size * DEFAULT_JIBO_EYE.dsize * mult;
+            eyeTarget.setXY(newX, newY, null);
+            eyeTarget.setSize(newSize);
+            eyeTarget.goToFront();
         }
     }
-    setSpriteCostume(target: Target, name: string, imageDataURI: string) {
+    async setSpriteCostume(target: Target, name: string, imageDataURI: string) {
         // try to set the costume of the target by name
         let foundCostume = this.setCostumeByName(target, name);
 
         if (!foundCostume) {
             console.log("Did not find the costume we wanted. Adding new one");
             // if not, add and set the costume
-            this.addCostumeBitmap(target, imageDataURI, "add and set", name);
+            await this.addCostumeBitmap(target, imageDataURI, "add and set", name);
         }
     }
-    getJiboBodyTarget(currentTarget: Target) {
+    getJiboBodyTarget(currentTarget: Target): Target {
         // find the jibo-body sprite
         let spriteTarget;
         if (currentTarget.getName().startsWith(JIBO_BODY)) {
@@ -231,7 +263,7 @@ export default class Scratch3VirtualJibo {
         }
         return spriteTarget;
     }
-    getJiboEyeTarget(currentTarget: Target) {
+    getJiboEyeTarget(currentTarget: Target): Target {
         // find the jibo-eye sprite
         let spriteTarget;
         if (currentTarget.getName().startsWith(JIBO_EYE)) {
@@ -270,7 +302,7 @@ export default class Scratch3VirtualJibo {
       this.runtime.emit('QUESTION', text);
       this.answer = await this.answer_receive();
     }
-    answer_receive() {
+    answer_receive(): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             this.runtime.once('ANSWER', (answer) => {
                 // TODO this introduces a bug with the sensing blocks, improve if possible
@@ -280,7 +312,7 @@ export default class Scratch3VirtualJibo {
     }
 
     /* update the appearance of virtual Jibo's LED*/
-    setLED(color: string, currentTarget: Target) {
+    async setLED(color: string, currentTarget: Target) {
         // find the jibo-body sprite to edit 
         let spriteTarget = this.getJiboBodyTarget(currentTarget);
         if (spriteTarget) {
@@ -293,34 +325,75 @@ export default class Scratch3VirtualJibo {
                 color = Object.keys(colorDef)[randomColorIdx];
             }
 
-            let imageDataURI = colorDef[color].imageData;
-            this.setSpriteCostume(spriteTarget, color, imageDataURI);
-
-            spriteTarget.setXY(DEFAULT_JIBO_BODY.x, DEFAULT_JIBO_BODY.y);
-            spriteTarget.setDirection(DEFAULT_JIBO_BODY.direction);
-            spriteTarget.setSize(DEFAULT_JIBO_BODY.size);
-
+            let imageData = colorDef[color].imageData;
+            await this.setSpriteCostume(spriteTarget, color, imageData);
         } else {
             console.log("No Jibo body found");
         }
     }
 
-    anim(animation: string, commandType: string, currentTarget: Target) {
+    async blink(jiboEye: Target) {
+        this.resetJiboEyeTarget(jiboEye);
+        for (let i=0; i<JIBO_EYE_ANIM.length; i++) {
+            let costumeName = JIBO_EYE_ANIM[i];
+            let imageData = jiboEyeDef[costumeName].imageData;
+            await this.setSpriteCostume(jiboEye, costumeName, imageData);
+            await new Promise((r) => setTimeout(r, 50));
+        }
+    }
+    async jumpTransition(jiboEye: Target, newAnim: string, imageData: string) {
+        let type = newAnim.includes("Eye") ? "eye" : "icon";
+        if (!isRenderedTarget(jiboEye)) {
+            console.warn("Eye could not be reset as the supplied target wasn't a rendered target");
+            return false;
+        }
+
+        // move up 5 loops
+        for (let i=0; i<5; i++) {
+            jiboEye.setXY(jiboEye.x, jiboEye.y + 5, null)
+            await new Promise((r) => setTimeout(r, 50));
+        }
+        // move eye down 7 loops
+        for (let i=0; i<7; i++) {
+            jiboEye.setXY(jiboEye.x, jiboEye.y - 5, null)
+            await new Promise((r) => setTimeout(r, 50));
+        }
+        // switch costume
+        this.resetJiboEyeTarget(jiboEye, type);
+        await this.setSpriteCostume(jiboEye, newAnim, imageData);
+        // move up 4 loops
+        for (let i=0; i<4; i++) {
+            jiboEye.setXY(jiboEye.x, jiboEye.y + 5, null)
+            await new Promise((r) => setTimeout(r, 50));
+        }
+        // move down 2 loops
+        for (let i=0; i<2; i++) {
+            jiboEye.setXY(jiboEye.x, jiboEye.y - 5, null)
+            await new Promise((r) => setTimeout(r, 50));
+        }
+    }
+    async anim(animation: string, commandType: string, currentTarget: Target) {
         // find the jibo-eye sprite to edit
         let spriteTarget = this.getJiboEyeTarget(currentTarget);
+        if (!isRenderedTarget(spriteTarget)) {
+            console.warn("Eye could not be reset as the supplied target wasn't a rendered target");
+            return false;
+        }
 
         if (spriteTarget) {
             // change the Sprite costume 
             let imageDataURI;
             //if (commandType == "dance") imageDataURI = danceFiles[animation].imageData;
             //else if (commandType == "emotion") imageDataURI = emotionFiles[animation].imageData;
-            if (commandType == "icon") imageDataURI = iconFiles[animation].imageData;
+            if (commandType == "icon") {
+                imageDataURI = iconFiles[animation].imageData;
+                await this.jumpTransition(spriteTarget, animation, imageDataURI);
+                await new Promise((r) => setTimeout(r, 3000));
+                await this.jumpTransition(spriteTarget, "Eye1", jiboEyeDef["Eye1"].imageData);
+                // finish a blink
+                await this.blink(spriteTarget);
+            }
 
-            // TODO do transition animation to change sprite icon
-            this.setSpriteCostume(spriteTarget, animation, imageDataURI);
-            spriteTarget.setXY(DEFAULT_JIBO_EYE.x, DEFAULT_JIBO_EYE.y);
-            spriteTarget.setDirection(DEFAULT_JIBO_EYE.direction);
-            spriteTarget.setSize(DEFAULT_JIBO_EYE.size);
 
         } else {
             console.log("No Jibo eye found");
@@ -333,7 +406,7 @@ export default class Scratch3VirtualJibo {
 
     /**
      * Add a costume to the current sprite based on some image data
-     * @param {RenderedTarget} target (e.g. `util.target`)
+     * @param {Target} target (e.g. `util.target`)
      * @param {ImageData} image What image to use to create the costume
      * @param {"add only" | "add and set"} action What action should be applied
      * - **_add only_**: generates the costume and append it it to the sprite's costume library
@@ -367,7 +440,7 @@ export default class Scratch3VirtualJibo {
 
     /**
      * Add a costume to the current sprite based on a bitmpa input
-     * @param {RenderedTarget} target (e.g. `util.target`)
+     * @param {Target} target (e.g. `util.target`)
      * @param {string} bitmapImage What image to use to create the costume
      * @param {"add only" | "add and set"} action What action should be applied
      * - **_add only_**: generates the costume and append it it to the sprite's costume library
@@ -401,7 +474,7 @@ export default class Scratch3VirtualJibo {
 
     /**
      * Add a costume to the current sprite based on same image data
-     * @param {RenderedTarget} target (e.g. `util.target`)
+     * @param {Target} target (e.g. `util.target`)
      * @param {string?} name costume name to look for
      */
     setCostumeByName(target: Target, name: string): boolean {

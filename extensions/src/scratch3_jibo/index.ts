@@ -332,9 +332,10 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         }),
         text: (aname) => `show ${aname} icon`,
         operation: async (icon: IconType, { target }: BlockUtility) => {
-          this.virtualJibo.anim(icon, "icon", target);
+          let virtualJ = this.virtualJibo.anim(icon, "icon", target);
           const akey = iconFiles[icon].file;
-          await this.jiboAnimFn(akey, 1000);
+          let physicalJ = this.jiboAnimFn(akey, 1000);
+          await Promise.all([virtualJ, physicalJ]);
         }
       }),
       JiboLED: () => ({
