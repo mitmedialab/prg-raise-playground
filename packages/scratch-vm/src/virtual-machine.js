@@ -30,7 +30,6 @@ const RESERVED_NAMES = ['_mouse_', '_stage_', '_edge_', '_myself_', '_random_'];
 
 const CORE_EXTENSIONS = [
     'jibo',
-    'textClassification',
     // 'motion',
     // 'looks',
     // 'sound',
@@ -655,7 +654,7 @@ class VirtualMachine extends EventEmitter {
             })
         } else if (url.includes("dropbox.com")) {        
             // Handle loading dropbox links
-            const dropboxRegex = /\/s\/[A-Za-z0-9]+\/.*.sb3/;
+            const dropboxRegex = /\/(s|scl)(\/fi)?\/[A-Za-z0-9]+\/.*.sb3(\?rlkey=[A-Za-z0-9]*)?/;
             const found = url.match(dropboxRegex);
             if (found.length > 0) url = 'https://dl.dropboxusercontent.com' + found[0];
         }
