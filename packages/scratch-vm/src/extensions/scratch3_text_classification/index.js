@@ -546,7 +546,7 @@ class Scratch3TextClassificationBlocks {
                     opcode: "getWordsLike",
                     text: formatMessage({
                         id: "textClassification.getWordsLike",
-                        default: "word [NUM] like [LIST] from [TEXT]",
+                        default: "word [NUM] of [TEXT] like [LIST]",
                         description:
                             "Reporter block that returns words that match target words",
                     }),
