@@ -506,9 +506,63 @@ class Scratch3TextClassificationBlocks {
                             type: ArgumentType.NUMBER,
                             defaultValue: "1",
                         },
+                        NUM: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: "1",
+                        },
                         TEXT: {
                             type: ArgumentType.STRING,
                             defaultValue: "Here comes the robot",
+                        },
+                    },
+                },
+                '---',
+                {
+                    opcode: "getPartOfSpeech",
+                    text: formatMessage({
+                        id: "textClassification.getPartOfSpeech",
+                        default: "[POS] [NUM] of [TEXT]",
+                        description:
+                            "Reporter block that returns the 1st match for a requested part of speech",
+                    }),
+                    blockType: BlockType.REPORTER,
+                    arguments: {
+                        POS: {
+                            type: ArgumentType.STRING,
+                            menu: "parts_of_speech",
+                            defaultValue: "noun",
+                        },
+                        NUM: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: "1",
+                        },
+                        TEXT: {
+                            type: ArgumentType.STRING,
+                            defaultValue: "My name is Scratch Cat",
+                        },
+                    },
+                },
+                {
+                    opcode: "getWordsLike",
+                    text: formatMessage({
+                        id: "textClassification.getWordsLike",
+                        default: "word [NUM] like [LIST] from [TEXT]",
+                        description:
+                            "Reporter block that returns words that match target words",
+                    }),
+                    blockType: BlockType.REPORTER,
+                    arguments: {
+                        NUM: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: "1",
+                        },
+                        LIST: {
+                            type: ArgumentType.STRING,
+                            defaultValue: "yes no maybe",
+                        },
+                        TEXT: {
+                            type: ArgumentType.STRING,
+                            defaultValue: "No I don't like them",
                         },
                     },
                 },
@@ -534,27 +588,6 @@ class Scratch3TextClassificationBlocks {
                     },
                 },
                 {
-                    opcode: "getPartOfSpeech",
-                    text: formatMessage({
-                        id: "textClassification.getPartOfSpeech",
-                        default: "first [POS] from [TEXT]",
-                        description:
-                            "Reporter block that returns the 1st match for a requested part of speech",
-                    }),
-                    blockType: BlockType.REPORTER,
-                    arguments: {
-                        POS: {
-                            type: ArgumentType.STRING,
-                            menu: "parts_of_speech",
-                            defaultValue: "noun",
-                        },
-                        TEXT: {
-                            type: ArgumentType.STRING,
-                            defaultValue: "My name is Scratch Cat",
-                        },
-                    },
-                },
-                {
                     opcode: "textContainsWordsLike",
                     text: formatMessage({
                         id: "textClassification.textContainsWordsLike",
@@ -571,26 +604,6 @@ class Scratch3TextClassificationBlocks {
                         LIST: {
                             type: ArgumentType.STRING,
                             defaultValue: "spin move say",
-                        },
-                    },
-                },
-                {
-                    opcode: "getWordsLike",
-                    text: formatMessage({
-                        id: "textClassification.getWordsLike",
-                        default: "first word like [LIST] from [TEXT]",
-                        description:
-                            "Reporter block that returns words that match target words",
-                    }),
-                    blockType: BlockType.REPORTER,
-                    arguments: {
-                        LIST: {
-                            type: ArgumentType.STRING,
-                            defaultValue: "yes no maybe",
-                        },
-                        TEXT: {
-                            type: ArgumentType.STRING,
-                            defaultValue: "No I don't like them",
                         },
                     },
                 },
@@ -1554,23 +1567,35 @@ class Scratch3TextClassificationBlocks {
         return this.predictedsentimentScore.comparative;
     }
 
-    getWordInString(args) {
-        let wordIdx = Number.parseInt(args.NUM);
+    getItemOfArray(item, array) {
+        if (item === 'first') {
+            return array[0];
+        } else if (item === 'last') {
+            return array[array.length-1];
+        } else if (item === 'random') {
+            let randomIdx = Math.floor(Math.random()*array.length);
+            return array[randomIdx];
+        } else if (item === 'all') {
+            return array.join(' ');
+        }
+        let wordIdx = Number.parseInt(item);
         if (wordIdx && wordIdx > 0) {
-            let splitText = args.TEXT.split(" ");
-            if (wordIdx <= splitText.length) return splitText[wordIdx - 1];
+            if (wordIdx <= array.length) return array[wordIdx - 1];
         }
         return "";
     }
 
-    getPOSTags(inputText) {
+    getWordInString(args) {
+        let splitText = this.splitText(args.TEXT);
+        return this.getItemOfArray(args.NUM, splitText);
+    }
+
+    splitText(inputText) {
         let words = inputText
             .replace(/[^\w\s\'\-]|_/g, "") // don't erase apostrophes and dashes
             .replace(/\s+/g, " ") // remove extra spaces
             .split(/[\s']+/); // split on spaces and apostrophes
-
-        let tags = new Tag(words).initial().smooth().tags;
-        return [words, tags];
+        return words;
     }
 
     tagMatchesPOS(tag, partOfSpeech) {
@@ -1596,21 +1621,19 @@ class Scratch3TextClassificationBlocks {
         return this.getPartOfSpeech(args) !== "";
     }
     getPartOfSpeech(args) {
-        let [words,
-            tags] = this.getPOSTags(args.TEXT);
-
+        let words = this.splitText(args.TEXT);
+        let tags = new Tag(words).initial().smooth().tags;
+        let matches = [];
         // loop through tagged words and return matches
         for (let i = 0; i < tags.length; i++) {
             let tag = tags[i];
 
             if (this.tagMatchesPOS(tag, args.POS)) {
-                if (args.POS == "number") return this.convertStringToNum(words[i]);
-                return words[i];
+                if (args.POS == "number") matches.push(this.convertStringToNum(words[i]));
+                else matches.push(words[i]);
             }
         }
-
-        // no matches
-        return "";
+        return this.getItemOfArray(args.NUM, matches);
     }
 
     textContainsWordsLike(args) {
@@ -1619,16 +1642,15 @@ class Scratch3TextClassificationBlocks {
     getWordsLike(args) {
         // user can past name of list or a string
         let targetWords = targetWords = args.LIST.toLowerCase().split(" ");
+        let splitText = this.splitText(args.TEXT);
+        let matches = [];
 
-        let splitText = args.TEXT.toLowerCase().split(" ");
         for (let i = 0; i < splitText.length; i++) {
-            if (targetWords.includes(splitText[i])) {
-                return splitText[i];
+            if (targetWords.includes(splitText[i].toLowerCase())) {
+                matches.push(splitText[i].toLowerCase());
             }
         }
-
-        // no matches
-        return "";
+        return this.getItemOfArray(args.NUM, matches);
     }
 
 
