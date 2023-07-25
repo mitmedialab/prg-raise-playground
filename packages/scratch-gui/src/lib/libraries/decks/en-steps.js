@@ -1,4 +1,4 @@
-// Text Classifier
+// Jibo Blocks
 import jiboBlocksIntro from './steps/jibo-blocks-intro.gif';
 import jiboBlocksSay from './steps/jibo-blocks-1.png';
 import jiboBlocksGF from './steps/jibo-blocks-2.png';
@@ -7,12 +7,15 @@ import jiboBlocksIcon from './steps/jibo-blocks-4.png';
 import jiboBlocksLEDRing from './steps/jibo-blocks-5.png';
 
 // Text Classifier
-import textClassifierIntro from './steps/text-tutorial-1.svg';
+import textClassifierIntro from './steps/text-tutorial-1.png';
 import textClassifierMatches from './steps/text-tutorial-2.png';
 import textClassifierConfidence from './steps/text-tutorial-3.png';
 import textClassifierEditModel from './steps/text-tutorial-4.png';
 import textClassifierAdd from './steps/text-tutorial-5.png';
 import textClassifierExamples from './steps/text-tutorial-6.png';
+import textClassifierIndex from './steps/text-tutorial-7.png';
+import textClassifierPOS from './steps/text-tutorial-8.png';
+import textClassifierWordsLike from './steps/text-tutorial-9.png';
 
 // Progress Tab
 import progressTabIntro from './steps/progress-tab-1.png';
@@ -238,6 +241,9 @@ const enImages = {
     textClassifierEditModel: textClassifierEditModel,
     textClassifierAdd: textClassifierAdd,
     textClassifierExamples: textClassifierExamples,
+    textClassifierIndex: textClassifierIndex,
+    textClassifierPOS: textClassifierPOS,
+    textClassifierWordsLike: textClassifierWordsLike,
 
     // Progress Tab
     progressTabIntro: progressTabIntro,

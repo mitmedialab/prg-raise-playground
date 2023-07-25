@@ -168,31 +168,13 @@ export default {
         },{
             title: (
                 <FormattedMessage
-                    defaultMessage="Use text matches blocks in conditionals"
-                    description="Step for text matches blocks"
-                    id="gui.howtos.text-classifer.matches"
-                />
-            ),
-            image: 'textClassifierMatches'
-        }, {
-            title: (
-                <FormattedMessage
-                    defaultMessage="Use confidence blocks in embedded conditionals"
-                    description="Step for using confidence blocks"
-                    id="gui.howtos.text-classifer.confidence"
-                />
-            ),
-            image: 'textClassifierConfidence'
-        }, {
-            title: (
-                <FormattedMessage
                     defaultMessage="Open the model editor"
                     description="Step for opening edit model modal"
                     id="gui.howtos.text-classifer.edit-model"
                 />
             ),
             image: 'textClassifierEditModel'
-        }, {
+        },{
             title: (
                 <FormattedMessage
                     defaultMessage="Add class labels and examples to your model"
@@ -201,7 +183,7 @@ export default {
                 />
             ),
             image: 'textClassifierAdd'
-        }, {
+        },{
             title: (
                 <FormattedMessage
                     defaultMessage="Add multiple examples to make a strong classifier"
@@ -210,7 +192,52 @@ export default {
                 />
             ),
             image: 'textClassifierExamples'
-        }, {
+        },{
+            title: (
+                <FormattedMessage
+                    defaultMessage="Use text matches blocks in conditionals"
+                    description="Step for text matches blocks"
+                    id="gui.howtos.text-classifer.matches"
+                />
+            ),
+            image: 'textClassifierMatches'
+        },{
+            title: (
+                <FormattedMessage
+                    defaultMessage="Use confidence blocks in embedded conditionals"
+                    description="Step for using confidence blocks"
+                    id="gui.howtos.text-classifer.confidence"
+                />
+            ),
+            image: 'textClassifierConfidence'
+        },{
+            title: (
+                <FormattedMessage
+                    defaultMessage="Choose specific words from a string"
+                    description="Step for getting word by index"
+                    id="gui.howtos.text-classifer.index"
+                />
+            ),
+            image: 'textClassifierIndex'
+        },{
+            title: (
+                <FormattedMessage
+                    defaultMessage="Get words by part of speech"
+                    description="Step for getting word by part of speech"
+                    id="gui.howtos.text-classifer.pos"
+                />
+            ),
+            image: 'textClassifierPOS'
+        },{
+            title: (
+                <FormattedMessage
+                    defaultMessage="Look for specific words from a list"
+                    description="Step for getting word from a search list"
+                    id="gui.howtos.text-classifer.wordsLike"
+                />
+            ),
+            image: 'textClassifierWordsLike'
+        },{
             deckIds: [
                 'ai-progress-tab'
             ]
