@@ -1618,6 +1618,7 @@ class Scratch3TextClassificationBlocks {
     }
 
     textContainsPartOfSpeech(args) {
+        args.NUM = "1";
         return this.getPartOfSpeech(args) !== "";
     }
     getPartOfSpeech(args) {
@@ -1637,6 +1638,7 @@ class Scratch3TextClassificationBlocks {
     }
 
     textContainsWordsLike(args) {
+        args.NUM = "1";
         return this.getWordsLike(args) !== "";
     }
     getWordsLike(args) {
