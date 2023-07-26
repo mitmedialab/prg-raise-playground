@@ -279,7 +279,6 @@ class Scratch3TextClassificationBlocks {
             acceptReporters: true
         };
 
-        this.resetModelData();
         // load the toxicity model
         this._toxicitymodel = null;
         this._loadToxicity();
@@ -758,7 +757,6 @@ class Scratch3TextClassificationBlocks {
      * TODO Moves info from the runtime into the classifier, called when a project is loaded
      */
     async loadModelFromRuntime() {
-        console.log("Load model from runtime");
         this.labelList = [];
         this.labelListEmpty = false;
         let textData = this.scratch_vm.modelData.textData;
