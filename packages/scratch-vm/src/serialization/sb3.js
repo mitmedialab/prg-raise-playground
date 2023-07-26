@@ -576,6 +576,9 @@ const serialize = function (runtime, targetId, extensionManager) {
     // Save training data for the text classifier model
     obj.textModel = runtime.modelData ? runtime.modelData.classifierData : undefined;
 
+    // Save logs to the progress tab
+    obj.progressTabLog = runtime.progressTab ? runtime.progressTab : [];
+
     // Assemble metadata
     const meta = Object.create(null);
     meta.semver = '3.0.0';

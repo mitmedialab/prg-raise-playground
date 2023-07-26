@@ -47,7 +47,14 @@ class ProgressTab extends React.Component {
             'setFileInput'
         ]);
         this.state = {selectedSoundIndex: 0};
-        console.log(this.props.vm.runtime.modelData);
+
+        // Log when the Progress Tab is accessed
+        let progressTabLog = this.props.vm.runtime.progressTab;
+        if (!progressTabLog) {
+            progressTabLog = [];
+        }
+        progressTabLog.push(Date.now());
+        this.props.vm.runtime.progressTab = progressTabLog;
     }
 
     componentWillReceiveProps (nextProps) {
