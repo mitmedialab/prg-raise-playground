@@ -152,8 +152,6 @@ class Scratch3TextClassificationBlocks {
 
         this.custom_NLP_model = tf.sequential();
 
-
-
         /**
          * The timer utility.
          * @type {Timer}
@@ -278,14 +276,6 @@ class Scratch3TextClassificationBlocks {
             ],
             acceptReporters: true
         };
-
-        // load the toxicity model
-        this._toxicitymodel = null;
-        this._loadToxicity();
-
-        // load the universal sentence encoder model
-        this._useModel = null;
-        this._loadUseModel();
 
         this.sentiment = new Sentiment();
 
@@ -934,6 +924,7 @@ class Scratch3TextClassificationBlocks {
      * @returns {float} value 0 (not at all similar) to 100 (very similar)
      */
     async getSimilarity(args) {
+        if (!this._useModel) await this._loadUseModel();
         if (this._useModel) {
             const firstText = args.TEXT_ONE;
             const secondText = args.TEXT_TWO;
@@ -1277,14 +1268,13 @@ class Scratch3TextClassificationBlocks {
             this.labelList.findIndex(e => e === a)), 'int32'), numClass);
         // console.log('ys',ys);
 
-        const trainingData = await use.load()
-            .then(model => {
-                return model.embed(this.sentencesample)
-                    .then(embeddings => {
-                        return embeddings;
-                    });
-            })
-            .catch(err => console.error('Fit Error:', err));
+        let trainingData;
+        try {
+            if (!this.useModel) await this._loadUseModel();
+            trainingData = await this._useModel.embed(this.sentencesample);
+        } catch (err) {
+            console.error('Fit Error:', err);
+        }
         // console.log(trainingData)
 
         // Add layers to the model
@@ -1307,7 +1297,7 @@ class Scratch3TextClassificationBlocks {
         // });
 
 
-        await this.custom_NLP_model.fit(trainingData, ys, {
+        let info = await this.custom_NLP_model.fit(trainingData, ys, {
             epochs: 100,
             batchSize: 4,
             shuffle: true,
@@ -1316,13 +1306,11 @@ class Scratch3TextClassificationBlocks {
             callbacks: [
                 tf.callbacks.earlyStopping({ monitor: 'val_loss', patience: 50 })
             ]
-        }).then(info => {
-            console.log('Final accuracy', info);
         });
-
+        console.log('Final accuracy', info);
         console.log('model is trained')
-        this.scratch_vm.emit('SAY', this.scratch_vm.executableTargets[1], 'say', 'The model is ready');
 
+        this.scratch_vm.emit('SAY', this.scratch_vm.executableTargets[1], 'say', 'The model is ready');
     }
 
     /**
@@ -1354,15 +1342,15 @@ class Scratch3TextClassificationBlocks {
         //var test_ex = ["sorry , that is not true","yes sir","i am uncertain","please say it again"]
         //var test_ex = ["i really do not have a clue"]
         console.log(text)
-        var test_ex = [text]
-        const testData = await use.load()
-            .then(model => {
-                return model.embed(test_ex)
-                    .then(embeddings => {
-                        return embeddings;
-                    });
-            })
-            .catch(err => console.error('Fit Error:', err));
+        let test_ex = [text]
+        let testData;
+        try {
+            if (!this._useModel) await this._loadUseModel();
+            testData = await this._useModel.embed(test_ex);
+        } catch (err) {
+            console.error('Fit Error:', err); return;
+
+        }
         // console.log(testData)
         // this.output = await this.custom_NLP_model.predict(testData);
         await this.custom_NLP_model.predict(testData).print();
@@ -1377,8 +1365,6 @@ class Scratch3TextClassificationBlocks {
         console.log('Predicted Label', this.predictionLabel);
         console.log('Predicted Class', this.predictionClass);
         console.log('Predicted Score', this.predictionScore);
-
-
     }
     /**
       * Exports the labels and examples in the form of a json document with the default name of "classifier-info.json"
@@ -1466,24 +1452,22 @@ class Scratch3TextClassificationBlocks {
     }
 
 
-    confidenceTrue(args) {
-        return this._classifyText(args.TEXT, args.LABEL, true);
+    async confidenceTrue(args) {
+        return await this._classifyText(args.TEXT, args.LABEL, true);
     }
-    confidenceFalse(args) {
-        return this._classifyText(args.TEXT, args.LABEL, false);
+    async confidenceFalse(args) {
+        return await this._classifyText(args.TEXT, args.LABEL, false);
     }
 
     //-----------------------------------------------------------------------
 
-    _loadToxicity() {
+    /*_loadToxicity() {
         var id = 'script-toxicity';
         if (document.getElementById(id)) {
             console.log('Toxicity script already loaded');
         }
         else {
-            console.log('loading Toxicity script');
-
-            var scriptObj = document.createElement('script');
+            let scriptObj = document.createElement('script');
             scriptObj.id = id;
             scriptObj.type = 'text/javascript';
             scriptObj.src = 'https://cdn.jsdelivr.net/npm/@tensorflow-models/toxicity';
@@ -1493,45 +1477,46 @@ class Scratch3TextClassificationBlocks {
 
             document.head.appendChild(scriptObj);
         }
-    }
+    }*/
 
-    _loadToxicityModel() {
+    async _loadToxicityModel() {
         if (this._toxicitymodel) {
             console.log('Toxicity model already loaded');
         }
         else {
             console.log('loading Toxicity model');
-
             const threshold = 0.1;
-            toxicity.load(threshold, this._toxicity_labels.items.map(lbl => lbl.value))
-                .then((model) => {
-                    console.log('loaded Toxicity model');
-                    this._toxicitymodel = model;
-                })
-                .catch((err) => {
-                    console.log('Failed to load toxicity model', err);
-                });
+
+            try {
+                this._toxicityModel = await toxicity.load(threshold, this._toxicity_labels.items.map(lbl => lbl.value))
+                console.log('loaded Toxicity model');
+            } catch (err) {
+                console.log('Failed to load toxicity model', err);
+            };
         }
     }
 
-    _loadUseModel() {
+    async _loadUseModel() {
         if (this._useModel) {
             console.log('Universal sentence encoder model already loaded');
         } else {
             console.log('Loading Universal Sentence Encoder model');
-            use.load().then((model) => {
+            try {
+                this._useModel = await use.load();
                 console.log('Loaded Universal sentence encoder model');
-                this._useModel = model;
-            }).catch((err) => {
+            } catch (e) {
                 console.log('Failed to load universal sentence encoder model');
-            });
+                console.error(e);
+            }
         }
     }
 
     //-----------------------------------------------------------------------
 
-    _classifyText(text, label, returnPositive) {
-        if (this._toxicitymodel && text && label) {
+    async _classifyText(text, label, returnPositive) {
+        if (!this._toxicityModel) await this._loadToxicityModel();
+
+        if (this._toxicityModel && text && label) {
             return this._toxicitymodel.classify([text])
                 .then((predictions) => {
                     const filtered = predictions.filter(prediction => prediction.label === label);
@@ -1565,9 +1550,9 @@ class Scratch3TextClassificationBlocks {
         if (item === 'first') {
             return array[0];
         } else if (item === 'last') {
-            return array[array.length-1];
+            return array[array.length - 1];
         } else if (item === 'random') {
-            let randomIdx = Math.floor(Math.random()*array.length);
+            let randomIdx = Math.floor(Math.random() * array.length);
             return array[randomIdx];
         } else if (item === 'all') {
             return array.join(' ');
