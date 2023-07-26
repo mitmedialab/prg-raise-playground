@@ -383,7 +383,7 @@ class MicrobitRobot {
   }
   
   /**
-   * RANDI just for testing out sending commands to robot via ble
+   * just for testing out sending commands to robot via ble
    */
   sendCommand (args) {
     let command = args.COMMAND;

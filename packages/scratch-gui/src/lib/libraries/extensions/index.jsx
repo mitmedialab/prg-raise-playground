@@ -213,7 +213,7 @@ export default [
         ),
         featured: true,
         tags: ["Made by PRG"]
-    },*/ //*/ // RANDI Removing extensions I don't want students to play with
+    },*/ //*/
     {
         name: (
             <FormattedMessage

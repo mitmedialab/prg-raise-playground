@@ -1262,7 +1262,6 @@ const deserialize = function (json, runtime, zip, isSingleSprite) {
     // Unpack the data for the text model
     runtime.modelData = {"textData": {}, "classifierData": {}, "nextLabelNumber": 1};
     if (json.hasOwnProperty("textModel")) {
-        // RANDI should make sure this works
         for (let label of Object.keys(json.textModel)) {
             runtime.modelData.textData[label] = [];
             runtime.modelData.classifierData[label] = [];

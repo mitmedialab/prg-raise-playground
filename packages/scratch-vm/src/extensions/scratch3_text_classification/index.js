@@ -758,7 +758,7 @@ class Scratch3TextClassificationBlocks {
      * TODO Moves info from the runtime into the classifier, called when a project is loaded
      */
     async loadModelFromRuntime() {
-        //console.log("Load model from runtime");
+        console.log("Load model from runtime");
         this.labelList = [];
         this.labelListEmpty = false;
         let textData = this.scratch_vm.modelData.textData;
@@ -775,10 +775,6 @@ class Scratch3TextClassificationBlocks {
             this.labelList.push('');    //if the label list is empty, fill it with an empty string
             this.labelListEmpty = true;
         }
-        /*console.log("RANDI try a practice class");
-        this.scratch_vm.modelData = {textData: {'Class 1':['Example 1','Example 2','Here\'s a really long example to make sure things are working','Example 3','Example 4','Example 5','Example 6']}, classifierData: {'Class 1':['Example 1','Example 2','Here\'s a really long example to make sure things are working','Example 3','Example 4','Example 5','Example 6']}, nextLabelNumber: 2};
-        this.labelList = ['Class 1'];
-        this.labelListEmpty = false;*/
 
         await this.buildCustomDeepModel()
 
