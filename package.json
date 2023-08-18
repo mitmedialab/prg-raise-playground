@@ -6,6 +6,8 @@
   },
   "workspaces": [
     "./packages/scratch-gui",
-    "./packages/scratch-vm"
+    "./packages/scratch-vm",
+    "./packages/scratch-blocks",
+    "./packages/scratch-render"
   ]
 }
