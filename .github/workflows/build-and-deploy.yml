@@ -20,6 +20,7 @@ jobs:
     - name: npm install, build, and test
       run: |
         npm install json5
+        npm install
         npx lerna exec -- npm install
         cd packages/scratch-gui
         npm run build --if-present
