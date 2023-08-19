@@ -3,5 +3,11 @@
   "private": true,
   "devDependencies": {
     "lerna": "^3.20.2"
-  }
+  },
+  "workspaces": [
+    "./packages/scratch-gui",
+    "./packages/scratch-vm",
+    "./packages/scratch-blocks",
+    "./packages/scratch-render"
+  ]
 }

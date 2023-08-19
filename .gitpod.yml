@@ -3,9 +3,8 @@ ports:
     onOpen: open-preview
 tasks:
   - init: >
-      nvm install &&
-      nvm use &&
-      npx lerna bootstrap --force-local &&
+      nvm install 16.19.0 &&
+      npm install &&
       cd packages/scratch-gui
     command: >
       npm start
