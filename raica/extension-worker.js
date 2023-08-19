@@ -81,15 +81,15 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./node_modules/babel-loader/lib/index.js?!./node_modules/scratch-vm/src/extension-support/extension-worker.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "../../node_modules/babel-loader/lib/index.js?!../../node_modules/scratch-vm/src/extension-support/extension-worker.js");
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/scratch-vm/src/extension-support/extension-worker.js":
-/*!*******************************************************************************************************************!*\
-  !*** ./node_modules/babel-loader/lib??ref--4!./node_modules/scratch-vm/src/extension-support/extension-worker.js ***!
-  \*******************************************************************************************************************/
+/***/ "../../node_modules/babel-loader/lib/index.js?!../../node_modules/scratch-vm/src/extension-support/extension-worker.js":
+/*!***********************************************************************************************************************************************************************************************************************************************************!*\
+  !*** /home/runner/work/prg-extension-boilerplate/prg-extension-boilerplate/node_modules/babel-loader/lib??ref--4!/home/runner/work/prg-extension-boilerplate/prg-extension-boilerplate/node_modules/scratch-vm/src/extension-support/extension-worker.js ***!
+  \***********************************************************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -97,8 +97,8 @@
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0) { ; } } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i.return && (_r = _i.return(), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i.return && (_r = _i.return(), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
@@ -107,10 +107,10 @@ function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _ty
 function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
 /* eslint-env worker */
 
-var ArgumentType = __webpack_require__(/*! ../extension-support/argument-type */ "./node_modules/scratch-vm/src/extension-support/argument-type.js");
-var BlockType = __webpack_require__(/*! ../extension-support/block-type */ "./node_modules/scratch-vm/src/extension-support/block-type.js");
-var dispatch = __webpack_require__(/*! ../dispatch/worker-dispatch */ "./node_modules/scratch-vm/src/dispatch/worker-dispatch.js");
-var TargetType = __webpack_require__(/*! ../extension-support/target-type */ "./node_modules/scratch-vm/src/extension-support/target-type.js");
+var ArgumentType = __webpack_require__(/*! ../extension-support/argument-type */ "../../node_modules/scratch-vm/src/extension-support/argument-type.js");
+var BlockType = __webpack_require__(/*! ../extension-support/block-type */ "../../node_modules/scratch-vm/src/extension-support/block-type.js");
+var dispatch = __webpack_require__(/*! ../dispatch/worker-dispatch */ "../../node_modules/scratch-vm/src/dispatch/worker-dispatch.js");
+var TargetType = __webpack_require__(/*! ../extension-support/target-type */ "../../node_modules/scratch-vm/src/extension-support/target-type.js");
 var ExtensionWorker = /*#__PURE__*/function () {
   function ExtensionWorker() {
     var _this = this;
@@ -166,14 +166,14 @@ var extensionWorker = new ExtensionWorker();
 global.Scratch.extensions = {
   register: extensionWorker.register.bind(extensionWorker)
 };
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../webpack/buildin/global.js */ "../../node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 
-/***/ "./node_modules/scratch-vm/node_modules/microee/index.js":
-/*!***************************************************************!*\
-  !*** ./node_modules/scratch-vm/node_modules/microee/index.js ***!
-  \***************************************************************/
+/***/ "../../node_modules/microee/index.js":
+/*!***********************************************************************************************************!*\
+  !*** /home/runner/work/prg-extension-boilerplate/prg-extension-boilerplate/node_modules/microee/index.js ***!
+  \***********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -231,15 +231,15 @@ module.exports = M;
 
 /***/ }),
 
-/***/ "./node_modules/scratch-vm/node_modules/minilog/lib/common/filter.js":
-/*!***************************************************************************!*\
-  !*** ./node_modules/scratch-vm/node_modules/minilog/lib/common/filter.js ***!
-  \***************************************************************************/
+/***/ "../../node_modules/minilog/lib/common/filter.js":
+/*!***********************************************************************************************************************!*\
+  !*** /home/runner/work/prg-extension-boilerplate/prg-extension-boilerplate/node_modules/minilog/lib/common/filter.js ***!
+  \***********************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 // default filter
-var Transform = __webpack_require__(/*! ./transform.js */ "./node_modules/scratch-vm/node_modules/minilog/lib/common/transform.js");
+var Transform = __webpack_require__(/*! ./transform.js */ "../../node_modules/minilog/lib/common/transform.js");
 
 var levelMap = { debug: 1, info: 2, warn: 3, error: 4 };
 
@@ -298,15 +298,15 @@ module.exports = Filter;
 
 /***/ }),
 
-/***/ "./node_modules/scratch-vm/node_modules/minilog/lib/common/minilog.js":
-/*!****************************************************************************!*\
-  !*** ./node_modules/scratch-vm/node_modules/minilog/lib/common/minilog.js ***!
-  \****************************************************************************/
+/***/ "../../node_modules/minilog/lib/common/minilog.js":
+/*!************************************************************************************************************************!*\
+  !*** /home/runner/work/prg-extension-boilerplate/prg-extension-boilerplate/node_modules/minilog/lib/common/minilog.js ***!
+  \************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Transform = __webpack_require__(/*! ./transform.js */ "./node_modules/scratch-vm/node_modules/minilog/lib/common/transform.js"),
-    Filter = __webpack_require__(/*! ./filter.js */ "./node_modules/scratch-vm/node_modules/minilog/lib/common/filter.js");
+var Transform = __webpack_require__(/*! ./transform.js */ "../../node_modules/minilog/lib/common/transform.js"),
+    Filter = __webpack_require__(/*! ./filter.js */ "../../node_modules/minilog/lib/common/filter.js");
 
 var log = new Transform(),
     slice = Array.prototype.slice;
@@ -354,14 +354,14 @@ exports.enable = function() {
 
 /***/ }),
 
-/***/ "./node_modules/scratch-vm/node_modules/minilog/lib/common/transform.js":
-/*!******************************************************************************!*\
-  !*** ./node_modules/scratch-vm/node_modules/minilog/lib/common/transform.js ***!
-  \******************************************************************************/
+/***/ "../../node_modules/minilog/lib/common/transform.js":
+/*!**************************************************************************************************************************!*\
+  !*** /home/runner/work/prg-extension-boilerplate/prg-extension-boilerplate/node_modules/minilog/lib/common/transform.js ***!
+  \**************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var microee = __webpack_require__(/*! microee */ "./node_modules/scratch-vm/node_modules/microee/index.js");
+var microee = __webpack_require__(/*! microee */ "../../node_modules/microee/index.js");
 
 // Implements a subset of Node's stream.Transform - in a cross-platform manner.
 function Transform() {}
@@ -437,14 +437,14 @@ module.exports = Transform;
 
 /***/ }),
 
-/***/ "./node_modules/scratch-vm/node_modules/minilog/lib/web/array.js":
-/*!***********************************************************************!*\
-  !*** ./node_modules/scratch-vm/node_modules/minilog/lib/web/array.js ***!
-  \***********************************************************************/
+/***/ "../../node_modules/minilog/lib/web/array.js":
+/*!*******************************************************************************************************************!*\
+  !*** /home/runner/work/prg-extension-boilerplate/prg-extension-boilerplate/node_modules/minilog/lib/web/array.js ***!
+  \*******************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Transform = __webpack_require__(/*! ../common/transform.js */ "./node_modules/scratch-vm/node_modules/minilog/lib/common/transform.js"),
+var Transform = __webpack_require__(/*! ../common/transform.js */ "../../node_modules/minilog/lib/common/transform.js"),
     cache = [ ];
 
 var logger = new Transform();
@@ -462,14 +462,14 @@ module.exports = logger;
 
 /***/ }),
 
-/***/ "./node_modules/scratch-vm/node_modules/minilog/lib/web/console.js":
-/*!*************************************************************************!*\
-  !*** ./node_modules/scratch-vm/node_modules/minilog/lib/web/console.js ***!
-  \*************************************************************************/
+/***/ "../../node_modules/minilog/lib/web/console.js":
+/*!*********************************************************************************************************************!*\
+  !*** /home/runner/work/prg-extension-boilerplate/prg-extension-boilerplate/node_modules/minilog/lib/web/console.js ***!
+  \*********************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Transform = __webpack_require__(/*! ../common/transform.js */ "./node_modules/scratch-vm/node_modules/minilog/lib/common/transform.js");
+var Transform = __webpack_require__(/*! ../common/transform.js */ "../../node_modules/minilog/lib/common/transform.js");
 
 var newlines = /\n+$/,
     logger = new Transform();
@@ -497,23 +497,23 @@ logger.write = function(name, level, args) {
 };
 
 logger.formatters = ['color', 'minilog'];
-logger.color = __webpack_require__(/*! ./formatters/color.js */ "./node_modules/scratch-vm/node_modules/minilog/lib/web/formatters/color.js");
-logger.minilog = __webpack_require__(/*! ./formatters/minilog.js */ "./node_modules/scratch-vm/node_modules/minilog/lib/web/formatters/minilog.js");
+logger.color = __webpack_require__(/*! ./formatters/color.js */ "../../node_modules/minilog/lib/web/formatters/color.js");
+logger.minilog = __webpack_require__(/*! ./formatters/minilog.js */ "../../node_modules/minilog/lib/web/formatters/minilog.js");
 
 module.exports = logger;
 
 
 /***/ }),
 
-/***/ "./node_modules/scratch-vm/node_modules/minilog/lib/web/formatters/color.js":
-/*!**********************************************************************************!*\
-  !*** ./node_modules/scratch-vm/node_modules/minilog/lib/web/formatters/color.js ***!
-  \**********************************************************************************/
+/***/ "../../node_modules/minilog/lib/web/formatters/color.js":
+/*!******************************************************************************************************************************!*\
+  !*** /home/runner/work/prg-extension-boilerplate/prg-extension-boilerplate/node_modules/minilog/lib/web/formatters/color.js ***!
+  \******************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Transform = __webpack_require__(/*! ../../common/transform.js */ "./node_modules/scratch-vm/node_modules/minilog/lib/common/transform.js"),
-    color = __webpack_require__(/*! ./util.js */ "./node_modules/scratch-vm/node_modules/minilog/lib/web/formatters/util.js");
+var Transform = __webpack_require__(/*! ../../common/transform.js */ "../../node_modules/minilog/lib/common/transform.js"),
+    color = __webpack_require__(/*! ./util.js */ "../../node_modules/minilog/lib/web/formatters/util.js");
 
 var colors = { debug: ['cyan'], info: ['purple' ], warn: [ 'yellow', true ], error: [ 'red', true ] },
     logger = new Transform();
@@ -534,15 +534,15 @@ module.exports = logger;
 
 /***/ }),
 
-/***/ "./node_modules/scratch-vm/node_modules/minilog/lib/web/formatters/minilog.js":
-/*!************************************************************************************!*\
-  !*** ./node_modules/scratch-vm/node_modules/minilog/lib/web/formatters/minilog.js ***!
-  \************************************************************************************/
+/***/ "../../node_modules/minilog/lib/web/formatters/minilog.js":
+/*!********************************************************************************************************************************!*\
+  !*** /home/runner/work/prg-extension-boilerplate/prg-extension-boilerplate/node_modules/minilog/lib/web/formatters/minilog.js ***!
+  \********************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Transform = __webpack_require__(/*! ../../common/transform.js */ "./node_modules/scratch-vm/node_modules/minilog/lib/common/transform.js"),
-    color = __webpack_require__(/*! ./util.js */ "./node_modules/scratch-vm/node_modules/minilog/lib/web/formatters/util.js"),
+var Transform = __webpack_require__(/*! ../../common/transform.js */ "../../node_modules/minilog/lib/common/transform.js"),
+    color = __webpack_require__(/*! ./util.js */ "../../node_modules/minilog/lib/web/formatters/util.js"),
     colors = { debug: ['gray'], info: ['purple' ], warn: [ 'yellow', true ], error: [ 'red', true ] },
     logger = new Transform();
 
@@ -571,10 +571,10 @@ module.exports = logger;
 
 /***/ }),
 
-/***/ "./node_modules/scratch-vm/node_modules/minilog/lib/web/formatters/util.js":
-/*!*********************************************************************************!*\
-  !*** ./node_modules/scratch-vm/node_modules/minilog/lib/web/formatters/util.js ***!
-  \*********************************************************************************/
+/***/ "../../node_modules/minilog/lib/web/formatters/util.js":
+/*!*****************************************************************************************************************************!*\
+  !*** /home/runner/work/prg-extension-boilerplate/prg-extension-boilerplate/node_modules/minilog/lib/web/formatters/util.js ***!
+  \*****************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -602,19 +602,19 @@ module.exports = color;
 
 /***/ }),
 
-/***/ "./node_modules/scratch-vm/node_modules/minilog/lib/web/index.js":
-/*!***********************************************************************!*\
-  !*** ./node_modules/scratch-vm/node_modules/minilog/lib/web/index.js ***!
-  \***********************************************************************/
+/***/ "../../node_modules/minilog/lib/web/index.js":
+/*!*******************************************************************************************************************!*\
+  !*** /home/runner/work/prg-extension-boilerplate/prg-extension-boilerplate/node_modules/minilog/lib/web/index.js ***!
+  \*******************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Minilog = __webpack_require__(/*! ../common/minilog.js */ "./node_modules/scratch-vm/node_modules/minilog/lib/common/minilog.js");
+var Minilog = __webpack_require__(/*! ../common/minilog.js */ "../../node_modules/minilog/lib/common/minilog.js");
 
 var oldEnable = Minilog.enable,
     oldDisable = Minilog.disable,
     isChrome = (typeof navigator != 'undefined' && /chrome/i.test(navigator.userAgent)),
-    console = __webpack_require__(/*! ./console.js */ "./node_modules/scratch-vm/node_modules/minilog/lib/web/console.js");
+    console = __webpack_require__(/*! ./console.js */ "../../node_modules/minilog/lib/web/console.js");
 
 // Use a more capable logging backend if on Chrome
 Minilog.defaultBackend = (isChrome ? console.minilog : console);
@@ -646,23 +646,23 @@ Minilog.disable = function() {
 exports = module.exports = Minilog;
 
 exports.backends = {
-  array: __webpack_require__(/*! ./array.js */ "./node_modules/scratch-vm/node_modules/minilog/lib/web/array.js"),
+  array: __webpack_require__(/*! ./array.js */ "../../node_modules/minilog/lib/web/array.js"),
   browser: Minilog.defaultBackend,
-  localStorage: __webpack_require__(/*! ./localstorage.js */ "./node_modules/scratch-vm/node_modules/minilog/lib/web/localstorage.js"),
-  jQuery: __webpack_require__(/*! ./jquery_simple.js */ "./node_modules/scratch-vm/node_modules/minilog/lib/web/jquery_simple.js")
+  localStorage: __webpack_require__(/*! ./localstorage.js */ "../../node_modules/minilog/lib/web/localstorage.js"),
+  jQuery: __webpack_require__(/*! ./jquery_simple.js */ "../../node_modules/minilog/lib/web/jquery_simple.js")
 };
 
 
 /***/ }),
 
-/***/ "./node_modules/scratch-vm/node_modules/minilog/lib/web/jquery_simple.js":
-/*!*******************************************************************************!*\
-  !*** ./node_modules/scratch-vm/node_modules/minilog/lib/web/jquery_simple.js ***!
-  \*******************************************************************************/
+/***/ "../../node_modules/minilog/lib/web/jquery_simple.js":
+/*!***************************************************************************************************************************!*\
+  !*** /home/runner/work/prg-extension-boilerplate/prg-extension-boilerplate/node_modules/minilog/lib/web/jquery_simple.js ***!
+  \***************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Transform = __webpack_require__(/*! ../common/transform.js */ "./node_modules/scratch-vm/node_modules/minilog/lib/common/transform.js");
+var Transform = __webpack_require__(/*! ../common/transform.js */ "../../node_modules/minilog/lib/common/transform.js");
 
 var cid = new Date().valueOf().toString(36);
 
@@ -740,14 +740,14 @@ module.exports = AjaxLogger;
 
 /***/ }),
 
-/***/ "./node_modules/scratch-vm/node_modules/minilog/lib/web/localstorage.js":
-/*!******************************************************************************!*\
-  !*** ./node_modules/scratch-vm/node_modules/minilog/lib/web/localstorage.js ***!
-  \******************************************************************************/
+/***/ "../../node_modules/minilog/lib/web/localstorage.js":
+/*!**************************************************************************************************************************!*\
+  !*** /home/runner/work/prg-extension-boilerplate/prg-extension-boilerplate/node_modules/minilog/lib/web/localstorage.js ***!
+  \**************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Transform = __webpack_require__(/*! ../common/transform.js */ "./node_modules/scratch-vm/node_modules/minilog/lib/common/transform.js"),
+var Transform = __webpack_require__(/*! ../common/transform.js */ "../../node_modules/minilog/lib/common/transform.js"),
     cache = false;
 
 var logger = new Transform();
@@ -765,10 +765,10 @@ module.exports = logger;
 
 /***/ }),
 
-/***/ "./node_modules/scratch-vm/src/dispatch/shared-dispatch.js":
-/*!*****************************************************************!*\
-  !*** ./node_modules/scratch-vm/src/dispatch/shared-dispatch.js ***!
-  \*****************************************************************/
+/***/ "../../node_modules/scratch-vm/src/dispatch/shared-dispatch.js":
+/*!*************************************************************************************************************************************!*\
+  !*** /home/runner/work/prg-extension-boilerplate/prg-extension-boilerplate/node_modules/scratch-vm/src/dispatch/shared-dispatch.js ***!
+  \*************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -780,15 +780,15 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToAr
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0) { ; } } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i.return && (_r = _i.return(), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i.return && (_r = _i.return(), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
 function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
 function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
-var log = __webpack_require__(/*! ../util/log */ "./node_modules/scratch-vm/src/util/log.js");
+var log = __webpack_require__(/*! ../util/log */ "../../node_modules/scratch-vm/src/util/log.js");
 
 /**
  * @typedef {object} DispatchCallMessage - a message to the dispatch system representing a service method call
@@ -1078,10 +1078,10 @@ module.exports = SharedDispatch;
 
 /***/ }),
 
-/***/ "./node_modules/scratch-vm/src/dispatch/worker-dispatch.js":
-/*!*****************************************************************!*\
-  !*** ./node_modules/scratch-vm/src/dispatch/worker-dispatch.js ***!
-  \*****************************************************************/
+/***/ "../../node_modules/scratch-vm/src/dispatch/worker-dispatch.js":
+/*!*************************************************************************************************************************************!*\
+  !*** /home/runner/work/prg-extension-boilerplate/prg-extension-boilerplate/node_modules/scratch-vm/src/dispatch/worker-dispatch.js ***!
+  \*************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1098,8 +1098,8 @@ function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) ===
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-var SharedDispatch = __webpack_require__(/*! ./shared-dispatch */ "./node_modules/scratch-vm/src/dispatch/shared-dispatch.js");
-var log = __webpack_require__(/*! ../util/log */ "./node_modules/scratch-vm/src/util/log.js");
+var SharedDispatch = __webpack_require__(/*! ./shared-dispatch */ "../../node_modules/scratch-vm/src/dispatch/shared-dispatch.js");
+var log = __webpack_require__(/*! ../util/log */ "../../node_modules/scratch-vm/src/util/log.js");
 
 /**
  * This class provides a Worker with the means to participate in the message dispatch system managed by CentralDispatch.
@@ -1228,10 +1228,10 @@ module.exports = new WorkerDispatch();
 
 /***/ }),
 
-/***/ "./node_modules/scratch-vm/src/extension-support/argument-type.js":
-/*!************************************************************************!*\
-  !*** ./node_modules/scratch-vm/src/extension-support/argument-type.js ***!
-  \************************************************************************/
+/***/ "../../node_modules/scratch-vm/src/extension-support/argument-type.js":
+/*!********************************************************************************************************************************************!*\
+  !*** /home/runner/work/prg-extension-boilerplate/prg-extension-boilerplate/node_modules/scratch-vm/src/extension-support/argument-type.js ***!
+  \********************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -1277,10 +1277,10 @@ module.exports = ArgumentType;
 
 /***/ }),
 
-/***/ "./node_modules/scratch-vm/src/extension-support/block-type.js":
-/*!*********************************************************************!*\
-  !*** ./node_modules/scratch-vm/src/extension-support/block-type.js ***!
-  \*********************************************************************/
+/***/ "../../node_modules/scratch-vm/src/extension-support/block-type.js":
+/*!*****************************************************************************************************************************************!*\
+  !*** /home/runner/work/prg-extension-boilerplate/prg-extension-boilerplate/node_modules/scratch-vm/src/extension-support/block-type.js ***!
+  \*****************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -1329,10 +1329,10 @@ module.exports = BlockType;
 
 /***/ }),
 
-/***/ "./node_modules/scratch-vm/src/extension-support/target-type.js":
-/*!**********************************************************************!*\
-  !*** ./node_modules/scratch-vm/src/extension-support/target-type.js ***!
-  \**********************************************************************/
+/***/ "../../node_modules/scratch-vm/src/extension-support/target-type.js":
+/*!******************************************************************************************************************************************!*\
+  !*** /home/runner/work/prg-extension-boilerplate/prg-extension-boilerplate/node_modules/scratch-vm/src/extension-support/target-type.js ***!
+  \******************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -1354,20 +1354,20 @@ module.exports = TargetType;
 
 /***/ }),
 
-/***/ "./node_modules/scratch-vm/src/util/log.js":
-/*!*************************************************!*\
-  !*** ./node_modules/scratch-vm/src/util/log.js ***!
-  \*************************************************/
+/***/ "../../node_modules/scratch-vm/src/util/log.js":
+/*!*********************************************************************************************************************!*\
+  !*** /home/runner/work/prg-extension-boilerplate/prg-extension-boilerplate/node_modules/scratch-vm/src/util/log.js ***!
+  \*********************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var minilog = __webpack_require__(/*! minilog */ "./node_modules/scratch-vm/node_modules/minilog/lib/web/index.js");
+var minilog = __webpack_require__(/*! minilog */ "../../node_modules/minilog/lib/web/index.js");
 minilog.enable();
 module.exports = minilog('vm');
 
 /***/ }),
 
-/***/ "./node_modules/webpack/buildin/global.js":
+/***/ "../../node_modules/webpack/buildin/global.js":
 /*!***********************************!*\
   !*** (webpack)/buildin/global.js ***!
   \***********************************/
