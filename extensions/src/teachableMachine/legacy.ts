@@ -5,6 +5,12 @@ export const info = {
   "showStatusButton": true,
   "blocks": [
     {
+      "opcode": "openTeachableMachine",
+      "func": "OPEN_TEACHABLE_MACHINE",
+      "blockType": "button",
+      "text": "Teachable Machine Site ↗"
+    },
+    {
       "opcode": "useModelBlock",
       "text": "use model [MODEL_URL]",
       "arguments": {

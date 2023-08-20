@@ -75,6 +75,9 @@ export default class teachableMachine extends extension({
       // Kick off looping the analysis logic.
       this._loop();
     }
+
+    
+    this.runtime.on('OPEN_TEACHABLE_MACHINE', this.openTeachableMachineSite.bind(this));
   }
 
   /**
@@ -310,6 +313,15 @@ export default class teachableMachine extends extension({
     this.runtime.ioDevices.video.setPreviewGhost(trans);
   }
 
+  /**
+   * Opens a new tab with the Google Teachable Machine website
+   */
+  @legacyBlock.openTeachableMachine()
+  openTeachableMachine() {}
+  openTeachableMachineSite() {
+    window.open('https://teachablemachine.withgoogle.com/train', '_blank');
+  }
+
   @legacyBlock.useModelBlock()
   useModelBlock(url: string) {
     this.useModel(url);
@@ -352,4 +364,5 @@ export default class teachableMachine extends extension({
   setVideoTransparency(transparency: number) {
     this.setTransparency(transparency);
   }
+
 }
