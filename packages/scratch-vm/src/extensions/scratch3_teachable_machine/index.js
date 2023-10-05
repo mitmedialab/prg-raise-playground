@@ -712,17 +712,8 @@ class Scratch3VideoSensingBlocks {
         if (this.predictionState[this.teachableImageModel].modelType === ModelType.AUDIO) {
             return this.predictionState[this.teachableImageModel].model.wordLabels();
         }
-        this.loadClassesToRuntime();
-        return this.predictionState[this.teachableImageModel].model.getClassLabels();
-    }
 
-    loadClassesToRuntime() {
-        let labelList = this.predictionState[this.teachableImageModel].model.getClassLabels();
-        for (let label in labelList) {
-            if (!this.runtime.modelData.imageData.includes(labelList[label])) {
-                this.runtime.modelData.imageData.push(labelList[label]);
-            }
-        }
+        return this.predictionState[this.teachableImageModel].model.getClassLabels();
     }
 
     async startPredicting(modelDataUrl) {
