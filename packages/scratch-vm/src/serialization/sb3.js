@@ -576,6 +576,9 @@ const serialize = function (runtime, targetId, extensionManager) {
     // Save training data for the text classifier model
     obj.textModel = runtime.modelData ? runtime.modelData.classifierData : undefined;
 
+    // Save logs to the progress tab
+    obj.progressTabLog = runtime.progressTab ? runtime.progressTab : [];
+
     // Assemble metadata
     const meta = Object.create(null);
     meta.semver = '3.0.0';
@@ -1262,7 +1265,6 @@ const deserialize = function (json, runtime, zip, isSingleSprite) {
     // Unpack the data for the text model
     runtime.modelData = {"textData": {}, "classifierData": {}, "nextLabelNumber": 1};
     if (json.hasOwnProperty("textModel")) {
-        // RANDI should make sure this works
         for (let label of Object.keys(json.textModel)) {
             runtime.modelData.textData[label] = [];
             runtime.modelData.classifierData[label] = [];

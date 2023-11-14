@@ -682,24 +682,8 @@ class MenuBar extends React.Component {
                         </div>
                     </div>
                     <Divider className={classNames(styles.divider)} />
-                    <a
-                        className={classNames(styles.menuBarItem, styles.hoverable)}
-                        href="https://httyr.media.mit.edu/tutorials"
-                        target="_blank"
-                    >
-                        Curriculum  Tutorials
-                    </a>
-                    <Divider className={classNames(styles.divider)} />
-                    <a
-                        className={classNames(styles.menuBarItem, styles.hoverable, styles.blankLink)}
-                        href="https://teachablemachine.withgoogle.com/train"
-                        target="_blank"
-                    >
-                        Teachable Machine
-                    </a>
-                    {this.props.showTutorials ? (
+                    {true ? (
                         <div>
-                            <Divider className={classNames(styles.divider)} />
                             <div
                                 aria-label={this.props.intl.formatMessage(ariaMessages.tutorials)}
                                 className={classNames(styles.menuBarItem, styles.hoverable)}
@@ -714,6 +698,14 @@ class MenuBar extends React.Component {
                         </div>) :
                         null
                     }
+                    {/*<Divider className={classNames(styles.divider)} />
+                    <a
+                        className={classNames(styles.menuBarItem, styles.hoverable, styles.blankLink)}
+                        href="https://teachablemachine.withgoogle.com/train"
+                        target="_blank"
+                    >
+                        Teachable Machine
+                    </a>*/}
                     <Divider className={classNames(styles.divider)} />
                     {this.props.canEditTitle ? (
                         <div className={classNames(styles.menuBarItem, styles.growable)}>

@@ -72,7 +72,7 @@ class EditLabelTile extends React.Component {
                                     label={this.props.labelName}
                                     text={example} 
                                     id={this.props.textData[this.props.labelName].indexOf(example)} 
-                                    closeButton={true}  // RANDI make this true?                                    
+                                    closeButton={true}                                  
                                     onDeleteExample={this.props.onDeleteExample}
                                 />
                             </Box>

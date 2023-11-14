@@ -1,3 +1,30 @@
+// Jibo Blocks
+import jiboBlocksIntro from './steps/jibo-blocks-intro.gif';
+import jiboBlocksSay from './steps/jibo-blocks-1.png';
+import jiboBlocksGF from './steps/jibo-blocks-2.png';
+import jiboBlocksWait from './steps/jibo-blocks-3.png';
+import jiboBlocksIcon from './steps/jibo-blocks-4.png';
+import jiboBlocksLEDRing from './steps/jibo-blocks-5.png';
+
+// Text Classifier
+import textClassifierIntro from './steps/text-tutorial-1.png';
+import textClassifierMatches from './steps/text-tutorial-2.png';
+import textClassifierConfidence from './steps/text-tutorial-3.png';
+import textClassifierEditModel from './steps/text-tutorial-4.png';
+import textClassifierAdd from './steps/text-tutorial-5.png';
+import textClassifierExamples from './steps/text-tutorial-6.png';
+import textClassifierIndex from './steps/text-tutorial-7.png';
+import textClassifierPOS from './steps/text-tutorial-8.png';
+import textClassifierWordsLike from './steps/text-tutorial-9.png';
+
+// Progress Tab
+import progressTabIntro from './steps/progress-tab-1.png';
+import progressTabClasses from './steps/progress-tab-2.png';
+import progressTabExamples from './steps/progress-tab-3.png';
+import progressTabBalance from './steps/progress-tab-4.png';
+import progressTabBlocks from './steps/progress-tab-5.png'; 
+import progressTabEmbedded from './steps/progress-tab-6.png';
+
 // Intro
 import introMove from './steps/intro-move.en.gif';
 import introSayHello from './steps/intro-say-hello.en.gif';
@@ -199,6 +226,33 @@ import talesDanceMoves from './steps/talking-12-dance-moves.en.gif';
 import talesAskAnswer from './steps/talking-13-ask-and-answer.en.gif';
 
 const enImages = {
+    // Jibo Blocks
+    jiboBlocksIntro: jiboBlocksIntro,
+    jiboBlocksSay: jiboBlocksSay,
+    jiboBlocksGF: jiboBlocksGF,
+    jiboBlocksWait: jiboBlocksWait,
+    jiboBlocksIcon: jiboBlocksIcon,
+    jiboBlocksLEDRing: jiboBlocksLEDRing,
+
+    // Text Classifier
+    textClassifierIntro: textClassifierIntro,
+    textClassifierMatches: textClassifierMatches,
+    textClassifierConfidence: textClassifierConfidence,
+    textClassifierEditModel: textClassifierEditModel,
+    textClassifierAdd: textClassifierAdd,
+    textClassifierExamples: textClassifierExamples,
+    textClassifierIndex: textClassifierIndex,
+    textClassifierPOS: textClassifierPOS,
+    textClassifierWordsLike: textClassifierWordsLike,
+
+    // Progress Tab
+    progressTabIntro: progressTabIntro,
+    progressTabClasses: progressTabClasses,
+    progressTabExamples: progressTabExamples,
+    progressTabBalance: progressTabBalance,
+    progressTabBlocks: progressTabBlocks,
+    progressTabEmbedded: progressTabEmbedded,
+
     // Intro
     introMove: introMove,
     introSayHello: introSayHello,

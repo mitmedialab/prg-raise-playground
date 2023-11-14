@@ -336,7 +336,7 @@ class MicrobitRobot {
      */
     messageParser (buf) {
       var msg = {};
-      if (buf[0]==224){ // RANDI these 200 numbers are arbitrary and could be changed here and in the microbit code
+      if (buf[0]==224){ // these 200 numbers are arbitrary and could be changed here and in the microbit code
         this.msg1 = buf;
       } else if (buf[0] != 224) {
         this.msg2 = buf;

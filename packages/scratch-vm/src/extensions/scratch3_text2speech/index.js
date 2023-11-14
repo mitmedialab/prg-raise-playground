@@ -104,6 +104,28 @@ const TURKISH_ID = 'tr';
 const WELSH_ID = 'cy';
 
 /**
+ * The url of the speech server.
+ * @type {string}
+ */
+const serverURL = 'wss://speech.scratch.mit.edu';
+
+/**
+ * The amount of time to wait between when we stop sending speech data to the server and when
+ * we expect the transcription result marked with isFinal: true to come back from the server.
+ * @type {int}
+ */
+const finalResponseTimeoutDurationMs = 3000;
+
+/**
+ * The max amount of time the Listen And Wait block will listen for.  It may listen for less time
+ * if we get back results that are good and think the user is done talking.
+ * Currently set to 10sec. This should not exceed the speech api limit (60sec) without redoing how
+ * we stream the microphone data data.
+ * @type {int}
+ */
+const listenAndWaitBlockTimeoutMs = 10000;
+
+/**
  * Class for the text2speech blocks.
  * @constructor
  */
@@ -136,6 +158,8 @@ class Scratch3Text2SpeechBlocks {
          * @type {Array}
          */
         this._supportedLocales = this._getSupportedLocales();
+
+        this._recognizedSpeech = "";
     }
 
     /**
@@ -435,6 +459,30 @@ class Scratch3Text2SpeechBlocks {
                             defaultValue: defaultTextToSpeak
                         }
                     }
+                },
+                {
+                    opcode: 'askSpeechRecognition',
+                    text: formatMessage({
+                        id: 'textClassification.askSpeechRecognition',
+                        default: 'speak [PROMPT] then listen',
+                        description: 'Get the class name that the input text matches'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        PROMPT: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'How are you?'
+                        }
+                    },
+                },
+                {
+                    opcode: 'getRecognizedSpeech',
+                    text: formatMessage({
+                        id: 'textClassification.getRecognizedSpeech',
+                        default: 'response',
+                        description: 'Return the results of the speech recognition'
+                    }),
+                    blockType: BlockType.REPORTER,
                 },
                 {
                     opcode: 'setVoice',
@@ -762,6 +810,30 @@ class Scratch3Text2SpeechBlocks {
                 });
             });
         });
+    }
+
+    recognizeSpeech() {
+        let recognition = new webkitSpeechRecognition();
+        return new Promise(resolve => {
+            recognition.start();
+            recognition.onresult = function (event) {
+                if (event.results.length > 0) {
+                    resolve(event.results[0][0].transcript);
+                }
+                resolve(""); // heard nothing
+            };
+        });
+    }
+
+    async askSpeechRecognition(args, util) {
+        let prompt = Cast.toString(args.PROMPT);
+        args.WORDS = prompt;
+        await this.speakAndWait(args, util);
+        this._recognizedSpeech = await this.recognizeSpeech();
+    }
+
+    getRecognizedSpeech() {
+        return this._recognizedSpeech;
     }
 }
 module.exports = Scratch3Text2SpeechBlocks;

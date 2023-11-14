@@ -1,0 +1,66 @@
+@import url('https://fonts.googleapis.com/css?family=Montserrat');
+
+html, body {
+  font-family: 'Montserrat', sans-serif;
+}
+
+.progressbar {
+  position: relative;
+  height: 40px;
+  width: 100%;
+  border-radius: 20px;
+  border: 2px solid #333;
+}
+
+.filler {
+  background: #5094fc;
+  height: 100%;
+  border-radius: inherit;
+  transition: width .2s ease-in;
+}
+
+.progresslocation {
+    display: flex;
+    flex-direction: column;
+    margin-left: auto;
+    margin-right: auto;
+    width: 70%;
+    height: 100%;
+    text-align: center;
+    padding: 10px;
+}
+
+.progressGoodMessages {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+  
+}
+
+.progressCompletedText {
+  color:black;
+  font-weight: bold;
+}
+
+.progressNotComplete {
+  color:black;
+  opacity: .5;
+}
+
+.progressUnderline {
+  text-decoration: underline;
+}
+
+.progressBorderBox {
+  border: 2px dashed black;
+  background-color: rgba(80, 148, 252, 0.3);
+  border-radius: 4px;
+  padding: 15px;
+  margin: 10px;
+  box-shadow: 3px 3px 5px 6px rgb(0, 0, 0, .2);
+  
+}
+
+.progressBarBox {
+  padding: 20px;
+}

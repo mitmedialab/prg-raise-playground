@@ -14,6 +14,7 @@ import Blocks from '../../containers/blocks.jsx';
 import CostumeTab from '../../containers/costume-tab.jsx';
 import TargetPane from '../../containers/target-pane.jsx';
 import SoundTab from '../../containers/sound-tab.jsx';
+import ProgressTab from '../../containers/progress-tab.jsx';
 import StageWrapper from '../../containers/stage-wrapper.jsx';
 import Loader from '../loader/loader.jsx';
 import Box from '../box/box.jsx';
@@ -42,6 +43,7 @@ import codeIcon from './icon--code.svg';
 import costumesIcon from './icon--costumes.svg';
 import soundsIcon from './icon--sounds.svg';
 import ProgrammaticModal from '../programmatic-modal/programmatic-modal.jsx';
+import progressIcon from './blue-progress-bar.svg';
 
 const messages = defineMessages({
     addExtension: {
@@ -99,6 +101,7 @@ const GUIComponent = props => {
         onToggleLoginOpen,
         onActivateCostumesTab,
         onActivateSoundsTab,
+        onActivateProgressTab,
         onActivateTab,
         onClickLogo,
         onExtensionButtonClick,
@@ -113,6 +116,7 @@ const GUIComponent = props => {
         onTelemetryModalOptOut,
         showComingSoon,
         soundsTabVisible,
+        progressTabVisible,
         stageSizeMode,
         targetIsStage,
         telemetryModalVisible,
@@ -306,6 +310,20 @@ const GUIComponent = props => {
                                             id="gui.gui.soundsTab"
                                         />
                                     </Tab>
+                                    <Tab
+                                        className={tabClassNames.tab}
+                                        onClick={onActivateProgressTab}
+                                    >
+                                        <img
+                                            draggable={false}
+                                            src={progressIcon}
+                                        />
+                                        <FormattedMessage
+                                            defaultMessage="Progress"
+                                            description="Button to get to the progress panel"
+                                            id="gui.gui.progressTab"
+                                        />
+                                    </Tab>
                                 </TabList>
                                 <TabPanel className={tabClassNames.tabPanel}>
                                     <Box className={styles.blocksWrapper}>
@@ -342,6 +360,9 @@ const GUIComponent = props => {
                                 </TabPanel>
                                 <TabPanel className={tabClassNames.tabPanel}>
                                     {soundsTabVisible ? <SoundTab vm={vm} /> : null}
+                                </TabPanel>
+                                <TabPanel className={tabClassNames.tabPanel}>
+                                    {progressTabVisible ? <ProgressTab vm={vm} /> : null}
                                 </TabPanel>
                             </Tabs>
                             {backpackVisible ? (
@@ -406,6 +427,7 @@ GUIComponent.propTypes = {
     logo: PropTypes.string,
     onActivateCostumesTab: PropTypes.func,
     onActivateSoundsTab: PropTypes.func,
+    onActivateProgressTab: PropTypes.func,
     onActivateTab: PropTypes.func,
     onClickAccountNav: PropTypes.func,
     onClickLogo: PropTypes.func,
@@ -426,6 +448,7 @@ GUIComponent.propTypes = {
     renderLogin: PropTypes.func,
     showComingSoon: PropTypes.bool,
     soundsTabVisible: PropTypes.bool,
+    progressTabVisible: PropTypes.bool,
     stageSizeMode: PropTypes.oneOf(Object.keys(STAGE_SIZE_MODES)),
     targetIsStage: PropTypes.bool,
     telemetryModalVisible: PropTypes.bool,
