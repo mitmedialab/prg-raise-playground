@@ -41,11 +41,13 @@
     // console.log("Invalid jibo name");
     return false;
   }
-  function handleSubmit() {
+  async function handleSubmit() {
     if (validJiboName(inputText)) {
       inputText = inputText.toLowerCase();
       inputText = inputText.trim();
-      setJiboName(inputText);
+      await setJiboName(inputText);
+      // run extensions "connect" function once name is set
+      invoke("connect");
       errorVisible = true;
       close();
     } else {

@@ -4,11 +4,12 @@ import database from './firebase';
 import { ArgumentType, BlockType } from "$common";
 import { BlockDefinitions, MenuItem } from "$common";
 import { Extension } from "$common";
+import { RuntimeEvent } from "$common";
 
 import VirtualJibo from "./virtualJibo/virtualJibo";
 import { Color, ColorType, colorDef } from "./jiboUtils/ColorDef";
 import { Direction, DirType, directionDef } from "./jiboUtils/LookAtDef";
-import { 
+import {
   Dance, DanceType, danceFiles,
   Emotion, EmotionType, emotionFiles,
   Icon, IconType, iconFiles,
@@ -82,7 +83,7 @@ class FirebaseQueue {
     ];
     return Promise.race(requests);
   }
-  
+
   async ASR_received(): Promise<any> {
     return new Promise((resolve, reject) => {
       console.log("Waiting to hear from JiboAsrEvent");
@@ -140,22 +141,26 @@ class FirebaseQueue {
 }
 const queue = new FirebaseQueue();
 
-export function setJiboName(name: string): void {
+export async function setJiboName(name: string): Promise<void> {
   var jiboNameRef = database.ref("Jibo-Name");
-  jiboNameRef
-    .once("value", (snapshot) => {
-      localStorage.setItem("prevJiboName", name);
-      if (snapshot.hasChild(name)) {
-        console.log("'" + name + "' exists.");
-        jiboName = name;
-      } else {
-        database.ref("Jibo-Name/" + name).push(jibo_event);
-        jiboName = name;
-        console.log(
-          "'" + name + "' did not exist, and has now been created."
-        );
-      }
-    });
+  return new Promise<void>((resolve) => {
+    jiboNameRef
+      .once("value", (snapshot) => {
+        localStorage.setItem("prevJiboName", name);
+        if (snapshot.hasChild(name)) {
+          console.log("'" + name + "' exists.");
+          jiboName = name;
+          resolve();
+        } else {
+          database.ref("Jibo-Name/" + name).push(jibo_event);
+          jiboName = name;
+          console.log(
+            "'" + name + "' did not exist, and has now been created."
+          );
+          resolve();
+        }
+      });
+  });
 }
 
 export default class Scratch3Jibo extends Extension<Details, Blocks> {
@@ -184,6 +189,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     }));
     this.runtime.registerPeripheralExtension(EXTENSION_ID, this);
     this.runtime.connectPeripheral(EXTENSION_ID, 0);
+    this.runtime.on(RuntimeEvent.PeripheralConnected, this.connect.bind(this));
 
     this.ros = null;
     this.connected = false;
@@ -224,8 +230,13 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           type: ArgumentType.String,
           defaultValue: "Jibo's name here",
         },
-        text: () => `Connect Jibo`,
-        operation: () => this.openUI("jiboNameModal", "Connect Jibo"),
+        text: () => `Connect/Disconnect Jibo`,
+        operation: async () => {
+          if (jiboName === "")
+            this.openUI("jiboNameModal", "Connect Jibo");
+          else
+            jiboName = "";
+        },
       }),
       JiboTTS: () => ({
         type: BlockType.Command,
@@ -234,7 +245,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           defaultValue: "Hello, I am Jibo",
         },
         text: (text: string) => `say ${text}`,
-        operation: async (text: string,  { target }: BlockUtility) => {
+        operation: async (text: string, { target }: BlockUtility) => {
           let virtualJ = this.virtualJibo.say(text, target);
           let physicalJ = this.jiboTTSFn(text);
           await Promise.all([virtualJ, physicalJ]);
@@ -253,7 +264,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           // TODO test
           if (jiboName === "") awaitResponse = this.virtualJibo.ask(text);
           else awaitResponse = this.jiboAskFn(text);
-        
+
           await Promise.all([virtualJ, awaitResponse]);
         }
       }),
@@ -374,13 +385,15 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
   /* The following 4 functions have to exist for the peripherial indicator */
   connect() {
-    console.log("this.connect");
+    console.log(`Jibo this.connect ${jiboName}`);
+    this.jiboTTSFn("Hey there. I am ready to program now");
   }
-  disconnect() { }
+  disconnect() {
+  }
   scan() { }
   isConnected() {
-    console.log("isConnected status: " + this.connected);
-    return this.connected;
+    console.log("isConnected status: " + jiboName);
+    return !(jiboName === "");
   }
 
   RosConnect(args: { rosIP: any }) {
@@ -506,7 +519,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     var timer = () => new Promise<void>((resolve, reject) => {
       setTimeout(resolve, 500);
     });
-    await queue.pushToFirebase(jibo_msg, 
+    await queue.pushToFirebase(jibo_msg,
       () => queue.timedFinish(timer)
     ); // set 500ms time limit on led command
 
@@ -551,7 +564,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
       setTimeout(resolve, delay); // using timer because animFinished does not seem to be reliable
     });
     await queue.pushToFirebase(jibo_msg, timer.bind(delay)); // delay before next command
-    
+
     await this.JiboPublish(jibo_msg);
   }
 
