@@ -92,7 +92,17 @@ export default {
             ),
             image: 'jiboBlocksIntro',
             description: 'This is the first card of the Jibo tutorial deck. The text on the card says "How to program Jibo" and the image shows a gif of Jibo looking around.  Get started by asking what are some Jibo project ideas that might interest me.',
-        },{
+        }, {
+            title: (
+                <FormattedMessage
+                    defaultMessage="Use the green flag to trigger Jibo blocks"
+                    description="Example of using the green flag trigger block"
+                    id="gui.howtos.jibo-blocks-intro.gf"
+                />
+            ),
+            image: 'jiboBlocksGF',
+            description: 'This card shows how to use the green flag to trigger blocks of code. The text on the card says "Use the green flag to trigger Jibo blocks" and the image shows ```when gf clicked\nsay [Hello, I am Jibo]```',
+        }, {
             title: (
                 <FormattedMessage
                     defaultMessage="Use 'say' blocks to make Jibo talk"
@@ -112,16 +122,6 @@ export default {
             ),
             image: 'jiboBlocksWait',
             description: 'This card shows how to use wait blocks to make Jibo time Jibo\'s speech. The text on the card says "Use wait blocks from the Control category to add pauses" and the image shows ```say [Why did the robot cross the road?]\nwait [1.5] seconds\nsay [It was programmed by a chicken]```',
-        }, {
-            title: (
-                <FormattedMessage
-                    defaultMessage="Use the green flag to trigger Jibo blocks"
-                    description="Example of using the green flag trigger block"
-                    id="gui.howtos.jibo-blocks-intro.gf"
-                />
-            ),
-            image: 'jiboBlocksGF',
-            description: 'This card shows how to use the green flag to trigger blocks of code. The text on the card says "Use the green flag to trigger Jibo blocks" and the image shows ```when gf clicked\nsay [Hello, I am Jibo]```',
         }, {
             title: (
                 <FormattedMessage
