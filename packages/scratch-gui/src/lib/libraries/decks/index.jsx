@@ -90,7 +90,8 @@ export default {
                     id="gui.howtos.jibo-blocks-intro.intro"
                 />
             ),
-            image: 'jiboBlocksIntro'
+            image: 'jiboBlocksIntro',
+            description: 'This is the first card of the Jibo tutorial deck. The text on the card says "How to program Jibo" and the image shows a gif of Jibo looking around.  Get started by asking what are some Jibo project ideas that might interest me.',
         },{
             title: (
                 <FormattedMessage
@@ -99,16 +100,8 @@ export default {
                     id="gui.howtos.jibo-blocks-intro.say"
                 />
             ),
-            image: 'jiboBlocksSay'
-        }, {
-            title: (
-                <FormattedMessage
-                    defaultMessage="Use the green flag to trigger Jibo movements"
-                    description="Example of using the green flag trigger block"
-                    id="gui.howtos.jibo-blocks-intro.gf"
-                />
-            ),
-            image: 'jiboBlocksGF'
+            image: 'jiboBlocksSay',
+            description: 'This card shows how to use the say blocks to trigger Jibo speech. The text on the card says "Use \'say\' blocks from the Jibo category to make Jibo talk" and the image shows code ```say [Hello, I am Jibo]\nsay [Also known as Doctor Are O Bott]```',
         }, {
             title: (
                 <FormattedMessage
@@ -117,7 +110,18 @@ export default {
                     id="gui.howtos.jibo-blocks-intro.wait"
                 />
             ),
-            image: 'jiboBlocksWait'
+            image: 'jiboBlocksWait',
+            description: 'This card shows how to use wait blocks to make Jibo time Jibo\'s speech. The text on the card says "Use wait blocks from the Control category to add pauses" and the image shows ```say [Why did the robot cross the road?]\nwait [1.5] seconds\nsay [It was programmed by a chicken]```',
+        }, {
+            title: (
+                <FormattedMessage
+                    defaultMessage="Use the green flag to trigger Jibo blocks"
+                    description="Example of using the green flag trigger block"
+                    id="gui.howtos.jibo-blocks-intro.gf"
+                />
+            ),
+            image: 'jiboBlocksGF',
+            description: 'This card shows how to use the green flag to trigger blocks of code. The text on the card says "Use the green flag to trigger Jibo blocks" and the image shows ```when gf clicked\nsay [Hello, I am Jibo]```',
         }, {
             title: (
                 <FormattedMessage
@@ -126,7 +130,8 @@ export default {
                     id="gui.howtos.jibo-blocks-intro.icon"
                 />
             ),
-            image: 'jiboBlocksIcon'
+            image: 'jiboBlocksIcon',
+            description: 'This card shows how to make Jibo play icons and do body movements. The text on the card says "You can make icons appear on Jibo\'s screen" and the image shows ```show (Penguin v) icon``` with an image of a penguin.',
         }, {
             title: (
                 <FormattedMessage
@@ -135,11 +140,13 @@ export default {
                     id="gui.howtos.jibo-blocks-intro.ledRing"
                 />
             ),
-            image: 'jiboBlocksLEDRing'
+            image: 'jiboBlocksLEDRing',
+            description: 'This card shows how to change the color of Jibo\'s belly LED ring. The text on the card says "Use LED ring blocks to make Jibo glow" and the code ```set LED ring to [blue v] \n set LED ring to [random v]```',
         }, {
             deckIds: [
-                'Make-Music',
-            ]
+                'move-around-with-arrow-keys', 'text-classifier-intro'
+            ],
+            description: 'This is the end of the Jibo blocks tutorial. It has links to other tutorials for controlling things with arrow keys and using text classification blocks.',
         }
         ],
         urlId: 'jiboBlocks'
@@ -164,7 +171,8 @@ export default {
                     id="gui.howtos.text-classifer.intro"
                 />
             ),
-            image: 'textClassifierIntro'
+            image: 'textClassifierIntro',
+            description: 'This is the first card of the text classifier tutorial deck the text says "How to create a text classifier" and there is a picture with the words Text Classifier and two speech bubbles. Get started by asking what are some text classification project ideas that might interest me.'
         },{
             title: (
                 <FormattedMessage
@@ -173,7 +181,8 @@ export default {
                     id="gui.howtos.text-classifer.edit-model"
                 />
             ),
-            image: 'textClassifierEditModel'
+            image: 'textClassifierEditModel',
+            description: 'This card shows how to open the text classifier model editor so that you can enter training examples. The text on the page says "Open the model edit" and the picture shows the Text Classification category with the "Edit Model" button that the user needs to press.'
         },{
             title: (
                 <FormattedMessage
@@ -182,43 +191,48 @@ export default {
                     id="gui.howtos.text-classifer.add"
                 />
             ),
-            image: 'textClassifierAdd'
+            image: 'textClassifierAdd',
+            description: 'This card shows how to add class labels and examples to the text classification model. The text says "Add class labels and examples to your model" and the picture shows the Edit Text Model modal with the "Add a Label" button highlighted. Once the user presses that button, a new row will appear on the modal that says "Class 1" and has input boxes for adding examples of that class.'
         },{
             title: (
                 <FormattedMessage
-                    defaultMessage="Add multiple examples to make a strong classifier"
+                    defaultMessage="Add multiple examples in each class to make a strong classifier"
                     description="Step for completing the model"
                     id="gui.howtos.text-classiferexamples"
                 />
             ),
-            image: 'textClassifierExamples'
+            image: 'textClassifierExamples',
+            description: 'This card shows what it looks like when a text classifier model has a lot of examples. The text on the card says "Add multiple examples to make a strong classifier" and the image shows two classes, "Hellos" and "Goodbyes" with five examples in each class.'
         },{
             title: (
                 <FormattedMessage
-                    defaultMessage="Use text matches blocks in conditionals"
+                    defaultMessage="Use text matches blocks in if statement conditionals"
                     description="Step for text matches blocks"
                     id="gui.howtos.text-classifer.matches"
                 />
             ),
-            image: 'textClassifierMatches'
+            image: 'textClassifierMatches',
+            description: 'This card shows how the text "text matches ?" block in an if statement. The text says "Use text matches blocks in if statement conditionals" and shows a picture with the code ```if <[text] matches (Positive v)?> then\nend```'
         },{
             title: (
                 <FormattedMessage
-                    defaultMessage="Use confidence blocks in embedded conditionals"
+                    defaultMessage="Use confidence blocks in embedded if-statement conditionals"
                     description="Step for using confidence blocks"
                     id="gui.howtos.text-classifer.confidence"
                 />
             ),
-            image: 'textClassifierConfidence'
+            image: 'textClassifierConfidence',
+            description: 'This card shows how to use the confidence blocks in embedded conditionals to check that the user has made a good math. The text says "Use confidence blocks in embedded conditionals" and the image shows this code ```if <[Hi there!] matches (Hellos v)?> then\nif <(confidence for [Hi there!]) > [0.5]> then\nsay [Hi! I missed you] for [2] seconds\nelse\nthink [What are they saying to me?] for [2] seconds\nend\nend```'
         },{
             title: (
                 <FormattedMessage
-                    defaultMessage="Choose specific words from a string"
+                    defaultMessage="Choose specific words from a sentence"
                     description="Step for getting word by index"
                     id="gui.howtos.text-classifer.index"
                 />
             ),
-            image: 'textClassifierIndex'
+            image: 'textClassifierIndex',
+            description: 'This card shows how to select particular words out of a string with spaces. The text says "Choose specific words from a sentence" and the images shows this code ```word [1] of [Here comes the robot]``` which returns Here and then ```word [last] of [Here comes the robot]``` which returns the word robot'
         },{
             title: (
                 <FormattedMessage
@@ -227,7 +241,8 @@ export default {
                     id="gui.howtos.text-classifer.pos"
                 />
             ),
-            image: 'textClassifierPOS'
+            image: 'textClassifierPOS',
+            description: 'This card shows how to select particular parts of speech out of a string. The text says "Get words by part of speech" and the image shows the code ```(noun v) [1] of [Tacos, apples, and penguins]``` which returns Tacos and ```(proper noun v) [all] of [My name is Black Cat]``` which returns Black Cat'
         },{
             title: (
                 <FormattedMessage
@@ -236,11 +251,13 @@ export default {
                     id="gui.howtos.text-classifer.wordsLike"
                 />
             ),
-            image: 'textClassifierWordsLike'
+            image: 'textClassifierWordsLike',
+            description: 'This card shows how to search for specific words in a string using a list. the text says "Look for specific words from a list" and the image shows the code ```word [1] of [Move to the left] like [spin move say]``` which returns move and ```word [1] of [No I don\'t like them] like (answer words)``` which returns the word no'
         },{
             deckIds: [
                 'ai-progress-tab'
-            ]
+            ],
+            description: ['This is the end of the text classification blocks tutorial. It has links to another tutorial with tips for making text classifers.']
         }
         ],
         urlId: 'textClassifier'
