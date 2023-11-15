@@ -510,7 +510,8 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     let resp = await GPTController.getChattyGPTResponse(this.msgLog, input);
 
     // TODO clean up characters that mess with Jibo's speech
-    resp = resp.replace("'", "");
+    resp = resp.replace(" '", " ");
+    resp = resp.replace("' ", " ");
     //console.log(`Got response from GPT: ${resp}`); // debug statement
     this.msgLog.addUserMessage(input);
     this.msgLog.addBotMessage(resp);
