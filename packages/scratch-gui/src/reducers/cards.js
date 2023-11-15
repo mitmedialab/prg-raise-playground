@@ -5,6 +5,7 @@ import decks from '../lib/libraries/decks/index.jsx';
 const CLOSE_CARDS = 'scratch-gui/cards/CLOSE_CARDS';
 const SHRINK_EXPAND_CARDS = 'scratch-gui/cards/SHRINK_EXPAND_CARDS';
 const VIEW_CARDS = 'scratch-gui/cards/VIEW_CARDS';
+const JIBO_HELP = 'scratch-gui/cards/JIBO_HELP';
 const ACTIVATE_DECK = 'scratch-gui/cards/ACTIVATE_DECK';
 const NEXT_STEP = 'scratch-gui/cards/NEXT_STEP';
 const PREV_STEP = 'scratch-gui/cards/PREV_STEP';
@@ -20,7 +21,8 @@ const initialState = {
     x: 0,
     y: 0,
     expanded: true,
-    dragging: false
+    dragging: false,
+    help_flag: 0,
 };
 
 const reducer = function (state, action) {
@@ -45,7 +47,8 @@ const reducer = function (state, action) {
             x: 0,
             y: 0,
             expanded: true,
-            visible: true
+            visible: true,
+            help_flag: 0,
         });
     case NEXT_STEP:
         if (state.activeDeckId !== null) {
@@ -81,6 +84,10 @@ const reducer = function (state, action) {
         return Object.assign({}, state, {
             dragging: false
         });
+    case JIBO_HELP:
+        return Object.assign({}, state, {
+            help_flag: Date.now()
+        });
     default:
         return state;
     }
@@ -95,6 +102,10 @@ const activateDeck = function (activeDeckId) {
 
 const viewCards = function () {
     return {type: VIEW_CARDS};
+};
+
+const jiboHelp = function () {
+    return {type: JIBO_HELP};
 };
 
 const closeCards = function () {
@@ -131,6 +142,7 @@ export {
     activateDeck,
     viewCards,
     closeCards,
+    jiboHelp,
     shrinkExpandCards,
     nextStep,
     prevStep,

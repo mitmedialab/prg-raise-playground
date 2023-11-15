@@ -192,6 +192,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     this.runtime.registerPeripheralExtension(EXTENSION_ID, this);
     this.runtime.connectPeripheral(EXTENSION_ID, 0);
     this.runtime.on("TUTORIAL_CHANGED", this.updateTutorial.bind(this));
+    this.runtime.on("JIBO_HELP_REQUESTED", this.jiboGPTAskFn.bind(this));
 
     this.ros = null;
     this.connected = false;

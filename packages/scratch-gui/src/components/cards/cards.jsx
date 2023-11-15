@@ -1,45 +1,69 @@
-import PropTypes from 'prop-types';
-import React, {Fragment} from 'react';
-import classNames from 'classnames';
-import {FormattedMessage} from 'react-intl';
-import Draggable from 'react-draggable';
+import PropTypes from "prop-types";
+import React, { Fragment } from "react";
+import classNames from "classnames";
+import { FormattedMessage } from "react-intl";
+import Draggable from "react-draggable";
 
-import styles from './card.css';
+import styles from "./card.css";
 
-import shrinkIcon from './icon--shrink.svg';
-import expandIcon from './icon--expand.svg';
+import shrinkIcon from "./icon--shrink.svg";
+import expandIcon from "./icon--expand.svg";
 
-import rightArrow from './icon--next.svg';
-import leftArrow from './icon--prev.svg';
+import rightArrow from "./icon--next.svg";
+import leftArrow from "./icon--prev.svg";
 
-import helpIcon from '../../lib/assets/icon--tutorials.svg';
-import closeIcon from './icon--close.svg';
+import helpIcon from "../../lib/assets/icon--tutorials.svg";
+import jiboHelpIcon from "../../lib/assets/icon--help.svg";
+import closeIcon from "./icon--close.svg";
 
-import {translateVideo} from '../../lib/libraries/decks/translate-video.js';
-import {translateImage} from '../../lib/libraries/decks/translate-image.js';
+import { translateVideo } from "../../lib/libraries/decks/translate-video.js";
+import { translateImage } from "../../lib/libraries/decks/translate-image.js";
 
-const CardHeader = ({onCloseCards, onShrinkExpandCards, onShowAll, totalSteps, step, expanded}) => (
-    <div className={expanded ? styles.headerButtons : classNames(styles.headerButtons, styles.headerButtonsHidden)}>
-        <div
-            className={styles.allButton}
-            onClick={onShowAll}
-        >
-            <img
-                className={styles.helpIcon}
-                src={helpIcon}
-            />
-            <FormattedMessage
-                defaultMessage="Tutorials"
-                description="Title for button to return to tutorials library"
-                id="gui.cards.all-tutorials"
-            />
+const CardHeader = ({
+    onCloseCards,
+    onShrinkExpandCards,
+    onShowAll,
+    onJiboHelp,
+    totalSteps,
+    step,
+    expanded,
+}) => (
+    <div
+        className={
+            expanded
+                ? styles.headerButtons
+                : classNames(styles.headerButtons, styles.headerButtonsHidden)
+        }
+    >
+        <div className={styles.headerButtonsRight}>
+            <div className={styles.allButton} onClick={onShowAll}>
+                <img className={styles.helpIcon} src={helpIcon} />
+                <FormattedMessage
+                    defaultMessage="Tutorials"
+                    description="Title for button to return to tutorials library"
+                    id="gui.cards.all-tutorials"
+                />
+            </div>
+            <div className={styles.allButton} onClick={onJiboHelp}>
+                <img className={styles.helpIcon} src={jiboHelpIcon} />
+                <FormattedMessage
+                    defaultMessage="Help"
+                    description="Title for button to trigger jiboGPT"
+                    id="gui.cards.jibo-help"
+                />
+            </div>
         </div>
         {totalSteps > 1 ? (
             <div className={styles.stepsList}>
-                {Array(totalSteps).fill(0)
+                {Array(totalSteps)
+                    .fill(0)
                     .map((_, i) => (
                         <div
-                            className={i === step ? styles.activeStepPip : styles.inactiveStepPip}
+                            className={
+                                i === step
+                                    ? styles.activeStepPip
+                                    : styles.inactiveStepPip
+                            }
                             key={`pip-step-${i}`}
                         />
                     ))}
@@ -54,27 +78,22 @@ const CardHeader = ({onCloseCards, onShrinkExpandCards, onShowAll, totalSteps, s
                     draggable={false}
                     src={expanded ? shrinkIcon : expandIcon}
                 />
-                {expanded ?
+                {expanded ? (
                     <FormattedMessage
                         defaultMessage="Shrink"
                         description="Title for button to shrink how-to card"
                         id="gui.cards.shrink"
-                    /> :
+                    />
+                ) : (
                     <FormattedMessage
                         defaultMessage="Expand"
                         description="Title for button to expand how-to card"
                         id="gui.cards.expand"
                     />
-                }
+                )}
             </div>
-            <div
-                className={styles.removeButton}
-                onClick={onCloseCards}
-            >
-                <img
-                    className={styles.closeIcon}
-                    src={closeIcon}
-                />
+            <div className={styles.removeButton} onClick={onCloseCards}>
+                <img className={styles.closeIcon} src={closeIcon} />
                 <FormattedMessage
                     defaultMessage="Close"
                     description="Title for button to close how-to card"
@@ -86,24 +105,23 @@ const CardHeader = ({onCloseCards, onShrinkExpandCards, onShowAll, totalSteps, s
 );
 
 class VideoStep extends React.Component {
-
-    componentDidMount () {
-        const script = document.createElement('script');
+    componentDidMount() {
+        const script = document.createElement("script");
         script.src = `https://fast.wistia.com/embed/medias/${this.props.video}.jsonp`;
         script.async = true;
-        script.setAttribute('id', 'wistia-video-content');
+        script.setAttribute("id", "wistia-video-content");
         document.body.appendChild(script);
 
-        const script2 = document.createElement('script');
-        script2.src = 'https://fast.wistia.com/assets/external/E-v1.js';
+        const script2 = document.createElement("script");
+        script2.src = "https://fast.wistia.com/assets/external/E-v1.js";
         script2.async = true;
-        script2.setAttribute('id', 'wistia-video-api');
+        script2.setAttribute("id", "wistia-video-api");
         document.body.appendChild(script2);
     }
 
     // We use the Wistia API here to update or pause the video dynamically:
     // https://wistia.com/support/developers/player-api
-    componentDidUpdate (prevProps) {
+    componentDidUpdate(prevProps) {
         // Ensure the wistia API is loaded and available
         if (!(window.Wistia && window.Wistia.api)) return;
 
@@ -121,21 +139,21 @@ class VideoStep extends React.Component {
         }
     }
 
-    componentWillUnmount () {
-        const script = document.getElementById('wistia-video-content');
+    componentWillUnmount() {
+        const script = document.getElementById("wistia-video-content");
         script.parentNode.removeChild(script);
 
-        const script2 = document.getElementById('wistia-video-api');
+        const script2 = document.getElementById("wistia-video-api");
         script2.parentNode.removeChild(script2);
     }
 
-    render () {
+    render() {
         return (
             <div className={styles.stepVideo}>
                 <div
                     className={`wistia_embed wistia_async_${this.props.video}`}
                     id="video-div"
-                    style={{height: `257px`, width: `466px`}}
+                    style={{ height: `257px`, width: `466px` }}
                 >
                     &nbsp;
                 </div>
@@ -146,19 +164,19 @@ class VideoStep extends React.Component {
 
 VideoStep.propTypes = {
     expanded: PropTypes.bool.isRequired,
-    video: PropTypes.string.isRequired
+    video: PropTypes.string.isRequired,
 };
 
-const ImageStep = ({title, image}) => (
+const ImageStep = ({ title, image }) => (
     <Fragment>
-        <div className={styles.stepTitle}>
-            {title}
-        </div>
+        <div className={styles.stepTitle}>{title}</div>
         <div className={styles.stepImageContainer}>
             <img
                 className={styles.stepImage}
                 draggable={false}
-                key={image} /* Use src as key to prevent hanging around on slow connections */
+                key={
+                    image
+                } /* Use src as key to prevent hanging around on slow connections */
                 src={image}
             />
         </div>
@@ -167,16 +185,30 @@ const ImageStep = ({title, image}) => (
 
 ImageStep.propTypes = {
     image: PropTypes.string.isRequired,
-    title: PropTypes.node.isRequired
+    title: PropTypes.node.isRequired,
 };
 
-const NextPrevButtons = ({isRtl, onNextStep, onPrevStep, expanded}) => (
+const NextPrevButtons = ({ isRtl, onNextStep, onPrevStep, expanded }) => (
     <Fragment>
         {onNextStep ? (
             <div>
-                <div className={expanded ? (isRtl ? styles.leftCard : styles.rightCard) : styles.hidden} />
                 <div
-                    className={expanded ? (isRtl ? styles.leftButton : styles.rightButton) : styles.hidden}
+                    className={
+                        expanded
+                            ? isRtl
+                                ? styles.leftCard
+                                : styles.rightCard
+                            : styles.hidden
+                    }
+                />
+                <div
+                    className={
+                        expanded
+                            ? isRtl
+                                ? styles.leftButton
+                                : styles.rightButton
+                            : styles.hidden
+                    }
                     onClick={onNextStep}
                 >
                     <img
@@ -188,9 +220,23 @@ const NextPrevButtons = ({isRtl, onNextStep, onPrevStep, expanded}) => (
         ) : null}
         {onPrevStep ? (
             <div>
-                <div className={expanded ? (isRtl ? styles.rightCard : styles.leftCard) : styles.hidden} />
                 <div
-                    className={expanded ? (isRtl ? styles.rightButton : styles.leftButton) : styles.hidden}
+                    className={
+                        expanded
+                            ? isRtl
+                                ? styles.rightCard
+                                : styles.leftCard
+                            : styles.hidden
+                    }
+                />
+                <div
+                    className={
+                        expanded
+                            ? isRtl
+                                ? styles.rightButton
+                                : styles.leftButton
+                            : styles.hidden
+                    }
                     onClick={onPrevStep}
                 >
                     <img
@@ -207,18 +253,24 @@ NextPrevButtons.propTypes = {
     expanded: PropTypes.bool.isRequired,
     isRtl: PropTypes.bool,
     onNextStep: PropTypes.func,
-    onPrevStep: PropTypes.func
+    onPrevStep: PropTypes.func,
 };
 CardHeader.propTypes = {
     expanded: PropTypes.bool.isRequired,
     onCloseCards: PropTypes.func.isRequired,
     onShowAll: PropTypes.func.isRequired,
+    onJiboHelp: PropTypes.func.isRequired,
     onShrinkExpandCards: PropTypes.func.isRequired,
     step: PropTypes.number,
-    totalSteps: PropTypes.number
+    totalSteps: PropTypes.number,
 };
 
-const PreviewsStep = ({deckIds, content, onActivateDeckFactory, onShowAll}) => (
+const PreviewsStep = ({
+    deckIds,
+    content,
+    onActivateDeckFactory,
+    onShowAll,
+}) => (
     <Fragment>
         <div className={styles.stepTitle}>
             <FormattedMessage
@@ -228,7 +280,7 @@ const PreviewsStep = ({deckIds, content, onActivateDeckFactory, onShowAll}) => (
             />
         </div>
         <div className={styles.decks}>
-            {deckIds.slice(0, 2).map(id => (
+            {deckIds.slice(0, 2).map((id) => (
                 <div
                     className={styles.deck}
                     key={`deck-preview-${id}`}
@@ -244,10 +296,7 @@ const PreviewsStep = ({deckIds, content, onActivateDeckFactory, onShowAll}) => (
             ))}
         </div>
         <div className={styles.seeAll}>
-            <div
-                className={styles.seeAllButton}
-                onClick={onShowAll}
-            >
+            <div className={styles.seeAllButton} onClick={onShowAll}>
                 <FormattedMessage
                     defaultMessage="See more"
                     description="Title for button to see more in how-to library"
@@ -263,20 +312,22 @@ PreviewsStep.propTypes = {
         id: PropTypes.shape({
             name: PropTypes.node.isRequired,
             img: PropTypes.string.isRequired,
-            steps: PropTypes.arrayOf(PropTypes.shape({
-                title: PropTypes.node,
-                image: PropTypes.string,
-                video: PropTypes.string,
-                deckIds: PropTypes.arrayOf(PropTypes.string)
-            }))
-        })
+            steps: PropTypes.arrayOf(
+                PropTypes.shape({
+                    title: PropTypes.node,
+                    image: PropTypes.string,
+                    video: PropTypes.string,
+                    deckIds: PropTypes.arrayOf(PropTypes.string),
+                })
+            ),
+        }),
     }).isRequired,
     deckIds: PropTypes.arrayOf(PropTypes.string).isRequired,
     onActivateDeckFactory: PropTypes.func.isRequired,
-    onShowAll: PropTypes.func.isRequired
+    onShowAll: PropTypes.func.isRequired,
 };
 
-const Cards = props => {
+const Cards = (props) => {
     const {
         activeDeckId,
         content,
@@ -295,9 +346,11 @@ const Cards = props => {
         showVideos,
         step,
         expanded,
+        help_flag,
+        onJiboHelp,
         ...posProps
     } = props;
-    let {x, y} = posProps;
+    let { x, y } = posProps;
 
     if (activeDeckId === null) return;
 
@@ -311,7 +364,7 @@ const Cards = props => {
 
     if (x === 0 && y === 0) {
         // initialize positions
-        x = isRtl ? (-190 - wideCardWidth - cardHorizontalDragOffset) : 292;
+        x = isRtl ? -190 - wideCardWidth - cardHorizontalDragOffset : 292;
         x += cardHorizontalDragOffset;
         // The tallest cards are about 320px high, and the default position is pinned
         // to near the bottom of the blocks palette to allow room to work above.
@@ -327,16 +380,18 @@ const Cards = props => {
         <div
             className={styles.cardContainerOverlay}
             style={{
-                width: `${window.innerWidth + (2 * cardHorizontalDragOffset)}px`,
-                height: `${window.innerHeight - menuBarHeight + cardVerticalDragOffset}px`,
+                width: `${window.innerWidth + 2 * cardHorizontalDragOffset}px`,
+                height: `${
+                    window.innerHeight - menuBarHeight + cardVerticalDragOffset
+                }px`,
                 top: `${menuBarHeight}px`,
-                left: `${-cardHorizontalDragOffset}px`
+                left: `${-cardHorizontalDragOffset}px`,
             }}
         >
             <Draggable
                 bounds="parent"
                 cancel="#video-div" // disable dragging on video div
-                position={{x: x, y: y}}
+                position={{ x: x, y: y }}
                 onDrag={onDrag}
                 onStart={onStartDrag}
                 onStop={onEndDrag}
@@ -349,43 +404,59 @@ const Cards = props => {
                             totalSteps={steps.length}
                             onCloseCards={onCloseCards}
                             onShowAll={onShowAll}
+                            onJiboHelp={onJiboHelp}
                             onShrinkExpandCards={onShrinkExpandCards}
                         />
-                        <div className={expanded ? styles.stepBody : styles.hidden}>
+                        <div
+                            className={
+                                expanded ? styles.stepBody : styles.hidden
+                            }
+                        >
                             {steps[step].deckIds ? (
                                 <PreviewsStep
                                     content={content}
                                     deckIds={steps[step].deckIds}
-                                    onActivateDeckFactory={onActivateDeckFactory}
+                                    onActivateDeckFactory={
+                                        onActivateDeckFactory
+                                    }
                                     onShowAll={onShowAll}
+                                    onJiboHelp={onJiboHelp}
                                 />
-                            ) : (
-                                steps[step].video ? (
-                                    showVideos ? (
-                                        <VideoStep
-                                            dragging={dragging}
-                                            expanded={expanded}
-                                            video={translateVideo(steps[step].video, locale)}
-                                        />
-                                    ) : ( // Else show the deck image and title
-                                        <ImageStep
-                                            image={content[activeDeckId].img}
-                                            title={content[activeDeckId].name}
-                                        />
-                                    )
+                            ) : steps[step].video ? (
+                                showVideos ? (
+                                    <VideoStep
+                                        dragging={dragging}
+                                        expanded={expanded}
+                                        video={translateVideo(
+                                            steps[step].video,
+                                            locale
+                                        )}
+                                    />
                                 ) : (
+                                    // Else show the deck image and title
                                     <ImageStep
-                                        image={translateImage(steps[step].image, locale)}
-                                        title={steps[step].title}
+                                        image={content[activeDeckId].img}
+                                        title={content[activeDeckId].name}
                                     />
                                 )
+                            ) : (
+                                <ImageStep
+                                    image={translateImage(
+                                        steps[step].image,
+                                        locale
+                                    )}
+                                    title={steps[step].title}
+                                />
                             )}
-                            {steps[step].trackingPixel && steps[step].trackingPixel}
+                            {steps[step].trackingPixel &&
+                                steps[step].trackingPixel}
                         </div>
                         <NextPrevButtons
                             expanded={expanded}
                             isRtl={isRtl}
-                            onNextStep={step < steps.length - 1 ? onNextStep : null}
+                            onNextStep={
+                                step < steps.length - 1 ? onNextStep : null
+                            }
                             onPrevStep={step > 0 ? onPrevStep : null}
                         />
                     </div>
@@ -401,13 +472,15 @@ Cards.propTypes = {
         id: PropTypes.shape({
             name: PropTypes.node.isRequired,
             img: PropTypes.string.isRequired,
-            steps: PropTypes.arrayOf(PropTypes.shape({
-                title: PropTypes.node,
-                image: PropTypes.string,
-                video: PropTypes.string,
-                deckIds: PropTypes.arrayOf(PropTypes.string)
-            }))
-        })
+            steps: PropTypes.arrayOf(
+                PropTypes.shape({
+                    title: PropTypes.node,
+                    image: PropTypes.string,
+                    video: PropTypes.string,
+                    deckIds: PropTypes.arrayOf(PropTypes.string),
+                })
+            ),
+        }),
     }),
     dragging: PropTypes.bool.isRequired,
     expanded: PropTypes.bool.isRequired,
@@ -425,16 +498,18 @@ Cards.propTypes = {
     showVideos: PropTypes.bool,
     step: PropTypes.number.isRequired,
     x: PropTypes.number,
-    y: PropTypes.number
+    y: PropTypes.number,
+    help_flag: PropTypes.number,
+    onJiboHelp: PropTypes.func,
 };
 
 Cards.defaultProps = {
-    showVideos: true
+    showVideos: true,
 };
 
 export {
     Cards as default,
     // Others exported for testability
     ImageStep,
-    VideoStep
+    VideoStep,
 };

@@ -111,7 +111,8 @@ const initTutorialCard = function (currentState, deckId) {
                 step: 0,
                 x: 0,
                 y: 0,
-                dragging: false
+                dragging: false,
+                help_flag: 0,
             }
         }
     );

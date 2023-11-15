@@ -11,6 +11,7 @@ import {
     dragCard,
     startDrag,
     endDrag,
+    jiboHelp,
 } from "../reducers/cards";
 
 import { openTipsLibrary } from "../reducers/modals";
@@ -49,6 +50,9 @@ class Cards extends React.Component {
                 `Tutorial Card ${this.props.step}: ${cardDesc}`
             );
         }
+        if (prevProps.help_flag != this.props.help_flag) {
+            this.props.vm.runtime.emit("JIBO_HELP_REQUESTED");
+        }
     }
     render() {
         return <CardsComponent {...this.props} />;
@@ -71,6 +75,7 @@ const mapStateToProps = (state) => ({
     locale: state.locales.locale,
     dragging: state.scratchGui.cards.dragging,
     showVideos: notScratchDesktop(),
+    help_flag: state.scratchGui.cards.help_flag,
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -79,6 +84,7 @@ const mapDispatchToProps = (dispatch) => ({
         dispatch(openTipsLibrary());
         dispatch(closeCards());
     },
+    onJiboHelp: () => dispatch(jiboHelp()),
     onCloseCards: () => dispatch(closeCards()),
     onShrinkExpandCards: () => dispatch(shrinkExpandCards()),
     onNextStep: () => dispatch(nextStep()),
