@@ -1,5 +1,5 @@
 import { ArgumentType, BlockType, Environment, ExtensionMenuDisplayDetails, extension, block } from "$common";
-import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
+import BlockUtility from "$scratch-vm/engine/block-utility";
 
 /** 👋 Hi!
 

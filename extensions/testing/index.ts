@@ -1,11 +1,11 @@
-import { untilCondition, openUIEvent, openUI, isFunction, splitOnCapitals, NonAbstractConstructor, ExtensionInstance, ExtensionConstructorParams } from "$common";
+import { untilCondition, openUIEvent, openUI, isFunction, splitOnCapitals, NonAbstractConstructor, ExtensionInstance, } from "$common";
 import { describe, expect, jest, test } from '@jest/globals';
 import path from "path";
 import { BlockKey, BlockTestCase, RuntimeForTest, TestHelper, UnitTests, GetTestCase, TestCaseEntry, InputArray, KeyToBlockIndexMap, IntegrationTest, Testable } from "./types";
 import { render, fireEvent } from '@testing-library/svelte';
 import glob from "glob";
 import fs from "fs";
-import { executeAndSquashWarnings, getEngineFile } from "./utils";
+import { executeAndSquashWarnings, extensionConstructorArgs, getEngineFile } from "./utils";
 import { BlockRunner } from "./BlockRunner";
 import testable from "./mixins/testable";
 import imageMock from "./mocks/image";
@@ -62,9 +62,8 @@ const mockRuntime = <T extends ExtensionInstance>(details: TestDetails<T, any>):
 
 const getInstance = async <T extends ExtensionInstance>(details: TestDetails<T, any>): Promise<Testable<T>> => {
   const runtime = mockRuntime(details);
-  const args: ExtensionConstructorParams = [runtime, testName, testID, ""];
   const TestClass = testable(details.Extension);
-  const instance = new TestClass(...args);
+  const instance = new TestClass(...extensionConstructorArgs(runtime, testName, testID));
   await instance.initialize();
 
   return instance as Testable<T>;

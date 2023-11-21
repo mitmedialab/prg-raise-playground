@@ -1,4 +1,5 @@
-import { isString } from "$common";
+import { ExtensionConstructorParams, isString } from "$common";
+import type Runtime from "$scratch-vm/engine/runtime";
 import { vmSrc } from "$root/scripts/paths";
 import path from "path";
 
@@ -17,7 +18,6 @@ export const executeAndSquashWarnings = <T extends (...args: any[]) => any>(oper
 };
 
 export const getEngineFile = (name: string) => path.join(vmSrc, "engine", name);
-
 
 const stubbed: Map<object, Record<keyof any, any>> = new Map();
 
@@ -39,3 +39,14 @@ export const restore = <const TContainer extends object, const TKey extends keyo
 ) => {
   container[key] = stubbed.get(container)[key];
 }
+
+export const extensionConstructorArgs = (
+  runtime: Runtime,
+  testName = "Unamed Test",
+  testID = "Default Test ID",
+  blockIconURI: string = null,
+  blockColor = "#000",
+  menuColor = "#111",
+  menuSelectColor = "#222"
+): ExtensionConstructorParams =>
+  [runtime, testName, testID, blockIconURI, blockColor, menuColor, menuSelectColor];
