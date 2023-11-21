@@ -17,7 +17,7 @@
     "add:arg": "npm run ts:node:extensions -- ./extensions/scripts/factories/customArgument.ts",
     "add:test": "npm run ts:node:extensions -- ./extensions/scripts/factories/test.ts",
     "add:package": "npm run ts:node:extensions -- ./extensions/scripts/factories/package.ts",
-    "rebuild:blocks": "npm run prepublish --prefix ./packages/scratch-blocks && npm run dev",
+    "rebuild:blocks": "npm run prepublish --prefix ./scratch-packages/scratch-blocks && npm run dev",
     "test:extensions": "npm run test --prefix ./extensions/",
     "document:extensions": "npm run document --prefix ./extensions/",
     "edocument": "npm run document:extensions",

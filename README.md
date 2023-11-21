@@ -6,7 +6,7 @@ This repository is your one-stop-shop for developing [scratch extensions](https:
 
 It's a fullblown [fork](https://en.wikipedia.org/wiki/Fork_(software_development)) of the official Scratch codebase, which the [Personal Robotics Group](https://robots.media.mit.edu/) (PRG) manages and extends to meet its needs. 
 
-Looking for the old documentation (<= Sept. 2022)? Head [here](./BACKGROUND.md).
+Looking for the old documentation (<= Sept. 2022)? Head [here](/docs/BACKGROUND.md).
 
 ## 📖 Table of Contents
 
@@ -165,7 +165,7 @@ First, read through the documentation of the `index.ts` file (written inside of 
 
 Also, try hovering over fields to view their documentation (typically a [summary](https://jsdoc.app/tags-summary.html), [examples](https://jsdoc.app/tags-example.html), and a [longer desrciption](https://jsdoc.app/tags-description.html)).
 
-![Gif of video hovering over fields to peak documentation](/assets/hover.gif)
+![Gif of video hovering over fields to peak documentation](/docs/assets/hover.gif)
 
 Still stuck? Check out our [From 0 to Extension guide](#-from-0-to-extension) and/or contact more experienced extension developers, like [Parker](https://github.com/pmalacho-mit) or [Randi](https://github.com/randi-c-dubs)
 

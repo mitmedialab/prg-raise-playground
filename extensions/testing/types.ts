@@ -1,11 +1,11 @@
 import type { RenderResult, fireEvent } from '@testing-library/svelte';
 import type { SvelteComponentDev } from "svelte/internal";
 import { Extension, ExtensionBlocks, ExtensionMenuDisplayDetails, NonEmptyArray, InternalButtonKey, Methods, MethodNames, ExtensionInstance, } from "$common";
-import Runtime from "$root/packages/scratch-vm/src/engine/runtime";
+import Runtime from "$root/scratch-packages/scratch-vm/src/engine/runtime";
 import { expect } from '@jest/globals';
 import { BlockRunner } from './BlockRunner';
 import testable from './mixins/testable';
-import type BlockUtility from '$root/packages/scratch-vm/src/engine/block-utility';
+import type BlockUtility from '$root/scratch-packages/scratch-vm/src/engine/block-utility';
 
 export type GenericExtension = Extension<ExtensionMenuDisplayDetails, ExtensionBlocks>;
 
@@ -128,7 +128,7 @@ export type UnitTests<T extends ExtensionInstance> = T extends GenericExtension
   ? { [k in BlockKey<T>]?: SingleOrArray<ObjectOrFunc<BlockTestCase<T, k>, Parameters<GetTestCase<T, k>>>> }
   : { [k in BlockKey<T>]?: SingleOrArray<ObjectOrFunc<BlockTestCase<T, k>, Parameters<GetTestCase<T, k>>>> };
 
-export type RenderedUI = RenderResult<SvelteComponentDev, typeof import("/Users/parkermalachowsky/MIT/prg-extension-boilerplate/extensions/testing/node_modules/@testing-library/dom/types/queries")>;
+export type RenderedUI = RenderResult<SvelteComponentDev, typeof import("./node_modules/@testing-library/dom/types/queries")>;
 
 export type RuntimeForTest<T extends ExtensionInstance> = Runtime & {
   forTest: {
