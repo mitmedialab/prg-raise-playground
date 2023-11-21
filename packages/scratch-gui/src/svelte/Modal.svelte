@@ -1,5 +1,7 @@
 <script lang="ts" context="module">
-    import type { ExtensionInstance } from "../../../../extensions/src/common/Extension";
+    import type _ExtensionManager from "scratch-vm/src/extension-support/extension-manager";
+    import type _VirtualMachine from "scratch-vm/src/virtual-machine";
+    import type { ExtensionInstance } from "../../../../extensions/src/common";
 
     type ExtensionID = string;
     type ComponentName = string;
@@ -11,15 +13,14 @@
 
     type UIConstructor = (details: Payload) => void;
 
-    type ExtensionManager = {
+    type ExtensionManager = _ExtensionManager & {
         getAuxiliaryObject: (
             id: ExtensionID,
             name: ComponentName
         ) => UIConstructor;
         getExtensionInstance: (id: ExtensionID) => ExtensionInstance;
     };
-
-    type VirtualMachine = {
+    type VirtualMachine = _VirtualMachine & {
         extensionManager: ExtensionManager;
     };
 </script>

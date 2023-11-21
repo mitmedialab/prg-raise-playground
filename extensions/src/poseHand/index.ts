@@ -28,7 +28,8 @@ type Details = {
   name: "Hand Sensing",
   description: "Sense hand movement with the camera.",
   iconURL: "pose-hand.png",
-  insetIconURL: "pose-hand-small-3.svg"
+  insetIconURL: "pose-hand-small-3.svg",
+  tags: ["Dancing with AI", "Made by PRG"]
 };
 
 /**

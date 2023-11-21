@@ -84,7 +84,7 @@ type Text<TParameters extends any[]> = {
   text: TParameters extends NonEmptyArray<any> ? (...params: TParameters) => string : string;
 }
 
-type Arguments<TParameters extends any[]> = &
+type Arguments<TParameters extends any[]> =
   TParameters extends [] | [BlockUtility] ? {
     /**
      * @description The args field should not be defined for blocks that take no arguments

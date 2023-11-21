@@ -8,7 +8,8 @@ type Details = {
   name: "Tables",
   description: "Make and use tables with rows and columns",
   iconURL: "tables.png",
-  insetIconURL: "tables.svg"
+  insetIconURL: "tables.svg",
+  tags: ["Made by PRG"]
 };
 
 type Blocks = {
@@ -17,7 +18,7 @@ type Blocks = {
   removeTable: (table: string) => void;
   insertColumn: (table: string) => void;
   insertRow: (table: string) => void;
-  insertValueAt: (table: string, value: any, row: number, column: number) => void;
+  insertValueAt: (table: string, value: number, row: number, column: number) => void;
   getValueAt: (table: string, row: number, column: number) => number;
   numberOfRows: (table: string) => number;
   numberOfColumns: (table: string) => number;

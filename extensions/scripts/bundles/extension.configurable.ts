@@ -1,6 +1,7 @@
 import { type Plugin } from "rollup";
 import { announceWrite, finalizeConfigurableExtensionBundle, setupExtensionBundleEntry } from "./plugins";
 import { getThirdPartyPlugins, BundleInfo, bundleExtensionBasedOnWatchMode } from ".";
+import { extractMethodTypesFromExtension } from "scripts/typeProbing";
 
 export default async function (info: BundleInfo) {
 
@@ -10,6 +11,12 @@ export default async function (info: BundleInfo) {
     announceWrite(info)
   ];
 
-  const plugins = [...customPRGPlugins, ...getThirdPartyPlugins()];
+  const plugins = [
+    ...customPRGPlugins,
+    ...getThirdPartyPlugins({
+      tsTransformers: [extractMethodTypesFromExtension(info)]
+    })
+  ];
+
   await bundleExtensionBasedOnWatchMode({ plugins, info });
 };

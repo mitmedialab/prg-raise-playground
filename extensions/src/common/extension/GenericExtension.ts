@@ -1,7 +1,7 @@
 import { ExtensionMenuDisplayDetails, ExtensionBlocks, BlockDefinitions, Translations } from "$common/types";
 import { isFunction } from "$common/utils";
 import { extension } from "./index";
-import { getImplementationName } from "./mixins/required/scratchInfo/index";
+import { getImplementationName } from "./mixins/base/scratchInfo/index";
 
 /**
  * @summary Base class for extensions implemented via the Typescript Extension Framework (using the "generic" strategy).
