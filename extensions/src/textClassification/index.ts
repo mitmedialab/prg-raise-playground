@@ -179,6 +179,23 @@ export default class TextClassification extends extension(details, "legacySuppor
     this.modelData.set(label, new Array<string>());
   }
 
+  deleteLabel(label: string, index: number) {
+    this.labels.splice(index, 1);
+    this.modelData.delete(label);
+  }
+
+  renameLabel(oldName: string, newName: string, index: number) {
+    if (this.modelData.has(newName)) return alert(`Could not rename ${oldName} to ${newName}, as that label already exists`);
+    this.labels[index] = newName;
+    this.modelData.set(newName, this.modelData.get(oldName));
+    this.modelData.delete(oldName);
+  }
+
+  clearLabels() {
+    this.labels = [];
+    this.modelData.clear();
+  }
+
   private getLoudness() {
     const { audioEngine, currentStepTime } = this.runtime;
     if (!audioEngine || !currentStepTime) return -1;
