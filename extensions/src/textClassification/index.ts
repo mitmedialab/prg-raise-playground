@@ -1,5 +1,5 @@
 /// <reference types="dom-speech-recognition" />
-import { Environment, extension, ExtensionMenuDisplayDetails, block, wrapClamp, fetchWithTimeout, RuntimeEvent } from "$common";
+import { Environment, extension, ExtensionMenuDisplayDetails, block, wrapClamp, fetchWithTimeout, RuntimeEvent, buttonBlock } from "$common";
 import type BlockUtility from "$scratch-vm/engine/block-utility";
 import { legacyFullSupport, info, } from "./legacy";
 import { getState, setState, tryCopyStateToClone } from "./state";
@@ -15,10 +15,18 @@ import { getTranslationToEnglish } from "./services/translation";
 const { legacyBlock, } = legacyFullSupport.for<TextClassification>();
 const { toxicitylabels: { items: toxicityLabelItems }, voices: { items: voiceItems } } = info.menus;
 
-const details: ExtensionMenuDisplayDetails = { name: "Text Classification" };
+const details: ExtensionMenuDisplayDetails = {
+  name: "Text Classification",
+  tags: ["Made by PRG"],
+  insetIconURL: "icon.svg",
+  iconURL: "menu.png",
+  description: "Create a text classification model for use in a Scratch project!",
+};
 
-export default class TextClassification extends extension(details, "legacySupport") {
-  labels: string[];
+const defaultLabel = "No labels";
+
+export default class TextClassification extends extension(details, "legacySupport", "ui") {
+  labels: string[] = [];
   lastRecognizedSpeech: string;
   currentLoudness: number;
   loudnessTimer = timer();
@@ -30,10 +38,7 @@ export default class TextClassification extends extension(details, "legacySuppor
   prediction = { label: 0, class: "", score: 0 };
   customLanguageModel: tf.Sequential;
 
-  modelData = {
-    textData: new Array<string>(),
-    classifierData: new Array<string>(),
-  }
+  modelData = new Map<string, string[]>();
 
   async init(env: Environment) {
     const { soundPlayers } = this;
@@ -43,7 +48,7 @@ export default class TextClassification extends extension(details, "legacySuppor
     env.runtime.on(RuntimeEvent.TargetWasCreated, tryCopyStateToClone);
     const threshold = 0.1;
     try {
-      this.toxicityModel = await loadToxicity(threshold, toxicityLabelItems.map(({ value }) => value));
+      //this.toxicityModel = await loadToxicity(threshold, toxicityLabelItems.map(({ value }) => value));
       console.log('loaded Toxicity model');
     }
     catch (error) {
@@ -53,9 +58,17 @@ export default class TextClassification extends extension(details, "legacySuppor
 
   protected getLegacyInfo() { return info }
 
+  @buttonBlock("Edit Model")
+  editButton() { this.openUI("Editor", "Edit Text Model") }
+
   @legacyBlock.ifTextMatchesClass((self) => ({
     argumentMethods: {
-      1: { getItems: () => self.labels }
+      1: {
+        getItems: () => {
+          const { labels } = self;
+          return labels?.length > 0 ? labels : [defaultLabel];
+        }
+      }
     }
   }))
   async ifTextMatchesClass(text: string, className: string) {
@@ -159,6 +172,11 @@ export default class TextClassification extends extension(details, "legacySuppor
   @legacyBlock.onHeardSound()
   onHeardSound(threshold: number) {
     return this.getLoudness() > threshold;
+  }
+
+  addLabel(label: string) {
+    this.labels.push(label);
+    this.modelData.set(label, new Array<string>());
   }
 
   private getLoudness() {

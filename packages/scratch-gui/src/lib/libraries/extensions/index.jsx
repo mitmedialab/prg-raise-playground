@@ -5,9 +5,6 @@ import generatedDetails from '../../../generated/details.generated';
 import React from 'react';
 import { FormattedMessage } from 'react-intl';
 
-import textClassificationBlocksIconURL from './text_classification/text-classification-blocks.png';
-import textClassificationBlocksInsetIconURL from './text_classification/text-classification-blocks-small.svg';
-
 import arduinoRobotIconURL from './arduino_extension/arduino_extension.png';
 import arduinoRobotInsetIconURL from './arduino_extension/arduino_small.svg';
 
@@ -65,28 +62,6 @@ export default [
     /* DO NOT REMOVE */
     ...generatedDetails,
     /* DO NOT REMOVE */
-    {
-        name: (
-            <FormattedMessage
-                defaultMessage="Text Classification"
-                description="Text Classification name"
-                id="gui.extension.text-classification.name"
-            />
-        ),
-        extensionId: 'textClassification',
-        iconURL: textClassificationBlocksIconURL,
-        insetIconURL: textClassificationBlocksInsetIconURL,
-        description: (
-            <FormattedMessage
-                defaultMessage="Create a text classification model for use in a Scratch project!"
-                description="Text Classification Description"
-                id="gui.extension.text-classification.description"
-            />
-        ),
-        featured: true,
-        tags: ["Made by PRG"]
-
-    },
     {
         name: (
             <FormattedMessage
