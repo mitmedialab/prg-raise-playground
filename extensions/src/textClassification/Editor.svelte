@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onDestroy } from "svelte";
   import type Extension from ".";
   import { ReactiveInvoke, color, reactiveInvoke } from "$common";
   import Class from "./components/Class.svelte";
@@ -6,6 +7,11 @@
 
   export let extension: Extension;
   export let close: () => void;
+
+  export const onClose = () => {
+    console.log("closed!");
+  };
+
   const invoke: ReactiveInvoke<Extension> = (functionName, ...args) =>
     reactiveInvoke((extension = extension), functionName, args);
 
@@ -29,6 +35,8 @@
     invoke("deleteLabel", extension.labels[activeIndex], activeIndex);
     activeIndex = -1;
   };
+
+  onDestroy(() => extension.buildCustomDeepModel());
 </script>
 
 <div class="container">

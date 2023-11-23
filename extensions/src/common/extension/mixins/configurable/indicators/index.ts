@@ -1,5 +1,8 @@
+import { untilTimePassed } from "$common/utils";
 import { MinimalExtensionConstructor } from "../../base";
 import { isSvgGroup, isSvgText, openAlert } from "./svgAlert";
+
+type IndicatorPayload = { position?: "category", msg: string, type?: "success" | "warning" | "error" };
 
 /**
  * Mixin the ability for extensions to add an indicator message to the workspace.
@@ -9,7 +12,7 @@ import { isSvgGroup, isSvgText, openAlert } from "./svgAlert";
  */
 export default function <T extends MinimalExtensionConstructor>(Ctor: T) {
   abstract class ExtensionThatIndicates extends Ctor {
-    readonly IndicatorType: "success" | "warning" | "error";
+    readonly IndicatorType: Required<IndicatorPayload>["type"];
 
     /**
      * Add an indicator message to the workspace.
@@ -19,7 +22,7 @@ export default function <T extends MinimalExtensionConstructor>(Ctor: T) {
      * - `type`: The type of indicator to display. Currently "success", "warning" and "error", which effect the color of the indicator.
      * @returns 
      */
-    async indicate({ position, msg, type }: { position: "category", msg: string, type: ExtensionThatIndicates["IndicatorType"] }) {
+    async indicate({ position = "category", msg, type = "success" }: IndicatorPayload) {
 
       const elements = position === "category"
         ? getCategoryElements(this.name)
@@ -29,6 +32,12 @@ export default function <T extends MinimalExtensionConstructor>(Ctor: T) {
       const { container } = elements;
       const alert = await openAlert(container, msg, type);
       return alert;
+    }
+
+    async indicateFor({ position = "category", msg, type = "success" }: IndicatorPayload, seconds: number) {
+      const { close } = await this.indicate({ position, msg, type });
+      await untilTimePassed(seconds * 1000);
+      close();
     }
   }
 

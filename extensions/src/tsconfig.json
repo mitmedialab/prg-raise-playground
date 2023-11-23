@@ -13,7 +13,8 @@
     "strictPropertyInitialization": false,
     "lib": [
       "dom",
-      "es6"
+      "es6",
+      "dom.iterable"
     ]
   },
   "include": [
