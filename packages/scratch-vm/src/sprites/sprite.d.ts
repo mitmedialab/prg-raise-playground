@@ -43,7 +43,7 @@ declare class Sprite {
      * Add an array of costumes, taking care to avoid duplicate names.
      * @param {!Array<object>} costumes Array of objects representing costumes.
      */
-    set costumes(arg: any[]);
+    set costumes(costumes: any[]);
     /**
      * Get full costume list
      * @return {object[]} list of costumes. Note that mutating the returned list will not

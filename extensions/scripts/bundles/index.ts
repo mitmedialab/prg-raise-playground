@@ -15,6 +15,7 @@ import { terser } from "rollup-plugin-terser";
 import css from 'rollup-plugin-css-only';
 import json from '@rollup/plugin-json';
 import image from '@rollup/plugin-image';
+import svg from 'rollup-plugin-svg';
 import nodePolyfills from 'rollup-plugin-polyfill-node';
 import babel from "@rollup/plugin-babel";
 import chalk from "chalk";
@@ -81,6 +82,7 @@ export const getThirdPartyPlugins = (customizations?: { tsTransformers?: Program
   }),
   css(),
   image(),
+  svg(),
   terser(),
 ];
 

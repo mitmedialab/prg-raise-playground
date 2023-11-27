@@ -1,6 +1,7 @@
 import { ArgumentType, BlockType } from "$common/types/enums";
 import { ExtensionMetadata, ExtensionBlockMetadata, ValueOf, TypeByArgumentType, ExtensionMenuItems, ReturnTypeByBlockType, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters } from "$common/types";
 import { ObjValueTuple, TuplifyUnion } from "./TsMagic";
+import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 
 /**
  * Types to assist in extracting information from the return type of the old 'getInfo' method
@@ -24,7 +25,7 @@ export type OpArgs<T extends ExtensionMetadata, K extends Opcodes<T>> = ArgsArra
 export type OpArgMenus<T extends ExtensionMetadata, K extends Opcodes<T>> = ArgsToMenusArray<ObjValueTuple<Arguments<T["blocks"], K>[keyof Arguments<T["blocks"], K>]>, T>;
 
 export type BlockType<T extends ExtensionMetadata, K extends Opcodes<T>> = Types<T["blocks"], K>[keyof Types<T["blocks"], K>] extends ValueOf<typeof BlockType> ? Types<T["blocks"], K>[keyof Types<T["blocks"], K>] : never;
-export type OpReturn<T extends ExtensionMetadata, K extends Opcodes<T>, TBlockType extends BlockType<T, K> = BlockType<T, K>> = ReturnTypeByBlockType<TBlockType>;
+export type OpReturn<T extends ExtensionMetadata, K extends Opcodes<T>, TBlockType extends BlockType<T, K> = BlockType<T, K>> = ReturnTypeByBlockType<TBlockType> | Promise<ReturnTypeByBlockType<TBlockType>>;
 
 export type ReservedMenuNames<T extends ExtensionMetadata> = ValueOf<{
   [Op in Opcodes<T>]: ValueOf<{
@@ -86,7 +87,7 @@ type ArgsToMenusArray<T extends unknown[], TData extends ExtensionMetadata> = T 
   : T;
 
 export type LegacyMethods<T extends ExtensionMetadata> = {
-  [k in Opcodes<T>]: (...args: OpArgs<T, k>) => OpReturn<T, k>;
+  [k in Opcodes<T>]: (...args: (OpArgs<T, k> | [...OpArgs<T, k>, BlockUtility])) => OpReturn<T, k>;
 };
 
 export type Menus = ExtensionMetadata["menus"];

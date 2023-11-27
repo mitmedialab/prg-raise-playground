@@ -4,12 +4,12 @@ export = ArgumentType;
  */
 type ArgumentType = string;
 declare namespace ArgumentType {
-    const ANGLE: string;
-    const BOOLEAN: string;
-    const COLOR: string;
-    const NUMBER: string;
-    const STRING: string;
-    const MATRIX: string;
-    const NOTE: string;
-    const IMAGE: string;
+    let ANGLE: string;
+    let BOOLEAN: string;
+    let COLOR: string;
+    let NUMBER: string;
+    let STRING: string;
+    let MATRIX: string;
+    let NOTE: string;
+    let IMAGE: string;
 }

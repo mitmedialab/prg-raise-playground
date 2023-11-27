@@ -11,6 +11,11 @@
     "ignoreDeprecations": "5.0",
     "noErrorTruncation": true,
     "strictPropertyInitialization": false,
+    "lib": [
+      "dom",
+      "es6",
+      "dom.iterable"
+    ]
   },
   "include": [
     ".**/*.ts",
