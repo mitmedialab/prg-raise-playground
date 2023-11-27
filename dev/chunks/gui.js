@@ -141,7 +141,7 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
 
 
 var onClickLogo = function onClickLogo() {
-  window.location = 'https://aieducation.mit.edu';
+  window.location = 'https://raise.mit.edu';
 };
 var handleTelemetryModalCancel = function handleTelemetryModalCancel() {
   Object(_lib_log_js__WEBPACK_IMPORTED_MODULE_6__["default"])('User canceled telemetry modal');
