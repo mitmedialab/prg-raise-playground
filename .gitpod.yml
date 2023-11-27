@@ -1,6 +1,7 @@
 tasks:
   - name: Init and Run
     init: |
+      nvm install 16
       npm run init
     command: |
       npm run dev
