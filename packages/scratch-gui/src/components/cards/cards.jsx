@@ -13,7 +13,7 @@ import rightArrow from "./icon--next.svg";
 import leftArrow from "./icon--prev.svg";
 
 import helpIcon from "../../lib/assets/icon--tutorials.svg";
-import jiboHelpIcon from "../../lib/assets/icon--help.svg";
+import jiboHelpIcon from "../../lib/assets/icon--jibohelp.svg";
 import closeIcon from "./icon--close.svg";
 
 import { translateVideo } from "../../lib/libraries/decks/translate-video.js";
