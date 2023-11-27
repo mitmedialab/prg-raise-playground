@@ -2,10 +2,10 @@ import classNames from 'classnames';
 import omit from 'lodash.omit';
 import PropTypes from 'prop-types';
 import React from 'react';
-import {defineMessages, FormattedMessage, injectIntl, intlShape} from 'react-intl';
-import {connect} from 'react-redux';
+import { defineMessages, FormattedMessage, injectIntl, intlShape } from 'react-intl';
+import { connect } from 'react-redux';
 import MediaQuery from 'react-responsive';
-import {Tab, Tabs, TabList, TabPanel} from 'react-tabs';
+import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import tabStyles from 'react-tabs/style/react-tabs.css';
 import VM from 'scratch-vm';
 import Renderer from 'scratch-render';
@@ -30,11 +30,9 @@ import Alerts from '../../containers/alerts.jsx';
 import DragLayer from '../../containers/drag-layer.jsx';
 import ConnectionModal from '../../containers/connection-modal.jsx';
 import TelemetryModal from '../telemetry-modal/telemetry-modal.jsx';
-import TextModelModal from '../../containers/model-modal.jsx';
-import ClassifierModelModal from '../../containers/classifier-model-modal.jsx'
 
-import layout, {STAGE_SIZE_MODES} from '../../lib/layout-constants';
-import {resolveStageSize} from '../../lib/screen-utils';
+import layout, { STAGE_SIZE_MODES } from '../../lib/layout-constants';
+import { resolveStageSize } from '../../lib/screen-utils';
 
 import styles from './gui.css';
 import addExtensionIcon from './icon--extensions.svg';
@@ -182,18 +180,8 @@ const GUIComponent = props => {
                 {tipsLibraryVisible ? (
                     <TipsLibrary />
                 ) : null}
-                {textModelModalVisible ? (
-                    <TextModelModal
-                        vm={vm}
-                    />
-                ) : null}
                 {programmaticModalDetails ? (
-                    <ProgrammaticModal vm={vm} {...programmaticModalDetails}/>
-                ) : null}
-                {classifierModelModalVisible ? (
-                    <ClassifierModelModal
-                        vm={vm}
-                    />
+                    <ProgrammaticModal vm={vm} {...programmaticModalDetails} />
                 ) : null}
                 {cardsVisible ? (
                     <Cards />

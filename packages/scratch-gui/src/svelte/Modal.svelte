@@ -40,6 +40,7 @@
     export let close: () => void;
 
     let target: HTMLDivElement;
+    let constructed: any;
 
     onMount(async () => {
         const props = {
@@ -51,8 +52,15 @@
             id,
             component
         );
-        new constructor(options);
+        constructed = new constructor(options);
         return;
+    });
+
+    onDestroy(() => {
+        // HACK: This is a hack to ensure a svelte's `onDestroy` callback(s) is called
+        const callbacks = constructed?.["$$"]?.["on_destroy"];
+        if (!callbacks) return;
+        callbacks.forEach((callback) => callback());
     });
 </script>
 
