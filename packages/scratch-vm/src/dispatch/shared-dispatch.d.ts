@@ -137,23 +137,6 @@ declare namespace SharedDispatch {
     export { DispatchCallMessage, DispatchResponseMessage, DispatchMessage };
 }
 /**
- * - a message to the dispatch system representing the results of a call
- */
-type DispatchResponseMessage = {
-    /**
-     * - a copy of the response ID from the call which generated this response
-     */
-    responseId: any;
-    /**
-     * - if this is truthy, then it contains results from a failed call (such as an exception)
-     */
-    error: any | undefined;
-    /**
-     * - if error is not truthy, then this contains the return value of the call (if any)
-     */
-    result: any | undefined;
-};
-/**
  * - a message to the dispatch system representing a service method call
  */
 type DispatchCallMessage = {
@@ -173,6 +156,23 @@ type DispatchCallMessage = {
      * - the arguments to be passed to the method
      */
     args: any[] | undefined;
+};
+/**
+ * - a message to the dispatch system representing the results of a call
+ */
+type DispatchResponseMessage = {
+    /**
+     * - a copy of the response ID from the call which generated this response
+     */
+    responseId: any;
+    /**
+     * - if this is truthy, then it contains results from a failed call (such as an exception)
+     */
+    error: any | undefined;
+    /**
+     * - if error is not truthy, then this contains the return value of the call (if any)
+     */
+    result: any | undefined;
 };
 /**
  * Any message to the dispatch system.

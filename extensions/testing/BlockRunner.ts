@@ -1,4 +1,4 @@
-import { BlockType, ExtensionBlockMetadata, ExtensionConstructorParams, ExtensionInstance, NonAbstractConstructor } from "$common";
+import { BlockType, ExtensionBlockMetadata, ExtensionConstructorParams, ExtensionInstance, NonAbstractConstructor, blockIDKey } from "$common";
 import { isLegacy } from "$common/extension/mixins/configurable/legacySupport";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import { buildKeyBlockMap } from "$testing";
@@ -56,6 +56,7 @@ export class BlockRunner<T extends ExtensionInstance> {
 
   private mockBlockUtility(): BlockUtility {
     const utility = new (jest.createMockFromModule(getEngineFile("block-utility")) as any)() as BlockUtility;
+    utility[blockIDKey] = "test-block";
     // utility can be built up over time
     return utility;
   }

@@ -1,10 +1,10 @@
-import { Environment, extension } from "$common";
+import { Environment, buttonBlock, extension } from "$common";
 import tmImage from '@teachablemachine/image';
 import tmPose from '@teachablemachine/pose';
 import { create } from '@tensorflow-models/speech-commands';
 import { legacyFullSupport, } from "./legacy";
 
-const { legacyExtension, legacyBlock } = legacyFullSupport.for<teachableMachine>();
+const { legacyBlock, legacyExtension } = legacyFullSupport.for<teachableMachine>();
 const VideoState = {
   /** Video turned off. */
   OFF: 'off',
@@ -26,7 +26,6 @@ export default class teachableMachine extends extension({
   insetIconURL: "teachable-machine-blocks-small.svg",
   tags: ["Dancing with AI", "Made by PRG"]
 }) {
-
   lastUpdate: number;
   maxConfidence: number;
   modelConfidences: {};
@@ -310,6 +309,14 @@ export default class teachableMachine extends extension({
     this.runtime.ioDevices.video.setPreviewGhost(trans);
   }
 
+  /**
+   * Opens a new tab with the Google Teachable Machine website
+   */
+  @buttonBlock("Teachable Machine Site ↗")
+  openTeachableMachine() {
+    window.open('https://teachablemachine.withgoogle.com/train', '_blank');
+  }
+
   @legacyBlock.useModelBlock()
   useModelBlock(url: string) {
     this.useModel(url);
@@ -352,4 +359,5 @@ export default class teachableMachine extends extension({
   setVideoTransparency(transparency: number) {
     this.setTransparency(transparency);
   }
+
 }

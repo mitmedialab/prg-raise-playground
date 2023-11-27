@@ -4,6 +4,6 @@ export = TargetType;
  */
 type TargetType = string;
 declare namespace TargetType {
-    const SPRITE: string;
-    const STAGE: string;
+    let SPRITE: string;
+    let STAGE: string;
 }
