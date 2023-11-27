@@ -9,6 +9,7 @@ let urlHelper: ReturnType<typeof getUrlHelper>;
 
 const rendererKey: keyof RenderedTarget = "renderer";
 const isRenderedTarget = (target: Target | RenderedTarget): target is RenderedTarget => rendererKey in target;
+const notRenderedTargetError = "Costume could not be added as the supplied target wasn't a rendered target";
 
 /**
  * Mixin the ability for extensions to add costumes to sprites
@@ -29,28 +30,8 @@ export default function <T extends MinimalExtensionConstructor>(Ctor: T) {
      * @param {string?} name optional name to attach to the costume
      */
     async addCostume(target: Target, image: ImageData, action: "add only" | "add and set", name?: string) {
-      if (!isRenderedTarget(target)) return console.warn("Costume could not be added is the supplied target wasn't a rendered target");
-
-      name ??= `${this.id}_generated_${Date.now()}`;
-      bitmapAdapter ??= new MockBitmapAdapter();
       urlHelper ??= getUrlHelper(image);
-
-      // storage is of type: https://github.com/LLK/scratch-storage/blob/develop/src/ScratchStorage.js
-      const { storage } = this.runtime;
-      const dataFormat = storage.DataFormat.PNG;
-      const assetType = storage.AssetType.ImageBitmap;
-      const dataBuffer = await bitmapAdapter.importBitmap(urlHelper.getDataURL(image));
-
-      const asset = storage.createAsset(assetType, dataFormat, dataBuffer, null, true);
-      const { assetId } = asset;
-      const costume = { name, dataFormat, asset, md5: `${assetId}.${dataFormat}`, assetId };
-
-      await this.runtime.addCostume(costume);
-
-      const { length } = target.getCostumes();
-
-      target.addCostume(costume, length);
-      if (action === "add and set") target.setCostume(length);
+      await this.addCostumeBitmap(target, urlHelper.getDataURL(image), action, name);
     }
 
     /**
@@ -63,11 +44,10 @@ export default function <T extends MinimalExtensionConstructor>(Ctor: T) {
      * @param {string?} name optional name to attach to the costume
      */
     async addCostumeBitmap(target: Target, bitmapImage: string, action: "add only" | "add and set", name?: string) {
-      if (!isRenderedTarget(target)) return console.warn("Costume could not be added as the supplied target wasn't a rendered target");
+      if (!isRenderedTarget(target)) return console.error(notRenderedTargetError);
 
-      name ??= `virtualJibo_generated_${Date.now()}`;
+      name ??= `${this.id}_generated_${Date.now()}`;
       bitmapAdapter ??= new MockBitmapAdapter();
-      //urlHelper ??= getUrlHelper(image);
 
       // storage is of type: https://github.com/LLK/scratch-storage/blob/develop/src/ScratchStorage.js
       const { storage } = this.runtime;
@@ -94,16 +74,15 @@ export default function <T extends MinimalExtensionConstructor>(Ctor: T) {
      */
     setCostumeByName(target: Target, name: string): boolean {
       if (!isRenderedTarget(target)) {
-        console.warn("Costume could not be set as the supplied target wasn't a rendered target");
+        console.error(notRenderedTargetError);
         return false;
       }
 
-      let costumeIdx = target.getCostumeIndexByName(name);
-      if (costumeIdx >= 0) {
-        target.setCostume(costumeIdx);
-        return true;
-      }
-      return false;
+      let costumeIndex = target.getCostumeIndexByName(name);
+      if (costumeIndex < 0) return false;
+
+      target.setCostume(costumeIndex);
+      return true;
     }
 
   }
