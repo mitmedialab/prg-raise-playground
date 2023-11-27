@@ -47,14 +47,14 @@ export type BlockDefinitions<TInfo extends ExtensionMetadata, TExtension extends
      * @param args The args this blocks take (spread). The very last argument will be a BlockUtility.
      * @returns 
      */
-    operation: (this: TExtension, ...args: [...Parameters<LegacyMethods<TInfo>[k]>, BlockUtility]) => TReturn,
+    operation: (this: TExtension, ...args: Parameters<LegacyMethods<TInfo>[k]>) => TReturn,
   } & (OpArgMenus<TInfo, k> extends [] ? {} : ArgumentMethods<TInfo, k>), TExtension>
   ) => DefineBlock<BaseGenericExtension, (...args: Parameters<LegacyMethods<TInfo>[k]>) => TReturn> & { type: BlockType<TInfo, k> }
 };
 
 export type BlockDecorators<TInfo extends ExtensionMetadata> = {
   [k in keyof LegacyMethods<TInfo>]:
-  <This extends ExtensionInstance, Args extends Parameters<LegacyMethods<TInfo>[k]>, Return extends any>(
+  <This extends ExtensionInstance, Args extends (Parameters<LegacyMethods<TInfo>[k]> | [...Parameters<LegacyMethods<TInfo>[k]>, BlockUtility]), Return extends any>(
     ...args: OpArgMenus<TInfo, k> extends [] ? [] : [ArgumentMethods<TInfo, k> | ((self: This) => ArgumentMethods<TInfo, k>)]
   ) => TypedMethodDecorator<This, Args, Return, (...args: Args) => Return>
 }

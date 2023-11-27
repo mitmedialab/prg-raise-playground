@@ -18,22 +18,22 @@
   --text-primary-transparent: $text-primary-transparent;
   --motion-primary: $motion-primary;
   --motion-tertiary: $motion-tertiary;
-  --motion-transparent: $;
-  --motion-light-transparent: $;
+  --motion-transparent: $motion-transparent;
+  --motion-light-transparent: $motion-light-transparent;
   --red-primary: $red-primary;
   --red-tertiary: $red-tertiary;
   --sound-primary: $sound-primary;
   --sound-tertiary: $sound-tertiary;
-  --control-primary: $control-primary; 
-  --data-primary: $data-primary; 
-  --pen-primary: $pen-primary; 
-  --pen-transparent: $pen-transparent; 
-  --error-primary: $error-primary; 
-  --error-light: $error-light; 
-  --error-transparent: $error-transparent; 
-  --extensions-primary: $extensions-primary; 
-  --extensions-tertiary: $extensions-tertiary; 
+  --control-primary: $control-primary;
+  --data-primary: $data-primary;
+  --pen-primary: $pen-primary;
+  --pen-transparent: $pen-transparent;
+  --error-primary: $error-primary;
+  --error-light: $error-light;
+  --error-transparent: $error-transparent;
+  --extensions-primary: $extensions-primary;
+  --extensions-tertiary: $extensions-tertiary;
   --extensions-transparent: $extensions-transparent;
-  --extensions-light: $extensions-light; 
+  --extensions-light: $extensions-light;
   --drop-highlight: $motion-transparent
 }

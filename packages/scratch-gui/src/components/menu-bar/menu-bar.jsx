@@ -72,7 +72,7 @@ import remixIcon from './icon--remix.svg';
 import dropdownCaret from './dropdown-caret.svg';
 import languageIcon from '../language-selector/language-icon.svg';
 
-import scratchLogo from './prg-white.png';
+import scratchLogo from './raise-white.png';
 
 import sharedMessages from '../../lib/shared-messages';
 
@@ -682,24 +682,8 @@ class MenuBar extends React.Component {
                         </div>
                     </div>
                     <Divider className={classNames(styles.divider)} />
-                    <a
-                        className={classNames(styles.menuBarItem, styles.hoverable)}
-                        href="https://httyr.media.mit.edu/tutorials"
-                        target="_blank"
-                    >
-                        Curriculum  Tutorials
-                    </a>
-                    <Divider className={classNames(styles.divider)} />
-                    <a
-                        className={classNames(styles.menuBarItem, styles.hoverable, styles.blankLink)}
-                        href="https://teachablemachine.withgoogle.com/train"
-                        target="_blank"
-                    >
-                        Teachable Machine
-                    </a>
-                    {this.props.showTutorials ? (
+                    {true ? (
                         <div>
-                            <Divider className={classNames(styles.divider)} />
                             <div
                                 aria-label={this.props.intl.formatMessage(ariaMessages.tutorials)}
                                 className={classNames(styles.menuBarItem, styles.hoverable)}
