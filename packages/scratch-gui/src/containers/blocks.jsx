@@ -117,7 +117,6 @@ class Blocks extends React.Component {
         toolboxWorkspace.registerButtonCallback('MAKE_A_LIST', varListButtonCallback('list'));
         toolboxWorkspace.registerButtonCallback('MAKE_A_PROCEDURE', procButtonCallback);
         toolboxWorkspace.registerButtonCallback('CONNECT_MICROBIT_ROBOT', connectMicrobitRobotCallback);
-
         this.props.vm.runtime.on(registerButtonCallbackEvent, (event) => {
             toolboxWorkspace.registerButtonCallback(event, () => this.props.vm.runtime.emit(event));
         });
