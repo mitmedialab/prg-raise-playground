@@ -35,7 +35,7 @@ export const build = async (
 ) => {
     const { length } = labels;
 
-    if (length < 2) return { error: "No classes inputted" };
+    if (length < 2) return { error: "2 or more classes required" };
 
     const model = sequential();
 

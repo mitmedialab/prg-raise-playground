@@ -11,9 +11,9 @@ export const getTextFromMenuItem = <T>(item: MenuItem<T>) => typeof item === "ob
 
 export async function fetchWithTimeout(
   resource: FetchParams["request"],
-  options: FetchParams["options"] & { timeout: number }
+  options: FetchParams["options"] & { timeoutMs: number }
 ) {
-  const { timeout } = options;
+  const { timeoutMs: timeout } = options;
 
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);

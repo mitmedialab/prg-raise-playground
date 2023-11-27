@@ -21,7 +21,7 @@ export const getTranslationToEnglish = async (words: string) => {
     if (cachedTranslations.has(words)) return cachedTranslations.get(words);
     const endpoint = getTranslationURL({ language: "en", text: encodeURIComponent(words) });
     try {
-        const json: { result: string } = await (await fetchWithTimeout(endpoint, { timeout: 30 })).json();
+        const json: { result: string } = await (await fetchWithTimeout(endpoint, { timeoutMs: 30 })).json();
         const translated = json.result;
         cachedTranslations.set(words, translated);
         return translated;

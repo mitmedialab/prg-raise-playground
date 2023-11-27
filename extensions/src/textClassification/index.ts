@@ -1,8 +1,8 @@
 /// <reference types="dom-speech-recognition" />
-import { Environment, extension, ExtensionMenuDisplayDetails, block, wrapClamp, fetchWithTimeout, RuntimeEvent, buttonBlock, untilTimePassed } from "$common";
+import { Environment, extension, ExtensionMenuDisplayDetails, wrapClamp, fetchWithTimeout, RuntimeEvent, buttonBlock, } from "$common";
 import type BlockUtility from "$scratch-vm/engine/block-utility";
 import { legacyFullSupport, info, } from "./legacy";
-import { getState, setState, tryCopyStateToClone } from "./state";
+import { State, getState, setState, tryCopyStateToClone } from "./state";
 import { getSynthesisURL } from "./services/synthesis";
 import timer from "./timer";
 import voices, { Voice } from "./voices";
@@ -22,7 +22,7 @@ const details: ExtensionMenuDisplayDetails = {
   description: "Create a text classification model for use in a Scratch project!",
 };
 
-const defaultLabel = "No labels";
+const defaultLabels = ["No labels"];
 
 export default class TextClassification extends extension(details, "legacySupport", "ui", "indicators") {
   labels: string[] = [];
@@ -53,12 +53,15 @@ export default class TextClassification extends extension(details, "legacySuppor
   @buttonBlock("Edit Model")
   editButton() { this.openUI("Editor", "Edit Text Model") }
 
+  @buttonBlock("Load / Save Model")
+  saveLoadButton() { this.openUI("ImportExport", "Save / Load Text Model") }
+
   @legacyBlock.ifTextMatchesClass((self) => ({
     argumentMethods: {
       1: {
         getItems: () => {
           const { labels } = self;
-          return labels?.length > 0 ? labels : [defaultLabel];
+          return labels?.length > 0 ? labels : defaultLabels;
         }
       }
     }
@@ -100,40 +103,13 @@ export default class TextClassification extends extension(details, "legacySuppor
 
   @legacyBlock.speakText()
   async speakText(text: string, { target }: BlockUtility) {
-    const locale = 'en-US';
-    const { audioEngine } = this.runtime;
-    const { currentVoice } = getState(target);
-    const { gender, playbackRate } = voices[currentVoice];
-    const encoded = encodeURIComponent(JSON.stringify(text).substring(0, 128));
-    const endpoint = getSynthesisURL({ gender, locale, text: encoded });
-
-    await new Promise<void>(async (resolve) => {
-      try {
-        const response = await fetchWithTimeout(endpoint, { timeout: 40 });
-        if (!response.ok) return console.warn(response.statusText);
-        const sound = { data: response.body as unknown as Buffer };
-        const soundPlayer = await audioEngine.decodeSoundPlayer(sound);
-        this.soundPlayers.set(soundPlayer.id, soundPlayer);
-        soundPlayer.setPlaybackRate(playbackRate);
-        const chain = audioEngine.createEffectChain();
-        chain.set('volume', 250);
-        soundPlayer.connect(chain);
-        soundPlayer.play();
-        soundPlayer.on('stop', () => {
-          this.soundPlayers.delete(soundPlayer.id);
-          resolve();
-        });
-      }
-      catch (error) {
-        console.warn(error);
-      }
-    });
+    await this.speak(text, getState(target));
   }
 
   @legacyBlock.askSpeechRecognition()
-  async askSpeechRecognition(prompt: string, util: BlockUtility) {
-    await this.speakText(prompt, util);
-    this.recognizeSpeech();
+  async askSpeechRecognition(prompt: string, { target }: BlockUtility) {
+    await this.speak(prompt, getState(target));
+    await this.recognizeSpeech();
   }
 
   @legacyBlock.getRecognizedSpeech()
@@ -151,7 +127,7 @@ export default class TextClassification extends extension(details, "legacySuppor
             return voiceItems[voiceIndex].value;
           }
 
-          return voiceItems.find(({ value, text }) => value === reported || text === reported)?.value
+          return voiceItems.find(({ value, text }) => value === reported || text === reported)?.value ?? "SQUEAK";
         }
       }
     }
@@ -159,6 +135,7 @@ export default class TextClassification extends extension(details, "legacySuppor
   setVoice(voice: Voice, { target }: BlockUtility) {
     const state = getState(target);
     state.currentVoice = voice ?? state.currentVoice;
+    setState(target, state);
   }
 
   @legacyBlock.onHeardSound()
@@ -193,9 +170,9 @@ export default class TextClassification extends extension(details, "legacySuppor
   }
 
   async buildCustomDeepModel() {
+    const indicator = await this.indicate({ msg: "wait .. loading model", type: "warning", });
     const identifier = Symbol();
     this.currentModelIdentifier = identifier;
-    const indicator = await this.indicate({ msg: "wait .. loading model", type: "warning", });
     const isCurrent = () => this.currentModelIdentifier === identifier;
     const result = await build(this.labels, this.modelData, isCurrent);
 
@@ -210,19 +187,84 @@ export default class TextClassification extends extension(details, "legacySuppor
     }
   }
 
+  importClassifier(file: File) {
+    return new Promise<boolean>((resolve) => {
+      if (!file) return resolve(false);
+      const reader = new FileReader();
+      reader.onload = ({ target: { result } }) => {
+        console.log(result);
+        try {
+          const data = JSON.parse(result as string) as Record<string, string[]>;
+          this.modelData = new Map(Object.entries(data));
+          this.labels = [...this.modelData.keys()];
+          resolve(true);
+        } catch (err) {
+          console.error(`Incorrect document form: ${file.name}: ${err}`);
+          this.modelData = new Map();
+          this.labels = [];
+          resolve(false);
+        }
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  exportClassifier() {
+    const serialized = JSON.stringify(Object.fromEntries(this.modelData));
+    const data = `text/json;charset=utf-8,${encodeURIComponent(serialized)}`;
+    const anchor = document.createElement('a');
+    anchor.setAttribute("href", "data:" + data);
+    anchor.setAttribute("download", "classifier-info.json");
+    anchor.click();
+  }
+
   /** End UI Methods */
 
   /** Begin Private Methods */
 
+  private async speak(text: string, { currentVoice }: State) {
+    const locale = 'en-US';
+    const { audioEngine } = this.runtime;
+    const { gender, playbackRate } = voices[currentVoice];
+    const encoded = encodeURIComponent(text.substring(0, 128));
+    const endpoint = getSynthesisURL({ gender, locale, text: encoded });
+
+    await new Promise<void>(async (resolve) => {
+      try {
+        const response = await fetchWithTimeout(endpoint, { timeoutMs: 40000 });
+        if (!response.ok) return console.warn(response.statusText);
+        const buffer = await response.arrayBuffer();
+        const soundPlayer = await audioEngine.decodeSoundPlayer({ data: { buffer } });
+        this.soundPlayers.set(soundPlayer.id, soundPlayer);
+        soundPlayer.setPlaybackRate(playbackRate);
+        const chain = audioEngine.createEffectChain();
+        chain.set('volume', 250);
+        soundPlayer.connect(chain);
+        soundPlayer.play();
+        soundPlayer.on('stop', () => {
+          this.soundPlayers.delete(soundPlayer.id);
+          resolve();
+        });
+      }
+      catch (error) {
+        console.warn(error);
+      }
+    });
+  }
+
   private async getToxicityModel() {
+    if (this.toxicityModel) return this.toxicityModel;
+    const msg = await this.indicate({ msg: "Loading toxicity model", type: "warning", });
     try {
-      this.toxicityModel ??= await loadToxicity(0.1, toxicityLabelItems.map(({ value }) => value));
-      console.log('loaded Toxicity model');
+      this.toxicityModel = await loadToxicity(0.1, toxicityLabelItems.map(({ value }) => value));
+      msg.close();
+      this.indicateFor({ msg: "Toxicity model loaded!", type: "success", }, 2);
+      return this.toxicityModel;
     }
     catch (error) {
-      console.log('Failed to load toxicity model', error);
+      msg.close();
+      this.indicateFor({ msg: "Failed to load toxicity model", type: "error", }, 2);
     }
-    return this.toxicityModel;
   }
 
   private getLoudness() {
@@ -263,9 +305,7 @@ export default class TextClassification extends extension(details, "legacySuppor
         ? Math.round(filtered[0].results[0].probabilities[returnPositive ? 1 : 0] * 100)
         : 0;
     }
-    catch (error) {
-      console.log('Failed to classify text', error);
-    }
+    catch (error) { console.error('Failed to classify text', error); }
   }
 
   private async getConfidence(text: string) {
@@ -279,51 +319,5 @@ export default class TextClassification extends extension(details, "legacySuppor
     if (this.labels.length === 0 || !this.labels[0] || !this.customPredictor) return;
     const { label } = await this.customPredictor(newText);
     return label;
-  }
-
-  /** End Private Methods */
-
-  private uiEventsTODO() {
-    /*
-    // Listen for model editing events emitted by the text modal
-    this.runtime.on('NEW_EXAMPLES', (examples, label) => {
-      this.newExamples(examples, label);
-    });
-    this.runtime.on('NEW_LABEL', (label) => {
-      this.newLabel(label);
-    });
-    this.runtime.on('DELETE_EXAMPLE', (label, exampleNum) => {
-      this.deleteExample(label, exampleNum);
-    });
-    this.runtime.on('RENAME_LABEL', (oldName, newName) => {
-      this.renameLabel(oldName, newName);
-    });
-    this.runtime.on('DELETE_LABEL', (label) => {
-      this.clearAllWithLabel({ LABEL: label });
-    });
-    this.runtime.on('CLEAR_ALL_LABELS', () => {
-      if (!this.labelListEmpty && confirm('Are you sure you want to clear all labels?')) {    //confirm with alert dialogue before clearing the model
-        let labels = [...this.labelList];
-        for (var i = 0; i < labels.length; i++) {
-          this.clearAllWithLabel({ LABEL: labels[i] });
-        }
-        //this.clearAll(); this crashed Scratch for some reason
-      }
-    });
-
-    //Listen for model editing events emitted by the classifier modal
-    this.runtime.on('EXPORT_CLASSIFIER', () => {
-      this.exportClassifier();
-    });
-    this.runtime.on('LOAD_CLASSIFIER', () => {
-      console.log("load");
-      this.loadClassifier();
-
-    });
-
-    this.runtime.on('DONE', () => {
-      console.log("DONE");
-      this.buildCustomDeepModel();
-    });*/
   }
 }

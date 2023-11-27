@@ -8,10 +8,6 @@
   export let extension: Extension;
   export let close: () => void;
 
-  export const onClose = () => {
-    console.log("closed!");
-  };
-
   const invoke: ReactiveInvoke<Extension> = (functionName, ...args) =>
     reactiveInvoke((extension = extension), functionName, args);
 

@@ -7,7 +7,7 @@ const stateKey = "Scratch.text2speech";
 
 export const setState = (target: Target, state: State) => target.setCustomState(stateKey, state);
 
-export const hasState = (target: Target) => Boolean(target.getCustomState(stateKey));
+export const hasState = (target: Target) => target.getCustomState(stateKey) !== undefined && target.getCustomState(stateKey) !== null;
 
 export const getState = (target: Target): State => {
     let state: State = target.getCustomState(stateKey);

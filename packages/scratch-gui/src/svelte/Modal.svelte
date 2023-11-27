@@ -57,6 +57,7 @@
     });
 
     onDestroy(() => {
+        // HACK: This is a hack to ensure a svelte's `onDestroy` callback(s) is called
         const callbacks = constructed?.["$$"]?.["on_destroy"];
         if (!callbacks) return;
         callbacks.forEach((callback) => callback());
