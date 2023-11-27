@@ -744,7 +744,7 @@ class Scratch3TextClassificationBlocks {
     }
 
     /**
-     * TODO Moves info from the runtime into the classifier, called when a project is loaded
+     * Moves info from the runtime into the classifier, called when a project is loaded
      */
     async loadModelFromRuntime() {
         this.labelList = [];
@@ -790,7 +790,7 @@ class Scratch3TextClassificationBlocks {
     }
 
     /**
-     * TODO Add new examples to a label
+     * Add new examples to a label
      * @param {array of strings} examples a list of text examples to add to a label
      * @param {string} label the name of the label
      */
@@ -811,11 +811,11 @@ class Scratch3TextClassificationBlocks {
                 this.scratch_vm.modelData.classifierData[label].push(text_example);
             }
         }
-
+        this.scratch_vm.emit("TEXT_MODEL_CHANGED");
     }
 
     /**
-     * TODO Add a new label to labelList
+     * Add a new label to labelList
      * @param {string} label the name of the label
      */
     newLabel(newLabelName) {   //add the name of a new label
@@ -833,13 +833,14 @@ class Scratch3TextClassificationBlocks {
         // update drowndown of class names
         //this.scratch_vm.emit("TOOLBOX_EXTENSIONS_NEED_UPDATE");
         this.scratch_vm.requestToolboxExtensionsUpdate();
+        this.scratch_vm.emit("TEXT_MODEL_CHANGED");
     }
 
 
 
 
     /**
-     * TODO Rename a label
+     * Rename a label
      * @param {string} oldName the name of the label to change
      * @param {string} newname the new name for the label
      */
@@ -854,10 +855,11 @@ class Scratch3TextClassificationBlocks {
 
         this.labelList.splice(this.labelList.indexOf(oldName), 1);  //reset label list with the new renamed label
         this.labelList.push(newName);
+        this.scratch_vm.emit("TEXT_MODEL_CHANGED");
     }
 
     /**
-     * TODO Delete an example (or all loaded examples, if exampleNum === -1)
+     * Delete an example (or all loaded examples, if exampleNum === -1)
      * @param {string} label the name of the label with the example to be removed
      * @param {integer} exampleNum which example, in the array of a label's examples, to remove
      */
@@ -871,10 +873,11 @@ class Scratch3TextClassificationBlocks {
             this.scratch_vm.modelData.textData[label].splice(exampleNum, 1);
             this.scratch_vm.modelData.classifierData[label].splice(exampleNum - this.scratch_vm.modelData.textData[label].length - 1, 1);
         }
+        this.scratch_vm.emit("TEXT_MODEL_CHANGED");
     }
 
     /**
-     * TODO Clear all data stored in the classifier and label list
+     * Clear all data stored in the classifier and label list
      */
     clearLocal() {
         console.log("Clear local data");
@@ -888,7 +891,7 @@ class Scratch3TextClassificationBlocks {
     }
 
     /**
-     * TODO Clear local label list, but also clear all data stored in the runtime
+     * Clear local label list, but also clear all data stored in the runtime
      */
     clearAll() {
         console.log("Clear all data");
@@ -896,10 +899,11 @@ class Scratch3TextClassificationBlocks {
         // Clear runtime's model data
 
         this.resetModelData();
+        this.scratch_vm.emit("TEXT_MODEL_CHANGED");
     }
 
     /**
-     * TODO Clear all examples with a given label
+     * Clear all examples with a given label
      * @param {string} args.LABEL the name of the label to remove from the model
      */
     clearAllWithLabel(args) {
@@ -915,6 +919,7 @@ class Scratch3TextClassificationBlocks {
                 this.labelListEmpty = true;
                 this.labelList.push('');
             }
+            this.scratch_vm.emit("TEXT_MODEL_CHANGED");
         }
     }
 

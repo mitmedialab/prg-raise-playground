@@ -5,6 +5,7 @@ import TextModelModalComponent from '../components/text-model-modal/model-modal.
 import VM from 'scratch-vm';
 import {connect} from 'react-redux';
 import {closeTextModelModal} from '../reducers/modals';
+import {activateDeck} from '../reducers/cards';
 
 class TextModelModal extends React.Component {
     constructor (props) {
@@ -93,9 +94,10 @@ class TextModelModal extends React.Component {
         this.props.vm.runtime.emit('DONE');
         this.props.onCancel();
     }
-    handleHelp () { //TODO?
-        console.log("Text Model Modal: Help requested");
-        //window.open(link, '_blank');
+    handleHelp () {
+        //console.log("Text Model Modal: Help requested"); // debug message
+        // note: cannot open modal and tutorial at the same time
+        this.props.vm.runtime.emit("JIBO_HELP_REQUESTED");
     }
     render () {
         return (
