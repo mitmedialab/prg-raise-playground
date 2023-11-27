@@ -1,4 +1,4 @@
-import { Environment, extension } from "$common";
+import { Environment, buttonBlock, extension } from "$common";
 import tmImage from '@teachablemachine/image';
 import tmPose from '@teachablemachine/pose';
 import { create } from '@tensorflow-models/speech-commands';
@@ -312,7 +312,7 @@ export default class teachableMachine extends extension({
   /**
    * Opens a new tab with the Google Teachable Machine website
    */
-  @legacyBlock.openTeachableMachine()
+  @buttonBlock("Teachable Machine Site ↗")
   openTeachableMachine() {
     window.open('https://teachablemachine.withgoogle.com/train', '_blank');
   }
