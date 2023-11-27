@@ -6,7 +6,8 @@ const details: ExtensionMenuDisplayDetails = {
   name: "Object Detection",
   description: "Detects and identifies the object shown!",
   iconURL: "Typescript_logo.png",
-  insetIconURL: "typescript-logo.svg"
+  insetIconURL: "typescript-logo.svg",
+  tags: ["PRG Internal"]
 };
 
 export default class objectDetection extends extension(details, "video", "drawable", "addCostumes", "toggleVideoBlock", "setTransparencyBlock") {
@@ -127,9 +128,6 @@ export default class objectDetection extends extension(details, "video", "drawab
     arg: {
       type: "number",
       defaultValue: 5,
-      handler: (x) => {
-        return Math.min(Math.max(0, x), 20)
-      }
     }
   })
   setThickness(thickness: number) {
@@ -154,7 +152,7 @@ export default class objectDetection extends extension(details, "video", "drawab
     text: (state) => `Toggle continuous detection ${state}`,
     arg: { type: ArgumentType.Boolean, options: [{ text: 'on', value: true }, { text: 'off', value: false }] }
   })
-  async continuouslyDetectObjects(state) {
+  async continuouslyDetectObjects(state: boolean) {
     this.continuous = state
     this.detectionLoop()
   }
