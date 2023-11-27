@@ -4,7 +4,7 @@ import tmPose from '@teachablemachine/pose';
 import { create } from '@tensorflow-models/speech-commands';
 import { legacyFullSupport, } from "./legacy";
 
-const { legacyExtension, legacyBlock } = legacyFullSupport.for<teachableMachine>();
+const { legacyBlock, legacyExtension } = legacyFullSupport.for<teachableMachine>();
 const VideoState = {
   /** Video turned off. */
   OFF: 'off',
@@ -26,7 +26,6 @@ export default class teachableMachine extends extension({
   insetIconURL: "teachable-machine-blocks-small.svg",
   tags: ["Dancing with AI", "Made by PRG"]
 }) {
-
   lastUpdate: number;
   maxConfidence: number;
   modelConfidences: {};
@@ -75,9 +74,6 @@ export default class teachableMachine extends extension({
       // Kick off looping the analysis logic.
       this._loop();
     }
-
-    
-    this.runtime.on('OPEN_TEACHABLE_MACHINE', this.openTeachableMachineSite.bind(this));
   }
 
   /**
@@ -317,8 +313,7 @@ export default class teachableMachine extends extension({
    * Opens a new tab with the Google Teachable Machine website
    */
   @legacyBlock.openTeachableMachine()
-  openTeachableMachine() {}
-  openTeachableMachineSite() {
+  openTeachableMachine() {
     window.open('https://teachablemachine.withgoogle.com/train', '_blank');
   }
 
