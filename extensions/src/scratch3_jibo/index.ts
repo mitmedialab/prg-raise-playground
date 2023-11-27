@@ -191,8 +191,11 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     }));
     this.runtime.registerPeripheralExtension(EXTENSION_ID, this);
     this.runtime.connectPeripheral(EXTENSION_ID, 0);
+
+    // TODO move all gpt scaffolding stuff into different file
     this.runtime.on("TUTORIAL_CHANGED", this.updateTutorial.bind(this));
-    this.runtime.on("JIBO_HELP_REQUESTED", this.jiboGPTAskFn.bind(this));
+    this.runtime.on("JIBO_HELP_REQUESTED", this.handleJiboHelp.bind(this));
+    this.runtime.on('TEXT_MODEL_CHANGED', this.updateTextModel.bind(this));
 
     this.ros = null;
     this.connected = false;
@@ -252,7 +255,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           defaultValue: "Jibo's name here",
         },
         // TODO update the text based on whether a Jibo name has been provided or not
-        text: () => { if (jiboName === "") return `Connect Jibo`; else return `Disconenct Jibo` },
+        text: () => { if (jiboName === "") return `Connect Jibo`; else return `Disconnect Jibo` },
         operation: async () => {
           if (jiboName === "")
             this.openUI("jiboNameModal", "Connect Jibo");
@@ -283,7 +286,6 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         operation: async (text: string, { target }: BlockUtility) => {
           let virtualJ = this.virtualJibo.say(text, target);;
           let awaitResponse;
-          // TODO test
           if (jiboName === "") awaitResponse = this.virtualJibo.ask(text);
           else awaitResponse = this.jiboAskFn(text);
 
@@ -407,10 +409,12 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
   /* The following 4 functions have to exist for the peripherial indicator */
   async connect() {
-    console.log(`Jibo this.connect ${jiboName}`);
-    await this.jiboLEDFn("magenta");
-    await this.jiboTTSFn("Hey there. I am ready to program now");
-    await this.jiboLEDFn("off");
+    if (jiboName === "") console.log(`Jibo this.connect ${jiboName}`);
+    else {
+      await this.jiboLEDFn("magenta");
+      await this.jiboTTSFn("Hey there. I am ready to program now");
+      await this.jiboLEDFn("off");
+    }
   }
   disconnect() {
   }
@@ -425,9 +429,24 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     this.jiboGPTAskFn();
   }
 
-  updateTutorial(tutorial, step, description) {
+  async updateTextModel() {
+    let textModelStatus = `Text Model Status: ${JSON.stringify(this.runtime.modelData.textData)}.`;
+    
+    // send update to GPT, but don't get resp
+    let resp = await GPTController.getChattyGPTResponse(this.msgLog, textModelStatus);
+    this.msgLog.addUserMessage(textModelStatus);
+    console.log(`To GPT: ${textModelStatus}`); // debug message
+    console.log(`From GPT: ${resp}`); // debug message
+  }
+  async updateTutorial(tutorial, step, description) {
     //console.log("Tutorial: ", tutorial, step); // debug statement
-    this.jiboGPTRespFn(description);
+    //this.jiboGPTRespFn(description);
+
+    // send update to GPT, but don't get resp
+    let resp = await GPTController.getChattyGPTResponse(this.msgLog, description);
+    this.msgLog.addUserMessage(description);
+    console.log(`To GPT: ${description}`); // debug message
+    console.log(`From GPT: ${resp}`); // debug message
   }
 
   RosConnect(args: { rosIP: any }) {
@@ -494,13 +513,18 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
   /* function that triggers Jibo to listen and sends messgae to GPT */
   async jiboGPTAskFn() {
-    //console.log("Jibo asked question, wait for response"); // debug statement
-    // making the ASR request
-    await this.JiboASR_request();
+    console.log("Jibo GPT listening for user response"); // debug statement
+    if (jiboName === "") await this.virtualJibo.ask("How can I help?");
+    else {
+      // making the ASR request
+      await this.JiboASR_receive()
+    }
 
-    // recurse on the user's response
-    let userResp = await queue.ASR_received();
-    //console.log(`User resp: ${userResp}`); // debug statement
+    // get user's response
+    let userResp = await this.jiboListenFn();
+    console.log(`User resp: ${userResp}`); // debug statement
+
+    // recurse on user's response 
     this.jiboGPTRespFn(userResp);
   }
 
@@ -518,8 +542,11 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     //console.log(`Added latest input and response to message log`); // debug statement
     //console.log(this.msgLog.getMessageLog()); // debug statement
 
-    // TODO have special indicator light so user knows when Sparki is in control
+    console.log(`To GPT: ${input}`); // debug message
+    console.log(`From GPT: ${resp}`); // debug message
+
     // say what gpt returns
+    await this.virtualJibo.say(resp, this.runtime.targets[0]);
     await this.jiboLEDFn("magenta");
     await this.jiboTTSFn(resp);
     await this.jiboLEDFn("off");
