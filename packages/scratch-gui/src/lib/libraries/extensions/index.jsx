@@ -5,9 +5,6 @@ import generatedDetails from '../../../generated/details.generated';
 import React from 'react';
 import { FormattedMessage } from 'react-intl';
 
-import textClassificationBlocksIconURL from './text_classification/text-classification-blocks.png';
-import textClassificationBlocksInsetIconURL from './text_classification/text-classification-blocks-small.svg';
-
 import arduinoRobotIconURL from './arduino_extension/arduino_extension.png';
 import arduinoRobotInsetIconURL from './arduino_extension/arduino_small.svg';
 
@@ -68,27 +65,6 @@ export default [
     {
         name: (
             <FormattedMessage
-                defaultMessage="Text Classification"
-                description="Text Classification name"
-                id="gui.extension.text-classification.name"
-            />
-        ),
-        extensionId: 'textClassification',
-        iconURL: textClassificationBlocksIconURL,
-        insetIconURL: textClassificationBlocksInsetIconURL,
-        description: (
-            <FormattedMessage
-                defaultMessage="Create a text classification model for use in a Scratch project!"
-                description="Text Classification Description"
-                id="gui.extension.text-classification.description"
-            />
-        ),
-        featured: true,
-        tags: ["Made by PRG"]
-    },
-    {
-        name: (
-            <FormattedMessage
                 defaultMessage="Text to Speech"
                 description="Name for the Text to Speech extension"
                 id="gui.extension.text2speech.name"
@@ -132,27 +108,7 @@ export default [
         internetConnectionRequired: true,
         tags: ["Made by Scratch"]
     },
-    // {
-    //     name: (
-    //         <FormattedMessage
-    //             defaultMessage="Jibo"
-    //                 description="Jibo Connection to ROS docker"
-    //                 id="gui.extension.jibo.name"
-    //             />
-    //     ),
-    //     extensionId: 'jibo',
-    //     iconURL: jiboRobotIconURL,
-    //     insetIconURL: jiboRobotInsetIconURL,
-    //     description: (
-    //         <FormattedMessage
-    //             defaultMessage="jibo"
-    //             description="Jibo Connection to ROS docker"
-    //             id="gui.extension.jibo.description"
-    //         />
-    //     ),
-    //     featured: true
-    // },
-    /* {
+    {
         name: (
             <FormattedMessage
                 defaultMessage="PRG Microbit Robot"
@@ -213,7 +169,7 @@ export default [
         ),
         featured: true,
         tags: ["Made by PRG"]
-    },*/ //*/
+    },
     {
         name: (
             <FormattedMessage

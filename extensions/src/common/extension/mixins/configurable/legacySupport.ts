@@ -119,7 +119,11 @@ export default function legacySupportMixin<T extends MinimalExtensionConstructor
           return { menuUpdates, replaceAt: { index, block: legacyBlock } };
         });
 
-      updates.forEach(({ replaceAt: { index, block } }) => mutableBlocks[index] = block);
+      updates.forEach(({ replaceAt: { index, block } }) => {
+        const current = mutableBlocks[index];
+        mutableBlocks[index] = block;
+        if (block.blockType === "button") mutableBlocks[index].func = current.func;
+      });
 
       updates
         .map(({ menuUpdates }) => menuUpdates)

@@ -1,7 +1,7 @@
 import { castToType } from "$common/cast";
 import CustomArgumentManager from "$common/extension/mixins/configurable/customArguments/CustomArgumentManager";
 import { ArgumentType, BlockType } from "$common/types/enums";
-import { BlockOperation, ValueOf, Menu, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, DynamicMenu, BlockMetadata, } from "$common/types";
+import { BlockOperation, ValueOf, Menu, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, DynamicMenu, BlockMetadata, BlockUtilityWithID, } from "$common/types";
 import { registerButtonCallback } from "$common/ui";
 import { isString, typesafeCall, } from "$common/utils";
 import type BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
@@ -12,10 +12,16 @@ import { convertToArgumentInfo, extractArgs, zipArgs } from "./args";
 import { convertToDisplayText } from "./text";
 import { CustomizableExtensionConstructor, MinimalExtensionInstance, } from "..";
 import { ExtensionInstanceWithFunctionality } from "../..";
+import { blockIDKey } from "$common/globals";
 
 export const getImplementationName = (opcode: string) => `internal_${opcode}`;
 
 const inlineImageAccessError = "ERROR: This argument represents an inline image and should not be accessed.";
+
+const isBlockUtilityWithID = (query: any): query is BlockUtilityWithID => query?.[blockIDKey] !== undefined;
+const nonBlockContextError = "Block method was not given a block utility, and thus was likely called by something OTHER THAN the Scratch Runtime. NOTE: You cannot call block methods directly from within your class due to how block methods are converted to work with scratch. Consider abstracting the logic to a seperate, non-block method which can be invoked directly."
+const checkForBlockContext = (blockUtility: BlockUtilityWithID) => isBlockUtilityWithID(blockUtility) ? void 0 : console.error(nonBlockContextError);
+
 
 /**
  * Wraps a blocks operation so that the arguments passed from Scratch are first extracted and then passed as indices in a parameter array.
@@ -29,7 +35,8 @@ export const wrapOperation = <T extends MinimalExtensionInstance>(
   operation: BlockOperation,
   args: { name: string, type: ValueOf<typeof ArgumentType>, handler: Handler }[]
 ) => _this.supports("customArguments")
-    ? function (this: ExtensionInstanceWithFunctionality<["customArguments"]>, argsFromScratch: Record<string, any>, blockUtility: BlockUtility) {
+    ? function (this: ExtensionInstanceWithFunctionality<["customArguments"]>, argsFromScratch: Record<string, any>, blockUtility: BlockUtilityWithID) {
+      checkForBlockContext(blockUtility);
       const castedArguments = args.map(({ name, type, handler }) => {
         if (type === ArgumentType.Image) return inlineImageAccessError;
         const param = argsFromScratch[name];
@@ -44,7 +51,8 @@ export const wrapOperation = <T extends MinimalExtensionInstance>(
       });
       return operation.call(_this, ...castedArguments, blockUtility);
     }
-    : function (this: T, argsFromScratch: Record<string, any>, blockUtility: BlockUtility) {
+    : function (this: T, argsFromScratch: Record<string, any>, blockUtility: BlockUtilityWithID) {
+      checkForBlockContext(blockUtility);
       const castedArguments = args.map(({ name, type, handler }) =>
         type === ArgumentType.Image
           ? inlineImageAccessError
