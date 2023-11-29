@@ -112,11 +112,19 @@ class Blocks extends React.Component {
         const connectMicrobitRobotCallback = () => {
             this.props.vm.runtime.emit('CONNECT_MICROBIT_ROBOT');
         }
+        const connectDoodlebotCallback = () => {
+            this.props.vm.runtime.emit('CONNECT_DOODLEBOT');
+        }
+        const testDoodlebotCallback = () => {
+            this.props.vm.runtime.emit('TEST_DOODLEBOT');
+        }
 
         toolboxWorkspace.registerButtonCallback('MAKE_A_VARIABLE', varListButtonCallback(''));
         toolboxWorkspace.registerButtonCallback('MAKE_A_LIST', varListButtonCallback('list'));
         toolboxWorkspace.registerButtonCallback('MAKE_A_PROCEDURE', procButtonCallback);
         toolboxWorkspace.registerButtonCallback('CONNECT_MICROBIT_ROBOT', connectMicrobitRobotCallback);
+        toolboxWorkspace.registerButtonCallback('CONNECT_DOODLEBOT', connectDoodlebotCallback);
+        toolboxWorkspace.registerButtonCallback('TEST_DOODLEBOT', testDoodlebotCallback);
         this.props.vm.runtime.on(registerButtonCallbackEvent, (event) => {
             toolboxWorkspace.registerButtonCallback(event, () => this.props.vm.runtime.emit(event));
         });

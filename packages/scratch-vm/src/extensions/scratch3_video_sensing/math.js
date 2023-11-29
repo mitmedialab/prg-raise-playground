@@ -9,7 +9,7 @@ const TO_DEGREE = 180 / Math.PI;
  * motionVector.
  * @type {UV}
  */
-const _motionVectorOut = {u: 0, v: 0};
+const _motionVectorOut = { u: 0, v: 0 };
 
 /**
  * Determine a motion vector combinations of the color component difference on
@@ -24,17 +24,17 @@ const _motionVectorOut = {u: 0, v: 0};
  */
 const motionVector = function (A2, A1B2, B1, C2, C1, out = _motionVectorOut) {
     // Compare sums of X * Y and sums of X squared and Y squared.
-    const delta = ((A1B2 * A1B2) - (A2 * B1));
+    const delta = A1B2 * A1B2 - A2 * B1;
     if (delta) {
         // System is not singular - solving by Kramer method.
-        const deltaX = -((C1 * A1B2) - (C2 * B1));
-        const deltaY = -((A1B2 * C2) - (A2 * C1));
+        const deltaX = -(C1 * A1B2 - C2 * B1);
+        const deltaY = -(A1B2 * C2 - A2 * C1);
         const Idelta = 8 / delta;
         out.u = deltaX * Idelta;
         out.v = deltaY * Idelta;
     } else {
         // Singular system - find optical flow in gradient direction.
-        const Norm = ((A1B2 + A2) * (A1B2 + A2)) + ((B1 + A1B2) * (B1 + A1B2));
+        const Norm = (A1B2 + A2) * (A1B2 + A2) + (B1 + A1B2) * (B1 + A1B2);
         if (Norm) {
             const IGradNorm = 8 / Norm;
             const temp = -(C1 + C2) * IGradNorm;
@@ -72,5 +72,5 @@ const scratchAtan2 = function (y, x) {
 module.exports = {
     motionVector,
     scratchDegrees,
-    scratchAtan2
+    scratchAtan2,
 };

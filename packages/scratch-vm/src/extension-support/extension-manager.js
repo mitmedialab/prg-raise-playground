@@ -16,7 +16,7 @@ const tryRetrieveExtensionConstructor = async (extensionId) =>
 const builtinExtensions = {
     // This is an example that isn't loaded with the other core blocks,
     // but serves as a reference for loading core blocks as extensions.
-    coreExample: () => require('../blocks/scratch3_core_example'),
+    coreExample: () => require("../blocks/scratch3_core_example"),
     // These are the non-core built-in extensions.
     pen: () => require('../extensions/scratch3_pen'),
     wedo2: () => require('../extensions/scratch3_wedo2'),
@@ -103,8 +103,12 @@ class ExtensionManager {
          */
         this.runtime = runtime;
 
-        dispatch.setService('extensions', this).catch(e => {
-            log.error(`ExtensionManager was unable to register extension service: ${JSON.stringify(e)}`);
+        dispatch.setService("extensions", this).catch((e) => {
+            log.error(
+                `ExtensionManager was unable to register extension service: ${JSON.stringify(
+                    e
+                )}`
+            );
         });
     }
 
@@ -166,7 +170,7 @@ class ExtensionManager {
 
         return new Promise((resolve, reject) => {
             // If we `require` this at the global level it breaks non-webpack targets, including tests
-            const ExtensionWorker = require('worker-loader?name=extension-worker.js!./extension-worker');
+            const ExtensionWorker = require("worker-loader?name=extension-worker.js!./extension-worker");
 
             this.pendingExtensions.push({ extensionURL, resolve, reject });
             dispatch.addWorker(new ExtensionWorker());
@@ -249,7 +253,11 @@ class ExtensionManager {
         const fakeWorkerId = this.nextExtensionWorker++;
         const serviceName = `extension_${fakeWorkerId}_${id}`;
         dispatch.setServiceSync(serviceName, extensionObject);
-        dispatch.callSync('extensions', 'registerExtensionServiceSync', serviceName);
+        dispatch.callSync(
+            "extensions",
+            "registerExtensionServiceSync",
+            serviceName
+        );
         return serviceName;
     }
 
@@ -261,9 +269,14 @@ class ExtensionManager {
      */
     _registerExtensionInfo(serviceName, extensionInfo) {
         extensionInfo = this._prepareExtensionInfo(serviceName, extensionInfo);
-        dispatch.call('runtime', '_registerExtensionPrimitives', extensionInfo).catch(e => {
-            log.error(`Failed to register primitives for extension on service ${serviceName}:`, e);
-        });
+        dispatch
+            .call("runtime", "_registerExtensionPrimitives", extensionInfo)
+            .catch((e) => {
+                log.error(
+                    `Failed to register primitives for extension on service ${serviceName}:`,
+                    e
+                );
+            });
     }
 
     /**
@@ -287,7 +300,7 @@ class ExtensionManager {
     _prepareExtensionInfo(serviceName, extensionInfo) {
         extensionInfo = Object.assign({}, extensionInfo);
         if (!/^[a-z0-9]+$/i.test(extensionInfo.id)) {
-            throw new Error('Invalid extension id');
+            throw new Error("Invalid extension id");
         }
         extensionInfo.name = extensionInfo.name || extensionInfo.id;
         extensionInfo.blocks = extensionInfo.blocks || [];
@@ -311,7 +324,10 @@ class ExtensionManager {
             return results;
         }, []);
         extensionInfo.menus = extensionInfo.menus || {};
-        extensionInfo.menus = this._prepareMenuInfo(serviceName, extensionInfo.menus);
+        extensionInfo.menus = this._prepareMenuInfo(
+            serviceName,
+            extensionInfo.menus
+        );
         return extensionInfo;
     }
 
@@ -332,17 +348,21 @@ class ExtensionManager {
             // its items listed in an `items` property.
             if (!menuInfo.items) {
                 menuInfo = {
-                    items: menuInfo
+                    items: menuInfo,
                 };
                 menus[menuName] = menuInfo;
             }
             // If `items` is a string, it should be the name of a function in the extension object. Calling the
             // function should return an array of items to populate the menu when it is opened.
-            if (typeof menuInfo.items === 'string') {
+            if (typeof menuInfo.items === "string") {
                 const menuItemFunctionName = menuInfo.items;
                 const serviceObject = dispatch.services[serviceName];
                 // Bind the function here so we can pass a simple item generation function to Scratch Blocks later.
-                menuInfo.items = this._getExtensionMenuItems.bind(this, serviceObject, menuItemFunctionName);
+                menuInfo.items = this._getExtensionMenuItems.bind(
+                    this,
+                    serviceObject,
+                    menuItemFunctionName
+                );
             }
         }
         return menus;
@@ -358,9 +378,11 @@ class ExtensionManager {
     _getExtensionMenuItems(extensionObject, menuItemFunctionName) {
         // Fetch the items appropriate for the target currently being edited. This assumes that menus only
         // collect items when opened by the user while editing a particular target.
-        const editingTarget = this.runtime.getEditingTarget() || this.runtime.getTargetForStage();
+        const editingTarget =
+            this.runtime.getEditingTarget() || this.runtime.getTargetForStage();
         const editingTargetID = editingTarget ? editingTarget.id : null;
-        const extensionMessageContext = this.runtime.makeMessageContextForTarget(editingTarget);
+        const extensionMessageContext =
+            this.runtime.makeMessageContextForTarget(editingTarget);
 
         // TODO: Fix this to use dispatch.call when extensions are running in workers.
         const menuFunc = extensionObject[menuItemFunctionName];
@@ -383,7 +405,9 @@ class ExtensionManager {
             });
 
         if (!menuItems || menuItems.length < 1) {
-            throw new Error(`Extension menu returned no items: ${menuItemFunctionName}`);
+            throw new Error(
+                `Extension menu returned no items: ${menuItemFunctionName}`
+            );
         }
         return menuItems;
     }

@@ -10,7 +10,7 @@ const StackFrame = require("./stackFrame");
  * @constructor
  */
 class Thread {
-    constructor (firstBlock) {
+    constructor(firstBlock) {
         /**
          * ID of top block of the thread
          * @type {!string}
@@ -82,7 +82,7 @@ class Thread {
      * stepping from block to block.
      * @const
      */
-    static get STATUS_RUNNING () {
+    static get STATUS_RUNNING() {
         return 0;
     }
 
@@ -91,7 +91,7 @@ class Thread {
      * execution is paused until the promise changes thread status.
      * @const
      */
-    static get STATUS_PROMISE_WAIT () {
+    static get STATUS_PROMISE_WAIT() {
         return 1;
     }
 
@@ -99,7 +99,7 @@ class Thread {
      * Thread status for yield.
      * @const
      */
-    static get STATUS_YIELD () {
+    static get STATUS_YIELD() {
         return 2;
     }
 
@@ -108,7 +108,7 @@ class Thread {
      * thread is resumed.
      * @const
      */
-    static get STATUS_YIELD_TICK () {
+    static get STATUS_YIELD_TICK() {
         return 3;
     }
 
@@ -117,7 +117,7 @@ class Thread {
      * Thread is in this state when there are no more blocks to execute.
      * @const
      */
-    static get STATUS_DONE () {
+    static get STATUS_DONE() {
         return 4;
     }
 
@@ -125,7 +125,7 @@ class Thread {
      * Push stack and update stack frames appropriately.
      * @param {string} blockId Block ID to push to stack.
      */
-    pushStack (blockId) {
+    pushStack(blockId) {
         this.stack.push(blockId);
         // Push an empty stack frame, if we need one.
         // Might not, if we just popped the stack.
@@ -140,7 +140,7 @@ class Thread {
      * (avoids popping and re-pushing a new stack frame - keeps the warpmode the same
      * @param {string} blockId Block ID to push to stack.
      */
-    reuseStackForNextBlock (blockId) {
+    reuseStackForNextBlock(blockId) {
         this.stack[this.stack.length - 1] = blockId;
         this.stackFrames[this.stackFrames.length - 1].reuse();
     }
@@ -149,7 +149,7 @@ class Thread {
      * Pop last block on the stack and its stack frame.
      * @return {string} Block ID popped from the stack.
      */
-    popStack () {
+    popStack() {
         StackFrame.release(this.stackFrames.pop());
         return this.stack.pop();
     }
@@ -157,11 +157,14 @@ class Thread {
     /**
      * Pop back down the stack frame until we hit a procedure call or the stack frame is emptied
      */
-    stopThisScript () {
+    stopThisScript() {
         let blockID = this.peekStack();
         while (blockID !== null) {
             const block = this.target.blocks.getBlock(blockID);
-            if (typeof block !== 'undefined' && block.opcode === 'procedures_call') {
+            if (
+                typeof block !== "undefined" &&
+                block.opcode === "procedures_call"
+            ) {
                 break;
             }
             this.popStack();
@@ -179,39 +182,42 @@ class Thread {
      * Get top stack item.
      * @return {?string} Block ID on top of stack.
      */
-    peekStack () {
+    peekStack() {
         return this.stack.length > 0 ? this.stack[this.stack.length - 1] : null;
     }
-
 
     /**
      * Get top stack frame.
      * @return {?TStackFrame} Last stack frame stored on this thread.
      */
-    peekStackFrame () {
-        return this.stackFrames.length > 0 ? this.stackFrames[this.stackFrames.length - 1] : null;
+    peekStackFrame() {
+        return this.stackFrames.length > 0
+            ? this.stackFrames[this.stackFrames.length - 1]
+            : null;
     }
 
     /**
      * Get stack frame above the current top.
      * @return {?TStackFrame} Second to last stack frame stored on this thread.
      */
-    peekParentStackFrame () {
-        return this.stackFrames.length > 1 ? this.stackFrames[this.stackFrames.length - 2] : null;
+    peekParentStackFrame() {
+        return this.stackFrames.length > 1
+            ? this.stackFrames[this.stackFrames.length - 2]
+            : null;
     }
 
     /**
      * Push a reported value to the parent of the current stack frame.
      * @param {*} value Reported value to push.
      */
-    pushReportedValue (value) {
-        this.justReported = typeof value === 'undefined' ? null : value;
+    pushReportedValue(value) {
+        this.justReported = typeof value === "undefined" ? null : value;
     }
 
     /**
      * Initialize procedure parameters on this stack frame.
      */
-    initParams () {
+    initParams() {
         const stackFrame = this.peekStackFrame();
         if (stackFrame.params === null) {
             stackFrame.params = {};
@@ -224,7 +230,7 @@ class Thread {
      * @param {!string} paramName Name of parameter.
      * @param {*} value Value to set for parameter.
      */
-    pushParam (paramName, value) {
+    pushParam(paramName, value) {
         const stackFrame = this.peekStackFrame();
         stackFrame.params[paramName] = value;
     }
@@ -234,7 +240,7 @@ class Thread {
      * @param {!string} paramName Name of parameter.
      * @return {*} value Value for parameter.
      */
-    getParam (paramName) {
+    getParam(paramName) {
         for (let i = this.stackFrames.length - 1; i >= 0; i--) {
             const frame = this.stackFrames[i];
             if (frame.params === null) {
@@ -252,17 +258,16 @@ class Thread {
      * Whether the current execution of a thread is at the top of the stack.
      * @return {boolean} True if execution is at top of the stack.
      */
-    atStackTop () {
+    atStackTop() {
         return this.peekStack() === this.topBlock;
     }
-
 
     /**
      * Switch the thread to the next block at the current level of the stack.
      * For example, this is used in a standard sequence of blocks,
      * where execution proceeds from one block to the next.
      */
-    goToNextBlock () {
+    goToNextBlock() {
         const nextBlockId = this.target.blocks.getNextBlock(this.peekStack());
         this.reuseStackForNextBlock(nextBlockId);
     }
@@ -273,13 +278,15 @@ class Thread {
      * @param {!string} procedureCode Procedure code of procedure being called.
      * @return {boolean} True if the call appears recursive.
      */
-    isRecursiveCall (procedureCode) {
+    isRecursiveCall(procedureCode) {
         let callCount = 5; // Max number of enclosing procedure calls to examine.
         const sp = this.stack.length - 1;
         for (let i = sp - 1; i >= 0; i--) {
             const block = this.target.blocks.getBlock(this.stack[i]);
-            if (block.opcode === 'procedures_call' &&
-                block.mutation.proccode === procedureCode) {
+            if (
+                block.opcode === "procedures_call" &&
+                block.mutation.proccode === procedureCode
+            ) {
                 return true;
             }
             if (--callCount < 0) return false;

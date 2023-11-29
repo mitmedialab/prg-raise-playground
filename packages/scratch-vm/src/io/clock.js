@@ -1,8 +1,8 @@
-const Timer = require('../util/timer');
+const Timer = require("../util/timer");
 
 class Clock {
-    constructor (runtime) {
-        this._projectTimer = new Timer({now: () => runtime.currentMSecs});
+    constructor(runtime) {
+        this._projectTimer = new Timer({ now: () => runtime.currentMSecs });
         this._projectTimer.start();
         this._pausedTime = null;
         this._paused = false;
@@ -13,25 +13,25 @@ class Clock {
         this.runtime = runtime;
     }
 
-    projectTimer () {
+    projectTimer() {
         if (this._paused) {
             return this._pausedTime / 1000;
         }
         return this._projectTimer.timeElapsed() / 1000;
     }
 
-    pause () {
+    pause() {
         this._paused = true;
         this._pausedTime = this._projectTimer.timeElapsed();
     }
 
-    resume () {
+    resume() {
         this._paused = false;
         const dt = this._projectTimer.timeElapsed() - this._pausedTime;
         this._projectTimer.startTime += dt;
     }
 
-    resetProjectTimer () {
+    resetProjectTimer() {
         this._projectTimer.start();
     }
 }

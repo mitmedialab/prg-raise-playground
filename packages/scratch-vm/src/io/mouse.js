@@ -1,7 +1,7 @@
-const MathUtil = require('../util/math-util');
+const MathUtil = require("../util/math-util");
 
 class Mouse {
-    constructor (runtime) {
+    constructor(runtime) {
         this._x = 0;
         this._y = 0;
         this._isDown = false;
@@ -18,16 +18,14 @@ class Mouse {
      * @param  {Target} target to trigger hats on.
      * @private
      */
-    _activateClickHats (target) {
+    _activateClickHats(target) {
         // Activate both "this sprite clicked" and "stage clicked"
         // They were separated into two opcodes for labeling,
         // but should act the same way.
         // Intentionally not checking isStage to make it work when sharing blocks.
         // @todo the blocks should be converted from one to another when shared
-        this.runtime.startHats('event_whenthisspriteclicked',
-            null, target);
-        this.runtime.startHats('event_whenstageclicked',
-            null, target);
+        this.runtime.startHats("event_whenthisspriteclicked", null, target);
+        this.runtime.startHats("event_whenstageclicked", null, target);
     }
 
     /**
@@ -37,13 +35,15 @@ class Mouse {
      * @return {Target} the target at that location
      * @private
      */
-    _pickTarget (x, y) {
+    _pickTarget(x, y) {
         if (this.runtime.renderer) {
             const drawableID = this.runtime.renderer.pick(x, y);
             for (let i = 0; i < this.runtime.targets.length; i++) {
                 const target = this.runtime.targets[i];
-                if (target.hasOwnProperty('drawableID') &&
-                    target.drawableID === drawableID) {
+                if (
+                    target.hasOwnProperty("drawableID") &&
+                    target.drawableID === drawableID
+                ) {
                     return target;
                 }
             }
@@ -56,24 +56,28 @@ class Mouse {
      * Mouse DOM event handler.
      * @param  {object} data Data from DOM event.
      */
-    postData (data) {
+    postData(data) {
         if (data.x) {
             this._clientX = data.x;
-            this._scratchX = Math.round(MathUtil.clamp(
-                480 * ((data.x / data.canvasWidth) - 0.5),
-                -240,
-                240
-            ));
+            this._scratchX = Math.round(
+                MathUtil.clamp(
+                    480 * (data.x / data.canvasWidth - 0.5),
+                    -240,
+                    240
+                )
+            );
         }
         if (data.y) {
             this._clientY = data.y;
-            this._scratchY = Math.round(MathUtil.clamp(
-                -360 * ((data.y / data.canvasHeight) - 0.5),
-                -180,
-                180
-            ));
+            this._scratchY = Math.round(
+                MathUtil.clamp(
+                    -360 * (data.y / data.canvasHeight - 0.5),
+                    -180,
+                    180
+                )
+            );
         }
-        if (typeof data.isDown !== 'undefined') {
+        if (typeof data.isDown !== "undefined") {
             const previousDownState = this._isDown;
             this._isDown = data.isDown;
 
@@ -84,8 +88,15 @@ class Mouse {
             if (data.wasDragged) return;
 
             // Do not activate click hats for clicks outside canvas bounds
-            if (!(data.x > 0 && data.x < data.canvasWidth &&
-                data.y > 0 && data.y < data.canvasHeight)) return;
+            if (
+                !(
+                    data.x > 0 &&
+                    data.x < data.canvasWidth &&
+                    data.y > 0 &&
+                    data.y < data.canvasHeight
+                )
+            )
+                return;
 
             const target = this._pickTarget(data.x, data.y);
             const isNewMouseDown = !previousDownState && this._isDown;
@@ -105,7 +116,7 @@ class Mouse {
      * Get the X position of the mouse in client coordinates.
      * @return {number} Non-clamped X position of the mouse cursor.
      */
-    getClientX () {
+    getClientX() {
         return this._clientX;
     }
 
@@ -113,7 +124,7 @@ class Mouse {
      * Get the Y position of the mouse in client coordinates.
      * @return {number} Non-clamped Y position of the mouse cursor.
      */
-    getClientY () {
+    getClientY() {
         return this._clientY;
     }
 
@@ -121,7 +132,7 @@ class Mouse {
      * Get the X position of the mouse in scratch coordinates.
      * @return {number} Clamped and integer rounded X position of the mouse cursor.
      */
-    getScratchX () {
+    getScratchX() {
         return this._scratchX;
     }
 
@@ -129,7 +140,7 @@ class Mouse {
      * Get the Y position of the mouse in scratch coordinates.
      * @return {number} Clamped and integer rounded Y position of the mouse cursor.
      */
-    getScratchY () {
+    getScratchY() {
         return this._scratchY;
     }
 
@@ -137,7 +148,7 @@ class Mouse {
      * Get the down state of the mouse.
      * @return {boolean} Is the mouse down?
      */
-    getIsDown () {
+    getIsDown() {
         return this._isDown;
     }
 }
