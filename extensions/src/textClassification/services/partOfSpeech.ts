@@ -1,5 +1,5 @@
 import { Tag } from "en-pos";
-import { wordsToNumbers } from "words-to-numbers";
+import wordsToNumbers from "words-to-numbers";
 
 const tagsByPartOfSpeech = {
     noun: ["NN", "PRP", "WP"],
