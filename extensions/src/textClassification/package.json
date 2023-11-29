@@ -1,0 +1,26 @@
+{
+  "name": "text-classification-extension",
+  "version": "1.0.0",
+  "description": "An extension created using the PRG AI Blocks framework",
+  "main": "index.ts",
+  "scripts": {
+    "directory": "echo textClassification",
+    "test": "npm run test --prefix ../../ -- textClassification/index.test.ts",
+    "dev": "npm run dev --prefix ../../../ -- only=textClassification",
+    "add:ui": "npm run add:ui --prefix ../../../  -- textClassification",
+    "add:arg": "npm run --prefix ../../../-- textClassification"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@tensorflow-models/toxicity": "1.2.2",
+    "@tensorflow-models/universal-sentence-encoder": "1.2.2",
+    "@tensorflow/tfjs": "^1.5.1",
+    "format-message": "^6.2.4",
+    "sentiment": "^5.0.2"
+  },
+  "devDependencies": {
+    "@types/dom-speech-recognition": "^0.0.1",
+    "@types/sentiment": "^5.0.1"
+  }
+}

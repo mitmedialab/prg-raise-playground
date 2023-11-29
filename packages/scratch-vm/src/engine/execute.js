@@ -1,9 +1,10 @@
-const BlockUtility = require("./block-utility");
-const BlocksExecuteCache = require("./blocks-execute-cache");
-const log = require("../util/log");
-const Thread = require("./thread");
-const { Map } = require("immutable");
-const cast = require("../util/cast");
+const BlockUtility = require('./block-utility');
+const BlocksExecuteCache = require('./blocks-execute-cache');
+const log = require('../util/log');
+const Thread = require('./thread');
+const { Map } = require('immutable');
+const cast = require('../util/cast');
+const { blockIDKey } = require("../dist/globals");
 
 /**
  * Single BlockUtility instance reused by execute for every pritimive ran.
@@ -113,8 +114,8 @@ const handleReport = function (
                         id: currentBlockId,
                         spriteName: targetId
                             ? sequencer.runtime
-                                  .getTargetById(targetId)
-                                  .getName()
+                                .getTargetById(targetId)
+                                .getName()
                             : null,
                         value: resolvedValue,
                     })
@@ -446,7 +447,7 @@ const _prepareBlockProfiling = function (profiler, blockCached) {
 
 /**
  * Execute a block.
- * @param {!Sequencer} sequencer Which sequencer is executing.
+ * @param {!import("./sequencer")} sequencer Which sequencer is executing.
  * @param {!Thread} thread Thread which to read and execute.
  */
 const execute = function (sequencer, thread) {
@@ -580,6 +581,7 @@ const execute = function (sequencer, thread) {
 
         // Inputs are set during previous steps in the loop.
 
+        blockUtility[blockIDKey] = opCached.id;
         const primitiveReportedValue = blockFunction(argValues, blockUtility);
 
         // If it's a promise, wait until promise resolves.

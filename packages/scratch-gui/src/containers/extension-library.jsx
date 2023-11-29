@@ -2,12 +2,13 @@ import bindAll from 'lodash.bindall';
 import PropTypes from 'prop-types';
 import React from 'react';
 import VM from 'scratch-vm';
-import {defineMessages, injectIntl, intlShape} from 'react-intl';
+import { addLocaleData, defineMessages, injectIntl, intlShape } from 'react-intl';
 
 import extensionLibraryContent from '../lib/libraries/extensions/index.jsx';
 
 import LibraryComponent from '../components/library/library.jsx';
 import extensionIcon from '../components/action-menu/icon--sprite.svg';
+import { allLocales, addToLocale } from '../reducers/locales.js';
 
 const messages = defineMessages({
     extensionTitle: {
@@ -22,14 +23,29 @@ const messages = defineMessages({
     }
 });
 
+const makeTranslationLabel = (tag) => ({
+    defaultMessage: tag,
+    description: `${tag} -- Tag for filtering a library for everything`,
+    id: `gui.extensionTags.${tag}`
+});
+
 class ExtensionLibrary extends React.PureComponent {
-    constructor (props) {
+    constructor(props) {
         super(props);
         bindAll(this, [
             'handleItemSelect'
         ]);
+        extensionLibraryContent.forEach(extension => {
+            allLocales.forEach(locale => {
+                if (!(locale in extension)) return;
+                const { extensionId } = extension;
+                const { name, description } = extension[locale];
+                addToLocale(locale, `extension.${extensionId}.name`, name);
+                addToLocale(locale, `extension.${extensionId}.description`, description);
+            });
+        });
     }
-    handleItemSelect (item) {
+    handleItemSelect(item) {
         const id = item.extensionId;
         let url = item.extensionURL ? item.extensionURL : id;
         if (!item.disabled && !id) {
@@ -46,15 +62,26 @@ class ExtensionLibrary extends React.PureComponent {
             }
         }
     }
-    render () {
-        const extensionLibraryThumbnailData = extensionLibraryContent.map(extension => ({
-            rawURL: extension.iconURL || extensionIcon,
-            ...extension
-        }));
+    render() {
+        const extensionLibraryThumbnailData = extensionLibraryContent
+            .map(({ iconURL, extensionId, tags, ...rest }) => {
+                const uniqueURL = iconURL ? `${iconURL}?key=${extensionId}` : extensionIcon;
+                return { rawURL: uniqueURL, iconURL: uniqueURL, extensionId, tags: tags ?? [], ...rest };
+            })
+            .sort((a, b) => {
+                if (a.tags?.includes('PRG Internal') || a.tags?.length === 0) return 1;
+                if (b.tags?.includes('PRG Internal') || b.tags?.length === 0) return -1;
+                return 0;
+            })
+
+        const uniqueTags = Array.from(new Set(extensionLibraryThumbnailData.map(({ tags }) => tags).flat()));
+        const tags = uniqueTags.map(tag => ({ tag, intlLabel: makeTranslationLabel(tag) }));
+
         return (
             <LibraryComponent
                 data={extensionLibraryThumbnailData}
-                filterable={false}
+                filterable={true}
+                tags={tags}
                 id="extensionLibrary"
                 title={this.props.intl.formatMessage(messages.extensionTitle)}
                 visible={this.props.visible}

@@ -1,0 +1,25 @@
+{
+  "extends": "../paths.tsconfig.json",
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "ESNext",
+    "noImplicitAny": false,
+    "esModuleInterop": true,
+    "allowJs": false,
+    "moduleResolution": "Node",
+    "skipLibCheck": true,
+    "ignoreDeprecations": "5.0",
+    "noErrorTruncation": true,
+    "strictPropertyInitialization": false,
+    "lib": [
+      "dom",
+      "es6",
+      "dom.iterable"
+    ]
+  },
+  "include": [
+    ".**/*.ts",
+    "**/*.ts",
+    "./declaration.d.ts"
+  ],
+}

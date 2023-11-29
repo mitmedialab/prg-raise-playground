@@ -195,7 +195,7 @@ class BLE extends JSONRPC {
      */
     didReceiveCall(method, params) {
         switch (method) {
-            case "didDiscoverPeripheral":
+            case 'didDiscoverPeripheral':
                 this._availablePeripherals[params.peripheralId] = params;
                 this._runtime.emit(
                     this._runtime.constructor.PERIPHERAL_LIST_UPDATE,
@@ -205,12 +205,30 @@ class BLE extends JSONRPC {
                     window.clearTimeout(this._discoverTimeoutID);
                 }
                 break;
-            case "characteristicDidChange":
+            case 'userDidPickPeripheral':
+                this._availablePeripherals[params.peripheralId] = params;
+                this._runtime.emit(
+                    this._runtime.constructor.USER_PICKED_PERIPHERAL,
+                    this._availablePeripherals
+                );
+                if (this._discoverTimeoutID) {
+                    window.clearTimeout(this._discoverTimeoutID);
+                }
+                break;
+            case 'userDidNotPickPeripheral':
+                this._runtime.emit(
+                    this._runtime.constructor.PERIPHERAL_SCAN_TIMEOUT
+                );
+                if (this._discoverTimeoutID) {
+                    window.clearTimeout(this._discoverTimeoutID);
+                }
+                break;
+            case 'characteristicDidChange':
                 if (this._characteristicDidChangeCallback) {
                     this._characteristicDidChangeCallback(params.message);
                 }
                 break;
-            case "ping":
+            case 'ping':
                 return 42;
         }
     }

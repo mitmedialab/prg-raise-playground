@@ -1,4 +1,5 @@
 import ScratchBlocks from 'scratch-blocks';
+import { overridesForCustomArgumentSupport } from './prg/customBlockOverrides';
 
 /**
  * Connect scratch blocks with the vm
@@ -6,7 +7,6 @@ import ScratchBlocks from 'scratch-blocks';
  * @return {ScratchBlocks} ScratchBlocks connected with the vm
  */
 export default function (vm) {
-
     const jsonForMenuBlock = function (name, menuOptionsFn, colors, start) {
         return {
             message0: '%1',
@@ -99,8 +99,8 @@ export default function (vm) {
         if (vm.runtime.targets[0] && vm.runtime.targets[0].getCostumes().length > 0) {
             return vm.runtime.targets[0].getCostumes().map(costume => [costume.name, costume.name])
                 .concat([[next, 'next backdrop'],
-                    [previous, 'previous backdrop'],
-                    [random, 'random backdrop']]);
+                [previous, 'previous backdrop'],
+                [random, 'random backdrop']]);
         }
         return [['', '']];
     };
@@ -341,5 +341,6 @@ export default function (vm) {
         return true;
     };
 
+    overridesForCustomArgumentSupport(ScratchBlocks, vm);
     return ScratchBlocks;
 }

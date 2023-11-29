@@ -6,6 +6,7 @@ const VirtualMachine = require('../../src/index');
 
 const projectUri = path.resolve(__dirname, '../fixtures/comments.sb3');
 const project = readFileToBuffer(projectUri);
+require("../helper/defineWindowGlobals");
 
 test('load an sb3 project with comments', t => {
     const vm = new VirtualMachine();
@@ -70,8 +71,8 @@ test('load an sb3 project with comments', t => {
         t.equal(stopAllBlock.comment, blockComments[4].id);
         t.equal(stopAllBlock.opcode, 'control_stop');
 
+        vm.quit();
         t.end();
-        process.nextTick(process.exit);
     });
 
     // Start VM, load project, and run

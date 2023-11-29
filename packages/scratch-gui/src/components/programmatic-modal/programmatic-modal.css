@@ -1,0 +1,39 @@
+@import "../../css/colors.css";
+@import "../../css/units.css";
+
+.modal-content {
+  width: fit-content;
+  height: fit-content;
+  overflow: scroll;
+  --ui-primary: $ui-primary;
+  --ui-secondary: $ui-secondary;
+  --ui-tertiary: $ui-tertiary;
+  --ui-modal-overlay: $ui-modal-overlay;
+  --ui-white: $ui-white;
+  --ui-white-dim: $ui-white-dim;
+  --ui-white-transparent: $ui-white-transparent;
+  --ui-transparent: $ui-transparent;
+  --ui-black-transparent: $ui-black-transparent;
+  --text-primary: $text-primary;
+  --text-primary-transparent: $text-primary-transparent;
+  --motion-primary: $motion-primary;
+  --motion-tertiary: $motion-tertiary;
+  --motion-transparent: $motion-transparent;
+  --motion-light-transparent: $motion-light-transparent;
+  --red-primary: $red-primary;
+  --red-tertiary: $red-tertiary;
+  --sound-primary: $sound-primary;
+  --sound-tertiary: $sound-tertiary;
+  --control-primary: $control-primary;
+  --data-primary: $data-primary;
+  --pen-primary: $pen-primary;
+  --pen-transparent: $pen-transparent;
+  --error-primary: $error-primary;
+  --error-light: $error-light;
+  --error-transparent: $error-transparent;
+  --extensions-primary: $extensions-primary;
+  --extensions-tertiary: $extensions-tertiary;
+  --extensions-transparent: $extensions-transparent;
+  --extensions-light: $extensions-light;
+  --drop-highlight: $motion-transparent
+}

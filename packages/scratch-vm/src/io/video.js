@@ -101,11 +101,11 @@ class Video {
      * Return frame data from the video feed in a specified dimensions, format, and mirroring.
      *
      * @param {object} frameInfo A descriptor of the frame you would like to receive.
-     * @param {Array.<number>} frameInfo.dimensions [width, height] array of numbers.  Defaults to [480,360]
-     * @param {boolean} frameInfo.mirror If you specificly want a mirror/non-mirror frame, defaults to the global
+     * @param {Array.<number>=} frameInfo.dimensions [width, height] array of numbers.  Defaults to [480,360]
+     * @param {boolean=} frameInfo.mirror If you specificly want a mirror/non-mirror frame, defaults to the global
      *                                   mirror state (ioDevices.video.mirror)
-     * @param {string} frameInfo.format Requested video format, available formats are 'image-data' and 'canvas'.
-     * @param {number} frameInfo.cacheTimeout Will reuse previous image data if the time since capture is less than
+     * @param {string=} frameInfo.format Requested video format, available formats are 'image-data' and 'canvas'.
+     * @param {number=} frameInfo.cacheTimeout Will reuse previous image data if the time since capture is less than
      *                                        the cacheTimeout.  Defaults to 16ms.
      *
      * @return {ArrayBuffer|Canvas|string|null} Frame data in requested format, null when errors.
@@ -134,22 +134,18 @@ class Video {
         this._ghost = ghost;
         // Confirm that the default value has been changed to a valid id for the drawable
         if (this._drawable !== -1) {
-            this.runtime.renderer.updateDrawableProperties(this._drawable, {
-                ghost: this._forceTransparentPreview ? 100 : ghost,
-            });
+            this.runtime.renderer.updateDrawableEffect(
+                this._drawable,
+                'ghost',
+                this._forceTransparentPreview ? 100 : ghost
+            );
         }
     }
 
     _disablePreview() {
         if (this._skinId !== -1) {
-            this.runtime.renderer.updateBitmapSkin(
-                this._skinId,
-                new ImageData(...Video.DIMENSIONS),
-                1
-            );
-            this.runtime.renderer.updateDrawableProperties(this._drawable, {
-                visible: false,
-            });
+            this.runtime.renderer.updateBitmapSkin(this._skinId, new ImageData(...Video.DIMENSIONS), 1);
+            this.runtime.renderer.updateDrawableVisible(this._drawable, false);
         }
         this._renderPreviewFrame = null;
     }
@@ -164,17 +160,13 @@ class Video {
                 1
             );
             this._drawable = renderer.createDrawable(StageLayering.VIDEO_LAYER);
-            renderer.updateDrawableProperties(this._drawable, {
-                skinId: this._skinId,
-            });
+            renderer.updateDrawableSkinId(this._drawable, this._skinId);
         }
 
         // if we haven't already created and started a preview frame render loop, do so
         if (!this._renderPreviewFrame) {
-            renderer.updateDrawableProperties(this._drawable, {
-                ghost: this._forceTransparentPreview ? 100 : this._ghost,
-                visible: true,
-            });
+            renderer.updateDrawableEffect(this._drawable, 'ghost', this._forceTransparentPreview ? 100 : this._ghost);
+            renderer.updateDrawableVisible(this._drawable, true);
 
             this._renderPreviewFrame = () => {
                 clearTimeout(this._renderPreviewTimeout);

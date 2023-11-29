@@ -17,7 +17,7 @@ const VariableUtil = require("../util/variable-util");
 
 class Target extends EventEmitter {
     /**
-     * @param {Runtime} runtime Reference to the runtime.
+     * @param {import("./runtime")} runtime Reference to the runtime.
      * @param {?Blocks} blocks Blocks instance for the blocks owned by this target.
      * @constructor
      */
@@ -30,7 +30,7 @@ class Target extends EventEmitter {
 
         /**
          * Reference to the runtime.
-         * @type {Runtime}
+         * @type {import("./runtime")}
          */
         this.runtime = runtime;
         /**
@@ -75,7 +75,7 @@ class Target extends EventEmitter {
      * Called when the project receives a "green flag."
      * @abstract
      */
-    onGreenFlag() {}
+    onGreenFlag() { }
 
     /**
      * Return a human-readable name for this target.
@@ -155,13 +155,13 @@ class Target extends EventEmitter {
             ) {
                 log.error(
                     `Found broadcast message with id: ${id}, but` +
-                        `its name, ${broadcastMsg.name} did not match expected name ${name}.`
+                    `its name, ${broadcastMsg.name} did not match expected name ${name}.`
                 );
             }
             if (broadcastMsg.type !== Variable.BROADCAST_MESSAGE_TYPE) {
                 log.error(
                     `Found variable with id: ${id}, but its type ${broadcastMsg.type}` +
-                        `did not match expected type ${Variable.BROADCAST_MESSAGE_TYPE}`
+                    `did not match expected type ${Variable.BROADCAST_MESSAGE_TYPE}`
                 );
             }
             return broadcastMsg;
@@ -214,7 +214,7 @@ class Target extends EventEmitter {
      * was not found.
      * @param {string} name Name of the variable.
      * @param {string} type Type of the variable. Defaults to Variable.SCALAR_TYPE.
-     * @param {?bool} skipStage Optional flag to skip checking the stage
+     * @param {?boolean} skipStage Optional flag to skip checking the stage
      * @return {?Variable} Variable object if found, or null if not.
      */
     lookupVariableByNameAndType(name, type, skipStage) {
@@ -245,11 +245,11 @@ class Target extends EventEmitter {
     }
 
     /**
-     * Look up a list object for this target, and create it if one doesn't exist.
-     * Search begins for local lists; then look for globals.
-     * @param {!string} id Id of the list.
-     * @param {!string} name Name of the list.
-     * @return {!Varible} Variable object representing the found/created list.
+    * Look up a list object for this target, and create it if one doesn't exist.
+    * Search begins for local lists; then look for globals.
+    * @param {!string} id Id of the list.
+    * @param {!string} name Name of the list.
+    * @return {!Variable} Variable object representing the found/created list.
      */
     lookupOrCreateList(id, name) {
         let list = this.lookupVariableById(id);
@@ -343,16 +343,28 @@ class Target extends EventEmitter {
                         );
                     }
 
+                    if (variable.type === Variable.SCALAR_TYPE) {
+                        // sensing__of may be referencing to this variable.
+                        // Change the reference.
+                        let blockUpdated = false;
+                        this.runtime.targets.forEach(t => {
+                            blockUpdated = t.blocks.updateSensingOfReference(
+                                oldName,
+                                newName,
+                                this.isStage ? '_stage_' : this.getName()
+                            ) || blockUpdated;
+                        });
+                        // Request workspace change only if sensing_of blocks were actually updated.
+                        if (blockUpdated) this.runtime.requestBlocksUpdate();
+                    }
+
                     const blocks = this.runtime.monitorBlocks;
-                    blocks.changeBlock(
-                        {
-                            id: id,
-                            element: "field",
-                            name: "VARIABLE",
-                            value: id,
-                        },
-                        this.runtime
-                    );
+                    blocks.changeBlock({
+                        id: id,
+                        element: 'field',
+                        name: variable.type === Variable.LIST_TYPE ? 'LIST' : 'VARIABLE',
+                        value: id
+                    }, this.runtime);
                     const monitorBlock = blocks.getBlock(variable.id);
                     if (monitorBlock) {
                         this.runtime.requestUpdateMonitor(
@@ -473,7 +485,7 @@ class Target extends EventEmitter {
      * @param {object} data An object with sprite info data to set.
      * @abstract
      */
-    postSpriteInfo() {}
+    postSpriteInfo() { }
 
     /**
      * Retrieve custom state associated with this target and the provided state ID.
@@ -513,7 +525,7 @@ class Target extends EventEmitter {
      * variables as well as any stage variables unless the skipStage flag is true.
      * For the stage, this is all stage variables.
      * @param {string} type The variable type to search for; defaults to Variable.SCALAR_TYPE
-     * @param {?bool} skipStage Optional flag to skip the stage.
+     * @param {?boolean} skipStage Optional flag to skip the stage.
      * @return {Array<string>} A list of variable names
      */
     getAllVariableNamesInScopeByType(type, skipStage) {

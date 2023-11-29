@@ -16,7 +16,7 @@ class RuntimeScriptCache {
     constructor(container, blockId) {
         /**
          * Container with block data for blockId.
-         * @type {Blocks}
+         * @type {import("./blocks")}
          */
         this.container = container;
 

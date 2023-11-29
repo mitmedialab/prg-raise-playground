@@ -16,6 +16,10 @@ const initialState = {
     messages: editorMessages.en
 };
 
+export const allLocales = Object.keys(editorMessages);
+
+export const addToLocale = (locale, id, translation) => initialState.messagesByLocale[locale][id] = translation;
+
 const reducer = function (state, action) {
     if (typeof state === 'undefined') state = initialState;
     switch (action.type) {

@@ -15,7 +15,6 @@ class ExtensionWorker {
             dispatch.call("extensions", "allocateWorker").then((x) => {
                 const [id, extension] = x;
                 this.workerId = id;
-
                 try {
                     importScripts(extension);
 

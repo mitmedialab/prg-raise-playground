@@ -20,7 +20,7 @@ class RenderedTarget extends Target {
 
         /**
          * Reference to the sprite that this is a render of.
-         * @type {!Sprite}
+         * @type {!import("./sprite")}
          */
         this.sprite = sprite;
         /**
@@ -203,7 +203,7 @@ class RenderedTarget extends Target {
     /**
      * Initialize the audio player for this sprite or clone.
      */
-    initAudio() {}
+    initAudio() { }
 
     /**
      * Event which fires when a target moves.
@@ -769,15 +769,7 @@ class RenderedTarget extends Target {
             this.renderer.updateDrawableVisible(this.drawableID, this.visible);
 
             const costume = this.getCostumes()[this.currentCostume];
-            const bitmapResolution = costume.bitmapResolution || 2;
-            this.renderer.updateDrawableSkinIdRotationCenter(
-                this.drawableID,
-                costume.skinId,
-                [
-                    costume.rotationCenterX / bitmapResolution,
-                    costume.rotationCenterY / bitmapResolution,
-                ]
-            );
+            this.renderer.updateDrawableSkinId(this.drawableID, costume.skinId);
 
             for (const effectName in this.effects) {
                 if (!this.effects.hasOwnProperty(effectName)) continue;

@@ -32,10 +32,8 @@ require("canvas-toBlob");
 const RESERVED_NAMES = ["_mouse_", "_stage_", "_edge_", "_myself_", "_random_"];
 
 const CORE_EXTENSIONS = [
-    "doodlebot",
-    "microbitRobot",
-    //'videoSensing'
-    // 'posenet',
+    // 'teachableMachine',
+    // 'textClassification'
     // 'motion',
     // 'looks',
     // 'sound',
@@ -69,11 +67,8 @@ class ScratchCanvasRecorder {
         this.video.style.left = "0";
         this.video.style.opacity = "0";
         document.body.appendChild(this.video);
-        this.stream = canvas.captureStream(); // frames per second
-        console.log(
-            "Started stream capture from canvas element: ",
-            this.stream
-        );
+        this.stream = canvas ? canvas.captureStream() : undefined; // frames per second
+        console.log('Started stream capture from canvas element: ', this.stream);
     }
 
     handleSourceOpen(event) {
@@ -138,8 +133,8 @@ class ScratchCanvasRecorder {
                 } catch (e2) {
                     alert(
                         "MediaRecorder is not supported by this browser.\n\n" +
-                            "Try Firefox 29 or later, or Chrome 47 or later, " +
-                            "with Enable experimental Web Platform features enabled from chrome://flags."
+                        "Try Firefox 29 or later, or Chrome 47 or later, " +
+                        "with Enable experimental Web Platform features enabled from chrome://flags."
                     );
                     console.error(
                         "Exception while creating MediaRecorder:",
@@ -368,6 +363,9 @@ class VirtualMachine extends EventEmitter {
         this.runtime.on(Runtime.PERIPHERAL_LIST_UPDATE, (info) => {
             this.emit(Runtime.PERIPHERAL_LIST_UPDATE, info);
         });
+        this.runtime.on(Runtime.USER_PICKED_PERIPHERAL, info => {
+            this.emit(Runtime.USER_PICKED_PERIPHERAL, info);
+        });
         this.runtime.on(Runtime.PERIPHERAL_CONNECTED, () =>
             this.emit(Runtime.PERIPHERAL_CONNECTED)
         );
@@ -411,6 +409,14 @@ class VirtualMachine extends EventEmitter {
      */
     start() {
         this.runtime.start();
+    }
+
+    /**
+     * Quit the VM, clearing any handles which might keep the process alive.
+     * Do not use the runtime after calling this method. This method is meant for test shutdown.
+     */
+    quit() {
+        this.runtime.quit();
     }
 
     /**
@@ -662,9 +668,9 @@ class VirtualMachine extends EventEmitter {
     uploadProjectToURL(url) {
         // get authToken using regex
         const delimiter = url.indexOf(";");
-        const authToken = url.substr(delimiter+1);
+        const authToken = url.substr(delimiter + 1);
         url = url.substr(0, delimiter);
-        
+
         this.saveProjectSb3().then(content => {
             nets({
                 url: url,
@@ -675,7 +681,7 @@ class VirtualMachine extends EventEmitter {
                 },
                 encoding: undefined,
                 body: content
-            },(err, resp, body) => {
+            }, (err, resp, body) => {
                 if (err) {
                     console.log(err);
                     return;
@@ -689,7 +695,7 @@ class VirtualMachine extends EventEmitter {
         if (url.includes("googleapis.com")) {
             // get authToken using regex
             const delimiter = url.indexOf(";");
-            const authToken = url.substr(delimiter+1);
+            const authToken = url.substr(delimiter + 1);
             url = url.substr(0, delimiter);
             return new Promise((resolve, reject) => {
                 nets({
@@ -701,9 +707,9 @@ class VirtualMachine extends EventEmitter {
                     resolve(this.loadProject(body));
                 })
             })
-        } else if (url.includes("dropbox.com")) {        
+        } else if (url.includes("dropbox.com")) {
             // Handle loading dropbox links
-            const dropboxRegex = /\/s\/[A-Za-z0-9]+\/.*.sb3/;
+            const dropboxRegex = /\/(s|scl)(\/fi)?\/[A-Za-z0-9]+\/.*.sb3(\?rlkey=[A-Za-z0-9]*)?/;
             const found = url.match(dropboxRegex);
             if (found.length > 0) url = 'https://dl.dropboxusercontent.com' + found[0];
         }
@@ -717,7 +723,7 @@ class VirtualMachine extends EventEmitter {
                 if (resp.statusCode !== 200) {
                     console.log(resp.statusCode);
                     resolve();
-                } else 
+                } else
                     resolve(this.loadProject(body));
             })
         })
@@ -788,9 +794,7 @@ class VirtualMachine extends EventEmitter {
 
         const soundDescs = serializeSounds(this.runtime, targetId);
         const costumeDescs = serializeCostumes(this.runtime, targetId);
-        const spriteJson = StringUtil.stringify(
-            sb3.serialize(this.runtime, targetId)
-        );
+        const spriteJson = StringUtil.stringify(sb3.serialize(this.runtime, targetId, this.extensionManager));
 
         const zip = new JSZip();
         zip.file("sprite.json", spriteJson);
@@ -807,12 +811,13 @@ class VirtualMachine extends EventEmitter {
     }
 
     /**
-     * Export project as a Scratch 3.0 JSON representation.
+     * Export project or sprite as a Scratch 3.0 JSON representation.
+     * @param {string=} optTargetId - Optional id of a sprite to serialize
      * @return {string} Serialized state of the runtime.
      */
-    toJSON() {
-        const sb3 = require("./serialization/sb3");
-        return StringUtil.stringify(sb3.serialize(this.runtime));
+    toJSON(optTargetId) {
+        const sb3 = require('./serialization/sb3');
+        return StringUtil.stringify(sb3.serialize(this.runtime, optTargetId, this.extensionManager));
     }
 
     // TODO do we still need this function? Keeping it here so as not to introduce
@@ -839,7 +844,11 @@ class VirtualMachine extends EventEmitter {
         // Clear the current runtime
         this.clear();
 
+        if (typeof performance !== 'undefined') {
+            performance.mark('scratch-vm-deserialize-start');
+        }
         const runtime = this.runtime;
+
         const deserializePromise = function () {
             const projectVersion = projectJSON.projectVersion;
             if (projectVersion === 2) {
@@ -852,9 +861,15 @@ class VirtualMachine extends EventEmitter {
             }
             return Promise.reject("Unable to verify Scratch Project version.");
         };
-        return deserializePromise().then(({ targets, extensions }) =>
-            this.installTargets(targets, extensions, true)
-        );
+        return deserializePromise()
+            .then(({ targets, extensions }) => {
+                if (typeof performance !== 'undefined') {
+                    performance.mark('scratch-vm-deserialize-end');
+                    performance.measure('scratch-vm-deserialize',
+                        'scratch-vm-deserialize-start', 'scratch-vm-deserialize-end');
+                }
+                return this.installTargets(targets, extensions, true, projectJSON);
+            });
     }
 
     /**
@@ -862,19 +877,17 @@ class VirtualMachine extends EventEmitter {
      * @param {Array.<Target>} targets - the targets to be installed
      * @param {ImportedExtensionsInfo} extensions - metadata about extensions used by these targets
      * @param {boolean} wholeProject - set to true if installing a whole project, as opposed to a single sprite.
+     * @param {object} fullJSON - the entire saved contents
      * @returns {Promise} resolved once targets have been installed
      */
-    installTargets(targets, extensions, wholeProject) {
-        const extensionPromises = [];
+    installTargets(targets, extensions, wholeProject, fullJSON) {
+        const { extensionManager } = this;
 
-        extensions.extensionIDs.forEach((extensionID) => {
-            if (!this.extensionManager.isExtensionLoaded(extensionID)) {
-                const extensionURL =
-                    extensions.extensionURLs.get(extensionID) || extensionID;
-                extensionPromises.push(
-                    this.extensionManager.loadExtensionURL(extensionURL)
-                );
-            }
+        const extensionPromises = Array.from(extensions.extensionIDs).map(async extensionID => {
+            if (!extensionManager.isExtensionLoaded(extensionID)) await extensionManager.loadExtensionURL(extensionID);
+            const instance = this.extensionManager.getExtensionInstance(extensionID);
+            instance?.["load"]?.(fullJSON); // TODO: Verify that this is okay to do on already loaded extensions
+            return instance;
         });
 
         targets = targets.filter((target) => !!target);
@@ -1183,6 +1196,7 @@ class VirtualMachine extends EventEmitter {
      */
     updateSoundBuffer(soundIndex, newBuffer, soundEncoding) {
         const sound = this.editingTarget.sprite.sounds[soundIndex];
+        if (sound && sound.broken) delete sound.broken;
         const id = sound ? sound.soundId : null;
         if (id && this.runtime && this.runtime.audioEngine) {
             this.editingTarget.sprite.soundBank.getSoundPlayer(id).buffer =
@@ -1277,6 +1291,7 @@ class VirtualMachine extends EventEmitter {
     ) {
         const costume = this.editingTarget.getCostumes()[costumeIndex];
         if (!(costume && this.runtime && this.runtime.renderer)) return;
+        if (costume && costume.broken) delete costume.broken;
 
         costume.rotationCenterX = rotationCenterX;
         costume.rotationCenterY = rotationCenterY;
@@ -1338,6 +1353,7 @@ class VirtualMachine extends EventEmitter {
      */
     updateSvg(costumeIndex, svg, rotationCenterX, rotationCenterY) {
         const costume = this.editingTarget.getCostumes()[costumeIndex];
+        if (costume && costume.broken) delete costume.broken;
         if (costume && this.runtime && this.runtime.renderer) {
             costume.rotationCenterX = rotationCenterX;
             costume.rotationCenterY = rotationCenterY;
@@ -1527,12 +1543,8 @@ class VirtualMachine extends EventEmitter {
         return this.runtime && this.runtime.renderer;
     }
 
-    /**
-     * Set the svg adapter for the VM/runtime, which converts scratch 2 svgs to scratch 3 svgs
-     * @param {!SvgRenderer} svgAdapter The adapter to attach
-     */
-    attachV2SVGAdapter(svgAdapter) {
-        this.runtime.attachV2SVGAdapter(svgAdapter);
+    // @deprecated
+    attachV2SVGAdapter() {
     }
 
     /**
@@ -1829,13 +1841,13 @@ class VirtualMachine extends EventEmitter {
                             <variables>
                                 ${globalVariables.map((v) => v.toXML()).join()}
                                 ${localVariables
-                                    .map((v) => v.toXML(true))
-                                    .join()}
+                .map((v) => v.toXML(true))
+                .join()}
                             </variables>
                             ${workspaceComments.map((c) => c.toXML()).join()}
                             ${this.editingTarget.blocks.toXML(
-                                this.editingTarget.comments
-                            )}
+                    this.editingTarget.comments
+                )}
                         </xml>`;
 
         this.emit("workspaceUpdate", { xml: xmlString });

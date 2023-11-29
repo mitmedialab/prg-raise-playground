@@ -209,7 +209,7 @@ class Scratch3DataBlocks {
         if (index === Cast.LIST_INVALID) {
             return;
         }
-        list.value.splice(index - 1, 1, item);
+        list.value[index - 1] = item;
         list._monitorUpToDate = false;
     }
 
@@ -284,7 +284,7 @@ class Scratch3DataBlocks {
 
     /**
      * Type representation for list variables.
-     * @const {string}
+     * @const {number}
      */
     static get LIST_ITEM_LIMIT() {
         return 200000;

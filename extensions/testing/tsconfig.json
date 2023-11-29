@@ -1,0 +1,19 @@
+{
+  "extends": "../paths.tsconfig.json",
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "ESNext",
+    "noImplicitAny": false,
+    "esModuleInterop": true,
+    "allowJs": false,
+    "moduleResolution": "Node",
+    "skipLibCheck": true,
+    "ignoreDeprecations": "5.0"
+  },
+  "include": [
+    ".**/*.ts",
+    "**/*.ts",
+    "jest.config.js",
+    "../src/declaration.d.ts"
+  ]
+}

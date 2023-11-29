@@ -1,14 +1,9 @@
+/* DO NOT REMOVE */
+import generatedDetails from '../../../generated/details.generated';
+/* DO NOT REMOVE */
+
 import React from 'react';
-import {FormattedMessage} from 'react-intl';
-
-import textClassificationBlocksIconURL from './text_classification/text-classification-blocks.png';
-import textClassificationBlocksInsetIconURL from './text_classification/text-classification-blocks-small.svg';
-
-import poseBodyBlocksIconURL from './posenet/pose-body.png';
-import poseHandBlocksIconURL from './posenet/pose-hand.png';
-import poseFaceBlocksIconURL from './posenet/pose-face.png';
-import teachableMachineBlocksIconURL from './teachable-machine-blocks/teachable-machine-blocks.png';
-import teachableMachineBlocksInsetIconURL from './teachable-machine-blocks/teachable-machine-blocks-small.svg';
+import { FormattedMessage } from 'react-intl';
 
 import arduinoRobotIconURL from './arduino_extension/arduino_extension.png';
 import arduinoRobotInsetIconURL from './arduino_extension/arduino_small.svg';
@@ -26,11 +21,6 @@ import penInsetIconURL from './pen/pen-small.svg';
 
 import videoSensingIconURL from './videoSensing/video-sensing.png';
 import videoSensingInsetIconURL from './videoSensing/video-sensing-small.svg';
-
-// import posenetIconURL from './posenet/video-sensing.png';
-import poseHandInsetIconURL from './posenet/pose-hand-small-3.svg';
-import poseFaceInsetIconURL from './posenet/pose-face-small.svg';
-import poseBodyInsetIconURL from './posenet/pose-body-small.svg';
 
 import text2speechIconURL from './text2speech/text2speech.png';
 import text2speechInsetIconURL from './text2speech/text2speech-small.svg';
@@ -69,28 +59,11 @@ import gdxforConnectionIconURL from './gdxfor/gdxfor-illustration.svg';
 import gdxforConnectionSmallIconURL from './gdxfor/gdxfor-small.svg';
 
 export default [
+    /* DO NOT REMOVE */
+    ...generatedDetails,
+    /* DO NOT REMOVE */
     {
         name: (
-            <FormattedMessage
-                defaultMessage="Teachable Machine"
-                description="Teachable Machine name"
-                id="gui.extension.teachable-machine.name"
-            />
-        ),
-        extensionId: 'teachableMachine',
-        iconURL: teachableMachineBlocksIconURL,
-        insetIconURL: teachableMachineBlocksInsetIconURL,
-        description: (
-            <FormattedMessage
-                defaultMessage="Use your Teachable Machine models in your Scratch project!"
-                description="Teachable Machine Description"
-                id="gui.extension.teachable-machine.description"
-            />
-        ),
-        featured: true
-    },
-    {
-         name: (
             <FormattedMessage
                 defaultMessage="PRG Doodlebot"
                 description="Name for the Doodlebot Extension"
@@ -110,7 +83,7 @@ export default [
         featured: true
     },
     {
-         name: (
+        name: (
             <FormattedMessage
                 defaultMessage="PRG Microbit Robot"
                 description="Name for the 'Microbit Robot' Extension"
@@ -127,10 +100,11 @@ export default [
                 id="gui.extension.microbit-robot.description"
             />
         ),
-        featured: true
+        featured: true,
+        tags: ["Made by PRG"]
     },
     {
-         name: (
+        name: (
             <FormattedMessage
                 defaultMessage="PRG Gizmo Robot"
                 description="Name for the 'Gizmo Robot' Extension"
@@ -147,9 +121,10 @@ export default [
                 id="gui.extension.gizmo-robot.description"
             />
         ),
-        featured: true
-    },{
-         name: (
+        featured: true,
+        tags: ["Made by PRG"]
+    }, {
+        name: (
             <FormattedMessage
                 defaultMessage="PRG Arduino Robot"
                 description="Name for the 'Arduino Robot' Extension"
@@ -166,7 +141,8 @@ export default [
                 id="gui.extension.arduino-robot.description"
             />
         ),
-        featured: true
+        featured: true,
+        tags: ["Made by PRG"]
     }, //*/ // RANDI Removing extensions I don't want students to play with
     {
         name: (
@@ -186,7 +162,8 @@ export default [
                 id="gui.extension.music.description"
             />
         ),
-        featured: true
+        featured: true,
+        tags: ["Made by Scratch"]
     },
     {
         name: (
@@ -206,7 +183,8 @@ export default [
                 id="gui.extension.pen.description"
             />
         ),
-        featured: true
+        featured: true,
+        tags: ["Made by Scratch"]
     },
     {
         name: (
@@ -226,7 +204,8 @@ export default [
                 id="gui.extension.videosensing.description"
             />
         ),
-        featured: true
+        featured: true,
+        tags: ["Made by Scratch"]
     },
     {
         name: (
@@ -248,7 +227,8 @@ export default [
             />
         ),
         featured: true,
-        internetConnectionRequired: true
+        internetConnectionRequired: true,
+        tags: ["Made by Scratch"]
     },
     {
         name: (
@@ -270,7 +250,8 @@ export default [
             />
         ),
         featured: true,
-        internetConnectionRequired: true
+        internetConnectionRequired: true,
+        tags: ["Made by Scratch"]
     },
     {
         name: 'Makey Makey',
@@ -285,7 +266,8 @@ export default [
                 id="gui.extension.makeymakey.description"
             />
         ),
-        featured: true
+        featured: true,
+        tags: ["Made by Scratch"]
     },
     {
         name: 'micro:bit',
@@ -315,7 +297,8 @@ export default [
                 id="gui.extension.microbit.connectingMessage"
             />
         ),
-        helpLink: 'https://scratch.mit.edu/microbit'
+        helpLink: 'https://scratch.mit.edu/microbit',
+        tags: ["Made by Scratch"]
     },
     {
         name: 'LEGO MINDSTORMS EV3',
@@ -345,7 +328,8 @@ export default [
                 id="gui.extension.ev3.connectingMessage"
             />
         ),
-        helpLink: 'https://scratch.mit.edu/ev3'
+        helpLink: 'https://scratch.mit.edu/ev3',
+        tags: ["Made by Scratch"]
     },
     {
         name: 'LEGO BOOST',
@@ -376,7 +360,8 @@ export default [
                 id="gui.extension.boost.connectingMessage"
             />
         ),
-        helpLink: 'https://scratch.mit.edu/boost'
+        helpLink: 'https://scratch.mit.edu/boost',
+        tags: ["Made by Scratch"]
     },
     {
         name: 'LEGO Education WeDo 2.0',
@@ -407,7 +392,8 @@ export default [
                 id="gui.extension.wedo2.connectingMessage"
             />
         ),
-        helpLink: 'https://scratch.mit.edu/wedo'
+        helpLink: 'https://scratch.mit.edu/wedo',
+        tags: ["Made by Scratch"]
     },
     {
         name: 'Go Direct Force & Acceleration',
@@ -437,6 +423,7 @@ export default [
                 id="gui.extension.gdxfor.connectingMessage"
             />
         ),
-        helpLink: 'https://scratch.mit.edu/vernier'
-    }//*/
+        helpLink: 'https://scratch.mit.edu/vernier',
+        tags: ["Made by Scratch"]
+    },
 ];

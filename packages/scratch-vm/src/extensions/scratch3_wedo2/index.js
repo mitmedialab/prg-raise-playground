@@ -1444,8 +1444,8 @@ class Scratch3WeDo2Blocks {
                     if (motor.pendingTimeoutDelay) {
                         motor.turnOnFor(
                             motor.pendingTimeoutStartTime +
-                                motor.pendingTimeoutDelay -
-                                Date.now()
+                            motor.pendingTimeoutDelay -
+                            Date.now()
                         );
                     } else {
                         motor.turnOn();
@@ -1578,17 +1578,12 @@ class Scratch3WeDo2Blocks {
     _isTilted(direction) {
         switch (direction) {
             case WeDo2TiltDirection.ANY:
-                return (
-                    Math.abs(this._peripheral.tiltX) >=
-                        Scratch3WeDo2Blocks.TILT_THRESHOLD ||
-                    Math.abs(this._peripheral.tiltY) >=
-                        Scratch3WeDo2Blocks.TILT_THRESHOLD
-                );
+                return this._getTiltAngle(WeDo2TiltDirection.UP) >= Scratch3WeDo2Blocks.TILT_THRESHOLD ||
+                    this._getTiltAngle(WeDo2TiltDirection.DOWN) >= Scratch3WeDo2Blocks.TILT_THRESHOLD ||
+                    this._getTiltAngle(WeDo2TiltDirection.LEFT) >= Scratch3WeDo2Blocks.TILT_THRESHOLD ||
+                    this._getTiltAngle(WeDo2TiltDirection.RIGHT) >= Scratch3WeDo2Blocks.TILT_THRESHOLD;
             default:
-                return (
-                    this._getTiltAngle(direction) >=
-                    Scratch3WeDo2Blocks.TILT_THRESHOLD
-                );
+                return this._getTiltAngle(direction) >= Scratch3WeDo2Blocks.TILT_THRESHOLD;
         }
     }
 

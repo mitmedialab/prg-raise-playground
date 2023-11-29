@@ -127,7 +127,7 @@ class BT extends JSONRPC {
     didReceiveCall(method, params) {
         // TODO: Add peripheral 'undiscover' handling
         switch (method) {
-            case "didDiscoverPeripheral":
+            case 'didDiscoverPeripheral':
                 this._availablePeripherals[params.peripheralId] = params;
                 this._runtime.emit(
                     this._runtime.constructor.PERIPHERAL_LIST_UPDATE,
@@ -137,11 +137,29 @@ class BT extends JSONRPC {
                     window.clearTimeout(this._discoverTimeoutID);
                 }
                 break;
-            case "didReceiveMessage":
+            case 'userDidPickPeripheral':
+                this._availablePeripherals[params.peripheralId] = params;
+                this._runtime.emit(
+                    this._runtime.constructor.USER_PICKED_PERIPHERAL,
+                    this._availablePeripherals
+                );
+                if (this._discoverTimeoutID) {
+                    window.clearTimeout(this._discoverTimeoutID);
+                }
+                break;
+            case 'userDidNotPickPeripheral':
+                this._runtime.emit(
+                    this._runtime.constructor.PERIPHERAL_SCAN_TIMEOUT
+                );
+                if (this._discoverTimeoutID) {
+                    window.clearTimeout(this._discoverTimeoutID);
+                }
+                break;
+            case 'didReceiveMessage':
                 this._messageCallback(params); // TODO: refine?
                 break;
             default:
-                return "nah";
+                return 'nah';
         }
     }
 
