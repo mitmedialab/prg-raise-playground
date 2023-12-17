@@ -19,9 +19,9 @@ hackToFilterOutUnhelpfulRollupLogs();
   const { length } = extensionDirectories;
 
   if (individually) {
-    for (const dir of extensionDirectories) {
-      await bundleExtension(dir, length, watch);
-    }
+    await Promise.all(extensionDirectories.map((dir) => {
+      return bundleExtension(dir, length, watch);
+    }));
   } else {
     extensionDirectories.forEach(dir => bundleExtension(dir, length, watch));
   }
