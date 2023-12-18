@@ -6,7 +6,7 @@
   "scripts": {
     "directory": "echo teachableMachine",
     "test": "npm run test --prefix ../../ -- teachableMachine/index.test.ts",
-    "dev": "npm run dev --prefix ../../../ -- only=teachableMachine"
+    "dev": "npm run dev --prefix ../../../ -- --include teachableMachine"
   },
   "author": "",
   "license": "ISC",

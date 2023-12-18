@@ -43,8 +43,8 @@ npm run init
 # This should only need to be ran once (unless you checkout a branch that adds new package dependencies).
 # Takes ~1.5 minutes
 
-npm run dev
-# This starts up a development server, serving all the currently implemented extensions.
+npm run dev -- --include examples
+# This starts up a development server, serving the two "example" extensions.
 # It takes about ~20s to initially startup and serve everything.
 # Open http://localhost:8601/ in your browser (keep refreshing if nothing's coming up)
 ```
@@ -84,14 +84,17 @@ After you've [made your extension](#-making-an-extension), run the following com
 cd prg-extension-boilerplate/ # If not already there
 # Change directory (cd) to prg-extension-boilerplate/ 
 
-npm run dev only=<folder name of extension>
-# For example: npm run dev only=my_awesome_extension
+npm run dev -- --include <folder name of extension(s)>
+# For example: npm run dev -- --include my_awesome_extension
 # Start a development server to view your extension and reload it as you make changes
 # This command will take ~20s to startup and serve everything to http://localhost:8601/
 
+# Note: you can use the '-i' shorthand instead of writing out '--include'
+npm run dev -- -i <folder name of extension(s)>
+
 # Alternatively, serve all the currently implemented extensions
-npm run dev
-# NOTE: This will be more intensive on your computer
+npm run dev -- --include all
+# NOTE: This will be much more intensive on your computer
 ```
 
 Then, after navigating to http://localhost:8601/, follow the 'Adding Extensions' guidance in the [official extension documentation](https://en.scratch-wiki.info/wiki/Extension) to add your extension to the workspace. 

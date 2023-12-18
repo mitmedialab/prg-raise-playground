@@ -4,7 +4,8 @@
     "module": "CommonJS",
     "noImplicitAny": false,
     "esModuleInterop": true,
-    "watch": false
   },
-  "include": ["./**/*.ts"]
+  "include": [
+    "./**/*.ts"
+  ]
 }

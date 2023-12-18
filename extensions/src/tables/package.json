@@ -5,6 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "directory": "echo tables",
+    "dev": "npm run dev --prefix ../../../ -- --include tables",
     "test": "npm run test --prefix ../../ -- tables/index.test.ts"
   },
   "author": "",

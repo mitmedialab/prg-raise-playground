@@ -62,7 +62,7 @@ export default class ExampleExtension extends extension({ name: "Example" }) {
                 ```
              - Instead of running the following from the root of the project every time:
                 ```
-                npm run dev only=myExtension
+                npm run dev --include myExtension
                 ```
             - Inspect the `package.json` file to see all augmented scripts.
 
