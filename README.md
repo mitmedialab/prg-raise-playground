@@ -97,6 +97,8 @@ npm run dev -- --include all
 # NOTE: This will be much more intensive on your computer
 ```
 
+> **_FYI:_** If you're wondering why the extra `--` are necessary in the above commands, it's to ensure that node does not parse the `--include` flag (or any other options following the standalone `--`) as node options, and instead passes those arguments to the appropriate script. [See more.](https://nodejs.org/docs/latest-v8.x/api/cli.html#cli_1)
+
 Then, after navigating to http://localhost:8601/, follow the 'Adding Extensions' guidance in the [official extension documentation](https://en.scratch-wiki.info/wiki/Extension) to add your extension to the workspace. 
 
 As long as the development server is running (meaning the `npm run dev` command is still executing), every change you make to the extension file(s) will trigger the page to refresh and your changes will be reflected automagically 🪄. 
