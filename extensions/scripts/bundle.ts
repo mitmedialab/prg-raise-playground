@@ -7,8 +7,8 @@ import { bundleExtension } from "./bundles";
 import { hackToFilterOutUnhelpfulRollupLogs } from './utils/rollupHelper';
 
 const specialGlobs = new Map([
-  ["all", "!([.]|commo*)*/"],
-  ["examples", "*_example/"]
+  ["all", "!([.]|commo*)*/"], // all folders EXCEPT ".templates" & "common"
+  ["examples", "*_example/"], // all folders ending with "_example"
 ]);
 
 const { watch, include, parrallel } = options(process.argv);

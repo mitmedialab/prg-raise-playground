@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## 2023-12-22
+
+### Changed
+- Using `yargs` npm package to parse command-line options instead of homegrown functionality (no more ugly `only=`)
+- Extensions are now bundled / served explicilty (based on the `--include` / `-i` flag) instead of all being included by default
+  - I.e. `npm run dev` now **REQUIRES** the `--include` / `-i` flag to be provided to indicate which extension(s) to bundle & serve
+    - e.g. `npm run dev -- --include myAwesomeExtension` or `npm run dev -- -i myAwesomeExtension`
+- Based on input / work from @sanjaiyan-dev, now bundle all extensions concurrently
+  - This was previously avoided, since it could lead to out of memory issues (since `npm run dev` was bundling all extensions by default). Now that extension bundling is more explicit, this is is less of a concern, and extensions are bundled concurrently by default
+  - Concurrent bundling can be opted-out-of (as is the case for the github action the bundles all extensions) by setting the `--parrallel` / `-p` flag to `false`
+    - e.g. `npm run dev -- --include all -p false`
+
 ## 2023-07-14
 
 ### Changed
