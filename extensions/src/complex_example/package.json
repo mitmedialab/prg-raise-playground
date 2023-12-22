@@ -5,7 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "dir:name": "complex_example",
-    "dev": "npm run dev --prefix ../../../ -- only=complex_example",
+    "dev": "npm run dev --prefix ../../../ -- --include complex_example",
     "test": "npm run test --prefix ../../ -- complex_example/index.test.ts"
   },
   "author": "",

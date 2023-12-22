@@ -2,11 +2,9 @@ import path from "path";
 import assert from "assert";
 import fs from "fs";
 import chalk from "chalk";
-import { processArgs } from "$root/scripts/processArgs";
-import { UnionToTuple, ValueOf } from "$common";
-import { DirectoryArg, directoryDefault, directoryFlag, getPathToExtension, getPathToTemplate } from ".";
-
-const alreadyExists = (directory: string) => fs.existsSync(getPathToExtension(directory, false));
+import { ValueOf } from "$common";
+import { getPathToExtension, getPathToTemplate, directoryArg } from ".";
+import { parsePositionalArgs } from "$root/scripts/options";
 
 const OperationMap = {
   Default: "default",
@@ -28,10 +26,11 @@ Object.values(templateByOperation)
   .map(template => getPathToTemplate(template))
   .forEach(filepath => assert(fs.existsSync(filepath)));
 
-const { directory, operation } = processArgs<DirectoryArg & { operation: Operation }>(
-  { ...directoryFlag, operation: "op" },
-  { ...directoryDefault, operation: OperationMap.Default }
+const { directory, operation } = parsePositionalArgs(directoryArg,
+  ["operation", { type: "string", default: OperationMap.Default, choices: operations }]
 );
+
+const alreadyExists = (directory: string) => fs.existsSync(getPathToExtension(directory, false));
 
 const error = (msg: string) => { throw new Error(chalk.redBright(msg)) };
 

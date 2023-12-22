@@ -5,11 +5,10 @@
   "main": "index.ts",
   "scripts": {
     "directory": "echo onnxTest",
-    "dev": "npm run dev --prefix ../../../ -- only=onnxTest",
+    "dev": "npm run dev --prefix ../../../ -- --include onnxTest",
     "test": "npm run test --prefix ../../ -- onnxTest/index.test.ts"
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
-  }
+  "dependencies": {}
 }

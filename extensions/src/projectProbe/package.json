@@ -6,7 +6,7 @@
   "scripts": {
     "directory": "echo projectProbe",
     "test": "npm run test --prefix ../../ -- projectProbe/index.test.ts",
-    "dev": "npm run dev --prefix ../../../ -- only=projectProbe",
+    "dev": "npm run dev --prefix ../../../ -- --include projectProbe",
     "add:ui": "npm run add:ui --prefix ../../../  -- projectProbe",
     "add:arg": "npm run add:arg --prefix ../../../-- projectProbe"
   },

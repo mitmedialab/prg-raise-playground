@@ -6,7 +6,7 @@
   "scripts": {
     "directory": "echo objectDetection",
     "test": "npm run test --prefix ../../ -- objectDetection/index.test.ts",
-    "dev": "npm run dev --prefix ../../../ -- only=objectDetection",
+    "dev": "npm run dev --prefix ../../../ -- --include objectDetection",
     "add:ui": "npm run add:ui --prefix ../../../  -- objectDetection",
     "add:arg": "npm run --prefix ../../../-- objectDetection"
   },
