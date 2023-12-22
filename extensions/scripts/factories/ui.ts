@@ -1,8 +1,8 @@
 import chalk from "chalk";
 import path from "path";
-import { copyTemplateToDestinationAndIncrementIfExists, processDirectoryArg } from ".";
+import { copyTemplateToDestinationAndIncrementIfExists, getDirectoryArg } from ".";
 
-const directory = processDirectoryArg();
+const directory = getDirectoryArg();
 const destination = copyTemplateToDestinationAndIncrementIfExists(directory, "UI.svelte");
 
 const name = path.basename(destination).replace(path.extname(destination), "");

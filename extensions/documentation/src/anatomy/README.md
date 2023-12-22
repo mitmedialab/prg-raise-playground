@@ -28,7 +28,7 @@ Below are the files you should always find within an extension's directory:
                 ```
              - Instead of running the following from the root of the project every time:
                 ```
-                npm run dev --include myExtension
+                npm run dev -- --include myExtension
                 ```
             - Inspect the `package.json` file to see all augmented scripts.
 

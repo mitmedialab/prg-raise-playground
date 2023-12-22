@@ -1,7 +1,7 @@
 import chalk from "chalk";
-import { processDirectoryArg, copyTemplateToDestination } from ".";
+import { copyTemplateToDestination, getDirectoryArg } from ".";
 
-const directory = processDirectoryArg();
+const directory = getDirectoryArg();
 const destination = copyTemplateToDestination(directory, "index.test.ts");
 
 const msg = [

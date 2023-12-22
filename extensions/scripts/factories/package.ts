@@ -1,6 +1,6 @@
 import fs from "fs";
 import chalk from "chalk";
-import { processDirectoryArg, copyTemplateToDestination } from ".";
+import { copyTemplateToDestination, getDirectoryArg, } from ".";
 import { splitOnCapitals } from "$common";
 
 const convertToPackageName = (name: string) =>
@@ -18,7 +18,7 @@ const fillInPackageDetails = (location: string, name: string) => {
   fs.writeFileSync(location, text, { encoding });
 }
 
-const directory = processDirectoryArg();
+const directory = getDirectoryArg();
 const file = copyTemplateToDestination(directory, "package.json");
 fillInPackageDetails(file, directory);
 

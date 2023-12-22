@@ -1,8 +1,10 @@
 import path from "path";
 import fs from "fs";
+import yargs, { type PositionalOptions, type InferredOptionType, choices } from 'yargs';
+import { hideBin } from 'yargs/helpers'
 import { extensionsSrc, templatesDirectory } from "scripts/utils/fileSystem";
 import chalk from "chalk";
-import { processArgs } from "$root/scripts/processArgs";
+import { PositionalArg, parsePositionalArgs } from "$root/scripts/options";
 
 export const getPathToTemplate = (name: string) => {
   const location = path.join(templatesDirectory, name);
@@ -50,17 +52,14 @@ export const copyTemplateToDestinationAndIncrementIfExists = (extensionDirectory
   return destination;
 }
 
-export type DirectoryArg = {
-  directory: string;
-}
-
-export const directoryFlag: DirectoryArg = { directory: "dir" };
-export const directoryDefault: DirectoryArg = { directory: null };
-
 export const error = (msg: string) => { throw new Error(chalk.redBright(msg)) };
 
-export const processDirectoryArg = () => {
-  const { directory } = processArgs<DirectoryArg>(directoryFlag, directoryDefault);
-  if (!directory) error("An extension directory must be provided in order to add a ui to an extension.");
-  return directory;
-}
+export const checkPositionalArgs = <T>(argv: T) => { };
+
+export const directoryArg = ["directory", {
+  type: "string",
+  demandOption: true,
+  description: "The name of the extension directory"
+}] as const satisfies PositionalArg;
+
+export const getDirectoryArg = () => parsePositionalArgs(directoryArg).directory;
