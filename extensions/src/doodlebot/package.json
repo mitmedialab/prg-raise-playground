@@ -1,0 +1,19 @@
+{
+  "name": "doodlebot-extension",
+  "version": "1.0.0",
+  "description": "An extension created using the PRG AI Blocks framework",
+  "main": "index.ts",
+  "scripts": {
+    "directory": "echo doodlebot",
+    "test": "npm run test --prefix ../../ -- doodlebot/index.test.ts",
+    "dev": "npm run dev --prefix ../../../ -- --include doodlebot",
+    "add:ui": "npm run add:ui --prefix ../../../  -- doodlebot",
+    "add:arg": "npm run --prefix ../../../-- doodlebot"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/web-bluetooth": "^0.0.20",
+    "events": "^3.3.0"
+  }
+}
