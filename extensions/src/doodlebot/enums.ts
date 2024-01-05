@@ -25,6 +25,9 @@ export const command = {
     disable: "x",
     motor: "m",
     arc: "t",
+    wifi: "k",
+    lowPower: "q",
+    display: "w"
 } as const;
 
 export type CommandKey = keyof typeof command;
@@ -52,4 +55,21 @@ export const keyBySensor = Object.fromEntries(Object.entries(sensor).map(([key, 
 
 export const motorCommandReceived = "ms";
 
+export const networkStatus = {
+    ipPrefix: "RPI ipaddr:",
+    hostnamePrefix: "hname:",
+} as const;
+
+export type NetworkStatusKey = keyof typeof networkStatus;
+export type NetworkStatus = typeof networkStatus[NetworkStatusKey];
+
 export type ReceivedCommand = Sensor | typeof motorCommandReceived;
+
+export const port = {
+    websocket: "8765",
+    camera: "8000"
+}
+
+const endpoint = {
+    camera: "video_feed'"
+}
