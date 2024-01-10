@@ -4,7 +4,12 @@ import UartService from "./communication/UartService";
 import { Command, NetworkStatus, ReceivedCommand, SensorKey, command, keyBySensor, motorCommandReceived, networkStatus, port, sensor } from "./enums";
 
 export type Services = Awaited<ReturnType<typeof Doodlebot.getServices>>;
-export type MotorStepRequest = { steps: number, stepsPerSecond: number };
+export type MotorStepRequest = {
+    /** Number of steps for the stepper (+ == forward, - == reverse) */
+    steps: number,
+    /** Number of steps/second (rate) of stepper */
+    stepsPerSecond: number
+};
 export type Bumper = { front: number, back: number };
 export type Vector3D = { x: number, y: number, z: number };
 export type Color = { red: number, green: number, blue: number, alpha: number };
@@ -276,12 +281,18 @@ export default class Doodlebot {
     }
 
     /**
+     * @typedef {Object} MotorStepRequest
+     * @property {number} steps - The number of steps the motor should move.
+     * @property {number} stepsPerSecond - The speed of the motor in steps per second.
+     */
+
+    /**
      * 
      * @param type 
-     * @param left 
-     * @param rightSteps 
+     * @param left {MotorStepRequest}
+     * @param right 
      */
-    async motorCommand(type: "steps", left: MotorStepRequest, rightSteps: MotorStepRequest);
+    async motorCommand(type: "steps", left: MotorStepRequest, right: MotorStepRequest);
     /**
      * 
      * @param type 
@@ -294,7 +305,7 @@ export default class Doodlebot {
      * @param type 
      */
     async motorCommand(type: "stop");
-    async motorCommand(type: string, ...args: any[]) {
+    async motorCommand(type: MotorCommand, ...args: any[]) {
         const { pending: { motor: pending } } = this;
         switch (type) {
             case "steps": {
@@ -377,12 +388,16 @@ export default class Doodlebot {
         }));
     }
 
-    async display(type: "clear");
+    async display(type: "clear"): Promise<void>;
     async display(type: DisplayCommand) {
         switch (type) {
             case "clear":
                 await this.sendWebsocketCommand(command.display, "c");
                 break;
         }
+    }
+
+    getNetworkCredentials(): NetworkCredentials {
+        return { ssid: this.ssid, password: this.wifiPassword };
     }
 }

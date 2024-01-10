@@ -24,15 +24,7 @@
  */
 
 import EventDispatcher from "./EventDispatcher";
-import ServiceHelper, { Service } from "./ServiceHelper";
-
-/**
- * Events raised by the UART service
- * newListener: keyof UartEvents;
- * removeListener: keyof UartEvents;
- * receive: Uint8Array;
- * receiveText: string;
- */
+import ServiceHelper from "./ServiceHelper";
 
 /**
  * Events raised by the UART service

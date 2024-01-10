@@ -9,32 +9,30 @@ const details: ExtensionMenuDisplayDetails = {
   insetIconURL: "Replace with the name of your inset icon image file (which should be placed in the same directory as this file)"
 };
 
-export default class DoodlebotBlocks extends extension(details, "indicators") {
-
-  private doodlebot: Doodlebot;
+export default class DoodlebotBlocks extends extension(details, "ui", "indicators") {
+  doodlebot: Doodlebot;
+  private indicator: Promise<{ close(): void; }>
 
   init(env: Environment) {
+    this.openUI("Connect");
+    this.setIndicator("disconnected");
   }
 
-  async connectToBLE() {
-    console.log("Getting BLE device");
-    const { bluetooth } = window.navigator;
-    if (!bluetooth) return alert("Your browser does not allow / support bluetooth.");
-    try {
-      const namePrefix = "Bluefruit52"; /* "Saira" "BBC micro:bit"; TODO: might delete? */
-      this.doodlebot = await Doodlebot.tryCreate("", "", bluetooth, { namePrefix });
-      await this.indicateFor({ position: "category", msg: "Connected to robot" }, 1000);
-    } catch (err) { DoodlebotBlocks.ProcessConnectionError(err); }
+  setDoodlebot(doodlebot: Doodlebot) {
+    this.doodlebot = doodlebot;
+    this.setIndicator("connected");
   }
 
-  @buttonBlock("Test Robot")
-  test() {
-
+  async setIndicator(status: "connected" | "disconnected") {
+    if (this.indicator) (await this.indicator).close;
+    this.indicator = status == "connected"
+      ? this.indicate({ position: "category", msg: "Connected to robot", type: "success" })
+      : this.indicate({ position: "category", msg: "Not connected to robot", type: "warning" });
   }
 
   @buttonBlock("Connect Robot")
   connect() {
-    this.connectToBLE();
+    this.openUI("Connect");
   }
 
   @block({
@@ -66,17 +64,28 @@ export default class DoodlebotBlocks extends extension(details, "indicators") {
     type: "command",
     text: "clear display"
   })
-  clearDisplay() {
-
+  async clearDisplay() {
+    await this.doodlebot?.display("clear");
   }
 
-  private static ProcessConnectionError(err: Error) {
-    console.error(err);
-    if (err.message == "Bluetooth adapter not available.")
-      alert("Your device does not support BLE connections.");
-    if (err.message == "User cancelled the requestDevice() chooser.")
-      alert("You must select a device to connect to. Please try again.");
-    else if (err.message !== "User cancelled the requestDevice() chooser.")
-      alert("There was a problem connecting your device, please try again or request assistance.");
+
+  @block({
+    type: "command",
+    text: (direction, steps) => `drive ${direction} for ${steps} steps`,
+    args: [
+      { type: "string", options: ["forward", "backward", "left", "right"], defaultValue: "forward" },
+      { type: "number", defaultValue: 50 }
+    ]
+  })
+  async drive(direction: "left" | "right" | "forward" | "backward", steps: number) {
+    const leftSteps = direction == "left" || direction == "backward" ? -steps : steps;
+    const rightSteps = direction == "right" || direction == "backward" ? -steps : steps;
+    const stepsPerSecond = 100;
+
+    await this.doodlebot?.motorCommand(
+      "steps",
+      { steps: leftSteps, stepsPerSecond },
+      { steps: rightSteps, stepsPerSecond }
+    );
   }
 }

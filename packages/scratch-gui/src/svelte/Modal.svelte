@@ -16,13 +16,30 @@
     type ExtensionManager = _ExtensionManager & {
         getAuxiliaryObject: (
             id: ExtensionID,
-            name: ComponentName
+            name: ComponentName,
         ) => UIConstructor;
         getExtensionInstance: (id: ExtensionID) => ExtensionInstance;
     };
     type VirtualMachine = _VirtualMachine & {
         extensionManager: ExtensionManager;
     };
+
+    async function untilDefined<T>(
+        getter: () => T,
+        delay: number = 100,
+    ): Promise<T> {
+        let timeout: NodeJS.Timeout;
+        let value = getter();
+        while (!value) {
+            await new Promise((resolve) => {
+                clearTimeout(timeout);
+                timeout = setTimeout(resolve, delay);
+            });
+            value = getter();
+        }
+        clearTimeout(timeout);
+        return value;
+    }
 </script>
 
 <script lang="ts">
@@ -43,15 +60,13 @@
     let constructed: any;
 
     onMount(async () => {
-        const props = {
-            close,
-            extension: vm.extensionManager.getExtensionInstance(id),
-        };
-        const options = { target, props };
-        const constructor = vm.extensionManager.getAuxiliaryObject(
-            id,
-            component
+        const { extensionManager } = vm;
+        const extension = await untilDefined(() =>
+            extensionManager.getExtensionInstance(id),
         );
+        const props = { close, extension };
+        const options = { target, props };
+        const constructor = extensionManager.getAuxiliaryObject(id, component);
         constructed = new constructor(options);
         return;
     });
