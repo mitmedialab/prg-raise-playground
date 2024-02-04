@@ -39,7 +39,7 @@ When invoking the `@block` decorator function on our method that uses a custom a
 
 Then, we modify the UI (Svelte) component we created earlier to match our block function argument, like so:
 
-[](./CustomArgument.svelte)
+[](./MyArgUI.svelte)
 
 
 ### (Advanced) Architecture
