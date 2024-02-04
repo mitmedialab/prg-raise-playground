@@ -4,7 +4,7 @@ import { FrameworkID, untilCondition, extensionBundleEvent, blockBundleEvent } f
 import { type Plugin } from "rollup";
 import { appendToRootDetailsFile, populateMenuFileForExtension } from "../extensionsMenu";
 import { exportAllFromModule, toNamedDefaultExport } from "../utils/importExport";
-import { default as glob } from 'glob';
+import { glob } from 'glob';
 import { commonDirectory, deleteAllFilesInDir, extensionBundlesDirectory, fileName, generatedMenuDetailsDirectory, getBundleFile, getDirectoryAndFileName, tsToJs } from "../utils/fileSystem";
 import { BundleInfo } from ".";
 import ts from "typescript";

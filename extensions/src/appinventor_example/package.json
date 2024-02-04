@@ -6,7 +6,7 @@
   "scripts": {
     "directory": "echo appinventor_example",
     "test": "npm run test --prefix ../../ -- appinventor_example/index.test.ts",
-    "dev": "npm run dev --prefix ../../../ -- only=appinventor_example",
+    "dev": "npm run dev --prefix ../../../ -- --include appinventor_example",
     "add:ui": "npm run add:ui --prefix ../../../  -- appinventor_example",
     "add:arg": "npm run --prefix ../../../-- appinventor_example"
   },

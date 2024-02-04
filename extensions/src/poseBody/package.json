@@ -5,6 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "directory": "echo poseBody",
+    "dev": "npm run dev --prefix ../../../ -- --include poseBody",
     "test": "npm run test --prefix ../../ -- poseBody/index.test.ts"
   },
   "author": "",

@@ -6,7 +6,7 @@
   "scripts": {
     "directory": "echo poseFace",
     "test": "npm run test --prefix ../../ -- poseFace/index.test.ts",
-    "dev": "npm run dev --prefix ../../../ -- only=poseFace"
+    "dev": "npm run dev --prefix ../../../ -- --include poseFace"
   },
   "author": "",
   "license": "ISC"

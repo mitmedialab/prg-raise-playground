@@ -6,7 +6,7 @@
   "scripts": {
     "directory": "echo selfieSegmentation",
     "test": "npm run test --prefix ../../ -- selfieSegmentation/index.test.ts",
-    "dev": "npm run dev --prefix ../../../ -- only=selfieSegmentation",
+    "dev": "npm run dev --prefix ../../../ -- --include selfieSegmentation",
     "add:ui": "npm run add:ui --prefix ../../../  -- selfieSegmentation",
     "add:arg": "npm run --prefix ../../../-- selfieSegmentation"
   },
