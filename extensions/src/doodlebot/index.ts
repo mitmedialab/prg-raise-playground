@@ -30,6 +30,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
       : this.indicate({ position: "category", msg: "Not connected to robot", type: "warning" });
   }
 
+  /** BEGIN Block Methods */
+
   @buttonBlock("Connect Robot")
   connect() {
     this.openUI("Connect");
@@ -88,4 +90,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
       { steps: rightSteps, stepsPerSecond }
     );
   }
+
+  /** END Block Methods */
+
 }
