@@ -28,7 +28,7 @@ This document will be most helpful for people doing more complex development, li
 ## Anatomy of an Extension Directory
 
 > NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
-If you want to edit it, please go to [extensions/documentation/src/anatomy/README.md](documentation/src/anatomy/README.md)
+If you want to edit it, please go to [extensions/documentation/src/anatomy/README.md](documentation/src/anatomy/README.md) ([See more](documentation/README.md))
 
 Extensions are defined by all the files that appear in their associated directory, located within `/extensions/src/`.
 
@@ -93,7 +93,7 @@ A great to start digging into the files that make up an Extension is to check ou
 ## Testing Extensions
 
 > NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
-If you want to edit it, please go to [extensions/documentation/src/testing/README.md](documentation/src/testing/README.md)
+If you want to edit it, please go to [extensions/documentation/src/testing/README.md](documentation/src/testing/README.md) ([See more](documentation/README.md))
 
 Writing tests is an important part of creating maintainable software.
 
@@ -402,7 +402,7 @@ createTestSuite({ Extension, __dirname }, {
 ## Programming Tutorial
 
 > NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
-If you want to edit it, please go to [extensions/documentation/src/tutorial/README.md](documentation/src/tutorial/README.md)
+If you want to edit it, please go to [extensions/documentation/src/tutorial/README.md](documentation/src/tutorial/README.md) ([See more](documentation/README.md))
 
 **_(Work in progress)_**
 
@@ -570,7 +570,7 @@ You do this by providing "add ons" as arguments, which come after the first `det
 
 Your code editor will help you see which "add ons" are available -- simply start to try to type after the first argument of the `extension` function, and suggestions (and documentation) will pop up.
 
-![Gif of extension addOns being suggested](/assets/addOns.gif)
+![Gif of extension addOns being suggested](/documentation/assets/addOns.gif)
 
 ### Putting it all together
 
@@ -603,7 +603,7 @@ export default class Example extends BaseClass {
 ## Creating UI for Extensions
 
 > NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
-If you want to edit it, please go to [extensions/documentation/src/ui/README.md](documentation/src/ui/README.md)
+If you want to edit it, please go to [extensions/documentation/src/ui/README.md](documentation/src/ui/README.md) ([See more](documentation/README.md))
 
 To develop UI for your extension, we ask that you implement an interface that will be rendered in a [modal](https://blog.hubspot.com/website/modal-web-design#:~:text=What%20is%20a%20modal?) / pop-up.
 
@@ -687,7 +687,7 @@ You can also create UI in order to accomplish custom arguments. Hop over to [Add
 ## Porting an Extension to use our Framework & Typescript
 
 > NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
-If you want to edit it, please go to [extensions/documentation/src/porting/README.md](documentation/src/porting/README.md)
+If you want to edit it, please go to [extensions/documentation/src/porting/README.md](documentation/src/porting/README.md) ([See more](documentation/README.md))
 
 *Want to move your vanilla-JS extension to our Typescript framework and reap the benefits of type safety and code generation?* **Great!**
 
@@ -1132,7 +1132,7 @@ export default class SomeBlocks extends Extension<Details, {
 ## Saving Custom Data for an Extension
 
 > NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
-If you want to edit it, please go to [extensions/documentation/src/saveLoad/README.md](documentation/src/saveLoad/README.md)
+If you want to edit it, please go to [extensions/documentation/src/saveLoad/README.md](documentation/src/saveLoad/README.md) ([See more](documentation/README.md))
 
 The Extension Framework allows you to easily save arbitrary data for an extension when an `.sb3` (Scratch 3 format) project is saved. 
 
@@ -1185,7 +1185,7 @@ export default class SaveLoadExample extends extension({ name }, "customSaveData
 ## App Inventor Cross-Compilation / Interoperability
 
 > NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
-If you want to edit it, please go to [extensions/documentation/src/appInventor/README.md](documentation/src/appInventor/README.md)
+If you want to edit it, please go to [extensions/documentation/src/appInventor/README.md](documentation/src/appInventor/README.md) ([See more](documentation/README.md))
 
 This effort is a work in progress and **_not_** ready to use. 
 
@@ -1227,7 +1227,7 @@ export default class extends extension({ name: "App Inventor Example", tags: ["P
 ## Making use of the Block Utility & Block ID
 
 > NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
-If you want to edit it, please go to [extensions/documentation/src/blockUtility/README.md](documentation/src/blockUtility/README.md)
+If you want to edit it, please go to [extensions/documentation/src/blockUtility/README.md](documentation/src/blockUtility/README.md) ([See more](documentation/README.md))
 
 The Scratch runtime will pass a `BlockUtility` object to every block method when it is executed. 
 
@@ -1260,7 +1260,7 @@ export default class extends extension({ name: "Block Utility example" }) {
 ## Adding Custom Arguments
 
 > NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
-If you want to edit it, please go to [extensions/documentation/src/customArguments/README.md](documentation/src/customArguments/README.md)
+If you want to edit it, please go to [extensions/documentation/src/customArguments/README.md](documentation/src/customArguments/README.md) ([See more](documentation/README.md))
 
 The Extension Framework allows us to do a lot of cool stuff that would be tricky or impossible to do if we were using the [default Scratch Extension workflow]().
 
@@ -1357,7 +1357,66 @@ export default class ExtensionWithCustomArgument extends extension(details, "cus
 
 Then, we modify the UI (Svelte) component we created earlier to match our block function argument, like so:
 
-Error! This snippet couldn't be located. Please contact the repo maintainer.
+```ts
+<script lang="ts">
+  import Extension from ".";
+  import { ParameterOf, ArgumentEntry, ArgumentEntrySetter } from "$common";
+
+  /**
+   * This type will hold onto the type of our custom argument,
+   * and ensure this UI remains in sync with the block function argument it's associated with.
+   * To do so, we make use of the 'ParameterOf' utility type.
+   * The first generic argument is our Extension.
+   * The second generic argument is the name of the block function this argument belongs to.
+   * The third generic argument is the index of the argument (since here we want the first argument, we use an index of 0)
+   */
+  type Value = ParameterOf<Extension, "blockWithCustomArgument", 0>;
+
+  /**
+   * This function will be used to set the value of your custom argument.
+   */
+  export let setter: ArgumentEntrySetter<Value>;
+
+  /**
+   * This is the current value of the custom argument at the time of opening this UI.
+   * Changing this value will have no effect -- instead use the `setter` function.
+   */
+  export let current: ArgumentEntry<Value>;
+
+  /**
+   * This is a reference to your extension.
+   * It should be treated as 'readonly', meaning you should only pull information FROM your extension to populate this UI.
+   * You should NOT use this UI to modify the extension, as that would both confuse the user and anyone developing the extension.
+   *
+   * If you need a UI to control the extension, instead use the Modal-style UI.
+   * @see https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extensions#creating-ui-for-extensions
+   */
+  export let extension: Extension;
+
+  /**
+   * Create variables to store the different parts of our argument's value
+   */
+  let { a, b, c } = current.value;
+
+  /**
+   * Use Svelte's reactivity to call the `setter` function whenever one of our inputs change
+   */
+  $: setter({ value: { a, b, c }, text: `[${a}, ${b}, ${c}]` });
+</script>
+
+<div>
+  <input bind:value={a} type="number" />
+  <input bind:value={b} type="text" />
+  <input bind:checked={c} type="checkbox" />
+</div>
+
+<style>
+</style>
+
+```
+
+> Included links:
+> * https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extensions#creating-ui-for-extensions
 
 
 ### (Advanced) Architecture
@@ -1414,7 +1473,7 @@ From there, the extension framework handles the rest:
 ## Extension Menu Tags / Categories
 
 > NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
-If you want to edit it, please go to [extensions/documentation/src/extensionMenuTags/README.md](documentation/src/extensionMenuTags/README.md)
+If you want to edit it, please go to [extensions/documentation/src/extensionMenuTags/README.md](documentation/src/extensionMenuTags/README.md) ([See more](documentation/README.md))
 
 Extensions can be associated with certain `tags` (or categories), which are visible in the [Extensions Menu](https://en.scratch-wiki.info/wiki/Extension#Adding_Extensions) and allow users to more easily find the extensions they are looking for.
 
@@ -1439,7 +1498,7 @@ To add define new `tags`, add an additional string literal to the [Tag type]().
 # Adding inline images to the text of blocks
 
 > NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
-If you want to edit it, please go to [extensions/documentation/src/inlineImages/README.md](documentation/src/inlineImages/README.md)
+If you want to edit it, please go to [extensions/documentation/src/inlineImages/README.md](documentation/src/inlineImages/README.md) ([See more](documentation/README.md))
 
 As noted in [Scratch's extension documentation](https://github.com/scratchfoundation/scratch-vm/blob/develop/docs/extensions.md#adding-an-inline-image), Blocks support arguments that can display images inline within their text display.
 
@@ -1492,7 +1551,7 @@ export default class ExampleExtensionWithInlineImages extends extension({
 ## Reference
 
 > NOTE: This is a generated README section, so no edits you make to it in this file will be saved. 
-If you want to edit it, please go to [extensions/documentation/src/reference/README.md](documentation/src/reference/README.md)
+If you want to edit it, please go to [extensions/documentation/src/reference/README.md](documentation/src/reference/README.md) ([See more](documentation/README.md))
 
 ### How Everything Fits Together
 ```mermaid

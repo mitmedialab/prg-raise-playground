@@ -94,12 +94,13 @@ const sortEntries = (entries: Entries): OrderedEntries => {
 
 const addIsGeneratedWarning = (entries: OrderedEntries): OrderedEntries => {
   const warning = "\n> NOTE: This is a generated README section, so no edits you make to it in this file will be saved. \nIf you want to edit it, please go to ";
-  const repoURL = "mitmedialab/prg-extension-boilerplate/tree/dev";
+  const documentationREADME = path.relative(extensionsRoot, path.join(documentationRoot, "README.md"));
+  const seeMore = `([See more](${documentationREADME}))`
   return entries.map(({ content, pathToREADME }) => {
     const lines = content.split("\n");
     const relativeToDocumentation = path.relative(extensionsRoot, pathToREADME);
     const relativeToExtensions = path.join("extensions", path.relative(extensionsRoot, pathToREADME));
-    lines.splice(1, 0, warning + `[${relativeToExtensions}](${relativeToDocumentation})`);
+    lines.splice(1, 0, warning + `[${relativeToExtensions}](${relativeToDocumentation}) ${seeMore}`);
     return { pathToREADME, content: lines.join("\n") }
   });
 }
