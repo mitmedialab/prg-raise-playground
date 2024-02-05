@@ -1,7 +1,7 @@
 import EventEmitter from "events";
 import { Service } from "./communication/ServiceHelper";
 import UartService from "./communication/UartService";
-import { Command, NetworkStatus, ReceivedCommand, SensorKey, command, keyBySensor, motorCommandReceived, networkStatus, port, sensor } from "./enums";
+import { Command, DisplayKey, NetworkStatus, ReceivedCommand, SensorKey, command, display, keyBySensor, motorCommandReceived, networkStatus, port, sensor } from "./enums";
 
 export type Services = Awaited<ReturnType<typeof Doodlebot.getServices>>;
 export type MotorStepRequest = {
@@ -29,7 +29,6 @@ type Subscription<T extends SubscriptionTarget> = {
 }
 
 type MotorCommand = "steps" | "arc" | "stop";
-type DisplayCommand = "clear";
 
 const trimNewtworkStatusMessage = (message: string, prefix: NetworkStatus) => message.replace(prefix, "").trim();
 
@@ -388,13 +387,9 @@ export default class Doodlebot {
         }));
     }
 
-    async display(type: "clear"): Promise<void>;
-    async display(type: DisplayCommand) {
-        switch (type) {
-            case "clear":
-                await this.sendWebsocketCommand(command.display, "c");
-                break;
-        }
+    async display(type: DisplayKey) {
+        const value = display[type];
+        await this.sendWebsocketCommand(command.display, value);
     }
 
     getNetworkCredentials(): NetworkCredentials {

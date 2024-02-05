@@ -1,12 +1,13 @@
 import { Environment, ExtensionMenuDisplayDetails, extension, block, buttonBlock } from "$common";
-import { Anim, anims } from "./enums";
+import { DisplayKey, displayKeys } from "./enums";
 import Doodlebot from "./Doodlebot";
 
 const details: ExtensionMenuDisplayDetails = {
   name: "Doodlebot",
   description: "Program a doodlebot robot",
   iconURL: "Replace with the name of your icon image file (which should be placed in the same directory as this file)",
-  insetIconURL: "Replace with the name of your inset icon image file (which should be placed in the same directory as this file)"
+  insetIconURL: "Replace with the name of your inset icon image file (which should be placed in the same directory as this file)",
+  tags: ["Made by PRG"]
 };
 
 export default class DoodlebotBlocks extends extension(details, "ui", "indicators") {
@@ -26,41 +27,18 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   async setIndicator(status: "connected" | "disconnected") {
     if (this.indicator) (await this.indicator).close;
     this.indicator = status == "connected"
-      ? this.indicate({ position: "category", msg: "Connected to robot", type: "success" })
-      : this.indicate({ position: "category", msg: "Not connected to robot", type: "warning" });
+      ? this.indicate({ position: "category", msg: "Connected to robot", type: "success", retry: true })
+      : this.indicate({ position: "category", msg: "Not connected to robot", type: "warning", retry: true });
   }
 
-  /** BEGIN Block Methods */
+  // #region Block Methods
 
   @buttonBlock("Connect Robot")
   connect() {
     this.openUI("Connect");
   }
 
-  @block({
-    type: "command",
-    text: (anim) => `play ${anim} animation`,
-    arg: {
-      type: "string",
-      options: anims,
-      defaultValue: "happy"
-    }
-  })
-  playAnimation(anim: Anim) {
-
-  }
-
-  @block({
-    type: "command",
-    text: (text) => `display text ${text}`,
-    arg: {
-      type: "string",
-      defaultValue: "Hello!"
-    }
-  })
-  displayText(text: string) {
-
-  }
+  // #region Websocket-based commands
 
   @block({
     type: "command",
@@ -70,6 +48,18 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     await this.doodlebot?.display("clear");
   }
 
+  @block({
+    type: "command",
+    text: (type: DisplayKey) => `display ${type}`,
+    arg: { type: "string", options: displayKeys.filter(key => key !== "clear"), defaultValue: "happy" }
+  })
+  async setDisplay(display: DisplayKey) {
+    await this.doodlebot?.display(display);
+  }
+
+  // #endregion
+
+  // #region BLE-based commands
 
   @block({
     type: "command",
@@ -91,6 +81,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     );
   }
 
-  /** END Block Methods */
+  // #endregion
+
+  // #endregion
 
 }

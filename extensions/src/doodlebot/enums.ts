@@ -51,6 +51,18 @@ export type SensorKey = keyof typeof sensor;
 export type Sensor = typeof sensor[SensorKey];
 export type SensorKeyByValue = { [K in SensorKey as typeof sensor[K]]: K };
 
+export const display = {
+    clear: "c",
+    sad: "s",
+    happy: "T",
+    child: "H"
+} as const;
+
+export type DisplayKey = keyof typeof display;
+export type Display = typeof display[DisplayKey];
+export const displayKeys = Object.keys(display) as DisplayKey[];
+
+
 export const keyBySensor = Object.fromEntries(Object.entries(sensor).map(([key, value]) => [value, key])) as SensorKeyByValue;
 
 export const motorCommandReceived = "ms";
