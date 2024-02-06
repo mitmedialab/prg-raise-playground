@@ -13,9 +13,14 @@
   const invoke: ReactiveInvoke<Extension> = (functionName, ...args) =>
     reactiveInvoke((extension = extension), functionName, args);
 
+  const storageKeys = {
+    ssid: "doodlebot-ssid",
+    password: "doodlebot-password",
+  };
+
   let error: string;
-  let ssid: string;
-  let password: string;
+  let ssid = localStorage.getItem(storageKeys.ssid) ?? "";
+  let password = localStorage.getItem(storageKeys.password) ?? "";
 
   const inputs = {
     ssid: null as HTMLInputElement,
@@ -26,6 +31,8 @@
     try {
       const doodlebot = await Doodlebot.tryCreate(ssid, password, bluetooth);
       invoke("setDoodlebot", doodlebot);
+      localStorage.setItem(storageKeys.ssid, ssid);
+      localStorage.setItem(storageKeys.password, password);
       close();
     } catch (err) {
       invoke("setIndicator", "disconnected");
@@ -75,7 +82,7 @@
           <input
             bind:this={inputs.password}
             bind:value={password}
-            type="text"
+            type="password"
             placeholder="e.g. 12345"
           />
         </p>
