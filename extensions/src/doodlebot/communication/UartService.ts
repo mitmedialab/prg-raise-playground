@@ -87,6 +87,7 @@ export default class UartService extends EventDispatcher<UartEvents> {
      * @param value The text to send
      */
     async sendText(value) {
+        console.log("sending text", value);
         const arrayData = value.split("").map((e) => e.charCodeAt(0));
         return this.helper.setCharacteristicValue(
             UartService.rx_uuid,

@@ -193,6 +193,7 @@ export default class Doodlebot {
                 this.updateNetworkStatus(command, parameters[0]);
                 continue;
             }
+            console.log({ command, parameters });
             switch (command) {
                 case motorCommandReceived:
                     this.onMotor.emit(events.stop);
@@ -307,6 +308,7 @@ export default class Doodlebot {
      */
     async motorCommand(type: "stop");
     async motorCommand(type: MotorCommand, ...args: any[]) {
+
         const { pending: { motor: pending } } = this;
         switch (type) {
             case "steps": {

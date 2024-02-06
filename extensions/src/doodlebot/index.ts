@@ -66,7 +66,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     text: (direction, steps) => `drive ${direction} for ${steps} steps`,
     args: [
       { type: "string", options: ["forward", "backward", "left", "right"], defaultValue: "forward" },
-      { type: "number", defaultValue: 50 }
+      { type: "number", defaultValue: 2000 }
     ]
   })
   async drive(direction: "left" | "right" | "forward" | "backward", steps: number) {
