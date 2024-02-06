@@ -155,6 +155,7 @@ export default class Doodlebot {
     }
 
     private parseCommand(command: string) {
+        console.log({ command });
         const lines = command.split("(").map((line) => line.replace(")", ""));
         return lines.map((line) => {
             const [command, ...parameters] = line.split(",") as [ReceivedCommand, ...string[]];
@@ -186,6 +187,7 @@ export default class Doodlebot {
     }
 
     private receiveTextBLE(event: CustomEvent<string>) {
+        console.log({ event });
         for (const { command, parameters } of this.parseCommand(event.detail)) {
             if (command.startsWith(networkStatus.ipPrefix)) {
                 this.updateNetworkStatus(command, parameters[0]);
