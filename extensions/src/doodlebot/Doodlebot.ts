@@ -231,6 +231,7 @@ export default class Doodlebot {
     }
 
     private onWebsocketMessage(event: MessageEvent) {
+        console.log("websocket message", { event });
     }
 
     private invalidateWifiConnection() {
@@ -375,10 +376,15 @@ export default class Doodlebot {
      * @param credentials 
      */
     async connectToWebsocket(credentials?: NetworkCredentials) {
+        debugger
         await this.connectToWifi(credentials);
+        debugger
         const { pending: { websocket: pending } } = this;
+        debugger
         if (pending) await pending;
+        debugger
         if (this.websocket) return;
+        debugger
         this.websocket = new WebSocket(`ws://${this.connection.ip}:${port.websocket}`);
         await this.untilFinishedPending("websocket", new Promise<void>((resolve) => {
             const resolveAndRemove = () => {
