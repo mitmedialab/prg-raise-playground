@@ -2,7 +2,7 @@ import { untilTimePassed } from "$common/utils";
 import { MinimalExtensionConstructor } from "../../base";
 import { isSvgGroup, isSvgText, openAlert } from "./svgAlert";
 
-type IndicatorPayload = { position?: "category", msg: string, type?: "success" | "warning" | "error", retry?: boolean };
+export type IndicatorPayload = { position?: "category", msg: string, type?: "success" | "warning" | "error", retry?: boolean };
 
 /**
  * Mixin the ability for extensions to add an indicator message to the workspace.
@@ -22,14 +22,19 @@ export default function <T extends MinimalExtensionConstructor>(Ctor: T) {
      * - `type`: The type of indicator to display. Currently "success", "warning" and "error", which effect the color of the indicator.
      * @returns 
      */
-    async indicate({ position = "category", msg, type = "success", retry = false }: IndicatorPayload) {
+    async indicate({ position = "category", msg, type = "success", retry = false }: IndicatorPayload): ReturnType<typeof openAlert> {
       const elements = position === "category"
         ? getCategoryElements(this.name)
         : { error: "Unsupported indicator position" };
 
-      if ("error" in elements)
-        if (retry) return untilTimePassed(100).then(() => this.indicate({ position, msg, type, retry: true }));
+      if ("error" in elements) {
+        if (retry) {
+          await untilTimePassed(100);
+          const retried = await this.indicate({ position, msg, type, retry: false });
+          return retried;
+        }
         else throw new Error(elements.error);
+      }
 
       const { container } = elements;
       const alert = await openAlert(container, msg, type);

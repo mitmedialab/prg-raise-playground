@@ -1,9 +1,10 @@
+import { IndicatorPayload } from ".";
 import { ExtensionInstanceWithFunctionality } from "../..";
 
 export const isSvgGroup = (element: Element): element is SVGGElement => element.nodeName === "g";
 export const isSvgText = (element: Element): element is SVGTextElement => element.nodeName === "text";
 
-type AlertType = Parameters<ExtensionInstanceWithFunctionality<["indicators"]>["indicate"]>[0]["type"];
+type AlertType = IndicatorPayload["type"];
 
 const fills = {
   success: "#5ACA75",

@@ -25,7 +25,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   }
 
   async setIndicator(status: "connected" | "disconnected") {
-    if (this.indicator) (await this.indicator).close;
+    if (this.indicator) (await this.indicator)?.close();
     this.indicator = status == "connected"
       ? this.indicate({ position: "category", msg: "Connected to robot", type: "success", retry: true })
       : this.indicate({ position: "category", msg: "Not connected to robot", type: "warning", retry: true });
