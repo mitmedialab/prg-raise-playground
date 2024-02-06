@@ -154,11 +154,10 @@ export default class Doodlebot {
         return `(${args.join(",")})`;
     }
 
-    private parseCommand(command: string) {
-        console.log({ command });
-        const lines = command.split("(").map((line) => line.replace(")", ""));
+    private parseCommand(text: string) {
+        const lines = text.split("(").map((line) => line.replace(")", "")).splice(1);
         return lines.map((line) => {
-            const [command, ...parameters] = line.split(",") as [ReceivedCommand, ...string[]];
+            const [command, ...parameters] = line.split(",").map(s => s.trim()) as [ReceivedCommand, ...string[]];
             return { command, parameters };
         });
     }
