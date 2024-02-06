@@ -72,7 +72,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   async drive(direction: "left" | "right" | "forward" | "backward", steps: number) {
     const leftSteps = direction == "left" || direction == "backward" ? -steps : steps;
     const rightSteps = direction == "right" || direction == "backward" ? -steps : steps;
-    const stepsPerSecond = 100;
+    const stepsPerSecond = 2000;
 
     await this.doodlebot?.motorCommand(
       "steps",
