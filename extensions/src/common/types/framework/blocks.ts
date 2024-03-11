@@ -1,5 +1,4 @@
-import type BlockUtility from "$scratch-vm/engine/block-utility";
-import { BaseGenericExtension } from ".";
+import { BaseGenericExtension, BlockUtilityWithID } from ".";
 import { BlockType } from "../enums";
 import { NonEmptyArray, ValueOf } from "../utils";
 import { ParamsAndUtility, ToArguments } from "./arguments";
@@ -9,7 +8,7 @@ export type ButtonBlock = () => InternalButtonKey;
 
 export type BlockMetadata<
   Fn extends BlockOperation,
-  TParameters extends any[] = Parameters<Fn> extends [...infer R, BlockUtility] ? R : Parameters<Fn>
+  TParameters extends any[] = Parameters<Fn> extends [...infer R, BlockUtilityWithID] ? R : Parameters<Fn>
 > = Type<ReturnType<Fn>> & Text<TParameters> & Arguments<TParameters>;
 
 export type Block<TExt extends BaseGenericExtension, TOp extends BlockOperation> = BlockMetadata<TOp> & Operation<TExt, TOp>;
@@ -85,7 +84,7 @@ type Text<TParameters extends any[]> = {
 }
 
 type Arguments<TParameters extends any[]> =
-  TParameters extends [] | [BlockUtility] ? {
+  TParameters extends [] | [BlockUtilityWithID] ? {
     /**
      * @description The args field should not be defined for blocks that take no arguments
      */
@@ -268,9 +267,9 @@ type Operation<TExt extends BaseGenericExtension, TOp extends BlockOperation> = 
  *  alert(`${msg} ${util.stackFrame.isLoop}`);
  * }
  * 
- * @param {BlockUtility} util Unless this block is a `Button`, the final argument passed to this function will always be a BlockUtility object, 
+ * @param {BlockUtilityWithID} util Unless this block is a `Button`, the final argument passed to this function will always be a BlockUtility object, 
  * which can help you accomplish more advanced block behavior. If you don't need to use it, feel free to omit it.
- * @see {BlockUtility} type for more information on the final argument passed to this function.
+ * @see {BlockUtilityWithID} type for more information on the final argument passed to this function.
  */
   operation: (this: TExt, ...params: TOp extends ButtonBlock ? Parameters<TOp> : ParamsAndUtility<TOp>) => TOp extends ButtonBlock ? void : ReturnType<TOp>;
 }
@@ -312,7 +311,7 @@ export type BlockDefinitions<T extends BaseGenericExtension> =
   {
     [k in keyof T["BlockFunctions"]]: T["BlockFunctions"][k] extends
     (...args: infer A) => infer R
-    ? DefineBlock<T, (...args: A | [...A, BlockUtility]) => R>
+    ? DefineBlock<T, (...args: A) => R>
     : never
   };
 
@@ -326,7 +325,7 @@ export type BlocksInfo<T extends BaseGenericExtension> = {
 export type BlockInfo<TExtension extends BaseGenericExtension, TKey extends keyof BlocksInfo<TExtension>> = BlocksInfo<TExtension>[TKey];
 
 export type NoArgsBlock = BlockMetadata<() => any>;
-export type OneArgBlock = BlockMetadata<(arg: any, utility: BlockUtility) => any, [string]>;
-export type MultipleArgsBlock = BlockMetadata<(arg1: any, arg2: any, utility: BlockUtility) => any>;
+export type OneArgBlock = BlockMetadata<(arg: any, utility: BlockUtilityWithID) => any, [string]>;
+export type MultipleArgsBlock = BlockMetadata<(arg1: any, arg2: any, utility: BlockUtilityWithID) => any>;
 export type WithArgsBlock = BlockMetadata<(...args: any[]) => any>;
 export type AnyBlock = NoArgsBlock | OneArgBlock | MultipleArgsBlock;
