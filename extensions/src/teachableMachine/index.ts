@@ -240,9 +240,13 @@ export default class teachableMachine extends extension({
   }
 
   modelArgumentToURL(modelArg: string) {
-    return modelArg.startsWith('https://teachablemachine.withgoogle.com/models/')
-      ? modelArg.replace("https://teachablemachine.withgoogle.com/models/", "https://storage.googleapis.com/tm-model/")
-      : `https://storage.googleapis.com/tm-model/${modelArg}/`;
+    const endpointProvidedFromInterface = "https://teachablemachine.withgoogle.com/models/";
+    // NOTE: It's possible Google will change this endpoint in the future, and that will break this extension.
+    // TODO: https://github.com/mitmedialab/prg-extension-boilerplate/issues/343
+    const redirectEndpoint = "https://storage.googleapis.com/tm-model/";
+    return modelArg.startsWith(endpointProvidedFromInterface)
+      ? modelArg.replace(endpointProvidedFromInterface, redirectEndpoint)
+      : redirectEndpoint + modelArg + "/";
   }
 
   updateStageModel(modelUrl) {
