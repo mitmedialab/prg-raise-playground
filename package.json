@@ -2,6 +2,7 @@
   "name": "root",
   "private": true,
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
     "ts:node": "./node_modules/.bin/ts-node -r tsconfig-paths/register",
     "ts:node:extensions": "npm run ts:node -- --project ./extensions/scripts/tsconfig.json",
     "init:extensions": "npm run init --prefix ./extensions/",

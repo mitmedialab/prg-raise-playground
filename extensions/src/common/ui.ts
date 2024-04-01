@@ -23,7 +23,7 @@ export type ReactiveMethods<Extension> = {
 }
 
 export const reactiveInvoke = <Extension, T extends keyof Methods<Extension>>(extensionAssignment: Extension, funcName: T, args: MethodParams<Extension>[T]): MethodReturns<Extension>[T] => {
-  return (extensionAssignment[funcName] as Function)(...args as []);
+  return (extensionAssignment[funcName] as Function)(...args);
 }
 
 export const reactiveSet = <Extension, T extends keyof Properties<Extension>>(extensionAssignment: Extension, propertyName: T, value: Extension[T]): void => {
@@ -52,7 +52,7 @@ const enum Color {
 }
 
 /**
- * Makes it easier to reference the css color variables defined in prg-extension-boilerplate/packages/scratch-gui/src/components/programmatic-modal/programmatic-modal.jsx
+ * Makes it easier to reference the css color variables defined in prg-extension-boilerplate/scratch-packages/scratch-gui/src/components/programmatic-modal/programmatic-modal.jsx
  */
 class CssVar {
   root: Color;
@@ -80,7 +80,7 @@ const extensions = new CssVar(Color.extensions);
 const drop = new CssVar(Color.extensions);
 
 /**
- * Color variable references corresponding to the css variables defined in prg-extension-boilerplate/packages/scratch-gui/src/components/programmatic-modal/programmatic-modal.jsx
+ * Color variable references corresponding to the css variables defined in prg-extension-boilerplate/scratch-packages/scratch-gui/src/components/programmatic-modal/programmatic-modal.jsx
  */
 export const color = {
   "ui": {

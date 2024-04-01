@@ -51,7 +51,7 @@ If you're solely interested in adding custom arguments to your extension's block
 You can open this section to learn how the code all works together to enable this functionality.  
 </summary>
 
-To add custom arguments, we unfortunately need to make modifications to multiple packages involved in the RAISE playground (`packages/scratch-gui` in addition to `extensions`).
+To add custom arguments, we unfortunately need to make modifications to multiple packages involved in the RAISE playground (`scratch-packages/scratch-gui` in addition to `extensions`).
 
 > This is _unfortunate_ as we aim to keep the Scratch-based packages as similiar to their original sources as possible. This way we can more easily incorporate changes and improvements released by the Scratch team. Thus, even though we are modifying scratch packages, we try keep our changes as small and surgical as possible.
 
@@ -82,7 +82,7 @@ To get a little more into the details...
 
 Block argument menu dropdown's are controlled by Blockly's [FieldDropdown](https://developers.google.com/blockly/reference/js/blockly.fielddropdown_class) class. A specific `FieldDropdown` class, tied to a specific block argument's **_dynamic_** menu, will invoke the menu's `options` function at various points during the _lifecycle_ of the field dropdown (like when it is initialized and when it is opened by the user).
 
-Therefore, we override a few key functions on Blockly's [FieldDropdown](https://developers.google.com/blockly/reference/js/blockly.fielddropdown_class) class (implemented in [packages/scratch-gui/src/lib/prg/customBlockOverrides.js]()) in order to collect the information about the dropdown before the dynamic `options` function is invoked. We can then use this information inside of our `options` function, while all other menus will be unnaffected.
+Therefore, we override a few key functions on Blockly's [FieldDropdown](https://developers.google.com/blockly/reference/js/blockly.fielddropdown_class) class (implemented in [scratch-packages/scratch-gui/src/lib/prg/customBlockOverrides.js]()) in order to collect the information about the dropdown before the dynamic `options` function is invoked. We can then use this information inside of our `options` function, while all other menus will be unnaffected.
 
 > Overriding this functionality does ahead overhead to every single dropdown menu, but this _cost_ should be negligible. 
 

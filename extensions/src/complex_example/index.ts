@@ -1,5 +1,5 @@
 import { ArgumentType, BlockType, RGBObject, MenuItem, copyTo, SaveDataHandler, block, buttonBlock, extension } from "$common";
-import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
+import BlockUtility from "$root/scratch-packages/scratch-vm/src/engine/block-utility";
 import AnimalArgument from "./AnimalArgument.svelte";
 
 const enum MatrixDimension {

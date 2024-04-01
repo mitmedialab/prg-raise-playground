@@ -570,7 +570,7 @@ You do this by providing "add ons" as arguments, which come after the first `det
 
 Your code editor will help you see which "add ons" are available -- simply start to try to type after the first argument of the `extension` function, and suggestions (and documentation) will pop up.
 
-![Gif of extension addOns being suggested](/documentation/assets/addOns.gif)
+![Gif of extension addOns being suggested](//.assets/addOns.gif)
 
 ### Putting it all together
 
@@ -696,13 +696,13 @@ Here's how:
 0. Before beginning the port, save off a project using your old extension which utilizes every one of its blocks. Once you're done porting, if this project can be reloaded and executed the same as before, you'll know you've done your job!
 1. Identify the following details of the "old" extension / the extension you want to port (if you're having trouble finding any, skip around to see if finding one detail helps you identify where to specifically to look for another):
     - ***Implementation***: Where the extension is actually implemented in [vanilla js](https://www.javatpoint.com/what-is-vanilla-javascript)
-        - This should be in some folder inside of [packages/scratch-vm/src/extensions/](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/packages/scratch-vm/src/extensions)
+        - This should be in some folder inside of [scratch-packages/scratch-vm/src/extensions/](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/scratch-packages/scratch-vm/src/extensions)
         - Each extension implemenation folder will have at least an `index.js` file as this is responsible for exporting a [class declaration](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes) (and this class can actually be thought of as the extension)
     - ***Extension ID***: The unique identifier of the extension used by the [Scratch Virtual Machine](https://github.com/LLK/scratch-vm/) to "look up" the extension:
-        - You can find this inside of the [packages/scratch-vm/src/extension-support/extension-manager.js](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/packages/scratch-vm/src/extension-support/extension-manager.js) file within the declaration of the `builtinExtensions` object (somewhere near the top of the file)
+        - You can find this inside of the [scratch-packages/scratch-vm/src/extension-support/extension-manager.js](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/scratch-packages/scratch-vm/src/extension-support/extension-manager.js) file within the declaration of the `builtinExtensions` object (somewhere near the top of the file)
         - The `builtinExtensions` object has keys corresponding to ***Extension ID***s and their value is a function that `requires` (or "loads in", see [CommonJS Modules](https://nodejs.org/api/modules.html#modules-commonjs-modules)) the corresponding ***Implementation***
     - ***Extension Menu Entry***: The details that define how an extension displays inside of the [Extension Menu](https://en.scratch-wiki.info/wiki/Extension#Adding_Extensions) (see "Adding Extensions") and effectively connects the the [GUI](https://github.com/LLK/scratch-gui) that the user sees with the [Virtual Machine](https://github.com/LLK/scratch-vm/) that controls executing extension blocks
-        - You will find this in one of the objects within the array exported by [packages/scratch-gui/src/lib/libraries/extensions/index.jsx](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/packages/scratch-gui/src/lib/libraries/extensions/index.jsx)
+        - You will find this in one of the objects within the array exported by [scratch-packages/scratch-gui/src/lib/libraries/extensions/index.jsx](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/scratch-packages/scratch-gui/src/lib/libraries/extensions/index.jsx)
         - To locate the object that corresponds to the extension you want to port, you can use the ***Extension ID*** (if you have it) which corresponds to the `extensionId` field, or you can use the name or description of the extension you see in the Extensions Menu of the [live site](https://playground.raise.mit.edu/main/) which (you guessed it) correspond to the `name` and `description` fields, respectively
 2. Create your "new" framework-based extension using the command outlined in [Making an Extension](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main#-making-an-extension) and use the ***Extension ID*** you found in step 1 as the value of `<folder to contain extension>`
     - For example, if your "old" extension's ***Extension ID*** is `prgRocks` you'll run the following command:
@@ -710,18 +710,18 @@ Here's how:
     npm run new:extension prgRocks
     ``` 
     - The reason this is necessary is two-fold: First, in the new extension framework, the name of the folder that contains an extension is automatically used as its ***Extension ID***. Second, because already saved `.sb3` / Scratch projects that use your extension refernce the specific ***Extension ID***, we need to make sure our updated, typescript-based extension has the same ID.
-3. Once you have created an extension with a folder name matching the ***Extension ID*** found in step 1, you can actually delete the corresponding entry inside of the `builtinExtensions` object of [packages/scratch-vm/src/extension-support/extension-manager.js](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/packages/scratch-vm/src/extension-support/extension-manager.js)
+3. Once you have created an extension with a folder name matching the ***Extension ID*** found in step 1, you can actually delete the corresponding entry inside of the `builtinExtensions` object of [scratch-packages/scratch-vm/src/extension-support/extension-manager.js](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/scratch-packages/scratch-vm/src/extension-support/extension-manager.js)
     - This means that now when someone clicks on your extension from the [Extension Menu](https://en.scratch-wiki.info/wiki/Extension#Adding_Extensions), it will load your new extension and not the old one.
 4. Use the details of the ***Extension Menu Entry*** to fill out the the details of the first generic parameter of the `Extension<..., ...>` class inside of the `index.ts` file that was created by the command in Step 2.
     - If that seems confusing, just go look inside of the `index.ts` and hopefully the documentation should make this more clear
     - Copy over text and boolean values (excluding the `extensionId` field)
     - For things like icons (which are likely imported), copy/move those files into your new extension folder and delete them from their old location
-5. Once you migrate all ***Extension Menu Entry*** details to your new extension, you can remove the ***Extension Menu Entry*** object from the array exported by [packages/scratch-gui/src/lib/libraries/extensions/index.jsx](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/packages/scratch-gui/src/lib/libraries/extensions/index.jsx)
+5. Once you migrate all ***Extension Menu Entry*** details to your new extension, you can remove the ***Extension Menu Entry*** object from the array exported by [scratch-packages/scratch-gui/src/lib/libraries/extensions/index.jsx](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/scratch-packages/scratch-gui/src/lib/libraries/extensions/index.jsx)
     - You can do this as the extension framework will automatically handle adding your extension (and its Extension Menu Display Details) to the [Extension Menu](https://en.scratch-wiki.info/wiki/Extension#Adding_Extensions)
 6. Now you can start coding! See the below comparison of a vanilla JS extension class and a typescript / framework based one.
     - NOTE: If there's a chance anyone has saved projects with the extension you're porting over, you need to make sure to follow the [Legacy Support](#legacy-support) instructions so those saved projects will continue to load correctly.
-7. Once you have migrated all of the "old" ***Impementation*** to your new extension folder & typescript code, you can go ahead and delete the ***Implementation*** folder inside of [pacakges/scratch-vm/src/extensions/](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/packages/scratch-vm/src/extensions).
-8. Now, there should be no remnants of the "old" extension inside of either [packages/scratch-vm](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/packages/scratch-vm) or [packages/scratch-gui](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/packages/scratch-gui) folders, and instead everything lives neatly inside its own directory within [extensions/src](https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extensions/src)
+7. Once you have migrated all of the "old" ***Impementation*** to your new extension folder & typescript code, you can go ahead and delete the ***Implementation*** folder inside of [pacakges/scratch-vm/src/extensions/](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/scratch-packages/scratch-vm/src/extensions).
+8. Now, there should be no remnants of the "old" extension inside of either [scratch-packages/scratch-vm](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/scratch-packages/scratch-vm) or [scratch-packages/scratch-gui](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/scratch-packages/scratch-gui) folders, and instead everything lives neatly inside its own directory within [extensions/src](https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extensions/src)
 9. Test out the project you saved in step 0 to verify that your port worked as expected.
 
 ### Implementing an Extension in Vanilla JS vs the Extension Framework
@@ -733,8 +733,8 @@ Below you can compare what an extension that was originally implemented in vanil
 Below is a sample, vanilla JS extension based on the final example provided in the [Scratch Extensions document](https://github.com/LLK/scratch-vm/blob/develop/docs/extensions.md). 
 
 What's not captured in the below example is all the additional work necessary to get the extension to show up (hinted at above), which includes:
-- Updating [extension library jsx](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/packages/scratch-gui/src/lib/libraries/extensions/index.jsx#L71)
-- Updating [extension manager](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/packages/scratch-vm/src/extension-support/extension-manager.js#L11) to support this extension 
+- Updating [extension library jsx](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/scratch-packages/scratch-gui/src/lib/libraries/extensions/index.jsx#L71)
+- Updating [extension manager](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/scratch-packages/scratch-vm/src/extension-support/extension-manager.js#L11) to support this extension 
 
 Every step of this process is not typesafe, and thus very error prone.
 
@@ -839,10 +839,10 @@ class SomeBlocks {
 
 Things to note about the below typescript snippet:
 - The object passed to the `extensions` type object encodes how the extension will be displayed in the extensions menu
-    - No more editing [any jsx](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/packages/scratch-gui/src/lib/libraries/extensions/index.jsx#L71) to specify how your extension should display in the Extensions Menu
+    - No more editing [any jsx](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/scratch-packages/scratch-gui/src/lib/libraries/extensions/index.jsx#L71) to specify how your extension should display in the Extensions Menu
     - Now your image assets related to your extension should reside in the same place as your implementation (i.e. in the same directory as the `index.ts` file)
-- Any index.ts file within a subfolder of the [extensions directory](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/packages/scratch-vm/src/extensions) will be assumed to implement an extension
-    - This means there's no need to specify your extension in the [extension-manager](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/packages/scratch-vm/src/extension-support/extension-manager.js#L11)
+- Any index.ts file within a subfolder of the [extensions directory](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/scratch-packages/scratch-vm/src/extensions) will be assumed to implement an extension
+    - This means there's no need to specify your extension in the [extension-manager](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/scratch-packages/scratch-vm/src/extension-support/extension-manager.js#L11)
 - All Block text is automatically formatted for translation
     - How to actually specify these translations is coming soon! 
     - Translations for extensions are not actually supported via Scratch out of the box, so enabling this for all extensions is a win for the Typescript Framework!
@@ -852,7 +852,7 @@ Things to note about the below typescript snippet:
 
 ```ts
 import { ArgumentType, BlockType, Environment, block, extension } from "$common";
-import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
+import BlockUtility from "$root/scratch-packages/scratch-vm/src/engine/block-utility";
 import formatMessage from './format-message'; // This should actually be an npm package and thus be 'format-message'
 
 const details = {
@@ -1428,7 +1428,7 @@ If you're solely interested in adding custom arguments to your extension's block
 You can open this section to learn how the code all works together to enable this functionality.  
 </summary>
 
-To add custom arguments, we unfortunately need to make modifications to multiple packages involved in the RAISE playground (`packages/scratch-gui` in addition to `extensions`).
+To add custom arguments, we unfortunately need to make modifications to multiple packages involved in the RAISE playground (`scratch-packages/scratch-gui` in addition to `extensions`).
 
 > This is _unfortunate_ as we aim to keep the Scratch-based packages as similiar to their original sources as possible. This way we can more easily incorporate changes and improvements released by the Scratch team. Thus, even though we are modifying scratch packages, we try keep our changes as small and surgical as possible.
 
@@ -1459,7 +1459,7 @@ To get a little more into the details...
 
 Block argument menu dropdown's are controlled by Blockly's [FieldDropdown](https://developers.google.com/blockly/reference/js/blockly.fielddropdown_class) class. A specific `FieldDropdown` class, tied to a specific block argument's **_dynamic_** menu, will invoke the menu's `options` function at various points during the _lifecycle_ of the field dropdown (like when it is initialized and when it is opened by the user).
 
-Therefore, we override a few key functions on Blockly's [FieldDropdown](https://developers.google.com/blockly/reference/js/blockly.fielddropdown_class) class (implemented in [packages/scratch-gui/src/lib/prg/customBlockOverrides.js]()) in order to collect the information about the dropdown before the dynamic `options` function is invoked. We can then use this information inside of our `options` function, while all other menus will be unnaffected.
+Therefore, we override a few key functions on Blockly's [FieldDropdown](https://developers.google.com/blockly/reference/js/blockly.fielddropdown_class) class (implemented in [scratch-packages/scratch-gui/src/lib/prg/customBlockOverrides.js]()) in order to collect the information about the dropdown before the dynamic `options` function is invoked. We can then use this information inside of our `options` function, while all other menus will be unnaffected.
 
 > Overriding this functionality does ahead overhead to every single dropdown menu, but this _cost_ should be negligible. 
 
@@ -1558,10 +1558,10 @@ If you want to edit it, please go to [extensions/documentation/src/reference/REA
 sequenceDiagram
     participant root as /
     participant A as /extensions/
-    participant B as /packages/scratch-gui/
-    participant C as /packages/scratch-vm/
+    participant B as /scratch-packages/scratch-gui/
+    participant C as /scratch-packages/scratch-vm/
     Note over root,C: INITIALIZATION
-    C-->>B: Lerna utility forces scratch-gui <br>to use /packages/scratch-vm for its dependency <br>instead of using the external npm package
+    C-->>B: Lerna utility forces scratch-gui <br>to use /scratch-packages/scratch-vm for its dependency <br>instead of using the external npm package
     Note over root,C: BUILD
     Note over root: /scripts/build.ts
     activate root

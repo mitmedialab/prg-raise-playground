@@ -170,7 +170,7 @@ First, read through the documentation of the `index.ts` file (written inside of 
 
 Also, try hovering over fields to view their documentation (typically a [summary](https://jsdoc.app/tags-summary.html), [examples](https://jsdoc.app/tags-example.html), and a [longer desrciption](https://jsdoc.app/tags-description.html)).
 
-![Gif of video hovering over fields to peak documentation](/documentation/assets/hover.gif)
+![Gif of video hovering over fields to peak documentation](//.assets/hover.gif)
 
 Still stuck? Check out our [From 0 to Extension guide](#-from-0-to-extension) and/or contact more experienced extension developers, like [Parker](https://github.com/pmalacho-mit) or [Randi](https://github.com/randi-c-dubs)
 

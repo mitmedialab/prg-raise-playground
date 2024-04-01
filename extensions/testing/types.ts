@@ -1,11 +1,11 @@
 import type { RenderResult, fireEvent } from '@testing-library/svelte';
 import type { SvelteComponentDev } from "svelte/internal";
 import { Extension, ExtensionBlocks, ExtensionMenuDisplayDetails, NonEmptyArray, InternalButtonKey, Methods, MethodNames, ExtensionInstance, } from "$common";
-import Runtime from "$root/packages/scratch-vm/src/engine/runtime";
+import Runtime from "$root/scratch-packages/scratch-vm/src/engine/runtime";
 import { expect } from '@jest/globals';
 import { BlockRunner } from './BlockRunner';
 import testable from './mixins/testable';
-import type BlockUtility from '$root/packages/scratch-vm/src/engine/block-utility';
+import type BlockUtility from '$root/scratch-packages/scratch-vm/src/engine/block-utility';
 
 export type GenericExtension = Extension<ExtensionMenuDisplayDetails, ExtensionBlocks>;
 
