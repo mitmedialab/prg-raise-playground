@@ -1,0 +1,4 @@
+[submodule "scratch-packages/scratch-gui"]
+	path = scratch-packages/scratch-gui
+	url = git@github.com:mitmedialab/prg-raise-playground-scratch-gui.git
+	branch = main
