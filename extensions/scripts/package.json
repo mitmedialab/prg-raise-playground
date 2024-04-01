@@ -43,5 +43,8 @@
     "tslib": {
       "typescript": "$typescript"
     }
+  },
+  "dependencies": {
+    "rollup": "^4.13.2"
   }
 }

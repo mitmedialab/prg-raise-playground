@@ -1,9 +1,9 @@
 import path from "path";
 import fs from "fs";
 import { glob, } from 'glob'
-import { extensionsFolder, guiSrc, packages, } from "$root/scripts/paths";
+import { extensionsFolder, guiSrc, scratchPackages, } from "$root/scripts/paths";
 
-export const extensionBundlesDirectory = path.join(packages.gui, "static", "extension-bundles");
+export const extensionBundlesDirectory = path.join(scratchPackages.gui, "static", "extension-bundles");
 export const generatedMenuDetailsDirectory = path.join(guiSrc, "generated");
 export const templatesDirectory = path.join(extensionsFolder, "src", ".templates");
 

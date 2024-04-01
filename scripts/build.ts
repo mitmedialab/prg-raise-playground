@@ -2,10 +2,10 @@ import { fork, type ChildProcess } from 'child_process';
 import path from "path";
 import fs from "fs";
 import { Message, Conditon } from './comms';
-import { extensionsFolder, packages, root } from './paths';
+import { extensionsFolder, scratchPackages, root } from './paths';
 import options, { convertToFlags, asFlags } from './options';
 
-const { gui } = packages;
+const { gui } = scratchPackages;
 
 const { watch } = options(process.argv);
 
