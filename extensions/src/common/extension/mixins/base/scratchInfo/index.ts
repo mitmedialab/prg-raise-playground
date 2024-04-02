@@ -86,7 +86,7 @@ export default function (Ctor: CustomizableExtensionConstructor) {
      */
     pushBlock<Fn extends BlockOperation>(opcode: string, definition: BlockDefinition<any, Fn>, operation: BlockOperation) {
       if (this.blockMap.has(opcode)) throw new Error(`Attempt to push block with opcode ${opcode}, but it was already set. This is assumed to be a mistake.`)
-      this.blockMap.set(opcode, { definition, operation });
+      this.blockMap.set(opcode, { definition, operation } as BlockEntry);
     }
 
     protected getInfo(): ExtensionMetadata {

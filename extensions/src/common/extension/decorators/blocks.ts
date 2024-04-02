@@ -1,7 +1,7 @@
 import type BlockUtility from "$scratch-vm/engine/block-utility";
 import { TypedClassDecorator, TypedGetterDecorator, TypedMethodDecorator, TypedSetterDecorator } from ".";
 import { BlockType } from "$common/types/enums";
-import { BlockMetadata, ScratchArgument, Argument } from "$common/types";
+import { BlockMetadata, ScratchArgument, Argument, NoArgsBlock } from "$common/types";
 import { getImplementationName } from "../mixins/base/scratchInfo/index";
 import { ExtensionInstance } from "..";
 import { isFunction, isString, tryCreateBundleTimeEvent } from "$common/utils";
@@ -140,7 +140,7 @@ export function getterBlock<This extends ExtensionInstance, TReturn>
     context.addInitializer(function () {
       this[opcode] = (_, util) => this[internalFuncName].call(this, null, util);;
       const text = `Get ${details.name}`;
-      this.pushBlock(opcode, { type: "reporter", text }, target);
+      this.pushBlock(opcode, ({ type: "reporter", text } satisfies NoArgsBlock) as any, target);
     });
 
     blockBundleEvent?.fire({
