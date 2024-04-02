@@ -4,7 +4,7 @@ import { glob, } from 'glob'
 import { extensionsFolder, guiSrc, scratchPackages, } from "$root/scripts/paths";
 
 export const extensionBundlesDirectory = path.join(scratchPackages.gui, "static", "extension-bundles");
-export const generatedMenuDetailsDirectory = path.join(guiSrc, "generated");
+export const generatedMenuDetailsDirectory = path.join(guiSrc, "generated", "prg");
 export const templatesDirectory = path.join(extensionsFolder, "src", ".templates");
 
 export const raiseLogo = path.join(templatesDirectory, "RAISE_Logo.png");
