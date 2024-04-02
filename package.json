@@ -8,15 +8,15 @@
     "build": "pnpm i && pnpm ts:node:extensions ./scripts/build.ts --include \"!([.]|commo*)*/\" --watch false --parrallel false",
     "dev": "pnpm ts:node:extensions ./scripts/build.ts --watch",
     "new:extension": "pnpm ts:node:extensions ./extensions/scripts/factories/extension.ts",
-    "add:ui": "npm run ts:node:extensions -- ./extensions/scripts/factories/ui.ts",
-    "add:arg": "npm run ts:node:extensions -- ./extensions/scripts/factories/customArgument.ts",
-    "add:test": "npm run ts:node:extensions -- ./extensions/scripts/factories/test.ts",
-    "add:package": "npm run ts:node:extensions -- ./extensions/scripts/factories/package.ts",
+    "add:ui": "pnpm ts:node:extensions./extensions/scripts/factories/ui.ts",
+    "add:arg": "pnpm ts:node:extensions./extensions/scripts/factories/customArgument.ts",
+    "add:test": "pnpm ts:node:extensions./extensions/scripts/factories/test.ts",
+    "add:package": "pnpm ts:node:extensions./extensions/scripts/factories/package.ts",
     "transpile:vm": "pnpm ts:node:extensions ./extensions/scripts/transpileVm.ts",
-    "test:extensions": "npm run test --prefix ./extensions/",
-    "document:extensions": "npm run document --prefix ./extensions/",
-    "edocument": "npm run document:extensions",
-    "etest": "npm run test:extensions"
+    "test:extensions": "pnpm --filter extensions test",
+    "document:extensions": "pnpm --filter extensions document",
+    "edocument": "pnpm document:extensions",
+    "etest": "pnpm test:extensions"
   },
   "devDependencies": {
     "@types/node": "^20.12.2",
