@@ -15,7 +15,7 @@ export type Vector3D = { x: number, y: number, z: number };
 export type Color = { red: number, green: number, blue: number, alpha: number };
 export type SensorReading = number | Vector3D | Bumper | Color;
 export type SensorData = Doodlebot["sensorData"];
-export type NetworkCredentials = { ssid: string, password: string };
+export type NetworkCredentials = { ssid: string, password: string, ipOverride?: string };
 export type NetworkConnection = { ip: string, hostname: string };
 
 type Pending = Record<"motor" | "wifi" | "websocket", Promise<any> | undefined>;
@@ -95,11 +95,11 @@ export default class Doodlebot {
      * @throws 
      * @returns 
      */
-    static async tryCreate(ssid: string, password: string, ble: Bluetooth, ...filters: BluetoothLEScanFilter[]) {
+    static async tryCreate({ ssid, password, ipOverride }: NetworkCredentials, ble: Bluetooth, ...filters: BluetoothLEScanFilter[]) {
         const robot = await Doodlebot.requestRobot(ble, ...filters);
         const services = await Doodlebot.getServices(robot);
         if (!services) throw new Error("Unable to connect to doodlebot's UART service");
-        return new Doodlebot(robot, services, ssid, password);
+        return new Doodlebot(robot, services, ssid, password, ipOverride);
     }
 
     private pending: Pending = { motor: undefined, wifi: undefined, websocket: undefined };
@@ -139,10 +139,10 @@ export default class Doodlebot {
         light: false
     };
 
-    constructor(private device: BluetoothDevice, private services: Services, private ssid: string, private wifiPassword: string) {
+    constructor(private device: BluetoothDevice, private services: Services, private ssid: string, private wifiPassword: string, private ip: string | undefined = undefined) {
         this.subscribe(services.uartService, "receiveText", this.receiveTextBLE.bind(this));
         this.subscribe(device, "gattserverdisconnected", this.handleBleDisconnect.bind(this));
-        this.connectToWebsocket({ ssid, password: wifiPassword });
+        this.connectToWebsocket({ ssid, password: wifiPassword, ipOverride: ip });
     }
 
     private subscribe<T extends SubscriptionTarget>(target: T, event: Subscription<T>["event"], listener: Subscription<T>["listener"]) {
@@ -160,11 +160,6 @@ export default class Doodlebot {
             const [command, ...parameters] = line.split(",").map(s => s.trim()) as [ReceivedCommand, ...string[]];
             return { command, parameters };
         });
-    }
-
-    private sendBLECommand(command: Command, ...args: (string | number)[]) {
-        const { uartService } = this.services;
-        return uartService.sendText(this.formCommand(command, ...args));
     }
 
     private async sendWebsocketCommand(command: Command, ...args: (string | number)[]) {
@@ -359,9 +354,12 @@ export default class Doodlebot {
 
         if (this.connection) return;
 
-        await this.untilFinishedPending("wifi", new Promise(async (resolve) => {
+        await this.untilFinishedPending("wifi", new Promise<void>(async (resolve) => {
             await this.sendBLECommand(command.wifi, this.ssid, this.wifiPassword);
-            this.onNetwork.once(events.connect, resolve)
+            this.onNetwork.once(events.connect, () => {
+                console.log("connected to wifi");
+                resolve();
+            })
         }));
     }
 
@@ -376,16 +374,14 @@ export default class Doodlebot {
      * @param credentials 
      */
     async connectToWebsocket(credentials?: NetworkCredentials) {
-        debugger
-        await this.connectToWifi(credentials);
-        debugger
-        const { pending: { websocket: pending } } = this;
-        debugger
-        if (pending) await pending;
-        debugger
-        if (this.websocket) return;
-        debugger
-        this.websocket = new WebSocket(`ws://${this.connection.ip}:${port.websocket}`);
+        if (!credentials?.ipOverride && !this.ip) {
+            await this.connectToWifi(credentials);
+            const { pending: { websocket: pending } } = this;
+            if (pending) await pending;
+            if (this.websocket) return;
+        }
+        const ip = credentials?.ipOverride ?? this.ip ?? this.connection.ip;
+        this.websocket = new WebSocket(`ws://${ip}:${port.websocket}`);
         await this.untilFinishedPending("websocket", new Promise<void>((resolve) => {
             const resolveAndRemove = () => {
                 this.websocket.removeEventListener("open", resolveAndRemove);
@@ -403,5 +399,16 @@ export default class Doodlebot {
 
     getNetworkCredentials(): NetworkCredentials {
         return { ssid: this.ssid, password: this.wifiPassword };
+    }
+
+    /**
+     * NOTE: Consider making private
+     * @param command 
+     * @param args 
+     * @returns 
+     */
+    sendBLECommand(command: Command, ...args: (string | number)[]) {
+        const { uartService } = this.services;
+        return uartService.sendText(this.formCommand(command, ...args));
     }
 }

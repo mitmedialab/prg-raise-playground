@@ -1,5 +1,5 @@
 import { Environment, ExtensionMenuDisplayDetails, extension, block, buttonBlock } from "$common";
-import { DisplayKey, displayKeys } from "./enums";
+import { DisplayKey, displayKeys, command, type Command } from "./enums";
 import Doodlebot from "./Doodlebot";
 
 const details: ExtensionMenuDisplayDetails = {
@@ -9,6 +9,24 @@ const details: ExtensionMenuDisplayDetails = {
   insetIconURL: "Replace with the name of your inset icon image file (which should be placed in the same directory as this file)",
   tags: ["Made by PRG"]
 };
+
+/**
+ * 
+ * @param input 
+ * @example splitArgsString("hello ahoy"); // Output: ["hello", "ahoy"]
+ * @example splitArgsString("hello,ahoy"); // Output: ["hello", "ahoy"]
+ * @example splitArgsString("hello, ahoy"); // Output: ["hello", "ahoy"]
+ * @example splitArgsString("hello"); // Output: ["hello"]
+ * @example splitArgsString(""); // Output: []
+ * @returns 
+ */
+const splitArgsString = (input: string): string[] => {
+  if (!input) return [];
+  // Regular expression to split the string by either comma followed by optional space characters or by space characters alone
+  const regex = /,\s*|\s+/;
+  const words = input.split(regex);
+  return words;
+}
 
 export default class DoodlebotBlocks extends extension(details, "ui", "indicators") {
   doodlebot: Doodlebot;
@@ -60,6 +78,19 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   // #endregion
 
   // #region BLE-based commands
+
+  @block({
+    type: "command",
+    text: (_command, args) => `send (${_command}, ${args}) over BLE`,
+    args: [{ type: "string", defaultValue: "u" }, { type: "string", defaultValue: "0" }]
+  })
+  async sendBLEMessage(_command: string, args: string) {
+    const candidates = Object.values(command).filter((entry) => entry === _command)
+
+    if (candidates.length === 0) return console.error(`Command ${command} not found`);
+
+    await this.doodlebot?.sendBLECommand(candidates[0], ...splitArgsString(args));
+  }
 
   @block({
     type: "command",

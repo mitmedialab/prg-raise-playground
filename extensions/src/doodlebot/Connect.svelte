@@ -1,7 +1,6 @@
 <script lang="ts">
   import type Extension from ".";
   import { ReactiveInvoke, reactiveInvoke, color } from "$common";
-  import { onMount } from "svelte";
   import Doodlebot from "./Doodlebot";
 
   export let extension: Extension;
@@ -16,11 +15,15 @@
   const storageKeys = {
     ssid: "doodlebot-ssid",
     password: "doodlebot-password",
+    ip: "doodlebot-ip",
   };
+
+  const ipPrefix = "192.168.0.";
 
   let error: string;
   let ssid = localStorage.getItem(storageKeys.ssid) ?? "";
   let password = localStorage.getItem(storageKeys.password) ?? "";
+  let ip = "";
 
   const inputs = {
     ssid: null as HTMLInputElement,
@@ -29,7 +32,11 @@
 
   const createConnection = async () => {
     try {
-      const doodlebot = await Doodlebot.tryCreate(ssid, password, bluetooth);
+      const doodlebot = await Doodlebot.tryCreate(
+        { ssid, password, ipOverride: ip ? ipPrefix + ip : undefined },
+        bluetooth,
+      );
+
       invoke("setDoodlebot", doodlebot);
       localStorage.setItem(storageKeys.ssid, ssid);
       localStorage.setItem(storageKeys.password, password);
@@ -49,7 +56,9 @@
   };
 
   const updateNetworkCredentials = () =>
-    extension.doodlebot.connectToWebsocket({ ssid, password });
+    extension.doodlebot.connectToWebsocket({ ssid, password, ipOverride: ip });
+
+  let showAdvanced = false;
 </script>
 
 <div
@@ -86,6 +95,27 @@
             placeholder="e.g. 12345"
           />
         </p>
+        <div>
+          <button
+            class="collapser"
+            on:click={() => (showAdvanced = !showAdvanced)}
+          >
+            {showAdvanced ? "▴" : "▾"} Advanced
+          </button>
+          <div
+            style:overflow="hidden"
+            style:max-height={showAdvanced ? "fit-content" : "0"}
+          >
+            <p>
+              IP: {ipPrefix}<input
+                bind:this={inputs.password}
+                bind:value={ip}
+                type="text"
+                placeholder="e.g. 12345"
+              />
+            </p>
+          </div>
+        </div>
       </div>
       <div>
         <h3>2. Select bluetooth device</h3>
@@ -108,8 +138,9 @@
           value={credentials.password}
         />
         <button
-          disabled={credentials.ssid === ssid &&
-            credentials.password === password}
+          disabled={(credentials.ssid === ssid &&
+            credentials.password === password) ||
+            !ip}
           on:click={updateNetworkCredentials}
         >
           Update</button
@@ -137,5 +168,13 @@
     padding: 4px 8px;
     text-align: center;
     border-radius: 5px;
+  }
+
+  .collapser {
+    background-color: inherit;
+    cursor: pointer;
+    border: none;
+    text-align: left;
+    outline: none;
   }
 </style>

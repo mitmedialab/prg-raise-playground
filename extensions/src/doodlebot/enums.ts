@@ -27,7 +27,8 @@ export const command = {
     arc: "t",
     wifi: "k",
     lowPower: "q",
-    display: "w"
+    display: "w",
+    pen: "u",
 } as const;
 
 export type CommandKey = keyof typeof command;
