@@ -11,7 +11,7 @@ const details: ExtensionMenuDisplayDetails = {
   tags: ["Made by PRG"]
 };
 
-
+const bumperOptions = ["front", "back", "front or back", "front and back", "neither"] as const;
 
 export default class DoodlebotBlocks extends extension(details, "ui", "indicators", "video", "drawable") {
   doodlebot: Doodlebot;
@@ -20,6 +20,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   init(env: Environment) {
     this.openUI("Connect");
     this.setIndicator("disconnected");
+
+    // idea: set up polling mechanism to try and disable unused sensors
   }
 
   setDoodlebot(doodlebot: Doodlebot) {
@@ -77,11 +79,66 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
 
   @block({
     type: "command",
+    text: "Stop"
+  })
+  async stop() {
+    await this.doodlebot?.motorCommand("stop");
+  }
+
+  @block({
+    type: "command",
     text: (direction) => `move pen ${direction}`,
     arg: { type: "string", options: ["up", "down"], defaultValue: "up" }
   })
   async movePen(direction: "up" | "down") {
     await this.doodlebot?.penCommand(direction);
+  }
+
+
+  @block({
+    type: "Boolean",
+    text: (bumper) => `is ${bumper} bumper pressed`,
+    arg: { type: "string", options: bumperOptions, defaultValue: bumperOptions[0] }
+  })
+  async isBumperPressed(bumber: typeof bumperOptions[number]) {
+    const isPressed = await this.doodlebot?.getSensorReading("bumper");
+    switch (bumber) {
+      case "back":
+        return isPressed.back > 0;
+      case "front":
+        return isPressed.front > 0;
+      case "front or back":
+        return isPressed.front > 0 || isPressed.back > 0;
+      case "front and back":
+        return isPressed.front > 0 && isPressed.back > 0;
+      case "neither":
+        return isPressed.front === 0 && isPressed.back === 0;
+    }
+  }
+
+  @block({
+    type: "hat",
+    text: (bumper, condition) => `when ${bumper} bumper ${condition}`,
+    args: [
+      { type: "string", options: bumperOptions, defaultValue: bumperOptions[0] },
+      { type: "string", options: ["release", "pressed"], defaultValue: "pressed" }
+    ]
+  })
+  whenBumperPressed(bumber: typeof bumperOptions[number], condition: "release" | "pressed") {
+    const isPressed = this.doodlebot?.getSensorReadingImmediately("bumper");
+    const isPressedCondition = condition === "pressed";
+    switch (bumber) {
+      case "back":
+        return isPressedCondition ? isPressed.back > 0 : isPressed.back === 0;
+      case "front":
+        return isPressedCondition ? isPressed.front > 0 : isPressed.front === 0;
+      case "front or back":
+        return isPressedCondition ? isPressed.front > 0 || isPressed.back > 0 : isPressed.front === 0 && isPressed.back === 0;
+      case "front and back":
+        return isPressedCondition ? isPressed.front > 0 && isPressed.back > 0 : isPressed.front === 0 || isPressed.back === 0;
+      case "neither":
+        return isPressedCondition ? isPressed.front === 0 && isPressed.back === 0 : isPressed.front > 0 && isPressed.back > 0;
+    }
   }
 
   @block({

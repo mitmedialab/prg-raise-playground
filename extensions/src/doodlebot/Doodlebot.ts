@@ -115,6 +115,8 @@ export default class Doodlebot {
     private websocket: WebSocket;
     private encoder = new TextEncoder();
 
+    private isStopped = true; // should this be initializeed more intelligently?
+
     private sensorData = ({
         bumper: { front: 0, back: 0 },
         altimeter: 0,
@@ -196,6 +198,7 @@ export default class Doodlebot {
             console.log({ command, parameters });
             switch (command) {
                 case motorCommandReceived:
+                    this.isStopped = true;
                     this.onMotor.emit(events.stop);
                     break;
                 case sensor.bumper: {
@@ -286,6 +289,16 @@ export default class Doodlebot {
     }
 
     /**
+     * 
+     * @param type 
+     * @returns 
+     */
+    getSensorReadingImmediately<T extends SensorKey>(type: T): SensorData[T] {
+        this.enableSensor(type); // should this be automatic?
+        return this.sensorData[type];
+    }
+
+    /**
      * @typedef {Object} MotorStepRequest
      * @property {number} steps - The number of steps the motor should move.
      * @property {number} stepsPerSecond - The speed of the motor in steps per second.
@@ -318,6 +331,7 @@ export default class Doodlebot {
                 if (pending) await pending;
                 const [left, right] = args as MotorStepRequest[];
                 return await this.untilFinishedPending("motor", new Promise(async (resolve) => {
+                    this.isStopped = false;
                     await this.sendBLECommand(command.motor, left.steps, right.steps, left.stepsPerSecond, right.stepsPerSecond);
                     this.onMotor.once(events.stop, resolve);
                 }));
@@ -326,11 +340,13 @@ export default class Doodlebot {
                 if (pending) await pending;
                 const [radius, degrees] = args as number[];
                 return await this.untilFinishedPending("motor", new Promise(async (resolve) => {
-                    await this.sendBLECommand(command.motor, radius, degrees);
+                    this.isStopped = false;
+                    await this.sendBLECommand(command.arc, radius, degrees);
                     this.onMotor.once(events.stop, resolve);
                 }));
             }
             case "stop":
+                if (this.isStopped) return;
                 return await this.untilFinishedPending("motor", new Promise(async (resolve) => {
                     await this.sendBLECommand(command.motor, "s");
                     this.onMotor.once(events.stop, resolve);
