@@ -105,6 +105,7 @@ export default class UartService extends EventDispatcher<UartEvents> {
         const view = event.target.value;
         const numberArray = new Uint8Array(view.buffer).slice()
         const value = String.fromCharCode.apply(null, numberArray);
+        console.log("received text", value);
         this.dispatchEvent("receiveText", value);
     }
 }

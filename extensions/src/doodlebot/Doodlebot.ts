@@ -1,7 +1,8 @@
 import EventEmitter from "events";
 import { Service } from "./communication/ServiceHelper";
 import UartService from "./communication/UartService";
-import { Command, DisplayKey, NetworkStatus, ReceivedCommand, SensorKey, command, display, keyBySensor, motorCommandReceived, networkStatus, port, sensor } from "./enums";
+import { Command, DisplayKey, NetworkStatus, ReceivedCommand, SensorKey, command, display, endpoint, keyBySensor, motorCommandReceived, networkStatus, port, sensor } from "./enums";
+import { base64ToFloat32Array, makeWebsocket } from "./utils";
 
 export type Services = Awaited<ReturnType<typeof Doodlebot.getServices>>;
 export type MotorStepRequest = {
@@ -18,7 +19,9 @@ export type SensorData = Doodlebot["sensorData"];
 export type NetworkCredentials = { ssid: string, password: string, ipOverride?: string };
 export type NetworkConnection = { ip: string, hostname: string };
 
-type Pending = Record<"motor" | "wifi" | "websocket", Promise<any> | undefined>;
+type MaybePromise<T> = undefined | Promise<T>;
+
+type Pending = Record<"motor" | "wifi" | "websocket", MaybePromise<any>> & { ip: MaybePromise<string> };
 
 type SubscriptionTarget = Pick<EventTarget, "addEventListener" | "removeEventListener">;
 
@@ -102,7 +105,7 @@ export default class Doodlebot {
         return new Doodlebot(robot, services, ssid, password, ipOverride);
     }
 
-    private pending: Pending = { motor: undefined, wifi: undefined, websocket: undefined };
+    private pending: Pending = { motor: undefined, wifi: undefined, websocket: undefined, ip: undefined };
     private onMotor = new EventEmitter();
     private onSensor = new EventEmitter();
     private onNetwork = new EventEmitter();
@@ -110,6 +113,7 @@ export default class Doodlebot {
     private subscriptions = new Array<Subscription<any>>();
     private connection: NetworkConnection;
     private websocket: WebSocket;
+    private encoder = new TextEncoder();
 
     private sensorData = ({
         bumper: { front: 0, back: 0 },
@@ -142,7 +146,8 @@ export default class Doodlebot {
     constructor(private device: BluetoothDevice, private services: Services, private ssid: string, private wifiPassword: string, private ip: string | undefined = undefined) {
         this.subscribe(services.uartService, "receiveText", this.receiveTextBLE.bind(this));
         this.subscribe(device, "gattserverdisconnected", this.handleBleDisconnect.bind(this));
-        this.connectToWebsocket({ ssid, password: wifiPassword, ipOverride: ip });
+        if (ip) this.connectToWebsocket(ip);
+        //this.connectToWebsocket({ ssid, password: wifiPassword, ipOverride: ip });
     }
 
     private subscribe<T extends SubscriptionTarget>(target: T, event: Subscription<T>["event"], listener: Subscription<T>["listener"]) {
@@ -162,31 +167,32 @@ export default class Doodlebot {
         });
     }
 
-    private async sendWebsocketCommand(command: Command, ...args: (string | number)[]) {
-        await this.connectToWebsocket();
-        this.websocket.send(this.formCommand(command, ...args));
-    }
-
     private updateSensor<T extends SensorKey>(type: T, value: SensorData[T]) {
         this.onSensor.emit(type, value);
         this.sensorData[type] = value;
+        this.sensorState[type] = true;
     }
 
     private updateNetworkStatus(ipComponent: string, hostnameComponent: string) {
         const ip = trimNewtworkStatusMessage(ipComponent, networkStatus.ipPrefix);
         const hostname = trimNewtworkStatusMessage(hostnameComponent, networkStatus.hostnamePrefix);
-        if (ip === localIp) return this.onNetwork.emit(events.disconnect);
+        if (ip === localIp) {
+            return this.onNetwork.emit(events.disconnect);
+        }
         this.connection = { ip, hostname };
         this.onNetwork.emit(events.connect, this.connection);
     }
 
     private receiveTextBLE(event: CustomEvent<string>) {
-        console.log({ event });
-        for (const { command, parameters } of this.parseCommand(event.detail)) {
-            if (command.startsWith(networkStatus.ipPrefix)) {
-                this.updateNetworkStatus(command, parameters[0]);
-                continue;
-            }
+        const { detail } = event;
+
+        if (detail.startsWith(networkStatus.ipPrefix)) {
+            const parts = detail.split(",");
+            this.updateNetworkStatus(parts[0], parts[1]);
+            return;
+        }
+
+        for (const { command, parameters } of this.parseCommand(detail)) {
             console.log({ command, parameters });
             switch (command) {
                 case motorCommandReceived:
@@ -225,8 +231,10 @@ export default class Doodlebot {
         }
     }
 
-    private onWebsocketMessage(event: MessageEvent) {
+    private async onWebsocketMessage(event: MessageEvent) {
         console.log("websocket message", { event });
+        const text = await event.data.text();
+        console.log(text);
     }
 
     private invalidateWifiConnection() {
@@ -273,7 +281,7 @@ export default class Doodlebot {
      * @returns 
      */
     async getSensorReading<T extends SensorKey>(type: T): Promise<SensorData[T]> {
-        await this.enableSensor(type);
+        await this.enableSensor(type); // should this be automatic?
         return this.sensorData[type];
     }
 
@@ -330,12 +338,30 @@ export default class Doodlebot {
         }
     }
 
+    async penCommand(direction: "up" | "down") {
+        await this.sendBLECommand(command.pen, direction === "up" ? 0 : 45);
+    }
+
     /**
      * 
      */
     async lowPowerMode() {
         await this.sendBLECommand(command.lowPower);
     }
+
+    async getIPAddress() {
+        const self = this;
+        const ip = await (
+            this.pending.ip ??
+            this.untilFinishedPending("ip", new Promise<string>(async (resolve) => {
+                this.sendBLECommand(command.network);
+                this.onNetwork.once(events.connect, () => resolve(self.connection.ip));
+                this.onNetwork.once(events.disconnect, () => resolve("invalid"));
+            }))
+        );
+        return ip;
+    }
+
 
     /**
      * 
@@ -355,7 +381,7 @@ export default class Doodlebot {
         if (this.connection) return;
 
         await this.untilFinishedPending("wifi", new Promise<void>(async (resolve) => {
-            await this.sendBLECommand(command.wifi, this.ssid, this.wifiPassword);
+            //await this.sendBLECommand(command.wifi, this.ssid, this.wifiPassword);
             this.onNetwork.once(events.connect, () => {
                 console.log("connected to wifi");
                 resolve();
@@ -363,33 +389,72 @@ export default class Doodlebot {
         }));
     }
 
-    async untilFinishedPending(type: keyof Pending, promise: Promise<any>) {
-        this.pending[type] = promise;
-        await promise;
-        this.pending[type] = undefined;
-    }
-
     /**
      * 
      * @param credentials 
      */
-    async connectToWebsocket(credentials?: NetworkCredentials) {
-        if (!credentials?.ipOverride && !this.ip) {
-            await this.connectToWifi(credentials);
-            const { pending: { websocket: pending } } = this;
-            if (pending) await pending;
-            if (this.websocket) return;
-        }
-        const ip = credentials?.ipOverride ?? this.ip ?? this.connection.ip;
-        this.websocket = new WebSocket(`ws://${ip}:${port.websocket}`);
+    async connectToWebsocket(ip: string) {
+        this.websocket = makeWebsocket(ip, port.websocket);
         await this.untilFinishedPending("websocket", new Promise<void>((resolve) => {
             const resolveAndRemove = () => {
+                console.log("Connected to websocket");
                 this.websocket.removeEventListener("open", resolveAndRemove);
                 resolve();
             }
             this.websocket.addEventListener("open", resolveAndRemove);
             this.websocket.addEventListener("message", this.onWebsocketMessage.bind(this));
         }));
+    }
+
+    async getImageStream(ip: string) {
+        const image = document.createElement("img");
+        image.src = `http://${ip}:${port.camera}/${endpoint.video}`;
+        image.crossOrigin = "anonymous";
+        await new Promise((resolve) => image.addEventListener("load", resolve));
+        return image;
+    }
+
+    async getAudioStream(ip: string, numSeconds = 1) {
+        const socket = new WebSocket(`ws://${ip}:${port.audio}`);
+
+
+        // Initialize the audio context
+        const audioContext: AudioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const sampleRate = 48000;  // Sample rate of the audio stream
+        const buffer = audioContext.createBuffer(1, sampleRate * numSeconds, sampleRate);
+
+        let index = 0;
+
+        socket.onmessage = async function (event) {
+            const offset = index++; // this is wrong, the offset is actually the length of the floats
+            const data = JSON.parse(event.data);
+            const float32Array = await base64ToFloat32Array(data.audio_data);
+            console.log(float32Array.length);
+            buffer.copyToChannel(float32Array, 0, offset * float32Array.length);
+        };
+
+
+        socket.onerror = function (error) {
+            console.error('WebSocket Error:', error);
+        };
+
+        const openMsg = this.encoder.encode('(1)');
+        socket.onopen = function (event) {
+            console.log('WebSocket connection established');
+            socket.send(openMsg);
+        };
+
+        socket.onclose = function () {
+            console.log('WebSocket connection closed');
+            // Optionally save the received audio data to a file
+            //saveAudioToFile();
+            const audioBufferSource = audioContext.createBufferSource();
+            audioBufferSource.buffer = buffer;
+            audioBufferSource.connect(audioContext.destination);
+            audioBufferSource.start();
+        };
+
+        return socket;
     }
 
     async display(type: DisplayKey) {
@@ -410,5 +475,23 @@ export default class Doodlebot {
     sendBLECommand(command: Command, ...args: (string | number)[]) {
         const { uartService } = this.services;
         return uartService.sendText(this.formCommand(command, ...args));
+    }
+
+    /**
+     * NOTE: Consider making private
+     * @param command 
+     * @param args 
+     */
+    sendWebsocketCommand(command: Command, ...args: (string | number)[]) {
+        // assumes connection to websocket established
+        const msg = this.formCommand(command, ...args);
+        this.websocket.send(this.encoder.encode(msg));
+    }
+
+    async untilFinishedPending<TKey extends keyof Pending>(type: TKey, promise: Pending[TKey]) {
+        this.pending[type] = promise;
+        const value = await promise;
+        this.pending[type] = undefined;
+        return value;
     }
 }

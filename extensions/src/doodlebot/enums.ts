@@ -27,8 +27,9 @@ export const command = {
     arc: "t",
     wifi: "k",
     lowPower: "q",
-    display: "w",
+    display: "d",
     pen: "u",
+    network: "g",
 } as const;
 
 export type CommandKey = keyof typeof command;
@@ -49,6 +50,7 @@ export const sensor = {
 } as const;
 
 export type SensorKey = keyof typeof sensor;
+export const sensorKeys = Object.keys(sensor) as SensorKey[];
 export type Sensor = typeof sensor[SensorKey];
 export type SensorKeyByValue = { [K in SensorKey as typeof sensor[K]]: K };
 
@@ -80,9 +82,10 @@ export type ReceivedCommand = Sensor | typeof motorCommandReceived;
 
 export const port = {
     websocket: "8765",
-    camera: "8000"
-}
+    camera: "8000",
+    audio: "8771",
+} as const;
 
-const endpoint = {
-    camera: "video_feed'"
-}
+export const endpoint = {
+    video: "video_feed"
+} 
