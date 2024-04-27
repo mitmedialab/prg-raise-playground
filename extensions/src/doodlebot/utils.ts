@@ -25,3 +25,11 @@ export const base64ToFloat32Array = async (base64) => {
 }
 
 export const makeWebsocket = (ip: string, port: string | number) => new WebSocket(`ws://${ip}:${port}`);
+
+export const testWebSocket = (ip: string, port: string | number) => {
+    const websocket = makeWebsocket(ip, port);
+    return new Promise<boolean>((resolve) => {
+        websocket.onopen = () => websocket.close();
+        websocket.onclose = (event) => resolve(event.wasClean);
+    });
+}

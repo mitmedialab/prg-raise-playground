@@ -2,7 +2,7 @@ import EventEmitter from "events";
 import { Service } from "./communication/ServiceHelper";
 import UartService from "./communication/UartService";
 import { Command, DisplayKey, NetworkStatus, ReceivedCommand, SensorKey, command, display, endpoint, keyBySensor, motorCommandReceived, networkStatus, port, sensor } from "./enums";
-import { base64ToFloat32Array, makeWebsocket } from "./utils";
+import { base64ToFloat32Array, makeWebsocket, testWebSocket } from "./utils";
 
 export type Services = Awaited<ReturnType<typeof Doodlebot.getServices>>;
 export type MotorStepRequest = {
@@ -148,8 +148,7 @@ export default class Doodlebot {
     constructor(private device: BluetoothDevice, private services: Services, private ssid: string, private wifiPassword: string, private ip: string | undefined = undefined) {
         this.subscribe(services.uartService, "receiveText", this.receiveTextBLE.bind(this));
         this.subscribe(device, "gattserverdisconnected", this.handleBleDisconnect.bind(this));
-        if (ip) this.connectToWebsocket(ip);
-        //this.connectToWebsocket({ ssid, password: wifiPassword, ipOverride: ip });
+        this.connectionWorkflow({ ssid, password: wifiPassword, ipOverride: ip });
     }
 
     private subscribe<T extends SubscriptionTarget>(target: T, event: Subscription<T>["event"], listener: Subscription<T>["listener"]) {
@@ -249,6 +248,7 @@ export default class Doodlebot {
     }
 
     private handleBleDisconnect() {
+        console.log("disconnected!!!");
         for (const callback of this.disconnectCallbacks) callback();
         for (const { target, event, listener } of this.subscriptions) target.removeEventListener(event, listener);
     }
@@ -384,24 +384,28 @@ export default class Doodlebot {
      * @param ssid 
      * @param password 
      */
-    async connectToWifi(credentials?: NetworkCredentials) {
-        const { ssid, pending: { wifi: pending } } = this;
-        const invalidate = credentials && credentials.ssid !== ssid;
-        if (invalidate) {
-            this.invalidateWifiConnection();
-            this.ssid = credentials.ssid;
-            this.wifiPassword = credentials.password;
-        }
-        else if (pending) await pending;
+    async connectToWifi(credentials: NetworkCredentials) {
+        // first check that IP can be connected to
 
-        if (this.connection) return;
+        if (credentials.ipOverride) {
+            const validIP = await testWebSocket(credentials.ipOverride, port.websocket);
+            if (validIP) return this.connection.ip = credentials.ipOverride;
+        }
+
+        const ip = await this.getIPAddress();
+
+        if (ip !== localIp) {
+            const validIP = await testWebSocket(ip, port.websocket);
+            if (validIP) return this.connection.ip = ip;
+        }
 
         await this.untilFinishedPending("wifi", new Promise<void>(async (resolve) => {
-            //await this.sendBLECommand(command.wifi, this.ssid, this.wifiPassword);
+            await this.sendBLECommand(command.wifi, this.ssid, this.wifiPassword);
+            await this.sendBLECommand(command.network);
             this.onNetwork.once(events.connect, () => {
                 console.log("connected to wifi");
                 resolve();
-            })
+            });
         }));
     }
 
@@ -420,6 +424,11 @@ export default class Doodlebot {
             this.websocket.addEventListener("open", resolveAndRemove);
             this.websocket.addEventListener("message", this.onWebsocketMessage.bind(this));
         }));
+    }
+
+    async connectionWorkflow(credentials: NetworkCredentials) {
+        await this.connectToWifi(credentials);
+        await this.connectToWebsocket(this.connection.ip);
     }
 
     async getImageStream(ip: string) {
