@@ -23,7 +23,7 @@
   let error: string;
   let ssid = localStorage.getItem(storageKeys.ssid) ?? "";
   let password = localStorage.getItem(storageKeys.password) ?? "";
-  let ip = "";
+  let ip = localStorage.getItem(storageKeys.ip) ?? "";
 
   const inputs = {
     ssid: null as HTMLInputElement,
@@ -40,6 +40,7 @@
       invoke("setDoodlebot", doodlebot);
       localStorage.setItem(storageKeys.ssid, ssid);
       localStorage.setItem(storageKeys.password, password);
+      localStorage.setItem(storageKeys.ip, ip);
       close();
     } catch (err) {
       invoke("setIndicator", "disconnected");

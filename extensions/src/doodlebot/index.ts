@@ -197,8 +197,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     text: "connect video"
   })
   async connectToVideo() {
-    const ip = await this.doodlebot?.getIPAddress();
-    const image = await this.doodlebot?.getImageStream(ip);
+    const image = await this.doodlebot?.getImageStream();
 
     const drawable = this.createDrawable(image);
     drawable.setVisible(true);

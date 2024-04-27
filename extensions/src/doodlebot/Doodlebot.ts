@@ -145,10 +145,12 @@ export default class Doodlebot {
         light: false
     };
 
+    private connectionPromise: Promise<void>;
+
     constructor(private device: BluetoothDevice, private services: Services, private ssid: string, private wifiPassword: string, private ip: string | undefined = undefined) {
         this.subscribe(services.uartService, "receiveText", this.receiveTextBLE.bind(this));
         this.subscribe(device, "gattserverdisconnected", this.handleBleDisconnect.bind(this));
-        this.connectionWorkflow({ ssid, password: wifiPassword, ipOverride: ip });
+        this.connectionPromise = this.connectionWorkflow({ ssid, password: wifiPassword, ipOverride: ip });
     }
 
     private subscribe<T extends SubscriptionTarget>(target: T, event: Subscription<T>["event"], listener: Subscription<T>["listener"]) {
@@ -389,7 +391,10 @@ export default class Doodlebot {
 
         if (credentials.ipOverride) {
             const validIP = await testWebSocket(credentials.ipOverride, port.websocket);
-            if (validIP) return this.connection.ip = credentials.ipOverride;
+            if (validIP) {
+                this.connection = { ip: credentials.ipOverride, hostname: "" };
+                return this.connection.ip;
+            }
         }
 
         const ip = await this.getIPAddress();
@@ -431,9 +436,10 @@ export default class Doodlebot {
         await this.connectToWebsocket(this.connection.ip);
     }
 
-    async getImageStream(ip: string) {
+    async getImageStream() {
+        if (!this.connection.ip) return;
         const image = document.createElement("img");
-        image.src = `http://${ip}:${port.camera}/${endpoint.video}`;
+        image.src = `http://${this.connection.ip}:${port.camera}/${endpoint.video}`;
         image.crossOrigin = "anonymous";
         await new Promise((resolve) => image.addEventListener("load", resolve));
         return image;
