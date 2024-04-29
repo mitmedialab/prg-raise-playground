@@ -2,7 +2,7 @@ import EventEmitter from "events";
 import { Service } from "./communication/ServiceHelper";
 import UartService from "./communication/UartService";
 import { Command, DisplayKey, NetworkStatus, ReceivedCommand, SensorKey, command, display, endpoint, keyBySensor, motorCommandReceived, networkStatus, port, sensor } from "./enums";
-import { base64ToFloat32Array, makeWebsocket, testWebSocket } from "./utils";
+import { base64ToInt32Array, makeWebsocket, Max32Int, testWebSocket } from "./utils";
 
 export type Services = Awaited<ReturnType<typeof Doodlebot.getServices>>;
 export type MotorStepRequest = {
@@ -174,6 +174,9 @@ export default class Doodlebot {
         accelerometer: false,
         light: false
     };
+
+    private audioSocket: WebSocket;
+    private audioCallbacks = new Set<(chunk: Float32Array) => void>();
 
     constructor(
         private device: BluetoothDevice,
@@ -545,47 +548,76 @@ export default class Doodlebot {
         return image;
     }
 
-    async getAudioStream(ip: string, numSeconds = 1) {
-        const socket = new WebSocket(`ws://${ip}:${port.audio}`);
+    private setupAudioStream() {
+        if (!this.connection.ip) return false;
 
+        if (this.audioSocket) return true;
 
-        // Initialize the audio context
-        const audioContext: AudioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-        const sampleRate = 48000;  // Sample rate of the audio stream
-        const buffer = audioContext.createBuffer(1, sampleRate * numSeconds, sampleRate);
+        const socket = new WebSocket(`ws://${this.connection.ip}:${port.audio}`);
+        const self = this;
 
-        let index = 0;
-
-        socket.onmessage = async function (event) {
-            const offset = index++; // this is wrong, the offset is actually the length of the floats
-            const data = JSON.parse(event.data);
-            const float32Array = await base64ToFloat32Array(data.audio_data);
-            console.log(float32Array.length);
-            buffer.copyToChannel(float32Array, 0, offset * float32Array.length);
+        socket.onopen = function (event) {
+            console.log('WebSocket connection established');
+            socket.send(self.encoder.encode('(1)'));
         };
-
 
         socket.onerror = function (error) {
             console.error('WebSocket Error:', error);
-        };
-
-        const openMsg = this.encoder.encode('(1)');
-        socket.onopen = function (event) {
-            console.log('WebSocket connection established');
-            socket.send(openMsg);
+            // TODO: automatically restart socket 
         };
 
         socket.onclose = function () {
             console.log('WebSocket connection closed');
-            // Optionally save the received audio data to a file
-            //saveAudioToFile();
-            const audioBufferSource = audioContext.createBufferSource();
-            audioBufferSource.buffer = buffer;
-            audioBufferSource.connect(audioContext.destination);
-            audioBufferSource.start();
         };
 
-        return socket;
+        socket.onmessage = async function (event) {
+            if (self.audioCallbacks.size === 0) return;
+
+            const data = JSON.parse(event.data);
+
+            const interleaved = await base64ToInt32Array(data.audio_data);
+            const chunkSize = interleaved.length / 2;
+
+            const mono = new Float32Array(chunkSize);
+
+            for (let i = 0, j = 0; i < interleaved.length; i += 2, j++) {
+                mono[j] = interleaved[i] / Max32Int;
+            }
+
+            for (const callback of self.audioCallbacks) callback(mono);
+        };
+
+        return true;
+    }
+
+    recordAudio(numSeconds = 1) {
+        if (!this.setupAudioStream()) return;
+
+        const context: AudioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const sampleRate = 48000;
+        const buffer = context.createBuffer(1, sampleRate * numSeconds, sampleRate);
+
+        let index = 0;
+        let samples = 0;
+
+        const callbacks = this.audioCallbacks;
+
+        return new Promise<{ context: AudioContext, buffer: AudioBuffer }>((resolve) => {
+            const accumulate = (chunk: Float32Array) => {
+
+                if (samples >= buffer.length) {
+                    callbacks.delete(accumulate);
+                    return resolve({ context, buffer });
+                }
+
+                const offset = index++;
+                const { length } = chunk;
+                buffer.copyToChannel(chunk, 0, offset * length);
+                samples += length;
+
+            }
+            callbacks.add(accumulate);
+        })
     }
 
     async display(type: DisplayKey) {

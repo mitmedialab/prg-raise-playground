@@ -44,14 +44,10 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     this.openUI("ReattachBLE");
   }
 
-  // #region Block Methods
-
   @buttonBlock("Connect Robot")
   connect() {
     this.openUI("Connect");
   }
-
-
 
   @block({
     type: "command",
@@ -89,7 +85,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
 
   @block({
     type: "command",
-    text: "Stop"
+    text: "stop driving"
   })
   async stop() {
     await this.doodlebot?.motorCommand("stop");
@@ -104,6 +100,15 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     await this.doodlebot?.penCommand(direction);
   }
 
+  @block({
+    type: "reporter",
+    text: (sensor: SensorKey) => `${sensor} sensor`,
+    arg: { type: "string", options: ["battery", "temperature", "humidity", "pressure", "distance"], defaultValue: "battery" }
+  })
+  async getSingleSensorReading(sensor: "battery" | "temperature" | "humidity" | "pressure" | "distance") {
+    const reading = await this.doodlebot?.getSensorReading(sensor);
+    return reading;
+  }
 
   @block({
     type: "Boolean",
@@ -152,16 +157,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   }
 
   @block({
-    type: "reporter",
-    text: (sensor: SensorKey) => `${sensor} sensor`,
-    arg: { type: "string", options: ["battery", "temperature", "humidity", "pressure", "distance"], defaultValue: "battery" }
-  })
-  async getSingleSensorReading(sensor: "battery" | "temperature" | "humidity" | "pressure" | "distance") {
-    const reading = await this.doodlebot?.getSensorReading(sensor);
-    return reading;
-  }
-
-  @block({
     type: "command",
     text: (sensor: SensorKey) => `disable ${sensor}`,
     arg: { type: "string", options: sensorKeys, defaultValue: sensorKeys[0] }
@@ -169,8 +164,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   async disableSensor(sensor: SensorKey) {
     await this.doodlebot?.disableSensor(sensor);
   }
-
-  // #region Websocket-based commands
 
   @block({
     type: "command",
@@ -189,9 +182,51 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     await this.doodlebot?.display(display);
   }
 
-  // #endregion
+  @block({
+    type: "command",
+    text: "stream video"
+  })
+  async connectToVideo() {
+    const image = await this.doodlebot?.getImageStream();
 
-  // #region BLE-based commands
+    const drawable = this.createDrawable(image);
+    drawable.setVisible(true);
+    const update = () => {
+      drawable.update(image);
+      requestAnimationFrame(update);
+    }
+    requestAnimationFrame(update);
+  }
+
+  @block({
+    type: "command",
+    text: (seconds) => `record for ${seconds} seconds and play`,
+    arg: { type: "number", defaultValue: 1 }
+  })
+  async recordAudio(seconds: number) {
+    const { context, buffer } = await this.doodlebot?.recordAudio(seconds);
+
+    const audioBufferSource = context.createBufferSource();
+    audioBufferSource.buffer = buffer;
+
+    const gainNode = context.createGain();
+    audioBufferSource.connect(gainNode);
+    gainNode.connect(context.destination);
+
+    const fadeInDuration = 0.1;
+    const fadeOutDuration = 0.1;
+    const audioDuration = audioBufferSource.buffer.duration;
+
+    // Start with silence
+    gainNode.gain.setValueAtTime(0, context.currentTime);
+    gainNode.gain.linearRampToValueAtTime(1, context.currentTime + fadeInDuration);
+
+    gainNode.gain.setValueAtTime(1, context.currentTime + audioDuration - fadeOutDuration);
+    gainNode.gain.linearRampToValueAtTime(0, context.currentTime + audioDuration);
+
+    audioBufferSource.start();
+    audioBufferSource.stop(context.currentTime + audioDuration);
+  }
 
   @block({
     type: "reporter",
@@ -200,33 +235,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   async getIP() {
     return this.doodlebot?.getIPAddress();
   }
-
-  @block({
-    type: "command",
-    text: "connect video"
-  })
-  async connectToVideo() {
-    const image = await this.doodlebot?.getImageStream();
-
-    const drawable = this.createDrawable(image);
-    drawable.setVisible(true);
-    setInterval(() => drawable.update(image), 100);
-  }
-
-  @block({
-    type: "command",
-    text: "connect audio"
-  })
-  async connectToAudio() {
-    const ip = await this.doodlebot?.getIPAddress();
-    const socket = await this.doodlebot?.getAudioStream(ip, 10);
-    await new Promise((resolve) => setTimeout(resolve, 9000));
-    socket.close();
-  }
-
-  // #endregion
-
-  // #region mixed commands
 
   @block({
     type: "command",
@@ -245,9 +253,5 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
       ? await this.doodlebot?.sendBLECommand(candidates[0], ...splitArgsString(args))
       : await this.doodlebot?.sendWebsocketCommand(candidates[0], ...splitArgsString(args));
   }
-
-  // #endregion
-
-  // #endregion
 
 }
