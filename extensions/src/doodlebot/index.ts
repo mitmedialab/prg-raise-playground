@@ -15,11 +15,20 @@ const details: ExtensionMenuDisplayDetails = {
 
 const bumperOptions = ["front", "back", "front or back", "front and back", "neither"] as const;
 
-const looper = (action: () => Promise<any>) => {
+const looper = (action: () => Promise<any>, profileMarker?: string) => {
   const controller = new AbortController();
+  let samples = 0;
+  let average = 0;
   async function loop() {
     if (controller.signal.aborted) return;
+    const start = performance.now();
     await action();
+    const end = performance.now();
+    if (profileMarker && samples < Number.MAX_SAFE_INTEGER) {
+      samples++;
+      average = (average * (samples - 1) + end - start) / samples;
+      if (samples % 100 === 0) console.log(`Average time for ${profileMarker}: ${average}ms`);
+    }
     requestAnimationFrame(loop);
   }
   loop();
@@ -244,7 +253,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
       for (const arr of result.gestures)
         for (const gesture of arr)
           self.gestureState[gesture.categoryName] = true;
-    });
+    }, "gesture detection");
 
     return this.gestureState[gesture];
   }
