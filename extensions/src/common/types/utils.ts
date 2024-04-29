@@ -48,3 +48,9 @@ export type ExpandRecursively<T> = T extends (...args: infer A) => infer R
   ? { [K in keyof O]: ExpandRecursively<O[K]> }
   : never
   : T;
+
+export type ReverseMap<T extends Record<keyof T, keyof any>> = {
+  [P in T[keyof T]]: {
+    [K in keyof T]: T[K] extends P ? K : never
+  }[keyof T]
+}

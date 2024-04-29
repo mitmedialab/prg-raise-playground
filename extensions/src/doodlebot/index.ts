@@ -3,6 +3,7 @@ import { DisplayKey, displayKeys, command, type Command, SensorKey, sensorKeys }
 import Doodlebot from "./Doodlebot";
 import { splitArgsString } from "./utils";
 import EventEmitter from "events";
+import { categoryByGesture, emojiByGesture, gestureDetection, gestureMenuItems, gestures, objectDetection } from "./detection";
 
 const details: ExtensionMenuDisplayDetails = {
   name: "Doodlebot",
@@ -14,17 +15,43 @@ const details: ExtensionMenuDisplayDetails = {
 
 const bumperOptions = ["front", "back", "front or back", "front and back", "neither"] as const;
 
+const looper = (action: () => Promise<any>) => {
+  const controller = new AbortController();
+  async function loop() {
+    if (controller.signal.aborted) return;
+    await action();
+    requestAnimationFrame(loop);
+  }
+  loop();
+  return controller;
+}
+
 export default class DoodlebotBlocks extends extension(details, "ui", "indicators", "video", "drawable") {
   doodlebot: Doodlebot;
   private indicator: Promise<{ close(): void; }>;
 
   bluetoothEmitter = new EventEmitter();
 
+  gestureLoop: ReturnType<typeof looper>;
+
+  gestureState = {
+    "Closed_Fist": false,
+    "Thumb_Up": false,
+    "Thumb_Down": false,
+    "Victory": false,
+    "Pointing_Up": false,
+    "ILoveYou": false,
+    "Open_Palm": false
+  } satisfies Record<keyof typeof categoryByGesture, boolean>;
+
+  imageStream: HTMLImageElement;
+
   init(env: Environment) {
     this.openUI("Connect");
     this.setIndicator("disconnected");
 
     // idea: set up polling mechanism to try and disable unused sensors
+    // idea: set up polling mechanism to destroy gesture recognition loop
   }
 
   setDoodlebot(doodlebot: Doodlebot) {
@@ -201,6 +228,28 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   }
 
   @block({
+    type: "hat",
+    text: (gesture) => `when ${gesture} detected`,
+    arg: { type: "string", defaultValue: "Thumb_Up", options: gestureMenuItems }
+  })
+  whenGesture(gesture: keyof typeof this.gestureState) {
+    const self = this;
+
+    this.gestureLoop ??= looper(async () => {
+      self.imageStream ??= await self.doodlebot?.getImageStream();
+      const result = await gestureDetection(self.imageStream);
+
+      for (const k in self.gestureState) self.gestureState[k] = false;
+
+      for (const arr of result.gestures)
+        for (const gesture of arr)
+          self.gestureState[gesture.categoryName] = true;
+    });
+
+    return this.gestureState[gesture];
+  }
+
+  @block({
     type: "command",
     text: (seconds) => `record for ${seconds} seconds and play`,
     arg: { type: "number", defaultValue: 1 }
@@ -234,15 +283,26 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
 
   @block({
     type: "command",
+    text: "detect"
+  })
+  async detect() {
+    const image = await this.doodlebot?.getImageStream();
+    await objectDetection(image);
+  }
+
+  @block({
+    type: "command",
     text: "stream video"
   })
   async connectToVideo() {
-    const image = await this.doodlebot?.getImageStream();
-
-    const drawable = this.createDrawable(image);
+    this.imageStream ??= await this.doodlebot?.getImageStream();
+    const drawable = this.createDrawable(this.imageStream);
     drawable.setVisible(true);
+
+    const self = this;
+
     const update = () => {
-      drawable.update(image);
+      drawable.update(self.imageStream);
       requestAnimationFrame(update);
     }
     requestAnimationFrame(update);

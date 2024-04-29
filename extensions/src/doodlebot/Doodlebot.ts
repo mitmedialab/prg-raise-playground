@@ -465,7 +465,7 @@ export default class Doodlebot {
 
         msg("Asking doodlebot for it's IP", "warning");
 
-        let ip = null;// await this.getIPAddress();
+        let ip = await this.getIPAddress();
 
         if (ip) {
             if (ip === localIp) {
@@ -489,15 +489,17 @@ export default class Doodlebot {
             const self = this;
             const { device } = this;
 
-            let interval: NodeJS.Timeout;
+            //let interval: NodeJS.Timeout;
 
             const reconnectToBluetooth = async () => {
                 this.requestBluetooth(async (ble) => {
                     msg("Reconnected to doodlebot", "success");
-                    clearInterval(interval);
+                    //clearInterval(interval);
                     const { robot, services } = await Doodlebot.getBLE(ble);
                     self.attachToBLE(robot, services);
                     device.removeEventListener("gattserverdisconnected", reconnectToBluetooth);
+                    msg("Waiting to issue connect command", "warning");
+                    await new Promise((resolve) => setTimeout(resolve, 5000));
                     msg("Testing doodlebot's IP after reconnect", "warning");
                     const ip = await self.getIPAddress();
                     msg(
@@ -513,7 +515,7 @@ export default class Doodlebot {
             msg("Attempting to connect to wifi", "warning");
 
             await this.sendBLECommand(command.wifi, credentials.ssid, credentials.password);
-            interval = setInterval(() => this.sendBLECommand(command.network), 5000);
+            //interval = setInterval(() => this.sendBLECommand(command.network), 5000);
         });
     }
 
