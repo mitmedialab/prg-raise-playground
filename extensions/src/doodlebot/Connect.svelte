@@ -23,7 +23,14 @@
   let error: string;
   let ssid = localStorage.getItem(storageKeys.ssid) ?? "";
   let password = localStorage.getItem(storageKeys.password) ?? "";
-  let ip = localStorage.getItem(storageKeys.ip) ?? "";
+
+  const savedIP = localStorage.getItem(storageKeys.ip);
+  const ipParts = [
+    savedIP?.split(".")[0] ?? "192",
+    savedIP?.split(".")[1] ?? "168",
+    savedIP?.split(".")[2] ?? "0",
+    savedIP?.split(".")[3] ?? "0",
+  ];
 
   const inputs = {
     ssid: null as HTMLInputElement,
@@ -31,16 +38,20 @@
   };
 
   const createConnection = async () => {
+    const ipOverride =
+      ipParts.filter(Boolean).length === 4 ? ipParts.join(".") : undefined;
+
     try {
-      const doodlebot = await Doodlebot.tryCreate(
-        { ssid, password, ipOverride: ip ? ipPrefix + ip : undefined },
-        bluetooth,
-      );
+      const doodlebot = await Doodlebot.tryCreate(bluetooth, {
+        credentials: { ssid, password, ipOverride },
+        requestBluetooth: extension.requestBluetooth.bind(extension),
+        saveIP: (ip) => localStorage.setItem(storageKeys.ip, ip),
+      });
 
       invoke("setDoodlebot", doodlebot);
       localStorage.setItem(storageKeys.ssid, ssid);
       localStorage.setItem(storageKeys.password, password);
-      localStorage.setItem(storageKeys.ip, ip);
+      if (ipOverride) localStorage.setItem(storageKeys.ip, ipOverride);
       close();
     } catch (err) {
       invoke("setIndicator", "disconnected");
@@ -56,10 +67,7 @@
     }
   };
 
-  const updateNetworkCredentials = () =>
-    extension.doodlebot.connectToWebsocket({ ssid, password, ipOverride: ip });
-
-  let showAdvanced = false;
+  let showAdvanced = true;
 </script>
 
 <div
@@ -74,83 +82,61 @@
     </div>
   {/if}
   {#if bluetooth}
-    {#if !extension.doodlebot}
-      <h1>How to connect to doodlebot</h1>
-      <div>
-        <h3>1. Set network credentials:</h3>
-        <p>
-          SSID (Network Name):
-          <input
-            bind:this={inputs.ssid}
-            bind:value={ssid}
-            type="text"
-            placeholder="e.g. my_wifi"
-          />
-        </p>
-        <p>
-          Password:
-          <input
-            bind:this={inputs.password}
-            bind:value={password}
-            type="password"
-            placeholder="e.g. 12345"
-          />
-        </p>
-        <div>
-          <button
-            class="collapser"
-            on:click={() => (showAdvanced = !showAdvanced)}
-          >
-            {showAdvanced ? "▴" : "▾"} Advanced
-          </button>
-          <div
-            style:overflow="hidden"
-            style:max-height={showAdvanced ? "fit-content" : "0"}
-          >
-            <p>
-              IP: {ipPrefix}<input
-                bind:this={inputs.password}
-                bind:value={ip}
-                type="text"
-                placeholder="e.g. 12345"
-              />
-            </p>
-          </div>
-        </div>
-      </div>
-      <div>
-        <h3>2. Select bluetooth device</h3>
-
-        <button disabled={!password || !ssid} on:click={createConnection}>
-          Open Bluetooth Menu
-        </button>
-      </div>
-    {:else}
-      {@const credentials = extension.doodlebot.getNetworkCredentials()}
-      <h1>Connected to doodlebot</h1>
-      <div>
-        <h3>Update network credentials:</h3>
+    <h1>How to connect to doodlebot</h1>
+    <div>
+      <h3>1. Set network credentials:</h3>
+      <p>
         SSID (Network Name):
-        <input bind:this={inputs.ssid} type="text" value={credentials.ssid} />
+        <input
+          bind:this={inputs.ssid}
+          bind:value={ssid}
+          type="text"
+          placeholder="e.g. my_wifi"
+        />
+      </p>
+      <p>
         Password:
         <input
           bind:this={inputs.password}
-          type="text"
-          value={credentials.password}
+          bind:value={password}
+          type="password"
+          placeholder="e.g. 12345"
         />
-        <button
-          disabled={(credentials.ssid === ssid &&
-            credentials.password === password) ||
-            !ip}
-          on:click={updateNetworkCredentials}
-        >
-          Update</button
-        >
-      </div>
+      </p>
       <div>
-        <button>Disconnect</button>
+        <button
+          class="collapser"
+          on:click={() => (showAdvanced = !showAdvanced)}
+        >
+          {showAdvanced ? "▴" : "▾"} Advanced
+        </button>
+        <div
+          style:overflow="hidden"
+          style:max-height={showAdvanced ? "fit-content" : "0"}
+        >
+          <p>
+            IP:
+            {#each ipParts as part, i}
+              <input
+                class="ip"
+                bind:this={inputs.password}
+                bind:value={ipParts[i]}
+                type="text"
+                placeholder="e.g. 192"
+              />
+              {i < ipParts.length - 1 ? "." : ""}
+            {/each}
+          </p>
+        </div>
       </div>
-    {/if}
+    </div>
+    <div>
+      <h3>2. Select bluetooth device</h3>
+
+      <button disabled={!password || !ssid} on:click={createConnection}>
+        Open Bluetooth Menu
+      </button>
+    </div>
   {:else}
     Uh oh! Your browser does not support bluetooth. Here's how to fix that...
     TBD
@@ -177,5 +163,9 @@
     border: none;
     text-align: left;
     outline: none;
+  }
+
+  .ip {
+    width: 3rem;
   }
 </style>

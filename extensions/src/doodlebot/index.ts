@@ -2,6 +2,7 @@ import { Environment, ExtensionMenuDisplayDetails, extension, block, buttonBlock
 import { DisplayKey, displayKeys, command, type Command, SensorKey, sensorKeys } from "./enums";
 import Doodlebot from "./Doodlebot";
 import { splitArgsString } from "./utils";
+import EventEmitter from "events";
 
 const details: ExtensionMenuDisplayDetails = {
   name: "Doodlebot",
@@ -15,7 +16,9 @@ const bumperOptions = ["front", "back", "front or back", "front and back", "neit
 
 export default class DoodlebotBlocks extends extension(details, "ui", "indicators", "video", "drawable") {
   doodlebot: Doodlebot;
-  private indicator: Promise<{ close(): void; }>
+  private indicator: Promise<{ close(): void; }>;
+
+  bluetoothEmitter = new EventEmitter();
 
   init(env: Environment) {
     this.openUI("Connect");
@@ -36,12 +39,19 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
       : this.indicate({ position: "category", msg: "Not connected to robot", type: "warning", retry: true });
   }
 
+  requestBluetooth(callback: (bluetooth: Bluetooth) => any) {
+    this.bluetoothEmitter.once("bluetooth", callback);
+    this.openUI("ReattachBLE");
+  }
+
   // #region Block Methods
 
   @buttonBlock("Connect Robot")
   connect() {
     this.openUI("Connect");
   }
+
+
 
   @block({
     type: "command",
@@ -176,7 +186,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     arg: { type: "string", options: displayKeys.filter(key => key !== "clear"), defaultValue: "happy" }
   })
   async setDisplay(display: DisplayKey) {
-    await this.doodlebot?.connectToWebsocket("192.168.0.103");
     await this.doodlebot?.display(display);
   }
 
