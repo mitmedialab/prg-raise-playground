@@ -58,7 +58,14 @@ export const display = {
     clear: "c",
     sad: "s",
     happy: "T",
-    child: "H"
+    child: "H",
+    angry: "a",
+    annoyed: "n",
+    disgust: "d",
+    worried: "w",
+    fear: "f",
+    love: "l",
+    confused: "q",
 } as const;
 
 export type DisplayKey = keyof typeof display;
@@ -88,4 +95,4 @@ export const port = {
 
 export const endpoint = {
     video: "video_feed"
-} 
+} as const;

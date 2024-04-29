@@ -167,14 +167,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
 
   @block({
     type: "command",
-    text: "clear display"
-  })
-  async clearDisplay() {
-    await this.doodlebot?.display("clear");
-  }
-
-  @block({
-    type: "command",
     text: (type: DisplayKey) => `display ${type}`,
     arg: { type: "string", options: displayKeys.filter(key => key !== "clear"), defaultValue: "happy" }
   })
@@ -184,18 +176,28 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
 
   @block({
     type: "command",
-    text: "stream video"
+    text: (text: string) => `display text ${text}`,
+    arg: { type: "string", defaultValue: "hello world!" }
   })
-  async connectToVideo() {
-    const image = await this.doodlebot?.getImageStream();
+  async setText(text: string) {
+    await this.doodlebot?.displayText(text);
+  }
 
-    const drawable = this.createDrawable(image);
-    drawable.setVisible(true);
-    const update = () => {
-      drawable.update(image);
-      requestAnimationFrame(update);
-    }
-    requestAnimationFrame(update);
+  @block({
+    type: "command",
+    text: "clear display"
+  })
+  async clearDisplay() {
+    await this.doodlebot?.display("clear");
+  }
+
+  @block({
+    type: "command",
+    text: (sound) => `play sound ${sound}`,
+    arg: { type: "number", defaultValue: 1 }
+  })
+  async playSound(sound: number) {
+    await this.doodlebot?.sendWebsocketCommand("m", sound)
   }
 
   @block({
@@ -226,6 +228,24 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
 
     audioBufferSource.start();
     audioBufferSource.stop(context.currentTime + audioDuration);
+
+    await new Promise((resolve) => setTimeout(resolve, audioDuration * 1000));
+  }
+
+  @block({
+    type: "command",
+    text: "stream video"
+  })
+  async connectToVideo() {
+    const image = await this.doodlebot?.getImageStream();
+
+    const drawable = this.createDrawable(image);
+    drawable.setVisible(true);
+    const update = () => {
+      drawable.update(image);
+      requestAnimationFrame(update);
+    }
+    requestAnimationFrame(update);
   }
 
   @block({

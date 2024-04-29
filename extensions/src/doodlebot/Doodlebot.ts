@@ -625,6 +625,10 @@ export default class Doodlebot {
         await this.sendWebsocketCommand(command.display, value);
     }
 
+    async displayText(text: string) {
+        await this.sendWebsocketCommand(command.display, "t", text);
+    }
+
     /**
      * NOTE: Consider making private
      * @param command 
