@@ -3,7 +3,7 @@ import { DisplayKey, displayKeys, command, type Command, SensorKey, sensorKeys }
 import Doodlebot from "./Doodlebot";
 import { splitArgsString } from "./utils";
 import EventEmitter from "events";
-import { categoryByGesture, emojiByGesture, gestureDetection, gestureMenuItems, gestures, objectDetection } from "./detection";
+import { categoryByGesture, classes, emojiByGesture, gestureDetection, gestureMenuItems, gestures, objectDetection } from "./detection";
 
 const details: ExtensionMenuDisplayDetails = {
   name: "Doodlebot",
@@ -42,6 +42,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   bluetoothEmitter = new EventEmitter();
 
   gestureLoop: ReturnType<typeof looper>;
+  objectLoop: ReturnType<typeof looper>;
 
   gestureState = {
     "Closed_Fist": false,
@@ -117,6 +118,16 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   async arc(direction: "left" | "right", radius: number, degrees: number) {
     if (direction == "right") degrees *= -1;
     await this.doodlebot?.motorCommand("arc", radius, degrees);
+  }
+
+  @block({
+    type: "command",
+    text: (degrees) => `spin ${degrees} degrees`,
+    arg: { type: "angle", defaultValue: 90 }
+  })
+  async spin(degrees: number) {
+    if (degrees === 0) return;
+    await this.doodlebot?.motorCommand("arc", 0, -degrees);
   }
 
   @block({
@@ -259,6 +270,25 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   }
 
   @block({
+    type: "reporter",
+    text: (object) => `degrees from ${object}`,
+    arg: { type: "string", defaultValue: "cup", options: classes }
+  })
+  async getOffsetFromObject(object: typeof classes[number]) {
+    this.imageStream ??= await this.doodlebot?.getImageStream();
+    const result = await objectDetection(this.imageStream);
+    for (const detection of result.detections) {
+      const isCup = detection.categories.some(({ categoryName }) => categoryName === object);
+      if (!isCup) continue;
+      if (!detection.boundingBox) continue;
+      const x = detection.boundingBox.originX + detection.boundingBox.width / 2;
+      const xOffset = x - this.imageStream.width / 2;
+      return xOffset * 90 / this.imageStream.width;
+    }
+    return 0;
+  }
+
+  @block({
     type: "command",
     text: (seconds) => `record for ${seconds} seconds and play`,
     arg: { type: "number", defaultValue: 1 }
@@ -295,8 +325,10 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     text: "detect"
   })
   async detect() {
-    const image = await this.doodlebot?.getImageStream();
-    await objectDetection(image);
+    this.imageStream ??= await this.doodlebot?.getImageStream();
+    console.log(this.imageStream.width, this.imageStream.height);
+    const result = await objectDetection(this.imageStream);
+    console.log(result);
   }
 
   @block({
