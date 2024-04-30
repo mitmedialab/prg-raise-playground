@@ -55,6 +55,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   } satisfies Record<keyof typeof categoryByGesture, boolean>;
 
   imageStream: HTMLImageElement;
+  videoDrawable: ReturnType<typeof this.createDrawable>;
 
   init(env: Environment) {
     this.openUI("Connect");
@@ -79,6 +80,19 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   requestBluetooth(callback: (bluetooth: Bluetooth) => any) {
     this.bluetoothEmitter.once("bluetooth", callback);
     this.openUI("ReattachBLE");
+  }
+
+  async createVideoStreamDrawable() {
+    this.imageStream ??= await this.doodlebot?.getImageStream();
+    const drawable = this.createDrawable(this.imageStream);
+    drawable.setVisible(true);
+    const self = this;
+    const update = () => {
+      drawable.update(self.imageStream);
+      requestAnimationFrame(update);
+    }
+    requestAnimationFrame(update);
+    return drawable;
   }
 
   @buttonBlock("Connect Robot")
@@ -248,6 +262,16 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   }
 
   @block({
+    type: "command",
+    text: (transparency) => `display video with ${transparency}% transparency`,
+    arg: { type: "number", defaultValue: 50 }
+  })
+  async connectToVideo(transparency: number) {
+    this.videoDrawable ??= await this.createVideoStreamDrawable();
+    this.videoDrawable.setTransparency(transparency);
+  }
+
+  @block({
     type: "hat",
     text: (gesture) => `when ${gesture} detected`,
     arg: { type: "string", defaultValue: "Thumb_Up", options: gestureMenuItems }
@@ -320,34 +344,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     await new Promise((resolve) => setTimeout(resolve, audioDuration * 1000));
   }
 
-  @block({
-    type: "command",
-    text: "detect"
-  })
-  async detect() {
-    this.imageStream ??= await this.doodlebot?.getImageStream();
-    console.log(this.imageStream.width, this.imageStream.height);
-    const result = await objectDetection(this.imageStream);
-    console.log(result);
-  }
-
-  @block({
-    type: "command",
-    text: "stream video"
-  })
-  async connectToVideo() {
-    this.imageStream ??= await this.doodlebot?.getImageStream();
-    const drawable = this.createDrawable(this.imageStream);
-    drawable.setVisible(true);
-
-    const self = this;
-
-    const update = () => {
-      drawable.update(self.imageStream);
-      requestAnimationFrame(update);
-    }
-    requestAnimationFrame(update);
-  }
 
   @block({
     type: "reporter",
