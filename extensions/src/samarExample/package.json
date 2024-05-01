@@ -1,0 +1,15 @@
+{
+  "name": "samar-example-extension",
+  "version": "1.0.0",
+  "description": "An extension created using the PRG AI Blocks framework",
+  "main": "index.ts",
+  "scripts": {
+    "directory": "echo samarExample",
+    "test": "npm run test --prefix ../../ -- samarExample/index.test.ts",
+    "dev": "npm run dev --prefix ../../../ -- --include samarExample",
+    "add:ui": "npm run add:ui --prefix ../../../  -- samarExample",
+    "add:arg": "npm run --prefix ../../../-- samarExample"
+  },
+  "author": "",
+  "license": "ISC"
+}
