@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Helper for making documentation",
   "scripts": {
-    "generate": "npm run ts:node:extensions --prefix ../../ -- ./extensions/documentation/scripts/generateREADME.ts"
+    "ts:node": "npm run ts:node:extensions --prefix ../../",
+    "generate": "npm run ts:node -- ./extensions/documentation/scripts/generateREADME.ts"
   },
   "author": "",
   "license": "ISC",
