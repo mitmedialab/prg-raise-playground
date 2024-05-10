@@ -117,9 +117,6 @@ class Blocks extends React.Component {
         toolboxWorkspace.registerButtonCallback('MAKE_A_LIST', varListButtonCallback('list'));
         toolboxWorkspace.registerButtonCallback('MAKE_A_PROCEDURE', procButtonCallback);
         toolboxWorkspace.registerButtonCallback('CONNECT_MICROBIT_ROBOT', connectMicrobitRobotCallback);
-        this.props.vm.runtime.on(registerButtonCallbackEvent, (event) => {
-            toolboxWorkspace.registerButtonCallback(event, () => this.props.vm.runtime.emit(event));
-        });
 
         this.props.vm.runtime.on(openUIEvent, (details) => this.props.onOpenProgrammaticModal(details));
 
@@ -217,6 +214,15 @@ class Blocks extends React.Component {
                 this.requestToolboxUpdate();
                 this.withToolboxUpdates(() => {
                     this.workspace.getFlyout().setRecyclingEnabled(true);
+
+                    // Moved from `componentDidMount` due to strange blockly error after changing locale.
+                    // Worth retesting after updating scratch, as this may have been addressed in later blockly versions.
+                    const registerButtonCallback = (event) =>
+                        this.workspace.getFlyout()
+                            ? this.workspace.registerButtonCallback(event, () => { this.props.vm.runtime.emit(event) })
+                            : this.props.vm.runtime.off(registerButtonCallbackEvent, registerButtonCallback)
+
+                    this.props.vm.runtime.on(registerButtonCallbackEvent, registerButtonCallback.bind(this));
                 });
             });
     }
