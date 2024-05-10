@@ -213,9 +213,10 @@ class Blocks extends React.Component {
                 this.props.vm.refreshWorkspace();
                 this.requestToolboxUpdate();
                 this.withToolboxUpdates(() => {
-                    this.flyout = this.workspace.getFlyout();
-                    this.flyout.setRecyclingEnabled(true);
+                    this.workspace.getFlyout().setRecyclingEnabled(true);
 
+                    // Moved from `componentDidMount` due to strange blockly error after changing locale.
+                    // Worth retesting after updating scratch, as this may have been addressed in later blockly versions.
                     const registerButtonCallback = (event) =>
                         this.workspace.getFlyout()
                             ? this.workspace.registerButtonCallback(event, () => { this.props.vm.runtime.emit(event) })
