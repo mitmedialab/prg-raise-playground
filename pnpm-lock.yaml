@@ -222,7 +222,7 @@ importers:
         specifier: ^0.0.1
         version: 0.0.1
       '@types/sentiment':
-        specifier: ^5.0.4
+        specifier: ^5.0.1
         version: 5.0.4
 
   extensions/testing:
