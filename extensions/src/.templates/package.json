@@ -5,10 +5,10 @@
   "main": "index.ts",
   "scripts": {
     "directory": "echo replace-with-directory-name",
-    "test": "npm run test --prefix ../../ -- replace-with-directory-name/index.test.ts",
-    "dev": "npm run dev --prefix ../../../ -- --include replace-with-directory-name",
-    "add:ui": "npm run add:ui --prefix ../../../  -- replace-with-directory-name",
-    "add:arg": "npm run --prefix ../../../-- replace-with-directory-name"
+    "test": "pnpm --filter ../../../ test replace-with-directory-name/index.test.ts",
+    "dev": "pnpm --filter ../../../ dev --include replace-with-directory-name",
+    "add:ui": "pnpm --filter ../../../ add:ui replace-with-directory-name",
+    "add:arg": "pnpm --filter ../../../ add:arg replace-with-directory-name"
   },
   "author": "",
   "license": "ISC"
