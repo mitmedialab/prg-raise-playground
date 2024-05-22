@@ -18,9 +18,9 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - name: Initialize
-      run: npm run init
+      run: pnpm install
     - name: Generate
-      run: npm run document:extensions
+      run: pnpm document:extensions
     - uses: stefanzweifel/git-auto-commit-action@v4
       with:
         commit_message: 're-generate extension documentation\n\nskip-checks:true'
