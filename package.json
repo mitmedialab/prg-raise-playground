@@ -6,7 +6,7 @@
     "ts:node": "./node_modules/.bin/ts-node -r tsconfig-paths/register",
     "ts:node:extensions": "pnpm ts:node --project ./extensions/scripts/tsconfig.json",
     "build:extensions": "pnpm ts:node:extensions ./scripts/build.ts",
-    "build": "pnpm install && pnpm build:extensions --include all --watch false --parrallel false",
+    "build": "pnpm install && pnpm transpile:vm && pnpm build:extensions --include all --watch false --parrallel false",
     "dev": "pnpm transpile:vm && pnpm build:extensions --watch",
     "new:extension": "pnpm ts:node:extensions ./extensions/scripts/factories/extension.ts",
     "add:ui": "pnpm ts:node:extensions./extensions/scripts/factories/ui.ts",
