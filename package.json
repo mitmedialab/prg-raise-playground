@@ -1,5 +1,5 @@
 {
-  "name": "extensions-root",
+  "name": "prg-extension-root",
   "private": true,
   "scripts": {
     "preinstall": "npx only-allow pnpm",
