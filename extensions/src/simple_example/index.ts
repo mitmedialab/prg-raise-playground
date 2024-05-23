@@ -1,4 +1,4 @@
-import { ArgumentType, BlockType, BlockUtilityWithID, Environment, ExtensionMenuDisplayDetails, Language, Menu, SaveDataHandler, block, buttonBlock, extension, tryCastToArgumentType, untilTimePassed } from "$common";
+import { ArgumentType, BlockType, BlockUtilityWithID, Environment, ExtensionMenuDisplayDetails, Language, Menu, SaveDataHandler, block, buttonBlock, extension, tryCastToArgumentType, untilTimePassed, reporter } from "$common";
 import jibo from "./jibo.png";
 import five from "./five.png";
 
@@ -53,6 +53,11 @@ export default class SimpleTypescript extends extension(details, "ui", "customSa
   log(value: string) {
     console.log(value);
   }
+
+  @reporter`TEST ${{type: "number", default: 3}} to ${"number"}`
+    simpleReporter(x: number, y: number) {
+        return x + y;
+    }
 
   @block({
     type: "command",

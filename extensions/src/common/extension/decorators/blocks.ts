@@ -6,6 +6,7 @@ import { getImplementationName } from "../mixins/base/scratchInfo/index";
 import { ExtensionInstance } from "..";
 import { isFunction, isString, tryCreateBundleTimeEvent } from "$common/utils";
 import { extractArgs } from "../mixins/base/scratchInfo/args";
+import { makeDecorator } from "$common/extension/decorators/newBlocks"
 
 type BlockFunctionMetadata = {
   methodName: string,
@@ -16,8 +17,11 @@ type BlockFunctionMetadata = {
 
 export const blockBundleEvent = tryCreateBundleTimeEvent<BlockFunctionMetadata>("blocks");
 
+
 export const getAccessorPrefix = "__getter__";
 export const setAccessorPrefix = "__setter__";
+
+export const reporter = makeDecorator("reporter");
 
 /**
  * This a decorator function that should be associated with methods of your Extension class, all in order to turn your class methods
@@ -52,6 +56,7 @@ export const setAccessorPrefix = "__setter__";
  * ```
  * @returns A manipulated version of the original method that is
  */
+
 export function block<
   const This extends ExtensionInstance,
   const Args extends any[],
