@@ -2,6 +2,7 @@ import { BlockMetadata, Argument, ReturnTypeByBlockType, ScratchBlockType, ToArg
 import { block } from "$common/extension/decorators/blocks";
 import { ExtensionInstance } from "..";
 import { TypedMethodDecorator } from ".";
+import type BlockUtilityWithID from "$scratch-vm/engine/block-utility";
 
 
 const process = (type: ScratchBlockType, strings: TemplateStringsArray, ...args: any[]) => {
@@ -33,6 +34,14 @@ namespace Utility {
     export type TaggedTemplate<Args extends any[], Return> = (strings: TemplateStringsArray, ...args: Args) => Return;
 }
 
+namespace Argument {
+    type TRemoveUtil<T extends any[]> = T extends [...infer R extends any[], BlockUtilityWithID] ? R : T;
+    // Maya note: thought ToArguments was the equivalent, but TypeScript does not like it....
+    export type MapToScratch<T extends any[], Internal extends TRemoveUtil<T> = TRemoveUtil<T>> = {
+        [k in keyof Internal]: Argument<Internal[k]>
+    }
+}
+
 // TODO: Restrict return based on Scratch type
 interface TemplateEngine<TBlockType extends ScratchBlockType> {
     /**
@@ -44,7 +53,7 @@ interface TemplateEngine<TBlockType extends ScratchBlockType> {
         const Return extends ReturnTypeByBlockType<TBlockType>
     >
         (
-            strings: TemplateStringsArray, ...args: ToArguments<Args>
+            strings: TemplateStringsArray, ...args: Argument.MapToScratch<Args>
         ): TypedMethodDecorator<This, Args, Return, ((...Args) => Return)>;
 
     /**
@@ -58,8 +67,8 @@ interface TemplateEngine<TBlockType extends ScratchBlockType> {
         (
             builder: (
                 instance: This,
-                tag: Utility.TaggedTemplate<ToArguments<Args>, BlockMetadata<(...args: Args) => Return>>
-            ) => BlockMetadata<(...args: Args) => Return>
+                tag: Utility.TaggedTemplate<Argument.MapToScratch<Args>, BlockMetadata<(...args: Args) => Return>>
+            ) => BlockMetadata<(...args: Args) => Return> 
         ): TypedMethodDecorator<This, Args, Return, ((...Args) => Return)>;
 }
 
