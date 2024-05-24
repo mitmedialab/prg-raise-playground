@@ -275,6 +275,8 @@ type Operation<TExt extends BaseGenericExtension, TOp extends BlockOperation> = 
   operation: (this: TExt, ...params: TOp extends ButtonBlock ? Parameters<TOp> : ParamsAndUtility<TOp>) => TOp extends ButtonBlock ? void : ReturnType<TOp>;
 }
 
+export type ScratchBlockType = typeof BlockType[keyof typeof BlockType];
+
 export type ReturnTypeByBlockType<T extends ValueOf<typeof BlockType>> =
   T extends typeof BlockType.Boolean
   ? boolean

@@ -1,12 +1,8 @@
-import { BlockMetadata, Argument } from "$common/types";
+import { BlockMetadata, Argument, ReturnTypeByBlockType, ScratchBlockType, ToArguments } from "$common/types";
 import { block } from "$common/extension/decorators/blocks";
-import { BlockType } from "$common/types/enums";
 import { ExtensionInstance } from "..";
-import type BlockUtilityWithID from "$scratch-vm/engine/block-utility";
 import { TypedMethodDecorator } from ".";
 
-// This should be defined elsewhere
-type ScratchBlockType = typeof BlockType[keyof typeof BlockType];
 
 const process = (type: ScratchBlockType, strings: TemplateStringsArray, ...args: any[]) => {
     if (args.length === 0) return { type, text: strings[0], };
@@ -29,17 +25,7 @@ export function makeDecorator<T extends ScratchBlockType>(type: T): TemplateEngi
 }
 
 namespace Utility {
-    export type Method<This, Args extends any[], Return> = (this: This, ...args: Args) => Return;
-    export type TaggedTemplate<TArgs extends any[], TReturn> = (strings: TemplateStringsArray, ...args: TArgs) => TReturn;
-}
-
-namespace Argument {
-    type TRemoveUtil<T extends any[]> = T extends [...infer R extends any[], BlockUtilityWithID] ? R : T;
-    // Maya note: thought ToArguments was the equivalent, but TypeScript does not like it....
-    // Parker note: ^interesting! Also, if we keep this implementation, we'll need to handle InlineImages
-    export type MapToScratch<T extends any[], Internal extends TRemoveUtil<T> = TRemoveUtil<T>> = {
-        [k in keyof Internal]: Argument<Internal[k]>
-    }
+    export type TaggedTemplate<Args extends any[], Return> = (strings: TemplateStringsArray, ...args: Args) => Return;
 }
 
 // TODO: Restrict return based on Scratch type
@@ -50,26 +36,26 @@ interface TemplateEngine<TBlockType extends ScratchBlockType> {
     execute<
         const This extends ExtensionInstance,
         const Args extends any[],
-        const Return,
+        const Return extends ReturnTypeByBlockType<TBlockType>
     >
         (
-            strings: TemplateStringsArray, ...args: Argument.MapToScratch<Args>
-        ): TypedMethodDecorator<This, Args, Return, Utility.Method<This, Args, Return>>;
+            strings: TemplateStringsArray, ...args: ToArguments<Args>
+        ): TypedMethodDecorator<This, Args, Return, ((...Args) => Return)>;
 
     /**
      * 
      */
     execute<
         const This extends ExtensionInstance,
-        Args extends any[],
-        Return,
+        const Args extends any[],
+        const Return extends ReturnTypeByBlockType<TBlockType>,
     >
         (
             builder: (
                 instance: This,
-                tag: Utility.TaggedTemplate<Argument.MapToScratch<Args>, BlockMetadata<(...args: Args) => Return>>
+                tag: Utility.TaggedTemplate<ToArguments<Args>, BlockMetadata<(...args: Args) => Return>>
             ) => BlockMetadata<(...args: Args) => Return>
-        ): TypedMethodDecorator<This, Args, Return, Utility.Method<This, Args, Return>>;
+        ): TypedMethodDecorator<This, Args, Return, ((...Args) => Return)>;
 }
 
 
