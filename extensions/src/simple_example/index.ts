@@ -55,13 +55,23 @@ export default class SimpleTypescript extends extension(details, "ui", "customSa
     console.log(value);
   }
 
-  @reporter`TEST ${{type: "number", defaultValue: 3}} to ${"number"}`
-    simpleReporter(x: number, y: number) {
+  @reporter`Add ${{type: "string", defaultValue: "yee"}} to ${{type: "string", defaultValue: "haw"}}: strings simple`
+    simpleReporterString(x: string, y: string) {
         return x + y;
     }
 
-    @reporter((instance, $) => $`Add ${{type: "number", defaultValue: 3}} to ${"number"}`)
-    reporterWithCallback(x: number, y: number) {
+    @reporter`Add ${{type: "number", defaultValue: 3}} to ${"number"}: number simple`
+    simpleReporterNumber(x: number, y: number) {
+        return x + y;
+    }
+
+    @reporter((instance, $) => $`Add ${{type: "string", defaultValue: "oo"}} to ${{type: "string", defaultValue: "wee"}}: strings complex`)
+    reporterWithCallbackString(x: string, y: string) {
+        return x + y;
+    }
+
+    @reporter((instance, $) => $`Add ${{type: "number", defaultValue: 3}} to ${"number"}: number complex`)
+    reporterWithCallbackNumber(x: number, y: number) {
         return x + y;
     }
 
