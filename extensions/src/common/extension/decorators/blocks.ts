@@ -21,9 +21,6 @@ export const blockBundleEvent = tryCreateBundleTimeEvent<BlockFunctionMetadata>(
 export const getAccessorPrefix = "__getter__";
 export const setAccessorPrefix = "__setter__";
 
-export const reporter = makeDecorator("reporter");
-export const command = makeDecorator("command");
-
 /**
  * This a decorator function that should be associated with methods of your Extension class, all in order to turn your class methods
  * into Blocks that can be executed in the Block Programming Environment.

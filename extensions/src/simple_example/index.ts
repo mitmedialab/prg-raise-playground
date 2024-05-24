@@ -1,4 +1,4 @@
-import { ArgumentType, BlockType, BlockUtilityWithID, Environment, ExtensionMenuDisplayDetails, Language, Menu, SaveDataHandler, block, buttonBlock, extension, tryCastToArgumentType, untilTimePassed, reporter, command } from "$common";
+import { ArgumentType, BlockType, BlockUtilityWithID, Environment, ExtensionMenuDisplayDetails, Language, Menu, SaveDataHandler, block, buttonBlock, extension, tryCastToArgumentType, untilTimePassed, scratch } from "$common";
 import jibo from "./jibo.png";
 import five from "./five.png";
 
@@ -55,30 +55,30 @@ export default class SimpleTypescript extends extension(details, "ui", "customSa
     console.log(value);
   }
 
-  @reporter`Add ${{type: "string", defaultValue: "yee"}} to ${{type: "string", defaultValue: "haw"}}: strings simple`
-    simpleReporterString(x: string, y: string) {
-        return x + y;
-    }
+  @(scratch.reporter`Add ${{ type: "string", defaultValue: "yee" }} to ${{ type: "string", defaultValue: "haw" }}: strings simple`)
+  simpleReporterString(x: string, y: string) {
+    return x + y;
+  }
 
-    @reporter`Add ${{type: "number", defaultValue: 3}} to ${"number"}: number simple`
-    simpleReporterNumber(x: number, y: number) {
-        return x + y;
-    }
+  @(scratch.reporter`Add ${{ type: "number", defaultValue: 3 }} to ${"number"}: number simple`)
+  simpleReporterNumber(x: number, y: number) {
+    return x + y;
+  }
 
-    @reporter((instance, $) => $`Add ${{type: "string", defaultValue: "oo"}} to ${{type: "string", defaultValue: "wee"}}: strings complex`)
-    reporterWithCallbackString(x: string, y: string) {
-        return x + y;
-    }
+  @(scratch.reporter((instance, $) => $`Add ${{ type: "string", defaultValue: "oo" }} to ${{ type: "string", defaultValue: "wee" }}: strings complex`))
+  reporterWithCallbackString(x: string, y: string) {
+    return x + y;
+  }
 
-    @reporter((self, $) => $`Add ${{type: "number", defaultValue: 3}} to ${"number"}: number complex`)
-    reporterWithCallbackNumber(x: number, y: number) {
-        return x + y;
-    }
+  @(scratch.reporter((self, $) => $`Add ${{ type: "number", defaultValue: 3 }} to ${"number"}: number complex`))
+  reporterWithCallbackNumber(x: number, y: number) {
+    return x + y;
+  }
 
-    @command`Hello ${{type: "string", defaultValue: "there"}}`
-    simpleCommand(text: string) {
-      console.log(text);
-    }
+  @(scratch.command`Hello ${{ type: "string", defaultValue: "there" }}`)
+  simpleCommand(text: string) {
+    console.log(text);
+  }
 
   @block({
     type: "command",
