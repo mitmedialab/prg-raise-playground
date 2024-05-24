@@ -1,4 +1,4 @@
-import { BlockMetadata, Argument, ReturnTypeByBlockType, ScratchBlockType, ToArguments } from "$common/types";
+import { BlockMetadata, Argument, ReturnTypeByBlockType, ScratchBlockType, ToArguments, AnyBlock } from "$common/types";
 import { block } from "$common/extension/decorators/blocks";
 import { ExtensionInstance } from "..";
 import { TypedMethodDecorator } from ".";
@@ -14,11 +14,16 @@ const process = (type: ScratchBlockType, strings: TemplateStringsArray, ...args:
 export function makeDecorator<T extends ScratchBlockType>(type: T): TemplateEngine<T>["execute"] {
     // function takes T and returns a function of TemplateEngine type
     // TemplateEngine returns based on the ScratchType of the block
-    return function decoratorFn(builderOrStrings, ...args) {
+    return function decoratorFn(builderOrStrings: Parameters<TemplateEngine<T>["execute"]>[0], ...args) {
         return function (target, context) {
-            const input: any = typeof builderOrStrings == "function"
-                ? (instance) => builderOrStrings(instance, process.bind(null, type))
-                : process(type, builderOrStrings, ...args);
+
+            type BlockMetadataFunction = (instance: ExtensionInstance) => BlockMetadata<(...args: any[]) => any>;
+            type StaticBlockMetadata = BlockMetadata<(...args: any[]) => any>;
+
+            const input = typeof builderOrStrings == "function"
+                ? (instance: ExtensionInstance) => builderOrStrings(instance, process.bind(null, type)) satisfies BlockMetadataFunction
+                : process(type, builderOrStrings, ...args) as StaticBlockMetadata;
+
             return block(input)(target, context);
         }
     }
