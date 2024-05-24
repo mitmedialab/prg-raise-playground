@@ -24,8 +24,10 @@ export function makeDecorator<T>(type: T): TemplateEngine<T>["execute"] {
 
     // function takes T and returns a function of TemplateEngine type
     // TemplateEngine returns based on the ScratchType of the block
-    return function(builderOrStrings, ...args) {
-        return function(target, context) {
+    return function decoratorFn<
+        const Return
+    >(builderOrStrings, ...args) {
+        return function (target, context) {
             // Defining block characteristics
             const opcode = target.name;
             const internalFuncName = getImplementationName(opcode);
@@ -74,7 +76,8 @@ export function makeDecorator<T>(type: T): TemplateEngine<T>["execute"] {
             }
 
             // Push the block
-            type Fn = (this: ExtensionInstance, value: any, util: BlockUtilityWithID) => void;
+            //type Fn = (this: This extends ExtensionInstance, value: any, util: BlockUtilityWithID) => void;
+            type Fn = (...args) => Return;
             const blockInfo = { type: blockType, text: textFunction, args: argList };
             context.addInitializer(function () { this.pushBlock(opcode, blockInfo as BlockMetadata<Fn>, target) });
             

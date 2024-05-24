@@ -1,4 +1,4 @@
-import { ArgumentType, BlockType, BlockUtilityWithID, Environment, ExtensionMenuDisplayDetails, Language, Menu, SaveDataHandler, block, buttonBlock, extension, tryCastToArgumentType, untilTimePassed, reporter } from "$common";
+import { ArgumentType, BlockType, BlockUtilityWithID, Environment, ExtensionMenuDisplayDetails, Language, Menu, SaveDataHandler, block, buttonBlock, extension, tryCastToArgumentType, untilTimePassed, reporter, command } from "$common";
 import jibo from "./jibo.png";
 import five from "./five.png";
 
@@ -70,9 +70,14 @@ export default class SimpleTypescript extends extension(details, "ui", "customSa
         return x + y;
     }
 
-    @reporter((instance, $) => $`Add ${{type: "number", defaultValue: 3}} to ${"number"}: number complex`)
+    @reporter((self, $) => $`Add ${{type: "number", defaultValue: 3}} to ${"number"}: number complex`)
     reporterWithCallbackNumber(x: number, y: number) {
         return x + y;
+    }
+
+    @command`Hello ${{type: "string", defaultValue: "there"}}`
+    simpleCommand(text: string) {
+      console.log(text);
     }
 
   @block({
