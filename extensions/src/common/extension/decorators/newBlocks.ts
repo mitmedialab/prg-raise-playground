@@ -1,15 +1,20 @@
-import { BlockMetadata, Argument, ReturnTypeByBlockType, ScratchBlockType, ToArguments } from "$common/types";
+import { BlockMetadata, Config, Argument, ReturnTypeByBlockType, ScratchBlockType, ToArguments } from "$common/types";
 import { block } from "$common/extension/decorators/blocks";
 import { ExtensionInstance } from "..";
 import { TypedMethodDecorator } from ".";
 import type BlockUtilityWithID from "$scratch-vm/engine/block-utility";
+
+export const scratch = {
+    reporter: makeDecorator("reporter"),
+    command: makeDecorator("command"),
+}
 
 
 const process = (type: ScratchBlockType, strings: TemplateStringsArray, ...args: any[]) => {
     if (args.length === 0) return { type, text: strings[0], };
     const text = (...placeholders: any[]) => strings.map((str, i) => `${str}${placeholders[i] ?? ""}`).join("");
     if (args.length === 1) return { type, text, arg: args[0] };
-    return { type, text, args };
+    return { type, text, args }; 
 }
 
 export function makeDecorator<T extends ScratchBlockType>(type: T): TemplateEngine<T>["execute"] {
@@ -20,10 +25,25 @@ export function makeDecorator<T extends ScratchBlockType>(type: T): TemplateEngi
             const input: any = typeof builderOrStrings == "function"
                 ? (instance) => builderOrStrings(instance, process.bind(null, type))
                 : process(type, builderOrStrings, ...args);
-            return block(input)(target, context);
+            if (target.config) {
+                return block(input, target.config)(target, context);
+            } else {
+                return block(input)(target, context);
+            }
+            
         }
     }
 }
+
+export function scratchVersions(config: Config) {
+    return function(
+        target,
+        context
+    ) {
+        target.config = config;
+        return target;
+    }
+  };
 
 namespace Utility {
     export type TaggedTemplate<Args extends any[], Return> = (strings: TemplateStringsArray, ...args: Args) => Return;
@@ -68,7 +88,4 @@ interface TemplateEngine<TBlockType extends ScratchBlockType> {
 }
 
 
-export const scratch = {
-    reporter: makeDecorator("reporter"),
-    command: makeDecorator("command"),
-}
+

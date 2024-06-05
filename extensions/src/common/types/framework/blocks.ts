@@ -9,8 +9,16 @@ export type ButtonBlock = () => InternalButtonKey;
 
 export type BlockMetadata<
   Fn extends BlockOperation,
+  TFunctions extends Array<(...args: any[]) => any> = [],
   TParameters extends any[] = Parameters<Fn> extends [...infer R, BlockUtility] ? R : Parameters<Fn>
-> = Type<ReturnType<Fn>> & Text<TParameters> & Arguments<TParameters>;
+> = Type<ReturnType<Fn>> & Text<TParameters> & Arguments<TParameters> & {
+  optionalFunctions?: TFunctions;
+};
+
+export type ArgTransformer = (...args: any[]) => any[];
+export type Config = {
+    [index: number]: ArgTransformer;
+};
 
 export type Block<TExt extends BaseGenericExtension, TOp extends BlockOperation> = BlockMetadata<TOp> & Operation<TExt, TOp>;
 

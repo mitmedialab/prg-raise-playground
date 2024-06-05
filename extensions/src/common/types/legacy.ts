@@ -1,5 +1,6 @@
 import { ArgumentType, BlockType } from "./enums";
 import { ValueOf } from "./utils";
+import { Config } from "."
 
 // Type definitions for scratch-vm (extension environment) 3.0
 // Project: https://github.com/LLK/scratch-vm#readme
@@ -131,6 +132,8 @@ export interface ExtensionBlockMetadata {
 
   /** Map of argument placeholder to metadata about each arg. */
   arguments?: Record<string, ExtensionArgumentMetadata> | undefined;
+
+  versions?: Config;
 }
 
 /** All the metadata needed to register an argument for an extension block. */
