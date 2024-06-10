@@ -258,24 +258,6 @@ import * as path from 'path';
                     // Set the starting y value for the input elements
                     var maxY = stackMax+5;
 
-                    // Store all the bounding boxes for the input elements
-                    var inputBoxes: any = [];
-                    if (inputElements.length > 0) {
-                        for (const element of inputElements) {
-                            const boundingBox = await element.boundingBox();
-                            if (boundingBox) {
-                                inputBoxes.push(boundingBox);
-                            }
-                        }
-                    } else {
-                        inputBoxes = [{
-                            x: startX,
-                            y: stackMax,
-                            width: 5,
-                            height: 5
-                        }]
-                    }
-
                     let inputIndex = 0;
                     let inputOffset = 0;
                     let tempScroll = 0;
@@ -308,16 +290,19 @@ import * as path from 'path';
                         if (boundingBox) {
                             await page.mouse.move(boundingBox.x + boundingBox.width / 2, boundingBox.y + boundingBox.height / 2);
                             await page.mouse.down();
-                            var moveX;
-                            var moveY;
+                            var moveX: any;
+                            var moveY: any;
                             
-                            if (inputIndex >= inputBoxes.length) { // If there are input boxes left to move to
+                            if (inputIndex >= inputElements.length) { // If there are input boxes left to move to
                                 inputOffset = inputOffset + boundingBox.height / 2;
                                 moveX = startX + (boundingBox.width / 2);
                                 moveY = maxY + inputOffset;
                             } else { // Otherwise, move below the stacks
-                                moveX = inputBoxes[inputIndex].x + (boundingBox.width / 2);
-                                moveY = inputBoxes[inputIndex].y + (boundingBox.height / 2);
+                                const inputBoundingBox = await inputElements[inputIndex].boundingBox();
+                                if (inputBoundingBox) {
+                                    moveX = inputBoundingBox.x + (boundingBox.width / 2);
+                                    moveY = inputBoundingBox.y + (boundingBox.height / 2);
+                                }
                             }
 
                             await page.mouse.move(moveX, boundY(moveY));

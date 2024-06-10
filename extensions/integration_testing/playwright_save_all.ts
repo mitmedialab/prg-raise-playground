@@ -123,7 +123,7 @@ import * as path from 'path';
                         const boundingBox = await element.boundingBox();
                         if (boundingBox) {
                             // Move the mouse to the center of the element
-                            yOffset += 15;
+                            yOffset += 20;
                             await page.mouse.move(boundingBox.x + boundingBox.width / 2, boundingBox.y + boundingBox.height / 2);
                             await page.mouse.down();
                             let x = xOffset + boundingBox.width / 2;
@@ -134,7 +134,6 @@ import * as path from 'path';
                             xOffset = xOffset + 20;
                             if (xOffset > 600) {
                                 xOffset = startX;
-                                yOffset = yOffset - 30;
                             }
                             // Scroll if we've reached the bottom of the workspace
                             if (yOffset > 600) {
