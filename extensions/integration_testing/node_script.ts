@@ -56,7 +56,7 @@ async function runPlaywrightTasks() {
       await runPlaywrightScript('playwright_save_all.ts');
       await runPlaywrightScript('playwright_save_combo.ts');
       await runPlaywrightScript('playwright_load.ts');
-      devProcess.kill();
+      process.exit(0);
     } catch (error) {
       console.error('Error during Playwright tasks:', error);
     } 

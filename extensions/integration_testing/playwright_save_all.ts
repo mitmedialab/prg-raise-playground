@@ -48,7 +48,7 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
     // Wait for the editor to load
     //await page.waitForSelector('.blocklyBlockCanvas');
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(3000);
     // Add the extension
     const addExtension = await page.$('[title="Add Extension"]');
     if (addExtension) {
