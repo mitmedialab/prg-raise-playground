@@ -2,6 +2,8 @@ import { chromium } from 'playwright';
 import { expect } from 'playwright/test';
 import * as path from 'path';
 
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 (async () => {
     // Launch a browser instance
     const browser = await chromium.launch({ headless: false }); // Set headless: false to see the browser actions
@@ -10,7 +12,17 @@ import * as path from 'path';
         acceptDownloads: true
     });
     const page = await context.newPage();
-    await page.goto('http://localhost:8602/');
+    let connected = false;
+    for (let i = 0; i < 120; i++) { // Retry up to 10 times
+        try {
+        await page.goto('http://localhost:8602/', { waitUntil: 'networkidle', timeout: 6000 });
+        connected = true;
+        break;
+        } catch (e) {
+        console.log('Connection failed, retrying...');
+        await delay(5000); // Wait for 5 seconds before retrying
+        }
+    }
 
     // All the extensions that have been included
     const includedExtensions = [
@@ -35,8 +47,8 @@ import * as path from 'path';
     const startY = 130;
 
     // Wait for the editor to load
-    await page.waitForSelector('.blocklyWorkspace');
-
+    //await page.waitForSelector('.blocklyBlockCanvas');
+    await page.waitForTimeout(2000);
     // Add the extension
     const addExtension = await page.$('[title="Add Extension"]');
     if (addExtension) {

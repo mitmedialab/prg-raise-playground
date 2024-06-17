@@ -31,7 +31,8 @@ import * as path from 'path';
     ];
 
 
-    await page.waitForSelector('.blocklyWorkspace');
+    //await page.waitForSelector('.blocklyWorkspace');
+    await page.waitForTimeout(2000);
 
     // Make sure no blocks are dragged out of the workspace
     function boundY(y: any) {

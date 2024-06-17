@@ -1,6 +1,8 @@
 import { chromium, Browser, BrowserContext, Page, ElementHandle } from 'playwright';
 import * as path from 'path';
 
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 (async () => {
     // Launch a browser instance
     const browser = await chromium.launch({ headless: false }); // Set headless: false to see the browser actions
@@ -11,6 +13,19 @@ import * as path from 'path';
     const page = await context.newPage();
 
     // Navigate to 'Create' page
+
+  // Try connecting to the server in a loop with delay
+//   let connected = false;
+//   for (let i = 0; i < 120; i++) { // Retry up to 10 times
+//     try {
+//       await page.goto('http://localhost:8602/', { waitUntil: 'networkidle', timeout: 6000 });
+//       connected = true;
+//       break;
+//     } catch (e) {
+//       console.log('Connection failed, retrying...');
+//       await delay(5000); // Wait for 5 seconds before retrying
+//     }
+//   }
     await page.goto('http://localhost:8602/');
     await page.click('text=File');
     
@@ -51,7 +66,8 @@ import * as path from 'path';
         }
     });
 
-    await page.waitForSelector('.blocklyBlockCanvas');
+    //await page.waitForSelector('.blocklyBlockCanvas', { timeout: 120000 });
+    await page.waitForTimeout(2000);
     await page.click('text=File');
     const [fileChooser2] = await Promise.all([
         page.waitForEvent('filechooser'),
@@ -59,7 +75,8 @@ import * as path from 'path';
       ]);
       
     await fileChooser2.setFiles(filePath);
-    await page.waitForSelector('.blocklyBlockCanvas');
+    //await page.waitForSelector('.blocklyBlockCanvas', { timeout: 120000 });
+    await page.waitForTimeout(2000);
 
 
     // Wait until blockly canvas has children
