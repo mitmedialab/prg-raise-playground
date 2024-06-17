@@ -16,8 +16,15 @@ export type BlockMetadata<
 };
 
 export type ArgTransformer = (...args: any[]) => any[];
+
+export type BlockOptions = {
+  transform?: ArgTransformer;
+  type?: { [key: string]: string };
+  name?: { [key: string]: string };
+};
+
 export type Config = {
-    [index: number]: ArgTransformer;
+  [index: number]: ArgTransformer | BlockOptions;
 };
 
 export type Block<TExt extends BaseGenericExtension, TOp extends BlockOperation> = BlockMetadata<TOp> & Operation<TExt, TOp>;
