@@ -1,4 +1,4 @@
-import { BlockMetadata, Argument, ReturnTypeByBlockType, ScratchBlockType, ToArguments, AnyBlock } from "$common/types";
+import { BlockMetadata, Argument, ReturnTypeByBlockType, ScratchBlockType, ToArguments, AnyBlock, NoArgsBlock, OneArgBlock, MultipleArgsBlock } from "$common/types";
 import { block } from "$common/extension/decorators/blocks";
 import { ExtensionInstance } from "..";
 import { TypedMethodDecorator } from ".";
@@ -6,24 +6,29 @@ import type BlockUtilityWithID from "$scratch-vm/engine/block-utility";
 
 
 const process = (type: ScratchBlockType, strings: TemplateStringsArray, ...args: any[]) => {
-    if (args.length === 0) return { type, text: strings[0], };
+    if (args.length === 0) return { type, text: strings[0], } satisfies NoArgsBlock;
     const text = (...placeholders: any[]) => strings.map((str, i) => `${str}${placeholders[i] ?? ""}`).join("");
-    if (args.length === 1) return { type, text, arg: args[0] };
+    if (args.length === 1) return { type, text, arg: args[0] } satisfies OneArgBlock;
     return { type, text, args };
 }
 
 export function makeDecorator<T extends ScratchBlockType>(type: T): TemplateEngine<T>["execute"] {
+    type AnyBlockMetadata = BlockMetadata<(...args: any[]) => any>;
+
+    type FirstArgumentAsFunction = (instance: ExtensionInstance, tag: Utility.TaggedTemplate<any[], AnyBlockMetadata>) => AnyBlockMetadata;
+    type FirstArgumentAsTemplateStrings = TemplateStringsArray;
+    type FirstArgument = FirstArgumentAsFunction | FirstArgumentAsTemplateStrings;
+
     // function takes T and returns a function of TemplateEngine type
     // TemplateEngine returns based on the ScratchType of the block
-    return function decoratorFn(builderOrStrings: Parameters<TemplateEngine<T>["execute"]>[0], ...args) {
+    return function decoratorFn(builderOrStrings: FirstArgument, ...args) {
         return function (target, context) {
 
-            type BlockMetadataFunction = (instance: ExtensionInstance) => BlockMetadata<(...args: any[]) => any>;
-            type StaticBlockMetadata = BlockMetadata<(...args: any[]) => any>;
+            type BlockMetadataFunction = (instance: ExtensionInstance) => AnyBlockMetadata
 
             const input = typeof builderOrStrings == "function"
-                ? (instance: ExtensionInstance) => builderOrStrings(instance, process.bind(null, type)) satisfies BlockMetadataFunction
-                : process(type, builderOrStrings, ...args) as StaticBlockMetadata;
+                ? ((instance: ExtensionInstance) => builderOrStrings(instance, process.bind(null, type))) satisfies BlockMetadataFunction
+                : process(type, builderOrStrings, ...args) as AnyBlockMetadata;
 
             return block(input)(target, context);
         }
@@ -68,7 +73,7 @@ interface TemplateEngine<TBlockType extends ScratchBlockType> {
             builder: (
                 instance: This,
                 tag: Utility.TaggedTemplate<Argument.MapToScratch<Args>, BlockMetadata<(...args: Args) => Return>>
-            ) => BlockMetadata<(...args: Args) => Return> 
+            ) => BlockMetadata<(...args: Args) => Return>
         ): TypedMethodDecorator<This, Args, Return, ((...Args) => Return)>;
 }
 
