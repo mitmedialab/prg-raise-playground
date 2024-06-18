@@ -22,7 +22,7 @@ export function makeDecorator<T extends ScratchBlockType>(type: T): TemplateEngi
             type StaticBlockMetadata = BlockMetadata<(...args: any[]) => any>;
 
             const input = typeof builderOrStrings == "function"
-                ? (instance: ExtensionInstance) => builderOrStrings(instance, process.bind(null, type)) satisfies BlockMetadataFunction
+                ? (instance: ExtensionInstance) => (builderOrStrings as any)(instance, process.bind(null, type)) satisfies BlockMetadataFunction
                 : process(type, builderOrStrings, ...args) as StaticBlockMetadata;
 
             return block(input)(target, context);
@@ -68,7 +68,7 @@ interface TemplateEngine<TBlockType extends ScratchBlockType> {
             builder: (
                 instance: This,
                 tag: Utility.TaggedTemplate<Argument.MapToScratch<Args>, BlockMetadata<(...args: Args) => Return>>
-            ) => BlockMetadata<(...args: Args) => Return> 
+            ) => BlockMetadata<(...args: Args) => Return>
         ): TypedMethodDecorator<This, Args, Return, ((...Args) => Return)>;
 }
 
