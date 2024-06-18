@@ -1,0 +1,22 @@
+{
+  "name": "music_generation-extension",
+  "version": "1.0.0",
+  "description": "An extension created using the PRG AI Blocks framework",
+  "main": "index.ts",
+  "scripts": {
+    "directory": "echo music_generation",
+    "dev": "npm run dev --prefix ../../../ -- --include music_generation",
+    "test": "npm run test --prefix ../../ -- music_generation/index.test.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@tensorflow-models/posenet": "^2.2.1",
+    "playwright": "^1.44.1",
+    "@magenta/music": "^1.23.1",
+    "jsdom": "^24.1.0",
+    "longbits": "1.1.0",
+    "domino": "2.1.6",
+    "tone": "^15.0.4"
+  }
+}
