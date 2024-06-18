@@ -16,7 +16,6 @@ import { runOncePerBundling } from "../utils/rollupHelper";
 import { sendToParent } from "$root/scripts/comms";
 import { setAuxiliaryInfoForExtension } from "./auxiliaryInfo";
 import { getAppInventorGenerator } from "scripts/utils/interop";
-import { vmDeclarations } from "scripts/utils/generate";
 
 export const clearDestinationDirectories = (): Plugin => {
   const runner = runOncePerBundling();
@@ -26,17 +25,6 @@ export const clearDestinationDirectories = (): Plugin => {
       if (!runner.check()) return;
       deleteAllFilesInDir(extensionBundlesDirectory);
       deleteAllFilesInDir(generatedMenuDetailsDirectory);
-    }
-  }
-}
-
-export const generateVmDeclarations = (): Plugin => {
-  const runner = runOncePerBundling();
-
-  return {
-    name: "",
-    buildStart() {
-      if (runner.check()) vmDeclarations();
     }
   }
 }
