@@ -139,4 +139,10 @@ export default class SimpleTypescript extends extension(details, "ui", "customSa
     console.log(blockID);
     return lhs + 5 - rhs;
   }
+
+  @(scratch.reporter`Sample ${"string"} async`)
+  sampleAsync(x: number, y: number) {
+    //await new Promise((resolve) => setTimeout(resolve, 1000));
+    return 5;
+  }
 }
