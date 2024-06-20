@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { FrameworkID, untilCondition, extensionBundleEvent, blockBundleEvent } from "$common";
-import { type Plugin } from "rollup";
+import { type Plugin, OutputAsset, OutputChunk, OutputBundle, NormalizedOutputOptions, PluginContext } from "rollup";
 import { appendToRootDetailsFile, populateMenuFileForExtension } from "../extensionsMenu";
 import { exportAllFromModule, toNamedDefaultExport } from "../utils/importExport";
 import { glob } from 'glob';
@@ -16,6 +16,7 @@ import { runOncePerBundling } from "../utils/rollupHelper";
 import { sendToParent } from "$root/scripts/comms";
 import { setAuxiliaryInfoForExtension } from "./auxiliaryInfo";
 import { getAppInventorGenerator } from "scripts/utils/interop";
+import { createFilter, FilterPattern } from '@rollup/pluginutils';
 
 export const clearDestinationDirectories = (): Plugin => {
   const runner = runOncePerBundling();
@@ -185,6 +186,45 @@ const frameworkBundle: { content: Promise<string> } & Record<string, any> = {
     this.cache ??= this.retrieve();
     return this.cache;
   }
+}
+
+export const mp3Bundler = (info: BundleInfo): Plugin => {
+  const { bundleDestination, menuDetails, name, directory } = info;
+  const filter = createFilter('**/*.mp3');
+  const outputDir = path.dirname(bundleDestination) + "/mp3";
+
+  return {
+    name: 'mp3-bundler',
+
+    async load(id: string) {
+      if (!filter(id)) return null;
+      const assetPath = path.resolve(id);
+      const fileContent = fs.readFileSync(assetPath);
+      const base64String = fileContent.toString('base64');
+      return {
+        code: `export default 'data:audio/mp3;base64,${base64String}';`,
+        map: { mappings: '' },
+      };
+    },
+
+    async generateBundle(this: PluginContext, outputOptions: NormalizedOutputOptions, bundle: OutputBundle, isWrite: boolean) {
+      const keys = Object.keys(bundle).filter((fileName) => fileName.endsWith('.js'));
+      const outputChunk = bundle[keys[0]] as OutputChunk;
+      const mp3Files = Object.keys(outputChunk.modules).filter((fileName) =>
+        fileName.endsWith('.mp3')
+      );
+      for (const fileName of mp3Files) {
+        const assetPath = path.resolve(fileName);
+        const fileContent = fs.readFileSync(assetPath);
+        const base64String = fileContent.toString('base64');
+        var code = `export default 'data:audio/mp3;base64,${base64String}';`;
+        const outputPath = path.join(outputDir, path.basename(fileName).replace(".mp3", ".js"));
+        await fs.promises.mkdir(path.dirname(outputPath), { recursive: true });
+        await fs.promises.writeFile(outputPath, code);
+        delete bundle[fileName];
+      }
+    },
+  };
 }
 
 export const finalizeConfigurableExtensionBundle = (info: BundleInfo): Plugin => {
