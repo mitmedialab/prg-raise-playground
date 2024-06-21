@@ -23,7 +23,7 @@ export function makeDecorator<T extends ScratchBlockType>(type: T): TemplateEngi
             type BlockMetadataFunction = (instance: ExtensionInstance) => AnyBlockMetadata
 
             const input = typeof builderOrStrings == "function"
-                ? ((instance: ExtensionInstance) => builderOrStrings(instance, process.bind(null, type))) satisfies BlockMetadataFunction
+                ? ((instance: ExtensionInstance) => builderOrStrings.call(instance, instance, process.bind(null, type))) satisfies BlockMetadataFunction
                 : process(type, builderOrStrings, ...args) as AnyBlockMetadata;
 
             return block(input)(target, context);
@@ -40,7 +40,10 @@ namespace Utility {
 namespace Argument {
     type TRemoveUtil<T extends any[]> = T extends [...infer R extends any[], BlockUtilityWithID] ? R : T;
     export type MapToScratch<T extends any[], Internal extends TRemoveUtil<T> = TRemoveUtil<T>> = {
-        [k in keyof Internal]: Internal[k] extends InlineImageSpecifier ? InlineImage : Argument<Internal[k]>
+        [k in keyof Internal]:
+        Internal[k] extends BlockUtilityWithID ? never :
+        Internal[k] extends InlineImageSpecifier ? InlineImage :
+        Argument<Internal[k]>
     }
 }
 
@@ -68,8 +71,9 @@ interface TemplateEngine<TBlockType extends ScratchBlockType> {
     >
         (
             builder: (
+                this: This,
                 instance: This,
-                tag: Utility.TaggedTemplate<Argument.MapToScratch<Args>, BlockMetadata<(...args: Args) => Return>>
+                tag: Utility.TaggedTemplate<Argument.MapToScratch<Args>, BlockMetadata<(...args: Args) => Return>>,
             ) => BlockMetadata<(...args: Args) => Return>
         ): TypedMethodDecorator<This, Args, Return, ((...args: Args) => Return)>;
 }
