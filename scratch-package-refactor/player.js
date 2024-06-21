@@ -143,7 +143,7 @@ if(false) {}
 },
 /******/ __webpack_require__ => { // webpackRuntimeModules
 /******/ var __webpack_exec__ = (moduleId) => (__webpack_require__(__webpack_require__.s = moduleId))
-/******/ __webpack_require__.O(0, ["vendors-node_modules_pnpm_microbit_microbit-universal-hex_0_2_2_tslib_2_6_2_node_modules_micr-40d7e8","src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx"], () => (__webpack_exec__("./src/playground/player.jsx")));
+/******/ __webpack_require__.O(0, ["vendors-node_modules_pnpm_microbit_microbit-universal-hex_0_2_2_tslib_2_6_3_node_modules_micr-634274","src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx"], () => (__webpack_exec__("./src/playground/player.jsx")));
 /******/ var __webpack_exports__ = __webpack_require__.O();
 /******/ return __webpack_exports__;
 /******/ }
