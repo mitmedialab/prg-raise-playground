@@ -17,7 +17,7 @@ export * from "./extension/GenericExtension";
 export * from "./extension/ExtensionBase";
 
 export * from "./extension/decorators/blocks";
-export * from "./extension/decorators/newBlocks";
+export * from "./extension/decorators/taggedTemplate";
 export * from "./extension/index";
 export * from "./extension/decorators/legacySupport/index";
 export * from "./extension/decorators/validators";

@@ -46,49 +46,17 @@ export default class SimpleTypescript extends extension(details, "ui", "customSa
   async init(env: Environment) {
   }
 
-  @block((self) => ({
-    type: BlockType.Command,
-    text: (msg) => `Indicate and log a ${msg} to the console`,
-    arg: { type: ArgumentType.String, options: self.logOptions }
-  }))
+  @(scratch.command((self, tag) => tag`Indicate and log ${{ type: "string", options: self.logOptions }} to the console`))
   log(value: string) {
     console.log(value);
   }
 
-  @(scratch.reporter`Add ${{ type: "string", defaultValue: "yee" }} to ${{ type: "string", defaultValue: "haw" }}: strings simple`)
-  simpleReporterString(x: string, y: string) {
-    return x + y;
-  }
-
-  @(scratch.reporter`Add ${{ type: "number", defaultValue: 3 }} to ${"number"}: number simple`)
-  simpleReporterNumber(x: number, y: number) {
-    return x + y;
-  }
-
-  @(scratch.reporter((instance, $) => $`Add ${{ type: "string", defaultValue: "oo" }} to ${{ type: "string", defaultValue: "wee" }}: strings complex`))
-  reporterWithCallbackString(x: string, y: string) {
-    return x + y;
-  }
-
-  @(scratch.reporter((self, $) => $`Add ${{ type: "number", defaultValue: 3 }} to ${"number"}: number complex`))
-  reporterWithCallbackNumber(x: number, y: number) {
-    return x + y;
-  }
-
-  @(scratch.command`Hello ${{ type: "string", defaultValue: "there" }}`)
-  simpleCommand(text: string) {
-    console.log(text);
-  }
-
-  @block({
-    type: "command",
-    args: [
-      { type: "string", defaultValue: "Howdy!" },
-      { type: "string", options: ["error", "success", "warning"] },
-      { type: "number", options: [1, 3, 5] }
-    ],
-    text: (msg, type, time) => `Indicate '${msg}' as ${type} for ${time} seconds`,
-  })
+  @(scratch.command`
+    Indicate ${{ type: "string", defaultValue: "Howdy!" }} 
+    as ${{ type: "string", options: ["error", "success", "warning"] }} 
+    for ${{ type: "number", options: [1, 3, 5] }}
+    seconds
+  `)
   async indicateMessage(value: string, type: typeof this.IndicatorType, time: number) {
     const position = "category";
     const msg = `This is a ${type} indicator for ${value}!`;
@@ -98,51 +66,29 @@ export default class SimpleTypescript extends extension(details, "ui", "customSa
     close();
   }
 
-  @block({ type: BlockType.Button, text: `Dummy UI` })
+  @(scratch.button`Dummy UI`)
   dummyUI() {
     this.openUI("Dummy", "Howdy");
   }
 
-  @block({ type: BlockType.Button, text: "Open Counter" })
+  @(scratch.button`Open Counter`)
   counterUI() {
     this.openUI("Counter", "Pretty cool, right?");
   }
 
-  @buttonBlock("Show colors")
+  @(scratch.button`Show colors`)
   colorUI() {
     this.openUI("Palette");
   }
 
-  @block({
-    type: BlockType.Command,
-    text: (jibo) => `This is what jibo looks like: ${jibo}`,
-    arg: {
-      type: "image",
-      uri: jibo,
-      alt: "Picture of Jibo",
-      flipRTL: true
-    }
-  })
+  @(scratch.command`This is what jibo looks like ${{ type: "image", uri: jibo, alt: "Picture of Jibo", flipRTL: true }}`)
   imageBlock(jibo: "inline image") {
   }
 
-  @block({
-    type: "reporter",
-    text: (lhs, five, rhs) => `${lhs} + ${five} - ${rhs}`,
-    args: [
-      { type: "number", defaultValue: 1 },
-      { type: "image", uri: five, alt: "golden five" },
-      "number"
-    ]
-  })
+  @(scratch.reporter`${{ type: "number", defaultValue: 1 }} + ${{ type: "image", uri: five, alt: "golden five" }} - ${"number"}`)
   addFive(lhs: number, five: "inline image", rhs: number, { blockID }: BlockUtilityWithID) {
     console.log(blockID);
     return lhs + 5 - rhs;
   }
-
-  @(scratch.reporter`Sample ${"string"} async`)
-  sampleAsync(x: number, y: number) {
-    //await new Promise((resolve) => setTimeout(resolve, 1000));
-    return 5;
-  }
 }
+

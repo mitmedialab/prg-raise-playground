@@ -1,4 +1,4 @@
-import { BlockMetadata, Argument, ReturnTypeByBlockType, ScratchBlockType, ToArguments, AnyBlock, NoArgsBlock, OneArgBlock, MultipleArgsBlock, BlockUtilityWithID } from "$common/types";
+import { BlockMetadata, Argument, ReturnTypeByBlockType, ScratchBlockType, NoArgsBlock, OneArgBlock, BlockUtilityWithID, InlineImage, InlineImageSpecifier } from "$common/types";
 import { block } from "$common/extension/decorators/blocks";
 import { ExtensionInstance } from "..";
 import { TypedMethodDecorator } from ".";
@@ -33,12 +33,14 @@ export function makeDecorator<T extends ScratchBlockType>(type: T): TemplateEngi
 
 namespace Utility {
     export type TaggedTemplate<Args extends any[], Return> = (strings: TemplateStringsArray, ...args: Args) => Return;
+    export type OptionalPromise<T> = T | Promise<T>;
 }
+
 
 namespace Argument {
     type TRemoveUtil<T extends any[]> = T extends [...infer R extends any[], BlockUtilityWithID] ? R : T;
     export type MapToScratch<T extends any[], Internal extends TRemoveUtil<T> = TRemoveUtil<T>> = {
-        [k in keyof Internal]: Argument<Internal[k]>
+        [k in keyof Internal]: Internal[k] extends InlineImageSpecifier ? InlineImage : Argument<Internal[k]>
     }
 }
 
@@ -50,7 +52,7 @@ interface TemplateEngine<TBlockType extends ScratchBlockType> {
     execute<
         This extends ExtensionInstance,
         Args extends any[],
-        Return extends ReturnTypeByBlockType<TBlockType>
+        Return extends Utility.OptionalPromise<ReturnTypeByBlockType<TBlockType>>
     >
         (
             strings: TemplateStringsArray, ...args: Argument.MapToScratch<Args>
@@ -62,7 +64,7 @@ interface TemplateEngine<TBlockType extends ScratchBlockType> {
     execute<
         This extends ExtensionInstance,
         Args extends any[],
-        Return extends ReturnTypeByBlockType<TBlockType>,
+        Return extends Utility.OptionalPromise<ReturnTypeByBlockType<TBlockType>>,
     >
         (
             builder: (
@@ -76,4 +78,5 @@ interface TemplateEngine<TBlockType extends ScratchBlockType> {
 export const scratch = {
     reporter: makeDecorator("reporter"),
     command: makeDecorator("command"),
+    button: makeDecorator("button"),
 }

@@ -6,7 +6,6 @@ import { getImplementationName } from "../mixins/base/scratchInfo/index";
 import { ExtensionInstance } from "..";
 import { isFunction, isString, tryCreateBundleTimeEvent } from "$common/utils";
 import { extractArgs } from "../mixins/base/scratchInfo/args";
-import { makeDecorator } from "$common/extension/decorators/newBlocks"
 
 type BlockFunctionMetadata = {
   methodName: string,
