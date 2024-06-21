@@ -33,7 +33,7 @@ export const vmDeclarations = () => {
         emittedFiles.has(directory) ? emittedFiles.get(directory).push(fileName) : emittedFiles.set(directory, [fileName]);
     };;
 
-    const entry = path.join(commonDirectory, "index.ts");
+    const entry = path.join(vmSrc, "virtual-machine.js");
     const program = ts.createProgram([entry], options, host);
     const result = program.emit();
 
