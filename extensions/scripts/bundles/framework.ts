@@ -1,5 +1,5 @@
 import { bundleBasedOnWatchMode, getBundleInfo, getOutputOptions, getThirdPartyPlugins, } from ".";
-import { clearDestinationDirectories, generateVmDeclarations, onFrameworkBundle, setupFrameworkBundleEntry, transpileExtensionGlobals } from "./plugins";
+import { clearDestinationDirectories, generateVmDeclarations, onFrameworkBundle, setupFrameworkBundleEntry, transpileExtensionGlobals, mp3Bundler } from "./plugins";
 import { commonDirectory } from "scripts/utils/fileSystem";
 import { FrameworkID, untilCondition } from "$common";
 
@@ -9,6 +9,7 @@ export default async function (doWatch: boolean) {
   let bundleExists = false;
 
   const customPRGPlugins = [
+    mp3Bundler(info),
     setupFrameworkBundleEntry(info),
     clearDestinationDirectories(),
     transpileExtensionGlobals(),
