@@ -31,17 +31,6 @@ export const clearDestinationDirectories = (): Plugin => {
   }
 }
 
-export const generateVmDeclarations = (): Plugin => {
-  const runner = runOncePerBundling();
-
-  return {
-    name: "",
-    buildStart() {
-      if (runner.check()) vmDeclarations();
-    }
-  }
-}
-
 export const transpileExtensionGlobals = (): Plugin => {
   const runner = runOncePerBundling();
   return {
