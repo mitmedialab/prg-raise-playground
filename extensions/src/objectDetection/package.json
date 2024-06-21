@@ -5,10 +5,10 @@
   "main": "index.ts",
   "scripts": {
     "directory": "echo objectDetection",
-    "test": "npm run test --prefix ../../ -- objectDetection/index.test.ts",
-    "dev": "npm run dev --prefix ../../../ -- --include objectDetection",
-    "add:ui": "npm run add:ui --prefix ../../../  -- objectDetection",
-    "add:arg": "npm run --prefix ../../../-- objectDetection"
+    "test": "pnpm --filter prg-extension-root test objectDetection/index.test.ts",
+    "dev": "pnpm --filter prg-extension-root dev --include objectDetection",
+    "add:ui": "pnpm --filter prg-extension-root add:ui objectDetection",
+    "add:arg": "pnpm --filter prg-extension-root add:arg objectDetection"
   },
   "author": "",
   "license": "ISC",

@@ -32,7 +32,7 @@ If you want to edit it, please go to [extensions/documentation/src/anatomy/READM
 
 Extensions are defined by all the files that appear in their associated directory, located within `/extensions/src/`.
 
-This directory is created when you run the command `npm run new:extension <extension name>` from the root of the project, where the value you provide for `<extension name>` is used to name this new directory. 
+This directory is created when you run the command `pnpm new:extension <extension name>` from the root of the project, where the value you provide for `<extension name>` is used to name this new directory. 
 
 > **NOTE:** It is important to keep in mind that the name of an extension's associated directory is internally used to identify it, so it is best to avoid changing the directory's name (as this could affect previously saved `.sb3` projects that reference the extension).
 
@@ -58,11 +58,11 @@ export default class ExampleExtension extends extension({ name: "Example" }) {
             - For example, if your extension folder is `myExtension`, you can do the following:
                 ```
                 cd extensions/myExtension # only do this once
-                npm run dev 
+                pnpm dev 
                 ```
              - Instead of running the following from the root of the project every time:
                 ```
-                npm run dev -- --include myExtension
+                pnpm dev -i myExtension
                 ```
             - Inspect the `package.json` file to see all augmented scripts.
 
@@ -614,8 +614,8 @@ Please first make sure you've satisfied [Svelte Dependency](https://github.com/m
 To generate a new svelte file, run the following command from the root of the project:
 
 ```bash
-npm run add:ui <extension folder>
-# For example: npm run add:ui myExtension
+pnpm add:ui <extension folder>
+# For example: pnpm add:ui myExtension
 ```
 
 If succesful, the above command will point you to a generated file with the `.svelte` file-extension that lives inside of your extension's directory.
@@ -707,7 +707,7 @@ Here's how:
 2. Create your "new" framework-based extension using the command outlined in [Making an Extension](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main#-making-an-extension) and use the ***Extension ID*** you found in step 1 as the value of `<folder to contain extension>`
     - For example, if your "old" extension's ***Extension ID*** is `prgRocks` you'll run the following command:
     ```bash
-    npm run new:extension prgRocks
+    pnpm new:extension prgRocks
     ``` 
     - The reason this is necessary is two-fold: First, in the new extension framework, the name of the folder that contains an extension is automatically used as its ***Extension ID***. Second, because already saved `.sb3` / Scratch projects that use your extension refernce the specific ***Extension ID***, we need to make sure our updated, typescript-based extension has the same ID.
 3. Once you have created an extension with a folder name matching the ***Extension ID*** found in step 1, you can actually delete the corresponding entry inside of the `builtinExtensions` object of [scratch-packages/scratch-vm/src/extension-support/extension-manager.js](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/scratch-packages/scratch-vm/src/extension-support/extension-manager.js)
@@ -720,7 +720,7 @@ Here's how:
     - You can do this as the extension framework will automatically handle adding your extension (and its Extension Menu Display Details) to the [Extension Menu](https://en.scratch-wiki.info/wiki/Extension#Adding_Extensions)
 6. Now you can start coding! See the below comparison of a vanilla JS extension class and a typescript / framework based one.
     - NOTE: If there's a chance anyone has saved projects with the extension you're porting over, you need to make sure to follow the [Legacy Support](#legacy-support) instructions so those saved projects will continue to load correctly.
-7. Once you have migrated all of the "old" ***Impementation*** to your new extension folder & typescript code, you can go ahead and delete the ***Implementation*** folder inside of [pacakges/scratch-vm/src/extensions/](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/scratch-packages/scratch-vm/src/extensions).
+7. Once you have migrated all of the "old" ***Impementation*** to your new extension folder & typescript code, you can go ahead and delete the ***Implementation*** folder inside of [scratch-packages/scratch-vm/src/extensions/](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/scratch-packages/scratch-vm/src/extensions).
 8. Now, there should be no remnants of the "old" extension inside of either [scratch-packages/scratch-vm](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/scratch-packages/scratch-vm) or [scratch-packages/scratch-gui](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/scratch-packages/scratch-gui) folders, and instead everything lives neatly inside its own directory within [extensions/src](https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extensions/src)
 9. Test out the project you saved in step 0 to verify that your port worked as expected.
 
@@ -1279,8 +1279,8 @@ For a quick breakdown of how we handle UI generally in the Extension Framework, 
 Then run the following command:
 
 ```bash
-npm run add:arg <extension directory>
-# For example: npm run add:arg myExtension
+pnpm add:arg <extension directory>
+# For example: pnpm add:arg myExtension
 ```
 
 This will create a new `.svelte` file for you within your extension's directory pre-configured to handle custom arguments. However, there's still some more you need to do before you can visualize and modify custom arguments.
@@ -1561,7 +1561,7 @@ sequenceDiagram
     participant B as /scratch-packages/scratch-gui/
     participant C as /scratch-packages/scratch-vm/
     Note over root,C: INITIALIZATION
-    C-->>B: Lerna utility forces scratch-gui <br>to use /scratch-packages/scratch-vm for its dependency <br>instead of using the external npm package
+    C-->>B: PNPM tells scratch-gui <br>to use /scratch-packages/scratch-vm for its dependency <br>instead of using the external npm package
     Note over root,C: BUILD
     Note over root: /scripts/build.ts
     activate root

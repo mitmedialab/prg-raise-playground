@@ -5,8 +5,8 @@
   "main": "index.ts",
   "scripts": {
     "directory": "echo teachableMachine",
-    "test": "npm run test --prefix ../../ -- teachableMachine/index.test.ts",
-    "dev": "npm run dev --prefix ../../../ -- --include teachableMachine"
+    "test": "pnpm --filter prg-extension-root test teachableMachine/index.test.ts",
+    "dev": "pnpm --filter prg-extension-root dev --include teachableMachine"
   },
   "author": "",
   "license": "ISC",
