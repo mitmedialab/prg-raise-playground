@@ -16,6 +16,7 @@ type BlockFunctionMetadata = {
 
 export const blockBundleEvent = tryCreateBundleTimeEvent<BlockFunctionMetadata>("blocks");
 
+
 export const getAccessorPrefix = "__getter__";
 export const setAccessorPrefix = "__setter__";
 
@@ -52,6 +53,7 @@ export const setAccessorPrefix = "__setter__";
  * ```
  * @returns A manipulated version of the original method that is
  */
+
 export function block<
   const This extends ExtensionInstance,
   const Args extends any[],

@@ -4,7 +4,6 @@ import { ArgumentType, BlockType } from "$common/types/enums";
 import { BlockOperation, ValueOf, Menu, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, DynamicMenu, BlockMetadata, BlockUtilityWithID, } from "$common/types";
 import { registerButtonCallback } from "$common/ui";
 import { isString, typesafeCall, } from "$common/utils";
-import type BlockUtility from "$root/scratch-packages/scratch-vm/src/engine/block-utility";
 import { menuProbe, asStaticMenu, getMenuName, convertMenuItemsToString } from "./menus";
 import { Handler } from "./handlers";
 import { BlockDefinition, getButtonID, isBlockGetter } from "./util";
