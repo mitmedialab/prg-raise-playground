@@ -187,6 +187,61 @@ const frameworkBundle: { content: Promise<string> } & Record<string, any> = {
   }
 }
 
+
+
+function findDetails(filePath) {
+  const sourceCode = fs.readFileSync(filePath, 'utf-8');
+
+  const sourceFile = ts.createSourceFile(
+    filePath,
+    sourceCode,
+    ts.ScriptTarget.Latest,
+    true
+  );
+  function findVariable(node: ts.Node, variableName: string): ts.Node | undefined {
+    if (node.kind === ts.SyntaxKind.VariableDeclaration) {
+      const variableDeclaration = node as ts.VariableDeclaration;
+      if (variableDeclaration.name.getText() === variableName) {
+        return variableDeclaration;
+      }
+    }
+    return ts.forEachChild(node, childNode => findVariable(childNode, variableName));
+  }
+  function findFirstExtensionParameter(node: ts.Node): string | undefined {
+    if (ts.isCallExpression(node)) {
+      const callExpression = node as ts.CallExpression;
+      const expression = callExpression.expression;
+  
+      if (ts.isIdentifier(expression) && expression.text === 'extension') {
+        const args = callExpression.arguments;
+  
+        if (args.length > 0) {
+          const firstArg = args[0];
+          return firstArg.getText(sourceFile);
+        }
+      }
+    }
+    return ts.forEachChild(node, findFirstExtensionParameter);
+  }
+
+  const firstExtensionParam = findFirstExtensionParameter(sourceFile);
+  
+  if (firstExtensionParam) {
+    console.log('First parameter of extension:', firstExtensionParam);
+    const detailsVariable = findVariable(sourceFile, firstExtensionParam) as ts.VariableDeclaration;
+    if (detailsVariable) {
+      console.log("First parameter is a variable");
+      const variableInitializer = detailsVariable.initializer;
+      if (variableInitializer) {
+        console.log(variableInitializer.getText());
+      }
+    }
+  } else {
+    console.log('No extension function call found or no first parameter.');
+  }
+  
+}
+
 export const finalizeConfigurableExtensionBundle = (info: BundleInfo): Plugin => {
   const { bundleDestination, menuDetails, name, directory } = info;
 
@@ -204,6 +259,11 @@ export const finalizeConfigurableExtensionBundle = (info: BundleInfo): Plugin =>
 
     const generateAppInventor = getAppInventorGenerator(info);
 
+    const fileName = info.indexFile;
+
+
+    findDetails(fileName);
+    
     eval(framework + "\n" + fs.readFileSync(bundleDestination, "utf-8"));
     if (!success) throw new Error(`No extension registered for '${name}'. Check your usage of the 'extension(...)' factory function.`);
 
