@@ -18,6 +18,7 @@ import { setAuxiliaryInfoForExtension } from "./auxiliaryInfo";
 import { getAppInventorGenerator } from "scripts/utils/interop";
 import { createFilter, FilterPattern } from '@rollup/pluginutils';
 import { vmDeclarations } from "scripts/utils/generate";
+import { chromium } from 'playwright';
 
 export const clearDestinationDirectories = (): Plugin => {
   const runner = runOncePerBundling();
@@ -186,6 +187,36 @@ export const mp3Bundler = (info: BundleInfo): Plugin => {
   };
 }
 
+async function playwrightTest(framework, bundledJsPath) {
+  console.log("LAUNCHING PLAYWRIGHT TEST");
+  const browser = await chromium.launch();
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  var detailsJSON = {};
+  await page.goto('about:blank');
+  
+  page.on('console', async (msg) => {
+    const args = await Promise.all(msg.args().map(arg => arg.jsonValue()));
+    console.log(`Console Log from page:`, ...args);
+    for (const arg of args) {
+      if (arg.includes("DETAILS: ")) {
+        let prefix = "DETAILS: ";
+        let jsonVal = arg.substring(prefix.length).trim();
+        jsonVal = JSON.parse(jsonVal.trim());
+        detailsJSON = jsonVal;
+      }
+    }
+  });
+
+  const bundledJs = fs.readFileSync(bundledJsPath, 'utf8');
+  await page.evaluate(`
+  ${framework}
+  ${bundledJs}`)
+  await page.waitForTimeout(1000);
+  await browser.close();
+  return detailsJSON;
+}
+
 export const finalizeConfigurableExtensionBundle = (info: BundleInfo): Plugin => {
   const { bundleDestination, menuDetails, name, directory } = info;
 
@@ -193,20 +224,30 @@ export const finalizeConfigurableExtensionBundle = (info: BundleInfo): Plugin =>
     const framework = await frameworkBundle.content;
     let success = false;
 
-    extensionBundleEvent.registerCallback(function (extensionInfo, removeSelf) {
-      const { details } = extensionInfo;
-      for (const key in menuDetails) delete menuDetails[key];
-      for (const key in details) menuDetails[key] = details[key];
-      success = true;
-      removeSelf();
-    });
+    // extensionBundleEvent.registerCallback(function (extensionInfo, removeSelf) {
+    //   const { details } = extensionInfo;
+    //   for (const key in menuDetails) delete menuDetails[key];
+    //   for (const key in details) menuDetails[key] = details[key];
+    //   console.log("DETAILS GOT ADDED");
+    //   console.log(details);
+    //   success = true;
+    //   removeSelf();
+    // });
 
     const generateAppInventor = getAppInventorGenerator(info);
 
-    eval(framework + "\n" + fs.readFileSync(bundleDestination, "utf-8"));
-    if (!success) throw new Error(`No extension registered for '${name}'. Check your usage of the 'extension(...)' factory function.`);
+    const detailsJSON: any = await playwrightTest(framework, bundleDestination);
+    for (const key in menuDetails) delete menuDetails[key];
+    for (const key in detailsJSON) menuDetails[key] = detailsJSON[key];
+    console.log("DETAILS GOT ADDED");
+    console.log(detailsJSON);
 
     generateAppInventor();
+    
+    // eval(framework + "\n" + fs.readFileSync(bundleDestination, "utf-8"));
+    
+
+    
   }
 
   const runner = runOncePerBundling();

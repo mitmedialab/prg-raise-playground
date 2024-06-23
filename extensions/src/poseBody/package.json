@@ -11,6 +11,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@tensorflow-models/posenet": "^2.2.1"
+    "@tensorflow-models/posenet": "2.2.1"
   }
 }
