@@ -16,6 +16,7 @@ import { runOncePerBundling } from "../utils/rollupHelper";
 import { sendToParent } from "$root/scripts/comms";
 import { setAuxiliaryInfoForExtension } from "./auxiliaryInfo";
 import { getAppInventorGenerator } from "scripts/utils/interop";
+import { chromium } from 'playwright';
 
 export const clearDestinationDirectories = (): Plugin => {
   const runner = runOncePerBundling();
@@ -188,58 +189,34 @@ const frameworkBundle: { content: Promise<string> } & Record<string, any> = {
 }
 
 
-
-function findDetails(filePath) {
-  const sourceCode = fs.readFileSync(filePath, 'utf-8');
-
-  const sourceFile = ts.createSourceFile(
-    filePath,
-    sourceCode,
-    ts.ScriptTarget.Latest,
-    true
-  );
-  function findVariable(node: ts.Node, variableName: string): ts.Node | undefined {
-    if (node.kind === ts.SyntaxKind.VariableDeclaration) {
-      const variableDeclaration = node as ts.VariableDeclaration;
-      if (variableDeclaration.name.getText() === variableName) {
-        return variableDeclaration;
+async function playwrightTest(framework, bundledJsPath) {
+  console.log("LAUNCHING PLAYWRIGHT TEST");
+  const browser = await chromium.launch();
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  var detailsJSON = {};
+  await page.goto('about:blank');
+  
+  page.on('console', async (msg) => {
+    const args = await Promise.all(msg.args().map(arg => arg.jsonValue()));
+    console.log(`Console Log from page:`, ...args);
+    for (const arg of args) {
+      if (arg.includes("DETAILS: ")) {
+        let prefix = "DETAILS: ";
+        let jsonVal = arg.substring(prefix.length).trim();
+        jsonVal = JSON.parse(jsonVal.trim());
+        detailsJSON = jsonVal;
       }
     }
-    return ts.forEachChild(node, childNode => findVariable(childNode, variableName));
-  }
-  function findFirstExtensionParameter(node: ts.Node): string | undefined {
-    if (ts.isCallExpression(node)) {
-      const callExpression = node as ts.CallExpression;
-      const expression = callExpression.expression;
-  
-      if (ts.isIdentifier(expression) && expression.text === 'extension') {
-        const args = callExpression.arguments;
-  
-        if (args.length > 0) {
-          const firstArg = args[0];
-          return firstArg.getText(sourceFile);
-        }
-      }
-    }
-    return ts.forEachChild(node, findFirstExtensionParameter);
-  }
+  });
 
-  const firstExtensionParam = findFirstExtensionParameter(sourceFile);
-  
-  if (firstExtensionParam) {
-    console.log('First parameter of extension:', firstExtensionParam);
-    const detailsVariable = findVariable(sourceFile, firstExtensionParam) as ts.VariableDeclaration;
-    if (detailsVariable) {
-      console.log("First parameter is a variable");
-      const variableInitializer = detailsVariable.initializer;
-      if (variableInitializer) {
-        console.log(variableInitializer.getText());
-      }
-    }
-  } else {
-    console.log('No extension function call found or no first parameter.');
-  }
-  
+  const bundledJs = fs.readFileSync(bundledJsPath, 'utf8');
+  await page.evaluate(`
+  ${framework}
+  ${bundledJs}`)
+  await page.waitForTimeout(1000);
+  await browser.close();
+  return detailsJSON;
 }
 
 export const finalizeConfigurableExtensionBundle = (info: BundleInfo): Plugin => {
@@ -249,25 +226,30 @@ export const finalizeConfigurableExtensionBundle = (info: BundleInfo): Plugin =>
     const framework = await frameworkBundle.content;
     let success = false;
 
-    extensionBundleEvent.registerCallback(function (extensionInfo, removeSelf) {
-      const { details } = extensionInfo;
-      for (const key in menuDetails) delete menuDetails[key];
-      for (const key in details) menuDetails[key] = details[key];
-      success = true;
-      removeSelf();
-    });
+    // extensionBundleEvent.registerCallback(function (extensionInfo, removeSelf) {
+    //   const { details } = extensionInfo;
+    //   for (const key in menuDetails) delete menuDetails[key];
+    //   for (const key in details) menuDetails[key] = details[key];
+    //   console.log("DETAILS GOT ADDED");
+    //   console.log(details);
+    //   success = true;
+    //   removeSelf();
+    // });
 
     const generateAppInventor = getAppInventorGenerator(info);
 
-    const fileName = info.indexFile;
-
-
-    findDetails(fileName);
-    
-    eval(framework + "\n" + fs.readFileSync(bundleDestination, "utf-8"));
-    if (!success) throw new Error(`No extension registered for '${name}'. Check your usage of the 'extension(...)' factory function.`);
+    const detailsJSON: any = await playwrightTest(framework, bundleDestination);
+    for (const key in menuDetails) delete menuDetails[key];
+    for (const key in detailsJSON) menuDetails[key] = detailsJSON[key];
+    console.log("DETAILS GOT ADDED");
+    console.log(detailsJSON);
 
     generateAppInventor();
+    
+    // eval(framework + "\n" + fs.readFileSync(bundleDestination, "utf-8"));
+    
+
+    
   }
 
   const runner = runOncePerBundling();

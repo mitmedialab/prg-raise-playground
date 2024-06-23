@@ -36,5 +36,8 @@
     "ts-node": {
       "typescript": "$typescript"
     }
+  },
+  "dependencies": {
+    "playwright": "^1.44.1"
   }
 }
