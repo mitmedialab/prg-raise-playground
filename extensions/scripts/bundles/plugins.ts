@@ -190,7 +190,6 @@ const frameworkBundle: { content: Promise<string> } & Record<string, any> = {
 
 
 async function playwrightTest(framework, bundledJsPath) {
-  console.log("LAUNCHING PLAYWRIGHT TEST");
   const browser = await chromium.launch();
   const context = await browser.newContext();
   const page = await context.newPage();
@@ -199,7 +198,6 @@ async function playwrightTest(framework, bundledJsPath) {
   
   page.on('console', async (msg) => {
     const args = await Promise.all(msg.args().map(arg => arg.jsonValue()));
-    console.log(`Console Log from page:`, ...args);
     for (const arg of args) {
       if (arg.includes("DETAILS: ")) {
         let prefix = "DETAILS: ";
@@ -224,32 +222,16 @@ export const finalizeConfigurableExtensionBundle = (info: BundleInfo): Plugin =>
 
   const executeBundleAndExtractMenuDetails = async () => {
     const framework = await frameworkBundle.content;
-    let success = false;
-
-    // extensionBundleEvent.registerCallback(function (extensionInfo, removeSelf) {
-    //   const { details } = extensionInfo;
-    //   for (const key in menuDetails) delete menuDetails[key];
-    //   for (const key in details) menuDetails[key] = details[key];
-    //   console.log("DETAILS GOT ADDED");
-    //   console.log(details);
-    //   success = true;
-    //   removeSelf();
-    // });
 
     const generateAppInventor = getAppInventorGenerator(info);
 
     const detailsJSON: any = await playwrightTest(framework, bundleDestination);
     for (const key in menuDetails) delete menuDetails[key];
     for (const key in detailsJSON) menuDetails[key] = detailsJSON[key];
-    console.log("DETAILS GOT ADDED");
-    console.log(detailsJSON);
 
     generateAppInventor();
     
     // eval(framework + "\n" + fs.readFileSync(bundleDestination, "utf-8"));
-    
-
-    
   }
 
   const runner = runOncePerBundling();
