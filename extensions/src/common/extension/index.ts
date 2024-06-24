@@ -48,8 +48,11 @@ export const extension = <const TSupported extends readonly MixinName[]>(
 ): ExtensionWithFunctionality<[...TSupported]> & typeof ExtensionBase => {
 
   if (details) {
-    let detailStr = `DETAILS: ${JSON.stringify(details)}`;
-    console.log(detailStr);
+    const element = document.createElement("div");
+    element.textContent = JSON.stringify(details);
+    element.id = "menuDetails";
+    element.style.display = "none";
+    document.body.appendChild(element);
     extensionBundleEvent?.fire({ details, addOns });
   }
 
