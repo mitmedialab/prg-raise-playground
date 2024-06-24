@@ -107,32 +107,33 @@ type ExplanationOfInitMethod = Documentation;
  * Hover over `exampleReporter` below to observe it's type signature and that it returns a `number` 
  * (which is _inferred_ by Typescript, but you could also be [explicitly stated](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#return-type-annotations)).
  * 
- * As described in the definiton of Block above (hover over it if you need a refresher), we turn the `exampleReporter` method into a method tied to a Block by "decorating" it with the `block` decorator function 
+ * As described in the definiton of Block above (hover over it if you need a refresher), we turn the `exampleReporter` method into a method tied to a Block by "decorating" it with the `scratch.reporter` decorator function 
  * (the use of the `@` tell us that it is a [decorator](https://www.typescriptlang.org/docs/handbook/decorators.html#method-decorators)).
  * 
- * As mentioned above, the `block` function takes a single argument as input, which provides all the necessary information
- * for the Block Programming Environment to create a Block tied to our method.
+ * In this scenario, `scratch.reporter` serves as a [tagged template literal](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates). This means we can use the passed-in [Template String](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals) to provide 
+ * all the necessary information for the Block Programming Environment to create a Reporter Block 
+ * tied to our method, with input fields at the positions of the templated arguments.
  * 
- * In this case, all we need is the block type (`type`) and the display text of the block (`text`).
  */
 type ExplanationOfReporterBlock = Documentation;
 
 /** 
- * Below, we define a method `exampleCommand` and decorate it with the `@block` function (similiar to above). 
+ * Below, we define a method `exampleCommand` and decorate it with the `@scratch.command` function (similiar to above). 
  * This is an example of a "command" block, as the underlying method takes 0 or more arguments, and returns nothing ([void](https://www.typescriptlang.org/docs/handbook/basic-types.html#void)).
  * 
  * Hover over `exampleCommand` below to observe it's type signature and how it returns `void`.
  * 
- * **NOTE:** Here, instead of passing an object to the `@block` decorator function (as above), we pass another function to it.
- * This function must take a single parameter, which will be a reference to our specific Extension (hover over `self` if you don't believe me). 
+ * **NOTE:** Here, instead of using a tagged template literal (as above), we pass another function to the `scratch` decorator.
+ * This function takes two parameters, the first of which is a reference to our specific Extension. 
  * As you can see in the definition of the `defaultValue` of our second argument, 
  * this allows us to pull values off of our extension when defining our block.
+ * The second argument references the tagged template literal we use to create the text and arguments of the block.
  */
 type ExplanationOfCommandBlock = Documentation;
 
 /**
- * We can either use the string to define our blockType, like above, 
- * or refernce a specific entry on the `BlockType` object, like below.
+ * We can either use `scratch.reporter` or `scratch.command` to define a Reporter or Command block, like above, 
+ * or reference a specific entry on the `BlockType` object, like below.
  * 
  * Make sure to hover over the `type` field to get more comprehensive documentation.
  */

@@ -1,4 +1,4 @@
-import { ArgumentType, BlockType, Environment, ExtensionMenuDisplayDetails, extension, block } from "$common";
+import { ArgumentType, BlockType, Environment, ExtensionMenuDisplayDetails, extension, block, scratch } from "$common";
 import BlockUtility from "$scratch-vm/engine/block-utility";
 
 /** 👋 Hi!
@@ -44,20 +44,16 @@ export default class ExtensionNameGoesHere extends extension(details) {
   exampleField: number;
 
   /** @see {ExplanationOfReporterBlock} */
-  @block({ type: "reporter", text: "This increments an internal field and then reports it's value" })
+  @(scratch.reporter`This increments an internal field and then reports it's value`)
   exampleReporter() {
     return ++this.exampleField;
   }
-
+  
   /** @see {ExplanationOfCommandBlock} */
-  @block((self) => ({
-    /** @see {ExplanationOfBlockType} */
-    type: BlockType.Command,
-    /** @see {ExplanationOfBlockTextFunction} */
-    text: (exampleString, exampleNumber) => `This is the block's display text with inputs here --> ${exampleString} and here --> ${exampleNumber}`,
-    /** @see {ExplanationOfBlockArgs} */
-    args: [ArgumentType.String, { type: ArgumentType.Number, defaultValue: self.exampleField }],
-  }))
+  @scratch.command(
+    (instance, $) => 
+      $`This is the block's display text with inputs here --> ${"string"} and here --> ${{type: "number", defaultValue: instance.exampleField}}`
+  )
   exampleCommand(exampleString: string, exampleNumber: number) {
     alert(`This is a command! Here's what it received: ${exampleString} and ${exampleNumber}`); // Replace with what the block should do! 
   }
@@ -65,6 +61,7 @@ export default class ExtensionNameGoesHere extends extension(details) {
   /** @see {ExplanationOfHatBlock} */
   /** @see {ExplanationOfBlockUtility} */
   @block({
+    /** @see {ExplanationOfBlockType} */
     type: "hat",
     text: (condition) => `Should the below block execute: ${condition}`,
     /** @see {ExplanationOfBlockArg} */
