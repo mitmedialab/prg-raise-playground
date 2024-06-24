@@ -1,5 +1,5 @@
 {
-  "name": "extensions-root",
+  "name": "prg-extension-root",
   "private": true,
   "scripts": {
     "preinstall": "npx only-allow pnpm",
@@ -9,10 +9,10 @@
     "build": "pnpm install && pnpm transpile:vm && pnpm build:extensions:and:gui --include all --watch false --parrallel false",
     "dev": "pnpm transpile:vm && pnpm build:extensions:and:gui --watch",
     "new:extension": "pnpm ts:node:extensions ./extensions/scripts/factories/extension.ts",
-    "add:ui": "pnpm ts:node:extensions./extensions/scripts/factories/ui.ts",
-    "add:arg": "pnpm ts:node:extensions./extensions/scripts/factories/customArgument.ts",
-    "add:test": "pnpm ts:node:extensions./extensions/scripts/factories/test.ts",
-    "add:package": "pnpm ts:node:extensions./extensions/scripts/factories/package.ts",
+    "add:ui": "pnpm ts:node:extensions ./extensions/scripts/factories/ui.ts",
+    "add:arg": "pnpm ts:node:extensions ./extensions/scripts/factories/customArgument.ts",
+    "add:test": "pnpm ts:node:extensions ./extensions/scripts/factories/test.ts",
+    "add:package": "pnpm ts:node:extensions ./extensions/scripts/factories/package.ts",
     "transpile:vm": "pnpm ts:node:extensions ./extensions/scripts/transpileVm.ts",
     "test:extensions": "pnpm --filter extensions test",
     "document:extensions": "pnpm --filter extensions document",

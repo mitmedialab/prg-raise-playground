@@ -6,4 +6,17 @@ settings:
 
 importers:
 
-  .: {}
+  .:
+    devDependencies:
+      '@types/events':
+        specifier: ^3.0.3
+        version: 3.0.3
+
+packages:
+
+  '@types/events@3.0.3':
+    resolution: {integrity: sha512-trOc4AAUThEz9hapPtSd7wf5tiQKvTtu5b371UxXdTuqzIh0ArcRspRP0i0Viu+LXstIQ1z96t1nsPxT9ol01g==}
+
+snapshots:
+
+  '@types/events@3.0.3': {}

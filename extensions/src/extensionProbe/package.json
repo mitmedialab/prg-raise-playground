@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "dev": "npm run dev --prefix ../../../ -- --include extensionProbe"
+    "dev": "pnpm --filter prg-extension-root dev --include extensionProbe"
   },
   "author": "",
   "license": "ISC",
