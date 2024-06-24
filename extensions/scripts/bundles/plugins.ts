@@ -193,26 +193,14 @@ async function playwrightTest(framework, bundledJsPath) {
   const browser = await chromium.launch();
   const context = await browser.newContext();
   const page = await context.newPage();
-  var detailsJSON = {};
   await page.goto('about:blank');
-  
-  page.on('console', async (msg) => {
-    const args = await Promise.all(msg.args().map(arg => arg.jsonValue()));
-    for (const arg of args) {
-      if (arg.includes("DETAILS: ")) {
-        let prefix = "DETAILS: ";
-        let jsonVal = arg.substring(prefix.length).trim();
-        jsonVal = JSON.parse(jsonVal.trim());
-        detailsJSON = jsonVal;
-      }
-    }
-  });
-
   const bundledJs = fs.readFileSync(bundledJsPath, 'utf8');
   await page.evaluate(`
   ${framework}
   ${bundledJs}`)
-  await page.waitForTimeout(1000);
+  await page.waitForSelector('#menuDetails', { state: 'attached' });
+  var detailsJSON = await page.$eval('#menuDetails', (element) => element.textContent);
+  detailsJSON = JSON.parse(detailsJSON);
   await browser.close();
   return detailsJSON;
 }
