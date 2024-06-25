@@ -1,0 +1,22 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    devDependencies:
+      '@mediapipe/selfie_segmentation':
+        specifier: ^0.1.1675465747
+        version: 0.1.1675465747
+
+packages:
+
+  '@mediapipe/selfie_segmentation@0.1.1675465747':
+    resolution: {integrity: sha512-IxYxNhwE5VwOm52L1yoFWYLP7q9Pd+NJjzOC5tlepfvEGaY3o9hslhUrx9BgseqdfZtKSDtd/4NfCSMjNzQalA==}
+
+snapshots:
+
+  '@mediapipe/selfie_segmentation@0.1.1675465747': {}

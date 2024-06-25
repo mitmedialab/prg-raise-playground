@@ -47,7 +47,7 @@ bundleExtensions.on("message", (msg: Message) => {
 
       if (watch) flags.unshift("serve")
       else {
-        flags.push(...asFlags("progress", "colors", "bail"));
+        flags.push(...asFlags("progress", "bail"));
         clearBuildDirs();
       }
 

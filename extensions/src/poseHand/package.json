@@ -5,8 +5,8 @@
   "main": "index.ts",
   "scripts": {
     "directory": "echo poseHand",
-    "dev": "npm run dev --prefix ../../../ -- --include poseHand",
-    "test": "npm run test --prefix ../../ -- poseHand/index.test.ts"
+    "dev": "pnpm --filter prg-extension-root dev --include poseHand",
+    "test": "pnpm --filter prg-extension-root test poseHand/index.test.ts"
   },
   "author": "",
   "license": "ISC",
