@@ -166,16 +166,16 @@ type ExplanationOfHatBlock = Documentation;
 type ExplanationOfBlockArg = Documentation;
 
 /**
- * You should notice that the final argument of our method is of type `BlockUtility`. 
+ * You should notice that the final argument of our method is of type `BlockUtilityWithID`. 
  * 
- * For every Block method, you can optionally add a final parameter of type `BlockUtility`
+ * For every Block method, you can optionally add a final parameter of type `BlockUtilityWithID`
  * which can be used to accomplish more [advanced behaviours](https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extensions#making-use-of-the-block-utility). 
  * No need to worry too much about when you're first starting out, though!
  * 
- * As is the case here, note that the inclusion of a `BlockUtility` argument does not "count" 
+ * As is the case here, note that the inclusion of a `BlockUtilityWithID` argument does not "count" 
  * as an Argument for your Block. 
  * 
- * Thus, if your method **_only_** accepts a `BlockUtility` argument, then the `block` function will **not**
+ * Thus, if your method **_only_** accepts a `BlockUtilityWithID` argument, then the `block` function will **not**
  * require (or allow) you to add a placeholder in the template literal -- similiar to the `exampleReporter` method / Block above.
  */
-type ExplanationOfBlockUtility = Documentation;
+type ExplanationOfBlockUtilityWithID = Documentation;

@@ -1,5 +1,4 @@
-import { ArgumentType, BlockType, Environment, extension, scratch } from "$common";
-import BlockUtility from "$root/scratch-packages/scratch-vm/src/engine/block-utility";
+import { ArgumentType, BlockType, BlockUtilityWithID, Environment, extension, scratch } from "$common";
 import formatMessage from './format-message'; // This should actually be an npm package and thus be 'format-message'
 
 const details = {
@@ -20,7 +19,7 @@ export default class SomeBlocks extends extension(details) {
       options: [{ text: 'Item One', value: 'itemId1' },'itemId2'] 
     }
   } of ${{ type: "number", defaultValue: 1 }}`)
-  myReporter(text: string, letterNum: number) {
+  myReporter(text: string, letterNum: number, util: BlockUtilityWithID) {
     const message = formatMessage({
       id: 'myReporter.result',
       default: 'Letter {letterNum} of {text} is {result}.',

@@ -62,7 +62,7 @@ export default class ExtensionNameGoesHere extends extension(details) {
 
   /** @see {ExplanationOfHatBlock} */
   @(scratch.hat`Should the below block execute: ${"Boolean"}`)
-  /** @see {ExplanationOfBlockUtility} */
+  /** @see {ExplanationOfBlockUtilityWithID} */
   async exampleHat(condition: boolean, util: BlockUtilityWithID) {
     return util.stackFrame.isLoop === condition;
   }
