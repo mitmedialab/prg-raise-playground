@@ -1,4 +1,4 @@
-import { Environment, extension, block, getterBlock, PropertyBlockDetails, setterBlock, Matrix } from "$common";
+import { Environment, extension, getterBlock, PropertyBlockDetails, setterBlock, Matrix, scratch } from "$common";
 
 const heightProperty: PropertyBlockDetails<number> = { name: "Height", type: "number" };
 
@@ -18,11 +18,7 @@ export default class extends extension({ name: "App Inventor Example", tags: ["P
     this.field = value;
   }
 
-  @block({
-    text: (x, y, z) => `${x} ${y} ${z}`,
-    args: ["number", "string", "matrix"],
-    type: "reporter"
-  })
+  @(scratch.reporter`${"number"} ${"string"} ${"matrix"}`)
   dummy(x: number, y: string, z: Matrix): number {
     return 0;
   }
