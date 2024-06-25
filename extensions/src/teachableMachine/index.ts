@@ -147,11 +147,9 @@ export default class teachableMachine extends extension({
     const { model, modelType } = this.predictionState[modelUrl];
     switch (modelType) {
       case this.ModelType.IMAGE:
-        if (frame) {
-          const imageBitmap = await createImageBitmap(frame);
-          return await model.predict(imageBitmap);
-        }
-        return null;
+        if (!frame) return null;
+        const imageBitmap = await createImageBitmap(frame);
+        return await model.predict(imageBitmap);
       case this.ModelType.POSE:
         const { pose, posenetOutput } = await model.estimatePose(frame);
         return await model.predict(posenetOutput);
