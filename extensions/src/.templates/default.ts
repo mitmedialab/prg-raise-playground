@@ -1,4 +1,4 @@
-import { ArgumentType, BlockType, Environment, ExtensionMenuDisplayDetails, extension, block, scratch } from "$common";
+import { ArgumentType, BlockType, Environment, ExtensionMenuDisplayDetails, extension, scratch } from "$common";
 import BlockUtility from "$scratch-vm/engine/block-utility";
 
 /** 👋 Hi!
@@ -43,6 +43,7 @@ export default class ExtensionNameGoesHere extends extension(details) {
   /** @see {ExplanationOfField} */
   exampleField: number;
 
+  /** @see {ExplanationOfBlockType} */
   /** @see {ExplanationOfReporterBlock} */
   @(scratch.reporter`This increments an internal field and then reports it's value`)
   exampleReporter() {
@@ -50,23 +51,18 @@ export default class ExtensionNameGoesHere extends extension(details) {
   }
   
   /** @see {ExplanationOfCommandBlock} */
-  @scratch.command(
+  @(scratch.command(
     (instance, $) => 
+      /** @see {ExplanationOfBlockArg} */
       $`This is the block's display text with inputs here --> ${"string"} and here --> ${{type: "number", defaultValue: instance.exampleField}}`
-  )
+  ))
   exampleCommand(exampleString: string, exampleNumber: number) {
     alert(`This is a command! Here's what it received: ${exampleString} and ${exampleNumber}`); // Replace with what the block should do! 
   }
 
   /** @see {ExplanationOfHatBlock} */
+  @(scratch.hat`Should the below block execute: ${"Boolean"}`)
   /** @see {ExplanationOfBlockUtility} */
-  @block({
-    /** @see {ExplanationOfBlockType} */
-    type: "hat",
-    text: (condition) => `Should the below block execute: ${condition}`,
-    /** @see {ExplanationOfBlockArg} */
-    arg: "Boolean"
-  })
   async exampleHat(condition: boolean, util: BlockUtility) {
     return util.stackFrame.isLoop === condition;
   }
