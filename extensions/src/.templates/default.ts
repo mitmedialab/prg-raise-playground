@@ -1,4 +1,4 @@
-import { ArgumentType, BlockType, Environment, ExtensionMenuDisplayDetails, extension, scratch } from "$common";
+import { ArgumentType, BlockType, BlockUtilityWithID, Environment, ExtensionMenuDisplayDetails, extension, scratch } from "$common";
 import BlockUtility from "$scratch-vm/engine/block-utility";
 
 /** 👋 Hi!
@@ -63,7 +63,7 @@ export default class ExtensionNameGoesHere extends extension(details) {
   /** @see {ExplanationOfHatBlock} */
   @(scratch.hat`Should the below block execute: ${"Boolean"}`)
   /** @see {ExplanationOfBlockUtility} */
-  async exampleHat(condition: boolean, util: BlockUtility) {
+  async exampleHat(condition: boolean, util: BlockUtilityWithID) {
     return util.stackFrame.isLoop === condition;
   }
 }
