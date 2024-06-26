@@ -9,7 +9,7 @@ import { Handler } from "./handlers";
 import { BlockDefinition, getButtonID, isBlockGetter } from "./util";
 import { convertToArgumentInfo, extractArgs, zipArgs } from "./args";
 import { convertToDisplayText } from "./text";
-import { CustomizableExtensionConstructor, MinimalExtensionInstance, } from "..";
+import { CustomizableExtensionConstructor, BaseScratchExtensionInstance, } from "..";
 import { ExtensionInstanceWithFunctionality } from "../..";
 import { blockIDKey } from "$common/globals";
 
@@ -29,7 +29,7 @@ const checkForBlockContext = (blockUtility: BlockUtilityWithID) => isBlockUtilit
  * @param args The args that must be parsed before being passed to the underlying operation 
  * @returns 
  */
-export const wrapOperation = <T extends MinimalExtensionInstance>(
+export const wrapOperation = <T extends BaseScratchExtensionInstance>(
   _this: T,
   operation: BlockOperation,
   args: { name: string, type: ValueOf<typeof ArgumentType>, handler: Handler }[]
@@ -126,7 +126,7 @@ export default function (Ctor: CustomizableExtensionConstructor) {
         info.func = buttonID;
       } else {
         const implementationName = getImplementationName(opcode);
-        this[implementationName] = wrapOperation(this as MinimalExtensionInstance, operation, zipArgs(args));
+        this[implementationName] = wrapOperation(this as BaseScratchExtensionInstance, operation, zipArgs(args));
       }
 
       return info;
