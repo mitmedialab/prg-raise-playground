@@ -1,7 +1,8 @@
 import { BaseScratchExtensionConstuctor } from "..";
 
 /**
- * Mixin the ability for extensions to check which optional mixins they support
+ * Mixin the ability for extensions to have their blocks 'versioned', 
+ * so that projects serialized with past versions of blocks can be loaded.
  * @param Ctor 
  * @returns 
  * @see https://www.typescriptlang.org/docs/handbook/mixins.html
