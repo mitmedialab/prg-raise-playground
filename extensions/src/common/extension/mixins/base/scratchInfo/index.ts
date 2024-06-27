@@ -1,7 +1,7 @@
 import { castToType } from "$common/cast";
 import CustomArgumentManager from "$common/extension/mixins/configurable/customArguments/CustomArgumentManager";
 import { ArgumentType, BlockType } from "$common/types/enums";
-import { BlockOperation, ValueOf, Menu, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, DynamicMenu, BlockMetadata, BlockUtilityWithID, } from "$common/types";
+import { BlockOperation, ValueOf, Menu, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, DynamicMenu, BlockMetadata, BlockUtilityWithID, VersionedOptions } from "$common/types";
 import { registerButtonCallback } from "$common/ui";
 import { isString, typesafeCall, } from "$common/utils";
 import { menuProbe, asStaticMenu, getMenuName, convertMenuItemsToString } from "./menus";
@@ -71,8 +71,10 @@ export const wrapOperation = <T extends BaseScratchExtensionInstance>(
 export default function (Ctor: CustomizableExtensionConstructor) {
   type BlockEntry = { definition: BlockDefinition<ScratchExtension, BlockOperation>, operation: BlockOperation };
   type BlockMap = Map<string, BlockEntry>;
+  type VersionMap = Map<string, VersionedOptions[]>;
   abstract class ScratchExtension extends Ctor {
     private readonly blockMap: BlockMap = new Map();
+    private readonly versionMap: VersionMap = new Map();
 
     private readonly menus: Menu<any>[] = [];
     private info: ExtensionMetadata;
@@ -86,6 +88,19 @@ export default function (Ctor: CustomizableExtensionConstructor) {
     pushBlock<Fn extends BlockOperation>(opcode: string, definition: BlockDefinition<any, Fn>, operation: BlockOperation) {
       if (this.blockMap.has(opcode)) throw new Error(`Attempt to push block with opcode ${opcode}, but it was already set. This is assumed to be a mistake.`)
       this.blockMap.set(opcode, { definition, operation } as BlockEntry);
+    }
+
+    pushVersions(opcode: string, versions: any) {
+      if (this.versionMap.has(opcode)) throw new Error(`Attempt to push block with opcode ${opcode}, but it was already set. This is assumed to be a mistake.`)
+      this.versionMap.set(opcode, versions);
+    }
+
+    getVersion(opcode: string) {
+      return this.versionMap.get(opcode);
+    }
+
+    getVersionMap() {
+      return this.versionMap;
     }
 
     protected getInfo(): ExtensionMetadata {

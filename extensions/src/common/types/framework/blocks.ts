@@ -277,6 +277,28 @@ type Operation<TExt extends BaseGenericExtension, TOp extends BlockOperation> = 
 
 export type ScratchBlockType = typeof BlockType[keyof typeof BlockType];
 
+export type BlockType = "reporter" | "command"; // etc, use actual version
+export type ArgValue = any;
+export type ArgIdentifier = string | number;
+export type ArgEntry = { 
+    /** If no id is provided, we can assume that the associated value does not correspond to any previously serialized argument */
+    readonly id?: ArgIdentifier, 
+    value: ArgValue
+}
+
+export type VersionArgTransformMechanism = {
+  arg: (identifier: ArgIdentifier) => ArgEntry,
+  args: () => ArgEntry[]
+}
+
+export type VersionedArgTransformer = (mechanism: VersionArgTransformMechanism) => ArgEntry[];
+
+export type VersionedOptions = {
+transform?: VersionedArgTransformer;
+previousType?: BlockType;
+previousName?: string;
+};
+
 export type ReturnTypeByBlockType<T extends ValueOf<typeof BlockType>> =
   T extends typeof BlockType.Boolean
   ? boolean
