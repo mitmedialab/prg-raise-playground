@@ -104,8 +104,8 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
         //     this.versionMap.set(opcode, versions);
         // }
 
-        alterProjectJSON(blocks, block, version) {
-            console.log("inside");
+        alterProjectJSON(blocks, block, version, blockLib) {
+            var addIds = [];
             const blocksInfo = this.getInfo().blocks.reduce((acc, tempBlock: any) => {
                 acc[tempBlock.opcode] = tempBlock;
                 return acc;
@@ -117,20 +117,13 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
             if (nameMap[version] && nameMap[version][blockInfoIndex]) {
                 blockInfoIndex = nameMap[version][blockInfoIndex];
             }
-            console.log(block.opcode);
             block.opcode = block.opcode.replace(oldIndex, blockInfoIndex);
-            console.log(block.opcode);
             const versions = this.getVersion(blockInfoIndex);
-            console.log(this.getVersionMap());
-            console.log(versions);
             if (versions && version < versions.length) {
                 const blockArgs = this.removeImageEntries(blocksInfo[blockInfoIndex].arguments);
                 var { inputs, variables } = this.gatherInputs(blocks, block);
                 var fields = this.gatherFields(block, blockArgs);
-                console.log(inputs);
-                console.log(fields);
                 var totalList = this.addInputsAndFields(inputs, fields);
-                console.log(totalList);
                 const newInputs = {};
                 const newFields = {};
                 let changed = false;
@@ -145,14 +138,9 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                             arg: (identifier: ArgIdentifier) => map.get(identifier),
                             args: () => Array.from(map.values()),
                         }
-                        console.log(versions[i].transform);
-                        console.log(mechanism);
                         const newEntries: ArgEntry[] = versions[i].transform(mechanism);
-                        console.log(newEntries);
                         const { entries, mappings } = this.updateEntries(newEntries);
                         totalList = entries;
-                        console.log("list");
-                        console.log(totalList);
                         variables = this.updateDictionary(variables, mappings)
                     }
                     if (versions[i].previousType) {
@@ -185,28 +173,27 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                             id: null
                         }
                     } else {
-                        const values = this.createInputBlock(blocks, blockArgs[argIndex].type, totalList[argIndex], block.id);
+                        const values = this.createInputBlock(blocks, blockArgs[argIndex].type, totalList[argIndex].value, block.id, blockLib);
                         const primitiveId = values.newId;
                         blocks = values.blocks;
-                        console.log(primitiveOpcodeInfoMap[blocks[primitiveId].opcode][0]);
-                        newInputs[argIndex] = [
-                            1, [
-                                primitiveOpcodeInfoMap[blocks[primitiveId].opcode][0], 
-                                String(totalList[argIndex].value)
-                            ]
-                        ];
+                        newInputs[argIndex] = {
+                            name: String(argIndex),
+                            block: values.newId,
+                            shadow: values.newId
+
+                        }
                     }
                     
                 }
 
                 // Re-assign fields and inputs
                 block.inputs = newInputs;
-                console.log(newInputs);
                 block.fields = newFields;
                 blocks[block.id] = block;
                 const regex = /_v(\d+)/g;
 
                 if (moveToSay && changed) {
+                    console.log("new block");
                     const oldID = block.id;
                     const next = block.next;
                     block.id = uid();
@@ -238,6 +225,8 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
 
                         }
                     }
+                    blockLib.createBlock(newBlock);
+                    blockLib.createBlock(block);
                     blocks[newBlock.id] = newBlock;
                     blocks[block.id] = block;
                 } else if (!moveToSay && changed) {
@@ -248,7 +237,7 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                             parentIndex = parentIndex.replace(`${parentIndex.split("_")[0]}_`, "");
                             parentIndex = parentIndex.replace(regex, "");
                             let argInfo = blocksInfo[parentIndex].arguments;
-                            const values = this.removeInput(parentBlock, block, blocks, argInfo);
+                            const values = this.removeInput(parentBlock, block, blocks, argInfo, blockLib);
                             blocks[parentBlock.id] = values.block;
                             blocks = values.blocks;
                             block.parent = null;
@@ -260,11 +249,6 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                 blocks[block.id] = block;
                 
             }
-            // step 5: get extension version info
-            // step 6: remove image entries from arguments
-            // step 7: combine inputs and fields
-            // step 8: apply transform functions
-            // step 9: say blocks
             return blocks;
         }
 
@@ -293,7 +277,7 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
             return ids;
         }
 
-        createInputBlock(blocks, type, value, parentId) {
+        createInputBlock(blocks, type, value, parentId, blockLib) {
             value = String(value);
             const primitiveObj = Object.create(null);
             const newId = uid();
@@ -363,6 +347,7 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                 }
             }
             blocks[newId] = primitiveObj;
+            blockLib.createBlock(primitiveObj);
             return { newId, blocks };
         };
 
@@ -486,13 +471,13 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
             return updatedDict;
         }
 
-        removeInput(block, removeBlock, blocks, argInfo) {
+        removeInput(block, removeBlock, blocks, argInfo, blockLib) {
             const inputs = block.inputs;
             const newInputs = {};
             let objectBlocks = {};
             for (const key of Object.keys(inputs)) {
                 if (inputs[key] && inputs[key].block == removeBlock.id) {
-                    const values = this.createInputBlock(blocks, argInfo[key].type, argInfo[key].defaultValue, block.id);
+                    const values = this.createInputBlock(blocks, argInfo[key].type, argInfo[key].defaultValue, block.id, blockLib);
                     objectBlocks = values.blocks;
                     newInputs[key] = {
                         name: String(key),
