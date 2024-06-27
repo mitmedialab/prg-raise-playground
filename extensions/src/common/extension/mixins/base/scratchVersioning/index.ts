@@ -113,6 +113,7 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
             let blockInfoIndex = block.opcode.replace(`${block.opcode.split("_")[0]}_`, "");
             let oldIndex = blockInfoIndex;
             const nameMap = this.createNameMap(blocksInfo);
+            console.log(nameMap);
             if (nameMap[version] && nameMap[version][blockInfoIndex]) {
                 blockInfoIndex = nameMap[version][blockInfoIndex];
             }
@@ -368,9 +369,9 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
         createNameMap(blocksInfo) {
             const versionMap = new Map();
             for (const opcode of Object.keys(blocksInfo)) {
-                if (typeof blocksInfo[opcode].versions == "object" && Object.keys(blocksInfo[opcode].versions).length > 0) {
+                const versions = this.getVersion(opcode);
+                if (versions && versions.length > 0) {
                     let tempName = opcode;
-                    let versions = blocksInfo[opcode].versions;
                     for (let index = versions.length - 1; index >= 0; index--) { // loop through each version entry
                         if (!versionMap.has(index)) {
                             versionMap[index] = {};
