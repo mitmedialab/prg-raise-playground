@@ -270,10 +270,21 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                                         let parentIndex = parentBlock.opcode;
                                         parentIndex = parentIndex.replace(`${parentIndex.split("_")[0]}_`, "");
                                         parentIndex = parentIndex.replace(regex, "");
-                                        let argInfo = blocksInfo[parentIndex].arguments;
-                                        const values = this.removeInput(parentBlock, block, object.blocks, argInfo);
-                                        object.blocks[parentBlock.id] = values.block;
-                                        object.blocks = values.blocks;
+                                        for (let key of Object.keys(parentBlock.inputs)) {
+                                            let values = [];
+                                            for (const value of parentBlock.inputs[key]) {
+                                                if (value != blockId) {
+                                                    if (value == 3) {
+                                                        values.push(1)
+                                                    } else {
+                                                        values.push(value);
+                                                    }
+                                                    
+                                                }
+
+                                            }
+                                            parentBlock.inputs[key] = values; 
+                                        }
                                         block.parent = null;
                                         block.topLevel = true;
                                     } 
@@ -716,19 +727,41 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
             let objectBlocks = {};
             for (const key of Object.keys(inputs)) {
                 if (inputs[key] && inputs[key].block == removeBlock.id) {
-                    const values = this.createInputBlock(blocks, argInfo[key].type, argInfo[key].defaultValue, block.id);
-                    objectBlocks = values.blocks;
-                    newInputs[key] = {
-                        name: String(key),
-                        block: values.newId,
-                        shadow: values.newId,
-                    };
+                    const primitiveBlock = this.createInputBlock(blocks, argInfo[key].type, argInfo[key].defaultValue, block.id);
+                    //objectBlocks = values.blocks;
+                    let defaultVal = argInfo[key].defaultValue;
+                    if (String(defaultVal) == "undefined") {
+                        switch(argInfo[key].type) {
+                            case "number": 
+                            case "angle": 
+                            case "color": {
+                                defaultVal = 0;
+                                break;
+                            }
+                            case "string": {
+                                defaultVal = "string";
+                                break;
+                            }
+                        }
+                    }
+                    newInputs[key] = [
+                        1, [
+                            primitiveOpcodeInfoMap[primitiveBlock.opcode][0],
+                            defaultVal
+                        ]
+                    ]
+                    // newInputs[key] = {
+                    //     name: String(key),
+                    //     block: values.newId,
+                    //     shadow: values.newId,
+                    // };
                 } else {
                     newInputs[key] = inputs[key];
                 }
             }
+            console.log(block.inputs);
             block.inputs = newInputs;
-            return { block: block, blocks: objectBlocks};
+            return block;
         }
 
 
