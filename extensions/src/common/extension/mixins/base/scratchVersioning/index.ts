@@ -115,6 +115,7 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
          * @return {object} An updated project JSON compatible with the current version of the extension
         */
         alterJSON(projectJSON: any) {
+            // Collect the targets
             const targetObjects = projectJSON.targets
             .map((t, i) => Object.assign(t, { targetPaneOrder: i }))
             .sort((a, b) => a.layerOrder - b.layerOrder);
@@ -147,6 +148,7 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                         acc[tempBlock.opcode] = tempBlock;
                         return acc;
                     }, {});
+                    // If the block is under the current extension
                     if (extensionID == this.getInfo().id) {
                         const block = object.blocks[blockId];
                         let blockInfoIndex = block.opcode.replace(`${block.opcode.split("_")[0]}_`, "");
@@ -155,10 +157,15 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                         if (nameMap[version] && nameMap[version][blockInfoIndex]) {
                             blockInfoIndex = nameMap[version][blockInfoIndex];
                         }
+                        // Update the opcode to be the current version name
                         block.opcode = block.opcode.replace(oldIndex, blockInfoIndex);
                         const versions = this.getVersion(blockInfoIndex);
+
+                        // If we need to update the JSON to be compatible with the current version
                         if (versions && version < versions.length) {
+                            // Remove the image entries from the arguments
                             const blockArgs = this.removeImageEntries(blocksInfo[blockInfoIndex].arguments);
+                            // Gather values
                             let { inputs, variables } = this.gatherInputs(block);
                             let fields = this.gatherFields(block, blockArgs);
                             let totalList = inputs.concat(fields);
@@ -166,8 +173,11 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                             const newFields = {};
                             let changed = false;
                             let moveToSay = false;
+
+                            // Apply each version modification as needed
                             for (let i = version; i < versions.length; i++) {
                                 if (versions[i].transform) {
+                                    // Create the map to be used in the mechanism from ArgEntry objects
                                     const map = new Map();
                                     for (let i = 0; i < totalList.length; i++) {
                                         map.set(totalList[i].id, totalList[i]);
@@ -176,12 +186,15 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                                         arg: (identifier: ArgIdentifier) => map.get(identifier),
                                         args: () => Array.from(map.values()),
                                     }
+                                    // Complete the transformation
                                     const entries: ArgEntry[] = versions[i].transform(mechanism);
+                                    // Update the ArgEntry objects' IDs and get position mappings
                                     const { newEntries, mappings } = this.updateEntries(entries);
                                     totalList = newEntries;
+                                    // Update variable positions
                                     variables = this.updateDictionary(variables, mappings)
                                 }
-                                if (versions[i].previousType) {
+                                if (versions[i].previousType) { 
                                     if (versions[i].previousType == "reporter" && blocksInfo[blockInfoIndex].blockType == "command") { // reporter to command
                                         changed = !changed;
                                         if (moveToSay) {
@@ -196,11 +209,15 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                                 }
                             }
 
+                            // Re-create the project JSON inputs/fields with the new values
                             for (let i = 0; i < Object.keys(blockArgs).length; i++) {
                                 const argIndex = Object.keys(blockArgs)[i];
+                                // If there's a variable in the argIndex position
                                 if (Object.keys(variables).includes(argIndex)) {
                                     newInputs[argIndex] = variables[argIndex];
-                                } else if (blockArgs[argIndex].menu) {
+                                } 
+                                // If we need to place the value in a field
+                                else if (blockArgs[argIndex].menu) {
                                     let fieldValue = totalList[argIndex];
                                     if (typeof fieldValue == "number") {
                                         fieldValue = String(fieldValue);  
@@ -210,8 +227,9 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                                         value: fieldValue,
                                         id: null
                                     }
-                                    
-                                } else {
+                                } 
+                                // If we need to place the value in an input
+                                else {
                                     const typeNum = this.getType(blockArgs[argIndex].type);
                                     newInputs[argIndex] = [
                                         1, [
@@ -220,24 +238,28 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                                         ]
                                     ]
                                 }
-                                
                             }
             
                             // Re-assign fields and inputs
                             block.inputs = newInputs;
                             block.fields = newFields;
+
                             const regex = /_v(\d+)/g;
             
-                            if (moveToSay && changed) {
+                            // If we need to move the information to a 'say' block, since 
+                            // we need to keep it connected to the previous/next blocks
+                            if (moveToSay && changed) { // command to reporter
                                 const oldID = blockId;
                                 const next = block.next;
+                                // Re-assign the ID of the current block
                                 block.id = uid();
-                                //blockJSON.topLevel = false;
+                                // Create the new block
                                 const newBlock = Object.create(null);
                                 newBlock.id = oldID;
                                 newBlock.parent = block.parent;
                                 block.parent = newBlock.id;
                                 newBlock.fields = {};
+                                // Input should be the reporter block variable
                                 newBlock.inputs = {
                                     MESSAGE: [
                                         3, 
@@ -252,7 +274,9 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                                 block.next = null;
                                 newBlock.opcode = "looks_say";
                                 newBlock.shadow = false;
-                                //newBlock.topLevel = true;
+                                
+                                // Since we changed the block ID, we need to update the 
+                                // block's input blocks to match
                                 for (const key of Object.keys(block.inputs)) {
                                     if (block.inputs[key].block) {
                                         let inputBlock = block.inputs[key].block;
@@ -263,45 +287,50 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
             
                                     }
                                 }
+                                // Set the blocks in the JSON
                                 newBlocks[block.id] = block;
                                 newBlocks[newBlock.id] = newBlock;
-                            } else if (!moveToSay && changed) {
+                            } 
+                            // If we need to create a command from a reporter
+                            else if (!moveToSay && changed) {
+                                // If the previous reporter block has a parent
                                 if (object.blocks[block.parent]) {
                                     const parentBlock = object.blocks[block.parent];
-                                    if (parentBlock) {
-                                        let parentIndex = parentBlock.opcode;
-                                        parentIndex = parentIndex.replace(`${parentIndex.split("_")[0]}_`, "");
-                                        parentIndex = parentIndex.replace(regex, "");
-                                        for (let key of Object.keys(parentBlock.inputs)) {
-                                            let values = [];
-                                            let index = 0;
-                                            for (const value of parentBlock.inputs[key]) {
-                                                if (value != blockId) {
-                                                    if (index == 0) {
-                                                        values.push(1);
-                                                    } else {
-                                                        values.push(value);
-                                                    }
+                                    // Remove the reporter variable from the parent block's inputs
+                                    for (let key of Object.keys(parentBlock.inputs)) {
+                                        let values = [];
+                                        let index = 0;
+                                        for (const value of parentBlock.inputs[key]) {
+                                            if (value != blockId) {
+                                                if (index == 0) {
+                                                    // We'll also need to set the shadow to 1
+                                                    // since we removed the variable
+                                                    values.push(1);
+                                                } else {
+                                                    values.push(value);
                                                 }
-                                                index = index + 1;
                                             }
-                                            parentBlock.inputs[key] = values; 
+                                            index = index + 1;
                                         }
-                                        block.parent = null;
-                                        block.topLevel = true;
-                                    } 
+                                        parentBlock.inputs[key] = values; 
+                                    }
+                                    // Update the current block to be a command block
+                                    block.parent = null;
+                                    block.topLevel = true;
                                 } 
                             } 
                         }
+                        // Set the blocks dictionary
                         if (!Object.keys(newBlocks).includes(blockId)) {
                             newBlocks[blockId] = block;
                         }
-                        
                     } 
                 }
+                // Update the target with the new blocks
                 object.blocks = newBlocks;
                 newTargets.push(object);
             }
+            // Update the project JSON with the new target
             projectJSON.targets = newTargets;
             return projectJSON;
         }
@@ -333,10 +362,14 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
         updateEntries(entries: ArgEntry[]) {
             const mappings = {};
             let newEntries = [];
+            // Loop through the arg entries
             for (let i = 0; i < entries.length; i++) {
+                // If the value hasn't just been added
                 if (entries[i].id) {
+                    // Set the positional dictionary
                     mappings[entries[i].id] = String(i);
                 }   
+                // Update the new ArgEntry array with the new ID
                 newEntries.push({id: String(i), value: entries[i].value});
             }
             return { newEntries, mappings };
@@ -351,21 +384,27 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
          * @param {object} blockInfo A dictionary with the information of each block from the extension
          * @return {object} The dictionary with each block's opcode at each version
         */
-        createNameMap(blocksInfo) {
+        createNameMap(blocksInfo: any) {
             const versionMap = new Map();
+            // Loop through every block in the extension
             for (const opcode of Object.keys(blocksInfo)) {
+                // Get version information for each extension
                 const versions = this.getVersion(opcode);
+                // If there is version information
                 if (versions && versions.length > 0) {
                     let tempName = opcode;
-                    for (let index = versions.length - 1; index >= 0; index--) { // loop through each version entry
+                    // Loop through the versions from most current to least current
+                    for (let index = versions.length - 1; index >= 0; index--) { 
                         if (!versionMap.has(index)) {
                             versionMap[index] = {};
                         }
+                        // Collect the name for the version, if it's not the current opcode
                         const version = versions[index];
                         if (typeof version == "object" && version.previousName) { // check if the version entry has a name
                             const oldName = version.previousName;
                             tempName = oldName;
                         }
+                        // Set the map entry for the version and the name at that version
                         if (tempName != opcode) {
                             versionMap[index][tempName] = opcode;
                         }
@@ -384,13 +423,11 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
          */
         removeImageEntries(dict: any) {
             const filteredDict = {};
-
             for (const [key, value] of Object.entries(dict)) {
                 if ((value as any).type !== 'image') {
                     filteredDict[key] = value;
                 }
             }
-
             return filteredDict;
         }
 
@@ -404,11 +441,14 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
         gatherInputs(blockJSON: any): any {
             var variables = {};
             const args: ArgEntry[] = [];
+            // Loop through the block's inputs
             if (blockJSON.inputs && Object.keys(blockJSON.inputs).length > 0) {
                 Object.keys(blockJSON.inputs).forEach(input => {
                     var keyIndex = input;
                     input = blockJSON.inputs[input];
+                    // If there is a variable in the input
                     if (typeof input[1] == "string") {
+                        // Set the variables dictionary accordingly
                         variables[keyIndex] = [
                             3,
                             input[1],
@@ -416,6 +456,7 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                         ]
                         args.push({id: keyIndex, value: input[2][1]});
                     } else {
+                        // If the input is a value, push that value according to type
                         const type = parseFloat(input[1][0]);
                         switch (type) {
                             case 6: // WHOLE_NUM_PRIMITIVE
@@ -447,15 +488,17 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
          * @param {object} blockJSON The block to gather the inputs from
          * @return {ArgEntry[]} An array of ArgEntry objects representing each field
          */
-        gatherFields(blockJSON, argList) {
+        gatherFields(blockJSON: any, argList: any) {
             const args: ArgEntry[] = [];
-            var fields = {};
+            // Loop through each field
             if (blockJSON.fields && Object.keys(blockJSON.fields).length > 0) {
                 Object.keys(blockJSON.fields).forEach(field => {
                         const keyIndex = field;
                         field = blockJSON.fields[field];
+                        // Collect the field's value
                         var value = (field as any).value;
                         var argType = argList[(field as any).name].type;
+                        // Convert the value to its correct type
                         if (argType == "number" || argType == "angle") {
                             value = parseFloat(value);
                         }
@@ -474,11 +517,13 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
          * @param {object} keyMapping The position transformations corresponding to a version transformation
          * @return {object} A dictionary with the new variable positions
         */
-        updateDictionary(originalDict, keyMapping) {
+        updateDictionary(originalDict: any, keyMapping: any) {
             const updatedDict = {};
             for (const [oldKey, newKey] of Object.entries(keyMapping)) {
+                // If the old variable exists at that position...
                 if (originalDict.hasOwnProperty(oldKey)) {
                     const newEntry = originalDict[oldKey];
+                    // ... update the new dictionary at the new position
                     updatedDict[newKey as any] = newEntry;
                 }
             }
@@ -493,7 +538,8 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
          * @return {number} The enum value of the type
         */
         getType(type: string): number {
-            let opcode;
+            let opcode: string;
+            // Collect the opcode for each type
             switch (type) {
                 case "number": {
                     opcode = 'math_number';
@@ -514,6 +560,7 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                     break;
                 }
             }
+            // Map the opcode to its enum type
             return primitiveOpcodeInfoMap[opcode][0];
         }
 
@@ -527,11 +574,14 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
          * correctly set the default value
          * @return {number} The parent block with the input removed
         */
-        removeInput(block, removeBlock, argInfo) {
+        removeInput(block: any, removeBlock: any, argInfo: any) {
             const inputs = block.inputs;
             const newInputs = {};
+            // Loop through block inputs
             for (const key of Object.keys(inputs)) {
-                if (inputs[key] && inputs[key].block == removeBlock.id) {
+                // If the input contains the block we need to remove
+                if (inputs[key] && inputs[key].includes(removeBlock.id)) {
+                    // Get the default value for the current input position
                     const typeNum = this.getType(argInfo[key].type);
                     let defaultVal = argInfo[key].defaultValue;
                     if (String(defaultVal) == "undefined") {
@@ -548,12 +598,14 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                             }
                         }
                     }
+                    // Set the input value to be the default instead of the variable
                     newInputs[key] = [
                         1, [
                             typeNum,
                             defaultVal
                         ]
                     ]
+                // Otherwise, leave the input as is
                 } else {
                     newInputs[key] = inputs[key];
                 }
@@ -561,8 +613,6 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
             block.inputs = newInputs;
             return block;
         }
-
-
     }
 
     return ExtensionWithConfigurableSupport;
