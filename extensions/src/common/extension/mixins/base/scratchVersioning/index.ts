@@ -129,7 +129,6 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
             for (const object of targetObjects) {
                 const newBlocks = {};
                 for (const blockId in object.blocks) {
-                    
                     let blockJSON = object.blocks[blockId];
                     let version = 0;
                     const blockOpcode = blockJSON.opcode;
@@ -154,9 +153,10 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                         acc[tempBlock.opcode] = tempBlock;
                         return acc;
                     }, {});
+
+                    const block = object.blocks[blockId];
                     // If the block is under the current extension
-                    if (extensionID == this.getInfo().id) {
-                        const block = object.blocks[blockId];
+                    if (extensionID == this.getInfo().id && !block.opcode.includes("_menu_")) {
                         let blockInfoIndex = block.opcode.replace(`${block.opcode.split("_")[0]}_`, "");
                         let oldIndex = blockInfoIndex;
                         const nameMap = this.createNameMap(blocksInfo);
@@ -166,6 +166,9 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                         // Update the opcode to be the current version name
                         block.opcode = block.opcode.replace(oldIndex, blockInfoIndex);
                         const versions = this.getVersion(blockInfoIndex);
+
+                        let originalType = blocksInfo[blockInfoIndex].blockType;
+                        let first = true;
 
                         // If we need to update the JSON to be compatible with the current version
                         if (versions && version < versions.length) {
@@ -181,6 +184,7 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                             let moveToSay = false;
 
                             // Apply each version modification as needed
+                            
                             for (let i = version; i < versions.length; i++) {
                                 if (versions[i].transform) {
                                     // Create the map to be used in the mechanism from ArgEntry objects
@@ -201,16 +205,9 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                                     variables = this.updateDictionary(variables, mappings)
                                 }
                                 if (versions[i].previousType) { 
-                                    if (versions[i].previousType == "reporter" && blocksInfo[blockInfoIndex].blockType == "command") { // reporter to command
-                                        changed = !changed;
-                                        if (moveToSay) {
-                                            moveToSay = false;
-                                        } 
-                                    } else { // command to reporter
-                                        changed = !changed;
-                                        if (!moveToSay) {
-                                            moveToSay = true;
-                                        }
+                                    if (first) {
+                                        originalType = versions[i].previousType;
+                                        first = false;
                                     }
                                 }
                             }
@@ -249,88 +246,99 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                             // Re-assign fields and inputs
                             block.inputs = newInputs;
                             block.fields = newFields;
-
-                            const regex = /_v(\d+)/g;
             
                             // If we need to move the information to a 'say' block, since 
                             // we need to keep it connected to the previous/next blocks
-                            if (moveToSay && changed) { // command to reporter
-                                const oldID = blockId;
-                                const next = block.next;
-                                // Re-assign the ID of the current block
-                                block.id = uid();
-                                // Create the new block
-                                const newBlock = Object.create(null);
-                                newBlock.id = oldID;
-                                newBlock.parent = block.parent;
-                                block.parent = newBlock.id;
-                                newBlock.fields = {};
-                                // Input should be the reporter block variable
-                                newBlock.inputs = {
-                                    MESSAGE: [
-                                        3, 
-                                        block.id,
-                                        [
-                                            10, 
-                                            "Hello"
+                            if (originalType != blocksInfo[blockInfoIndex].blockType) {
+                                if ((originalType == "command" || originalType == "hat") && blocksInfo[blockInfoIndex].blockType == "reporter") { // square to circle
+                                    const oldID = blockId;
+                                    const next = block.next;
+                                    // Re-assign the ID of the current block
+                                    block.id = uid();
+                                    // Create the new block
+                                    const newBlock = Object.create(null);
+                                    newBlock.id = oldID;
+                                    newBlock.parent = block.parent;
+                                    block.parent = newBlock.id;
+                                    newBlock.fields = {};
+                                    // Input should be the reporter block variable
+                                    newBlock.inputs = {
+                                        MESSAGE: [
+                                            3, 
+                                            block.id,
+                                            [
+                                                10, 
+                                                "Hello"
+                                            ]
                                         ]
-                                    ]
-                                }
-                                newBlock.next = next;
-                                block.next = null;
-                                newBlock.opcode = "looks_say";
-                                newBlock.shadow = false;
-                                
-                                // Since we changed the block ID, we need to update the 
-                                // block's input blocks to match
-                                for (const key of Object.keys(block.inputs)) {
-                                    if (block.inputs[key].block) {
-                                        let inputBlock = block.inputs[key].block;
-                                        if (object.blocks[inputBlock]) {
-                                            object.blocks[inputBlock].parent = block.id;
-                                            block.inputs[key].shadow = block.inputs[key].block;
-                                        }
-            
                                     }
-                                }
-                                // Set the blocks in the JSON
-                                newBlocks[block.id] = block;
-                                newBlocks[newBlock.id] = newBlock;
-                            } 
-                            // If we need to create a command from a reporter
-                            else if (!moveToSay && changed) {
-                                // If the previous reporter block has a parent
-                                if (object.blocks[block.parent]) {
-                                    const parentBlock = object.blocks[block.parent];
-                                    // Remove the reporter variable from the parent block's inputs
-                                    for (let key of Object.keys(parentBlock.inputs)) {
-                                        let values = [];
-                                        let index = 0;
-                                        for (const value of parentBlock.inputs[key]) {
-                                            if (value != blockId) {
-                                                if (index == 0) {
-                                                    // We'll also need to set the shadow to 1
-                                                    // since we removed the variable
-                                                    values.push(1);
-                                                } else {
-                                                    values.push(value);
-                                                }
+                                    newBlock.next = next;
+                                    block.next = null;
+                                    newBlock.opcode = "looks_say";
+                                    newBlock.shadow = false;
+                                    
+                                    // Since we changed the block ID, we need to update the 
+                                    // block's input blocks to match
+                                    for (const key of Object.keys(block.inputs)) {
+                                        if (block.inputs[key].block) {
+                                            let inputBlock = block.inputs[key].block;
+                                            if (object.blocks[inputBlock]) {
+                                                object.blocks[inputBlock].parent = block.id;
+                                                block.inputs[key].shadow = block.inputs[key].block;
                                             }
-                                            index = index + 1;
+                
                                         }
-                                        parentBlock.inputs[key] = values; 
                                     }
-                                    // Update the current block to be a command block
-                                    block.parent = null;
-                                    block.topLevel = true;
+                                    // Set the blocks in the JSON
+                                    newBlocks[block.id] = block;
+                                    newBlocks[newBlock.id] = newBlock;
                                 } 
-                            } 
+                                // If we need to create a command from a reporter
+                                else if (originalType == "reporter" && (blocksInfo[blockInfoIndex].blockType == "command" || blocksInfo[blockInfoIndex].blockType == "hat")) { // reporter to command) { // circle to square
+                                    // If the previous reporter block has a parent
+                                    if (object.blocks[block.parent]) {
+                                        const parentBlock = object.blocks[block.parent];
+                                        // Remove the reporter variable from the parent block's inputs
+                                        for (let key of Object.keys(parentBlock.inputs)) {
+                                            let values = [];
+                                            let index = 0;
+                                            for (const value of parentBlock.inputs[key]) {
+                                                if (value != blockId) {
+                                                    if (index == 0) {
+                                                        // We'll also need to set the shadow to 1
+                                                        // since we removed the variable
+                                                        values.push(1);
+                                                    } else {
+                                                        values.push(value);
+                                                    }
+                                                }
+                                                index = index + 1;
+                                            }
+                                            parentBlock.inputs[key] = values; 
+                                        }
+                                        // Update the current block to be a command block
+                                        block.parent = null;
+                                        block.topLevel = true;
+                                    } 
+                                } else if ((originalType == "command") && (blocksInfo[blockInfoIndex].blockType == "hat")) {
+                                    if (object.blocks[block.parent]) {
+                                        const oldId = block.parent;
+                                        const parentBlock = object.blocks[block.parent];
+                                        parentBlock.next = null;
+                                        block.parent = null;
+                                        block.topLevel = true;
+                                        newBlocks[blockId] = block;
+                                        newBlocks[oldId] = parentBlock;
+                                    }
+                                }
+                            }
                         }
-                        // Set the blocks dictionary
-                        if (!Object.keys(newBlocks).includes(blockId)) {
-                            newBlocks[blockId] = block;
-                        }
+                        
                     } 
+                    // Set the blocks dictionary
+                    if (!Object.keys(newBlocks).includes(blockId)) {
+                        newBlocks[blockId] = block;
+                    }
                 }
                 // Update the target with the new blocks
                 object.blocks = newBlocks;
