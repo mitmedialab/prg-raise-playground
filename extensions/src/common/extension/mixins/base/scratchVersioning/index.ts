@@ -170,7 +170,6 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                                         args: () => Array.from(map.values()),
                                     }
                                     const entries: ArgEntry[] = versions[i].transform(mechanism);
-                                    console.log(entries);
                                     const { newEntries, mappings } = this.updateEntries(entries);
                                     totalList = newEntries;
                                     variables = this.updateDictionary(variables, mappings)
@@ -312,34 +311,14 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
 
         updateEntries(entries) {
             const mappings = {};
-            console.log("entries");
-            // let entries = Array.from(map.keys());
             let newEntries = [];
-            console.log(entries);
-            // console.log(map);
             for (let i = 0; i < entries.length; i++) {
-                // console.log(map.get(entries[i]));
                 mappings[entries[i].id] = String(i);
                 newEntries.push({id: String(i), value: entries[i].value});
             }
             return { newEntries, mappings };
 
         }
-
-        // getNewIds(blockJSON) {
-        //     console.log("here");
-        //     console.log(blockJSON);
-        //     let ids = [];
-        //     const inputs = blockJSON.inputs;
-        //     console.log(inputs);
-        //     for (const input of Object.keys(inputs)) {
-        //         console.log(inputs[input]);
-        //         if (inputs[input].block) {
-        //             ids.push(inputs[input].block);
-        //         }
-        //     }
-        //     return ids;
-        // }
 
         createInputBlock(blocks, type, value, parentId) {
             value = String(value);
@@ -474,7 +453,6 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                     var keyIndex = input;
                     input = blockJSON.inputs[input];
                     if (typeof input[1] == "string") {
-                        console.log("VARIABLE");
                         variables[keyIndex] = [
                             3,
                             input[1],
@@ -573,12 +551,9 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
 
         updateDictionary(originalDict, keyMapping) {
             const updatedDict = {};
-            console.log("mapping");
-            console.log(keyMapping);
             for (const [oldKey, newKey] of Object.entries(keyMapping)) {
                 if (originalDict.hasOwnProperty(oldKey)) {
                     const newEntry = originalDict[oldKey];
-                    //newEntry.name = String(newKey); // Update the name field
                     updatedDict[newKey as any] = newEntry;
                 }
             }
