@@ -104,16 +104,14 @@ const uid = function () {
     return id.join('');
 };
 
-type VersionMap = Map<string, VersionedOptions[]>;
 export default function (Ctor: BaseScratchExtensionConstuctor) {
     abstract class ExtensionWithConfigurableSupport extends Ctor {
         
-
         alterJSON(projectJSON) {
             const targetObjects = projectJSON.targets
             .map((t, i) => Object.assign(t, { targetPaneOrder: i }))
             .sort((a, b) => a.layerOrder - b.layerOrder);
-            //const targetObjects = projectJSON.targets;
+
             const newTargets = [];
             for (const object of targetObjects) {
                 const newBlocks = {};
@@ -142,13 +140,11 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                         acc[tempBlock.opcode] = tempBlock;
                         return acc;
                     }, {});
-                    const menuRegex = /menu_\d+/g;
                     if (extensionID == this.getInfo().id) {
                         const block = object.blocks[blockId];
                         let blockInfoIndex = block.opcode.replace(`${block.opcode.split("_")[0]}_`, "");
                         let oldIndex = blockInfoIndex;
                         const nameMap = this.createNameMap(blocksInfo);
-                        console.log(nameMap);
                         if (nameMap[version] && nameMap[version][blockInfoIndex]) {
                             blockInfoIndex = nameMap[version][blockInfoIndex];
                         }
@@ -156,9 +152,9 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                         const versions = this.getVersion(blockInfoIndex);
                         if (versions && version < versions.length) {
                             const blockArgs = this.removeImageEntries(blocksInfo[blockInfoIndex].arguments);
-                            var { inputs, variables } = this.gatherInputs(object.blocks, block);
-                            var fields = this.gatherFields(block, blockArgs);
-                            var totalList = this.addInputsAndFields(inputs, fields);
+                            let { inputs, variables } = this.gatherInputs(object.blocks, block);
+                            let fields = this.gatherFields(block, blockArgs);
+                            let totalList = this.addInputsAndFields(inputs, fields);
                             const newInputs = {};
                             const newFields = {};
                             let changed = false;
@@ -173,9 +169,10 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                                         arg: (identifier: ArgIdentifier) => map.get(identifier),
                                         args: () => Array.from(map.values()),
                                     }
-                                    const newEntries: ArgEntry[] = versions[i].transform(mechanism);
-                                    const { entries, mappings } = this.updateEntries(newEntries);
-                                    totalList = entries;
+                                    const entries: ArgEntry[] = versions[i].transform(mechanism);
+                                    console.log(entries);
+                                    const { newEntries, mappings } = this.updateEntries(entries);
+                                    totalList = newEntries;
                                     variables = this.updateDictionary(variables, mappings)
                                 }
                                 if (versions[i].previousType) {
@@ -192,13 +189,13 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                                     }
                                 }
                             }
-            
+
                             for (let i = 0; i < Object.keys(blockArgs).length; i++) {
                                 const argIndex = Object.keys(blockArgs)[i];
                                 if (Object.keys(variables).includes(argIndex)) {
                                     newInputs[argIndex] = variables[argIndex];
                                 } else if (blockArgs[argIndex].menu) {
-                                    var fieldValue = totalList[argIndex];
+                                    let fieldValue = totalList[argIndex];
                                     if (typeof fieldValue == "number") {
                                         fieldValue = String(fieldValue);  
                                     }
@@ -226,7 +223,6 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                             const regex = /_v(\d+)/g;
             
                             if (moveToSay && changed) {
-                                console.log("new block");
                                 const oldID = blockId;
                                 const next = block.next;
                                 block.id = uid();
@@ -272,27 +268,24 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                                         parentIndex = parentIndex.replace(regex, "");
                                         for (let key of Object.keys(parentBlock.inputs)) {
                                             let values = [];
+                                            let index = 0;
                                             for (const value of parentBlock.inputs[key]) {
                                                 if (value != blockId) {
-                                                    if (value == 3) {
-                                                        values.push(1)
+                                                    if (index == 0) {
+                                                        values.push(1);
                                                     } else {
                                                         values.push(value);
                                                     }
-                                                    
                                                 }
-
+                                                index = index + 1;
                                             }
                                             parentBlock.inputs[key] = values; 
                                         }
                                         block.parent = null;
                                         block.topLevel = true;
                                     } 
-                                    
                                 } 
                             } 
-                            //object.blocks[block.id] = block;
-                            
                         }
                         if (!Object.keys(newBlocks).includes(blockId)) {
                             newBlocks[blockId] = block;
@@ -317,162 +310,19 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
             }
         };
 
-
-        // alterProjectJSON(blocks, block, version, blockLib) {
-        //     var addIds = [];
-        //     const blocksInfo = this.getInfo().blocks.reduce((acc, tempBlock: any) => {
-        //         acc[tempBlock.opcode] = tempBlock;
-        //         return acc;
-        //     }, {});
-        //     let blockInfoIndex = block.opcode.replace(`${block.opcode.split("_")[0]}_`, "");
-        //     let oldIndex = blockInfoIndex;
-        //     const nameMap = this.createNameMap(blocksInfo);
-        //     console.log(nameMap);
-        //     if (nameMap[version] && nameMap[version][blockInfoIndex]) {
-        //         blockInfoIndex = nameMap[version][blockInfoIndex];
-        //     }
-        //     block.opcode = block.opcode.replace(oldIndex, blockInfoIndex);
-        //     const versions = this.getVersion(blockInfoIndex);
-        //     if (versions && version < versions.length) {
-        //         const blockArgs = this.removeImageEntries(blocksInfo[blockInfoIndex].arguments);
-        //         var { inputs, variables } = this.gatherInputs(blocks, block);
-        //         var fields = this.gatherFields(block, blockArgs);
-        //         var totalList = this.addInputsAndFields(inputs, fields);
-        //         const newInputs = {};
-        //         const newFields = {};
-        //         let changed = false;
-        //         let moveToSay = false;
-        //         for (let i = version; i < versions.length; i++) {
-        //             if (versions[i].transform) {
-        //                 const map = new Map();
-        //                 for (let i = 0; i < totalList.length; i++) {
-        //                     map.set(totalList[i].id, totalList[i]);
-        //                 }
-        //                 const mechanism: VersionArgTransformMechanism = {
-        //                     arg: (identifier: ArgIdentifier) => map.get(identifier),
-        //                     args: () => Array.from(map.values()),
-        //                 }
-        //                 const newEntries: ArgEntry[] = versions[i].transform(mechanism);
-        //                 const { entries, mappings } = this.updateEntries(newEntries);
-        //                 totalList = entries;
-        //                 variables = this.updateDictionary(variables, mappings)
-        //             }
-        //             if (versions[i].previousType) {
-        //                 if (versions[i].previousType == "reporter" && blocksInfo[blockInfoIndex].blockType == "command") { // reporter to command
-        //                     changed = !changed;
-        //                     if (moveToSay) {
-        //                         moveToSay = false;
-        //                     } 
-        //                 } else { // command to reporter
-        //                     changed = !changed;
-        //                     if (!moveToSay) {
-        //                         moveToSay = true;
-        //                     }
-        //                 }
-        //             }
-        //         }
-
-        //         for (let i = 0; i < Object.keys(blockArgs).length; i++) {
-        //             const argIndex = Object.keys(blockArgs)[i];
-        //             if (Object.keys(variables).includes(argIndex)) {
-        //                 newInputs[argIndex] = variables[argIndex];
-        //             } else if (blockArgs[argIndex].menu) {
-        //                 var fieldValue = totalList[argIndex];
-        //                 if (typeof fieldValue == "number") {
-        //                     fieldValue = String(fieldValue);  
-        //                 }
-        //                 newFields[argIndex] = {
-        //                     name: String(argIndex),
-        //                     value: fieldValue,
-        //                     id: null
-        //                 }
-        //             } else {
-        //                 const values = this.createInputBlock(blocks, blockArgs[argIndex].type, totalList[argIndex].value, block.id);
-        //                 const primitiveId = values.newId;
-        //                 blocks = values.blocks;
-        //                 newInputs[argIndex] = {
-        //                     name: String(argIndex),
-        //                     block: values.newId,
-        //                     shadow: values.newId
-
-        //                 }
-        //             }
-                    
-        //         }
-
-        //         // Re-assign fields and inputs
-        //         block.inputs = newInputs;
-        //         block.fields = newFields;
-        //         blocks[block.id] = block;
-        //         const regex = /_v(\d+)/g;
-
-        //         if (moveToSay && changed) {
-        //             console.log("new block");
-        //             const oldID = block.id;
-        //             const next = block.next;
-        //             block.id = uid();
-        //             //blockJSON.topLevel = false;
-        //             const newBlock = Object.create(null);
-        //             newBlock.id = oldID;
-        //             newBlock.parent = block.parent;
-        //             block.parent = newBlock.id;
-        //             newBlock.fields = {};
-        //             newBlock.inputs = {
-        //                 MESSAGE: {
-        //                     name: 'MESSAGE',
-        //                     block: block.id,
-        //                     shadow: block.id
-        //                 }
-        //             }
-        //             newBlock.next = next;
-        //             block.next = null;
-        //             newBlock.opcode = "looks_say";
-        //             newBlock.shadow = false;
-        //             //newBlock.topLevel = true;
-        //             for (const key of Object.keys(block.inputs)) {
-        //                 if (block.inputs[key].block) {
-        //                     let inputBlock = block.inputs[key].block;
-        //                     if (blocks[inputBlock]) {
-        //                         blocks[inputBlock].parent = block.id;
-        //                         block.inputs[key].shadow = block.inputs[key].block;
-        //                     }
-
-        //                 }
-        //             }
-        //             blockLib.createBlock(newBlock);
-        //             blockLib.createBlock(block);
-        //             blocks[newBlock.id] = newBlock;
-        //             blocks[block.id] = block;
-        //         } else if (!moveToSay && changed) {
-        //             if (blocks[block.parent]) {
-        //                 const parentBlock = blocks[block.parent];
-        //                 if (parentBlock) {
-        //                     let parentIndex = parentBlock.opcode;
-        //                     parentIndex = parentIndex.replace(`${parentIndex.split("_")[0]}_`, "");
-        //                     parentIndex = parentIndex.replace(regex, "");
-        //                     let argInfo = blocksInfo[parentIndex].arguments;
-        //                     const values = this.removeInput(parentBlock, block, blocks, argInfo);
-        //                     blocks[parentBlock.id] = values.block;
-        //                     blocks = values.blocks;
-        //                     block.parent = null;
-        //                     block.topLevel = true;
-        //                 } 
-                        
-        //             } 
-        //         } 
-        //         blocks[block.id] = block;
-                
-        //     }
-        //     return blocks;
-        // }
-
         updateEntries(entries) {
             const mappings = {};
+            console.log("entries");
+            // let entries = Array.from(map.keys());
+            let newEntries = [];
+            console.log(entries);
+            // console.log(map);
             for (let i = 0; i < entries.length; i++) {
+                // console.log(map.get(entries[i]));
                 mappings[entries[i].id] = String(i);
-                entries[i].id = String(i);
+                newEntries.push({id: String(i), value: entries[i].value});
             }
-            return { entries, mappings };
+            return { newEntries, mappings };
 
         }
 
@@ -623,23 +473,35 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                 Object.keys(blockJSON.inputs).forEach(input => {
                     var keyIndex = input;
                     input = blockJSON.inputs[input];
-                    console.log("INPUT");
-                    console.log(input);
-                    const type = parseFloat(input[1][0]);
-                    switch (type) {
-                        case 6:
-                        case 5:
-                        case 8:
-                        case 4: {
-                            args.push({id: keyIndex, value: parseFloat(input[1][1])})
-                            break;
+                    if (typeof input[1] == "string") {
+                        console.log("VARIABLE");
+                        variables[keyIndex] = [
+                            3,
+                            input[1],
+                            input[2]
+                        ]
+                        args.push({id: keyIndex, value: input[2][1]});
+                    } else {
+                        const type = parseFloat(input[1][0]);
+                        switch (type) {
+                            case 6:
+                            case 5:
+                            case 8:
+                            case 4: {
+                                args.push({id: keyIndex, value: parseFloat(input[1][1])});
+                                break;
+                            }
+                            case 10: {
+                                args.push({id: keyIndex, value: input[1][1]})
+                                break;
+                            }
+                            default: {
+                                args.push({id: keyIndex, value: input[1][1]});
+                                break;
+                            }  
                         }
-                        case 10: {
-                            args.push({id: keyIndex, value: input[1][1]})
-                            break;
-                        }
-                            
                     }
+                   
 //                    const MATH_NUM_PRIMITIVE = 4; // there's no reason these constants can't collide
                     // // math_positive_number
                     // const POSITIVE_NUM_PRIMITIVE = 5; // with the above, but removing duplication for clarity
@@ -711,10 +573,12 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
 
         updateDictionary(originalDict, keyMapping) {
             const updatedDict = {};
+            console.log("mapping");
+            console.log(keyMapping);
             for (const [oldKey, newKey] of Object.entries(keyMapping)) {
                 if (originalDict.hasOwnProperty(oldKey)) {
-                    const newEntry = { ...originalDict[oldKey] };
-                    newEntry.name = String(newKey); // Update the name field
+                    const newEntry = originalDict[oldKey];
+                    //newEntry.name = String(newKey); // Update the name field
                     updatedDict[newKey as any] = newEntry;
                 }
             }
@@ -759,7 +623,6 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                     newInputs[key] = inputs[key];
                 }
             }
-            console.log(block.inputs);
             block.inputs = newInputs;
             return block;
         }
