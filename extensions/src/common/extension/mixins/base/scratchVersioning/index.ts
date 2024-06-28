@@ -1,4 +1,5 @@
 import { BaseScratchExtensionConstuctor } from "..";
+import { ArgEntry, VersionArgTransformMechanism, ArgIdentifier } from "$common/types";
 
 /**
  * Mixin the ability for extensions to have their blocks 'versioned', 
@@ -8,29 +9,6 @@ import { BaseScratchExtensionConstuctor } from "..";
  * @see https://www.typescriptlang.org/docs/handbook/mixins.html
  */
 
-type BlockType = "reporter" | "command"; // etc, use actual version
-type ArgValue = any;
-type ArgIdentifier = string | number;
-type ArgEntry = { 
-    /** If no id is provided, we can assume that the associated value does not correspond to any previously serialized argument */
-    readonly id?: ArgIdentifier, 
-    value: ArgValue
-}
-
-
-
-type VersionArgTransformMechanism = {
-    arg: (identifier: ArgIdentifier) => ArgEntry,
-    args: () => ArgEntry[]
-}
-
-type VersionedArgTransformer = (mechanism: VersionArgTransformMechanism) => ArgEntry[];
-
-type VersionedOptions = {
-  transform?: VersionedArgTransformer;
-  previousType?: BlockType;
-  previousName?: string;
-};
 
 const CORE_EXTENSIONS = [
     'argument',
