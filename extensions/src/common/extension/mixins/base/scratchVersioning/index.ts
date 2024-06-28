@@ -107,7 +107,14 @@ const uid = function () {
 export default function (Ctor: BaseScratchExtensionConstuctor) {
     abstract class ExtensionWithConfigurableSupport extends Ctor {
         
-        alterJSON(projectJSON) {
+        /**
+         * A function that modifies a project JSON based on any updated
+         * versioning implementations
+         * 
+         * @param {object} projectJSON The project JSON to be modified
+         * @return {object} An updated project JSON compatible with the current version of the extension
+        */
+        alterJSON(projectJSON: any) {
             const targetObjects = projectJSON.targets
             .map((t, i) => Object.assign(t, { targetPaneOrder: i }))
             .sort((a, b) => a.layerOrder - b.layerOrder);
@@ -152,9 +159,9 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                         const versions = this.getVersion(blockInfoIndex);
                         if (versions && version < versions.length) {
                             const blockArgs = this.removeImageEntries(blocksInfo[blockInfoIndex].arguments);
-                            let { inputs, variables } = this.gatherInputs(object.blocks, block);
+                            let { inputs, variables } = this.gatherInputs(block);
                             let fields = this.gatherFields(block, blockArgs);
-                            let totalList = this.addInputsAndFields(inputs, fields);
+                            let totalList = inputs.concat(fields);
                             const newInputs = {};
                             const newFields = {};
                             let changed = false;
@@ -205,10 +212,10 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                                     }
                                     
                                 } else {
-                                    const primitiveBlock = this.createInputBlock(object.blocks, blockArgs[argIndex].type, totalList[argIndex].value, block.id);
+                                    const typeNum = this.getType(blockArgs[argIndex].type);
                                     newInputs[argIndex] = [
                                         1, [
-                                            primitiveOpcodeInfoMap[primitiveBlock.opcode][0],
+                                            typeNum,
                                             String(totalList[argIndex].value)
                                         ]
                                     ]
@@ -299,7 +306,13 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
             return projectJSON;
         }
 
-        getExtensionIdForOpcode(opcode) {
+        /**
+         * Helper function to get the extension ID from a block's opcode
+         * 
+         * @param {string} opcode The block's opcode
+         * @return {string} The extension ID
+        */
+        getExtensionIdForOpcode(opcode: string): string {
             // Allowed ID characters are those matching the regular expression [\w-]: A-Z, a-z, 0-9, and hyphen ("-").
             const index = opcode.indexOf('_');
             const forbiddenSymbols = /[^\w-]/g;
@@ -309,91 +322,35 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
             }
         };
 
-        updateEntries(entries) {
+        /**
+         * Helper function used to create a position mapping from one version to another as well as
+         * assign each ArgEntry object a new ID
+         * 
+         * @param {ArgEntry[]} entries The updated entries to create the mapping from
+         * @return {ArgEntry[]} returns.newEntries - The ArgEntry objects with updated IDs
+         * @return {object} returns.mappings - A dictionary with the position mappings
+        */
+        updateEntries(entries: ArgEntry[]) {
             const mappings = {};
             let newEntries = [];
             for (let i = 0; i < entries.length; i++) {
-                mappings[entries[i].id] = String(i);
+                if (entries[i].id) {
+                    mappings[entries[i].id] = String(i);
+                }   
                 newEntries.push({id: String(i), value: entries[i].value});
             }
             return { newEntries, mappings };
 
         }
 
-        createInputBlock(blocks, type, value, parentId) {
-            value = String(value);
-            const primitiveObj = Object.create(null);
-            const newId = uid();
-            primitiveObj.id = newId;
-            primitiveObj.next = null;
-            primitiveObj.parent = parentId;
-            primitiveObj.shadow = true;
-            primitiveObj.inputs = Object.create(null);
-            // need a reference to parent id
-            switch (type) {
-                case "number": {
-                    if (value == "undefined") {
-                        value = 0;
-                    }
-                    primitiveObj.opcode = 'math_number';
-                    primitiveObj.fields = {
-                        NUM: {
-                            name: 'NUM',
-                            value: value
-                        }
-                    };
-                    primitiveObj.topLevel = false;
-                    break;
-                }
-                case "angle": {
-                    if (value == "undefined") {
-                        value = 0;
-                    }
-                    primitiveObj.opcode = 'math_angle';
-                    primitiveObj.fields = {
-                        NUM: {
-                            name: 'NUM',
-                            value: value
-                        }
-                    };
-                    primitiveObj.topLevel = false;
-                    break;
-                }
-                case "color": {
-                    if (value == "undefined") {
-                        value = 0;
-                    }
-                    primitiveObj.opcode = 'colour_picker';
-                    primitiveObj.fields = {
-                        COLOUR: {
-                            name: 'COLOUR',
-                            value: value
-                        }
-                    };
-                    primitiveObj.topLevel = false;
-                    break;
-                }
-                case "string": {
-                    primitiveObj.opcode = 'text';
-                    primitiveObj.fields = {
-                        TEXT: {
-                            name: 'TEXT',
-                            value: value
-                        }
-                    };
-                    primitiveObj.topLevel = false;
-                    break;
-                }
-                default: {
-                    //log.error(`Found unknown primitive type during deserialization: ${JSON.stringify(inputDescOrId)}`);
-                    return null;
-                }
-            }
-            //blocks[newId] = primitiveObj;
-            //blockLib.createBlock(primitiveObj);
-            return primitiveObj;
-        };
-
+        /**
+         * This function creates a dictionary with the opcode associated with each block
+         * at each version, so that if an opcode changes during a version, we'll be able
+         * to find the correct block.
+         * 
+         * @param {object} blockInfo A dictionary with the information of each block from the extension
+         * @return {object} The dictionary with each block's opcode at each version
+        */
         createNameMap(blocksInfo) {
             const versionMap = new Map();
             for (const opcode of Object.keys(blocksInfo)) {
@@ -421,6 +378,7 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
 
         /**
          * Remove image entries from the passed-in arguments for each block from the extension
+         * 
          * @param {object} dict The arguments of the block
          * @return {object} The arguments of the block with the static images removed
          */
@@ -437,15 +395,13 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
         }
 
         /**
-         * Gather the primitive values from the 'inputs' property of a block as well as the block's variables
+         * Gather the values from the 'inputs' property of a block as well as the block's variables
          * 
-         * @param {object} blocks The blocks related to the Scratch object
          * @param {object} blockJSON The block to gather the inputs from
-         * @return {object} return.inputs - A dictionary of the inputs, with each value a primitive object
+         * @return {ArgEntry[]} return.inputs - An array of ArgEntry objects with each value representing an input
          * @return {object} return.variables - A dictionary with all th block's variables as values and their positions as keys
          */
-        gatherInputs(blocks, blockJSON) {
-            var inputs = {};
+        gatherInputs(blockJSON: any): any {
             var variables = {};
             const args: ArgEntry[] = [];
             if (blockJSON.inputs && Object.keys(blockJSON.inputs).length > 0) {
@@ -462,62 +418,35 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                     } else {
                         const type = parseFloat(input[1][0]);
                         switch (type) {
-                            case 6:
-                            case 5:
-                            case 8:
-                            case 4: {
+                            case 6: // WHOLE_NUM_PRIMITIVE
+                            case 5: // POSITIVE_NUM_PRIMITIVE
+                            case 7: // INTEGER_NUM_PRIMITIVE
+                            case 8: // ANGLE_NUM_PRIMITIVE
+                            case 9: // COLOR_PICKER_PRIMITIVE
+                            case 4: // MATH_NUM_PRIMITIVE
+                            {
                                 args.push({id: keyIndex, value: parseFloat(input[1][1])});
                                 break;
                             }
-                            case 10: {
+                            case 10: // TEXT_PRIMITIVE
+                            default: // BROADCAST_PRIMITIVE, VAR_PRIMITIVE, LIST_PRIMITIVE
+                            {
                                 args.push({id: keyIndex, value: input[1][1]})
                                 break;
                             }
-                            default: {
-                                args.push({id: keyIndex, value: input[1][1]});
-                                break;
-                            }  
                         }
                     }
-                   
-//                    const MATH_NUM_PRIMITIVE = 4; // there's no reason these constants can't collide
-                    // // math_positive_number
-                    // const POSITIVE_NUM_PRIMITIVE = 5; // with the above, but removing duplication for clarity
-                    // // math_whole_number
-                    // const WHOLE_NUM_PRIMITIVE = 6;
-                    // // math_integer
-                    // const INTEGER_NUM_PRIMITIVE = 7;
-                    // // math_angle
-                    // const ANGLE_NUM_PRIMITIVE = 8;
-                    // // colour_picker
-                    // const COLOR_PICKER_PRIMITIVE = 9;
-                    // // text
-                    // const TEXT_PRIMITIVE = 10;
-                    // // event_broadcast_menu
-                    // const BROADCAST_PRIMITIVE = 11;
-                    // // data_variable
-                    // const VAR_PRIMITIVE = 12;
-                    // // data_listcontents
-                    // const LIST_PRIMITIVE = 13;
-                    // if (blocks[(input as any).block]) {
-                    //     if (Object.keys(primitiveOpcodeInfoMap).includes(blocks[(input as any).block].opcode)) {
-                    //         const inputBlock = blocks[(input as any).block].fields;
-                    //         const inputType = Object.keys(blocks[(input as any).block].fields)[0];
-                    //         var inputValue = inputBlock[inputType].value;
-                    //         if (inputType == "NUM") {
-                    //             inputValue = parseFloat(inputValue);
-                    //         }
-                    //     } else {
-                    //         variables[keyIndex] = input;
-                    //         inputValue = "0";
-                    //     }
-                    //     args.push({id: keyIndex, value: inputValue})
-                    // } 
                 })
             }
             return { inputs: args, variables: variables };
         }
 
+        /**
+         * Gather the values from the 'fields' property of a block
+         * 
+         * @param {object} blockJSON The block to gather the inputs from
+         * @return {ArgEntry[]} An array of ArgEntry objects representing each field
+         */
         gatherFields(blockJSON, argList) {
             const args: ArgEntry[] = [];
             var fields = {};
@@ -537,18 +466,14 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
         }
 
         /**
-         * A function that combines the primitive values from the block's inputs and fields
-         * so that it can be processed by the version functions
+         * If the positions of the arguments change between version transformations, we
+         * use this function to update the variables dictionary to contain each variable's
+         * new position
          * 
-         * @param {object} inputs A dictionary with the primitive values of the block's inputs
-         * @param {object} fields A dictionary with the primitive values of the block's fields
-         * @param {object} argList The argument dictionary for the associated block
-         * @return {Array} An array with the combined primitive values from the block's inputs and fields
-         */
-        addInputsAndFields(inputs, fields) {
-            return inputs.concat(fields);
-        }
-
+         * @param {object} originalDict The dictionary with the old variable positions
+         * @param {object} keyMapping The position transformations corresponding to a version transformation
+         * @return {object} A dictionary with the new variable positions
+        */
         updateDictionary(originalDict, keyMapping) {
             const updatedDict = {};
             for (const [oldKey, newKey] of Object.entries(keyMapping)) {
@@ -560,14 +485,54 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
             return updatedDict;
         }
 
-        removeInput(block, removeBlock, blocks, argInfo) {
+        /**
+         * Taking a type as provided by the argument info from the extension and converting it 
+         * to an integer (as would be represented in the JSON)
+         * 
+         * @param {string} type The type of the value
+         * @return {number} The enum value of the type
+        */
+        getType(type: string): number {
+            let opcode;
+            switch (type) {
+                case "number": {
+                    opcode = 'math_number';
+                    break;
+                }
+                case "angle": {
+                    opcode = 'math_angle';
+                    break;
+                }
+                case "color": {
+                    opcode = 'colour_picker';
+                    break;
+                }
+                case "string":
+                default:
+                {
+                    opcode = 'text';
+                    break;
+                }
+            }
+            return primitiveOpcodeInfoMap[opcode][0];
+        }
+
+        /**
+         * If a block changes from a reporter to a command, we use this function
+         * to remove the reporter version from its parent in the JSON
+         * 
+         * @param {object} block The parent block we'll use to remove the input
+         * @param {object} removeBlock The block to remove
+         * @param {object} argInfo The type info for the block's arguments so we can 
+         * correctly set the default value
+         * @return {number} The parent block with the input removed
+        */
+        removeInput(block, removeBlock, argInfo) {
             const inputs = block.inputs;
             const newInputs = {};
-            let objectBlocks = {};
             for (const key of Object.keys(inputs)) {
                 if (inputs[key] && inputs[key].block == removeBlock.id) {
-                    const primitiveBlock = this.createInputBlock(blocks, argInfo[key].type, argInfo[key].defaultValue, block.id);
-                    //objectBlocks = values.blocks;
+                    const typeNum = this.getType(argInfo[key].type);
                     let defaultVal = argInfo[key].defaultValue;
                     if (String(defaultVal) == "undefined") {
                         switch(argInfo[key].type) {
@@ -585,15 +550,10 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                     }
                     newInputs[key] = [
                         1, [
-                            primitiveOpcodeInfoMap[primitiveBlock.opcode][0],
+                            typeNum,
                             defaultVal
                         ]
                     ]
-                    // newInputs[key] = {
-                    //     name: String(key),
-                    //     block: values.newId,
-                    //     shadow: values.newId,
-                    // };
                 } else {
                     newInputs[key] = inputs[key];
                 }
