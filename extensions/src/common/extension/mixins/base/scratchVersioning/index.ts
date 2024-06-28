@@ -133,6 +133,7 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                     const regex = /_v(\d+)/g;
                     const matches = blockOpcode.match(regex); // Get all matches
 
+                    // Collect the version number
                     if (matches) {
                         const lastMatch = matches[matches.length - 1]; 
                         const versionMatch = lastMatch.match(/_v(\d+)/); 
@@ -436,15 +437,15 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
          * 
          * @param {object} blockJSON The block to gather the inputs from
          * @return {ArgEntry[]} return.inputs - An array of ArgEntry objects with each value representing an input
-         * @return {object} return.variables - A dictionary with all th block's variables as values and their positions as keys
+         * @return {object} return.variables - A dictionary with all the block's variables as values and their positions as keys
          */
         gatherInputs(blockJSON: any): any {
-            var variables = {};
+            const variables = {};
             const args: ArgEntry[] = [];
             // Loop through the block's inputs
             if (blockJSON.inputs && Object.keys(blockJSON.inputs).length > 0) {
                 Object.keys(blockJSON.inputs).forEach(input => {
-                    var keyIndex = input;
+                    const keyIndex = input;
                     input = blockJSON.inputs[input];
                     // If there is a variable in the input
                     if (typeof input[1] == "string") {
@@ -496,8 +497,8 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                         const keyIndex = field;
                         field = blockJSON.fields[field];
                         // Collect the field's value
-                        var value = (field as any).value;
-                        var argType = argList[(field as any).name].type;
+                        let value = (field as any).value;
+                        let argType = argList[(field as any).name].type;
                         // Convert the value to its correct type
                         if (argType == "number" || argType == "angle") {
                             value = parseFloat(value);
