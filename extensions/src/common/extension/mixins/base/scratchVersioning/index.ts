@@ -32,6 +32,21 @@ type VersionedOptions = {
   previousName?: string;
 };
 
+const CORE_EXTENSIONS = [
+    'argument',
+    'colour',
+    'control',
+    'data',
+    'event',
+    'looks',
+    'math',
+    'motion',
+    'operator',
+    'procedures',
+    'sensing',
+    'sound'
+];
+
 // Constants referring to 'primitive' blocks that are usually shadows,
 // or in the case of variables and lists, appear quite often in projects
 // math_number
@@ -93,164 +108,352 @@ type VersionMap = Map<string, VersionedOptions[]>;
 export default function (Ctor: BaseScratchExtensionConstuctor) {
     abstract class ExtensionWithConfigurableSupport extends Ctor {
         
-        //private readonly versionMap: VersionMap = new Map();
 
-        
-
-        
-
-        // pushVersions(opcode: string, versions: any) {
-        //     if (this.versionMap.has(opcode)) throw new Error(`Attempt to push block with opcode ${opcode}, but it was already set. This is assumed to be a mistake.`)
-        //     this.versionMap.set(opcode, versions);
-        // }
-
-        alterProjectJSON(blocks, block, version, blockLib) {
-            var addIds = [];
-            const blocksInfo = this.getInfo().blocks.reduce((acc, tempBlock: any) => {
-                acc[tempBlock.opcode] = tempBlock;
-                return acc;
-            }, {});
-            let blockInfoIndex = block.opcode.replace(`${block.opcode.split("_")[0]}_`, "");
-            let oldIndex = blockInfoIndex;
-            const nameMap = this.createNameMap(blocksInfo);
-            console.log(nameMap);
-            if (nameMap[version] && nameMap[version][blockInfoIndex]) {
-                blockInfoIndex = nameMap[version][blockInfoIndex];
-            }
-            block.opcode = block.opcode.replace(oldIndex, blockInfoIndex);
-            const versions = this.getVersion(blockInfoIndex);
-            if (versions && version < versions.length) {
-                const blockArgs = this.removeImageEntries(blocksInfo[blockInfoIndex].arguments);
-                var { inputs, variables } = this.gatherInputs(blocks, block);
-                var fields = this.gatherFields(block, blockArgs);
-                var totalList = this.addInputsAndFields(inputs, fields);
-                const newInputs = {};
-                const newFields = {};
-                let changed = false;
-                let moveToSay = false;
-                for (let i = version; i < versions.length; i++) {
-                    if (versions[i].transform) {
-                        const map = new Map();
-                        for (let i = 0; i < totalList.length; i++) {
-                            map.set(totalList[i].id, totalList[i]);
-                        }
-                        const mechanism: VersionArgTransformMechanism = {
-                            arg: (identifier: ArgIdentifier) => map.get(identifier),
-                            args: () => Array.from(map.values()),
-                        }
-                        const newEntries: ArgEntry[] = versions[i].transform(mechanism);
-                        const { entries, mappings } = this.updateEntries(newEntries);
-                        totalList = entries;
-                        variables = this.updateDictionary(variables, mappings)
-                    }
-                    if (versions[i].previousType) {
-                        if (versions[i].previousType == "reporter" && blocksInfo[blockInfoIndex].blockType == "command") { // reporter to command
-                            changed = !changed;
-                            if (moveToSay) {
-                                moveToSay = false;
-                            } 
-                        } else { // command to reporter
-                            changed = !changed;
-                            if (!moveToSay) {
-                                moveToSay = true;
-                            }
-                        }
-                    }
-                }
-
-                for (let i = 0; i < Object.keys(blockArgs).length; i++) {
-                    const argIndex = Object.keys(blockArgs)[i];
-                    if (Object.keys(variables).includes(argIndex)) {
-                        newInputs[argIndex] = variables[argIndex];
-                    } else if (blockArgs[argIndex].menu) {
-                        var fieldValue = totalList[argIndex];
-                        if (typeof fieldValue == "number") {
-                            fieldValue = String(fieldValue);  
-                        }
-                        newFields[argIndex] = {
-                            name: String(argIndex),
-                            value: fieldValue,
-                            id: null
-                        }
-                    } else {
-                        const values = this.createInputBlock(blocks, blockArgs[argIndex].type, totalList[argIndex].value, block.id, blockLib);
-                        const primitiveId = values.newId;
-                        blocks = values.blocks;
-                        newInputs[argIndex] = {
-                            name: String(argIndex),
-                            block: values.newId,
-                            shadow: values.newId
-
-                        }
-                    }
+        alterJSON(projectJSON) {
+            const targetObjects = projectJSON.targets
+            .map((t, i) => Object.assign(t, { targetPaneOrder: i }))
+            .sort((a, b) => a.layerOrder - b.layerOrder);
+            //const targetObjects = projectJSON.targets;
+            const newTargets = [];
+            for (const object of targetObjects) {
+                const newBlocks = {};
+                for (const blockId in object.blocks) {
                     
-                }
+                    let blockJSON = object.blocks[blockId];
+                    let version = 0;
+                    const blockOpcode = blockJSON.opcode;
 
-                // Re-assign fields and inputs
-                block.inputs = newInputs;
-                block.fields = newFields;
-                blocks[block.id] = block;
-                const regex = /_v(\d+)/g;
+                    // Check if version name is included
+                    const regex = /_v(\d+)/g;
+                    const matches = blockOpcode.match(regex); // Get all matches
 
-                if (moveToSay && changed) {
-                    console.log("new block");
-                    const oldID = block.id;
-                    const next = block.next;
-                    block.id = uid();
-                    //blockJSON.topLevel = false;
-                    const newBlock = Object.create(null);
-                    newBlock.id = oldID;
-                    newBlock.parent = block.parent;
-                    block.parent = newBlock.id;
-                    newBlock.fields = {};
-                    newBlock.inputs = {
-                        MESSAGE: {
-                            name: 'MESSAGE',
-                            block: block.id,
-                            shadow: block.id
+                    if (matches) {
+                        const lastMatch = matches[matches.length - 1]; 
+                        const versionMatch = lastMatch.match(/_v(\d+)/); 
+
+                        if (versionMatch) {
+                            version = parseInt(versionMatch[1], 10); // Extract and parse the version number
                         }
+                        blockJSON.opcode = blockOpcode.replace(regex, ""); // Remove all version numbers from the opcode
                     }
-                    newBlock.next = next;
-                    block.next = null;
-                    newBlock.opcode = "looks_say";
-                    newBlock.shadow = false;
-                    //newBlock.topLevel = true;
-                    for (const key of Object.keys(block.inputs)) {
-                        if (block.inputs[key].block) {
-                            let inputBlock = block.inputs[key].block;
-                            if (blocks[inputBlock]) {
-                                blocks[inputBlock].parent = block.id;
-                                block.inputs[key].shadow = block.inputs[key].block;
+
+                    const extensionID = this.getExtensionIdForOpcode(blockJSON.opcode);
+                    const blocksInfo = this.getInfo().blocks.reduce((acc, tempBlock: any) => {
+                        acc[tempBlock.opcode] = tempBlock;
+                        return acc;
+                    }, {});
+                    const menuRegex = /menu_\d+/g;
+                    if (extensionID == this.getInfo().id) {
+                        const block = object.blocks[blockId];
+                        let blockInfoIndex = block.opcode.replace(`${block.opcode.split("_")[0]}_`, "");
+                        let oldIndex = blockInfoIndex;
+                        const nameMap = this.createNameMap(blocksInfo);
+                        console.log(nameMap);
+                        if (nameMap[version] && nameMap[version][blockInfoIndex]) {
+                            blockInfoIndex = nameMap[version][blockInfoIndex];
+                        }
+                        block.opcode = block.opcode.replace(oldIndex, blockInfoIndex);
+                        const versions = this.getVersion(blockInfoIndex);
+                        if (versions && version < versions.length) {
+                            const blockArgs = this.removeImageEntries(blocksInfo[blockInfoIndex].arguments);
+                            var { inputs, variables } = this.gatherInputs(object.blocks, block);
+                            var fields = this.gatherFields(block, blockArgs);
+                            var totalList = this.addInputsAndFields(inputs, fields);
+                            const newInputs = {};
+                            const newFields = {};
+                            let changed = false;
+                            let moveToSay = false;
+                            for (let i = version; i < versions.length; i++) {
+                                if (versions[i].transform) {
+                                    const map = new Map();
+                                    for (let i = 0; i < totalList.length; i++) {
+                                        map.set(totalList[i].id, totalList[i]);
+                                    }
+                                    const mechanism: VersionArgTransformMechanism = {
+                                        arg: (identifier: ArgIdentifier) => map.get(identifier),
+                                        args: () => Array.from(map.values()),
+                                    }
+                                    const newEntries: ArgEntry[] = versions[i].transform(mechanism);
+                                    const { entries, mappings } = this.updateEntries(newEntries);
+                                    totalList = entries;
+                                    variables = this.updateDictionary(variables, mappings)
+                                }
+                                if (versions[i].previousType) {
+                                    if (versions[i].previousType == "reporter" && blocksInfo[blockInfoIndex].blockType == "command") { // reporter to command
+                                        changed = !changed;
+                                        if (moveToSay) {
+                                            moveToSay = false;
+                                        } 
+                                    } else { // command to reporter
+                                        changed = !changed;
+                                        if (!moveToSay) {
+                                            moveToSay = true;
+                                        }
+                                    }
+                                }
                             }
-
+            
+                            for (let i = 0; i < Object.keys(blockArgs).length; i++) {
+                                const argIndex = Object.keys(blockArgs)[i];
+                                if (Object.keys(variables).includes(argIndex)) {
+                                    newInputs[argIndex] = variables[argIndex];
+                                } else if (blockArgs[argIndex].menu) {
+                                    var fieldValue = totalList[argIndex];
+                                    if (typeof fieldValue == "number") {
+                                        fieldValue = String(fieldValue);  
+                                    }
+                                    newFields[argIndex] = {
+                                        name: String(argIndex),
+                                        value: fieldValue,
+                                        id: null
+                                    }
+                                    
+                                } else {
+                                    const primitiveBlock = this.createInputBlock(object.blocks, blockArgs[argIndex].type, totalList[argIndex].value, block.id);
+                                    newInputs[argIndex] = [
+                                        1, [
+                                            primitiveOpcodeInfoMap[primitiveBlock.opcode][0],
+                                            String(totalList[argIndex].value)
+                                        ]
+                                    ]
+                                }
+                                
+                            }
+            
+                            // Re-assign fields and inputs
+                            block.inputs = newInputs;
+                            block.fields = newFields;
+                            const regex = /_v(\d+)/g;
+            
+                            if (moveToSay && changed) {
+                                console.log("new block");
+                                const oldID = blockId;
+                                const next = block.next;
+                                block.id = uid();
+                                //blockJSON.topLevel = false;
+                                const newBlock = Object.create(null);
+                                newBlock.id = oldID;
+                                newBlock.parent = block.parent;
+                                block.parent = newBlock.id;
+                                newBlock.fields = {};
+                                newBlock.inputs = {
+                                    MESSAGE: [
+                                        3, 
+                                        block.id,
+                                        [
+                                            10, 
+                                            "Hello"
+                                        ]
+                                    ]
+                                }
+                                newBlock.next = next;
+                                block.next = null;
+                                newBlock.opcode = "looks_say";
+                                newBlock.shadow = false;
+                                //newBlock.topLevel = true;
+                                for (const key of Object.keys(block.inputs)) {
+                                    if (block.inputs[key].block) {
+                                        let inputBlock = block.inputs[key].block;
+                                        if (object.blocks[inputBlock]) {
+                                            object.blocks[inputBlock].parent = block.id;
+                                            block.inputs[key].shadow = block.inputs[key].block;
+                                        }
+            
+                                    }
+                                }
+                                newBlocks[block.id] = block;
+                                newBlocks[newBlock.id] = newBlock;
+                            } else if (!moveToSay && changed) {
+                                if (object.blocks[block.parent]) {
+                                    const parentBlock = object.blocks[block.parent];
+                                    if (parentBlock) {
+                                        let parentIndex = parentBlock.opcode;
+                                        parentIndex = parentIndex.replace(`${parentIndex.split("_")[0]}_`, "");
+                                        parentIndex = parentIndex.replace(regex, "");
+                                        let argInfo = blocksInfo[parentIndex].arguments;
+                                        const values = this.removeInput(parentBlock, block, object.blocks, argInfo);
+                                        object.blocks[parentBlock.id] = values.block;
+                                        object.blocks = values.blocks;
+                                        block.parent = null;
+                                        block.topLevel = true;
+                                    } 
+                                    
+                                } 
+                            } 
+                            //object.blocks[block.id] = block;
+                            
                         }
-                    }
-                    blockLib.createBlock(newBlock);
-                    blockLib.createBlock(block);
-                    blocks[newBlock.id] = newBlock;
-                    blocks[block.id] = block;
-                } else if (!moveToSay && changed) {
-                    if (blocks[block.parent]) {
-                        const parentBlock = blocks[block.parent];
-                        if (parentBlock) {
-                            let parentIndex = parentBlock.opcode;
-                            parentIndex = parentIndex.replace(`${parentIndex.split("_")[0]}_`, "");
-                            parentIndex = parentIndex.replace(regex, "");
-                            let argInfo = blocksInfo[parentIndex].arguments;
-                            const values = this.removeInput(parentBlock, block, blocks, argInfo, blockLib);
-                            blocks[parentBlock.id] = values.block;
-                            blocks = values.blocks;
-                            block.parent = null;
-                            block.topLevel = true;
-                        } 
+                        if (!Object.keys(newBlocks).includes(blockId)) {
+                            newBlocks[blockId] = block;
+                        }
                         
                     } 
-                } 
-                blocks[block.id] = block;
-                
+                }
+                object.blocks = newBlocks;
+                newTargets.push(object);
             }
-            return blocks;
+            projectJSON.targets = newTargets;
+            return projectJSON;
         }
+
+        getExtensionIdForOpcode(opcode) {
+            // Allowed ID characters are those matching the regular expression [\w-]: A-Z, a-z, 0-9, and hyphen ("-").
+            const index = opcode.indexOf('_');
+            const forbiddenSymbols = /[^\w-]/g;
+            const prefix = opcode.substring(0, index).replace(forbiddenSymbols, '-');
+            if (CORE_EXTENSIONS.indexOf(prefix) === -1) {
+                if (prefix !== '') return prefix;
+            }
+        };
+
+
+        // alterProjectJSON(blocks, block, version, blockLib) {
+        //     var addIds = [];
+        //     const blocksInfo = this.getInfo().blocks.reduce((acc, tempBlock: any) => {
+        //         acc[tempBlock.opcode] = tempBlock;
+        //         return acc;
+        //     }, {});
+        //     let blockInfoIndex = block.opcode.replace(`${block.opcode.split("_")[0]}_`, "");
+        //     let oldIndex = blockInfoIndex;
+        //     const nameMap = this.createNameMap(blocksInfo);
+        //     console.log(nameMap);
+        //     if (nameMap[version] && nameMap[version][blockInfoIndex]) {
+        //         blockInfoIndex = nameMap[version][blockInfoIndex];
+        //     }
+        //     block.opcode = block.opcode.replace(oldIndex, blockInfoIndex);
+        //     const versions = this.getVersion(blockInfoIndex);
+        //     if (versions && version < versions.length) {
+        //         const blockArgs = this.removeImageEntries(blocksInfo[blockInfoIndex].arguments);
+        //         var { inputs, variables } = this.gatherInputs(blocks, block);
+        //         var fields = this.gatherFields(block, blockArgs);
+        //         var totalList = this.addInputsAndFields(inputs, fields);
+        //         const newInputs = {};
+        //         const newFields = {};
+        //         let changed = false;
+        //         let moveToSay = false;
+        //         for (let i = version; i < versions.length; i++) {
+        //             if (versions[i].transform) {
+        //                 const map = new Map();
+        //                 for (let i = 0; i < totalList.length; i++) {
+        //                     map.set(totalList[i].id, totalList[i]);
+        //                 }
+        //                 const mechanism: VersionArgTransformMechanism = {
+        //                     arg: (identifier: ArgIdentifier) => map.get(identifier),
+        //                     args: () => Array.from(map.values()),
+        //                 }
+        //                 const newEntries: ArgEntry[] = versions[i].transform(mechanism);
+        //                 const { entries, mappings } = this.updateEntries(newEntries);
+        //                 totalList = entries;
+        //                 variables = this.updateDictionary(variables, mappings)
+        //             }
+        //             if (versions[i].previousType) {
+        //                 if (versions[i].previousType == "reporter" && blocksInfo[blockInfoIndex].blockType == "command") { // reporter to command
+        //                     changed = !changed;
+        //                     if (moveToSay) {
+        //                         moveToSay = false;
+        //                     } 
+        //                 } else { // command to reporter
+        //                     changed = !changed;
+        //                     if (!moveToSay) {
+        //                         moveToSay = true;
+        //                     }
+        //                 }
+        //             }
+        //         }
+
+        //         for (let i = 0; i < Object.keys(blockArgs).length; i++) {
+        //             const argIndex = Object.keys(blockArgs)[i];
+        //             if (Object.keys(variables).includes(argIndex)) {
+        //                 newInputs[argIndex] = variables[argIndex];
+        //             } else if (blockArgs[argIndex].menu) {
+        //                 var fieldValue = totalList[argIndex];
+        //                 if (typeof fieldValue == "number") {
+        //                     fieldValue = String(fieldValue);  
+        //                 }
+        //                 newFields[argIndex] = {
+        //                     name: String(argIndex),
+        //                     value: fieldValue,
+        //                     id: null
+        //                 }
+        //             } else {
+        //                 const values = this.createInputBlock(blocks, blockArgs[argIndex].type, totalList[argIndex].value, block.id);
+        //                 const primitiveId = values.newId;
+        //                 blocks = values.blocks;
+        //                 newInputs[argIndex] = {
+        //                     name: String(argIndex),
+        //                     block: values.newId,
+        //                     shadow: values.newId
+
+        //                 }
+        //             }
+                    
+        //         }
+
+        //         // Re-assign fields and inputs
+        //         block.inputs = newInputs;
+        //         block.fields = newFields;
+        //         blocks[block.id] = block;
+        //         const regex = /_v(\d+)/g;
+
+        //         if (moveToSay && changed) {
+        //             console.log("new block");
+        //             const oldID = block.id;
+        //             const next = block.next;
+        //             block.id = uid();
+        //             //blockJSON.topLevel = false;
+        //             const newBlock = Object.create(null);
+        //             newBlock.id = oldID;
+        //             newBlock.parent = block.parent;
+        //             block.parent = newBlock.id;
+        //             newBlock.fields = {};
+        //             newBlock.inputs = {
+        //                 MESSAGE: {
+        //                     name: 'MESSAGE',
+        //                     block: block.id,
+        //                     shadow: block.id
+        //                 }
+        //             }
+        //             newBlock.next = next;
+        //             block.next = null;
+        //             newBlock.opcode = "looks_say";
+        //             newBlock.shadow = false;
+        //             //newBlock.topLevel = true;
+        //             for (const key of Object.keys(block.inputs)) {
+        //                 if (block.inputs[key].block) {
+        //                     let inputBlock = block.inputs[key].block;
+        //                     if (blocks[inputBlock]) {
+        //                         blocks[inputBlock].parent = block.id;
+        //                         block.inputs[key].shadow = block.inputs[key].block;
+        //                     }
+
+        //                 }
+        //             }
+        //             blockLib.createBlock(newBlock);
+        //             blockLib.createBlock(block);
+        //             blocks[newBlock.id] = newBlock;
+        //             blocks[block.id] = block;
+        //         } else if (!moveToSay && changed) {
+        //             if (blocks[block.parent]) {
+        //                 const parentBlock = blocks[block.parent];
+        //                 if (parentBlock) {
+        //                     let parentIndex = parentBlock.opcode;
+        //                     parentIndex = parentIndex.replace(`${parentIndex.split("_")[0]}_`, "");
+        //                     parentIndex = parentIndex.replace(regex, "");
+        //                     let argInfo = blocksInfo[parentIndex].arguments;
+        //                     const values = this.removeInput(parentBlock, block, blocks, argInfo);
+        //                     blocks[parentBlock.id] = values.block;
+        //                     blocks = values.blocks;
+        //                     block.parent = null;
+        //                     block.topLevel = true;
+        //                 } 
+                        
+        //             } 
+        //         } 
+        //         blocks[block.id] = block;
+                
+        //     }
+        //     return blocks;
+        // }
 
         updateEntries(entries) {
             const mappings = {};
@@ -262,22 +465,22 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
 
         }
 
-        getNewIds(blockJSON) {
-            console.log("here");
-            console.log(blockJSON);
-            let ids = [];
-            const inputs = blockJSON.inputs;
-            console.log(inputs);
-            for (const input of Object.keys(inputs)) {
-                console.log(inputs[input]);
-                if (inputs[input].block) {
-                    ids.push(inputs[input].block);
-                }
-            }
-            return ids;
-        }
+        // getNewIds(blockJSON) {
+        //     console.log("here");
+        //     console.log(blockJSON);
+        //     let ids = [];
+        //     const inputs = blockJSON.inputs;
+        //     console.log(inputs);
+        //     for (const input of Object.keys(inputs)) {
+        //         console.log(inputs[input]);
+        //         if (inputs[input].block) {
+        //             ids.push(inputs[input].block);
+        //         }
+        //     }
+        //     return ids;
+        // }
 
-        createInputBlock(blocks, type, value, parentId, blockLib) {
+        createInputBlock(blocks, type, value, parentId) {
             value = String(value);
             const primitiveObj = Object.create(null);
             const newId = uid();
@@ -346,9 +549,9 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                     return null;
                 }
             }
-            blocks[newId] = primitiveObj;
-            blockLib.createBlock(primitiveObj);
-            return { newId, blocks };
+            //blocks[newId] = primitiveObj;
+            //blockLib.createBlock(primitiveObj);
+            return primitiveObj;
         };
 
         createNameMap(blocksInfo) {
@@ -409,20 +612,56 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                 Object.keys(blockJSON.inputs).forEach(input => {
                     var keyIndex = input;
                     input = blockJSON.inputs[input];
-                    if (blocks[(input as any).block]) {
-                        if (Object.keys(primitiveOpcodeInfoMap).includes(blocks[(input as any).block].opcode)) {
-                            const inputBlock = blocks[(input as any).block].fields;
-                            const inputType = Object.keys(blocks[(input as any).block].fields)[0];
-                            var inputValue = inputBlock[inputType].value;
-                            if (inputType == "NUM") {
-                                inputValue = parseFloat(inputValue);
-                            }
-                        } else {
-                            variables[keyIndex] = input;
-                            inputValue = "0";
+                    console.log("INPUT");
+                    console.log(input);
+                    const type = parseFloat(input[1][0]);
+                    switch (type) {
+                        case 6:
+                        case 5:
+                        case 8:
+                        case 4: {
+                            args.push({id: keyIndex, value: parseFloat(input[1][1])})
+                            break;
                         }
-                        args.push({id: keyIndex, value: inputValue})
-                    } 
+                        case 10: {
+                            args.push({id: keyIndex, value: input[1][1]})
+                            break;
+                        }
+                            
+                    }
+//                    const MATH_NUM_PRIMITIVE = 4; // there's no reason these constants can't collide
+                    // // math_positive_number
+                    // const POSITIVE_NUM_PRIMITIVE = 5; // with the above, but removing duplication for clarity
+                    // // math_whole_number
+                    // const WHOLE_NUM_PRIMITIVE = 6;
+                    // // math_integer
+                    // const INTEGER_NUM_PRIMITIVE = 7;
+                    // // math_angle
+                    // const ANGLE_NUM_PRIMITIVE = 8;
+                    // // colour_picker
+                    // const COLOR_PICKER_PRIMITIVE = 9;
+                    // // text
+                    // const TEXT_PRIMITIVE = 10;
+                    // // event_broadcast_menu
+                    // const BROADCAST_PRIMITIVE = 11;
+                    // // data_variable
+                    // const VAR_PRIMITIVE = 12;
+                    // // data_listcontents
+                    // const LIST_PRIMITIVE = 13;
+                    // if (blocks[(input as any).block]) {
+                    //     if (Object.keys(primitiveOpcodeInfoMap).includes(blocks[(input as any).block].opcode)) {
+                    //         const inputBlock = blocks[(input as any).block].fields;
+                    //         const inputType = Object.keys(blocks[(input as any).block].fields)[0];
+                    //         var inputValue = inputBlock[inputType].value;
+                    //         if (inputType == "NUM") {
+                    //             inputValue = parseFloat(inputValue);
+                    //         }
+                    //     } else {
+                    //         variables[keyIndex] = input;
+                    //         inputValue = "0";
+                    //     }
+                    //     args.push({id: keyIndex, value: inputValue})
+                    // } 
                 })
             }
             return { inputs: args, variables: variables };
@@ -471,13 +710,13 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
             return updatedDict;
         }
 
-        removeInput(block, removeBlock, blocks, argInfo, blockLib) {
+        removeInput(block, removeBlock, blocks, argInfo) {
             const inputs = block.inputs;
             const newInputs = {};
             let objectBlocks = {};
             for (const key of Object.keys(inputs)) {
                 if (inputs[key] && inputs[key].block == removeBlock.id) {
-                    const values = this.createInputBlock(blocks, argInfo[key].type, argInfo[key].defaultValue, block.id, blockLib);
+                    const values = this.createInputBlock(blocks, argInfo[key].type, argInfo[key].defaultValue, block.id);
                     objectBlocks = values.blocks;
                     newInputs[key] = {
                         name: String(key),

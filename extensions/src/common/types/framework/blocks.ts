@@ -277,7 +277,7 @@ type Operation<TExt extends BaseGenericExtension, TOp extends BlockOperation> = 
 
 export type ScratchBlockType = typeof BlockType[keyof typeof BlockType];
 
-export type BlockType = "reporter" | "command"; // etc, use actual version
+export type BlockType2 = "reporter" | "command"; // etc, use actual version
 export type ArgValue = any;
 export type ArgIdentifier = string | number;
 export type ArgEntry = { 
@@ -295,7 +295,7 @@ export type VersionedArgTransformer = (mechanism: VersionArgTransformMechanism) 
 
 export type VersionedOptions = {
 transform?: VersionedArgTransformer;
-previousType?: BlockType;
+previousType?: BlockType2;
 previousName?: string;
 };
 
