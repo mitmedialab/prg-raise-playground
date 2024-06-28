@@ -86,6 +86,33 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
     abstract class ExtensionWithConfigurableSupport extends Ctor {
         
         /**
+         * A function that appends the version number to each opcode on project save
+         * 
+         * @param {Array} objTargets The obj.targets array from the Scratch project
+         * @return {Array} An updated object.targets array with the new opcodes
+        */
+        alterOpcodes(objTargets: any) {
+            const newTargets  = [];
+            // Loop through the object targets
+            for (const object of objTargets) {
+                for (const blockId in object.blocks) {
+                    const block = object.blocks[blockId];
+                    // Get the opcode from the block
+                    let blockInfoIndex = block.opcode.replace(`${block.opcode.split("_")[0]}_`, "");
+                    // Add the version number to the opcode
+                    const versions = this.getVersion(blockInfoIndex);
+                    if (versions && versions.length > 0) {
+                        object.blocks[blockId].opcode = `${object.blocks[blockId].opcode}_v${versions.length}`;
+                    } else {
+                        object.blocks[blockId].opcode = `${object.blocks[blockId].opcode}_v0`;
+                    }
+                }
+                newTargets.push(object);
+            }
+            return newTargets;
+        }
+        
+        /**
          * A function that modifies a project JSON based on any updated
          * versioning implementations
          * 
