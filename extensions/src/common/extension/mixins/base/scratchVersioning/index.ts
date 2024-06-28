@@ -294,7 +294,7 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                                     newBlocks[newBlock.id] = newBlock;
                                 } 
                                 // If we need to create a command from a reporter
-                                else if (originalType == "reporter" && (blocksInfo[blockInfoIndex].blockType == "command" || blocksInfo[blockInfoIndex].blockType == "hat")) { // reporter to command) { // circle to square
+                                else if (originalType == "reporter" && (blocksInfo[blockInfoIndex].blockType == "command" || blocksInfo[blockInfoIndex].blockType == "button" || blocksInfo[blockInfoIndex].blockType == "hat")) { // reporter to command) { // circle to square
                                     // If the previous reporter block has a parent
                                     if (object.blocks[block.parent]) {
                                         const parentBlock = object.blocks[block.parent];
@@ -317,8 +317,11 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                                             parentBlock.inputs[key] = values; 
                                         }
                                         // Update the current block to be a command block
-                                        block.parent = null;
-                                        block.topLevel = true;
+                                        if (blocksInfo[blockInfoIndex].blockType == "command") {
+                                            block.parent = null;
+                                            block.topLevel = true;
+                                        }
+                                        
                                     } 
                                 } else if ((originalType == "command") && (blocksInfo[blockInfoIndex].blockType == "hat")) {
                                     if (object.blocks[block.parent]) {
