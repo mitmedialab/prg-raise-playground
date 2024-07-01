@@ -1,4 +1,4 @@
-import { ArgumentType, BlockType, BlockUtilityWithID, Environment, ExtensionMenuDisplayDetails, Language, Menu, SaveDataHandler, block, buttonBlock, extension, tryCastToArgumentType, untilTimePassed, scratch } from "$common";
+import { ArgumentType, BlockType, BlockUtilityWithID, Environment, ExtensionMenuDisplayDetails, Language, Menu, SaveDataHandler, block, buttonBlock, extension, tryCastToArgumentType, untilTimePassed, scratch, versions, VersionedArgTransformer } from "$common";
 import jibo from "./jibo.png";
 import five from "./five.png";
 
@@ -15,6 +15,7 @@ const details: ExtensionMenuDisplayDetails = {
   menuSelectColor: "#9e0d2c",
   tags: ["PRG Internal"],
 }
+
 
 export default class SimpleTypescript extends extension(details, "ui", "customSaveData", "indicators") {
   count: number = 0;
@@ -50,6 +51,33 @@ export default class SimpleTypescript extends extension(details, "ui", "customSa
   log(value: string) {
     console.log(value);
   }
+
+  // @versions({
+  //   type: "command",
+  //   text: `Set selfie image as costume`,
+  // })
+  // setCostume() {
+  //   // this.addCostume(target, this.lastProcessedImage, "add and set")
+  // }
+
+  @(scratch.command`Test ${"number"} and ${"number"} and ${"number"} and ${"number"}`)
+  @(versions([
+    {transform: ( ({arg}) => [arg('0'), arg('1'), { value: 4 }, arg('2')] ) satisfies VersionedArgTransformer,
+    previousName: 'returnValue2',
+    previousType: 'reporter'
+  },
+  {transform: ( ({arg}) => [arg('1'), arg('0'), arg('2'), arg('3')] ) satisfies VersionedArgTransformer,
+  }
+  ]))
+  async returnValue(x: number, y: number, z: number, a: number) {
+    //return true;
+  }
+
+
+  // @(scratch.reporter`Oop ${"number"} and ${"number"} and ${"number"}`)
+  // returnValue2(x: number, y: number, z: number) {
+  //   return 10;
+  // }
 
   @(scratch.command`
     Indicate ${{ type: "string", defaultValue: "Howdy!" }} 
