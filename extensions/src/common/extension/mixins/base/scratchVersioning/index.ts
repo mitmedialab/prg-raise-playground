@@ -193,7 +193,7 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                                         map.set(totalList[i].id, totalList[i]);
                                     }
                                     const mechanism: VersionArgTransformMechanism = {
-                                        arg: (identifier: ArgIdentifier) => map.get(identifier),
+                                        arg: (identifier: ArgIdentifier) => map.get(String(identifier)),
                                         args: () => Array.from(map.values()),
                                     }
                                     // Complete the transformation
