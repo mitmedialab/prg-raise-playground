@@ -215,7 +215,7 @@ if(false) {}
 },
 /******/ __webpack_require__ => { // webpackRuntimeModules
 /******/ var __webpack_exec__ = (moduleId) => (__webpack_require__(__webpack_require__.s = moduleId))
-/******/ __webpack_require__.O(0, ["vendors-node_modules_pnpm_microbit_microbit-universal-hex_0_2_2_tslib_2_6_3_node_modules_micr-f6be40","vendors-node_modules_pnpm_core-js_2_6_12_node_modules_core-js_fn_array_includes_js-node_modul-b41ce8","src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx"], () => (__webpack_exec__("./src/playground/index.jsx")));
+/******/ __webpack_require__.O(0, ["vendors-node_modules_pnpm_microbit_microbit-universal-hex_0_2_2_tslib_2_6_3_node_modules_micr-39ddfc","vendors-node_modules_pnpm_core-js_2_6_12_node_modules_core-js_fn_array_includes_js-node_modul-b41ce8","src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx"], () => (__webpack_exec__("./src/playground/index.jsx")));
 /******/ var __webpack_exports__ = __webpack_require__.O();
 /******/ return __webpack_exports__;
 /******/ }
