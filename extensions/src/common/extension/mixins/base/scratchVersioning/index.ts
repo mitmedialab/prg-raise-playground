@@ -201,14 +201,16 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                                     // Update the ArgEntry objects' IDs and get position mappings
                                     const { newEntries, mappings } = this.updateEntries(entries);
                                     totalList = newEntries;
-                                    // Update variable positions
+                                    // Change the menu block value if applicable
                                     for (const key of Object.keys(menus)) {
                                         if (mappings[key]) {
                                             let value = newEntries[mappings[key]].value;
                                             object.blocks[menus[key]].fields["0"][0] = value;
                                         }
                                     }
+                                    // Update menu positions
                                     menus = this.updateDictionary(menus, mappings);
+                                    // Update variable positions
                                     variables = this.updateDictionary(variables, mappings);
                                 }
                                 if (versions[i].previousType) { 
@@ -222,10 +224,12 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                             // Re-create the project JSON inputs/fields with the new values
                             for (let i = 0; i < Object.keys(blockArgs).length; i++) {
                                 const argIndex = Object.keys(blockArgs)[i];
-                                // If there's a variable in the argIndex position
+                                // If there's a menu block in the argIndex position
                                 if (Object.keys(menus).includes(argIndex)) {
                                     newInputs[argIndex] = [1, menus[argIndex]];
-                                } else if (Object.keys(variables).includes(argIndex)) {
+                                } 
+                                // If there's a variable in the argIndex position
+                                else if (Object.keys(variables).includes(argIndex)) {
                                     newInputs[argIndex] = variables[argIndex];
                                 } 
                                 // If we need to place the value in a field
@@ -477,11 +481,14 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                     if (typeof input[1] == "string") {
                         const variableBlock = blocks[input[1]];
                         if (variableBlock) {
+                            // Store the block ID if the variable is a menu block
                             if (variableBlock.opcode.includes("_menu_")) {
                                 menu[keyIndex] = input[1];
+                                // Find the menu block value
                                 const menuValue = variableBlock.fields["0"][0];
                                 args.push({id: keyIndex, value: menuValue});
                             } else {
+                                // Set the variables dictionary accordingly
                                 variables[keyIndex] = [
                                     3,
                                     input[1],
@@ -490,9 +497,6 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                                 args.push({id: keyIndex, value: input[2][1]});
                             }
                         }
-                        // Set the variables dictionary accordingly
-                        
-                        
                     } else {
                         // If the input is a value, push that value according to type
                         const type = parseFloat(input[1][0]);
