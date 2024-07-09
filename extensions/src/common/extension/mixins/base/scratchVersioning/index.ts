@@ -175,7 +175,7 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                             // Remove the image entries from the arguments
                             const blockArgs = this.removeImageEntries(blocksInfo[blockInfoIndex].arguments);
                             // Gather values
-                            let { inputs, variables } = this.gatherInputs(block);
+                            let { inputs, variables, menus } = this.gatherInputs(block, object.blocks);
                             let fields = this.gatherFields(block, blockArgs);
                             let totalList = inputs.concat(fields);
                             const newInputs = {};
@@ -202,7 +202,14 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                                     const { newEntries, mappings } = this.updateEntries(entries);
                                     totalList = newEntries;
                                     // Update variable positions
-                                    variables = this.updateDictionary(variables, mappings)
+                                    for (const key of Object.keys(menus)) {
+                                        if (mappings[key]) {
+                                            let value = newEntries[mappings[key]].value;
+                                            object.blocks[menus[key]].fields["0"][0] = value;
+                                        }
+                                    }
+                                    menus = this.updateDictionary(menus, mappings);
+                                    variables = this.updateDictionary(variables, mappings);
                                 }
                                 if (versions[i].previousType) { 
                                     if (first) {
@@ -216,7 +223,9 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                             for (let i = 0; i < Object.keys(blockArgs).length; i++) {
                                 const argIndex = Object.keys(blockArgs)[i];
                                 // If there's a variable in the argIndex position
-                                if (Object.keys(variables).includes(argIndex)) {
+                                if (Object.keys(menus).includes(argIndex)) {
+                                    newInputs[argIndex] = [1, menus[argIndex]];
+                                } else if (Object.keys(variables).includes(argIndex)) {
                                     newInputs[argIndex] = variables[argIndex];
                                 } 
                                 // If we need to place the value in a field
@@ -455,8 +464,9 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
          * @return {ArgEntry[]} return.inputs - An array of ArgEntry objects with each value representing an input
          * @return {object} return.variables - A dictionary with all the block's variables as values and their positions as keys
          */
-        gatherInputs(blockJSON: any): any {
+        gatherInputs(blockJSON: any, blocks): any {
             const variables = {};
+            const menu = {};
             const args: ArgEntry[] = [];
             // Loop through the block's inputs
             if (blockJSON.inputs && Object.keys(blockJSON.inputs).length > 0) {
@@ -465,13 +475,24 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                     input = blockJSON.inputs[input];
                     // If there is a variable in the input
                     if (typeof input[1] == "string") {
+                        const variableBlock = blocks[input[1]];
+                        if (variableBlock) {
+                            if (variableBlock.opcode.includes("_menu_")) {
+                                menu[keyIndex] = input[1];
+                                const menuValue = variableBlock.fields["0"][0];
+                                args.push({id: keyIndex, value: menuValue});
+                            } else {
+                                variables[keyIndex] = [
+                                    3,
+                                    input[1],
+                                    input[2]
+                                ];
+                                args.push({id: keyIndex, value: input[2][1]});
+                            }
+                        }
                         // Set the variables dictionary accordingly
-                        variables[keyIndex] = [
-                            3,
-                            input[1],
-                            input[2]
-                        ]
-                        args.push({id: keyIndex, value: input[2][1]});
+                        
+                        
                     } else {
                         // If the input is a value, push that value according to type
                         const type = parseFloat(input[1][0]);
@@ -496,7 +517,7 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                     }
                 })
             }
-            return { inputs: args, variables: variables };
+            return { inputs: args, variables: variables, menus: menu };
         }
 
         /**
