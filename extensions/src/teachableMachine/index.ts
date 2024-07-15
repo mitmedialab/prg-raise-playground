@@ -1,4 +1,4 @@
-import { Environment, buttonBlock, extension } from "$common";
+import { Environment, buttonBlock, extension, scratch, versions } from "$common";
 import tmImage from '@teachablemachine/image';
 import tmPose from '@teachablemachine/pose';
 import { create } from '@tensorflow-models/speech-commands';
@@ -317,7 +317,12 @@ export default class teachableMachine extends extension({
     window.open('https://teachablemachine.withgoogle.com/train', '_blank');
   }
 
-  @legacyBlock.useModelBlock()
+  @(scratch.command`use model ${"string"}`)
+  @versions(
+    {
+      transform: ({ arg }) => [arg("MODEL_URL")],
+    }
+  )
   useModelBlock(url: string) {
     this.useModel(url);
   }
