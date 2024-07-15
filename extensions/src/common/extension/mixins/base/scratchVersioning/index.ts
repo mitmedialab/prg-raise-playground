@@ -136,7 +136,6 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                     // Check if version name is included
                     const regex = /_v(\d+)/g;
                     const matches = blockOpcode.match(regex); // Get all matches
-
                     // Collect the version number
                     if (matches) {
                         const lastMatch = matches[matches.length - 1]; 
@@ -154,6 +153,8 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                         return acc;
                     }, {});
 
+
+
                     const block = object.blocks[blockId];
                     // If the block is under the current extension
                     if (extensionID == this.getInfo().id && !block.opcode.includes("_menu_")) {
@@ -165,7 +166,7 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                         }
                         // Update the opcode to be the current version name
                         block.opcode = block.opcode.replace(oldIndex, blockInfoIndex);
-                        const versions = this.getVersion(blockInfoIndex);
+                        let versions = this.getVersion(blockInfoIndex);
 
                         let originalType = blocksInfo[blockInfoIndex].blockType;
                         let first = true;
@@ -184,6 +185,7 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                             let moveToSay = false;
 
                             // Apply each version modification as needed
+                            versions = Array.isArray(versions) && Array.isArray(versions[0]) ? versions[0] : versions;
                             for (let i = version; i < versions.length; i++) {
                                 if (versions[i].transform) {
                                     // totalList is the map to be used in the mechanism from ArgEntry objects
@@ -194,6 +196,7 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                                         args: () => Array.from(map.values()),
                                     }
                                     // Complete the transformation
+                                    
                                     const entries: ArgEntry[] = versions[i].transform(mechanism);
                                     // Update the ArgEntry objects' IDs and get position mappings
                                     const { newEntries, mappings } = this.updateEntries(entries, originalKeys);
@@ -417,7 +420,8 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
             // Loop through every block in the extension
             for (const opcode of Object.keys(blocksInfo)) {
                 // Get version information for each extension
-                const versions = this.getVersion(opcode);
+                let versions = this.getVersion(opcode);
+                versions = Array.isArray(versions) && Array.isArray(versions[0]) ? versions[0] : versions
                 // If there is version information
                 if (versions && versions.length > 0) {
                     let tempName = opcode;
