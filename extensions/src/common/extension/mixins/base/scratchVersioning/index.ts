@@ -176,22 +176,19 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                             const blockArgs = this.removeImageEntries(blocksInfo[blockInfoIndex].arguments);
                             // Gather values
                             let { inputs, variables, menus } = this.gatherInputs(block, object.blocks);
-                            let fields = this.gatherFields(block, blockArgs);
-                            let totalList = inputs.concat(fields);
+                            let fields = this.gatherFields(block);
+                            let totalList = this.mergeMaps(inputs, fields);
                             const newInputs = {};
                             const newFields = {};
                             let changed = false;
                             let moveToSay = false;
 
                             // Apply each version modification as needed
-                            
                             for (let i = version; i < versions.length; i++) {
                                 if (versions[i].transform) {
-                                    // Create the map to be used in the mechanism from ArgEntry objects
-                                    const map = new Map();
-                                    for (let i = 0; i < totalList.length; i++) {
-                                        map.set(totalList[i].id, totalList[i]);
-                                    }
+                                    // totalList is the map to be used in the mechanism from ArgEntry objects
+                                    const map: any = totalList;
+                                    let originalKeys: string[] = Array.from(map.keys());
                                     const mechanism: VersionArgTransformMechanism = {
                                         arg: (identifier: ArgIdentifier) => map.get(String(identifier)),
                                         args: () => Array.from(map.values()),
@@ -199,12 +196,12 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                                     // Complete the transformation
                                     const entries: ArgEntry[] = versions[i].transform(mechanism);
                                     // Update the ArgEntry objects' IDs and get position mappings
-                                    const { newEntries, mappings } = this.updateEntries(entries);
+                                    const { newEntries, mappings } = this.updateEntries(entries, originalKeys);
                                     totalList = newEntries;
                                     // Change the menu block value if applicable
                                     for (const key of Object.keys(menus)) {
                                         if (mappings[key]) {
-                                            let value = newEntries[mappings[key]].value;
+                                            let value = newEntries.get(mappings[key]).value;
                                             object.blocks[menus[key]].fields["0"][0] = value;
                                         }
                                     }
@@ -234,7 +231,7 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                                 } 
                                 // If we need to place the value in a field
                                 else if (blockArgs[argIndex].menu) {
-                                    let fieldValue = totalList[argIndex];
+                                    let fieldValue = totalList.get(argIndex).value;
                                     if (typeof fieldValue == "number") {
                                         fieldValue = String(fieldValue);  
                                     }
@@ -250,7 +247,7 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                                     newInputs[argIndex] = [
                                         1, [
                                             typeNum,
-                                            String(totalList[argIndex].value)
+                                            String(totalList.get(argIndex).value)
                                         ]
                                     ]
                                 }
@@ -386,21 +383,22 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
          * assign each ArgEntry object a new ID
          * 
          * @param {ArgEntry[]} entries The updated entries to create the mapping from
+         * @param {string[]} originalKeys The original list of keys to be passed in
          * @return {ArgEntry[]} returns.newEntries - The ArgEntry objects with updated IDs
          * @return {object} returns.mappings - A dictionary with the position mappings
         */
-        updateEntries(entries: ArgEntry[]) {
+        updateEntries(entries: ArgEntry[], originalKeys: string[]) {
             const mappings = {};
-            let newEntries = [];
+            let newEntries = new Map();
             // Loop through the arg entries
             for (let i = 0; i < entries.length; i++) {
                 // If the value hasn't just been added
                 if (entries[i].id) {
                     // Set the positional dictionary
-                    mappings[entries[i].id] = String(i);
+                    mappings[entries[i].id] = originalKeys[i];
                 }   
                 // Update the new ArgEntry array with the new ID
-                newEntries.push({id: String(i), value: entries[i].value});
+                newEntries.set(originalKeys[i], {id: originalKeys[i], value: entries[i].value});
             }
             return { newEntries, mappings };
 
@@ -471,7 +469,7 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
         gatherInputs(blockJSON: any, blocks): any {
             const variables = {};
             const menu = {};
-            const args: ArgEntry[] = [];
+            const args = new Map();
             // Loop through the block's inputs
             if (blockJSON.inputs && Object.keys(blockJSON.inputs).length > 0) {
                 Object.keys(blockJSON.inputs).forEach(input => {
@@ -486,7 +484,7 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                                 menu[keyIndex] = input[1];
                                 // Find the menu block value
                                 const menuValue = variableBlock.fields["0"][0];
-                                args.push({id: keyIndex, value: menuValue});
+                                args.set(keyIndex, menuValue);
                             } else {
                                 // Set the variables dictionary accordingly
                                 variables[keyIndex] = [
@@ -494,7 +492,7 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                                     input[1],
                                     input[2]
                                 ];
-                                args.push({id: keyIndex, value: input[2][1]});
+                                args.set(keyIndex, {id: keyIndex, value: input[2][1]});
                             }
                         }
                     } else {
@@ -508,13 +506,13 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                             case 9: // COLOR_PICKER_PRIMITIVE
                             case 4: // MATH_NUM_PRIMITIVE
                             {
-                                args.push({id: keyIndex, value: parseFloat(input[1][1])});
+                                args.set(keyIndex, {id: keyIndex, value: parseFloat(input[1][1])});
                                 break;
                             }
                             case 10: // TEXT_PRIMITIVE
                             default: // BROADCAST_PRIMITIVE, VAR_PRIMITIVE, LIST_PRIMITIVE
                             {
-                                args.push({id: keyIndex, value: input[1][1]})
+                                args.set(keyIndex, {id: keyIndex, value: input[1][1]})
                                 break;
                             }
                         }
@@ -530,8 +528,8 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
          * @param {object} blockJSON The block to gather the inputs from
          * @return {ArgEntry[]} An array of ArgEntry objects representing each field
          */
-        gatherFields(blockJSON: any, argList: any) {
-            const args: ArgEntry[] = [];
+        gatherFields(blockJSON: any): any {
+            const args = new Map();
             // Loop through each field
             if (blockJSON.fields && Object.keys(blockJSON.fields).length > 0) {
                 Object.keys(blockJSON.fields).forEach(field => {
@@ -539,15 +537,25 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                         field = blockJSON.fields[field];
                         // Collect the field's value
                         let value = (field as any).value;
-                        let argType = argList[(field as any).name].type;
+                        // let argType = argList[(field as any).name].type;
                         // Convert the value to its correct type
-                        if (argType == "number" || argType == "angle") {
-                            value = parseFloat(value);
-                        }
-                        args.push({id: keyIndex, value: value})
+                        // if (argType == "number" || argType == "angle") {
+                        //     value = parseFloat(value);
+                        // }
+                        args.set(keyIndex, {id: keyIndex, value: value})
                 })
             }
             return args;
+        }
+
+        mergeMaps(map1: any, map2: any): any {
+            let combinedMap = new Map([...map1]);
+
+            map2.forEach((value, key) => {
+                combinedMap.set(key, value);
+            });
+            
+            return combinedMap;
         }
 
         /**
