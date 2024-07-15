@@ -94,7 +94,7 @@ export function versions<
   const Fn extends (...args: Args) => Return,
 >
   (
-    config: VersionedOptions[]
+    ...config: VersionedOptions[]
   ): TypedMethodDecorator<This, Args, Return, (...args: Args) => Return> {
 
   return function (this: This, target: (this: This, ...args: Args) => Return, context: ClassMethodDecoratorContext<This, Fn>) {
