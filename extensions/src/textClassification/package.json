@@ -5,10 +5,10 @@
   "main": "index.ts",
   "scripts": {
     "directory": "echo textClassification",
-    "test": "npm run test --prefix ../../ -- textClassification/index.test.ts",
-    "dev": "npm run dev --prefix ../../../ -- --include textClassification",
-    "add:ui": "npm run add:ui --prefix ../../../  -- textClassification",
-    "add:arg": "npm run --prefix ../../../-- textClassification"
+    "test": "pnpm --filter prg-extension-root test textClassification/index.test.ts",
+    "dev": "pnpm --filter prg-extension-root dev --include textClassification",
+    "add:ui": "pnpm --filter prg-extension-root add:ui textClassification",
+    "add:arg": "pnpm --filter prg-extension-root add:arg textClassification"
   },
   "author": "",
   "license": "ISC",

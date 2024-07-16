@@ -69,7 +69,7 @@ You do this by providing "add ons" as arguments, which come after the first `det
 
 Your code editor will help you see which "add ons" are available -- simply start to try to type after the first argument of the `extension` function, and suggestions (and documentation) will pop up.
 
-![Gif of extension addOns being suggested](/documentation/assets/addOns.gif)
+![Gif of extension addOns being suggested](//.assets/addOns.gif)
 
 ### Putting it all together
 

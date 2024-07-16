@@ -21,8 +21,8 @@ This section contains concise explanations on how to accomplish something (often
 Assuming you have...
 - Git installed (if not, jump to: [Git](#Git))
 - **_(Windows only)_** WSL setup (if not, jump to: [Windows Setup](#windows-only))
-- Node <=16 is installed (if not, jump to: [Node](#Node))
-- NPM >= 8.3.0 installed (if not, jump to: [NPM](#NPM))
+- Node is installed (if not, jump to: [Node](#Node))
+- PNPM is installed: [PNPM](#PNPM)
 - VS Code installed with Typescript Extension added (if not, jump to: [Vs Code](#VS-Code-(Recommended)))
 
 Run the following from the command line:
@@ -30,20 +30,20 @@ Run the following from the command line:
 (**NOTE:** If using gitpod, this all will be done for you on startup)
 
 ```shell script
-git clone git@github.com:mitmedialab/prg-extension-boilerplate.git
-# Clone the repository onto your computer. This could take a while (~5m), grab a beverage!
+git clone --recurse-submodules git@github.com:mitmedialab/prg-extension-boilerplate.git
+# Clone the repository (including git submodules: scratch-gui and scratch-vm) onto your computer. This could take a while (~5m), grab a beverage!
 
 cd prg-extension-boilerplate/
 # Change directory (cd) to the repository
 
 git checkout dev 
 
-npm run init
+pnpm install
 # This will symlink the packages together to allow for seamless local development, and installs dependencies for each package. 
 # This should only need to be ran once (unless you checkout a branch that adds new package dependencies).
 # Takes ~1.5 minutes
 
-npm run dev -- --include examples
+pnpm dev -i examples
 # This starts up a development server, serving the two "example" extensions.
 # It takes about ~20s to initially startup and serve everything.
 # Open http://localhost:8601/ in your browser (keep refreshing if nothing's coming up)
@@ -61,8 +61,8 @@ git checkout dev
 git pull # Update branch with any remote changes
 git checkout -b <my branch> # Checkout your 'feature' branch, e.g. git checkout -b new_rad_extension
 
-npm run new:extension <folder to contain extension>
-# For example: npm run new:extension my_awesome_extension
+pnpm new:extension <folder to contain extension>
+# For example: pnpm new:extension my_awesome_extension
 # If succesful, the output of this command will tell you where to find your new extension file.
 # It will be an index.ts file, and its documentation should help you get started
 ```
@@ -72,7 +72,7 @@ npm run new:extension <folder to contain extension>
 If you're a pro extension-maker, use the following command to make a new extension that contains no documentation and/or filler text. 
 
 ```shell script
-npm run new:extension <folder to contain extension> barebones 
+pnpm new:extension <folder to contain extension> barebones 
 # Note the 'barenones' at the end
 ```
 
@@ -84,24 +84,22 @@ After you've [made your extension](#-making-an-extension), run the following com
 cd prg-extension-boilerplate/ # If not already there
 # Change directory (cd) to prg-extension-boilerplate/ 
 
-npm run dev -- --include <folder name of extension(s)>
-# For example: npm run dev -- --include my_awesome_extension
+pnpm dev -i <folder name of extension(s)>
+# For example: pnpm dev -i my_awesome_extension
 # Start a development server to view your extension and reload it as you make changes
 # This command will take ~20s to startup and serve everything to http://localhost:8601/
 
 # Note: you can use the '-i' shorthand instead of writing out '--include'
-npm run dev -- -i <folder name of extension(s)>
+pnpm dev -i <folder name of extension(s)>
 
 # Alternatively, serve all the currently implemented extensions
-npm run dev -- --include all
+pnpm dev -i all
 # NOTE: This will be much more intensive on your computer
 ```
 
-> **_FYI:_** If you're wondering why the extra `--` are necessary in the above commands, it's to ensure that node does not parse the `--include` flag (or any other options following the standalone `--`) as node options, and instead passes those arguments to the appropriate script. [See more.](https://nodejs.org/docs/latest-v8.x/api/cli.html#cli_1)
-
 Then, after navigating to http://localhost:8601/, follow the 'Adding Extensions' guidance in the [official extension documentation](https://en.scratch-wiki.info/wiki/Extension) to add your extension to the workspace. 
 
-As long as the development server is running (meaning the `npm run dev` command is still executing), every change you make to the extension file(s) will trigger the page to refresh and your changes will be reflected automagically 🪄. 
+As long as the development server is running (meaning the `pnpm dev` command is still executing), every change you make to the extension file(s) will trigger the page to refresh and your changes will be reflected automagically 🪄. 
 
 ### 📦 Committing, pushing, and deploying an extension 
 
@@ -170,7 +168,7 @@ First, read through the documentation of the `index.ts` file (written inside of 
 
 Also, try hovering over fields to view their documentation (typically a [summary](https://jsdoc.app/tags-summary.html), [examples](https://jsdoc.app/tags-example.html), and a [longer desrciption](https://jsdoc.app/tags-description.html)).
 
-![Gif of video hovering over fields to peak documentation](/documentation/assets/hover.gif)
+![Gif of video hovering over fields to peak documentation](//.assets/hover.gif)
 
 Still stuck? Check out our [From 0 to Extension guide](#-from-0-to-extension) and/or contact more experienced extension developers, like [Parker](https://github.com/pmalacho-mit) or [Randi](https://github.com/randi-c-dubs)
 
@@ -217,22 +215,23 @@ Please [install git](https://git-scm.com/downloads), which helps us with [source
 
 Like many web development projects, this project requires [node](https://nodejs.org/en/).
 
-Also, [due to a Webpack 4 issue](https://github.com/webpack/webpack/issues/14532), we require a node version <=16.
-
-Please locate the [latest v16 release](https://nodejs.org/en/blog/release) and install a suitable version for your operating system. If you already have node and need to downgrade to a version <= 16, please see these [instructions for downgrading node](https://www.educative.io/answers/how-to-downgrade-node-version).
+If you don't have Node installed, check out [this page](https://nodejs.org/en/download/package-manager) on how to download it.
 
 #### Maintainer Note (9/15/22)
 
 > In October 2022, node 18 LTS will be released, making it slightly harder to get node 16 LTS. 
 Before then, we either need to upgrade webpack to be able to use node 18, or revise the above instructions to help users locate node 16.
 
-### NPM
+### PNPM
 
-[NPM](https://www.npmjs.com/) (Node Package Manager) is a [package manager](https://en.wikipedia.org/wiki/Package_manager) that is *usually* automatically installed with [Node](#Node). 
+[PNPM](https://pnpm.io/) (Performant Node Package Manager) is a [package manager](https://en.wikipedia.org/wiki/Package_manager) that enhances dependency management for JavaScript projects by storing package files globally and using symbolic links in the `node_modules` folder. This approach reduces disk space usage and maintains the module dependency tree, making it a faster and more space-efficient alternative to traditional package managers like [NPM](https://www.npmjs.com/), [Node](#Node)'s default package manager.
 
-This project requires you to have NPM version ***8.3.0*** or later (in order to leverage [overrides](https://docs.npmjs.com/cli/v8/configuring-npm/package-json#overrides)).
+If you've already installed [Node](#Node), you'll likely have NPM automatically installed. Run the command below to install PNPM using NPM.
+```shell script
+npm install -g pnpm
+```
 
-Please follow [these instructions](https://docs.npmjs.com/try-the-latest-stable-version-of-npm) to check which version of NPM you have and upgrade it if it's older than ***8.3.0***.
+If you don't have NPM, you can [follow these instructions](https://pnpm.io/installation) to install PNPM.
 
 ### VS Code (Recommended)
 

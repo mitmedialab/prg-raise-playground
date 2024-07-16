@@ -1,5 +1,5 @@
 import { Extension, Environment, untilExternalGlobalVariableLoaded, validGenericExtension, RuntimeEvent } from "$common";
-import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
+import BlockUtility from "$root/scratch-packages/scratch-vm/src/engine/block-utility";
 import { legacyFullSupport, info } from "./legacy";
 
 const { legacyExtension, legacyDefinition } = legacyFullSupport.for<PoseFace>();

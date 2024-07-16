@@ -1,4 +1,4 @@
-import { ExtensionMenuDisplayDetails, ExtensionBlocks, BlockDefinitions, Translations } from "$common/types";
+import { ExtensionMenuDisplayDetails, ExtensionBlocks, BlockDefinitions, Translations, OneArgBlock, MultipleArgsBlock, NoArgsBlock } from "$common/types";
 import { isFunction } from "$common/utils";
 import { extension } from "./index";
 import { getImplementationName } from "./mixins/base/scratchInfo/index";
@@ -105,11 +105,12 @@ export abstract class Extension<
       const block = blocks[opcode];
       const { operation, text, arg, args, type } = isFunction(block) ? block.call(this, this) : block;;
       this.pushBlock(opcode,
-        arg
-          ? { text, type, arg }
+        (arg
+          ? { text, type, arg } satisfies OneArgBlock
           : args
-            ? { text, type, args }
-            : { text, type },
+            ? { text, type, args } satisfies MultipleArgsBlock
+            : { text, type } satisfies NoArgsBlock
+        ) as any,
         operation);
       const internalFuncName = getImplementationName(opcode);
       (this as unknown)[opcode] = function () { return self[internalFuncName].call(self, ...arguments); };

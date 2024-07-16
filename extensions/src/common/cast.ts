@@ -1,6 +1,6 @@
 import { ArgumentType } from "./types/enums";
-import { RGBObject, TypeByArgumentType, ValueOf } from "./types";
-import Cast from '$scratch-vm/util/cast';
+import { TypeByArgumentType, ValueOf } from "./types";
+import { decimalToRgb, hexToRgb } from "./utils";
 
 export const castToType = (argumentType: ValueOf<typeof ArgumentType>, value: any) => {
   switch (argumentType) {
@@ -17,7 +17,9 @@ export const castToType = (argumentType: ValueOf<typeof ArgumentType>, value: an
     case ArgumentType.Matrix:
       return toMatrix(value);
     case ArgumentType.Color:
-      return Cast.toRgbColorObject(value) as RGBObject;
+      return typeof value === 'string' && value.substring(0, 1) === '#'
+        ? hexToRgb(value) ?? { r: 0, g: 0, b: 0, a: 255 }
+        : decimalToRgb(castToType("number", value));
     default:
       throw new Error(`Method not implemented for value of ${value} and type ${argumentType}`);
   }
