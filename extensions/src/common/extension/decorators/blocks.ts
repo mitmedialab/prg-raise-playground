@@ -54,28 +54,22 @@ export const setAccessorPrefix = "__setter__";
  * @returns A manipulated version of the original method that is
  */
 
-
 export function block<
   const This extends ExtensionInstance,
   const Args extends any[],
   const Return,
   const Fn extends (...args: Args) => Return,
-  const TRemoveUtil extends any[] = Args extends [...infer R extends any[], BlockUtility] ? R : Args
+  const TRemoveUtil extends any[] = Args extends [...infer R extends any[], BlockUtility] ? R : Args,
 >
   (
     blockInfoOrGetter: (BlockMetadata<(...args: TRemoveUtil) => Return> | ((this: This, self: This) => BlockMetadata<(...args: TRemoveUtil) => Return>))
-    , versions?: Config): TypedMethodDecorator<This, Args, Return, (...args: Args) => Return> {
+  ): TypedMethodDecorator<This, Args, Return, (...args: Args) => Return> {
 
   return function (this: This, target: (this: This, ...args: Args) => Return, context: ClassMethodDecoratorContext<This, Fn>) {
-    var opcode = target.name;
+    const opcode = target.name;
     const internalFuncName = getImplementationName(opcode);
     // could add check for if this block is meant for scratch
-    if (versions) {
-      context.addInitializer(function () { this.pushBlock(opcode, blockInfoOrGetter, target, versions) });
-    } else {
-      context.addInitializer(function () { this.pushBlock(opcode, blockInfoOrGetter, target) });
-    }
-
+    context.addInitializer(function () { this.pushBlock(opcode, blockInfoOrGetter, target) });
 
     const isProbableAtBundleTime = !isFunction(blockInfoOrGetter);
     if (isProbableAtBundleTime) {
@@ -88,10 +82,8 @@ export function block<
         scratchType: blockInfoOrGetter.type
       });
     }
+
     return (function () { return this[internalFuncName].call(this, ...arguments) });
-
-
-
   };
 }
 
