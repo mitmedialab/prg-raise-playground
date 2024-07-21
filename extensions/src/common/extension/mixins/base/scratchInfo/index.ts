@@ -1,8 +1,7 @@
 import { castToType } from "$common/cast";
 import CustomArgumentManager from "$common/extension/mixins/configurable/customArguments/CustomArgumentManager";
 import { ArgumentType, BlockType } from "$common/types/enums";
-import { Config } from "$common/types"
-import { BlockOperation, ValueOf, Menu, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, DynamicMenu, BlockMetadata, BlockUtilityWithID, } from "$common/types";
+import { BlockOperation, ValueOf, Menu, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, DynamicMenu, BlockMetadata, BlockUtilityWithID, VersionedOptions } from "$common/types";
 import { registerButtonCallback } from "$common/ui";
 import { isString, typesafeCall, } from "$common/utils";
 import { menuProbe, asStaticMenu, getMenuName, convertMenuItemsToString } from "./menus";
@@ -10,7 +9,7 @@ import { Handler } from "./handlers";
 import { BlockDefinition, getButtonID, isBlockGetter } from "./util";
 import { convertToArgumentInfo, extractArgs, zipArgs } from "./args";
 import { convertToDisplayText } from "./text";
-import { CustomizableExtensionConstructor, MinimalExtensionInstance, } from "..";
+import { CustomizableExtensionConstructor, BaseScratchExtensionInstance, } from "..";
 import { ExtensionInstanceWithFunctionality } from "../..";
 import { blockIDKey } from "$common/globals";
 
@@ -31,7 +30,7 @@ const checkForBlockContext = (blockUtility: BlockUtilityWithID) => isBlockUtilit
  * @param args The args that must be parsed before being passed to the underlying operation 
  * @returns 
  */
-export const wrapOperation = <T extends MinimalExtensionInstance>(
+export const wrapOperation = <T extends BaseScratchExtensionInstance>(
   _this: T,
   operation: BlockOperation,
   args: { name: string, type: ValueOf<typeof ArgumentType>, handler: Handler }[]
@@ -73,8 +72,10 @@ export const wrapOperation = <T extends MinimalExtensionInstance>(
 export default function (Ctor: CustomizableExtensionConstructor) {
   type BlockEntry = { definition: BlockDefinition<ScratchExtension, BlockOperation>, operation: BlockOperation, versions: Config };
   type BlockMap = Map<string, BlockEntry>;
+  type VersionMap = Map<string, VersionedOptions[]>;
   abstract class ScratchExtension extends Ctor {
     private readonly blockMap: BlockMap = new Map();
+    private readonly versionMap: VersionMap = new Map();
 
     private readonly menus: Menu<any>[] = [];
     private info: ExtensionMetadata;
@@ -89,11 +90,24 @@ export default function (Ctor: CustomizableExtensionConstructor) {
     pushBlock<Fn extends BlockOperation>(opcode: string, definition: BlockDefinition<any, Fn>, operation: BlockOperation, versions?: Config) {
       if (this.blockMap.has(opcode)) throw new Error(`Attempt to push block with opcode ${opcode}, but it was already set. This is assumed to be a mistake.`)
       if (versions) {
-        this.blockMap.set(opcode, { definition, operation, versions} as BlockEntry);
+        this.blockMap.set(opcode, { definition, operation, versions } as BlockEntry);
       } else {
         this.blockMap.set(opcode, { definition, operation, versions: [] } as BlockEntry);
       }
-      
+
+    }
+
+    pushVersions(opcode: string, versions: any) {
+      if (this.versionMap.has(opcode)) throw new Error(`Attempt to push block with opcode ${opcode}, but it was already set. This is assumed to be a mistake.`)
+      this.versionMap.set(opcode, versions);
+    }
+
+    getVersion(opcode: string) {
+      return this.versionMap.get(opcode);
+    }
+
+    getVersionMap() {
+      return this.versionMap;
     }
 
     protected getInfo(): ExtensionMetadata {
@@ -134,7 +148,7 @@ export default function (Ctor: CustomizableExtensionConstructor) {
         info.func = buttonID;
       } else {
         const implementationName = getImplementationName(opcode);
-        this[implementationName] = wrapOperation(this as MinimalExtensionInstance, operation, zipArgs(args));
+        this[implementationName] = wrapOperation(this as BaseScratchExtensionInstance, operation, zipArgs(args));
       }
 
       return info;

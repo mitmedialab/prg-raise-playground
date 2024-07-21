@@ -1,7 +1,7 @@
 import type BlockUtility from "$scratch-vm/engine/block-utility";
 import { TypedClassDecorator, TypedGetterDecorator, TypedMethodDecorator, TypedSetterDecorator } from ".";
 import { BlockType } from "$common/types/enums";
-import { BlockMetadata, ScratchArgument, Argument, NoArgsBlock, Config } from "$common/types";
+import { BlockMetadata, ScratchArgument, Argument, NoArgsBlock, VersionedOptions } from "$common/types";
 import { getImplementationName } from "../mixins/base/scratchInfo/index";
 import { ExtensionInstance } from "..";
 import { isFunction, isString, tryCreateBundleTimeEvent } from "$common/utils";
@@ -64,34 +64,51 @@ export function block<
 >
   (
     blockInfoOrGetter: (BlockMetadata<(...args: TRemoveUtil) => Return> | ((this: This, self: This) => BlockMetadata<(...args: TRemoveUtil) => Return>))
-  , versions?: Config): TypedMethodDecorator<This, Args, Return, (...args: Args) => Return> {
+    , versions?: Config): TypedMethodDecorator<This, Args, Return, (...args: Args) => Return> {
 
   return function (this: This, target: (this: This, ...args: Args) => Return, context: ClassMethodDecoratorContext<This, Fn>) {
-      var opcode = target.name;
-        const internalFuncName = getImplementationName(opcode);
-      // could add check for if this block is meant for scratch
-      if (versions) {
-        context.addInitializer(function () { this.pushBlock(opcode, blockInfoOrGetter, target, versions) });
-      } else {
-        context.addInitializer(function () { this.pushBlock(opcode, blockInfoOrGetter, target) });
-      }
-      
+    var opcode = target.name;
+    const internalFuncName = getImplementationName(opcode);
+    // could add check for if this block is meant for scratch
+    if (versions) {
+      context.addInitializer(function () { this.pushBlock(opcode, blockInfoOrGetter, target, versions) });
+    } else {
+      context.addInitializer(function () { this.pushBlock(opcode, blockInfoOrGetter, target) });
+    }
 
-      const isProbableAtBundleTime = !isFunction(blockInfoOrGetter);
-      if (isProbableAtBundleTime) {
-        const { type } = blockInfoOrGetter;
-        blockBundleEvent?.fire({
-          methodName: opcode,
-          args: extractArgs(blockInfoOrGetter).map(a => isString(a) ? a : a.type),
-          // is 'any' an issue? Likely!
-          returns: type === "command" ? "void" : type === "Boolean" ? "bool" : "any",
-          scratchType: blockInfoOrGetter.type
-        });
-      }
-      return (function () { return this[internalFuncName].call(this, ...arguments) });
-    
 
-    
+    const isProbableAtBundleTime = !isFunction(blockInfoOrGetter);
+    if (isProbableAtBundleTime) {
+      const { type } = blockInfoOrGetter;
+      blockBundleEvent?.fire({
+        methodName: opcode,
+        args: extractArgs(blockInfoOrGetter).map(a => isString(a) ? a : a.type),
+        // is 'any' an issue? Likely!
+        returns: type === "command" ? "void" : type === "Boolean" ? "bool" : "any",
+        scratchType: blockInfoOrGetter.type
+      });
+    }
+    return (function () { return this[internalFuncName].call(this, ...arguments) });
+
+
+
+  };
+}
+
+export function versions<
+  const This extends ExtensionInstance,
+  const Args extends any[],
+  const Return,
+  const Fn extends (...args: Args) => Return,
+>
+  (
+    ...config: VersionedOptions[]
+  ): TypedMethodDecorator<This, Args, Return, (...args: Args) => Return> {
+
+  return function (this: This, target: (this: This, ...args: Args) => Return, context: ClassMethodDecoratorContext<This, Fn>) {
+    context.addInitializer(function () { this.pushVersions(target.name, config); });
+    //
+    return target;
   };
 }
 
