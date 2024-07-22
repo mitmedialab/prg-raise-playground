@@ -177,10 +177,10 @@ export default class ExtensionNameGoesHere extends extension(details, "ui") {
   //   }
   // }
 
-  @(scratch.command`Add chord ${"string"} to progression`)
-  addChord(chord: string) {
-    this.userChordProgression.push(chord);
-  }
+  // @(scratch.command`Add chord ${"string"} to progression`)
+  // addChord(chord: string) {
+  //   this.userChordProgression.push(chord);
+  // }
 
   @(scratch.command`Generate song from played notes`)
   async generateSong(util: BlockUtilityWithID) {
