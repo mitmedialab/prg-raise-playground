@@ -97,8 +97,7 @@ export class Music {
     convertToBeats(sequence, stepsPerBeat = 4) {
         return sequence.map(note => ({
             pitch: note.pitch,
-            startBeat: note.quantizedStartStep / stepsPerBeat,
-            endBeat: note.quantizedEndStep / stepsPerBeat
+            beats: (note.quantizedEndStep - note.quantizedStartStep) / stepsPerBeat
         }));
     }
 
