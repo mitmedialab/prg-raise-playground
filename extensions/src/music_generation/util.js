@@ -94,6 +94,34 @@ export class Music {
         return Math.pow(2, (interval / 12));
     }
 
+    convertToBeats(sequence, stepsPerBeat = 4) {
+        return sequence.map(note => ({
+            pitch: note.pitch,
+            startBeat: note.quantizedStartStep / stepsPerBeat,
+            endBeat: note.quantizedEndStep / stepsPerBeat
+        }));
+    }
+
+    playNoteBlock(pitch, beats, util) {
+        if (this._stackTimerNeedsInit(util)) {
+            let note = pitch;
+            note = Math.min(Math.max(note, 0), 130);
+            beats = Math.min(Math.max(beats, 0), 100);
+            // If the duration is 0, do not play the note. In Scratch 2.0, "play drum for 0 beats" plays the drum,
+            // but "play note for 0 beats" is silent.
+            if (beats === 0) return;
+
+            const durationSec = this._beatsToSec(beats);
+
+            this._playNote(util, note, durationSec);
+
+            this._startStackTimer(util, durationSec);
+
+        } else {
+            this._checkStackTimer(util);
+        }
+    }
+
 
     _playNote(util, note, durationSec) {
         if (util.runtime.audioEngine === null) return;

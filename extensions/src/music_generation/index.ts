@@ -78,6 +78,7 @@ export default class ExtensionNameGoesHere extends extension(details, "ui") {
   currentBeat;
   rnn;
   musicInstance;
+  generated;
 
 
   // setNotes(notes) {
@@ -142,14 +143,13 @@ export default class ExtensionNameGoesHere extends extension(details, "ui") {
       annotationType: mm.NoteSequence.TextAnnotation.TextAnnotationType.CHORD_SYMBOL,
     }));
 
-    console.log(progressionArray);
-    console.log()
-
     quantizedSequence.textAnnotations = progressionArray;
-    return [];
+    //return [];
 
-    //const continuedSequence = await this.rnn.continueSequence(quantizedSequence, 40, 1.0, ['C', 'G', 'Am', 'F']);
-    //return continuedSequence.notes;
+    const continuedSequence = await this.rnn.continueSequence(quantizedSequence, 40, 1.0, ['C', 'G', 'Am', 'F']);
+    console.log(continuedSequence.notes);
+    this.generated = continuedSequence.notes;
+    return continuedSequence.notes;
   }
 
 
@@ -246,6 +246,8 @@ export default class ExtensionNameGoesHere extends extension(details, "ui") {
 
   @(scratch.command`Play note at pitch ${"number"} for ${"number"}`)
   playNoteBlock(pitch: number, beats: number, util: BlockUtilityWithID) {
+    console.log("util");
+    console.log(util);
     if (this.musicInstance._stackTimerNeedsInit(util)) {
       let note = pitch;
       note = Math.min(Math.max(note, 0), 130);
@@ -260,16 +262,49 @@ export default class ExtensionNameGoesHere extends extension(details, "ui") {
 
       this.musicInstance._startStackTimer(util, durationSec);
 
+
+
       let oneNote = { pitch: pitch, startTime: this.currentBeat, endTime: this.currentBeat + beats };
 
       this.currentBeat += beats;
       this.userEnteredNotes.push(oneNote);
       this.startTime = this.currentBeat;
+
+
     } else {
       this.musicInstance._checkStackTimer(util);
     }
 
 
+  }
+
+  delay(seconds: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, seconds * 1000));
+  }
+
+  @(scratch.command`Play generated`)
+  async playGenerated(util: BlockUtilityWithID) {
+    let sequenceNotes = this.musicInstance.convertToBeats(this.generated);
+    console.log(sequenceNotes);
+    for (let i = 0; i < sequenceNotes.length; i++) {
+      let note = sequenceNotes[i];
+      let beats = note.endBeat - note.startBeat;
+
+      // Play the note
+      note = Math.min(Math.max(note.pitch, 0), 130);
+      beats = Math.min(Math.max(beats, 0), 100);
+      // If the duration is 0, do not play the note. In Scratch 2.0, "play drum for 0 beats" plays the drum,
+      // but "play note for 0 beats" is silent.
+      if (beats === 0) return;
+
+      const durationSec = this.musicInstance._beatsToSec(beats);
+
+      this.musicInstance._playNote(util, note, durationSec);
+
+      // Wait for the note duration before playing the next one
+      await this.delay(durationSec);
+      util.stackFrame.timer = null;
+    }
   }
 
   @(scratch.command`Start model`)
