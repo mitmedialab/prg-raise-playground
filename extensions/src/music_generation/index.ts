@@ -198,12 +198,9 @@ export default class ExtensionNameGoesHere extends extension(details, "ui") {
 
   @(scratch.command`Play note ${"number"} of generated notes`)
   async playGeneratedNote(index: number, util: BlockUtilityWithID) {
-    console.log("here");
     util.stackFrame.timer = null;
     let sequenceNotes = this.musicInstance.convertToBeats(this.generated);
-    console.log(sequenceNotes);
     let note = sequenceNotes[index];
-    console.log(note);
     // Play the note
     let beats = Math.min(Math.max(note.beats, 0), 100);
     note = Math.min(Math.max(note.pitch, 0), 130);
@@ -219,6 +216,13 @@ export default class ExtensionNameGoesHere extends extension(details, "ui") {
 
     await this.delay(durationSec);
 
+  }
+
+  @(scratch.reporter`Get note ${"number"} of generated notes`)
+  getNote(index: number) {
+    let sequenceNotes = this.musicInstance.convertToBeats(this.generated);
+    let note = sequenceNotes[index];
+    return note.pitch;
   }
 
 
