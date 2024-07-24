@@ -2,6 +2,7 @@ import { BlockMetadata, Argument, ReturnTypeByBlockType, ScratchBlockType, NoArg
 import { block } from "$common/extension/decorators/blocks";
 import { ExtensionInstance } from "..";
 import { TypedMethodDecorator } from ".";
+import type BlockUtility from "$scratch-vm/engine/block-utility";
 
 const process = (type: ScratchBlockType, strings: TemplateStringsArray, ...args: any[]) => {
     if (args.length === 0) return { type, text: strings[0], } satisfies NoArgsBlock;
@@ -41,7 +42,7 @@ namespace Argument {
     type TRemoveUtil<T extends any[]> = T extends [...infer R extends any[], BlockUtilityWithID] ? R : T;
     export type MapToScratch<T extends any[], Internal extends TRemoveUtil<T> = TRemoveUtil<T>> = {
         [k in keyof Internal]:
-        Internal[k] extends BlockUtilityWithID ? never :
+        Internal[k] extends (BlockUtilityWithID | BlockUtility) ? never :
         Internal[k] extends InlineImageSpecifier ? InlineImage :
         Argument<Internal[k]>
     }
