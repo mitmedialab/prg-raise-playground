@@ -1,6 +1,7 @@
 import { ExtensionWithFunctionality, MixinName, optionalMixins } from "./mixins/index";
 import { ExtensionBase } from "./ExtensionBase";
 import scratchInfo from "./mixins/base/scratchInfo";
+import scratchVersions from "./mixins/base/scratchVersioning";
 import supported from "./mixins/base/supported";
 import { ExtensionMenuDisplayDetails, Writeable } from "$common/types";
 import { tryCaptureDependencies } from "./mixins/dependencies";
@@ -49,7 +50,7 @@ export const extension = <const TSupported extends readonly MixinName[]>(
 
   if (details) extensionBundleEvent?.fire({ details, addOns });
 
-  const Base = scratchInfo(supported(ExtensionBase, addOns)) as ExtensionWithFunctionality<[...TSupported]>;
+  const Base = scratchVersions(scratchInfo(supported(ExtensionBase, addOns))) as ExtensionWithFunctionality<[...TSupported]>;
 
   if (!addOns) return Base;
 

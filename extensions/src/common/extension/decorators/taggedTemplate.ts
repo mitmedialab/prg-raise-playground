@@ -82,5 +82,6 @@ interface TemplateEngine<TBlockType extends ScratchBlockType> {
 export const scratch = {
     reporter: makeDecorator("reporter"),
     command: makeDecorator("command"),
+    hat: makeDecorator("hat"),
     button: makeDecorator("button"),
 }
