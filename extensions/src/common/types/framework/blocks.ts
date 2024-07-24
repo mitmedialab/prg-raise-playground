@@ -280,10 +280,10 @@ export type ScratchBlockType = typeof BlockType[keyof typeof BlockType];
 export type BlockType2 = "reporter" | "command" | "hat"; // etc, use actual version
 export type ArgValue = any;
 export type ArgIdentifier = string | number;
-export type ArgEntry = { 
-    /** If no id is provided, we can assume that the associated value does not correspond to any previously serialized argument */
-    readonly id?: ArgIdentifier, 
-    value: ArgValue
+export type ArgEntry = {
+  /** If no id is provided, we can assume that the associated value does not correspond to any previously serialized argument */
+  readonly id?: ArgIdentifier,
+  value: ArgValue
 }
 
 export type VersionArgTransformMechanism = {
@@ -294,9 +294,9 @@ export type VersionArgTransformMechanism = {
 export type VersionedArgTransformer = (mechanism: VersionArgTransformMechanism) => ArgEntry[];
 
 export type VersionedOptions = {
-transform?: VersionedArgTransformer;
-previousType?: BlockType2;
-previousName?: string;
+  transform?: VersionedArgTransformer;
+  previousType?: BlockType2;
+  previousName?: string;
 };
 
 export type ReturnTypeByBlockType<T extends ValueOf<typeof BlockType>> =

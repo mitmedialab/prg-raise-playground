@@ -91,11 +91,11 @@ export default function (Ctor: CustomizableExtensionConstructor) {
     }
 
     pushVersions(opcode: string, versions: any) {
-      if (this.versionMap.has(opcode)) throw new Error(`Attempt to push block with opcode ${opcode}, but it was already set. This is assumed to be a mistake.`)
+      if (this.versionMap.has(opcode)) throw new Error(`Attempt to push version with opcode ${opcode}, but it was already set. This is assumed to be a mistake.`)
       this.versionMap.set(opcode, versions);
     }
 
-    getVersion(opcode: string) {
+    getVersions(opcode: string) {
       return this.versionMap.get(opcode);
     }
 

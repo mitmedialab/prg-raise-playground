@@ -1,7 +1,7 @@
 import type BlockUtility from "$scratch-vm/engine/block-utility";
 import { TypedClassDecorator, TypedGetterDecorator, TypedMethodDecorator, TypedSetterDecorator } from ".";
 import { BlockType } from "$common/types/enums";
-import { BlockMetadata, ScratchArgument, Argument, NoArgsBlock, VersionedOptions } from "$common/types";
+import { BlockMetadata, ScratchArgument, Argument, NoArgsBlock, VersionedOptions, VersionedArgTransformer } from "$common/types";
 import { getImplementationName } from "../mixins/base/scratchInfo/index";
 import { ExtensionInstance } from "..";
 import { isFunction, isString, tryCreateBundleTimeEvent } from "$common/utils";
@@ -94,11 +94,12 @@ export function versions<
   const Fn extends (...args: Args) => Return,
 >
   (
-    ...config: VersionedOptions[]
+    ...config: (VersionedOptions | VersionedArgTransformer)[]
   ): TypedMethodDecorator<This, Args, Return, (...args: Args) => Return> {
 
   return function (this: This, target: (this: This, ...args: Args) => Return, context: ClassMethodDecoratorContext<This, Fn>) {
-    context.addInitializer(function () { this.pushVersions(target.name, config); });
+    const options = config.map((entry) => isFunction(entry) ? { transform: entry } : entry);
+    context.addInitializer(function () { this.pushVersions(target.name, options); });
     //
     return target;
   };

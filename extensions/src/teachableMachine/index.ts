@@ -319,9 +319,7 @@ export default class teachableMachine extends extension({
 
   @(scratch.command`use model ${"string"}`)
   @versions(
-    {
-      transform: ({ arg }) => [arg("MODEL_URL")],
-    }
+    ({ arg }) => [arg("MODEL_URL")],
   )
   useModelBlock(url: string) {
     this.useModel(url);

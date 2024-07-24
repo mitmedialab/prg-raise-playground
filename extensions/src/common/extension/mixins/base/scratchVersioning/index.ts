@@ -1,5 +1,168 @@
 import { BaseScratchExtensionConstuctor } from "..";
-import { ArgEntry, VersionArgTransformMechanism, ArgIdentifier } from "$common/types";
+import type { ArgEntry, VersionArgTransformMechanism, ArgIdentifier, ExtensionBlockMetadata } from "$common/types";
+import { CORE_EXTENSIONS, primitiveOpcodeInfoMap } from './enums';
+import { uid, regex, merge } from "./utils";
+import { isString } from "$common/utils";
+
+type BlockID = ReturnType<typeof uid>;
+type SerializedBlock = { opcode: string, id: string, fields: any, inputs: Record<string, any>, next: BlockID, parent: BlockID, topLevel: boolean };
+type SerializedTarget = { blocks: Record<string, SerializedBlock>, layerOrder: number, };
+
+type SerializedScratchData = {
+    targets: SerializedTarget[],
+}
+
+type BlockInfoByOpcode = Record<string, ExtensionBlockMetadata>;
+
+/**
+ * 
+ * NOTE: This modifies the block in place, and thus has side-effects
+ * @param block 
+ * @returns 
+ */
+const getVersionForBlockAndRemoveFromOpcode = (block: Pick<SerializedBlock, "opcode">) => {
+    const { opcode } = block;
+    const allVersionMatches = opcode.match(regex.versionSuffix.global);
+    if (!allVersionMatches) return 0;
+
+    const lastMatch = allVersionMatches.at(-1);
+    const matchVersionNumber = lastMatch.match(regex.versionSuffix.local);
+    const version = matchVersionNumber ? parseInt(matchVersionNumber[1], 10) : 0;
+
+    block.opcode = opcode.replace(regex.versionSuffix.global, "");
+    return version;
+}
+
+const getExtensionIdForBlock = ({ opcode }: Pick<SerializedBlock, "opcode">) => {
+    const index = opcode.indexOf('_');
+    const prefix = opcode.substring(0, index).replace(regex.forbiddenSymbols, '-');
+    if (CORE_EXTENSIONS.indexOf(prefix) === -1) {
+        if (prefix !== '') return prefix;
+    }
+};
+
+/**
+ * Remove image entries from the passed-in arguments for each block from the extension
+ * 
+ * @param {object} dict The arguments of the block
+ * @return {object} The arguments of the block with the static images removed
+ */
+const getBlockArgumentsWithoutImageEntries = ({ arguments: args }: Pick<ExtensionBlockMetadata, "arguments">) => {
+    const filtered: ExtensionBlockMetadata["arguments"] = {};
+    for (const [key, value] of Object.entries(args)) {
+        if (value.type === 'image') continue;
+        filtered[key] = value;
+    }
+    return filtered;
+}
+
+/**
+ * Gather the values from the 'inputs' property of a block as well as the block's variables
+ * @param {object} block The block to gather the inputs from
+ * @return {ArgEntry[]} return.inputs - An array of ArgEntry objects with each value representing an input
+ * @return {object} return.variables - A dictionary with all the block's variables as values and their positions as keys
+ */
+const gatherInputs = (block: SerializedBlock, { blocks }: SerializedTarget) => {
+    const variables = {};
+    const menus = {};
+    const args = new Map();
+
+    if (!block.inputs || Object.keys(block.inputs).length <= 0)
+        return { inputs: args, variables, menus };
+
+    for (const inputID in block.inputs) {
+        const input = block.inputs[inputID];
+        // If there is a variable in the input
+        if (isString(input[1])) {
+            const variableBlock = blocks[input[1]];
+            if (!variableBlock) continue;
+            // Store the block ID if the variable is a menu block
+            if (variableBlock.opcode.includes("_menu_")) {
+                menus[inputID] = input[1];
+                // Find the menu block value
+                const menuValue = variableBlock.fields["0"][0];
+                args.set(inputID, menuValue);
+            } else {
+                // Set the variables dictionary accordingly
+                variables[inputID] = [
+                    3,
+                    input[1],
+                    input[2]
+                ];
+                args.set(inputID, { id: inputID, value: input[2][1] });
+            }
+
+        } else {
+            // If the input is a value, push that value according to type
+            const type = parseFloat(input[1][0]);
+            switch (type) {
+                case primitiveOpcodeInfoMap.math_whole_number.code:
+                case primitiveOpcodeInfoMap.math_positive_number.code:
+                case primitiveOpcodeInfoMap.math_integer.code:
+                case primitiveOpcodeInfoMap.math_angle.code:
+                case primitiveOpcodeInfoMap.colour_picker.code:
+                case primitiveOpcodeInfoMap.math_positive_number.code:
+                    args.set(inputID, { id: inputID, value: parseFloat(input[1][1]) });
+                case primitiveOpcodeInfoMap.text.code:
+                case primitiveOpcodeInfoMap.event_broadcast_menu.code:
+                case primitiveOpcodeInfoMap.data_variable.code:
+                case primitiveOpcodeInfoMap.data_listcontents.code:
+                    args.set(inputID, { id: inputID, value: input[1][1] });
+                default:
+                    throw new Error("Unhandled input type");
+            }
+        }
+    }
+
+    return { inputs: args, variables: variables, menus: menus };
+}
+
+
+const gatherFields = ({ fields }: SerializedBlock) => {
+    const args = new Map();
+    if (!fields || Object.keys(fields).length <= 0)
+        return args;
+
+    for (const id in fields) {
+        const field = fields[id];
+        const { value } = field;
+        // let argType = argList[(field as any).name].type;
+        // Convert the value to its correct type
+        // if (argType == "number" || argType == "angle") {
+        //     value = parseFloat(value);
+        // }
+        args.set(id, { id, value })
+    }
+
+    return args;
+}
+
+/**
+ * Helper function used to create a position mapping from one version to another as well as
+ * assign each ArgEntry object a new ID
+ * 
+ * @param {ArgEntry[]} entries The updated entries to create the mapping from
+ * @param {string[]} serializedIDs The original list of keys to be passed in
+ * @return {ArgEntry[]} returns.newEntries - The ArgEntry objects with updated IDs
+ * @return {object} returns.mappings - A dictionary with the position mappings
+*/
+const updateEntries = (entries: ArgEntry[], serializedIDs: string[]) => {
+    const mappings: Map<string | number, string> = new Map();
+    const newEntries = new Map<string, ArgEntry>();
+    // Loop through the arg entries
+    for (let i = 0; i < entries.length; i++) {
+        const { id, value } = entries[i];
+        const serialized = serializedIDs[i];
+
+        if (id) mappings.set(id, serialized);
+
+        // Update the new ArgEntry array with the new ID
+        newEntries.set(serialized, { id: serialized, value });
+    }
+    return { newEntries, mappings };
+
+}
+
 
 /**
  * Mixin the ability for extensions to have their blocks 'versioned', 
@@ -8,110 +171,27 @@ import { ArgEntry, VersionArgTransformMechanism, ArgIdentifier } from "$common/t
  * @returns 
  * @see https://www.typescriptlang.org/docs/handbook/mixins.html
  */
-
-
-const CORE_EXTENSIONS = [
-    'argument',
-    'colour',
-    'control',
-    'data',
-    'event',
-    'looks',
-    'math',
-    'motion',
-    'operator',
-    'procedures',
-    'sensing',
-    'sound'
-];
-
-// Constants referring to 'primitive' blocks that are usually shadows,
-// or in the case of variables and lists, appear quite often in projects
-// math_number
-const MATH_NUM_PRIMITIVE = 4; // there's no reason these constants can't collide
-// math_positive_number
-const POSITIVE_NUM_PRIMITIVE = 5; // with the above, but removing duplication for clarity
-// math_whole_number
-const WHOLE_NUM_PRIMITIVE = 6;
-// math_integer
-const INTEGER_NUM_PRIMITIVE = 7;
-// math_angle
-const ANGLE_NUM_PRIMITIVE = 8;
-// colour_picker
-const COLOR_PICKER_PRIMITIVE = 9;
-// text
-const TEXT_PRIMITIVE = 10;
-// event_broadcast_menu
-const BROADCAST_PRIMITIVE = 11;
-// data_variable
-const VAR_PRIMITIVE = 12;
-// data_listcontents
-const LIST_PRIMITIVE = 13;
-
-// Map block opcodes to the above primitives and the name of the field we can use
-// to find the value of the field
-const primitiveOpcodeInfoMap = {
-    math_number: [MATH_NUM_PRIMITIVE, 'NUM'],
-    math_positive_number: [POSITIVE_NUM_PRIMITIVE, 'NUM'],
-    math_whole_number: [WHOLE_NUM_PRIMITIVE, 'NUM'],
-    math_integer: [INTEGER_NUM_PRIMITIVE, 'NUM'],
-    math_angle: [ANGLE_NUM_PRIMITIVE, 'NUM'],
-    colour_picker: [COLOR_PICKER_PRIMITIVE, 'COLOUR'],
-    text: [TEXT_PRIMITIVE, 'TEXT'],
-    event_broadcast_menu: [BROADCAST_PRIMITIVE, 'BROADCAST_OPTION'],
-    data_variable: [VAR_PRIMITIVE, 'VARIABLE'],
-    data_listcontents: [LIST_PRIMITIVE, 'LIST']
-};
-
-
-const soup_ = '!#%()*+,-./:;=?@[]^_`{|}~' +
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-
-/**
- * Generate a unique ID, from Blockly.  This should be globally unique.
- * 87 characters ^ 20 length > 128 bits (better than a UUID).
- * @return {string} A globally unique ID string.
- */
-const uid = function () {
-    const length = 20;
-    const soupLength = soup_.length;
-    const id = [];
-    for (let i = 0; i < length; i++) {
-        id[i] = soup_.charAt(Math.random() * soupLength);
-    }
-    return id.join('');
-};
-
 export default function (Ctor: BaseScratchExtensionConstuctor) {
     abstract class ExtensionWithConfigurableSupport extends Ctor {
-        
         /**
-         * A function that appends the version number to each opcode on project save
+         * Appends the version number to each opcode of block on project save
          * 
          * @param {Array} objTargets The obj.targets array from the Scratch project
          * @return {Array} An updated object.targets array with the new opcodes
         */
-        alterOpcodes(objTargets: any) {
-            const newTargets  = [];
-            // Loop through the object targets
-            for (const object of objTargets) {
+        alterOpcodes({ targets }: SerializedScratchData) {
+            for (const object of targets) {
                 for (const blockId in object.blocks) {
-                    const block = object.blocks[blockId];
-                    // Get the opcode from the block
-                    let blockInfoIndex = block.opcode.replace(`${block.opcode.split("_")[0]}_`, "");
-                    // Add the version number to the opcode
-                    const versions = this.getVersion(blockInfoIndex);
-                    if (versions && versions.length > 0) {
-                        object.blocks[blockId].opcode = `${object.blocks[blockId].opcode}_v${versions.length}`;
-                    } else {
-                        object.blocks[blockId].opcode = `${object.blocks[blockId].opcode}_v0`;
-                    }
+                    const { opcode } = object.blocks[blockId];
+                    const extensionPrefix = opcode.split("_")[0];
+                    const pureOpcode = opcode.replace(`${extensionPrefix}_`, "");
+                    const versions = this.getVersions(pureOpcode);
+                    const versionNumber = versions?.length ?? 0;
+                    object.blocks[blockId].opcode = `${opcode}_v${versionNumber}`;
                 }
-                newTargets.push(object);
             }
-            return newTargets;
         }
-        
+
         /**
          * A function that modifies a project JSON based on any updated
          * versioning implementations
@@ -119,292 +199,230 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
          * @param {object} projectJSON The project JSON to be modified
          * @return {object} An updated project JSON compatible with the current version of the extension
         */
-        alterJSON(projectJSON: any) {
+        alterJSON(projectJSON: SerializedScratchData) {
             // Collect the targets
-            const targetObjects = projectJSON.targets
-            .map((t, i) => Object.assign(t, { targetPaneOrder: i }))
-            .sort((a, b) => a.layerOrder - b.layerOrder);
+            const serializedTargets = projectJSON.targets
+                .map((t, i) => Object.assign(t, { targetPaneOrder: i }))
+                .sort((a, b) => a.layerOrder - b.layerOrder);
 
             const newTargets = [];
-            for (const object of targetObjects) {
+            const selfInfo = this.getInfo();
+            const { blocks: selfBlocks, id: selfID } = selfInfo;
+
+            const blockInfoByOpcode = selfBlocks.reduce((acc, tempBlock: ExtensionBlockMetadata) => {
+                acc[tempBlock.opcode] = tempBlock;
+                return acc;
+            }, {} as BlockInfoByOpcode);
+
+            const nameMap = this.createNameMap(blockInfoByOpcode);
+
+            for (const serializedTarget of serializedTargets) {
                 const newBlocks = {};
-                for (const blockId in object.blocks) {
-                    let blockJSON = object.blocks[blockId];
-                    let version = 0;
-                    const blockOpcode = blockJSON.opcode;
+                for (const blockId in serializedTarget.blocks) {
+                    const serializedBlock = serializedTarget.blocks[blockId];
+                    const version = getVersionForBlockAndRemoveFromOpcode(serializedBlock);
+                    const extensionID = getExtensionIdForBlock(serializedBlock);
+                    const blockBelongsToSelf = extensionID === selfID;
 
-                    // Check if version name is included
-                    const regex = /_v(\d+)/g;
-                    const matches = blockOpcode.match(regex); // Get all matches
-                    // Collect the version number
-                    if (matches) {
-                        const lastMatch = matches[matches.length - 1]; 
-                        const versionMatch = lastMatch.match(/_v(\d+)/); 
+                    if (blockBelongsToSelf && !serializedBlock.opcode.includes("_menu_")) {
+                        const serializedOpcode = serializedBlock.opcode.replace(`${extensionID}_`, "");
+                        const upgradedOpcode = nameMap.get(version)?.get(serializedOpcode) ?? serializedOpcode;
 
-                        if (versionMatch) {
-                            version = parseInt(versionMatch[1], 10); // Extract and parse the version number
-                        }
-                        blockJSON.opcode = blockOpcode.replace(regex, ""); // Remove all version numbers from the opcode
-                    }
+                        serializedBlock.opcode = serializedBlock.opcode.replace(serializedOpcode, upgradedOpcode);
+                        const versions = this.getVersions(upgradedOpcode);
 
-                    const extensionID = this.getExtensionIdForOpcode(blockJSON.opcode);
-                    const blocksInfo = this.getInfo().blocks.reduce((acc, tempBlock: any) => {
-                        acc[tempBlock.opcode] = tempBlock;
-                        return acc;
-                    }, {});
+                        const latestBlockInfo = blockInfoByOpcode[upgradedOpcode];
 
+                        const versioningRequired = versions && version < versions.length;
+                        if (!versioningRequired) continue;
 
+                        let { inputs, variables, menus } = gatherInputs(serializedBlock, serializedTarget);
+                        let fields = gatherFields(serializedBlock);
+                        let allArgs = merge(inputs, fields);
+                        const newInputs = {};
+                        const newFields = {};
 
-                    const block = object.blocks[blockId];
-                    // If the block is under the current extension
-                    if (extensionID == this.getInfo().id && !block.opcode.includes("_menu_")) {
-                        let blockInfoIndex = block.opcode.replace(`${block.opcode.split("_")[0]}_`, "");
-                        let oldIndex = blockInfoIndex;
-                        const nameMap = this.createNameMap(blocksInfo);
-                        if (nameMap[version] && nameMap[version][blockInfoIndex]) {
-                            blockInfoIndex = nameMap[version][blockInfoIndex];
-                        }
-                        // Update the opcode to be the current version name
-                        block.opcode = block.opcode.replace(oldIndex, blockInfoIndex);
-                        let versions = this.getVersion(blockInfoIndex);
+                        for (const { transform } of versions) {
+                            if (!transform) continue;
 
-                        let originalType = blocksInfo[blockInfoIndex].blockType;
-                        let first = true;
+                            const serializedArgIDs: string[] = Array.from(allArgs.keys());
+                            const mechanism: VersionArgTransformMechanism = {
+                                arg: (identifier: ArgIdentifier) => allArgs.get(String(identifier)),
+                                args: () => Array.from(allArgs.values()),
+                            }
+                            const entries = transform(mechanism);
+                            const { newEntries, mappings } = updateEntries(entries, serializedArgIDs);
 
-                        // If we need to update the JSON to be compatible with the current version
-                        if (versions && version < versions.length) {
-                            // Remove the image entries from the arguments
-                            const blockArgs = this.removeImageEntries(blocksInfo[blockInfoIndex].arguments);
-                            // Gather values
-                            let { inputs, variables, menus } = this.gatherInputs(block, object.blocks);
-                            let fields = this.gatherFields(block);
-                            let totalList = this.mergeMaps(inputs, fields);
-                            const newInputs = {};
-                            const newFields = {};
-                            let changed = false;
-                            let moveToSay = false;
+                            allArgs = newEntries;
 
-                            // Apply each version modification as needed
-                            versions = Array.isArray(versions) && Array.isArray(versions[0]) ? versions[0] : versions;
-                            for (let i = version; i < versions.length; i++) {
-                                if (versions[i].transform) {
-                                    // totalList is the map to be used in the mechanism from ArgEntry objects
-                                    const map: any = totalList;
-                                    let originalKeys: string[] = Array.from(map.keys());
-                                    const mechanism: VersionArgTransformMechanism = {
-                                        arg: (identifier: ArgIdentifier) => map.get(String(identifier)),
-                                        args: () => Array.from(map.values()),
-                                    }
-                                    // Complete the transformation
-                                    
-                                    const entries: ArgEntry[] = versions[i].transform(mechanism);
-                                    // Update the ArgEntry objects' IDs and get position mappings
-                                    const { newEntries, mappings } = this.updateEntries(entries, originalKeys);
-                                    totalList = newEntries;
-                                    // Change the menu block value if applicable
-                                    for (const key of Object.keys(menus)) {
-                                        if (mappings[key]) {
-                                            let value = newEntries.get(mappings[key]).value;
-                                            object.blocks[menus[key]].fields["0"][0] = value;
-                                        }
-                                    }
-                                    // Update menu positions
-                                    menus = this.updateDictionary(menus, mappings);
-                                    // Update variable positions
-                                    variables = this.updateDictionary(variables, mappings);
-                                }
-                                if (versions[i].previousType) { 
-                                    if (first) {
-                                        originalType = versions[i].previousType;
-                                        first = false;
-                                    }
-                                }
+                            // Change the menu block value if applicable
+                            for (const key of Object.keys(menus)) {
+                                if (!mappings.has(key)) continue;
+                                const { value } = newEntries.get(mappings.get(key));
+                                serializedTarget.blocks[menus[key]].fields["0"][0] = value;
                             }
 
-                            // Re-create the project JSON inputs/fields with the new values
-                            for (let i = 0; i < Object.keys(blockArgs).length; i++) {
-                                const argIndex = Object.keys(blockArgs)[i];
-                                // If there's a menu block in the argIndex position
-                                if (Object.keys(menus).includes(argIndex)) {
-                                    newInputs[argIndex] = [1, menus[argIndex]];
-                                } 
-                                // If there's a variable in the argIndex position
-                                else if (Object.keys(variables).includes(argIndex)) {
-                                    newInputs[argIndex] = variables[argIndex];
-                                } 
-                                // If we need to place the value in a field
-                                else if (blockArgs[argIndex].menu) {
-                                    let fieldValue = totalList.get(argIndex).value;
-                                    if (typeof fieldValue == "number") {
-                                        fieldValue = String(fieldValue);  
-                                    }
-                                    newFields[argIndex] = {
-                                        name: String(argIndex),
-                                        value: fieldValue,
-                                        id: null
-                                    }
-                                } 
-                                // If we need to place the value in an input
-                                else {
-                                    const typeNum = this.getType(blockArgs[argIndex].type);
-                                    newInputs[argIndex] = [
-                                        1, [
-                                            typeNum,
-                                            String(totalList.get(argIndex).value)
+                            menus = this.updateDictionary(menus, mappings);
+                            variables = this.updateDictionary(variables, mappings);
+                        }
+
+                        const latestBlockArgs = getBlockArgumentsWithoutImageEntries(latestBlockInfo);
+
+                        // Re-create the project JSON inputs/fields with the new values
+                        for (let i = 0; i < Object.keys(latestBlockArgs).length; i++) {
+                            const argID = Object.keys(latestBlockArgs)[i];
+
+                            // If there's a menu block in the argIndex position
+                            if (Object.keys(menus).includes(argID)) {
+                                newInputs[argID] = [1, menus[argID]];
+                            }
+                            // If there's a variable in the argIndex position
+                            else if (Object.keys(variables).includes(argID)) {
+                                newInputs[argID] = variables[argID];
+                            }
+                            // If we need to place the value in a field
+                            else if (latestBlockArgs[argID].menu) {
+                                let fieldValue = allArgs.get(argID).value;
+                                if (typeof fieldValue == "number") {
+                                    fieldValue = String(fieldValue);
+                                }
+                                newFields[argID] = {
+                                    name: String(argID),
+                                    value: fieldValue,
+                                    id: null
+                                }
+                            }
+                            // If we need to place the value in an input
+                            else {
+                                const typeNum = this.getType(latestBlockArgs[argID].type);
+                                newInputs[argID] = [
+                                    1, [
+                                        typeNum,
+                                        String(allArgs.get(argID).value)
+                                    ]
+                                ]
+                            }
+                        }
+
+                        // Re-assign fields and inputs
+                        serializedBlock.inputs = newInputs;
+                        serializedBlock.fields = newFields;
+
+                        let originalType = blockInfoByOpcode[upgradedOpcode].blockType;
+                        let first = true;
+                        // Apply each version modification as needed
+                        for (let i = version; i < versions.length; i++) {
+                            const { previousType } = version[i];
+                            if (previousType) {
+                                if (first) {
+                                    originalType = versions[i].previousType;
+                                    first = false;
+                                }
+                            }
+                        }
+
+
+                        // If we need to move the information to a 'say' block, since 
+                        // we need to keep it connected to the previous/next blocks
+                        if (originalType != blockInfoByOpcode[upgradedOpcode].blockType) {
+                            if ((originalType == "command" || originalType == "hat") && blockInfoByOpcode[upgradedOpcode].blockType == "reporter") { // square to circle
+                                const oldID = blockId;
+                                const next = serializedBlock.next;
+                                // Re-assign the ID of the current block
+                                serializedBlock.id = uid();
+                                // Create the new block
+                                const newBlock = Object.create(null);
+                                newBlock.id = oldID;
+                                newBlock.parent = serializedBlock.parent;
+                                serializedBlock.parent = newBlock.id;
+                                newBlock.fields = {};
+                                // Input should be the reporter block variable
+                                newBlock.inputs = {
+                                    MESSAGE: [
+                                        3,
+                                        serializedBlock.id,
+                                        [
+                                            10,
+                                            "Hello"
                                         ]
                                     ]
                                 }
+                                newBlock.next = next;
+                                serializedBlock.next = null;
+                                newBlock.opcode = "looks_say";
+                                newBlock.shadow = false;
+
+                                // Since we changed the block ID, we need to update the 
+                                // block's input blocks to match
+                                for (const key of Object.keys(serializedBlock.inputs)) {
+                                    if (serializedBlock.inputs[key].block) {
+                                        let inputBlock = serializedBlock.inputs[key].block;
+                                        if (serializedTarget.blocks[inputBlock]) {
+                                            serializedTarget.blocks[inputBlock].parent = serializedBlock.id;
+                                            serializedBlock.inputs[key].shadow = serializedBlock.inputs[key].block;
+                                        }
+
+                                    }
+                                }
+                                // Set the blocks in the JSON
+                                newBlocks[serializedBlock.id] = serializedBlock;
+                                newBlocks[newBlock.id] = newBlock;
                             }
-            
-                            // Re-assign fields and inputs
-                            block.inputs = newInputs;
-                            block.fields = newFields;
-            
-                            // If we need to move the information to a 'say' block, since 
-                            // we need to keep it connected to the previous/next blocks
-                            if (originalType != blocksInfo[blockInfoIndex].blockType) {
-                                if ((originalType == "command" || originalType == "hat") && blocksInfo[blockInfoIndex].blockType == "reporter") { // square to circle
-                                    const oldID = blockId;
-                                    const next = block.next;
-                                    // Re-assign the ID of the current block
-                                    block.id = uid();
-                                    // Create the new block
-                                    const newBlock = Object.create(null);
-                                    newBlock.id = oldID;
-                                    newBlock.parent = block.parent;
-                                    block.parent = newBlock.id;
-                                    newBlock.fields = {};
-                                    // Input should be the reporter block variable
-                                    newBlock.inputs = {
-                                        MESSAGE: [
-                                            3, 
-                                            block.id,
-                                            [
-                                                10, 
-                                                "Hello"
-                                            ]
-                                        ]
-                                    }
-                                    newBlock.next = next;
-                                    block.next = null;
-                                    newBlock.opcode = "looks_say";
-                                    newBlock.shadow = false;
-                                    
-                                    // Since we changed the block ID, we need to update the 
-                                    // block's input blocks to match
-                                    for (const key of Object.keys(block.inputs)) {
-                                        if (block.inputs[key].block) {
-                                            let inputBlock = block.inputs[key].block;
-                                            if (object.blocks[inputBlock]) {
-                                                object.blocks[inputBlock].parent = block.id;
-                                                block.inputs[key].shadow = block.inputs[key].block;
-                                            }
-                
-                                        }
-                                    }
-                                    // Set the blocks in the JSON
-                                    newBlocks[block.id] = block;
-                                    newBlocks[newBlock.id] = newBlock;
-                                } 
-                                // If we need to create a command from a reporter
-                                else if (originalType == "reporter" && (blocksInfo[blockInfoIndex].blockType == "command" || blocksInfo[blockInfoIndex].blockType == "button" || blocksInfo[blockInfoIndex].blockType == "hat")) { // reporter to command) { // circle to square
-                                    // If the previous reporter block has a parent
-                                    if (object.blocks[block.parent]) {
-                                        const parentBlock = object.blocks[block.parent];
-                                        // Remove the reporter variable from the parent block's inputs
-                                        for (let key of Object.keys(parentBlock.inputs)) {
-                                            let values = [];
-                                            let index = 0;
-                                            for (const value of parentBlock.inputs[key]) {
-                                                if (value != blockId) {
-                                                    if (index == 0) {
-                                                        // We'll also need to set the shadow to 1
-                                                        // since we removed the variable
-                                                        values.push(1);
-                                                    } else {
-                                                        values.push(value);
-                                                    }
+                            // If we need to create a command from a reporter
+                            else if (originalType == "reporter" && (blockInfoByOpcode[upgradedOpcode].blockType == "command" || blockInfoByOpcode[upgradedOpcode].blockType == "button" || blockInfoByOpcode[upgradedOpcode].blockType == "hat")) { // reporter to command) { // circle to square
+                                // If the previous reporter block has a parent
+                                if (serializedTarget.blocks[serializedBlock.parent]) {
+                                    const parentBlock = serializedTarget.blocks[serializedBlock.parent];
+                                    // Remove the reporter variable from the parent block's inputs
+                                    for (let key of Object.keys(parentBlock.inputs)) {
+                                        let values = [];
+                                        let index = 0;
+                                        for (const value of parentBlock.inputs[key]) {
+                                            if (value != blockId) {
+                                                if (index == 0) {
+                                                    // We'll also need to set the shadow to 1
+                                                    // since we removed the variable
+                                                    values.push(1);
+                                                } else {
+                                                    values.push(value);
                                                 }
-                                                index = index + 1;
                                             }
-                                            parentBlock.inputs[key] = values; 
+                                            index = index + 1;
                                         }
-                                        // Update the current block to be a command block
-                                        if (blocksInfo[blockInfoIndex].blockType == "command") {
-                                            block.parent = null;
-                                            block.topLevel = true;
-                                        }
-                                        
-                                    } 
-                                } else if ((originalType == "command") && (blocksInfo[blockInfoIndex].blockType == "hat")) {
-                                    if (object.blocks[block.parent]) {
-                                        const oldId = block.parent;
-                                        const parentBlock = object.blocks[block.parent];
-                                        parentBlock.next = null;
-                                        block.parent = null;
-                                        block.topLevel = true;
-                                        newBlocks[blockId] = block;
-                                        newBlocks[oldId] = parentBlock;
+                                        parentBlock.inputs[key] = values;
                                     }
+                                    // Update the current block to be a command block
+                                    if (blockInfoByOpcode[upgradedOpcode].blockType == "command") {
+                                        serializedBlock.parent = null;
+                                        serializedBlock.topLevel = true;
+                                    }
+
+                                }
+                            } else if ((originalType == "command") && (blockInfoByOpcode[upgradedOpcode].blockType == "hat")) {
+                                if (serializedTarget.blocks[serializedBlock.parent]) {
+                                    const oldId = serializedBlock.parent;
+                                    const parentBlock = serializedTarget.blocks[serializedBlock.parent];
+                                    parentBlock.next = null;
+                                    serializedBlock.parent = null;
+                                    serializedBlock.topLevel = true;
+                                    newBlocks[blockId] = serializedBlock;
+                                    newBlocks[oldId] = parentBlock;
                                 }
                             }
                         }
-                        
-                    } 
+                    }
                     // Set the blocks dictionary
                     if (!Object.keys(newBlocks).includes(blockId)) {
-                        newBlocks[blockId] = block;
+                        newBlocks[blockId] = serializedBlock;
                     }
                 }
                 // Update the target with the new blocks
-                object.blocks = newBlocks;
-                newTargets.push(object);
+                serializedTarget.blocks = newBlocks;
+                newTargets.push(serializedTarget);
             }
             // Update the project JSON with the new target
             projectJSON.targets = newTargets;
             return projectJSON;
-        }
-
-        /**
-         * Helper function to get the extension ID from a block's opcode
-         * 
-         * @param {string} opcode The block's opcode
-         * @return {string} The extension ID
-        */
-        getExtensionIdForOpcode(opcode: string): string {
-            // Allowed ID characters are those matching the regular expression [\w-]: A-Z, a-z, 0-9, and hyphen ("-").
-            const index = opcode.indexOf('_');
-            const forbiddenSymbols = /[^\w-]/g;
-            const prefix = opcode.substring(0, index).replace(forbiddenSymbols, '-');
-            if (CORE_EXTENSIONS.indexOf(prefix) === -1) {
-                if (prefix !== '') return prefix;
-            }
-        };
-
-        /**
-         * Helper function used to create a position mapping from one version to another as well as
-         * assign each ArgEntry object a new ID
-         * 
-         * @param {ArgEntry[]} entries The updated entries to create the mapping from
-         * @param {string[]} originalKeys The original list of keys to be passed in
-         * @return {ArgEntry[]} returns.newEntries - The ArgEntry objects with updated IDs
-         * @return {object} returns.mappings - A dictionary with the position mappings
-        */
-        updateEntries(entries: ArgEntry[], originalKeys: string[]) {
-            const mappings = {};
-            let newEntries = new Map();
-            // Loop through the arg entries
-            for (let i = 0; i < entries.length; i++) {
-                // If the value hasn't just been added
-                if (entries[i].id) {
-                    // Set the positional dictionary
-                    mappings[entries[i].id] = originalKeys[i];
-                }   
-                // Update the new ArgEntry array with the new ID
-                newEntries.set(originalKeys[i], {id: originalKeys[i], value: entries[i].value});
-            }
-            return { newEntries, mappings };
-
         }
 
         /**
@@ -415,34 +433,21 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
          * @param {object} blockInfo A dictionary with the information of each block from the extension
          * @return {object} The dictionary with each block's opcode at each version
         */
-        createNameMap(blocksInfo: any) {
-            const versionMap = new Map();
-            // Loop through every block in the extension
+        createNameMap(blocksInfo: BlockInfoByOpcode) {
+            const versionMap = new Map<number, Map<string, string>>();
             for (const opcode of Object.keys(blocksInfo)) {
-                // Get version information for each extension
-                let versions = this.getVersion(opcode);
-                versions = Array.isArray(versions) && Array.isArray(versions[0]) ? versions[0] : versions
-                // If there is version information
-                if (versions && versions.length > 0) {
-                    let tempName = opcode;
-                    // Loop through the versions from most current to least current
-                    for (let index = versions.length - 1; index >= 0; index--) { 
-                        if (!versionMap.has(index)) {
-                            versionMap[index] = {};
-                        }
-                        // Collect the name for the version, if it's not the current opcode
-                        const version = versions[index];
-                        if (typeof version == "object" && version.previousName) { // check if the version entry has a name
-                            const oldName = version.previousName;
-                            tempName = oldName;
-                        }
-                        // Set the map entry for the version and the name at that version
-                        if (tempName != opcode) {
-                            versionMap[index][tempName] = opcode;
-                        }
-                    }
+                const versions = this.getVersions(opcode);
+                if (!versions || versions.length === 0) continue;
+
+                let tempName = opcode;
+                for (let index = versions.length - 1; index >= 0; index--) {
+                    const version = versions[index];
+                    if (!versionMap.has(index)) versionMap.set(index, new Map());
+                    tempName = version.previousName ?? tempName;
+                    if (tempName !== opcode) versionMap.get(index).set(tempName, opcode);
                 }
             }
+
             return versionMap;
         }
 
@@ -464,69 +469,6 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
         }
 
         /**
-         * Gather the values from the 'inputs' property of a block as well as the block's variables
-         * 
-         * @param {object} blockJSON The block to gather the inputs from
-         * @return {ArgEntry[]} return.inputs - An array of ArgEntry objects with each value representing an input
-         * @return {object} return.variables - A dictionary with all the block's variables as values and their positions as keys
-         */
-        gatherInputs(blockJSON: any, blocks): any {
-            const variables = {};
-            const menu = {};
-            const args = new Map();
-            // Loop through the block's inputs
-            if (blockJSON.inputs && Object.keys(blockJSON.inputs).length > 0) {
-                Object.keys(blockJSON.inputs).forEach(input => {
-                    const keyIndex = input;
-                    input = blockJSON.inputs[input];
-                    // If there is a variable in the input
-                    if (typeof input[1] == "string") {
-                        const variableBlock = blocks[input[1]];
-                        if (variableBlock) {
-                            // Store the block ID if the variable is a menu block
-                            if (variableBlock.opcode.includes("_menu_")) {
-                                menu[keyIndex] = input[1];
-                                // Find the menu block value
-                                const menuValue = variableBlock.fields["0"][0];
-                                args.set(keyIndex, menuValue);
-                            } else {
-                                // Set the variables dictionary accordingly
-                                variables[keyIndex] = [
-                                    3,
-                                    input[1],
-                                    input[2]
-                                ];
-                                args.set(keyIndex, {id: keyIndex, value: input[2][1]});
-                            }
-                        }
-                    } else {
-                        // If the input is a value, push that value according to type
-                        const type = parseFloat(input[1][0]);
-                        switch (type) {
-                            case 6: // WHOLE_NUM_PRIMITIVE
-                            case 5: // POSITIVE_NUM_PRIMITIVE
-                            case 7: // INTEGER_NUM_PRIMITIVE
-                            case 8: // ANGLE_NUM_PRIMITIVE
-                            case 9: // COLOR_PICKER_PRIMITIVE
-                            case 4: // MATH_NUM_PRIMITIVE
-                            {
-                                args.set(keyIndex, {id: keyIndex, value: parseFloat(input[1][1])});
-                                break;
-                            }
-                            case 10: // TEXT_PRIMITIVE
-                            default: // BROADCAST_PRIMITIVE, VAR_PRIMITIVE, LIST_PRIMITIVE
-                            {
-                                args.set(keyIndex, {id: keyIndex, value: input[1][1]})
-                                break;
-                            }
-                        }
-                    }
-                })
-            }
-            return { inputs: args, variables: variables, menus: menu };
-        }
-
-        /**
          * Gather the values from the 'fields' property of a block
          * 
          * @param {object} blockJSON The block to gather the inputs from
@@ -537,29 +479,19 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
             // Loop through each field
             if (blockJSON.fields && Object.keys(blockJSON.fields).length > 0) {
                 Object.keys(blockJSON.fields).forEach(field => {
-                        const keyIndex = field;
-                        field = blockJSON.fields[field];
-                        // Collect the field's value
-                        let value = (field as any).value;
-                        // let argType = argList[(field as any).name].type;
-                        // Convert the value to its correct type
-                        // if (argType == "number" || argType == "angle") {
-                        //     value = parseFloat(value);
-                        // }
-                        args.set(keyIndex, {id: keyIndex, value: value})
+                    const keyIndex = field;
+                    field = blockJSON.fields[field];
+                    // Collect the field's value
+                    let value = (field as any).value;
+                    // let argType = argList[(field as any).name].type;
+                    // Convert the value to its correct type
+                    // if (argType == "number" || argType == "angle") {
+                    //     value = parseFloat(value);
+                    // }
+                    args.set(keyIndex, { id: keyIndex, value: value })
                 })
             }
             return args;
-        }
-
-        mergeMaps(map1: any, map2: any): any {
-            let combinedMap = new Map([...map1]);
-
-            map2.forEach((value, key) => {
-                combinedMap.set(key, value);
-            });
-            
-            return combinedMap;
         }
 
         /**
@@ -609,10 +541,10 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                 }
                 case "string":
                 default:
-                {
-                    opcode = 'text';
-                    break;
-                }
+                    {
+                        opcode = 'text';
+                        break;
+                    }
             }
             // Map the opcode to its enum type
             return primitiveOpcodeInfoMap[opcode][0];
@@ -639,9 +571,9 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                     const typeNum = this.getType(argInfo[key].type);
                     let defaultVal = argInfo[key].defaultValue;
                     if (String(defaultVal) == "undefined") {
-                        switch(argInfo[key].type) {
-                            case "number": 
-                            case "angle": 
+                        switch (argInfo[key].type) {
+                            case "number":
+                            case "angle":
                             case "color": {
                                 defaultVal = 0;
                                 break;
@@ -659,7 +591,7 @@ export default function (Ctor: BaseScratchExtensionConstuctor) {
                             defaultVal
                         ]
                     ]
-                // Otherwise, leave the input as is
+                    // Otherwise, leave the input as is
                 } else {
                     newInputs[key] = inputs[key];
                 }
