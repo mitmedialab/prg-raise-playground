@@ -1,5 +1,5 @@
 import { legacySupportWithInfoArgument } from "$common/extension/mixins/configurable/legacySupport";
-import { ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuItems, BlockOperation, Argument, ExtensionMenuMetadata, ExtensionDynamicMenu, Menu, DynamicMenuThatAcceptsReporters, BaseGenericExtension, VerboseArgument, DefineBlock, AbstractConstructor, NonAbstractConstructor, BlockMetadata } from "$common/types";
+import { ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuItems, BlockOperation, Argument, ExtensionMenuMetadata, ExtensionDynamicMenu, Menu, DynamicMenuThatAcceptsReporters, BaseGenericExtension, VerboseArgument, DefineBlock, AbstractConstructor, NonAbstractConstructor, BlockMetadata, NoArgsBlock, OneArgBlock } from "$common/types";
 import { isFunction, isString } from "$common/utils";
 import { block } from "../blocks";
 import { ArgumentMethods, BlockDecorators, BlockDefinitions, BlockEntry, BlockMap, LegacyExtension, LegacyExtensionDecorator, LegacySupport, ObjectOrGetter } from "./types";
@@ -126,7 +126,10 @@ const convertAndInsertBlock = (map: BlockMap, block: ExtensionBlockMetadata, met
   const { opcode, arguments: _arguments, blockType: type } = block;
   const { text, orderedNames } = parseText(block);
 
-  if (!_arguments) return map.set(opcode, { type, text });
+  if (!_arguments) {
+    if (typeof text !== "string") throw new Error(`Text is not a string: ${text}`);
+    return map.set(opcode, ({ type, text } satisfies NoArgsBlock) as BlockEntry);
+  }
 
   const args = Object.entries(_arguments ?? {})
     .map(([name, { menu, ...rest }]) => ({ options: extractMenuOptions(metadata, menu), name, menu, ...rest }))
@@ -135,8 +138,8 @@ const convertAndInsertBlock = (map: BlockMap, block: ExtensionBlockMetadata, met
 
   const { length } = args;
   return length >= 2
-    ? map.set(opcode, { type, text, args: args as [] })
-    : map.set(opcode, { type, text, arg: args[0] })
+    ? map.set(opcode, { type, text, args } as any)
+    : map.set(opcode, ({ type, text: text as OneArgBlock["text"], arg: args[0] } satisfies OneArgBlock) as any)
 }
 
 const getBlockMetaData = (metadata: ExtensionMetadata) => Array.from(

@@ -1,0 +1,4 @@
+packages:
+  - "extensions/**"
+  - "extensions/src/**"
+  - "scratch-packages/*"

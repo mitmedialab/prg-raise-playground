@@ -4,7 +4,6 @@ import { ArgumentType, BlockType } from "$common/types/enums";
 import { BlockOperation, ValueOf, Menu, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, DynamicMenu, BlockMetadata, BlockUtilityWithID, } from "$common/types";
 import { registerButtonCallback } from "$common/ui";
 import { isString, typesafeCall, } from "$common/utils";
-import type BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import { menuProbe, asStaticMenu, getMenuName, convertMenuItemsToString } from "./menus";
 import { Handler } from "./handlers";
 import { BlockDefinition, getButtonID, isBlockGetter } from "./util";
@@ -86,7 +85,7 @@ export default function (Ctor: CustomizableExtensionConstructor) {
      */
     pushBlock<Fn extends BlockOperation>(opcode: string, definition: BlockDefinition<any, Fn>, operation: BlockOperation) {
       if (this.blockMap.has(opcode)) throw new Error(`Attempt to push block with opcode ${opcode}, but it was already set. This is assumed to be a mistake.`)
-      this.blockMap.set(opcode, { definition, operation });
+      this.blockMap.set(opcode, { definition, operation } as BlockEntry);
     }
 
     protected getInfo(): ExtensionMetadata {

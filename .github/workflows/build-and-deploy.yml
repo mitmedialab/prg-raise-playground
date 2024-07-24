@@ -9,15 +9,20 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [16.17.1]
+        node-version: [18]
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
+      with:
+        submodules: true
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - name: npm install, build, and test
-      run: npm run build
+    - uses: pnpm/action-setup@v4
+      with:
+        version: 8
+    - name: install & build
+      run: pnpm build
       env:
         CI: true
     - name: Extract branch name

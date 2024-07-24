@@ -3,16 +3,36 @@
     "noImplicitOverride": true,
     "baseUrl": ".",
     "paths": {
-      "$root": ["../"],
-      "$root/*": ["../*"],
-      "$common": ["./src/common"],
-      "$common/*": ["./src/common/*"],
-      "$src": ["./src/"],
-      "$src/*": ["./src/*"],
-      "$testing": ["./testing"],
-      "$testing/*": ["./testing/*"],
-      "$scratch-vm": ["../packages/scratch-vm/src"],
-      "$scratch-vm/*": ["../packages/scratch-vm/src/*"]
+      "$root": [
+        "../"
+      ],
+      "$root/*": [
+        "../*"
+      ],
+      "$common": [
+        "./src/common"
+      ],
+      "$common/*": [
+        "./src/common/*"
+      ],
+      "$src": [
+        "./src/"
+      ],
+      "$src/*": [
+        "./src/*"
+      ],
+      "$testing": [
+        "./testing"
+      ],
+      "$testing/*": [
+        "./testing/*"
+      ],
+      "$scratch-vm": [
+        "../scratch-packages/scratch-vm/src"
+      ],
+      "$scratch-vm/*": [
+        "../scratch-packages/scratch-vm/src/*"
+      ]
     }
   }
 }

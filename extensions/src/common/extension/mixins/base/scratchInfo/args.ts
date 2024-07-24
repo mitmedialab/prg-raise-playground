@@ -14,7 +14,7 @@ const getArgumentType = <T>(arg: Argument<T>): ValueOf<typeof ArgumentType> =>
  * @param block 
  * @returns An array of 0, 1, or 2+ args
  */
-export const extractArgs = (block: BlockMetadata<BlockOperation>) => {
+export const extractArgs = <Fn extends BlockOperation>(block: BlockMetadata<Fn>) => {
   const argKey: ValidKey<OneArgBlock> = "arg";
   const argsKey: ValidKey<MultipleArgsBlock> = "args";
   if (argKey in block && block[argKey]) return [(block as OneArgBlock).arg];
