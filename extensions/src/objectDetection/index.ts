@@ -303,7 +303,9 @@ export default class objectDetection extends extension(details, "video", "drawab
       }
     }
     if (box) {
-      return this.calculateDistance2D(box.originX, box.originY, x, y);
+      let boxX = box.originX + box.width / 2;
+      let boxY = box.originY + box.height / 2;
+      return this.calculateDistance2D(boxX, boxY, x, y);
     }
     return false;
   }
@@ -326,7 +328,11 @@ export default class objectDetection extends extension(details, "video", "drawab
       }
     }
     if (box1 && box2) {
-      return this.calculateDistance2D(box1.originX, box1.originY, box2.originX, box2.originY);
+      let box1X = box1.originX + box1.width / 2;
+      let box1Y = box1.originY + box1.height / 2;
+      let box2X = box2.originX + box2.width / 2;
+      let box2Y = box2.originY + box2.height / 2;
+      return this.calculateDistance2D(box1X, box1Y, box2X, box2Y);
     }
     return false;
   }
@@ -349,7 +355,11 @@ export default class objectDetection extends extension(details, "video", "drawab
       }
     }
     if (box1 && box2) {
-      return this.calculateAngle(box1.originX, box1.originY, box2.originX, box2.originY);
+      let box1X = box1.originX + box1.width / 2;
+      let box1Y = box1.originY + box1.height / 2;
+      let box2X = box2.originX + box2.width / 2;
+      let box2Y = box2.originY + box2.height / 2;
+      return this.calculateAngle(box1X, box1Y, box2X, box2Y);
     }
     return false;
   }
@@ -368,7 +378,9 @@ export default class objectDetection extends extension(details, "video", "drawab
       }
     }
     if (box) {
-      return this.calculateAngle(box.originX, box.originY, x, y);
+      let boxX = box.originX + box.width / 2;
+      let boxY = box.originY + box.height / 2;
+      return this.calculateAngle(boxX, boxY, x, y);
     }
     return false;
   }
@@ -379,7 +391,9 @@ export default class objectDetection extends extension(details, "video", "drawab
     const detections = await this.detector.detect(frame);
     if (index < detections.detections.length) {
       let box = detections.detections[index].boundingBox;
-      return this.calculateDistance2D(box.originX, box.originY, x, y);
+      let boxX = box.originX + box.width / 2;
+      let boxY = box.originY + box.height / 2;
+      return this.calculateDistance2D(boxX, boxY, x, y);
     }
     return false;
   }
@@ -390,7 +404,9 @@ export default class objectDetection extends extension(details, "video", "drawab
     const detections = await this.detector.detect(frame);
     if (index < detections.detections.length) {
       let box = detections.detections[index].boundingBox;
-      return this.calculateAngle(box.originX, box.originY, x, y);
+      let boxX = box.originX + box.width / 2;
+      let boxY = box.originY + box.height / 2;
+      return this.calculateAngle(boxX, boxY, x, y);
     }
     return false;
   }
