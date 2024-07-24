@@ -152,6 +152,7 @@ export default class teachableMachine extends extension({
         const imageBitmap = await createImageBitmap(frame);
         return await model.predict(imageBitmap);
       case this.ModelType.POSE:
+        if (!frame) return null;
         const { pose, posenetOutput } = await model.estimatePose(frame);
         return await model.predict(posenetOutput);
       case this.ModelType.AUDIO:
