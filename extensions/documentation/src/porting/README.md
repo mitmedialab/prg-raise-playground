@@ -19,7 +19,7 @@ Here's how:
 2. Create your "new" framework-based extension using the command outlined in [Making an Extension](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main#-making-an-extension) and use the ***Extension ID*** you found in step 1 as the value of `<folder to contain extension>`
     - For example, if your "old" extension's ***Extension ID*** is `prgRocks` you'll run the following command:
     ```bash
-    npm run new:extension prgRocks
+    pnpm new:extension prgRocks
     ``` 
     - The reason this is necessary is two-fold: First, in the new extension framework, the name of the folder that contains an extension is automatically used as its ***Extension ID***. Second, because already saved `.sb3` / Scratch projects that use your extension refernce the specific ***Extension ID***, we need to make sure our updated, typescript-based extension has the same ID.
 3. Once you have created an extension with a folder name matching the ***Extension ID*** found in step 1, you can actually delete the corresponding entry inside of the `builtinExtensions` object of [scratch-packages/scratch-vm/src/extension-support/extension-manager.js](https://github.com/mitmedialab/prg-extension-boilerplate/blob/main/scratch-packages/scratch-vm/src/extension-support/extension-manager.js)
@@ -32,7 +32,7 @@ Here's how:
     - You can do this as the extension framework will automatically handle adding your extension (and its Extension Menu Display Details) to the [Extension Menu](https://en.scratch-wiki.info/wiki/Extension#Adding_Extensions)
 6. Now you can start coding! See the below comparison of a vanilla JS extension class and a typescript / framework based one.
     - NOTE: If there's a chance anyone has saved projects with the extension you're porting over, you need to make sure to follow the [Legacy Support](#legacy-support) instructions so those saved projects will continue to load correctly.
-7. Once you have migrated all of the "old" ***Impementation*** to your new extension folder & typescript code, you can go ahead and delete the ***Implementation*** folder inside of [pacakges/scratch-vm/src/extensions/](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/scratch-packages/scratch-vm/src/extensions).
+7. Once you have migrated all of the "old" ***Impementation*** to your new extension folder & typescript code, you can go ahead and delete the ***Implementation*** folder inside of [scratch-packages/scratch-vm/src/extensions/](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/scratch-packages/scratch-vm/src/extensions).
 8. Now, there should be no remnants of the "old" extension inside of either [scratch-packages/scratch-vm](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/scratch-packages/scratch-vm) or [scratch-packages/scratch-gui](https://github.com/mitmedialab/prg-extension-boilerplate/tree/main/scratch-packages/scratch-gui) folders, and instead everything lives neatly inside its own directory within [extensions/src](https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extensions/src)
 9. Test out the project you saved in step 0 to verify that your port worked as expected.
 

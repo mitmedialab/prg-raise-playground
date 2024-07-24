@@ -1,6 +1,7 @@
 import { castToType } from "$common/cast";
 import CustomArgumentManager from "$common/extension/mixins/configurable/customArguments/CustomArgumentManager";
 import { ArgumentType, BlockType } from "$common/types/enums";
+import { Config } from "$common/types"
 import { BlockOperation, ValueOf, Menu, ExtensionMetadata, ExtensionBlockMetadata, ExtensionMenuMetadata, DynamicMenu, BlockMetadata, BlockUtilityWithID, } from "$common/types";
 import { registerButtonCallback } from "$common/ui";
 import { isString, typesafeCall, } from "$common/utils";
@@ -20,6 +21,7 @@ const inlineImageAccessError = "ERROR: This argument represents an inline image 
 const isBlockUtilityWithID = (query: any): query is BlockUtilityWithID => query?.[blockIDKey] !== undefined;
 const nonBlockContextError = "Block method was not given a block utility, and thus was likely called by something OTHER THAN the Scratch Runtime. NOTE: You cannot call block methods directly from within your class due to how block methods are converted to work with scratch. Consider abstracting the logic to a seperate, non-block method which can be invoked directly."
 const checkForBlockContext = (blockUtility: BlockUtilityWithID) => isBlockUtilityWithID(blockUtility) ? void 0 : console.error(nonBlockContextError);
+
 
 
 /**
@@ -69,7 +71,7 @@ export const wrapOperation = <T extends MinimalExtensionInstance>(
  * @see https://www.typescriptlang.org/docs/handbook/mixins.html
  */
 export default function (Ctor: CustomizableExtensionConstructor) {
-  type BlockEntry = { definition: BlockDefinition<ScratchExtension, BlockOperation>, operation: BlockOperation };
+  type BlockEntry = { definition: BlockDefinition<ScratchExtension, BlockOperation>, operation: BlockOperation, versions: Config };
   type BlockMap = Map<string, BlockEntry>;
   abstract class ScratchExtension extends Ctor {
     private readonly blockMap: BlockMap = new Map();
@@ -83,9 +85,15 @@ export default function (Ctor: CustomizableExtensionConstructor) {
      * @param definition 
      * @param operation 
      */
-    pushBlock<Fn extends BlockOperation>(opcode: string, definition: BlockDefinition<any, Fn>, operation: BlockOperation) {
+    // add functions parameter here
+    pushBlock<Fn extends BlockOperation>(opcode: string, definition: BlockDefinition<any, Fn>, operation: BlockOperation, versions?: Config) {
       if (this.blockMap.has(opcode)) throw new Error(`Attempt to push block with opcode ${opcode}, but it was already set. This is assumed to be a mistake.`)
-      this.blockMap.set(opcode, { definition, operation } as BlockEntry);
+      if (versions) {
+        this.blockMap.set(opcode, { definition, operation, versions} as BlockEntry);
+      } else {
+        this.blockMap.set(opcode, { definition, operation, versions: [] } as BlockEntry);
+      }
+      
     }
 
     protected getInfo(): ExtensionMetadata {
@@ -102,7 +110,7 @@ export default function (Ctor: CustomizableExtensionConstructor) {
 
     private convertToInfo(details: [opcode: string, entry: BlockEntry]) {
       const [opcode, entry] = details;
-      const { definition, operation } = entry;
+      const { definition, operation, versions } = entry;
 
       // Utilize explicit casting to appease test framework's typechecker
       const block = isBlockGetter(definition)
@@ -118,7 +126,7 @@ export default function (Ctor: CustomizableExtensionConstructor) {
       const displayText = convertToDisplayText(opcode, text, args);
       const argumentsInfo = convertToArgumentInfo(opcode, args, menus);
 
-      const info: ExtensionBlockMetadata = { opcode, text: displayText, blockType: type, arguments: argumentsInfo };
+      const info: ExtensionBlockMetadata = { opcode, text: displayText, blockType: type, arguments: argumentsInfo, versions };
 
       if (type === BlockType.Button) {
         const buttonID = getButtonID(id, opcode);
