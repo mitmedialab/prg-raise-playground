@@ -83,4 +83,5 @@ export const scratch = {
     reporter: makeDecorator("reporter"),
     command: makeDecorator("command"),
     button: makeDecorator("button"),
+    hat: makeDecorator("hat")
 }

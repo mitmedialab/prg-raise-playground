@@ -6,7 +6,7 @@ One of the coolest is the ability to define custom arguments, which means both:
 - Introducing an arbitrary new type of argument 
   - It could be an alias for a `number` the same way the built-in `Angle` argument is. Or it could be something new entirely, like an object with some specific keys, or an array of a certain length -- whatever you want!
 - Defining the UI the allows a user to set / interact with that argument type
-  - Imagine being able to create argument-specifc UI like is done for the built-in `Note`, `Angle`, `Color`, and `Matrix` arguments 
+  - Imagine being able to create argument-specific UI like is done for the built-in `Note`, `Angle`, `Color`, and `Matrix` arguments 
 
 Here's how:
 
@@ -17,7 +17,7 @@ For a quick breakdown of how we handle UI generally in the Extension Framework, 
 Then run the following command:
 
 ```bash
-npm run add:arg <extension directory>
+pnpm add:arg <extension directory>
 # For example: npm run add:arg myExtension
 ```
 
@@ -31,7 +31,7 @@ Assume we have the following extension:
 
 [](./extension.ts?export=x)
 
-When invoking the `@block` decorator function on our method that uses a custom argument, we can define the `arg` field like so:
+When invoking the `@scratch` decorator function on our method that uses a custom argument, we can define the placeholder like so (note the use of the `instance` parameter in invoking the `makeCustomArgument` function):
 
 [](./index.ts?export=x)
 
@@ -63,10 +63,10 @@ At the heart of this implementation is co-opting the usage of block argument's d
 
 > In the extension framework, an argument with a dynamic menu looks like:
 >```ts
->arg: {
+>@(scratch.command`placholder text ${{
 >  type: "number",
 >  options: () => ["option A", "option B"] // for example
->}
+>}}`)
 >```
 
 This is the perfect setup for our solution, as:
