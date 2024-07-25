@@ -101,11 +101,9 @@ export default class teachableMachine extends extension({
         dimensions: this.DIMENSIONS
       });
 
-      if (frame) {
-        this.lastUpdate = time;
-        this.isPredicting = 0;
-        this.predictAllBlocks(frame);
-      }
+      this.lastUpdate = time;
+      this.isPredicting = 0;
+      this.predictAllBlocks(frame);
     }
   }
 
@@ -149,9 +147,11 @@ export default class teachableMachine extends extension({
     const { model, modelType } = this.predictionState[modelUrl];
     switch (modelType) {
       case this.ModelType.IMAGE:
+        if (!frame) return null;
         const imageBitmap = await createImageBitmap(frame);
         return await model.predict(imageBitmap);
       case this.ModelType.POSE:
+        if (!frame) return null;
         const { pose, posenetOutput } = await model.estimatePose(frame);
         return await model.predict(posenetOutput);
       case this.ModelType.AUDIO:
