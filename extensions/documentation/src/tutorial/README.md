@@ -5,7 +5,7 @@
 
 Below is our starter piece of code, where we import the following items from the `$common` package:
 - `extension`: A factory function that returns a base class that our extension should [extend](https://www.typescriptlang.org/docs/handbook/2/classes.html#extends-clauses). This function allows for you to configure the capability of your Extension (as you'll see [later](#configuring-your-extensions-functionality)).
-- `block`: A [method decorator](https://www.typescriptlang.org/docs/handbook/decorators.html#:~:text=Method%20Decorators,or%20replace%20a%20method%20definition.) function that will be [used below](#decorating-our-method-with-block) to mark our class method as something that should be turned into a Block. The argument provided to the `block` function contains all the information necessary to create a Block representation of our method in the Block Programming Environment.
+- `scratch`: An object with two [method decorator](https://www.typescriptlang.org/docs/handbook/decorators.html#:~:text=Method%20Decorators,or%20replace%20a%20method%20definition.) functions -- `scratch.reporter`, `scratch.command`, `scratch.hat`, and `scratch.button` -- that will be [used below](#decorating-our-method-with-block) to mark our class method as something that should be turned into either a Reporter or Command Block. The [template literal](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals) argument provided to the `scratch` functions contains all the information necessary to create a Block representation of our method in the Block Programming Environment.
 - `ExtensionMenuDisplayDetails`: A type imported to add typesafety to how we define the `details` object which we use when configuring our Extension's base class through the `extension` function. As the name suggests, the contents of this object determine how our Extension displays to the user, especially through the [Extensions Menu](https://en.scratch-wiki.info/wiki/Library#Extensions_Library).
 - `Environment`: A type imported to add typesafety to the argument of the `init` function (which all Extensions are required to implement -- it is used in place of a [constructor](https://www.typescriptlang.org/docs/handbook/2/classes.html#constructors))
 
@@ -29,17 +29,15 @@ Next, let's define a [method](https://www.typescriptlang.org/docs/handbook/2/cla
 
 [](./index.ts?export=method)
 
-### Decorating our method with `block`
+### Decorating our method with `scratch`
 
-In order for this method to become a Block in the Block Programming Environment, we need to mark it (or [decorate](https://www.typescriptlang.org/docs/handbook/decorators.html#:~:text=Method%20Decorators,or%20replace%20a%20method%20definition.) it) with the `block` function. 
+In order for this method to become a Block in the Block Programming Environment, we need to mark it (or [decorate](https://www.typescriptlang.org/docs/handbook/decorators.html#:~:text=Method%20Decorators,or%20replace%20a%20method%20definition.) it) with the `scratch` functions (for example, `scratch.reporter`). 
 
 [](./index.ts?export=blockify)
 
-> **NOTE:** We preceed in the invocation of `block` with an `@` symbol which signifies the `block` function is [decorating](https://www.typescriptlang.org/docs/handbook/decorators.html#introduction) our method.
+> **NOTE:** We preceed in the invocation of `scratch` with an `@` symbol which signifies the `scratch` function is [decorating](https://www.typescriptlang.org/docs/handbook/decorators.html#introduction) our method.
 
-The argument that `block` takes provides all the information the Block Programming Environment needs in order to create a Block tied to your method. 
-
-Your code editor and typescript will help ensure you provide all the necessary information, as well as give you a sense of the choices you have when defining this information. Make sure to hover over the fields of the object argument (i.g. `type`, `text`, `arg`, and/or `args`) to see thorough documentation on what those fields are and what values they can take on.
+The template literal that the `scratch` decorator takes provides all the information the Block Programming Environment needs in order to create a Block tied to your method (i.g. the block's type, text, and args). 
 
 #### Need to access properties of your Extension when define a Block?
 <details>
@@ -47,13 +45,9 @@ Your code editor and typescript will help ensure you provide all the necessary i
 Open this
 </summary>
 
-If you need to access some information on your extension when invoking `block`, you can do so by passing a function (instead of an object) as an argument. 
+If you need to access some information on your extension when invoking `scratch` decorators, you can do so by passing a function (instead of an object) as an argument. 
 
-This function will accept one argument, which will be a reference to your Extension (the name `self` is used as a convention). You can then pull values off of it (like `defaultValue` below) when defining your return object. The returned object is the same type as the object argument of the `block` function.  
-
-[](./index.ts?export=functionArg)
-
-> **NOTE:** As you can see above, we need to make use of the `as const` [const assertion](https://dev.to/typescripttv/best-practices-with-const-assertions-in-typescript-4l10#:~:text=TypeScript%203.4%20introduced%20const%20assertions,pushed%20into%20an%20existing%20array.) when specifying the `args` field. This is only necessary because we are using a string value to define the `type` of our Arguments. Without `as const`, when typescript infers the return type of our function, it thinks our Arguments' `type`s are simply [strings](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#the-primitives-string-number-and-boolean), which causes errors since a `string` is not a valid Argument type. By using `as const`, we ensure it infers our Argument types as [literals](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#literal-types). 
+This function will accept two arguments: the first is a reference to your Extension, and the second is a tagged template literal you can use to define your block, just like the previous `scratch` functions. You can then pull values off of the Extension reference (like `defaultValue` below) in the placeholders of the template literal. 
 
 [](./index.ts?export=functionArg)
 
@@ -69,7 +63,7 @@ You do this by providing "add ons" as arguments, which come after the first `det
 
 Your code editor will help you see which "add ons" are available -- simply start to try to type after the first argument of the `extension` function, and suggestions (and documentation) will pop up.
 
-![Gif of extension addOns being suggested](/documentation/assets/addOns.gif)
+![Gif of extension addOns being suggested](//.assets/addOns.gif)
 
 ### Putting it all together
 

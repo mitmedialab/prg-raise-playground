@@ -275,6 +275,8 @@ type Operation<TExt extends BaseGenericExtension, TOp extends BlockOperation> = 
   operation: (this: TExt, ...params: TOp extends ButtonBlock ? Parameters<TOp> : ParamsAndUtility<TOp>) => TOp extends ButtonBlock ? void : ReturnType<TOp>;
 }
 
+export type ScratchBlockType = typeof BlockType[keyof typeof BlockType];
+
 export type ReturnTypeByBlockType<T extends ValueOf<typeof BlockType>> =
   T extends typeof BlockType.Boolean
   ? boolean
@@ -326,7 +328,7 @@ export type BlocksInfo<T extends BaseGenericExtension> = {
 export type BlockInfo<TExtension extends BaseGenericExtension, TKey extends keyof BlocksInfo<TExtension>> = BlocksInfo<TExtension>[TKey];
 
 export type NoArgsBlock = BlockMetadata<() => any>;
-export type OneArgBlock = BlockMetadata<(arg: any, utility: BlockUtility) => any, [string]>;
-export type MultipleArgsBlock = BlockMetadata<(arg1: any, arg2: any, utility: BlockUtility) => any>;
+export type OneArgBlock = BlockMetadata<(arg: unknown, utility: BlockUtility) => any>;
+export type MultipleArgsBlock = BlockMetadata<(arg1: unknown, arg2: unknown, utility: BlockUtility) => any>;
 export type WithArgsBlock = BlockMetadata<(...args: any[]) => any>;
 export type AnyBlock = NoArgsBlock | OneArgBlock | MultipleArgsBlock;

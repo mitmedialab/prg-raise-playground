@@ -4,23 +4,16 @@ const name = "";
 
 export const x = codeSnippet();
 
-import { block, buttonBlock, extension } from "$common";
+import { extension, scratch } from "$common";
 
 export default class ExampleExtension extends extension({ name }, "ui") {
   init = notRelevantToExample;
 
-  @block({
-    type: "button",
-    text: `Button Text Goes Here`
-  })
-  verboseButton() {
+  @(scratch.button`Button Text Goes Here`)
+  buttonBlock() {
     this.openUI("SvelteFileName", "Title of Window");
   }
 
-  @buttonBlock(`Button Text Goes Here`)
-  shortHandButton() {
-    this.openUI("SvelteFileName", "Title of Window");
-  }
 }
 
 x.end;

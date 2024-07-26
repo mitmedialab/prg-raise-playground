@@ -3,7 +3,7 @@
 
 Extensions are defined by all the files that appear in their associated directory, located within `/extensions/src/`.
 
-This directory is created when you run the command `npm run new:extension <extension name>` from the root of the project, where the value you provide for `<extension name>` is used to name this new directory. 
+This directory is created when you run the command `pnpm new:extension <extension name>` from the root of the project, where the value you provide for `<extension name>` is used to name this new directory. 
 
 > **NOTE:** It is important to keep in mind that the name of an extension's associated directory is internally used to identify it, so it is best to avoid changing the directory's name (as this could affect previously saved `.sb3` projects that reference the extension).
 
@@ -24,11 +24,11 @@ Below are the files you should always find within an extension's directory:
             - For example, if your extension folder is `myExtension`, you can do the following:
                 ```
                 cd extensions/myExtension # only do this once
-                npm run dev 
+                pnpm dev 
                 ```
              - Instead of running the following from the root of the project every time:
                 ```
-                npm run dev -- --include myExtension
+                pnpm dev -i myExtension
                 ```
             - Inspect the `package.json` file to see all augmented scripts.
 

@@ -1,7 +1,7 @@
 import { ArgumentType, BlockType } from "$common/types/enums";
 import { ExtensionMetadata, ExtensionBlockMetadata, ValueOf, TypeByArgumentType, ExtensionMenuItems, ReturnTypeByBlockType, MenuThatAcceptsReporters, DynamicMenuThatAcceptsReporters } from "$common/types";
 import { ObjValueTuple, TuplifyUnion } from "./TsMagic";
-import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
+import BlockUtility from "$root/scratch-packages/scratch-vm/src/engine/block-utility";
 
 /**
  * Types to assist in extracting information from the return type of the old 'getInfo' method

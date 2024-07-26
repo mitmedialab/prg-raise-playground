@@ -185,6 +185,14 @@ const decimalToHex = (decimal: number) => {
   return hex;
 }
 
+export const decimalToRgb = (decimal: number) => {
+  const a = (decimal >> 24) & 0xFF;
+  const r = (decimal >> 16) & 0xFF;
+  const g = (decimal >> 8) & 0xFF;
+  const b = decimal & 0xFF;
+  return { r: r, g: g, b: b, a: a > 0 ? a : 255 } satisfies RGBObject & { a: number };
+}
+
 /**
  * Convert an RGB color object to a Scratch decimal color.
  * @param {RGBObject} rgb - {r: red [0,255], g: green [0,255], b: blue [0,255]}.
@@ -201,6 +209,16 @@ function rgbToDecimal(rgb: RGBObject) {
  */
 export const rgbToHex = (rgb: RGBObject) => decimalToHex(rgbToDecimal(rgb));
 
+export const hexToRgb = (hex: string) => {
+  const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+  hex = hex.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b);
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  } : null satisfies RGBObject;
+}
 
 /**
  * Keep a number between two limits, wrapping "extra" into the range.

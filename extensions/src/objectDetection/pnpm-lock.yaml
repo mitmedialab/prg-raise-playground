@@ -1,0 +1,22 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      '@mediapipe/tasks-vision':
+        specifier: ^0.1.0-alpha-12
+        version: 0.1.0-alpha-9
+
+packages:
+
+  '@mediapipe/tasks-vision@0.1.0-alpha-9':
+    resolution: {integrity: sha512-hpgY13d3zwbKEyEEG03m1rpEYM56CGPcMGgHwveZ4+SfDjmMLaev14bvlVpog51UNDE7abJTRL6Q4OtIJsSxXQ==}
+
+snapshots:
+
+  '@mediapipe/tasks-vision@0.1.0-alpha-9': {}

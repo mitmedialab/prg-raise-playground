@@ -10,7 +10,7 @@ Please first make sure you've satisfied [Svelte Dependency](https://github.com/m
 To generate a new svelte file, run the following command from the root of the project:
 
 ```bash
-npm run add:ui <extension folder>
+pnpm add:ui <extension folder>
 # For example: npm run add:ui myExtension
 ```
 
@@ -34,7 +34,7 @@ The first argument of the `openUI` method is the name of the `.svelte` file in w
 
 The second argument is the title that will display at the top of the modal window. If omitted, this will default to the name of your extension.
 
-Below are two examples of declaring buttons (one using the standard `@block` decorator, and the other using the `@buttonBlock` decorator short-hand):
+Here is an example of how to declare a button block:
 
 [](./index.ts?export=x)
 

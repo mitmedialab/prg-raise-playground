@@ -5,8 +5,8 @@
   "main": "index.ts",
   "scripts": {
     "directory": "echo simple_example",
-    "dev": "npm run dev --prefix ../../../ -- --include simple_example",
-    "test": "npm run test --prefix ../../ -- simple_example/index.test.ts"
+    "dev": "pnpm --filter prg-extension-root dev -i simple_example",
+    "test": "pnpm --filter prg-extension-root test simple_example/index.test.ts"
   },
   "author": "",
   "license": "ISC"

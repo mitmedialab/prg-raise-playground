@@ -5,10 +5,10 @@
   "main": "index.ts",
   "scripts": {
     "directory": "echo appinventor_example",
-    "test": "npm run test --prefix ../../ -- appinventor_example/index.test.ts",
-    "dev": "npm run dev --prefix ../../../ -- --include appinventor_example",
-    "add:ui": "npm run add:ui --prefix ../../../  -- appinventor_example",
-    "add:arg": "npm run --prefix ../../../-- appinventor_example"
+    "test": "pnpm --filter prg-extension-root test appinventor_example/index.test.ts",
+    "dev": "pnpm --filter extensions-root dev --include appinventor_example",
+    "add:ui": "pnpm --filter prg-extension-root add:ui appinventor_example",
+    "add:arg": "pnpm --filter prg-extension-root add:arg appinventor_example"
   },
   "author": "",
   "license": "ISC"
