@@ -1,6 +1,6 @@
 import { BlockMetadata, Argument, ReturnTypeByBlockType, ScratchBlockType, NoArgsBlock, OneArgBlock, BlockUtilityWithID, InlineImage, InlineImageSpecifier } from "$common/types";
 import { block } from "$common/extension/decorators/blocks";
-import { ExtensionInstance } from "..";
+import { extension, ExtensionInstance } from "..";
 import { TypedMethodDecorator } from ".";
 import type BlockUtility from "$scratch-vm/engine/block-utility";
 
@@ -84,5 +84,9 @@ export const scratch = {
     reporter: makeDecorator("reporter"),
     command: makeDecorator("command"),
     button: makeDecorator("button"),
-    hat: makeDecorator("hat")
+    hat: makeDecorator("hat"),
+    boolean: makeDecorator("Boolean"),
+    conditional: makeDecorator("conditional"),
+    event: makeDecorator("event"),
+    loop: makeDecorator("loop"),
 }

@@ -1,4 +1,10 @@
+
 type Documentation = "See documentation below:";
+
+/**
+ * Nice job! You hovered over a JSDoc type to see more information about it.
+ */
+type ExplanationOfSomething = Documentation;
 
 /**
  * An Extension is the [class](https://www.typescriptlang.org/docs/handbook/2/classes.html) that you'll implement that adds new functionality to the Block Programming Environment by constructing new Blocks.
@@ -38,7 +44,7 @@ type Extension = Documentation;
  * **NOTE:** Ignore the `.` in front of the `@` symbol -- this is just so JSDoc doesn't mess with the formatting.
  * ```ts
  * .@(scratch.command`This is the text that will display on the block`)
- * exampleMethod(someText: string, noteValue: number) {
+ * exampleMethod() {
  *    ...
  * }
  * ```
@@ -62,7 +68,7 @@ type BlockProgrammingEnvironment = Documentation;
  * The below object describes how your extension will display in the extensions menu. 
  * 
  * These details will be passed as the first argument to the `extension` function below
- * (see the class defintion below to see how we [extend]() the value returned by the `extension` function). 
+ * (see the class defintion below to see how we [extend]() the base class returned by the `extension` function). 
  * 
  * Hover over any of the fields below (e.g. `name`, `description`) to see documentation about what it is/does. 
  */
@@ -97,27 +103,16 @@ type ExplanationOfField = Documentation;
 type ExplanationOfInitMethod = Documentation;
 
 /** 
- * Below is an example of a 'Reporter' Block, which is a Block that takes 0 or more arguments
- * and returns a value (likely a `string` or `number`). 
- * 
- * Hover over `exampleReporter` below to observe it's type signature and that it returns a `number` 
- * (which is _inferred_ by Typescript, but you could also be [explicitly stated](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#return-type-annotations)).
- * 
- * As described in the definiton of Block above (hover over it if you need a refresher), we turn the `exampleReporter` method into a method tied to a Block by "decorating" it with the `scratch.reporter` decorator function 
- * (the use of the `@` tell us that it is a [decorator](https://www.typescriptlang.org/docs/handbook/decorators.html#method-decorators)).
- * 
- * In this scenario, `scratch.reporter` serves as a [Tagged Template Literal](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates). This means we can use the passed-in [Template String](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals) to provide 
- * all the necessary information for the Block Programming Environment to create a Reporter Block 
- * tied to our method, with input fields at the positions of the templated arguments.
- * 
- */
-type ExplanationOfReporterBlock = Documentation;
-
-/** 
  * Below, we define a method `exampleCommand` and decorate it with the `@scratch.command` function (similiar to above). 
  * This is an example of a "command" block, as the underlying method takes 0 or more arguments, and returns nothing ([void](https://www.typescriptlang.org/docs/handbook/basic-types.html#void)).
  * 
  * Hover over `exampleCommand` below to observe it's type signature and how it returns `void`.
+ * 
+ */
+type ExplanationOfExampleCommand = Documentation;
+
+/**
+ * TODO
  * 
  * **NOTE:** Here, instead of using a tagged template literal (as above), we pass another function to the `scratch` decorator.
  * This function takes two parameters, the first of which is a reference to our specific Extension. 
@@ -125,25 +120,37 @@ type ExplanationOfReporterBlock = Documentation;
  * this allows us to pull values off of our extension when defining our block.
  * The second argument references the tagged template literal we use to create the text and arguments of the block.
  */
-type ExplanationOfCommandBlock = Documentation;
+type ExplanationOfCommandWithExtendDefinition = Documentation;
 
 /**
- * We can use the `scratch` decorator functions to define four types of blocks: a command block,
- * a reporter block, a button block, or a hat block.
+ * Below is an example of how you define a "Reporter" Block in Scratch, which is a Block that takes 0 or more arguments and returns a value (likely a `string` or `number`).
+ * 
+ * The definition has two different parts:
+ * - **The method (line 48):** The [method]() `exampleReporter` is the function that runs when the associated Scratch Block is executed.
+ *      -  * Hover over `exampleReporter` below to observe it's type signature and that it returns a `number` 
+ * (which is _inferred_ by Typescript, but you could also be [explicitly stated](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#return-type-annotations)).
+ * - **The decorator (line 47):** The `@(scratch.reporter...)` bit above the `exampleReporter` definition is a [decorator](https://www.typescriptlang.org/docs/handbook/decorators.html) for that method (specifically, the `@` symbol is what denotes that it is a decorator).
+ *      - This "decorator" is what allows you to associate your extension's method with a Scratch Block, as well as configure how that Block will look and behave.
+ * 
+ * The `scratch.reporter` decorator function is a [Tagged Template Literal](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates)
+ * which is why you see the "\`" backtick marks around some text after it. This text is actually the text that will be displayed on the associated Scratch Block. 
+ * 
+ * Tagged template literals will be used in a more interesting way below (see `ExplanationOfReporterWithArguments`), but for now you can just think of them as a function that takes a string argument, which would normally be invoked like this:
+ * `myTemplateFunction("some text");`, but is instead invoked like this ```myTemplateFunction`some text`;```.
  */
-type ExplanationOfBlockType = Documentation;
+type ExplanationOfExampleReporter = Documentation;
 
 /**
- * Because the underlying `exampleCommand` method takes arguments, we use a [Template String](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals) with placeholders that match the arguments of the method,
- * which will auto-magically cause the resulting Blocks to have input fields at the positions of the templated arguments.
+ * Please read the documentation for `ExplanationOfExampleReporter` if you haven't.
+ * 
+ * The below method and its `scratch.reporter` decorator are very similar to the `exampleReporter` method above, 
+ * however `reporterThatTakesTwoArguments` is a method that takes two arguments.
+ * 
+ * You can see this in the method signature of `reporterThatTakesTwoArguments` on line 54 -- it takes a `string` and a `number` as arguments.
+ * 
+ * TODO not finished...
  */
-type ExplanationOfBlockTextFunction = Documentation;
-
-/**
- * Because our method accepts two arguments, we must define a template literal with two placeholders.
- * Each placeholder will correspond to the types of the method's arguments. 
- */
-type ExplanationOfBlockArgs = Documentation;
+type ExplanationOfReporterWithArguments = Documentation;
 
 /**
  * Below is an example of yet another type of Block, in this case a "Hat", which is used to determine if a stack of connected Blocks should execute or not. 
@@ -151,26 +158,12 @@ type ExplanationOfBlockArgs = Documentation;
  * Accordingly, this block must return a [boolean](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#the-primitives-string-number-and-boolean) (a true / false value).
  * 
  * The best way to understand what a Hat Block does (and really all blocks) is to [start a development](https://github.com/mitmedialab/prg-extension-boilerplate#-running-an-extension) and server and play with them yourself.
- */
-type ExplanationOfHatBlock = Documentation;
-
-/**
- * Because our block method only takes one argument (besides the BlockUtility, explained below), 
- * we provide an `arg` field instead of `args` like we did above. 
  * 
- * The `arg` field accepts only a single _Argument_ value corresponding to the specific type of our method's argument. 
- * 
- * As was the case for the `args` field above, 
- * it is necessary to hover over the `arg` field to understand the different forms in which you can define an _Argument_.
- */
-type ExplanationOfBlockArg = Documentation;
-
-/**
  * You should notice that the final argument of our method is of type `BlockUtilityWithID`. 
  * 
  * For every Block method, you can optionally add a final parameter of type `BlockUtilityWithID`
  * which can be used to accomplish more [advanced behaviours](https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev/extensions#making-use-of-the-block-utility). 
- * No need to worry too much about when you're first starting out, though!
+ * No need to worry too much about this when you're first starting out, though!
  * 
  * As is the case here, note that the inclusion of a `BlockUtilityWithID` argument does not "count" 
  * as an Argument for your Block. 
@@ -178,4 +171,4 @@ type ExplanationOfBlockArg = Documentation;
  * Thus, if your method **_only_** accepts a `BlockUtilityWithID` argument, then the `block` function will **not**
  * require (or allow) you to add a placeholder in the template literal -- similiar to the `exampleReporter` method / Block above.
  */
-type ExplanationOfBlockUtilityWithID = Documentation;
+type ExplanationOfExampleHatAndBlockUtility = Documentation;
