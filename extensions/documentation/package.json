@@ -1,10 +1,10 @@
 {
-  "name": "documentation",
+  "name": "extensions-documentation",
   "version": "1.0.0",
   "description": "Helper for making documentation",
   "scripts": {
-    "ts:node": "npm run ts:node:extensions --prefix ../../",
-    "generate": "npm run ts:node -- ./extensions/documentation/scripts/generateREADME.ts"
+    "ts:node": "pnpm --filter extensions-root ts:node:extensions",
+    "generate": "pnpm ts:node ./extensions/documentation/scripts/generateREADME.ts"
   },
   "author": "",
   "license": "ISC",

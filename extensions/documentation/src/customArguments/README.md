@@ -6,7 +6,7 @@ One of the coolest is the ability to define custom arguments, which means both:
 - Introducing an arbitrary new type of argument 
   - It could be an alias for a `number` the same way the built-in `Angle` argument is. Or it could be something new entirely, like an object with some specific keys, or an array of a certain length -- whatever you want!
 - Defining the UI the allows a user to set / interact with that argument type
-  - Imagine being able to create argument-specifc UI like is done for the built-in `Note`, `Angle`, `Color`, and `Matrix` arguments 
+  - Imagine being able to create argument-specific UI like is done for the built-in `Note`, `Angle`, `Color`, and `Matrix` arguments 
 
 Here's how:
 
@@ -17,7 +17,7 @@ For a quick breakdown of how we handle UI generally in the Extension Framework, 
 Then run the following command:
 
 ```bash
-npm run add:arg <extension directory>
+pnpm add:arg <extension directory>
 # For example: npm run add:arg myExtension
 ```
 
@@ -31,7 +31,7 @@ Assume we have the following extension:
 
 [](./extension.ts?export=x)
 
-When invoking the `@block` decorator function on our method that uses a custom argument, we can define the `arg` field like so:
+When invoking the `@scratch` decorator function on our method that uses a custom argument, we can define the placeholder like so (note the use of the `instance` parameter in invoking the `makeCustomArgument` function):
 
 [](./index.ts?export=x)
 
@@ -51,7 +51,7 @@ If you're solely interested in adding custom arguments to your extension's block
 You can open this section to learn how the code all works together to enable this functionality.  
 </summary>
 
-To add custom arguments, we unfortunately need to make modifications to multiple packages involved in the RAISE playground (`packages/scratch-gui` in addition to `extensions`).
+To add custom arguments, we unfortunately need to make modifications to multiple packages involved in the RAISE playground (`scratch-packages/scratch-gui` in addition to `extensions`).
 
 > This is _unfortunate_ as we aim to keep the Scratch-based packages as similiar to their original sources as possible. This way we can more easily incorporate changes and improvements released by the Scratch team. Thus, even though we are modifying scratch packages, we try keep our changes as small and surgical as possible.
 
@@ -63,10 +63,10 @@ At the heart of this implementation is co-opting the usage of block argument's d
 
 > In the extension framework, an argument with a dynamic menu looks like:
 >```ts
->arg: {
+>@(scratch.command`placholder text ${{
 >  type: "number",
 >  options: () => ["option A", "option B"] // for example
->}
+>}}`)
 >```
 
 This is the perfect setup for our solution, as:
@@ -82,7 +82,7 @@ To get a little more into the details...
 
 Block argument menu dropdown's are controlled by Blockly's [FieldDropdown](https://developers.google.com/blockly/reference/js/blockly.fielddropdown_class) class. A specific `FieldDropdown` class, tied to a specific block argument's **_dynamic_** menu, will invoke the menu's `options` function at various points during the _lifecycle_ of the field dropdown (like when it is initialized and when it is opened by the user).
 
-Therefore, we override a few key functions on Blockly's [FieldDropdown](https://developers.google.com/blockly/reference/js/blockly.fielddropdown_class) class (implemented in [packages/scratch-gui/src/lib/prg/customBlockOverrides.js]()) in order to collect the information about the dropdown before the dynamic `options` function is invoked. We can then use this information inside of our `options` function, while all other menus will be unnaffected.
+Therefore, we override a few key functions on Blockly's [FieldDropdown](https://developers.google.com/blockly/reference/js/blockly.fielddropdown_class) class (implemented in [scratch-packages/scratch-gui/src/lib/prg/customBlockOverrides.js]()) in order to collect the information about the dropdown before the dynamic `options` function is invoked. We can then use this information inside of our `options` function, while all other menus will be unnaffected.
 
 > Overriding this functionality does ahead overhead to every single dropdown menu, but this _cost_ should be negligible. 
 

@@ -5,7 +5,7 @@ export const AuxiliaryExtensionInfo = "AuxiliaryExtensionInfo";
 
 /**
  * Literal values that control the interaction between the extension framework and the Scratch GUI,
- * specifically how dropdowns (tied to dynamic menus) are co-opted to support custom block arguments.
+ * specifically how dropdowns (tied to dynamic menus) are co-opted to support custom block arguments (and their UIs).
  */
 export const guiDropdownInterop = {
     runtimeKey: "prgDropdownCustomization",

@@ -3,7 +3,7 @@ import { BaseGenericExtension, BlockMetadata, BlockOperation, DefineBlock, Exten
 import { Arguments, BlockType, LegacyMethods, OpArgMenus, OpReturn, Opcodes, ReservedMenuNames } from "./LegacyProbe";
 import { TupleToObject, TuplifyUnion } from "./TsMagic";
 import { Extension } from "$common/extension/GenericExtension";
-import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
+import BlockUtility from "$root/scratch-packages/scratch-vm/src/engine/block-utility";
 import { ExtensionConstructor, ExtensionInstance } from "$common/extension";
 
 export type BlockEntry = BlockMetadata<BlockOperation>;

@@ -5,10 +5,10 @@
   "main": "index.ts",
   "scripts": {
     "directory": "echo projectProbe",
-    "test": "npm run test --prefix ../../ -- projectProbe/index.test.ts",
-    "dev": "npm run dev --prefix ../../../ -- --include projectProbe",
-    "add:ui": "npm run add:ui --prefix ../../../  -- projectProbe",
-    "add:arg": "npm run add:arg --prefix ../../../-- projectProbe"
+    "test": "pnpm --filter prg-extension-root test projectProbe/index.test.ts",
+    "dev": "pnpm --filter prg-extension-root dev --include projectProbe",
+    "add:ui": "pnpm --filter prg-extension-root add:ui projectProbe",
+    "add:arg": "pnpm --filter prg-extension-root add:arg projectProbe"
   },
   "author": "",
   "license": "ISC",
