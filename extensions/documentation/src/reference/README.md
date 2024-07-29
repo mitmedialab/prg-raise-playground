@@ -8,7 +8,7 @@ sequenceDiagram
     participant B as /scratch-packages/scratch-gui/
     participant C as /scratch-packages/scratch-vm/
     Note over root,C: INITIALIZATION
-    C-->>B: Lerna utility forces scratch-gui <br>to use /scratch-packages/scratch-vm for its dependency <br>instead of using the external npm package
+    C-->>B: PNPM tells scratch-gui <br>to use /scratch-packages/scratch-vm for its dependency <br>instead of using the external npm package
     Note over root,C: BUILD
     Note over root: /scripts/build.ts
     activate root
