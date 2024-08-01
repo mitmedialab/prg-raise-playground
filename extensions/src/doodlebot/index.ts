@@ -297,6 +297,21 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   // ))
   async playSoundFile(sound: string, util: BlockUtilityWithID) {
     await this.doodlebot?.sendWebsocketCommand("m", sound)
+  }
+
+  @block((self) => ({
+    type: "command",
+    text: (sound) => `play asset file ${sound}`,
+    // arg: self.makeCustomArgument({
+    //   component: CustomArgument,
+    //   initial: { value: "File", text: "File" }
+    // })
+    arg: { type: "string", options: () => soundFiles }
+  }))
+  // @(scratch.command(
+  //   (self, tag) => tag`play sound file ${{ type: "string", options: self.soundFiles }}`
+  // ))
+  async playAssetFile(sound: string, util: BlockUtilityWithID) {
     const { target } = util;
     console.log(target);
     if (target.sprite) {
@@ -428,7 +443,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   async setArrays() {
     imageFiles = await this.doodlebot.findImageFiles();
-    soundFiles = await this.doodlebot.findSoundFiles();
     soundFiles = await this.doodlebot.findSoundFiles();
   }
 
