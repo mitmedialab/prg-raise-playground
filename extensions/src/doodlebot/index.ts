@@ -62,21 +62,33 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   videoDrawable: ReturnType<typeof this.createDrawable>;
   ip: string;
   soundDictionary;
+  costumeDictionary;
 
 
-  init(env: Environment) {
+  async init(env: Environment) {
     this.openUI("Connect");
     this.setIndicator("disconnected");
     this.soundDictionary = {};
+    this.costumeDictionary = {};
 
     for (const target of env.runtime.targets) {
       this.soundDictionary[target.id] = {};
+      this.costumeDictionary[target.id] = {};
       console.log(target);
       if (target.sprite) {
         for (const sound of target.sprite.sounds) {
           if (sound.asset.dataFormat == "wav") {
             this.soundDictionary[target.id][sound.name] = sound.asset.data;
           }
+        }
+        for (const costume of target.sprite.costumes) {
+          await this.convertSvgUint8ArrayToPng(costume.asset.data, costume.size[0], costume.size[1])
+            .then((pngBlob: Blob) => {
+              const url = URL.createObjectURL(pngBlob)
+              this.costumeDictionary[target.id][costume.name] = "costume9999.png---name---" + url;
+            })
+
+
         }
       }
     }
@@ -91,6 +103,49 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   async setIP(ip: string) {
     this.ip = ip;
 
+  }
+
+  async convertSvgUint8ArrayToPng(uint8Array, width, height) {
+    return new Promise((resolve, reject) => {
+      // Convert Uint8Array to a string
+      const svgString = new TextDecoder().decode(uint8Array);
+
+      // Create an SVG Blob
+      const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+
+      // Create an Image element
+      const img = new Image();
+      img.onload = () => {
+        // Create a canvas element
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+
+        // Draw the image on the canvas
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Convert the canvas to PNG data URL
+        const pngDataUrl = canvas.toDataURL('image/png');
+
+        // Convert the data URL to a Blob
+        fetch(pngDataUrl)
+          .then(res => res.blob())
+          .then(blob => {
+            // Clean up
+            URL.revokeObjectURL(url);
+            resolve(blob);
+          })
+          .catch(err => {
+            URL.revokeObjectURL(url);
+            reject(err);
+          });
+      };
+
+      img.onerror = reject;
+      img.src = url;
+    });
   }
 
   getCurrentSounds(id): string[] {
@@ -487,6 +542,12 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   @(scratch.command((self, $) => $`Upload image file ${self.makeCustomArgument({ component: FileArgument, initial: { value: "", text: "File" } })}`))
   async uploadImageFile(test: string) {
     await this.uploadFile("image", test);
+  }
+
+  @(scratch.command((self, $) => $`Upload costume ${{ type: "string", options: Object.keys(self.costumeDictionary[self.runtime._editingTarget.id]) }}`))
+  async uploadCostume(test: string) {
+    await this.uploadFile("image", this.costumeDictionary[this.runtime._editingTarget.id][test]);
+    await this.setArrays();
   }
 
   // @block({
