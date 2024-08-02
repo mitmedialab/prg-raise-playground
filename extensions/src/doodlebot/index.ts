@@ -3,6 +3,8 @@ import { DisplayKey, displayKeys, command, type Command, SensorKey, sensorKeys }
 import Doodlebot from "./Doodlebot";
 import { splitArgsString } from "./utils";
 import CustomArgument from './CustomArgument.svelte';
+import SoundArgument from './SoundArgument.svelte';
+import ImageArgument from './ImageArgument.svelte';
 import EventEmitter from "events";
 import { categoryByGesture, classes, emojiByGesture, gestureDetection, gestureMenuItems, gestures, objectDetection } from "./detection";
 
@@ -61,16 +63,27 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   imageStream: HTMLImageElement;
   videoDrawable: ReturnType<typeof this.createDrawable>;
   ip: string;
+  soundDictionary;
 
 
   init(env: Environment) {
     this.openUI("Connect");
     this.setIndicator("disconnected");
+    this.soundDictionary = {};
 
-    console.log(env);
+    for (const target of env.runtime.targets) {
+      this.soundDictionary[target.id] = {};
+      if (target.sprite) {
+        for (const sound of target.sprite.sounds) {
+          if (sound.asset.dataFormat == "wav") {
+            this.soundDictionary[target.id][sound.name] = sound.asset.data;
+          }
+        }
+      }
+    }
 
-    soundFiles = ["test"];
-    imageFiles = ["test"];
+    soundFiles = ["File"];
+    imageFiles = ["File"];
 
     // idea: set up polling mechanism to try and disable unused sensors
     // idea: set up polling mechanism to destroy gesture recognition loop
@@ -81,6 +94,10 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   }
 
+  getCurrentSounds(id): string[] {
+    return Object.keys(this.soundDictionary[id]);
+  }
+
   async setDoodlebot(doodlebot: Doodlebot) {
     this.doodlebot = doodlebot;
     this.setIndicator("connected");
@@ -88,6 +105,10 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     soundFiles = await doodlebot.findSoundFiles();
     console.log("SETTING");
     console.log(soundFiles);
+  }
+
+  async getIPAddress() {
+    return this.doodlebot?.getStoredIPAddress();
   }
 
   async setIndicator(status: "connected" | "disconnected") {
@@ -247,13 +268,18 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     await this.doodlebot?.disableSensor(sensor);
   }
 
-  @block({
+  @block((self) => ({
     type: "command",
-    text: (type: DisplayKey) => `display ${type}`,
-    arg: { type: "string", options: displayKeys.filter(key => key !== "clear"), defaultValue: "happy" }
-  })
-  async setDisplay(display: DisplayKey) {
-    await this.doodlebot?.display(display);
+    text: (type: DisplayKey | string) => `display ${type}`,
+    arg: { type: "string", options: () => displayKeys.filter(key => key !== "clear").concat(imageFiles), defaultValue: "happy" }
+  }))
+  async setDisplay(display: DisplayKey | string) {
+    if (imageFiles.includes(display)) {
+      await this.doodlebot?.displayFile(display);
+    } else {
+      await this.doodlebot?.display(display as DisplayKey);
+    }
+
   }
 
   @block({
@@ -286,41 +312,23 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   @block((self) => ({
     type: "command",
     text: (sound) => `play sound file ${sound}`,
-    // arg: self.makeCustomArgument({
-    //   component: CustomArgument,
-    //   initial: { value: "File", text: "File" }
-    // })
-    arg: { type: "string", options: () => soundFiles }
+    arg: {
+      type: "string", options: () => soundFiles.concat(self.getCurrentSounds(self.runtime._editingTarget.id))
+    }
   }))
-  // @(scratch.command(
-  //   (self, tag) => tag`play sound file ${{ type: "string", options: self.soundFiles }}`
-  // ))
   async playSoundFile(sound: string, util: BlockUtilityWithID) {
-    await this.doodlebot?.sendWebsocketCommand("m", sound)
+    let currentId = this.runtime._editingTarget.id;
+    let costumeSounds = this.getCurrentSounds(currentId);
+    if (costumeSounds.includes(sound)) {
+      let soundArray = this.soundDictionary[currentId][sound];
+      console.log(soundArray);
+      await this.doodlebot.sendAudioData(soundArray);
+    } else {
+      await this.doodlebot?.sendWebsocketCommand("m", sound)
+    }
+
   }
 
-  @block((self) => ({
-    type: "command",
-    text: (sound) => `play asset file ${sound}`,
-    // arg: self.makeCustomArgument({
-    //   component: CustomArgument,
-    //   initial: { value: "File", text: "File" }
-    // })
-    arg: { type: "string", options: () => soundFiles }
-  }))
-  // @(scratch.command(
-  //   (self, tag) => tag`play sound file ${{ type: "string", options: self.soundFiles }}`
-  // ))
-  async playAssetFile(sound: string, util: BlockUtilityWithID) {
-    const { target } = util;
-    console.log(target);
-    if (target.sprite) {
-      console.log(target.sprite);
-      let soundArray = target.sprite.sounds[0].asset.data;
-      console.log(soundArray);
-      this.doodlebot.sendAudioData(soundArray);
-    }
-  }
 
   @block({
     type: "command",
@@ -405,45 +413,10 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     await new Promise((resolve) => setTimeout(resolve, audioDuration * 1000));
   }
 
-
-  async downloadAndUploadFile(fileUrl: string, uploadEndpoint: string): Promise<void> {
-    try {
-      // Step 1: Download the file from the URL
-      const response = await fetch(fileUrl);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch file from URL: ${response.statusText}`);
-      }
-
-      // Convert response to a Blob
-      const fileBlob = await response.blob();
-
-      // Step 2: Prepare FormData for upload
-      const formData = new FormData();
-      formData.append('file', fileBlob, 'uploaded-file'); // Optional: 'uploaded-file' is the filename
-
-      // Step 3: Upload the file to the server
-      const uploadResponse = await fetch(uploadEndpoint, {
-        method: 'POST',
-        body: formData,
-        headers: {
-          // 'Content-Type': 'multipart/form-data', // No need to set Content-Type manually
-        },
-      });
-
-      if (!uploadResponse.ok) {
-        throw new Error(`Failed to upload file: ${uploadResponse.statusText}`);
-      }
-
-      const result = await uploadResponse.json();
-      console.log('File uploaded successfully:', result);
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  }
-
   async setArrays() {
     imageFiles = await this.doodlebot.findImageFiles();
     soundFiles = await this.doodlebot.findSoundFiles();
+    console.log("SETTING");
   }
 
 
@@ -455,22 +428,32 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     return this.doodlebot?.getIPAddress();
   }
 
-  @block({
-    type: "command",
-    text: "Upload files"
-  })
-  async uploadFiles() {
-    this.openUI("UI");
+  // @block({
+  //   type: "command",
+  //   text: "Upload files"
+  // })
+  // async uploadFiles() {
+  //   this.openUI("UI");
+  // }
+
+  @(scratch.command((self, $) => $`Upload sound file ${self.makeCustomArgument({ component: SoundArgument, initial: { value: "File", text: "File" } })}`))
+  uploadSoundFile(test: string) {
+
   }
 
-  @block({
-    type: "command",
-    text: "Find files"
-  })
-  async findFiles() {
-    let response = await this.doodlebot?.fetchAndExtractList("http://192.168.41.121:8080/sounds/");
-    console.log(response);
+  @(scratch.command((self, $) => $`Upload image file ${self.makeCustomArgument({ component: ImageArgument, initial: { value: "File", text: "File" } })}`))
+  uploadImageFile(test: string) {
+
   }
+
+  // @block({
+  //   type: "command",
+  //   text: "Find files"
+  // })
+  // async findFiles() {
+  //   let response = await this.doodlebot?.fetchAndExtractList("http://192.168.41.121:8080/sounds/");
+  //   console.log(response);
+  // }
 
   @block({
     type: "command",

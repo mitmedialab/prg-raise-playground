@@ -632,6 +632,11 @@ export default class Doodlebot {
         });
     }
 
+    getStoredIPAddress() {
+        if (!this.connection) { return "" }
+        return this.connection.ip;
+    }
+
     parseWavHeader(uint8Array) {
         const dataView = new DataView(uint8Array.buffer);
 
@@ -679,9 +684,6 @@ export default class Doodlebot {
 
         ws.onopen = () => {
             console.log('WebSocket connection opened');
-
-            let offset = 0;
-
             let { sampleWidth, channels, rate } = this.parseWavHeader(uint8Array);
             let first = "(1," + String(sampleWidth) + "," + String(channels) + "," + String(rate) + ")";
             console.log(first);
@@ -695,21 +697,16 @@ export default class Doodlebot {
                     return;
                 }
 
-                // Calculate end position of the current chunk
-                //const end = Math.min(offset + CHUNK_SIZE, uint8Array.length);
                 const chunk = chunks[i];
-                console.log("sending");
 
                 const binaryString = Array.from(chunk).map((byte: any) => String.fromCharCode(byte)).join('');;
                 const base64Data = btoa(binaryString);
                 const jsonData = JSON.stringify({ audio_data: base64Data });
-                console.log(jsonData);
                 ws.send(jsonData);
                 i = i + 1;
                 sendNextChunk();
             }
 
-            // Start sending chunks
             sendNextChunk();
         };
 
@@ -717,11 +714,8 @@ export default class Doodlebot {
             console.error('WebSocket error:', error);
         };
 
-        ws.onmessage = (event) => {
-            const response = JSON.parse(event.data);
-            if (response.type === 'ack' && response.status === 'received') {
-                console.log('Message successfully received by server');
-            }
+        ws.onmessage = (message) => {
+            console.log(message);
         }
 
         ws.onclose = () => {
@@ -835,6 +829,10 @@ export default class Doodlebot {
     async display(type: DisplayKey) {
         const value = display[type];
         await this.sendWebsocketCommand(command.display, value);
+    }
+
+    async displayFile(file: string) {
+        await this.sendWebsocketCommand(command.display, file);
     }
 
     // Function to fetch and parse HTML template
