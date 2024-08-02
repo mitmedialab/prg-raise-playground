@@ -2,9 +2,7 @@ import { Environment, ExtensionMenuDisplayDetails, extension, block, buttonBlock
 import { DisplayKey, displayKeys, command, type Command, SensorKey, sensorKeys } from "./enums";
 import Doodlebot from "./Doodlebot";
 import { splitArgsString } from "./utils";
-import CustomArgument from './CustomArgument.svelte';
-import SoundArgument from './SoundArgument.svelte';
-import ImageArgument from './ImageArgument.svelte';
+import FileArgument from './FileArgument.svelte';
 import EventEmitter from "events";
 import { categoryByGesture, classes, emojiByGesture, gestureDetection, gestureMenuItems, gestures, objectDetection } from "./detection";
 
@@ -73,6 +71,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
     for (const target of env.runtime.targets) {
       this.soundDictionary[target.id] = {};
+      console.log(target);
       if (target.sprite) {
         for (const sound of target.sprite.sounds) {
           if (sound.asset.dataFormat == "wav") {
@@ -436,14 +435,58 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   //   this.openUI("UI");
   // }
 
-  @(scratch.command((self, $) => $`Upload sound file ${self.makeCustomArgument({ component: SoundArgument, initial: { value: "File", text: "File" } })}`))
-  uploadSoundFile(test: string) {
+  async uploadFile(type: string, blobURL: string) {
+    const ip = await this.getIPAddress();
+    let uploadEndpoint;
+    if (type == "sound") {
+      uploadEndpoint = "http://" + ip + ":8080/sounds_upload";
+    } else {
+      uploadEndpoint = "http://" + ip + ":8080/img_upload";
+    }
 
+    try {
+      const components = blobURL.split("---name---");
+      console.log("COMPONENTS");
+      console.log(components);
+      const response1 = await fetch(components[1]);
+      if (!response1.ok) {
+        throw new Error(`Failed to fetch Blob from URL: ${blobURL}`);
+      }
+      const blob = await response1.blob();
+      // Convert Blob to File
+      const file = new File([blob], components[0], { type: blob.type });
+      const formData = new FormData();
+      formData.append("file", file);
+
+      console.log("file");
+      console.log(file);
+
+      const response2 = await fetch(uploadEndpoint, {
+        method: "POST",
+        body: formData,
+      });
+
+      console.log(response2);
+
+      if (!response2.ok) {
+        throw new Error(`Failed to upload file: ${response2.statusText}`);
+      }
+
+      console.log("File uploaded successfully");
+      this.setArrays();
+    } catch (error) {
+      console.error("Error:", error);
+    }
   }
 
-  @(scratch.command((self, $) => $`Upload image file ${self.makeCustomArgument({ component: ImageArgument, initial: { value: "File", text: "File" } })}`))
-  uploadImageFile(test: string) {
+  @(scratch.command((self, $) => $`Upload sound file ${self.makeCustomArgument({ component: FileArgument, initial: { value: "", text: "File" } })}`))
+  async uploadSoundFile(test: string) {
+    await this.uploadFile("sound", test);
+  }
 
+  @(scratch.command((self, $) => $`Upload image file ${self.makeCustomArgument({ component: FileArgument, initial: { value: "", text: "File" } })}`))
+  async uploadImageFile(test: string) {
+    await this.uploadFile("image", test);
   }
 
   // @block({

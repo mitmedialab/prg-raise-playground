@@ -430,7 +430,6 @@ export default class Doodlebot {
             await new Promise(resolve => setTimeout(resolve, 100));
         }
         let endpoint = "http://" + this.connection.ip + ":8080/images/"
-        console.log(endpoint);
         let uploadedImages = await this.fetchAndExtractList(endpoint);
         return uploadedImages.filter(item => !this.imageFiles.includes(item));
     }
@@ -442,9 +441,6 @@ export default class Doodlebot {
         if (!this.connection) return [];
         let endpoint = "http://" + this.connection.ip + ":8080/sounds/"
         let uploadedSounds = await this.fetchAndExtractList(endpoint);
-        console.log("uploaded");
-        console.log(uploadedSounds);
-        console.log(uploadedSounds.filter(item => !this.soundFiles.includes(item)));
         return uploadedSounds.filter(item => !this.soundFiles.includes(item));
     }
 
@@ -846,9 +842,6 @@ export default class Doodlebot {
 
             // Get the HTML text
             const htmlText = await response.text();
-
-            console.log(response);
-            console.log(htmlText);
 
             // Parse the HTML text into a DOM structure
             const parser = new DOMParser();
