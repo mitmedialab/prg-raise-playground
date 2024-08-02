@@ -544,10 +544,11 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     await this.uploadFile("image", test);
   }
 
-  @(scratch.command((self, $) => $`Upload costume ${{ type: "string", options: Object.keys(self.costumeDictionary[self.runtime._editingTarget.id]) }}`))
+  @(scratch.command((self, $) => $`Display costume ${{ type: "string", options: Object.keys(self.costumeDictionary[self.runtime._editingTarget.id]) }}`))
   async uploadCostume(test: string) {
     await this.uploadFile("image", this.costumeDictionary[this.runtime._editingTarget.id][test]);
     await this.setArrays();
+    await this.doodlebot.displayFile("costume9999.png");
   }
 
   // @block({
