@@ -71,7 +71,17 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     this.soundDictionary = {};
     this.costumeDictionary = {};
 
-    for (const target of env.runtime.targets) {
+    await this.setDictionaries();
+
+    soundFiles = ["File"];
+    imageFiles = ["File"];
+
+    // idea: set up polling mechanism to try and disable unused sensors
+    // idea: set up polling mechanism to destroy gesture recognition loop
+  }
+
+  async setDictionaries() {
+    for (const target of this.runtime.targets) {
       this.soundDictionary[target.id] = {};
       this.costumeDictionary[target.id] = {};
       console.log(target);
@@ -82,22 +92,21 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
           }
         }
         for (const costume of target.sprite.costumes) {
-          await this.convertSvgUint8ArrayToPng(costume.asset.data, costume.size[0], costume.size[1])
-            .then((pngBlob: Blob) => {
-              const url = URL.createObjectURL(pngBlob)
-              this.costumeDictionary[target.id][costume.name] = "costume9999.png---name---" + url;
-            })
-
+          if (costume.asset.dataFormat == "svg") {
+            await this.convertSvgUint8ArrayToPng(costume.asset.data, costume.size[0], costume.size[1])
+              .then((pngBlob: Blob) => {
+                const url = URL.createObjectURL(pngBlob)
+                this.costumeDictionary[target.id][costume.name] = "costume9999.png---name---" + url;
+              })
+          } else if (costume.asset.dataFormat == "png") {
+            const blob = new Blob([costume.asset.data], { type: 'image/png' });
+            const url = URL.createObjectURL(blob)
+            this.costumeDictionary[target.id][costume.name] = "costume9999.png---name---" + url;
+          }
 
         }
       }
     }
-
-    soundFiles = ["File"];
-    imageFiles = ["File"];
-
-    // idea: set up polling mechanism to try and disable unused sensors
-    // idea: set up polling mechanism to destroy gesture recognition loop
   }
 
   async setIP(ip: string) {
@@ -544,7 +553,12 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     await this.uploadFile("image", test);
   }
 
-  @(scratch.command((self, $) => $`Display costume ${{ type: "string", options: Object.keys(self.costumeDictionary[self.runtime._editingTarget.id]) }}`))
+  @(scratch.command((self, $) => $`Display costume ${{
+    type: "string", options: () => {
+      self.setDictionaries();
+      return Object.keys(self.costumeDictionary[self.runtime._editingTarget.id])
+    }
+  }}`))
   async uploadCostume(test: string) {
     await this.uploadFile("image", this.costumeDictionary[this.runtime._editingTarget.id][test]);
     await this.setArrays();
