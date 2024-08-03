@@ -62,7 +62,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   videoDrawable: ReturnType<typeof this.createDrawable>;
   ip: string;
   soundDictionary;
-  costumeDictionary;
+  costumeDictionary: any;
 
 
   async init(env: Environment) {
@@ -70,6 +70,10 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     this.setIndicator("disconnected");
     this.soundDictionary = {};
     this.costumeDictionary = {};
+
+    env.runtime.on("TARGETS_UPDATE", async () => {
+      await this.setDictionaries();
+    })
 
     await this.setDictionaries();
 
@@ -84,7 +88,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     for (const target of this.runtime.targets) {
       this.soundDictionary[target.id] = {};
       this.costumeDictionary[target.id] = {};
-      console.log(target);
       if (target.sprite) {
         for (const sound of target.sprite.sounds) {
           if (sound.asset.dataFormat == "wav") {
@@ -92,16 +95,17 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
           }
         }
         for (const costume of target.sprite.costumes) {
+          let id = "Costume: " + costume.name;
           if (costume.asset.dataFormat == "svg") {
             await this.convertSvgUint8ArrayToPng(costume.asset.data, costume.size[0], costume.size[1])
               .then((pngBlob: Blob) => {
                 const url = URL.createObjectURL(pngBlob)
-                this.costumeDictionary[target.id][costume.name] = "costume9999.png---name---" + url;
+                this.costumeDictionary[target.id][id] = "costume9999.png---name---" + url;
               })
           } else if (costume.asset.dataFormat == "png") {
             const blob = new Blob([costume.asset.data], { type: 'image/png' });
             const url = URL.createObjectURL(blob)
-            this.costumeDictionary[target.id][costume.name] = "costume9999.png---name---" + url;
+            this.costumeDictionary[target.id][id] = "costume9999.png---name---" + url;
           }
 
         }
@@ -334,10 +338,20 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   @block((self) => ({
     type: "command",
     text: (type: DisplayKey | string) => `display ${type}`,
-    arg: { type: "string", options: () => displayKeys.filter(key => key !== "clear").concat(imageFiles), defaultValue: "happy" }
+    arg: {
+      type: "string", options: () => {
+        self.setDictionaries();
+        return displayKeys.filter(key => key !== "clear").concat(imageFiles).concat(Object.keys(self.costumeDictionary[self.runtime._editingTarget.id]) as any[]).filter((item: string) => item != "costume9999.png")
+      }, defaultValue: "happy"
+    }
   }))
   async setDisplay(display: DisplayKey | string) {
-    if (imageFiles.includes(display)) {
+    let costumeNames = Object.keys(this.costumeDictionary[this.runtime._editingTarget.id]);
+    if (costumeNames.includes(display)) {
+      await this.uploadFile("image", this.costumeDictionary[this.runtime._editingTarget.id][display]);
+      await this.setArrays();
+      await this.doodlebot.displayFile("costume9999.png");
+    } else if (imageFiles.includes(display)) {
       await this.doodlebot?.displayFile(display);
     } else {
       await this.doodlebot?.display(display as DisplayKey);
@@ -374,7 +388,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   @block((self) => ({
     type: "command",
-    text: (sound) => `play sound file ${sound}`,
+    text: (sound) => `play sound ${sound}`,
     arg: {
       type: "string", options: () => soundFiles.concat(self.getCurrentSounds(self.runtime._editingTarget.id))
     }
@@ -552,27 +566,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   async uploadImageFile(test: string) {
     await this.uploadFile("image", test);
   }
-
-  @(scratch.command((self, $) => $`Display costume ${{
-    type: "string", options: () => {
-      self.setDictionaries();
-      return Object.keys(self.costumeDictionary[self.runtime._editingTarget.id])
-    }
-  }}`))
-  async uploadCostume(test: string) {
-    await this.uploadFile("image", this.costumeDictionary[this.runtime._editingTarget.id][test]);
-    await this.setArrays();
-    await this.doodlebot.displayFile("costume9999.png");
-  }
-
-  // @block({
-  //   type: "command",
-  //   text: "Find files"
-  // })
-  // async findFiles() {
-  //   let response = await this.doodlebot?.fetchAndExtractList("http://192.168.41.121:8080/sounds/");
-  //   console.log(response);
-  // }
 
   @block({
     type: "command",
