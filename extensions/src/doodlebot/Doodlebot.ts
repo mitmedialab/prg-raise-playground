@@ -896,4 +896,246 @@ export default class Doodlebot {
         this.pending[type] = undefined;
         return value;
     }
+
+    // Parameters
+    LEFT_MOTOR_SPEED = 100; // Base speed
+    RIGHT_MOTOR_SPEED = 100; // Base speed
+    TURN_SPEED = 50; // Speed adjustment for turning
+
+    // Process image to find the line position
+
+
+    // Adjust motor speeds based on line position
+    async adjustMotorSpeeds(linePosition: number, imageWidth: number) {
+        const center = imageWidth / 2;
+
+        // Calculate error
+        const error = linePosition - center;
+
+        console.log("error");
+        console.log(error);
+
+        // Proportional control
+        const leftSpeed = this.LEFT_MOTOR_SPEED - this.TURN_SPEED * (error / center);
+        const rightSpeed = this.RIGHT_MOTOR_SPEED + this.TURN_SPEED * (error / center);
+
+        // Set motor speeds
+        await this.setMotorSpeeds(leftSpeed, rightSpeed);
+    }
+
+    stop = false;
+
+    stopLineFollowing() {
+        this.stop = true;
+    }
+
+    // Main loop
+    async followLine() {
+        this.stop = false;
+        console.log(this.stop);
+        while (!this.stop) {
+            const image = await this.getImageStreamArray();
+            console.log("here");
+            const binary = this.thresholdImage(image.uint8, image.width, image.height);
+            console.log("binary");
+            console.log(binary);
+            const linePosition = this.findLinePosition(binary.uint8, binary.width, binary.height);
+            console.log("here");
+            await this.adjustMotorSpeeds(linePosition, image.width);
+        }
+    }
+
+    // Utility functions
+    delay(ms: number): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async getImageStreamArray(): Promise<{ uint8: Uint8Array | null, width: number, height: number }> {
+        if (!this.connection.ip) return null;
+
+        const image = document.createElement("img");
+        image.src = `http://${this.connection.ip}:${port.camera}/${endpoint.video}`;
+        image.crossOrigin = "anonymous";
+
+        // Wait for the image to load
+        await new Promise((resolve) => image.addEventListener("load", resolve));
+
+        // Create a canvas and draw the image on it
+        const canvas = document.createElement("canvas");
+        canvas.width = image.naturalWidth;
+        canvas.height = image.naturalHeight;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+            console.error("Failed to get canvas context");
+            return null;
+        }
+        ctx.drawImage(image, 0, 0);
+
+        // Extract image data from the canvas
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const uint8Array = new Uint8Array(imageData.data.buffer);
+
+        return { uint8: uint8Array, width: canvas.width, height: canvas.height };
+    }
+
+
+    /**
+  * Applies thresholding to convert the image to binary and filters to keep only the top 30% of the image.
+  * @param uint8Array The image data as a Uint8Array.
+  * @param width The width of the image.
+  * @param height The height of the image.
+  * @param threshold The threshold value for binarization (default is 128).
+  * @returns An object containing the binary image data as a Uint8Array, width, and height of the filtered image.
+  */
+    thresholdImage(uint8Array: Uint8Array, width: number, height: number, threshold: number = 118): { uint8: Uint8Array, width: number, height: number } {
+        // Create an off-screen canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+            throw new Error("Failed to get canvas context");
+        }
+
+        // Create an ImageData object from the Uint8Array
+        const imageData = new ImageData(new Uint8ClampedArray(uint8Array), width, height);
+
+        // Draw the image data onto the canvas
+        ctx.putImageData(imageData, 0, 0);
+
+        // Get the image data from the canvas
+        const data = ctx.getImageData(0, 0, width, height).data;
+
+        // Apply thresholding
+        for (let i = 0; i < data.length; i += 4) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+            const a = data[i + 3];
+            const gray = (r + g + b) / 3; // Convert to grayscale
+
+            const value = gray >= threshold ? 255 : 0; // Apply threshold
+            // if (value == 255) {
+            //     console.log("OWAH");
+            // } else {
+            //     console.log("EEEE");
+            // }
+            data[i] = data[i + 1] = data[i + 2] = value; // Set R, G, B to the threshold value
+            data[i + 3] = 255; // Set alpha to fully opaque
+        }
+
+        // Calculate the number of rows to keep (top 30%)
+        const topRows = Math.floor(height * 0.2);
+        const newHeight = topRows;
+
+        // Create a new Uint8Array for the filtered image data
+        const filteredData = new Uint8ClampedArray(width * newHeight * 4);
+
+        // Copy the data for the top 30% of the image
+        for (let row = 0; row < newHeight; row++) {
+            for (let col = 0; col < width; col++) {
+                const srcIndex = row * width * 4 + col * 4;
+                const destIndex = row * width * 4 + col * 4;
+                filteredData[destIndex] = data[srcIndex];
+                filteredData[destIndex + 1] = data[srcIndex + 1];
+                filteredData[destIndex + 2] = data[srcIndex + 2];
+                filteredData[destIndex + 3] = data[srcIndex + 3];
+            }
+        }
+
+        // Create a new ImageData object with the filtered data
+        const filteredImageData = new ImageData(filteredData, width, newHeight);
+
+        console.log("returned");
+        console.log(new Uint8Array(filteredData.buffer));
+
+        // Create a new Uint8Array with the filtered image data
+        return { uint8: new Uint8Array(filteredData.buffer), width, height: newHeight };
+    }
+
+
+
+    findLinePosition(binaryImage: Uint8Array, width: number, height: number): number {
+        console.log("binary");
+        console.log(binaryImage);
+        // Convert Uint8Array to a 2D array for easier processing
+        const image2D: number[][] = [];
+        for (let y = 0; y < height; y++) {
+            image2D[y] = [];
+            for (let x = 0; x < width; x++) {
+                // Assuming the binaryImage is in RGBA format, and we are interested in the grayscale value
+                const index = (y * width + x) * 4; // 4 bytes per pixel (RGBA)
+                const r = binaryImage[index];
+                const g = binaryImage[index + 1];
+                const b = binaryImage[index + 2];
+                const grayscale = (r + g + b) / 3;
+                image2D[y][x] = grayscale;
+            }
+        }
+
+        // Find the position of the line
+        // For example, find the first row where the average grayscale value is less than a threshold
+        const threshold = 5; // Adjust this threshold as needed
+        console.log(image2D);
+        for (let y = 0; y < height; y++) {
+            let lineDetected = false;
+            for (let x = 0; x < width; x++) {
+                if (image2D[y][x] < threshold && this.isSurroundedByWhite(image2D, x, y, width, height, 5)) {
+                    lineDetected = true;
+                    console.log("x position");
+                    console.log(x);
+                    return x;
+                    break;
+                }
+            }
+            if (lineDetected) {
+                console.log("returned line position");
+                //console.log(x);
+                return y; // Return the Y position of the detected line
+            }
+        }
+
+        // Return -1 if no line is detected
+
+        return -1;
+    }
+
+    isSurroundedByWhite(image2D: number[][], x: number, y: number, width: number, height: number, margin: number): boolean {
+        // Check the pixel to the left and right within the margin
+        for (let dx = 1; dx <= margin; dx++) {
+            // Check left pixel
+            if (x - dx >= 0) {
+                if (image2D[y][x - dx] !== 255) { // Assuming 255 is white
+                    return false;
+                }
+            }
+
+            // Check right pixel
+            if (x + dx < width) {
+                if (image2D[y][x + dx] !== 255) { // Assuming 255 is white
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+
+    async setMotorSpeeds(leftSpeed: number, rightSpeed: number) {
+        console.log("left speed");
+        console.log(leftSpeed);
+        console.log("right speed");
+        console.log(rightSpeed);
+        const leftSteps = Math.round(leftSpeed * 5);
+        const rightSteps = Math.round(rightSpeed * 5);
+        const stepsPerSecond = 100; // Example value, adjust as needed
+        await this.motorCommand(
+            "steps",
+            { steps: leftSteps, stepsPerSecond },
+            { steps: rightSteps, stepsPerSecond }
+        );
+    }
+
+
+
 }

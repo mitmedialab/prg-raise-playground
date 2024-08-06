@@ -59,7 +59,9 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   } satisfies Record<keyof typeof categoryByGesture, boolean>;
 
   imageStream: HTMLImageElement;
+  imageStreamBinary: HTMLImageElement;
   videoDrawable: ReturnType<typeof this.createDrawable>;
+  videoDrawableBinary: ReturnType<typeof this.createDrawable>;
   ip: string;
   soundDictionary;
   costumeDictionary: any;
@@ -168,8 +170,12 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   async setDoodlebot(doodlebot: Doodlebot) {
     this.doodlebot = doodlebot;
     this.setIndicator("connected");
-    imageFiles = await doodlebot.findImageFiles();
-    soundFiles = await doodlebot.findSoundFiles();
+    try {
+      imageFiles = await doodlebot.findImageFiles();
+      soundFiles = await doodlebot.findSoundFiles();
+    } catch (e) {
+      this.openUI("ArrayError");
+    }
     console.log("SETTING");
     console.log(soundFiles);
   }
@@ -190,6 +196,34 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     this.openUI("ReattachBLE");
   }
 
+  async uint8ArrayToImage(uint8Array: Uint8Array, width: number, height: number) {
+    // Create an off-screen canvas
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error("Failed to get canvas context");
+    }
+
+    // Create an ImageData object from the Uint8Array
+    const imageData = new ImageData(new Uint8ClampedArray(uint8Array), width, height);
+
+    // Draw the image data onto the canvas
+    ctx.putImageData(imageData, 0, 0);
+
+    // Convert the canvas to a data URL
+    const dataURL = canvas.toDataURL('image/png');
+
+    // Create an HTMLImageElement
+    const img = new Image();
+    img.src = dataURL;
+
+    await new Promise((resolve) => img.addEventListener("load", resolve));
+
+    return img;
+  }
+
   async createVideoStreamDrawable() {
     this.imageStream ??= await this.doodlebot?.getImageStream();
     const drawable = this.createDrawable(this.imageStream);
@@ -200,6 +234,37 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       requestAnimationFrame(update);
     }
     requestAnimationFrame(update);
+    return drawable;
+  }
+
+
+  imagesEqual(img1: HTMLImageElement, img2: HTMLImageElement): boolean {
+    return img1.src === img2.src;
+  }
+
+  arraysEqual(a: Uint8Array, b: Uint8Array): boolean {
+    if (a.byteLength !== b.byteLength) {
+      return false;
+    }
+    return a.every((value, index) => value === b[index]);
+  }
+
+  async setImage() {
+    let binary2 = await this.doodlebot?.getImageStreamArray();
+    let threshold2 = this.doodlebot?.thresholdImage(binary2.uint8, binary2.width, binary2.height);
+    return (await this.uint8ArrayToImage(threshold2.uint8, binary2.width, binary2.height));
+  }
+
+  async delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  async createVideoStreamDrawableBinary() {
+    let binary = await this.doodlebot?.getImageStreamArray();
+    let threshold = this.doodlebot?.thresholdImage(binary.uint8, binary.width, binary.height);
+    this.imageStreamBinary ??= await this.uint8ArrayToImage(threshold.uint8, threshold.width, threshold.height);
+    const drawable = this.createDrawable(this.imageStreamBinary);
+    drawable.setVisible(true);
     return drawable;
   }
 
@@ -241,6 +306,16 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   async arc(direction: "left" | "right", radius: number, degrees: number) {
     if (direction == "right") degrees *= -1;
     await this.doodlebot?.motorCommand("arc", radius, degrees);
+  }
+
+  @(scratch.command`Start line following`)
+  startLine() {
+    this.doodlebot?.followLine();
+  }
+
+  @(scratch.command`Stop line following`)
+  stopLine() {
+    this.doodlebot?.stopLineFollowing();
   }
 
   @block({
@@ -418,6 +493,16 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   }
 
   @block({
+    type: "command",
+    text: (transparency) => `display binary video with ${transparency}% transparency`,
+    arg: { type: "number", defaultValue: 50 }
+  })
+  async connectToVideoBinary(transparency: number) {
+    this.videoDrawableBinary ??= await this.createVideoStreamDrawableBinary();
+    this.videoDrawableBinary.setTransparency(transparency);
+  }
+
+  @block({
     type: "hat",
     text: (gesture) => `when ${gesture} detected`,
     arg: { type: "string", defaultValue: "Thumb_Up", options: gestureMenuItems }
@@ -491,9 +576,14 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   }
 
   async setArrays() {
-    imageFiles = await this.doodlebot.findImageFiles();
-    soundFiles = await this.doodlebot.findSoundFiles();
-    console.log("SETTING");
+    try {
+      imageFiles = await this.doodlebot.findImageFiles();
+      soundFiles = await this.doodlebot.findSoundFiles();
+      console.log("SETTING");
+    } catch (e) {
+      console.log("error", e);
+      this.openUI("ArrayError");
+    }
   }
 
 
@@ -557,13 +647,13 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     }
   }
 
-  @(scratch.command((self, $) => $`Upload sound file ${self.makeCustomArgument({ component: FileArgument, initial: { value: "", text: "File" } })}`))
-  async uploadSoundFile(test: string) {
+  @(scratch.command((self, $) => $`Upload sound file ${self.makeCustomArgument({ component: FileArgument, initial: { value: "", text: "File" } })} with name ${"string"}`))
+  async uploadSoundFile(test: string, name: string) {
     await this.uploadFile("sound", test);
   }
 
-  @(scratch.command((self, $) => $`Upload image file ${self.makeCustomArgument({ component: FileArgument, initial: { value: "", text: "File" } })}`))
-  async uploadImageFile(test: string) {
+  @(scratch.command((self, $) => $`Upload image file ${self.makeCustomArgument({ component: FileArgument, initial: { value: "", text: "File" } })} with name ${"string"}`))
+  async uploadImageFile(test: string, name: string) {
     await this.uploadFile("image", test);
   }
 
