@@ -855,8 +855,7 @@ export default class Doodlebot {
 
             return itemNames;
         } catch (error) {
-            console.error('Error fetching or parsing HTML:', error);
-            return [];
+            throw new Error('Error fetching or parsing HTML:', error)
         }
     }
 

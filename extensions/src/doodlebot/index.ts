@@ -168,8 +168,12 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   async setDoodlebot(doodlebot: Doodlebot) {
     this.doodlebot = doodlebot;
     this.setIndicator("connected");
-    imageFiles = await doodlebot.findImageFiles();
-    soundFiles = await doodlebot.findSoundFiles();
+    try {
+      imageFiles = await doodlebot.findImageFiles();
+      soundFiles = await doodlebot.findSoundFiles();
+    } catch (e) {
+      this.openUI("ArrayError");
+    }
     console.log("SETTING");
     console.log(soundFiles);
   }
