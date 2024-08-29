@@ -257,6 +257,10 @@ export const info = {
         {
           "text": "right lower eyelid",
           "value": "33"
+        },
+        {
+          "text": "top of head",
+          "value": "34"
         }
       ],
       "acceptReporters": false
@@ -450,4 +454,4 @@ export const info = {
   }
 } as const;
 export const legacyFullSupport = legacy(info);
-export const legacyIncrementalSupport = legacy(info, {"incrementalDevelopment":true});
+export const legacyIncrementalSupport = legacy(info, { "incrementalDevelopment": true });
