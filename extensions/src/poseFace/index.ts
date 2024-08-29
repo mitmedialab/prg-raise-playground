@@ -1,6 +1,8 @@
 import { Extension, Environment, untilExternalGlobalVariableLoaded, validGenericExtension, RuntimeEvent } from "$common";
 import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
 import { legacyFullSupport, info } from "./legacy";
+import { getLandmarkModel } from "./landmarkHelper";
+import { type Results, type FaceMesh } from "@mediapipe/face_mesh";
 
 const { legacyExtension, legacyDefinition } = legacyFullSupport.for<PoseFace>();
 
@@ -104,16 +106,25 @@ export default class PoseFace extends Extension<Details, Blocks> {
   emotions = info.menus.EMOTION.items
   all_emotions = info.menus.EMOTION_ALL.items
 
+  landmarkDetector: FaceMesh;
+  landmarkResults: Results;
+
+  private processResults(results: Results) {
+    this.landmarkResults = results;
+  }
   /**
    * Acts like class PoseHand's constructor (instead of a child class constructor)
    * @param env 
    */
-  init(env: Environment) {
+  async init(env: Environment) {
+    this.landmarkDetector = await getLandmarkModel((results) => this.processResults(results));
     if (this.runtime.ioDevices) {
       this.runtime.on(RuntimeEvent.ProjectStart, this.projectStarted.bind(this));
       this._loop();
     }
   }
+
+
 
   projectStarted() {
     this.setTransparency(this.globalVideoTransparency);
@@ -130,6 +141,16 @@ export default class PoseFace extends Extension<Details, Blocks> {
     return { x: x - (this.DIMENSIONS[0] / 2), y: (this.DIMENSIONS[1] / 2) - y };
   }
 
+  /**
+   * Converts the coordinates from the MediaPipe face estimate to Scratch coordinates
+   * @param x 
+   * @param y
+   * @returns enum
+   */
+  convertMediaPipeCoordsToScratch(x, y) {
+    return this.convertCoordsToScratch({ x: this.DIMENSIONS[0] * x, y: this.DIMENSIONS[1] * y });
+  }
+
   async _loop() {
     while (true) {
       const frame = this.runtime.ioDevices.video.getFrame({
@@ -137,9 +158,14 @@ export default class PoseFace extends Extension<Details, Blocks> {
         dimensions: this.DIMENSIONS
       });
 
+      const canvas = this.runtime.ioDevices.video.getFrame({
+        format: 'canvas'
+      });
+
       const time = +new Date();
       if (frame) {
         this.affdexState = await this.estimateAffdexOnImage(frame);
+        await this.landmarkDetector.send({ image: canvas });
         // TODO: Once indicators are implemented, indicate the state of the extension based on this.affdexState
       }
       const estimateThrottleTimeout = (+new Date() - time) / 4;
@@ -192,11 +218,17 @@ export default class PoseFace extends Extension<Details, Blocks> {
    * @returns None
    */
   goToPart(part, util) {
-    if (!this.affdexState || !this.affdexState.featurePoints) return;
+    if (part < 34) {
+      if (!this.affdexState || !this.affdexState.featurePoints) return;
+      const featurePoint = this.affdexState.featurePoints[part];
+      const { x, y } = this.convertCoordsToScratch(featurePoint);
+      (util.target as any).setXY(x, y, false);
+    } else {
+      if (!this.landmarkResults) return;
+      const { x, y } = this.convertMediaPipeCoordsToScratch(this.landmarkResults.multiFaceLandmarks[0][10].x, this.landmarkResults.multiFaceLandmarks[0][10].y);
+      (util.target as any).setXY(x, y, false);
+    }
 
-    const featurePoint = this.affdexState.featurePoints[part];
-    const { x, y } = this.convertCoordsToScratch(featurePoint);
-    (util.target as any).setXY(x, y, false);
   }
 
   /**
