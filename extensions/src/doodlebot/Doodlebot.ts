@@ -1,6 +1,7 @@
 import EventEmitter from "events";
 import { Service } from "./communication/ServiceHelper";
 import UartService from "./communication/UartService";
+import { followLine } from "./LineFollowing";
 import { Command, DisplayKey, NetworkStatus, ReceivedCommand, SensorKey, command, display, endpoint, keyBySensor, motorCommandReceived, networkStatus, port, sensor } from "./enums";
 import { base64ToInt32Array, makeWebsocket, Max32Int, testWebSocket } from "./utils";
 
@@ -282,8 +283,16 @@ export default class Doodlebot {
 
     private async onWebsocketMessage(event: MessageEvent) {
         console.log("websocket message", { event });
-        const text = await event.data.text();
-        console.log(text);
+        if (event.data instanceof Blob) {
+            const text = await event.data.text();
+            console.log(text);
+        }
+        else if (event.data instanceof ArrayBuffer) {
+            const decoder = new TextDecoder('utf-8');
+            const decodedMessage = decoder.decode(event.data);
+            console.log('Received ArrayBuffer as text:', decodedMessage);
+        }
+        
     }
 
     private invalidateWifiConnection() {
@@ -548,6 +557,19 @@ export default class Doodlebot {
         image.crossOrigin = "anonymous";
         await new Promise((resolve) => image.addEventListener("load", resolve));
         return image;
+    }
+
+    async followLine(line: number[][], delay: number, previousSpeed: number) {
+        const commands = followLine(line, delay, previousSpeed);
+
+        for (const command of commands) {
+            const { leftWheelDistance, rightWheelDistance, leftWheelSpeed, rightWheelSpeed } = command;
+            await this.motorCommand(
+                "steps",
+                { steps: leftWheelDistance, leftWheelSpeed },
+                { steps: rightWheelDistance, rightWheelSpeed }
+              );
+        }
     }
 
     private setupAudioStream() {
