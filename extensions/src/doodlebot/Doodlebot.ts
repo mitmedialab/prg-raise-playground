@@ -24,7 +24,7 @@ export type SaveIP = (ip: string) => void;
 
 type MaybePromise<T> = undefined | Promise<T>;
 
-type Pending = Record<"motor" | "wifi" | "websocket", MaybePromise<any>> & { ip: MaybePromise<string> };
+type Pending = Record<"motor" | "wifi" | "websocket" | "video" | "image", MaybePromise<any>> & { ip: MaybePromise<string> };
 
 type SubscriptionTarget = Pick<EventTarget, "addEventListener" | "removeEventListener">;
 
@@ -548,6 +548,7 @@ export default class Doodlebot {
     async connectionWorkflow(credentials: NetworkCredentials) {
         await this.connectToWifi(credentials);
         await this.connectToWebsocket(this.connection.ip);
+        //await this.connectToImageWebSocket(this.connection.ip);
     }
 
     async getImageStream() {
@@ -559,18 +560,208 @@ export default class Doodlebot {
         return image;
     }
 
-    async followLine(line: number[][], delay: number, previousSpeed: number) {
-        const commands = followLine(line, delay, previousSpeed);
-
-        for (const command of commands) {
-            const { leftWheelDistance, rightWheelDistance, leftWheelSpeed, rightWheelSpeed } = command;
-            await this.motorCommand(
-                "steps",
-                { steps: leftWheelDistance, leftWheelSpeed },
-                { steps: rightWheelDistance, rightWheelSpeed }
-              );
-        }
+    async connectToImageWebSocket(ip: string) {
+        // Create a WebSocket connection
+        this.websocket = new WebSocket(`ws://${ip}:${port.camera}`);
+    
+        // Return a promise that resolves when the WebSocket is connected
+        await this.untilFinishedPending("image", new Promise<void>((resolve, reject) => {
+            const onOpen = () => {
+                console.log("Connected to WebSocket for image stream");
+                this.websocket.removeEventListener("open", onOpen);
+                resolve();
+            };
+    
+            const onError = (err: Event) => {
+                console.error("WebSocket error: ", err);
+                reject(err);
+            };
+    
+            this.websocket.addEventListener("open", onOpen);
+            this.websocket.addEventListener("error", onError);
+    
+            // Handle each message (which could be an image frame)
+            this.websocket.addEventListener("message", (event) => this.onWebSocketImageMessage(event));
+        }));
     }
+    
+    // Handle incoming image data from WebSocket
+    onWebSocketImageMessage(event: MessageEvent) {
+        // Assuming the message contains binary image data (e.g., Blob or ArrayBuffer)
+        const imageBlob = event.data;
+    
+        // Create an image element to render the received frame
+        const image = document.createElement("img");
+        const url = URL.createObjectURL(imageBlob);
+        image.src = url;
+    
+        // Wait until the image loads and then perform some action
+        image.addEventListener("load", () => {
+            console.log("Image frame received and rendered");
+            this.onImageReceived(image); // Process or display the image
+            URL.revokeObjectURL(url); // Clean up the URL object
+        });
+    }
+    
+    // Example image processing logic
+    onImageReceived(image: HTMLImageElement) {
+        // Perform operations on the image, e.g., display or analyze the frame
+        console.log("Processing image from WebSocket stream");
+        document.body.appendChild(image); // Example: Display the image in the document
+    }
+    
+
+    async followLine() {
+
+        const line = [
+            [320.0, 0.0],
+            [321.18093016474705, 85.93089371628516],
+            [324.46129173348885, 155.591194051611],
+            [329.8474413179264, 210.9928561014725],
+            [337.7368075299604, 254.1478349613646],
+            [348.4625309811926, 287.0680857267824],
+            [361.20418428371824, 311.7655634932206],
+            [374.5270520484066, 330.2522233561744],
+            [387.18749088738452, 344.5400204111386],
+            [399.34185741311743, 356.6409097536084],
+        ].map(([x, y]) => [x, y*1.5]);
+
+        const line2 = [[0.0, 0.0],
+        [6.750959988805026, 28.656715258676463],
+        [16.80684538467081, 51.52899671303742],
+        [29.27087024849043, 69.52656205250135],
+        [43.24624864115695, 83.55912896648654],
+        [57.83619462356339, 94.53641514441152],
+        [72.14392225660285, 103.36813827569464],
+        [85.27264560116842, 110.96401604975448],
+        [96.3255787181531, 118.23376615600927],
+        [104.40593566845, 126.0871062838775]].map(([x, y]) => [
+            x + 320,     // Add 320 to x
+            y * 3        // Multiply y by 2
+        ]);
+
+        const line3 = [[0.0, 0.0],
+        [6.268865158534559, 20.97535705484649],
+        [15.20407690140092, 38.649805462755155],
+        [25.67096258758057, 53.6101410082584],
+        [36.53484957605513, 66.44315947588885],
+        [46.661065225806075, 77.73565665017801],
+        [54.91493689581503, 88.07442806521303],
+        [60.16179194506348, 98.04627025686385],
+        [61.26695773253297, 108.23797825832502],
+        [57.09576161720508, 119.2363481045747]].map(([x, y]) => [
+            x + 320,     // Add 320 to x
+            y * 3       // Multiply y by 2
+        ]);
+
+        const line4 = [ [0.0, 0.0],
+        [4.263741167481272, 17.75353054629771],
+        [9.675681926862309, 33.672742232365366],
+        [14.965101388327154, 47.88832444264693],
+        [18.861278662060074, 60.53096656158614],
+        [20.093492858245157, 71.7313579736269],
+        [17.391023087066518, 81.62018806321313],
+        [9.48314845870837, 90.32814621478864],
+        [-4.900851916645138, 97.98592181279739],
+        [-27.0316989288099, 104.72420424168314]].map(([x, y]) => [
+            x + 320,     // Add 320 to x
+            y * 3        // Multiply y by 2
+        ]);
+
+        const line5 = [[0.0, 0.0],
+        [-2.458546532762881, 10.996484372490875],
+        [-8.215642996982728, 19.47870953494133],
+        [-18.51592857487068, 25.15912618527381],
+        [-34.604042448638, 27.750185021410845],
+        [-57.72462380049591, 26.964336741274786],
+        [-89.1223118126556, 22.514032042788193],
+        [-130.04174566732827, 14.111721623873494],
+        [-181.72756454672538, 1.4698561824531832],
+        [-245.42440763305805, 0.699113583550306]].map(([x, y]) => [
+            x + 320,     // Add 320 to x
+            y * 3        // Multiply y by 2
+        ]);
+
+        const delay = 0.5;
+        const previousSpeed = 0.25;
+
+
+        let commands2 = followLine(line, delay, previousSpeed);
+
+            for (const command of commands2) {
+                console.log(command);
+                const { leftWheelSpeed, rightWheelSpeed, leftWheelDistance, rightWheelDistance } = command;
+                await this.motorCommand(
+                    "steps",
+                    { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
+                    { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
+                );
+                console.log("command");
+                console.log(command);
+
+            }
+
+            commands2 = followLine(line2, delay, previousSpeed);
+
+            for (const command of commands2) {
+                console.log(command);
+                const { leftWheelSpeed, rightWheelSpeed, leftWheelDistance, rightWheelDistance } = command;
+                await this.motorCommand(
+                    "steps",
+                    { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
+                    { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
+                );
+                console.log("command");
+                console.log(command);
+
+                
+            }
+            commands2 = followLine(line3, delay, previousSpeed);
+
+            for (const command of commands2) {
+                console.log(command);
+                const { leftWheelSpeed, rightWheelSpeed, leftWheelDistance, rightWheelDistance } = command;
+                await this.motorCommand(
+                    "steps",
+                    { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
+                    { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
+                );
+                console.log("command");
+                console.log(command);
+
+            }
+            commands2 = followLine(line4, delay, previousSpeed);
+
+            for (const command of commands2) {
+                console.log(command);
+                const { leftWheelSpeed, rightWheelSpeed, leftWheelDistance, rightWheelDistance } = command;
+                await this.motorCommand(
+                    "steps",
+                    { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
+                    { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
+                );
+                console.log("command");
+                console.log(command);
+
+            }
+            commands2 = followLine(line5, delay, previousSpeed);
+
+            for (const command of commands2) {
+                console.log(command);
+                const { leftWheelSpeed, rightWheelSpeed, leftWheelDistance, rightWheelDistance } = command;
+                await this.motorCommand(
+                    "steps",
+                    { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
+                    { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
+                );
+                console.log("command");
+                console.log(command);
+
+            }
+
+        
+    }
+
 
     private setupAudioStream() {
         if (!this.connection.ip) return false;
