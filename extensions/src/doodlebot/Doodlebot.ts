@@ -292,7 +292,7 @@ export default class Doodlebot {
             const decodedMessage = decoder.decode(event.data);
             console.log('Received ArrayBuffer as text:', decodedMessage);
         }
-        
+
     }
 
     private invalidateWifiConnection() {
@@ -563,7 +563,7 @@ export default class Doodlebot {
     async connectToImageWebSocket(ip: string) {
         // Create a WebSocket connection
         this.websocket = new WebSocket(`ws://${ip}:${port.camera}`);
-    
+
         // Return a promise that resolves when the WebSocket is connected
         await this.untilFinishedPending("image", new Promise<void>((resolve, reject) => {
             const onOpen = () => {
@@ -571,30 +571,30 @@ export default class Doodlebot {
                 this.websocket.removeEventListener("open", onOpen);
                 resolve();
             };
-    
+
             const onError = (err: Event) => {
                 console.error("WebSocket error: ", err);
                 reject(err);
             };
-    
+
             this.websocket.addEventListener("open", onOpen);
             this.websocket.addEventListener("error", onError);
-    
+
             // Handle each message (which could be an image frame)
             this.websocket.addEventListener("message", (event) => this.onWebSocketImageMessage(event));
         }));
     }
-    
+
     // Handle incoming image data from WebSocket
     onWebSocketImageMessage(event: MessageEvent) {
         // Assuming the message contains binary image data (e.g., Blob or ArrayBuffer)
         const imageBlob = event.data;
-    
+
         // Create an image element to render the received frame
         const image = document.createElement("img");
         const url = URL.createObjectURL(imageBlob);
         image.src = url;
-    
+
         // Wait until the image loads and then perform some action
         image.addEventListener("load", () => {
             console.log("Image frame received and rendered");
@@ -602,14 +602,14 @@ export default class Doodlebot {
             URL.revokeObjectURL(url); // Clean up the URL object
         });
     }
-    
+
     // Example image processing logic
     onImageReceived(image: HTMLImageElement) {
         // Perform operations on the image, e.g., display or analyze the frame
         console.log("Processing image from WebSocket stream");
         document.body.appendChild(image); // Example: Display the image in the document
     }
-    
+
 
     async followLine() {
 
@@ -624,7 +624,7 @@ export default class Doodlebot {
             [374.5270520484066, 330.2522233561744],
             [387.18749088738452, 344.5400204111386],
             [399.34185741311743, 356.6409097536084],
-        ].map(([x, y]) => [x, y*1.5]);
+        ].map(([x, y]) => [x, y * 1.5]);
 
         const line2 = [[0.0, 0.0],
         [6.750959988805026, 28.656715258676463],
@@ -654,7 +654,7 @@ export default class Doodlebot {
             y * 3       // Multiply y by 2
         ]);
 
-        const line4 = [ [0.0, 0.0],
+        const line4 = [[0.0, 0.0],
         [4.263741167481272, 17.75353054629771],
         [9.675681926862309, 33.672742232365366],
         [14.965101388327154, 47.88832444264693],
@@ -682,84 +682,136 @@ export default class Doodlebot {
             y * 3        // Multiply y by 2
         ]);
 
+        const line6 = [
+            [0.0, 0.0],
+            [0.09236843533610564, -0.07283113197185509],
+            [0.1787644355172215, -0.21099708488163482],
+            [0.2613754803283964, -0.42708340844685555],
+            [0.34238904955468125, -0.7336756523850327],
+            [0.4239926229811255, -1.1433593664136825],
+            [0.5083736803927803, -1.6687201002503227],
+            [0.597719701574695, -2.3223434036124684]
+
+        ].map(([x, y]) => [
+            y * 100 + 320,     // Add 320 to x
+            x * 100 * 3        // Multiply y by 2
+        ]);
+
+        const line7 = [[0.0, 0.0], [0.09236843533610564, -0.07283113197185509], [0.1787644355172215, -0.21099708488163482], [0.2613754803283964, -0.42708340844685555], [0.34238904955468125, -0.7336756523850327], [0.4239926229811255, -1.1433593664136825], [0.5083736803927803, -1.6687201002503227], [0.597719701574695, -2.3223434036124684]].map(([x, y]) => [
+            y * 100 + 320,     // Add 320 to x
+            x * 100 * 3        // Multiply y by 2
+        ])
+
+
+
         const delay = 0.5;
         const previousSpeed = 0.1;
 
 
         let commands2 = followLine(line, delay, previousSpeed);
 
-            for (const command of commands2) {
-                console.log(command);
-                const { leftWheelSpeed, rightWheelSpeed, leftWheelDistance, rightWheelDistance } = command;
-                await this.motorCommand(
-                    "steps",
-                    { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
-                    { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
-                );
-                console.log("command");
-                console.log(command);
+        for (const command of commands2) {
+            console.log(command);
+            const { leftWheelSpeed, rightWheelSpeed, leftWheelDistance, rightWheelDistance } = command;
+            await this.motorCommand(
+                "steps",
+                { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
+                { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
+            );
+            console.log("command");
+            console.log(command);
 
-            }
+        }
 
-            commands2 = followLine(line2, delay, previousSpeed);
+        commands2 = followLine(line2, delay, previousSpeed);
 
-            for (const command of commands2) {
-                console.log(command);
-                const { leftWheelSpeed, rightWheelSpeed, leftWheelDistance, rightWheelDistance } = command;
-                await this.motorCommand(
-                    "steps",
-                    { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
-                    { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
-                );
-                console.log("command");
-                console.log(command);
+        for (const command of commands2) {
+            console.log(command);
+            const { leftWheelSpeed, rightWheelSpeed, leftWheelDistance, rightWheelDistance } = command;
+            await this.motorCommand(
+                "steps",
+                { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
+                { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
+            );
+            console.log("command");
+            console.log(command);
 
-                
-            }
-            commands2 = followLine(line3, delay, previousSpeed);
 
-            for (const command of commands2) {
-                console.log(command);
-                const { leftWheelSpeed, rightWheelSpeed, leftWheelDistance, rightWheelDistance } = command;
-                await this.motorCommand(
-                    "steps",
-                    { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
-                    { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
-                );
-                console.log("command");
-                console.log(command);
+        }
+        commands2 = followLine(line3, delay, previousSpeed);
 
-            }
-            commands2 = followLine(line4, delay, previousSpeed);
+        for (const command of commands2) {
+            console.log(command);
+            const { leftWheelSpeed, rightWheelSpeed, leftWheelDistance, rightWheelDistance } = command;
+            await this.motorCommand(
+                "steps",
+                { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
+                { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
+            );
+            console.log("command");
+            console.log(command);
 
-            for (const command of commands2) {
-                console.log(command);
-                const { leftWheelSpeed, rightWheelSpeed, leftWheelDistance, rightWheelDistance } = command;
-                await this.motorCommand(
-                    "steps",
-                    { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
-                    { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
-                );
-                console.log("command");
-                console.log(command);
+        }
+        commands2 = followLine(line4, delay, previousSpeed);
 
-            }
-            commands2 = followLine(line5, delay, previousSpeed);
+        for (const command of commands2) {
+            console.log(command);
+            const { leftWheelSpeed, rightWheelSpeed, leftWheelDistance, rightWheelDistance } = command;
+            await this.motorCommand(
+                "steps",
+                { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
+                { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
+            );
+            console.log("command");
+            console.log(command);
 
-            for (const command of commands2) {
-                console.log(command);
-                const { leftWheelSpeed, rightWheelSpeed, leftWheelDistance, rightWheelDistance } = command;
-                await this.motorCommand(
-                    "steps",
-                    { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
-                    { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
-                );
-                console.log("command");
-                console.log(command);
+        }
+        commands2 = followLine(line5, delay, previousSpeed);
 
-            }
+        for (const command of commands2) {
+            console.log(command);
+            const { leftWheelSpeed, rightWheelSpeed, leftWheelDistance, rightWheelDistance } = command;
+            await this.motorCommand(
+                "steps",
+                { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
+                { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
+            );
+            console.log("command");
+            console.log(command);
 
-        
+        }
+
+        commands2 = followLine(line6, delay, previousSpeed);
+
+        for (const command of commands2) {
+            console.log(command);
+            const { leftWheelSpeed, rightWheelSpeed, leftWheelDistance, rightWheelDistance } = command;
+            await this.motorCommand(
+                "steps",
+                { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
+                { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
+            );
+            console.log("command");
+            console.log(command);
+
+        }
+
+        commands2 = followLine(line7, delay, previousSpeed);
+
+        for (const command of commands2) {
+            console.log(command);
+            const { leftWheelSpeed, rightWheelSpeed, leftWheelDistance, rightWheelDistance } = command;
+            await this.motorCommand(
+                "steps",
+                { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
+                { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
+            );
+            console.log("command");
+            console.log(command);
+
+        }
+
+
     }
 
 
