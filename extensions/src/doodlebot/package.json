@@ -15,6 +15,8 @@
   "dependencies": {
     "@mediapipe/tasks-vision": "^0.10.12",
     "@types/web-bluetooth": "^0.0.20",
+    "bezier-js": "^6.1.4",
+    "cubic-spline": "^3.0.3",
     "events": "^3.3.0"
   }
 }
