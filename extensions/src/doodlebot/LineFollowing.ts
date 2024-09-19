@@ -11,33 +11,49 @@ const cameraMatrix = [
 
 const wheelBase = 0.1016;
 const bezierSamples = 2;
-const bezierIncrement = .01;
-const linearSpeed = .25;
+const bezierIncrement = .1;
+const linearSpeed = .1;
 
 
 export function followLine(linePixels: number[][], delay: number, previousSpeed: number) {
-    const xs = linePixels.map((point) => point[0]);
-    const ys = linePixels.map((point) => point[1]);
-    const spline = new Spline.default(ys, xs); // Opposite so we get the x values
-    const y1 = findPointOnCurve(spline, 0, previousSpeed * delay);
-    const y2 = findPointOnCurve(spline, 0, previousSpeed * delay + 10);
 
-    console.log(y1);
-    console.log(y2);
-    console.log(spline);
-    const groundCoordinate1 = pixelToGroundCoordinates([spline.at(y1), y1]);
-    const groundCoordinate2 = pixelToGroundCoordinates([spline.at(y2), y2]);
+    let increasing = true;
+    const filteredLinePixels = linePixels.filter((pixel, index, array) => {
+        // Skip the first element, as there's no previous element to compare with
+        if (index === 0) return true;
+      
+        const prevY = array[index - 1][1];
+        const currentY = pixel[1];
+        if (currentY < prevY) {
+            increasing = false;
+        }
+        // Keep the pixel if the y-value is increasing
+        return increasing;
+      });
+    const xs = filteredLinePixels.map((point) => point[0]);
+    const ys = filteredLinePixels.map((point) => point[1]);
+    const spline = new Spline.default(ys, xs); // Opposite so we get the x values
+    const x1 = findPointAtDistanceWithIncrements(spline, 0.1, (previousSpeed * delay) - bezierIncrement - 0.05);
+    const x2 = findPointAtDistanceWithIncrements(spline, 0.1, (previousSpeed * delay));
+
+    console.log(x1);
+    console.log(x2);
+    // console.log(spline);
+    const groundCoordinate1 = pixelToGroundCoordinates([spline.at(x1), x1]);
+    const groundCoordinate2 = pixelToGroundCoordinates([spline.at(x2), x2]);
 
     console.log("ground coordinates");
-    console.log(groundCoordinate1);
-    console.log(groundCoordinate2);
+    console.log(groundCoordinate1.x*100, groundCoordinate1.y*100);
+    console.log(groundCoordinate2.x*100, groundCoordinate2.y*100);
 
     const bezier = new Bezier.Bezier(
         { x: 0, y: 0 },
         { x: 0, y: bezierIncrement },
         groundCoordinate1,
-        groundCoordinate2,
+        groundCoordinate2
     );
+    console.log("bezier")
+    console.log(bezier);
 
     const motorCommands = [];
     // TODO: Improve this function
@@ -52,40 +68,108 @@ export function followLine(linePixels: number[][], delay: number, previousSpeed:
 }
 
 
-function calculateDistanceOnCurve(curve: Spline, t0: number, t1: number) {
-    const numSteps = 100;
-    let distance = 0;
-    let prevPoint = pixelToGroundCoordinates([curve.at(t0), t0]);
-    for (let i = 1; i <= numSteps; i++) {
-        const t = t0 + (t1 - t0) * i / numSteps;
-        const currentPoint = pixelToGroundCoordinates([curve.at(t), t]);
-        distance += Math.sqrt(
-            Math.pow(currentPoint.x - prevPoint.x, 2) +
-            Math.pow(currentPoint.y - prevPoint.y, 2)
-        );
-        prevPoint = currentPoint;
-    }
-    return distance;
-}
+// function calculateDistanceOnCurve(curve: Spline, t0: number, t1: number) {
+//     const numSteps = 100;
+//     let distance = 0;
+//     let prevPoint = pixelToGroundCoordinates([curve.at(t0), t0]);
+//     // console.log('prev point');
+//     // console.log(prevPoint);
+//     for (let i = 1; i <= numSteps; i++) {
+//         const t = t0 + (t1 - t0) * i / numSteps;
+//         const currentPoint = pixelToGroundCoordinates([curve.at(t), t]);
+//         // console.log("current point");
+//         // console.log(currentPoint);
+//         distance += Math.sqrt(
+//             Math.pow(currentPoint.x - prevPoint.x, 2) +
+//             Math.pow(currentPoint.y - prevPoint.y, 2)
+//         );
+//         prevPoint = currentPoint;
+//         console.log(currentPoint);
+//         console.log(distance);
+//     }
+//     return distance;
+// }
 
-function findPointOnCurve(curve: Spline, t0: number, desiredDistance) {
-    let low = t0;
-    let high = imageDimensions[1];  // Assuming y ranges from 0 to image height
-    let mid: number; // y value 
+// Spline function that gives the y value for a given x value
 
-    while (high - low > 0.0001) {
-        mid = (low + high) / 2;
-        const distance = calculateDistanceOnCurve(curve, t0, mid);
-
-        if (distance < desiredDistance) {
-            low = mid;  // Increase y
-        } else {
-            high = mid; // Decrease y
+  
+  // Function to calculate the Euclidean distance between two points
+  function distanceBetweenPoints(x1, y1, x2, y2) {
+    const ground1 = pixelToGroundCoordinates([x1, y1]);
+    const ground2 = pixelToGroundCoordinates([x2, y2]);
+    const dx = ground2.x - ground1.x;
+    const dy = ground2.y - ground2.y;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+  
+  function findPointAtDistanceWithIncrements(spline, increment: number, desiredDistance: number): number {
+    let totalDistance = 0;
+    const xValues = spline.xs;
+  
+    // Iterate through each pair of xValues in the array
+    for (let i = 0; i < xValues.length - 1; i++) {
+      let currentX = xValues[i];
+      const nextX = xValues[i + 1];
+  
+      // Check the direction between currentX and nextX (allow for backtracking)
+      let direction = nextX > currentX ? 1 : -1;
+  
+      // Step through each segment in increments, adjusting for direction
+      while ((direction === 1 && currentX < nextX) || (direction === -1 && currentX > nextX)) {
+        
+        const nextXIncrement = currentX + direction * increment;  // Increment or decrement by step size
+  
+        const currentY = spline.at(currentX);
+        const nextY = spline.at(nextXIncrement);
+        // console.log(spline);
+        // console.log(currentX, currentY);
+  
+        // Calculate distance between current and next increment
+        const distance = distanceBetweenPoints(currentX, currentY, nextXIncrement, nextY);
+  
+        totalDistance += distance;
+  
+        // Check if the accumulated distance is equal to or exceeds the desired distance
+        if (totalDistance >= desiredDistance) {
+          return nextXIncrement;
         }
+  
+        // Move to the next increment
+        currentX = nextXIncrement;
+  
+        // Stop if we overshoot the next point
+        if ((direction === 1 && currentX > nextX) || (direction === -1 && currentX < nextX)) {
+          currentX = nextX;
+        }
+      }
     }
+  
+    // If the desired distance is beyond all xValues, return the last point
+    return xValues[xValues.length - 1];
+  }
+  
+  // Example usage
 
-    return mid;
-}
+  
+
+// function findPointOnCurve(curve: Spline, t0: number, desiredDistance) {
+//     let low = t0;
+//     let high = imageDimensions[1];  // Assuming y ranges from 0 to image height
+//     let mid: number; // y value 
+
+//     while (high - low > 0.0001) {
+//         mid = (low + high) / 2;
+//         const distance = calculateDistanceOnCurve(curve, t0, mid);
+
+//         if (distance < desiredDistance) {
+//             low = mid;  // Increase y
+//         } else {
+//             high = mid; // Decrease y
+//         }
+//     }
+
+//     return mid;
+// }
 
 // function pixelToGroundCoordinates(
 //     pixelCoords: [number, number],
@@ -134,7 +218,7 @@ const imageDimensions = [640,480];
 const horizontalFOV = 53.5;
 const verticalFOV = 41.41;
 const cameraHeight = 0.1;  
-const tiltAngle = 52.85331330197821;
+const tiltAngle = 32.85331330197821;
 
 function pixelToGroundCoordinates(
     pixelCoords: [number, number],

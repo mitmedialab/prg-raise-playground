@@ -683,7 +683,7 @@ export default class Doodlebot {
         ]);
 
         const delay = 0.5;
-        const previousSpeed = 0.25;
+        const previousSpeed = 0.1;
 
 
         let commands2 = followLine(line, delay, previousSpeed);
