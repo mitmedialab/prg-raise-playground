@@ -1,7 +1,5 @@
 import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, RuntimeEvent } from "$common";
 import { legacyFullSupport, info } from "./legacy";
-
-import * as handpose from '@tensorflow-models/handpose';
 import { HandLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
 const { legacyExtension, legacyDefinition } = legacyFullSupport.for<PoseHand>();
 
