@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@mediapipe/tasks-vision':
+        specifier: ^0.1.0-alpha-12
+        version: 0.1.0-alpha-9
     devDependencies:
       '@types/node':
         specifier: ^20.12.2
@@ -48,6 +52,9 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.9':
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
+
+  '@mediapipe/tasks-vision@0.1.0-alpha-9':
+    resolution: {integrity: sha512-hpgY13d3zwbKEyEEG03m1rpEYM56CGPcMGgHwveZ4+SfDjmMLaev14bvlVpog51UNDE7abJTRL6Q4OtIJsSxXQ==}
 
   '@tsconfig/node10@1.0.11':
     resolution: {integrity: sha512-DcRjDCujK/kCk/cUe8Xz8ZSpm8mS3mNNpta+jGCA6USEDfktlNvm1+IuZ9eTcDbNk41BHwpHHeW+N1lKCz4zOw==}
@@ -219,6 +226,8 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.4.15
+
+  '@mediapipe/tasks-vision@0.1.0-alpha-9': {}
 
   '@tsconfig/node10@1.0.11': {}
 
