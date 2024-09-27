@@ -8,11 +8,17 @@ importers:
 
   .:
     dependencies:
+      '@mediapipe/tasks-vision':
+        specifier: ^0.1.0-alpha-12
+        version: 0.1.0-alpha-9
       '@tensorflow-models/handpose':
         specifier: ^0.0.3
         version: 0.0.3(@tensorflow/tfjs-converter@1.7.4(@tensorflow/tfjs-core@1.7.4))(@tensorflow/tfjs-core@1.7.4)
 
 packages:
+
+  '@mediapipe/tasks-vision@0.1.0-alpha-9':
+    resolution: {integrity: sha512-hpgY13d3zwbKEyEEG03m1rpEYM56CGPcMGgHwveZ4+SfDjmMLaev14bvlVpog51UNDE7abJTRL6Q4OtIJsSxXQ==}
 
   '@tensorflow-models/handpose@0.0.3':
     resolution: {integrity: sha512-U5SBwxeQUXVawACDn+e0r4XJEDEah/J1HlWAqApXcm8DXjCtGKxQm/8BmFsg6ebbtAQ/R1bripohaQ655fv29w==}
@@ -49,6 +55,8 @@ packages:
     resolution: {integrity: sha512-2CkZ9Wn2dS4mMUWQaXLsOAfGD+irMlLEeSP3cMxpGbgyOOzJGFa+MWCOMTOCMyZinHRPxyOj/S/C57li/1to6Q==}
 
 snapshots:
+
+  '@mediapipe/tasks-vision@0.1.0-alpha-9': {}
 
   '@tensorflow-models/handpose@0.0.3(@tensorflow/tfjs-converter@1.7.4(@tensorflow/tfjs-core@1.7.4))(@tensorflow/tfjs-core@1.7.4)':
     dependencies:
