@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@mediapipe/tasks-vision": "^0.1.0-alpha-12",
     "@tensorflow-models/handpose": "^0.0.3"
   }
 }
