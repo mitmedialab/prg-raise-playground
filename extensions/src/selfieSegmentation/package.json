@@ -5,10 +5,10 @@
   "main": "index.ts",
   "scripts": {
     "directory": "echo selfieSegmentation",
-    "test": "npm run test --prefix ../../ -- selfieSegmentation/index.test.ts",
-    "dev": "npm run dev --prefix ../../../ -- --include selfieSegmentation",
-    "add:ui": "npm run add:ui --prefix ../../../  -- selfieSegmentation",
-    "add:arg": "npm run --prefix ../../../-- selfieSegmentation"
+    "test": "pnpm --filter prg-extension-root test selfieSegmentation/index.test.ts",
+    "dev": "pnpm --filter prg-extension-root dev --include selfieSegmentation",
+    "add:ui": "pnpm --filter prg-extension-root add:ui selfieSegmentation",
+    "add:arg": "pnpm --filter prg-extension-root add:arg selfieSegmentation"
   },
   "author": "",
   "license": "ISC",

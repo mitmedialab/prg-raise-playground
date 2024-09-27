@@ -1,6 +1,6 @@
 import { Extension } from "$common/extension/GenericExtension";
 import { Environment } from "$common/types";
-import Runtime from "$root/packages/scratch-vm/src/engine/runtime";
+import Runtime from "$root/scratch-packages/scratch-vm/src/engine/runtime";
 import { test, describe } from "$testing";
 import { DefaultDisplayDetails } from "$testing/defaults";
 

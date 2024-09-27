@@ -2,7 +2,7 @@ import { codeSnippet } from "documentation";
 
 export const base = codeSnippet();
 
-import { extension, block, type ExtensionMenuDisplayDetails, type Environment } from "$common";
+import { extension, type ExtensionMenuDisplayDetails, type Environment, scratch } from "$common";
 
 const details: ExtensionMenuDisplayDetails = { name: "" };
 
@@ -55,11 +55,7 @@ export const blockify = codeSnippet(); {
   class Example extends BaseClass {
     init(env: Environment): void { }
 
-    @block({
-      type: "command",
-      text: (name, age) => `What's your ${name} and ${age}?`,
-      args: [{ type: "string", defaultValue: "name" }, "number"]
-    })
+    @(scratch.command`What's your ${{ type: "string", defaultValue: "name" }} and ${"number"}?`)
     someMethodToBlockify(name: string, age: number) {
       console.log(`Hello, ${name}! ${age} is the new ${Math.random() * age * 2}`);
     }
@@ -76,11 +72,7 @@ export const functionArg = codeSnippet(); {
   class Example extends _BaseClass {
     defaultValue = "";
 
-    @block((self) => ({
-      type: "command",
-      text: (name, age) => `What's your ${name} and ${age}?`,
-      args: [{ type: "string", defaultValue: self.defaultValue }, "number"] as const
-    }))
+    @(scratch.command((instance, $) => $`What's your ${{ type: "string", defaultValue: instance.defaultValue }} and ${"number"}?`))
     someMethodToBlockify(name: string, age: number) { // ...
       functionArg.end;
     }
@@ -96,11 +88,7 @@ export const ui = codeSnippet(); {
   class Example extends BaseClass {
     init(env: Environment): void { }
 
-    @block({
-      type: "command",
-      text: (name, age) => `What's your ${name} and ${age}?`,
-      args: [{ type: "string", defaultValue: "name" }, "number"]
-    })
+    @(scratch.command`What's your ${{ type: "string", defaultValue: "name" }} and ${"number"}?`)
     someMethodToBlockify(name: string, age: number) {
       this.openUI("someComponent");
     }

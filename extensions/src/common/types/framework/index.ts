@@ -1,6 +1,5 @@
 import { Extension } from "$common/extension/GenericExtension";
 import type ExtensionManager from "$scratch-vm/extension-support/extension-manager";
-import type Runtime from "$scratch-vm/engine/runtime";
 import type BlockUtility from "$scratch-vm/engine/block-utility";
 import type { blockIDKey } from "../../globals";
 import { ExtensionBlocks } from "./blocks";
@@ -8,6 +7,7 @@ import { Language } from "../enums";
 import { MethodNames, ValueOf } from "../utils";
 import { ExtensionInstance } from "$common/extension";
 import { Tag } from "./tags";
+import { Runtime } from "../scratch/vm";
 
 export type BaseGenericExtension = Extension<ExtensionMenuDisplayDetails, ExtensionBlocks>;
 

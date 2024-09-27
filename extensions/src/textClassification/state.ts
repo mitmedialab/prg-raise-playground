@@ -1,4 +1,4 @@
-import Target from "$root/packages/scratch-vm/src/engine/target";
+import Target from "$root/scratch-packages/scratch-vm/src/engine/target";
 import { Voice } from "./voices";
 
 export type State = { currentVoice: Voice; }

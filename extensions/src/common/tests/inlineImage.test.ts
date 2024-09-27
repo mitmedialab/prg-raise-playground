@@ -1,7 +1,7 @@
 import { extension } from "$common/extension";
 import { block } from "$common/extension/decorators/blocks";
 import { ArgumentType, Environment, ExtensionBlockMetadata, InlineImage } from "$common/types";
-import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
+import BlockUtility from "$root/scratch-packages/scratch-vm/src/engine/block-utility";
 import { createTestSuite, imageMock } from "$testing";
 import mocked from "./nonExistentFile.png";
 

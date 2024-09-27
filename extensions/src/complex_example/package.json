@@ -5,8 +5,8 @@
   "main": "index.ts",
   "scripts": {
     "dir:name": "complex_example",
-    "dev": "npm run dev --prefix ../../../ -- --include complex_example",
-    "test": "npm run test --prefix ../../ -- complex_example/index.test.ts"
+    "dev": "pnpm --filter prg-extension-root dev --include complex_example",
+    "test": "pnpm --filter prg-extension-root test complex_example/index.test.ts"
   },
   "author": "",
   "license": "ISC"

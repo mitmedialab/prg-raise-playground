@@ -4,9 +4,8 @@
   "description": "All extensions",
   "main": "index.js",
   "scripts": {
-    "init": "find . -maxdepth 4 -name package.json -not -path \"**/node_modules/*\" -execdir pwd \\; -execdir npm i \\;",
-    "test": "npm run test --prefix testing/",
-    "document": "npm run generate --prefix documentation/"
+    "test": "pnpm --filter extensions-testing test",
+    "document": "pnpm --filter extensions-documentation generate"
   },
   "author": "",
   "license": "ISC",

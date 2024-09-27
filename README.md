@@ -1,10 +1,14 @@
-# ✨ PRG Scratch Extension Development Environment
+# ✨ PRG RAISE Playground
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/mitmedialab/prg-extension-boilerplate/tree/dev)
 
 This repository is your one-stop-shop for developing [scratch extensions](https://en.scratch-wiki.info/wiki/Extension) for PRG curricula.
 
-It's a fullblown [fork](https://en.wikipedia.org/wiki/Fork_(software_development)) of the official Scratch codebase, which the [Personal Robotics Group](https://robots.media.mit.edu/) (PRG) manages and extends to meet its needs. 
+It [forks](https://en.wikipedia.org/wiki/Fork_(software_development)) a few of the official Scratch codebases, which the [Personal Robotics Group](https://robots.media.mit.edu/) (PRG) manages and extends to meet its needs. These exist as [git submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules) located inside of the [scratch-packages/](./scratch-packages/) folder.
+- [scratch-packages/scratch-gui/](./scratch-packages/scratch-gui/)
+    - [prg-raise-playground-scratch-gui](https://github.com/mitmedialab/prg-raise-playground-scratch-gui) forks the [scratch-gui](https://github.com/scratchfoundation/scratch-gui) package. See [our changes](https://github.com/mitmedialab/prg-raise-playground-scratch-gui/pull/7).
+- [scratch-packages/scratch-vm/](./scratch-packages/scratch-vm/)
+    - [prg-raise-playground-scratch-vm](https://github.com/mitmedialab/prg-raise-playground-scratch-vm) forks the [scratch-vm](https://github.com/scratchfoundation/scratch-vm) package. See [our changes](https://github.com/mitmedialab/prg-raise-playground-scratch-vm/pull/2).
 
 Looking for the old documentation (<= Sept. 2022)? Head [here](./BACKGROUND.md).
 
@@ -14,15 +18,15 @@ Looking for the old documentation (<= Sept. 2022)? Head [here](./BACKGROUND.md).
 
 ## ⚡ Quick Start
 
-This section contains concise explanations on how to accomplish something (often just a couple of commands to run). If you need more info please check out one of the lower sections. 
+This section contains concise explanations on how to accomplish something (often just a couple of [terminal commands](https://developer.mozilla.org/en-US/docs/Learn/Tools_and_testing/Understanding_client-side_tools/Command_line) to run). If you need more info please check out one of the lower sections. 
 
 ### 🚧 Project setup
 
 Assuming you have...
 - Git installed (if not, jump to: [Git](#Git))
 - **_(Windows only)_** WSL setup (if not, jump to: [Windows Setup](#windows-only))
-- Node <=16 is installed (if not, jump to: [Node](#Node))
-- NPM >= 8.3.0 installed (if not, jump to: [NPM](#NPM))
+- Node is installed (if not, jump to: [Node](#Node))
+- PNPM is installed: [PNPM](#PNPM)
 - VS Code installed with Typescript Extension added (if not, jump to: [Vs Code](#VS-Code-(Recommended)))
 
 Run the following from the command line:
@@ -30,20 +34,20 @@ Run the following from the command line:
 (**NOTE:** If using gitpod, this all will be done for you on startup)
 
 ```shell script
-git clone git@github.com:mitmedialab/prg-extension-boilerplate.git
-# Clone the repository onto your computer. This could take a while (~5m), grab a beverage!
+git clone --recurse-submodules git@github.com:mitmedialab/prg-extension-boilerplate.git
+# Clone the repository (including git submodules: scratch-gui and scratch-vm) onto your computer. This could take a while (~5m), grab a beverage!
 
 cd prg-extension-boilerplate/
 # Change directory (cd) to the repository
 
 git checkout dev 
 
-npm run init
+pnpm install
 # This will symlink the packages together to allow for seamless local development, and installs dependencies for each package. 
 # This should only need to be ran once (unless you checkout a branch that adds new package dependencies).
-# Takes ~1.5 minutes
+# Takes ~1.5 minutes the first time it runs, and is much quicker (a few seconds) for later installs / updates
 
-npm run dev -- --include examples
+pnpm dev -i examples
 # This starts up a development server, serving the two "example" extensions.
 # It takes about ~20s to initially startup and serve everything.
 # Open http://localhost:8601/ in your browser (keep refreshing if nothing's coming up)
@@ -61,8 +65,8 @@ git checkout dev
 git pull # Update branch with any remote changes
 git checkout -b <my branch> # Checkout your 'feature' branch, e.g. git checkout -b new_rad_extension
 
-npm run new:extension <folder to contain extension>
-# For example: npm run new:extension my_awesome_extension
+pnpm new:extension <folder to contain extension>
+# For example: pnpm new:extension my_awesome_extension
 # If succesful, the output of this command will tell you where to find your new extension file.
 # It will be an index.ts file, and its documentation should help you get started
 ```
@@ -72,7 +76,7 @@ npm run new:extension <folder to contain extension>
 If you're a pro extension-maker, use the following command to make a new extension that contains no documentation and/or filler text. 
 
 ```shell script
-npm run new:extension <folder to contain extension> barebones 
+pnpm new:extension <folder to contain extension> barebones 
 # Note the 'barenones' at the end
 ```
 
@@ -84,81 +88,26 @@ After you've [made your extension](#-making-an-extension), run the following com
 cd prg-extension-boilerplate/ # If not already there
 # Change directory (cd) to prg-extension-boilerplate/ 
 
-npm run dev -- --include <folder name of extension(s)>
-# For example: npm run dev -- --include my_awesome_extension
+pnpm dev -i <folder name of extension(s)>
+# For example: pnpm dev -i my_awesome_extension
 # Start a development server to view your extension and reload it as you make changes
 # This command will take ~20s to startup and serve everything to http://localhost:8601/
 
 # Note: you can use the '-i' shorthand instead of writing out '--include'
-npm run dev -- -i <folder name of extension(s)>
+pnpm dev -i <folder name of extension(s)>
 
 # Alternatively, serve all the currently implemented extensions
-npm run dev -- --include all
+pnpm dev -i all
 # NOTE: This will be much more intensive on your computer
 ```
 
-> **_FYI:_** If you're wondering why the extra `--` are necessary in the above commands, it's to ensure that node does not parse the `--include` flag (or any other options following the standalone `--`) as node options, and instead passes those arguments to the appropriate script. [See more.](https://nodejs.org/docs/latest-v8.x/api/cli.html#cli_1)
-
 Then, after navigating to http://localhost:8601/, follow the 'Adding Extensions' guidance in the [official extension documentation](https://en.scratch-wiki.info/wiki/Extension) to add your extension to the workspace. 
 
-As long as the development server is running (meaning the `npm run dev` command is still executing), every change you make to the extension file(s) will trigger the page to refresh and your changes will be reflected automagically 🪄. 
+As long as the development server is running (meaning the `pnpm dev` command is still executing), every change you make to the extension file(s) will trigger the page to refresh and your changes will be reflected automagically 🪄. 
 
 ### 📦 Committing, pushing, and deploying an extension 
 
-If you followed the steps outlined in [Making an Extension](#🔨-making-an-extension), you should have created a new branch off of the `dev` branch where you implemented your extension. 
-
-#### Automatic Deployment to Temperorary URL
-
-Whenever you [push]() on this new branch, a [github action]() will automatically deploy your extension to a URL corresponding to your branch name. 
-
-For example, if my branch is called `myNewExtension`, whenever I succesfully push up code on this branch, I should be able to see my changes at: https://playground.raise.mit.edu/myNewExtension/
-
-> NOTE: The github action(s) that manages deployment can take anywhere from 10 - 30 minutes. View the status of actions in the repo's [Actions tab](https://github.com/mitmedialab/prg-extension-boilerplate/actions). In order for your site to be succesfully deployed, both an action titled with your commmit message and one after it titled ***pages build and deployment*** must complete succesfully. 
-
-Though this branch-specific URL can be very helpful for sharing your extension quickly, we **require** that you don't use this URL for _official_ purposes -- instead you should follow the instructions in [Integrating Your Extension into the main Branch](#integrating-your-extension-into-the-main-branch) if you want to share extension as part of a curricullum, to an outside organization, etc. 
-
-So this means you can use your branch-specific URL to share your extension with colleagues, get feedback, and quickly iterate on your extension. However, if you want to share your extension externally, especially with students, it must first be integrated into the `main` branch, and then you can direct them to: https://playground.raise.mit.edu/main/
-
-#### Integrating Your Extension into the `main` Branch
-
-The extensions pushed into the `main` branch should represent all of the extensions PRG officially supports, and thus what PRG is committed to maintaining now and into the future. 
-
-Thus, you should only _officially_ share extensions via the `main` branch and corresponding [main site](https://playground.raise.mit.edu/main/) (https://playground.raise.mit.edu/main/). In other words, if an outside party (student, teacher, organization, etc.) reports a bug about an extension (or the platform), they should be doing so based on their usage of the main site -- not a branch-specific site that no other team members know about. 
-
-By adhering to this practice, as well as a regimented process for [merging](https://git-scm.com/docs/git-merge) changes to the `dev` and `main` branches, we can ensure both the best experinece for our users and the least amount of headache for us as developers / maintainers.
-
-Here's the process for getting your extension into the `main` branch and deployed to https://playground.raise.mit.edu/main/:
-
-1. Get your development branch current with the `dev` branch
-    ```bash
-    cd prg-extension-boilerplate/ # Change directory (cd) to prg-extension-boilerplate/, if not already there
-
-    git checkout <your branch name> # Checkout your brnahc, if not already checked out
-
-    git pull # Fetch the latest changes from all remote branches. 
-    # NOTE: using `git fetch` would do the same, but it's yet another git command to remember...
-
-    git merge origin/dev # Merge the latest changes from the remote (i.e. origin) dev branch into your development branch
-    ```
-2. Create a Pull Request (PR) from your branch into `dev`
-    1. Go to the [Pull Requests tab](https://github.com/mitmedialab/prg-extension-boilerplate/pulls)
-    2. Click **New Pull Request** 
-    3. Set _base_ to `dev` and _compare_ to the name of your branch
-        - The flow should look like: `dev` <-- `<your branch>`
-    4. Select **Create Pull Request** 
-        - Do this enough times so that the pull request is actually created -- github's UI seems to be a little redunant
-3. Set [pmalacho-mit](https://github.com/pmalacho-mit) (Parker Malachowsky) as the reviewer of the PR
-    - NOTE: If anyone's interested in being a reviewer please also talk to Parker and he will add you above.
-4. Work with your reviewer to get your PR approved, and then **YOUR REVIEWER** will merge your PR and your changes will go into `dev` 🎉🎉🎉.  In this way, you and the reviewer are equally responsible for keeping the `dev` branch bug-free. 
-    - Your reviewer will review your code, test your extension, and leave comments for you to respond to.
-    - You can speed up the review process by doing the following:
-        - Writing readable code and leaving necessary (but [_only necessary_](https://levelup.gitconnected.com/please-dont-comment-your-code-d0830785bdc9)) comments
-            - Use [JSDoc comments](https://jsdoc.app/about-getting-started.html) where possible (e.g. on functions, classes, method parameters, etc.)
-        - [Writing tests for your extension]() (coming soon)
-        - [Creating tutorials for your extension]() (coming soon)
-5. Once your code is in `dev`, your work is done! The code base's maintainer (Parker, at this time) will then semiweekly merge the `dev` branch into the `main` branch.
-6. Once Parker has notified you that your changes are live, you can direct your audience to the deployed `main` branch: https://playground.raise.mit.edu/main/
-    - Check out the [URL Parameters]() section to see how you can customize this link to automatically add your extension, tutorials, demo project, etc. when the page is loaded. 
+To learn how to manage git-tracking and deploying your extension, please head to the [CICD.md](./CI-CD.md) (continuous integration & continuous delivery / deployment) documentation.
 
 ## 🔎 How to program an extension
 
@@ -170,9 +119,9 @@ First, read through the documentation of the `index.ts` file (written inside of 
 
 Also, try hovering over fields to view their documentation (typically a [summary](https://jsdoc.app/tags-summary.html), [examples](https://jsdoc.app/tags-example.html), and a [longer desrciption](https://jsdoc.app/tags-description.html)).
 
-![Gif of video hovering over fields to peak documentation](/documentation/assets/hover.gif)
+![Gif of video hovering over fields to peak documentation](//.assets/hover.gif)
 
-Still stuck? Check out our [From 0 to Extension guide](#-from-0-to-extension) and/or contact more experienced extension developers, like [Parker](https://github.com/pmalacho-mit) or [Randi](https://github.com/randi-c-dubs)
+Still stuck? Check out our [From 0 to Extension guide](#-from-0-to-extension) and/or contact more experienced extension developers, like [Parker](https://github.com/pmalacho-mit) or [Maya](https://github.com/mayarajan3)
 
 ### 🪜 From 0 to Extension
 
@@ -217,22 +166,23 @@ Please [install git](https://git-scm.com/downloads), which helps us with [source
 
 Like many web development projects, this project requires [node](https://nodejs.org/en/).
 
-Also, [due to a Webpack 4 issue](https://github.com/webpack/webpack/issues/14532), we require a node version <=16.
-
-Please locate the [latest v16 release](https://nodejs.org/en/blog/release) and install a suitable version for your operating system. If you already have node and need to downgrade to a version <= 16, please see these [instructions for downgrading node](https://www.educative.io/answers/how-to-downgrade-node-version).
+If you don't have Node installed, check out [this page](https://nodejs.org/en/download/package-manager) on how to download it.
 
 #### Maintainer Note (9/15/22)
 
 > In October 2022, node 18 LTS will be released, making it slightly harder to get node 16 LTS. 
 Before then, we either need to upgrade webpack to be able to use node 18, or revise the above instructions to help users locate node 16.
 
-### NPM
+### PNPM
 
-[NPM](https://www.npmjs.com/) (Node Package Manager) is a [package manager](https://en.wikipedia.org/wiki/Package_manager) that is *usually* automatically installed with [Node](#Node). 
+[PNPM](https://pnpm.io/) (Performant Node Package Manager) is a [package manager](https://en.wikipedia.org/wiki/Package_manager) that enhances dependency management for JavaScript projects by storing package files globally and using symbolic links in the `node_modules` folder. This approach reduces disk space usage and maintains the module dependency tree, making it a faster and more space-efficient alternative to traditional package managers like [NPM](https://www.npmjs.com/), [Node](#Node)'s default package manager.
 
-This project requires you to have NPM version ***8.3.0*** or later (in order to leverage [overrides](https://docs.npmjs.com/cli/v8/configuring-npm/package-json#overrides)).
+If you've already installed [Node](#Node), you'll likely have NPM automatically installed. Run the command below to install PNPM using NPM.
+```shell script
+npm install -g pnpm
+```
 
-Please follow [these instructions](https://docs.npmjs.com/try-the-latest-stable-version-of-npm) to check which version of NPM you have and upgrade it if it's older than ***8.3.0***.
+If you don't have NPM, you can [follow these instructions](https://pnpm.io/installation) to install PNPM.
 
 ### VS Code (Recommended)
 

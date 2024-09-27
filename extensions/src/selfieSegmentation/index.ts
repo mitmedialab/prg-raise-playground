@@ -5,7 +5,8 @@ import type BlockUtility from "$scratch-vm/engine/block-utility";
 
 const details: ExtensionMenuDisplayDetails = {
   name: "Selfie Detector",
-  tags: ["Made by PRG"]
+  tags: ["Made by PRG"],
+  insetIconURL: "profile-picture.png",
 };
 
 export default class extends extension(

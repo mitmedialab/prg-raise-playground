@@ -2,14 +2,14 @@ import { fork, type ChildProcess } from 'child_process';
 import path from "path";
 import fs from "fs";
 import { Message, Conditon } from './comms';
-import { extensionsFolder, packages, root } from './paths';
+import { extensionsFolder, scratchPackages, root } from './paths';
 import options, { convertToFlags, asFlags } from './options';
 
-const { gui } = packages;
+const { gui } = scratchPackages;
 
 const { watch } = options(process.argv);
 
-const getNodeModule = (dir: string, module: string) => path.join(dir, "node_modules", ".bin", module);
+const getNodeModule = (dir: string, module: string) => path.join(dir, "node_modules", module);
 
 const [guiBuildDir, rootBuildDir] = [gui, root].map(dir => path.join(dir, "build"));
 
@@ -39,14 +39,17 @@ bundleExtensions.on("message", (msg: Message) => {
       break;
     case Conditon.ExtensionsSuccesfullyBundled:
       if (childProcesses.serveGui) return;
-      const webpack = getNodeModule(gui, watch ? "webpack-dev-server" : "webpack");
+      const webpack = path.join(getNodeModule(gui, "webpack"), "bin", "webpack.js");
       const config = path.join(gui, "webpack.config.js");
       const clearTsNodeArgs = [];
       const options = { cwd: gui, execArgv: clearTsNodeArgs };
       const flags = convertToFlags({ config });
 
-      if (!watch) flags.push(...asFlags("progress", "colors", "bail"));
-      if (!watch) clearBuildDirs();
+      if (watch) flags.unshift("serve")
+      else {
+        flags.push(...asFlags("progress", "bail"));
+        clearBuildDirs();
+      }
 
       childProcesses.serveGui = fork(webpack, flags, options);
 
