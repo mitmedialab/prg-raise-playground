@@ -7,10 +7,43 @@ const Cast = require('../../util/cast');
 const formatMessage = require('format-message');
 const Video = require('../../io/video');
 
-const handpose = require('@tensorflow-models/handpose');
+const { HandLandmarker, FilesetResolver } = require('@mediapipe/tasks-vision');
 
 function friendlyRound(amount) {
     return Number(amount).toFixed(2);
+}
+
+const handOptions = {
+    "thumb": {
+        3: 4,
+        1: 2,
+        0: 1,
+        2: 3
+    },
+    "indexFinger": {
+        3: 8,
+        1: 6,
+        0: 5,
+        2: 7
+    },
+    "middleFinger": {
+        3: 12,
+        1: 10,
+        0: 9,
+        2: 11
+    },
+    "ringFinger": {
+        3: 16,
+        1: 14,
+        0: 13,
+        2: 15
+    },
+    "pinky": {
+        3: 20,
+        1: 18,
+        0: 17,
+        2: 19
+    },
 }
 
 /**
@@ -101,6 +134,8 @@ class Scratch3PoseNetBlocks {
             this.runtime.on(Runtime.PROJECT_RUN_START, this.reset.bind(this));
             this._loop();
         }
+
+        this.loadMediaPipeModel();
     }
 
     /**
@@ -215,13 +250,15 @@ class Scratch3PoseNetBlocks {
     async _loop() {
         while (true) {
             const frame = this.runtime.ioDevices.video.getFrame({
-                format: Video.FORMAT_IMAGE_DATA,
+                format: "canvas",
                 dimensions: Scratch3PoseNetBlocks.DIMENSIONS
             });
 
             const time = +new Date();
             if (frame) {
-                this.handPoseState = await this.estimateHandPoseOnImage(frame);
+                if (this.handModel) {
+                    this.handPoseState = this.handModel.detect(frame);
+                }
                 if (this.isConnected()) {
                     this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
                 } else {
@@ -233,24 +270,20 @@ class Scratch3PoseNetBlocks {
         }
     }
 
-    /**
-     * @param imageElement
-     * @returns {Promise<AnnotatedPrediction[]>}
-     */
-    async estimateHandPoseOnImage(imageElement) {
-        const handModel = await this.getLoadedHandModel();
-        return await handModel.estimateHands(imageElement, {
-            flipHorizontal: false
-        });
+    async loadMediaPipeModel() {
+        const vision = await FilesetResolver.forVisionTasks(
+            // path/to/wasm/root
+            "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+        );
+        this.handModel = await HandLandmarker.createFromOptions(
+            vision,
+            {
+                baseOptions: {
+                    modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task"
+                },
+                numHands: 2
+            });
     }
-
-    async getLoadedHandModel() {
-        if (!this._handModel) {
-            this._handModel = await handpose.load();
-        }
-        return this._handModel;
-    }
-
     /**
      * Create data for a menu in scratch-blocks format, consisting of an array
      * of objects with text and value properties. The text is a translated
@@ -493,10 +526,16 @@ class Scratch3PoseNetBlocks {
         };
     }
 
+    mediapipeCoordsToScratch(x, y, z) {
+        return this.tfCoordsToScratch({ x: this.DIMENSIONS[0] * x, y: this.DIMENSIONS[1] * y, z });
+    }
+
     goToHandPart(args, util) {
         if (this.handPoseState && this.handPoseState.length > 0) {
-            const [x, y, z] = this.handPoseState[0].annotations[args['HAND_PART']][args['HAND_SUB_PART']];
-            const { x: scratchX, y: scratchY } = this.tfCoordsToScratch({ x, y, z });
+            const { x, y, z } = this.handPoseState.landmarks[0][handOptions[handPart][fingerPart]];
+            const { x: scratchX, y: scratchY } = this.mediapipeCoordsToScratch(x, y, z);
+            //const [x, y, z] = this.handPoseState[0].annotations[args['HAND_PART']][args['HAND_SUB_PART']];
+            //const { x: scratchX, y: scratchY } = this.tfCoordsToScratch({ x, y, z });
             util.target.setXY(scratchX, scratchY, false);
         }
     }
