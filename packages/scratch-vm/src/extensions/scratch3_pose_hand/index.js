@@ -129,13 +129,14 @@ class Scratch3PoseNetBlocks {
          */
         this.firstInstall = true;
 
+        this.loadMediaPipeModel();
+
         if (this.runtime.ioDevices) {
             this.runtime.on(Runtime.PROJECT_LOADED, this.projectStarted.bind(this));
             this.runtime.on(Runtime.PROJECT_RUN_START, this.reset.bind(this));
             this._loop();
         }
 
-        this.loadMediaPipeModel();
     }
 
     /**
@@ -259,11 +260,17 @@ class Scratch3PoseNetBlocks {
                 if (this.handModel) {
                     this.handPoseState = this.handModel.detect(frame);
                 }
+                else {
+                    console.log("Hand model not loaded");
+                }
                 if (this.isConnected()) {
                     this.runtime.emit(this.runtime.constructor.PERIPHERAL_CONNECTED);
                 } else {
                     this.runtime.emit(this.runtime.constructor.PERIPHERAL_DISCONNECTED);
                 }
+            }
+            else {
+                console.log("No frame");
             }
             const estimateThrottleTimeout = (+new Date() - time) / 4;
             await new Promise(r => setTimeout(r, estimateThrottleTimeout));
