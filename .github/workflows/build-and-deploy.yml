@@ -38,6 +38,5 @@ jobs:
     - name: Deploy
       uses: JamesIves/github-pages-deploy-action@v4
       with:
-        BRANCH: gh-pages
-        FOLDER: 'packages/scratch-gui/build'
-        TARGET_FOLDER: ${{ steps.extract_branch.outputs.branch }}
+        folder: 'packages/scratch-gui/build'
+        target-folder: ${{ steps.extract_branch.outputs.branch }}
