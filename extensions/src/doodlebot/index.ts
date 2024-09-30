@@ -114,13 +114,13 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
       console.log("No line detected");
       return;
     }
+
+    console.log("Line coordinates:", JSON.stringify(lineCoordinates));
   
-    // Create a drawable if it doesn't exist
     if (!this.videoDrawable) {
       this.videoDrawable = await this.createVideoStreamDrawable();
     }
   
-    // Create a temporary canvas to draw on
     const canvas = document.createElement('canvas');
     canvas.width = this.imageStream.width; // Assume these properties exist
     canvas.height = this.imageStream.height;
@@ -129,7 +129,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     if (ctx) {
       ctx.drawImage(this.imageStream, 0, 0, canvas.width, canvas.height);
       
-      // Draw the line on the canvas
       ctx.beginPath();
       ctx.moveTo(lineCoordinates[0][0], lineCoordinates[0][1]);
       for (let i = 1; i < lineCoordinates.length; i++) {
@@ -139,7 +138,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
       ctx.lineWidth = 2;
       ctx.stroke();
   
-      // Update the drawable with the new canvas content
       this.videoDrawable.update(canvas);
     }
   }
