@@ -6,3 +6,7 @@
 	path = scratch-packages/scratch-vm
 	url = git@github.com:mitmedialab/prg-raise-playground-scratch-vm.git
 	branch = main
+[submodule "scratch-packages/scratch-blocks"]
+	path = scratch-packages/scratch-blocks
+	url = git@github.com:gonfunko/scratch-blocks.git
+	branch = blockly-changes

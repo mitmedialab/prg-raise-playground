@@ -32,6 +32,12 @@
       ],
       "$scratch-vm/*": [
         "../scratch-packages/scratch-vm/src/*"
+      ],
+      "$scratch-blocks": [
+        "../scratch-packages/scratch-blocks/src"
+      ],
+      "$scratch-blocks/*": [
+        "../scratch-packages/scratch-blocks/src/*"
       ]
     }
   }
