@@ -17,7 +17,7 @@
 
         class LineDetector {
             constructor(raspberryPiIp, width = 640, height = 480) {
-                this.raspberryPiIp = raspberryPiIp;
+                this.raspberryPiIp = raspberryPiIp = "192.168.41.214";
                 this.width = width;
                 this.height = height;
                 this.canvas = document.createElement('canvas');
@@ -29,11 +29,12 @@
 
             async detectLine() {
                 try {
-                    const image = await this.loadImage(`http://${this.raspberryPiIp}:${port.camera}/${endpoint.video}?t=${Date.now()}`);
+                    const image = await this.loadImage(`http://${this.raspberryPiIp}:${port.camera}/${endpoint.video}`);
                     this.ctx.drawImage(image, 0, 0, this.width, this.height);
                     const imageData = this.ctx.getImageData(0, 0, this.width, this.height);
                     const lineCoordinates = this.processImageData(imageData);
-
+                    console.log("coordinates");
+                    console.log(lineCoordinates);
                     if (lineCoordinates.length > 0) {
                         this.lastDetectedLine = lineCoordinates;
                     }
@@ -58,16 +59,16 @@
 
             processImageData(imageData) {
                 const lineCoordinates = [];
-                const threshold = 50;
+                const threshold = 70;
 
                 for (let y = 0; y < this.height; y++) {
                     for (let x = 0; x < this.width; x++) {
                         const index = (y * this.width + x) * 4;
                         const [r, g, b] = imageData.data.slice(index, index + 3);
                         
-                        if (r < threshold && g < threshold && b < threshold) {
+                        if (r < threshold && g < threshold && b < threshold && y < 400) {
                             lineCoordinates.push([x, y]);
-                        }
+                        }   
                     }
                 }
                 return lineCoordinates.sort((a, b) => a[1] - b[1]);
@@ -75,10 +76,10 @@
 
             drawLine(coordinates) {
                 this.ctx.beginPath();
-                this.ctx.strokeStyle = 'red';
+                this.ctx.strokeStyle = 'blue';
                 this.ctx.lineWidth = 2;
                 coordinates.forEach(([x, y], i) => {
-                    i === 0 ? this.ctx.moveTo(x, y) : this.ctx.lineTo(x, y);
+                this.ctx.arc(x, y, 5, 0, Math.PI*2);
                 });
                 this.ctx.stroke();
             }
@@ -112,7 +113,7 @@
 <body>
     <h1>Line Detection</h1>
     <div id="controls">
-        <input type="text" id="ipInput" placeholder="Enter Raspberry Pi IP">
+        <input type="text" id="ipInput" placeholder="IP Address">
         <button onclick="initializeDetector()">Start Detection</button>
     </div>
     <img id="outputImage" alt="Processed Image">
