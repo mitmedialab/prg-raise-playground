@@ -4,7 +4,7 @@ import Doodlebot from "./Doodlebot";
 import { splitArgsString } from "./utils";
 import EventEmitter from "events";
 import { categoryByGesture, classes, emojiByGesture, gestureDetection, gestureMenuItems, gestures, objectDetection } from "./detection";
-
+import { createLineDetector } from "./LineDetection";
 const details: ExtensionMenuDisplayDetails = {
   name: "Doodlebot",
   description: "Program a doodlebot robot",
@@ -38,7 +38,7 @@ const looper = (action: () => Promise<any>, profileMarker?: string) => {
 export default class DoodlebotBlocks extends extension(details, "ui", "indicators", "video", "drawable") {
   doodlebot: Doodlebot;
   private indicator: Promise<{ close(): void; }>;
-
+  private lineDetector: (() => Promise<number[][]>) | null = null;
   bluetoothEmitter = new EventEmitter();
 
   gestureLoop: ReturnType<typeof looper>;
@@ -93,6 +93,54 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     }
     requestAnimationFrame(update);
     return drawable;
+  }
+
+  @block({
+    type: "command",
+    text: "displayLine"
+  })
+  async displayLine() {
+    console.log("displayLine");
+    if (!this.lineDetector) {
+      const ipAddress = await this.doodlebot?.getIPAddress();
+      if (!ipAddress) {
+        console.error("Unable to get IP address for line detection");
+        return;
+      }
+      this.lineDetector = createLineDetector(ipAddress);
+    }
+  
+    const lineCoordinates = await this.lineDetector();
+    if (lineCoordinates.length === 0) {
+      console.log("No line detected");
+      return;
+    }
+
+    console.log("Line coordinates:", JSON.stringify(lineCoordinates));
+  
+    if (!this.videoDrawable) {
+      this.videoDrawable = await this.createVideoStreamDrawable();
+    }
+  
+    const canvas = document.createElement('canvas');
+    canvas.width = this.imageStream.width; // Assume these properties exist
+    canvas.height = this.imageStream.height;
+    const ctx = canvas.getContext('2d');
+  
+    if (ctx) {
+      ctx.drawImage(this.imageStream, 0, 0, canvas.width, canvas.height);
+      
+      ctx.beginPath();
+      ctx.moveTo(lineCoordinates[0][0], lineCoordinates[0][1]);
+      for (let i = 1; i < lineCoordinates.length; i++) {
+        ctx.lineTo(lineCoordinates[i][0], lineCoordinates[i][1]);
+      }
+      ctx.strokeStyle = 'red';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+  
+      this.videoDrawable.update(canvas);
+    }
   }
 
   @buttonBlock("Connect Robot")
