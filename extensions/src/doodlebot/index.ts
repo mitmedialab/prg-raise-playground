@@ -100,6 +100,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     text: "displayLine"
   })
   async displayLine() {
+    console.log("displayLine");
     if (!this.lineDetector) {
       const ipAddress = await this.doodlebot?.getIPAddress();
       if (!ipAddress) {
