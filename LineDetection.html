@@ -15,9 +15,11 @@
         const port = { camera: 8000 };
         const endpoint = { video: 'video_feed' };
 
+        let collectLine = false;
+
         class LineDetector {
             constructor(raspberryPiIp, width = 640, height = 480) {
-                this.raspberryPiIp = raspberryPiIp = "192.168.41.214";
+                this.raspberryPiIp = raspberryPiIp;
                 this.width = width;
                 this.height = height;
                 this.canvas = document.createElement('canvas');
@@ -41,12 +43,11 @@
                         this.lastDetectedLine = lineCoordinates;
                     }
 
-                    if (this.frameCount < 7) {
+                    if (collectLine) {
                         this.allCoordinates.push(lineCoordinates);
                         this.frameCount++;
-                        if (this.frameCount === 7) {
-                            this.writeCoordinatesToFile(this.allCoordinates);
-                        }
+                        this.writeCoordinatesToFile(this.allCoordinates);
+                        collectLine = false;
                     }
 
                     this.drawLine(this.lastDetectedLine);
@@ -122,6 +123,10 @@
             updateInterval = setInterval(updateImage, 500);
         }
 
+        function collectLineFn() {
+            collectLine = true;
+        }
+
         async function updateImage() {
             if (detector) {
                 const imageDataUrl = await detector.detectLine();
@@ -137,6 +142,7 @@
     <div id="controls">
         <input type="text" id="ipInput" placeholder="IP Address">
         <button onclick="initializeDetector()">Start Detection</button>
+        <button onclick="collectLineFn()">Collect Points</button>
     </div>
     <img id="outputImage" alt="Processed Image">
 </body>
