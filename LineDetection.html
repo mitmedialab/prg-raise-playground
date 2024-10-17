@@ -97,12 +97,12 @@
 
             writeCoordinatesToFile(allCoordinates) {
                 const content = allCoordinates.map((frame, index) => 
-                    `Frame ${index + 1}:\n${frame.map(coord => coord.join(',')).join('\n')}\n`
-                ).join('\n');
+                    `export const baseLine = [${frame.map(coord => ("[" + coord.join(',') + "]"))}]\n`
+                );
                 const blob = new Blob([content], { type: 'text/plain' });
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(blob);
-                a.download = 'coordinates.txt';
+                a.download = 'iterations.txt';
                 a.click();
                 URL.revokeObjectURL(a.href);
             }
