@@ -147,6 +147,90 @@ export default class Doodlebot {
 
     private isStopped = true; // should this be initializeed more intelligently?
 
+    public newSounds: string[] = [];
+    public newImages: string[] = [];
+    private soundFiles = ['Scn2ALL.wav', 'Huh_sigh.wav', 'HMMMM.wav', 'Scn4bALL.wav', 'Sch1Whistle.wav', 'Scn4ALL.wav', '5.wav', 'Hmm.wav', '1.wav', 'Scn6Whistle.wav', 'Scn4Whistle.wav', 'Yay.wav', '3.wav', '4.wav', 'Scn6ALL.wav', '8.wav', 'mmMMmmm.wav', '9.wav', 'Scn2Whistle.wav', 'Scn6Voice.wav', '2.wav', 'NO.wav', '7.wav', 'emmemm.wav', 'Scn4bVoice.wav', 'Scn4Voice.wav', 'mumbleandhum.wav', 'Scn2Voice.wav', 'hello.wav', 'OK.wav', '6.wav', 'gotit.wav', 'Scn1ALL.wav', 'Scn1Voice.wav']
+    private imageFiles = [
+        "hannah.jpg",
+        "sad.png",
+        "13confused.png",
+        "newhannah.jpg",
+        "RGB24bits_320x240.png",
+        "1sleep.png",
+        "wink.png",
+        "panda.gif",
+        "sleep.png",
+        "angry.png",
+        "base_v2.png",
+        "surprise@2x.png",
+        "base@2x.png",
+        "annoyed.png",
+        "8confused.png",
+        "4asleep.png",
+        "13asleep.png",
+        "14asleep.png",
+        "colorcheck_320x240.png",
+        "3confused.png",
+        "4sleep.png",
+        "12asleep.png",
+        "2asleep.png",
+        "NTSCtest_320x240.png",
+        "happy.png",
+        "angry_RTeye_closed.bmp",
+        "15confused.png",
+        "asleep.png",
+        "angry_mouth.bmp",
+        "11asleep.png",
+        "6confused.png",
+        "9confused.png",
+        "disgust.png",
+        "angry_LTeye-closed.bmp",
+        "animesmileinvertedsmall.png",
+        "love.png",
+        "a.out",
+        "15asleep.png",
+        "14confused.png",
+        "db_animation-test.gif",
+        "5confused.png",
+        "PALtest_320x240.png",
+        "9asleep.png",
+        "surprise.png",
+        "5asleep.png",
+        "sadface.png",
+        "10asleep.png",
+        "3asleep.png",
+        "10confused.png",
+        "2confused.png",
+        "engaged.png",
+        "angry_mouth_closed.bmp",
+        "RGBParrot_320x240.png",
+        "page7orig.jpg",
+        "somethingWrong.png",
+        "confused.png",
+        "11confused.png",
+        "ball.gif",
+        "7confused.png",
+        "12confused.png",
+        "worried.png",
+        "animesmileinverted.png",
+        "angry_LTeye.bmp",
+        "7asleep.png",
+        "panda.jpg",
+        "animesmile.png",
+        "cambridge24bit_320x240.png",
+        "base_transparent@2x.png",
+        "8asleep.png",
+        "6asleep.png",
+        "fear.png",
+        "1asleep.png",
+        "3sleep.png",
+        "angry_cheek.bmp",
+        "4confused.png",
+        "base_v1.png",
+        "2sleep.png",
+        "1confused.png",
+        "angry_RTeye.bmp"
+    ];
     private sensorData = ({
         bumper: { front: 0, back: 0 },
         altimeter: 0,
@@ -282,8 +366,14 @@ export default class Doodlebot {
 
     private async onWebsocketMessage(event: MessageEvent) {
         console.log("websocket message", { event });
-        const text = await event.data.text();
-        console.log(text);
+        try {
+            const text = await event.data.text();
+            console.log(text);
+        }
+        catch (e) {
+            console.log(JSON.stringify(event));
+            console.log("Error receiving message: ", e);
+        }
     }
 
     private invalidateWifiConnection() {
@@ -333,6 +423,25 @@ export default class Doodlebot {
     async getSensorReading<T extends SensorKey>(type: T): Promise<SensorData[T]> {
         await this.enableSensor(type); // should this be automatic?
         return this.sensorData[type];
+    }
+
+    async findImageFiles() {
+        while (!this.connection) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        let endpoint = "http://" + this.connection.ip + ":8080/images/"
+        let uploadedImages = await this.fetchAndExtractList(endpoint);
+        return uploadedImages.filter(item => !this.imageFiles.includes(item));
+    }
+
+    async findSoundFiles() {
+        while (!this.connection) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        if (!this.connection) return [];
+        let endpoint = "http://" + this.connection.ip + ":8080/sounds/"
+        let uploadedSounds = await this.fetchAndExtractList(endpoint);
+        return uploadedSounds.filter(item => !this.soundFiles.includes(item));
     }
 
     /**
@@ -440,7 +549,7 @@ export default class Doodlebot {
         }
     }
 
-    setIP(ip: string) {
+    async setIP(ip: string) {
         this.connection ??= { ip };
         this.saveIP(ip);
         return this.connection.ip = ip;
@@ -517,6 +626,97 @@ export default class Doodlebot {
             await this.sendBLECommand(command.wifi, credentials.ssid, credentials.password);
             //interval = setInterval(() => this.sendBLECommand(command.network), 5000);
         });
+    }
+
+    getStoredIPAddress() {
+        if (!this.connection) { return "" }
+        return this.connection.ip;
+    }
+
+    parseWavHeader(uint8Array) {
+        const dataView = new DataView(uint8Array.buffer);
+
+        // Extract sample width, number of channels, and sample rate
+        const sampleWidth = dataView.getUint16(34, true) / 8; // Sample width in bytes (16-bit samples = 2 bytes, etc.)
+        const channels = dataView.getUint16(22, true); // Number of channels
+        const rate = dataView.getUint32(24, true); // Sample rate
+        const byteRate = dataView.getUint32(28, true); // Byte rate
+        const blockAlign = dataView.getUint16(32, true); // Block align
+        const dataSize = dataView.getUint32(40, true); // Size of the data chunk
+
+        const frameSize = blockAlign; // Size of each frame in bytes
+
+        return {
+            sampleWidth,
+            channels,
+            rate,
+            frameSize,
+            dataSize
+        };
+    }
+
+    splitIntoChunks(uint8Array, framesPerChunk) {
+        const headerInfo = this.parseWavHeader(uint8Array);
+        const { frameSize } = headerInfo;
+        const chunkSize = framesPerChunk * frameSize; // Number of bytes per chunk
+        const chunks = [];
+
+        // Skip the header (typically 44 bytes)
+        const dataStart = 44;
+
+        for (let i = dataStart; i < uint8Array.length; i += chunkSize) {
+            const chunk = uint8Array.slice(i, i + chunkSize);
+            chunks.push(chunk);
+        }
+
+        return chunks;
+    }
+
+
+    async sendAudioData(uint8Array: Uint8Array) {
+        let CHUNK_SIZE = 1024;
+        let ip = this.connection.ip;
+        const ws = makeWebsocket(ip, '8877');
+
+        ws.onopen = () => {
+            console.log('WebSocket connection opened');
+            let { sampleWidth, channels, rate } = this.parseWavHeader(uint8Array);
+            let first = "(1," + String(sampleWidth) + "," + String(channels) + "," + String(rate) + ")";
+            console.log(first);
+            ws.send(first);
+            let chunks = this.splitIntoChunks(uint8Array, CHUNK_SIZE);
+            let i = 0;
+            async function sendNextChunk() {
+                if (i >= chunks.length) {
+                    console.log('All data sent');
+                    ws.close();
+                    return;
+                }
+
+                const chunk = chunks[i];
+
+                const binaryString = Array.from(chunk).map((byte: any) => String.fromCharCode(byte)).join('');;
+                const base64Data = btoa(binaryString);
+                const jsonData = JSON.stringify({ audio_data: base64Data });
+                ws.send(jsonData);
+                i = i + 1;
+                sendNextChunk();
+            }
+
+            sendNextChunk();
+        };
+
+        ws.onerror = (error) => {
+            console.error('WebSocket error:', error);
+        };
+
+        ws.onmessage = (message) => {
+            console.log(message);
+        }
+
+        ws.onclose = () => {
+            console.log('WebSocket connection closed');
+        };
     }
 
     /**
@@ -627,9 +827,45 @@ export default class Doodlebot {
         await this.sendWebsocketCommand(command.display, value);
     }
 
-    async displayText(text: string) {
+    async displayFile(file: string) {
+        await this.sendWebsocketCommand(command.display, file);
+    }
+
+    // Function to fetch and parse HTML template
+    async fetchAndExtractList(endpoint) {
+        try {
+            // Fetch the HTML template from the endpoint
+            const response = await fetch(endpoint);
+            // if (!response.ok) {
+            //     throw new Error('Network response was not ok');
+            // }
+
+            // Get the HTML text
+            const htmlText = await response.text();
+
+            // Parse the HTML text into a DOM structure
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlText, 'text/html');
+
+            // Extract all <li> elements
+            const listItems = doc.querySelectorAll('li');
+
+            // Get the text content of each <li> element
+            const itemNames = Array.from(listItems).map(li => li.textContent.trim());
+
+            return itemNames;
+        } catch (error) {
+            throw new Error('Error fetching or parsing HTML:', error)
+        }
+    }
+
+    async displayText(text: string, size: string) {
+        //(d,F,[number]) == s, m, or l
+        await this.sendWebsocketCommand(command.display, "F", size);
         await this.sendWebsocketCommand(command.display, "t", text);
     }
+
+
 
     /**
      * NOTE: Consider making private

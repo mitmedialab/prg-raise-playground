@@ -30,6 +30,7 @@ export const command = {
     display: "d",
     pen: "u",
     network: "g",
+    speaker: "s"
 } as const;
 
 export type CommandKey = keyof typeof command;

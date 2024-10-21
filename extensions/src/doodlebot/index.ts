@@ -1,7 +1,8 @@
-import { Environment, ExtensionMenuDisplayDetails, extension, block, buttonBlock } from "$common";
+import { Environment, ExtensionMenuDisplayDetails, extension, block, buttonBlock, scratch, BlockUtilityWithID } from "$common";
 import { DisplayKey, displayKeys, command, type Command, SensorKey, sensorKeys } from "./enums";
 import Doodlebot from "./Doodlebot";
 import { splitArgsString } from "./utils";
+import FileArgument from './FileArgument.svelte';
 import EventEmitter from "events";
 import { categoryByGesture, classes, emojiByGesture, gestureDetection, gestureMenuItems, gestures, objectDetection } from "./detection";
 
@@ -35,7 +36,10 @@ const looper = (action: () => Promise<any>, profileMarker?: string) => {
   return controller;
 }
 
-export default class DoodlebotBlocks extends extension(details, "ui", "indicators", "video", "drawable") {
+export var imageFiles = [];
+export var soundFiles: string[] = [];
+
+export default class DoodlebotBlocks extends extension(details, "ui", "customArguments", "indicators", "video", "drawable") {
   doodlebot: Doodlebot;
   private indicator: Promise<{ close(): void; }>;
 
@@ -56,18 +60,126 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
 
   imageStream: HTMLImageElement;
   videoDrawable: ReturnType<typeof this.createDrawable>;
+  ip: string;
+  soundDictionary;
+  costumeDictionary: any;
 
-  init(env: Environment) {
+
+  async init(env: Environment) {
     this.openUI("Connect");
     this.setIndicator("disconnected");
+    this.soundDictionary = {};
+    this.costumeDictionary = {};
+
+    env.runtime.on("TARGETS_UPDATE", async () => {
+      await this.setDictionaries();
+    })
+
+    await this.setDictionaries();
+
+    soundFiles = ["File"];
+    imageFiles = ["File"];
 
     // idea: set up polling mechanism to try and disable unused sensors
     // idea: set up polling mechanism to destroy gesture recognition loop
   }
 
-  setDoodlebot(doodlebot: Doodlebot) {
+  async setDictionaries() {
+    for (const target of this.runtime.targets) {
+      this.soundDictionary[target.id] = {};
+      this.costumeDictionary[target.id] = {};
+      if (target.sprite) {
+        for (const sound of target.sprite.sounds) {
+          if (sound.asset.dataFormat == "wav") {
+            this.soundDictionary[target.id][sound.name] = sound.asset.data;
+          }
+        }
+        for (const costume of target.sprite.costumes) {
+          let id = "Costume: " + costume.name;
+          if (costume.asset.dataFormat == "svg") {
+            await this.convertSvgUint8ArrayToPng(costume.asset.data, costume.size[0], costume.size[1])
+              .then((pngBlob: Blob) => {
+                const url = URL.createObjectURL(pngBlob)
+                this.costumeDictionary[target.id][id] = "costume9999.png---name---" + url;
+              })
+          } else if (costume.asset.dataFormat == "png") {
+            const blob = new Blob([costume.asset.data], { type: 'image/png' });
+            const url = URL.createObjectURL(blob)
+            this.costumeDictionary[target.id][id] = "costume9999.png---name---" + url;
+          }
+
+        }
+      }
+    }
+  }
+
+  async setIP(ip: string) {
+    this.ip = ip;
+
+  }
+
+  async convertSvgUint8ArrayToPng(uint8Array, width, height) {
+    return new Promise((resolve, reject) => {
+      // Convert Uint8Array to a string
+      const svgString = new TextDecoder().decode(uint8Array);
+
+      // Create an SVG Blob
+      const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+
+      // Create an Image element
+      const img = new Image();
+      img.onload = () => {
+        // Create a canvas element
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+
+        // Draw the image on the canvas
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Convert the canvas to PNG data URL
+        const pngDataUrl = canvas.toDataURL('image/png');
+
+        // Convert the data URL to a Blob
+        fetch(pngDataUrl)
+          .then(res => res.blob())
+          .then(blob => {
+            // Clean up
+            URL.revokeObjectURL(url);
+            resolve(blob);
+          })
+          .catch(err => {
+            URL.revokeObjectURL(url);
+            reject(err);
+          });
+      };
+
+      img.onerror = reject;
+      img.src = url;
+    });
+  }
+
+  getCurrentSounds(id): string[] {
+    return Object.keys(this.soundDictionary[id]);
+  }
+
+  async setDoodlebot(doodlebot: Doodlebot) {
     this.doodlebot = doodlebot;
     this.setIndicator("connected");
+    try {
+      imageFiles = await doodlebot.findImageFiles();
+      soundFiles = await doodlebot.findSoundFiles();
+    } catch (e) {
+      this.openUI("ArrayError");
+    }
+    console.log("SETTING");
+    console.log(soundFiles);
+  }
+
+  async getIPAddress() {
+    return this.doodlebot?.getStoredIPAddress();
   }
 
   async setIndicator(status: "connected" | "disconnected") {
@@ -102,16 +214,17 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
 
   @block({
     type: "command",
-    text: (direction, steps) => `drive ${direction} for ${steps} steps`,
+    text: (direction, steps, speed) => `drive ${direction} for ${steps} steps at speed ${speed}`,
     args: [
       { type: "string", options: ["forward", "backward", "left", "right"], defaultValue: "forward" },
-      { type: "number", defaultValue: 2000 }
+      { type: "number", defaultValue: 2000 },
+      { type: "number", options: [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000], defaultValue: 2000 }
     ]
   })
-  async drive(direction: "left" | "right" | "forward" | "backward", steps: number) {
+  async drive(direction: "left" | "right" | "forward" | "backward", steps: number, speed: number) {
     const leftSteps = direction == "left" || direction == "backward" ? -steps : steps;
     const rightSteps = direction == "right" || direction == "backward" ? -steps : steps;
-    const stepsPerSecond = 2000;
+    const stepsPerSecond = speed;
 
     await this.doodlebot?.motorCommand(
       "steps",
@@ -226,22 +339,38 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     await this.doodlebot?.disableSensor(sensor);
   }
 
-  @block({
+  @block((self) => ({
     type: "command",
-    text: (type: DisplayKey) => `display ${type}`,
-    arg: { type: "string", options: displayKeys.filter(key => key !== "clear"), defaultValue: "happy" }
-  })
-  async setDisplay(display: DisplayKey) {
-    await this.doodlebot?.display(display);
+    text: (type: DisplayKey | string) => `display ${type}`,
+    arg: {
+      type: "string", options: () => {
+        self.setDictionaries();
+        return displayKeys.filter(key => key !== "clear").concat(imageFiles).concat(Object.keys(self.costumeDictionary[self.runtime._editingTarget.id]) as any[]).filter((item: string) => item != "costume9999.png")
+      }, defaultValue: "happy"
+    }
+  }))
+  async setDisplay(display: DisplayKey | string) {
+    let costumeNames = Object.keys(this.costumeDictionary[this.runtime._editingTarget.id]);
+    if (costumeNames.includes(display)) {
+      await this.uploadFile("image", this.costumeDictionary[this.runtime._editingTarget.id][display]);
+      await this.setArrays();
+      await this.doodlebot.displayFile("costume9999.png");
+    } else if (imageFiles.includes(display)) {
+      await this.doodlebot?.displayFile(display);
+    } else {
+      await this.doodlebot?.display(display as DisplayKey);
+    }
+
   }
 
   @block({
     type: "command",
-    text: (text: string) => `display text ${text}`,
-    arg: { type: "string", defaultValue: "hello world!" }
+    text: (text: string, size: string) => `display text ${text} with size ${size}`,
+    args: [{ type: "string", defaultValue: "hello world!" },
+    { type: "string", options: ["s", "m", "l"], defaultValue: "m" }]
   })
-  async setText(text: string) {
-    await this.doodlebot?.displayText(text);
+  async setText(text: string, size: string) {
+    await this.doodlebot?.displayText(text, size);
   }
 
   @block({
@@ -260,6 +389,27 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   async playSound(sound: number) {
     await this.doodlebot?.sendWebsocketCommand("m", sound)
   }
+
+  @block((self) => ({
+    type: "command",
+    text: (sound) => `play sound ${sound}`,
+    arg: {
+      type: "string", options: () => soundFiles.concat(self.getCurrentSounds(self.runtime._editingTarget.id))
+    }
+  }))
+  async playSoundFile(sound: string, util: BlockUtilityWithID) {
+    let currentId = this.runtime._editingTarget.id;
+    let costumeSounds = this.getCurrentSounds(currentId);
+    if (costumeSounds.includes(sound)) {
+      let soundArray = this.soundDictionary[currentId][sound];
+      console.log(soundArray);
+      await this.doodlebot.sendAudioData(soundArray);
+    } else {
+      await this.doodlebot?.sendWebsocketCommand("m", sound)
+    }
+
+  }
+
 
   @block({
     type: "command",
@@ -344,6 +494,12 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     await new Promise((resolve) => setTimeout(resolve, audioDuration * 1000));
   }
 
+  async setArrays() {
+    imageFiles = await this.doodlebot.findImageFiles();
+    soundFiles = await this.doodlebot.findSoundFiles();
+    console.log("SETTING");
+  }
+
 
   @block({
     type: "reporter",
@@ -351,6 +507,68 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   })
   async getIP() {
     return this.doodlebot?.getIPAddress();
+  }
+
+  // @block({
+  //   type: "command",
+  //   text: "Upload files"
+  // })
+  // async uploadFiles() {
+  //   this.openUI("UI");
+  // }
+
+  async uploadFile(type: string, blobURL: string) {
+    const ip = await this.getIPAddress();
+    let uploadEndpoint;
+    if (type == "sound") {
+      uploadEndpoint = "http://" + ip + ":8080/sounds_upload";
+    } else {
+      uploadEndpoint = "http://" + ip + ":8080/img_upload";
+    }
+
+    try {
+      const components = blobURL.split("---name---");
+      console.log("COMPONENTS");
+      console.log(components);
+      const response1 = await fetch(components[1]);
+      if (!response1.ok) {
+        throw new Error(`Failed to fetch Blob from URL: ${blobURL}`);
+      }
+      const blob = await response1.blob();
+      // Convert Blob to File
+      const file = new File([blob], components[0], { type: blob.type });
+      const formData = new FormData();
+      formData.append("file", file);
+
+      console.log("file");
+      console.log(file);
+
+      const response2 = await fetch(uploadEndpoint, {
+        method: "POST",
+        body: formData,
+      });
+
+      console.log(response2);
+
+      if (!response2.ok) {
+        throw new Error(`Failed to upload file: ${response2.statusText}`);
+      }
+
+      console.log("File uploaded successfully");
+      this.setArrays();
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
+
+  @(scratch.command((self, $) => $`Upload sound file ${self.makeCustomArgument({ component: FileArgument, initial: { value: "", text: "File" } })}`))
+  async uploadSoundFile(test: string) {
+    await this.uploadFile("sound", test);
+  }
+
+  @(scratch.command((self, $) => $`Upload image file ${self.makeCustomArgument({ component: FileArgument, initial: { value: "", text: "File" } })}`))
+  async uploadImageFile(test: string) {
+    await this.uploadFile("image", test);
   }
 
   @block({
