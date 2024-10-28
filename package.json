@@ -33,5 +33,9 @@
     "ts-node": {
       "typescript": "$typescript"
     }
+  },
+  "dependencies": {
+    "@u4/opencv4nodejs": "^7.1.2",
+    "axios": "^1.7.7"
   }
 }

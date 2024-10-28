@@ -25,37 +25,51 @@
                 this.canvas.height = height;
                 this.ctx = this.canvas.getContext('2d');
                 this.lastDetectedLine = [];
-                this.frameCount = 0;
-                this.allCoordinates = [];
+                this.isProcessing = false;
             }
 
             async detectLine() {
+                if (this.isProcessing) return this.canvas.toDataURL();
+                this.isProcessing = true;
+
                 try {
                     const image = await this.loadImage(`http://${this.raspberryPiIp}:${port.camera}/${endpoint.video}`);
                     this.ctx.drawImage(image, 0, 0, this.width, this.height);
                     const imageData = this.ctx.getImageData(0, 0, this.width, this.height);
-                    const preprocessedImageData = this.preprocessImage(imageData);
-                    const lineCoordinates = this.processImageData(preprocessedImageData);
-                    const filteredCoordinates = this.filterContinuousLine(lineCoordinates);
-                    console.log("coordinates");
-                    console.log(filteredCoordinates);
-                    if (filteredCoordinates.length > 0) {
-                        this.lastDetectedLine = filteredCoordinates;
+                    
+                    // Convert to grayscale
+                    const data = imageData.data;
+                    for (let i = 0; i < data.length; i += 4) {
+                        const gray = (data[i] + data[i + 1] + data[i + 2]) / 3;
+                        data[i] = gray;
+                        data[i + 1] = gray;
+                        data[i + 2] = gray;
+                    }
+                    this.ctx.putImageData(imageData, 0, 0);
+
+                    // Apply Gaussian blur
+                    const blurredData = this.gaussianBlur(imageData);
+                    this.ctx.putImageData(blurredData, 0, 0);
+
+                    // Apply threshold
+                    const thresholdedData = this.threshold(blurredData);
+                    this.ctx.putImageData(thresholdedData, 0, 0);
+
+                    // Find contours and get largest
+                    const contours = this.findContours(thresholdedData);
+                    const sortedContours = contours.sort((c1, c2) => c2.length - c1.length);
+
+                    if (sortedContours.length > 0) {
+                        this.lastDetectedLine = sortedContours[0];
+                        this.drawLine(this.lastDetectedLine);
                     }
 
-                    if (this.frameCount < 7) {
-                        this.allCoordinates.push(filteredCoordinates);
-                        this.frameCount++;
-                        if (this.frameCount === 7) {
-                            this.writeCoordinatesToFile(this.allCoordinates);
-                        }
-                    }
-
-                    this.drawLine(this.lastDetectedLine);
                     return this.canvas.toDataURL();
                 } catch (error) {
                     console.error('Error detecting line:', error);
                     return null;
+                } finally {
+                    this.isProcessing = false;
                 }
             }
 
@@ -69,75 +83,104 @@
                 });
             }
 
-            preprocessImage(imageData) {
+            gaussianBlur(imageData) {
                 const data = imageData.data;
-                const threshold = this.calculateBlackThreshold(data);
-                
-                for (let i = 0; i < data.length; i += 4) {
-                    const r = data[i];
-                    const g = data[i + 1];
-                    const b = data[i + 2];
-                    
-                    const brightness = (r + g + b) / 3;
-                    
-                    if (brightness < threshold) {
-                        data[i] = 0;     // Set red to min
-                        data[i + 1] = 0; // Set green to min
-                        data[i + 2] = 0; // Set blue to min
-                    } else {
-                        data[i] = 255;     // Set red to max
-                        data[i + 1] = 255; // Set green to max
-                        data[i + 2] = 255; // Set blue to max
+                const result = new ImageData(new Uint8ClampedArray(data), this.width, this.height);
+                const kernel = [
+                    [1, 4, 6, 4, 1],
+                    [4, 16, 24, 16, 4],
+                    [6, 24, 36, 24, 6],
+                    [4, 16, 24, 16, 4],
+                    [1, 4, 6, 4, 1]
+                ];
+                const kernelSize = 5;
+                const kernelSum = 256;
+
+                for (let y = 2; y < this.height - 2; y++) {
+                    for (let x = 2; x < this.width - 2; x++) {
+                        let sum = 0;
+                        for (let ky = 0; ky < kernelSize; ky++) {
+                            for (let kx = 0; kx < kernelSize; kx++) {
+                                const px = x + kx - 2;
+                                const py = y + ky - 2;
+                                const i = (py * this.width + px) * 4;
+                                sum += data[i] * kernel[ky][kx];
+                            }
+                        }
+                        const i = (y * this.width + x) * 4;
+                        const val = sum / kernelSum;
+                        result.data[i] = val;
+                        result.data[i + 1] = val;
+                        result.data[i + 2] = val;
+                        result.data[i + 3] = 255;
                     }
                 }
+                return result;
+            }
+
+            threshold(imageData) {
+                const data = imageData.data;
+                const result = new ImageData(new Uint8ClampedArray(data), this.width, this.height);
                 
-                return imageData;
-            }
-
-            calculateBlackThreshold(data) {
-                let brightnessValues = [];
                 for (let i = 0; i < data.length; i += 4) {
-                    const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
-                    brightnessValues.push(brightness);
+                    const val = data[i] < 128 ? 0 : 255;
+                    result.data[i] = val;
+                    result.data[i + 1] = val;
+                    result.data[i + 2] = val;
+                    result.data[i + 3] = 255;
                 }
-                brightnessValues.sort((a, b) => a - b);
-                return brightnessValues[Math.floor(brightnessValues.length * 0.3)]; // 30th percentile as threshold
+                return result;
             }
 
-            processImageData(imageData) {
-                const lineCoordinates = [];
-
+            findContours(imageData) {
+                const contours = [];
+                const data = imageData.data;
+                const visited = new Set();
+                
                 for (let y = 0; y < this.height; y++) {
                     for (let x = 0; x < this.width; x++) {
-                        const index = (y * this.width + x) * 4;
-                        const r = imageData.data[index];
+                        const idx = (y * this.width + x) * 4;
+                        const key = `${x},${y}`;
                         
-                        if (r === 0) {  // Check for black pixels (preprocessed black line)
-                            lineCoordinates.push([x, y]);
-                        }   
+                        if (data[idx] === 0 && !visited.has(key)) {
+                            const contour = [];
+                            this.traceContour(x, y, data, visited, contour);
+                            if (contour.length > 0) {
+                                contours.push(contour);
+                            }
+                        }
                     }
                 }
-                return lineCoordinates.sort((a, b) => a[1] - b[1]);
+                return contours;
             }
 
-            filterContinuousLine(coordinates) {
-                if (coordinates.length < 2) return coordinates;
-
-                const filteredCoordinates = [coordinates[0]];
-                const maxDistance = 20; // Maximum allowed distance between consecutive points
-
-                for (let i = 1; i < coordinates.length; i++) {
-                    const [prevX, prevY] = filteredCoordinates[filteredCoordinates.length - 1];
-                    const [currentX, currentY] = coordinates[i];
+            traceContour(startX, startY, data, visited, contour) {
+                const stack = [[startX, startY]];
+                
+                while (stack.length > 0) {
+                    const [x, y] = stack.pop();
+                    const key = `${x},${y}`;
                     
-                    const distance = Math.sqrt(Math.pow(currentX - prevX, 2) + Math.pow(currentY - prevY, 2));
+                    if (visited.has(key)) continue;
                     
-                    if (distance <= maxDistance) {
-                        filteredCoordinates.push(coordinates[i]);
+                    visited.add(key);
+                    contour.push([x, y]);
+                    
+                    // Check 8-connected neighbors
+                    for (let dy = -1; dy <= 1; dy++) {
+                        for (let dx = -1; dx <= 1; dx++) {
+                            const nx = x + dx;
+                            const ny = y + dy;
+                            
+                            if (nx >= 0 && nx < this.width && ny >= 0 && ny < this.height) {
+                                const idx = (ny * this.width + nx) * 4;
+                                if (data[idx] === 0 && !visited.has(`${nx},${ny}`)) {
+                                    stack.push([nx, ny]);
+                                }
+                            }
+                        }
                     }
                 }
-
-                return filteredCoordinates;
             }
 
             drawLine(coordinates) {
@@ -152,18 +195,6 @@
                     }
                 });
                 this.ctx.stroke();
-            }
-
-            writeCoordinatesToFile(allCoordinates) {
-                const content = allCoordinates.map((frame, index) => 
-                    `Frame ${index + 1}:\n${frame.map(coord => coord.join(',')).join('\n')}\n`
-                ).join('\n');
-                const blob = new Blob([content], { type: 'text/plain' });
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(blob);
-                a.download = 'coordinates.txt';
-                a.click();
-                URL.revokeObjectURL(a.href);
             }
         }
 
