@@ -28,15 +28,14 @@ export function cutOffLineAtOverlap(line1: Point[], line2: Point[]): { line: Poi
     const line1End = line1[line1.length - 1];
     const line2End = line2[line2.length - 1];
     
-    let finalLine: Point[];
+    let line: Point[];
     let overlap = false;
 
     closestPointIndex = findClosestPoint(line1, line2StartPoint);
     if (line2End[1] > line1End[1]) {
-        finalLine = line1.slice(0, closestPointIndex + 1);
-        
+        line = line1.slice(0, closestPointIndex + 1);
     } else {
-        finalLine = line1;
+        line = line1;
         overlap = true;
     }
 
@@ -54,7 +53,7 @@ export function cutOffLineAtOverlap(line1: Point[], line2: Point[]): { line: Poi
         totalDistance += distance;
     }
 
-    return {line: finalLine, distance: totalDistance, overlap};
+    return {line, distance: totalDistance, overlap};
 }
 
 export function applyTranslation(line: Point[], translationVector: number[]) {
