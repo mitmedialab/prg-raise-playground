@@ -332,12 +332,12 @@ export function followLine(previousLine: Point[], pixels: Point[], delay: number
       worldDistance += distanceBetweenPoints(worldPoints[i], worldPoints[i + 1]);
     }
 
-    // Collect the error between guess and reality
+    // Collect the error between guess and world
     let procrustesResult: ProcrustesResult;
     if (previousCommands.length == 0) {
         procrustesResult = procrustes(segment1, segment2);
     } else if (worldDistance > 0.05) {
-        // TODO: check if line2 is much smaller than line 1, then use segment1 and segment2. Otherwise, use all the lines
+        // TODO: check if line 2 is much smaller than line 1, then use segment1 and segment2. Otherwise, use guessLine and worldPoints
         procrustesResult = procrustes(guessLine, worldPoints, 0.5);
     } else {
         // If the current frame doesn't contain that many points, just use previous guess
