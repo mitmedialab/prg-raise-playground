@@ -53,11 +53,11 @@ function findOptimalTranslation(line1: Point[], line2: Point[]) {
         centroid1[1] - centroid2[1]  
     ];
 
-    const translatedLine2 = applyTranslation(line2, translationVector);
+    const translatedLine = applyTranslation(line2, translationVector);
     
     return {
         translationVector,
-        translatedLine2
+        translatedLine
     };
 }
 
@@ -74,23 +74,26 @@ function mapCurve(line: {x: number, y: number}[]) {
 }
 
 function getError(line1: Point[], line2: Point[]) {
+    // Normalize and balance each curve
     const balanced1 = procrustesNormalizeCurve(rebalanceCurve(mapLine(line1), {}));
     const balanced2 = procrustesNormalizeCurve(rebalanceCurve(mapLine(line2), {}))
-    const rotation = findProcrustesRotationAngle(balanced1, balanced2);
 
+    // Find the rotation between the two lines
+    const rotation = findProcrustesRotationAngle(balanced1, balanced2);
     
     const points1 = rebalanceLine(line1);
     const points2 = rebalanceLine(line2);
 
     let rotatedCurve1 = rotateCurve(mapLine(points1), rotation);
 
-    const {translatedLine2, translationVector} = findOptimalTranslation(points2, mapCurve(rotatedCurve1));
-    const translatedLine1 = translatedLine2;
+    // Find the translation between the two lines
+    const {translatedLine, translationVector} = findOptimalTranslation(points2, mapCurve(rotatedCurve1));
     
-    return {curve1: translatedLine1, curve2: points2, rotation: rotation, translation: translationVector}
+    return {curve1: translatedLine, curve2: points2, rotation: rotation, translation: translationVector}
 }
 
 export function procrustes(line1: Point[], line2: Point[], ratio=0.5): ProcrustesResult {
+    // Balance each line to have the same number of points
     line1 = mapCurve(rebalanceCurve(mapLine(line1), {}));
     line2 = mapCurve(rebalanceCurve(mapLine(line2), {}));
 
@@ -98,21 +101,24 @@ export function procrustes(line1: Point[], line2: Point[], ratio=0.5): Procruste
     const minY = Math.min(...yValues);
     const maxY = Math.max(...yValues);
 
-    let midY: number;
+    // Get the first ratio % of the 2nd line 
     const range = maxY - minY;
-    midY = minY + range*ratio;
+    const midY = minY + range*ratio;
     const line2Filtered = line2.filter(point => point[1] >= minY && point[1] <= midY);
 
+    // Get the distance of the filtered line
     let totalDistance = 0;
     for (let i = 0; i < line2Filtered.length - 1; i++) {
         totalDistance += distanceBetweenPoints(line2Filtered[i], line2Filtered[i + 1]);
     }
 
+    // Get a list of segments from the first line with around the same distance as the first line
+    // TODO: Make this a range instead of a value
     let sublines = getSublinesOfLength(line1, totalDistance);
-    sublines = [...sublines]
+
+    // Get the most similar segment to the filtered second line
     let maxSimilarity = 0;
     let maxLine = sublines[0];
-
     for (const line of sublines) {
         const similarity = shapeSimilarity(mapLine(line), mapLine(line2Filtered), {checkRotations: false});
         if (similarity > maxSimilarity) {
@@ -121,6 +127,7 @@ export function procrustes(line1: Point[], line2: Point[], ratio=0.5): Procruste
         }
     }
     
+    // Calculate the error between the most similar segments
     const { rotation, translation } = getError(maxLine, line2Filtered);
 
     return {rotation, translation };
