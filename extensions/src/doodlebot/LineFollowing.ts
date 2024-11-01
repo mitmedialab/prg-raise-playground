@@ -372,7 +372,7 @@ export function followLine(previousLine: Point[], pixels: Point[], delay: number
     // Create the spline 
     const xs = line.map((point: Point) => point[0]);
     const ys = line.map((point: Point) => point[1]);
-    const spline = new Spline.default(ys, xs); // Opposite so we get the x values
+    const spline = new Spline.default(ys, xs); // Switch x and y so we no overlapping 'x' values
 
     // Find the end point for the Bezier curve
     const distance = previousSpeed*delay + lookahead;
@@ -398,13 +398,15 @@ export function followLine(previousLine: Point[], pixels: Point[], delay: number
     const point3 = {x: spline.at(x3), y: x3}
 
     // Find the x offset to correct
-    const reference1 = [spline.at(spline.xs[0]), 0]
+    const reference1 = [spline.at(spline.xs[0]), 0] // First point should be very close to 0
     const reference2 = [0, 0]
     let xOffset = reference1[0] - reference2[0];
 
+    // We want to correct the offset and direct the robot to a future point on the curve
+    // TODO: Add angle correction to the control points
     const bezier = new Bezier.Bezier(
         { x: point3.x - xOffset, y: point3.y },
-        { x: point3.x - xOffset, y: point3.y },
+        { x: point3.x - xOffset, y: point3.y + controlLength },
         extendedPoint1,
         point2
     );
@@ -417,7 +419,7 @@ export function followLine(previousLine: Point[], pixels: Point[], delay: number
         const command = calculateCurveBetweenPoints(bezierPoints[i], bezierPoints[i+1]);
         motorCommands.push(command);
     }
-    
+
     return {motorCommands, bezierPoints, line};
 
 }

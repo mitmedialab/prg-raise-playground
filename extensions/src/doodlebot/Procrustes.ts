@@ -12,20 +12,26 @@ import { type Point, type ProcrustesResult, applyTranslation, distanceBetweenPoi
 
 function calculateCentroid(line: Point[]) {
     const n = line.length;
+    
+    // Sum all x and y coordinates
     const sum = line.reduce((acc: number[], point: Point) => {
         return [acc[0] + point[0], acc[1] + point[1]];
     }, [0, 0]);
     
-    return [sum[0] / n, sum[1] / n]; // Return the average of the x and y coordinates
+    // Return the average coordinates as the centroid
+    return [sum[0] / n, sum[1] / n];
 }
+
 
 function getSublinesOfLength(line: Point[], totalDistance: number) {
     let sublines = [];
 
+    // Iterate over each starting point in the line
     for (let start = 0; start < line.length - 1; start++) {
         let currentLine = [line[start]]; 
         let currentDistance = 0;
 
+        // Extend the subline from the start point until the total distance is reached
         for (let i = start + 1; i < line.length; i++) {
             const point1 = line[i - 1];
             const point2 = line[i];
@@ -34,6 +40,7 @@ function getSublinesOfLength(line: Point[], totalDistance: number) {
             currentDistance += segmentDistance;
             currentLine.push(point2);
 
+            // If the accumulated distance meets or exceeds the target, save the subline
             if (currentDistance >= totalDistance) {
                 sublines.push(currentLine);
                 break;
@@ -44,15 +51,19 @@ function getSublinesOfLength(line: Point[], totalDistance: number) {
     return sublines;
 }
 
+
 function findOptimalTranslation(line1: Point[], line2: Point[]) {
+    // Calculate centroids for both lines
     const centroid1 = calculateCentroid(line1);
     const centroid2 = calculateCentroid(line2);
     
+    // Determine translation vector needed to align centroids
     const translationVector = [
         centroid1[0] - centroid2[0],
-        centroid1[1] - centroid2[1]  
+        centroid1[1] - centroid2[1]
     ];
 
+    // Apply translation to line2
     const translatedLine = applyTranslation(line2, translationVector);
     
     return {
@@ -60,6 +71,7 @@ function findOptimalTranslation(line1: Point[], line2: Point[]) {
         translatedLine
     };
 }
+
 
 function rebalanceLine(line: Point[]) {
     return rebalanceCurve(line.map((point: Point) => ({ x: point[0], y: point[1] })), {}).map(point => [point.x, point.y]);
