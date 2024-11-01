@@ -1,9 +1,12 @@
 import * as Spline from "cubic-spline";
 import * as Bezier from "bezier-js";
 import { rebalanceCurve, rotateCurve } from "curve-matcher";
-import { procrustes, applyTranslation, cutOffLineAtOverlap } from "./Procrustes";
+import { procrustes } from "./Procrustes";
+import { type Point, type ProcrustesResult, type RobotPosition, type Command, applyTranslation, cutOffLineAtOverlap, distanceBetweenPoints } from './LineHelper';
 
 // CONSTANTS
+const maxDistance = 100;
+const epsilon = 0.4;
 const bezierSamples = 3;
 const controlLength = .02;
 const lookahead = 0.06;
@@ -14,17 +17,25 @@ const verticalFOV = 41.41;
 const cameraHeight = 0.098;  
 const tiltAngle = 41.5;
 
-type Command = { radius: number, angle: number };
-type Point = number[];
-type RobotPosition = { x: number, y: number, angle: number };
-type ProcrustesResult = { rotation: number, translation: number[] };
+function cutOffLineOnDistance(line, maxDistance) {
+  let filteredLine = [line[0]]; // Start with the first point
+  
+  for (let i = 1; i < line.length; i++) {
+      const point1 = line[i - 1];
+      const point2 = line[i];
+      const distance = distanceBetweenPoints(point1, point2);
+      
+      // If the distance exceeds the threshold, stop adding points
+      if (distance > maxDistance) {
+          break;
+      }
 
-
-function distanceBetweenPoints(x1: number, y1: number, x2: number, y2: number) {
-    const dx = x2 - x1;
-    const dy = y2 - y1;
-    return Math.sqrt(dx * dx + dy * dy);
+      filteredLine.push(point2); // Add the current point if within distance
+  }
+  
+  return filteredLine;
 }
+
   
 function findPointAtDistanceWithIncrements(spline: Spline, increment: number, desiredDistance: number): number {
   let totalDistance = 0;
@@ -43,7 +54,7 @@ function findPointAtDistanceWithIncrements(spline: Spline, increment: number, de
 
       // Calculate distance between current and next increment
       if (!isNaN(nextY)) {
-          const distance = distanceBetweenPoints(currentX, currentY, nextXIncrement, nextY);
+          const distance = distanceBetweenPoints([currentX, currentY], [nextXIncrement, nextY]);
 
           totalDistance += distance;
           if (totalDistance >= desiredDistance) {
@@ -135,10 +146,10 @@ function groupByYInterval(points: Point[], intervalSize: number): Point[] {
           // If no point is far enough, return the endpoints.
           return [points[0], points[points.length - 1]];
       }
-  }
+}
   
 
-  export function simplifyLine(points: Point[], epsilon: number, intervalSize: number): number[][] {
+function simplifyLine(points: Point[], epsilon: number, intervalSize: number): number[][] {
       // Group points by y-interval and pick the median x-coordinate in each group
       const medianPoints = groupByYInterval(points, intervalSize);
   
@@ -147,16 +158,16 @@ function groupByYInterval(points: Point[], intervalSize: number): Point[] {
   }
   
 
-  function perpendicularDistance(point: number[], lineStart: number[], lineEnd: number[]): number {
-      const [x, y] = point;
-      const [x1, y1] = lineStart;
-      const [x2, y2] = lineEnd;
-  
-      const num = Math.abs((y2 - y1) * x - (x2 - x1) * y + x2 * y1 - y2 * x1);
-      const den = Math.sqrt(Math.pow(y2 - y1, 2) + Math.pow(x2 - x1, 2));
-  
-      return den === 0 ? 0 : num / den;
-  }
+function perpendicularDistance(point: number[], lineStart: number[], lineEnd: number[]): number {
+    const [x, y] = point;
+    const [x1, y1] = lineStart;
+    const [x2, y2] = lineEnd;
+
+    const num = Math.abs((y2 - y1) * x - (x2 - x1) * y + x2 * y1 - y2 * x1);
+    const den = Math.sqrt(Math.pow(y2 - y1, 2) + Math.pow(x2 - x1, 2));
+
+    return den === 0 ? 0 : num / den;
+}
   
 
 function rotateAndTranslateLine(line: Point[], angle: number, translation: number[]) {
@@ -290,13 +301,17 @@ function blendLines(entireLine: Point[], worldPoints: Point[], transitionLength:
 
 
 
-export function followLine(previousPoints: Point[], worldPoints: Point[], delay: number, previousSpeed: number, previousCommands: {radius: number, angle: number}[]) {
-    let robotPosition = {x:0, y:0, angle:0};
+export function followLine(previousLine: Point[], pixels: Point[], delay: number, previousSpeed: number, previousCommands: {radius: number, angle: number}[]) {
+  let worldPoints = simplifyLine(pixels, epsilon, 0.1);
+  worldPoints = cutOffLineOnDistance(worldPoints.filter((point: Point) => point[1] < 370), maxDistance);
+  worldPoints = worldPoints.map(point => pixelToGroundCoordinates(point));
+  
+  let robotPosition = {x:0, y:0, angle:0};
     for (const command of previousCommands) {
         robotPosition = getRobotPositionAfterArc(command, robotPosition);
     }
 
-   let wholeLine = rotateAndTranslateLine(previousPoints, -1*robotPosition.angle, [-1*robotPosition.x, -1*robotPosition.y]);
+   let wholeLine = rotateAndTranslateLine(previousLine, -1*robotPosition.angle, [-1*robotPosition.x, -1*robotPosition.y]);
 
    // Cutting off segments to the overlap portion
    let segment1 = showLineAboveY(wholeLine, Math.max(worldPoints[0][1], wholeLine[0][1]));
@@ -304,7 +319,7 @@ export function followLine(previousPoints: Point[], worldPoints: Point[], delay:
 
     let worldDistance = 0;
     for (let i = 0; i < worldPoints.length - 1; i++) {
-      worldDistance += distanceBetweenPoints(worldPoints[i][0], worldPoints[i][1], worldPoints[i + 1][0], worldPoints[i + 1][1]);
+      worldDistance += distanceBetweenPoints(worldPoints[i], worldPoints[i + 1]);
     }
 
     let procrustesResult: ProcrustesResult;
@@ -366,9 +381,9 @@ export function followLine(previousPoints: Point[], worldPoints: Point[], delay:
         y: point1.y + unitDy * controlLength
     };
 
-    const x3 = spline.xs[0];
+    const x3 = previousSpeed*delay;
     const point3 = {x: spline.at(x3), y: x3}
-    const reference1 = [spline.at(x3), 0]
+    const reference1 = [spline.at(spline.xs[0]), 0]
     const reference2 = [0, 0]
 
     let xOffset = reference1[0] - reference2[0];
@@ -380,7 +395,7 @@ export function followLine(previousPoints: Point[], worldPoints: Point[], delay:
         point2
     );
 
-    const motorCommands: { radius: number, angle: number}[] = [];
+    const motorCommands: Command[] = [];
 
     const bezierPoints = bezierCurvePoints(bezier, bezierSamples);
     for (let i = 0; i < bezierPoints.length - 1; i++) {
@@ -392,7 +407,7 @@ export function followLine(previousPoints: Point[], worldPoints: Point[], delay:
 }
 
 
-export function pixelToGroundCoordinates(pixelCoords: Point): { x: number, y: number } {
+export function pixelToGroundCoordinates(pixelCoords: Point): Point {
     // Based on Franklin's algorithm
     const verticalPixels = imageDimensions[1]/verticalFOV;
     const angleP = pixelCoords[1]/verticalPixels;
@@ -451,15 +466,8 @@ function calculateCurveBetweenPoints(pointA: RobotPosition, pointB: RobotPositio
     const { x: x1, y: y1, angle: theta1Rad } = pointA;
     const { x: x2, y: y2, angle: theta2Rad } = pointB;
 
-    // Calculate midpoint between points A and B
-    const midX = (x1 + x2) / 2;
-    const midY = (y1 + y2) / 2;
-
     // Distance between points A and B
     const distanceAB = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
-
-    // Calculate the bisector of A and B in terms of orientation (90 degrees)
-    const angleBisector = Math.atan2(y2 - y1, x2 - x1) + Math.PI / 2;
 
     // Determine the radius by projecting from the midpoint to a perpendicular circle center
     const tanAngle = Math.tan((theta2Rad - theta1Rad) / 2);
@@ -470,10 +478,6 @@ function calculateCurveBetweenPoints(pointA: RobotPosition, pointB: RobotPositio
 
     // Calculate the radius of the arc
     const radius = distanceAB / (2 * tanAngle);
-
-    // Calculate the center of the circle based on direction (left or right of the line A-B)
-    const centerX = midX + radius * Math.cos(angleBisector);
-    const centerY = midY + radius * Math.sin(angleBisector);
 
     // Calculate the angle to travel on the circumference in radians
     const angleRad = 2 * Math.atan2(distanceAB, 2 * radius);

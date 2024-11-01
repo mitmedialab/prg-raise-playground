@@ -1,18 +1,14 @@
 //import { procrustes } from "./transform-lines-2";
 import {
     procrustesNormalizeCurve,
-    procrustesNormalizeRotation,
     findProcrustesRotationAngle,
     rebalanceCurve,
     shapeSimilarity,
     rotateCurve
   } from 'curve-matcher';
 
-type Point = number[];
+import { type Point, type ProcrustesResult, applyTranslation, distanceBetweenPoints } from './LineHelper';
 
-function distanceBetweenPoints(p1: Point, p2: Point): number {
-    return Math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2);
-}
 
 function calculateCentroid(line: Point[]) {
     const n = line.length;
@@ -21,13 +17,6 @@ function calculateCentroid(line: Point[]) {
     }, [0, 0]);
     
     return [sum[0] / n, sum[1] / n]; // Return the average of the x and y coordinates
-}
-
-export function applyTranslation(line: Point[], translationVector: number[]) {
-    return line.map(point => [
-        point[0] + translationVector[0],
-        point[1] + translationVector[1]
-    ]);
 }
 
 function getSublinesOfLength(line: Point[], totalDistance: number) {
@@ -55,7 +44,6 @@ function getSublinesOfLength(line: Point[], totalDistance: number) {
     return sublines;
 }
 
-
 function findOptimalTranslation(line1: Point[], line2: Point[]) {
     const centroid1 = calculateCentroid(line1);
     const centroid2 = calculateCentroid(line2);
@@ -81,8 +69,8 @@ function mapLine(line: Point[]) {
     return line.map((point: Point) => ({ x: point[0], y: point[1] }))
 }
 
-function mapCurve(line: Point[]) {
-    return line.map((point: Point) => [point.x, point.y]);
+function mapCurve(line: {x: number, y: number}[]) {
+    return line.map((point: {x: number, y: number}) => [point.x, point.y]);
 }
 
 function getError(line1: Point[], line2: Point[]) {
@@ -102,58 +90,7 @@ function getError(line1: Point[], line2: Point[]) {
     return {curve1: translatedLine1, curve2: points2, rotation: rotation, translation: translationVector}
 }
 
-function findClosestPoint(line: Point[], targetPoint: Point): number {
-    let closestPointIndex = 0;
-    let minDistance = Infinity;
-
-    line.forEach((point, index) => {
-        const distance = distanceBetweenPoints(point, targetPoint);
-        if (distance < minDistance) {
-            minDistance = distance;
-            closestPointIndex = index;
-        }
-    });
-
-    return closestPointIndex; // Return the index of the closest point
-}
-
-export function cutOffLineAtOverlap(line1: Point[], line2: Point[]): { line: Point[], distance: number, overlap: Boolean } {
-    const line2StartPoint = line2[0];
-    let closestPointIndex: number;
-    const line1End = line1[line1.length - 1];
-    const line2End = line2[line2.length - 1];
-    
-    let finalLine: Point[];
-    let overlap = false;
-
-    closestPointIndex = findClosestPoint(line1, line2StartPoint);
-    if (line2End[1] > line1End[1]) {
-        finalLine = line1.slice(0, closestPointIndex + 1);
-        
-    } else {
-        finalLine = line1;
-        overlap = true;
-    }
-
-    const trimmedLine = line1.slice(0, closestPointIndex + 1);
-
-    let totalDistance = 0;
-
-    for (let i = 0; i < trimmedLine.length - 1; i++) {
-        const point1 = trimmedLine[i];
-        const point2 = trimmedLine[i + 1];
-        
-        const distance = Math.sqrt(
-            Math.pow(point2[0] - point1[0], 2) + Math.pow(point2[1] - point1[1], 2)
-        );
-        totalDistance += distance;
-    }
-
-    return {line: finalLine, distance: totalDistance, overlap};
-}
-
-
-export function procrustes(line1: Point[], line2: Point[], ratio=0.5): { rotation: number, translation: number[] } {
+export function procrustes(line1: Point[], line2: Point[], ratio=0.5): ProcrustesResult {
     line1 = mapCurve(rebalanceCurve(mapLine(line1), {}));
     line2 = mapCurve(rebalanceCurve(mapLine(line2), {}));
 
@@ -185,10 +122,6 @@ export function procrustes(line1: Point[], line2: Point[], ratio=0.5): { rotatio
     }
     
     const { rotation, translation } = getError(maxLine, line2Filtered);
-    let rotatedCurve1 = rotateCurve(mapLine(line1), rotation);
-    let translatedLine1 = applyTranslation(mapCurve(rotatedCurve1), translation);
-
-    const end = cutOffLineAtOverlap(translatedLine1, line2Filtered);
 
     return {rotation, translation };
 }
