@@ -7,7 +7,7 @@ import {
     rotateCurve
   } from 'curve-matcher';
 
-import { type Point, type ProcrustesResult, applyTranslation, distanceBetweenPoints } from './LineHelper';
+import { type Point, type ProcrustesResult, applyTranslation, distanceBetweenPoints, cutOffLineAtOverlap } from './LineHelper';
 
 
 function calculateCentroid(line: Point[]) {
@@ -141,8 +141,12 @@ export function procrustes(line1: Point[], line2: Point[], ratio=0.5): Procruste
     
     // Calculate the error between the most similar segments
     const { rotation, translation } = getError(maxLine, line2Filtered);
+    let rotatedCurve1 = rotateCurve(mapLine(line1), rotation);
+    let translatedLine1 = applyTranslation(mapCurve(rotatedCurve1), translation);
 
-    return {rotation, translation };
+    const end = cutOffLineAtOverlap(translatedLine1, line2Filtered);
+
+    return {rotation, translation, distance: end.distance };
 }
 
 

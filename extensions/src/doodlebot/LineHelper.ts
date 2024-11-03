@@ -1,7 +1,7 @@
 export type Command = { radius: number, angle: number };
 export type Point = number[];
 export type RobotPosition = { x: number, y: number, angle: number };
-export type ProcrustesResult = { rotation: number, translation: number[] };
+export type ProcrustesResult = { rotation: number, translation: number[], distance: number };
 
 export function distanceBetweenPoints(p1: Point, p2: Point): number {
     return Math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2);

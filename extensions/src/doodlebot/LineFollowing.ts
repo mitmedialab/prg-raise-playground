@@ -309,10 +309,27 @@ function blendLines(entireLine: Point[], worldPoints: Point[], transitionLength:
 }
 
 
-export function followLine(previousLine: Point[], pixels: Point[], delay: number, previousSpeed: number, previousCommands: {radius: number, angle: number}[]) {
+export function followLine(previousLine: Point[], pixels: Point[], next: Point[], delay: number, previousSpeed: number, previousCommands: Command[]) {
+
+  let nextPoints = simplifyLine(pixels, epsilon, 0.1);
+  nextPoints = cutOffLineOnDistance(nextPoints.filter((point: Point) => point[1] < 370), maxDistance);
+  nextPoints = nextPoints.map(point => pixelToGroundCoordinates(point));
+
   let worldPoints = simplifyLine(pixels, epsilon, 0.1);
   worldPoints = cutOffLineOnDistance(worldPoints.filter((point: Point) => point[1] < 370), maxDistance);
   worldPoints = worldPoints.map(point => pixelToGroundCoordinates(point));
+
+   let multiplier = 1;
+    let distanceTest = 0.06/multiplier;
+    try {
+        if (nextPoints && nextPoints.length > 20 && worldPoints.length > 20) {
+            let res = procrustes(worldPoints, nextPoints, 0.6);
+            distanceTest = res.distance
+        }
+        
+    } catch (e) {}
+
+  
   
   let robotPosition = {x:0, y:0, angle:0};
     for (const command of previousCommands) {
@@ -341,11 +358,11 @@ export function followLine(previousLine: Point[], pixels: Point[], delay: number
         procrustesResult = procrustes(guessLine, worldPoints, 0.5);
     } else {
         // If the current frame doesn't contain that many points, just use previous guess
-        procrustesResult = { translation: [0, 0], rotation: 0 };
+        procrustesResult = { translation: [0, 0], rotation: 0, distance: 0 };
     }
 
     // Correct the guess of the previous line
-    let line = rotateCurve(guessLine.map((point: Point) => ({x: point[0], y: point[1]})), procrustesResult.rotation).map((point: number) => [point.x, point.y]);
+    let line = rotateCurve(guessLine.map((point: Point) => ({x: point[0], y: point[1]})), procrustesResult.rotation).map((point: {x: number, y: number}) => [point.x, point.y]);
     line = applyTranslation(line, procrustesResult.translation);    
     line = showLineAboveY(line, 0);
     
@@ -375,7 +392,8 @@ export function followLine(previousLine: Point[], pixels: Point[], delay: number
     const spline = new Spline.default(ys, xs); // Switch x and y so we no overlapping 'x' values
 
     // Find the end point for the Bezier curve
-    const distance = previousSpeed*delay + lookahead;
+    //const distance = previousSpeed*delay + lookahead;
+    const distance = distanceTest*0.9;
     const x1 = findPointAtDistanceWithIncrements(spline, 0.001, distance - .01);
     const x2 = findPointAtDistanceWithIncrements(spline, 0.001, distance);
     const point1 = {x: spline.at(x1), y: x1}
