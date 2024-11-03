@@ -18,6 +18,7 @@
     "bezier-js": "^6.1.4",
     "canvas": "^2.11.2",
     "cubic-spline": "^3.0.3",
+    "curve-matcher": "^1.1.1",
     "events": "^3.3.0"
   }
 }

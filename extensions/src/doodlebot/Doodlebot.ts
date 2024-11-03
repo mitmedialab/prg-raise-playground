@@ -643,7 +643,7 @@ export default class Doodlebot {
 
         const beforeLine = this.prependUntilTarget(lineData[0]);
 
-        let { motorCommands, bezierPoints, line } = followLine(beforeLine, lineData[0], delay, previousSpeed, []);
+        let { motorCommands, bezierPoints, line } = followLine(beforeLine, lineData[0], lineData[1], delay, previousSpeed, []);
         for (const command of motorCommands) {
             const { radius, angle } = command;
             // await this.motorCommand(
