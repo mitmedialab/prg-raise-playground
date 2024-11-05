@@ -5,6 +5,9 @@ import { splitArgsString } from "./utils";
 import EventEmitter from "events";
 import { categoryByGesture, classes, emojiByGesture, gestureDetection, gestureMenuItems, gestures, objectDetection } from "./detection";
 //import { createLineDetector } from "./LineDetection";
+import { line0, line1, line2, line3, line4, line5, line6, line7, line8 } from './Points';
+import { followLine } from "./LineFollowing";
+
 const details: ExtensionMenuDisplayDetails = {
   name: "Doodlebot",
   description: "Program a doodlebot robot",
@@ -109,7 +112,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     //   }
     //   this.lineDetector = createLineDetector(ipAddress);
     // }
-  
+
     // const lineCoordinates = await this.lineDetector();
     // if (lineCoordinates.length === 0) {
     //   console.log("No line detected");
@@ -117,19 +120,19 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     // }
 
     // console.log("Line coordinates:", JSON.stringify(lineCoordinates));
-  
+
     // if (!this.videoDrawable) {
     //   this.videoDrawable = await this.createVideoStreamDrawable();
     // }
-  
+
     // const canvas = document.createElement('canvas');
     // canvas.width = this.imageStream.width; // Assume these properties exist
     // canvas.height = this.imageStream.height;
     // const ctx = canvas.getContext('2d');
-  
+
     // if (ctx) {
     //   ctx.drawImage(this.imageStream, 0, 0, canvas.width, canvas.height);
-      
+
     //   ctx.beginPath();
     //   ctx.moveTo(lineCoordinates[0][0], lineCoordinates[0][1]);
     //   for (let i = 1; i < lineCoordinates.length; i++) {
@@ -138,7 +141,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     //   ctx.strokeStyle = 'red';
     //   ctx.lineWidth = 2;
     //   ctx.stroke();
-  
+
     //   this.videoDrawable.update(canvas);
     // }
   }
@@ -200,12 +203,119 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     await this.doodlebot?.motorCommand("stop");
   }
 
+  prependUntilTarget = (line) => {
+    const targetX = line[0][0];
+    const targetY = line[0][1];
+    const startX = line[0][0];
+    const startY = 0; // Start slightly below targetY
+
+
+    const incrementX = 0.01; // Small step for x
+    let x = startX;
+    let y = startY;
+
+    const newSegment = [];
+    while (y < targetY) {
+      newSegment.push([x, y]);
+      y += incrementX; // Increment y based on slope
+    }
+
+    // Prepend the new segment to the beginning of line
+    line.unshift(...newSegment);
+    return line;
+  }
+
+  async followLine() {
+
+    const delay = 0.5;
+    const previousSpeed = 0.1;
+
+    const lineData = [line0, line1, line2, line3, line4, line5, line6, line7, line8];
+
+    const beforeLine = this.prependUntilTarget(lineData[0]);
+
+    let { motorCommands, bezierPoints, line } = followLine(beforeLine, lineData[0], lineData[1], delay, previousSpeed, [], true);
+    console.log("here");
+    for (const command of motorCommands) {
+      const { radius, angle } = command;
+      // await this.motorCommand(
+      //     "steps",
+      //     { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
+      //     { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
+      // );
+      console.log("command");
+      console.log(command);
+    }
+
+
+    ({ motorCommands, bezierPoints, line } = followLine(line, lineData[1], lineData[2], delay, previousSpeed, motorCommands));
+    for (const command of motorCommands) {
+      const { radius, angle } = command;
+      // await this.motorCommand(
+      //     "steps",
+      //     { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
+      //     { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
+      // );
+      console.log("command");
+      console.log(command);
+    }
+
+    ({ motorCommands, bezierPoints, line } = followLine(line, lineData[2], lineData[3], delay, previousSpeed, motorCommands));
+    for (const command of motorCommands) {
+      const { radius, angle } = command;
+      // await this.motorCommand(
+      //     "steps",
+      //     { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
+      //     { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
+      // );
+      console.log("command");
+      console.log(command);
+    }
+
+    ({ motorCommands, bezierPoints, line } = followLine(line, lineData[3], lineData[4], delay, previousSpeed, motorCommands));
+    for (const command of motorCommands) {
+      const { radius, angle } = command;
+      // await this.motorCommand(
+      //     "steps",
+      //     { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
+      //     { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
+      // );
+      console.log("command");
+      console.log(command);
+    }
+
+    ({ motorCommands, bezierPoints, line } = followLine(line, lineData[4], lineData[5], delay, previousSpeed, motorCommands));
+    for (const command of motorCommands) {
+      const { radius, angle } = command;
+      // await this.motorCommand(
+      //     "steps",
+      //     { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
+      //     { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
+      // );
+      console.log("command");
+      console.log(command);
+    }
+
+    ({ motorCommands, bezierPoints, line } = followLine(line, lineData[5], lineData[6], delay, previousSpeed, motorCommands));
+    for (const command of motorCommands) {
+      const { radius, angle } = command;
+      // await this.motorCommand(
+      //     "steps",
+      //     { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
+      //     { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
+      // );
+      console.log("command");
+      console.log(command);
+    }
+
+  }
+
   @block({
     type: "command",
     text: "test line follow"
   })
   async testLine() {
-    await this.doodlebot?.followLine();
+    await this.followLine();
   }
 
   @block({
