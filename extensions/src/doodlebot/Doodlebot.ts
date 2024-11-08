@@ -5,6 +5,7 @@ import { followLine } from "./LineFollowing";
 import { Command, DisplayKey, NetworkStatus, ReceivedCommand, SensorKey, command, display, endpoint, keyBySensor, motorCommandReceived, networkStatus, port, sensor } from "./enums";
 import { base64ToInt32Array, makeWebsocket, Max32Int, testWebSocket } from "./utils";
 import { line0, line1, line2, line3, line4, line5, line6, line7, line8 } from './Points';
+import { LineDetector } from "./LineDetection";
 
 export type Services = Awaited<ReturnType<typeof Doodlebot.getServices>>;
 export type MotorStepRequest = {
@@ -634,87 +635,30 @@ export default class Doodlebot {
     }
 
 
+
     async followLine() {
 
+        let first = true;
         const delay = 0.5;
         const previousSpeed = 0.1;
-
-        const lineData = [line0, line1, line2, line3, line4, line5, line6, line7, line8];
-
-        const beforeLine = this.prependUntilTarget(lineData[0]);
-
-        let { motorCommands, bezierPoints, line } = followLine(beforeLine, lineData[0], lineData[1], delay, previousSpeed, []);
-        for (const command of motorCommands) {
-            const { radius, angle } = command;
-            // await this.motorCommand(
-            //     "steps",
-            //     { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
-            //     { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
-            // );
-            console.log("command");
-            console.log(command);
-        }
-
-
-        ({ motorCommands, bezierPoints, line } = followLine(line, lineData[1], lineData[2], delay, previousSpeed, motorCommands));
-        for (const command of motorCommands) {
-            const { radius, angle } = command;
-            // await this.motorCommand(
-            //     "steps",
-            //     { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
-            //     { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
-            // );
-            console.log("command");
-            console.log(command);
-        }
-
-        ({ motorCommands, bezierPoints, line } = followLine(line, lineData[2], lineData[3], delay, previousSpeed, motorCommands));
-        for (const command of motorCommands) {
-            const { radius, angle } = command;
-            // await this.motorCommand(
-            //     "steps",
-            //     { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
-            //     { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
-            // );
-            console.log("command");
-            console.log(command);
-        }
-
-        ({ motorCommands, bezierPoints, line } = followLine(line, lineData[3], lineData[4], delay, previousSpeed, motorCommands));
-        for (const command of motorCommands) {
-            const { radius, angle } = command;
-            // await this.motorCommand(
-            //     "steps",
-            //     { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
-            //     { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
-            // );
-            console.log("command");
-            console.log(command);
-        }
-
-        ({ motorCommands, bezierPoints, line } = followLine(line, lineData[4], lineData[5], delay, previousSpeed, motorCommands));
-        for (const command of motorCommands) {
-            const { radius, angle } = command;
-            // await this.motorCommand(
-            //     "steps",
-            //     { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
-            //     { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
-            // );
-            console.log("command");
-            console.log(command);
-        }
-
-        ({ motorCommands, bezierPoints, line } = followLine(line, lineData[5], lineData[6], delay, previousSpeed, motorCommands));
-        for (const command of motorCommands) {
-            const { radius, angle } = command;
-            // await this.motorCommand(
-            //     "steps",
-            //     { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
-            //     { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
-            // );
-            console.log("command");
-            console.log(command);
-        }
+        const detector = new LineDetector(this.connection.ip);
+        let motorCommands, bezierPoints, line;
+        const intervalId = setInterval(async () => {
+            try {
+                const lineData = await detector.detectLine();
+                if (first) {
+                    ({ motorCommands, bezierPoints, line } = followLine(lineData, lineData, null, delay, previousSpeed, [], false, true));
+                } else {
+                    ({ motorCommands, bezierPoints, line } = followLine(line, lineData, null, delay, previousSpeed, motorCommands, false, false));
+                }
+                // Process the line data here
+                console.log(lineData);
+            } catch (error) {
+                console.error("Error detecting line:", error);
+                // Optionally stop polling if there's a consistent error
+                clearInterval(intervalId);
+            }
+        }, 1000 / 15); // 66.67 ms interval
 
     }
 

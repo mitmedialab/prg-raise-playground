@@ -234,7 +234,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
 
     const beforeLine = this.prependUntilTarget(lineData[0]);
 
-    let { motorCommands, bezierPoints, line } = followLine(beforeLine, lineData[0], lineData[1], delay, previousSpeed, [], true);
+    let { motorCommands, bezierPoints, line } = followLine(beforeLine, lineData[0], lineData[1], delay, previousSpeed, [], true, true);
     console.log("here");
     for (const command of motorCommands) {
       const { radius, angle } = command;
@@ -248,7 +248,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     }
 
 
-    ({ motorCommands, bezierPoints, line } = followLine(line, lineData[1], lineData[2], delay, previousSpeed, motorCommands));
+    ({ motorCommands, bezierPoints, line } = followLine(line, lineData[1], lineData[2], delay, previousSpeed, motorCommands, true));
     for (const command of motorCommands) {
       const { radius, angle } = command;
       // await this.motorCommand(
@@ -260,7 +260,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
       console.log(command);
     }
 
-    ({ motorCommands, bezierPoints, line } = followLine(line, lineData[2], lineData[3], delay, previousSpeed, motorCommands));
+    ({ motorCommands, bezierPoints, line } = followLine(line, lineData[2], lineData[3], delay, previousSpeed, motorCommands, true));
     for (const command of motorCommands) {
       const { radius, angle } = command;
       // await this.motorCommand(
@@ -272,7 +272,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
       console.log(command);
     }
 
-    ({ motorCommands, bezierPoints, line } = followLine(line, lineData[3], lineData[4], delay, previousSpeed, motorCommands));
+    ({ motorCommands, bezierPoints, line } = followLine(line, lineData[3], lineData[4], delay, previousSpeed, motorCommands, true));
     for (const command of motorCommands) {
       const { radius, angle } = command;
       // await this.motorCommand(
@@ -284,7 +284,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
       console.log(command);
     }
 
-    ({ motorCommands, bezierPoints, line } = followLine(line, lineData[4], lineData[5], delay, previousSpeed, motorCommands));
+    ({ motorCommands, bezierPoints, line } = followLine(line, lineData[4], lineData[5], delay, previousSpeed, motorCommands, true));
     for (const command of motorCommands) {
       const { radius, angle } = command;
       // await this.motorCommand(
@@ -296,7 +296,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
       console.log(command);
     }
 
-    ({ motorCommands, bezierPoints, line } = followLine(line, lineData[5], lineData[6], delay, previousSpeed, motorCommands));
+    ({ motorCommands, bezierPoints, line } = followLine(line, lineData[5], lineData[6], delay, previousSpeed, motorCommands, true));
     for (const command of motorCommands) {
       const { radius, angle } = command;
       // await this.motorCommand(
