@@ -1,12 +1,12 @@
 import { endpoint, port } from "./enums";
-import cv from '@u4/opencv4nodejs';
+//import cv from '@u4/opencv4nodejs';
 import axios from 'axios';
 
 export class LineDetector {
   private lastDetectedLine: number[][] = [];
   private isProcessing = false;
 
-  constructor(private raspberryPiIp: string, private width = 640, private height = 480) {}
+  constructor(private raspberryPiIp: string, private width = 640, private height = 480) { }
 
   async detectLine(): Promise<number[][]> {
     if (this.isProcessing) return this.lastDetectedLine;
@@ -20,30 +20,30 @@ export class LineDetector {
       );
 
       // Convert response to cv Mat
-      const buffer = Buffer.from(response.data);
-      let mat = cv.imdecode(buffer);
-      
-      // Resize if needed
-      if (mat.cols !== this.width || mat.rows !== this.height) {
-        mat = mat.resize(this.height, this.width);
-      }
+      // const buffer = Buffer.from(response.data);
+      // let mat = cv.imdecode(buffer);
 
-      // Convert to grayscale and apply threshold
-      const gray = mat.cvtColor(cv.COLOR_BGR2GRAY);
-      const blurred = gray.gaussianBlur(new cv.Size(5, 5), 0);
-      const thresh = blurred.threshold(0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU);
+      // // Resize if needed
+      // if (mat.cols !== this.width || mat.rows !== this.height) {
+      //   mat = mat.resize(this.height, this.width);
+      // }
 
-      // Find contours
-      const contours = thresh.findContours(cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
-      
-      // Get the largest contour (assuming it's the line)
-      const sortedContours = contours.sort((c1, c2) => c2.area - c1.area);
-      
-      if (sortedContours.length > 0) {
-        // Convert contour points to coordinate array
-        const coordinates = sortedContours[0].getPoints().map(point => [point.x, point.y]);
-        this.lastDetectedLine = coordinates;
-      }
+      // // Convert to grayscale and apply threshold
+      // const gray = mat.cvtColor(cv.COLOR_BGR2GRAY);
+      // const blurred = gray.gaussianBlur(new cv.Size(5, 5), 0);
+      // const thresh = blurred.threshold(0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU);
+
+      // // Find contours
+      // const contours = thresh.findContours(cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+
+      // // Get the largest contour (assuming it's the line)
+      // const sortedContours = contours.sort((c1, c2) => c2.area - c1.area);
+
+      // if (sortedContours.length > 0) {
+      //   // Convert contour points to coordinate array
+      //   const coordinates = sortedContours[0].getPoints().map(point => [point.x, point.y]);
+      //   this.lastDetectedLine = coordinates;
+      // }
 
       return this.lastDetectedLine;
     } catch (error) {
