@@ -1,12 +1,18 @@
 import { endpoint, port } from "./enums";
-//import cv from '@u4/opencv4nodejs';
 import axios from 'axios';
 
 export class LineDetector {
   private lastDetectedLine: number[][] = [];
   private isProcessing = false;
+  private frameCount = 0;
+  private allCoordinates: number[][][] = [];
 
-  constructor(private raspberryPiIp: string, private width = 640, private height = 480) { }
+  constructor(
+    private raspberryPiIp: string, 
+    private width = 640, 
+    private height = 480,
+    private threshold = 70  // Threshold for detecting dark pixels
+  ) {}
 
   async detectLine(): Promise<number[][]> {
     if (this.isProcessing) return this.lastDetectedLine;
@@ -19,31 +25,25 @@ export class LineDetector {
         { responseType: 'arraybuffer' }
       );
 
-      // Convert response to cv Mat
-      // const buffer = Buffer.from(response.data);
-      // let mat = cv.imdecode(buffer);
+      // Convert response to Uint8Array for pixel processing
+      const buffer = Buffer.from(response.data);
+      const pixels = new Uint8Array(buffer);
+      
+      // Process the image data to find dark pixels
+      const lineCoordinates = this.processImageData(pixels);
 
-      // // Resize if needed
-      // if (mat.cols !== this.width || mat.rows !== this.height) {
-      //   mat = mat.resize(this.height, this.width);
-      // }
+      if (lineCoordinates.length > 0) {
+        this.lastDetectedLine = lineCoordinates;
+      }
 
-      // // Convert to grayscale and apply threshold
-      // const gray = mat.cvtColor(cv.COLOR_BGR2GRAY);
-      // const blurred = gray.gaussianBlur(new cv.Size(5, 5), 0);
-      // const thresh = blurred.threshold(0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU);
-
-      // // Find contours
-      // const contours = thresh.findContours(cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
-
-      // // Get the largest contour (assuming it's the line)
-      // const sortedContours = contours.sort((c1, c2) => c2.area - c1.area);
-
-      // if (sortedContours.length > 0) {
-      //   // Convert contour points to coordinate array
-      //   const coordinates = sortedContours[0].getPoints().map(point => [point.x, point.y]);
-      //   this.lastDetectedLine = coordinates;
-      // }
+      // Store coordinates for the first 7 frames (matching HTML version)
+      if (this.frameCount < 7) {
+        this.allCoordinates.push(lineCoordinates);
+        this.frameCount++;
+        if (this.frameCount === 7) {
+          this.logCoordinates();
+        }
+      }
 
       return this.lastDetectedLine;
     } catch (error) {
@@ -52,6 +52,37 @@ export class LineDetector {
     } finally {
       this.isProcessing = false;
     }
+  }
+
+  private processImageData(pixels: Uint8Array): number[][] {
+    const lineCoordinates: number[][] = [];
+
+    // Process only up to y < 400 (matching HTML version)
+    for (let y = 0; y < Math.min(this.height, 400); y++) {
+      for (let x = 0; x < this.width; x++) {
+        const index = (y * this.width + x) * 3; // RGB format
+        const r = pixels[index];
+        const g = pixels[index + 1];
+        const b = pixels[index + 2];
+
+        // Check if pixel is dark (below threshold)
+        if (r < this.threshold && g < this.threshold && b < this.threshold) {
+          lineCoordinates.push([x, y]);
+        }
+      }
+    }
+
+    // Sort coordinates by y-value (top to bottom)
+    return lineCoordinates.sort((a, b) => a[1] - b[1]);
+  }
+
+  private logCoordinates(): void {
+    // Log coordinates for debugging (similar to file writing in HTML version)
+    console.log('Collected coordinates from 7 frames:');
+    this.allCoordinates.forEach((frame, index) => {
+      console.log(`Frame ${index + 1}:`);
+      console.log(frame.map(coord => coord.join(',')).join('\n'));
+    });
   }
 }
 
