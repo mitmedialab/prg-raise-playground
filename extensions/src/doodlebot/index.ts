@@ -320,6 +320,14 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
 
   @block({
     type: "command",
+    text: "test line follow 2"
+  })
+  async testLine2() {
+    await this.doodlebot.followLine();
+  }
+
+  @block({
+    type: "command",
     text: (direction) => `move pen ${direction}`,
     arg: { type: "string", options: ["up", "down"], defaultValue: "up" }
   })

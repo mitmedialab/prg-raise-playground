@@ -7,7 +7,7 @@ import { type Point, type ProcrustesResult, type RobotPosition, type Command, ap
 // CONSTANTS
 const maxDistance = 100;
 const epsilon = 0.3;
-const bezierSamples = 3;
+const bezierSamples = 2;
 const controlLength = .02;
 const lookahead = 0.06;
 
@@ -332,13 +332,13 @@ function prependUntilTarget(line) {
 
 
 export function followLine(previousLine: Point[], pixels: Point[], next: Point[], delay: number, previousSpeed: number, previousCommands: Command[], test: Boolean, first = false) {
-    
-   let nextPoints: Point[];
-   if (test) {
-      nextPoints = simplifyLine(next, epsilon, 0.1);
-      nextPoints = cutOffLineOnDistance(nextPoints.filter((point: Point) => point[1] < 370), maxDistance);
-      nextPoints = nextPoints.map(point => pixelToGroundCoordinates(point));
-   }
+
+    let nextPoints: Point[];
+    if (test) {
+        nextPoints = simplifyLine(next, epsilon, 0.1);
+        nextPoints = cutOffLineOnDistance(nextPoints.filter((point: Point) => point[1] < 370), maxDistance);
+        nextPoints = nextPoints.map(point => pixelToGroundCoordinates(point));
+    }
 
     let worldPoints = simplifyLine(pixels, epsilon, 0.1);
     worldPoints = cutOffLineOnDistance(worldPoints.filter((point: Point) => point[1] < 370), maxDistance);
@@ -352,13 +352,13 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     let multiplier = 1;
     let distanceTest = 0.06 / multiplier;
     if (test) {
-      try {
-          if (nextPoints && nextPoints.length > 20 && worldPoints.length > 20) {
-              let res = procrustes(worldPoints, nextPoints, 0.6);
-              distanceTest = res.distance
-          }
+        try {
+            if (nextPoints && nextPoints.length > 20 && worldPoints.length > 20) {
+                let res = procrustes(worldPoints, nextPoints, 0.6);
+                distanceTest = res.distance
+            }
 
-      } catch (e) { }
+        } catch (e) { }
     }
     /* TESTING */
 
@@ -426,9 +426,9 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     // Find the end point for the Bezier curve
     let distance: number;
     if (test) {
-      distance = distanceTest * 0.9;
+        distance = distanceTest * 0.9;
     } else {
-      distance = previousSpeed*delay + lookahead;
+        distance = previousSpeed * delay + lookahead;
     }
 
     const x1 = findPointAtDistanceWithIncrements(spline, 0.001, distance - .01);
@@ -451,21 +451,21 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     // Find the start point for the Bezier curve -- account for camera latency
     let x3: number;
     if (test) {
-      x3 = spline.xs[0];
+        x3 = spline.xs[0];
     } else {
-      x3 = previousSpeed * delay;
+        x3 = previousSpeed * delay;
     }
     const point3 = { x: spline.at(x3), y: x3 }
 
     // Find the x offset to correct
     const reference1 = [spline.at(spline.xs[0]), 0] // First point should be very close to 0
     const reference2 = [0, 0]
-    
+
     let xOffset: number;
     if (test) {
-      xOffset = 0;
+        xOffset = 0;
     } else {
-      xOffset = reference1[0] - reference2[0];
+        xOffset = reference1[0] - reference2[0];
     }
 
     // We want to correct the offset and direct the robot to a future point on the curve
