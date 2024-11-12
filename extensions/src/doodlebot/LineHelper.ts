@@ -1,4 +1,4 @@
-export type Command = { radius: number, angle: number };
+export type Command = { radius: number, angle: number, distance: number };
 export type Point = number[];
 export type RobotPosition = { x: number, y: number, angle: number };
 export type ProcrustesResult = { rotation: number, translation: number[], distance: number };

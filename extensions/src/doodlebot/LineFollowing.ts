@@ -364,7 +364,11 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
 
     let robotPosition = { x: 0, y: 0, angle: 0 };
     for (const command of previousCommands) {
+      if (command.radius == Infinity) {
+        robotPosition.y = robotPosition.y + command.distance;
+    } else {
         robotPosition = getRobotPositionAfterArc(command, robotPosition);
+    }
     }
 
     // Guess the location of the previous line
@@ -548,31 +552,39 @@ function solveForSide(angleA: number, angleB: number, sideB: number) {
 
 
 function calculateCurveBetweenPoints(pointA: RobotPosition, pointB: RobotPosition) {
-    const { x: x1, y: y1, angle: theta1Rad } = pointA;
-    const { x: x2, y: y2, angle: theta2Rad } = pointB;
+  const { x: x1, y: y1, angle: theta1Rad } = pointA;
+  const { x: x2, y: y2, angle: theta2Rad } = pointB;
 
-    // Distance between points A and B
-    const distanceAB = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+  // Midpoint and distance between points A and B
+  const midX = (x1 + x2) / 2;
+  const midY = (y1 + y2) / 2;
+  const distanceAB = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
 
-    // Determine the radius by projecting from the midpoint to a perpendicular circle center
-    const tanAngle = Math.tan((theta2Rad - theta1Rad) / 2);
+  // Calculate the bisector angle and tangent angle for radius calculation
+  const angleBisector = Math.atan2(y2 - y1, x2 - x1) + Math.PI / 2;
+  const tanAngle = Math.tan((theta2Rad - theta1Rad) / 2);
 
-    if (Math.abs(tanAngle) < 1e-6) {
-        return { radius: Infinity, angle: 0 }; // Straight line, infinite radius
-    }
+  // If tanAngle is close to zero, it's a straight line
+  if (Math.abs(tanAngle) < 1e-6) {
+      // Return infinite radius and the straight-line distance
+      return { radius: Infinity, angle: 0, distance: distanceAB };
+  }
 
-    // Calculate the radius of the arc
-    const radius = distanceAB / (2 * tanAngle);
+  // Calculate the radius of the curve
+  const radius = distanceAB / (2 * tanAngle);
 
-    // Calculate the angle to travel on the circumference in radians
-    const angleRad = 2 * Math.atan2(distanceAB, 2 * radius);
+  // Angle to travel on the circumference
+  const angleRad = 2 * Math.atan2(distanceAB, 2 * radius);
 
-    // Convert radius back to inches (assuming pixels to inches ratio, like 30 pixels per inch)
-    const radiusInches = Math.abs(radius * 39.37);
-    let angleDegrees = angleRad * (180 / Math.PI);
-    if (angleDegrees > 180) {
-        angleDegrees = angleDegrees - 360;
-    }
+  // Convert to inches assuming pixels to inches ratio (e.g., 39.37 pixels/inch)
+  const radiusInches = Math.abs(radius * 39.37);
+  let angleDegrees = angleRad * (180 / Math.PI);
+  if (angleDegrees > 180) {
+      angleDegrees = angleDegrees - 360;
+  }
 
-    return { radius: radiusInches, angle: angleDegrees };
+  // Calculate arc length for the curved path (angle in radians * radius)
+  const arcLength = Math.abs(angleRad * radiusInches);
+
+  return { radius: radiusInches, angle: angleDegrees, distance: arcLength };
 }
