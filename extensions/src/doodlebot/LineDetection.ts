@@ -162,38 +162,109 @@ export class LineDetector {
     const maxY = Math.min(this.height, 400);
     
     console.log(`Processing image data: ${this.width}x${maxY}`);
-    console.log(`Pixel array length: ${pixels.length}, Expected length: ${this.width * this.height * 3}`);
 
-    // Add sample pixel values logging
-    const samplePixels: {[key: string]: number[]} = {};
+    // Parameters for line detection
+    const threshold = 70;  // Threshold for dark pixels
+    const minBlueness = 150;  // Minimum blue value for blue line detection
+    const colorDiffThreshold = 50;  // Minimum difference between blue and other channels
     
+    // Store points by row for better line tracking
+    const pointsByRow: Map<number, number[]> = new Map();
+    
+    // First pass: collect potential line points
     for (let y = 0; y < maxY; y++) {
+      const rowPoints: number[] = [];
+      
       for (let x = 0; x < this.width; x++) {
-        const index = (y * this.width + x) * 3; // RGB format
+        const index = (y * this.width + x) * 4; // RGBA format
         const r = pixels[index];
         const g = pixels[index + 1];
         const b = pixels[index + 2];
 
-        // Log a few sample pixels
-        if (y % 100 === 0 && x % 100 === 0) {
-          samplePixels[`${x},${y}`] = [r, g, b];
-        }
+        // For black line detection
+        const isBlack = r < threshold && g < threshold && b < threshold;
+        
+        // For blue line detection
+        const isBlueDominant = b > minBlueness && 
+                              b > (r + colorDiffThreshold) && 
+                              b > (g + colorDiffThreshold);
 
-        // Check if pixel is dark (below threshold)
-        if (r < this.threshold && g < this.threshold && b < this.threshold) {
-          lineCoordinates.push([x, y]);
+        if (isBlack || isBlueDominant) {
+          rowPoints.push(x);
         }
+      }
+
+      if (rowPoints.length > 0) {
+        // Calculate median x-coordinate for this row to reduce noise
+        rowPoints.sort((a, b) => a - b);
+        const medianX = rowPoints[Math.floor(rowPoints.length / 2)];
+        pointsByRow.set(y, [medianX]);
       }
     }
 
-    console.log("Sample pixel values:", samplePixels);
-    console.log(`Found ${lineCoordinates.length} dark pixels`);
+    // Second pass: Apply continuity constraints
+    let lastValidY = -1;
+    let lastValidX = -1;
+    const maxJump = 30; // Maximum allowed pixel jump between consecutive points
+
+    for (let y = 0; y < maxY; y++) {
+      const points = pointsByRow.get(y);
+      if (!points) continue;
+
+      const x = points[0];
+
+      // Check if this point is a reasonable continuation of the line
+      if (lastValidY !== -1) {
+        const yGap = y - lastValidY;
+        const xGap = Math.abs(x - lastValidX);
+
+        // If point is too far from previous point, skip it
+        if (yGap > 2 || xGap > maxJump) {
+          continue;
+        }
+      }
+
+      // Add point to final line coordinates
+      lineCoordinates.push([x, y]);
+      lastValidY = y;
+      lastValidX = x;
+    }
 
     // Sort coordinates by y-value (top to bottom)
     const sortedCoordinates = lineCoordinates.sort((a, b) => a[1] - b[1]);
-    console.log("First few coordinates:", sortedCoordinates.slice(0, 5));
     
-    return sortedCoordinates;
+    // Apply smoothing to reduce jagged edges
+    const smoothedCoordinates = this.smoothLine(sortedCoordinates);
+    
+    return smoothedCoordinates;
+  }
+
+  private smoothLine(coordinates: number[][]): number[][] {
+    if (coordinates.length < 3) return coordinates;
+
+    const smoothed: number[][] = [];
+    const windowSize = 3;
+
+    // Keep first point
+    smoothed.push([...coordinates[0]]);
+
+    // Smooth middle points
+    for (let i = 1; i < coordinates.length - 1; i++) {
+      const window = coordinates.slice(
+        Math.max(0, i - Math.floor(windowSize/2)),
+        Math.min(coordinates.length, i + Math.floor(windowSize/2) + 1)
+      );
+
+      const avgX = window.reduce((sum, point) => sum + point[0], 0) / window.length;
+      smoothed.push([Math.round(avgX), coordinates[i][1]]);
+    }
+
+    // Keep last point
+    if (coordinates.length > 1) {
+      smoothed.push([...coordinates[coordinates.length - 1]]);
+    }
+
+    return smoothed;
   }
 
   private logCoordinates(): void {
