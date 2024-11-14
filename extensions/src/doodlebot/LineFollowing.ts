@@ -2,7 +2,7 @@ import * as Spline from "cubic-spline";
 import * as Bezier from "bezier-js";
 import { rebalanceCurve, rotateCurve } from "curve-matcher";
 import { procrustes } from "./Procrustes";
-import { type Point, type ProcrustesResult, type RobotPosition, type Command, calculateLineError, applyTranslation, cutOffLineAtOverlap, distanceBetweenPoints } from './LineHelper';
+import { type Point, type ProcrustesResult, type RobotPosition, type Command, calculateLineError, applyTranslation, cutOffLineAtOverlap, distanceBetweenPoints, approximateBezierWithArc } from './LineHelper';
 
 // CONSTANTS
 const maxDistance = 100;
@@ -506,13 +506,16 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
 
     const motorCommands: Command[] = [];
 
-    // Split the Bezier curve into a series of arcs
+    // // Split the Bezier curve into a series of arcs
     const bezierPoints = bezierCurvePoints(bezier, bezierSamples);
 
-    for (let i = 0; i < bezierPoints.length - 1; i++) {
-        const command = calculateCurveBetweenPoints(bezierPoints[i], bezierPoints[i + 1]);
-        motorCommands.push(command);
-    }
+    // for (let i = 0; i < bezierPoints.length - 1; i++) {
+    //     const command = calculateCurveBetweenPoints(bezierPoints[i], bezierPoints[i + 1]);
+    //     motorCommands.push(command);
+    // }
+
+    const command = approximateBezierWithArc(bezier.points[0], bezier.points[1], bezier.points[2], bezier.points[3]);
+    motorCommands.push(command);
 
     return { motorCommands, bezierPoints, line };
 
