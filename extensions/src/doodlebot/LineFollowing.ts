@@ -2,7 +2,7 @@ import * as Spline from "cubic-spline";
 import * as Bezier from "bezier-js";
 import { rebalanceCurve, rotateCurve } from "curve-matcher";
 import { procrustes } from "./Procrustes";
-import { type Point, type ProcrustesResult, type RobotPosition, type Command, applyTranslation, cutOffLineAtOverlap, distanceBetweenPoints } from './LineHelper';
+import { type Point, type ProcrustesResult, type RobotPosition, type Command, calculateLineError, applyTranslation, cutOffLineAtOverlap, distanceBetweenPoints } from './LineHelper';
 
 // CONSTANTS
 const maxDistance = 100;
@@ -366,9 +366,9 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     for (const command of previousCommands) {
       if (command.radius == Infinity) {
         robotPosition.y = robotPosition.y + command.distance;
-    } else {
-        robotPosition = getRobotPositionAfterArc(command, robotPosition);
-    }
+      } else {
+          robotPosition = getRobotPositionAfterArc(command, robotPosition);
+      }
     }
 
     // Guess the location of the previous line
@@ -389,8 +389,31 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     if (previousCommands.length == 0) {
         procrustesResult = procrustes(segment1, segment2);
     } else if (worldDistance > 0.05) {
-        // TODO: check if line 2 is much smaller than line 1, then use segment1 and segment2. Otherwise, use guessLine and worldPoints
-        procrustesResult = procrustes(guessLine, worldPoints, 0.5);
+        const scaleValues = [];
+        const start = 0.1;
+        const end = 1;
+        const interval = 0.01;
+        for (let value = start; value <= end; value += interval) {
+            scaleValues.push(value); // Keeps precision at 1 decimal
+        }
+        let lowestError = Infinity;
+        let bestResult = null;
+        scaleValues.forEach(scale => {
+            // Apply the Procrustes transformation
+            let result = procrustes(guessLine, worldPoints, scale);
+            // Calculate cumulative error
+            console.log(guessLine);
+            let guessLine2 = rotateCurve(guessLine.map(point => ({x: point[0], y: point[1]})), result.rotation).map((point: { x: number, y: number }) => [point.x, point.y]);
+            guessLine2 = applyTranslation(guessLine2, result.translation);    
+            guessLine2 = showLineAboveY(guessLine2, 0);
+            let cumulativeError = calculateLineError(worldPoints, guessLine2)
+            // Update if we find a lower cumulative error
+            if (cumulativeError < lowestError) {
+                lowestError = cumulativeError;
+                bestResult = result;
+            }
+        });
+        procrustesResult = bestResult;
     } else {
         // If the current frame doesn't contain that many points, just use previous guess
         procrustesResult = { translation: [0, 0], rotation: 0, distance: 0 };
