@@ -15,7 +15,8 @@ const imageDimensions = [640, 480];
 const horizontalFOV = 53.4;
 const verticalFOV = 41.41;
 const cameraHeight = 0.098;
-const tiltAngle = 41.5;
+//const tiltAngle = 41.5;
+const tiltAngle = 40;
 
 function cutOffLineOnDistance(line: Point[], maxDistance: number) {
     let filteredLine = [line[0]]; // Start with the first point
@@ -336,13 +337,17 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     let nextPoints: Point[];
     if (test) {
         nextPoints = simplifyLine(next, epsilon, 0.1);
+        nextPoints = smoothLine(nextPoints, 2);
         nextPoints = cutOffLineOnDistance(nextPoints.filter((point: Point) => point[1] < 370), maxDistance);
         nextPoints = nextPoints.map(point => pixelToGroundCoordinates(point));
+
     }
 
     let worldPoints = simplifyLine(pixels, epsilon, 0.1);
+    worldPoints = smoothLine(worldPoints, 2);
     worldPoints = cutOffLineOnDistance(worldPoints.filter((point: Point) => point[1] < 370), maxDistance);
     worldPoints = worldPoints.map(point => pixelToGroundCoordinates(point));
+
 
     if (first) {
         previousLine = prependUntilTarget(worldPoints);
@@ -355,7 +360,7 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
         try {
             if (nextPoints && nextPoints.length > 20 && worldPoints.length > 20) {
                 let res = procrustes(worldPoints, nextPoints, 0.6);
-                distanceTest = res.distance
+                distanceTest = Math.max(res.distance, 0.06);
             }
 
         } catch (e) { }
@@ -364,15 +369,16 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
 
     let robotPosition = { x: 0, y: 0, angle: 0 };
     for (const command of previousCommands) {
-      if (command.radius == Infinity) {
-        robotPosition.y = robotPosition.y + command.distance;
-      } else {
-          robotPosition = getRobotPositionAfterArc(command, robotPosition);
-      }
+        if (command.radius == Infinity) {
+            robotPosition.y = robotPosition.y + command.distance;
+        } else {
+            robotPosition = getRobotPositionAfterArc(command, robotPosition);
+        }
     }
 
     // Guess the location of the previous line
     let guessLine = rotateAndTranslateLine(previousLine, -1 * robotPosition.angle, [-1 * robotPosition.x, -1 * robotPosition.y]);
+
 
     // Cutting off segments to the overlap portion
     let segment1 = showLineAboveY(guessLine, Math.max(worldPoints[0][1], guessLine[0][1]));
@@ -387,8 +393,10 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     // Collect the error between guess and world
     let procrustesResult: ProcrustesResult;
     if (previousCommands.length == 0) {
+
         procrustesResult = procrustes(segment1, segment2);
     } else if (worldDistance > 0.05) {
+
         const scaleValues = [];
         const start = 0.1;
         const end = 1;
@@ -402,9 +410,8 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
             // Apply the Procrustes transformation
             let result = procrustes(guessLine, worldPoints, scale);
             // Calculate cumulative error
-            console.log(guessLine);
-            let guessLine2 = rotateCurve(guessLine.map(point => ({x: point[0], y: point[1]})), result.rotation).map((point: { x: number, y: number }) => [point.x, point.y]);
-            guessLine2 = applyTranslation(guessLine2, result.translation);    
+            let guessLine2 = rotateCurve(guessLine.map(point => ({ x: point[0], y: point[1] })), result.rotation).map((point: { x: number, y: number }) => [point.x, point.y]);
+            guessLine2 = applyTranslation(guessLine2, result.translation);
             guessLine2 = showLineAboveY(guessLine2, 0);
             let cumulativeError = calculateLineError(worldPoints, guessLine2)
             // Update if we find a lower cumulative error
@@ -423,6 +430,7 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     let line = rotateCurve(guessLine.map((point: Point) => ({ x: point[0], y: point[1] })), procrustesResult.rotation).map((point: { x: number, y: number }) => [point.x, point.y]);
     line = applyTranslation(line, procrustesResult.translation);
     line = showLineAboveY(line, 0);
+
 
 
     if (worldDistance > 0.05) {
@@ -453,7 +461,7 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     // Find the end point for the Bezier curve
     let distance: number;
     if (test) {
-        distance = distanceTest * 0.9;
+        distance = distanceTest * 0.8;
     } else {
         distance = previousSpeed * delay + lookahead;
     }
@@ -578,39 +586,39 @@ function solveForSide(angleA: number, angleB: number, sideB: number) {
 
 
 function calculateCurveBetweenPoints(pointA: RobotPosition, pointB: RobotPosition) {
-  const { x: x1, y: y1, angle: theta1Rad } = pointA;
-  const { x: x2, y: y2, angle: theta2Rad } = pointB;
+    const { x: x1, y: y1, angle: theta1Rad } = pointA;
+    const { x: x2, y: y2, angle: theta2Rad } = pointB;
 
-  // Midpoint and distance between points A and B
-  const midX = (x1 + x2) / 2;
-  const midY = (y1 + y2) / 2;
-  const distanceAB = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+    // Midpoint and distance between points A and B
+    const midX = (x1 + x2) / 2;
+    const midY = (y1 + y2) / 2;
+    const distanceAB = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
 
-  // Calculate the bisector angle and tangent angle for radius calculation
-  const angleBisector = Math.atan2(y2 - y1, x2 - x1) + Math.PI / 2;
-  const tanAngle = Math.tan((theta2Rad - theta1Rad) / 2);
+    // Calculate the bisector angle and tangent angle for radius calculation
+    const angleBisector = Math.atan2(y2 - y1, x2 - x1) + Math.PI / 2;
+    const tanAngle = Math.tan((theta2Rad - theta1Rad) / 2);
 
-  // If tanAngle is close to zero, it's a straight line
-  if (Math.abs(tanAngle) < 1e-6) {
-      // Return infinite radius and the straight-line distance
-      return { radius: Infinity, angle: 0, distance: distanceAB };
-  }
+    // If tanAngle is close to zero, it's a straight line
+    if (Math.abs(tanAngle) < 1e-6) {
+        // Return infinite radius and the straight-line distance
+        return { radius: Infinity, angle: 0, distance: distanceAB };
+    }
 
-  // Calculate the radius of the curve
-  const radius = distanceAB / (2 * tanAngle);
+    // Calculate the radius of the curve
+    const radius = distanceAB / (2 * tanAngle);
 
-  // Angle to travel on the circumference
-  const angleRad = 2 * Math.atan2(distanceAB, 2 * radius);
+    // Angle to travel on the circumference
+    const angleRad = 2 * Math.atan2(distanceAB, 2 * radius);
 
-  // Convert to inches assuming pixels to inches ratio (e.g., 39.37 pixels/inch)
-  const radiusInches = Math.abs(radius * 39.37);
-  let angleDegrees = angleRad * (180 / Math.PI);
-  if (angleDegrees > 180) {
-      angleDegrees = angleDegrees - 360;
-  }
+    // Convert to inches assuming pixels to inches ratio (e.g., 39.37 pixels/inch)
+    const radiusInches = Math.abs(radius * 39.37);
+    let angleDegrees = angleRad * (180 / Math.PI);
+    if (angleDegrees > 180) {
+        angleDegrees = angleDegrees - 360;
+    }
 
-  // Calculate arc length for the curved path (angle in radians * radius)
-  const arcLength = Math.abs(angleRad * radiusInches);
+    // Calculate arc length for the curved path (angle in radians * radius)
+    const arcLength = Math.abs(angleRad * radiusInches);
 
-  return { radius: radiusInches, angle: angleDegrees, distance: arcLength };
+    return { radius: radiusInches, angle: angleDegrees, distance: arcLength };
 }

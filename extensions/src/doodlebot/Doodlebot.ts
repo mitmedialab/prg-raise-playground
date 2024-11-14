@@ -646,17 +646,18 @@ export default class Doodlebot {
         const intervalId = setInterval(async () => {
             try {
                 const lineData = await detector.detectLine();
-                console.log(lineData);
-                if (first) {
-                    ({ motorCommands, bezierPoints, line } = followLine(lineData, lineData, null, delay, previousSpeed, [], false, true));
-                    first = false;
-                } else {
-                    ({ motorCommands, bezierPoints, line } = followLine(line, lineData, null, delay, previousSpeed, motorCommands, false, false));
-                }
-                for (const command of motorCommands) {
-                    const { radius, angle } = command;
-                    await this.motorCommand("arc", radius, angle);
-                }
+                console.log(this.connection.ip);
+                console.log("LINE DATA", lineData);
+                // if (first) {
+                //     ({ motorCommands, bezierPoints, line } = followLine(lineData, lineData, null, delay, previousSpeed, [], false, true));
+                //     first = false;
+                // } else {
+                //     ({ motorCommands, bezierPoints, line } = followLine(line, lineData, null, delay, previousSpeed, motorCommands, false, false));
+                // }
+                // for (const command of motorCommands) {
+                //     const { radius, angle } = command;
+                //     await this.motorCommand("arc", radius, angle);
+                // }
                 // Process the line data here
 
             } catch (error) {
