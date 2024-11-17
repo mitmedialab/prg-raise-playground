@@ -3,6 +3,10 @@ export type Point = number[];
 export type PointObject = {x: number, y: number};
 export type RobotPosition = { x: number, y: number, angle: number };
 export type ProcrustesResult = { rotation: number, translation: number[], distance: number };
+export type Arc = {
+    radius: number;
+    angle: number;
+}
 
 export function distanceBetweenPoints(p1: Point, p2: Point): number {
     return Math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2);
