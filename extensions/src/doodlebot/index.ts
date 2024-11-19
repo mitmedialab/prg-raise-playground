@@ -8,6 +8,7 @@ import { categoryByGesture, classes, emojiByGesture, gestureDetection, gestureMe
 import { line0, line1, line2, line3, line4, line5, line6, line7, line8 } from './Points';
 import { followLine } from "./LineFollowing";
 import { createLineDetector } from "./LineDetection";
+import { calculateArcTime } from "./TimeHelper";
 
 const details: ExtensionMenuDisplayDetails = {
   name: "Doodlebot",
@@ -241,80 +242,123 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     const lineData = [line0, line1, line2, line3, line4, line5, line6, line7, line8];
 
     const beforeLine = this.prependUntilTarget(lineData[0]);
+    const allCommands = [];
 
-    let { motorCommands, bezierPoints, line } = followLine(beforeLine, lineData[0], lineData[1], delay, previousSpeed, [], true, true);
+    let prevRadius: number;
+    let prevAngle: number;
+    let prevTravel: number;
+    let { motorCommands, bezierPoints, line } = followLine(beforeLine, lineData[0], lineData[1], delay, previousSpeed, [], [], [], true, true);
     console.log("here");
     for (const command of motorCommands) {
       const { radius, angle } = command;
-      // await this.motorCommand(
-      //     "steps",
-      //     { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
-      //     { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
-      // );
+      let { travelT, priorTravelSpeed, targetSpeed, acceleration, adjustedT, aT } = calculateArcTime(0, 0, radius, angle);
+      this.doodlebot.sendBLECommand("t", radius, angle);
+      //await this.doodlebot.motorCommand("arc", radius, angle);
+      prevTravel = travelT;
+      prevRadius = radius;
+      prevAngle = angle;
       console.log("command");
       console.log(command);
+      allCommands.push(command);
     }
 
-
-    ({ motorCommands, bezierPoints, line } = followLine(line, lineData[1], lineData[2], delay, previousSpeed, motorCommands, true));
+    await new Promise((resolve) => setTimeout(resolve, (prevTravel / 2) * 1000));
+    ({ motorCommands, bezierPoints, line } = followLine(line, lineData[1], lineData[2], delay, previousSpeed, motorCommands, [prevTravel / 2], [prevTravel], true));
+    //({ motorCommands, bezierPoints, line } = followLine(line, lineData[1], lineData[2], delay, previousSpeed, motorCommands, [prevTravel], [prevTravel], true));
+    //await new Promise((resolve) => setTimeout(resolve, (prevTravel + 2) * 1000));
     for (const command of motorCommands) {
       const { radius, angle } = command;
-      // await this.motorCommand(
-      //     "steps",
-      //     { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
-      //     { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
-      // );
+      let { travelT, priorTravelSpeed, targetSpeed, acceleration, adjustedT, aT } = calculateArcTime(prevRadius, prevAngle, radius, angle);
+      this.doodlebot.sendBLECommand("t", radius, angle);
+      //await this.doodlebot.motorCommand("arc", radius, angle);
+      prevTravel = travelT;
+      prevRadius = radius;
+      prevAngle = angle;
       console.log("command");
       console.log(command);
+      allCommands.push(command);
     }
 
-    ({ motorCommands, bezierPoints, line } = followLine(line, lineData[2], lineData[3], delay, previousSpeed, motorCommands, true));
+    await new Promise((resolve) => setTimeout(resolve, (prevTravel / 2) * 1000));
+    ({ motorCommands, bezierPoints, line } = followLine(line, lineData[2], lineData[3], delay, previousSpeed, motorCommands, [prevTravel / 2], [prevTravel], true));
+    //({ motorCommands, bezierPoints, line } = followLine(line, lineData[2], lineData[3], delay, previousSpeed, motorCommands, [prevTravel], [prevTravel], true));
+    //await new Promise((resolve) => setTimeout(resolve, (prevTravel + 2) * 1000));
     for (const command of motorCommands) {
       const { radius, angle } = command;
-      // await this.motorCommand(
-      //     "steps",
-      //     { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
-      //     { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
-      // );
+      let { travelT, priorTravelSpeed, targetSpeed, acceleration, adjustedT, aT } = calculateArcTime(prevRadius, prevAngle, radius, angle);
+      this.doodlebot.sendBLECommand("t", radius, angle);
+      //await this.doodlebot.motorCommand("arc", radius, angle);
+      prevTravel = travelT;
+      prevRadius = radius;
+      prevAngle = angle;
       console.log("command");
       console.log(command);
+      allCommands.push(command);
     }
 
-    ({ motorCommands, bezierPoints, line } = followLine(line, lineData[3], lineData[4], delay, previousSpeed, motorCommands, true));
+    await new Promise((resolve) => setTimeout(resolve, (prevTravel / 2) * 1000));
+    ({ motorCommands, bezierPoints, line } = followLine(line, lineData[3], lineData[4], delay, previousSpeed, motorCommands, [prevTravel / 2], [prevTravel], true));
+    //({ motorCommands, bezierPoints, line } = followLine(line, lineData[3], lineData[4], delay, previousSpeed, motorCommands, [prevTravel], [prevTravel], true));
+    //await new Promise((resolve) => setTimeout(resolve, (prevTravel + 2) * 1000));
     for (const command of motorCommands) {
       const { radius, angle } = command;
-      // await this.motorCommand(
-      //     "steps",
-      //     { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
-      //     { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
-      // );
+      let { travelT, priorTravelSpeed, targetSpeed, acceleration, adjustedT, aT } = calculateArcTime(prevRadius, prevAngle, radius, angle);
+      this.doodlebot.sendBLECommand("t", radius, angle);
+      //await this.doodlebot.motorCommand("arc", radius, angle);
+      prevTravel = travelT;
+      prevRadius = radius;
+      prevAngle = angle;
       console.log("command");
       console.log(command);
+      allCommands.push(command);
     }
 
-    ({ motorCommands, bezierPoints, line } = followLine(line, lineData[4], lineData[5], delay, previousSpeed, motorCommands, true));
+    await new Promise((resolve) => setTimeout(resolve, (prevTravel / 2) * 1000));
+    ({ motorCommands, bezierPoints, line } = followLine(line, lineData[4], lineData[5], delay, previousSpeed, motorCommands, [prevTravel / 2], [prevTravel], true));
+    //({ motorCommands, bezierPoints, line } = followLine(line, lineData[4], lineData[5], delay, previousSpeed, motorCommands, [prevTravel], [prevTravel], true));
+    //await new Promise((resolve) => setTimeout(resolve, (prevTravel + 2) * 1000));
     for (const command of motorCommands) {
       const { radius, angle } = command;
-      // await this.motorCommand(
-      //     "steps",
-      //     { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
-      //     { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
-      // );
+      let { travelT, priorTravelSpeed, targetSpeed, acceleration, adjustedT, aT } = calculateArcTime(prevRadius, prevAngle, radius, angle);
+      this.doodlebot.sendBLECommand("t", radius, angle);
+      //await this.doodlebot.motorCommand("arc", radius, angle);
+      prevTravel = travelT;
+      prevRadius = radius;
+      prevAngle = angle;
       console.log("command");
       console.log(command);
+      allCommands.push(command);
     }
 
-    ({ motorCommands, bezierPoints, line } = followLine(line, lineData[5], lineData[6], delay, previousSpeed, motorCommands, true));
+    await new Promise((resolve) => setTimeout(resolve, (prevTravel / 2) * 1000));
+    ({ motorCommands, bezierPoints, line } = followLine(line, lineData[5], lineData[6], delay, previousSpeed, motorCommands, [prevTravel / 2], [prevTravel], true));
+    //({ motorCommands, bezierPoints, line } = followLine(line, lineData[5], lineData[6], delay, previousSpeed, motorCommands, [prevTravel], [prevTravel], true));
+    //await new Promise((resolve) => setTimeout(resolve, (prevTravel + 2) * 1000));
     for (const command of motorCommands) {
       const { radius, angle } = command;
-      // await this.motorCommand(
-      //     "steps",
-      //     { steps: Math.round(leftWheelDistance), stepsPerSecond: Math.round(leftWheelSpeed) },
-      //     { steps: Math.round(rightWheelDistance), stepsPerSecond: Math.round(rightWheelSpeed) }
-      // );
+      let { travelT, priorTravelSpeed, targetSpeed, acceleration, adjustedT, aT } = calculateArcTime(prevRadius, prevAngle, radius, angle);
+      this.doodlebot.sendBLECommand("t", radius, angle);
+      //await this.doodlebot.motorCommand("arc", radius, angle);
+      prevTravel = travelT;
+      prevRadius = radius;
+      prevAngle = angle;
       console.log("command");
       console.log(command);
+      allCommands.push(command);
     }
+
+    // for (let i = 0; i < allCommands.length - 1; i++) {
+    //   let command1 = allCommands[i];
+    //   let { radius: radius1, angle: angle1 } = command1;
+
+    //   let command2 = allCommands[i + 1];
+    //   let { radius: radius2, angle: angle2 } = command2;
+
+    //   console.log(calculateArcTime(radius1, angle1, radius2, angle2));
+    //   let { travelT, priorTravelSpeed, targetSpeed, acceleration, adjustedT, aT } = calculateArcTime(radius1, angle1, radius2, angle2);
+    //   console.log("Travel time is less than 0.01 seconds. Waiting...");
+    //   await new Promise((resolve) => setTimeout(resolve, (travelT/2) * 1000));
+    // }
 
   }
 

@@ -2,7 +2,7 @@ import * as Spline from "cubic-spline";
 import * as Bezier from "bezier-js";
 import { rebalanceCurve, rotateCurve } from "curve-matcher";
 import { procrustes } from "./Procrustes";
-import { type Point, type PointObject, type Arc, type ProcrustesResult, type RobotPosition, type Command, calculateLineError, applyTranslation, cutOffLineAtOverlap, distanceBetweenPoints, approximateBezierWithArc } from './LineHelper';
+import { type Point, type PointObject, type ProcrustesResult, type RobotPosition, type Command, calculateLineError, applyTranslation, cutOffLineAtOverlap, distanceBetweenPoints, approximateBezierWithArc } from './LineHelper';
 
 // CONSTANTS
 const maxDistance = 100;
@@ -186,10 +186,17 @@ function rotateAndTranslateLine(line: Point[], angle: number, translation: numbe
     });
 }
 
-function getRobotPositionAfterArc(command: Command, initialPosition: RobotPosition) {
+function getRobotPositionAfterArc(
+    command: Command,
+    initialPosition: RobotPosition,
+    percent: number
+) {
     // Extract radius and angle from command
     let { radius, angle: angleDegrees } = command;
     const { x: initialX, y: initialY, angle: initialAngle } = initialPosition;
+
+    // Clamp percent between 0 and 1 to avoid invalid inputs
+    percent = Math.max(0, Math.min(1, percent));
 
     // Determine the direction
     const direction = angleDegrees < 0 ? "left" : "right";
@@ -206,8 +213,9 @@ function getRobotPositionAfterArc(command: Command, initialPosition: RobotPositi
         ? initialY + radius * Math.sin(initialAngle)
         : initialY - radius * Math.sin(initialAngle);
 
-    // Calculate the new angle traveled
-    const finalAngleTraveled = initialAngle + angleRadians * (direction === "left" ? -1 : 1);
+    // Calculate the angle traveled based on the percentage of the arc
+    const angleTraveled = angleRadians * percent;
+    const finalAngleTraveled = initialAngle + angleTraveled * (direction === "left" ? -1 : 1);
 
     // Calculate the new position along the arc
     const newX = direction === "left"
@@ -332,7 +340,7 @@ function prependUntilTarget(line) {
 }
 
 
-export function followLine(previousLine: Point[], pixels: Point[], next: Point[], delay: number, previousSpeed: number, previousCommands: Command[], test: Boolean, first = false) {
+export function followLine(previousLine: Point[], pixels: Point[], next: Point[], delay: number, previousSpeed: number, previousCommands: Command[], previousTime: number[], totalTime: number[], test: Boolean, first = false) {
 
     let nextPoints: Point[];
     if (test) {
@@ -368,11 +376,12 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     /* TESTING */
 
     let robotPosition = { x: 0, y: 0, angle: 0 };
-    for (const command of previousCommands) {
+    for (let i = 0; i < previousCommands.length; i++) {
+        const command = previousCommands[i];
         if (command.radius == Infinity) {
-            robotPosition.y = robotPosition.y + command.distance;
+            robotPosition.y = robotPosition.y + command.distance * (previousTime[i] / totalTime[i]);
         } else {
-            robotPosition = getRobotPositionAfterArc(command, robotPosition);
+            robotPosition = getRobotPositionAfterArc({ angle: command.angle * -1, radius: command.radius, distance: 0 }, robotPosition, (previousTime[i] / totalTime[i]));
         }
     }
 
@@ -584,61 +593,62 @@ function solveForSide(angleA: number, angleB: number, sideB: number) {
     return sideA;
 }
 
-function createArcFromPoints(P1: PointObject, P2: PointObject, P3: PointObject): Arc | null {
-  // Midpoints of the segments
-  const mid1 = { x: (P1.x + P2.x) / 2, y: (P1.y + P2.y) / 2 };
-  const mid2 = { x: (P2.x + P3.x) / 2, y: (P2.y + P3.y) / 2 };
+function createArcFromPoints(P1: PointObject, P2: PointObject, P3: PointObject): Command {
+    // Midpoints of the segments
+    const mid1 = { x: (P1.x + P2.x) / 2, y: (P1.y + P2.y) / 2 };
+    const mid2 = { x: (P2.x + P3.x) / 2, y: (P2.y + P3.y) / 2 };
 
-  // Perpendicular directions
-  const dir1 = { x: P2.y - P1.y, y: P1.x - P2.x }; // Perpendicular to P1 -> P2
-  const dir2 = { x: P3.y - P2.y, y: P2.x - P3.x }; // Perpendicular to P2 -> P3
+    // Perpendicular directions
+    const dir1 = { x: P2.y - P1.y, y: P1.x - P2.x }; // Perpendicular to P1 -> P2
+    const dir2 = { x: P3.y - P2.y, y: P2.x - P3.x }; // Perpendicular to P2 -> P3
 
-  // Solve for intersection (center of the circle)
-  const det = dir1.x * dir2.y - dir1.y * dir2.x;
-  if (Math.abs(det) < 1e-9) {
-      // The points are collinear, no valid arc
-      return null;
-  }
+    // Solve for intersection (center of the circle)
+    const det = dir1.x * dir2.y - dir1.y * dir2.x;
+    if (Math.abs(det) < 1e-9) {
+        // The points are collinear, no valid arc
+        return { radius: 0, angle: 0, distance: distanceBetweenPoints([P1.x, P1.y], [P3.x, P3.y]) };
+    }
 
-  const dx = mid2.x - mid1.x;
-  const dy = mid2.y - mid1.y;
-  const t = (dy * dir2.x - dx * dir2.y) / det;
+    const dx = mid2.x - mid1.x;
+    const dy = mid2.y - mid1.y;
+    const t = (dy * dir2.x - dx * dir2.y) / det;
 
-  const center = {
-      x: mid1.x + t * dir1.x,
-      y: mid1.y + t * dir1.y
-  };
+    const center = {
+        x: mid1.x + t * dir1.x,
+        y: mid1.y + t * dir1.y
+    };
 
-  // Radius of the circle
-  const radius = Math.sqrt((P1.x - center.x) ** 2 + (P1.y - center.y) ** 2) * 39.37;
+    // Radius of the circle
+    const radius = Math.sqrt((P1.x - center.x) ** 2 + (P1.y - center.y) ** 2) * 39.37;
 
-  // Angles of the points
-  const startAngle = Math.atan2(P1.y - center.y, P1.x - center.x) * (180 / Math.PI);
-  const middleAngle = Math.atan2(P2.y - center.y, P2.x - center.x) * (180 / Math.PI);
-  const endAngle = Math.atan2(P3.y - center.y, P3.x - center.x) * (180 / Math.PI);
+    // Angles of the points
+    const startAngle = Math.atan2(P1.y - center.y, P1.x - center.x) * (180 / Math.PI);
+    const middleAngle = Math.atan2(P2.y - center.y, P2.x - center.x) * (180 / Math.PI);
+    const endAngle = Math.atan2(P3.y - center.y, P3.x - center.x) * (180 / Math.PI);
 
-  // Determine sweep direction (left or right)
-  const crossProduct = (P2.x - P1.x) * (P3.y - P2.y) - (P2.y - P1.y) * (P3.x - P2.x);
-  let sweepAngle = endAngle - startAngle;
+    // Determine sweep direction (left or right)
+    const crossProduct = (P2.x - P1.x) * (P3.y - P2.y) - (P2.y - P1.y) * (P3.x - P2.x);
+    let sweepAngle = endAngle - startAngle;
 
-  if (sweepAngle > 180) {
-      sweepAngle -= 360;
-  } else if (sweepAngle < -180) {
-      sweepAngle += 360;
-  }
+    if (sweepAngle > 180) {
+        sweepAngle -= 360;
+    } else if (sweepAngle < -180) {
+        sweepAngle += 360;
+    }
 
-  if (crossProduct < 0) {
-      // Left turn: negative angle
-      if (sweepAngle > 0) sweepAngle = sweepAngle*-1;
-  } else {
-      // Right turn: positive angle
-      if (sweepAngle < 0) sweepAngle = sweepAngle*-1;
-  }
+    if (crossProduct < 0) {
+        // Left turn: negative angle
+        if (sweepAngle > 0) sweepAngle = sweepAngle * -1;
+    } else {
+        // Right turn: positive angle
+        if (sweepAngle < 0) sweepAngle = sweepAngle * -1;
+    }
 
-  return {
-      radius,
-      angle: sweepAngle
-  };
+    return {
+        radius,
+        angle: sweepAngle * -1 * 2,
+        distance: 0
+    };
 }
 
 

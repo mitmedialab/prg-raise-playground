@@ -1,12 +1,8 @@
 export type Command = { radius: number, angle: number, distance: number };
 export type Point = number[];
-export type PointObject = {x: number, y: number};
+export type PointObject = { x: number, y: number };
 export type RobotPosition = { x: number, y: number, angle: number };
 export type ProcrustesResult = { rotation: number, translation: number[], distance: number };
-export type Arc = {
-    radius: number;
-    angle: number;
-}
 
 export function distanceBetweenPoints(p1: Point, p2: Point): number {
     return Math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2);
@@ -36,7 +32,7 @@ export function cutOffLineAtOverlap(line1: Point[], line2: Point[]): { line: Poi
     let closestPointIndex: number;
     const line1End = line1[line1.length - 1];
     const line2End = line2[line2.length - 1];
-    
+
     let line: Point[];
     let overlap = false;
 
@@ -55,14 +51,14 @@ export function cutOffLineAtOverlap(line1: Point[], line2: Point[]): { line: Poi
     for (let i = 0; i < trimmedLine.length - 1; i++) {
         const point1 = trimmedLine[i];
         const point2 = trimmedLine[i + 1];
-        
+
         const distance = Math.sqrt(
             Math.pow(point2[0] - point1[0], 2) + Math.pow(point2[1] - point1[1], 2)
         );
         totalDistance += distance;
     }
 
-    return {line, distance: totalDistance, overlap};
+    return { line, distance: totalDistance, overlap };
 }
 
 export function applyTranslation(line: Point[], translationVector: number[]) {
@@ -129,9 +125,9 @@ function bezierMidpoint(P1: PointObject, C1: PointObject, C2: PointObject, P2: P
 }
 
 function findSingleCircle(
-P1: PointObject,
-P2: PointObject,
-midpoint: PointObject
+    P1: PointObject,
+    P2: PointObject,
+    midpoint: PointObject
 ): { center: PointObject; radius: number; angle: number } | null {
     const mid1 = { x: (P1.x + midpoint.x) / 2, y: (P1.y + midpoint.y) / 2 };
     const mid2 = { x: (P2.x + midpoint.x) / 2, y: (P2.y + midpoint.y) / 2 };
@@ -168,7 +164,7 @@ midpoint: PointObject
         angleInDegrees += 360;
     }
 
-    return { center, radius: radiusInInches, angle: -1*angleInDegrees };
+    return { center, radius: radiusInInches, angle: -1 * angleInDegrees };
 }
 
 
