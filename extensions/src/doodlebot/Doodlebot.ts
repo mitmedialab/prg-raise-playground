@@ -655,7 +655,7 @@ export default class Doodlebot {
         //     try {
         //         await sleep(1000);
         console.log("before 1");
-        let lineData = await this.detector.detectLine();
+        let lineData = await this.detector.detectLine(this);
         console.log("after 1");
         //lineData = lineData.map(pixel => [640 - pixel[0], 480 - pixel[1]])
         lineData = lineData.sort((a, b) => a[1] - b[1]);
