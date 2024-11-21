@@ -644,52 +644,75 @@ export default class Doodlebot {
     lineCounter = 0;
     detector;
     async followLine() {
-
         let first = true;
         const delay = 0.5;
         const previousSpeed = 0.1;
+        const interval = 1000 / 2; // 1/15th of a second
 
-        let lineString = "";
-        const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-        // for (let j = 0; j < 20; j++) {
-        //     try {
-        //         await sleep(1000);
-        console.log("before 1");
-        let lineData = await this.detector.detectLine();
-        console.log("after 1");
-        //lineData = lineData.map(pixel => [640 - pixel[0], 480 - pixel[1]])
-        lineData = lineData.sort((a, b) => a[1] - b[1]);
-        //const lineDataString = `export const line${lineCounter} = ${JSON.stringify(lineData)};\n`;
-        //lineString += lineDataString;
-        //console.log(lineString);
-        //lineCounter += 1;
-        console.log(this.connection.ip);
-        console.log("LINE DATA", lineData);
-        console.log("before");
-        if (first) {
-            ({ motorCommands: this.motorCommands, bezierPoints: this.bezierPoints, line: this.line } = followLine(lineData, lineData, null, delay, previousSpeed, [], [], [], false, true));
-            first = false;
-        } else {
-            ({ motorCommands: this.motorCommands, bezierPoints: this.bezierPoints, line: this.line } = followLine(this.line, lineData, null, delay, previousSpeed, this.motorCommands, [1], [1], false, false));
+        while (true) {
+            try {
+                console.log("before 1");
+                let lineData = await this.detector.detectLine(); // Await works here
+                console.log("after 1");
+
+                // Process line data
+                lineData = lineData.sort((a, b) => a[1] - b[1]);
+                console.log("LINE DATA", lineData);
+
+                if (first) {
+                    ({ motorCommands: this.motorCommands, bezierPoints: this.bezierPoints, line: this.line } = followLine(
+                        lineData,
+                        lineData,
+                        null,
+                        delay,
+                        previousSpeed,
+                        [],
+                        [],
+                        [],
+                        false,
+                        true
+                    ));
+                    first = false;
+                } else {
+                    ({ motorCommands: this.motorCommands, bezierPoints: this.bezierPoints, line: this.line } = followLine(
+                        this.line,
+                        lineData,
+                        null,
+                        delay,
+                        previousSpeed,
+                        this.motorCommands,
+                        [1.1 / 2],
+                        [1],
+                        false,
+                        false
+                    ));
+                }
+
+                console.log("after");
+                for (const command of this.motorCommands) {
+                    const { radius, angle } = command;
+                    console.log(command);
+                    this.sendBLECommand("t", radius, angle);
+                }
+                console.log("after 2");
+
+                // Wait for the interval duration before the next iteration
+                await new Promise((resolve) => setTimeout(resolve, interval));
+            } catch (error) {
+                console.error("Error in followLine loop:", error);
+                break; // Optionally, break the loop on error
+            }
         }
-        console.log("after");
-        for (const command of this.motorCommands) {
-            const { radius, angle } = command;
-            console.log(command);
-
-            this.motorCommand("arc", radius, angle);
-        }
-        console.log("after 2");
-        //console.log(j);
-        // Process the line data here
-
-        //     } catch (error) {
-        //         console.error("Error detecting line:", error);
-        //         // Optionally stop polling if there's a consistent error
-        //     }
-        // }
-
     }
+    //console.log(j);
+    // Process the line data here
+
+    //     } catch (error) {
+    //         console.error("Error detecting line:", error);
+    //         // Optionally stop polling if there's a consistent error
+    //     }
+    // }
+
 
 
     private setupAudioStream() {
