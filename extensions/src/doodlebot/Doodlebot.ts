@@ -6,6 +6,7 @@ import { Command, DisplayKey, NetworkStatus, ReceivedCommand, SensorKey, command
 import { base64ToInt32Array, makeWebsocket, Max32Int, testWebSocket } from "./utils";
 import { line0, line1, line2, line3, line4, line5, line6, line7, line8 } from './Points';
 import { LineDetector } from "./LineDetection";
+import { calculateArcTime } from "./TimeHelper";
 
 export type Services = Awaited<ReturnType<typeof Doodlebot.getServices>>;
 export type MotorStepRequest = {
@@ -647,7 +648,9 @@ export default class Doodlebot {
         let first = true;
         const delay = 0.5;
         const previousSpeed = 0.1;
-        const interval = 1000 / 2; // 1/15th of a second
+        const interval = 1000; // 1/15th of a second
+        let prevRadius;
+        let prevAngle;
 
         while (true) {
             try {
@@ -674,6 +677,8 @@ export default class Doodlebot {
                     ));
                     first = false;
                 } else {
+                    prevRadius = this.motorCommands[0].radius;
+                    prevAngle = this.motorCommands[0].angle;
                     ({ motorCommands: this.motorCommands, bezierPoints: this.bezierPoints, line: this.line } = followLine(
                         this.line,
                         lineData,
@@ -681,11 +686,13 @@ export default class Doodlebot {
                         delay,
                         previousSpeed,
                         this.motorCommands,
-                        [1.1 / 2],
+                        [1],
                         [1],
                         false,
                         false
                     ));
+                    prevRadius = this.motorCommands[0].radius;
+                    prevAngle = this.motorCommands[0].angle;
                 }
 
                 console.log("after");

@@ -9,7 +9,8 @@ const maxDistance = 100;
 const epsilon = 0.3;
 const bezierSamples = 2;
 const controlLength = .01;
-const lookahead = 0.06;
+const lookahead = .07;
+const start = 0.04;
 
 const imageDimensions = [640, 480];
 const horizontalFOV = 53.4;
@@ -355,7 +356,8 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     let worldPoints = simplifyLine(pixels, epsilon, 0.1);
     worldPoints = smoothLine(worldPoints, 2);
     worldPoints = cutOffLineOnDistance(worldPoints.filter((point: Point) => point[1] < 370), maxDistance);
-    //console.log(worldPoints);
+    console.log("world", worldPoints);
+    console.log("command", previousCommands)
     if (worldPoints[0] == undefined) {
         worldPoints = [];
     }
@@ -391,8 +393,10 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
 
     console.log("here 4");
     // Guess the location of the previous line
+    console.log("position", robotPosition);
     let guessLine = rotateAndTranslateLine(previousLine, -1 * robotPosition.angle, [-1 * robotPosition.x, -1 * robotPosition.y]);
 
+    console.log("guess", guessLine);
 
     // Cutting off segments to the overlap portion
     let segment1 = showLineAboveY(guessLine, Math.max(worldPoints.length > 0 ? worldPoints[0][1] : 0, guessLine[0][1]));
@@ -414,7 +418,7 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     if (previousCommands.length == 0) {
 
         procrustesResult = procrustes(segment1, segment2);
-    } else if (worldDistance > 0.05) {
+    } else if (worldDistance > 0.02) {
 
         const scaleValues = [];
         const start = 0.1;
@@ -427,17 +431,26 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
         let bestResult = null;
         scaleValues.forEach(scale => {
             // Apply the Procrustes transformation
-            let result = procrustes(guessLine, worldPoints, scale);
+
             // Calculate cumulative error
             //TODO
-            let guessLine2 = rotateCurve(guessLine.map(point => ({ x: point[0], y: point[1] })), result.rotation)?.map((point: { x: number, y: number }) => [point.x, point.y]);
-            guessLine2 = applyTranslation(guessLine2, result.translation);
-            guessLine2 = showLineAboveY(guessLine2, 0);
-            let cumulativeError = calculateLineError(worldPoints, guessLine2)
-            // Update if we find a lower cumulative error
-            if (cumulativeError < lowestError) {
-                lowestError = cumulativeError;
-                bestResult = result;
+            try {
+                let result = procrustes(guessLine, worldPoints, scale);
+                let guessLine2 = rotateCurve(guessLine.map(point => ({ x: point[0], y: point[1] })), result.rotation);
+                //console.log(guessLine2);
+                if (guessLine2) {
+                    guessLine2 = guessLine2.map((point: { x: number, y: number }) => [point.x, point.y]);
+                    guessLine2 = applyTranslation(guessLine2, result.translation);
+                    guessLine2 = showLineAboveY(guessLine2, 0);
+                    let cumulativeError = calculateLineError(worldPoints, guessLine2)
+                    // Update if we find a lower cumulative error
+                    if (cumulativeError < lowestError) {
+                        lowestError = cumulativeError;
+                        bestResult = result;
+                    }
+                }
+            } catch (e) {
+
             }
         });
         procrustesResult = bestResult;
@@ -447,6 +460,8 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     }
 
     // Correct the guess of the previous line
+    console.log("guess line", guessLine);
+    console.log("result", procrustesResult);
     let line = rotateCurve(guessLine.map((point: Point) => ({ x: point[0], y: point[1] })), procrustesResult.rotation).map((point: { x: number, y: number }) => [point.x, point.y]);
     line = applyTranslation(line, procrustesResult.translation);
     line = showLineAboveY(line, 0);
@@ -476,6 +491,7 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     // Create the spline 
     const xs = line.map((point: Point) => point[0]);
     const ys = line.map((point: Point) => point[1]);
+    console.log(ys, xs);
     const spline = new Spline.default(ys, xs); // Switch x and y so we no overlapping 'x' values
 
     // Find the end point for the Bezier curve
@@ -508,7 +524,7 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     if (test) {
         x3 = spline.xs[0];
     } else {
-        x3 = spline.xs[0];
+        x3 = start;
     }
     const point3 = { x: spline.at(x3), y: x3 }
 
@@ -531,7 +547,7 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     const bezier = new Bezier.Bezier(
         { x: point3.x + xOffset, y: point3.y },
         { x: point3.x + xOffset, y: point3.y + controlLength },
-        extendedPoint1,
+        isNaN(extendedPoint1.x) ? point2 : extendedPoint1,
         point2
     );
 
