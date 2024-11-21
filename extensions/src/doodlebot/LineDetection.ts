@@ -22,6 +22,8 @@ export class LineDetector {
   private isProcessing: boolean = false;
   private lastProcessTime: number = 0;
   private readonly MIN_PROCESS_INTERVAL = 100;
+  private imageElement: HTMLImageElement | null = null;
+  private imageUrl: string | null = null;
 
   constructor(raspberryPiIp: string, width = 640, height = 480) {
     debug.info('Initializing LineDetector', { raspberryPiIp, width, height });
@@ -76,39 +78,51 @@ export class LineDetector {
   }
 
   private loadImage(url: string, timeoutMs: number = 5000): Promise<HTMLImageElement> {
+    if (this.imageElement && this.imageUrl === url) {
+        debug.info('Reusing existing image');
+        return Promise.resolve(this.imageElement);
+    }
+
     debug.time('loadImage');
     debug.info('Loading image from URL:', url);
     
     return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      
-      const timeoutId = setTimeout(() => {
-        debug.error('Image load timeout after', timeoutMs, 'ms');
-        cleanup();
-        reject(new Error('Image load timeout'));
-      }, timeoutMs);
+        if (!this.imageElement) {
+            this.imageElement = new Image();
+            this.imageElement.crossOrigin = 'anonymous';
+        }
+        
+        const timeoutId = setTimeout(() => {
+            debug.error('Image load timeout after', timeoutMs, 'ms');
+            cleanup();
+            reject(new Error('Image load timeout'));
+        }, timeoutMs);
 
-      const cleanup = () => {
-        img.onload = null;
-        img.onerror = null;
-        clearTimeout(timeoutId);
-      };
+        const cleanup = () => {
+            this.imageElement!.onload = null;
+            this.imageElement!.onerror = null;
+            clearTimeout(timeoutId);
+        };
 
-      img.onload = () => {
-        debug.info('Image loaded successfully');
-        debug.timeEnd('loadImage');
-        cleanup();
-        resolve(img);
-      };
+        this.imageElement.onload = () => {
+            debug.info('Image loaded successfully');
+            debug.timeEnd('loadImage');
+            cleanup();
+            this.imageUrl = url;
+            resolve(this.imageElement!);
+        };
 
-      img.onerror = (error) => {
-        debug.error('Failed to load image:', error);
-        cleanup();
-        reject(new Error('Failed to load image'));
-      };
+        this.imageElement.onerror = (error) => {
+            debug.error('Failed to load image:', error);
+            cleanup();
+            this.imageUrl = null;
+            reject(new Error('Failed to load image'));
+        };
 
-      img.src = url;
+        if (this.imageUrl !== url) {
+            this.imageUrl = url;
+            this.imageElement.src = url;
+        }
     });
   }
 
