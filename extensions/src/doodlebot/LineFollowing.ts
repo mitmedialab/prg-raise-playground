@@ -11,6 +11,7 @@ const bezierSamples = 2;
 const controlLength = .01;
 const lookahead = .07;
 const start = 0.04;
+const spin = 10;
 
 const imageDimensions = [640, 480];
 const horizontalFOV = 53.4;
@@ -487,6 +488,26 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
         seenY.add(y);
         return true;
     });
+
+    if (line.length == 0) {
+        let angle: number;
+        if (previousCommands[0].radius == 2) {
+            if (previousCommands[0].angle > 0) {
+                angle = previousCommands[0].angle + spin;
+            } else {
+                angle = previousCommands[0].angle - spin;
+            }
+        } else {
+            if (previousCommands[0].angle < 0) {
+                angle = spin;
+            } else {
+                angle = -1 * spin;
+            }
+        }
+        const motorCommands = { radius: 2, angle: angle, distance: 0 }
+        const bezierPoints = [];
+        return { motorCommands, bezierPoints, line };
+    }
 
     // Create the spline 
     const xs = line.map((point: Point) => point[0]);
