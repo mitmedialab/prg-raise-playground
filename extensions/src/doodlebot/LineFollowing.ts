@@ -9,8 +9,8 @@ const maxDistance = 100;
 const epsilon = 0.3;
 const bezierSamples = 2;
 const controlLength = .01;
-const lookahead = .07;
-const start = 0.04;
+const lookahead = .03;
+const start = 0.01;
 
 const imageDimensions = [640, 480];
 const horizontalFOV = 53.4;
@@ -524,9 +524,18 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     if (test) {
         x3 = spline.xs[0];
     } else {
-        x3 = start;
+        x3 = spline.xs[0];
     }
-    const point3 = { x: spline.at(x3), y: x3 }
+    const splineValue = spline.at(x3);
+    if (typeof splineValue === 'undefined') {
+        // Handle the error case - either return early or use a default value
+        return {
+            motorCommands: [],
+            bezierPoints: [],
+            line: []
+        };
+    }
+    const point3 = { x: splineValue, y: x3 };
 
     // Find the x offset to correct
     const reference1 = [spline.at(spline.xs[0]), 0] // First point should be very close to 0
