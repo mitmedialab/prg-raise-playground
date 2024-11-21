@@ -8,15 +8,15 @@ import { type Point, type PointObject, type ProcrustesResult, type RobotPosition
 const maxDistance = 100;
 const epsilon = 0.3;
 const bezierSamples = 2;
-const controlLength = .02;
+const controlLength = .01;
 const lookahead = 0.06;
 
 const imageDimensions = [640, 480];
 const horizontalFOV = 53.4;
 const verticalFOV = 41.41;
 const cameraHeight = 0.098;
-//const tiltAngle = 41.5;
-const tiltAngle = 40;
+const tiltAngle = 25;
+//const tiltAngle = 38;
 
 function cutOffLineOnDistance(line: Point[], maxDistance: number) {
     let filteredLine = [line[0]]; // Start with the first point
@@ -351,11 +351,15 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
 
     }
 
+
     let worldPoints = simplifyLine(pixels, epsilon, 0.1);
     worldPoints = smoothLine(worldPoints, 2);
     worldPoints = cutOffLineOnDistance(worldPoints.filter((point: Point) => point[1] < 370), maxDistance);
-    worldPoints = worldPoints.map(point => pixelToGroundCoordinates(point));
-
+    //console.log(worldPoints);
+    if (worldPoints[0] == undefined) {
+        worldPoints = [];
+    }
+    worldPoints = worldPoints.length > 0 ? worldPoints.map(point => pixelToGroundCoordinates(point)) : [];
 
     if (first) {
         previousLine = prependUntilTarget(worldPoints);
@@ -385,13 +389,19 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
         }
     }
 
+    console.log("here 4");
     // Guess the location of the previous line
     let guessLine = rotateAndTranslateLine(previousLine, -1 * robotPosition.angle, [-1 * robotPosition.x, -1 * robotPosition.y]);
 
 
     // Cutting off segments to the overlap portion
-    let segment1 = showLineAboveY(guessLine, Math.max(worldPoints[0][1], guessLine[0][1]));
-    let segment2 = showLineBelowY(worldPoints, Math.min(guessLine[guessLine.length - 1][1], worldPoints[worldPoints.length - 1][1]))
+    let segment1 = showLineAboveY(guessLine, Math.max(worldPoints.length > 0 ? worldPoints[0][1] : 0, guessLine[0][1]));
+    let segment2;
+    if (worldPoints.length > 0) {
+        segment2 = showLineBelowY(worldPoints, Math.min(guessLine[guessLine.length - 1][1], worldPoints[worldPoints.length - 1][1]))
+    } else {
+        segment2 = [];
+    }
 
     // Distance of the world line
     let worldDistance = 0;
@@ -419,7 +429,8 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
             // Apply the Procrustes transformation
             let result = procrustes(guessLine, worldPoints, scale);
             // Calculate cumulative error
-            let guessLine2 = rotateCurve(guessLine.map(point => ({ x: point[0], y: point[1] })), result.rotation).map((point: { x: number, y: number }) => [point.x, point.y]);
+            //TODO
+            let guessLine2 = rotateCurve(guessLine.map(point => ({ x: point[0], y: point[1] })), result.rotation)?.map((point: { x: number, y: number }) => [point.x, point.y]);
             guessLine2 = applyTranslation(guessLine2, result.translation);
             guessLine2 = showLineAboveY(guessLine2, 0);
             let cumulativeError = calculateLineError(worldPoints, guessLine2)
@@ -449,7 +460,7 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     }
 
     line = smoothLine(line);
-    line = rebalanceCurve(line.map((point: Point) => ({ x: point[0], y: point[1] })), {}).map((point: { x: number, y: number }) => [point.x, point.y]);
+    //line = rebalanceCurve(line.map((point: Point) => ({ x: point[0], y: point[1] })), {}).map((point: { x: number, y: number }) => [point.x, point.y]);
 
     // Remove duplicate y values
     const seenY = new Set();
@@ -472,7 +483,7 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     if (test) {
         distance = distanceTest * 0.8;
     } else {
-        distance = previousSpeed * delay + lookahead;
+        distance = lookahead;
     }
 
     const x1 = findPointAtDistanceWithIncrements(spline, 0.001, distance - .01);
@@ -497,29 +508,34 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     if (test) {
         x3 = spline.xs[0];
     } else {
-        x3 = previousSpeed * delay;
+        x3 = spline.xs[0];
     }
     const point3 = { x: spline.at(x3), y: x3 }
 
     // Find the x offset to correct
     const reference1 = [spline.at(spline.xs[0]), 0] // First point should be very close to 0
     const reference2 = [0, 0]
+    console.log("TRANSLATION", procrustesResult);
 
     let xOffset: number;
     if (test) {
         xOffset = 0;
     } else {
-        xOffset = reference1[0] - reference2[0];
+        xOffset = (reference1[0] - reference2[0]);
+        //xOffset = 0;
     }
+    console.log("X OFFSET", xOffset);
 
     // We want to correct the offset and direct the robot to a future point on the curve
     // TODO: Add angle correction to the control points
     const bezier = new Bezier.Bezier(
-        { x: point3.x - xOffset, y: point3.y },
-        { x: point3.x - xOffset, y: point3.y + controlLength },
+        { x: point3.x + xOffset, y: point3.y },
+        { x: point3.x + xOffset, y: point3.y + controlLength },
         extendedPoint1,
         point2
     );
+
+    console.log("BEZIER", bezier);
 
     const motorCommands: Command[] = [];
 
@@ -532,7 +548,9 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     // }
 
     const command = createArcFromPoints(bezier.points[0], bezier.get(0.5), bezier.points[3]);
+    //command.angle = command.angle * -1;
     motorCommands.push(command);
+
 
     return { motorCommands, bezierPoints, line };
 
@@ -646,7 +664,7 @@ function createArcFromPoints(P1: PointObject, P2: PointObject, P3: PointObject):
 
     return {
         radius,
-        angle: sweepAngle * -1 * 2,
+        angle: sweepAngle * -1,
         distance: 0
     };
 }

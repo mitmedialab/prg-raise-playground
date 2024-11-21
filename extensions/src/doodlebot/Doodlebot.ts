@@ -550,6 +550,7 @@ export default class Doodlebot {
     async connectionWorkflow(credentials: NetworkCredentials) {
         await this.connectToWifi(credentials);
         await this.connectToWebsocket(this.connection.ip);
+        this.detector = new LineDetector(this.connection.ip);
         //await this.connectToImageWebSocket(this.connection.ip);
     }
 
@@ -636,36 +637,57 @@ export default class Doodlebot {
 
 
 
+    i = 0;
+    motorCommands;
+    bezierPoints;
+    line;
+    lineCounter = 0;
+    detector;
     async followLine() {
 
         let first = true;
         const delay = 0.5;
         const previousSpeed = 0.1;
-        const detector = new LineDetector(this.connection.ip);
-        let motorCommands, bezierPoints, line;
-        const intervalId = setInterval(async () => {
-            try {
-                const lineData = await detector.detectLine();
-                console.log(this.connection.ip);
-                console.log("LINE DATA", lineData);
-                // if (first) {
-                //     ({ motorCommands, bezierPoints, line } = followLine(lineData, lineData, null, delay, previousSpeed, [], false, true));
-                //     first = false;
-                // } else {
-                //     ({ motorCommands, bezierPoints, line } = followLine(line, lineData, null, delay, previousSpeed, motorCommands, false, false));
-                // }
-                // for (const command of motorCommands) {
-                //     const { radius, angle } = command;
-                //     await this.motorCommand("arc", radius, angle);
-                // }
-                // Process the line data here
 
-            } catch (error) {
-                console.error("Error detecting line:", error);
-                // Optionally stop polling if there's a consistent error
-                clearInterval(intervalId);
-            }
-        }, 1000 / 15); // 66.67 ms interval
+        let lineString = "";
+        const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+        // for (let j = 0; j < 20; j++) {
+        //     try {
+        //         await sleep(1000);
+        console.log("before 1");
+        let lineData = await this.detector.detectLine();
+        console.log("after 1");
+        //lineData = lineData.map(pixel => [640 - pixel[0], 480 - pixel[1]])
+        lineData = lineData.sort((a, b) => a[1] - b[1]);
+        //const lineDataString = `export const line${lineCounter} = ${JSON.stringify(lineData)};\n`;
+        //lineString += lineDataString;
+        //console.log(lineString);
+        //lineCounter += 1;
+        console.log(this.connection.ip);
+        console.log("LINE DATA", lineData);
+        console.log("before");
+        if (first) {
+            ({ motorCommands: this.motorCommands, bezierPoints: this.bezierPoints, line: this.line } = followLine(lineData, lineData, null, delay, previousSpeed, [], [], [], false, true));
+            first = false;
+        } else {
+            ({ motorCommands: this.motorCommands, bezierPoints: this.bezierPoints, line: this.line } = followLine(this.line, lineData, null, delay, previousSpeed, this.motorCommands, [1], [1], false, false));
+        }
+        console.log("after");
+        for (const command of this.motorCommands) {
+            const { radius, angle } = command;
+            console.log(command);
+
+            this.motorCommand("arc", radius, angle);
+        }
+        console.log("after 2");
+        //console.log(j);
+        // Process the line data here
+
+        //     } catch (error) {
+        //         console.error("Error detecting line:", error);
+        //         // Optionally stop polling if there's a consistent error
+        //     }
+        // }
 
     }
 
