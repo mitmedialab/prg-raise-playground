@@ -22,6 +22,7 @@ export class LineDetector {
   private isProcessing: boolean = false;
   private lastProcessTime: number = 0;
   private readonly MIN_PROCESS_INTERVAL = 100;
+  private imageStream: HTMLImageElement | null = null;
 
   constructor(private raspberryPiIp: string, width = 640, height = 480) {
     debug.info('Initializing LineDetector', { raspberryPiIp, width, height });
@@ -44,6 +45,20 @@ export class LineDetector {
     this.allCoordinates = [];
     
     debug.info('LineDetector initialized successfully');
+  }
+
+  async initialize(doodlebot: Doodlebot): Promise<void> {
+    debug.info('Initializing image stream');
+    try {
+      this.imageStream = await doodlebot.getImageStream();
+      if (!this.imageStream) {
+        throw new Error('Failed to get image stream from Doodlebot');
+      }
+      debug.info('Successfully initialized image stream');
+    } catch (error) {
+      debug.error('Error initializing image stream:', error);
+      throw error;
+    }
   }
 
   private processImageData(imageData: ImageData): number[][] {
@@ -74,24 +89,6 @@ export class LineDetector {
       : [];
   }
 
-  private async getImage(doodlebot: Doodlebot): Promise<HTMLImageElement> {
-    debug.time('getImage');
-    debug.info('Getting image stream from Doodlebot');
-
-    try {
-      const image = await doodlebot.getImageStream();
-      if (!image) {
-        throw new Error('Failed to get image stream from Doodlebot');
-      }
-      debug.info('Successfully got image from Doodlebot');
-      debug.timeEnd('getImage');
-      return image;
-    } catch (error) {
-      debug.error('Error getting image stream:', error);
-      throw error;
-    }
-  }
-
   async detectLine(doodlebot: Doodlebot, retries: number = 3): Promise<number[][]> {
     const now = Date.now();
     
@@ -105,69 +102,79 @@ export class LineDetector {
       return this.lastDetectedLine;
     }
 
+    if (!this.imageStream) {
+      debug.warn('Image stream not initialized, initializing now');
+      await this.initialize(doodlebot);
+    }
+
     debug.time('detectLine');
     this.isProcessing = true;
     let attempt = 0;
 
-    while (attempt < retries) {
-      try {
-        debug.info(`Detection attempt ${attempt + 1}/${retries}`);
-        
-        const image = await this.getImage(doodlebot);
-        
-        debug.info('Clearing canvas and drawing new image');
-        this.ctx.clearRect(0, 0, this.width, this.height);
-        this.ctx.drawImage(image, 0, 0, this.width, this.height);
-        
-        debug.info('Getting image data from canvas');
-        const imageData = this.ctx.getImageData(0, 0, this.width, this.height);
-        
-        debug.info('Processing image data');
-        const lineCoordinates = this.processImageData(imageData);
+    try {
+      while (attempt < retries) {
+        try {
+          debug.info(`Detection attempt ${attempt + 1}/${retries}`);
+          
+          debug.info('Clearing canvas and drawing new image');
+          this.ctx.clearRect(0, 0, this.width, this.height);
+          this.ctx.drawImage(this.imageStream!, 0, 0, this.width, this.height);
+          
+          debug.info('Getting image data from canvas');
+          const imageData = this.ctx.getImageData(0, 0, this.width, this.height);
+          
+          debug.info('Processing image data');
+          const lineCoordinates = this.processImageData(imageData);
 
-        if (lineCoordinates.length > 0) {
-          debug.info('Line detected successfully', {
-            points: lineCoordinates.length,
-            firstPoint: lineCoordinates[0],
-            lastPoint: lineCoordinates[lineCoordinates.length - 1]
-          });
+          if (lineCoordinates.length > 0) {
+            debug.info('Line detected successfully', {
+              points: lineCoordinates.length,
+              firstPoint: lineCoordinates[0],
+              lastPoint: lineCoordinates[lineCoordinates.length - 1]
+            });
+            
+            this.lastDetectedLine = lineCoordinates;
+            
+            if (this.collectLine) {
+              this.allCoordinates.push(lineCoordinates);
+              this.frameCount++;
+              this.collectLine = false;
+              debug.info('Line collected, frame count:', this.frameCount);
+            }
+            
+            this.lastProcessTime = now;
+            this.isProcessing = false;
+            debug.timeEnd('detectLine');
+            return lineCoordinates;
+          }
+
+          debug.warn('No line detected in this attempt');
+          attempt++;
+          const backoffTime = 100 * Math.pow(2, attempt);
+          debug.info(`Waiting ${backoffTime}ms before next attempt`);
+          await new Promise(resolve => setTimeout(resolve, backoffTime));
           
-          this.lastDetectedLine = lineCoordinates;
+        } catch (error) {
+          debug.error(`Processing attempt ${attempt + 1} failed:`, error);
+          attempt++;
           
-          if (this.collectLine) {
-            this.allCoordinates.push(lineCoordinates);
-            this.frameCount++;
-            this.collectLine = false;
-            debug.info('Line collected, frame count:', this.frameCount);
+          if (attempt === retries) {
+            debug.warn('Max retries reached, returning last known good result');
+            this.isProcessing = false;
+            debug.timeEnd('detectLine');
+            return this.lastDetectedLine;
           }
           
-          this.lastProcessTime = now;
-          this.isProcessing = false;
-          debug.timeEnd('detectLine');
-          return lineCoordinates;
+          const backoffTime = 100 * Math.pow(2, attempt);
+          debug.info(`Waiting ${backoffTime}ms before retry`);
+          await new Promise(resolve => setTimeout(resolve, backoffTime));
         }
-
-        debug.warn('No line detected in this attempt');
-        attempt++;
-        const backoffTime = 100 * Math.pow(2, attempt);
-        debug.info(`Waiting ${backoffTime}ms before next attempt`);
-        await new Promise(resolve => setTimeout(resolve, backoffTime));
-        
-      } catch (error) {
-        debug.error(`Detection attempt ${attempt + 1} failed:`, error);
-        attempt++;
-        
-        if (attempt === retries) {
-          debug.warn('Max retries reached, returning last known good result');
-          this.isProcessing = false;
-          debug.timeEnd('detectLine');
-          return this.lastDetectedLine;
-        }
-        
-        const backoffTime = 100 * Math.pow(2, attempt);
-        debug.info(`Waiting ${backoffTime}ms before retry`);
-        await new Promise(resolve => setTimeout(resolve, backoffTime));
       }
+    } catch (error) {
+      debug.error('Error getting image stream:', error);
+      this.isProcessing = false;
+      debug.timeEnd('detectLine');
+      return this.lastDetectedLine;
     }
 
     this.isProcessing = false;
@@ -205,7 +212,7 @@ export class LineDetector {
   }
 }
 
-export function createLineDetector(raspberryPiIp: string): (doodlebot: Doodlebot) => Promise<number[][]> {
+export async function createLineDetector(raspberryPiIp: string): Promise<(doodlebot: Doodlebot) => Promise<number[][]>> {
   debug.info('Creating new LineDetector instance');
   const detector = new LineDetector(raspberryPiIp);
   return (doodlebot: Doodlebot) => detector.detectLine(doodlebot);
