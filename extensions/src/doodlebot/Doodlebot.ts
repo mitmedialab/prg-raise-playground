@@ -677,8 +677,6 @@ export default class Doodlebot {
                     ));
                     first = false;
                 } else {
-                    prevRadius = this.motorCommands[0].radius;
-                    prevAngle = this.motorCommands[0].angle;
                     ({ motorCommands: this.motorCommands, bezierPoints: this.bezierPoints, line: this.line } = followLine(
                         this.line,
                         lineData,
@@ -691,12 +689,12 @@ export default class Doodlebot {
                         false,
                         false
                     ));
-                    prevRadius = this.motorCommands[0].radius;
-                    prevAngle = this.motorCommands[0].angle;
                 }
 
                 console.log("after");
+                console.log("motorCommands DEBUG 1", this.motorCommands);
                 for (const command of this.motorCommands) {
+                    console.log("command DEBUG 2", command);
                     const { radius, angle } = command;
                     console.log(command);
                     this.sendBLECommand("t", radius, angle);

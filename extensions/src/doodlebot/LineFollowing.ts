@@ -504,7 +504,7 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
                 angle = -1 * spin;
             }
         }
-        const motorCommands = { radius: 2, angle: angle, distance: 0 }
+        const motorCommands = [{ radius: 2, angle: angle, distance: 0 }];
         const bezierPoints = [];
         return { motorCommands, bezierPoints, line };
     }
