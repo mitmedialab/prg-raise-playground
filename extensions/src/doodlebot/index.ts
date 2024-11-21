@@ -87,6 +87,11 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     this.openUI("ReattachBLE");
   }
 
+  async getImageStream() {
+    this.imageStream ??= await this.doodlebot?.getImageStream();
+    return this.imageStream;
+  }
+
   async createVideoStreamDrawable() {
     this.imageStream ??= await this.doodlebot?.getImageStream();
     if (!this.imageStream) {
@@ -118,7 +123,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
         console.error("Unable to get IP address for line detection");
         return;
       }
-      this.lineDetector = createLineDetector(ipAddress);
+      const imageStream = await this.getImageStream();
+      this.lineDetector = createLineDetector(ipAddress, imageStream);
     }
 
     const lineCoordinates = await this.lineDetector();
