@@ -652,7 +652,7 @@ export default class Doodlebot {
         while (true) {
             try {
                 console.log("before 1");
-                let lineData = await this.detector.detectLine(); // Await works here
+                let lineData = await this.detector.detectLine(this); // Await works here
                 console.log("after 1");
 
                 // Process line data

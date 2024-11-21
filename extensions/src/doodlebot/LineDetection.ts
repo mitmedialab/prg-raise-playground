@@ -1,4 +1,5 @@
 import { endpoint, port } from "./enums";
+import Doodlebot from "./Doodlebot";
 
 const debug = {
   info: (msg: string, ...args: any[]) => console.log(`[LineDetector] ${msg}`, ...args),
@@ -9,7 +10,6 @@ const debug = {
 };
 
 export class LineDetector {
-  private raspberryPiIp: string;
   private width: number;
   private height: number;
   private canvas: HTMLCanvasElement;
@@ -22,13 +22,10 @@ export class LineDetector {
   private isProcessing: boolean = false;
   private lastProcessTime: number = 0;
   private readonly MIN_PROCESS_INTERVAL = 100;
-  private imageElement: HTMLImageElement | null = null;
-  private imageUrl: string | null = null;
 
-  constructor(raspberryPiIp: string, width = 640, height = 480) {
+  constructor(private raspberryPiIp: string, width = 640, height = 480) {
     debug.info('Initializing LineDetector', { raspberryPiIp, width, height });
     
-    this.raspberryPiIp = raspberryPiIp;
     this.width = width;
     this.height = height;
     this.canvas = document.createElement('canvas');
@@ -77,56 +74,25 @@ export class LineDetector {
       : [];
   }
 
-  private loadImage(url: string, timeoutMs: number = 5000): Promise<HTMLImageElement> {
-    if (this.imageElement && this.imageUrl === url) {
-        debug.info('Reusing existing image');
-        return Promise.resolve(this.imageElement);
+  private async getImage(doodlebot: Doodlebot): Promise<HTMLImageElement> {
+    debug.time('getImage');
+    debug.info('Getting image stream from Doodlebot');
+
+    try {
+      const image = await doodlebot.getImageStream();
+      if (!image) {
+        throw new Error('Failed to get image stream from Doodlebot');
+      }
+      debug.info('Successfully got image from Doodlebot');
+      debug.timeEnd('getImage');
+      return image;
+    } catch (error) {
+      debug.error('Error getting image stream:', error);
+      throw error;
     }
-
-    debug.time('loadImage');
-    debug.info('Loading image from URL:', url);
-    
-    return new Promise((resolve, reject) => {
-        if (!this.imageElement) {
-            this.imageElement = new Image();
-            this.imageElement.crossOrigin = 'anonymous';
-        }
-        
-        const timeoutId = setTimeout(() => {
-            debug.error('Image load timeout after', timeoutMs, 'ms');
-            cleanup();
-            reject(new Error('Image load timeout'));
-        }, timeoutMs);
-
-        const cleanup = () => {
-            this.imageElement!.onload = null;
-            this.imageElement!.onerror = null;
-            clearTimeout(timeoutId);
-        };
-
-        this.imageElement.onload = () => {
-            debug.info('Image loaded successfully');
-            debug.timeEnd('loadImage');
-            cleanup();
-            this.imageUrl = url;
-            resolve(this.imageElement!);
-        };
-
-        this.imageElement.onerror = (error) => {
-            debug.error('Failed to load image:', error);
-            cleanup();
-            this.imageUrl = null;
-            reject(new Error('Failed to load image'));
-        };
-
-        if (this.imageUrl !== url) {
-            this.imageUrl = url;
-            this.imageElement.src = url;
-        }
-    });
   }
 
-  async detectLine(retries: number = 3): Promise<number[][]> {
+  async detectLine(doodlebot: Doodlebot, retries: number = 3): Promise<number[][]> {
     const now = Date.now();
     
     if (this.isProcessing) {
@@ -147,8 +113,7 @@ export class LineDetector {
       try {
         debug.info(`Detection attempt ${attempt + 1}/${retries}`);
         
-        const imageUrl = `http://${this.raspberryPiIp}:${port.camera}/${endpoint.video}`;
-        const image = await this.loadImage(imageUrl);
+        const image = await this.getImage(doodlebot);
         
         debug.info('Clearing canvas and drawing new image');
         this.ctx.clearRect(0, 0, this.width, this.height);
@@ -240,8 +205,8 @@ export class LineDetector {
   }
 }
 
-export function createLineDetector(raspberryPiIp: string): () => Promise<number[][]> {
+export function createLineDetector(raspberryPiIp: string): (doodlebot: Doodlebot) => Promise<number[][]> {
   debug.info('Creating new LineDetector instance');
   const detector = new LineDetector(raspberryPiIp);
-  return () => detector.detectLine();
+  return (doodlebot: Doodlebot) => detector.detectLine(doodlebot);
 }
