@@ -635,32 +635,44 @@ export default class Doodlebot {
         line.unshift(...newSegment);
         return line;
     }
-
+    
+    printLine() {
+        console.log(this.wholeString);
+    }
 
 
     i = 0;
+    wholeString = "export const allLines = [";
+    cumulativeLine = "export const cumulativeLines = [";
+
     motorCommands;
     bezierPoints;
     line;
     lineCounter = 0;
     detector;
+    
     async followLine() {
         let first = true;
         const delay = 0.5;
         const previousSpeed = 0.1;
-        const interval = 1000; // 1/15th of a second
+        const interval = 300; // 1/15th of a second
         let prevRadius;
         let prevAngle;
-
+        let lineData
+        await this.detector.initialize(this);
+        
         while (true) {
+            console.log("NEXT");
             try {
                 console.log("before 1");
-                let lineData = await this.detector.detectLine(this); // Await works here
                 console.log("after 1");
-
+                let lineData = this.detector.returnLine();
                 // Process line data
                 lineData = lineData.sort((a, b) => a[1] - b[1]);
                 console.log("LINE DATA", lineData);
+                this.wholeString = this.wholeString + `${JSON.stringify(lineData)},`;
+                this.printLine();
+                this.lineCounter += 1;
 
                 if (first) {
                     ({ motorCommands: this.motorCommands, bezierPoints: this.bezierPoints, line: this.line } = followLine(
@@ -691,15 +703,23 @@ export default class Doodlebot {
                     ));
                 }
 
+
+                this.cumulativeLine = this.cumulativeLine + `${JSON.stringify(this.line)},`;
                 console.log("after");
                 console.log("motorCommands DEBUG 1", this.motorCommands);
                 for (const command of this.motorCommands) {
                     console.log("command DEBUG 2", command);
                     const { radius, angle } = command;
                     console.log(command);
-                    this.sendBLECommand("t", radius, angle);
+                    if (command.distance > 0) {
+                        this.sendWebsocketCommand("m", Math.round(12335.6*command.distance), Math.round(12335.6*command.distance), 500, 500);
+                    } else {
+                        this.sendBLECommand("t", radius, angle);
+                    }
+                    
                 }
                 console.log("after 2");
+                console.log(this.cumulativeLine);
 
                 // Wait for the interval duration before the next iteration
                 await new Promise((resolve) => setTimeout(resolve, interval));
