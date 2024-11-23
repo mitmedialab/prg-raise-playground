@@ -710,7 +710,7 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     // }
 
     let command = createArcFromPoints(bezier.points[0], bezier.get(0.5), bezier.get(1));
-    command.angle = command.angle*4;
+    command.angle = command.angle/2;
     // if (command.radius > 50) {
     //     command = {radius: Infinity, angle: 0, distance: 0.03}
     // }
