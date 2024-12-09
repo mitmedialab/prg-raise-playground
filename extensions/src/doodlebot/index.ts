@@ -81,9 +81,59 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   DIMENSIONS = [480, 360];
 
   init(env: Environment) {
-    this.openUI("Connect");
     this.setIndicator("disconnected");
+    if (window.isSecureContext) this.openUI("Connect")
+    else this.connectToDoodlebotWithExternalBLE();
     this._loop();
+  }
+
+  private async connectToDoodlebotWithExternalBLE() {
+    const disconnectMessage = "disconnected";
+    const urlParams = new URLSearchParams(window.location.search); // Hack for now
+    let source: MessageEventSource;
+    let targetOrigin: string;
+
+    await new Promise<void>((resolve) => {
+      const onInitialMessage = (event: MessageEvent) => {
+        source = event.source;
+        targetOrigin = event.origin;
+        window.removeEventListener("message", onInitialMessage);
+        source.postMessage("ready", { targetOrigin })
+        resolve();
+      }
+      window.addEventListener("message", onInitialMessage);
+    });
+
+    const doodlebot = new Doodlebot(
+      {
+        onDisconnect: () => {
+          window.addEventListener("message", (event) => {
+            if (event.data !== disconnectMessage) return;
+            this.setIndicator("disconnected");
+            alert("Disconnected from robot"); // Decide how to handle (maybe direct user to close window and go back to https)
+          });
+        },
+        onReceive: (callback) => {
+          window.addEventListener('message', (event) => {
+            if (event.data === disconnectMessage) return;
+            callback(event.data);
+          });
+        },
+        send: (text) => new Promise<void>(resolve => {
+          const onMessageReturn = ({ data }: MessageEvent<string>) => {
+            if (data !== text) return;
+            window.removeEventListener("message", onMessageReturn);
+            resolve();
+          }
+          window.addEventListener("message", onMessageReturn);
+          source.postMessage(text, { targetOrigin });
+        })
+      },
+      () => alert("requestBluetooth called"), // placeholder
+      { ssid: urlParams.get("ssid"), password: urlParams.get("password"), ipOverride: urlParams.get("ip") },
+      () => alert("save IP called"), // placeholder
+    )
+    this.setDoodlebot(doodlebot);
   }
 
   setDoodlebot(doodlebot: Doodlebot) {
@@ -569,7 +619,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   }
 
   @block({
-    type: "command", 
+    type: "command",
     text: (url) => `import model ${url}`,
     arg: {
       type: "string",
@@ -580,13 +630,13 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     await this.useModel(url);
   }
 
-  
+
   @block({
     type: "hat",
     text: (className) => `when model detects ${className}`,
     arg: {
       type: "string",
-      options: function() {
+      options: function () {
         if (!this) {
           throw new Error('Context is undefined');
         }
@@ -607,7 +657,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     return this.getModelPrediction();
   }
 
-  
+
   async useModel(url: string) {
     try {
       const modelUrl = this.modelArgumentToURL(url);
