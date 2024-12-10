@@ -1,6 +1,6 @@
 import { Environment, ExtensionMenuDisplayDetails, extension, block, buttonBlock } from "$common";
 import { DisplayKey, displayKeys, command, type Command, SensorKey, sensorKeys } from "./enums";
-import Doodlebot from "./Doodlebot";
+import Doodlebot, { NetworkCredentials } from "./Doodlebot";
 import { splitArgsString } from "./utils";
 import EventEmitter from "events";
 import { categoryByGesture, classes, emojiByGesture, gestureDetection, gestureMenuItems, gestures, objectDetection } from "./detection";
@@ -88,49 +88,59 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   }
 
   private async connectToDoodlebotWithExternalBLE() {
+    // A few globals that currently must be set the same across the playground and the https frontend
+    const handshakeMessage = "doodlebot";
     const disconnectMessage = "disconnected";
-    const urlParams = new URLSearchParams(window.location.search); // Hack for now
-    let source: MessageEventSource;
-    let targetOrigin: string;
+    const commandCompleteIdentifier = "done";
 
-    await new Promise<void>((resolve) => {
-      const onInitialMessage = (event: MessageEvent) => {
-        source = event.source;
-        targetOrigin = event.origin;
+    const urlParams = new URLSearchParams(window.location.search); // Hack for now
+    const networkCredentials: NetworkCredentials = {
+      ssid: urlParams.get("ssid"),
+      password: urlParams.get("password"),
+      ipOverride: urlParams.get("ip").trim() === "" ? null : urlParams.get("ip")
+    }
+
+    type ExternalPageDetails = { source: MessageEventSource, targetOrigin: string }
+
+    const { source, targetOrigin } = await new Promise<ExternalPageDetails>((resolve) => {
+      const onInitialMessage = ({ data, source, origin }: MessageEvent) => {
+        if (typeof data !== "string" || data !== handshakeMessage) return;
         window.removeEventListener("message", onInitialMessage);
-        source.postMessage("ready", { targetOrigin })
-        resolve();
+        source.postMessage("ready", { targetOrigin: origin })
+        resolve({ source, targetOrigin: origin });
       }
       window.addEventListener("message", onInitialMessage);
     });
 
     const doodlebot = new Doodlebot(
       {
-        onDisconnect: () => {
-          window.addEventListener("message", (event) => {
-            if (event.data !== disconnectMessage) return;
-            this.setIndicator("disconnected");
-            alert("Disconnected from robot"); // Decide how to handle (maybe direct user to close window and go back to https)
-          });
-        },
-        onReceive: (callback) => {
-          window.addEventListener('message', (event) => {
-            if (event.data === disconnectMessage) return;
-            callback(event.data);
-          });
-        },
         send: (text) => new Promise<void>(resolve => {
-          const onMessageReturn = ({ data }: MessageEvent<string>) => {
-            if (data !== text) return;
+          const onMessageReturn = ({ data, origin }: MessageEvent<string>) => {
+            if (origin !== targetOrigin || !data.includes(text) || !data.includes(commandCompleteIdentifier)) return;
             window.removeEventListener("message", onMessageReturn);
             resolve();
           }
           window.addEventListener("message", onMessageReturn);
           source.postMessage(text, { targetOrigin });
-        })
+        }),
+
+        onReceive: (callback) => {
+          window.addEventListener('message', ({ data, origin }) => {
+            if (origin !== targetOrigin || data === disconnectMessage || data.includes(commandCompleteIdentifier)) return;
+            callback(new CustomEvent<string>("ble", { detail: data }));
+          });
+        },
+
+        onDisconnect: () => {
+          window.addEventListener("message", ({ data, origin }) => {
+            if (origin !== targetOrigin || data !== disconnectMessage) return;
+            this.setIndicator("disconnected");
+            alert("Disconnected from robot"); // Decide how to handle (maybe direct user to close window and go back to https)
+          });
+        },
       },
       () => alert("requestBluetooth called"), // placeholder
-      { ssid: urlParams.get("ssid"), password: urlParams.get("password"), ipOverride: urlParams.get("ip") },
+      networkCredentials,
       () => alert("save IP called"), // placeholder
     )
     this.setDoodlebot(doodlebot);

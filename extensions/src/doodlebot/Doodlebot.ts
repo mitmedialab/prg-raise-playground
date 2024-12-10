@@ -550,6 +550,7 @@ export default class Doodlebot {
     }
 
     async getImageStream() {
+        if (this.pending["websocket"]) await this.pending["websocket"];
         if (!this.connection.ip) return;
         const image = document.createElement("img");
         image.src = `http://${this.connection.ip}:${port.camera}/${endpoint.video}`;
