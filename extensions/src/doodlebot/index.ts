@@ -94,10 +94,18 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     const commandCompleteIdentifier = "done";
 
     const urlParams = new URLSearchParams(window.location.search); // Hack for now
+
+    const ip = urlParams.get("ip");
+
+    if (!ip) {
+      alert("No IP address provided. Please provide an IP address in the URL query string.");
+      return;
+    }
+
     const networkCredentials: NetworkCredentials = {
-      ssid: urlParams.get("ssid"),
-      password: urlParams.get("password"),
-      ipOverride: urlParams.get("ip").trim() === "" ? null : urlParams.get("ip")
+      ssid: "dummy", // NOTE: When using the external BLE, it is assumed a valid ip address will be provided, and thus there is no need for wifi credentials
+      password: "dummy", // NOTE: When using the external BLE, it is assumed a valid ip address will be provided, and thus there is no need for wifi credentials
+      ipOverride: ip
     }
 
     type ExternalPageDetails = { source: MessageEventSource, targetOrigin: string }
