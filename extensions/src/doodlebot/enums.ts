@@ -30,6 +30,8 @@ export const command = {
     display: "d",
     pen: "u",
     network: "g",
+    wait: "w",
+    execute: "z"
 } as const;
 
 export type CommandKey = keyof typeof command;
