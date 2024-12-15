@@ -20,6 +20,15 @@
         extension.buildCustomDeepModel();
         close();
     };
+
+    const _close = async () => {
+        if (file) {
+            const success = await extension.importClassifier(file);
+            if (!success) close();
+            extension.buildCustomDeepModel();
+        }
+        close();
+    }
 </script>
 
 <div style:background-color={color.ui.white}>
@@ -33,7 +42,7 @@
             on:change={(e) => (file = e.currentTarget.files[0])}
         />
     </PrimaryButton>
-    <PrimaryButton on:click={close}>Done</PrimaryButton>
+    <PrimaryButton on:click={_close}>Done</PrimaryButton>
 </div>
 
 <style>
