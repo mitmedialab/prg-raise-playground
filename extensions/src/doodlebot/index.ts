@@ -923,7 +923,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     }
 
     // Capture a snapshot every 500ms
-    const interval = 500; // 500ms between snapshots
+    const interval = 100; // 500ms between snapshots
     const iterations = (seconds * 1000) / interval;
     
     for (let i = 0; i < iterations; i++) {
