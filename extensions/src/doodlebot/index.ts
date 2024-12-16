@@ -12,6 +12,7 @@ import tmPose from '@teachablemachine/pose';
 import { calculateArcTime } from "./TimeHelper";
 import tmImage from '@teachablemachine/image';
 import * as speechCommands from '@tensorflow-models/speech-commands';
+import JSZip from 'jszip';
 
 const details: ExtensionMenuDisplayDetails = {
   name: "Doodlebot",
@@ -806,7 +807,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
 
   private _loop() {
     setTimeout(this._loop.bind(this), Math.max(this.runtime.currentStepTime, this.INTERVAL));
-    console.log('Running loop');
     const time = Date.now();
     if (this.lastUpdate === null) {
       this.lastUpdate = time;
@@ -830,7 +830,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
         console.error("Failed to get image stream");
         return;
       }
-      console.log("received new image stream");
       const imageBitmap = await createImageBitmap(imageStream);
       this.predictAllBlocks(imageBitmap);
     } catch (error) {
@@ -839,7 +838,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   }
 
   private async predictAllBlocks(frame: ImageBitmap) {
-    console.log('Starting prediction with frame:', frame);
     for (let modelUrl in this.predictionState) {
       if (!this.predictionState[modelUrl].model) {
         console.log('No model found for:', modelUrl);
@@ -850,7 +848,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
         continue;
       }
       ++this.isPredicting;
-      console.log('Starting prediction, isPredicting:', this.isPredicting);
       const prediction = await this.predictModel(modelUrl, frame);
       console.log('Prediction:', prediction);
       this.predictionState[modelUrl].topClass = prediction;
@@ -897,6 +894,82 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
         }
         return null;
     }
+  }
+
+  @block({
+    type: "command",
+    text: (seconds) => `capture for ${seconds} seconds`,
+    arg: { type: "number", defaultValue: 10 }
+  })
+  async captureSnapshots(seconds: number) {
+    // Create indicator to show progress
+    const indicator = await this.indicate({ 
+      type: "info", 
+      msg: "Capturing snapshots..." 
+    });
+
+    const snapshots: string[] = [];
+    const zip = new JSZip();
+    
+    // Ensure we have video stream
+    this.imageStream ??= await this.doodlebot?.getImageStream();
+    if (!this.imageStream) {
+      indicator.close();
+      await this.indicate({ 
+        type: "error", 
+        msg: "No video stream available" 
+      });
+      return;
+    }
+
+    // Capture a snapshot every 500ms
+    const interval = 500; // 500ms between snapshots
+    const iterations = (seconds * 1000) / interval;
+    
+    for (let i = 0; i < iterations; i++) {
+      // Create a canvas to draw the current frame
+      const canvas = document.createElement('canvas');
+      canvas.width = this.imageStream.width;
+      canvas.height = this.imageStream.height;
+      const ctx = canvas.getContext('2d');
+      
+      // Draw current frame to canvas
+      ctx.drawImage(this.imageStream, 0, 0);
+      
+      // Convert to base64 and store
+      const dataUrl = canvas.toDataURL('image/jpeg');
+      snapshots.push(dataUrl);
+      
+      // Add to zip file
+      const base64Data = dataUrl.replace(/^data:image\/jpeg;base64,/, "");
+      zip.file(`snapshot_${i+1}.jpg`, base64Data, {base64: true});
+      
+      // Wait for next interval
+      await new Promise(resolve => setTimeout(resolve, interval));
+    }
+
+    // Generate zip file
+    const content = await zip.generateAsync({type: "blob"});
+    
+    // Create download link
+    const downloadUrl = URL.createObjectURL(content);
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = 'snapshots.zip';
+    
+    // Trigger download
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Cleanup
+    URL.revokeObjectURL(downloadUrl);
+    indicator.close();
+    
+    await this.indicate({ 
+      type: "success", 
+      msg: `Captured ${snapshots.length} snapshots` 
+    });
   }
 }
 
