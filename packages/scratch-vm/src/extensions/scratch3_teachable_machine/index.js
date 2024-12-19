@@ -440,7 +440,7 @@ class Scratch3VideoSensingBlocks {
         // first added to a project, and is overwritten by a PROJECT_LOADED
         // event listener that later calls updateVideoDisplay
         if (this.firstInstall) {
-            this.globalVideoState = VideoState.OFF;
+            this.globalVideoState = VideoState.ON;
             this.globalVideoTransparency = 50;
             this.updateVideoDisplay();
             this.updateToStageModel();
