@@ -19,6 +19,9 @@ const base = {
         fs: "empty"
     },
     mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
+    node: {
+        fs: "empty"
+    },
     devtool: 'cheap-module-source-map',
     devServer: {
         contentBase: path.resolve(__dirname, 'build'),

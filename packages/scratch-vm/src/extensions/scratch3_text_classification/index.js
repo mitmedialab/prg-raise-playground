@@ -149,7 +149,7 @@ class Scratch3TextClassificationBlocks {
         this.scratch_vm.connectPeripheral(EXTENSION_ID, 0);
         this.similarity = 0;
         this.k = 0;
-        this.labelList = [];
+        this.labelList = [''];
         this.labelListEmpty = true;
         this.exampleEmbeddings = {};
         this.lastEmbedding = {};
@@ -236,7 +236,6 @@ class Scratch3TextClassificationBlocks {
 
         
         this._recognizedSpeech = '';
-
     }
 
     /**

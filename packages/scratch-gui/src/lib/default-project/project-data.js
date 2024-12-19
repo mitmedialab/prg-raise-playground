@@ -74,33 +74,55 @@ const projectData = translateFunction => {
                 currentCostume: 0,
                 costumes: [
                     {
-                        assetId: 'b7853f557e4426412e64bb3da6531a99',
-                        name: translator(messages.costume, {index: 1}),
+                        assetId: '0579fe60bb3717c49dfd7743caa84ada',
+                        name: 'neutral',
                         bitmapResolution: 1,
-                        md5ext: 'b7853f557e4426412e64bb3da6531a99.svg',
+                        md5ext: '0579fe60bb3717c49dfd7743caa84ada.svg',
                         dataFormat: 'svg',
                         rotationCenterX: 48,
                         rotationCenterY: 50
                     },
-                    // {
-                    //     assetId: 'e6ddc55a6ddd9cc9d84fe0b4c21e016f',
-                    //     name: translator(messages.costume, {index: 2}),
-                    //     bitmapResolution: 1,
-                    //     md5ext: 'e6ddc55a6ddd9cc9d84fe0b4c21e016f.svg',
-                    //     dataFormat: 'svg',
-                    //     rotationCenterX: 46,
-                    //     rotationCenterY: 53
-                    // }
+
+                    {
+                        assetId: '26c688d7544757225ff51cd2fb1519b5',
+                        name: 'happy',
+                        bitmapResolution: 1,
+                        md5ext: '26c688d7544757225ff51cd2fb1519b5.svg',
+                        dataFormat: 'svg',
+                        rotationCenterX: 48,
+                        rotationCenterY: 50
+                    },
+
+                    {
+                        assetId: 'adf61e2090f8060e1e8b2b0604d03751',
+                        name: 'ecstatic',
+                        bitmapResolution: 1,
+                        md5ext: 'adf61e2090f8060e1e8b2b0604d03751.svg',
+                        dataFormat: 'svg',
+                        rotationCenterX: 48,
+                        rotationCenterY: 50
+                    },
+
+                    {
+                        assetId: '594704bf12e3c4d9e83bb91661ad709a',
+                        name: 'angry',
+                        bitmapResolution: 1,
+                        md5ext: '594704bf12e3c4d9e83bb91661ad709a.svg',
+                        dataFormat: 'svg',
+                        rotationCenterX: 48,
+                        rotationCenterY: 50
+                    },
+
                 ],
                 sounds: [
                     {
-                        assetId: '83c36d806dc92327b9e7049a565c6bff',
-                        name: translator(messages.meow),
+                        assetId: '83a9787d4cb6f3b7632b4ddfebf74367',
+                        name: 'pop',
                         dataFormat: 'wav',
                         format: '',
                         rate: 22050,
                         sampleCount: 18688,
-                        md5ext: '83c36d806dc92327b9e7049a565c6bff.wav'
+                        md5ext: '83a9787d4cb6f3b7632b4ddfebf74367.wav'
                     }
                 ],
                 volume: 100,
