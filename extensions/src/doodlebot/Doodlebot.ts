@@ -149,7 +149,7 @@ export default class Doodlebot {
         }, requestBluetooth, credentials, saveIP);
     }
 
-    private pending: Pending = { motor: undefined, wifi: undefined, websocket: undefined, ip: undefined };
+    private pending: any = { motor: undefined, wifi: undefined, websocket: undefined, ip: undefined };
     private onMotor = new EventEmitter();
     private onSensor = new EventEmitter();
     private onNetwork = new EventEmitter();
@@ -733,6 +733,91 @@ export default class Doodlebot {
     //     }
     // }
 
+    parseWavHeader(uint8Array) {
+        const dataView = new DataView(uint8Array.buffer);
+
+        // Extract sample width, number of channels, and sample rate
+        const sampleWidth = dataView.getUint16(34, true) / 8; // Sample width in bytes (16-bit samples = 2 bytes, etc.)
+        const channels = dataView.getUint16(22, true); // Number of channels
+        const rate = dataView.getUint32(24, true); // Sample rate
+        const byteRate = dataView.getUint32(28, true); // Byte rate
+        const blockAlign = dataView.getUint16(32, true); // Block align
+        const dataSize = dataView.getUint32(40, true); // Size of the data chunk
+
+        const frameSize = blockAlign; // Size of each frame in bytes
+
+        return {
+            sampleWidth,
+            channels,
+            rate,
+            frameSize,
+            dataSize
+        };
+    }
+
+    splitIntoChunks(uint8Array, framesPerChunk) {
+        const headerInfo = this.parseWavHeader(uint8Array);
+        const { frameSize } = headerInfo;
+        const chunkSize = framesPerChunk * frameSize; // Number of bytes per chunk
+        const chunks = [];
+
+        // Skip the header (typically 44 bytes)
+        const dataStart = 44;
+
+        for (let i = dataStart; i < uint8Array.length; i += chunkSize) {
+            const chunk = uint8Array.slice(i, i + chunkSize);
+            chunks.push(chunk);
+        }
+
+        return chunks;
+    }
+
+    async sendAudioData(uint8Array: Uint8Array) {
+        let CHUNK_SIZE = 1024;
+        let ip = this.connection.ip;
+        const ws = makeWebsocket(ip, '8877');
+
+        ws.onopen = () => {
+            console.log('WebSocket connection opened');
+            let { sampleWidth, channels, rate } = this.parseWavHeader(uint8Array);
+            let first = "(1," + String(sampleWidth) + "," + String(channels) + "," + String(rate) + ")";
+            console.log(first);
+            ws.send(first);
+            let chunks = this.splitIntoChunks(uint8Array, CHUNK_SIZE);
+            let i = 0;
+            async function sendNextChunk() {
+                if (i >= chunks.length) {
+                    console.log('All data sent');
+                    ws.close();
+                    return;
+                }
+
+                const chunk = chunks[i];
+
+                const binaryString = Array.from(chunk).map((byte: any) => String.fromCharCode(byte)).join('');;
+                const base64Data = btoa(binaryString);
+                const jsonData = JSON.stringify({ audio_data: base64Data });
+                ws.send(jsonData);
+                i = i + 1;
+                sendNextChunk();
+            }
+
+            sendNextChunk();
+        };
+
+        ws.onerror = (error) => {
+            console.error('WebSocket error:', error);
+        };
+
+        ws.onmessage = (message) => {
+            console.log(message);
+        }
+
+        ws.onclose = () => {
+            console.log('WebSocket connection closed');
+        };
+    }
+
 
 
     private setupAudioStream() {
@@ -746,6 +831,7 @@ export default class Doodlebot {
         socket.onopen = function (event) {
             console.log('WebSocket connection established');
             socket.send(self.encoder.encode('(1)'));
+            console.log("sent");
         };
 
         socket.onerror = function (error) {
