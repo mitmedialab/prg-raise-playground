@@ -562,8 +562,8 @@ writeString(view: DataView, offset: number, text: string) {
 }
 
 
-  async sendAudioFileToChatEndpoint(file) {
-    const url = "https://doodlebot.media.mit.edu/chat";
+  async sendAudioFileToChatEndpoint() {
+    const url = "http://doodlebot.media.mit.edu/chat";
   //   const response = await fetch("https://www.wavsource.com/snds_2020-10-01_3728627494378403/people/comedians/allen_arrogh.wav", 
   //     {
   //     mode: 'no-cors'
@@ -711,16 +711,16 @@ writeString(view: DataView, offset: number, text: string) {
     return true;
   }
 
-  async processAndSendAudio(buffer) {
+  async processAndSendAudio() {
     try {
-        const wavBlob = await this.saveAudioBufferToWav(buffer);
-        console.log(wavBlob);
-        const wavFile = new File([wavBlob], "output.wav", { type: "audio/wav" });
+        // const wavBlob = await this.saveAudioBufferToWav(buffer);
+        // console.log(wavBlob);
+        // const wavFile = new File([wavBlob], "output.wav", { type: "audio/wav" });
     //     const isValid = await this.isValidWavFile(wavFile);
     // if (!isValid) {
     //   throw new Error("Generated file is not a valid WAV file");
     // }
-        await this.sendAudioFileToChatEndpoint(wavFile);
+        await this.sendAudioFileToChatEndpoint();
     } catch (error) {
         console.error("Error processing and sending audio:", error);
     }
@@ -733,8 +733,8 @@ writeString(view: DataView, offset: number, text: string) {
     arg: { type: "number" }
   })
   async recordAndPlay(seconds: number) {
-    const { context, buffer } = await this.doodlebot?.recordAudio(seconds);
-    await this.processAndSendAudio(buffer);
+    //const { context, buffer } = await this.doodlebot?.recordAudio(seconds);
+    await this.processAndSendAudio();
   }
 
   @block({
