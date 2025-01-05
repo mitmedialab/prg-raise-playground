@@ -1,0 +1,15 @@
+{
+  "name": "microbit-blocks-extension",
+  "version": "1.0.0",
+  "description": "An extension created using the PRG AI Blocks framework",
+  "main": "index.ts",
+  "scripts": {
+    "directory": "echo microbitBlocks",
+    "test": "pnpm --filter prg-extension-root test microbitBlocks/index.test.ts",
+    "dev": "pnpm --filter prg-extension-root dev --include microbitBlocks",
+    "add:ui": "pnpm --filter prg-extension-root add:ui microbitBlocks",
+    "add:arg": "pnpm --filter prg-extension-root add:arg microbitBlocks"
+  },
+  "author": "",
+  "license": "ISC"
+}
