@@ -676,6 +676,95 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     return this.getModelPrediction();
   }
 
+  writeString(view: DataView, offset: number, text: string) {
+    for (let i = 0; i < text.length; i++) {
+        view.setUint8(offset + i, text.charCodeAt(i));
+    }
+  }
+  
+  async sendAudioFileToChatEndpoint() {
+    const url = "http://doodlebot.media.mit.edu/chat";
+
+    // Create a simple WAV file buffer
+    const sampleRate = 44100; // Standard audio sample rate
+    const duration = 2; // 2 seconds
+    const frequency = 440; // A4 note frequency
+
+    // Generate audio samples (sine wave)
+    const samples = new Float32Array(sampleRate * duration);
+    for (let i = 0; i < samples.length; i++) {
+        samples[i] = Math.sin((2 * Math.PI * frequency * i) / sampleRate);
+    }
+
+    // Create a WAV file header
+    const wavHeader = new ArrayBuffer(44);
+    const view = new DataView(wavHeader);
+
+    // RIFF header
+    this.writeString(view, 0, "RIFF");
+    view.setUint32(4, 36 + samples.length * 2, true); // File size
+    this.writeString(view, 8, "WAVE");
+
+    // Format chunk
+    this.writeString(view, 12, "fmt ");
+    view.setUint32(16, 16, true); // Subchunk1 size
+    view.setUint16(20, 1, true); // Audio format (1 = PCM)
+    view.setUint16(22, 1, true); // Number of channels
+    view.setUint32(24, sampleRate, true); // Sample rate
+    view.setUint32(28, sampleRate * 2, true); // Byte rate
+    view.setUint16(32, 2, true); // Block align
+    view.setUint16(34, 16, true); // Bits per sample
+
+    // Data chunk
+    this.writeString(view, 36, "data");
+    view.setUint32(40, samples.length * 2, true); // Data size
+
+    // Combine header and samples
+    const wavData = new Uint8Array(wavHeader.byteLength + samples.length * 2);
+    wavData.set(new Uint8Array(wavHeader), 0);
+
+    // Write PCM samples
+    for (let i = 0; i < samples.length; i++) {
+        const sample = Math.max(-1, Math.min(1, samples[i])); // Clamp between -1 and 1
+        const int16 = sample < 0 ? sample * 0x8000 : sample * 0x7fff; // Convert to 16-bit PCM
+        wavData[44 + i * 2] = int16 & 0xff;
+        wavData[44 + i * 2 + 1] = (int16 >> 8) & 0xff;
+    }
+    const blob = new Blob([wavData], { type: "audio/wav" });
+
+    // Create a File object
+    const file = new File([blob], "generated.wav", { type: "audio/wav" });
+
+    const formData = new FormData();
+    formData.append("audio_file", file);
+
+    try {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "multipart/form-data" },
+            body: formData,
+            mode: 'no-cors',
+        });
+
+        console.log(response.text());
+        console.log(response.json());
+
+        // Read the text response header
+        const textResponse = response.headers.get("text-response");
+        console.log("text", textResponse);
+    } catch (error) {
+        console.error("Error sending audio file:", error);
+    }
+  }
+
+  @block({
+    type: "command",
+    text: `Test chat API call`,
+  })
+  async testChatAPI() {
+    this.sendAudioFileToChatEndpoint();
+  }
+
 
   async useModel(url: string) {
     try {
