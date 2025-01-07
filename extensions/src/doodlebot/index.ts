@@ -743,11 +743,10 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
             method: "POST",
             headers: { "Content-Type": "multipart/form-data" },
             body: formData,
-            mode: 'no-cors',
         });
 
-        console.log(response.text());
-        console.log(response.json());
+        const text = response.text();
+        console.log(text);
 
         // Read the text response header
         const textResponse = response.headers.get("text-response");
