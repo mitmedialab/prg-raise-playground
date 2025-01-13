@@ -561,7 +561,7 @@ export default class Doodlebot {
 
     async connectToImageWebSocket(ip: string) {
         // Create a WebSocket connection
-        this.websocket = new WebSocket(`wss://${ip}:${port.camera}`);
+        this.websocket = new WebSocket(`ws://${ip}:${port.camera}`);
 
         // Return a promise that resolves when the WebSocket is connected
         await this.untilFinishedPending("image", new Promise<void>((resolve, reject) => {
@@ -740,7 +740,7 @@ export default class Doodlebot {
 
         if (this.audioSocket) return true;
 
-        const socket = new WebSocket(`wss://${this.connection.ip}:${port.audio}`);
+        const socket = new WebSocket(`ws://${this.connection.ip}:${port.audio}`);
         const self = this;
 
         socket.onopen = function (event) {
