@@ -683,7 +683,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   }
   
   async sendAudioFileToChatEndpoint() {
-    const url = "http://doodlebot.media.mit.edu/health";
+    const url = "https://doodlebot.media.mit.edu/health";
 
     // Create a simple WAV file buffer
     const sampleRate = 44100; // Standard audio sample rate
