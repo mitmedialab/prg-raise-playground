@@ -683,7 +683,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   }
   
   async sendAudioFileToChatEndpoint() {
-    const url = "http://doodlebot.media.mit.edu/chat";
+    const url = "http://doodlebot.media.mit.edu/health";
 
     // Create a simple WAV file buffer
     const sampleRate = 44100; // Standard audio sample rate
@@ -740,11 +740,13 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
 
     try {
         const response = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "multipart/form-data" },
-            body: formData,
+            method: "GET",
+            // headers: { "Content-Type": "multipart/form-data" },
+            // body: formData,
+            mode: 'no-cors'
         });
 
+        console.log(response);
         const text = response.text();
         console.log(text);
 
