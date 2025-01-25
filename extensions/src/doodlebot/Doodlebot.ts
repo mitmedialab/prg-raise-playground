@@ -650,32 +650,40 @@ export default class Doodlebot {
     line;
     lineCounter = 0;
     detector;
+    j = 0;
     
     async followLine() {
         let first = true;
         const delay = 0.5;
         const previousSpeed = 0.1;
-        const interval = 350; // 1/15th of a second
+        const interval = 180; // 1/15th of a second
         let prevRadius;
         let prevAngle;
-        let lineData
+        let lineData;
+        let t = { adjustedT: 0.3 };
+        let lastTime = null;
         await this.detector.initialize(this);
         
         while (true) {
             console.log("NEXT");
             try {
-                console.log("before 1");
-                console.log("after 1");
+                // console.log("before 1");
+                // console.log("after 1");
                 let lineData = this.detector.returnLine();
                 // Process line data
                 lineData = lineData.sort((a, b) => a[1] - b[1]);
-                console.log("LINE DATA", lineData);
+                //console.log("LINE DATA", lineData);
                 this.wholeString = this.wholeString + `${JSON.stringify(lineData)},`;
                 this.printLine();
                 this.lineCounter += 1;
-
+                let newMotorCommands;
+                const startTime = Date.now();
+                const difference = (startTime - lastTime) / 1000;
+                console.log("ADJUSTED TIME", t);
+                console.log("TIME PASSED", difference);
+                
                 if (first) {
-                    ({ motorCommands: this.motorCommands, bezierPoints: this.bezierPoints, line: this.line } = followLine(
+                    ({ motorCommands: newMotorCommands, bezierPoints: this.bezierPoints, line: this.line } = followLine(
                         lineData,
                         lineData,
                         null,
@@ -687,46 +695,62 @@ export default class Doodlebot {
                         false,
                         true
                     ));
-                    first = false;
                 } else {
-                    ({ motorCommands: this.motorCommands, bezierPoints: this.bezierPoints, line: this.line } = followLine(
+                    ({ motorCommands: newMotorCommands, bezierPoints: this.bezierPoints, line: this.line } = followLine(
                         this.line,
                         lineData,
                         null,
                         delay,
                         previousSpeed,
                         this.motorCommands,
-                        [1],
-                        [1],
+                        [difference/2],
+                        [difference],
                         false,
                         false
                     ));
                 }
-
-
-                this.cumulativeLine = this.cumulativeLine + `${JSON.stringify(this.line)},`;
-                console.log("after");
-                console.log("motorCommands DEBUG 1", this.motorCommands);
-                for (const command of this.motorCommands) {
-                    console.log("command DEBUG 2", command);
-                    const { radius, angle } = command;
-                    console.log(command);
-                    if (command.distance > 0) {
-                        this.sendWebsocketCommand("m", Math.round(12335.6*command.distance), Math.round(12335.6*command.distance), 500, 500);
+                if (this.motorCommands && !(this.motorCommands[0].distance > 0)) {
+                    if (this.motorCommands) {
+                        t = calculateArcTime(this.motorCommands[0].radius, this.motorCommands[0].angle, newMotorCommands.radius, newMotorCommands.angle);
                     } else {
-                        this.sendBLECommand("t", radius, angle);
+                        t = calculateArcTime(0, 0, newMotorCommands.radius, newMotorCommands.angle);
                     }
-                    
+                }
+                this.motorCommands = newMotorCommands;
+                lastTime = Date.now();
+                this.cumulativeLine = this.cumulativeLine + `${JSON.stringify(this.line)},`;
+                // console.log("after");
+                // console.log("motorCommands DEBUG 1", this.motorCommands);
+                if (this.j % 2 == 0) {
+                    for (const command of this.motorCommands) {
+                        console.log("COMMAND", command);
+                        const { radius, angle } = command;
+                        console.log(command);
+                        if (command.distance > 0) {
+                            this.sendWebsocketCommand("m", Math.round(12335.6*command.distance), Math.round(12335.6*command.distance), 500, 500);
+                        } else {
+                            this.sendBLECommand("t", radius, angle);
+                        }
+                    }
                 }
                 console.log("after 2");
                 console.log(this.cumulativeLine);
 
                 // Wait for the interval duration before the next iteration
+                // if (first) {
+                //     this.sendWebsocketCommand("m", Math.round(12335.6*10), Math.round(12335.6*10), 500, 500);
+                //     //await new Promise((resolve) => setTimeout(resolve, 1000));
+                //     first = false;
+                // } else {
+                //     await new Promise((resolve) => setTimeout(resolve, interval));
+                // }
                 await new Promise((resolve) => setTimeout(resolve, interval));
+                first = false;
             } catch (error) {
                 console.error("Error in followLine loop:", error);
                 break; // Optionally, break the loop on error
             }
+            this.j = this.j + 1;
         }
     }
     //console.log(j);
