@@ -17,7 +17,7 @@ const imageDimensions = [640, 480];
 const horizontalFOV = 53.4;
 const verticalFOV = 41.41;
 const cameraHeight = 0.098;
-const tiltAngle = 30;
+const tiltAngle = 25;
 //const tiltAngle = 38;
 
 function cutOffLineOnDistance(line: Point[], maxDistance: number) {
@@ -391,6 +391,52 @@ function prependUntilTarget(line2) {
 }
 
 
+/**
+ * Removes outliers from a 2D array of points using the IQR method.
+ * @param points - Array of points ([x, y]) representing a line.
+ * @param threshold - Multiplier for the IQR to define outliers (default is 1.5).
+ * @returns A filtered array of points without outliers.
+ */
+function removeOutliers(points: Point[], threshold: number = 1.5): Point[] {
+    if (points.length < 3) return points; // Not enough points to calculate outliers
+
+    // Sort points by x-coordinate
+    const sortedPoints = [...points].sort((a, b) => a[1] - b[1]);
+
+    // Extract y-values
+    const yValues = sortedPoints.map(point => point[0]);
+
+    // Calculate Q1 (25th percentile) and Q3 (75th percentile)
+    const q1 = percentile(yValues, 25);
+    const q3 = percentile(yValues, 75);
+
+    // Calculate IQR
+    const iqr = q3 - q1;
+
+    // Define lower and upper bounds for outliers
+    const lowerBound = q1 - threshold * iqr;
+    const upperBound = q3 + threshold * iqr;
+
+    // Filter points within the bounds
+    return sortedPoints.filter(([y, ]) => y >= lowerBound && y <= upperBound);
+}
+
+/**
+ * Calculates the nth percentile of a sorted array.
+ * @param values - Sorted array of numbers.
+ * @param percentile - Percentile to calculate (0-100).
+ * @returns The calculated percentile value.
+ */
+function percentile(values: number[], percentile: number): number {
+    const index = (percentile / 100) * (values.length - 1);
+    const lower = Math.floor(index);
+    const upper = Math.ceil(index);
+    const weight = index - lower;
+    return values[lower] * (1 - weight) + values[upper] * weight;
+}
+
+
+
 export function followLine(previousLine: Point[], pixels: Point[], next: Point[], delay: number, previousSpeed: number, previousCommands: Command[], previousTime: number[], totalTime: number[], test: Boolean, first = false) {
 
     let nextPoints: Point[];
@@ -403,9 +449,10 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
 
     }
 
-
+    //pixels = removeOutliers(pixels, 2);
     let worldPoints = simplifyLine(pixels, epsilon, 0.1);
     worldPoints = smoothLine(worldPoints, 2);
+    
     
     // console.log("world", worldPoints);
     // console.log("command", previousCommands)
@@ -520,7 +567,7 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
             try {
                 // segment 1 is guessLine
                 // segment 2 is worldPoints
-                let result = procrustes(segment1, segment2, scale);
+                let result = procrustes(guessLine, world1, scale);
                 let guessLine2 = rotateCurve(segment1.map(point => ({ x: point[0], y: point[1] })), result.rotation);
                 //console.log(guessLine2);
                 if (guessLine2) {
@@ -692,7 +739,7 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     if (test) {
         xOffset = 0;
     } else {
-        xOffset = ((reference1[0] - reference2[0]))/2;
+        xOffset = ((reference1[0] - reference2[0]));
         //xOffset = -1*procrustesResult.translation[0];
     }
     //console.log("X OFFSET", xOffset);
@@ -719,7 +766,7 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     // }
 
     let command = createArcFromPoints(bezier.points[0], bezier.get(0.5), bezier.get(1));
-    let ratio = 4/6;
+    let ratio = 4/4;
     command.angle = (command.angle* ratio) > 35 ? 35 : (command.angle* ratio);
     command.angle = (command.angle * ratio) < -35 ? -35 : (command.angle* ratio);
     // if (command.radius > 50) {

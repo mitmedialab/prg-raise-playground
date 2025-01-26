@@ -656,7 +656,7 @@ export default class Doodlebot {
         let first = true;
         const delay = 0.5;
         const previousSpeed = 0.1;
-        const interval = 180; // 1/15th of a second
+        const interval = 175; // 1/15th of a second
         let prevRadius;
         let prevAngle;
         let lineData;
