@@ -808,7 +808,7 @@ createAndSaveWAV(interleaved, sampleRate) {
 }
 
   async sendAudioFileToChatEndpoint(file) {
-    const url = "https://doodlebot.media.mit.edu/chat";
+    const url = "http://doodlebot.media.mit.edu/chat";
     const formData = new FormData();
     formData.append("audio_file", file);
     // https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWalk60.wav
