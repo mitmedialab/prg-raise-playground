@@ -656,7 +656,7 @@ export default class Doodlebot {
         let first = true;
         const delay = 0.5;
         const previousSpeed = 0.1;
-        let iterations = 2;
+        let iterations = 1;
         const min = 370;
         const max = 395;
         const intervalMax = max/iterations;
@@ -754,8 +754,8 @@ export default class Doodlebot {
                 // }
                 const arcLength = (Math.PI * (this.motorCommands[0].radius + 2.93) * this.motorCommands[0].angle)/180;
                 console.log("arc", arcLength, "command", this.motorCommands[0]);
-                const ratio = 2/Math.abs(arcLength);
-                console.log('interval', interval*ratio, "angle", this.motorCommands[0].angle, "length", arcLength);
+                const ratio = 2.5/Math.abs(arcLength);
+                console.log('interval', interval*ratio, "angle", this.motorCommands[0].angle, "length", arcLength, "time", t.aT);
                 const waitTime = Math.max(Math.min(interval*ratio, intervalMax), intervalMin);
                 await new Promise((resolve) => setTimeout(resolve, waitTime));
                 prevInterval = waitTime/1000;

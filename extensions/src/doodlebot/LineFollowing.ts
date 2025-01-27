@@ -10,7 +10,7 @@ const epsilon = 1;
 const bezierSamples = 2;
 const controlLength = .01;
 let lookahead = .05;
-let start = 0.005;
+let start = 0.01;
 const spin = 10;
 
 const imageDimensions = [640, 480];
