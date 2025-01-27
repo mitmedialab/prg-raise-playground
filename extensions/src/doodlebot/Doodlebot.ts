@@ -657,11 +657,11 @@ export default class Doodlebot {
         const delay = 0.5;
         const previousSpeed = 0.1;
         let iterations = 1;
-        const min = 370;
-        const max = 395;
+        const min = 370 + 20;
+        const max = 395 + 20;
         const intervalMax = max/iterations;
         const intervalMin = min/iterations;
-        const interval = (375)/iterations; // 1/15th of a second
+        const interval = (375 + 20)/iterations; // 1/15th of a second
         let prevRadius;
         let prevAngle;
         let lineData;
@@ -722,6 +722,17 @@ export default class Doodlebot {
                 this.cumulativeLine = this.cumulativeLine + `${JSON.stringify(this.line)},`;
                 // console.log("after");
                 // console.log("motorCommands DEBUG 1", this.motorCommands);
+                const length = (Math.PI * (newMotorCommands[0].radius) * newMotorCommands[0].angle)/180;
+                console.log("LENGTH", length);
+                if (length < 1.5) {
+                    newMotorCommands[0].angle = newMotorCommands[0].angle * 1.2
+                }
+                if (newMotorCommands[0].angle > 35) {
+                    newMotorCommands[0].angle = 35;
+                }
+                if (newMotorCommands[0].angle < -35) {
+                    newMotorCommands[0].angle = -35;
+                }
                 if (this.j % iterations == 0) {
                     if (this.motorCommands && !(this.motorCommands[0].distance > 0)) {
                         if (this.motorCommands) {
@@ -752,6 +763,7 @@ export default class Doodlebot {
                 // } else {
                 //     await new Promise((resolve) => setTimeout(resolve, interval));
                 // }
+
                 const arcLength = (Math.PI * (this.motorCommands[0].radius + 2.93) * this.motorCommands[0].angle)/180;
                 console.log("arc", arcLength, "command", this.motorCommands[0]);
                 const ratio = 2.5/Math.abs(arcLength);
