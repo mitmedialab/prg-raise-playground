@@ -9,8 +9,8 @@ const maxDistance = 100;
 const epsilon = 1;
 const bezierSamples = 2;
 const controlLength = .01;
-const lookahead = .05;
-const start = 0.01;
+let lookahead = .05;
+let start = 0.005;
 const spin = 10;
 
 const imageDimensions = [640, 480];
@@ -449,27 +449,30 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
 
     }
 
-    //pixels = removeOutliers(pixels, 2);
-    let worldPoints = simplifyLine(pixels, epsilon, 0.1);
-    worldPoints = smoothLine(worldPoints, 2);
-    
-    
-    // console.log("world", worldPoints);
-    // console.log("command", previousCommands)
-    if (worldPoints[0] == undefined) {
-        worldPoints = [];
-    }
-    worldPoints = worldPoints.length > 0 ? worldPoints.map(point => pixelToGroundCoordinates(point)) : [];
-    worldPoints = cutOffLineOnDistance(worldPoints.filter((point: Point) => point[1] < 370), 0.02);
-    let procrustesLine; 
+    let worldPoints = [];
+    if (pixels.length > 0) {
+        //pixels = removeOutliers(pixels, 2);
+        worldPoints = simplifyLine(pixels, epsilon, 0.1);
+        worldPoints = smoothLine(worldPoints, 2);
+        
+        
+        // console.log("world", worldPoints);
+        // console.log("command", previousCommands)
+        if (worldPoints[0] == undefined) {
+            worldPoints = [];
+        }
+        worldPoints = worldPoints.length > 0 ? worldPoints.map(point => pixelToGroundCoordinates(point)) : [];
+        worldPoints = cutOffLineOnDistance(worldPoints.filter((point: Point) => point[1] < 420), 0.02);
+        let procrustesLine; 
 
 
-    if (first) {
-        previousLine = worldPoints
-    }
+        if (first) {
+            previousLine = worldPoints
+        }
 
-    if (previousLine.length == 0 && worldPoints.length > 0 && previousCommands[0].radius == 2) {
-        previousLine = worldPoints;
+        if (previousLine.length == 0 && worldPoints.length > 0 && previousCommands[0].radius == 2) {
+            previousLine = worldPoints;
+        }
     }
 
     console.log("previous line", previousLine);
@@ -489,160 +492,167 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     }
     /* TESTING */
 
+    previousLine = showLineAboveY(previousLine, 0);
+    let guessLine = previousLine;
     let robotPosition = { x: 0, y: 0, angle: 0 };
-    for (let i = 0; i < previousCommands.length; i++) {
-        const command = previousCommands[i];
-        if (command.radius == Infinity) {
-            robotPosition.y = robotPosition.y + command.distance * (previousTime[i] / totalTime[i]);
-        } else {
-            robotPosition = getRobotPositionAfterArc({ angle: command.angle * -1, radius: command.radius, distance: 0 }, robotPosition, (previousTime[i] / totalTime[i]));
+    const sameLine = worldPoints.length > 0 && worldPoints[0][0] == previousLine[0][0];
+    let guessFirst = true;
+    if (worldPoints.length == 0) {
+        
+        console.log("found? ", guessLine.find(value => value[1] > 0));
+        for (let i = 0; i < previousCommands.length; i++) {
+            const command = previousCommands[i];
+            if (command.radius == Infinity) {
+                robotPosition.y = robotPosition.y + command.distance * Math.min((previousTime[i] / totalTime[i]), 1);
+            } else {
+                robotPosition = getRobotPositionAfterArc({ angle: command.angle * -1, radius: command.radius, distance: 0 }, robotPosition, Math.min((previousTime[i] / totalTime[i]), 1));
+            }
+        }
+        guessLine = rotateAndTranslateLine(previousLine, -1 * robotPosition.angle, [-1 * robotPosition.x, -1 * robotPosition.y]);
+        guessLine = showLineAboveY(guessLine, 0);
+        if (guessLine.length < 50 || !guessLine.find(value => value[1] > 0)) {
+            start = .03;
+            lookahead = .07;
+            console.log("MODIFIED");
+            guessLine = previousLine;
         }
     }
 
+    console.log("POSITION", robotPosition, "RATIO", Math.min((previousTime[0] / totalTime[0]), 1), "PREVIOUS", previousTime[0], totalTime[0]);
     // Guess the location of the previous line
     // console.log("position", robotPosition);
-    //let guessLine = rotateAndTranslateLine(previousLine, -1 * robotPosition.angle, [-1 * robotPosition.x, -1 * robotPosition.y]);
-    let guessLine = previousLine;
+
+    //let guessLine = previousLine;
+    console.log("before", previousLine, "after", guessLine);
 
     // console.log("guess", guessLine);
-    let spin = 15;
     if (guessLine.length == 0) {
-        let angle: number;
-        if (previousCommands[0].radius == 2) {
-            if (previousCommands[0].angle > 0) {
-                angle = previousCommands[0].angle + spin;
-            } else {
-                angle = previousCommands[0].angle - spin;
-            }
-        } else {
-            if (previousCommands[0].angle < 0) {
-                angle = spin;
-            } else {
-                angle = -1 * spin;
-            }
-        }
-        const motorCommands = [{ radius: 2, angle: angle, distance: 0 }];
-        const bezierPoints = [];
-        return { motorCommands, bezierPoints, line: [] };
-    }
-
-    // Cutting off segments to the overlap portion
-    let segment1 = showLineAboveY(guessLine, Math.max(worldPoints.length > 0 ? worldPoints[0][1] : 0, guessLine[0][1]));
-    let segment2;
-    if (worldPoints.length > 0) {
-        segment2 = showLineBelowY(worldPoints, Math.min(guessLine[guessLine.length - 1][1], worldPoints[worldPoints.length - 1][1]))
-    } else {
-        segment2 = [];
-    }
-
-    // Distance of the world line
-    let worldDistance = 0;
-    for (let i = 0; i < worldPoints.length - 1; i++) {
-        worldDistance += distanceBetweenPoints(worldPoints[i], worldPoints[i + 1]);
-    }
-
-    // Collect the error between guess and world
-    let procrustesResult: ProcrustesResult;
-    if (previousCommands.length == 0 && false) {
-
-        procrustesResult = procrustes(segment1, segment2);
-    } else if (worldDistance > 0.02) {
-
-        const scaleValues = [];
-        const start = 0.7;
-        const end = 0.9;
-        const interval = 0.01;
-        for (let value = start; value <= end; value += interval) {
-            scaleValues.push(value); // Keeps precision at 1 decimal
-        }
-        let lowestError = Infinity;
-        let bestResult = null;
-        scaleValues.forEach(scale => {
-            // Apply the Procrustes transformation
-
-            // Calculate cumulative error
-            //TODO
-            let world1 = worldPoints
-            let guess1 = guessLine;
-            try {
-                // segment 1 is guessLine
-                // segment 2 is worldPoints
-                let result = procrustes(guessLine, world1, scale);
-                let guessLine2 = rotateCurve(segment1.map(point => ({ x: point[0], y: point[1] })), result.rotation);
-                //console.log(guessLine2);
-                if (guessLine2) {
-                    guessLine2 = guessLine2.map((point: { x: number, y: number }) => [point.x, point.y]);
-                    guessLine2 = applyTranslation(guessLine2, result.translation);
-                    guessLine2 = showLineAboveY(guessLine2, 0);
-                    let cumulativeError = calculateLineError(segment2, guessLine2)
-                    // Update if we find a lower cumulative error
-                    //if (cumulativeError < lowestError && (Math.abs(result.rotation) < 0.2) && Math.abs(result.translation[0]) < 0.03 && Math.abs(result.translation[1]) < 0.03) {
-                    if (cumulativeError < lowestError) {
-                        lowestError = cumulativeError;
-                        bestResult = result;
-                    }
-                }
-            } catch (e) {
-
-            }
-            // try {
-            //     let result = procrustes(segment1, segment2, scale);
-            //     let guessLine2 = rotateCurve(guessLine.map(point => ({ x: point[0], y: point[1] })), result.rotation);
-            //     //console.log(guessLine2);
-            //     if (guessLine2) {
-            //         guessLine2 = guessLine2.map((point: { x: number, y: number }) => [point.x, point.y]);
-            //         guessLine2 = applyTranslation(guessLine2, result.translation);
-            //         guessLine2 = showLineAboveY(guessLine2, 0);
-            //         let cumulativeError = calculateLineError(worldPoints, guessLine2)
-            //         // Update if we find a lower cumulative error
-            //         if (cumulativeError < lowestError) {
-            //             lowestError = cumulativeError;
-            //             bestResult = result;
-            //         }
-            //     }
-            // } catch (e) {
-
-            // }
-        });
-        procrustesResult = bestResult;
-        // if (procrustesResult && (procrustesResult.rotation > 0.5 || procrustesResult.rotation < 0.5)) {
-        //     procrustesResult = { translation: [0, 0], rotation: 0, distance: 0 };
-        // } else if (!procrustesResult) {
-        //     procrustesResult = { translation: [0, 0], rotation: 0, distance: 0 };
-        // }
-    } else {
-        // If the current frame doesn't contain that many points, just use previous guess
-        procrustesResult = { translation: [0, 0], rotation: 0, distance: 0 };
-    }
-
-    // Correct the guess of the previous line
-    // console.log("guess line", guessLine);
-    if (!procrustesResult) {
-        procrustesResult = { translation: [0, 0], rotation: 0, distance: 0 };
-    }
-     console.log("result", procrustesResult);
-    let line = rotateCurve(guessLine.map((point: Point) => ({ x: point[0], y: point[1] })), procrustesResult.rotation).map((point: { x: number, y: number }) => [point.x, point.y]);
-    line = applyTranslation(line, procrustesResult.translation);
-    line = showLineAboveY(line, 0);
-
-    console.log("previous line", line);
-
-    if (line.length < 1) {
         return;
     }
 
-    let trimmedLine;
-    if (worldDistance > 0.05 && line.length > 0) {
-        // If we have enough points to append, add the new portion of the current camera frame
-        let test2 = worldPoints.slice(Math.round(worldPoints.length/2), worldPoints.length)
-        if (test2.length > 0) {
-            let trimmedLine = cutOffLineAtOverlap(line, test2);
-            line = trimmedLine.overlap ? trimmedLine.line : blendLines(trimmedLine.line, test2);
-        } 
-        
-    }
+    let line;
+    if (worldPoints.length > 0) {
+        // Cutting off segments to the overlap portion
+        let segment1 = showLineAboveY(guessLine, Math.max(worldPoints.length > 0 ? worldPoints[0][1] : 0, guessLine[0][1]));
+        let segment2;
+        if (worldPoints.length > 0) {
+            segment2 = showLineBelowY(worldPoints, Math.min(guessLine[guessLine.length - 1][1], worldPoints[worldPoints.length - 1][1]))
+        } else {
+            segment2 = [];
+        }
 
-    line = smoothLine(line);
+        // Distance of the world line
+        let worldDistance = 0;
+        for (let i = 0; i < worldPoints.length - 1; i++) {
+            worldDistance += distanceBetweenPoints(worldPoints[i], worldPoints[i + 1]);
+        }
+
+        // Collect the error between guess and world
+        let procrustesResult: ProcrustesResult;
+        if (previousCommands.length == 0 && false) {
+
+            procrustesResult = procrustes(segment1, segment2);
+        } else if (worldDistance > 0.02) {
+
+            const scaleValues = [];
+            const start = 0.7;
+            const end = 0.9;
+            const interval = 0.01;
+            for (let value = start; value <= end; value += interval) {
+                scaleValues.push(value); // Keeps precision at 1 decimal
+            }
+            let lowestError = Infinity;
+            let bestResult = null;
+            scaleValues.forEach(scale => {
+                // Apply the Procrustes transformation
+
+                // Calculate cumulative error
+                //TODO
+                let world1 = worldPoints
+                let guess1 = guessLine;
+                try {
+                    // segment 1 is guessLine
+                    // segment 2 is worldPoints
+                    let result = procrustes(guessLine, world1, scale);
+                    let guessLine2 = rotateCurve(segment1.map(point => ({ x: point[0], y: point[1] })), result.rotation);
+                    //console.log(guessLine2);
+                    if (guessLine2) {
+                        guessLine2 = guessLine2.map((point: { x: number, y: number }) => [point.x, point.y]);
+                        guessLine2 = applyTranslation(guessLine2, result.translation);
+                        guessLine2 = showLineAboveY(guessLine2, 0);
+                        let cumulativeError = calculateLineError(segment2, guessLine2)
+                        // Update if we find a lower cumulative error
+                        if (cumulativeError < lowestError && (Math.abs(result.rotation) < 0.2) && Math.abs(result.translation[0]) < 0.03 && Math.abs(result.translation[1]) < 0.03) {
+                        //if (cumulativeError < lowestError) {
+                            lowestError = cumulativeError;
+                            bestResult = result;
+                        }
+                    }
+                } catch (e) {
+
+                }
+                // try {
+                //     let result = procrustes(segment1, segment2, scale);
+                //     let guessLine2 = rotateCurve(guessLine.map(point => ({ x: point[0], y: point[1] })), result.rotation);
+                //     //console.log(guessLine2);
+                //     if (guessLine2) {
+                //         guessLine2 = guessLine2.map((point: { x: number, y: number }) => [point.x, point.y]);
+                //         guessLine2 = applyTranslation(guessLine2, result.translation);
+                //         guessLine2 = showLineAboveY(guessLine2, 0);
+                //         let cumulativeError = calculateLineError(worldPoints, guessLine2)
+                //         // Update if we find a lower cumulative error
+                //         if (cumulativeError < lowestError) {
+                //             lowestError = cumulativeError;
+                //             bestResult = result;
+                //         }
+                //     }
+                // } catch (e) {
+
+                // }
+            });
+            procrustesResult = bestResult;
+            // if (procrustesResult && (procrustesResult.rotation > 0.5 || procrustesResult.rotation < 0.5)) {
+            //     procrustesResult = { translation: [0, 0], rotation: 0, distance: 0 };
+            // } else if (!procrustesResult) {
+            //     procrustesResult = { translation: [0, 0], rotation: 0, distance: 0 };
+            // }
+        } else {
+            // If the current frame doesn't contain that many points, just use previous guess
+            procrustesResult = { translation: [0, 0], rotation: 0, distance: 0 };
+        }
+
+        // Correct the guess of the previous line
+        // console.log("guess line", guessLine);
+        if (!procrustesResult) {
+            procrustesResult = { translation: [0, 0], rotation: 0, distance: 0 };
+        }
+        console.log("result", procrustesResult, procrustesResult.translation[1]);
+        line = rotateCurve(guessLine.map((point: Point) => ({ x: point[0], y: point[1] })), procrustesResult.rotation).map((point: { x: number, y: number }) => [point.x, point.y]);
+        line = applyTranslation(line, procrustesResult.translation);
+        line = showLineAboveY(line, 0);
+
+        console.log("previous line", line);
+
+        if (line.length < 1) {
+            return;
+        }
+
+        let trimmedLine;
+        if (worldDistance > 0.05 && line.length > 0) {
+            // If we have enough points to append, add the new portion of the current camera frame
+            let test2 = worldPoints.slice(Math.round(worldPoints.length/2), worldPoints.length)
+            if (test2.length > 0) {
+                let trimmedLine = cutOffLineAtOverlap(line, test2);
+                line = trimmedLine.overlap ? trimmedLine.line : blendLines(trimmedLine.line, test2);
+            } 
+            
+        }
+
+        line = smoothLine(line);
+    } else {
+        line = guessLine;
+        line = showLineAboveY(line, 0);
+    }
     //line = rebalanceCurve(line.map((point: Point) => ({ x: point[0], y: point[1] })), {}).map((point: { x: number, y: number }) => [point.x, point.y]);
 
     // Remove duplicate y values
@@ -657,24 +667,7 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     });
 
     if (line.length == 0) {
-        console.log("LINE LENGTH IS 0", line);
-        let angle: number;
-        if (previousCommands[0].radius == 2) {
-            if (previousCommands[0].angle > 0) {
-                angle = previousCommands[0].angle + spin;
-            } else {
-                angle = previousCommands[0].angle - spin;
-            }
-        } else {
-            if (previousCommands[0].angle < 0) {
-                angle = spin;
-            } else {
-                angle = -1 * spin;
-            }
-        }
-        const motorCommands = [{ radius: 2, angle: angle, distance: 0 }];
-        const bezierPoints = [];
-        return { motorCommands, bezierPoints, line };
+        return;
     }
 
     // Create the spline 
@@ -739,7 +732,7 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     if (test) {
         xOffset = 0;
     } else {
-        xOffset = ((reference1[0] - reference2[0]));
+        xOffset = ((reference1[0] - reference2[0]))/1;
         //xOffset = -1*procrustesResult.translation[0];
     }
     //console.log("X OFFSET", xOffset);
@@ -767,8 +760,8 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
 
     let command = createArcFromPoints(bezier.points[0], bezier.get(0.5), bezier.get(1));
     let ratio = 4/4;
-    command.angle = (command.angle* ratio) > 35 ? 35 : (command.angle* ratio);
-    command.angle = (command.angle * ratio) < -35 ? -35 : (command.angle* ratio);
+    // command.angle = (command.angle* ratio) > 35 ? 35 : (command.angle* ratio);
+    // command.angle = (command.angle * ratio) < -35 ? -35 : (command.angle* ratio);
     // if (command.radius > 50) {
     //     command = {radius: Infinity, angle: 0, distance: 0.03}
     // }

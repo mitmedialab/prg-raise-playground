@@ -656,11 +656,17 @@ export default class Doodlebot {
         let first = true;
         const delay = 0.5;
         const previousSpeed = 0.1;
-        const interval = 175; // 1/15th of a second
+        let iterations = 2;
+        const min = 370;
+        const max = 395;
+        const intervalMax = max/iterations;
+        const intervalMin = min/iterations;
+        const interval = (375)/iterations; // 1/15th of a second
         let prevRadius;
         let prevAngle;
         let lineData;
-        let t = { adjustedT: 0.3 };
+        let prevInterval;
+        let t = { aT: 0.3 };
         let lastTime = null;
         await this.detector.initialize(this);
         
@@ -670,6 +676,7 @@ export default class Doodlebot {
                 // console.log("before 1");
                 // console.log("after 1");
                 let lineData = this.detector.returnLine();
+                console.log("LINE DATA", lineData);
                 // Process line data
                 lineData = lineData.sort((a, b) => a[1] - b[1]);
                 //console.log("LINE DATA", lineData);
@@ -703,25 +710,27 @@ export default class Doodlebot {
                         delay,
                         previousSpeed,
                         this.motorCommands,
-                        [difference/2],
-                        [difference],
+                        [prevInterval/2],
+                        [t.aT],
                         false,
                         false
                     ));
                 }
-                if (this.motorCommands && !(this.motorCommands[0].distance > 0)) {
-                    if (this.motorCommands) {
-                        t = calculateArcTime(this.motorCommands[0].radius, this.motorCommands[0].angle, newMotorCommands.radius, newMotorCommands.angle);
-                    } else {
-                        t = calculateArcTime(0, 0, newMotorCommands.radius, newMotorCommands.angle);
-                    }
-                }
-                this.motorCommands = newMotorCommands;
+                
+                
                 lastTime = Date.now();
                 this.cumulativeLine = this.cumulativeLine + `${JSON.stringify(this.line)},`;
                 // console.log("after");
                 // console.log("motorCommands DEBUG 1", this.motorCommands);
-                if (this.j % 2 == 0) {
+                if (this.j % iterations == 0) {
+                    if (this.motorCommands && !(this.motorCommands[0].distance > 0)) {
+                        if (this.motorCommands) {
+                            t = calculateArcTime(this.motorCommands[0].radius, this.motorCommands[0].angle, newMotorCommands[0].radius, newMotorCommands[0].angle);
+                        } else {
+                            t = calculateArcTime(0, 0, newMotorCommands[0].radius, newMotorCommands[0].angle);
+                        }
+                    }
+                    this.motorCommands = newMotorCommands;
                     for (const command of this.motorCommands) {
                         console.log("COMMAND", command);
                         const { radius, angle } = command;
@@ -733,7 +742,6 @@ export default class Doodlebot {
                         }
                     }
                 }
-                console.log("after 2");
                 console.log(this.cumulativeLine);
 
                 // Wait for the interval duration before the next iteration
@@ -744,7 +752,13 @@ export default class Doodlebot {
                 // } else {
                 //     await new Promise((resolve) => setTimeout(resolve, interval));
                 // }
-                await new Promise((resolve) => setTimeout(resolve, interval));
+                const arcLength = (Math.PI * (this.motorCommands[0].radius + 2.93) * this.motorCommands[0].angle)/180;
+                console.log("arc", arcLength, "command", this.motorCommands[0]);
+                const ratio = 2/Math.abs(arcLength);
+                console.log('interval', interval*ratio, "angle", this.motorCommands[0].angle, "length", arcLength);
+                const waitTime = Math.max(Math.min(interval*ratio, intervalMax), intervalMin);
+                await new Promise((resolve) => setTimeout(resolve, waitTime));
+                prevInterval = waitTime/1000;
                 first = false;
             } catch (error) {
                 console.error("Error in followLine loop:", error);
