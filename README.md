@@ -50,7 +50,7 @@ pnpm install
 pnpm dev -i examples
 # This starts up a development server, serving the two "example" extensions.
 # It takes about ~20s to initially startup and serve everything.
-# Open http://localhost:8601/ in your browser (keep refreshing if nothing's coming up)
+# Open http://localhost:8602/ in your browser (keep refreshing if nothing's coming up)
 ```
 
 ### 🔨 Making an extension
