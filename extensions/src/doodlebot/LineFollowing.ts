@@ -440,6 +440,7 @@ function percentile(values: number[], percentile: number): number {
 export function followLine(previousLine: Point[], pixels: Point[], next: Point[], delay: number, previousSpeed: number, previousCommands: Command[], previousTime: number[], totalTime: number[], test: Boolean, first = false) {
 
     let nextPoints: Point[];
+    let errorMultiplier = 1;
     if (test) {
         nextPoints = simplifyLine(next, epsilon, 0.1);
         nextPoints = smoothLine(nextPoints, 2);
@@ -511,10 +512,15 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
         guessLine = rotateAndTranslateLine(previousLine, -1 * robotPosition.angle, [-1 * robotPosition.x, -1 * robotPosition.y]);
         guessLine = showLineAboveY(guessLine, 0);
         if (guessLine.length < 50 || !guessLine.find(value => value[1] > 0)) {
-            start = .03;
-            lookahead = .07;
+            start = .02;
+            lookahead = .06;
             console.log("MODIFIED");
+            console.log("traveled", robotPosition.x, robotPosition.y);;
+            guessLine = rotateAndTranslateLine(previousLine, 0, [0, -.0005]);
+            guessLine = showLineAboveY(guessLine, 0);
             guessLine = previousLine;
+            errorMultiplier = errorMultiplier * 0;
+
         }
     }
 
@@ -732,8 +738,9 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     if (test) {
         xOffset = 0;
     } else {
-        xOffset = ((reference1[0] - reference2[0]))/1;
+        xOffset = ((reference1[0] - reference2[0])*errorMultiplier)/1;
         //xOffset = -1*procrustesResult.translation[0];
+        
     }
     //console.log("X OFFSET", xOffset);
 
@@ -741,12 +748,13 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     // TODO: Add angle correction to the control points
     const bezier = new Bezier.Bezier(
         { x: point3.x + xOffset, y: point3.y },
-        { x: point3.x + xOffset, y: point3.y + controlLength },
+        { x: point3.x + xOffset, y: point3.y + (errorMultiplier > 1 ? controlLength *  1 : controlLength) },
         isNaN(extendedPoint1.x) ? point2 : extendedPoint1,
         point2
     );
 
-    console.log("BEZIER", bezier);
+
+    console.log("error", xOffset, "before", xOffset/errorMultiplier, "BEZIER", bezier.points[0], bezier.points[1], bezier.points[2], bezier.points[3]);
 
     const motorCommands: Command[] = [];
 
@@ -765,6 +773,10 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     // if (command.radius > 50) {
     //     command = {radius: Infinity, angle: 0, distance: 0.03}
     // }
+    if (errorMultiplier > 1) {
+        command.angle = command.angle * 1.5;
+        command.radius = command.radius / 2;
+    }
     motorCommands.push(command);
 
 

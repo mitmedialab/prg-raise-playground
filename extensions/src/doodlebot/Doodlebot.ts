@@ -656,18 +656,21 @@ export default class Doodlebot {
         let first = true;
         const delay = 0.5;
         const previousSpeed = 0.1;
-        let iterations = 1;
-        const min = 370 + 20;
-        const max = 395 + 20;
+        let iterations = 2;
+        const min = 360;
+        const max = 375;
         const intervalMax = max/iterations;
         const intervalMin = min/iterations;
-        const interval = (375 + 20)/iterations; // 1/15th of a second
+        const interval = (370)/iterations; // 1/15th of a second
         let prevRadius;
         let prevAngle;
         let lineData;
         let prevInterval;
         let t = { aT: 0.3 };
         let lastTime = null;
+        console.log(this.connection.ip);
+        console.log(this.detector);
+        this.detector = new LineDetector(this.connection.ip);
         await this.detector.initialize(this);
         
         while (true) {
