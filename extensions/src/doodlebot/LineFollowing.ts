@@ -696,7 +696,7 @@ export function followLine(previousLine: Point[], pixels: Point[], previousPixel
     }
 
     // TODO: change to .005
-    const x1 = findPointAtDistanceWithIncrements(spline, 0.001, distance - .03);
+    const x1 = findPointAtDistanceWithIncrements(spline, 0.001, distance - .02);
     const x2 = findPointAtDistanceWithIncrements(spline, 0.001, distance);
     const point1 = { x: spline.at(x1), y: x1 }
     const point2 = { x: spline.at(x2), y: x2 }
@@ -779,6 +779,7 @@ export function followLine(previousLine: Point[], pixels: Point[], previousPixel
     if (errorMultiplier == 0) {
         command.angle = Math.max(command.angle * 1.5, 5);
         command.radius = Math.min(1.5, command.radius / 2);
+        command.distance = 0;
     }
     motorCommands.push(command);
 
