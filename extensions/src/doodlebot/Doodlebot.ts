@@ -657,11 +657,11 @@ export default class Doodlebot {
         const delay = 0.5;
         const previousSpeed = 0.1;
         let iterations = 2;
-        const min = 360;
-        const max = 375;
+        const min = 330 + -10;
+        const max = 355 + -10;
         const intervalMax = max/iterations;
         const intervalMin = min/iterations;
-        const interval = (370)/iterations; // 1/15th of a second
+        const interval = (340 + -5)/iterations; // 1/15th of a second
         let prevRadius;
         let prevAngle;
         let lineData;
@@ -672,6 +672,7 @@ export default class Doodlebot {
         console.log(this.detector);
         this.detector = new LineDetector(this.connection.ip);
         await this.detector.initialize(this);
+        let prevLine = [];
         
         while (true) {
             console.log("NEXT");
@@ -679,7 +680,11 @@ export default class Doodlebot {
                 // console.log("before 1");
                 // console.log("after 1");
                 let lineData = this.detector.returnLine();
+                const imageDimensions = [640, 480];
+                const valid = !lineData.find(value => value[0] > 640 || value[0] < 0 || value[1] > 480 || value[1] < 0)
                 console.log("LINE DATA", lineData);
+                lineData = lineData.filter(value => value[1] < 460)
+                
                 // Process line data
                 lineData = lineData.sort((a, b) => a[1] - b[1]);
                 //console.log("LINE DATA", lineData);
@@ -696,6 +701,7 @@ export default class Doodlebot {
                     ({ motorCommands: newMotorCommands, bezierPoints: this.bezierPoints, line: this.line } = followLine(
                         lineData,
                         lineData,
+                        prevLine,
                         null,
                         delay,
                         previousSpeed,
@@ -709,6 +715,7 @@ export default class Doodlebot {
                     ({ motorCommands: newMotorCommands, bezierPoints: this.bezierPoints, line: this.line } = followLine(
                         this.line,
                         lineData,
+                        prevLine,
                         null,
                         delay,
                         previousSpeed,
@@ -728,7 +735,8 @@ export default class Doodlebot {
                 const length = (Math.PI * (newMotorCommands[0].radius) * newMotorCommands[0].angle)/180;
                 console.log("LENGTH", length);
                 if (length < 1.5) {
-                    newMotorCommands[0].angle = newMotorCommands[0].angle * 1.2
+                    //newMotorCommands[0].angle = newMotorCommands[0].angle * 1.2;
+                    console.log("MULTIPLYING LENGTH");
                 }
                 if (newMotorCommands[0].angle > 35) {
                     newMotorCommands[0].angle = 35;
@@ -736,7 +744,22 @@ export default class Doodlebot {
                 if (newMotorCommands[0].angle < -35) {
                     newMotorCommands[0].angle = -35;
                 }
+
+                let waitTime = 330;
                 if (this.j % iterations == 0) {
+                    newMotorCommands[0].angle = this.limitArcLength(newMotorCommands[0].angle, newMotorCommands[0].radius, 1.5);
+                    //newMotorCommands[0].angle = this.increaseArcLength(newMotorCommands[0].angle, newMotorCommands[0].radius, );
+                    if (newMotorCommands[0].radius < 10) {
+                        newMotorCommands[0].angle = this.limitArcLength(newMotorCommands[0].angle, newMotorCommands[0].radius, 1.0);
+                        waitTime = 300;
+                    }
+                    // if (newMotorCommands[0].radius < 2) {
+                    //     newMotorCommands[0].angle = this.limitArcLength(newMotorCommands[0].angle, newMotorCommands[0].radius, 1.0);
+                    // }
+                    // if (newMotorCommands[0].radius > 20) {
+                    //     newMotorCommands[0].angle = this.increaseArcLength(newMotorCommands[0].angle, newMotorCommands[0].radius, 3);
+                    // }
+
                     if (this.motorCommands && !(this.motorCommands[0].distance > 0)) {
                         if (this.motorCommands) {
                             t = calculateArcTime(this.motorCommands[0].radius, this.motorCommands[0].angle, newMotorCommands[0].radius, newMotorCommands[0].angle);
@@ -744,17 +767,37 @@ export default class Doodlebot {
                             t = calculateArcTime(0, 0, newMotorCommands[0].radius, newMotorCommands[0].angle);
                         }
                     }
+                    const deepEqual = (a, b) => {
+                        if (a === b) return true;
+                        if (Array.isArray(a) && Array.isArray(b)) {
+                          return a.length === b.length && a.every((val, i) => deepEqual(val, b[i]));
+                        }
+                        if (typeof a === 'object' && typeof b === 'object') {
+                          const keysA = Object.keys(a), keysB = Object.keys(b);
+                          return keysA.length === keysB.length && keysA.every(key => deepEqual(a[key], b[key]));
+                        }
+                        return false;
+                      };
                     this.motorCommands = newMotorCommands;
                     for (const command of this.motorCommands) {
                         console.log("COMMAND", command);
-                        const { radius, angle } = command;
+                        let { radius, angle } = command;
+                        
                         console.log(command);
-                        if (command.distance > 0) {
-                            this.sendWebsocketCommand("m", Math.round(12335.6*command.distance), Math.round(12335.6*command.distance), 500, 500);
-                        } else {
-                            this.sendBLECommand("t", radius, angle);
+
+                        if ((lineData.length == 0 || !deepEqual(lineData, prevLine)) && valid) {
+                            if (command.distance > 0) {
+                                this.sendWebsocketCommand("m", Math.round(12335.6*command.distance), Math.round(12335.6*command.distance), 500, 500);
+                            } else {
+                                this.sendBLECommand("t", radius, angle);
+                            }
                         }
+                        if (deepEqual(lineData, prevLine) && lineData.length > 0) {
+                            console.log("LAG");
+                        }
+                        
                     }
+
                 }
                 console.log(this.cumulativeLine);
 
@@ -767,14 +810,16 @@ export default class Doodlebot {
                 //     await new Promise((resolve) => setTimeout(resolve, interval));
                 // }
 
-                const arcLength = (Math.PI * (this.motorCommands[0].radius + 2.93) * this.motorCommands[0].angle)/180;
-                console.log("arc", arcLength, "command", this.motorCommands[0]);
-                const ratio = 2.5/Math.abs(arcLength);
-                console.log('interval', interval*ratio, "angle", this.motorCommands[0].angle, "length", arcLength, "time", t.aT);
-                const waitTime = Math.max(Math.min(interval*ratio, intervalMax), intervalMin);
+                // const arcLength = (Math.PI * (this.motorCommands[0].radius + 2.93) * this.motorCommands[0].angle)/180;
+                // console.log("arc", arcLength, "command", this.motorCommands[0]);
+                // const ratio = 1.7/Math.abs(arcLength);
+                // console.log('interval', interval*ratio, "angle", this.motorCommands[0].angle, "length", arcLength, "time", t.aT);
+                // const waitTime = Math.max(Math.min(interval*ratio, intervalMax), intervalMin);
+                
                 await new Promise((resolve) => setTimeout(resolve, waitTime));
                 prevInterval = waitTime/1000;
                 first = false;
+                prevLine = lineData;
             } catch (error) {
                 console.error("Error in followLine loop:", error);
                 break; // Optionally, break the loop on error
@@ -791,7 +836,21 @@ export default class Doodlebot {
     //     }
     // }
 
+    limitArcLength(angle: number, radius: number, maxArcLength: number = 2): number {
+        // Calculate the max allowable angle
+        const maxAngle = (maxArcLength * 180) / ((radius + 2.93) * Math.PI);
+    
+        // Return the limited angle
+        return Math.min(angle, maxAngle);
+    }
 
+    increaseArcLength(angle: number, radius: number, maxArcLength: number = 2): number {
+        // Calculate the max allowable angle
+        const maxAngle = (maxArcLength * 180) / ((radius + 2.93) * Math.PI);
+    
+        // Return the limited angle
+        return maxAngle;
+    }
 
     private setupAudioStream() {
         if (!this.connection.ip) return false;

@@ -17,7 +17,7 @@ const imageDimensions = [640, 480];
 const horizontalFOV = 53.4;
 const verticalFOV = 41.41;
 const cameraHeight = 0.098;
-const tiltAngle = 25;
+const tiltAngle = 35;
 //const tiltAngle = 38;
 
 function cutOffLineOnDistance(line: Point[], maxDistance: number) {
@@ -437,7 +437,7 @@ function percentile(values: number[], percentile: number): number {
 
 
 
-export function followLine(previousLine: Point[], pixels: Point[], next: Point[], delay: number, previousSpeed: number, previousCommands: Command[], previousTime: number[], totalTime: number[], test: Boolean, first = false) {
+export function followLine(previousLine: Point[], pixels: Point[], previousPixels: Point[], next: Point[], delay: number, previousSpeed: number, previousCommands: Command[], previousTime: number[], totalTime: number[], test: Boolean, first = false) {
 
     let nextPoints: Point[];
     let errorMultiplier = 1;
@@ -463,11 +463,11 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
             worldPoints = [];
         }
         worldPoints = worldPoints.length > 0 ? worldPoints.map(point => pixelToGroundCoordinates(point)) : [];
-        worldPoints = cutOffLineOnDistance(worldPoints.filter((point: Point) => point[1] < 420), 0.02);
+        worldPoints = cutOffLineOnDistance(worldPoints.filter((point: Point) => point[1] < 1000), 0.02);
         let procrustesLine; 
 
 
-        if (first) {
+        if (first || (previousPixels.length == 0 && pixels.length > 3000)) {
             previousLine = worldPoints
         }
 
@@ -501,27 +501,28 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     if (worldPoints.length == 0) {
         
         console.log("found? ", guessLine.find(value => value[1] > 0));
-        for (let i = 0; i < previousCommands.length; i++) {
-            const command = previousCommands[i];
-            if (command.radius == Infinity) {
-                robotPosition.y = robotPosition.y + command.distance * Math.min((previousTime[i] / totalTime[i]), 1);
-            } else {
-                robotPosition = getRobotPositionAfterArc({ angle: command.angle * -1, radius: command.radius, distance: 0 }, robotPosition, Math.min((previousTime[i] / totalTime[i]), 1));
-            }
-        }
-        guessLine = rotateAndTranslateLine(previousLine, -1 * robotPosition.angle, [-1 * robotPosition.x, -1 * robotPosition.y]);
-        guessLine = showLineAboveY(guessLine, 0);
-        if (guessLine.length < 50 || !guessLine.find(value => value[1] > 0)) {
+        // for (let i = 0; i < previousCommands.length; i++) {
+        //     const command = previousCommands[i];
+        //     if (command.radius == Infinity) {
+        //         robotPosition.y = robotPosition.y + command.distance * Math.min((previousTime[i] / totalTime[i]), 1);
+        //     } else {
+        //         robotPosition = getRobotPositionAfterArc({ angle: command.angle * -1, radius: command.radius, distance: 0 }, robotPosition, Math.min((previousTime[i] / totalTime[i]), 1));
+        //     }
+        // }
+        // guessLine = rotateAndTranslateLine(previousLine, -1 * robotPosition.angle, [-1 * robotPosition.x, -1 * robotPosition.y]);
+        // guessLine = showLineAboveY(guessLine, 0);
+        // if (guessLine.length < 50 || !guessLine.find(value => value[1] > 0)) {
             start = .02;
             lookahead = .06;
             console.log("MODIFIED");
-            console.log("traveled", robotPosition.x, robotPosition.y);;
-            guessLine = rotateAndTranslateLine(previousLine, 0, [0, -.0005]);
+            console.log("traveled", robotPosition.x, robotPosition.y);
+            console.log("points", guessLine[guessLine.length - 1][1]);
+            //guessLine = rotateAndTranslateLine(previousLine, 0, [0, -.0005]);
             guessLine = showLineAboveY(guessLine, 0);
             guessLine = previousLine;
             errorMultiplier = errorMultiplier * 0;
 
-        }
+        //}
     }
 
     console.log("POSITION", robotPosition, "RATIO", Math.min((previousTime[0] / totalTime[0]), 1), "PREVIOUS", previousTime[0], totalTime[0]);
@@ -694,7 +695,8 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
         distance = lookahead * 1;
     }
 
-    const x1 = findPointAtDistanceWithIncrements(spline, 0.001, distance - .02);
+    // TODO: change to .005
+    const x1 = findPointAtDistanceWithIncrements(spline, 0.001, distance - .03);
     const x2 = findPointAtDistanceWithIncrements(spline, 0.001, distance);
     const point1 = { x: spline.at(x1), y: x1 }
     const point2 = { x: spline.at(x2), y: x2 }
@@ -706,9 +708,10 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     const unitDx = dx / length;
     const unitDy = dy / length;
 
+    // TODO change to point2
     const extendedPoint1 = {
-        x: point1.x + unitDx * controlLength,
-        y: point1.y + unitDy * controlLength
+        x: point2.x + unitDx * (controlLength),
+        y: point2.y + unitDy * (controlLength)
     };
 
     // Find the start point for the Bezier curve -- account for camera latency
@@ -748,7 +751,7 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     // TODO: Add angle correction to the control points
     const bezier = new Bezier.Bezier(
         { x: point3.x + xOffset, y: point3.y },
-        { x: point3.x + xOffset, y: point3.y + (errorMultiplier > 1 ? controlLength *  1 : controlLength) },
+        { x: point3.x + xOffset, y: point3.y + .005 },
         isNaN(extendedPoint1.x) ? point2 : extendedPoint1,
         point2
     );
@@ -773,9 +776,9 @@ export function followLine(previousLine: Point[], pixels: Point[], next: Point[]
     // if (command.radius > 50) {
     //     command = {radius: Infinity, angle: 0, distance: 0.03}
     // }
-    if (errorMultiplier > 1) {
-        command.angle = command.angle * 1.5;
-        command.radius = command.radius / 2;
+    if (errorMultiplier == 0) {
+        command.angle = Math.max(command.angle * 1.5, 5);
+        command.radius = Math.min(1.5, command.radius / 2);
     }
     motorCommands.push(command);
 
