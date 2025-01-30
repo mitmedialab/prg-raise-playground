@@ -811,22 +811,26 @@ createAndSaveWAV(interleaved, sampleRate) {
     const url = "http://doodlebot.media.mit.edu/chat";
     const formData = new FormData();
     formData.append("audio_file", file);
-    // https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWalk60.wav
+
     try {
         const response = await fetch(url, {
             method: "POST",
-            headers: { "Content-Type": "multipart/form-data" },
             body: formData,
         });
-        const text = await response.text();
-        console.log("text", text);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.log("Error response:", errorText);
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const textResponse = response.headers.get("text-response");
-        // Process the audio file from the response
+        console.log("Text Response:", textResponse);
+
         const blob = await response.blob();
         const audioUrl = URL.createObjectURL(blob);
-        console.log("Text Response:", textResponse);
         console.log("Audio URL:", audioUrl);
-        // Play the audio
+
         const audio = new Audio(audioUrl);
         audio.play();
     } catch (error) {
