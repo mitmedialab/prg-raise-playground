@@ -681,79 +681,80 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     try {
       const modelUrl = this.modelArgumentToURL(url);
       console.log('Loading model from URL:', modelUrl);
-      this.getPredictionStateOrStartPredicting(modelUrl, true);
-      console.log('Model state:', this.predictionState[modelUrl]);
-      this.updateStageModel(modelUrl);
+      
+      // Initialize prediction state if needed
+      this.predictionState[modelUrl] = {};
+      
+      // Load and initialize the model
+      const { model, type } = await this.initModel(modelUrl);
+      this.predictionState[modelUrl].modelType = type;
+      this.predictionState[modelUrl].model = model;
+      
+      // Update the current model reference
+      this.teachableImageModel = modelUrl;
+      
+      await this.indicate({ 
+        type: "success", 
+        msg: "Model loaded successfully" 
+      });
     } catch (e) {
       console.error('Error loading model:', e);
       this.teachableImageModel = null;
+      await this.indicate({ 
+        type: "error", 
+        msg: "Failed to load model" 
+      });
     }
   }
 
   modelArgumentToURL(modelArg: string) {
+    // Convert user-provided model URL/ID to the correct format
     const endpointProvidedFromInterface = "https://teachablemachine.withgoogle.com/models/";
-    // NOTE: It's possible Google will change this endpoint in the future, and that will break this extension.
-    // TODO: https://github.com/mitmedialab/prg-extension-boilerplate/issues/343
     const redirectEndpoint = "https://storage.googleapis.com/tm-model/";
+    
     return modelArg.startsWith(endpointProvidedFromInterface)
       ? modelArg.replace(endpointProvidedFromInterface, redirectEndpoint)
       : redirectEndpoint + modelArg + "/";
   }
 
-  getPredictionStateOrStartPredicting(modelUrl, override = false) {
-    const hasPredictionState = this.predictionState.hasOwnProperty(modelUrl);
-    if (!hasPredictionState || override) {
-      this.startPredicting(modelUrl);
-      return null;
-    }
-    return this.predictionState[modelUrl];
-  }
-
-  async startPredicting(modelDataUrl) {
-    const alreadyLoaded = Boolean(this.predictionState[modelDataUrl]);
-    try {
-      const indicator = await this.indicate({
-        type: "warning",
-        msg: alreadyLoaded ? "Updating model" : "Loading model"
-      });
-      this.predictionState[modelDataUrl] = {};
-      // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
-      const { model, type } = await this.initModel(modelDataUrl);
-      this.predictionState[modelDataUrl].modelType = type;
-      this.predictionState[modelDataUrl].model = model;
-      this.runtime.requestToolboxExtensionsUpdate();
-      indicator.close();
-      this.indicateFor({ type: "success", msg: "Model loaded" }, 1);
-    } catch (e) {
-      this.predictionState[modelDataUrl] = {};
-      console.log("Model initialization failure!", e);
-      this.indicateFor({ type: "error", msg: "Unable to load model." }, 1);
-    }
-  }
-
-  async initModel(modelUrl) {
+  async initModel(modelUrl: string) {
     const avoidCache = `?x=${Date.now()}`;
     const modelURL = modelUrl + "model.json" + avoidCache;
     const metadataURL = modelUrl + "metadata.json" + avoidCache;
-    const customMobileNet = await tmImage.load(modelURL, metadataURL);
-    if ((customMobileNet as any)._metadata.hasOwnProperty('tfjsSpeechCommandsVersion')) {
-      const recognizer = await speechCommands.create("BROWSER_FFT", undefined, modelURL, metadataURL);
-      await recognizer.ensureModelLoaded();
-      await recognizer.listen(async result => {
-        this.latestAudioResults = result;
-      }, {
-        includeSpectrogram: true, // in case listen should return result.spectrogram
-        probabilityThreshold: 0.75,
-        invokeCallbackOnNoiseAndUnknown: true,
-        overlapFactor: 0.50 // probably want between 0.5 and 0.75. More info in README
-      });
-      return { model: recognizer, type: this.ModelType.AUDIO };
-    } else if ((customMobileNet as any)._metadata.packageName === "@teachablemachine/pose") {
-      const customPoseNet = await tmPose.load(modelURL, metadataURL);
-      return { model: customPoseNet, type: this.ModelType.POSE };
-    } else {
-      console.log(customMobileNet.getMetadata(), customMobileNet.getTotalClasses(), customMobileNet.getClassLabels());
-      return { model: customMobileNet, type: this.ModelType.IMAGE };
+
+    // First try loading as an image model
+    try {
+      const customMobileNet = await tmImage.load(modelURL, metadataURL);
+      
+      // Check if it's actually an audio model
+      if ((customMobileNet as any)._metadata.hasOwnProperty('tfjsSpeechCommandsVersion')) {
+        const recognizer = await speechCommands.create("BROWSER_FFT", undefined, modelURL, metadataURL);
+        await recognizer.ensureModelLoaded();
+        
+        // Setup audio listening
+        await recognizer.listen(async result => {
+          this.latestAudioResults = result;
+        }, {
+          includeSpectrogram: true,
+          probabilityThreshold: 0.75,
+          invokeCallbackOnNoiseAndUnknown: true,
+          overlapFactor: 0.50
+        });
+        
+        return { model: recognizer, type: this.ModelType.AUDIO };
+      } 
+      // Check if it's a pose model
+      else if ((customMobileNet as any)._metadata.packageName === "@teachablemachine/pose") {
+        const customPoseNet = await tmPose.load(modelURL, metadataURL);
+        return { model: customPoseNet, type: this.ModelType.POSE };
+      }
+      // Otherwise it's an image model
+      else {
+        return { model: customMobileNet, type: this.ModelType.IMAGE };
+      }
+    } catch (e) {
+      console.error("Failed to load model:", e);
+      throw e;
     }
   }
 
