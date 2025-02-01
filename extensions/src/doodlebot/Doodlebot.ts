@@ -673,6 +673,7 @@ export default class Doodlebot {
         this.detector = new LineDetector(this.connection.ip);
         await this.detector.initialize(this);
         let prevLine = [];
+        let add = 0;
         
         while (true) {
             console.log("NEXT");
@@ -683,7 +684,9 @@ export default class Doodlebot {
                 const imageDimensions = [640, 480];
                 const valid = !lineData.find(value => value[0] > 640 || value[0] < 0 || value[1] > 480 || value[1] < 0)
                 console.log("LINE DATA", lineData);
-                lineData = lineData.filter(value => value[1] < 460)
+                const firstQuadrant = lineData.filter(value => value[1] < 50);
+                lineData = firstQuadrant.length > 0 ? lineData.filter(value => value[1] < 400) : [];
+                console.log("FIRST QUADRANT", firstQuadrant.length);
                 
                 // Process line data
                 lineData = lineData.sort((a, b) => a[1] - b[1]);
@@ -708,6 +711,7 @@ export default class Doodlebot {
                         [],
                         [],
                         [],
+                        add,
                         false,
                         true
                     ));
@@ -722,6 +726,7 @@ export default class Doodlebot {
                         this.motorCommands,
                         [prevInterval/2],
                         [t.aT],
+                        add,
                         false,
                         false
                     ));
@@ -738,20 +743,20 @@ export default class Doodlebot {
                     //newMotorCommands[0].angle = newMotorCommands[0].angle * 1.2;
                     console.log("MULTIPLYING LENGTH");
                 }
-                if (newMotorCommands[0].angle > 35) {
-                    newMotorCommands[0].angle = 35;
+                if (newMotorCommands[0].angle > 8) {
+                    newMotorCommands[0].angle = 8;
                 }
-                if (newMotorCommands[0].angle < -35) {
-                    newMotorCommands[0].angle = -35;
+                if (newMotorCommands[0].angle < -8) {
+                    newMotorCommands[0].angle = -8;
                 }
 
-                let waitTime = 330;
+                let waitTime = prevLine.length < 100 ? 250 : 330;
                 if (this.j % iterations == 0) {
-                    newMotorCommands[0].angle = this.limitArcLength(newMotorCommands[0].angle, newMotorCommands[0].radius, 1.5);
+                    newMotorCommands[0].angle = this.limitArcLength(newMotorCommands[0].angle, newMotorCommands[0].radius, 2);
                     //newMotorCommands[0].angle = this.increaseArcLength(newMotorCommands[0].angle, newMotorCommands[0].radius, );
                     if (newMotorCommands[0].radius < 10) {
-                        newMotorCommands[0].angle = this.limitArcLength(newMotorCommands[0].angle, newMotorCommands[0].radius, 1.0);
-                        waitTime = 300;
+                        newMotorCommands[0].angle = this.limitArcLength(newMotorCommands[0].angle, newMotorCommands[0].radius, 1.5);
+                        //waitTime = 300;
                     }
                     // if (newMotorCommands[0].radius < 2) {
                     //     newMotorCommands[0].angle = this.limitArcLength(newMotorCommands[0].angle, newMotorCommands[0].radius, 1.0);
@@ -797,6 +802,11 @@ export default class Doodlebot {
                         }
                         
                     }
+                    if (prevLine.length < 100 && lineData.length < 100) {
+                        add = add + 1;
+                    } else {
+                        add = 0;
+                    }
 
                 }
                 console.log(this.cumulativeLine);
@@ -838,18 +848,29 @@ export default class Doodlebot {
 
     limitArcLength(angle: number, radius: number, maxArcLength: number = 2): number {
         // Calculate the max allowable angle
+        let negative = true;
+        if (angle > 0) {
+            negative = false;
+        }
+        angle = Math.abs(angle);
         const maxAngle = (maxArcLength * 180) / ((radius + 2.93) * Math.PI);
     
+        const returnAngle = Math.min(angle, maxAngle);
         // Return the limited angle
-        return Math.min(angle, maxAngle);
+        return negative ? returnAngle * -1 : returnAngle;
     }
 
     increaseArcLength(angle: number, radius: number, maxArcLength: number = 2): number {
         // Calculate the max allowable angle
+        let negative = true;
+        if (angle > 0) {
+            negative = false;
+        }
+        angle = Math.abs(angle);
         const maxAngle = (maxArcLength * 180) / ((radius + 2.93) * Math.PI);
     
         // Return the limited angle
-        return maxAngle;
+        return negative ? maxAngle*-1 : maxAngle;
     }
 
     private setupAudioStream() {

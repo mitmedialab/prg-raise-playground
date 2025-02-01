@@ -17,7 +17,7 @@ const imageDimensions = [640, 480];
 const horizontalFOV = 53.4;
 const verticalFOV = 41.41;
 const cameraHeight = 0.098;
-const tiltAngle = 35;
+const tiltAngle = 28;
 //const tiltAngle = 38;
 
 function cutOffLineOnDistance(line: Point[], maxDistance: number) {
@@ -437,7 +437,7 @@ function percentile(values: number[], percentile: number): number {
 
 
 
-export function followLine(previousLine: Point[], pixels: Point[], previousPixels: Point[], next: Point[], delay: number, previousSpeed: number, previousCommands: Command[], previousTime: number[], totalTime: number[], test: Boolean, first = false) {
+export function followLine(previousLine: Point[], pixels: Point[], previousPixels: Point[], next: Point[], delay: number, previousSpeed: number, previousCommands: Command[], previousTime: number[], totalTime: number[], add: number, test: Boolean, first = false) {
 
     let nextPoints: Point[];
     let errorMultiplier = 1;
@@ -451,7 +451,8 @@ export function followLine(previousLine: Point[], pixels: Point[], previousPixel
     }
 
     let worldPoints = [];
-    if (pixels.length > 0) {
+    console.log("PIXEL LENGTH", pixels.length);
+    if (pixels.length > 100 || first) {
         //pixels = removeOutliers(pixels, 2);
         worldPoints = simplifyLine(pixels, epsilon, 0.1);
         worldPoints = smoothLine(worldPoints, 2);
@@ -467,7 +468,7 @@ export function followLine(previousLine: Point[], pixels: Point[], previousPixel
         let procrustesLine; 
 
 
-        if (first || (previousPixels.length == 0 && pixels.length > 3000)) {
+        if (first || (previousPixels.length == 0 && pixels.length > 100)) {
             previousLine = worldPoints
         }
 
@@ -512,11 +513,17 @@ export function followLine(previousLine: Point[], pixels: Point[], previousPixel
         // guessLine = rotateAndTranslateLine(previousLine, -1 * robotPosition.angle, [-1 * robotPosition.x, -1 * robotPosition.y]);
         // guessLine = showLineAboveY(guessLine, 0);
         // if (guessLine.length < 50 || !guessLine.find(value => value[1] > 0)) {
-            start = .02;
-            lookahead = .06;
+        if ((.06 + .01*add) < guessLine[guessLine.length - 1][1]) {
+            start = .02 + .01*add;
+            lookahead = .06 + .01*add;
+        } else {
+            start = Math.max(guessLine[0][1], guessLine[guessLine.length - 1][1] - .04);
+            lookahead = guessLine[guessLine.length - 1][1];
+        }
             console.log("MODIFIED");
             console.log("traveled", robotPosition.x, robotPosition.y);
             console.log("points", guessLine[guessLine.length - 1][1]);
+            console.log("point2", guessLine[0][1])
             //guessLine = rotateAndTranslateLine(previousLine, 0, [0, -.0005]);
             guessLine = showLineAboveY(guessLine, 0);
             guessLine = previousLine;
@@ -730,7 +737,10 @@ export function followLine(previousLine: Point[], pixels: Point[], previousPixel
             line: []
         };
     }
-    const point3 = { x: splineValue, y: x3 };
+    if (isNaN(splineValue)) {
+        console.log("isNAN");
+    }
+    const point3 = { x: !isNaN(splineValue) ? splineValue : 0, y: x3 };
 
     // Find the x offset to correct
     const reference1 = [spline.at(spline.xs[0]), 0] // First point should be very close to 0
@@ -757,7 +767,7 @@ export function followLine(previousLine: Point[], pixels: Point[], previousPixel
     );
 
 
-    console.log("error", xOffset, "before", xOffset/errorMultiplier, "BEZIER", bezier.points[0], bezier.points[1], bezier.points[2], bezier.points[3]);
+    console.log("error", xOffset, "BEZIER", bezier.points[0], bezier.points[1], bezier.points[2], bezier.points[3]);
 
     const motorCommands: Command[] = [];
 
@@ -777,8 +787,12 @@ export function followLine(previousLine: Point[], pixels: Point[], previousPixel
     //     command = {radius: Infinity, angle: 0, distance: 0.03}
     // }
     if (errorMultiplier == 0) {
+        let negative = command.angle < 0;
+        command.angle = Math.abs(command.angle);
         command.angle = Math.max(command.angle * 1.5, 5);
-        command.radius = Math.min(1.5, command.radius / 2);
+        command.angle = pixels.length > 0 && pixels.length <= 100 ? Math.min(command.angle, 5) : command.angle;
+        command.angle = negative ? -1*command.angle : command.angle;
+        command.radius = Math.max(1, Math.min(1.5, command.radius / 2));
         command.distance = 0;
     }
     motorCommands.push(command);
