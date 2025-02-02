@@ -10,7 +10,7 @@ const epsilon = 1;
 const bezierSamples = 2;
 const controlLength = .01;
 let lookahead = .05;
-let start = 0.01;
+let start = 0.005;
 const spin = 10;
 
 const imageDimensions = [640, 480];
@@ -468,12 +468,21 @@ export function followLine(previousLine: Point[], pixels: Point[], previousPixel
         let procrustesLine; 
 
 
-        if (first || (previousPixels.length == 0 && pixels.length > 100)) {
-            previousLine = worldPoints
-        }
+        // TODO: if its a blob (y difference < .03), set worldPoints to []
+        // else go below
+        
+        const height = worldPoints.length > 0 ? worldPoints[worldPoints.length - 1][1] - worldPoints[0][1] : 0;
+        console.log("HEIGHT", height);
+        if (height > .03) {
+            if (first || (previousPixels.length == 0 && pixels.length > 100)) {
+                previousLine = worldPoints
+            }
 
-        if (previousLine.length == 0 && worldPoints.length > 0 && previousCommands[0].radius == 2) {
-            previousLine = worldPoints;
+            if (previousLine.length == 0 && worldPoints.length > 0 && previousCommands[0].radius == 2) {
+                previousLine = worldPoints;
+            }
+        } else {
+            worldPoints = [];
         }
     }
 
