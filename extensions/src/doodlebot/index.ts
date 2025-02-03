@@ -676,6 +676,27 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     return this.getModelPrediction();
   }
 
+  @block({
+    type: "reporter",
+    text: (className) => `confidence for ${className}`,
+    arg: {
+      type: "string",
+      options: function () {
+        if (!this) {
+          throw new Error('Context is undefined');
+        }
+        return this.getModelClasses() || ["Select a class"];
+      },
+      defaultValue: "Select a class"
+    }
+  })
+  getConfidence(className: string) {
+    if (!this.modelConfidences || !this.modelConfidences[className]) {
+      return 0;
+    }
+    return Math.round(this.modelConfidences[className] * 100);
+  }
+
   writeString(view: DataView, offset: number, text: string) {
     for (let i = 0; i < text.length; i++) {
         view.setUint8(offset + i, text.charCodeAt(i));
@@ -988,6 +1009,14 @@ createAndSaveWAV(interleaved, sampleRate) {
     }
   }
 
+  private getPredictionStateOrStartPredicting(modelUrl: string) {
+    if (!modelUrl || !this.predictionState || !this.predictionState[modelUrl]) {
+      console.warn('No prediction state available for model:', modelUrl);
+      return null;
+    }
+    return this.predictionState[modelUrl];
+  }
+
   model_match(state) {
     const modelUrl = this.teachableImageModel;
     const className = state;
@@ -1127,7 +1156,7 @@ createAndSaveWAV(interleaved, sampleRate) {
   async captureSnapshots(seconds: number) {
     // Create indicator to show progress
     const indicator = await this.indicate({ 
-      type: "info", 
+      type: "warning",
       msg: "Capturing snapshots..." 
     });
 
