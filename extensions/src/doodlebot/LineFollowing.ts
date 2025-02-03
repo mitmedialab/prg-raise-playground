@@ -10,7 +10,7 @@ const epsilon = 1;
 const bezierSamples = 2;
 const controlLength = .01;
 let lookahead = .05;
-let start = 0.005;
+let start = 0.001;
 const spin = 10;
 
 const imageDimensions = [640, 480];
@@ -738,7 +738,8 @@ export function followLine(previousLine: Point[], pixels: Point[], previousPixel
     if (test) {
         x3 = spline.xs[0];
     } else {
-        x3 = start;
+        // change this to findPointAtDistanceWithIncrements(spline, 0.001, start);
+        x3 = findPointAtDistanceWithIncrements(spline, 0.001, start);
     }
     const splineValue = spline.at(x3);
     if (typeof splineValue === 'undefined') {
@@ -767,7 +768,7 @@ export function followLine(previousLine: Point[], pixels: Point[], previousPixel
         //xOffset = -1*procrustesResult.translation[0];
         
     }
-    //console.log("X OFFSET", xOffset);
+    console.log("X OFFSET", xOffset, "multiplier", errorMultiplier);
 
     // We want to correct the offset and direct the robot to a future point on the curve
     // TODO: Add angle correction to the control points
