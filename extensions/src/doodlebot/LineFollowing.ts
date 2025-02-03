@@ -17,8 +17,10 @@ const imageDimensions = [640, 480];
 const horizontalFOV = 53.4;
 const verticalFOV = 41.41;
 const cameraHeight = 0.098;
-const tiltAngle = 28;
+const tiltAngle = 38;
 //const tiltAngle = 38;
+
+
 
 function cutOffLineOnDistance(line: Point[], maxDistance: number) {
     let filteredLine = [line[0]]; // Start with the first point
@@ -38,7 +40,6 @@ function cutOffLineOnDistance(line: Point[], maxDistance: number) {
 
     return filteredLine;
 }
-
 
 function findPointAtDistanceWithIncrements(spline: Spline, increment: number, desiredDistance: number): number {
     let totalDistance = 0;
@@ -463,8 +464,9 @@ export function followLine(previousLine: Point[], pixels: Point[], previousPixel
         if (worldPoints[0] == undefined) {
             worldPoints = [];
         }
+        worldPoints = cutOffLineOnDistance(worldPoints, 50);
         worldPoints = worldPoints.length > 0 ? worldPoints.map(point => pixelToGroundCoordinates(point)) : [];
-        worldPoints = cutOffLineOnDistance(worldPoints.filter((point: Point) => point[1] < 1000), 0.02);
+        worldPoints = cutOffLineOnDistance(worldPoints, 0.02);
         let procrustesLine; 
 
 
@@ -541,12 +543,13 @@ export function followLine(previousLine: Point[], pixels: Point[], previousPixel
         //}
     }
 
+    console.log("points", guessLine[guessLine.length - 1][1]);
     console.log("POSITION", robotPosition, "RATIO", Math.min((previousTime[0] / totalTime[0]), 1), "PREVIOUS", previousTime[0], totalTime[0]);
     // Guess the location of the previous line
     // console.log("position", robotPosition);
 
     //let guessLine = previousLine;
-    console.log("before", previousLine, "after", guessLine);
+    console.log("before", JSON.stringify(previousLine), "after", JSON.stringify(guessLine));
 
     // console.log("guess", guessLine);
     if (guessLine.length == 0) {
@@ -712,22 +715,22 @@ export function followLine(previousLine: Point[], pixels: Point[], previousPixel
     }
 
     // TODO: change to .005
-    const x1 = findPointAtDistanceWithIncrements(spline, 0.001, distance - .02);
+    const x1 = findPointAtDistanceWithIncrements(spline, 0.001, distance - .01);
     const x2 = findPointAtDistanceWithIncrements(spline, 0.001, distance);
     const point1 = { x: spline.at(x1), y: x1 }
     const point2 = { x: spline.at(x2), y: x2 }
 
     // Extend point1 in the direction of the unit vector to make the Bezier control point
-    const dx = point1.x - point2.x;
-    const dy = point1.y - point2.y;
+    const dx = point2.x - point1.x;
+    const dy = point2.y - point1.y;
     const length = Math.sqrt(dx * dx + dy * dy);
     const unitDx = dx / length;
     const unitDy = dy / length;
 
     // TODO change to point2
     const extendedPoint1 = {
-        x: point2.x + unitDx * (controlLength),
-        y: point2.y + unitDy * (controlLength)
+        x: point2.x - unitDx * (controlLength),
+        y: point2.y - unitDy * (controlLength)
     };
 
     // Find the start point for the Bezier curve -- account for camera latency
@@ -774,6 +777,8 @@ export function followLine(previousLine: Point[], pixels: Point[], previousPixel
         isNaN(extendedPoint1.x) ? point2 : extendedPoint1,
         point2
     );
+
+    console.log("x1", x1, "x2", x2, "")
 
 
     console.log("error", xOffset, "BEZIER", bezier.points[0], bezier.points[1], bezier.points[2], bezier.points[3]);

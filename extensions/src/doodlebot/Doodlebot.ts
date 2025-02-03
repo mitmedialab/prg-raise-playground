@@ -684,8 +684,10 @@ export default class Doodlebot {
                 const imageDimensions = [640, 480];
                 const valid = !lineData.find(value => value[0] > 640 || value[0] < 0 || value[1] > 480 || value[1] < 0)
                 console.log("LINE DATA", lineData);
-                const firstQuadrant = lineData.filter(value => value[1] < 50);
-                lineData = firstQuadrant.length > 0 ? lineData.filter(value => value[1] < 400) : [];
+                // lineData = lineData.map(value => [640 - value[0], 480 - value[1]])
+                //console.log("LINE DATA", lineData);
+                const firstQuadrant = lineData.filter(value => value[1] < 10);
+                lineData = firstQuadrant.length > 0 ? lineData.filter(value => value[1] < 350) : [];
                 console.log("FIRST QUADRANT", firstQuadrant.length);
                 
                 // Process line data
@@ -743,14 +745,14 @@ export default class Doodlebot {
                     //newMotorCommands[0].angle = newMotorCommands[0].angle * 1.2;
                     console.log("MULTIPLYING LENGTH");
                 }
-                if (newMotorCommands[0].angle > 30) {
-                    newMotorCommands[0].angle = 30;
+                if (newMotorCommands[0].angle > 10) {
+                    newMotorCommands[0].angle = 10;
                 }
-                if (newMotorCommands[0].angle < -30) {
-                    newMotorCommands[0].angle = -30;
+                if (newMotorCommands[0].angle < -10) {
+                    newMotorCommands[0].angle = -10;
                 }
 
-                let waitTime = prevLine.length < 100 ? 300 : 350;
+                let waitTime = prevLine.length < 100 ? 250 : 300;
                 //let waitTime = 330;
                 if (this.j % iterations == 0) {
                     newMotorCommands[0].angle = this.limitArcLength(newMotorCommands[0].angle, newMotorCommands[0].radius, 2);
