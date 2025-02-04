@@ -745,14 +745,24 @@ export default class Doodlebot {
                     //newMotorCommands[0].angle = newMotorCommands[0].angle * 1.2;
                     console.log("MULTIPLYING LENGTH");
                 }
+                let waitTime = prevLine.length < 100 ? 200 : 210;
                 if (newMotorCommands[0].angle > 10) {
                     newMotorCommands[0].angle = 10;
-                }
-                if (newMotorCommands[0].angle < -10) {
+                    //waitTime = 300;
+                } else if (newMotorCommands[0].angle < -10) {
                     newMotorCommands[0].angle = -10;
+                    //waitTime = 300;
                 }
 
-                let waitTime = prevLine.length < 100 ? 250 : 300;
+                
+                // if (prevLine.length) {
+                //     if (newMotorCommands[0].angle > 5) {
+                //         newMotorCommands[0].angle = 5;
+                //     }
+                //     if (newMotorCommands[0].angle < -5) {
+                //         newMotorCommands[0].angle = -5;
+                //     }
+                // }
                 //let waitTime = 330;
                 if (this.j % iterations == 0) {
                     newMotorCommands[0].angle = this.limitArcLength(newMotorCommands[0].angle, newMotorCommands[0].radius, 2);
