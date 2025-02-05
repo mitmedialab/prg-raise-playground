@@ -745,7 +745,7 @@ export default class Doodlebot {
                     //newMotorCommands[0].angle = newMotorCommands[0].angle * 1.2;
                     console.log("MULTIPLYING LENGTH");
                 }
-                let waitTime = prevLine.length < 100 ? 200 : 210;
+                let waitTime = prevLine.length < 100 ? 190 : 200;
                 if (newMotorCommands[0].angle > 10) {
                     newMotorCommands[0].angle = 10;
                     //waitTime = 300;
