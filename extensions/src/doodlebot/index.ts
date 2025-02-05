@@ -706,7 +706,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   async saveAudioBufferToWav(buffer) {
     function createWavHeader(buffer) {
         const numChannels = buffer.numberOfChannels;
-        const sampleRate = buffer.sampleRate;
+        const sampleRate = buffer.sampleRate / 4;
         const bitsPerSample = 16; // 16-bit PCM
         const blockAlign = (numChannels * bitsPerSample) / 8;
         const byteRate = sampleRate * blockAlign;
@@ -832,6 +832,9 @@ createAndSaveWAV(interleaved, sampleRate) {
     const url = "http://doodlebot.media.mit.edu/chat";
     const formData = new FormData();
     formData.append("audio_file", file);
+    const audioURL = URL.createObjectURL(file);
+    const audio = new Audio(audioURL);
+    //audio.play();
 
     try {
         const response = await fetch(url, {
@@ -853,7 +856,9 @@ createAndSaveWAV(interleaved, sampleRate) {
         console.log("Audio URL:", audioUrl);
 
         const audio = new Audio(audioUrl);
-        audio.play();
+        const array = await blob.arrayBuffer();
+        this.doodlebot.sendAudioData(new Uint8Array(array));
+
     } catch (error) {
         console.error("Error sending audio file:", error);
     }
