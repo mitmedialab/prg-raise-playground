@@ -69,6 +69,12 @@ const msg = (content: string, type: "success" | "warning" | "error") => {
     }
 }
 
+type BLECommunication = {
+    onDisconnect: (...callbacks: (() => void)[]) => void,
+    onReceive: (callback: (text: CustomEvent<string>) => void) => void,
+    send: (text: string) => Promise<void>,
+}
+
 export default class Doodlebot {
     /**
      * 
@@ -136,7 +142,11 @@ export default class Doodlebot {
         { requestBluetooth, credentials, saveIP }: CreatePayload,
         ...filters: BluetoothLEScanFilter[]) {
         const { robot, services } = await Doodlebot.getBLE(ble, ...filters);
-        return new Doodlebot(robot, services, requestBluetooth, credentials, saveIP);
+        return new Doodlebot({
+            onReceive: (callback) => services.uartService.addEventListener("receiveText", callback),
+            onDisconnect: (callback) => ble.addEventListener("gattserverdisconnected", callback),
+            send: (text) => services.uartService.sendText(text),
+        }, requestBluetooth, credentials, saveIP);
     }
 
     private pending: Pending = { motor: undefined, wifi: undefined, websocket: undefined, ip: undefined };
@@ -183,26 +193,14 @@ export default class Doodlebot {
     private audioCallbacks = new Set<(chunk: Float32Array) => void>();
 
     constructor(
-        private device: BluetoothDevice,
-        private services: Services,
+        private ble: BLECommunication,
         private requestBluetooth: RequestBluetooth,
         private credentials: NetworkCredentials,
         private saveIP: SaveIP
     ) {
-        this.attachToBLE(device, services);
+        this.ble.onReceive(this.receiveTextBLE.bind(this));
+        this.ble.onDisconnect(this.handleBleDisconnect.bind(this));
         this.connectionWorkflow(credentials);
-    }
-
-    private attachToBLE(device: BluetoothDevice, services: Services) {
-        this.device = device;
-        this.services = services;
-        this.subscribe(services.uartService, "receiveText", this.receiveTextBLE.bind(this));
-        this.subscribe(device, "gattserverdisconnected", this.handleBleDisconnect.bind(this));
-    }
-
-    private subscribe<T extends SubscriptionTarget>(target: T, event: Subscription<T>["event"], listener: Subscription<T>["listener"]) {
-        target.addEventListener(event, listener);
-        this.subscriptions.push({ target, event, listener });
     }
 
     private formCommand(...args: (string | number)[]) {
@@ -497,38 +495,34 @@ export default class Doodlebot {
             msg("Could not retrieve IP address from doodlebot", "error")
         }
 
-        return new Promise<string>(async (resolve) => {
-            const self = this;
-            const { device } = this;
+        // return new Promise<string>(async (resolve) => {
+        //     const self = this;
+        //     const { device } = this;
 
-            //let interval: NodeJS.Timeout;
+        //     const reconnectToBluetooth = async () => {
+        //         this.requestBluetooth(async (ble) => {
+        //             msg("Reconnected to doodlebot", "success");
+        //             const { robot, services } = await Doodlebot.getBLE(ble);
+        //             self.attachToBLE(robot, services);
+        //             device.removeEventListener("gattserverdisconnected", reconnectToBluetooth);
+        //             msg("Waiting to issue connect command", "warning");
+        //             await new Promise((resolve) => setTimeout(resolve, 5000));
+        //             msg("Testing doodlebot's IP after reconnect", "warning");
+        //             const ip = await self.getIPAddress();
+        //             msg(
+        //                 ip === localIp ? "Doodlebot's IP is local, not valid" : "Doodlebot's IP is valid",
+        //                 ip === localIp ? "warning" : "success"
+        //             )
+        //             resolve(this.setIP(ip));
+        //         });
+        //     }
 
-            const reconnectToBluetooth = async () => {
-                this.requestBluetooth(async (ble) => {
-                    msg("Reconnected to doodlebot", "success");
-                    //clearInterval(interval);
-                    const { robot, services } = await Doodlebot.getBLE(ble);
-                    self.attachToBLE(robot, services);
-                    device.removeEventListener("gattserverdisconnected", reconnectToBluetooth);
-                    msg("Waiting to issue connect command", "warning");
-                    await new Promise((resolve) => setTimeout(resolve, 5000));
-                    msg("Testing doodlebot's IP after reconnect", "warning");
-                    const ip = await self.getIPAddress();
-                    msg(
-                        ip === localIp ? "Doodlebot's IP is local, not valid" : "Doodlebot's IP is valid",
-                        ip === localIp ? "warning" : "success"
-                    )
-                    resolve(this.setIP(ip));
-                });
-            }
+        //     device.addEventListener("gattserverdisconnected", reconnectToBluetooth);
 
-            device.addEventListener("gattserverdisconnected", reconnectToBluetooth);
+        //     msg("Attempting to connect to wifi", "warning");
 
-            msg("Attempting to connect to wifi", "warning");
-
-            await this.sendBLECommand(command.wifi, credentials.ssid, credentials.password);
-            //interval = setInterval(() => this.sendBLECommand(command.network), 5000);
-        });
+        //     await this.sendBLECommand(command.wifi, credentials.ssid, credentials.password);
+        // });
     }
 
     /**
@@ -556,6 +550,7 @@ export default class Doodlebot {
     }
 
     async getImageStream() {
+        if (this.pending["websocket"]) await this.pending["websocket"];
         if (!this.connection.ip) return;
         const image = document.createElement("img");
         image.src = `http://${this.connection.ip}:${port.camera}/${endpoint.video}`;
@@ -635,7 +630,7 @@ export default class Doodlebot {
         line.unshift(...newSegment);
         return line;
     }
-    
+
     printLine() {
         console.log(this.wholeString);
     }
@@ -651,7 +646,6 @@ export default class Doodlebot {
     lineCounter = 0;
     detector;
     j = 0;
-    
     async followLine() {
         let first = true;
         const delay = 0.5;
@@ -674,7 +668,6 @@ export default class Doodlebot {
         await this.detector.initialize(this);
         let prevLine = [];
         let add = 0;
-        
         while (true) {
             console.log("NEXT");
             try {
@@ -974,8 +967,7 @@ export default class Doodlebot {
      * @returns 
      */
     sendBLECommand(command: Command, ...args: (string | number)[]) {
-        const { uartService } = this.services;
-        return uartService.sendText(this.formCommand(command, ...args));
+        return this.ble.send(this.formCommand(command, ...args));
     }
 
     /**
