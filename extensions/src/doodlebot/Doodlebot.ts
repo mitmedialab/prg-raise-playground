@@ -635,8 +635,6 @@ export default class Doodlebot {
         console.log(this.wholeString);
     }
 
-
-    i = 0;
     wholeString = "export const allLines = [";
     cumulativeLine = "export const cumulativeLines = [";
 
@@ -645,7 +643,7 @@ export default class Doodlebot {
     line;
     lineCounter = 0;
     detector;
-    j = 0;
+    iterationNumber = 0;
 
     deepEqual = (a, b) => {
         if (a === b) return true;
@@ -736,7 +734,7 @@ export default class Doodlebot {
                 }
 
                 
-                if (this.j % iterations == 0) {
+                if (this.iterationNumber % iterations == 0) {
                     newMotorCommands[0].angle = this.limitArcLength(newMotorCommands[0].angle, newMotorCommands[0].radius, 2);
                     // newMotorCommands[0].angle = this.increaseArcLength(newMotorCommands[0].angle, newMotorCommands[0].radius, );
                     if (newMotorCommands[0].radius < 10) {
@@ -788,7 +786,7 @@ export default class Doodlebot {
                 console.error("Error in followLine loop:", error);
                 break; // Optionally, break the loop on error
             }
-            this.j = this.j + 1;
+            this.iterationNumber = this.iterationNumber + 1;
         }
     }
 
