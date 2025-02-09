@@ -646,22 +646,35 @@ export default class Doodlebot {
     lineCounter = 0;
     detector;
     j = 0;
+
+    deepEqual = (a, b) => {
+        if (a === b) return true;
+        if (Array.isArray(a) && Array.isArray(b)) {
+          return a.length === b.length && a.every((val, i) => this.deepEqual(val, b[i]));
+        }
+        if (typeof a === 'object' && typeof b === 'object') {
+          const keysA = Object.keys(a), keysB = Object.keys(b);
+          return keysA.length === keysB.length && keysA.every(key => this.deepEqual(a[key], b[key]));
+        }
+        return false;
+    };
+
     async followLine() {
         let first = true;
-        const delay = 0.5;
-        const previousSpeed = 0.1;
         let iterations = 2;
-        const min = 330 + -10;
-        const max = 355 + -10;
+
+        const min = 320;
+        const max = 345;
+
+        // For future speed calculations
         const intervalMax = max/iterations;
         const intervalMin = min/iterations;
         const interval = (340 + -5)/iterations; // 1/15th of a second
-        let prevRadius;
-        let prevAngle;
-        let lineData;
+
         let prevInterval;
         let t = { aT: 0.3 };
-        let lastTime = null;
+        let lastTime: number;
+
         console.log(this.connection.ip);
         console.log(this.detector);
         this.detector = new LineDetector(this.connection.ip);
@@ -669,45 +682,31 @@ export default class Doodlebot {
         let prevLine = [];
         let add = 0;
         while (true) {
-            console.log("NEXT");
             try {
-                // console.log("before 1");
-                // console.log("after 1");
                 let lineData = this.detector.returnLine();
-                const imageDimensions = [640, 480];
-                const valid = !lineData.find(value => value[0] > 640 || value[0] < 0 || value[1] > 480 || value[1] < 0)
-                console.log("LINE DATA", lineData);
                 // lineData = lineData.map(value => [640 - value[0], 480 - value[1]])
-                //console.log("LINE DATA", lineData);
                 const firstQuadrant = lineData.filter(value => value[1] < 10);
                 lineData = firstQuadrant.length > 0 ? lineData.filter(value => value[1] < 350) : [];
                 console.log("FIRST QUADRANT", firstQuadrant.length);
-                
                 // Process line data
                 lineData = lineData.sort((a, b) => a[1] - b[1]);
-                //console.log("LINE DATA", lineData);
+
+                // Debugging statements
                 this.wholeString = this.wholeString + `${JSON.stringify(lineData)},`;
                 this.printLine();
                 this.lineCounter += 1;
+
                 let newMotorCommands;
-                const startTime = Date.now();
-                const difference = (startTime - lastTime) / 1000;
-                console.log("ADJUSTED TIME", t);
-                console.log("TIME PASSED", difference);
                 
                 if (first) {
                     ({ motorCommands: newMotorCommands, bezierPoints: this.bezierPoints, line: this.line } = followLine(
                         lineData,
                         lineData,
                         prevLine,
-                        null,
-                        delay,
-                        previousSpeed,
                         [],
                         [],
                         [],
                         add,
-                        false,
                         true
                     ));
                 } else {
@@ -715,61 +714,34 @@ export default class Doodlebot {
                         this.line,
                         lineData,
                         prevLine,
-                        null,
-                        delay,
-                        previousSpeed,
                         this.motorCommands,
                         [prevInterval/2],
                         [t.aT],
                         add,
-                        false,
                         false
                     ));
                 }
                 
-                
                 lastTime = Date.now();
+
+                // Debugging statement
                 this.cumulativeLine = this.cumulativeLine + `${JSON.stringify(this.line)},`;
-                // console.log("after");
-                // console.log("motorCommands DEBUG 1", this.motorCommands);
-                const length = (Math.PI * (newMotorCommands[0].radius) * newMotorCommands[0].angle)/180;
-                console.log("LENGTH", length);
-                if (length < 1.5) {
-                    //newMotorCommands[0].angle = newMotorCommands[0].angle * 1.2;
-                    console.log("MULTIPLYING LENGTH");
-                }
+                console.log(this.cumulativeLine);
+
                 let waitTime = prevLine.length < 100 ? 190 : 200;
                 if (newMotorCommands[0].angle > 10) {
                     newMotorCommands[0].angle = 10;
-                    //waitTime = 300;
                 } else if (newMotorCommands[0].angle < -10) {
                     newMotorCommands[0].angle = -10;
-                    //waitTime = 300;
                 }
 
                 
-                // if (prevLine.length) {
-                //     if (newMotorCommands[0].angle > 5) {
-                //         newMotorCommands[0].angle = 5;
-                //     }
-                //     if (newMotorCommands[0].angle < -5) {
-                //         newMotorCommands[0].angle = -5;
-                //     }
-                // }
-                //let waitTime = 330;
                 if (this.j % iterations == 0) {
                     newMotorCommands[0].angle = this.limitArcLength(newMotorCommands[0].angle, newMotorCommands[0].radius, 2);
-                    //newMotorCommands[0].angle = this.increaseArcLength(newMotorCommands[0].angle, newMotorCommands[0].radius, );
+                    // newMotorCommands[0].angle = this.increaseArcLength(newMotorCommands[0].angle, newMotorCommands[0].radius, );
                     if (newMotorCommands[0].radius < 10) {
                         newMotorCommands[0].angle = this.limitArcLength(newMotorCommands[0].angle, newMotorCommands[0].radius, 1.5);
-                        //waitTime = 300;
                     }
-                    // if (newMotorCommands[0].radius < 2) {
-                    //     newMotorCommands[0].angle = this.limitArcLength(newMotorCommands[0].angle, newMotorCommands[0].radius, 1.0);
-                    // }
-                    // if (newMotorCommands[0].radius > 20) {
-                    //     newMotorCommands[0].angle = this.increaseArcLength(newMotorCommands[0].angle, newMotorCommands[0].radius, 3);
-                    // }
 
                     if (this.motorCommands && !(this.motorCommands[0].distance > 0)) {
                         if (this.motorCommands) {
@@ -778,32 +750,19 @@ export default class Doodlebot {
                             t = calculateArcTime(0, 0, newMotorCommands[0].radius, newMotorCommands[0].angle);
                         }
                     }
-                    const deepEqual = (a, b) => {
-                        if (a === b) return true;
-                        if (Array.isArray(a) && Array.isArray(b)) {
-                          return a.length === b.length && a.every((val, i) => deepEqual(val, b[i]));
-                        }
-                        if (typeof a === 'object' && typeof b === 'object') {
-                          const keysA = Object.keys(a), keysB = Object.keys(b);
-                          return keysA.length === keysB.length && keysA.every(key => deepEqual(a[key], b[key]));
-                        }
-                        return false;
-                      };
+                    
                     this.motorCommands = newMotorCommands;
                     for (const command of this.motorCommands) {
-                        console.log("COMMAND", command);
                         let { radius, angle } = command;
-                        
-                        console.log(command);
 
-                        if ((lineData.length == 0 || !deepEqual(lineData, prevLine)) && valid) {
+                        if ((lineData.length == 0 || !this.deepEqual(lineData, prevLine))) {
                             if (command.distance > 0) {
                                 this.sendWebsocketCommand("m", Math.round(12335.6*command.distance), Math.round(12335.6*command.distance), 500, 500);
                             } else {
                                 this.sendBLECommand("t", radius, angle);
                             }
                         }
-                        if (deepEqual(lineData, prevLine) && lineData.length > 0) {
+                        if (this.deepEqual(lineData, prevLine) && lineData.length > 0) {
                             console.log("LAG");
                         }
                         
@@ -813,18 +772,7 @@ export default class Doodlebot {
                     } else {
                         add = 0;
                     }
-
                 }
-                console.log(this.cumulativeLine);
-
-                // Wait for the interval duration before the next iteration
-                // if (first) {
-                //     this.sendWebsocketCommand("m", Math.round(12335.6*10), Math.round(12335.6*10), 500, 500);
-                //     //await new Promise((resolve) => setTimeout(resolve, 1000));
-                //     first = false;
-                // } else {
-                //     await new Promise((resolve) => setTimeout(resolve, interval));
-                // }
 
                 // const arcLength = (Math.PI * (this.motorCommands[0].radius + 2.93) * this.motorCommands[0].angle)/180;
                 // console.log("arc", arcLength, "command", this.motorCommands[0]);
@@ -843,14 +791,7 @@ export default class Doodlebot {
             this.j = this.j + 1;
         }
     }
-    //console.log(j);
-    // Process the line data here
 
-    //     } catch (error) {
-    //         console.error("Error detecting line:", error);
-    //         // Optionally stop polling if there's a consistent error
-    //     }
-    // }
 
     limitArcLength(angle: number, radius: number, maxArcLength: number = 2): number {
         // Calculate the max allowable angle
