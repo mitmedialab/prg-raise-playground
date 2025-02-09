@@ -21,8 +21,8 @@ export const getTranslationToEnglish = async (words: string) => {
     if (cachedTranslations.has(words)) return cachedTranslations.get(words);
     const endpoint = getTranslationURL({ language: "en", text: encodeURIComponent(words) });
     try {
-        const json: { result: string } = await (await fetchWithTimeout(endpoint, { timeoutMs: 30 })).json();
-        const translated = json.result;
+        const json: { result: string } = await (await fetchWithTimeout(endpoint, { timeoutMs: 1000 })).json();
+        const translated = json.result.replaceAll("%20", " ");
         cachedTranslations.set(words, translated);
         return translated;
     }

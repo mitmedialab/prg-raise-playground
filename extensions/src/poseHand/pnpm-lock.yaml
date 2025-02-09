@@ -1,0 +1,81 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      '@tensorflow-models/handpose':
+        specifier: ^0.0.3
+        version: 0.0.3(@tensorflow/tfjs-converter@1.7.4(@tensorflow/tfjs-core@1.7.4))(@tensorflow/tfjs-core@1.7.4)
+
+packages:
+
+  '@tensorflow-models/handpose@0.0.3':
+    resolution: {integrity: sha512-U5SBwxeQUXVawACDn+e0r4XJEDEah/J1HlWAqApXcm8DXjCtGKxQm/8BmFsg6ebbtAQ/R1bripohaQ655fv29w==}
+    peerDependencies:
+      '@tensorflow/tfjs-converter': ^1.6.1
+      '@tensorflow/tfjs-core': ^1.6.1
+
+  '@tensorflow/tfjs-converter@1.7.4':
+    resolution: {integrity: sha512-B/Ux9I3osI0CXoESGR0Xe5C6BsEfC04+g2xn5zVaW9KEuVEnGEgnuBQxgijRFzkqTwoyLv4ptAmjyIghVARX0Q==}
+    peerDependencies:
+      '@tensorflow/tfjs-core': 1.7.4
+
+  '@tensorflow/tfjs-core@1.7.4':
+    resolution: {integrity: sha512-3G4VKJ6nPs7iCt6gs3bjRj8chihKrYWenf63R0pm7D9MhlrVoX/tpN4LYVMGgBL7jHPxMLKdOkoAZJrn/J88HQ==}
+    engines: {yarn: '>= 1.3.2'}
+
+  '@types/offscreencanvas@2019.3.0':
+    resolution: {integrity: sha512-esIJx9bQg+QYF0ra8GnvfianIY8qWB0GBx54PK5Eps6m+xTj86KLavHv6qDhzKcu5UUOgNfJ2pWaIIV7TRUd9Q==}
+
+  '@types/seedrandom@2.4.27':
+    resolution: {integrity: sha512-YvMLqFak/7rt//lPBtEHv3M4sRNA+HGxrhFZ+DQs9K2IkYJbNwVIb8avtJfhDiuaUBX/AW0jnjv48FV8h3u9bQ==}
+
+  '@types/webgl-ext@0.0.30':
+    resolution: {integrity: sha512-LKVgNmBxN0BbljJrVUwkxwRYqzsAEPcZOe6S2T6ZaBDIrFp0qu4FNlpc5sM1tGbXUYFgdVQIoeLk1Y1UoblyEg==}
+
+  '@types/webgl2@0.0.4':
+    resolution: {integrity: sha512-PACt1xdErJbMUOUweSrbVM7gSIYm1vTncW2hF6Os/EeWi6TXYAYMPp+8v6rzHmypE5gHrxaxZNXgMkJVIdZpHw==}
+
+  node-fetch@2.1.2:
+    resolution: {integrity: sha512-IHLHYskTc2arMYsHZH82PVX8CSKT5lzb7AXeyO06QnjGDKtkv+pv3mEki6S7reB/x1QPo+YPxQRNEVgR5V/w3Q==}
+    engines: {node: 4.x || >=6.0.0}
+
+  seedrandom@2.4.3:
+    resolution: {integrity: sha512-2CkZ9Wn2dS4mMUWQaXLsOAfGD+irMlLEeSP3cMxpGbgyOOzJGFa+MWCOMTOCMyZinHRPxyOj/S/C57li/1to6Q==}
+
+snapshots:
+
+  '@tensorflow-models/handpose@0.0.3(@tensorflow/tfjs-converter@1.7.4(@tensorflow/tfjs-core@1.7.4))(@tensorflow/tfjs-core@1.7.4)':
+    dependencies:
+      '@tensorflow/tfjs-converter': 1.7.4(@tensorflow/tfjs-core@1.7.4)
+      '@tensorflow/tfjs-core': 1.7.4
+
+  '@tensorflow/tfjs-converter@1.7.4(@tensorflow/tfjs-core@1.7.4)':
+    dependencies:
+      '@tensorflow/tfjs-core': 1.7.4
+
+  '@tensorflow/tfjs-core@1.7.4':
+    dependencies:
+      '@types/offscreencanvas': 2019.3.0
+      '@types/seedrandom': 2.4.27
+      '@types/webgl-ext': 0.0.30
+      '@types/webgl2': 0.0.4
+      node-fetch: 2.1.2
+      seedrandom: 2.4.3
+
+  '@types/offscreencanvas@2019.3.0': {}
+
+  '@types/seedrandom@2.4.27': {}
+
+  '@types/webgl-ext@0.0.30': {}
+
+  '@types/webgl2@0.0.4': {}
+
+  node-fetch@2.1.2: {}
+
+  seedrandom@2.4.3: {}

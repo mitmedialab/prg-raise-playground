@@ -1,6 +1,5 @@
-import Runtime from "$scratch-vm/engine/runtime";
-
-import { AbstractConstructor, Environment, ExlcudeFirst } from "$common/types";
+import { AbstractConstructor, Environment, ExlcudeFirst, } from "$common/types";
+import { Runtime } from "$common/types/scratch/vm";
 
 export type ExtensionConstructorParams = ConstructorParameters<typeof ConstructableExtension>;
 export type AuxiliaryExtensionInfoParams = ExlcudeFirst<ExtensionConstructorParams>;

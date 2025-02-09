@@ -22,7 +22,7 @@
     - This is where icons are encoded to URIs
 - extensions/src/common/extension/mixins/optional/appInventor/index.ts
     - We can use this to setup common functionality for all app-inventor-interoping extensions 
-- packages/scratch-vm/src/extension-support/bundle-loader.js
+- scratch-packages/scratch-vm/src/extension-support/bundle-loader.js
     - methods (on Scratch side) to handle importing extension bundles
 
 ## Topics of discussion

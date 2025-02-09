@@ -1,5 +1,4 @@
-import { ArgumentType, BlockType, RGBObject, MenuItem, copyTo, SaveDataHandler, block, buttonBlock, extension } from "$common";
-import BlockUtility from "$root/packages/scratch-vm/src/engine/block-utility";
+import { RGBObject, MenuItem, copyTo, SaveDataHandler, extension, scratch, type BlockUtilityWithID } from "$common";
 import AnimalArgument from "./AnimalArgument.svelte";
 
 const enum MatrixDimension {
@@ -15,7 +14,6 @@ export const enum Animal {
   Monkey,
   Pig
 }
-
 
 export const nameByAnimal: Record<Animal, string> = {
   [Animal.Leopard]: 'leopard',
@@ -77,56 +75,37 @@ export default class TypeScriptFrameworkExample extends extension(
     );
   }
 
-  @block({
-    type: BlockType.Reporter,
-    text: 'My Extension ID is',
-  })
+  @(scratch.reporter`My Extension ID is`)
   getID() {
     return this.id as string;
   }
 
-  @block({
-    type: BlockType.Reporter,
-    args: [
-      ArgumentType.Color,
-      {
-        type: ArgumentType.String, options: [
-          { value: 'r', text: 'red' },
-          { value: 'g', text: 'green' },
-          { value: 'b', text: 'blue' }
-        ]
-      }],
-    text: (color, channel) => `Report ${channel} of ${color}`,
-  })
-  getColorChannel(color: RGBObject, channel: string) {
+  @(scratch.reporter`Report ${{
+    type: "string", options: [
+      { value: 'r', text: 'red' },
+      { value: 'g', text: 'green' },
+      { value: 'b', text: 'blue' }
+    ]
+  }} 
+  of ${"color"}`)
+  getColorChannel(channel: string, color: RGBObject,) {
     return color[channel];
   }
 
-  @block((self) => ({
-    type: BlockType.Reporter,
-    args: [
-      { type: ArgumentType.Number, defaultValue: 3, options: self.lhsOptions },
-      { type: ArgumentType.Number }
-    ],
-    text: (left, right) => `Add ${left} to ${right}`,
-  }))
+  @(scratch.reporter(
+    (self, tag) => tag`Add ${{ type: "number", defaultValue: 3, options: self.lhsOptions }} to ${"number"}`)
+  )
   add(left: number, right: number) {
     return left + right;
   }
 
-  @block({
-    type: "reporter",
-    args: [
-      ArgumentType.Matrix,
-      {
-        type: ArgumentType.Number, options: [
-          { value: MatrixDimension.Row, text: 'rows' },
-          { value: MatrixDimension.Column, text: 'columns' },
-          { value: MatrixDimension.Both, text: 'rows and columns' }
-        ]
-      }],
-    text: (matrix, dimension) => `Sum ${dimension} of ${matrix}`,
-  })
+  @(scratch.reporter`Sum ${"matrix"} of ${{
+    type: "number", options: [
+      { value: MatrixDimension.Row, text: 'rows' },
+      { value: MatrixDimension.Column, text: 'columns' },
+      { value: MatrixDimension.Both, text: 'rows and columns' }
+    ]
+  }}`)
   sumMatrix(matrix: boolean[][], dimension: MatrixDimension) {
     switch (dimension) {
       case MatrixDimension.Row:
@@ -145,66 +124,42 @@ export default class TypeScriptFrameworkExample extends extension(
     }
   }
 
-  @block({
-    type: BlockType.Reporter,
-    arg: ArgumentType.Note,
-    text: (note) => `Pick note ${note}`,
-  })
+  @(scratch.reporter`Pick note ${"note"}`)
   selectNote(note: number) {
     return note;
   }
 
-  @block({
-    type: BlockType.Reporter,
-    arg: ArgumentType.Angle,
-    text: (angle) => `Pick angle ${angle}`,
-  })
+  @(scratch.reporter`Pick angle ${"angle"}`)
   selectAngle(angle: number) {
     return angle;
   }
 
-  @block({
-    type: BlockType.Reporter,
-    text: 'Increment',
-  })
+  @(scratch.reporter`Increment`)
   increment() {
     return ++this.state;
   }
 
-  @block((self) => ({
-    type: BlockType.Reporter,
-    text: (animal) => `This is a ${animal}`,
-    arg:
-    {
-      type: ArgumentType.Number,
-      options: {
-        items: self.animals,
-        acceptsReporters: true,
-        handler: (input) => {
-          switch (input) {
-            case `${Animal.Leopard}`:
-            case `${Animal.Tiger}`:
-            case `${Animal.Gorilla}`:
-            case `${Animal.Monkey}`:
-            case `${Animal.Pig}`:
-              return input as any as Animal;
-            default:
-              alert(`You silly goose! ${input} is not an animal.`);
-              return Animal.Leopard;
-          }
-        }
+  @(scratch.reporter(function (_, tag) {
+    const handler = (input) => {
+      switch (input) {
+        case `${Animal.Leopard}`:
+        case `${Animal.Tiger}`:
+        case `${Animal.Gorilla}`:
+        case `${Animal.Monkey}`:
+        case `${Animal.Pig}`:
+          return input as any as Animal;
+        default:
+          alert(`You silly goose! ${input} is not an animal.`);
+          return Animal.Leopard;
       }
     }
-  } as const))
+    return tag`This is a ${{ type: "number", options: { items: this.animals, acceptsReporters: true, handler } }}`;
+  }))
   animalName(animal: Animal) {
     return nameByAnimal[animal];
   }
 
-  @block((self) => ({
-    type: BlockType.Reporter,
-    arg: { type: ArgumentType.Number, options: self.animals },
-    text: (animal) => `Where does the ${animal} live?`,
-  }))
+  @(scratch.reporter((self, tag) => tag`Where does the ${{ type: "number", options: self.animals }} live?`))
   animalHabit(animal: Animal) {
     switch (animal) {
       case Animal.Leopard:
@@ -220,60 +175,44 @@ export default class TypeScriptFrameworkExample extends extension(
     }
   }
 
-  @block((self) => ({
-    type: BlockType.Command,
-    arg: self.makeCustomArgument({
-      component: AnimalArgument,
-      initial: { value: Animal.Leopard, text: nameByAnimal[Animal.Leopard] }
-    }),
-    text: (animal) => `Add ${animal} to collection`,
+  @(scratch.command(function (_, tag) {
+    const value = Animal.Leopard;
+    const text = nameByAnimal[value];
+    const arg = this.makeCustomArgument({ component: AnimalArgument, initial: { value, text } });
+    return tag`Add ${arg} to collection`;
   }))
   addAnimalToCollectionAndAlert(animal: Animal) {
     this.addAnimalToCollection(animal);
     this.openUI("Alert");
   }
 
-  @block((self) => ({
-    type: BlockType.Reporter,
-    arg: { type: ArgumentType.Number, options: self.getAnimalCollection },
-    text: (animal) => `Animals in collection: ${animal}`,
-  }))
+  @(scratch.reporter(
+    (self, tag) => tag`Animals in collection: ${{ type: "number", options: self.getAnimalCollection }}`
+  ))
   chooseBetweenAnimals(animal: Animal) {
     return nameByAnimal[animal];
   }
 
-  @buttonBlock("Show Animal Collection")
+  @(scratch.button`Show Animal Collection`)
   showAnimalCollectionUI() {
     this.openUI("Animals", "Here's your animal collection");
   }
 
-  // Details of block defined using a 'block getter' function implemented using 'method' syntax.
   // This block is functionally equivalent to the one for 'multiplyUsingSelf' below.
-  @block(function () {
-    return {
-      type: BlockType.Reporter,
-      args: [
-        { type: ArgumentType.Number, defaultValue: 3, options: this.lhsOptions },
-        ArgumentType.Number
-      ],
-      text: (left, right) => `${left} X ${right}`,
-    }
-  })
-  multiplyUsingThis(left: number, right: number, util: BlockUtility) {
+  @(scratch.reporter(
+    function (_, tag) {
+      return tag`${{ type: "number", defaultValue: 3, options: this.lhsOptions }} X ${"number"}`;
+    })
+  )
+  multiplyUsingThis(left: number, right: number, util: BlockUtilityWithID) {
     return left * right;
   }
 
-  // Details of block defined using a 'block getter' function implemented using 'arrow' syntax.
   // This block is functionally equivalent to the one for 'multiplyUsingThis' above.
-  @block((self) => ({
-    type: BlockType.Reporter,
-    text: (left, right) => `${left} X ${right}`,
-    args: [
-      { type: ArgumentType.Number, defaultValue: 3, options: self.lhsOptions },
-      ArgumentType.Number
-    ],
-  }))
-  multiplyUsingSelf(left: number, right: number, util: BlockUtility) {
+  @(scratch.reporter(
+    (self, tag) => tag`${{ type: "number", defaultValue: 3, options: self.lhsOptions }} X ${"number"}`
+  ))
+  multiplyUsingSelf(left: number, right: number, util: BlockUtilityWithID) {
     return left * right;
   }
 }

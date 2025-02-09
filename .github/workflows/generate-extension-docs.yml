@@ -10,17 +10,22 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [16.17.1]
+        node-version: [18]
     steps:
     - uses: actions/checkout@v3
+      with:
+        submodules: true
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
+    - uses: pnpm/action-setup@v4
+      with:
+        version: 9.1.2
     - name: Initialize
-      run: npm run init
+      run: pnpm install
     - name: Generate
-      run: npm run document:extensions
+      run: pnpm document:extensions
     - uses: stefanzweifel/git-auto-commit-action@v4
       with:
         commit_message: 're-generate extension documentation\n\nskip-checks:true'

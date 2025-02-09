@@ -14,7 +14,8 @@
     "lib": [
       "dom",
       "es6",
-      "dom.iterable"
+      "dom.iterable",
+      "ESNext"
     ]
   },
   "include": [
