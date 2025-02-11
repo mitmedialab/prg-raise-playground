@@ -915,15 +915,40 @@ createAndSaveWAV(interleaved, sampleRate) {
     }
   }
 
-  @block({
-    type: "command",
-    text: `Test chat API call`,
-  })
-  async testChatAPI() {
-    const { context, buffer } = await this.doodlebot?.recordAudio(1);
+  // Internal method that can be called directly
+  private async handleChatInteraction(seconds: number) {
+    console.log(`recording audio for ${seconds} seconds`);
+    // Display "listening" while recording
+    await this.doodlebot?.display("clear");
+    await this.doodlebot?.displayText("listening");
+    
+    const { context, buffer } = await this.doodlebot?.recordAudio(seconds);
+    console.log("finished recording audio");
+    
+    // Display "thinking" while processing and waiting for response
+    await this.doodlebot?.display("clear");
+    await this.doodlebot?.displayText("thinking");
+    
+    // Before sending audio to be played
     await this.processAndSendAudio(buffer);
+    
+    // Display "speaking" when ready to speak
+    await this.doodlebot?.display("clear");
+    await this.doodlebot?.displayText("speaking");
+    
+    // Wait a moment before clearing the display
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    await this.doodlebot?.display("clear");
   }
 
+  @block({
+    type: "command",
+    text: (seconds) => `chat with me for ${seconds} seconds`,
+    arg: { type: "number", defaultValue: 3 }
+  })
+  async testChatAPI(seconds: number) {
+    await this.handleChatInteraction(seconds);
+  }
 
   async useModel(url: string) {
     try {

@@ -852,29 +852,37 @@ export default class Doodlebot {
 
         const context: AudioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
         const sampleRate = 48000;
-        const buffer = context.createBuffer(1, sampleRate * numSeconds, sampleRate);
+        const totalSamples = sampleRate * numSeconds;
+        const buffer = context.createBuffer(1, totalSamples, sampleRate);
 
         let index = 0;
         let samples = 0;
-
+        const startTime = Date.now();
         const callbacks = this.audioCallbacks;
 
         return new Promise<{ context: AudioContext, buffer: AudioBuffer }>((resolve) => {
             const accumulate = (chunk: Float32Array) => {
-
-                if (samples >= buffer.length) {
+                // Check if we've exceeded our time limit
+                if (Date.now() - startTime >= numSeconds * 1000) {
                     callbacks.delete(accumulate);
                     return resolve({ context, buffer });
                 }
 
-                const offset = index++;
-                const { length } = chunk;
-                buffer.copyToChannel(chunk, 0, offset * length);
-                samples += length;
+                if (samples + chunk.length > totalSamples) {
+                    // Only copy what we need to fill the buffer
+                    const remainingSamples = totalSamples - samples;
+                    buffer.copyToChannel(chunk.slice(0, remainingSamples), 0, samples);
+                    samples = totalSamples;
+                    callbacks.delete(accumulate);
+                    return resolve({ context, buffer });
+                }
 
+                buffer.copyToChannel(chunk, 0, samples);
+                samples += chunk.length;
+                index++;
             }
             callbacks.add(accumulate);
-        })
+        });
     }
 
     async display(type: DisplayKey) {
