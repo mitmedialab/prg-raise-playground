@@ -1,6 +1,6 @@
 import * as Spline from "cubic-spline";
 import * as Bezier from "bezier-js";
-import { rebalanceCurve, rotateCurve } from "curve-matcher";
+import { rotateCurve } from "curve-matcher";
 import { procrustes } from "./Procrustes";
 import { type Point, type PointObject, type ProcrustesResult, type RobotPosition, type Command, calculateLineError, applyTranslation, cutOffLineAtOverlap, distanceBetweenPoints, approximateBezierWithArc } from './LineHelper';
 
@@ -18,7 +18,6 @@ const horizontalFOV = 53.4;
 const verticalFOV = 41.41;
 const cameraHeight = 0.098;
 const tiltAngle = 30;
-//const tiltAngle = 38;
 
 
 
@@ -329,14 +328,7 @@ function prependUntilTarget(line2) {
     return line;
 }
 
-function getAngleBetweenPoints(x1: number, y1: number, x2: number, y2: number) {
-    let angleRad = Math.atan2(y2 - y1, x2 - x1); // Get angle in radians
-    let angleDeg = angleRad * (180 / Math.PI);  // Convert to degrees
-    return angleDeg;
-}
-
 export function followLine(previousLine: Point[], pixels: Point[], previousPixels: Point[], previousCommands: Command[], previousTime: number[], totalTime: number[], add: number, first = false) {
-
 
     let errorMultiplier = 1;
     let worldPoints = [];
@@ -351,7 +343,6 @@ export function followLine(previousLine: Point[], pixels: Point[], previousPixel
         }
         worldPoints = cutOffLineOnDistance(worldPoints, 50);
         worldPoints = worldPoints.length > 0 ? worldPoints.map(point => pixelToGroundCoordinates(point)) : [];
-        //worldPoints = cutOffLineOnDistance(worldPoints, 0.02);
         
         const height = worldPoints.length > 0 ? worldPoints[worldPoints.length - 1][1] - worldPoints[0][1] : 0;
 

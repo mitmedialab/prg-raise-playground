@@ -4,7 +4,6 @@ import UartService from "./communication/UartService";
 import { followLine } from "./LineFollowing";
 import { Command, DisplayKey, NetworkStatus, ReceivedCommand, SensorKey, command, display, endpoint, keyBySensor, motorCommandReceived, networkStatus, port, sensor } from "./enums";
 import { base64ToInt32Array, makeWebsocket, Max32Int, testWebSocket } from "./utils";
-import { line0, line1, line2, line3, line4, line5, line6, line7, line8 } from './Points';
 import { LineDetector } from "./LineDetection";
 import { calculateArcTime } from "./TimeHelper";
 
@@ -661,14 +660,6 @@ export default class Doodlebot {
         let first = true;
         let iterations = 2;
 
-        const min = 320;
-        const max = 345;
-
-        // For future speed calculations
-        const intervalMax = max/iterations;
-        const intervalMin = min/iterations;
-        const interval = (340 + -5)/iterations; // 1/15th of a second
-
         let prevInterval;
         let t = { aT: 0.3 };
         let lastTime: number;
@@ -771,12 +762,6 @@ export default class Doodlebot {
                         add = 0;
                     }
                 }
-
-                // const arcLength = (Math.PI * (this.motorCommands[0].radius + 2.93) * this.motorCommands[0].angle)/180;
-                // console.log("arc", arcLength, "command", this.motorCommands[0]);
-                // const ratio = 1.7/Math.abs(arcLength);
-                // console.log('interval', interval*ratio, "angle", this.motorCommands[0].angle, "length", arcLength, "time", t.aT);
-                // const waitTime = Math.max(Math.min(interval*ratio, intervalMax), intervalMin);
                 
                 await new Promise((resolve) => setTimeout(resolve, waitTime));
                 prevInterval = waitTime/1000;
