@@ -142,6 +142,8 @@ export class LineDetector {
             this.isProcessing = false;
             debug.timeEnd('detectLine');
             return lineCoordinates;
+          } else {
+            this.lastDetectedLine = lineCoordinates;
           }
 
           debug.warn('No line detected in this attempt');

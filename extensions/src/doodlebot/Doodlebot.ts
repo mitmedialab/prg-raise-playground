@@ -4,7 +4,6 @@ import UartService from "./communication/UartService";
 import { followLine } from "./LineFollowing";
 import { Command, DisplayKey, NetworkStatus, ReceivedCommand, SensorKey, command, display, endpoint, keyBySensor, motorCommandReceived, networkStatus, port, sensor } from "./enums";
 import { base64ToInt32Array, makeWebsocket, Max32Int, testWebSocket } from "./utils";
-import { line0, line1, line2, line3, line4, line5, line6, line7, line8 } from './Points';
 import { LineDetector } from "./LineDetection";
 import { calculateArcTime } from "./TimeHelper";
 
@@ -635,8 +634,6 @@ export default class Doodlebot {
         console.log(this.wholeString);
     }
 
-
-    i = 0;
     wholeString = "export const allLines = [";
     cumulativeLine = "export const cumulativeLines = [";
 
@@ -645,95 +642,166 @@ export default class Doodlebot {
     line;
     lineCounter = 0;
     detector;
+    iterationNumber = 0;
+
+    deepEqual = (a, b) => {
+        if (a === b) return true;
+        if (Array.isArray(a) && Array.isArray(b)) {
+          return a.length === b.length && a.every((val, i) => this.deepEqual(val, b[i]));
+        }
+        if (typeof a === 'object' && typeof b === 'object') {
+          const keysA = Object.keys(a), keysB = Object.keys(b);
+          return keysA.length === keysB.length && keysA.every(key => this.deepEqual(a[key], b[key]));
+        }
+        return false;
+    };
 
     async followLine() {
         let first = true;
-        const delay = 0.5;
-        const previousSpeed = 0.1;
-        const interval = 350; // 1/15th of a second
-        let prevRadius;
-        let prevAngle;
-        let lineData
-        await this.detector.initialize(this);
+        let iterations = 2;
 
+        let prevInterval;
+        let t = { aT: 0.3 };
+        let lastTime: number;
+
+        console.log(this.connection.ip);
+        console.log(this.detector);
+        this.detector = new LineDetector(this.connection.ip);
+        await this.detector.initialize(this);
+        let prevLine = [];
+        let add = 0;
         while (true) {
-            console.log("NEXT");
             try {
-                console.log("before 1");
-                console.log("after 1");
                 let lineData = this.detector.returnLine();
+                // lineData = lineData.map(value => [640 - value[0], 480 - value[1]])
+                const firstQuadrant = lineData.filter(value => value[1] < 10);
+                lineData = firstQuadrant.length > 0 ? lineData.filter(value => value[1] < 350) : [];
+                console.log("FIRST QUADRANT", firstQuadrant.length);
                 // Process line data
                 lineData = lineData.sort((a, b) => a[1] - b[1]);
-                console.log("LINE DATA", lineData);
+
+                // Debugging statements
                 this.wholeString = this.wholeString + `${JSON.stringify(lineData)},`;
                 this.printLine();
                 this.lineCounter += 1;
 
+                let newMotorCommands;
+                
                 if (first) {
-                    ({ motorCommands: this.motorCommands, bezierPoints: this.bezierPoints, line: this.line } = followLine(
+                    ({ motorCommands: newMotorCommands, bezierPoints: this.bezierPoints, line: this.line } = followLine(
                         lineData,
                         lineData,
-                        null,
-                        delay,
-                        previousSpeed,
+                        prevLine,
                         [],
                         [],
                         [],
-                        false,
+                        add,
                         true
                     ));
-                    first = false;
                 } else {
-                    ({ motorCommands: this.motorCommands, bezierPoints: this.bezierPoints, line: this.line } = followLine(
+                    ({ motorCommands: newMotorCommands, bezierPoints: this.bezierPoints, line: this.line } = followLine(
                         this.line,
                         lineData,
-                        null,
-                        delay,
-                        previousSpeed,
+                        prevLine,
                         this.motorCommands,
-                        [1],
-                        [1],
-                        false,
+                        [prevInterval/2],
+                        [t.aT],
+                        add,
                         false
                     ));
                 }
+                
+                lastTime = Date.now();
 
-
+                // Debugging statement
                 this.cumulativeLine = this.cumulativeLine + `${JSON.stringify(this.line)},`;
-                console.log("after");
-                console.log("motorCommands DEBUG 1", this.motorCommands);
-                for (const command of this.motorCommands) {
-                    console.log("command DEBUG 2", command);
-                    const { radius, angle } = command;
-                    console.log(command);
-                    if (command.distance > 0) {
-                        this.sendWebsocketCommand("m", Math.round(12335.6 * command.distance), Math.round(12335.6 * command.distance), 500, 500);
-                    } else {
-                        this.sendBLECommand("t", radius, angle);
-                    }
-
-                }
-                console.log("after 2");
                 console.log(this.cumulativeLine);
 
-                // Wait for the interval duration before the next iteration
-                await new Promise((resolve) => setTimeout(resolve, interval));
+                let waitTime = prevLine.length < 100 ? 190 : 200;
+                if (newMotorCommands[0].angle > 10) {
+                    newMotorCommands[0].angle = 10;
+                } else if (newMotorCommands[0].angle < -10) {
+                    newMotorCommands[0].angle = -10;
+                }
+
+                
+                if (this.iterationNumber % iterations == 0) {
+                    newMotorCommands[0].angle = this.limitArcLength(newMotorCommands[0].angle, newMotorCommands[0].radius, 2);
+                    // newMotorCommands[0].angle = this.increaseArcLength(newMotorCommands[0].angle, newMotorCommands[0].radius, );
+                    if (newMotorCommands[0].radius < 10) {
+                        newMotorCommands[0].angle = this.limitArcLength(newMotorCommands[0].angle, newMotorCommands[0].radius, 1.5);
+                    }
+
+                    if (this.motorCommands && !(this.motorCommands[0].distance > 0)) {
+                        if (this.motorCommands) {
+                            t = calculateArcTime(this.motorCommands[0].radius, this.motorCommands[0].angle, newMotorCommands[0].radius, newMotorCommands[0].angle);
+                        } else {
+                            t = calculateArcTime(0, 0, newMotorCommands[0].radius, newMotorCommands[0].angle);
+                        }
+                    }
+                    
+                    this.motorCommands = newMotorCommands;
+                    for (const command of this.motorCommands) {
+                        let { radius, angle } = command;
+
+                        if ((lineData.length == 0 || !this.deepEqual(lineData, prevLine))) {
+                            if (command.distance > 0) {
+                                this.sendWebsocketCommand("m", Math.round(12335.6*command.distance), Math.round(12335.6*command.distance), 500, 500);
+                            } else {
+                                this.sendBLECommand("t", radius, angle);
+                            }
+                        }
+                        if (this.deepEqual(lineData, prevLine) && lineData.length > 0) {
+                            console.log("LAG");
+                        }
+                        
+                    }
+                    if (prevLine.length < 100 && lineData.length < 100) {
+                        add = add + 1;
+                    } else {
+                        add = 0;
+                    }
+                }
+                
+                await new Promise((resolve) => setTimeout(resolve, waitTime));
+                prevInterval = waitTime/1000;
+                first = false;
+                prevLine = lineData;
             } catch (error) {
                 console.error("Error in followLine loop:", error);
                 break; // Optionally, break the loop on error
             }
+            this.iterationNumber = this.iterationNumber + 1;
         }
     }
-    //console.log(j);
-    // Process the line data here
-
-    //     } catch (error) {
-    //         console.error("Error detecting line:", error);
-    //         // Optionally stop polling if there's a consistent error
-    //     }
-    // }
 
 
+    limitArcLength(angle: number, radius: number, maxArcLength: number = 2): number {
+        // Calculate the max allowable angle
+        let negative = true;
+        if (angle > 0) {
+            negative = false;
+        }
+        angle = Math.abs(angle);
+        const maxAngle = (maxArcLength * 180) / ((radius + 2.93) * Math.PI);
+    
+        const returnAngle = Math.min(angle, maxAngle);
+        // Return the limited angle
+        return negative ? returnAngle * -1 : returnAngle;
+    }
+
+    increaseArcLength(angle: number, radius: number, maxArcLength: number = 2): number {
+        // Calculate the max allowable angle
+        let negative = true;
+        if (angle > 0) {
+            negative = false;
+        }
+        angle = Math.abs(angle);
+        const maxAngle = (maxArcLength * 180) / ((radius + 2.93) * Math.PI);
+    
+        // Return the limited angle
+        return negative ? maxAngle*-1 : maxAngle;
+    }
 
     private setupAudioStream() {
         if (!this.connection.ip) return false;
