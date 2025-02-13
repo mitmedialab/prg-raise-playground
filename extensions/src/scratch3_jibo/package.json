@@ -1,19 +1,20 @@
 {
-  "name": "scratch3_jibo-extension",
+  "name": "jibo-extension",
   "version": "1.0.0",
   "description": "An extension created using the PRG AI Blocks framework",
   "main": "index.ts",
   "scripts": {
     "directory": "echo scratch3_jibo",
-    "test": "pnpm --filter prg-extension-root test scratch3_jibo/index.test.ts",
-    "dev": "pnpm --filter prg-extension-root dev --include scratch3_jibo",
-    "add:ui": "pnpm --filter prg-extension-root add:ui scratch3_jibo",
-    "add:arg": "pnpm --filter prg-extension-root add:arg scratch3_jibo"
+    "dev": "pnpm --filter prg-extension-root dev -i scratch3_jibo",
+    "test": "pnpm --filter prg-extension-root test scratch3_jibo/index.test.ts"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "firebase": "^11.3.1",
+    "firebase": "^9.22.2",
     "roslib": "^1.4.1"
+  },
+  "devDependencies": {
+    "@types/roslib": "^1.3.0"
   }
 }
