@@ -494,7 +494,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     this.asr_out = await queue.ASR_received();
   }
   async jiboListenFn() {
-    //if (jiboName === "") return this.virtualJibo.answer;
+    // if (jiboName === "") return this.virtualJibo.answer;
     return this.asr_out;
   }
 
