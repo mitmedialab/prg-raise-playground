@@ -44,6 +44,7 @@ export default class SimpleTypescript extends extension(details, "ui", "customSa
   }
 
   async init(env: Environment) {
+    console.log("help");
   }
 
   @(scratch.command((self, tag) => tag`Indicate and log ${{ type: "string", options: self.logOptions }} to the console`))
