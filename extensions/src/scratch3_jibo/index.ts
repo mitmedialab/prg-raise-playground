@@ -175,7 +175,6 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   virtualJibo: VirtualJibo;
 
   init() {
-    console.log("here");
     this.dances = Object.entries(Dance).map(([dance, def]) => ({
       text: Dance[dance],
       value: Dance[dance],
