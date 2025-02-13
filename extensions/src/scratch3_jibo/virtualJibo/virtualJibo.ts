@@ -56,7 +56,7 @@ import jiboEye3 from "./jiboEye/Eye3.svg";
 import jiboEye4 from "./jiboEye/Eye4.svg";
 import jiboEye5 from "./jiboEye/Eye5.svg";
 
-import Runtime from "$root/packages/scratch-vm/src/engine/runtime";
+import Runtime from "$scratch-vm/src/engine/runtime";
 
 let bitmapAdapter: MockBitmapAdapter;
 let urlHelper: ReturnType<typeof getUrlHelper>;
