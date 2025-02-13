@@ -86,6 +86,12 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     if (window.isSecureContext) this.openUI("Connect")
     else this.connectToDoodlebotWithExternalBLE();
     this._loop();
+    env.runtime.on("PROJECT_RUN_START", () => {
+      this.setDisplay("love");
+    })
+    env.runtime.on("PROJECT_RUN_STOP", () => {
+      this.setDisplay("sad");
+    })
   }
 
   private async connectToDoodlebotWithExternalBLE() {
