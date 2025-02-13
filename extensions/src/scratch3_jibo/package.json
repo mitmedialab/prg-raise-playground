@@ -11,10 +11,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "firebase": "^9.22.2",
-    "roslib": "^1.4.1"
-  },
-  "devDependencies": {
-    "@types/roslib": "^1.3.0"
+    "firebase": "^9.22.2"
   }
 }
