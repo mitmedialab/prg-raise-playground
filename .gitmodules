@@ -9,4 +9,4 @@
 [submodule "scratch-packages/scratch-blocks"]
 	path = scratch-packages/scratch-blocks
 	url = git@github.com:gonfunko/scratch-blocks.git
-	branch = blockly-changes
+	branch = modern-blockly
