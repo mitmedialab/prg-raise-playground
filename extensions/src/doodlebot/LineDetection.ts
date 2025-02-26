@@ -66,11 +66,11 @@ export class LineDetector {
     debug.time('processImageData');
 
     const lineCoordinates: number[][] = [];
-    const maxY = Math.min(this.height, 400);
+    const maxY = Math.max(this.height, 400);
     const data = imageData.data;
     const width = this.width;
 
-    for (let y = 0; y < maxY; y += 2) {
+    for (let y = 100; y < maxY; y += 2) {
       const rowOffset = y * width * 4;
       for (let x = 0; x < width; x += 2) {
         const index = rowOffset + (x * 4);

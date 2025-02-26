@@ -673,7 +673,7 @@ export default class Doodlebot {
         while (true) {
             try {
                 let lineData = this.detector.returnLine();
-                // lineData = lineData.map(value => [640 - value[0], 480 - value[1]])
+                lineData = lineData.map(value => [640 - value[0], 480 - value[1]])
                 const firstQuadrant = lineData.filter(value => value[1] < 10);
                 lineData = firstQuadrant.length > 0 ? lineData.filter(value => value[1] < 350) : [];
                 console.log("FIRST QUADRANT", firstQuadrant.length);
