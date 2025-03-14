@@ -1,0 +1,15 @@
+{
+  "name": "app_inventor-extension",
+  "version": "1.0.0",
+  "description": "An extension created using the PRG AI Blocks framework",
+  "main": "index.ts",
+  "scripts": {
+    "directory": "echo app_inventor",
+    "test": "pnpm --filter prg-extension-root test app_inventor/index.test.ts",
+    "dev": "pnpm --filter prg-extension-root dev --include app_inventor",
+    "add:ui": "pnpm --filter prg-extension-root add:ui app_inventor",
+    "add:arg": "pnpm --filter prg-extension-root add:arg app_inventor"
+  },
+  "author": "",
+  "license": "ISC"
+}
