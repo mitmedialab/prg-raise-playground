@@ -163,7 +163,7 @@ const handleTelemetryModalOptOut = () => {
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../node_modules/.pnpm/css-loader@3.6.0_webpack@5.91.0_webpack-cli@5.1.4_/node_modules/css-loader/dist/runtime/api.js */ "./node_modules/.pnpm/css-loader@3.6.0_webpack@5.91.0_webpack-cli@5.1.4_/node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.id, "html,\nbody,\n.index_app_3Qs6X {\n    /* probably unecessary, transitional until layout is refactored */\n    width: 100%; \n    height: 100%;\n    margin: 0;\n\n    /* Setting min height/width makes the UI scroll below those sizes */\n    min-width: 1024px;\n    min-height: 640px; /* Min height to fit sprite/backdrop button */\n}\n\n/* @todo: move globally? Safe / side FX, for blocks particularly? */\n\n* { box-sizing: border-box; }\n", ""]);
+exports.push([module.id, "html,\nbody {\n    /* probably unecessary, transitional until layout is refactored */\n    height: 100%;\n    width: 100%;\n    margin: 0;\n}\n\n.index_app_3Qs6X {\n    width: 100%; \n    height: 94.5%;\n    transform: translateY(6%);\n    /* Setting min height/width makes the UI scroll below those sizes */\n    min-width: 924px;\n    min-height: 640px; /* Min height to fit sprite/backdrop button */\n}\n\n/* @todo: move globally? Safe / side FX, for blocks particularly? */\n\n* { box-sizing: border-box; }\n", ""]);
 // Exports
 exports.locals = {
 	"app": "index_app_3Qs6X"
