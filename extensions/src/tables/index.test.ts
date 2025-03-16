@@ -49,6 +49,8 @@ createTestSuite({ Extension, __dirname }, {
         const { extension, testHelper: { expect } } = fixture;
         extension.newTable({ name: 'newTable', rows: 2, columns: 2 });
         expect(extension.tables.newTable.length).toBe(2);
+        expect(extension.rowNames.newTable[0]).toBe('row');
+        expect(extension.columnNames.newTable[0]).toBe('col');
       },
       after: async (fixture) => {
         const { ui, extension, testHelper: { expect, fireEvent, updateHTMLInputValue } } = fixture;
@@ -67,8 +69,14 @@ createTestSuite({ Extension, __dirname }, {
         expect(cells.length).toBe(4);
         const cell = cells[0] as HTMLInputElement;
 
+        const rows = await ui.findAllByTestId('rowNameCell');
+        expect(rows.length).toBe(2);
+        const row = rows[0] as HTMLInputElement;
+
         await fireEvent.change(cell, { target: { value: '3' } });
+        await fireEvent.change(row, { target: { value: 'newName' } });
         expect(extension.tables.newTable[0][0]).toBe(3);
+        expect(extension.rowNames.newTable[0]).toBe('newName');
 
         delete extension.tables.newTable;
       }
@@ -112,10 +120,16 @@ createTestSuite({ Extension, __dirname }, {
         input: 'newTable',
         before: ({ extension }) => {
           extension.tables.newTable = [[1]];
+          extension.rowNames.newTable = ['row'];
+          extension.columnNames.newTable = ['col'];
         },
         after: ({ extension }) => {
           expect(extension.tables.newTable).toBe(undefined);
+          expect(extension.rowNames.newTable).toBe(undefined);
+          expect(extension.columnNames.newTable).toBe(undefined);
           delete extension.tables.newTable;
+          delete extension.rowNames.newTable;
+          delete extension.columnNames.newTable;
         }
       }
     },
@@ -124,11 +138,17 @@ createTestSuite({ Extension, __dirname }, {
         input: 'newTable',
         before: ({ extension }) => {
           extension.tables.newTable = [[1]];
+          extension.rowNames.newTable = ['row'];
+          extension.columnNames.newTable = ['col'];
         },
         after: ({ extension }) => {
           expect(extension.tables.newTable[0].length).toBe(2);
           expect(extension.tables.newTable[0][1]).toBe(0);
+          expect(extension.columnNames.newTable.length).toBe(2);
+          expect(extension.rowNames.newTable.length).toBe(1);
           delete extension.tables.newTable;
+          delete extension.rowNames.newTable;
+          delete extension.columnNames.newTable;
         }
       }
     },
@@ -137,11 +157,63 @@ createTestSuite({ Extension, __dirname }, {
         input: 'newTable',
         before: ({ extension }) => {
           extension.tables.newTable = [[1]];
+          extension.rowNames.newTable = ['row'];
+          extension.columnNames.newTable = ['col'];
         },
         after: ({ extension }) => {
           expect(extension.tables.newTable.length).toBe(2);
           expect(extension.tables.newTable[1][0]).toBe(0);
+          expect(extension.columnNames.newTable.length).toBe(1);
+          expect(extension.rowNames.newTable.length).toBe(2);
           delete extension.tables.newTable;
+          delete extension.rowNames.newTable;
+          delete extension.columnNames.newTable;
+        }
+      }
+    },
+    deleteColumn: ({ expect }) => {
+      return {
+        input: ['newTable', 1],
+        before: ({ extension }) => {
+          extension.tables.newTable = [
+            [0, 0],
+            [1, 0]
+          ];
+          extension.rowNames.newTable = ['row', 'row'];
+          extension.columnNames.newTable = ['col', 'col'];
+        },
+        after: ({ extension }) => {
+          expect(extension.tables.newTable.length).toBe(2);
+          expect(extension.tables.newTable[0].length).toBe(1);
+          expect(extension.tables.newTable[0][0]).toBe(0);
+          expect(extension.columnNames.newTable.length).toBe(1);
+          expect(extension.rowNames.newTable.length).toBe(2);
+          delete extension.tables.newTable;
+          delete extension.rowNames.newTable;
+          delete extension.columnNames.newTable;
+        }
+      }
+    },
+    deleteRow: ({ expect }) => {
+      return {
+        input: ['newTable', 1],
+        before: ({ extension }) => {
+          extension.tables.newTable = [
+            [0, 0],
+            [1, 1]
+          ];
+          extension.rowNames.newTable = ['row', 'row'];
+          extension.columnNames.newTable = ['col', 'col'];
+        },
+        after: ({ extension }) => {
+          expect(extension.tables.newTable.length).toBe(1);
+          expect(extension.tables.newTable[0].length).toBe(2);
+          expect(extension.tables.newTable[0][0]).toBe(1);
+          expect(extension.columnNames.newTable.length).toBe(2);
+          expect(extension.rowNames.newTable.length).toBe(1);
+          delete extension.tables.newTable;
+          delete extension.rowNames.newTable;
+          delete extension.columnNames.newTable;
         }
       }
     },
