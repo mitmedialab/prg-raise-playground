@@ -208,6 +208,15 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
 
   @block({
     type: "command",
+    text: (seconds) => `chat with me for ${seconds} seconds`,
+    arg: { type: "number", defaultValue: 3 }
+  })
+  async testChatAPI(seconds: number) {
+    await this.handleChatInteraction(seconds);
+  }
+
+  @block({
+    type: "command",
     text: (direction, steps) => `drive ${direction} for ${steps} steps`,
     args: [
       { type: "string", options: ["forward", "backward", "left", "right"], defaultValue: "forward" },
@@ -261,7 +270,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
 
   @block({
     type: "command",
-    text: "Test line follow"
+    text: "perform line following"
   })
   async testLine2() {
     await this.doodlebot.followLine();
@@ -276,70 +285,70 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     await this.doodlebot?.penCommand(direction);
   }
 
-  @block({
-    type: "reporter",
-    text: (sensor: SensorKey) => `${sensor} sensor`,
-    arg: { type: "string", options: ["battery", "temperature", "humidity", "pressure", "distance"], defaultValue: "battery" }
-  })
-  async getSingleSensorReading(sensor: "battery" | "temperature" | "humidity" | "pressure" | "distance") {
-    const reading = await this.doodlebot?.getSensorReading(sensor);
-    return reading;
-  }
+  // @block({
+  //   type: "reporter",
+  //   text: (sensor: SensorKey) => `${sensor} sensor`,
+  //   arg: { type: "string", options: ["battery", "temperature", "humidity", "pressure", "distance"], defaultValue: "battery" }
+  // })
+  // async getSingleSensorReading(sensor: "battery" | "temperature" | "humidity" | "pressure" | "distance") {
+  //   const reading = await this.doodlebot?.getSensorReading(sensor);
+  //   return reading;
+  // }
 
-  @block({
-    type: "Boolean",
-    text: (bumper) => `is ${bumper} bumper pressed`,
-    arg: { type: "string", options: bumperOptions, defaultValue: bumperOptions[0] }
-  })
-  async isBumperPressed(bumber: typeof bumperOptions[number]) {
-    const isPressed = await this.doodlebot?.getSensorReading("bumper");
-    switch (bumber) {
-      case "back":
-        return isPressed.back > 0;
-      case "front":
-        return isPressed.front > 0;
-      case "front or back":
-        return isPressed.front > 0 || isPressed.back > 0;
-      case "front and back":
-        return isPressed.front > 0 && isPressed.back > 0;
-      case "neither":
-        return isPressed.front === 0 && isPressed.back === 0;
-    }
-  }
+  // @block({
+  //   type: "Boolean",
+  //   text: (bumper) => `is ${bumper} bumper pressed`,
+  //   arg: { type: "string", options: bumperOptions, defaultValue: bumperOptions[0] }
+  // })
+  // async isBumperPressed(bumber: typeof bumperOptions[number]) {
+  //   const isPressed = await this.doodlebot?.getSensorReading("bumper");
+  //   switch (bumber) {
+  //     case "back":
+  //       return isPressed.back > 0;
+  //     case "front":
+  //       return isPressed.front > 0;
+  //     case "front or back":
+  //       return isPressed.front > 0 || isPressed.back > 0;
+  //     case "front and back":
+  //       return isPressed.front > 0 && isPressed.back > 0;
+  //     case "neither":
+  //       return isPressed.front === 0 && isPressed.back === 0;
+  //   }
+  // }
 
-  @block({
-    type: "hat",
-    text: (bumper, condition) => `when ${bumper} bumper ${condition}`,
-    args: [
-      { type: "string", options: bumperOptions, defaultValue: bumperOptions[0] },
-      { type: "string", options: ["release", "pressed"], defaultValue: "pressed" }
-    ]
-  })
-  whenBumperPressed(bumber: typeof bumperOptions[number], condition: "release" | "pressed") {
-    const isPressed = this.doodlebot?.getSensorReadingImmediately("bumper");
-    const isPressedCondition = condition === "pressed";
-    switch (bumber) {
-      case "back":
-        return isPressedCondition ? isPressed.back > 0 : isPressed.back === 0;
-      case "front":
-        return isPressedCondition ? isPressed.front > 0 : isPressed.front === 0;
-      case "front or back":
-        return isPressedCondition ? isPressed.front > 0 || isPressed.back > 0 : isPressed.front === 0 && isPressed.back === 0;
-      case "front and back":
-        return isPressedCondition ? isPressed.front > 0 && isPressed.back > 0 : isPressed.front === 0 || isPressed.back === 0;
-      case "neither":
-        return isPressedCondition ? isPressed.front === 0 && isPressed.back === 0 : isPressed.front > 0 && isPressed.back > 0;
-    }
-  }
+  // @block({
+  //   type: "hat",
+  //   text: (bumper, condition) => `when ${bumper} bumper ${condition}`,
+  //   args: [
+  //     { type: "string", options: bumperOptions, defaultValue: bumperOptions[0] },
+  //     { type: "string", options: ["release", "pressed"], defaultValue: "pressed" }
+  //   ]
+  // })
+  // whenBumperPressed(bumber: typeof bumperOptions[number], condition: "release" | "pressed") {
+  //   const isPressed = this.doodlebot?.getSensorReadingImmediately("bumper");
+  //   const isPressedCondition = condition === "pressed";
+  //   switch (bumber) {
+  //     case "back":
+  //       return isPressedCondition ? isPressed.back > 0 : isPressed.back === 0;
+  //     case "front":
+  //       return isPressedCondition ? isPressed.front > 0 : isPressed.front === 0;
+  //     case "front or back":
+  //       return isPressedCondition ? isPressed.front > 0 || isPressed.back > 0 : isPressed.front === 0 && isPressed.back === 0;
+  //     case "front and back":
+  //       return isPressedCondition ? isPressed.front > 0 && isPressed.back > 0 : isPressed.front === 0 || isPressed.back === 0;
+  //     case "neither":
+  //       return isPressedCondition ? isPressed.front === 0 && isPressed.back === 0 : isPressed.front > 0 && isPressed.back > 0;
+  //   }
+  // }
 
-  @block({
-    type: "command",
-    text: (sensor: SensorKey) => `disable ${sensor}`,
-    arg: { type: "string", options: sensorKeys, defaultValue: sensorKeys[0] }
-  })
-  async disableSensor(sensor: SensorKey) {
-    await this.doodlebot?.disableSensor(sensor);
-  }
+  // @block({
+  //   type: "command",
+  //   text: (sensor: SensorKey) => `disable ${sensor}`,
+  //   arg: { type: "string", options: sensorKeys, defaultValue: sensorKeys[0] }
+  // })
+  // async disableSensor(sensor: SensorKey) {
+  //   await this.doodlebot?.disableSensor(sensor);
+  // }
 
   @block({
     type: "command",
@@ -369,7 +378,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
 
   @block({
     type: "command",
-    text: (sound) => `play sound ${sound}`,
+    text: (sound) => `play sound track${sound}`,
     arg: { type: "number", defaultValue: 1 }
   })
   async playSound(sound: number) {
@@ -379,85 +388,85 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   @block({
     type: "command",
     text: (transparency) => `display video with ${transparency}% transparency`,
-    arg: { type: "number", defaultValue: 50 }
+    arg: { type: "number", defaultValue: 0 }
   })
   async connectToVideo(transparency: number) {
     this.videoDrawable ??= await this.createVideoStreamDrawable();
     this.videoDrawable.setTransparency(transparency);
   }
 
-  @block({
-    type: "hat",
-    text: (gesture) => `when ${gesture} detected`,
-    arg: { type: "string", defaultValue: "Thumb_Up", options: gestureMenuItems }
-  })
-  whenGesture(gesture: keyof typeof this.gestureState) {
-    const self = this;
+  // @block({
+  //   type: "hat",
+  //   text: (gesture) => `when ${gesture} detected`,
+  //   arg: { type: "string", defaultValue: "Thumb_Up", options: gestureMenuItems }
+  // })
+  // whenGesture(gesture: keyof typeof this.gestureState) {
+  //   const self = this;
 
-    this.gestureLoop ??= looper(async () => {
-      self.imageStream ??= await self.doodlebot?.getImageStream();
-      const result = await gestureDetection(self.imageStream);
+  //   this.gestureLoop ??= looper(async () => {
+  //     self.imageStream ??= await self.doodlebot?.getImageStream();
+  //     const result = await gestureDetection(self.imageStream);
 
-      for (const k in self.gestureState) self.gestureState[k] = false;
+  //     for (const k in self.gestureState) self.gestureState[k] = false;
 
-      for (const arr of result.gestures)
-        for (const gesture of arr)
-          self.gestureState[gesture.categoryName] = true;
-    }, "gesture detection");
+  //     for (const arr of result.gestures)
+  //       for (const gesture of arr)
+  //         self.gestureState[gesture.categoryName] = true;
+  //   }, "gesture detection");
 
-    return this.gestureState[gesture];
-  }
+  //   return this.gestureState[gesture];
+  // }
 
-  @block({
-    type: "reporter",
-    text: (object) => `degrees from ${object}`,
-    arg: { type: "string", defaultValue: "cup", options: classes }
-  })
-  async getOffsetFromObject(object: typeof classes[number]) {
-    this.imageStream ??= await this.doodlebot?.getImageStream();
-    const result = await objectDetection(this.imageStream);
-    for (const detection of result.detections) {
-      const isCup = detection.categories.some(({ categoryName }) => categoryName === object);
-      if (!isCup) continue;
-      if (!detection.boundingBox) continue;
-      const x = detection.boundingBox.originX + detection.boundingBox.width / 2;
-      const xOffset = x - this.imageStream.width / 2;
-      return xOffset * 90 / this.imageStream.width;
-    }
-    return 0;
-  }
+  // @block({
+  //   type: "reporter",
+  //   text: (object) => `degrees from ${object}`,
+  //   arg: { type: "string", defaultValue: "cup", options: classes }
+  // })
+  // async getOffsetFromObject(object: typeof classes[number]) {
+  //   this.imageStream ??= await this.doodlebot?.getImageStream();
+  //   const result = await objectDetection(this.imageStream);
+  //   for (const detection of result.detections) {
+  //     const isCup = detection.categories.some(({ categoryName }) => categoryName === object);
+  //     if (!isCup) continue;
+  //     if (!detection.boundingBox) continue;
+  //     const x = detection.boundingBox.originX + detection.boundingBox.width / 2;
+  //     const xOffset = x - this.imageStream.width / 2;
+  //     return xOffset * 90 / this.imageStream.width;
+  //   }
+  //   return 0;
+  // }
 
-  @block({
-    type: "command",
-    text: (seconds) => `record for ${seconds} seconds and play`,
-    arg: { type: "number", defaultValue: 1 }
-  })
-  async recordAudio(seconds: number) {
-    const { context, buffer } = await this.doodlebot?.recordAudio(seconds);
+  // @block({
+  //   type: "command",
+  //   text: (seconds) => `record for ${seconds} seconds and play`,
+  //   arg: { type: "number", defaultValue: 1 }
+  // })
+  // async recordAudio(seconds: number) {
+  //   const { context, buffer } = await this.doodlebot?.recordAudio(seconds);
 
-    const audioBufferSource = context.createBufferSource();
-    audioBufferSource.buffer = buffer;
+  //   const audioBufferSource = context.createBufferSource();
+  //   audioBufferSource.buffer = buffer;
 
-    const gainNode = context.createGain();
-    audioBufferSource.connect(gainNode);
-    gainNode.connect(context.destination);
+  //   const gainNode = context.createGain();
+  //   audioBufferSource.connect(gainNode);
+  //   gainNode.connect(context.destination);
 
-    const fadeInDuration = 0.1;
-    const fadeOutDuration = 0.1;
-    const audioDuration = audioBufferSource.buffer.duration;
+  //   const fadeInDuration = 0.1;
+  //   const fadeOutDuration = 0.1;
+  //   const audioDuration = audioBufferSource.buffer.duration;
 
-    // Start with silence
-    gainNode.gain.setValueAtTime(0, context.currentTime);
-    gainNode.gain.linearRampToValueAtTime(1, context.currentTime + fadeInDuration);
+  //   // Start with silence
+  //   gainNode.gain.setValueAtTime(0, context.currentTime);
+  //   gainNode.gain.linearRampToValueAtTime(1, context.currentTime + fadeInDuration);
 
-    gainNode.gain.setValueAtTime(1, context.currentTime + audioDuration - fadeOutDuration);
-    gainNode.gain.linearRampToValueAtTime(0, context.currentTime + audioDuration);
+  //   gainNode.gain.setValueAtTime(1, context.currentTime + audioDuration - fadeOutDuration);
+  //   gainNode.gain.linearRampToValueAtTime(0, context.currentTime + audioDuration);
 
-    audioBufferSource.start();
-    audioBufferSource.stop(context.currentTime + audioDuration);
+  //   audioBufferSource.start();
+  //   audioBufferSource.stop(context.currentTime + audioDuration);
 
-    await new Promise((resolve) => setTimeout(resolve, audioDuration * 1000));
-  }
+  //   await new Promise((resolve) => setTimeout(resolve, audioDuration * 1000));
+  // }
 
 
   @block({
@@ -488,7 +497,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
 
   @block({
     type: "command",
-    text: (url) => `import model ${url}`,
+    text: (url) => `import ML model ${url}`,
     arg: {
       type: "string",
       defaultValue: "URL HERE"
@@ -519,7 +528,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
 
   @block({
     type: "reporter",
-    text: "model prediction",
+    text: "retrieve model prediction",
   })
   modelPrediction() {
     return this.getModelPrediction();
@@ -790,15 +799,6 @@ createAndSaveWAV(interleaved, sampleRate) {
     await this.doodlebot?.display("clear");
   }
 
-  @block({
-    type: "command",
-    text: (seconds) => `chat with me for ${seconds} seconds`,
-    arg: { type: "number", defaultValue: 3 }
-  })
-  async testChatAPI(seconds: number) {
-    await this.handleChatInteraction(seconds);
-  }
-
   async useModel(url: string) {
     try {
       const modelUrl = this.modelArgumentToURL(url);
@@ -1029,7 +1029,7 @@ createAndSaveWAV(interleaved, sampleRate) {
 
   @block({
     type: "command",
-    text: (seconds) => `capture for ${seconds} seconds`,
+    text: (seconds) => `capture snapshots for ${seconds} seconds`,
     arg: { type: "number", defaultValue: 10 }
   })
   async captureSnapshots(seconds: number) {
@@ -1103,4 +1103,3 @@ createAndSaveWAV(interleaved, sampleRate) {
     });
   }
 }
-
