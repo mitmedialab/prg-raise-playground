@@ -121,27 +121,38 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
       const onInitialMessage = ({ data, source, origin }: MessageEvent) => {
         if (typeof data !== "string" || data !== handshakeMessage) return;
         window.removeEventListener("message", onInitialMessage);
+        console.log("posting ready");
         source.postMessage("ready", { targetOrigin: origin })
         resolve({ source, targetOrigin: origin });
       }
       window.addEventListener("message", onInitialMessage);
     });
 
+    console.log("source", source);
+    console.log("target origin", targetOrigin);
+
     const doodlebot = new Doodlebot(
       {
         send: (text) => new Promise<void>(resolve => {
           const onMessageReturn = ({ data, origin }: MessageEvent<string>) => {
-            if (origin !== targetOrigin || !data.includes(text) || !data.includes(commandCompleteIdentifier)) return;
+            if (origin !== targetOrigin || !data.includes(text) || !data.includes(commandCompleteIdentifier)) {
+              console.log("error -- source");
+              return;
+            } 
             window.removeEventListener("message", onMessageReturn);
             resolve();
           }
           window.addEventListener("message", onMessageReturn);
+          console.log("posting message");
           source.postMessage(text, { targetOrigin });
         }),
 
         onReceive: (callback) => {
           window.addEventListener('message', ({ data, origin }) => {
-            if (origin !== targetOrigin || data === disconnectMessage || data.includes(commandCompleteIdentifier)) return;
+            if (origin !== targetOrigin || data === disconnectMessage || data.includes(commandCompleteIdentifier)) {
+              console.log("error 2 -- source");
+              return;
+            } 
             callback(new CustomEvent<string>("ble", { detail: data }));
           });
         },
