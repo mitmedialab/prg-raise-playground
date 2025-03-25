@@ -81,6 +81,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   INTERVAL = 16;
   DIMENSIONS = [480, 360];
 
+  SOCIAL = true;
+
   init(env: Environment) {
     this.setIndicator("disconnected");
     if (window.isSecureContext) this.openUI("Connect")
@@ -172,9 +174,22 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     this.setDoodlebot(doodlebot);
   }
 
-  setDoodlebot(doodlebot: Doodlebot) {
+  async setDoodlebot(doodlebot: Doodlebot) {
     this.doodlebot = doodlebot;
-    this.setIndicator("connected");
+    await this.setIndicator("connected");
+    
+    // Wait a short moment to ensure connection is established
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    try {
+      if (this.SOCIAL && this.doodlebot) {
+        await this.doodlebot.display("happy");
+        await this.speakText("Hi! I'm Doodlebot! I'm here to help you learn about AI and robotics! If you have any questions, just click on the chat with me block and I'll do my best to help you out!");
+      }
+    } catch (error) {
+      console.error("Error during welcome message:", error);
+      // Don't throw the error - we still want the robot to be usable even if the welcome message fails
+    }
   }
 
   async setIndicator(status: "connected" | "disconnected") {
@@ -228,6 +243,41 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
 
   @block({
     type: "command",
+    text: (text) => `speak ${text}`,
+    arg: { type: "string", defaultValue: "Hello!" }
+  })
+  async speak(text: string) {
+    await this.speakText(text);
+  }
+
+  @block({
+    type: "command",
+    text: (type: DisplayKey) => `display emotion ${type}`,
+    arg: { type: "string", options: displayKeys.filter(key => key !== "clear"), defaultValue: "happy" }
+  })
+  async setDisplay(display: DisplayKey) {
+    await this.doodlebot?.display(display);
+  }
+
+  @block({
+    type: "command",
+    text: (text: string) => `display text ${text}`,
+    arg: { type: "string", defaultValue: "hello world!" }
+  })
+  async setText(text: string) {
+    await this.doodlebot?.displayText(text);
+  }
+
+  @block({
+    type: "command",
+    text: "clear display"
+  })
+  async clearDisplay() {
+    await this.doodlebot?.display("clear");
+  }
+
+  @block({
+    type: "command",
     text: (direction, steps) => `drive ${direction} for ${steps} steps`,
     args: [
       { type: "string", options: ["forward", "backward", "left", "right"], defaultValue: "forward" },
@@ -235,6 +285,12 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     ]
   })
   async drive(direction: "left" | "right" | "forward" | "backward", steps: number) {
+
+    if (this.SOCIAL) {
+      await this.doodlebot?.display("love");
+      await this.speakText(`Driving forward for ${steps} steps`);
+    }
+
     const leftSteps = direction == "left" || direction == "backward" ? -steps : steps;
     const rightSteps = direction == "right" || direction == "backward" ? -steps : steps;
     const stepsPerSecond = 2000;
@@ -256,6 +312,10 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     ]
   })
   async arc(direction: "left" | "right", radius: number, degrees: number) {
+    if (this.SOCIAL) {
+      await this.doodlebot?.display("happy");
+      await this.speakText(`Driving ${direction} arc with radius ${radius} for ${degrees} degrees`);
+    }
     if (direction == "right") degrees *= -1;
     await this.doodlebot?.motorCommand("arc", radius, degrees);
   }
@@ -266,6 +326,10 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     arg: { type: "angle", defaultValue: 90 }
   })
   async spin(degrees: number) {
+    if (this.SOCIAL) {
+      await this.doodlebot?.display("happy");
+      await this.speakText(`Spinning ${degrees} degrees`);
+    }
     if (degrees === 0) return;
     await this.doodlebot?.motorCommand("arc", 0, -degrees);
   }
@@ -275,26 +339,33 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     text: "stop driving"
   })
   async stop() {
+    if (this.SOCIAL) {
+      await this.doodlebot?.display("disgust");
+      await this.speakText("okk, I will stop driving now.");
+    }
     await this.doodlebot?.motorCommand("stop");
   }
 
 
-  @block({
-    type: "command",
-    text: "perform line following"
-  })
-  async testLine2() {
-    await this.doodlebot.followLine();
-  }
+  // @block({
+  //   type: "command",
+  //   text: "perform line following"
+  // })
+  // async testLine2() {
+  //   if (this.SOCIAL) {
+  //     await this.speakText("Starting line following now!");
+  //   }
+  //   await this.doodlebot.followLine();
+  // }
 
-  @block({
-    type: "command",
-    text: (direction) => `move pen ${direction}`,
-    arg: { type: "string", options: ["up", "down"], defaultValue: "up" }
-  })
-  async movePen(direction: "up" | "down") {
-    await this.doodlebot?.penCommand(direction);
-  }
+  // @block({
+  //   type: "command",
+  //   text: (direction) => `move pen ${direction}`,
+  //   arg: { type: "string", options: ["up", "down"], defaultValue: "up" }
+  // })
+  // async movePen(direction: "up" | "down") {
+  //   await this.doodlebot?.penCommand(direction);
+  // }
 
   // @block({
   //   type: "reporter",
@@ -361,49 +432,35 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   //   await this.doodlebot?.disableSensor(sensor);
   // }
 
-  @block({
-    type: "command",
-    text: (type: DisplayKey) => `display ${type}`,
-    arg: { type: "string", options: displayKeys.filter(key => key !== "clear"), defaultValue: "happy" }
-  })
-  async setDisplay(display: DisplayKey) {
-    await this.doodlebot?.display(display);
-  }
+  // @block({
+  //   type: "command",
+  //   text: (sound) => `play sound track${sound}`,
+  //   arg: { type: "number", defaultValue: 1 }
+  // })
+  // async playSound(sound: number) {
+  //   await this.doodlebot?.sendWebsocketCommand("m", sound)
+  // }
+
+  // @block({
+  //   type: "command",
+  //   text: (transparency) => `display video with ${transparency}% transparency`,
+  //   arg: { type: "number", defaultValue: 0 }
+  // })
+  // async connectToVideo(transparency: number) {
+  //   this.videoDrawable ??= await this.createVideoStreamDrawable();
+  //   this.videoDrawable.setTransparency(transparency);
+  // }
 
   @block({
     type: "command",
-    text: (text: string) => `display text ${text}`,
-    arg: { type: "string", defaultValue: "hello world!" }
+    text: "display video",
   })
-  async setText(text: string) {
-    await this.doodlebot?.displayText(text);
-  }
-
-  @block({
-    type: "command",
-    text: "clear display"
-  })
-  async clearDisplay() {
-    await this.doodlebot?.display("clear");
-  }
-
-  @block({
-    type: "command",
-    text: (sound) => `play sound track${sound}`,
-    arg: { type: "number", defaultValue: 1 }
-  })
-  async playSound(sound: number) {
-    await this.doodlebot?.sendWebsocketCommand("m", sound)
-  }
-
-  @block({
-    type: "command",
-    text: (transparency) => `display video with ${transparency}% transparency`,
-    arg: { type: "number", defaultValue: 0 }
-  })
-  async connectToVideo(transparency: number) {
+  async connectToVideo() {
     this.videoDrawable ??= await this.createVideoStreamDrawable();
-    this.videoDrawable.setTransparency(transparency);
+    if (this.SOCIAL) {
+      await this.doodlebot?.display("happy");
+      await this.speakText("You can now see what I see on your screen!");
+    }
   }
 
   // @block({
@@ -480,31 +537,31 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   // }
 
 
-  @block({
-    type: "reporter",
-    text: "get IP address"
-  })
-  async getIP() {
-    return this.doodlebot?.getIPAddress();
-  }
+  // @block({
+  //   type: "reporter",
+  //   text: "get IP address"
+  // })
+  // async getIP() {
+  //   return this.doodlebot?.getIPAddress();
+  // }
 
-  @block({
-    type: "command",
-    text: (_command, args, protocol) => `send (${_command}, ${args}) over ${protocol}`,
-    args: [
-      { type: "string", defaultValue: "u" },
-      { type: "string", defaultValue: "0" },
-      { type: "string", options: ["BLE", "Websocket"], defaultValue: "BLE" }
-    ]
-  })
-  async sendMessage(_command: string, args: string, protocol: "BLE" | "Websocket") {
-    const candidates = Object.values(command).filter((entry) => entry === _command)
-    if (candidates.length === 0) return console.error(`Command ${command} not found`);
+  // @block({
+  //   type: "command",
+  //   text: (_command, args, protocol) => `send (${_command}, ${args}) over ${protocol}`,
+  //   args: [
+  //     { type: "string", defaultValue: "u" },
+  //     { type: "string", defaultValue: "0" },
+  //     { type: "string", options: ["BLE", "Websocket"], defaultValue: "BLE" }
+  //   ]
+  // })
+  // async sendMessage(_command: string, args: string, protocol: "BLE" | "Websocket") {
+  //   const candidates = Object.values(command).filter((entry) => entry === _command)
+  //   if (candidates.length === 0) return console.error(`Command ${command} not found`);
 
-    protocol === "BLE"
-      ? await this.doodlebot?.sendBLECommand(candidates[0], ...splitArgsString(args))
-      : await this.doodlebot?.sendWebsocketCommand(candidates[0], ...splitArgsString(args));
-  }
+  //   protocol === "BLE"
+  //     ? await this.doodlebot?.sendBLECommand(candidates[0], ...splitArgsString(args))
+  //     : await this.doodlebot?.sendWebsocketCommand(candidates[0], ...splitArgsString(args));
+  // }
 
   @block({
     type: "command",
@@ -515,27 +572,37 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     }
   })
   async importModel(url: string) {
-    await this.useModel(url);
-  }
-
-
-  @block({
-    type: "hat",
-    text: (className) => `when model detects ${className}`,
-    arg: {
-      type: "string",
-      options: function () {
-        if (!this) {
-          throw new Error('Context is undefined');
-        }
-        return this.getModelClasses() || ["Select a class"];
-      },
-      defaultValue: "Select a class"
+    if (this.SOCIAL) {
+      await this.doodlebot?.display("happy");
+      await this.speakText(`Importing Teachable Machine model`);
     }
-  })
-  whenModelDetects(className: string) {
-    return this.model_match(className);
+    await this.useModel(url);
+
+    if (this.SOCIAL) {
+      await this.doodlebot?.display("happy");
+      await this.speakText(`Model imported successfully. You can access your image classes using the model prediction blocks.`);
+      await this.speakText(`Let me know if you have any questions.`);
+    }
   }
+
+
+  // @block({
+  //   type: "hat",
+  //   text: (className) => `when model detects ${className}`,
+  //   arg: {
+  //     type: "string",
+  //     options: function () {
+  //       if (!this) {
+  //         throw new Error('Context is undefined');
+  //       }
+  //       return this.getModelClasses() || ["Select a class"];
+  //     },
+  //     defaultValue: "Select a class"
+  //   }
+  // })
+  // whenModelDetects(className: string) {
+  //   return this.model_match(className);
+  // }
 
   @block({
     type: "reporter",
@@ -1040,14 +1107,23 @@ createAndSaveWAV(interleaved, sampleRate) {
 
   @block({
     type: "command",
-    text: (seconds) => `capture snapshots for ${seconds} seconds`,
-    arg: { type: "number", defaultValue: 10 }
+    text: (imageClass, seconds) => `capture snapshots of ${imageClass} class for ${seconds} seconds`,
+    args: [
+      { type: "string", defaultValue: "class name" },
+      { type: "number", defaultValue: 10 }
+    ]
   })
-  async captureSnapshots(seconds: number) {
+  async captureSnapshots(imageClass: string, seconds: number) {
+    if (this.SOCIAL) {
+      await this.doodlebot?.display("love");
+      await this.speakText(`Bring the ${imageClass} to my camera, and I will capture snapshots of it for you.`);
+      await this.speakText("Ready Set Go!");
+    }
+
     // Create indicator to show progress
     const indicator = await this.indicate({ 
       type: "warning",
-      msg: "Capturing snapshots..." 
+      msg: `Capturing snapshots of ${imageClass}...` 
     });
 
     const snapshots: string[] = [];
@@ -1084,7 +1160,7 @@ createAndSaveWAV(interleaved, sampleRate) {
       
       // Add to zip file
       const base64Data = dataUrl.replace(/^data:image\/jpeg;base64,/, "");
-      zip.file(`snapshot_${i+1}.jpg`, base64Data, {base64: true});
+      zip.file(`${imageClass}_${i+1}.jpg`, base64Data, {base64: true});
       
       // Wait for next interval
       await new Promise(resolve => setTimeout(resolve, interval));
@@ -1093,11 +1169,11 @@ createAndSaveWAV(interleaved, sampleRate) {
     // Generate zip file
     const content = await zip.generateAsync({type: "blob"});
     
-    // Create download link
+    // Create download link with image class in filename
     const downloadUrl = URL.createObjectURL(content);
     const link = document.createElement('a');
     link.href = downloadUrl;
-    link.download = 'snapshots.zip';
+    link.download = `${imageClass}_snapshots.zip`;
     
     // Trigger download
     document.body.appendChild(link);
@@ -1110,7 +1186,61 @@ createAndSaveWAV(interleaved, sampleRate) {
     
     await this.indicate({ 
       type: "success", 
-      msg: `Captured ${snapshots.length} snapshots` 
+      msg: `Captured ${snapshots.length} snapshots of ${imageClass}` 
     });
+
+    if (this.SOCIAL) {
+      await this.doodlebot?.display("happy");
+      await this.speakText(`Done. I've saved the snapshots to the Downloads folder, to a zip file called ${imageClass}_snapshots`);
+      await this.speakText("You can now upload this file to the Teachable Machine interface to train your model.");
+      await this.speakText("Let me know if you have any questions.");
+    }
+  }
+
+  private async speakText(text: string, showDisplay: boolean = false) {
+    try {
+      // Display "speaking" while processing if showDisplay is true
+      if (showDisplay) {
+        await this.doodlebot?.display("clear");
+        await this.doodlebot?.displayText("speaking");
+      }
+
+      const url = "http://doodlebot.media.mit.edu/speak";
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const audioUrl = URL.createObjectURL(blob);
+      const audio = new Audio(audioUrl);
+      
+      // Convert blob to Uint8Array and send to Doodlebot
+      const array = await blob.arrayBuffer();
+      await this.doodlebot.sendAudioData(new Uint8Array(array));
+
+      // Wait a moment before clearing the display if showDisplay is true
+      if (showDisplay) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        await this.doodlebot?.display("clear");
+      }
+
+    } catch (error) {
+      console.error("Error in speak function:", error);
+      if (showDisplay) {
+        await this.doodlebot?.display("clear");
+        await this.doodlebot?.displayText("error");
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        await this.doodlebot?.display("clear");
+      }
+      throw error; // Re-throw the error so calling functions can handle it
+    }
   }
 }
