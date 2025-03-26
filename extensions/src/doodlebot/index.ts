@@ -152,7 +152,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
         onReceive: (callback) => {
           window.addEventListener('message', ({ data, origin }) => {
             if (origin !== targetOrigin || data === disconnectMessage || data.includes(commandCompleteIdentifier)) {
-              console.log("error 2 -- source");
+              console.log("error 2 -- source", data);
               return;
             } 
             callback(new CustomEvent<string>("ble", { detail: data }));
