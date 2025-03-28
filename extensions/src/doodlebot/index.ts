@@ -81,7 +81,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   INTERVAL = 16;
   DIMENSIONS = [480, 360];
 
-  SOCIAL = true;
+  SOCIAL = false;
 
   init(env: Environment) {
     this.setIndicator("disconnected");
@@ -232,32 +232,32 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     this.openUI("Connect");
   }
 
-  @block({
-    type: "command",
-    text: (seconds) => `chat with me for ${seconds} seconds`,
-    arg: { type: "number", defaultValue: 3 }
-  })
-  async testChatAPI(seconds: number) {
-    await this.handleChatInteraction(seconds);
-  }
+  // @block({
+  //   type: "command",
+  //   text: (seconds) => `chat with me for ${seconds} seconds`,
+  //   arg: { type: "number", defaultValue: 3 }
+  // })
+  // async testChatAPI(seconds: number) {
+  //   await this.handleChatInteraction(seconds);
+  // }
 
-  @block({
-    type: "command",
-    text: (text) => `speak ${text}`,
-    arg: { type: "string", defaultValue: "Hello!" }
-  })
-  async speak(text: string) {
-    await this.speakText(text);
-  }
+  // @block({
+  //   type: "command",
+  //   text: (text) => `speak ${text}`,
+  //   arg: { type: "string", defaultValue: "Hello!" }
+  // })
+  // async speak(text: string) {
+  //   await this.speakText(text);
+  // }
 
-  @block({
-    type: "command",
-    text: (type: DisplayKey) => `display emotion ${type}`,
-    arg: { type: "string", options: displayKeys.filter(key => key !== "clear"), defaultValue: "happy" }
-  })
-  async setDisplay(display: DisplayKey) {
-    await this.doodlebot?.display(display);
-  }
+  // @block({
+  //   type: "command",
+  //   text: (type: DisplayKey) => `display emotion ${type}`,
+  //   arg: { type: "string", options: displayKeys.filter(key => key !== "clear"), defaultValue: "happy" }
+  // })
+  // async setDisplay(display: DisplayKey) {
+  //   await this.doodlebot?.display(display);
+  // }
 
   @block({
     type: "command",
