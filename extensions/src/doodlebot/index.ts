@@ -81,7 +81,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   INTERVAL = 16;
   DIMENSIONS = [480, 360];
 
-  SOCIAL = false;
+  SOCIAL = true;
+  socialness = 1.0; // Value from 0 to 1, where 1 is always social and 0 is never social
 
   init(env: Environment) {
     this.setIndicator("disconnected");
@@ -182,7 +183,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     try {
-      if (this.SOCIAL && this.doodlebot) {
+      if (this.SOCIAL && Math.random() < this.socialness && this.doodlebot) {
         await this.doodlebot.display("happy");
         await this.speakText("Hi! I'm Doodlebot! I'm here to help you learn about AI and robotics! If you have any questions, just click on the chat with me block and I'll do my best to help you out!");
       }
@@ -232,32 +233,50 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     this.openUI("Connect");
   }
 
-  // @block({
-  //   type: "command",
-  //   text: (seconds) => `chat with me for ${seconds} seconds`,
-  //   arg: { type: "number", defaultValue: 3 }
-  // })
-  // async testChatAPI(seconds: number) {
-  //   await this.handleChatInteraction(seconds);
-  // }
+  @block({
+    type: "command",
+    text: (value) => `set socialness to ${value}`,
+    arg: { 
+      type: "number", 
+      defaultValue: 1.0
+    }
+  })
+  async setSocialness(value: number) {
+    // Ensure value is between 0 and 1
+    this.socialness = Math.max(0, Math.min(1, value));
+    
+    if (this.SOCIAL && Math.random() < this.socialness) {
+      await this.doodlebot?.display("happy");
+      await this.speakText(`I'll be ${Math.round(this.socialness * 100)}% social from now on!`);
+    }
+  }
 
-  // @block({
-  //   type: "command",
-  //   text: (text) => `speak ${text}`,
-  //   arg: { type: "string", defaultValue: "Hello!" }
-  // })
-  // async speak(text: string) {
-  //   await this.speakText(text);
-  // }
+  @block({
+    type: "command",
+    text: (seconds) => `chat with me for ${seconds} seconds`,
+    arg: { type: "number", defaultValue: 3 }
+  })
+  async testChatAPI(seconds: number) {
+    await this.handleChatInteraction(seconds);
+  }
 
-  // @block({
-  //   type: "command",
-  //   text: (type: DisplayKey) => `display emotion ${type}`,
-  //   arg: { type: "string", options: displayKeys.filter(key => key !== "clear"), defaultValue: "happy" }
-  // })
-  // async setDisplay(display: DisplayKey) {
-  //   await this.doodlebot?.display(display);
-  // }
+  @block({
+    type: "command",
+    text: (text) => `speak ${text}`,
+    arg: { type: "string", defaultValue: "Hello!" }
+  })
+  async speak(text: string) {
+    await this.speakText(text);
+  }
+
+  @block({
+    type: "command",
+    text: (type: DisplayKey) => `display emotion ${type}`,
+    arg: { type: "string", options: displayKeys.filter(key => key !== "clear"), defaultValue: "happy" }
+  })
+  async setDisplay(display: DisplayKey) {
+    await this.doodlebot?.display(display);
+  }
 
   @block({
     type: "command",
@@ -286,9 +305,9 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   })
   async drive(direction: "left" | "right" | "forward" | "backward", steps: number) {
 
-    if (this.SOCIAL) {
+    if (this.SOCIAL && Math.random() < this.socialness) {
       await this.doodlebot?.display("love");
-      await this.speakText(`Driving forward for ${steps} steps`);
+      await this.speakText(`Driving ${direction} for ${steps} steps`);
     }
 
     const leftSteps = direction == "left" || direction == "backward" ? -steps : steps;
@@ -312,7 +331,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     ]
   })
   async arc(direction: "left" | "right", radius: number, degrees: number) {
-    if (this.SOCIAL) {
+    if (this.SOCIAL && Math.random() < this.socialness) {
       await this.doodlebot?.display("happy");
       await this.speakText(`Driving ${direction} arc with radius ${radius} for ${degrees} degrees`);
     }
@@ -326,7 +345,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     arg: { type: "angle", defaultValue: 90 }
   })
   async spin(degrees: number) {
-    if (this.SOCIAL) {
+    if (this.SOCIAL && Math.random() < this.socialness) {
       await this.doodlebot?.display("happy");
       await this.speakText(`Spinning ${degrees} degrees`);
     }
@@ -339,7 +358,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
     text: "stop driving"
   })
   async stop() {
-    if (this.SOCIAL) {
+    if (this.SOCIAL && Math.random() < this.socialness) {
       await this.doodlebot?.display("disgust");
       await this.speakText("okk, I will stop driving now.");
     }
@@ -457,7 +476,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   })
   async connectToVideo() {
     this.videoDrawable ??= await this.createVideoStreamDrawable();
-    if (this.SOCIAL) {
+    if (this.SOCIAL && Math.random() < this.socialness) {
       await this.doodlebot?.display("happy");
       await this.speakText("You can now see what I see on your screen!");
     }
@@ -565,20 +584,20 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
 
   @block({
     type: "command",
-    text: (url) => `import ML model ${url}`,
+    text: (url) => `import AI model ${url}`,
     arg: {
       type: "string",
       defaultValue: "URL HERE"
     }
   })
   async importModel(url: string) {
-    if (this.SOCIAL) {
+    if (this.SOCIAL && Math.random() < this.socialness) {
       await this.doodlebot?.display("happy");
       await this.speakText(`Importing Teachable Machine model`);
     }
     await this.useModel(url);
 
-    if (this.SOCIAL) {
+    if (this.SOCIAL && Math.random() < this.socialness) {
       await this.doodlebot?.display("happy");
       await this.speakText(`Model imported successfully. You can access your image classes using the model prediction blocks.`);
       await this.speakText(`Let me know if you have any questions.`);
@@ -606,7 +625,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
 
   @block({
     type: "reporter",
-    text: "retrieve model prediction",
+    text: "get AI prediction",
   })
   modelPrediction() {
     return this.getModelPrediction();
@@ -1114,7 +1133,7 @@ createAndSaveWAV(interleaved, sampleRate) {
     ]
   })
   async captureSnapshots(imageClass: string, seconds: number) {
-    if (this.SOCIAL) {
+    if (this.SOCIAL && Math.random() < this.socialness) {
       await this.doodlebot?.display("love");
       await this.speakText(`Bring the ${imageClass} to my camera, and I will capture snapshots of it for you.`);
       await this.speakText("Ready Set Go!");
@@ -1189,7 +1208,7 @@ createAndSaveWAV(interleaved, sampleRate) {
       msg: `Captured ${snapshots.length} snapshots of ${imageClass}` 
     });
 
-    if (this.SOCIAL) {
+    if (this.SOCIAL && Math.random() < this.socialness) {
       await this.doodlebot?.display("happy");
       await this.speakText(`Done. I've saved the snapshots to the Downloads folder, to a zip file called ${imageClass}_snapshots`);
       await this.speakText("You can now upload this file to the Teachable Machine interface to train your model.");
