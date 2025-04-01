@@ -55,9 +55,19 @@ export default class Pixi3D extends extension(details) {
     this.pixi3d.createCube([x, y, z], scale, [r, g, b], animated == "true");
   }
 
-  @(scratch.command`Create plane with position x: ${{type: "number", defaultValue: 0}}, y: ${{type: "number", defaultValue: 0}}, z: ${{type: "number", defaultValue: -2}}, scale ${{type: "number", defaultValue: 0.5}}, color r: ${{type: "number", defaultValue: 1}}, g: ${{type: "number", defaultValue: 0}}, b: ${{type: "number", defaultValue: 1}}, and animation: ${{type: "string", options: ["true", "false"]}}`)
-  createPlane(x: number, y: number, z: number, scale: number, r: number, g: number, b: number, animated: string) {
-    this.pixi3d.createPlane([x, y, z], scale, [r, g, b], animated == "true");
+  @(scratch.command`Create plane with position x: ${{type: "number", defaultValue: 0}}, y: ${{type: "number", defaultValue: 0}}, z: ${{type: "number", defaultValue: -2}}, scale ${{type: "number", defaultValue: 0.5}}, color r: ${{type: "number", defaultValue: 1}}, g: ${{type: "number", defaultValue: 0}}, b: ${{type: "number", defaultValue: 1}}`)
+  createPlane(x: number, y: number, z: number, scale: number, r: number, g: number, b: number) {
+    this.pixi3d.createPlane([x, y, z], scale, [r, g, b]);
   }
+
+  @(scratch.command`Create sphere with position x: ${{type: "number", defaultValue: 0}}, y: ${{type: "number", defaultValue: 0}}, z: ${{type: "number", defaultValue: -2}}, scale ${{type: "number", defaultValue: 0.5}}, color r: ${{type: "number", defaultValue: 1}}, g: ${{type: "number", defaultValue: 0}}, b: ${{type: "number", defaultValue: 1}}`)
+  createSphere(x: number, y: number, z: number, scale: number, r: number, g: number, b: number) {
+    this.pixi3d.createSphere([x, y, z], scale, [r, g, b]);
+  }
+
+  // @(scratch.command`Create cylinder with position x: ${{type: "number", defaultValue: 0}}, y: ${{type: "number", defaultValue: 0}}, z: ${{type: "number", defaultValue: -2}}, radius ${{type: "number", defaultValue: 1}}, height ${{type: "number", defaultValue: 3}}, color r: ${{type: "number", defaultValue: 1}}, g: ${{type: "number", defaultValue: 0}}, b: ${{type: "number", defaultValue: 1}}`)
+  // createCylinder(x: number, y: number, z: number, radius: number, height: number, r: number, g: number, b: number) {
+  //   this.pixi3d.createSphere([x, y, z], radius, height, [r, g, b]);
+  // }
 
 }
