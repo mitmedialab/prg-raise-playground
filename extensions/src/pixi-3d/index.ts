@@ -37,46 +37,27 @@ const details: ExtensionMenuDisplayDetails = {
 /** @see {ExplanationOfClass} */
 export default class Pixi3D extends extension(details) {
 
+  pixi3d;
   /** @see {ExplanationOfInitMethod} */
   async init(env: Environment) {
     this.exampleField = 0;
     // @ts-ignore
-    env.runtime.createApplication();
+    this.pixi3d = env.runtime.getPixi3D();
+    this.pixi3d.createApplication();
   }
 
   /** @see {ExplanationOfField} */
   exampleField: number;
 
   /** @see {ExplanationOfExampleReporter}*/
-  @(scratch.reporter`This is the block's display text (so replace me with what you want the block to say)`)
-  exampleReporter() {
-    return ++this.exampleField;
+  @(scratch.command`Create cube with position x: ${{type: "number", defaultValue: 0}}, y ${{type: "number", defaultValue: 0}}, z ${{type: "number", defaultValue: -2}}, scale ${{type: "number", defaultValue: 0.5}}, color r: ${{type: "number", defaultValue: 1}}, g: ${{type: "number", defaultValue: 0}}, b: ${{type: "number", defaultValue: 1}}, and animation: ${{type: "string", options: ["true", "false"]}}`)
+  createCube(x: number, y: number, z: number, scale: number, r: number, g: number, b: number, animated: string) {
+    this.pixi3d.createCube([x, y, z], scale, [r, g, b], animated == "true");
   }
 
-  /** @see {ExplanationOfReporterWithArguments}*/
-  @(scratch.reporter`This is the block's display text with inputs here --> ${"string"} and here --> ${{ type: "number", defaultValue: 1 }}`)
-  reporterThatTakesTwoArguments(exampleString: string, exampleNumber: number) {
-    return exampleString + exampleNumber;
+  @(scratch.command`Create plane with position x: ${{type: "number", defaultValue: 0}}, y: ${{type: "number", defaultValue: 0}}, z: ${{type: "number", defaultValue: -2}}, scale ${{type: "number", defaultValue: 0.5}}, color r: ${{type: "number", defaultValue: 1}}, g: ${{type: "number", defaultValue: 0}}, b: ${{type: "number", defaultValue: 1}}, and animation: ${{type: "string", options: ["true", "false"]}}`)
+  createPlane(x: number, y: number, z: number, scale: number, r: number, g: number, b: number, animated: string) {
+    this.pixi3d.createPlane([x, y, z], scale, [r, g, b], animated == "true");
   }
 
-  /** @see {ExplanationOfExampleCommand} */
-  @(scratch.command`This is the block's display text`)
-  exampleCommand() {
-    alert("This is a command!");
-  }
-
-  /** @see {ExplanationOfCommandWithExtendDefinition} */
-  @(scratch.command((instance, tag) => {
-    console.log("Creating a block for extension: ", instance.id);
-    return tag`This is the block's display text`;
-  }))
-  exampleCommandWithExtendedDefinition() {
-    alert("This is a command defined using the extended definition strategy!");
-  }
-
-  /** @see {ExplanationOfExampleHatAndBlockUtility} */
-  @(scratch.hat`Should the below block execute: ${"Boolean"}`)
-  async exampleHatThatUsesBlockUtility(condition: boolean, util: BlockUtilityWithID) {
-    return util.stackFrame.isLoop === condition;
-  }
 }
