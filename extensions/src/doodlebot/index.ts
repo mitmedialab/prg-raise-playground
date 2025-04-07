@@ -262,6 +262,27 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
 
   @block({
     type: "command",
+    text: (seconds) => `listen for ${seconds} seconds and repeat`,
+    arg: { type: "number", defaultValue: 3 }
+  })
+  async repeatAfterMe(seconds: number) {
+    // Record the audio
+    const { context, buffer } = await this.doodlebot?.recordAudio(seconds);
+    
+    // Convert to WAV format
+    const wavBlob = await this.saveAudioBufferToWav(buffer);
+    const arrayBuffer = await wavBlob.arrayBuffer();
+    
+    // Send the audio data directly to the Doodlebot for playback
+    await this.doodlebot.sendAudioData(new Uint8Array(arrayBuffer));
+    
+    // Wait until playback is complete (approximately buffer duration)
+    const playbackDuration = buffer.duration * 1000; // convert to milliseconds
+    await new Promise(resolve => setTimeout(resolve, playbackDuration));
+  }
+
+  @block({
+    type: "command",
     text: (text) => `speak ${text}`,
     arg: { type: "string", defaultValue: "Hello!" }
   })
