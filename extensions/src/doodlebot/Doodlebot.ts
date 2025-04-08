@@ -673,7 +673,8 @@ export default class Doodlebot {
         while (true) {
             try {
                 let lineData = this.detector.returnLine();
-                lineData = lineData.map(value => [640 - value[0], 480 - value[1]])
+                console.log("line data", lineData);
+                // lineData = lineData.map(value => [640 - value[0], 480 - value[1]])
                 const firstQuadrant = lineData.filter(value => value[1] < 10);
                 lineData = firstQuadrant.length > 0 ? lineData.filter(value => value[1] < 350) : [];
                 console.log("FIRST QUADRANT", firstQuadrant.length);
@@ -717,7 +718,7 @@ export default class Doodlebot {
                 this.cumulativeLine = this.cumulativeLine + `${JSON.stringify(this.line)},`;
                 console.log(this.cumulativeLine);
 
-                let waitTime = prevLine.length < 100 ? 190 : 200;
+                let waitTime = prevLine.length < 100 ? 390 : 400;
                 if (newMotorCommands[0].angle > 10) {
                     newMotorCommands[0].angle = 10;
                 } else if (newMotorCommands[0].angle < -10) {

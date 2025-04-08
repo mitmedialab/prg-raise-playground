@@ -123,7 +123,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
       const onInitialMessage = ({ data, source, origin }: MessageEvent) => {
         if (typeof data !== "string" || data !== handshakeMessage) return;
         window.removeEventListener("message", onInitialMessage);
-        console.log("posting ready");
         source.postMessage("ready", { targetOrigin: origin })
         resolve({ source, targetOrigin: origin });
       }
@@ -347,16 +346,16 @@ export default class DoodlebotBlocks extends extension(details, "ui", "indicator
   }
 
 
-  // @block({
-  //   type: "command",
-  //   text: "perform line following"
-  // })
-  // async testLine2() {
-  //   if (this.SOCIAL) {
-  //     await this.speakText("Starting line following now!");
-  //   }
-  //   await this.doodlebot.followLine();
-  // }
+  @block({
+    type: "command",
+    text: "perform line following"
+  })
+  async testLine2() {
+    if (this.SOCIAL) {
+      await this.speakText("Starting line following now!");
+    }
+    await this.doodlebot.followLine();
+  }
 
   // @block({
   //   type: "command",
