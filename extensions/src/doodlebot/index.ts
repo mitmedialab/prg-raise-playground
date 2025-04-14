@@ -789,23 +789,23 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     return this.doodlebot?.getIPAddress();
   }
 
-  // @block({
-  //   type: "command",
-  //   text: (_command, args, protocol) => `send (${_command}, ${args}) over ${protocol}`,
-  //   args: [
-  //     { type: "string", defaultValue: "u" },
-  //     { type: "string", defaultValue: "0" },
-  //     { type: "string", options: ["BLE", "Websocket"], defaultValue: "BLE" }
-  //   ]
-  // })
-  // async sendMessage(_command: string, args: string, protocol: "BLE" | "Websocket") {
-  //   const candidates = Object.values(command).filter((entry) => entry === _command)
-  //   if (candidates.length === 0) return console.error(`Command ${command} not found`);
+  @block({
+    type: "command",
+    text: (_command, args, protocol) => `send (${_command}, ${args}) over ${protocol}`,
+    args: [
+      { type: "string", defaultValue: "u" },
+      { type: "string", defaultValue: "0" },
+      { type: "string", options: ["BLE", "Websocket"], defaultValue: "BLE" }
+    ]
+  })
+  async sendMessage(_command: string, args: string, protocol: "BLE" | "Websocket") {
+    const candidates = Object.values(command).filter((entry) => entry === _command)
+    if (candidates.length === 0) return console.error(`Command ${command} not found`);
 
-  //   protocol === "BLE"
-  //     ? await this.doodlebot?.sendBLECommand(candidates[0], ...splitArgsString(args))
-  //     : await this.doodlebot?.sendWebsocketCommand(candidates[0], ...splitArgsString(args));
-  // }
+    protocol === "BLE"
+      ? await this.doodlebot?.sendBLECommand(candidates[0], ...splitArgsString(args))
+      : await this.doodlebot?.sendWebsocketCommand(candidates[0], ...splitArgsString(args));
+  }
 
   @block({
     type: "command",
