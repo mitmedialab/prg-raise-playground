@@ -276,7 +276,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       imageFiles = await doodlebot.findImageFiles();
       soundFiles = await doodlebot.findSoundFiles();
     } catch (e) {
-      this.openUI("ArrayError");
+      //this.openUI("ArrayError");
     }
     
     // Wait a short moment to ensure connection is established
