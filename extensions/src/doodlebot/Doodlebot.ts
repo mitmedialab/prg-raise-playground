@@ -1094,6 +1094,27 @@ export default class Doodlebot {
         await this.sendWebsocketCommand(command.display, "t", text);
     }
 
+    async moveEyes(direction1: string, direction2: string) {
+        const dirMap: Record<string, string> = {
+          center: "C",
+          left: "<",
+          right: ">",
+          up: "^",
+          down: "v",
+        };
+      
+        const from = dirMap[direction1];
+        const to = dirMap[direction2];
+      
+        if (!from || !to || (from != "C" && to != "C")) {
+          throw new Error(`Invalid direction: ${direction1}, ${direction2}`);
+        }
+      
+        const movement = `(${from}${to})`;
+      
+        await this.sendWebsocketCommand(command.display, movement);
+      }
+
     /**
      * NOTE: Consider making private
      * @param command 
