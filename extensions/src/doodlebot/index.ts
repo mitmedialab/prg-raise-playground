@@ -574,7 +574,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   @block({
     type: "command",
-    text: (direction1, direction2) => `move eyes from (${direction1} to ${direction2}`,
+    text: (direction1, direction2) => `move eyes from ${direction1} to ${direction2}`,
     args: [
       { type: "string", options: ["center", "left", "right"]},
       { type: "string", options: ["center", "left", "right"]},
