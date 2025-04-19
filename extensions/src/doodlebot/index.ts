@@ -574,6 +574,35 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   @block({
     type: "command",
+    text: (direction1, direction2) => `move eyes from (${direction1} to ${direction2}`,
+    args: [
+      { type: "string", options: ["center", "left", "right"]},
+      { type: "string", options: ["center", "left", "right"]},
+    ]
+  })
+  async moveEyes(direction1: string, direction2: string) {
+    const dirMap: Record<string, string> = {
+      center: "C",
+      left: "<",
+      right: ">",
+      up: "^",
+      down: "v",
+    };
+  
+    const from = dirMap[direction1];
+    const to = dirMap[direction2];
+  
+    if (!from || !to || (from != "C" && to != "C")) {
+      throw new Error(`Invalid direction: ${direction1}, ${direction2}`);
+    }
+  
+    const command = `(${from}${to})`;
+  
+    await this.doodlebot.sendWebsocketCommand("d", command);
+  }
+
+  @block({
+    type: "command",
     text: (sound) => `play sound track${sound}`,
     arg: { type: "number", defaultValue: 1 }
   })
