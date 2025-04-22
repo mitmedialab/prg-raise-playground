@@ -1,4 +1,5 @@
 import { scratch, extension, type ExtensionMenuDisplayDetails, type BlockUtilityWithID, type Environment } from "$common";
+import FileArgument from "./FileArgument.svelte"
 
 
 
@@ -35,7 +36,7 @@ const details: ExtensionMenuDisplayDetails = {
 };
 
 /** @see {ExplanationOfClass} */
-export default class Pixi3D extends extension(details) {
+export default class Pixi3D extends extension(details, "customArguments") {
 
   pixi3d;
   /** @see {ExplanationOfInitMethod} */
@@ -63,6 +64,11 @@ export default class Pixi3D extends extension(details) {
   @(scratch.command`Create sphere with position x: ${{type: "number", defaultValue: 0}}, y: ${{type: "number", defaultValue: 0}}, z: ${{type: "number", defaultValue: -2}}, scale ${{type: "number", defaultValue: 0.5}}, color r: ${{type: "number", defaultValue: 1}}, g: ${{type: "number", defaultValue: 0}}, b: ${{type: "number", defaultValue: 1}}`)
   createSphere(x: number, y: number, z: number, scale: number, r: number, g: number, b: number) {
     this.pixi3d.createSphere([x, y, z], scale, [r, g, b]);
+  }
+
+  @(scratch.command((self, $) => $`Upload model ${self.makeCustomArgument({ component: FileArgument, initial: { value: "", text: "File" } })} with scale ${{type: "number", defaultValue: 1}}`))
+  uploadSoundFile(test: string, scale: number) {
+    this.pixi3d.importGltf(test, [0, 0, -2], scale);
   }
 
   // @(scratch.command`Create cylinder with position x: ${{type: "number", defaultValue: 0}}, y: ${{type: "number", defaultValue: 0}}, z: ${{type: "number", defaultValue: -2}}, radius ${{type: "number", defaultValue: 1}}, height ${{type: "number", defaultValue: 3}}, color r: ${{type: "number", defaultValue: 1}}, g: ${{type: "number", defaultValue: 0}}, b: ${{type: "number", defaultValue: 1}}`)
