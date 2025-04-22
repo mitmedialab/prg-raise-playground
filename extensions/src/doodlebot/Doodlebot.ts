@@ -1102,6 +1102,8 @@ export default class Doodlebot {
           up: "^",
           down: "v",
         };
+
+        //const websocket2 = new WebSocket(`ws://${this.connection.ip}:${8766}`);
       
         const from = dirMap[direction1];
         const to = dirMap[direction2];
@@ -1110,7 +1112,7 @@ export default class Doodlebot {
           throw new Error(`Invalid direction: ${direction1}, ${direction2}`);
         }
       
-        const movement = `(${from}${to})`;
+        const movement = `${from}${to}`;
       
         await this.sendWebsocketCommand(command.display, movement);
       }
