@@ -290,7 +290,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     await this.setIndicator("connected");
 
     try {
-      imageFiles = await doodlebot.findImageFiles();
+      imageFiles = await doodlebot.fetch("http://192.168.41.122:8080/images")
       soundFiles = await doodlebot.findSoundFiles();
     } catch (e) {
       //this.openUI("ArrayError");
