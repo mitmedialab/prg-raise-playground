@@ -688,7 +688,8 @@ export default class Doodlebot {
         if (this.pending["websocket"]) await this.pending["websocket"];
         if (!this.connection.ip) return;
         const image = document.createElement("img");
-        image.src = `http://${this.connection.ip}:${port.camera}/${endpoint.video}`;
+        //image.src = `http://${this.connection.ip}:${port.camera}/${endpoint.video}`;
+        image.src = "https://doodlebot.media.mit.edu/proxy/video_feed";
         image.crossOrigin = "anonymous";
         await new Promise((resolve) => image.addEventListener("load", resolve));
         return image;
