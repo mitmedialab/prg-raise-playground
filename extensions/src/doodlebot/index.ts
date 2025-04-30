@@ -261,7 +261,24 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       networkCredentials,
       () => alert("save IP called"), // placeholder
     )
+    doodlebot.fetch = async (url: string) => {
+      // Send the fetch request to the source
+      await doodlebot.send(`fetch---${url}`);
+      return new Promise<string>((resolve, reject) => {
+        const fetchReturn = (event: MessageEvent) => {
+          if (event.origin !== targetOrigin || !event.data.startsWith("fetchResponse---")) {
+            return;
+          }
+          const response = event.data.split("fetchResponse---")[1];
+          resolve(response);
+          window.removeEventListener('message', fetchReturn);
+        }
+        window.addEventListener('message', fetchReturn);
+      });
+    }
     this.setDoodlebot(doodlebot);
+
+    
   }
 
   getCurrentSounds(id): string[] {
