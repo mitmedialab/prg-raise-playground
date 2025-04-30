@@ -681,14 +681,67 @@ export default class Doodlebot {
     }
 
     async getImageStream() {
-        if (this.pending["websocket"]) await this.pending["websocket"];
-        if (!this.connection.ip) return;
-        const image = document.createElement("img");
-        image.src = `http://${this.connection.ip}:${port.camera}/${endpoint.video}`;
-        image.crossOrigin = "anonymous";
-        await new Promise((resolve) => image.addEventListener("load", resolve));
-        return image;
+        const pc = new RTCPeerConnection();
+        pc.addTransceiver("video", { direction: "recvonly" });
+    
+        return new Promise((resolve, reject) => {
+            pc.ontrack = (event) => {
+                const stream = event.streams[0];
+    
+                const video = document.createElement('video');
+                video.srcObject = stream;
+    
+                video.onloadedmetadata = async () => {
+                    try {
+                        await video.play();
+    
+                        const canvas = document.createElement('canvas');
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+                        // Create a Blob from the canvas
+                        canvas.toBlob((blob) => {
+                            if (blob) {
+                                resolve(blob); // <= blob will be passed to createImageBitmap(blob)
+                            } else {
+                                reject(new Error('Failed to create blob from canvas'));
+                            }
+                        }, 'image/png');
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+    
+                video.onerror = (error) => {
+                    reject(error);
+                };
+            };
+    
+            // pc.createOffer()
+            //     .then(offer => pc.setLocalDescription(offer))
+            //     .then(() => fetch(`http://${this.connection.ip}:8000/webrtc`, {
+            //         method: 'POST',
+            //         body: JSON.stringify(pc.localDescription),
+            //         headers: { 'Content-Type': 'application/json' }
+            //     }))
+            //     .then(response => response.json())
+            //     .then(answer => pc.setRemoteDescription(answer))
+            //     .catch(reject);
+        });
     }
+    
+
+    // async getImageStream() {
+    //     if (this.pending["websocket"]) await this.pending["websocket"];
+    //     if (!this.connection.ip) return;
+    //     const image = document.createElement("img");
+    //     image.src = `http://${this.connection.ip}:${port.camera}/${endpoint.video}`;
+    //     image.crossOrigin = "anonymous";
+    //     await new Promise((resolve) => image.addEventListener("load", resolve));
+    //     return image;
+    // }
 
     async connectToImageWebSocket(ip: string) {
         // Create a WebSocket connection
