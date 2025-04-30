@@ -731,7 +731,9 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   }
 
   async uploadFile(type: string, blobURL: string) {
+    console.log("BEFORE IP");
     const ip = await this.getIPAddress();
+    console.log("GOT IP");
     let uploadEndpoint;
     if (type == "sound") {
       uploadEndpoint = "http://" + ip + ":8080/sounds_upload";
@@ -743,11 +745,15 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       const components = blobURL.split("---name---");
       console.log("COMPONENTS");
       console.log(components);
+      console.log("BEFORE BLOB");
       const response1 = await fetch(components[1]);
+      console.log("AFTER BLOB");
       if (!response1.ok) {
         throw new Error(`Failed to fetch Blob from URL: ${blobURL}`);
       }
+      console.log("BEFORE BLOB 2");
       const blob = await response1.blob();
+      console.log("AFTER BLOB 2");
       // Convert Blob to File
       const file = new File([blob], components[0], { type: blob.type });
       const formData = new FormData();
@@ -755,12 +761,12 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
       console.log("file");
       console.log(file);
-
+      console.log("BEFORE FETCH");
       const response2 = await fetch(uploadEndpoint, {
         method: "POST",
         body: formData,
       });
-
+      console.log("AFTER FETCH");
       console.log(response2);
 
       if (!response2.ok) {
