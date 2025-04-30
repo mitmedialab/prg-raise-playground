@@ -625,6 +625,10 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   }
 
+  async getIPAddress() {
+    return this.doodlebot?.getStoredIPAddress();
+  }
+
   // @block({
   //   type: "command",
   //   text: (transparency) => `display video with ${transparency}% transparency`,
@@ -727,7 +731,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   }
 
   async uploadFile(type: string, blobURL: string) {
-    const ip = await this.doodlebot?.getIPAddress();
+    const ip = await this.getIPAddress();
     let uploadEndpoint;
     if (type == "sound") {
       uploadEndpoint = "http://" + ip + ":8080/sounds_upload";

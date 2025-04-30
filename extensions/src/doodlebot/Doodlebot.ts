@@ -587,6 +587,10 @@ export default class Doodlebot {
         return this.connection.ip = ip;
     }
 
+    getStoredIPAddress() {
+        if (!this.connection) { return "" }
+        return this.connection.ip;
+    }
 
     /**
      * 
