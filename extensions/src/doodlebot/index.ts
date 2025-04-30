@@ -640,7 +640,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     text: "display video",
   })
   async connectToVideo() {
-    this.videoDrawable ??= await this.createVideoStreamDrawable();
+    // this.videoDrawable ??= await this.createVideoStreamDrawable();
     if (this.SOCIAL && Math.random() < this.socialness) {
       await this.doodlebot?.display("happy");
       await this.speakText("You can now see what I see on your screen!");
@@ -727,7 +727,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   }
 
   async uploadFile(type: string, blobURL: string) {
-    const ip = await this.getIPAddress();
+    const ip = await this.doodlebot?.getIPAddress();
     let uploadEndpoint;
     if (type == "sound") {
       uploadEndpoint = "http://" + ip + ":8080/sounds_upload";
@@ -1374,7 +1374,8 @@ createAndSaveWAV(interleaved, sampleRate) {
     const zip = new JSZip();
     
     // Ensure we have video stream
-    this.imageStream ??= await this.doodlebot?.getImageStream();
+    // this.imageStream ??= await this.doodlebot?.getImageStream();
+
     if (!this.imageStream) {
       indicator.close();
       await this.indicate({ 
