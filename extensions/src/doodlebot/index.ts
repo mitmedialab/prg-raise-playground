@@ -263,8 +263,9 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     )
     doodlebot.fetch = async (url: string) => {
       // Send the fetch request to the source
-      await doodlebot.send(`fetch---${url}`);
+      console.log("INSIDE FETCH");
       return new Promise<string>((resolve, reject) => {
+        console.log("INSIDE PROMISE");
         const fetchReturn = (event: MessageEvent) => {
           if (event.origin !== targetOrigin || !event.data.startsWith("fetchResponse---")) {
             return;
@@ -273,7 +274,9 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
           resolve(response);
           window.removeEventListener('message', fetchReturn);
         }
+        source.postMessage(`fetch---${url}`, { targetOrigin });
         window.addEventListener('message', fetchReturn);
+        
       });
     }
     this.setDoodlebot(doodlebot);
@@ -290,6 +293,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     await this.setIndicator("connected");
 
     try {
+      console.log("FETCHING");
+      console.log(doodlebot.fetch);
       imageFiles = await doodlebot.fetch("http://192.168.41.122:8080/images")
       soundFiles = await doodlebot.findSoundFiles();
     } catch (e) {
