@@ -271,8 +271,9 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
             return;
           }
           const response = event.data.split("fetchResponse---")[1];
-          resolve(response);
+          console.log("RESPONSE", response);
           window.removeEventListener('message', fetchReturn);
+          resolve(response);
         }
         source.postMessage(`fetch---${url}`, { targetOrigin });
         window.addEventListener('message', fetchReturn);
@@ -295,7 +296,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     try {
       console.log("FETCHING");
       console.log(doodlebot.fetch);
-      imageFiles = await doodlebot.fetch("http://192.168.41.122:8080/images")
+      imageFiles = await doodlebot.fetch("http://192.168.41.122:8080/images");
+      console.log("FILES", imageFiles)
       soundFiles = await doodlebot.findSoundFiles();
     } catch (e) {
       //this.openUI("ArrayError");
