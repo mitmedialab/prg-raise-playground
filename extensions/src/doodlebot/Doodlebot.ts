@@ -326,6 +326,10 @@ export default class Doodlebot {
             return;
         }
 
+        if (detail.includes("fetch")) {
+            return;
+        }
+
         for (const { command, parameters } of this.parseCommand(detail)) {
             console.log({ command, parameters });
             switch (command) {
