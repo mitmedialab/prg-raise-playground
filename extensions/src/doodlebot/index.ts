@@ -295,8 +295,9 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
     try {
       console.log("FETCHING");
+      const ip = await this.getIPAddress()
       console.log(doodlebot.fetch);
-      imageFiles = await doodlebot.fetch("http://192.168.41.122:8080/images");
+      imageFiles = await doodlebot.fetch(`http://${ip}:8080/images`);
       console.log("FILES", imageFiles)
       soundFiles = await doodlebot.findSoundFiles();
     } catch (e) {
