@@ -268,6 +268,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
         console.log("INSIDE PROMISE");
         const fetchReturn = (event: MessageEvent) => {
           if (event.origin !== targetOrigin || !event.data.startsWith("fetchResponse---")) {
+            console.log("ERROR", event.origin, targetOrigin);
             return;
           }
           const response = event.data.split("fetchResponse---")[1];
@@ -275,8 +276,9 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
           window.removeEventListener('message', fetchReturn);
           resolve(response);
         }
-        window.addEventListener('message', fetchReturn);
         source.postMessage(`fetch---${url}`, { targetOrigin });
+        window.addEventListener('message', fetchReturn);
+        
         
         
       });
