@@ -300,16 +300,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     this.doodlebot = doodlebot;
     await this.setIndicator("connected");
 
-    try {
-      console.log("FETCHING");
-      const ip = await this.getIPAddress()
-      console.log(doodlebot.fetch);
-      imageFiles = await doodlebot.send(`fetch---http://${ip}:8080/images`);
-      console.log("FILES", imageFiles)
-      soundFiles = await doodlebot.findSoundFiles();
-    } catch (e) {
-      //this.openUI("ArrayError");
-    }
+   
     
     // Wait a short moment to ensure connection is established
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -322,6 +313,17 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     } catch (error) {
       console.error("Error during welcome message:", error);
       // Don't throw the error - we still want the robot to be usable even if the welcome message fails
+    }
+
+    try {
+      console.log("FETCHING");
+      const ip = await this.getIPAddress()
+      console.log(doodlebot.fetch);
+      imageFiles = await doodlebot.send(`fetch---http://${ip}:8080/images`);
+      console.log("FILES", imageFiles)
+      soundFiles = await doodlebot.findSoundFiles();
+    } catch (e) {
+      //this.openUI("ArrayError");
     }
   }
 
