@@ -241,6 +241,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
         onReceive: (callback) => {
           window.addEventListener('message', ({ data, origin }) => {
+            console.log("RECEIVED", data);
             if (origin !== targetOrigin || data === disconnectMessage || data.includes(commandCompleteIdentifier)) {
               console.log("error 2 -- source", data);
               return;
