@@ -277,8 +277,9 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
           window.removeEventListener('message', fetchReturn);
           resolve(response);
         }
-        source.postMessage(`fetch---${url}`, { targetOrigin });
         window.addEventListener('message', fetchReturn);
+        source.postMessage(`fetch---${url}`, { targetOrigin });
+        
         
         
         
