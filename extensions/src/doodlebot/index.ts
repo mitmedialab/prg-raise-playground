@@ -265,24 +265,24 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     doodlebot.fetch = async (url: string) => {
       // Send the fetch request to the source
       console.log("INSIDE FETCH");
+      
       return new Promise<string>((resolve, reject) => {
         console.log("INSIDE PROMISE");
         const fetchReturn = (event: MessageEvent) => {
           if (event.origin !== targetOrigin || !event.data.startsWith("fetchResponse---")) {
             console.log("ERROR", event.origin, targetOrigin);
+            console.log("ERROR", event.data);
             return;
           }
-          const response = event.data.split("fetchResponse---")[1];
+          const url = event.data.split("---")[1];
+          const response = event.data.split("---")[2];
           console.log("RESPONSE", response);
           window.removeEventListener('message', fetchReturn);
           resolve(response);
         }
         window.addEventListener('message', fetchReturn);
+        console.log("posting message");
         source.postMessage(`fetch---${url}`, { targetOrigin });
-        
-        
-        
-        
       });
     }
     this.setDoodlebot(doodlebot);
@@ -302,7 +302,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       console.log("FETCHING");
       const ip = await this.getIPAddress()
       console.log(doodlebot.fetch);
-      imageFiles = await doodlebot.fetch(`http://${ip}:8080/images`);
+      imageFiles = await doodlebot.send(`fetch--http://${ip}:8080/images`);
       console.log("FILES", imageFiles)
       soundFiles = await doodlebot.findSoundFiles();
     } catch (e) {
