@@ -274,12 +274,19 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
         console.log("INSIDE PROMISE");
         const fetchReturn = (event: MessageEvent) => {
           console.log("inside return");
-          if (event.origin !== targetOrigin || !event.data.startsWith("fetchResponse---")) {
+          if (event.origin !== targetOrigin) {
             console.log("ERROR", event.origin, targetOrigin);
+            return;
+          }
+          if (!event.data.startsWith("fetchResponse---")) {
             console.log("ERROR", event.data);
             return;
           }
-          const url = event.data.split("---")[1];
+          const urlReturned = event.data.split("---")[1];
+          if (url != urlReturned) {
+            console.log("URL NOT SAME");
+            return;
+          }
           const response = event.data.split("---")[2];
           console.log("RESPONSE", response);
           window.removeEventListener('message', fetchReturn);
@@ -324,8 +331,10 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       const ip = await this.getIPAddress();
       console.log(doodlebot.fetch);
       imageFiles = await doodlebot.fetch(`http://${ip}:8080/images`);
+      imageFiles = doodlebot.extractList(imageFiles);
       console.log("FILES", imageFiles)
-      soundFiles = await doodlebot.findSoundFiles();
+      soundFiles = await doodlebot.fetch(`http://${ip}:8080/sounds`);
+      soundFiles = doodlebot.extractList(soundFiles);
     } catch (e) {
       //this.openUI("ArrayError");
     }
