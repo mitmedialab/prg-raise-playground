@@ -72,6 +72,7 @@ type BLECommunication = {
     onDisconnect: (...callbacks: (() => void)[]) => void,
     onReceive: (callback: (text: CustomEvent<string>) => void) => void,
     send: (text: string) => Promise<void>,
+    fetch: 
 }
 
 export default class Doodlebot {
@@ -326,7 +327,8 @@ export default class Doodlebot {
             return;
         }
 
-        if (detail.includes("fetch")) {
+        if (detail.includes("fetchReturn---")) {
+            // Process fetch return
             return;
         }
 
@@ -431,6 +433,19 @@ export default class Doodlebot {
     async getSensorReading<T extends SensorKey>(type: T): Promise<SensorData[T]> {
         await this.enableSensor(type); // should this be automatic?
         return this.sensorData[type];
+    }
+
+    extractList(text: string) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(text, 'text/html');
+
+        // Extract all <li> elements
+        const listItems = doc.querySelectorAll('li');
+
+        // Get the text content of each <li> element
+        const itemNames = Array.from(listItems).map(li => li.textContent.trim());
+
+        return itemNames;
     }
 
     // Function to fetch and parse HTML template
