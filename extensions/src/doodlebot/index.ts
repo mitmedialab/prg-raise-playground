@@ -88,6 +88,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   soundDictionary;
   costumeDictionary: any;
 
+  externalIp: string
+
   SOCIAL = true;
   socialness = 1.0; // Value from 0 to 1, where 1 is always social and 0 is never social
 
@@ -200,6 +202,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       alert("No IP address provided. Please provide an IP address in the URL query string.");
       return;
     }
+
+    this.externalIp = ip;
 
     const networkCredentials: NetworkCredentials = {
       ssid: "dummy", // NOTE: When using the external BLE, it is assumed a valid ip address will be provided, and thus there is no need for wifi credentials
@@ -317,7 +321,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
     try {
       console.log("FETCHING");
-      const ip = await this.getIPAddress()
+      const ip = await this.getIPAddress();
       console.log(doodlebot.fetch);
       imageFiles = await doodlebot.fetch(`http://${ip}:8080/images`);
       console.log("FILES", imageFiles)
@@ -660,7 +664,11 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   }
 
   async getIPAddress() {
-    return this.doodlebot?.getStoredIPAddress();
+    if (window.isSecureContext) {
+      return this.doodlebot?.getStoredIPAddress();
+    } else {
+      return this.externalIp;
+    }
   }
 
   // @block({
