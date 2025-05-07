@@ -51,7 +51,7 @@ export class LineDetector {
   async initialize(doodlebot: Doodlebot): Promise<void> {
     debug.info('Initializing image stream');
     try {
-      this.imageStream = await doodlebot.getImageStream();
+      this.imageStream = doodlebot.getImageStream();
       if (!this.imageStream) {
         throw new Error('Failed to get image stream from Doodlebot');
       }

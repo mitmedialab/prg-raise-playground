@@ -741,7 +741,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     text: "display video",
   })
   async connectToVideo() {
-    // this.videoDrawable ??= await this.createVideoStreamDrawable();
+    this.videoDrawable ??= await this.createVideoStreamDrawable();
     if (this.SOCIAL && Math.random() < this.socialness) {
       await this.doodlebot?.display("happy");
       await this.speakText("You can now see what I see on your screen!");
