@@ -267,7 +267,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       networkCredentials,
       () => alert("save IP called"), // placeholder
     )
-    doodlebot.fetch = async (url: string) => {
+    doodlebot.fetch = async (url: string, type: string) => {
       // Send the fetch request to the source
       console.log("INSIDE FETCH");
       
@@ -295,8 +295,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
         }
         console.log("adding return");
         window.addEventListener('message', fetchReturn);
-        console.log("posting message", `fetch---${url}`, targetOrigin);
-        source.postMessage(`fetch---${url}`, { targetOrigin });
+        console.log("posting message", `fetch---${type}--${url}`, targetOrigin);
+        source.postMessage(`fetch---${type}---${url}`, { targetOrigin });
       });
     }
     this.setDoodlebot(doodlebot);
@@ -331,10 +331,10 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       console.log("FETCHING");
       const ip = await this.getIPAddress();
       console.log(doodlebot.fetch);
-      imageFiles = await doodlebot.fetch(`http://${ip}:8080/images`);
+      imageFiles = await doodlebot.fetch(`http://${ip}:8080/images`, "text");
       imageFiles = doodlebot.extractList(imageFiles);
       console.log("FILES", imageFiles)
-      soundFiles = await doodlebot.fetch(`http://${ip}:8080/sounds`);
+      soundFiles = await doodlebot.fetch(`http://${ip}:8080/sounds`, "text");
       soundFiles = doodlebot.extractList(soundFiles);
     } catch (e) {
       //this.openUI("ArrayError");
@@ -879,22 +879,66 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   async callSinglePredict() {
     console.log("inside");
-    const ip = await this.getIP();
+    const ip = await this.getIPAddress();
     const uploadEndpoint = "http://" + ip + ":8000/single_predict";
     console.log("calling single predict");
-    const response2 = await fetch(uploadEndpoint);
-    const responseJson = await response2.json();
-    console.log(responseJson);
-    return "";
+    if (window.isSecureContext) {
+      const response2 = await fetch(uploadEndpoint);
+      const responseJson = await response2.json();
+      return responseJson;
+    } else {
+      const response2 = await this.doodlebot.fetch(uploadEndpoint, "json");
+      const responseJson = JSON.parse(response2);
+      return responseJson;
+    }
+    
   }
 
   @block({
     type: "reporter",
-    text: "get single predict"
+    text: (location, type) => `get ${location} of ${type}`,
+    args: [
+      { type: "string", options: ["x", "y"], defaultValue: "x" },
+      { type: "string", options: ["face", "object"], defaultValue: "face" }
+    ]
   })
-  async getSinglePredict() {
+  async getSinglePredict2s(location: string, type: string) {
     const reading = await this.callSinglePredict();
-    return reading;
+    if (type == "face") {
+      if (reading.faces.length == 0) {
+        return 0;
+      }
+      if (location == "x") {
+        return reading.faces[0].x;
+      } else {
+        return reading.faces[0].y;
+      }
+    } else {
+      if (reading.objects.length == 0) {
+        return 0;
+      }
+      if (location == "x") {
+        return reading.objects[0].x;
+      } else {
+        return reading.objects[0].y;
+      }
+    }
+  }
+
+  @block({
+    type: "reporter",
+    text: (type) => `is ${type} detected`,
+    args: [{ type: "string", options: ["face", "object"], defaultValue: "face" }]
+  })
+  async isFaceDetected(type: string) {
+    const reading = await this.callSinglePredict();
+    if (reading.faces.length > 0 && type == "face") {
+      return true;
+    }
+    if (reading.objects.length > 0 && type == "object") {
+      return true;
+    }
+    return false;
   }
 
   @(scratch.command((self, $) => $`Upload sound file ${self.makeCustomArgument({ component: FileArgument, initial: { value: "", text: "File" } })}`))
