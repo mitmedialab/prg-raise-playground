@@ -103,6 +103,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     })
 
     await this.setDictionaries();
+    console.log("env", env);
 
     soundFiles = ["File"];
     imageFiles = ["File"];
@@ -305,25 +306,59 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     this.openUI("ReattachBLE");
   }
 
-  async getImageStream() {
-    this.imageStream ??= await this.doodlebot?.getImageStream();
+  getImageStream() {
+    this.imageStream ??= this.doodlebot?.getImageStream();
     return this.imageStream;
   }
 
+  // async createVideoStreamDrawable() {
+  //   this.imageStream ??= this.doodlebot?.getImageStream();
+  //   if (!this.imageStream) {
+  //     console.error("Failed to get image stream");
+  //     return;
+  //   }
+  //   //console.log("Image stream dimensions:", this.imageStream.width, "x", this.imageStream.height);
+  //   const drawable = this.createDrawable(this.imageStream);
+  //   drawable.setVisible(true);
+  //   const self = this;
+  //   const update = () => {
+  //     drawable.update(this.doodlebot?.getImageStream());
+  //     requestAnimationFrame(update);
+  //   }
+  //   requestAnimationFrame(update);
+  //   return drawable;
+  // }
+
   async createVideoStreamDrawable() {
-    this.imageStream ??= await this.doodlebot?.getImageStream();
+    this.imageStream ??= this.doodlebot?.getImageStream();
     if (!this.imageStream) {
       console.error("Failed to get image stream");
       return;
     }
-    console.log("Image stream dimensions:", this.imageStream.width, "x", this.imageStream.height);
-    const drawable = this.createDrawable(this.imageStream);
+  
+    let stageWidth = 480;
+    let stageHeight = 360;
+
+    const resizedCanvas = document.createElement('canvas');
+    resizedCanvas.width = stageWidth;
+    resizedCanvas.height = stageHeight;
+    const resizedCtx = resizedCanvas.getContext('2d');
+  
+    const drawable = this.createDrawable(resizedCanvas); // draw from resized version
     drawable.setVisible(true);
-    const self = this;
+  
     const update = () => {
-      drawable.update(self.imageStream);
+      const latest = this.doodlebot?.getImageStream();
+      if (!latest) return;
+  
+      // Draw the current stream into the resized canvas
+      resizedCtx.clearRect(0, 0, stageWidth, stageHeight);
+      resizedCtx.drawImage(latest, 0, 0, stageWidth, stageHeight);
+      drawable.update(resizedCanvas);
+  
       requestAnimationFrame(update);
-    }
+    };
+  
     requestAnimationFrame(update);
     return drawable;
   }
@@ -487,16 +522,27 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   }
 
 
-  // @block({
-  //   type: "command",
-  //   text: "perform line following"
-  // })
-  // async testLine2() {
-  //   if (this.SOCIAL) {
-  //     await this.speakText("Starting line following now!");
-  //   }
-  //   await this.doodlebot.followLine();
-  // }
+  @block({
+    type: "command",
+    text: "perform line following"
+  })
+  async testLine2() {
+    if (this.SOCIAL) {
+      await this.speakText("Starting line following now!");
+    }
+    await this.doodlebot.followLine();
+  }
+
+  @block({
+    type: "command",
+    text: "get predictions"
+  })
+  async testLine2() {
+    if (this.SOCIAL) {
+      await this.speakText("Starting line following now!");
+    }
+    await this.doodlebot.followLine();
+  }
 
   @block({
     type: "command",
@@ -727,7 +773,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   }
 
   async uploadFile(type: string, blobURL: string) {
-    const ip = await this.getIPAddress();
+    const ip = await this.getIP();
     let uploadEndpoint;
     if (type == "sound") {
       uploadEndpoint = "http://" + ip + ":8080/sounds_upload";
@@ -770,6 +816,26 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     }
   }
 
+  async callSinglePredict() {
+    console.log("inside");
+    const ip = await this.getIP();
+    const uploadEndpoint = "http://" + ip + ":8000/single_predict";
+    console.log("calling single predict");
+    const response2 = await fetch(uploadEndpoint);
+    const responseJson = await response2.json();
+    console.log(responseJson);
+    return "";
+  }
+
+  @block({
+    type: "reporter",
+    text: "get single predict"
+  })
+  async getSinglePredict() {
+    const reading = await this.callSinglePredict();
+    return reading;
+  }
+
   @(scratch.command((self, $) => $`Upload sound file ${self.makeCustomArgument({ component: FileArgument, initial: { value: "", text: "File" } })}`))
   async uploadSoundFile(test: string) {
     await this.uploadFile("sound", test);
@@ -779,6 +845,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   async uploadImageFile(test: string) {
     await this.uploadFile("image", test);
   }
+
+  
 
 
   @block({
@@ -1278,13 +1346,13 @@ createAndSaveWAV(interleaved, sampleRate) {
 
   private async getImageStreamAndPredict() {
     try {
-      const imageStream = await this.getImageStream();
+      const imageStream = this.getImageStream();
       if (!imageStream) {
         console.error("Failed to get image stream");
         return;
       }
-      const imageBitmap = await createImageBitmap(imageStream);
-      this.predictAllBlocks(imageBitmap);
+      // const imageBitmap = await createImageBitmap(imageStream);
+      // this.predictAllBlocks(imageBitmap);
     } catch (error) {
       console.error("Error in getting image stream and predicting:", error);
     }
@@ -1374,7 +1442,7 @@ createAndSaveWAV(interleaved, sampleRate) {
     const zip = new JSZip();
     
     // Ensure we have video stream
-    this.imageStream ??= await this.doodlebot?.getImageStream();
+    this.imageStream ??= this.doodlebot?.getImageStream();
     if (!this.imageStream) {
       indicator.close();
       await this.indicate({ 
