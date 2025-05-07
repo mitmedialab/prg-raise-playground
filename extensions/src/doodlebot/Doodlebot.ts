@@ -146,7 +146,16 @@ export default class Doodlebot {
             onReceive: (callback) => services.uartService.addEventListener("receiveText", callback),
             onDisconnect: (callback) => ble.addEventListener("gattserverdisconnected", callback),
             send: (text) => services.uartService.sendText(text),
-        }, requestBluetooth, credentials, saveIP);
+        }, requestBluetooth, credentials, saveIP, async (description) => {
+            const response = await fetch(`http://192.168.41.214:8000/webrtc`, {
+                method: 'POST',
+                body: description,
+                headers: { 'Content-Type': 'application/json' }
+            });
+            console.log("INSIDE INTERNAL FUNCTION");
+            const responseJson = await response.json()
+            return responseJson;
+        });
     }
 
     private pending: Pending = { motor: undefined, wifi: undefined, websocket: undefined, ip: undefined };
@@ -336,7 +345,7 @@ export default class Doodlebot {
         
         this.pc.createOffer()
             .then(offer => this.pc.setLocalDescription(offer))
-            .then(() => fetchFunction())
+            .then(() => fetchFunction(JSON.stringify(this.pc.localDescription)))
             .then(answer => this.pc.setRemoteDescription(answer))
             .catch(err => console.error("WebRTC error:", err));
         
@@ -656,7 +665,7 @@ export default class Doodlebot {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 2000);
         try {
-            const resp = await fetch(`http://${ip}:${port.camera}/${endpoint.video}`, { signal: controller.signal });
+            const resp = await fetch(`http://${ip}:8000/static/webrtc-client.html`, { signal: controller.signal });
             return resp.ok;
         }
         catch {

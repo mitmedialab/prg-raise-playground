@@ -266,7 +266,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       () => alert("requestBluetooth called"), // placeholder
       networkCredentials,
       () => alert("save IP called"), // placeholder,
-      async () => {
+      async (description) => {
         // Send the fetch request to the source
         console.log("INSIDE FETCH 2");
         
@@ -294,8 +294,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
           }
           console.log("adding return");
           window.addEventListener('message', fetchReturn);
-          console.log("posting message", `fetch---webrtc`, targetOrigin);
-          source.postMessage(`fetch---webrtc`, { targetOrigin });
+          console.log("posting message", `fetch---webrtc--${description}`, targetOrigin);
+          source.postMessage(`fetch---webrtc--${description}`, { targetOrigin });
         });
       }
     )
