@@ -277,6 +277,12 @@ export default class Doodlebot {
     private audioSocket: WebSocket;
     private audioCallbacks = new Set<(chunk: Float32Array) => void>();
 
+    private pc: any;
+    private webrtcVideo: any;
+
+    public previewImage;
+    public canvasWebrtc;
+
     constructor(
         private ble: BLECommunication,
         private requestBluetooth: RequestBluetooth,
@@ -286,6 +292,85 @@ export default class Doodlebot {
         this.ble.onReceive(this.receiveTextBLE.bind(this));
         this.ble.onDisconnect(this.handleBleDisconnect.bind(this));
         this.connectionWorkflow(credentials);
+        
+        this.pc = new RTCPeerConnection();
+        this.pc.addTransceiver("video", { direction: "recvonly" });
+        console.log("pc", this.pc);
+        
+        this.pc.ontrack = (event) => {
+            const stream = event.streams[0];
+            console.log("stream", stream);
+        
+            this.webrtcVideo = document.createElement('video');
+            this.webrtcVideo.srcObject = stream;
+            this.webrtcVideo.autoplay = true;
+            this.webrtcVideo.playsInline = true;
+            document.body.appendChild(this.webrtcVideo);
+        
+            this.webrtcVideo.play().catch(e => console.error("Playback error:", e));
+        
+            this.webrtcVideo.onerror = (error) => {
+                console.log("ERROR 2", error);
+            };
+            let latestFrameId = 0;
+            // Setup once
+            this.canvasWebrtc = document.createElement('canvas');
+            const ctx = this.canvasWebrtc.getContext('2d');
+            this.canvasWebrtc.width = 640;
+            this.canvasWebrtc.height = 480;
+            let lastUpdateTime = 0;
+
+            // Then
+            const handleVideoFrame = (now) => {
+                if (now - lastUpdateTime < 100) {
+                    this.webrtcVideo.requestVideoFrameCallback(handleVideoFrame);
+                    return;
+                }
+                lastUpdateTime = now;
+
+                ctx.drawImage(this.webrtcVideo, 0, 0, this.canvasWebrtc.width, this.canvasWebrtc.height);
+                //this.previewImage.src = this.canvasWebrtc.toDataURL('image/jpeg', 0.6);
+                this.webrtcVideo.requestVideoFrameCallback(handleVideoFrame);
+            };
+            this.webrtcVideo.requestVideoFrameCallback(handleVideoFrame);
+
+            // const handleVideoFrame = () => {
+            //     const currentFrameId = ++latestFrameId;
+            
+            //     const canvas = document.createElement('canvas');
+            //     canvas.width = this.webrtcVideo.videoWidth;
+            //     canvas.height = this.webrtcVideo.videoHeight;
+            //     const ctx = canvas.getContext('2d');
+            //     ctx.drawImage(this.webrtcVideo, 0, 0, canvas.width, canvas.height);
+            
+            //     const dataUrl = canvas.toDataURL('image/jpeg', 0.6); // Much faster than PNG
+            
+            //     if (currentFrameId !== latestFrameId) return;
+            
+            //     this.previewImage.src = dataUrl;
+            
+            //     this.webrtcVideo.requestVideoFrameCallback(handleVideoFrame);
+            // };
+            
+
+            
+            //this.webrtcVideo.requestVideoFrameCallback(handleVideoFrame);
+        };
+        
+        this.pc.createOffer()
+            .then(offer => this.pc.setLocalDescription(offer))
+            .then(() => fetch(`http://192.168.41.214:8000/webrtc`, {
+                method: 'POST',
+                body: JSON.stringify(this.pc.localDescription),
+                headers: { 'Content-Type': 'application/json' }
+            }))
+            .then(response => response.json())
+            .then(answer => this.pc.setRemoteDescription(answer))
+            .catch(err => console.error("WebRTC error:", err));
+        
+        this.previewImage = document.createElement("img");
+        document.body.appendChild(this.previewImage);
+        
     }
 
     private formCommand(...args: (string | number)[]) {
@@ -573,6 +658,10 @@ export default class Doodlebot {
     }
 
     async getIPAddress() {
+        console.log(this.connection);
+        if (this.connection && this.connection.ip) {
+            return this.connection.ip;
+        }
         const self = this;
         const interval = setTimeout(() => this.sendBLECommand(command.network), 1000);
         const ip = await new Promise<string>(async (resolve) => {
@@ -703,16 +792,21 @@ export default class Doodlebot {
         //await this.connectToImageWebSocket(this.connection.ip);
     }
 
-    async getImageStream() {
-        if (this.pending["websocket"]) await this.pending["websocket"];
-        if (!this.connection.ip) return;
-        const image = document.createElement("img");
-        //image.src = `http://${this.connection.ip}:${port.camera}/${endpoint.video}`;
-        image.src = "https://doodlebot.media.mit.edu/proxy/video_feed";
-        image.crossOrigin = "anonymous";
-        await new Promise((resolve) => image.addEventListener("load", resolve));
-        return image;
+    getImageStream() {
+        return this.canvasWebrtc;
     }
+    
+    
+
+    // async getImageStream() {
+    //     if (this.pending["websocket"]) await this.pending["websocket"];
+    //     if (!this.connection.ip) return;
+    //     const image = document.createElement("img");
+    //     image.src = `http://${this.connection.ip}:${port.camera}/${endpoint.video}`;
+    //     image.crossOrigin = "anonymous";
+    //     await new Promise((resolve) => image.addEventListener("load", resolve));
+    //     return image;
+    // }
 
     async connectToImageWebSocket(ip: string) {
         // Create a WebSocket connection
