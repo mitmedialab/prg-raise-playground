@@ -288,9 +288,9 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
               return;
             }
             const response = event.data.split("---")[2];
-            console.log("RESPONSE", response);
+            console.log("RESPONSE", JSON.parse(response));
             window.removeEventListener('message', fetchReturn);
-            resolve(response);
+            resolve(JSON.parse(response));
           }
           console.log("adding return");
           window.addEventListener('message', fetchReturn);
