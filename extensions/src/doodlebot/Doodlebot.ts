@@ -287,7 +287,8 @@ export default class Doodlebot {
         private ble: BLECommunication,
         private requestBluetooth: RequestBluetooth,
         private credentials: NetworkCredentials,
-        private saveIP: SaveIP
+        private saveIP: SaveIP,
+        private fetchFunction
     ) {
         this.ble.onReceive(this.receiveTextBLE.bind(this));
         this.ble.onDisconnect(this.handleBleDisconnect.bind(this));
@@ -320,7 +321,6 @@ export default class Doodlebot {
             this.canvasWebrtc.height = 480;
             let lastUpdateTime = 0;
 
-            // Then
             const handleVideoFrame = (now) => {
                 if (now - lastUpdateTime < 100) {
                     this.webrtcVideo.requestVideoFrameCallback(handleVideoFrame);
@@ -329,47 +329,25 @@ export default class Doodlebot {
                 lastUpdateTime = now;
 
                 ctx.drawImage(this.webrtcVideo, 0, 0, this.canvasWebrtc.width, this.canvasWebrtc.height);
-                //this.previewImage.src = this.canvasWebrtc.toDataURL('image/jpeg', 0.6);
                 this.webrtcVideo.requestVideoFrameCallback(handleVideoFrame);
             };
             this.webrtcVideo.requestVideoFrameCallback(handleVideoFrame);
-
-            // const handleVideoFrame = () => {
-            //     const currentFrameId = ++latestFrameId;
-            
-            //     const canvas = document.createElement('canvas');
-            //     canvas.width = this.webrtcVideo.videoWidth;
-            //     canvas.height = this.webrtcVideo.videoHeight;
-            //     const ctx = canvas.getContext('2d');
-            //     ctx.drawImage(this.webrtcVideo, 0, 0, canvas.width, canvas.height);
-            
-            //     const dataUrl = canvas.toDataURL('image/jpeg', 0.6); // Much faster than PNG
-            
-            //     if (currentFrameId !== latestFrameId) return;
-            
-            //     this.previewImage.src = dataUrl;
-            
-            //     this.webrtcVideo.requestVideoFrameCallback(handleVideoFrame);
-            // };
-            
-
-            
-            //this.webrtcVideo.requestVideoFrameCallback(handleVideoFrame);
         };
         
         this.pc.createOffer()
             .then(offer => this.pc.setLocalDescription(offer))
-            .then(() => fetch(`http://192.168.41.214:8000/webrtc`, {
-                method: 'POST',
-                body: JSON.stringify(this.pc.localDescription),
-                headers: { 'Content-Type': 'application/json' }
-            }))
-            .then(response => response.json())
+            .then(() => fetchFunction())
             .then(answer => this.pc.setRemoteDescription(answer))
             .catch(err => console.error("WebRTC error:", err));
         
         this.previewImage = document.createElement("img");
         document.body.appendChild(this.previewImage);
+
+        // fetch(`http://192.168.41.214:8000/webrtc`, {
+        //     method: 'POST',
+        //     body: JSON.stringify(this.pc.localDescription),
+        //     headers: { 'Content-Type': 'application/json' }
+        // })
         
     }
 

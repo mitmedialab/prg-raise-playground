@@ -265,7 +265,39 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       },
       () => alert("requestBluetooth called"), // placeholder
       networkCredentials,
-      () => alert("save IP called"), // placeholder
+      () => alert("save IP called"), // placeholder,
+      async () => {
+        // Send the fetch request to the source
+        console.log("INSIDE FETCH 2");
+        
+        return new Promise<string>((resolve, reject) => {
+          console.log("INSIDE PROMISE 2");
+          const fetchReturn = (event: MessageEvent) => {
+            console.log("inside return");
+            if (event.origin !== targetOrigin) {
+              console.log("ERROR", event.origin, targetOrigin);
+              return;
+            }
+            if (!event.data.startsWith("fetchResponse---")) {
+              console.log("ERROR", event.data);
+              return;
+            }
+            const urlReturned = event.data.split("---")[1];
+            if ("webrtc" != urlReturned) {
+              console.log("URL NOT SAME");
+              return;
+            }
+            const response = event.data.split("---")[2];
+            console.log("RESPONSE", response);
+            window.removeEventListener('message', fetchReturn);
+            resolve(response);
+          }
+          console.log("adding return");
+          window.addEventListener('message', fetchReturn);
+          console.log("posting message", `fetch---webrtc`, targetOrigin);
+          source.postMessage(`fetch---webrtc`, { targetOrigin });
+        });
+      }
     )
     doodlebot.fetch = async (url: string, type: string) => {
       // Send the fetch request to the source
