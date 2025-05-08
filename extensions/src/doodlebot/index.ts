@@ -576,8 +576,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     type: "command",
     text: (direction1, direction2) => `move eyes from ${direction1} to ${direction2}`,
     args: [
-      { type: "string", options: ["center", "left", "right"]},
-      { type: "string", options: ["center", "left", "right"]},
+      { type: "string", options: ["center", "left", "right", "up", "down"]},
+      { type: "string", options: ["center", "left", "right", "up", "down"]},
     ]
   })
   async moveEyes(direction1: string, direction2: string) {
