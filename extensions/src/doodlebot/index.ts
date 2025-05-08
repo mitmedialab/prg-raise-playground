@@ -294,8 +294,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
           }
           console.log("adding return");
           window.addEventListener('message', fetchReturn);
-          console.log("posting message", `fetch---webrtc--${description}`, targetOrigin);
-          source.postMessage(`fetch---webrtc--${description}`, { targetOrigin });
+          console.log("posting message", `fetch---webrtc---${description}`, targetOrigin);
+          source.postMessage(`fetch---webrtc---${description}`, { targetOrigin });
         });
       }
     )
@@ -471,7 +471,16 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     arg: { type: "number", defaultValue: 3 }
   })
   async testChatAPI(seconds: number) {
-    await this.handleChatInteraction(seconds);
+    await this.handleChatInteraction(seconds, "chat");
+  }
+
+  @block({
+    type: "command",
+    text: (seconds) => `repeat after me for ${seconds} seconds`,
+    arg: { type: "number", defaultValue: 3 }
+  })
+  async testRepeatAPI(seconds: number) {
+    await this.handleChatInteraction(seconds, "repeat_after_me");
   }
 
   @block({
@@ -1213,8 +1222,8 @@ createAndSaveWAV(interleaved, sampleRate) {
   return blob;
 }
 
-  async sendAudioFileToChatEndpoint(file) {
-    const url = "http://doodlebot.media.mit.edu/chat";
+  async sendAudioFileToChatEndpoint(file, endpoint) {
+    const url = `http://doodlebot.media.mit.edu/${endpoint}`;
     const formData = new FormData();
     formData.append("audio_file", file);
     const audioURL = URL.createObjectURL(file);
@@ -1285,7 +1294,7 @@ createAndSaveWAV(interleaved, sampleRate) {
     return true;
   }
   
-  async processAndSendAudio(buffer) {
+  async processAndSendAudio(buffer, endpoint) {
     try {
         const wavBlob = await this.saveAudioBufferToWav(buffer);
         console.log(wavBlob);
@@ -1294,14 +1303,14 @@ createAndSaveWAV(interleaved, sampleRate) {
     // if (!isValid) {
     //   throw new Error("Generated file is not a valid WAV file");
     // }
-        await this.sendAudioFileToChatEndpoint(wavFile);
+        await this.sendAudioFileToChatEndpoint(wavFile, endpoint);
     } catch (error) {
         console.error("Error processing and sending audio:", error);
     }
   }
 
   // Internal method that can be called directly
-  private async handleChatInteraction(seconds: number) {
+  private async handleChatInteraction(seconds: number, endpoint: string) {
     console.log(`recording audio for ${seconds} seconds`);
     // Display "listening" while recording
     await this.doodlebot?.display("clear");
@@ -1315,7 +1324,7 @@ createAndSaveWAV(interleaved, sampleRate) {
     await this.doodlebot?.displayText("thinking");
     
     // Before sending audio to be played
-    await this.processAndSendAudio(buffer);
+    await this.processAndSendAudio(buffer, endpoint);
     
     // Display "speaking" when ready to speak
     await this.doodlebot?.display("clear");
