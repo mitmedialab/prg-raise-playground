@@ -934,7 +934,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   async callSinglePredict() {
     console.log("inside");
     const ip = await this.getIPAddress();
-    const uploadEndpoint = "http://" + ip + ":8000/single_predict";
+    const uploadEndpoint = "http://" + ip + ":8001/single_predict";
     console.log("calling single predict");
     if (window.isSecureContext) {
       const response2 = await fetch(uploadEndpoint);
