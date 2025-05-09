@@ -146,13 +146,14 @@ export default class Doodlebot {
             onDisconnect: (callback) => ble.addEventListener("gattserverdisconnected", callback),
             send: (text) => services.uartService.sendText(text),
         }, requestBluetooth, credentials, saveIP, async (description) => {
-            const response = await fetch(`http://192.168.41.214:8000/webrtc`, {
+            const response = await fetch(`http://192.168.41.214:8001/webrtc`, {
                 method: 'POST',
                 body: description,
                 headers: { 'Content-Type': 'application/json' }
             });
             console.log("INSIDE INTERNAL FUNCTION");
-            const responseJson = await response.json()
+            const responseJson = await response.json();
+            console.log("kjson", responseJson);
             return responseJson;
         });
     }
@@ -344,7 +345,9 @@ export default class Doodlebot {
         
         this.pc.createOffer()
             .then(offer => this.pc.setLocalDescription(offer))
-            .then(() => fetchFunction(JSON.stringify(this.pc.localDescription)))
+            .then(() => {
+                fetchFunction(JSON.stringify(this.pc.localDescription))
+            })
             .then(answer => this.pc.setRemoteDescription(answer))
             .catch(err => console.error("WebRTC error:", err));
         
@@ -646,6 +649,7 @@ export default class Doodlebot {
     async getIPAddress() {
         console.log(this.connection);
         if (this.connection && this.connection.ip) {
+            console.log("returning")
             return this.connection.ip;
         }
         const self = this;
@@ -1114,7 +1118,7 @@ export default class Doodlebot {
     }
     async sendAudioData(uint8Array: Uint8Array) {
         let CHUNK_SIZE = 1024;
-        let ip = this.connection.ip;
+        let ip = await this.getIPAddress();
         const ws = makeWebsocket(ip, '8877');
         ws.onopen = () => {
             console.log('WebSocket connection opened');

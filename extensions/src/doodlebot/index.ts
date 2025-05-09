@@ -1255,7 +1255,7 @@ blobToBase64(blob) {
     try {
         let response;
         let uint8array;
-        if (window.isSecureContext) {
+        // if (window.isSecureContext) {
           response = await fetch(url, {
               method: "POST",
               body: formData,
@@ -1277,16 +1277,16 @@ blobToBase64(blob) {
           const audio = new Audio(audioUrl);
           const array = await blob.arrayBuffer();
           uint8array = new Uint8Array(array);
-        } else {
-          const base64 = await this.blobToBase64(blob);
-          const payload = {
-            filename: file.name,
-            content: base64,
-            mimeType: blob.type,
-          };
-          response = await this.doodlebot.fetch(endpoint, "chatgpt", payload);
-          uint8array = new Uint8Array([...atob(response)].map(char => char.charCodeAt(0)));
-        }
+        // } else {
+        //   const base64 = await this.blobToBase64(blob);
+        //   const payload = {
+        //     filename: file.name,
+        //     content: base64,
+        //     mimeType: blob.type,
+        //   };
+        //   response = await this.doodlebot.fetch(endpoint, "chatgpt", payload);
+        //   uint8array = new Uint8Array([...atob(response)].map(char => char.charCodeAt(0)));
+        // }
         this.doodlebot.sendAudioData(uint8array);
 
     } catch (error) {
