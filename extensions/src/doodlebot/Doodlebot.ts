@@ -331,7 +331,7 @@ export default class Doodlebot {
             let lastUpdateTime = 0;
 
             const handleVideoFrame = (now) => {
-                if (now - lastUpdateTime < 100) {
+                if (now - lastUpdateTime < 33) {
                     this.webrtcVideo.requestVideoFrameCallback(handleVideoFrame);
                     return;
                 }
