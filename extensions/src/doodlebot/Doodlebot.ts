@@ -1168,6 +1168,8 @@ export default class Doodlebot {
         const startTime = Date.now();
         const callbacks = this.audioCallbacks;
 
+        
+
         return new Promise<{ context: AudioContext, buffer: AudioBuffer }>((resolve) => {
             const accumulate = (chunk: Float32Array) => {
                 // Check if we've exceeded our time limit
@@ -1190,6 +1192,10 @@ export default class Doodlebot {
                 index++;
             }
             callbacks.add(accumulate);
+            setTimeout(() => {
+                callbacks.delete(accumulate);
+                resolve({ context, buffer });
+            }, numSeconds * 1000 + 1000); // +1s safety
         });
     }
 
