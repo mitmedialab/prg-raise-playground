@@ -346,7 +346,7 @@ export default class Doodlebot {
         this.pc.createOffer()
             .then(offer => this.pc.setLocalDescription(offer))
             .then(() => {
-                fetchFunction(JSON.stringify(this.pc.localDescription))
+                return fetchFunction(JSON.stringify(this.pc.localDescription));
             })
             .then(answer => this.pc.setRemoteDescription(answer))
             .catch(err => console.error("WebRTC error:", err));
