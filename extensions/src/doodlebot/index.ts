@@ -299,14 +299,10 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
         });
       }
     )
-    doodlebot.fetch = async (url: string, type: string) => {
+    doodlebot.fetch = async (url: string, type: string, options?: string) => {
       // Send the fetch request to the source
-      console.log("INSIDE FETCH");
-      
       return new Promise<string>((resolve, reject) => {
-        console.log("INSIDE PROMISE");
         const fetchReturn = (event: MessageEvent) => {
-          console.log("inside return");
           if (event.origin !== targetOrigin) {
             console.log("ERROR", event.origin, targetOrigin);
             return;
@@ -328,7 +324,11 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
         console.log("adding return");
         window.addEventListener('message', fetchReturn);
         console.log("posting message", `fetch---${type}--${url}`, targetOrigin);
-        source.postMessage(`fetch---${type}---${url}`, { targetOrigin });
+        if (options) {
+          source.postMessage(`fetch---${type}---${url}---${JSON.stringify(options)}`, { targetOrigin });
+        } else {
+          source.postMessage(`fetch---${type}---${url}`, { targetOrigin });
+        }
       });
     }
     this.setDoodlebot(doodlebot);
@@ -710,8 +710,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     type: "command",
     text: (direction1, direction2) => `move eyes from ${direction1} to ${direction2}`,
     args: [
-      { type: "string", options: ["center", "left", "right", "up", "down"]},
-      { type: "string", options: ["center", "left", "right", "up", "down"]},
+      { type: "string", options: ["center", "left", "right", "up", "down"] },
+      { type: "string", options: ["center", "left", "right", "up", "down"] },
     ]
   })
   async moveEyes(direction1: string, direction2: string) {
@@ -1234,7 +1234,16 @@ createAndSaveWAV(interleaved, sampleRate) {
   return blob;
 }
 
-  async sendAudioFileToChatEndpoint(file, endpoint) {
+blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result); // "data:<mime>;base64,<base64>"
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+  async sendAudioFileToChatEndpoint(file, endpoint, blob) {
     const url = `http://doodlebot.media.mit.edu/${endpoint}`;
     const formData = new FormData();
     formData.append("audio_file", file);
@@ -1243,27 +1252,41 @@ createAndSaveWAV(interleaved, sampleRate) {
     //audio.play();
 
     try {
-        const response = await fetch(url, {
-            method: "POST",
-            body: formData,
-        });
+        let response;
+        let uint8array;
+        if (window.isSecureContext) {
+          response = await fetch(url, {
+              method: "POST",
+              body: formData,
+          });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.log("Error response:", errorText);
-            throw new Error(`HTTP error! status: ${response.status}`);
+          if (!response.ok) {
+              const errorText = await response.text();
+              console.log("Error response:", errorText);
+              throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const textResponse = response.headers.get("text-response");
+          console.log("Text Response:", textResponse);
+
+          const blob = await response.blob();
+          const audioUrl = URL.createObjectURL(blob);
+          console.log("Audio URL:", audioUrl);
+
+          const audio = new Audio(audioUrl);
+          const array = await blob.arrayBuffer();
+          uint8array = new Uint8Array(array);
+        } else {
+          const base64 = await this.blobToBase64(blob);
+          const payload = {
+            filename: file.name,
+            content: base64,
+            mimeType: blob.type,
+          };
+          response = await this.doodlebot.fetch(endpoint, "chatgpt", payload);
+          uint8array = new Uint8Array([...atob(response)].map(char => char.charCodeAt(0)));
         }
-
-        const textResponse = response.headers.get("text-response");
-        console.log("Text Response:", textResponse);
-
-        const blob = await response.blob();
-        const audioUrl = URL.createObjectURL(blob);
-        console.log("Audio URL:", audioUrl);
-
-        const audio = new Audio(audioUrl);
-        const array = await blob.arrayBuffer();
-        this.doodlebot.sendAudioData(new Uint8Array(array));
+        this.doodlebot.sendAudioData(uint8array);
 
     } catch (error) {
         console.error("Error sending audio file:", error);
@@ -1315,7 +1338,7 @@ createAndSaveWAV(interleaved, sampleRate) {
     // if (!isValid) {
     //   throw new Error("Generated file is not a valid WAV file");
     // }
-        await this.sendAudioFileToChatEndpoint(wavFile, endpoint);
+        await this.sendAudioFileToChatEndpoint(wavFile, endpoint, wavBlob);
     } catch (error) {
         console.error("Error processing and sending audio:", error);
     }

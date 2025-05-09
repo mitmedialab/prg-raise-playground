@@ -71,8 +71,7 @@ const msg = (content: string, type: "success" | "warning" | "error") => {
 type BLECommunication = {
     onDisconnect: (...callbacks: (() => void)[]) => void,
     onReceive: (callback: (text: CustomEvent<string>) => void) => void,
-    send: (text: string) => Promise<void>,
-    fetch: 
+    send: (text: string) => Promise<void>
 }
 
 export default class Doodlebot {
