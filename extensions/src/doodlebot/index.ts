@@ -331,6 +331,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
         }
       });
     }
+    doodlebot.setIP(ip);
     this.setDoodlebot(doodlebot);
 
     
