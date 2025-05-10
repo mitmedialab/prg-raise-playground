@@ -902,30 +902,45 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       if (!response1.ok) {
         throw new Error(`Failed to fetch Blob from URL: ${blobURL}`);
       }
-      console.log("BEFORE BLOB 2");
       const blob = await response1.blob();
-      console.log("AFTER BLOB 2");
-      // Convert Blob to File
-      const file = new File([blob], components[0], { type: blob.type });
-      const formData = new FormData();
-      formData.append("file", file);
+      if (window.isSecureContext) {
+        console.log("BEFORE BLOB 2");
+        
+        console.log("AFTER BLOB 2");
+        // Convert Blob to File
+        const file = new File([blob], components[0], { type: blob.type });
+        const formData = new FormData();
+        formData.append("file", file);
 
-      console.log("file");
-      console.log(file);
-      console.log("BEFORE FETCH");
-      const response2 = await fetch(uploadEndpoint, {
-        method: "POST",
-        body: formData,
-      });
-      console.log("AFTER FETCH");
-      console.log(response2);
+        console.log("file");
+        console.log(file);
+        console.log("BEFORE FETCH");
+        const response2 = await fetch(uploadEndpoint, {
+          method: "POST",
+          body: formData,
+        });
+        console.log("AFTER FETCH");
+        console.log(response2);
 
-      if (!response2.ok) {
-        throw new Error(`Failed to upload file: ${response2.statusText}`);
+        if (!response2.ok) {
+          throw new Error(`Failed to upload file: ${response2.statusText}`);
+        }
+
+        console.log("File uploaded successfully");
+        this.setArrays();
+      } else {
+        const base64 = await this.blobToBase64(blob);
+          const payload = {
+            filename: components[0],
+            content: base64,
+            mimeType: blob.type,
+          };
+          const response2 = await this.doodlebot.fetch(uploadEndpoint, "file_upload", payload);
+          if (!response2.ok) {
+            throw new Error(`Failed to upload file: ${response2.statusText}`);
+          }
       }
-
-      console.log("File uploaded successfully");
-      this.setArrays();
+      
     } catch (error) {
       console.error("Error:", error);
     }
@@ -1245,6 +1260,7 @@ blobToBase64(blob) {
 }
 
   async sendAudioFileToChatEndpoint(file, endpoint, blob) {
+    console.log("sending audio file");
     const url = `http://doodlebot.media.mit.edu/${endpoint}`;
     const formData = new FormData();
     formData.append("audio_file", file);
@@ -1351,7 +1367,7 @@ blobToBase64(blob) {
     // Display "listening" while recording
     await this.doodlebot?.display("clear");
     await this.doodlebot?.displayText("listening");
-    
+    console.log("recording audio?")
     const { context, buffer } = await this.doodlebot?.recordAudio(seconds);
     console.log("finished recording audio");
     
