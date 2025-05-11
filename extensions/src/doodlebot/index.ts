@@ -936,9 +936,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
             mimeType: blob.type,
           };
           const response2 = await this.doodlebot.fetch(uploadEndpoint, "file_upload", payload);
-          if (!response2.ok) {
-            throw new Error(`Failed to upload file: ${response2.statusText}`);
-          }
       }
       
     } catch (error) {

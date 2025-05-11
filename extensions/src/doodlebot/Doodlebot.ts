@@ -331,11 +331,11 @@ export default class Doodlebot {
             let lastUpdateTime = 0;
 
             const handleVideoFrame = (now) => {
-                if (now - lastUpdateTime < 33) {
-                    this.webrtcVideo.requestVideoFrameCallback(handleVideoFrame);
-                    return;
-                }
-                lastUpdateTime = now;
+                // if (now - lastUpdateTime < 33) {
+                //     this.webrtcVideo.requestVideoFrameCallback(handleVideoFrame);
+                //     return;
+                // }
+                // lastUpdateTime = now;
 
                 ctx.drawImage(this.webrtcVideo, 0, 0, this.canvasWebrtc.width, this.canvasWebrtc.height);
                 this.webrtcVideo.requestVideoFrameCallback(handleVideoFrame);
