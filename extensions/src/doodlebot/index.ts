@@ -481,6 +481,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     arg: { type: "number", defaultValue: 3 }
   })
   async testRepeatAPI(seconds: number) {
+
     await this.handleChatInteraction(seconds, "repeat_after_me");
   }
 
@@ -1256,7 +1257,7 @@ blobToBase64(blob) {
   });
 }
 
-  async sendAudioFileToChatEndpoint(file, endpoint, blob) {
+  async sendAudioFileToChatEndpoint(file, endpoint, blob, seconds) {
     console.log("sending audio file");
     const url = `http://doodlebot.media.mit.edu/${endpoint}`;
     const formData = new FormData();
@@ -1300,7 +1301,17 @@ blobToBase64(blob) {
         //   response = await this.doodlebot.fetch(endpoint, "chatgpt", payload);
         //   uint8array = new Uint8Array([...atob(response)].map(char => char.charCodeAt(0)));
         // }
+        const interval = 50; // 0.2 seconds in milliseconds
+        const endTime = Date.now() + 1 * 1000;
+
         this.doodlebot.sendAudioData(uint8array);
+        while (Date.now() < endTime) {
+          await this.doodlebot.sendWebsocketCommand("d,O");
+          await new Promise((res) => setTimeout(res, interval));
+          await this.doodlebot.sendWebsocketCommand("d,N");
+          await new Promise((res) => setTimeout(res, interval));
+        }
+        
 
     } catch (error) {
         console.error("Error sending audio file:", error);
@@ -1343,7 +1354,7 @@ blobToBase64(blob) {
     return true;
   }
   
-  async processAndSendAudio(buffer, endpoint) {
+  async processAndSendAudio(buffer, endpoint, seconds) {
     try {
         const wavBlob = await this.saveAudioBufferToWav(buffer);
         console.log(wavBlob);
@@ -1352,7 +1363,7 @@ blobToBase64(blob) {
     // if (!isValid) {
     //   throw new Error("Generated file is not a valid WAV file");
     // }
-        await this.sendAudioFileToChatEndpoint(wavFile, endpoint, wavBlob);
+        await this.sendAudioFileToChatEndpoint(wavFile, endpoint, wavBlob, seconds);
     } catch (error) {
         console.error("Error processing and sending audio:", error);
     }
@@ -1373,15 +1384,15 @@ blobToBase64(blob) {
     await this.doodlebot?.displayText("thinking");
     
     // Before sending audio to be played
-    await this.processAndSendAudio(buffer, endpoint);
+    await this.processAndSendAudio(buffer, endpoint, seconds);
     
     // Display "speaking" when ready to speak
-    await this.doodlebot?.display("clear");
-    await this.doodlebot?.displayText("speaking");
+    // await this.doodlebot?.display("clear");
+    // await this.doodlebot?.displayText("speaking");
     
     // Wait a moment before clearing the display
     await new Promise(resolve => setTimeout(resolve, 2000));
-    await this.doodlebot?.display("clear");
+    await this.doodlebot?.display("h");
   }
 
   async useModel(url: string) {
