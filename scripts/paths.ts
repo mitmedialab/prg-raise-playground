@@ -9,10 +9,12 @@ const getPackage = (name: string) => path.join(root, "scratch-packages", `scratc
 export const scratchPackages = {
   gui: getPackage("gui"),
   vm: getPackage("vm"),
+  blocks: getPackage("blocks")
 }
 
 export const vmSrc = path.join(scratchPackages.vm, "src");
 export const guiSrc = path.join(scratchPackages.gui, "src");
+export const blocksSrc = path.join(scratchPackages.blocks, "src");
 export const extensionsFolder = path.join(root, "extensions");
 
 

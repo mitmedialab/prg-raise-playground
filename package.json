@@ -27,11 +27,20 @@
     "tsconfig-paths": "^4.1.1",
     "tslib": "^2.4.1",
     "typescript": "latest",
-    "yargs": "^17.7.2"
+    "yargs": "^17.7.2",
+    "@blockly/keyboard-experiment": "^0.0.3",
+    "blockly": "^12.0.0-beta.1"
   },
   "overrides": {
     "ts-node": {
       "typescript": "$typescript"
+    },
+    "blockly": "^12.0.0-beta.1",
+    "@blockly/keyboard-experiment": {
+      "blockly": "^12.0.0-beta.1"
     }
+  },
+  "resolutions": {
+    "blockly": "^12.0.0-beta.1"
   }
 }
