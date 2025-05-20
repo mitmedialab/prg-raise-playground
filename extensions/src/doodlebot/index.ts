@@ -1275,6 +1275,22 @@ blobToBase64(blob) {
 
             eventSource.onmessage = (event) => {
               console.log("Received viseme event:", event.data);
+              try {
+                const data = JSON.parse(event.data);
+                const visemeId = data.visemeId;
+                const offsetMs = data.offsetMs;
+          
+                // You can customize which viseme IDs should trigger a command.
+                // For now, all non-silence visemes trigger it.
+                if (visemeId !== 0) {
+                  setTimeout(() => {
+                    this.doodlebot.display("happy");
+                    console.log("DISPLAYING");
+                  }, offsetMs);
+                }
+              } catch (err) {
+                console.error("Failed to parse viseme event:", err);
+              }
             };
 
             eventSource.onerror = (err) => {
