@@ -481,7 +481,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     arg: { type: "number", defaultValue: 3 }
   })
   async testRepeatAPI(seconds: number) {
-
     await this.handleChatInteraction(seconds, "repeat_after_me");
   }
 
@@ -1270,6 +1269,20 @@ blobToBase64(blob) {
         let response;
         let uint8array;
         // if (window.isSecureContext) {
+          
+          if (endpoint == "repeat_after_me") {
+            const eventSource = new EventSource("http://doodlebot.media.mit.edu/viseme-events");
+
+            eventSource.onmessage = (event) => {
+              console.log("Received viseme event:", event.data);
+            };
+
+            eventSource.onerror = (err) => {
+              console.error("EventSource failed:", err);
+              eventSource.close();
+            };
+          }
+
           response = await fetch(url, {
               method: "POST",
               body: formData,
