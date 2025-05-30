@@ -776,9 +776,9 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     const ip = await this.getIP();
     let uploadEndpoint;
     if (type == "sound") {
-      uploadEndpoint = "http://" + ip + ":8080/sounds_upload";
+      uploadEndpoint = "https://" + ip + "/api/v1/upload/sounds_upload";
     } else {
-      uploadEndpoint = "http://" + ip + ":8080/img_upload";
+      uploadEndpoint = "https://" + ip + "/api/v1/upload/img_upload";
     }
 
     try {
@@ -819,7 +819,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   async callSinglePredict() {
     console.log("inside");
     const ip = await this.getIP();
-    const uploadEndpoint = "http://" + ip + ":8000/single_predict";
+    const uploadEndpoint = "https://" + ip + "/api/v1/videopush/single_predict";
     console.log("calling single predict");
     const response2 = await fetch(uploadEndpoint);
     const responseJson = await response2.json();

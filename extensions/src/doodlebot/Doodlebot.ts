@@ -3,7 +3,7 @@ import { Service } from "./communication/ServiceHelper";
 import UartService from "./communication/UartService";
 import { followLine } from "./LineFollowing";
 import { Command, DisplayKey, NetworkStatus, ReceivedCommand, SensorKey, command, display, endpoint, keyBySensor, motorCommandReceived, networkStatus, port, sensor } from "./enums";
-import { base64ToInt32Array, makeWebsocket, Max32Int, testWebSocket } from "./utils";
+import { base64ToInt32Array, makeWebsocket, makeWebsocketHttps Max32Int, testWebSocket } from "./utils";
 import { LineDetector } from "./LineDetection";
 import { calculateArcTime } from "./TimeHelper";
 
@@ -546,7 +546,7 @@ export default class Doodlebot {
         while (!this.connection) {
             await new Promise(resolve => setTimeout(resolve, 100));
         }
-        let endpoint = "http://" + this.connection.ip + ":8080/images/"
+        let endpoint = "https://" + this.connection.ip + "/api/v1/upload/images/"
         let uploadedImages = await this.fetchAndExtractList(endpoint);
         return uploadedImages.filter(item => !this.imageFiles.includes(item));
     }
@@ -556,7 +556,7 @@ export default class Doodlebot {
             await new Promise(resolve => setTimeout(resolve, 100));
         }
         if (!this.connection) return [];
-        let endpoint = "http://" + this.connection.ip + ":8080/sounds/"
+        let endpoint = "https://" + this.connection.ip + "/api/v1/upload/sounds/"
         let uploadedSounds = await this.fetchAndExtractList(endpoint);
         return uploadedSounds.filter(item => !this.soundFiles.includes(item));
     }
@@ -659,7 +659,7 @@ export default class Doodlebot {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 2000);
         try {
-            const resp = await fetch(`http://${ip}:${port.camera}/${endpoint.video}`, { signal: controller.signal });
+            const resp = await fetch(`https://${ip}/api/v1/videopush/${endpoint.video}`, { signal: controller.signal });
             return resp.ok;
         }
         catch {
@@ -750,7 +750,7 @@ export default class Doodlebot {
      * @param credentials 
      */
     async connectToWebsocket(ip: string) {
-        this.websocket = makeWebsocket(ip, port.websocket);
+        this.websocket = makeWebsocketHttps(ip, '/api/v1/command');
         await this.untilFinishedPending("websocket", new Promise<void>((resolve) => {
             const resolveAndRemove = () => {
                 console.log("Connected to websocket");
@@ -779,7 +779,7 @@ export default class Doodlebot {
     //     if (this.pending["websocket"]) await this.pending["websocket"];
     //     if (!this.connection.ip) return;
     //     const image = document.createElement("img");
-    //     image.src = `http://${this.connection.ip}:${port.camera}/${endpoint.video}`;
+    //     image.src = `https://${this.connection.ip}/api/v1/videopush/${endpoint.video}`;
     //     image.crossOrigin = "anonymous";
     //     await new Promise((resolve) => image.addEventListener("load", resolve));
     //     return image;
@@ -1106,7 +1106,7 @@ export default class Doodlebot {
     async sendAudioData(uint8Array: Uint8Array) {
         let CHUNK_SIZE = 1024;
         let ip = this.connection.ip;
-        const ws = makeWebsocket(ip, '8877');
+        const ws = makeWebsocketHttps(ip, '/api/v1/speaker');
         ws.onopen = () => {
             console.log('WebSocket connection opened');
             let { sampleWidth, channels, rate } = this.parseWavHeader(uint8Array);
