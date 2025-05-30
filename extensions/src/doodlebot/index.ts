@@ -1388,6 +1388,22 @@ blobToBase64(blob) {
         const wavBlob = await this.saveAudioBufferToWav(buffer);
         console.log(wavBlob);
         const wavFile = new File([wavBlob], "output.wav", { type: "audio/wav" });
+
+        // // Create a temporary URL for the file
+        // const url = URL.createObjectURL(wavFile);
+
+        // // Create a temporary anchor element
+        // const a = document.createElement("a");
+        // a.href = url;
+        // a.download = "output.wav";
+        // document.body.appendChild(a);
+
+        // // Trigger the download
+        // a.click();
+
+        // // Clean up
+        // document.body.removeChild(a);
+        // URL.revokeObjectURL(url);
     //     const isValid = await this.isValidWavFile(wavFile);
     // if (!isValid) {
     //   throw new Error("Generated file is not a valid WAV file");
