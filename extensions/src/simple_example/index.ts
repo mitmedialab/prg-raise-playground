@@ -85,10 +85,30 @@ export default class SimpleTypescript extends extension(details, "ui", "customSa
   imageBlock(jibo: "inline image") {
   }
 
+  @(scratch.command`Test hat 2`)
+  testing() {
+    this.value = 5;
+  }
+
   @(scratch.reporter`${{ type: "number", defaultValue: 1 }} + ${{ type: "image", uri: five, alt: "golden five" }} - ${"number"}`)
-  addFive(lhs: number, five: "inline image", rhs: number, { blockID }: BlockUtilityWithID) {
-    console.log(blockID);
+  addFive(lhs: number, five: "inline image", rhs: number, blockInstance: BlockUtilityWithID) {
+    console.log(blockInstance);
+    console.log(blockInstance.blockID);
+    setTimeout(() => {
+      console.log(blockInstance.blockID);
+    }, 500)
+    // topBlock
     return lhs + 5 - rhs;
+  }
+
+  @(scratch.hat`Test hat`) 
+  testHat() {
+    return this.value == 5;
+  }
+
+  @(scratch.event`Test`)
+  testEvent() {
+    return this.value == 5;
   }
 }
 
