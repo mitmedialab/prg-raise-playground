@@ -808,8 +808,11 @@ class Scratch3TextClassificationBlocks {
             const secondText = args.TEXT_TWO;
 
             // translates text from any language to english
-            let newFirstText = await this.getTranslate(firstText, 'en');
-            let newSecondText = await this.getTranslate(secondText, 'en');
+            // let newFirstText = await this.getTranslate(firstText, 'en');
+            // let newSecondText = await this.getTranslate(secondText, 'en');
+
+            let newFirstText = firstText;
+            let newSecondText = secondText;
 
             let firstEmbedding = await this._useModel.embed(newFirstText);
             let secondEmbedding = await this._useModel.embed(newSecondText);    
@@ -1073,7 +1076,8 @@ class Scratch3TextClassificationBlocks {
      * @returns if the direction is "predict" returns the predicted label for the text inputted
      */
     async get_embeddings(text,label,direction) { //changes text into a 2d tensor
-        const newText = await this.getTranslate(text,"en"); //translates text from any language to english
+        //const newText = await this.getTranslate(text,"en"); //translates text from any language to english
+        const newText = text;
         console.log(newText);
 
         if (!this.labelListEmpty) { 
@@ -1095,7 +1099,8 @@ class Scratch3TextClassificationBlocks {
      * @returns if the direction is "predict" returns the predicted label for the text inputted
      */
     async get_confidence(text,label,direction) { //changes text into a 2d tensor
-        const newText = await this.getTranslate(text,"en"); //translates text from any language to english
+        //const newText = await this.getTranslate(text,"en"); //translates text from any language to english
+        const newText = text;
         console.log(newText);
 
         if (direction === "predict") {
