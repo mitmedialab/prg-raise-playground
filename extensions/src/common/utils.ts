@@ -1,4 +1,4 @@
-import { MenuItem, Primitive, RGBObject } from "./types"
+import { MenuItem, Primitive, RGBObject, BlockUtilityWithID } from "./types";
 
 type FetchParams = {
   request: Parameters<typeof fetch>[0],
@@ -303,3 +303,14 @@ export const uuidv4 = () => 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
       v = c == 'x' ? r : (r & 0x3 | 0x8);
     return v.toString(16);
   });
+
+export const checkContext = (blockInstance: BlockUtilityWithID, target: string) => {
+  const topBlock = blockInstance.thread.topBlock;
+  const blocks = blockInstance.thread.blockContainer._blocks;
+  const topOpcode = blocks[topBlock].opcode;
+  const methodName = topOpcode.split("_")[1];
+  if (methodName == target) {
+    return true;
+  }
+  return false;
+}
