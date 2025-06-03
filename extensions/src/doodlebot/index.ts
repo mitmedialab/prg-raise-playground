@@ -273,6 +273,10 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     this.doodlebot = doodlebot;
     await this.setIndicator("connected");
 
+    const urlParams = new URLSearchParams(window.location.search); // Hack for now
+    const ip = urlParams.get("ip");
+    this.doodlebot.setIP(ip);
+
     try {
       imageFiles = await doodlebot.findImageFiles();
       soundFiles = await doodlebot.findSoundFiles();
@@ -1326,7 +1330,7 @@ createAndSaveWAV(interleaved, sampleRate) {
     return predictionState.topClass;
   }
 
-  private _loop() {
+  private async _loop() {
     setTimeout(this._loop.bind(this), Math.max(this.runtime.currentStepTime, this.INTERVAL));
     const time = Date.now();
     if (this.lastUpdate === null) {
@@ -1341,6 +1345,7 @@ createAndSaveWAV(interleaved, sampleRate) {
       this.lastUpdate = time;
       this.isPredicting = 0;
       this.getImageStreamAndPredict();
+      //await new Promise(resolve => setTimeout(resolve, 500));
     }
   }
 

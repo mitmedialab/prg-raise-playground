@@ -356,9 +356,13 @@ export default class Doodlebot {
             //this.webrtcVideo.requestVideoFrameCallback(handleVideoFrame);
         };
         
+        const urlParams = new URLSearchParams(window.location.search); // Hack for now
+        const ip = urlParams.get("ip");
+
         this.pc.createOffer()
             .then(offer => this.pc.setLocalDescription(offer))
-            .then(() => fetch(`http://192.168.41.214:8000/webrtc`, {
+            //.then(() => fetch(`http://192.168.41.231:8001/webrtc`, {
+            .then(() => fetch(`http://${ip}:8001/webrtc`, {
                 method: 'POST',
                 body: JSON.stringify(this.pc.localDescription),
                 headers: { 'Content-Type': 'application/json' }
@@ -546,7 +550,8 @@ export default class Doodlebot {
         while (!this.connection) {
             await new Promise(resolve => setTimeout(resolve, 100));
         }
-        let endpoint = "https://" + this.connection.ip + "/api/v1/upload/images/"
+        //let endpoint = "https://" + this.connection.ip + "/api/v1/upload/images/"
+        let endpoint = "https://" + this.connection.ip + "/api/v1/upload/images"
         let uploadedImages = await this.fetchAndExtractList(endpoint);
         return uploadedImages.filter(item => !this.imageFiles.includes(item));
     }
@@ -556,7 +561,8 @@ export default class Doodlebot {
             await new Promise(resolve => setTimeout(resolve, 100));
         }
         if (!this.connection) return [];
-        let endpoint = "https://" + this.connection.ip + "/api/v1/upload/sounds/"
+        //let endpoint = "https://" + this.connection.ip + "/api/v1/upload/sounds/"
+        let endpoint = "https://" + this.connection.ip + "/api/v1/upload/sounds"
         let uploadedSounds = await this.fetchAndExtractList(endpoint);
         return uploadedSounds.filter(item => !this.soundFiles.includes(item));
     }
@@ -787,7 +793,7 @@ export default class Doodlebot {
 
     async connectToImageWebSocket(ip: string) {
         // Create a WebSocket connection
-        this.websocket = new WebSocket(`ws://${ip}:${port.camera}`);
+        this.websocket = new WebSocket(`wss://${ip}:${port.camera}`);
 
         // Return a promise that resolves when the WebSocket is connected
         await this.untilFinishedPending("image", new Promise<void>((resolve, reject) => {
@@ -1035,7 +1041,7 @@ export default class Doodlebot {
 
         if (this.audioSocket) return true;
 
-        const socket = new WebSocket(`ws://${this.connection.ip}:${port.audio}`);
+        const socket = new WebSocket(`wss://${this.connection.ip}:${port.audio}`);
         const self = this;
 
         socket.onopen = function (event) {
