@@ -1081,7 +1081,7 @@ createAndSaveWAV(interleaved, sampleRate) {
 }
 
   async sendAudioFileToChatEndpoint(file) {
-    const url = "http://doodlebot.media.mit.edu/chat";
+    const url = "https://doodlebot.media.mit.edu/chat";
     const formData = new FormData();
     formData.append("audio_file", file);
     const audioURL = URL.createObjectURL(file);
@@ -1522,7 +1522,7 @@ createAndSaveWAV(interleaved, sampleRate) {
         await this.doodlebot?.displayText("speaking");
       }
 
-      const url = "http://doodlebot.media.mit.edu/speak";
+      const url = "https://doodlebot.media.mit.edu/speak";
       const response = await fetch(url, {
         method: "POST",
         headers: {
