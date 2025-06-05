@@ -362,7 +362,7 @@ export default class Doodlebot {
         this.pc.createOffer()
             .then(offer => this.pc.setLocalDescription(offer))
             //.then(() => fetch(`http://192.168.41.231:8001/webrtc`, {
-            .then(() => fetch(`https://${ip}:8001/webrtc`, {
+            .then(() => fetch(`https://${ip}/api/v1/video/webrtc`, {
                 method: 'POST',
                 body: JSON.stringify(this.pc.localDescription),
                 headers: { 'Content-Type': 'application/json' }
