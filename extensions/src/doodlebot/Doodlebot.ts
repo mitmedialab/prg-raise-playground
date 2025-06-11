@@ -769,7 +769,7 @@ export default class Doodlebot {
     }
 
     async connectionWorkflow(credentials: NetworkCredentials) {
-        await this.connectToWifi(credentials);
+        //await this.connectToWifi(credentials);
         await this.connectToWebsocket(this.connection.ip);
         this.detector = new LineDetector(this.connection.ip);
         //await this.connectToImageWebSocket(this.connection.ip);
