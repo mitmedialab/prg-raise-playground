@@ -50,7 +50,7 @@ pnpm install
 pnpm dev -i examples
 # This starts up a development server, serving the two "example" extensions.
 # It takes about ~20s to initially startup and serve everything.
-# Open http://localhost:8601/ in your browser (keep refreshing if nothing's coming up)
+# Open http://localhost:8602/ in your browser (keep refreshing if nothing's coming up)
 ```
 
 ### 🔨 Making an extension
@@ -91,7 +91,7 @@ cd prg-extension-boilerplate/ # If not already there
 pnpm dev -i <folder name of extension(s)>
 # For example: pnpm dev -i my_awesome_extension
 # Start a development server to view your extension and reload it as you make changes
-# This command will take ~20s to startup and serve everything to http://localhost:8601/
+# This command will take ~20s to startup and serve everything to http://localhost:8602/
 
 # Note: you can use the '-i' shorthand instead of writing out '--include'
 pnpm dev -i <folder name of extension(s)>
@@ -101,7 +101,7 @@ pnpm dev -i all
 # NOTE: This will be much more intensive on your computer
 ```
 
-Then, after navigating to http://localhost:8601/, follow the 'Adding Extensions' guidance in the [official extension documentation](https://en.scratch-wiki.info/wiki/Extension) to add your extension to the workspace. 
+Then, after navigating to http://localhost:8602/, follow the 'Adding Extensions' guidance in the [official extension documentation](https://en.scratch-wiki.info/wiki/Extension) to add your extension to the workspace. 
 
 As long as the development server is running (meaning the `pnpm dev` command is still executing), every change you make to the extension file(s) will trigger the page to refresh and your changes will be reflected automagically 🪄. 
 
