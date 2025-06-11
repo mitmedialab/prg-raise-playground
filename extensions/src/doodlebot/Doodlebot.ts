@@ -3,7 +3,7 @@ import { Service } from "./communication/ServiceHelper";
 import UartService from "./communication/UartService";
 import { followLine } from "./LineFollowing";
 import { Command, DisplayKey, NetworkStatus, ReceivedCommand, SensorKey, command, display, endpoint, keyBySensor, motorCommandReceived, networkStatus, port, sensor } from "./enums";
-import { base64ToInt32Array, makeWebsocket, makeWebsocketHttps Max32Int, testWebSocket } from "./utils";
+import { base64ToInt32Array, makeWebsocket, makeWebsocketHttps, Max32Int, testWebSocket } from "./utils";
 import { LineDetector } from "./LineDetection";
 import { calculateArcTime } from "./TimeHelper";
 
