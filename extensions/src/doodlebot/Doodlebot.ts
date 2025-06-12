@@ -770,6 +770,10 @@ export default class Doodlebot {
 
     async connectionWorkflow(credentials: NetworkCredentials) {
         //await this.connectToWifi(credentials);
+        const urlParams = new URLSearchParams(window.location.search); // Hack for now
+        let ip = urlParams.get("ip");
+        this.setIP(ip);
+        
         await this.connectToWebsocket(this.connection.ip);
         this.detector = new LineDetector(this.connection.ip);
         //await this.connectToImageWebSocket(this.connection.ip);
