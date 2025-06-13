@@ -71,7 +71,7 @@ const msg = (content: string, type: "success" | "warning" | "error") => {
 type BLECommunication = {
     onDisconnect: (...callbacks: (() => void)[]) => void,
     onReceive: (callback: (text: CustomEvent<string>) => void) => void,
-    send: (text: string) => Promise<void>,
+    send: (text: string) => Promise<void>
 }
 
 export default class Doodlebot {
@@ -145,7 +145,17 @@ export default class Doodlebot {
             onReceive: (callback) => services.uartService.addEventListener("receiveText", callback),
             onDisconnect: (callback) => ble.addEventListener("gattserverdisconnected", callback),
             send: (text) => services.uartService.sendText(text),
-        }, requestBluetooth, credentials, saveIP);
+        }, requestBluetooth, credentials, saveIP, async (description) => {
+            const response = await fetch(`http://192.168.41.214:8001/webrtc`, {
+                method: 'POST',
+                body: description,
+                headers: { 'Content-Type': 'application/json' }
+            });
+            console.log("INSIDE INTERNAL FUNCTION");
+            const responseJson = await response.json();
+            console.log("kjson", responseJson);
+            return responseJson;
+        });
     }
 
     private pending: Pending = { motor: undefined, wifi: undefined, websocket: undefined, ip: undefined };
@@ -286,7 +296,8 @@ export default class Doodlebot {
         private ble: BLECommunication,
         private requestBluetooth: RequestBluetooth,
         private credentials: NetworkCredentials,
-        private saveIP: SaveIP
+        private saveIP: SaveIP,
+        private fetchFunction
     ) {
         this.ble.onReceive(this.receiveTextBLE.bind(this));
         this.ble.onDisconnect(this.handleBleDisconnect.bind(this));
@@ -319,41 +330,17 @@ export default class Doodlebot {
             this.canvasWebrtc.height = 480;
             let lastUpdateTime = 0;
 
-            // Then
             const handleVideoFrame = (now) => {
-                if (now - lastUpdateTime < 100) {
-                    this.webrtcVideo.requestVideoFrameCallback(handleVideoFrame);
-                    return;
-                }
-                lastUpdateTime = now;
+                // if (now - lastUpdateTime < 33) {
+                //     this.webrtcVideo.requestVideoFrameCallback(handleVideoFrame);
+                //     return;
+                // }
+                // lastUpdateTime = now;
 
                 ctx.drawImage(this.webrtcVideo, 0, 0, this.canvasWebrtc.width, this.canvasWebrtc.height);
-                //this.previewImage.src = this.canvasWebrtc.toDataURL('image/jpeg', 0.6);
                 this.webrtcVideo.requestVideoFrameCallback(handleVideoFrame);
             };
             this.webrtcVideo.requestVideoFrameCallback(handleVideoFrame);
-
-            // const handleVideoFrame = () => {
-            //     const currentFrameId = ++latestFrameId;
-            
-            //     const canvas = document.createElement('canvas');
-            //     canvas.width = this.webrtcVideo.videoWidth;
-            //     canvas.height = this.webrtcVideo.videoHeight;
-            //     const ctx = canvas.getContext('2d');
-            //     ctx.drawImage(this.webrtcVideo, 0, 0, canvas.width, canvas.height);
-            
-            //     const dataUrl = canvas.toDataURL('image/jpeg', 0.6); // Much faster than PNG
-            
-            //     if (currentFrameId !== latestFrameId) return;
-            
-            //     this.previewImage.src = dataUrl;
-            
-            //     this.webrtcVideo.requestVideoFrameCallback(handleVideoFrame);
-            // };
-            
-
-            
-            //this.webrtcVideo.requestVideoFrameCallback(handleVideoFrame);
         };
         
         const urlParams = new URLSearchParams(window.location.search); // Hack for now
@@ -373,6 +360,12 @@ export default class Doodlebot {
         
         this.previewImage = document.createElement("img");
         document.body.appendChild(this.previewImage);
+
+        // fetch(`http://192.168.41.214:8000/webrtc`, {
+        //     method: 'POST',
+        //     body: JSON.stringify(this.pc.localDescription),
+        //     headers: { 'Content-Type': 'application/json' }
+        // })
         
     }
 
@@ -412,6 +405,11 @@ export default class Doodlebot {
         if (detail.startsWith(networkStatus.ipPrefix)) {
             const parts = detail.split(",");
             this.updateNetworkStatus(parts[0], parts[1]);
+            return;
+        }
+
+        if (detail.includes("fetchReturn---")) {
+            // Process fetch return
             return;
         }
 
@@ -516,6 +514,19 @@ export default class Doodlebot {
     async getSensorReading<T extends SensorKey>(type: T): Promise<SensorData[T]> {
         await this.enableSensor(type); // should this be automatic?
         return this.sensorData[type];
+    }
+
+    extractList(text: string) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(text, 'text/html');
+
+        // Extract all <li> elements
+        const listItems = doc.querySelectorAll('li');
+
+        // Get the text content of each <li> element
+        const itemNames = Array.from(listItems).map(li => li.textContent.trim());
+
+        return itemNames;
     }
 
     // Function to fetch and parse HTML template
@@ -647,6 +658,7 @@ export default class Doodlebot {
     async getIPAddress() {
         console.log(this.connection);
         if (this.connection && this.connection.ip) {
+            console.log("returning")
             return this.connection.ip;
         }
         const self = this;
@@ -665,7 +677,7 @@ export default class Doodlebot {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 2000);
         try {
-            const resp = await fetch(`https://${ip}/api/v1/videopush/${endpoint.video}`, { signal: controller.signal });
+            const resp = await fetch(`http://${ip}:8000/static/webrtc-client.html`, { signal: controller.signal });
             return resp.ok;
         }
         catch {
@@ -682,6 +694,10 @@ export default class Doodlebot {
         return this.connection.ip = ip;
     }
 
+    getStoredIPAddress() {
+        if (!this.connection) { return "" }
+        return this.connection.ip;
+    }
 
     /**
      * 
@@ -1165,6 +1181,8 @@ export default class Doodlebot {
         const startTime = Date.now();
         const callbacks = this.audioCallbacks;
 
+        
+
         return new Promise<{ context: AudioContext, buffer: AudioBuffer }>((resolve) => {
             const accumulate = (chunk: Float32Array) => {
                 // Check if we've exceeded our time limit
@@ -1187,6 +1205,10 @@ export default class Doodlebot {
                 index++;
             }
             callbacks.add(accumulate);
+            setTimeout(() => {
+                callbacks.delete(accumulate);
+                resolve({ context, buffer });
+            }, numSeconds * 1000 + 1000); // +1s safety
         });
     }
 
@@ -1198,6 +1220,29 @@ export default class Doodlebot {
     async displayText(text: string) {
         await this.sendWebsocketCommand(command.display, "t", text);
     }
+
+    async moveEyes(direction1: string, direction2: string) {
+        const dirMap: Record<string, string> = {
+          center: "C",
+          left: "<",
+          right: ">",
+          up: "^",
+          down: "v",
+        };
+
+        //const websocket2 = new WebSocket(`ws://${this.connection.ip}:${8766}`);
+      
+        const from = dirMap[direction1];
+        const to = dirMap[direction2];
+      
+        if (!from || !to || (from != "C" && to != "C")) {
+          throw new Error(`Invalid direction: ${direction1}, ${direction2}`);
+        }
+      
+        const movement = `${from}${to}`;
+      
+        await this.sendWebsocketCommand(command.display, movement);
+      }
 
     /**
      * NOTE: Consider making private
