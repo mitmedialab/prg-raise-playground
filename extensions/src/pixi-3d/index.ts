@@ -44,31 +44,37 @@ export default class Pixi3D extends extension(details, "customArguments") {
     this.exampleField = 0;
     // @ts-ignore
     this.pixi3d = env.runtime.getPixi3D();
-    this.pixi3d.createApplication();
+    await this.pixi3d.createApplication();
+    await this.pixi3d.importGltf("static/assets/Doodlebot5.glb", [0,0,0], 1)
   }
 
   /** @see {ExplanationOfField} */
   exampleField: number;
 
   /** @see {ExplanationOfExampleReporter}*/
-  @(scratch.command`Create cube with position x: ${{type: "number", defaultValue: 0}}, y ${{type: "number", defaultValue: 0}}, z ${{type: "number", defaultValue: -2}}, scale ${{type: "number", defaultValue: 0.5}}, color r: ${{type: "number", defaultValue: 1}}, g: ${{type: "number", defaultValue: 0}}, b: ${{type: "number", defaultValue: 1}}, and animation: ${{type: "string", options: ["true", "false"]}}`)
-  createCube(x: number, y: number, z: number, scale: number, r: number, g: number, b: number, animated: string) {
-    this.pixi3d.createCube([x, y, z], scale, [r, g, b], animated == "true");
-  }
+  // @(scratch.command`Create cube with position x: ${{type: "number", defaultValue: 0}}, y ${{type: "number", defaultValue: 0}}, z ${{type: "number", defaultValue: -2}}, scale ${{type: "number", defaultValue: 0.5}}, color r: ${{type: "number", defaultValue: 1}}, g: ${{type: "number", defaultValue: 0}}, b: ${{type: "number", defaultValue: 1}}, and animation: ${{type: "string", options: ["true", "false"]}}`)
+  // createCube(x: number, y: number, z: number, scale: number, r: number, g: number, b: number, animated: string) {
+  //   this.pixi3d.createCube([x, y, z], scale, [r, g, b], animated == "true");
+  // }
 
-  @(scratch.command`Create plane with position x: ${{type: "number", defaultValue: 0}}, y: ${{type: "number", defaultValue: 0}}, z: ${{type: "number", defaultValue: -2}}, scale ${{type: "number", defaultValue: 0.5}}, color r: ${{type: "number", defaultValue: 1}}, g: ${{type: "number", defaultValue: 0}}, b: ${{type: "number", defaultValue: 1}}`)
-  createPlane(x: number, y: number, z: number, scale: number, r: number, g: number, b: number) {
-    this.pixi3d.createPlane([x, y, z], scale, [r, g, b]);
-  }
+  // @(scratch.command`Create plane with position x: ${{type: "number", defaultValue: 0}}, y: ${{type: "number", defaultValue: 0}}, z: ${{type: "number", defaultValue: -2}}, scale ${{type: "number", defaultValue: 0.5}}, color r: ${{type: "number", defaultValue: 1}}, g: ${{type: "number", defaultValue: 0}}, b: ${{type: "number", defaultValue: 1}}`)
+  // createPlane(x: number, y: number, z: number, scale: number, r: number, g: number, b: number) {
+  //   this.pixi3d.createPlane([x, y, z], scale, [r, g, b]);
+  // }
 
-  @(scratch.command`Create sphere with position x: ${{type: "number", defaultValue: 0}}, y: ${{type: "number", defaultValue: 0}}, z: ${{type: "number", defaultValue: -2}}, scale ${{type: "number", defaultValue: 0.5}}, color r: ${{type: "number", defaultValue: 1}}, g: ${{type: "number", defaultValue: 0}}, b: ${{type: "number", defaultValue: 1}}`)
-  createSphere(x: number, y: number, z: number, scale: number, r: number, g: number, b: number) {
-    this.pixi3d.createSphere([x, y, z], scale, [r, g, b]);
-  }
+  // @(scratch.command`Create sphere with position x: ${{type: "number", defaultValue: 0}}, y: ${{type: "number", defaultValue: 0}}, z: ${{type: "number", defaultValue: -2}}, scale ${{type: "number", defaultValue: 0.5}}, color r: ${{type: "number", defaultValue: 1}}, g: ${{type: "number", defaultValue: 0}}, b: ${{type: "number", defaultValue: 1}}`)
+  // createSphere(x: number, y: number, z: number, scale: number, r: number, g: number, b: number) {
+  //   this.pixi3d.createSphere([x, y, z], scale, [r, g, b]);
+  // }
 
-  @(scratch.command((self, $) => $`Upload model ${self.makeCustomArgument({ component: FileArgument, initial: { value: "", text: "File" } })} with scale ${{type: "number", defaultValue: 1}}`))
-  uploadSoundFile(test: string, scale: number) {
-    this.pixi3d.importGltf(test, [0, 0, -2], scale);
+  // @(scratch.command((self, $) => $`Upload model ${self.makeCustomArgument({ component: FileArgument, initial: { value: "", text: "File" } })} with scale ${{type: "number", defaultValue: 1}}`))
+  // uploadSoundFile(test: string, scale: number) {
+  //   this.pixi3d.importGltf(test, [0, 0, -2], scale);
+  // }
+
+  @(scratch.command`Arc with angle ${"number"} and radius ${"number"}`)
+  arcDoodlebotc(angle: number, radius: number) {
+    this.pixi3d.animateArc(angle, radius);
   }
 
   // @(scratch.command`Create cylinder with position x: ${{type: "number", defaultValue: 0}}, y: ${{type: "number", defaultValue: 0}}, z: ${{type: "number", defaultValue: -2}}, radius ${{type: "number", defaultValue: 1}}, height ${{type: "number", defaultValue: 3}}, color r: ${{type: "number", defaultValue: 1}}, g: ${{type: "number", defaultValue: 0}}, b: ${{type: "number", defaultValue: 1}}`)
