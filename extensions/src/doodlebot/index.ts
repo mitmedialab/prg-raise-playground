@@ -90,10 +90,20 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   externalIp: string
 
+  blocksRun: number;
+
   SOCIAL = true;
   socialness = 1.0; // Value from 0 to 1, where 1 is always social and 0 is never social
 
+  blockCounter(utility: BlockUtilityWithID) {
+    if (JSON.parse(JSON.stringify(utility.blockID)) == JSON.parse(JSON.stringify(utility.thread.topBlock))) {
+      this.blocksRun = 0;
+    }
+    this.blocksRun = this.blocksRun + 1;
+  }
+
   async init(env: Environment) {
+    this.blocksRun = 0;
     this.soundDictionary = {};
     this.costumeDictionary = {};
     this.setIndicator("disconnected");
@@ -109,12 +119,40 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
     soundFiles = ["File"];
     imageFiles = ["File"];
-    // env.runtime.on("PROJECT_RUN_START", () => {
-    //   this.doodlebot?.display("love");
-    // })
-    // env.runtime.on("PROJECT_RUN_STOP", () => {
-    //   this.doodlebot?.display("sad");
-    // })
+
+    env.runtime.on("PROJECT_RUN_START", async () => {
+      const r = Math.random();
+      console.log("starting", r);
+      if (r < 0.3) {
+        await this.speakText("Here I go!")
+      } else if (r < 0.6) {
+        await this.speakText("Let's do it!")
+      }
+    })
+    env.runtime.on("PROJECT_RUN_STOP", async () => {
+      if (this.blocksRun > 10) {
+        
+        const r = Math.random();
+        console.log("blocks > 10", r);
+        if (r < 0.3) {
+          await this.speakText("Whew!")
+        } else if (r < 0.6) {
+          await this.speakText("That was tough!")
+        }
+      } else {
+        const r = Math.random(); 
+        console.log("blocks < 10", r);
+        if (r < 0.2) {
+          await this.speakText("Yay!");
+        } else if (r < 0.4) {
+          await this.speakText("Yippee!");
+        } else if (r < 0.5) {
+          await this.speakText("I did it!");
+        } else if (r < 0.6) {
+          await this.speakText("Go Doodlebot!");
+        }
+      }
+    })
   }
 
   async setDictionaries() {
@@ -548,8 +586,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       { type: "number", defaultValue: 2000 }
     ]
   })
-  async drive(direction: "left" | "right" | "forward" | "backward", steps: number) {
-
+  async drive(direction: "left" | "right" | "forward" | "backward", steps: number, utility: BlockUtilityWithID) {
+    this.blockCounter(utility);
     if (this.SOCIAL && Math.random() < this.socialness) {
       await this.doodlebot?.display("love");
       await this.speakText(`Driving ${direction} for ${steps} steps`);
@@ -575,7 +613,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       { type: "number", defaultValue: 90 }
     ]
   })
-  async arc(direction: "left" | "right", radius: number, degrees: number) {
+  async arc(direction: "left" | "right", radius: number, degrees: number, utility: BlockUtilityWithID) {
+    this.blockCounter(utility);
     if (this.SOCIAL && Math.random() < this.socialness) {
       await this.doodlebot?.display("happy");
       await this.speakText(`Driving ${direction} arc with radius ${radius} for ${degrees} degrees`);
@@ -589,7 +628,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     text: (degrees) => `spin ${degrees} degrees`,
     arg: { type: "angle", defaultValue: 90 }
   })
-  async spin(degrees: number) {
+  async spin(degrees: number, utility: BlockUtilityWithID) {
+    this.blockCounter(utility);
     if (this.SOCIAL && Math.random() < this.socialness) {
       await this.doodlebot?.display("happy");
       await this.speakText(`Spinning ${degrees} degrees`);
@@ -946,7 +986,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   async callSinglePredict() {
     console.log("inside");
     const ip = await this.getIPAddress();
-    const uploadEndpoint = "http://" + ip + ":8001/single_predict";
+    const uploadEndpoint = "http://" + ip + ":8001/get_stream";
     console.log("calling single predict");
     if (window.isSecureContext) {
       const response2 = await fetch(uploadEndpoint);
