@@ -95,9 +95,20 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   SOCIAL = true;
   socialness = 1.0; // Value from 0 to 1, where 1 is always social and 0 is never social
 
-  blockCounter(utility: BlockUtilityWithID) {
+  sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  async blockCounter(utility: BlockUtilityWithID) {
     if (JSON.parse(JSON.stringify(utility.blockID)) == JSON.parse(JSON.stringify(utility.thread.topBlock))) {
       this.blocksRun = 0;
+      const r = Math.random();
+      console.log("starting", r);
+      if (r < 0.3) {
+        await this.speakText("Here I go!");
+      } else if (r < 0.6) {
+        await this.speakText("Let's do it!");
+      }
     }
     this.blocksRun = this.blocksRun + 1;
   }
@@ -120,18 +131,11 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     soundFiles = ["File"];
     imageFiles = ["File"];
 
-    env.runtime.on("PROJECT_RUN_START", async () => {
-      const r = Math.random();
-      console.log("starting", r);
-      if (r < 0.3) {
-        await this.speakText("Here I go!")
-      } else if (r < 0.6) {
-        await this.speakText("Let's do it!")
-      }
-    })
+    // env.runtime.on("PROJECT_RUN_START", async () => {
+      
+    // })
     env.runtime.on("PROJECT_RUN_STOP", async () => {
       if (this.blocksRun > 10) {
-        
         const r = Math.random();
         console.log("blocks > 10", r);
         if (r < 0.3) {
@@ -548,7 +552,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     text: (text) => `speak ${text}`,
     arg: { type: "string", defaultValue: "Hello!" }
   })
-  async speak(text: string) {
+  async speak(text: string, utility: BlockUtilityWithID) {
+    await this.blockCounter(utility);
     await this.speakText(text);
   }
 
@@ -587,7 +592,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     ]
   })
   async drive(direction: "left" | "right" | "forward" | "backward", steps: number, utility: BlockUtilityWithID) {
-    this.blockCounter(utility);
+    await this.blockCounter(utility);
     if (this.SOCIAL && Math.random() < this.socialness) {
       await this.doodlebot?.display("love");
       await this.speakText(`Driving ${direction} for ${steps} steps`);
@@ -614,7 +619,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     ]
   })
   async arc(direction: "left" | "right", radius: number, degrees: number, utility: BlockUtilityWithID) {
-    this.blockCounter(utility);
+    await this.blockCounter(utility);
     if (this.SOCIAL && Math.random() < this.socialness) {
       await this.doodlebot?.display("happy");
       await this.speakText(`Driving ${direction} arc with radius ${radius} for ${degrees} degrees`);
@@ -629,7 +634,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     arg: { type: "angle", defaultValue: 90 }
   })
   async spin(degrees: number, utility: BlockUtilityWithID) {
-    this.blockCounter(utility);
+    await this.blockCounter(utility);
     if (this.SOCIAL && Math.random() < this.socialness) {
       await this.doodlebot?.display("happy");
       await this.speakText(`Spinning ${degrees} degrees`);
@@ -1824,16 +1829,26 @@ blobToBase64(blob) {
       const blob = await response.blob();
       const audioUrl = URL.createObjectURL(blob);
       const audio = new Audio(audioUrl);
+
+      await new Promise((resolve) => {
+        audio.addEventListener('loadedmetadata', () => {
+          resolve(null);
+        });
+      });
+      
+      const durationMs = audio.duration * 1000; // duration is in seconds
       
       // Convert blob to Uint8Array and send to Doodlebot
       const array = await blob.arrayBuffer();
       await this.doodlebot.sendAudioData(new Uint8Array(array));
+      console.log("DATA SENT");
 
       // Wait a moment before clearing the display if showDisplay is true
       if (showDisplay) {
         await new Promise(resolve => setTimeout(resolve, 2000));
         await this.doodlebot?.display("clear");
       }
+      await new Promise(resolve => setTimeout(resolve, durationMs));
 
     } catch (error) {
       console.error("Error in speak function:", error);
