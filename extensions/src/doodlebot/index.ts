@@ -528,6 +528,31 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   @block({
     type: "command",
+    text: (voice, pitch) => `set voice to ${voice} and pitch to ${pitch}`,
+    args: [
+      { type: "number", defaultValue: 1, name: "voice" },
+      { type: "number", defaultValue: 0, name: "pitch" }
+    ]
+  })
+  async setVoiceAndPitch(voice: number, pitch: number) {
+    try {
+      const url = `https://doodlebot.media.mit.edu/settings?voice=${voice}&pitch=${pitch}`;
+      const response = await fetch(url, {
+        method: "POST"
+      });
+  
+      if (!response.ok) {
+        const text = await response.text();
+        console.error("Error setting voice/pitch:", text);
+      }
+    } catch (error) {
+      console.error("Failed to update settings:", error);
+    }
+  }
+  
+
+  @block({
+    type: "command",
     text: (seconds) => `listen for ${seconds} seconds and repeat`,
     arg: { type: "number", defaultValue: 3 }
   })
@@ -1315,34 +1340,34 @@ blobToBase64(blob) {
         let uint8array;
         // if (window.isSecureContext) {
           
-          if (endpoint == "repeat_after_me") {
-            const eventSource = new EventSource("http://doodlebot.media.mit.edu/viseme-events");
+          // if (endpoint == "repeat_after_me") {
+          //   const eventSource = new EventSource("http://doodlebot.media.mit.edu/viseme-events");
 
-            eventSource.onmessage = (event) => {
-              console.log("Received viseme event:", event.data);
-              try {
-                const data = JSON.parse(event.data);
-                const visemeId = data.visemeId;
-                const offsetMs = data.offsetMs;
+          //   eventSource.onmessage = (event) => {
+          //     console.log("Received viseme event:", event.data);
+          //     try {
+          //       const data = JSON.parse(event.data);
+          //       const visemeId = data.visemeId;
+          //       const offsetMs = data.offsetMs;
           
-                // You can customize which viseme IDs should trigger a command.
-                // For now, all non-silence visemes trigger it.
-                if (visemeId !== 0) {
-                  setTimeout(() => {
-                    this.doodlebot.display("happy");
-                    console.log("DISPLAYING");
-                  }, offsetMs);
-                }
-              } catch (err) {
-                console.error("Failed to parse viseme event:", err);
-              }
-            };
+          //       // You can customize which viseme IDs should trigger a command.
+          //       // For now, all non-silence visemes trigger it.
+          //       if (visemeId !== 0) {
+          //         setTimeout(() => {
+          //           this.doodlebot.display("happy");
+          //           console.log("DISPLAYING");
+          //         }, offsetMs);
+          //       }
+          //     } catch (err) {
+          //       console.error("Failed to parse viseme event:", err);
+          //     }
+          //   };
 
-            eventSource.onerror = (err) => {
-              console.error("EventSource failed:", err);
-              eventSource.close();
-            };
-          }
+          //   eventSource.onerror = (err) => {
+          //     console.error("EventSource failed:", err);
+          //     eventSource.close();
+          //   };
+          // }
 
           response = await fetch(url, {
               method: "POST",
@@ -1813,7 +1838,7 @@ blobToBase64(blob) {
         await this.doodlebot?.displayText("speaking");
       }
 
-      const url = "http://doodlebot.media.mit.edu/speak";
+      const url = "https://doodlebot.media.mit.edu/speak";
       const response = await fetch(url, {
         method: "POST",
         headers: {
