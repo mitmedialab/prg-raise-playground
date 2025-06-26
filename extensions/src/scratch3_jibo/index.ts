@@ -192,11 +192,11 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
     this.ros = null;
     this.connected = false;
-    this.rosbridgeIP = "ws://localhost:9090"; // rosbridgeIP option includes port
+    this.rosbridgeIP = "ws://bubbles-sonic-onion-jean.local:9090"; // rosbridgeIP option includes port
     this.jbVolume = "60";
     this.asr_out = "";
 
-    this.RosConnect({ rosIP: "localhost" });
+    this.RosConnect({ rosIP: "bubbles-sonic-onion-jean.local" });
 
     this.virtualJibo = new VirtualJibo();
     this.virtualJibo.init(this.runtime);
