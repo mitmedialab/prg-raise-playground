@@ -90,6 +90,9 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   externalIp: string
 
+  voice_id: number;
+  pitch_value: number;
+
   blocksRun: number;
 
   SOCIAL = true;
@@ -115,6 +118,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   async init(env: Environment) {
     this.blocksRun = 0;
+    this.voice_id = 1;
+    this.pitch_value = 0;
     this.soundDictionary = {};
     this.costumeDictionary = {};
     this.setIndicator("disconnected");
@@ -130,6 +135,20 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
     soundFiles = ["File"];
     imageFiles = ["File"];
+
+    // try {
+    //   const url = `https://doodlebot.media.mit.edu/settings?voice=1&pitch=0`;
+    //   const response = await fetch(url, {
+    //     method: "POST"
+    //   });
+  
+    //   if (!response.ok) {
+    //     const text = await response.text();
+    //     console.error("Error setting voice/pitch:", text);
+    //   }
+    // } catch (error) {
+    //   console.error("Failed to update settings:", error);
+    // }
 
     // env.runtime.on("PROJECT_RUN_START", async () => {
       
@@ -535,19 +554,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     ]
   })
   async setVoiceAndPitch(voice: number, pitch: number) {
-    try {
-      const url = `https://doodlebot.media.mit.edu/settings?voice=${voice}&pitch=${pitch}`;
-      const response = await fetch(url, {
-        method: "POST"
-      });
-  
-      if (!response.ok) {
-        const text = await response.text();
-        console.error("Error setting voice/pitch:", text);
-      }
-    } catch (error) {
-      console.error("Failed to update settings:", error);
-    }
+    this.voice_id = voice;
+    this.pitch_value = pitch;
   }
   
 
@@ -1328,7 +1336,7 @@ blobToBase64(blob) {
 
   async sendAudioFileToChatEndpoint(file, endpoint, blob, seconds) {
     console.log("sending audio file");
-    const url = `http://doodlebot.media.mit.edu/${endpoint}`;
+    const url = `http://doodlebot.media.mit.edu/${endpoint}?voice=${this.voice_id}&pitch=${this.pitch_value}`
     const formData = new FormData();
     formData.append("audio_file", file);
     const audioURL = URL.createObjectURL(file);
@@ -1838,7 +1846,7 @@ blobToBase64(blob) {
         await this.doodlebot?.displayText("speaking");
       }
 
-      const url = "https://doodlebot.media.mit.edu/speak";
+      const url = `http://doodlebot.media.mit.edu/speak?voice=${this.voice_id}&pitch=${this.pitch_value}`;
       const response = await fetch(url, {
         method: "POST",
         headers: {
