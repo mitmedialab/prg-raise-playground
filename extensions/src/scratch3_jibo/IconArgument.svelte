@@ -4,7 +4,7 @@
   import { ParameterOf, ArgumentEntry, ArgumentEntrySetter } from "$common";
 
   const iconImgs: Record<IconType, string> = {
-    [Icon.Airplane]: "https://cdn.emojidex.com/emoji/seal/airplane.png?1499688727",
+    [Icon.Airplane]: "https://images.emojiterra.com/twitter/v14.0/256px/2708.png",
     [Icon.Apple]:
       "https://images.emojiterra.com/google/noto-emoji/v2.034/512px/1f34e.png",
     [Icon.Art]: "https://images.emojiterra.com/google/noto-emoji/v2.034/512px/1f3a8.png",
