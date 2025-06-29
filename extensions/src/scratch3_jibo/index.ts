@@ -172,6 +172,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   dirs: MenuItem<string>[];
   audios: MenuItem<string>[]; // new
   virtualJibo: VirtualJibo;
+  state: any;
 
   init() {
     this.dances = Object.entries(Dance).map(([dance, def]) => ({
@@ -195,6 +196,8 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     this.rosbridgeIP = "ws://bubbles-sonic-onion-jean.local:9090"; // rosbridgeIP option includes port
     this.jbVolume = "60";
     this.asr_out = "";
+
+    this.state = null;
 
     this.RosConnect({ rosIP: "bubbles-sonic-onion-jean.local" });
 
@@ -473,6 +476,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     // await queue.pushToFirebase(jibo_msg, queue.animFinished);
 
     await this.JiboPublish(jibo_msg);
+    await this.waitForFieldToComplete('tts_message');
   }
 
   // TODO figure out why Jibo seems to ignore this value
@@ -544,6 +548,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     // await queue.pushToFirebase(jibo_msg, timer)
 
     await this.JiboPublish(jibo_msg);
+    await this.waitForMotionToComplete();
   }
 
   async jiboAnimFn(animation_key: string, delay: number) {
@@ -565,6 +570,8 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     // await queue.pushToFirebase(jibo_msg, timer.bind(delay)); // delay before next command
 
     await this.JiboPublish(jibo_msg);
+    await this.waitForFieldToComplete('in_motion')
+    console.log("ANIMATION DONE");
   }
 
   async jiboDanceFn(animation_key: string, delay: number) {
@@ -573,12 +580,9 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     var timer = () => new Promise<void>((resolve, reject) => {
       setTimeout(resolve, 500);
     });
-    await queue.pushToFirebase({
-      do_anim_transition: true,
-      anim_transition: 0
-    }, timer);
 
     await this.JiboPublish({ do_anim_transition: true, anim_transition: 0 });
+    await this.waitForFieldToComplete('in_motion');
   }
 
   async jiboAudioFn(audio_file: string) {
@@ -597,7 +601,36 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     // await queue.pushToFirebase(jibo_msg, queue.animFinished);
 
     await this.JiboPublish(jibo_msg);
+    await this.waitForFieldToComplete('audio');
   }
+
+  waitForFieldToComplete(field: string) {
+    return new Promise<void>((resolve) => {
+        console.log(this.state);
+        const interval = setInterval(() => {
+          if (this.state && this.state[field] === '') {
+            clearInterval(interval);
+            console.log("Dance complete.");
+            resolve();
+          }
+        }, 100); // Check every 100ms
+    });
+  }
+
+  waitForMotionToComplete() {
+    return new Promise<void>((resolve) => {
+      console.log(this.state);
+      const interval = setInterval(() => {
+        if (this.state && this.state.doing_motion === false) {
+          clearInterval(interval);
+          console.log("Dance complete.");
+          resolve();
+        }
+      }, 100); // Check every 100ms
+    });
+  }
+
+  
 
   async JiboPublish(msg: any) {
     if (!this.connected) {
@@ -627,10 +660,11 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
       messageType: "jibo_msgs/JiboState",
     });
 
-    state_listener.subscribe(function (message: any) {
-      console.log("Received message on " + state_listener.name + ": ");
-      console.log(message);
-      state_listener.unsubscribe();
+    state_listener.subscribe((message: any) => {
+      //console.log("Received message on " + state_listener.name + ": ");
+      // console.log(message);
+      this.state = message;
+      //state_listener.unsubscribe();
     });
   }
   async JiboASR_request() {
