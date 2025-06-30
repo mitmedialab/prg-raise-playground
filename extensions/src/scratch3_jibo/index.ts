@@ -461,6 +461,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   }
 
   async jiboTTSFn(text: string) {
+    await this.waitToClear();
     var jibo_msg = {
       // readyForNext: false,
       msg_type: "JiboAction",
@@ -486,6 +487,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   }
 
   async jiboAskFn(text: string) {
+    await this.waitToClear();
     // say question
     await this.jiboTTSFn(text);
     // making the ASR request
@@ -531,6 +533,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
   // there is no message when the look finishes. Just using a set time to finish block
   async jiboLookFn(dir: string) {
+    await this.waitToClear();
     let coords = directionDef[dir].value;
     let jibo_msg = {
       do_lookat: true,
@@ -575,6 +578,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   }
 
   async jiboDanceFn(animation_key: string, delay: number) {
+    await this.waitToClear();
     await this.jiboAnimFn(animation_key, delay);
     // transition back to neutral
     var timer = () => new Promise<void>((resolve, reject) => {
@@ -586,6 +590,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   }
 
   async jiboAudioFn(audio_file: string) {
+    await this.waitToClear();
     console.log("the audio file is: " + audio_file); // debug statement
     var jibo_msg = {
       // readyForNext: false,
@@ -602,6 +607,23 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
     await this.JiboPublish(jibo_msg);
     await this.waitForFieldToComplete('audio');
+  }
+
+  waitToClear() {
+    return new Promise<void>((resolve) => {
+        console.log(this.state);
+        const interval = setInterval(() => {
+          if (this.state && this.state['is_listening'] === false 
+            && this.state['in_motion'] == '' 
+            && this.state['audio'] == '' 
+            && this.state['tts_msg'] == ''
+            && this.state['doing_motion'] == false) {
+            clearInterval(interval);
+            console.log("All fields clear");
+            resolve();
+          }
+        }, 100); // Check every 100ms
+    });
   }
 
   waitForFieldToComplete(field: string) {
