@@ -1033,7 +1033,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   async callSinglePredict() {
     console.log("inside");
     const ip = await this.getIP();
-    const uploadEndpoint = "https://" + ip + "/api/v1/video/get_stream";
+    const uploadEndpoint = "https://" + ip + "/api/v1/video/single_predict";
     console.log("calling single predict");
     if (window.isSecureContext) {
       const response2 = await fetch(uploadEndpoint);
@@ -1369,7 +1369,7 @@ blobToBase64(blob) {
 
   async sendAudioFileToChatEndpoint(file, endpoint, blob, seconds) {
     console.log("sending audio file");
-    const url = `http://doodlebot.media.mit.edu/${endpoint}?voice=${this.voice_id}&pitch=${this.pitch_value}`
+    const url = `https://doodlebot.media.mit.edu/${endpoint}?voice=${this.voice_id}&pitch=${this.pitch_value}`
     const formData = new FormData();
     formData.append("audio_file", file);
     const audioURL = URL.createObjectURL(file);
@@ -1879,7 +1879,7 @@ blobToBase64(blob) {
         await this.doodlebot?.displayText("speaking");
       }
 
-      const url = `http://doodlebot.media.mit.edu/speak?voice=${this.voice_id}&pitch=${this.pitch_value}`;
+      const url = `https://doodlebot.media.mit.edu/speak?voice=${this.voice_id}&pitch=${this.pitch_value}`;
       const response = await fetch(url, {
         method: "POST",
         headers: {
