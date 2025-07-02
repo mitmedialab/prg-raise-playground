@@ -6,9 +6,3 @@
 	path = scratch-packages/scratch-vm
 	url = git@github.com:mitmedialab/prg-raise-playground-scratch-vm.git
 	branch = main
-[submodule "virtualize"]
-	path = virtualize
-	url = https://github.com/mitmedialab/virtualize
-[submodule "virtualize-node"]
-	path = virtualize-node
-	url = https://github.com/mitmedialab/virtualize-node.git
