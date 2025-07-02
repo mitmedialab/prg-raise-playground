@@ -90,10 +90,36 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   externalIp: string
 
+  voice_id: number;
+  pitch_value: number;
+
+  blocksRun: number;
+
   SOCIAL = true;
   socialness = 1.0; // Value from 0 to 1, where 1 is always social and 0 is never social
 
+  sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  async blockCounter(utility: BlockUtilityWithID) {
+    if (JSON.parse(JSON.stringify(utility.blockID)) == JSON.parse(JSON.stringify(utility.thread.topBlock))) {
+      this.blocksRun = 0;
+      const r = Math.random();
+      console.log("starting", r);
+      if (r < 0.3) {
+        await this.speakText("Here I go!");
+      } else if (r < 0.6) {
+        await this.speakText("Let's do it!");
+      }
+    }
+    this.blocksRun = this.blocksRun + 1;
+  }
+
   async init(env: Environment) {
+    this.blocksRun = 0;
+    this.voice_id = 1;
+    this.pitch_value = 0;
     this.soundDictionary = {};
     this.costumeDictionary = {};
     this.setIndicator("disconnected");
@@ -109,12 +135,47 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
     soundFiles = ["File"];
     imageFiles = ["File"];
-    // env.runtime.on("PROJECT_RUN_START", () => {
-    //   this.doodlebot?.display("love");
+
+    // try {
+    //   const url = `https://doodlebot.media.mit.edu/settings?voice=1&pitch=0`;
+    //   const response = await fetch(url, {
+    //     method: "POST"
+    //   });
+  
+    //   if (!response.ok) {
+    //     const text = await response.text();
+    //     console.error("Error setting voice/pitch:", text);
+    //   }
+    // } catch (error) {
+    //   console.error("Failed to update settings:", error);
+    // }
+
+    // env.runtime.on("PROJECT_RUN_START", async () => {
+      
     // })
-    // env.runtime.on("PROJECT_RUN_STOP", () => {
-    //   this.doodlebot?.display("sad");
-    // })
+    env.runtime.on("PROJECT_RUN_STOP", async () => {
+      if (this.blocksRun > 10) {
+        const r = Math.random();
+        console.log("blocks > 10", r);
+        if (r < 0.3) {
+          await this.speakText("Whew!")
+        } else if (r < 0.6) {
+          await this.speakText("That was tough!")
+        }
+      } else {
+        const r = Math.random(); 
+        console.log("blocks < 10", r);
+        if (r < 0.2) {
+          await this.speakText("Yay!");
+        } else if (r < 0.4) {
+          await this.speakText("Yippee!");
+        } else if (r < 0.5) {
+          await this.speakText("I did it!");
+        } else if (r < 0.6) {
+          await this.speakText("Go Doodlebot!");
+        }
+      }
+    })
   }
 
   async setDictionaries() {
@@ -495,6 +556,20 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   @block({
     type: "command",
+    text: (voice, pitch) => `set voice to ${voice} and pitch to ${pitch}`,
+    args: [
+      { type: "number", defaultValue: 1, name: "voice" },
+      { type: "number", defaultValue: 0, name: "pitch" }
+    ]
+  })
+  async setVoiceAndPitch(voice: number, pitch: number) {
+    this.voice_id = voice;
+    this.pitch_value = pitch;
+  }
+  
+
+  @block({
+    type: "command",
     text: (seconds) => `listen for ${seconds} seconds and repeat`,
     arg: { type: "number", defaultValue: 3 }
   })
@@ -519,7 +594,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     text: (text) => `speak ${text}`,
     arg: { type: "string", defaultValue: "Hello!" }
   })
-  async speak(text: string) {
+  async speak(text: string, utility: BlockUtilityWithID) {
+    await this.blockCounter(utility);
     await this.speakText(text);
   }
 
@@ -557,8 +633,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       { type: "number", defaultValue: 2000 }
     ]
   })
-  async drive(direction: "left" | "right" | "forward" | "backward", steps: number) {
-
+  async drive(direction: "left" | "right" | "forward" | "backward", steps: number, utility: BlockUtilityWithID) {
+    await this.blockCounter(utility);
     if (this.SOCIAL && Math.random() < this.socialness) {
       await this.doodlebot?.display("love");
       await this.speakText(`Driving ${direction} for ${steps} steps`);
@@ -584,7 +660,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       { type: "number", defaultValue: 90 }
     ]
   })
-  async arc(direction: "left" | "right", radius: number, degrees: number) {
+  async arc(direction: "left" | "right", radius: number, degrees: number, utility: BlockUtilityWithID) {
+    await this.blockCounter(utility);
     if (this.SOCIAL && Math.random() < this.socialness) {
       await this.doodlebot?.display("happy");
       await this.speakText(`Driving ${direction} arc with radius ${radius} for ${degrees} degrees`);
@@ -598,7 +675,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     text: (degrees) => `spin ${degrees} degrees`,
     arg: { type: "angle", defaultValue: 90 }
   })
-  async spin(degrees: number) {
+  async spin(degrees: number, utility: BlockUtilityWithID) {
+    await this.blockCounter(utility);
     if (this.SOCIAL && Math.random() < this.socialness) {
       await this.doodlebot?.display("happy");
       await this.speakText(`Spinning ${degrees} degrees`);
@@ -955,7 +1033,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   async callSinglePredict() {
     console.log("inside");
     const ip = await this.getIP();
-    const uploadEndpoint = "https://" + ip + "/api/v1/video/single_predict";
+    const uploadEndpoint = "https://" + ip + "/api/v1/video/get_stream";
     console.log("calling single predict");
     if (window.isSecureContext) {
       const response2 = await fetch(uploadEndpoint);
@@ -974,7 +1052,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     text: (location, type) => `get ${location} of ${type}`,
     args: [
       { type: "string", options: ["x", "y"], defaultValue: "x" },
-      { type: "string", options: ["face", "object"], defaultValue: "face" }
+      { type: "string", options: ["face", "apple", "orange"], defaultValue: "face" }
     ]
   })
   async getSinglePredict2s(location: string, type: string) {
@@ -992,26 +1070,50 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       if (reading.objects.length == 0) {
         return 0;
       }
-      if (location == "x") {
-        return reading.objects[0].x;
+      if (type == "apple") {
+        const firstApple = reading.objects.find(obj => obj.label === "apple");
+        if (firstApple) {
+          if (location == "x") {
+            return firstApple.x;
+          } else {
+            return firstApple.y;
+          }
+        } else {
+          return 0;
+        }
       } else {
-        return reading.objects[0].y;
+        const firstOrange = reading.objects.find(obj => obj.label === "orange");
+        if (firstOrange) {
+          if (location == "x") {
+            return firstOrange.x;
+          } else {
+            return firstOrange.y;
+          }
+        } else {
+          return 0;
+        }
       }
+      
     }
   }
 
   @block({
     type: "reporter",
     text: (type) => `is ${type} detected`,
-    args: [{ type: "string", options: ["face", "object"], defaultValue: "face" }]
+    args: [{ type: "string", options: ["face", "apple", "orange"], defaultValue: "face" }]
   })
   async isFaceDetected(type: string) {
     const reading = await this.callSinglePredict();
     if (reading.faces.length > 0 && type == "face") {
       return true;
     }
-    if (reading.objects.length > 0 && type == "object") {
-      return true;
+    if (reading.objects.length > 0 && type == "apple") {
+      const firstApple = reading.objects.find(obj => obj.label === "apple");
+      return firstApple ? true : false;
+    }
+    if (reading.objects.length > 0 && type == "orange") {
+      const firstOrange = reading.objects.find(obj => obj.label === "orange");
+      return firstOrange ? true : false;
     }
     return false;
   }
@@ -1267,10 +1369,7 @@ blobToBase64(blob) {
 
   async sendAudioFileToChatEndpoint(file, endpoint, blob, seconds) {
     console.log("sending audio file");
-    // i'm not sure why i changed this next file from /${endpoint} to /chat
-    // i think someone was helping me get it working on my machine and
-    // told me try this? surly this is going to break something else? -jon
-    const url = "https://doodlebot.media.mit.edu/chat";
+    const url = `http://doodlebot.media.mit.edu/${endpoint}?voice=${this.voice_id}&pitch=${this.pitch_value}`
     const formData = new FormData();
     formData.append("audio_file", file);
     const audioURL = URL.createObjectURL(file);
@@ -1282,34 +1381,34 @@ blobToBase64(blob) {
         let uint8array;
         // if (window.isSecureContext) {
           
-          if (endpoint == "repeat_after_me") {
-            const eventSource = new EventSource("http://doodlebot.media.mit.edu/viseme-events");
+          // if (endpoint == "repeat_after_me") {
+          //   const eventSource = new EventSource("http://doodlebot.media.mit.edu/viseme-events");
 
-            eventSource.onmessage = (event) => {
-              console.log("Received viseme event:", event.data);
-              try {
-                const data = JSON.parse(event.data);
-                const visemeId = data.visemeId;
-                const offsetMs = data.offsetMs;
+          //   eventSource.onmessage = (event) => {
+          //     console.log("Received viseme event:", event.data);
+          //     try {
+          //       const data = JSON.parse(event.data);
+          //       const visemeId = data.visemeId;
+          //       const offsetMs = data.offsetMs;
           
-                // You can customize which viseme IDs should trigger a command.
-                // For now, all non-silence visemes trigger it.
-                if (visemeId !== 0) {
-                  setTimeout(() => {
-                    this.doodlebot.display("happy");
-                    console.log("DISPLAYING");
-                  }, offsetMs);
-                }
-              } catch (err) {
-                console.error("Failed to parse viseme event:", err);
-              }
-            };
+          //       // You can customize which viseme IDs should trigger a command.
+          //       // For now, all non-silence visemes trigger it.
+          //       if (visemeId !== 0) {
+          //         setTimeout(() => {
+          //           this.doodlebot.display("happy");
+          //           console.log("DISPLAYING");
+          //         }, offsetMs);
+          //       }
+          //     } catch (err) {
+          //       console.error("Failed to parse viseme event:", err);
+          //     }
+          //   };
 
-            eventSource.onerror = (err) => {
-              console.error("EventSource failed:", err);
-              eventSource.close();
-            };
-          }
+          //   eventSource.onerror = (err) => {
+          //     console.error("EventSource failed:", err);
+          //     eventSource.close();
+          //   };
+          // }
 
           response = await fetch(url, {
               method: "POST",
@@ -1780,7 +1879,7 @@ blobToBase64(blob) {
         await this.doodlebot?.displayText("speaking");
       }
 
-      const url = "https://doodlebot.media.mit.edu/speak";
+      const url = `http://doodlebot.media.mit.edu/speak?voice=${this.voice_id}&pitch=${this.pitch_value}`;
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -1796,16 +1895,26 @@ blobToBase64(blob) {
       const blob = await response.blob();
       const audioUrl = URL.createObjectURL(blob);
       const audio = new Audio(audioUrl);
+
+      await new Promise((resolve) => {
+        audio.addEventListener('loadedmetadata', () => {
+          resolve(null);
+        });
+      });
+      
+      const durationMs = audio.duration * 1000; // duration is in seconds
       
       // Convert blob to Uint8Array and send to Doodlebot
       const array = await blob.arrayBuffer();
       await this.doodlebot.sendAudioData(new Uint8Array(array));
+      console.log("DATA SENT");
 
       // Wait a moment before clearing the display if showDisplay is true
       if (showDisplay) {
         await new Promise(resolve => setTimeout(resolve, 2000));
         await this.doodlebot?.display("clear");
       }
+      await new Promise(resolve => setTimeout(resolve, durationMs));
 
     } catch (error) {
       console.error("Error in speak function:", error);
