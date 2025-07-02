@@ -965,7 +965,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     text: (location, type) => `get ${location} of ${type}`,
     args: [
       { type: "string", options: ["x", "y"], defaultValue: "x" },
-      { type: "string", options: ["face", "object"], defaultValue: "face" }
+      { type: "string", options: ["face", "apple", "orange"], defaultValue: "face" }
     ]
   })
   async getSinglePredict2s(location: string, type: string) {
@@ -983,26 +983,50 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       if (reading.objects.length == 0) {
         return 0;
       }
-      if (location == "x") {
-        return reading.objects[0].x;
+      if (type == "apple") {
+        const firstApple = reading.objects.find(obj => obj.label === "apple");
+        if (firstApple) {
+          if (location == "x") {
+            return firstApple.x;
+          } else {
+            return firstApple.y;
+          }
+        } else {
+          return 0;
+        }
       } else {
-        return reading.objects[0].y;
+        const firstOrange = reading.objects.find(obj => obj.label === "orange");
+        if (firstOrange) {
+          if (location == "x") {
+            return firstOrange.x;
+          } else {
+            return firstOrange.y;
+          }
+        } else {
+          return 0;
+        }
       }
+      
     }
   }
 
   @block({
     type: "reporter",
     text: (type) => `is ${type} detected`,
-    args: [{ type: "string", options: ["face", "object"], defaultValue: "face" }]
+    args: [{ type: "string", options: ["face", "apple", "orange"], defaultValue: "face" }]
   })
   async isFaceDetected(type: string) {
     const reading = await this.callSinglePredict();
     if (reading.faces.length > 0 && type == "face") {
       return true;
     }
-    if (reading.objects.length > 0 && type == "object") {
-      return true;
+    if (reading.objects.length > 0 && type == "apple") {
+      const firstApple = reading.objects.find(obj => obj.label === "apple");
+      return firstApple ? true : false;
+    }
+    if (reading.objects.length > 0 && type == "orange") {
+      const firstOrange = reading.objects.find(obj => obj.label === "orange");
+      return firstOrange ? true : false;
     }
     return false;
   }
