@@ -24,9 +24,7 @@ export const base64ToInt32Array = async (base64) => {
     return new Int32Array(arrayBuffer);
 }
 
-export const makeWebsocket = (ip: string, port: string | number) => new WebSocket(`ws://${ip}:${port}`);
-
-export const makeWebsocketHttps = (ip: string, path: string) => new WebSocket(`wss://${ip}${path}`);
+export const makeWebsocket = (ip: string, path: string) => new WebSocket(`wss://${ip}${path}`);
 
 export const testWebSocket = (ip: string, port: string | number, timeoutSeconds?: number) => {
     const websocket = makeWebsocket(ip, port);

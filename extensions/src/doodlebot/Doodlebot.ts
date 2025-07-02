@@ -3,7 +3,7 @@ import { Service } from "./communication/ServiceHelper";
 import UartService from "./communication/UartService";
 import { followLine } from "./LineFollowing";
 import { Command, DisplayKey, NetworkStatus, ReceivedCommand, SensorKey, command, display, endpoint, keyBySensor, motorCommandReceived, networkStatus, port, sensor } from "./enums";
-import { base64ToInt32Array, makeWebsocket, makeWebsocketHttps, Max32Int, testWebSocket } from "./utils";
+import { base64ToInt32Array, makeWebsocket, Max32Int, testWebSocket } from "./utils";
 import { LineDetector } from "./LineDetection";
 import { calculateArcTime } from "./TimeHelper";
 
@@ -343,9 +343,17 @@ export default class Doodlebot {
             this.webrtcVideo.requestVideoFrameCallback(handleVideoFrame);
         };
         
-        const urlParams = new URLSearchParams(window.location.search); // Hack for now
+        // this is an ungly hack just to get things working
+        // (it was crashing on my machine)
+        // the pc.createOffer() call below needs the IP
+        // but this is beofre the IP address has been prompted
+        // for. I think it works sometimes because we save the
+        // address for next time, but fails the first time
+        // It looks like this ps.createOffer call was just chucked
+        // here in the constructor as a quick test of webrtc video?
+        // -jon
+        const urlParams = new URLSearchParams(window.location.search);
         const ip = urlParams.get("ip");
-
         this.pc.createOffer()
             .then(offer => this.pc.setLocalDescription(offer))
             //.then(() => fetch(`http://192.168.41.231:8001/webrtc`, {
@@ -561,7 +569,6 @@ export default class Doodlebot {
         while (!this.connection) {
             await new Promise(resolve => setTimeout(resolve, 100));
         }
-        //let endpoint = "https://" + this.connection.ip + "/api/v1/upload/images/"
         let endpoint = "https://" + this.connection.ip + "/api/v1/upload/images"
         let uploadedImages = await this.fetchAndExtractList(endpoint);
         return uploadedImages.filter(item => !this.imageFiles.includes(item));
@@ -572,7 +579,6 @@ export default class Doodlebot {
             await new Promise(resolve => setTimeout(resolve, 100));
         }
         if (!this.connection) return [];
-        //let endpoint = "https://" + this.connection.ip + "/api/v1/upload/sounds/"
         let endpoint = "https://" + this.connection.ip + "/api/v1/upload/sounds"
         let uploadedSounds = await this.fetchAndExtractList(endpoint);
         return uploadedSounds.filter(item => !this.soundFiles.includes(item));
@@ -772,7 +778,7 @@ export default class Doodlebot {
      * @param credentials 
      */
     async connectToWebsocket(ip: string) {
-        this.websocket = makeWebsocketHttps(ip, '/api/v1/command');
+        this.websocket = makeWebsocket(ip, '/api/v1/command');
         await this.untilFinishedPending("websocket", new Promise<void>((resolve) => {
             const resolveAndRemove = () => {
                 console.log("Connected to websocket");
@@ -785,8 +791,11 @@ export default class Doodlebot {
     }
 
     async connectionWorkflow(credentials: NetworkCredentials) {
+        // i commented out the next line as a hack to get this working
+        // quickly on my machine, it probably just needs to be uncommented
+        // but I can't test this at the moment -jon
         //await this.connectToWifi(credentials);
-        const urlParams = new URLSearchParams(window.location.search); // Hack for now
+        const urlParams = new URLSearchParams(window.location.search); // Hack for now -jon
         let ip = urlParams.get("ip");
         this.setIP(ip);
         
@@ -1132,7 +1141,7 @@ export default class Doodlebot {
     async sendAudioData(uint8Array: Uint8Array) {
         let CHUNK_SIZE = 1024;
         let ip = this.connection.ip;
-        const ws = makeWebsocketHttps(ip, '/api/v1/speaker');
+        const ws = makeWebsocket(ip, '/api/v1/speaker');
         ws.onopen = () => {
             console.log('WebSocket connection opened');
             let { sampleWidth, channels, rate } = this.parseWavHeader(uint8Array);

@@ -195,7 +195,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     const disconnectMessage = "disconnected";
     const commandCompleteIdentifier = "done";
 
-    const urlParams = new URLSearchParams(window.location.search); // Hack for now
+    const urlParams = new URLSearchParams(window.location.search); // Hack for now -jon
 
     const ip = urlParams.get("ip");
 
@@ -345,7 +345,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     this.doodlebot = doodlebot;
     await this.setIndicator("connected");
 
-    const urlParams = new URLSearchParams(window.location.search); // Hack for now
+    const urlParams = new URLSearchParams(window.location.search); // Hack for now -jon
     const ip = urlParams.get("ip");
     this.doodlebot.setIP(ip);
 
@@ -1267,6 +1267,9 @@ blobToBase64(blob) {
 
   async sendAudioFileToChatEndpoint(file, endpoint, blob, seconds) {
     console.log("sending audio file");
+    // i'm not sure why i changed this next file from /${endpoint} to /chat
+    // i think someone was helping me get it working on my machine and
+    // told me try this? surly this is going to break something else? -jon
     const url = "https://doodlebot.media.mit.edu/chat";
     const formData = new FormData();
     formData.append("audio_file", file);
@@ -1586,7 +1589,7 @@ blobToBase64(blob) {
     return predictionState.topClass;
   }
 
-  private async _loop() {
+  private _loop() {
     setTimeout(this._loop.bind(this), Math.max(this.runtime.currentStepTime, this.INTERVAL));
     const time = Date.now();
     if (this.lastUpdate === null) {
@@ -1601,7 +1604,6 @@ blobToBase64(blob) {
       this.lastUpdate = time;
       this.isPredicting = 0;
       this.getImageStreamAndPredict();
-      //await new Promise(resolve => setTimeout(resolve, 500));
     }
   }
 
