@@ -346,10 +346,10 @@ export default class Doodlebot {
         // this is an ugly hack just to get things working
         // (it was crashing on my machine)
         // the pc.createOffer() call below needs the IP
-        // but this is beofre the IP address has been prompted
+        // but this is before the IP address has been prompted
         // for. I think it works sometimes because we save the
         // address for next time, but fails the first time
-        // It looks like this ps.createOffer call was just chucked
+        // it looks like this ps.createOffer call was just chucked
         // here in the constructor as a quick test of webrtc video?
         // -jon
         const urlParams = new URLSearchParams(window.location.search);
