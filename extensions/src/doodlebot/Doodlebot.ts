@@ -343,7 +343,7 @@ export default class Doodlebot {
             this.webrtcVideo.requestVideoFrameCallback(handleVideoFrame);
         };
         
-        // this is an ungly hack just to get things working
+        // this is an ugly hack just to get things working
         // (it was crashing on my machine)
         // the pc.createOffer() call below needs the IP
         // but this is beofre the IP address has been prompted
