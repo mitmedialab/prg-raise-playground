@@ -343,11 +343,26 @@ export default class Doodlebot {
             this.webrtcVideo.requestVideoFrameCallback(handleVideoFrame);
         };
         
+        // this is an ugly hack just to get things working
+        // (it was crashing on my machine)
+        // the pc.createOffer() call below needs the IP
+        // but this is before the IP address has been prompted
+        // for. I think it works sometimes because we save the
+        // address for next time, but fails the first time
+        // it looks like this ps.createOffer call was just chucked
+        // here in the constructor as a quick test of webrtc video?
+        // -jon
+        const urlParams = new URLSearchParams(window.location.search);
+        const ip = urlParams.get("ip");
         this.pc.createOffer()
             .then(offer => this.pc.setLocalDescription(offer))
-            .then(() => {
-                return fetchFunction(JSON.stringify(this.pc.localDescription));
-            })
+            //.then(() => fetch(`http://192.168.41.231:8001/webrtc`, {
+            .then(() => fetch(`https://${ip}/api/v1/video/webrtc`, {
+                method: 'POST',
+                body: JSON.stringify(this.pc.localDescription),
+                headers: { 'Content-Type': 'application/json' }
+            }))
+            .then(response => response.json())
             .then(answer => this.pc.setRemoteDescription(answer))
             .catch(err => console.error("WebRTC error:", err));
         
@@ -554,7 +569,7 @@ export default class Doodlebot {
         while (!this.connection) {
             await new Promise(resolve => setTimeout(resolve, 100));
         }
-        let endpoint = "http://" + this.connection.ip + ":8080/images/"
+        let endpoint = "https://" + this.connection.ip + "/api/v1/upload/images"
         let uploadedImages = await this.fetchAndExtractList(endpoint);
         return uploadedImages.filter(item => !this.imageFiles.includes(item));
     }
@@ -564,7 +579,7 @@ export default class Doodlebot {
             await new Promise(resolve => setTimeout(resolve, 100));
         }
         if (!this.connection) return [];
-        let endpoint = "http://" + this.connection.ip + ":8080/sounds/"
+        let endpoint = "https://" + this.connection.ip + "/api/v1/upload/sounds"
         let uploadedSounds = await this.fetchAndExtractList(endpoint);
         return uploadedSounds.filter(item => !this.soundFiles.includes(item));
     }
@@ -763,7 +778,7 @@ export default class Doodlebot {
      * @param credentials 
      */
     async connectToWebsocket(ip: string) {
-        this.websocket = makeWebsocket(ip, port.websocket);
+        this.websocket = makeWebsocket(ip, '/api/v1/command');
         await this.untilFinishedPending("websocket", new Promise<void>((resolve) => {
             const resolveAndRemove = () => {
                 console.log("Connected to websocket");
@@ -776,7 +791,14 @@ export default class Doodlebot {
     }
 
     async connectionWorkflow(credentials: NetworkCredentials) {
-        await this.connectToWifi(credentials);
+        // i commented out the next line as a hack to get this working
+        // quickly on my machine, it probably just needs to be uncommented
+        // but I can't test this at the moment -jon
+        //await this.connectToWifi(credentials);
+        const urlParams = new URLSearchParams(window.location.search); // Hack for now -jon
+        let ip = urlParams.get("ip");
+        this.setIP(ip);
+        
         await this.connectToWebsocket(this.connection.ip);
         this.detector = new LineDetector(this.connection.ip);
         //await this.connectToImageWebSocket(this.connection.ip);
@@ -792,7 +814,7 @@ export default class Doodlebot {
     //     if (this.pending["websocket"]) await this.pending["websocket"];
     //     if (!this.connection.ip) return;
     //     const image = document.createElement("img");
-    //     image.src = `http://${this.connection.ip}:${port.camera}/${endpoint.video}`;
+    //     image.src = `https://${this.connection.ip}/api/v1/videopush/${endpoint.video}`;
     //     image.crossOrigin = "anonymous";
     //     await new Promise((resolve) => image.addEventListener("load", resolve));
     //     return image;
@@ -800,7 +822,7 @@ export default class Doodlebot {
 
     async connectToImageWebSocket(ip: string) {
         // Create a WebSocket connection
-        this.websocket = new WebSocket(`ws://${ip}:${port.camera}`);
+        this.websocket = new WebSocket(`wss://${ip}:${port.camera}`);
 
         // Return a promise that resolves when the WebSocket is connected
         await this.untilFinishedPending("image", new Promise<void>((resolve, reject) => {
@@ -1048,7 +1070,7 @@ export default class Doodlebot {
 
         if (this.audioSocket) return true;
 
-        const socket = new WebSocket(`ws://${this.connection.ip}:${port.audio}`);
+        const socket = new WebSocket(`wss://${this.connection.ip}:${port.audio}`);
         const self = this;
 
         socket.onopen = function (event) {
@@ -1118,8 +1140,8 @@ export default class Doodlebot {
     }
     async sendAudioData(uint8Array: Uint8Array) {
         let CHUNK_SIZE = 1024;
-        let ip = await this.getIPAddress();
-        const ws = makeWebsocket(ip, '8877');
+        let ip = this.connection.ip;
+        const ws = makeWebsocket(ip, '/api/v1/speaker');
         ws.onopen = () => {
             console.log('WebSocket connection opened');
             let { sampleWidth, channels, rate } = this.parseWavHeader(uint8Array);

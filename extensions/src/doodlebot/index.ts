@@ -256,7 +256,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     const disconnectMessage = "disconnected";
     const commandCompleteIdentifier = "done";
 
-    const urlParams = new URLSearchParams(window.location.search); // Hack for now
+    const urlParams = new URLSearchParams(window.location.search); // Hack for now -jon
 
     const ip = urlParams.get("ip");
 
@@ -406,7 +406,16 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     this.doodlebot = doodlebot;
     await this.setIndicator("connected");
 
-   
+    const urlParams = new URLSearchParams(window.location.search); // Hack for now -jon
+    const ip = urlParams.get("ip");
+    this.doodlebot.setIP(ip);
+
+    try {
+      imageFiles = await doodlebot.findImageFiles();
+      soundFiles = await doodlebot.findSoundFiles();
+    } catch (e) {
+      //this.openUI("ArrayError");
+    }
     
     // Wait a short moment to ensure connection is established
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -965,9 +974,9 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     console.log("GOT IP");
     let uploadEndpoint;
     if (type == "sound") {
-      uploadEndpoint = "http://" + ip + ":8080/sounds_upload";
+      uploadEndpoint = "https://" + ip + "/api/v1/upload/sounds_upload";
     } else {
-      uploadEndpoint = "http://" + ip + ":8080/img_upload";
+      uploadEndpoint = "https://" + ip + "/api/v1/upload/img_upload";
     }
 
     try {
@@ -1023,8 +1032,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   async callSinglePredict() {
     console.log("inside");
-    const ip = await this.getIPAddress();
-    const uploadEndpoint = "http://" + ip + ":8001/get_stream";
+    const ip = await this.getIP();
+    const uploadEndpoint = "https://" + ip + "/api/v1/video/single_predict";
     console.log("calling single predict");
     if (window.isSecureContext) {
       const response2 = await fetch(uploadEndpoint);
@@ -1360,7 +1369,7 @@ blobToBase64(blob) {
 
   async sendAudioFileToChatEndpoint(file, endpoint, blob, seconds) {
     console.log("sending audio file");
-    const url = `http://doodlebot.media.mit.edu/${endpoint}?voice=${this.voice_id}&pitch=${this.pitch_value}`
+    const url = `https://doodlebot.media.mit.edu/${endpoint}?voice=${this.voice_id}&pitch=${this.pitch_value}`
     const formData = new FormData();
     formData.append("audio_file", file);
     const audioURL = URL.createObjectURL(file);
@@ -1870,7 +1879,7 @@ blobToBase64(blob) {
         await this.doodlebot?.displayText("speaking");
       }
 
-      const url = `http://doodlebot.media.mit.edu/speak?voice=${this.voice_id}&pitch=${this.pitch_value}`;
+      const url = `https://doodlebot.media.mit.edu/speak?voice=${this.voice_id}&pitch=${this.pitch_value}`;
       const response = await fetch(url, {
         method: "POST",
         headers: {
