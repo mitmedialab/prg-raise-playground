@@ -1,0 +1,15 @@
+{
+  "name": "raise-conference-extension",
+  "version": "1.0.0",
+  "description": "An extension created using the PRG AI Blocks framework",
+  "main": "index.ts",
+  "scripts": {
+    "directory": "echo raise-conference",
+    "test": "pnpm --filter prg-extension-root test raise-conference/index.test.ts",
+    "dev": "pnpm --filter prg-extension-root dev --include raise-conference",
+    "add:ui": "pnpm --filter prg-extension-root add:ui raise-conference",
+    "add:arg": "pnpm --filter prg-extension-root add:arg raise-conference"
+  },
+  "author": "",
+  "license": "ISC"
+}
