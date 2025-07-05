@@ -73,8 +73,18 @@ export default class Pixi3D extends extension(details, "customArguments") {
   // }
 
   @(scratch.command`Arc with angle ${"number"} and radius ${"number"}`)
-  arcDoodlebotc(angle: number, radius: number) {
+  arcDoodlebot(angle: number, radius: number) {
     this.pixi3d.animateArc(angle, radius);
+  }
+
+  @(scratch.command`Drive straight for ${"number"}`)
+  forwardDoodlebot(radius: number) {
+    this.pixi3d.animateStraight(radius);
+  }
+
+  @(scratch.command`Spin ${"number"} degrees`)
+  spinDoodlebot(radius: number) {
+    this.pixi3d.animateStraight(radius);
   }
 
   // @(scratch.command`Create cylinder with position x: ${{type: "number", defaultValue: 0}}, y: ${{type: "number", defaultValue: 0}}, z: ${{type: "number", defaultValue: -2}}, radius ${{type: "number", defaultValue: 1}}, height ${{type: "number", defaultValue: 3}}, color r: ${{type: "number", defaultValue: 1}}, g: ${{type: "number", defaultValue: 0}}, b: ${{type: "number", defaultValue: 1}}`)
