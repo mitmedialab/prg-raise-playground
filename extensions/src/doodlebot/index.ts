@@ -95,7 +95,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   blocksRun: number;
 
-  SOCIAL = true;
+  SOCIAL = false;
   socialness = 1.0; // Value from 0 to 1, where 1 is always social and 0 is never social
 
   sleep(ms: number) {
@@ -627,22 +627,17 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   @block({
     type: "command",
-    text: (direction, steps) => `drive ${direction} for ${steps} steps`,
+    text: (direction, steps, speed) => `drive ${direction} for ${steps} steps at speed ${speed}`,
     args: [
       { type: "string", options: ["forward", "backward", "left", "right"], defaultValue: "forward" },
-      { type: "number", defaultValue: 2000 }
+      { type: "number", defaultValue: 2000 },
+      { type: "number", options: [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000], defaultValue: 2000 }
     ]
   })
-  async drive(direction: "left" | "right" | "forward" | "backward", steps: number, utility: BlockUtilityWithID) {
-    await this.blockCounter(utility);
-    if (this.SOCIAL && Math.random() < this.socialness) {
-      await this.doodlebot?.display("love");
-      await this.speakText(`Driving ${direction} for ${steps} steps`);
-    }
-
+  async drive(direction: "left" | "right" | "forward" | "backward", steps: number, speed: number) {
     const leftSteps = direction == "left" || direction == "backward" ? -steps : steps;
     const rightSteps = direction == "right" || direction == "backward" ? -steps : steps;
-    const stepsPerSecond = 2000;
+    const stepsPerSecond = speed;
 
     await this.doodlebot?.motorCommand(
       "steps",
