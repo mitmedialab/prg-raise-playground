@@ -95,14 +95,15 @@ export default class ExtensionNameGoesHere extends extension(details) {
           this.challengePassed = true;
         }
       }
-      if (level == "followHand") {
-        if (this.followHand()) {
+      if (level == "followNose") {
+        if (this.followNose()) {
           this.challengePassed = true;
         }
       }
     })
 
     env.runtime.on('PROJECT_RUN_START', () => {
+      console.log("PROJECT STARTED");
       this.populateSizeArray();
       this.aliceInWonderland();
     })
@@ -128,18 +129,27 @@ export default class ExtensionNameGoesHere extends extension(details) {
   showPassword(utility: BlockUtilityWithID) {
     const position = this.getPosition(utility);
     console.log(position);
-    if (this.challengePassed) {
-      if (this.level == "poseHand") {
-        if (position[0] > 150 && position[1] > 150) {
-          return "HEY";
-        } else {
-          return "NO";
-        }
+    if (this.level == "poseFace") {
+      if (this.detectSmile()) {
+        return "HEY";
+      } else {
+        return "NO";
       }
-      return "HEY";
     } else {
-      return "NO";
+      if (this.challengePassed) {
+        if (this.level == "followNose") {
+          if (position[0] > 150 && position[1] > 150) {
+            return "HEY";
+          } else {
+            return "NO";
+          }
+        }
+        return "HEY";
+      } else {
+        return "NO";
+      }
     }
+    
   }
 
   @(scratch.reporter`Get stats`)
@@ -231,14 +241,14 @@ export default class ExtensionNameGoesHere extends extension(details) {
     return conditionMet;
   }
 
-  followHand() {
-    const handBlocks = [
-      ['event_whenflagclicked', 'control_forever', "control_wait", 'poseHand_goToHandPart'],
-      ['event_whenflagclicked', 'control_forever', 'poseHand_goToHandPart', "control_wait"],
-      ['event_whenflagclicked', 'control_forever', 'poseHand_goToHandPart'],
-      ['control_forever', 'poseHand_goToHandPart'],
-      ['control_forever', 'poseHand_goToHandPart', "control_wait"],
-      ['control_forever', "control_wait", 'poseHand_goToHandPart']
+  followNose() {
+    const noseBlocks = [
+      ['event_whenflagclicked', 'control_forever', "control_wait", 'poseBody_goToPart'],
+      ['event_whenflagclicked', 'control_forever', 'poseBody_goToPart', "control_wait"],
+      ['event_whenflagclicked', 'control_forever', 'poseBody_goToPart'],
+      ['control_forever', 'poseBody_goToPart'],
+      ['control_forever', 'poseBody_goToPart', "control_wait"],
+      ['control_forever', "control_wait", 'poseBody_goToPart']
     ]
     const targets = this.getTargets();
     let conditionMet = false;
@@ -247,7 +257,26 @@ export default class ExtensionNameGoesHere extends extension(details) {
       if (name != "Stage") {
         console.log(target.sprite.name);
         const stacks = this.detectStacks(target);
-        const blocksMet = stacks.length > 0 ? this.hasCommonArray(stacks, handBlocks) : false;
+        const blocksMet = stacks.length > 0 ? this.hasCommonArray(stacks, noseBlocks) : false;
+        conditionMet = blocksMet;
+      }
+    }
+    return conditionMet;
+  }
+
+  
+  detectSmile() {
+    const faceBlocks = [
+      ['poseFace_affdexWhenExpression', 'looks_sayforsecs']
+    ];
+    const targets = this.getTargets();
+    let conditionMet = false;
+    for (const target of targets) {
+      const name = target.sprite.name;
+      if (name != "Stage") {
+        console.log(target.sprite.name);
+        const stacks = this.detectStacks(target);
+        const blocksMet = stacks.length > 0 ? this.hasCommonArray(stacks, faceBlocks) : false;
         conditionMet = blocksMet;
       }
     }
@@ -263,6 +292,7 @@ export default class ExtensionNameGoesHere extends extension(details) {
     const stacks = [];
     const scripts = target.blocks._scripts;
     const blocks = target.blocks._blocks;
+    console.log("blocks", blocks);
     for (const script of scripts) {
       const currentStack = [];
       let block = blocks[script];
@@ -283,6 +313,19 @@ export default class ExtensionNameGoesHere extends extension(details) {
     }
     console.log("ALL STACKS", stacks);
     return stacks;
+  }
+
+  getIfCondition(blockId, blocks) {
+    const block = blocks[blockId];
+    let inputBlock = block.inputs.CONDITION.block;
+    inputBlock = blocks[inputBlock];
+    if (inputBlock.opcode == "operator_gt") {
+      const operand1 = blocks[inputBlock.inputs.OPERAND1.block];
+      const operand2 = blocks[inputBlock.inputs.OPERAND2.block];
+      if (operand1.opcode == "textClassification_sentimentScore") {
+
+      }
+    }
   }
   
 
