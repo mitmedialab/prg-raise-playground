@@ -518,41 +518,41 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     this.openUI("Connect");
   }
 
-  @block({
-    type: "command",
-    text: (value) => `set socialness to ${value}`,
-    arg: { 
-      type: "number", 
-      defaultValue: 1.0
-    }
-  })
-  async setSocialness(value: number) {
-    // Ensure value is between 0 and 1
-    this.socialness = Math.max(0, Math.min(1, value));
+  // @block({
+  //   type: "command",
+  //   text: (value) => `set socialness to ${value}`,
+  //   arg: { 
+  //     type: "number", 
+  //     defaultValue: 1.0
+  //   }
+  // })
+  // async setSocialness(value: number) {
+  //   // Ensure value is between 0 and 1
+  //   this.socialness = Math.max(0, Math.min(1, value));
     
-    if (this.SOCIAL && Math.random() < this.socialness) {
-      await this.doodlebot?.display("happy");
-      await this.speakText(`I'll be ${Math.round(this.socialness * 100)}% social from now on!`);
-    }
-  }
+  //   if (this.SOCIAL && Math.random() < this.socialness) {
+  //     await this.doodlebot?.display("happy");
+  //     await this.speakText(`I'll be ${Math.round(this.socialness * 100)}% social from now on!`);
+  //   }
+  // }
 
-  @block({
-    type: "command",
-    text: (seconds) => `chat with me for ${seconds} seconds`,
-    arg: { type: "number", defaultValue: 3 }
-  })
-  async testChatAPI(seconds: number) {
-    await this.handleChatInteraction(seconds, "chat");
-  }
+  // @block({
+  //   type: "command",
+  //   text: (seconds) => `chat with me for ${seconds} seconds`,
+  //   arg: { type: "number", defaultValue: 3 }
+  // })
+  // async testChatAPI(seconds: number) {
+  //   await this.handleChatInteraction(seconds, "chat");
+  // }
 
-  @block({
-    type: "command",
-    text: (seconds) => `repeat after me for ${seconds} seconds`,
-    arg: { type: "number", defaultValue: 3 }
-  })
-  async testRepeatAPI(seconds: number) {
-    await this.handleChatInteraction(seconds, "repeat_after_me");
-  }
+  // @block({
+  //   type: "command",
+  //   text: (seconds) => `repeat after me for ${seconds} seconds`,
+  //   arg: { type: "number", defaultValue: 3 }
+  // })
+  // async testRepeatAPI(seconds: number) {
+  //   await this.handleChatInteraction(seconds, "repeat_after_me");
+  // }
 
   @block({
     type: "command",
@@ -568,26 +568,26 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   }
   
 
-  @block({
-    type: "command",
-    text: (seconds) => `listen for ${seconds} seconds and repeat`,
-    arg: { type: "number", defaultValue: 3 }
-  })
-  async repeatAfterMe(seconds: number) {
-    // Record the audio
-    const { context, buffer } = await this.doodlebot?.recordAudio(seconds);
+  // @block({
+  //   type: "command",
+  //   text: (seconds) => `listen for ${seconds} seconds and repeat`,
+  //   arg: { type: "number", defaultValue: 3 }
+  // })
+  // async repeatAfterMe(seconds: number) {
+  //   // Record the audio
+  //   const { context, buffer } = await this.doodlebot?.recordAudio(seconds);
     
-    // Convert to WAV format
-    const wavBlob = await this.saveAudioBufferToWav(buffer);
-    const arrayBuffer = await wavBlob.arrayBuffer();
+  //   // Convert to WAV format
+  //   const wavBlob = await this.saveAudioBufferToWav(buffer);
+  //   const arrayBuffer = await wavBlob.arrayBuffer();
     
-    // Send the audio data directly to the Doodlebot for playback
-    await this.doodlebot.sendAudioData(new Uint8Array(arrayBuffer));
+  //   // Send the audio data directly to the Doodlebot for playback
+  //   await this.doodlebot.sendAudioData(new Uint8Array(arrayBuffer));
     
-    // Wait until playback is complete (approximately buffer duration)
-    const playbackDuration = buffer.duration * 1000; // convert to milliseconds
-    await new Promise(resolve => setTimeout(resolve, playbackDuration));
-  }
+  //   // Wait until playback is complete (approximately buffer duration)
+  //   const playbackDuration = buffer.duration * 1000; // convert to milliseconds
+  //   await new Promise(resolve => setTimeout(resolve, playbackDuration));
+  // }
 
   @block({
     type: "command",
@@ -698,27 +698,27 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   }
 
 
-  @block({
-    type: "command",
-    text: "perform line following"
-  })
-  async testLine2() {
-    if (this.SOCIAL) {
-      await this.speakText("Starting line following now!");
-    }
-    await this.doodlebot.followLine();
-  }
+  // @block({
+  //   type: "command",
+  //   text: "perform line following"
+  // })
+  // async testLine2() {
+  //   if (this.SOCIAL) {
+  //     await this.speakText("Starting line following now!");
+  //   }
+  //   await this.doodlebot.followLine();
+  // }
 
-  @block({
-    type: "command",
-    text: "get predictions"
-  })
-  async testLine2() {
-    if (this.SOCIAL) {
-      await this.speakText("Starting line following now!");
-    }
-    await this.doodlebot.followLine();
-  }
+  // @block({
+  //   type: "command",
+  //   text: "get predictions"
+  // })
+  // async testLine2() {
+  //   if (this.SOCIAL) {
+  //     await this.speakText("Starting line following now!");
+  //   }
+  //   await this.doodlebot.followLine();
+  // }
 
   @block({
     type: "command",
@@ -729,15 +729,15 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     await this.doodlebot?.penCommand(direction);
   }
 
-  @block({
-    type: "reporter",
-    text: (sensor: SensorKey) => `${sensor} sensor`,
-    arg: { type: "string", options: ["battery", "temperature", "humidity", "pressure", "distance"], defaultValue: "battery" }
-  })
-  async getSingleSensorReading(sensor: "battery" | "temperature" | "humidity" | "pressure" | "distance") {
-    const reading = await this.doodlebot?.getSensorReading(sensor);
-    return reading;
-  }
+  // @block({
+  //   type: "reporter",
+  //   text: (sensor: SensorKey) => `${sensor} sensor`,
+  //   arg: { type: "string", options: ["battery", "temperature", "humidity", "pressure", "distance"], defaultValue: "battery" }
+  // })
+  // async getSingleSensorReading(sensor: "battery" | "temperature" | "humidity" | "pressure" | "distance") {
+  //   const reading = await this.doodlebot?.getSensorReading(sensor);
+  //   return reading;
+  // }
 
   @block({
     type: "Boolean",
@@ -785,14 +785,14 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     }
   }
 
-  @block({
-    type: "command",
-    text: (sensor: SensorKey) => `disable ${sensor}`,
-    arg: { type: "string", options: sensorKeys, defaultValue: sensorKeys[0] }
-  })
-  async disableSensor(sensor: SensorKey) {
-    await this.doodlebot?.disableSensor(sensor);
-  }
+  // @block({
+  //   type: "command",
+  //   text: (sensor: SensorKey) => `disable ${sensor}`,
+  //   arg: { type: "string", options: sensorKeys, defaultValue: sensorKeys[0] }
+  // })
+  // async disableSensor(sensor: SensorKey) {
+  //   await this.doodlebot?.disableSensor(sensor);
+  // }
 
   @block({
     type: "command",
@@ -815,25 +815,25 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     await this.doodlebot?.sendWebsocketCommand("m", sound)
   }
 
-  @block((self) => ({
-    type: "command",
-    text: (sound) => `play sound ${sound}`,
-    arg: {
-      type: "string", options: () => soundFiles.concat(self.getCurrentSounds(self.runtime._editingTarget.id))
-    }
-  }))
-  async playSoundFile(sound: string, util: BlockUtilityWithID) {
-    let currentId = this.runtime._editingTarget.id;
-    let costumeSounds = this.getCurrentSounds(currentId);
-    if (costumeSounds.includes(sound)) {
-      let soundArray = this.soundDictionary[currentId][sound];
-      console.log(soundArray);
-      await this.doodlebot.sendAudioData(soundArray);
-    } else {
-      await this.doodlebot?.sendWebsocketCommand("m", sound)
-    }
+  // @block((self) => ({
+  //   type: "command",
+  //   text: (sound) => `play sound ${sound}`,
+  //   arg: {
+  //     type: "string", options: () => soundFiles.concat(self.getCurrentSounds(self.runtime._editingTarget.id))
+  //   }
+  // }))
+  // async playSoundFile(sound: string, util: BlockUtilityWithID) {
+  //   let currentId = this.runtime._editingTarget.id;
+  //   let costumeSounds = this.getCurrentSounds(currentId);
+  //   if (costumeSounds.includes(sound)) {
+  //     let soundArray = this.soundDictionary[currentId][sound];
+  //     console.log(soundArray);
+  //     await this.doodlebot.sendAudioData(soundArray);
+  //   } else {
+  //     await this.doodlebot?.sendWebsocketCommand("m", sound)
+  //   }
 
-  }
+  // }
 
   @block((self) => ({
     type: "command",
@@ -1131,53 +1131,53 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   
 
 
-  @block({
-    type: "reporter",
-    text: "get IP address"
-  })
-  async getIP() {
-    return this.doodlebot?.getIPAddress();
-  }
+  // @block({
+  //   type: "reporter",
+  //   text: "get IP address"
+  // })
+  // async getIP() {
+  //   return this.doodlebot?.getIPAddress();
+  // }
 
-  @block({
-    type: "command",
-    text: (_command, args, protocol) => `send (${_command}, ${args}) over ${protocol}`,
-    args: [
-      { type: "string", defaultValue: "u" },
-      { type: "string", defaultValue: "0" },
-      { type: "string", options: ["BLE", "Websocket"], defaultValue: "BLE" }
-    ]
-  })
-  async sendMessage(_command: string, args: string, protocol: "BLE" | "Websocket") {
-    const candidates = Object.values(command).filter((entry) => entry === _command)
-    if (candidates.length === 0) return console.error(`Command ${command} not found`);
+  // @block({
+  //   type: "command",
+  //   text: (_command, args, protocol) => `send (${_command}, ${args}) over ${protocol}`,
+  //   args: [
+  //     { type: "string", defaultValue: "u" },
+  //     { type: "string", defaultValue: "0" },
+  //     { type: "string", options: ["BLE", "Websocket"], defaultValue: "BLE" }
+  //   ]
+  // })
+  // async sendMessage(_command: string, args: string, protocol: "BLE" | "Websocket") {
+  //   const candidates = Object.values(command).filter((entry) => entry === _command)
+  //   if (candidates.length === 0) return console.error(`Command ${command} not found`);
 
-    protocol === "BLE"
-      ? await this.doodlebot?.sendBLECommand(candidates[0], ...splitArgsString(args))
-      : await this.doodlebot?.sendWebsocketCommand(candidates[0], ...splitArgsString(args));
-  }
+  //   protocol === "BLE"
+  //     ? await this.doodlebot?.sendBLECommand(candidates[0], ...splitArgsString(args))
+  //     : await this.doodlebot?.sendWebsocketCommand(candidates[0], ...splitArgsString(args));
+  // }
 
-  @block({
-    type: "command",
-    text: (url) => `import AI model ${url}`,
-    arg: {
-      type: "string",
-      defaultValue: "URL HERE"
-    }
-  })
-  async importModel(url: string) {
-    if (this.SOCIAL && Math.random() < this.socialness) {
-      await this.doodlebot?.display("happy");
-      await this.speakText(`Importing Teachable Machine model`);
-    }
-    await this.useModel(url);
+  // @block({
+  //   type: "command",
+  //   text: (url) => `import AI model ${url}`,
+  //   arg: {
+  //     type: "string",
+  //     defaultValue: "URL HERE"
+  //   }
+  // })
+  // async importModel(url: string) {
+  //   if (this.SOCIAL && Math.random() < this.socialness) {
+  //     await this.doodlebot?.display("happy");
+  //     await this.speakText(`Importing Teachable Machine model`);
+  //   }
+  //   await this.useModel(url);
 
-    if (this.SOCIAL && Math.random() < this.socialness) {
-      await this.doodlebot?.display("happy");
-      await this.speakText(`Model imported successfully. You can access your image classes using the model prediction blocks.`);
-      await this.speakText(`Let me know if you have any questions.`);
-    }
-  }
+  //   if (this.SOCIAL && Math.random() < this.socialness) {
+  //     await this.doodlebot?.display("happy");
+  //     await this.speakText(`Model imported successfully. You can access your image classes using the model prediction blocks.`);
+  //     await this.speakText(`Let me know if you have any questions.`);
+  //   }
+  // }
 
 
   // @block({
@@ -1198,28 +1198,28 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   //   return this.model_match(className);
   // }
 
-  @block({
-    type: "reporter",
-    text: "get AI prediction",
-  })
-  modelPrediction() {
-    return this.getModelPrediction();
-  }
+  // @block({
+  //   type: "reporter",
+  //   text: "get AI prediction",
+  // })
+  // modelPrediction() {
+  //   return this.getModelPrediction();
+  // }
 
-  @block({
-    type: "reporter",
-    text: (className) => `confidence for ${className}`,
-    arg: {
-      type: "string",
-      options: function () {
-        if (!this) {
-          throw new Error('Context is undefined');
-        }
-        return this.getModelClasses() || ["Select a class"];
-      },
-      defaultValue: "Select a class"
-    }
-  })
+  // @block({
+  //   type: "reporter",
+  //   text: (className) => `confidence for ${className}`,
+  //   arg: {
+  //     type: "string",
+  //     options: function () {
+  //       if (!this) {
+  //         throw new Error('Context is undefined');
+  //       }
+  //       return this.getModelClasses() || ["Select a class"];
+  //     },
+  //     defaultValue: "Select a class"
+  //   }
+  // })
   getConfidence(className: string) {
     if (!this.modelConfidences || !this.modelConfidences[className]) {
       return 0;
@@ -1779,14 +1779,14 @@ blobToBase64(blob) {
     }
   }
 
-  @block({
-    type: "command",
-    text: (imageClass, seconds) => `capture snapshots of ${imageClass} class for ${seconds} seconds`,
-    args: [
-      { type: "string", defaultValue: "class name" },
-      { type: "number", defaultValue: 10 }
-    ]
-  })
+  // @block({
+  //   type: "command",
+  //   text: (imageClass, seconds) => `capture snapshots of ${imageClass} class for ${seconds} seconds`,
+  //   args: [
+  //     { type: "string", defaultValue: "class name" },
+  //     { type: "number", defaultValue: 10 }
+  //   ]
+  // })
   async captureSnapshots(imageClass: string, seconds: number) {
     if (this.SOCIAL && Math.random() < this.socialness) {
       await this.doodlebot?.display("love");
