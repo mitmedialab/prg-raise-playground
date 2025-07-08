@@ -81,6 +81,12 @@ export default class ExtensionNameGoesHere extends extension(details) {
           this.challengePassed = true;
         }
       }
+      if (level == "textClassification") {
+        if (this.textClassification()) {
+          this.challengePassed = true;
+          console.log("VERY GOOD");
+        }
+      }
       if (level == "aliceInWonderland") {
         if (this.aliceSprite) {
           const newSize = this.aliceSprite.size;
@@ -283,10 +289,40 @@ export default class ExtensionNameGoesHere extends extension(details) {
     return conditionMet;
   }
 
+  textClassification() {
+    const textStacks = [
+      ['sensing_askandwait', 'control_if', "id", "looks_sayforsecs"],
+      ['event_whenflagclicked', 'sensing_askandwait', 'control_if', "id", "looks_sayforsecs"],
+      ['sensing_askandwait', 'control_if_else', "id", "looks_sayforsecs"],
+      ['event_whenflagclicked', 'sensing_askandwait', 'control_if_else', "id", "looks_sayforsecs"],
+    ]
+    const targets = this.getTargets();
+    let conditionMet = false;
+    for (const target of targets) {
+      const name = target.sprite.name;
+      if (name != "Stage") {
+        console.log(target.sprite.name);
+        const stacks = this.detectStacks(target);
+        const blocksMet = stacks.length > 0 ? this.hasCommonArray(stacks, textStacks) : false;
+        const metStack = blocksMet ? stacks[this.getCommonArray(stacks, textStacks)] : [];
+        console.log(metStack);
+        const ifId = metStack.find((value) => value.includes("id---"));
+        console.log(ifId);
+        const idMet = ifId ? this.getIfCondition(ifId.replace(/^id---/, ""), this.getBlocks(target)) : false;
+        conditionMet = blocksMet && idMet;
+      }
+    }
+    return conditionMet;
+  }
+
 
 
 
   // UTILITY FUNCTIONS
+
+  getBlocks(target) {
+    return target.blocks._blocks;
+  }
 
   detectStacks(target) {
     const stacks = [];
@@ -304,6 +340,11 @@ export default class ExtensionNameGoesHere extends extension(details) {
       while (block.next) {
         block = blocks[block.next];
         currentStack.push(block.opcode);
+        if (block.opcode == "control_if" || block.opcode == "control_if_else") {
+          currentStack.push(`id---${block.id}`);
+          let nextBlock = block.inputs.SUBSTACK.block;
+          block.next = nextBlock;
+        }
         if (block.opcode == "control_forever" || block.opcode == "control_repeat") {
           let nextBlock = block.inputs.SUBSTACK.block;
           block.next = nextBlock;
@@ -318,14 +359,54 @@ export default class ExtensionNameGoesHere extends extension(details) {
   getIfCondition(blockId, blocks) {
     const block = blocks[blockId];
     let inputBlock = block.inputs.CONDITION.block;
-    inputBlock = blocks[inputBlock];
-    if (inputBlock.opcode == "operator_gt") {
-      const operand1 = blocks[inputBlock.inputs.OPERAND1.block];
-      const operand2 = blocks[inputBlock.inputs.OPERAND2.block];
-      if (operand1.opcode == "textClassification_sentimentScore") {
+    inputBlock = inputBlock ? blocks[inputBlock] : null;
 
+    let operand1;
+    let operand2;
+    let operand1condition = false;
+    let operand2condition = false;
+
+    console.log(inputBlock);
+    console.log(inputBlock.inputs);
+    console.log(inputBlock.inputs.OPERAND1);
+
+    if (inputBlock && inputBlock.opcode == "operator_gt") {
+      operand1 = inputBlock.inputs['OPERAND1'].block;
+      console.log(operand1);
+      operand1 = operand1 ? blocks[operand1] : null;
+      console.log(operand1);
+      operand2 = inputBlock.inputs['OPERAND2'].block;
+      console.log(operand2);
+      operand2 = operand2 ? blocks[operand2] : null;
+      console.log(operand2);
+      console.log("one");
+    } else if (inputBlock && inputBlock.opcode == "operator_lt") {
+      operand1 = inputBlock.inputs['OPERAND2'].block;
+      operand1 = operand1 ? blocks[operand1] : null;
+      operand2 = inputBlock.inputs['OPERAND1'].block;
+      operand2 = operand2 ? blocks[operand2] : null;
+    }
+    console.log(operand1, operand2);
+      
+    if (operand1 && operand1.opcode == "textClassification_sentimentScore") {
+      console.log("passed 1");
+      let answerBlock = operand1.inputs.TEXT.block;
+      answerBlock = answerBlock ? blocks[answerBlock] : null;
+      if (answerBlock && answerBlock.opcode == "sensing_answer") {
+        console.log("passed 2");
+        operand1condition = true;
       }
     }
+    if (operand2 && operand2.opcode == "text") {
+      console.log("passed 3");
+      if (operand2.fields.TEXT.value == "0") {
+        console.log("passed 4");
+        operand2condition = true;
+      }
+    }
+    console.log("operand1", operand1condition, "operand2", operand2condition)
+    return operand1condition && operand2condition;
+   
   }
   
 
@@ -345,7 +426,15 @@ export default class ExtensionNameGoesHere extends extension(details) {
   arraysEqual(a, b) {
     if (a.length !== b.length) return false;
     for (let i = 0; i < a.length; i++) {
-      if (a[i] !== b[i]) return false;
+      if (a[i] !== b[i]) {
+        if (a[i] == "id" && b[i].includes("id---")) {
+
+        } else if (b[i] == "id" && a[i].includes("id---")) {
+
+        } else {
+          return false;
+        }
+      }
     }
     return true;
   }
@@ -356,6 +445,18 @@ export default class ExtensionNameGoesHere extends extension(details) {
       for (let j = 0; j < arr2D2.length; j++) {
         if (this.arraysEqual(arr2D1[i], arr2D2[j])) {
           return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  getCommonArray(arr2D1, arr2D2) {
+    console.log(arr2D1);
+    for (let i = 0; i < arr2D1.length; i++) {
+      for (let j = 0; j < arr2D2.length; j++) {
+        if (this.arraysEqual(arr2D1[i], arr2D2[j])) {
+          return i;
         }
       }
     }
