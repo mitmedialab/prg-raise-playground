@@ -461,6 +461,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   }
 
   async jiboTTSFn(text: string) {
+    console.log("saying");
     await this.waitToClear();
     var jibo_msg = {
       // readyForNext: false,
@@ -477,7 +478,8 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     // await queue.pushToFirebase(jibo_msg, queue.animFinished);
 
     await this.JiboPublish(jibo_msg);
-    await this.waitForFieldToComplete('tts_message');
+    //await this.waitForFieldToComplete('tts_message');
+    await this.waitToClear();
   }
 
   // TODO figure out why Jibo seems to ignore this value
@@ -555,6 +557,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   }
 
   async jiboAnimFn(animation_key: string, delay: number) {
+    await this.waitToClear();
     console.log("the animation file is: " + animation_key); // debug statement
     var jibo_msg = {
       // readyForNext: false,
@@ -621,6 +624,8 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
             clearInterval(interval);
             console.log("All fields clear");
             resolve();
+          } else {
+            console.log(this.state);
           }
         }, 100); // Check every 100ms
     });
