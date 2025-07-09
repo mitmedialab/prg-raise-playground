@@ -1027,7 +1027,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   async callSinglePredict() {
     console.log("inside");
-    const ip = await this.getIPadress();
+    const ip = await this.getIP();
     const uploadEndpoint = "https://" + ip + "/api/v1/video/single_predict";
     console.log("calling single predict");
     if (window.isSecureContext) {
@@ -1130,9 +1130,9 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   //   type: "reporter",
   //   text: "get IP address"
   // })
-  // async getIP() {
-  //   return this.doodlebot?.getIPAddress();
-  // }
+  async getIP() {
+    return this.doodlebot?.getIPAddress();
+  }
 
   // @block({
   //   type: "command",
