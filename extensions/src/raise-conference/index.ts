@@ -42,7 +42,7 @@ export default class ExtensionNameGoesHere extends extension(details) {
   stage;
   env;
   currentTarget;
-  levelMap;
+  passwordMap;
   level;
 
   sizeMap;
@@ -57,13 +57,13 @@ export default class ExtensionNameGoesHere extends extension(details) {
     this.env = env;
     this.currentTarget = this.env.runtime._editingTarget;
 
-    this.levelMap = {
-      0: "sdkkdjj",
-      1: "aliceInWonderland",
-      2: "kjsdkjfk",
-      3: "sjksddka",
-      4: "jdksldf",
-      5: "jdkslsld"
+    this.passwordMap = {
+      "storyTime": "aliceInWonderland",
+      "aliceInWonderland": "dancingSprite",
+      "dancingSprite": "detectSmile",
+      "detectSmile": "followHand",
+      "followHand": "textClassification",
+      "textClassification": "You finished!",
     }
 
     const url = new URL(window.location.href); // Or use any URL string
@@ -84,7 +84,6 @@ export default class ExtensionNameGoesHere extends extension(details) {
       if (level == "textClassification") {
         if (this.textClassification()) {
           this.challengePassed = true;
-          console.log("VERY GOOD");
         }
       }
       if (level == "aliceInWonderland") {
@@ -96,22 +95,16 @@ export default class ExtensionNameGoesHere extends extension(details) {
           } 
         }
       }
+    })
+
+    env.runtime.on('PROJECT_RUN_START', () => {
+      this.populateSizeArray();
+      this.aliceInWonderland();
       if (level == "dancingSprite") {
         if (this.dancingSprite()) {
           this.challengePassed = true;
         }
       }
-      if (level == "followNose") {
-        if (this.followNose()) {
-          this.challengePassed = true;
-        }
-      }
-    })
-
-    env.runtime.on('PROJECT_RUN_START', () => {
-      console.log("PROJECT STARTED");
-      this.populateSizeArray();
-      this.aliceInWonderland();
     })
 
     for (const target of env.runtime.targets) {
@@ -134,23 +127,26 @@ export default class ExtensionNameGoesHere extends extension(details) {
   @(scratch.reporter`Show password`)
   showPassword(utility: BlockUtilityWithID) {
     const position = this.getPosition(utility);
-    console.log(position);
-    if (this.level == "poseFace") {
+    if (this.level == "detectSmile") {
       if (this.detectSmile()) {
-        return "HEY";
+        return this.passwordMap[this.level];
+      } else {
+        return "NO";
+      }
+    } else if (this.level == "followHand") {
+      if (this.followHand()) {
+        console.log(position[0], position[1]);
+        if (position[0] > 150 && position[1] > 100) {
+          return this.passwordMap[this.level];
+        } else {
+          return "NO";
+        }
       } else {
         return "NO";
       }
     } else {
       if (this.challengePassed) {
-        if (this.level == "followNose") {
-          if (position[0] > 150 && position[1] > 150) {
-            return "HEY";
-          } else {
-            return "NO";
-          }
-        }
-        return "HEY";
+        return this.passwordMap[this.level];
       } else {
         return "NO";
       }
@@ -175,22 +171,27 @@ export default class ExtensionNameGoesHere extends extension(details) {
 
   storyTime() {
     const validFirst = [
-      ['looks_sayforsecs', 'looks_sayforsecs'],
-      ['looks_say', 'control_wait', 'looks_say', 'control_wait'],
-      ['event_whenflagclicked', 'looks_sayforsecs', 'looks_sayforsecs'],
       ['event_whenflagclicked', 'looks_say', 'control_wait', 'looks_say', 'control_wait'],
+      ['event_whenflagclicked', 'looks_say', 'control_wait', 'looks_sayforsecs', 'control_wait'],
+      ['event_whenflagclicked', 'looks_sayforsecs', 'control_wait', 'looks_say', 'control_wait'],
+      ['event_whenflagclicked', 'looks_sayforsecs', 'control_wait', 'looks_sayforsecs', 'control_wait'],
+
+      
+      // ['event_whenflagclicked', 'looks_sayforsecs', 'looks_sayforsecs'],
+      // ['event_whenflagclicked', 'looks_say', 'control_wait', 'looks_say', 'control_wait'],
     ];
     const validSecond = [
-      ['looks_sayforsecs', 'looks_sayforsecs'],
-      ['control_wait', 'looks_say', 'control_wait', 'looks_say'],
-      ['event_whenflagclicked', 'looks_sayforsecs', 'looks_sayforsecs'],
-      ['event_whenflagclicked', 'control_wait', 'looks_say', 'control_wait', 'looks_say'],
+      ['event_whenflagclicked', 'control_wait', 'looks_say', 'control_wait' , 'looks_say'],
+      ['event_whenflagclicked', 'control_wait', 'looks_say', 'control_wait' , 'looks_sayforsecs'],
+      ['event_whenflagclicked', 'control_wait', 'looks_sayforsecs', 'control_wait'  , 'looks_say'],
+      ['event_whenflagclicked', 'control_wait', 'looks_sayforsecs', 'control_wait' , 'looks_sayforsecs'],
     ];
     const targets = this.getTargets();
     const conditionsMet = {
       "one": false,
       "two": false
     }
+    console.log(targets);
     for (const target of targets) {
       const name = target.sprite.name;
       if (name != "Stage") {
@@ -198,10 +199,11 @@ export default class ExtensionNameGoesHere extends extension(details) {
         const stacks = this.detectStacks(target);
         const firstMet = stacks.length > 0 ? this.hasCommonArray(stacks, validFirst) : false;
         const secondMet = stacks.length > 0 ? this.hasCommonArray(stacks, validSecond) : false;
-        conditionsMet.one = firstMet ? (firstMet && secondMet ? false : true) : false;
-        conditionsMet.two = secondMet ? (firstMet && secondMet ? false : true) : false;
+        conditionsMet.one = conditionsMet.one ? true : firstMet ? (firstMet && secondMet ? false : true) : false;
+        conditionsMet.two = conditionsMet.two ? true : secondMet ? (firstMet && secondMet ? false : true) : false;
       }
     }
+    console.log(conditionsMet);
     return conditionsMet.one && conditionsMet.two;
   }
 
@@ -230,7 +232,14 @@ export default class ExtensionNameGoesHere extends extension(details) {
   dancingSprite() {
     const validBlocks = [
       ['event_whenflagclicked', 'sound_play', 'control_forever', "control_wait", "looks_nextcostume"],
-      ['sound_play', 'control_forever', "control_wait", "looks_nextcostume"]
+      ['sound_play', 'control_forever', "control_wait", "looks_nextcostume"],
+      ['event_whenflagclicked', 'sound_play', 'control_forever', "looks_nextcostume", "control_wait"],
+      ['sound_play', 'control_forever', "looks_nextcostume", "control_wait"],
+      ['event_whenflagclicked', 'sound_play', 'control_repeat', "control_wait", "looks_nextcostume"],
+      ['sound_play', 'control_repeat', "control_wait", "looks_nextcostume"],
+      ['event_whenflagclicked', 'sound_play', 'control_repeat', "looks_nextcostume", "control_wait"],
+      ['sound_play', 'control_repeat', "looks_nextcostume", "control_wait"],
+      
     ];
     const targets = this.getTargets();
     let conditionMet = false;
@@ -241,20 +250,21 @@ export default class ExtensionNameGoesHere extends extension(details) {
         const stacks = this.detectStacks(target);
         const blocksMet = stacks.length > 0 ? this.hasCommonArray(stacks, validBlocks) : false;
         const costumeMet = this.getCostumeLength(target) > 1;
+        console.log(blocksMet, costumeMet);
         conditionMet = blocksMet && costumeMet;
       }
     }
     return conditionMet;
   }
 
-  followNose() {
+  followHand() {
     const noseBlocks = [
-      ['event_whenflagclicked', 'control_forever', "control_wait", 'poseBody_goToPart'],
-      ['event_whenflagclicked', 'control_forever', 'poseBody_goToPart', "control_wait"],
-      ['event_whenflagclicked', 'control_forever', 'poseBody_goToPart'],
-      ['control_forever', 'poseBody_goToPart'],
-      ['control_forever', 'poseBody_goToPart', "control_wait"],
-      ['control_forever', "control_wait", 'poseBody_goToPart']
+      ['event_whenflagclicked', 'control_forever', "control_wait", 'poseHand_goToHandPart'],
+      ['event_whenflagclicked', 'control_forever', 'poseHand_goToHandPart', "control_wait"],
+      ['event_whenflagclicked', 'control_forever', 'poseHand_goToHandPart'],
+      ['control_forever', 'poseHand_goToHandPart'],
+      ['control_forever', 'poseHand_goToHandPart', "control_wait"],
+      ['control_forever', "control_wait", 'poseHand_goToHandPart']
     ]
     const targets = this.getTargets();
     let conditionMet = false;
@@ -334,7 +344,7 @@ export default class ExtensionNameGoesHere extends extension(details) {
       let block = blocks[script];
       currentStack.push(block.opcode);
       if (block.opcode == "control_forever" || block.opcode == "control_repeat") {
-        let nextBlock = block.inputs.SUBSTACK.block;
+        let nextBlock = block.inputs.SUBSTACK ? block.inputs.SUBSTACK.block : null;
         block.next = nextBlock;
       }
       while (block.next) {
@@ -342,11 +352,11 @@ export default class ExtensionNameGoesHere extends extension(details) {
         currentStack.push(block.opcode);
         if (block.opcode == "control_if" || block.opcode == "control_if_else") {
           currentStack.push(`id---${block.id}`);
-          let nextBlock = block.inputs.SUBSTACK.block;
+          let nextBlock = block.inputs.SUBSTACK ? block.inputs.SUBSTACK.block : null;
           block.next = nextBlock;
         }
         if (block.opcode == "control_forever" || block.opcode == "control_repeat") {
-          let nextBlock = block.inputs.SUBSTACK.block;
+          let nextBlock = block.inputs.SUBSTACK ? block.inputs.SUBSTACK.block : null;
           block.next = nextBlock;
         }
       }
