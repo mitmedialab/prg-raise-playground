@@ -1,0 +1,30 @@
+{
+  "name": "doodlebot-extension",
+  "version": "1.0.0",
+  "description": "An extension created using the PRG AI Blocks framework",
+  "main": "index.ts",
+  "scripts": {
+    "directory": "echo doodlebot",
+    "test": "npm run test --prefix ../../ -- doodlebot/index.test.ts",
+    "dev": "npm run dev --prefix ../../../ -- --include doodlebot",
+    "add:ui": "npm run add:ui --prefix ../../../  -- doodlebot",
+    "add:arg": "npm run --prefix ../../../-- doodlebot"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@mediapipe/tasks-vision": "^0.10.12",
+    "@teachablemachine/image": "^0.8.5",
+    "@teachablemachine/pose": "^0.8.6",
+    "@tensorflow-models/speech-commands": "^0.5.4",
+    "@tensorflow/tfjs": "^4.17.0",
+    "@types/web-bluetooth": "^0.0.20",
+    "axios": "^1.7.7",
+    "bezier-js": "^6.1.4",
+    "canvas": "^2.11.2",
+    "cubic-spline": "^3.0.3",
+    "curve-matcher": "^1.1.1",
+    "events": "^3.3.0",
+    "jszip": "^3.10.1"
+  }
+}
