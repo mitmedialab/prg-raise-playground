@@ -154,11 +154,9 @@ export default class ExtensionNameGoesHere extends extension(details) {
     
   }
 
-  @(scratch.reporter`Get stats`)
+  @(scratch.reporter`Get level`)
   getStats() {
-    console.log(this.currentTarget);
-    this.detectStacks(this.currentTarget);
-    this.storyTime();
+    return this.level;
   }
 
 
@@ -170,21 +168,32 @@ export default class ExtensionNameGoesHere extends extension(details) {
   // LEVEL FUNCTIONS
 
   storyTime() {
-    const validFirst = [
-      ['event_whenflagclicked', 'looks_say', 'control_wait', 'looks_say', 'control_wait'],
-      ['event_whenflagclicked', 'looks_say', 'control_wait', 'looks_sayforsecs', 'control_wait'],
-      ['event_whenflagclicked', 'looks_sayforsecs', 'control_wait', 'looks_say', 'control_wait'],
-      ['event_whenflagclicked', 'looks_sayforsecs', 'control_wait', 'looks_sayforsecs', 'control_wait'],
+    // const validFirst = [
+    //   ['event_whenflagclicked', 'looks_say', 'control_wait', 'looks_say', 'control_wait'],
+    //   ['event_whenflagclicked', 'looks_say', 'control_wait', 'looks_sayforsecs', 'control_wait'],
+    //   ['event_whenflagclicked', 'looks_sayforsecs', 'control_wait', 'looks_say', 'control_wait'],
+    //   ['event_whenflagclicked', 'looks_sayforsecs', 'control_wait', 'looks_sayforsecs', 'control_wait'],
 
       
-      // ['event_whenflagclicked', 'looks_sayforsecs', 'looks_sayforsecs'],
-      // ['event_whenflagclicked', 'looks_say', 'control_wait', 'looks_say', 'control_wait'],
+    //   // ['event_whenflagclicked', 'looks_sayforsecs', 'looks_sayforsecs'],
+    //   // ['event_whenflagclicked', 'looks_say', 'control_wait', 'looks_say', 'control_wait'],
+    // ];
+    const validFirst = [
+      ['event_whenflagclicked', 'looks_say', 'control_wait'],
+      ['event_whenflagclicked', 'looks_say'],
+      ['event_whenflagclicked', 'looks_sayforsecs'],
+      ['event_whenflagclicked', 'looks_sayforsecs', 'control_wait'],
     ];
+    // const validSecond = [
+    //   ['event_whenflagclicked', 'control_wait', 'looks_say', 'control_wait' , 'looks_say'],
+    //   ['event_whenflagclicked', 'control_wait', 'looks_say', 'control_wait' , 'looks_sayforsecs'],
+    //   ['event_whenflagclicked', 'control_wait', 'looks_sayforsecs', 'control_wait'  , 'looks_say'],
+    //   ['event_whenflagclicked', 'control_wait', 'looks_sayforsecs', 'control_wait' , 'looks_sayforsecs'],
+    // ];
+
     const validSecond = [
-      ['event_whenflagclicked', 'control_wait', 'looks_say', 'control_wait' , 'looks_say'],
-      ['event_whenflagclicked', 'control_wait', 'looks_say', 'control_wait' , 'looks_sayforsecs'],
-      ['event_whenflagclicked', 'control_wait', 'looks_sayforsecs', 'control_wait'  , 'looks_say'],
-      ['event_whenflagclicked', 'control_wait', 'looks_sayforsecs', 'control_wait' , 'looks_sayforsecs'],
+      ['event_whenflagclicked', 'control_wait', 'looks_say'],
+      ['event_whenflagclicked', 'control_wait', 'looks_sayforsecs'],
     ];
     const targets = this.getTargets();
     const conditionsMet = {
@@ -211,7 +220,9 @@ export default class ExtensionNameGoesHere extends extension(details) {
   aliceInWonderland() {
     const previousSize = [
       ['event_whenflagclicked', 'control_repeat', 'looks_changesizeby'],
-      ['control_repeat', 'looks_changesizeby']
+      ['control_repeat', 'looks_changesizeby'],
+      ['event_whenflagclicked', 'control_repeat_until', 'looks_changesizeby'],
+      ['control_repeat_until', 'looks_changesizeby']
     ]
     let conditionMet = false;
     const targets = this.getTargets();
