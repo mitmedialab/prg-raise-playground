@@ -80,6 +80,4 @@
   <button on:click={openNextChallenge} disabled={!isPasswordCorrect}>
     Open Next Challenge
   </button>
-
-  <button on:click={close}>Cancel</button>
 </div>

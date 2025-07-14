@@ -156,24 +156,12 @@ export default class ExtensionNameGoesHere extends extension(details, "ui") {
     
   }
 
-  @(scratch.reporter`Get level`)
-  getStats() {
-    return this.level;
-  }
-
-  @(scratch.command`Go to next level ${{type: "string", defaultValue: "password"}}`)
-  goToLevel(level: string) {
-    if (level == "aliceInWonderland") {
-      window.open("https://playground.raise.mit.edu/raise-conference/?level=dancingSprite&project=https://www.dropbox.com/scl/fi/3e2x09nq6at2tsi0vpdmb/ballerina.sb3?rlkey=07pgqu4l5ua04lqe81kgws9no&st=feg29s34&dl=0", "_blank");
-    }
-  }
-
-  @(scratch.button`Get password information`)
+  @(scratch.button`Go To Next Level!`)
   levelInformation() {
     this.openUI("Password");
   }
 
-  @(scratch.button`Get level information`)
+  @(scratch.button`Get Level Information`)
   nextLevel() {
     this.openUI("Level");
   }
