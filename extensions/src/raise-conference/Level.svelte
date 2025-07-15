@@ -89,13 +89,30 @@
   `,
     textClassification: `
     <h3>Challenge 6: Text Classification</h3>
-    <p>
-      Ask the user to enter a piece of text. If the sentiment is greater than 0, say something for 2 seconds.
-    </p>
-    <p><strong>Blocks you might use:</strong><br />
-      • "ask … and wait"<br />
-      • "answer"
-    </p>
+<p>
+  Your sprite will ask the user what they think of the artwork on the screen and respond based on the sentiment of their answer.
+</p>
+<ul>
+  <li>
+    The <code>ask [...] and wait</code> block shows a question to the user and lets them type a response.
+  </li>
+  <li>
+    Whatever the user types is automatically saved in the <code>answer</code> block.
+  </li>
+  <li>
+    Use the <code>answer</code> block to get the user’s response. This block stores whatever the user types.
+  </li>
+  <li>
+    Use a block from the Text Classification extension to get the Sentiment Score for the answer:
+    <ul>
+      <li>A Sentiment Score greater than 0 means the response has a positive sentiment.</li>
+      <li>A Sentiment Score less than 0 means the response has a negative sentiment.</li>
+    </ul>
+  </li>
+  <li>
+    If the sentiment is greater than 0, make the sprite say something for 2 seconds, like “I’m glad you liked it!”
+  </li>
+</ul>
     <p><strong>Hint:</strong> You can refer to this information at any time by clicking the "Get Level Information" button in the RAISE Conference extension. Once you solve the challenge and the password shows on the stage, enter the password in the "Go To Next Level!" modal.</p>
 
   `,
