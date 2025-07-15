@@ -14,46 +14,70 @@
   const levelHtmlMap: Record<string, string> = {
     storyTime: `<h3>Story Time</h3>
     <p>
-      Make 2 characters take turns speaking on the stage. <br/>
-      Once a character speaks, it should wait for the other character to finish speaking before speaking again.<br/>
-      Each character should speak once.<br/>
+      Create a scene where two characters (sprites) take turns speaking on the stage.
+    </p>
+    <p>
+      Each character should say something once.
+    </p>
+    <p>
+      When one character speaks, the other should wait until the first finishes.
+    </p>
+    <p>
+      The dialogue should feel like a back-and-forth conversation, not overlapping speech.
+    </p>
+    <p>
       You'll see the password once you run the correct code.
     </p>`,
     aliceInWonderland: `
-    <h3>Alice in Wonderland</h3>
+    <h3>Growing Alien</h3>
     <p>
-      Make a character grow by 100 in size using a loop.<br /><br />
-      <strong>What is a loop?</strong><br />
-      Repeat…<br />
-      Repeat until…<br />
-      Forever…<br /><br />
+      Make a character grow in size by 100 using a loop.
+    </p>
+    <ul>
+      <li>The character should gradually increase in size, not all at once.</li>
+      <li>Start from the character's original size and grow until it's 100 units larger.</li>
+      <li>Use a loop block.</li>
+    </ul>
+    <p><strong>Hint: What's a loop block?</strong></p>
+    <ul>
+      <li>Loops let a block of code run multiple times.</li>
+      <li>Examples of loop blocks: repeat, repeat until, or forever.</li>
+    </ul>
+    <p>
       You'll see the password after running the correct code and making the sprite increase in size by 100.
     </p>
   `,
     dancingSprite: `
     <h3>Dancing Sprite</h3>
     <p>
-      Make a sprite dance forever by switching between two costumes while playing music in a loop.
+      Make a sprite dance forever by switching between two costumes and playing music in a loop.
     </p>
-    <p><strong>Hints:</strong><br />
-      • Use one stack<br />
-      • Make the animation smooth!
-    </p>
+    <ul>
+      <li>The sprite should alternate between costumes to look like it's dancing.</li>
+      <li>The music should keep playing the entire time.</li>
+      <li>The animation should look natural, not too fast or jumpy.</li>
+    </ul>
+    <p><strong>Hint:</strong> Try using a wait block between costume changes to slow down the animation and make the dancing look smoother.</p>
+
   `,
     detectSmile: `
     <h3>Detect Smile</h3>
     <p>
-      Detect when a user is smiling and have the sprite respond.
-      For example, the sprite could say “You have a beautiful smile!”
+      Make your sprite recognize when a user is smiling and respond with a message like: "You have a beautiful smile!".
     </p>
+    <ul>
+      <li>Use the “Face Sensing” extension.</li>
+      <li>The sprite should only respond when a smile is detected.</li>
+    </ul>
+    <p><strong>Hint:</strong> Make sure the sprite is checking for the smile continuously, using a loop or an if block.</p>
   `,
     followHand: `
     <h3>Follow Hand</h3>
     <p>
-      <strong>Part 1:</strong> Use the follow hand part block so that the sprite constantly follows a finger on your hand.
+      Use the extension “Hand Sensing” to make your sprite follow a finger, like your index finger.
     </p>
     <p>
-      <strong>Part 2:</strong> Then, use your finger to drag the sprite to the top right corner of the screen.
+      Now, use your finger to drag the sprite to the top-right corner of the stage.
     </p>
   `,
     textClassification: `
@@ -70,9 +94,9 @@
 
   // ✅ Your Google Drive embed links
   const videoMap: Record<string, string> = {
-    storyTime: "https://drive.google.com/file/d/1FP7GdXpQ1sIfInNZvcNJRfU3WOadpA3-/preview",
-    aliceInWonderland: "https://drive.google.com/file/d/1yERMmk55-TDH6B6LMN6_qC_yPTQutgY1/preview",
-    dancingSprite: "https://drive.google.com/file/d/1uHPLbs6BxmMQ-XZ6YibBmke_ZWyAdq-y/preview",
+    storyTime: "https://drive.google.com/file/d/1HlZeA3XkrWgYZfPgUPXHLAL3C-mxrKz0/preview",
+    aliceInWonderland: "https://drive.google.com/file/d/1xhyPRdNIgaaSH3jeilt313FNpd8594Ah/preview",
+    dancingSprite: "https://drive.google.com/file/d/1poAfLvhbLr7u3FZOYFhkJyTRSmf6nZ7v/preview",
     detectSmile: "https://drive.google.com/file/d/1JpNZ_9LPeNN1nzykv0iCmDOeHk5orNQ4/preview",
     followHand: "https://drive.google.com/file/d/1jXBsBHnt03GQL-WUUZqquFAjB-BDj2iD/preview",
     textClassification: "https://drive.google.com/file/d/1MI6lGMnHorL0F0Q-bcHfokuZHvyH8PCC/preview",
