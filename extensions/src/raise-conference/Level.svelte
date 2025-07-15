@@ -12,7 +12,7 @@
 
   // ✅ Challenge HTML for each level
   const levelHtmlMap: Record<string, string> = {
-    storyTime: `<h3>Story Time</h3>
+    storyTime: `<h3>Challenge 1: Story Time</h3>
     <p>
       Create a scene where two characters (sprites) take turns speaking on the stage.
     </p>
@@ -27,9 +27,10 @@
     </p>
     <p>
       You'll see the password once you run the correct code.
-    </p>`,
+    </p>
+    <p><strong>Note:</strong> You can refer to this information at any time by clicking the "Get Level Information" button in the RAISE Conference extension. Once you solve the challenge and the password shows on the stage, enter the password in the "Go To Next Level!" modal.</p>`,
     aliceInWonderland: `
-    <h3>Growing Alien</h3>
+    <h3>Challenge 2: Growing Alien</h3>
     <p>
       Make a character grow in size by 100 using a loop.
     </p>
@@ -46,9 +47,10 @@
     <p>
       You'll see the password after running the correct code and making the sprite increase in size by 100.
     </p>
+    <p><strong>Note:</strong> You can refer to this information at any time by clicking the "Get Level Information" button in the RAISE Conference extension. Once you solve the challenge and the password shows on the stage, enter the password in the "Go To Next Level!" modal.</p>
   `,
     dancingSprite: `
-    <h3>Dancing Sprite</h3>
+    <h3>Challenge 3: Dancing Sprite</h3>
     <p>
       Make a sprite dance forever by switching between two costumes and playing music in a loop.
     </p>
@@ -58,10 +60,11 @@
       <li>The animation should look natural, not too fast or jumpy.</li>
     </ul>
     <p><strong>Hint:</strong> Try using a wait block between costume changes to slow down the animation and make the dancing look smoother.</p>
+    <p><strong>Note:</strong> You can refer to this information at any time by clicking the "Get Level Information" button in the RAISE Conference extension. Once you solve the challenge and the password shows on the stage, enter the password in the "Go To Next Level!" modal.</p>
 
   `,
     detectSmile: `
-    <h3>Detect Smile</h3>
+    <h3>Challenge 4: Detect Smile</h3>
     <p>
       Make your sprite recognize when a user is smiling and respond with a message like: "You have a beautiful smile!".
     </p>
@@ -70,18 +73,22 @@
       <li>The sprite should only respond when a smile is detected.</li>
     </ul>
     <p><strong>Hint:</strong> Make sure the sprite is checking for the smile continuously, using a loop or an if block.</p>
+    <p><strong>Note:</strong> You can refer to this information at any time by clicking the "Get Level Information" button in the RAISE Conference extension. Once you solve the challenge and the password shows on the stage, enter the password in the "Go To Next Level!" modal.</p>
+
   `,
     followHand: `
-    <h3>Follow Hand</h3>
+    <h3>Challenge 5: Follow Hand</h3>
     <p>
       Use the extension “Hand Sensing” to make your sprite follow a finger, like your index finger.
     </p>
     <p>
       Now, use your finger to drag the sprite to the top-right corner of the stage.
     </p>
+    <p><strong>Note:</strong> You can refer to this information at any time by clicking the "Get Level Information" button in the RAISE Conference extension. Once you solve the challenge and the password shows on the stage, enter the password in the "Go To Next Level!" modal.</p>
+
   `,
     textClassification: `
-    <h3>Text Classification</h3>
+    <h3>Challenge 6: Text Classification</h3>
     <p>
       Ask the user to enter a piece of text. If the sentiment is greater than 0, say something for 2 seconds.
     </p>
@@ -89,6 +96,8 @@
       • "ask … and wait"<br />
       • "answer"
     </p>
+    <p><strong>Hint:</strong> You can refer to this information at any time by clicking the "Get Level Information" button in the RAISE Conference extension. Once you solve the challenge and the password shows on the stage, enter the password in the "Go To Next Level!" modal.</p>
+
   `,
   };
 
@@ -135,7 +144,7 @@
 
 <div
   class:container
-  style:width="500px"
+  style:width="700px"
   style:background-color={color.ui.white}
   style:color={color.text.primary}
 >

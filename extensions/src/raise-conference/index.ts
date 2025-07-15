@@ -73,6 +73,7 @@ export default class ExtensionNameGoesHere extends extension(details, "ui") {
     console.log("params", params.get('level'));
     const level = params.get('level');
     this.level = level;
+    this.openUI("Level");
 
     this.sizeMap = {};
 
