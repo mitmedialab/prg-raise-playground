@@ -139,7 +139,7 @@ export default class ExtensionNameGoesHere extends extension(details, "ui") {
     } else if (this.level == "followHand") {
       if (this.followHand()) {
         console.log(position[0], position[1]);
-        if (position[0] > 150 && position[1] > 100) {
+        if (position[0] > 100 && position[1] > 50) {
           return this.passwordMap[this.level];
         } else {
           return "NO";
