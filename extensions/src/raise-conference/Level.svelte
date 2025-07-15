@@ -143,6 +143,8 @@
 
   :global(.level-content p) {
       font-size: 12px !important;
+      line-height: 1em;
+
     }
 
     :global(.level-content li) {
@@ -152,7 +154,7 @@
 
 <div
   class:container
-  style:width="700px"
+  style:width="1000px"
   style:background-color={color.ui.white}
   style:color={color.text.primary}
 >
