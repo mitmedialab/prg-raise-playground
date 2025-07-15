@@ -16,8 +16,8 @@
 
   // Define levels and correct passwords
   const levelPasswords: Record<string, string> = {
-    "storyTime": "aliceInWonderland",
-    "aliceInWonderland": "dancingSprite",
+    "storyTime": "growingAlien",
+    "growingAlien": "dancingSprite",
     "dancingSprite": "detectSmile",
     "detectSmile": "followHand",
     "followHand": "textClassification",
@@ -25,11 +25,11 @@
   };
 
   const levelLinks: Record<string, string> = {
-    "storyTime": "https://playground.raise.mit.edu/raise-conference/?level=aliceInWonderland&project=https://www.dropbox.com/scl/fi/ptjjvcqh4hlhgdqfusgrn/growingAlien.sb3?rlkey=vomdmj7y6jnx6vmjc6kc49x8f&st=e3ehc439&dl=0",
-    "aliceInWonderland": "https://playground.raise.mit.edu/raise-conference/?level=dancingSprite&project=https://www.dropbox.com/scl/fi/3e2x09nq6at2tsi0vpdmb/ballerina.sb3?rlkey=07pgqu4l5ua04lqe81kgws9no&st=3ph4nusm&dl=0",
+    "storyTime": "https://playground.raise.mit.edu/raise-conference/?level=growingAlien&project=https://www.dropbox.com/scl/fi/ptjjvcqh4hlhgdqfusgrn/growingAlien.sb3?rlkey=vomdmj7y6jnx6vmjc6kc49x8f&st=e3ehc439&dl=0",
+    "growingAlien": "https://playground.raise.mit.edu/raise-conference/?level=dancingSprite&project=https://www.dropbox.com/scl/fi/3e2x09nq6at2tsi0vpdmb/ballerina.sb3?rlkey=07pgqu4l5ua04lqe81kgws9no&st=3ph4nusm&dl=0",
     "dancingSprite": "https://playground.raise.mit.edu/raise-conference/?level=detectSmile&project=https://www.dropbox.com/scl/fi/3tudm9qq1spkunk1buc8h/beautifulSmile.sb3?rlkey=3okdy34lxvb662ib4z7ky9hpf&st=dbr9c883&dl=0",
     "detectSmile": "https://playground.raise.mit.edu/raise-conference/?level=followHand&project=https://www.dropbox.com/scl/fi/ez1nd8uwnk9ud5r89v018/followHand.sb3?rlkey=s90ftjlmhnxooytu085dexoxx&st=5biqx8v5&dl=0",
-    "followHand": "https://playground.raise.mit.edu/raise-conference/?level=textClassification&project=https://www.dropbox.com/scl/fi/srw0kpkmv45dpm3x4rdqj/textClassification.sb3?rlkey=ktv66sfucfzz6vfj1qswd7h2z&st=o4ebwpfa&dl=0",
+    "followHand": "https://playground.raise.mit.edu/raise-conference/?level=textClassification&project=https://www.dropbox.com/scl/fi/9c09wt5njkph8m1isiw0q/textClassification.sb3?rlkey=tdvme0m8jjcufrbryt4d93bqg&st=yl618j68&dl=0",
     "textClassification": "You finished!"
   };
 

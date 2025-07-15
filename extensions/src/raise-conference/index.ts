@@ -60,8 +60,8 @@ export default class ExtensionNameGoesHere extends extension(details, "ui") {
     console.log(env.runtime);
 
     this.passwordMap = {
-      "storyTime": "aliceInWonderland",
-      "aliceInWonderland": "dancingSprite",
+      "storyTime": "growingAlien",
+      "growingAlien": "dancingSprite",
       "dancingSprite": "detectSmile",
       "detectSmile": "followHand",
       "followHand": "textClassification",
@@ -89,7 +89,7 @@ export default class ExtensionNameGoesHere extends extension(details, "ui") {
           this.challengePassed = true;
         }
       }
-      if (level == "aliceInWonderland") {
+      if (level == "growingAlien") {
         if (this.aliceSprite) {
           const newSize = this.aliceSprite.size;
           const prevSize = this.sizeMap[this.aliceSprite.sprite.name];

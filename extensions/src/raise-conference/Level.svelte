@@ -29,7 +29,7 @@
       You'll see the password once you run the correct code.
     </p>
     <p><strong>Note:</strong> You can refer to this information at any time by clicking the "Get Level Information" button in the RAISE Conference extension. Once you solve the challenge and the password shows on the stage, enter the password in the "Go To Next Level!" modal.</p>`,
-    aliceInWonderland: `
+    growingAlien: `
     <h3>Challenge 2: Growing Alien</h3>
     <p>
       Make a character grow in size by 100 using a loop.
@@ -104,7 +104,7 @@
   // ✅ Your Google Drive embed links
   const videoMap: Record<string, string> = {
     storyTime: "https://drive.google.com/file/d/1HlZeA3XkrWgYZfPgUPXHLAL3C-mxrKz0/preview",
-    aliceInWonderland: "https://drive.google.com/file/d/1xhyPRdNIgaaSH3jeilt313FNpd8594Ah/preview",
+    growingAlien: "https://drive.google.com/file/d/1xhyPRdNIgaaSH3jeilt313FNpd8594Ah/preview",
     dancingSprite: "https://drive.google.com/file/d/1poAfLvhbLr7u3FZOYFhkJyTRSmf6nZ7v/preview",
     detectSmile: "https://drive.google.com/file/d/1JpNZ_9LPeNN1nzykv0iCmDOeHk5orNQ4/preview",
     followHand: "https://drive.google.com/file/d/1jXBsBHnt03GQL-WUUZqquFAjB-BDj2iD/preview",
