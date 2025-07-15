@@ -154,7 +154,9 @@
 
 <div
   class:container
-  style:width="1000px"
+  style:width="700px"
+  style:height="500px"
+  style:overflow="scroll"
   style:background-color={color.ui.white}
   style:color={color.text.primary}
 >
