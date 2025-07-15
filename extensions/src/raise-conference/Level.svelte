@@ -143,7 +143,7 @@
 
   :global(.level-content p) {
       font-size: 12px !important;
-      line-height: 1em;
+      line-height: 1.3em;
 
     }
 

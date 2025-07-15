@@ -30,7 +30,7 @@
     "dancingSprite": "https://playground.raise.mit.edu/raise-conference/?level=detectSmile&project=https://www.dropbox.com/scl/fi/3tudm9qq1spkunk1buc8h/beautifulSmile.sb3?rlkey=3okdy34lxvb662ib4z7ky9hpf&st=dbr9c883&dl=0",
     "detectSmile": "https://playground.raise.mit.edu/raise-conference/?level=followHand&project=https://www.dropbox.com/scl/fi/ez1nd8uwnk9ud5r89v018/followHand.sb3?rlkey=s90ftjlmhnxooytu085dexoxx&st=5biqx8v5&dl=0",
     "followHand": "https://playground.raise.mit.edu/raise-conference/?level=textClassification&project=https://www.dropbox.com/scl/fi/9c09wt5njkph8m1isiw0q/textClassification.sb3?rlkey=tdvme0m8jjcufrbryt4d93bqg&st=yl618j68&dl=0",
-    "textClassification": "You finished!"
+    "textClassification": "https://docs.google.com/presentation/d/1ZVHqaSFg3FULKu_EGJWV6364OWtustFg13jYZIZekzQ/edit?usp=sharing"
   };
 
   $: isPasswordCorrect = levelPasswords[extension.level]?.trim() === password.trim();
