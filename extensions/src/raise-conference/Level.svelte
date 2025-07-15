@@ -140,6 +140,14 @@
   button {
     padding: 8px 16px;
   }
+
+  :global(.level-content p) {
+      font-size: 12px !important;
+    }
+
+    :global(.level-content li) {
+    font-size: 12px !important;
+  }
 </style>
 
 <div
@@ -148,7 +156,9 @@
   style:background-color={color.ui.white}
   style:color={color.text.primary}
 >
+<div class="level-content">
   {@html currentHtml}
+</div>
 
   {#if currentVideo}
     <div class="video-container">
