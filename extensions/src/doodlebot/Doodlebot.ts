@@ -573,6 +573,14 @@ export default class Doodlebot {
         let uploadedImages = await this.fetchAndExtractList(endpoint);
         return uploadedImages.filter(item => !this.imageFiles.includes(item));
     }
+    
+    async callSegmentation(ip) {
+        while (!this.connection) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        let endpoint = "https://" + ip + "/api/v1/video/stream?width=640&height=480&set_display=true&set_detect_objects=true&set_detect_faces=true"
+        await fetch(endpoint);
+    }
 
     async findSoundFiles() {
         while (!this.connection) {
