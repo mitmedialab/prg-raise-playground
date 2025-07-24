@@ -93,7 +93,7 @@ export default class ExtensionNameGoesHere extends extension(details, "ui") {
         if (this.aliceSprite) {
           const newSize = this.aliceSprite.size;
           const prevSize = this.sizeMap[this.aliceSprite.sprite.name];
-          if ((newSize - prevSize) == 100 && this.aliceInWonderland()) {
+          if ((newSize - prevSize) >= 100 && this.aliceInWonderland()) {
             this.challengePassed = true;
           } 
         }
