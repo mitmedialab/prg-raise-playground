@@ -31,7 +31,8 @@ export const command = {
     pen: "u",
     network: "g",
     wait: "w",
-    execute: "z"
+    execute: "z",
+    volume: "s"
 } as const;
 
 export type CommandKey = keyof typeof command;
@@ -68,6 +69,7 @@ export const display = {
     fear: "f",
     love: "l",
     confused: "q",
+    font: "F"
 } as const;
 
 export type DisplayKey = keyof typeof display;

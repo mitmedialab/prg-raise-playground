@@ -884,6 +884,15 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     }
   }
 
+  @block({
+    type: "command",
+    text: "start video segmentation",
+  })
+  async startVideoSegmentation() {
+    const ip = await this.getIP();
+    await this.doodlebot?.callSegmentation(ip);
+  }
+
   // @block({
   //   type: "hat",
   //   text: (gesture) => `when ${gesture} detected`,
@@ -1123,6 +1132,25 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     await this.uploadFile("image", test);
   }
 
+  @block({
+    type: "command",
+    text: (volume) => `set volume to ${volume}`,
+    arg: { type: "number", options: [0, 100, 200, 300], defaultValue: 100 },
+
+  })
+  async setVolume(volume: 0 | 100 | 200 | 300) {
+    await this.doodlebot?.setVolume(volume)
+  }
+
+  @block({
+    type: "command",
+    text: (size) => `set font size to ${size}`,
+    arg: { type: "string", options: ["small", "medium", "large"], defaultValue: "medium" },
+
+  })
+  async setFont(size: "small" | "medium" | "large") {
+    await this.doodlebot?.setFont(size);
+  }
   
 
 

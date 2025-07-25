@@ -658,6 +658,15 @@ export default class Doodlebot {
         }
     }
 
+    async setVolume(volume: 0 | 100 | 200 | 300) {
+        await this.sendBLECommand(command.volume, volume);
+    }
+
+    async setFont(font: "small" | "medium" | "large") {
+        let key = font == "small" ? "s" : (font == "medium" ? "m" : (font == "large" ? "l" : null))
+        await this.sendWebsocketCommand(command.display, display.font, key);
+    }
+
     async penCommand(direction: "up" | "down") {
         await this.sendBLECommand(command.pen, direction === "up" ? 0 : 45);
     }
@@ -1146,7 +1155,19 @@ export default class Doodlebot {
         }
         return chunks;
     }
+
+
+    private isSendingAudio = false;
+
     async sendAudioData(uint8Array: Uint8Array) {
+
+        if (this.isSendingAudio) {
+            console.warn("WebSocket is already sending audio data.");
+            return;
+        }
+    
+        this.isSendingAudio = true;
+
         let CHUNK_SIZE = 1024;
         let ip = this.connection.ip;
         const ws = makeWebsocket(ip, '/api/v1/speaker');
@@ -1182,6 +1203,7 @@ export default class Doodlebot {
         }
         ws.onclose = () => {
             console.log('WebSocket connection closed');
+            this.isSendingAudio = false;
         };
     }
 
