@@ -659,7 +659,7 @@ export default class Doodlebot {
     }
 
     async setVolume(volume: 0 | 100 | 200 | 300) {
-        await this.sendBLECommand(command.volume, volume);
+        await this.sendWebsocketCommand(command.volume, volume);
     }
 
     async setFont(font: "small" | "medium" | "large") {
