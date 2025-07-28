@@ -1179,7 +1179,7 @@ export default class Doodlebot {
             ws.send(first);
             let chunks = this.splitIntoChunks(uint8Array, CHUNK_SIZE);
             let i = 0;
-            async function sendNextChunk() {
+            const sendNextChunk = async () => {
                 if (i >= chunks.length) {
                     console.log('All data sent');
                     this.isSendingAudio = false;
