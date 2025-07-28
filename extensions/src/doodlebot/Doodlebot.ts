@@ -1182,6 +1182,7 @@ export default class Doodlebot {
             async function sendNextChunk() {
                 if (i >= chunks.length) {
                     console.log('All data sent');
+                    this.isSendingAudio = false;
                     ws.close();
                     return;
                 }
@@ -1203,7 +1204,6 @@ export default class Doodlebot {
         }
         ws.onclose = () => {
             console.log('WebSocket connection closed');
-            this.isSendingAudio = false;
         };
     }
 
