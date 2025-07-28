@@ -2,6 +2,11 @@
 @import "../../css/units.css";
 @import "../../css/z-index.css";
 
+.blank-link::after {
+    content: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAASUlEQVQoU5WQwQ4AIAhC4/8/2rJmQ5NDHuUNBhjizMxYwvMAEABrGwSJHeS/FkxOwGGqY4UiIYEKaqO7BO8gy3Cpf1CNfous+SZoSE/7IpEx6wAAAABJRU5ErkJggg==);
+    margin: 0 3px 0 7px;
+}
+
 .menu-bar {
     display: flex;
     flex-direction: row;
