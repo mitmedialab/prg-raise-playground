@@ -986,7 +986,8 @@ class Scratch3TextClassificationBlocks {
         const words = [];
 
         // get embeddings for comparison text once at the beginning and save it (more optimized)
-        let translatedText = await this.getTranslate(text, 'en');
+        //let translatedText = await this.getTranslate(text, 'en');
+        let translatedText = text;
         let useModel = await use.load();
         this.lastEmbedding[translatedText] = await useModel.embed(translatedText);
         
