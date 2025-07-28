@@ -16,7 +16,7 @@ import {
     BLOCKS_TAB_INDEX,
     COSTUMES_TAB_INDEX,
     SOUNDS_TAB_INDEX,
-    MODELS_TAB_INDEX
+    PROGRESS_TAB_INDEX
 } from '../reducers/editor-tab';
 
 import {
@@ -112,7 +112,10 @@ GUI.propTypes = {
     onVmInit: PropTypes.func,
     projectHost: PropTypes.string,
     projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    telemetryModalVisible: PropTypes.bool,
+    telemetryModalVisible: PropTypes.bool,    
+    textModelModalVisible: PropTypes.bool,
+    classifierModelModalVisible: PropTypes.bool,
+    classifierModelModalVisible: PropTypes.bool,
     vm: PropTypes.instanceOf(VM).isRequired
 };
 
@@ -142,16 +145,20 @@ const mapStateToProps = state => {
         isRtl: state.locales.isRtl,
         isShowingProject: getIsShowingProject(loadingState),
         loadingStateVisible: state.scratchGui.modals.loadingProject,
-        modelsTabVisible: state.scratchGui.editorTab.activeTabIndex === MODELS_TAB_INDEX,
         projectId: state.scratchGui.projectState.projectId,
         soundsTabVisible: state.scratchGui.editorTab.activeTabIndex === SOUNDS_TAB_INDEX,
+        progressTabVisible: state.scratchGui.editorTab.activeTabIndex === PROGRESS_TAB_INDEX,
         targetIsStage: (
             state.scratchGui.targets.stage &&
             state.scratchGui.targets.stage.id === state.scratchGui.targets.editingTarget
         ),
         telemetryModalVisible: state.scratchGui.modals.telemetryModal,
         tipsLibraryVisible: state.scratchGui.modals.tipsLibrary,
-        vm: state.scratchGui.vm
+        textModelModalVisible: state.scratchGui.modals.textModelModal,
+        classifierModelModalVisible: state.scratchGui.modals.classifierModelModal,
+        vm: state.scratchGui.vm,
+        textModelModalVisible: state.scratchGui.modals.textModelModal,
+        classifierModelModalVisible: state.scratchGui.modals.classifierModelModal,
     };
 };
 
@@ -160,7 +167,7 @@ const mapDispatchToProps = dispatch => ({
     onActivateTab: tab => dispatch(activateTab(tab)),
     onActivateCostumesTab: () => dispatch(activateTab(COSTUMES_TAB_INDEX)),
     onActivateSoundsTab: () => dispatch(activateTab(SOUNDS_TAB_INDEX)),
-    onActivateModelsTab: () => dispatch(activateTab(MODELS_TAB_INDEX)),
+    onActivateProgressTab: () => dispatch(activateTab(PROGRESS_TAB_INDEX)),
     onRequestCloseBackdropLibrary: () => dispatch(closeBackdropLibrary()),
     onRequestCloseCostumeLibrary: () => dispatch(closeCostumeLibrary()),
     onRequestCloseTelemetryModal: () => dispatch(closeTelemetryModal())

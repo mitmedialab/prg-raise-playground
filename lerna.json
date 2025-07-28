@@ -1,8 +1,6 @@
 {
   "packages": [
-    "packages/scratch-gui",
-    "packages/scratch-render",
-    "packages/scratch-vm"
+    "packages/*"
   ],
   "version": "0.0.0"
 }

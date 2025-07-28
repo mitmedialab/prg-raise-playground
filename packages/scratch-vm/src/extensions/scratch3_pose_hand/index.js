@@ -78,7 +78,7 @@ const EXTENSION_ID = 'poseHand';
  * @constructor
  */
 class Scratch3PoseNetBlocks {
-    constructor (runtime) {
+    constructor(runtime) {
         /**
          * The runtime instantiating this block package.
          * @type {Runtime}
@@ -108,7 +108,7 @@ class Scratch3PoseNetBlocks {
      * is analyzed.
      * @type {number}
      */
-    static get INTERVAL () {
+    static get INTERVAL() {
         return 33;
     }
 
@@ -117,7 +117,7 @@ class Scratch3PoseNetBlocks {
      * sample canvas.
      * @type {Array.<number>}
      */
-    static get DIMENSIONS () {
+    static get DIMENSIONS() {
         return [480, 360];
     }
 
@@ -125,7 +125,7 @@ class Scratch3PoseNetBlocks {
      * The key to load & store a target's motion-related state.
      * @type {string}
      */
-    static get STATE_KEY () {
+    static get STATE_KEY() {
         return 'Scratch.pose_hand';
     }
 
@@ -133,7 +133,7 @@ class Scratch3PoseNetBlocks {
      * The default motion-related state, to be used when a target has no existing motion state.
      * @type {MotionState}
      */
-    static get DEFAULT_MOTION_STATE () {
+    static get DEFAULT_MOTION_STATE() {
         return {
             motionFrameNumber: 0,
             motionAmount: 0,
@@ -146,7 +146,7 @@ class Scratch3PoseNetBlocks {
      * accessible by any object connected to the virtual machine.
      * @type {number}
      */
-    get globalVideoTransparency () {
+    get globalVideoTransparency() {
         const stage = this.runtime.getTargetForStage();
         if (stage) {
             return stage.videoTransparency;
@@ -154,7 +154,7 @@ class Scratch3PoseNetBlocks {
         return 50;
     }
 
-    set globalVideoTransparency (transparency) {
+    set globalVideoTransparency(transparency) {
         const stage = this.runtime.getTargetForStage();
         if (stage) {
             stage.videoTransparency = transparency;
@@ -167,7 +167,7 @@ class Scratch3PoseNetBlocks {
      * object connected to the virtual machine.
      * @type {number}
      */
-    get globalVideoState () {
+    get globalVideoState() {
         const stage = this.runtime.getTargetForStage();
         if (stage) {
             return stage.videoState;
@@ -178,7 +178,7 @@ class Scratch3PoseNetBlocks {
         return VideoState.OFF;
     }
 
-    set globalVideoState (state) {
+    set globalVideoState(state) {
         const stage = this.runtime.getTargetForStage();
         if (stage) {
             stage.videoState = state;
@@ -190,7 +190,7 @@ class Scratch3PoseNetBlocks {
      * Get the latest values for video transparency and state,
      * and set the video device to use them.
      */
-    projectStarted () {
+    projectStarted() {
         this.setVideoTransparency({
             TRANSPARENCY: this.globalVideoTransparency
         });
@@ -199,7 +199,7 @@ class Scratch3PoseNetBlocks {
         });
     }
 
-    reset () {
+    reset() {
     }
 
     isConnected() {
@@ -212,7 +212,7 @@ class Scratch3PoseNetBlocks {
     connect() {
     }
 
-    async _loop () {
+    async _loop() {
         while (true) {
             const frame = this.runtime.ioDevices.video.getFrame({
                 format: Video.FORMAT_IMAGE_DATA,
@@ -260,7 +260,7 @@ class Scratch3PoseNetBlocks {
      * @return {array} - An array of objects with text and value properties.
      * @private
      */
-    _buildMenu (info) {
+    _buildMenu(info) {
         return info.map((entry, index) => {
             const obj = {};
             obj.text = entry.name;
@@ -269,7 +269,7 @@ class Scratch3PoseNetBlocks {
         });
     }
 
-    static get SensingAttribute () {
+    static get SensingAttribute() {
         return SensingAttribute;
     }
 
@@ -281,7 +281,7 @@ class Scratch3PoseNetBlocks {
      *   attribute menu
      * @param {string} value - the serializable value of the attribute
      */
-    get ATTRIBUTE_INFO () {
+    get ATTRIBUTE_INFO() {
         return [
             {
                 name: formatMessage({
@@ -302,7 +302,7 @@ class Scratch3PoseNetBlocks {
         ];
     }
 
-    static get SensingSubject () {
+    static get SensingSubject() {
         return SensingSubject;
     }
 
@@ -312,7 +312,7 @@ class Scratch3PoseNetBlocks {
      * @param {string} name - the translatable name to display in the subject menu
      * @param {string} value - the serializable value of the subject
      */
-    get SUBJECT_INFO () {
+    get SUBJECT_INFO() {
         return [
             {
                 name: formatMessage({
@@ -338,7 +338,7 @@ class Scratch3PoseNetBlocks {
      * @readonly
      * @enum {string}
      */
-    static get VideoState () {
+    static get VideoState() {
         return VideoState;
     }
 
@@ -348,7 +348,7 @@ class Scratch3PoseNetBlocks {
      * @param {string} name - the translatable name to display in the video state menu
      * @param {string} value - the serializable value stored in the block
      */
-    get VIDEO_STATE_INFO () {
+    get VIDEO_STATE_INFO() {
         return [
             {
                 name: formatMessage({
@@ -381,7 +381,7 @@ class Scratch3PoseNetBlocks {
     /**
      * @returns {object} metadata for this extension and its blocks.
      */
-    getInfo () {
+    getInfo() {
         // Set the video display properties to defaults the first time
         // getInfo is run. This turns on the video device when it is
         // first added to a project, and is overwritten by a PROJECT_LOADED
@@ -460,21 +460,21 @@ class Scratch3PoseNetBlocks {
                 HAND_PART: {
                     acceptReporters: true,
                     items: [
-                        {text: 'thumb', value: 'thumb'},
-                        {text: 'index finger', value: 'indexFinger'},
-                        {text: 'middle finger', value: 'middleFinger'},
-                        {text: 'ring finger', value: 'ringFinger'},
-                        {text: 'pinky', value: 'pinky'},
+                        { text: 'thumb', value: 'thumb' },
+                        { text: 'index finger', value: 'indexFinger' },
+                        { text: 'middle finger', value: 'middleFinger' },
+                        { text: 'ring finger', value: 'ringFinger' },
+                        { text: 'pinky', value: 'pinky' },
                         // {text: 'base of palm', value: 'palmBase'},
                     ]
                 },
                 HAND_SUB_PART: {
                     acceptReporters: true,
                     items: [
-                        {text: 'base', value: 0},
-                        {text: 'first knuckle', value: 1},
-                        {text: 'second knuckle', value: 2},
-                        {text: 'tip', value: 3},
+                        { text: 'base', value: 0 },
+                        { text: 'first knuckle', value: '1' },
+                        { text: 'second knuckle', value: '2' },
+                        { text: 'tip', value: '3' },
                     ]
                 },
                 ATTRIBUTE: {
@@ -496,7 +496,7 @@ class Scratch3PoseNetBlocks {
     goToHandPart(args, util) {
         if (this.handPoseState && this.handPoseState.length > 0) {
             const [x, y, z] = this.handPoseState[0].annotations[args['HAND_PART']][args['HAND_SUB_PART']];
-            const {x: scratchX, y: scratchY} = this.tfCoordsToScratch({x, y, z});
+            const { x: scratchX, y: scratchY } = this.tfCoordsToScratch({ x, y, z });
             util.target.setXY(scratchX, scratchY, false);
         }
     }
@@ -507,7 +507,7 @@ class Scratch3PoseNetBlocks {
      * @returns {number} class name if video frame matched, empty number if model not loaded yet
      */
     handPosePositionX(args, util) {
-        return this.handPoseState.length > 0 ? this.tfCoordsToScratch({x: this.handPoseState[0].annotations[args['HAND_PART']][args['HAND_SUB_PART']][0]}).x : 0;
+        return this.handPoseState.length > 0 ? this.tfCoordsToScratch({ x: this.handPoseState[0].annotations[args['HAND_PART']][args['HAND_SUB_PART']][0] }).x : 0;
     }
 
     /**
@@ -516,11 +516,11 @@ class Scratch3PoseNetBlocks {
      * @returns {number} class name if video frame matched, empty number if model not loaded yet
      */
     handPosePositionY(args, util) {
-        return this.handPoseState.length > 0 ? this.tfCoordsToScratch({y: this.handPoseState[0].annotations[args['HAND_PART']][args['HAND_SUB_PART']][1]}).y : 0;
+        return this.handPoseState.length > 0 ? this.tfCoordsToScratch({ y: this.handPoseState[0].annotations[args['HAND_PART']][args['HAND_SUB_PART']][1] }).y : 0;
     }
 
-    tfCoordsToScratch({x, y}) {
-        return {x: x - 250, y: 200 - y};
+    tfCoordsToScratch({ x, y }) {
+        return { x: x - 250, y: 200 - y };
     }
 
     /**
@@ -529,7 +529,7 @@ class Scratch3PoseNetBlocks {
      * @param {object} args - the block arguments
      * @param {VideoState} args.VIDEO_STATE - the video state to set the device to
      */
-    videoToggle (args) {
+    videoToggle(args) {
         const state = args.VIDEO_STATE;
         this.globalVideoState = state;
         if (state === VideoState.OFF) {
@@ -548,7 +548,7 @@ class Scratch3PoseNetBlocks {
      * @param {number} args.TRANSPARENCY - the transparency to set the video
      *   preview to
      */
-    setVideoTransparency (args) {
+    setVideoTransparency(args) {
         const transparency = Cast.toNumber(args.TRANSPARENCY);
         this.globalVideoTransparency = transparency;
         this.runtime.ioDevices.video.setPreviewGhost(transparency);
