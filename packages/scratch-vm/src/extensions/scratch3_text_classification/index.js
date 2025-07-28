@@ -1138,7 +1138,7 @@ class Scratch3TextClassificationBlocks {
             let textEmbeddings = this.exampleEmbeddings[newText] || this.lastEmbedding[newText];
             if (!textEmbeddings) {
                 let useModel = await this.useModelPromise;
-                textEmbeddings = await this.embed(newText);
+                textEmbeddings = await useModel.embed(newText);
             }
             if (direction === "example") {
                 await this.classifier.addExample(textEmbeddings, label);
