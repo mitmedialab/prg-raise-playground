@@ -299,6 +299,33 @@ class Scratch3TextClassificationBlocks {
             voiceId: SQUEAK_ID
         };
     }
+
+    async loadUSEModel () {
+        const retries = 10;
+        let exponentialBackoffDelay = 1000;
+
+        for (let i = 0; i < retries; i++) {
+            try {
+                const model = await use.load();
+                return model;
+            }
+            catch (error) {
+                console.error('Error loading USE model:', error);
+                console.warn('Retrying in ' + exponentialBackoffDelay / 1000 + 's');
+                if (i < retries - 1) {
+                    await new Promise(resolve => setTimeout(resolve, exponentialBackoffDelay));
+                    exponentialBackoffDelay *= 2;
+                }
+            }
+        }
+    }
+
+    _useModel = null;
+
+    get useModelPromise () {
+        if (!this._useModel) this._useModel = this.loadUSEModel();
+        return this._useModel;
+    }
     
     /**
      * @param {Target} target - collect  state for this target.
@@ -987,7 +1014,7 @@ class Scratch3TextClassificationBlocks {
 
         // get embeddings for comparison text once at the beginning and save it (more optimized)
         let translatedText = await this.getTranslate(text, 'en');
-        let useModel = await use.load();
+        let useModel = await this.useModelPromise;
         this.lastEmbedding[translatedText] = await useModel.embed(translatedText);
         
         for (const label in this.scratch_vm.modelData.textData) {
@@ -1041,7 +1068,7 @@ class Scratch3TextClassificationBlocks {
         let secondEmbedding = this.exampleEmbeddings[newSecondText] || this.lastEmbedding[newSecondText];
 
         if (!firstEmbedding || !secondEmbedding) {
-            let useModel = await use.load();
+            let useModel = await this.useModelPromise;
             if (!firstEmbedding) firstEmbedding = await useModel.embed(newFirstText);
             if (!secondEmbedding) secondEmbedding = await useModel.embed(newSecondText);    
         }
@@ -1110,8 +1137,8 @@ class Scratch3TextClassificationBlocks {
             //   check to see if we already have an embedding for this input
             let textEmbeddings = this.exampleEmbeddings[newText] || this.lastEmbedding[newText];
             if (!textEmbeddings) {
-                let useModel = await use.load();
-                textEmbeddings = await useModel.embed(newText);    
+                let useModel = await this.useModelPromise;
+                textEmbeddings = await this.embed(newText);
             }
             if (direction === "example") {
                 await this.classifier.addExample(textEmbeddings, label);
