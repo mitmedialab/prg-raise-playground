@@ -1246,6 +1246,7 @@ class Scratch3TextClassificationBlocks {
         }
     }
     getTranslate (words, language) {
+        return Promise.resolve(words);
         // Don't remake the request if we already have the value.
         if (this._lastTextTranslated === words &&
             this._lastLangTranslated === language) {
