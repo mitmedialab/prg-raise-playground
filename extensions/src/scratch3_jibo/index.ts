@@ -23,6 +23,8 @@ import IconArgUI from "./IconArgument.svelte";
 
 import ROSLIB from "roslib";
 
+//import { loadProject } from "$scratch-vm"
+
 const EXTENSION_ID = "jibo";
 
 // jibo's name
