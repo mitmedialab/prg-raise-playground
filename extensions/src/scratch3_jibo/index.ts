@@ -23,7 +23,6 @@ import IconArgUI from "./IconArgument.svelte";
 
 import ROSLIB from "roslib";
 
-//import { loadProject } from "$scratch-vm"
 
 const EXTENSION_ID = "jibo";
 
@@ -189,7 +188,10 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
       value: Audio[audio],
       text: Audio[audio],
     }));
-    console.log("NEV", env);
+
+    this.openUI("UI");
+    this.runtime._downloadProjectFromURLDirect("https://www.dropbox.com/scl/fi/gfexwdpvq7b0ntyuzs0oj/JiboStarter_fs.sb3?rlkey=joffuyxw0pag8v3o62g1xhxdm&st=ygrbc5cw&dl=0&tutorial=jiboBlocks");
+
     this.runtime.registerPeripheralExtension(EXTENSION_ID, this);
     this.runtime.connectPeripheral(EXTENSION_ID, 0);
     this.runtime.on(RuntimeEvent.PeripheralConnected, this.connect.bind(this));
@@ -198,7 +200,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     this.asr_out = "";
 
     this.state = null;
-    this.openUI("UI");
+    
 
   }
 
