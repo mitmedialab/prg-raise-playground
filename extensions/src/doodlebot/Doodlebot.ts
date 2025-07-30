@@ -1283,6 +1283,10 @@ export default class Doodlebot {
         await this.sendWebsocketCommand(command.display, movement);
       }
 
+      async displayFile(file: string) {
+        await this.sendWebsocketCommand(command.display, file);
+     }
+
     /**
      * NOTE: Consider making private
      * @param command 
