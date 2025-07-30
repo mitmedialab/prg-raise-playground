@@ -724,15 +724,15 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     await this.doodlebot?.penCommand(direction);
   }
 
-  // @block({
-  //   type: "reporter",
-  //   text: (sensor: SensorKey) => `${sensor} sensor`,
-  //   arg: { type: "string", options: ["battery", "temperature", "humidity", "pressure", "distance"], defaultValue: "battery" }
-  // })
-  // async getSingleSensorReading(sensor: "battery" | "temperature" | "humidity" | "pressure" | "distance") {
-  //   const reading = await this.doodlebot?.getSensorReading(sensor);
-  //   return reading;
-  // }
+  @block({
+    type: "reporter",
+    text: (sensor: SensorKey) => `${sensor} sensor`,
+    arg: { type: "string", options: ["battery", "temperature", "humidity", "pressure", "distance"], defaultValue: "battery" }
+  })
+  async getSingleSensorReading(sensor: "battery" | "temperature" | "humidity" | "pressure" | "distance") {
+    const reading = await this.doodlebot?.getSensorReading(sensor);
+    return reading;
+  }
 
   @block({
     type: "Boolean",
