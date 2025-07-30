@@ -315,7 +315,7 @@ export default class Doodlebot {
             this.webrtcVideo.srcObject = stream;
             this.webrtcVideo.autoplay = true;
             this.webrtcVideo.playsInline = true;
-            document.body.appendChild(this.webrtcVideo);
+            // document.body.appendChild(this.webrtcVideo);
         
             this.webrtcVideo.play().catch(e => console.error("Playback error:", e));
         
