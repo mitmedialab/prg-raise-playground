@@ -174,7 +174,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   virtualJibo: VirtualJibo;
   state: any;
 
-  init() {
+  init(env) {
     this.dances = Object.entries(Dance).map(([dance, def]) => ({
       text: Dance[dance],
       value: Dance[dance],
@@ -187,6 +187,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
       value: Audio[audio],
       text: Audio[audio],
     }));
+    console.log("NEV", env);
     this.runtime.registerPeripheralExtension(EXTENSION_ID, this);
     this.runtime.connectPeripheral(EXTENSION_ID, 0);
     this.runtime.on(RuntimeEvent.PeripheralConnected, this.connect.bind(this));
@@ -201,14 +202,16 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
   setJiboName(name: string) {
     console.log("NAME", name);
-    jiboName = name;
     this.ros = null;
     this.connected = false;
     this.rosbridgeIP = `ws://${name}.local:9090`; // rosbridgeIP option includes port
     this.jbVolume = "60";
     const connection = this.RosConnect({ rosIP: `${name}.local` });
-    console.log("CONNECTION", connection);
-    this.connect();
+    if (connection) {
+      this.connect();
+      jiboName = name;
+    }
+    
   }
 
   checkBusy(self: Scratch3Jibo) {
