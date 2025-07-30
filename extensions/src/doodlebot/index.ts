@@ -810,25 +810,25 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     await this.doodlebot?.sendWebsocketCommand("m", sound)
   }
 
-  // @block((self) => ({
-  //   type: "command",
-  //   text: (sound) => `play sound ${sound}`,
-  //   arg: {
-  //     type: "string", options: () => soundFiles.concat(self.getCurrentSounds(self.runtime._editingTarget.id))
-  //   }
-  // }))
-  // async playSoundFile(sound: string, util: BlockUtilityWithID) {
-  //   let currentId = this.runtime._editingTarget.id;
-  //   let costumeSounds = this.getCurrentSounds(currentId);
-  //   if (costumeSounds.includes(sound)) {
-  //     let soundArray = this.soundDictionary[currentId][sound];
-  //     console.log(soundArray);
-  //     await this.doodlebot.sendAudioData(soundArray);
-  //   } else {
-  //     await this.doodlebot?.sendWebsocketCommand("m", sound)
-  //   }
+  @block((self) => ({
+    type: "command",
+    text: (sound) => `play sound ${sound}`,
+    arg: {
+      type: "string", options: () => soundFiles.concat(self.getCurrentSounds(self.runtime._editingTarget.id))
+    }
+  }))
+  async playSoundFile(sound: string, util: BlockUtilityWithID) {
+    let currentId = this.runtime._editingTarget.id;
+    let costumeSounds = this.getCurrentSounds(currentId);
+    if (costumeSounds.includes(sound)) {
+      let soundArray = this.soundDictionary[currentId][sound];
+      console.log(soundArray);
+      await this.doodlebot.sendAudioData(soundArray);
+    } else {
+      await this.doodlebot?.sendWebsocketCommand("m", sound)
+    }
 
-  // }
+  }
 
   @block((self) => ({
     type: "command",
