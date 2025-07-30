@@ -190,19 +190,25 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     this.runtime.registerPeripheralExtension(EXTENSION_ID, this);
     this.runtime.connectPeripheral(EXTENSION_ID, 0);
     this.runtime.on(RuntimeEvent.PeripheralConnected, this.connect.bind(this));
-
-    this.ros = null;
-    this.connected = false;
-    this.rosbridgeIP = "ws://bubbles-sonic-onion-jean.local:9090"; // rosbridgeIP option includes port
-    this.jbVolume = "60";
+    this.virtualJibo = new VirtualJibo();
+    this.virtualJibo.init(this.runtime);
     this.asr_out = "";
 
     this.state = null;
+    this.openUI("UI");
 
-    this.RosConnect({ rosIP: "bubbles-sonic-onion-jean.local" });
+  }
 
-    this.virtualJibo = new VirtualJibo();
-    this.virtualJibo.init(this.runtime);
+  setJiboName(name: string) {
+    console.log("NAME", name);
+    jiboName = name;
+    this.ros = null;
+    this.connected = false;
+    this.rosbridgeIP = `ws://${name}.local:9090`; // rosbridgeIP option includes port
+    this.jbVolume = "60";
+    const connection = this.RosConnect({ rosIP: `${name}.local` });
+    console.log("CONNECTION", connection);
+    this.connect();
   }
 
   checkBusy(self: Scratch3Jibo) {
@@ -235,7 +241,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         text: () => `Connect/Disconnect Jibo`,
         operation: async () => {
           if (jiboName === "")
-            this.openUI("jiboNameModal", "Connect Jibo");
+            this.openUI("UI", "Connect Jibo");
           else
             jiboName = "";
         },
