@@ -208,9 +208,9 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     console.log("NAME", name);
     this.ros = null;
     this.connected = false;
-    this.rosbridgeIP = `ws://${name}.local:9090`; // rosbridgeIP option includes port
+    this.rosbridgeIP = `wss://${name}.mitlivinglab.org`; // rosbridgeIP option includes port
     this.jbVolume = "60";
-    const connection = this.RosConnect({ rosIP: `${name}.local` });
+    const connection = this.RosConnect({ rosIP: `${name}.mitlivinglab.org` });
     if (connection) {
       this.connect();
       jiboName = name;
@@ -413,7 +413,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
   RosConnect(args: { rosIP: any }) {
     const rosIP = args.rosIP.toString();
-    this.rosbridgeIP = "ws://" + rosIP + ":9090";
+    this.rosbridgeIP = "wss://" + rosIP;
     // log.log("ROS: Attempting to connect to rosbridge at " + this.rosbridgeIP);
 
     if (!this.connected) {
