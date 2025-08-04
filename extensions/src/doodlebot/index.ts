@@ -45,7 +45,7 @@ const looper = (action: () => Promise<any>, profileMarker?: string) => {
   return controller;
 }
 
-export var imageFiles = [];
+export var imageFiles: string[] = [];
 export var soundFiles: string[] = [];
 
 export default class DoodlebotBlocks extends extension(details, "ui", "customArguments", "indicators", "video", "drawable") {
@@ -85,8 +85,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   INTERVAL = 16;
   DIMENSIONS = [480, 360];
 
-  soundDictionary;
-  costumeDictionary: any;
+  soundDictionary: {} | { string: string[] };
+  costumeDictionary: {} | { string: string[] };
 
   externalIp: string
 
