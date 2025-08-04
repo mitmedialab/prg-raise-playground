@@ -434,11 +434,11 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       console.log("FETCHING");
       const ip = await this.getIPAddress();
       console.log(doodlebot.fetch);
-      imageFiles = await doodlebot.fetch(`http://${ip}:8080/images`, "text");
-      imageFiles = doodlebot.extractList(imageFiles);
+      let tempImage = await doodlebot.fetch(`http://${ip}:8080/images`, "text");
+      imageFiles = doodlebot.extractList(tempImage);
       console.log("FILES", imageFiles)
-      soundFiles = await doodlebot.fetch(`http://${ip}:8080/sounds`, "text");
-      soundFiles = doodlebot.extractList(soundFiles);
+      let tempSound = await doodlebot.fetch(`http://${ip}:8080/sounds`, "text");
+      soundFiles = doodlebot.extractList(tempSound);
     } catch (e) {
       //this.openUI("ArrayError");
     }
