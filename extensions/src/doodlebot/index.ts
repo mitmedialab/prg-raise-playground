@@ -399,7 +399,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   }
 
   getCurrentSounds(id): string[] {
-    return Object.keys(this.soundDictionary[id]);
+    return (this.soundDictionary && this.soundDictionary[id]) ? Object.keys(this.soundDictionary[id]) : [];
   }
 
   async setDoodlebot(doodlebot: Doodlebot) {
@@ -836,7 +836,9 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     arg: {
       type: "string", options: () => {
         self.setDictionaries();
-        return displayKeys.filter(key => key !== "clear").concat(imageFiles).concat(Object.keys(self.costumeDictionary[self.runtime._editingTarget.id]) as any[]).filter((item: string) => item != "costume9999.png")
+        return displayKeys.filter(key => key !== "clear").concat(imageFiles).concat(
+          (self.costumeDictionary && self.costumeDictionary[self.runtime._editingTarget.id]) ? Object.keys(self.costumeDictionary[self.runtime._editingTarget.id]) : [] as any[]
+        ).filter((item: string) => item != "costume9999.png")
       }, defaultValue: "happy"
     }
   }))
