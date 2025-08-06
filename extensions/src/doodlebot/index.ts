@@ -727,9 +727,9 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   @block({
     type: "reporter",
     text: (sensor: SensorKey) => `${sensor} sensor`,
-    arg: { type: "string", options: ["battery", "temperature", "humidity", "pressure", "distance"], defaultValue: "battery" }
+    arg: { type: "string", options: ["battery", "temperature", "humidity", "pressure", "distance", "gyroscope", "altimeter", "accelerometer"], defaultValue: "battery" }
   })
-  async getSingleSensorReading(sensor: "battery" | "temperature" | "humidity" | "pressure" | "distance") {
+  async getSingleSensorReading(sensor: "battery" | "temperature" | "humidity" | "pressure" | "distance" | "gyroscope" | "altimeter" | "accelerometer") {
     const reading = await this.doodlebot?.getSensorReading(sensor);
     return reading;
   }
