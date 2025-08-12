@@ -658,7 +658,7 @@ export default class Doodlebot {
         }
     }
 
-    async setVolume(volume: 0 | 100 | 200 | 300) {
+    async setVolume(volume: number) {
         await this.sendWebsocketCommand(command.volume, volume);
     }
 

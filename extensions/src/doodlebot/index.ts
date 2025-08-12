@@ -668,7 +668,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   @block({
     type: "command",
     text: (degrees) => `spin ${degrees} degrees`,
-    arg: { type: "angle", defaultValue: 90 }
+    arg: { type: "number", defaultValue: 90 }
   })
   async spin(degrees: number, utility: BlockUtilityWithID) {
     await this.blockCounter(utility);
@@ -1137,10 +1137,10 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   @block({
     type: "command",
     text: (volume) => `set volume to ${volume}`,
-    arg: { type: "number", options: [0, 100, 200, 300], defaultValue: 100 },
+    arg: { type: "number", options: [0, 25, 50, 75, 100, 200, 300], defaultValue: 100 },
 
   })
-  async setVolume(volume: 0 | 100 | 200 | 300) {
+  async setVolume(volume: number) {
     await this.doodlebot?.setVolume(volume)
   }
 
