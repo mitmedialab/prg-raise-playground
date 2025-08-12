@@ -630,13 +630,13 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     text: (direction, steps, speed) => `drive ${direction} for ${steps} steps at speed ${speed}`,
     args: [
       { type: "string", options: ["forward", "backward", "left", "right"], defaultValue: "forward" },
-      { type: "number", defaultValue: 2000 },
+      { type: "number", defaultValue: 200 },
       { type: "number", options: [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000], defaultValue: 2000 }
     ]
   })
   async drive(direction: "left" | "right" | "forward" | "backward", steps: number, speed: number) {
-    const leftSteps = direction == "left" || direction == "backward" ? -steps : steps;
-    const rightSteps = direction == "right" || direction == "backward" ? -steps : steps;
+    const leftSteps = direction == "left" || direction == "backward" ? -steps*1000 : steps*1000;
+    const rightSteps = direction == "right" || direction == "backward" ? -steps*1000 : steps*1000;
     const stepsPerSecond = speed;
 
     await this.doodlebot?.motorCommand(
@@ -732,6 +732,24 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   async getSingleSensorReading(sensor: "battery" | "temperature" | "humidity" | "pressure" | "distance" | "gyroscope" | "altimeter" | "accelerometer") {
     const reading = await this.doodlebot?.getSensorReading(sensor);
     return reading;
+  }
+
+  
+
+  @(scratch.hat`
+    when ${{ type: "string", options: ["battery", "temperature", "humidity", "pressure", "distance", "altimeter"], defaultValue: "battery" }} 
+    sensor > ${{ type: "number", defaultValue: 0 }}
+  `)
+  whenSensorGreater(sensor: "battery" | "temperature" | "humidity" | "pressure" | "distance" | "altimeter", greater: number) {
+    const reading = this.doodlebot?.getSensorReadingSync(sensor);
+    if (!reading) return false;
+
+    if ((Number(reading) > Number(greater))) {
+      console.log(reading);
+    }
+    console.log("reading", Number(reading), "greater", Number(greater));
+    console.log((Number(reading) > Number(greater)));
+    return (Number(reading) > Number(greater));
   }
 
   @block({
@@ -1134,7 +1152,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   }
 
   @block({
-    type: "reporter",
+    type: "Boolean",
     text: (type) => `is ${type} detected`,
     args: [{ type: "string", options: ["face", "apple", "orange"], defaultValue: "face" }]
   })

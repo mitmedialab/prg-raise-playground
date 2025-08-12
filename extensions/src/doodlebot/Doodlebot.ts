@@ -524,6 +524,15 @@ export default class Doodlebot {
         return this.sensorData[type];
     }
 
+    getSensorReadingSync<T extends SensorKey>(type: T): SensorData[T] | false {
+        if (this.sensorState[type]) {
+            return this.sensorData[type];
+        } else {
+            this.enableSensor(type);
+            return false;
+        }
+    }
+
     extractList(text: string) {
         const parser = new DOMParser();
         const doc = parser.parseFromString(text, 'text/html');
