@@ -853,7 +853,37 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     } else {
       await this.doodlebot?.display(display as DisplayKey);
     }
+  }
 
+  @block((self) => ({
+    type: "command",
+    text: (type: DisplayKey | string, seconds: number) => `display ${type} for ${seconds} seconds`,
+    args: [{
+      type: "string", options: () => {
+        self.setDictionaries();
+        return displayKeys.filter(key => key !== "clear").concat(imageFiles).concat(
+          (self.costumeDictionary && self.costumeDictionary[self.runtime._editingTarget.id]) ? Object.keys(self.costumeDictionary[self.runtime._editingTarget.id]) : [] as any[]
+        ).filter((item: string) => item != "costume9999.png")
+      }, defaultValue: "happy"
+    }, {type: "string", defaultValue: 1}]
+  }))
+  async setDisplayForSeconds(display: DisplayKey | string, seconds: number) {
+    let costumeNames = Object.keys(this.costumeDictionary[this.runtime._editingTarget.id]);
+    if (costumeNames.includes(display)) {
+      await this.uploadFile("image", this.costumeDictionary[this.runtime._editingTarget.id][display]);
+      await this.setArrays();
+      await this.doodlebot.displayFile("costume9999.png");
+      await new Promise(resolve => setTimeout(resolve, seconds*1000));
+      await this.doodlebot.display("happy");
+    } else if (imageFiles.includes(display)) {
+      await this.doodlebot?.displayFile(display);
+      await new Promise(resolve => setTimeout(resolve, seconds*1000));
+      await this.doodlebot.display("happy");
+    } else {
+      await this.doodlebot?.display(display as DisplayKey);
+      await new Promise(resolve => setTimeout(resolve, seconds*1000));
+      await this.doodlebot.display("happy");
+    }
   }
 
   async getIPAddress() {
