@@ -619,6 +619,16 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   @block({
     type: "command",
+    text: (size) => `set font size to ${size}`,
+    arg: { type: "string", options: ["small", "medium", "large"], defaultValue: "medium" },
+
+  })
+  async setFont(size: "small" | "medium" | "large") {
+    await this.doodlebot?.setFont(size);
+  }
+
+  @block({
+    type: "command",
     text: "clear display"
   })
   async clearDisplay() {
@@ -1172,15 +1182,25 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     return false;
   }
 
-  @(scratch.command((self, $) => $`Upload sound file ${self.makeCustomArgument({ component: FileArgument, initial: { value: "", text: "File" } })}`))
-  async uploadSoundFile(test: string) {
-    await this.uploadFile("sound", test);
+  // @(scratch.command((self, $) => $`Upload sound file ${self.makeCustomArgument({ component: FileArgument, initial: { value: "", text: "File" } })}`))
+  // async uploadSoundFile(test: string) {
+  //   await this.uploadFile("sound", test);
+  // }
+
+  @(scratch.button`Upload sound`)
+  uploadSoundUI() {
+    this.openUI("UploadSound");
   }
 
-  @(scratch.command((self, $) => $`Upload image file ${self.makeCustomArgument({ component: FileArgument, initial: { value: "", text: "File" } })}`))
-  async uploadImageFile(test: string) {
-    await this.uploadFile("image", test);
+  @(scratch.button`Upload image`)
+  uploadImageUI() {
+    this.openUI("UploadImage");
   }
+
+  // @(scratch.command((self, $) => $`Upload image file ${self.makeCustomArgument({ component: FileArgument, initial: { value: "", text: "File" } })}`))
+  // async uploadImageFile(test: string) {
+  //   await this.uploadFile("image", test);
+  // }
 
   @block({
     type: "command",
@@ -1192,15 +1212,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     await this.doodlebot?.setVolume(volume)
   }
 
-  @block({
-    type: "command",
-    text: (size) => `set font size to ${size}`,
-    arg: { type: "string", options: ["small", "medium", "large"], defaultValue: "medium" },
-
-  })
-  async setFont(size: "small" | "medium" | "large") {
-    await this.doodlebot?.setFont(size);
-  }
+  
   
 
 
