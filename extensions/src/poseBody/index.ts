@@ -82,7 +82,7 @@ export default class PoseBody extends Extension<Details, Blocks> {
    * Acts like class PoseBody's constructor (instead of a child class constructor)
    * @param env 
    */
-  async init(env: Environment) {
+  init(env: Environment) {
     
     if (this.runtime.ioDevices) {
       this._loop();
