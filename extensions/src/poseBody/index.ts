@@ -1,4 +1,5 @@
 import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, RuntimeEvent, ValueOf } from "$common";
+import "@tensorflow/tfjs-backend-webgl";
 import * as posenet from '@tensorflow-models/posenet';
 
 import { legacyFullSupport, info } from "./legacy";
@@ -76,12 +77,13 @@ export default class PoseBody extends Extension<Details, Blocks> {
    */
   bodyOptions = info.menus.PART.items;
 
+
   /**
    * Acts like class PoseBody's constructor (instead of a child class constructor)
    * @param env 
    */
-  init(env: Environment) {
-
+  async init(env: Environment) {
+    
     if (this.runtime.ioDevices) {
       this._loop();
     }
@@ -154,6 +156,7 @@ export default class PoseBody extends Extension<Details, Blocks> {
    * @returns 
    */
   async ensureBodyModelLoaded() {
+
     this.bodyModel ??= await posenet.load();
     return this.bodyModel;
   }
