@@ -76,12 +76,26 @@ export default class PoseBody extends Extension<Details, Blocks> {
    */
   bodyOptions = info.menus.PART.items;
 
+
+  loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = src;
+      script.async = true;
+      script.onload = () => resolve(src);
+      script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+      document.head.appendChild(script);
+    });
+  }
+
   /**
    * Acts like class PoseBody's constructor (instead of a child class constructor)
    * @param env 
    */
-  init(env: Environment) {
+  async init(env: Environment) {
 
+    await this.loadScript("https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js");
+    
     if (this.runtime.ioDevices) {
       this._loop();
     }
@@ -154,6 +168,7 @@ export default class PoseBody extends Extension<Details, Blocks> {
    * @returns 
    */
   async ensureBodyModelLoaded() {
+
     this.bodyModel ??= await posenet.load();
     return this.bodyModel;
   }
