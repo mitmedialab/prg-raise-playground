@@ -1,5 +1,5 @@
 import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, RuntimeEvent, ValueOf } from "$common";
-import "@tensorflow/tfjs-backend-webgl";
+import "@tensorflow/tfjs-backend-cpu";
 import * as posenet from '@tensorflow-models/posenet';
 
 import { legacyFullSupport, info } from "./legacy";

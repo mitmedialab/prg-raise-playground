@@ -11,7 +11,7 @@ importers:
       '@tensorflow-models/posenet':
         specifier: 2.2.2
         version: 2.2.2(@tensorflow/tfjs-converter@3.21.0(@tensorflow/tfjs-core@3.0.0-rc.1))(@tensorflow/tfjs-core@3.0.0-rc.1)
-      '@tensorflow/tfjs-backend-webgl':
+      '@tensorflow/tfjs-backend-cpu':
         specifier: 3.0.0-rc.1
         version: 3.0.0-rc.1(@tensorflow/tfjs-core@3.0.0-rc.1)
       '@tensorflow/tfjs-core':
@@ -28,12 +28,6 @@ packages:
 
   '@tensorflow/tfjs-backend-cpu@3.0.0-rc.1':
     resolution: {integrity: sha512-9+13fs3vVpfOpDY+Aa/JXdda2SuBN/clxxoNYIX3pMY0GAGwpUaAkSECLuOOhnngHcl9pxuaJtgqrCcrq+A3/A==}
-    engines: {yarn: '>= 1.3.2'}
-    peerDependencies:
-      '@tensorflow/tfjs-core': 3.0.0-rc.1
-
-  '@tensorflow/tfjs-backend-webgl@3.0.0-rc.1':
-    resolution: {integrity: sha512-qEjtL/71HflBHJgWXhtj+8BVYB9Q+NHw282QGWi9QLA9SlWe3BRJhbGCaD28/Ddl+mSzBWFQnK+sKdZ04LL1Sg==}
     engines: {yarn: '>= 1.3.2'}
     peerDependencies:
       '@tensorflow/tfjs-core': 3.0.0-rc.1
@@ -55,9 +49,6 @@ packages:
 
   '@types/webgl-ext@0.0.30':
     resolution: {integrity: sha512-LKVgNmBxN0BbljJrVUwkxwRYqzsAEPcZOe6S2T6ZaBDIrFp0qu4FNlpc5sM1tGbXUYFgdVQIoeLk1Y1UoblyEg==}
-
-  '@types/webgl2@0.0.5':
-    resolution: {integrity: sha512-oGaKsBbxQOY5+aJFV3KECDhGaXt+yZJt2y/OZsnQGLRkH6Fvr7rv4pCt3SRH1somIHfej/c4u7NSpCyd9x+1Ow==}
 
   node-fetch@2.6.13:
     resolution: {integrity: sha512-StxNAxh15zr77QvvkmveSQ8uCQ4+v5FkvNTj0OESmiHu+VRi/gXArXtkWMElOsOUNLtUEvI4yS+rdtOHZTwlQA==}
@@ -93,16 +84,6 @@ snapshots:
       '@types/seedrandom': 2.4.27
       seedrandom: 2.4.3
 
-  '@tensorflow/tfjs-backend-webgl@3.0.0-rc.1(@tensorflow/tfjs-core@3.0.0-rc.1)':
-    dependencies:
-      '@tensorflow/tfjs-backend-cpu': 3.0.0-rc.1(@tensorflow/tfjs-core@3.0.0-rc.1)
-      '@tensorflow/tfjs-core': 3.0.0-rc.1
-      '@types/offscreencanvas': 2019.3.0
-      '@types/seedrandom': 2.4.27
-      '@types/webgl-ext': 0.0.30
-      '@types/webgl2': 0.0.5
-      seedrandom: 2.4.3
-
   '@tensorflow/tfjs-converter@3.21.0(@tensorflow/tfjs-core@3.0.0-rc.1)':
     dependencies:
       '@tensorflow/tfjs-core': 3.0.0-rc.1
@@ -122,8 +103,6 @@ snapshots:
   '@types/seedrandom@2.4.27': {}
 
   '@types/webgl-ext@0.0.30': {}
-
-  '@types/webgl2@0.0.5': {}
 
   node-fetch@2.6.13:
     dependencies:
