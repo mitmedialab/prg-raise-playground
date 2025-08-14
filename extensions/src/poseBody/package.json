@@ -12,7 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@tensorflow-models/posenet": "2.2.2",
-    "@tensorflow/tfjs-backend-cpu": "3.0.0-rc.1",
+    "@tensorflow/tfjs-backend-webgl": "3.0.0-rc.1",
     "@tensorflow/tfjs-core": "3.0.0-rc.1"
   }
 }

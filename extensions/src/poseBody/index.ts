@@ -1,5 +1,5 @@
 import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, RuntimeEvent, ValueOf } from "$common";
-import "@tensorflow/tfjs-backend-cpu";
+import "@tensorflow/tfjs-backend-webgl";
 import * as posenet from '@tensorflow-models/posenet';
 
 import { legacyFullSupport, info } from "./legacy";
@@ -82,7 +82,7 @@ export default class PoseBody extends Extension<Details, Blocks> {
    * Acts like class PoseBody's constructor (instead of a child class constructor)
    * @param env 
    */
-  async init(env: Environment) {
+  init(env: Environment) {
     
     if (this.runtime.ioDevices) {
       this._loop();
