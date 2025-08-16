@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+      "target": "ES2020",
+      "module": "ESNext",
+      "moduleResolution": "NodeNext",
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "strict": true
+    },
+    "ts-node": {
+      "esm": true
+    },
+    "include": ["./replaceReturn.ts"]
+  }
+  
