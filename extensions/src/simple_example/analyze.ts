@@ -17,6 +17,7 @@ interface BlockInfo {
   name: string;
   type: "command" | "button" | "reporter" | "unknown";
   returns?: string; // JS type of return value
+  async: boolean;   // whether the block is async
 }
 
 // Helper to infer return type from AST nodes
@@ -82,6 +83,7 @@ traverse(ast, {
             name: methodName,
             type: blockType,
             returns: returnType,
+            async: methodNode.async ?? false,
           });
         }
       },
@@ -90,4 +92,4 @@ traverse(ast, {
 });
 
 fs.writeFileSync(outputFile, JSON.stringify(blocks, null, 2), "utf-8");
-console.log(`✅ Blocks JSON with return types written to ${outputFile}`);
+console.log(`✅ Blocks JSON with return types + async flag written to ${outputFile}`);
