@@ -103,16 +103,16 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   }
 
   async blockCounter(utility: BlockUtilityWithID) {
-    if (JSON.parse(JSON.stringify(utility.blockID)) == JSON.parse(JSON.stringify(utility.thread.topBlock))) {
-      this.blocksRun = 0;
-      const r = Math.random();
-      console.log("starting", r);
-      if (r < 0.3) {
-        await this.speakText("Here I go!");
-      } else if (r < 0.6) {
-        await this.speakText("Let's do it!");
-      }
-    }
+    // if (JSON.parse(JSON.stringify(utility.blockID)) == JSON.parse(JSON.stringify(utility.thread.topBlock))) {
+    //   this.blocksRun = 0;
+    //   const r = Math.random();
+    //   console.log("starting", r);
+    //   if (r < 0.3) {
+    //     await this.speakText("Here I go!");
+    //   } else if (r < 0.6) {
+    //     await this.speakText("Let's do it!");
+    //   }
+    // }
     this.blocksRun = this.blocksRun + 1;
   }
 
@@ -153,29 +153,29 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     // env.runtime.on("PROJECT_RUN_START", async () => {
       
     // })
-    env.runtime.on("PROJECT_RUN_STOP", async () => {
-      if (this.blocksRun > 10) {
-        const r = Math.random();
-        console.log("blocks > 10", r);
-        if (r < 0.3) {
-          await this.speakText("Whew!")
-        } else if (r < 0.6) {
-          await this.speakText("That was tough!")
-        }
-      } else {
-        const r = Math.random(); 
-        console.log("blocks < 10", r);
-        if (r < 0.2) {
-          await this.speakText("Yay!");
-        } else if (r < 0.4) {
-          await this.speakText("Yippee!");
-        } else if (r < 0.5) {
-          await this.speakText("I did it!");
-        } else if (r < 0.6) {
-          await this.speakText("Go Doodlebot!");
-        }
-      }
-    })
+    // env.runtime.on("PROJECT_RUN_STOP", async () => {
+    //   if (this.blocksRun > 10) {
+    //     const r = Math.random();
+    //     console.log("blocks > 10", r);
+    //     if (r < 0.3) {
+    //       await this.speakText("Whew!")
+    //     } else if (r < 0.6) {
+    //       await this.speakText("That was tough!")
+    //     }
+    //   } else {
+    //     const r = Math.random(); 
+    //     console.log("blocks < 10", r);
+    //     if (r < 0.2) {
+    //       await this.speakText("Yay!");
+    //     } else if (r < 0.4) {
+    //       await this.speakText("Yippee!");
+    //     } else if (r < 0.5) {
+    //       await this.speakText("I did it!");
+    //     } else if (r < 0.6) {
+    //       await this.speakText("Go Doodlebot!");
+    //     }
+    //   }
+    // })
   }
 
   async setDictionaries() {
@@ -645,8 +645,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     ]
   })
   async drive(direction: "left" | "right" | "forward" | "backward", steps: number, speed: number) {
-    const leftSteps = direction == "left" || direction == "backward" ? -steps*1000 : steps*1000;
-    const rightSteps = direction == "right" || direction == "backward" ? -steps*1000 : steps*1000;
+    const leftSteps = direction == "left" || direction == "backward" ? -steps * 10 : steps * 10;
+    const rightSteps = direction == "right" || direction == "backward" ? -steps * 10 : steps * 10;
     const stepsPerSecond = speed;
 
     await this.doodlebot?.motorCommand(
@@ -740,7 +740,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     arg: { type: "string", options: ["battery", "temperature", "humidity", "pressure", "distance", "gyroscope", "altimeter", "accelerometer"], defaultValue: "battery" }
   })
   async getSingleSensorReading(sensor: "battery" | "temperature" | "humidity" | "pressure" | "distance" | "gyroscope" | "altimeter" | "accelerometer") {
-    const reading = await this.doodlebot?.getSensorReading(sensor);
+    const reading = await this.doodlebot?.getSingleSensorReading(sensor);
     return reading;
   }
 
@@ -753,12 +753,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   whenSensorGreater(sensor: "battery" | "temperature" | "humidity" | "pressure" | "distance" | "altimeter", greater: number) {
     const reading = this.doodlebot?.getSensorReadingSync(sensor);
     if (!reading) return false;
-
-    if ((Number(reading) > Number(greater))) {
-      console.log(reading);
-    }
-    console.log("reading", Number(reading), "greater", Number(greater));
-    console.log((Number(reading) > Number(greater)));
     return (Number(reading) > Number(greater));
   }
 
@@ -808,14 +802,14 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     }
   }
 
-  // @block({
-  //   type: "command",
-  //   text: (sensor: SensorKey) => `disable ${sensor}`,
-  //   arg: { type: "string", options: sensorKeys, defaultValue: sensorKeys[0] }
-  // })
-  // async disableSensor(sensor: SensorKey) {
-  //   await this.doodlebot?.disableSensor(sensor);
-  // }
+  @block({
+    type: "command",
+    text: (sensor: SensorKey) => `disable ${sensor}`,
+    arg: { type: "string", options: sensorKeys, defaultValue: sensorKeys[0] }
+  })
+  async disableSensor(sensor: SensorKey) {
+    await this.doodlebot?.disableSensor(sensor);
+  }
 
   @block({
     type: "command",

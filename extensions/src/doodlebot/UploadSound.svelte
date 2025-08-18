@@ -77,8 +77,9 @@
 
       
     });
-    function handleSubmit() {
-      invoke("uploadFile", "sound", value);
+    async function handleSubmit() {
+      await extension.uploadFile("sound", value);
+      close();
     }
 </script>
 

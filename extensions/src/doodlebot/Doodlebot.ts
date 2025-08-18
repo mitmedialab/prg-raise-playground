@@ -524,6 +524,13 @@ export default class Doodlebot {
         return this.sensorData[type];
     }
 
+    async getSingleSensorReading<T extends SensorKey>(type: T): Promise<SensorData[T]> {
+        await this.enableSensor(type); // should this be automatic?
+        const reading = this.sensorData[type];
+        await this.disableSensor(type);
+        return reading;
+    }
+
     getSensorReadingSync<T extends SensorKey>(type: T): SensorData[T] | false {
         if (this.sensorState[type]) {
             return this.sensorData[type];

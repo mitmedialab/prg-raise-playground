@@ -77,8 +77,9 @@
 
       
     });
-    function handleSubmit() {
-      invoke("uploadFile", "image", value);
+    async function handleSubmit() {
+      await extension.uploadFile("image", value);
+      close();
     }
 </script>
 
