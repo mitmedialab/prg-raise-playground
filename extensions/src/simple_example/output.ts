@@ -22,8 +22,8 @@ export default class SimpleTypescript extends extension(details, "ui", "customSa
     acceptsReporters: true,
     handler: (x: any) => tryCastToArgumentType(ArgumentType.String, x, () => {
       alert(`Unsopported input: ${x}`);
-      AndroidBridge.setResult("anonymous", "");
-      AndroidBridge.setResult("anonymous", "");
+      AndroidBridge.setResult("anonymous", "", typeof "");
+      AndroidBridge.setResult("anonymous", "", typeof "");
       return "";
     })
   };
@@ -40,11 +40,11 @@ export default class SimpleTypescript extends extension(details, "ui", "customSa
   });
   increment() {
     this.count++;
-    AndroidBridge.setResult("increment");
+    AndroidBridge.setResult("increment", undefined, "undefined");
   }
   incrementBy(amount: number) {
     this.count += amount;
-    AndroidBridge.setResult("incrementBy");
+    AndroidBridge.setResult("incrementBy", undefined, "undefined");
   }
   async init(env: Environment) {}
   @scratch.command((self, tag) => tag`Indicate and log ${{
@@ -53,7 +53,7 @@ export default class SimpleTypescript extends extension(details, "ui", "customSa
   }} to the console`)
   log(value: string) {
     console.log(value);
-    AndroidBridge.setResult("log");
+    AndroidBridge.setResult("log", undefined, "undefined");
   }
   @(scratch.command`
     Indicate ${{
@@ -85,17 +85,17 @@ export default class SimpleTypescript extends extension(details, "ui", "customSa
   @(scratch.button`Dummy UI`)
   dummyUI() {
     this.openUI("Dummy", "Howdy");
-    AndroidBridge.setResult("dummyUI");
+    AndroidBridge.setResult("dummyUI", undefined, "undefined");
   }
   @(scratch.button`Open Counter`)
   counterUI() {
     this.openUI("Counter", "Pretty cool, right?");
-    AndroidBridge.setResult("counterUI");
+    AndroidBridge.setResult("counterUI", undefined, "undefined");
   }
   @(scratch.button`Show colors`)
   colorUI() {
     this.openUI("Palette");
-    AndroidBridge.setResult("colorUI");
+    AndroidBridge.setResult("colorUI", undefined, "undefined");
   }
   @(scratch.command`This is what jibo looks like ${{
     type: "image",
@@ -104,7 +104,7 @@ export default class SimpleTypescript extends extension(details, "ui", "customSa
     flipRTL: true
   }}`)
   imageBlock(jibo: "inline image") {
-    AndroidBridge.setResult("imageBlock");
+    AndroidBridge.setResult("imageBlock", undefined, "undefined");
   }
   @(scratch.reporter`${{
     type: "number",
@@ -118,7 +118,7 @@ export default class SimpleTypescript extends extension(details, "ui", "customSa
     blockID
   }: BlockUtilityWithID) {
     console.log(blockID);
-    AndroidBridge.setResult("addFive", lhs + 5 - rhs);
+    AndroidBridge.setResult("addFive", lhs + 5 - rhs, typeof (lhs + 5 - rhs));
     return lhs + 5 - rhs;
   }
 }
