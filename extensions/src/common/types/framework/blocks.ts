@@ -314,7 +314,7 @@ export type BlockDefinitions<T extends BaseGenericExtension> =
   {
     [k in keyof T["BlockFunctions"]]: T["BlockFunctions"][k] extends
     (...args: infer A) => infer R
-    ? DefineBlock<T, (...args: A | [...A, BlockUtility]) => R>
+    ? DefineBlock<T, (...args: A) => R>
     : never
   };
 
