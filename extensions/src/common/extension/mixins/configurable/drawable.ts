@@ -60,6 +60,8 @@ type Renderer = {
   destroyDrawable(drawableID: Handle, group: string): void;
 }
 
+type Drawable = ImageBitmap | Parameters<Renderer["createBitmapSkin"]>[0];
+
 /**
  * Mixin the ability for extensions to draw images into the canvas
  * @param Ctor 
@@ -75,11 +77,12 @@ export default function <T extends MinimalExtensionConstructor>(Ctor: T) {
      * @param {ImageData | ImageBitmap} image 
      * @returns 
      */
-    protected createDrawable<T extends ImageData | ImageBitmap>(image: T) {
+    protected createDrawable<T extends ImageBitmap | Drawable>(image: T) {
       this.renderer ??= this.runtime.renderer;
       const { renderer } = this;
 
       if (!renderer) return null;
+
 
       const skin = renderer.createBitmapSkin(image as ImageData, 1);
       const drawable = renderer.createDrawable(StageLayering.VideoLayer);
@@ -92,7 +95,7 @@ export default function <T extends MinimalExtensionConstructor>(Ctor: T) {
       const setVisible = (visible: boolean = true) =>
         renderer.updateDrawableVisible(drawable, visible);
 
-      const update = (image: ImageData | ImageBitmap) =>
+      const update = (image: Drawable) =>
         renderer.updateBitmapSkin(skin, image as ImageData, 1);
 
       const destroy = () => {
