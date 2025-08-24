@@ -2,6 +2,11 @@ module.exports = function ({ types: t }) {
   return {
     visitor: {
       FunctionDeclaration(path) {
+        // 🔹 Remove decorators if they exist
+        if (path.node.decorators) {
+          path.node.decorators = null;
+        }
+
         const funcName = path.node.id ? path.node.id.name : "anonymous";
 
         path.traverse({
@@ -46,8 +51,12 @@ module.exports = function ({ types: t }) {
         }
       },
 
-      // Handles arrow functions / function expressions
       FunctionExpression(path) {
+        // 🔹 Remove decorators
+        if (path.node.decorators) {
+          path.node.decorators = null;
+        }
+
         const name =
           path.node.id?.name ||
           (path.parent.type === "VariableDeclarator" && path.parent.id.name) ||
@@ -92,6 +101,13 @@ module.exports = function ({ types: t }) {
           );
         }
       },
+
+      // 🔹 Remove decorators from class methods too
+      ClassMethod(path) {
+        if (path.node.decorators) {
+          path.node.decorators = null;
+        }
+      }
     },
   };
 };
