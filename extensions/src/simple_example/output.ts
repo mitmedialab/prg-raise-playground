@@ -22,8 +22,20 @@ export default class SimpleTypescript extends extension(details, "ui", "customSa
     acceptsReporters: true,
     handler: (x: any) => tryCastToArgumentType(ArgumentType.String, x, () => {
       alert(`Unsopported input: ${x}`);
-      AndroidBridge.setResult("anonymous", "", typeof "");
-      AndroidBridge.setResult("anonymous", "", typeof "");
+      if (typeof "" === "number") {
+        AndroidBridge.setResult_double("anonymous", "", "number");
+      } else if (typeof "" === "string") {
+        AndroidBridge.setResult_string("anonymous", "", "string");
+      } else {
+        AndroidBridge.setResult("anonymous", "", typeof "");
+      }
+      if (typeof "" === "number") {
+        AndroidBridge.setResult_double("anonymous", "", "number");
+      } else if (typeof "" === "string") {
+        AndroidBridge.setResult_string("anonymous", "", "string");
+      } else {
+        AndroidBridge.setResult("anonymous", "", typeof "");
+      }
       return "";
     })
   };
@@ -47,30 +59,12 @@ export default class SimpleTypescript extends extension(details, "ui", "customSa
     AndroidBridge.setResult("incrementBy", undefined, "undefined");
   }
   async init(env: Environment) {}
-  @scratch.command((self, tag) => tag`Indicate and log ${{
-    type: "string",
-    options: self.logOptions
-  }} to the console`)
   log(value: string) {
     console.log(value);
     AndroidBridge.setResult("log", undefined, "undefined");
   }
-  @(scratch.command`
-    Indicate ${{
-    type: "string",
-    defaultValue: "Howdy!"
-  }} 
-    as ${{
-    type: "string",
-    options: ["error", "success", "warning"]
-  }} 
-    for ${{
-    type: "number",
-    options: [1, 3, 5]
-  }}
-    seconds
-  `)
-  async indicateMessage(value: string, type: typeof this.IndicatorType, time: number) {
+  async indicateMessage(value: string, time: number) {
+    let type = "success" as typeof this.IndicatorType;
     const position = "category";
     const msg = `This is a ${type} indicator for ${value}!`;
     const [{
@@ -82,43 +76,39 @@ export default class SimpleTypescript extends extension(details, "ui", "customSa
     }), untilTimePassed(time * 1000)]);
     close();
   }
-  @(scratch.button`Dummy UI`)
   dummyUI() {
     this.openUI("Dummy", "Howdy");
     AndroidBridge.setResult("dummyUI", undefined, "undefined");
   }
-  @(scratch.button`Open Counter`)
   counterUI() {
     this.openUI("Counter", "Pretty cool, right?");
     AndroidBridge.setResult("counterUI", undefined, "undefined");
   }
-  @(scratch.button`Show colors`)
   colorUI() {
     this.openUI("Palette");
     AndroidBridge.setResult("colorUI", undefined, "undefined");
   }
-  @(scratch.command`This is what jibo looks like ${{
-    type: "image",
-    uri: jibo,
-    alt: "Picture of Jibo",
-    flipRTL: true
-  }}`)
   imageBlock(jibo: "inline image") {
     AndroidBridge.setResult("imageBlock", undefined, "undefined");
   }
-  @(scratch.reporter`${{
-    type: "number",
-    defaultValue: 1
-  }} + ${{
-    type: "image",
-    uri: five,
-    alt: "golden five"
-  }} - ${"number"}`)
-  addFive(lhs: number, five: "inline image", rhs: number, {
-    blockID
-  }: BlockUtilityWithID) {
-    console.log(blockID);
-    AndroidBridge.setResult("addFive", lhs + 5 - rhs, typeof (lhs + 5 - rhs));
+  giveString(jibo: string) {
+    if (typeof jibo === "number") {
+      AndroidBridge.setResult_double("giveString", jibo, "number");
+    } else if (typeof jibo === "string") {
+      AndroidBridge.setResult_string("giveString", jibo, "string");
+    } else {
+      AndroidBridge.setResult("giveString", jibo, typeof jibo);
+    }
+    return jibo;
+  }
+  addFive(lhs: number, rhs: number) {
+    if (typeof (lhs + 5 - rhs) === "number") {
+      AndroidBridge.setResult_double("addFive", lhs + 5 - rhs, "number");
+    } else if (typeof (lhs + 5 - rhs) === "string") {
+      AndroidBridge.setResult_string("addFive", lhs + 5 - rhs, "string");
+    } else {
+      AndroidBridge.setResult("addFive", lhs + 5 - rhs, typeof (lhs + 5 - rhs));
+    }
     return lhs + 5 - rhs;
   }
 }

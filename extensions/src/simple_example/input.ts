@@ -53,11 +53,11 @@ export default class SimpleTypescript extends extension(details, "ui", "customSa
 
   @(scratch.command`
     Indicate ${{ type: "string", defaultValue: "Howdy!" }} 
-    as ${{ type: "string", options: ["error", "success", "warning"] }} 
     for ${{ type: "number", options: [1, 3, 5] }}
     seconds
   `)
-  async indicateMessage(value: string, type: typeof this.IndicatorType, time: number) {
+  async indicateMessage(value: string, time: number) {
+    let type = "success" as typeof this.IndicatorType;
     const position = "category";
     const msg = `This is a ${type} indicator for ${value}!`;
     const [{ close }] = await Promise.all([
@@ -85,9 +85,13 @@ export default class SimpleTypescript extends extension(details, "ui", "customSa
   imageBlock(jibo: "inline image") {
   }
 
-  @(scratch.reporter`${{ type: "number", defaultValue: 1 }} + ${{ type: "image", uri: five, alt: "golden five" }} - ${"number"}`)
-  addFive(lhs: number, five: "inline image", rhs: number, { blockID }: BlockUtilityWithID) {
-    console.log(blockID);
+  @(scratch.reporter`Give string ${"string"}`)
+  giveString(jibo: string) {
+    return jibo;
+  }
+
+  @(scratch.reporter`${{ type: "number", defaultValue: 1 }} - ${"number"}`)
+  addFive(lhs: number, rhs: number) {
     return lhs + 5 - rhs;
   }
 }
