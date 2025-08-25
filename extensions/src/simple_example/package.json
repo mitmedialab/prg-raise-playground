@@ -6,8 +6,40 @@
   "scripts": {
     "directory": "echo simple_example",
     "dev": "pnpm --filter prg-extension-root dev -i simple_example",
-    "test": "pnpm --filter prg-extension-root test simple_example/index.test.ts"
+    "test": "tap",
+    "lint": "eslint \"**/*.js\"",
+    "postlint": "template-oss-check",
+    "template-oss-apply": "template-oss-apply --force",
+    "lintfix": "npm run lint -- --fix",
+    "snap": "tap",
+    "posttest": "npm run lint"
   },
-  "author": "",
-  "license": "ISC"
+  "author": "GitHub Inc.",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/core": "^7.28.3",
+    "@babel/generator": "^7.28.3",
+    "@babel/plugin-proposal-decorators": "^7.28.0",
+    "@babel/plugin-syntax-decorators": "^7.27.1",
+    "@babel/plugin-syntax-typescript": "^7.27.1",
+    "@babel/traverse": "^7.28.3",
+    "@babel/types": "^7.28.2"
+  },
+  "files": [
+    "bin/",
+    "lib/"
+  ],
+  "engines": {
+    "node": "^14.17.0 || ^16.13.0 || >=18.0.0"
+  },
+  "templateOSS": {
+    "//@npmcli/template-oss": "This file is partially managed by @npmcli/template-oss. Edits may be overwritten.",
+    "version": "4.17.0"
+  },
+  "tap": {
+    "nyc-arg": [
+      "--exclude",
+      "tap-snapshots/**"
+    ]
+  }
 }
