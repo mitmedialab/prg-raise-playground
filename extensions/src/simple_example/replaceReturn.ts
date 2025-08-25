@@ -1,113 +1,123 @@
-module.exports = function ({ types: t }) {
-  return {
-    visitor: {
-      FunctionDeclaration(path) {
-        // 🔹 Remove decorators if they exist
-        if (path.node.decorators) {
-          path.node.decorators = null;
-        }
+import fs from "fs";
+import { parse } from "@babel/parser";
+import traverse from "@babel/traverse";
+import generate from "@babel/generator";
+import * as t from "@babel/types";
 
-        const funcName = path.node.id ? path.node.id.name : "anonymous";
+const inputFile = process.argv[2] || "input.ts";
+const outputFile = process.argv[3] || "output.ts";
 
-        path.traverse({
-          ReturnStatement(returnPath) {
-            const arg = returnPath.node.argument;
-            if (arg) {
-              // Replace return X with setResult(funcName, X, typeof X)
-              returnPath.replaceWith(
-                t.returnStatement(
-                  t.callExpression(
-                    t.memberExpression(
-                      t.identifier("AndroidBridge"),
-                      t.identifier("setResult")
-                    ),
-                    [
-                      t.stringLiteral(funcName),
-                      arg,
-                      t.unaryExpression("typeof", arg, true),
-                    ]
-                  )
-                )
-              );
-            }
-          },
-        });
+const code = fs.readFileSync(inputFile, "utf-8");
 
-        // If no return statements exist, append a call at the end
-        const hasReturn = path.get("body.body").some((stmt) => stmt.isReturnStatement());
-        if (!hasReturn) {
-          path.get("body").pushContainer(
-            "body",
-            t.expressionStatement(
-              t.callExpression(
-                t.memberExpression(
-                  t.identifier("AndroidBridge"),
-                  t.identifier("setResult")
-                ),
-                [t.stringLiteral(funcName)]
-              )
+const ast = parse(code, {
+  sourceType: "module",
+  plugins: [
+    "typescript",
+    "asyncGenerators",
+    "classProperties",
+    "classPrivateProperties",
+    "classPrivateMethods",
+    "dynamicImport",
+    ["decorators", { decoratorsBeforeExport: true }],
+  ],
+});
+
+// Helper to get function name
+function getFunctionName(path: any): string {
+  const node = path.node;
+
+  if (t.isFunctionDeclaration(node) && node.id) return node.id.name;
+
+  if (
+    (t.isFunctionExpression(node) || t.isArrowFunctionExpression(node)) &&
+    t.isVariableDeclarator(path.parent) &&
+    t.isIdentifier(path.parent.id)
+  ) {
+    return path.parent.id.name;
+  }
+
+  if (t.isClassMethod(node) && t.isIdentifier(node.key)) {
+    return node.key.name;
+  }
+
+  return "anonymous";
+}
+
+traverse(ast, {
+  Function(path) {
+    // 🔹 Remove decorators from functions
+    if (path.node.decorators) {
+      path.node.decorators = null;
+    }
+
+    if (path.node.async) return; // skip async functions
+
+    const functionName = getFunctionName(path);
+    let hasReturn = false;
+
+    // Handle all return statements inside this function
+    path.traverse({
+      ReturnStatement(retPath) {
+        hasReturn = true;
+
+        if (!retPath.node.argument) {
+          // return without value → setResult with undefined + type
+          const undef = t.identifier("undefined");
+          const setResultCall = t.expressionStatement(
+            t.callExpression(
+              t.memberExpression(
+                t.identifier("AndroidBridge"),
+                t.identifier("setResult")
+              ),
+              [t.stringLiteral(functionName), undef, t.stringLiteral("undefined")]
             )
           );
-        }
-      },
-
-      FunctionExpression(path) {
-        // 🔹 Remove decorators
-        if (path.node.decorators) {
-          path.node.decorators = null;
-        }
-
-        const name =
-          path.node.id?.name ||
-          (path.parent.type === "VariableDeclarator" && path.parent.id.name) ||
-          "anonymous";
-
-        path.traverse({
-          ReturnStatement(returnPath) {
-            const arg = returnPath.node.argument;
-            if (arg) {
-              returnPath.replaceWith(
-                t.returnStatement(
-                  t.callExpression(
-                    t.memberExpression(
-                      t.identifier("AndroidBridge"),
-                      t.identifier("setResult")
-                    ),
-                    [
-                      t.stringLiteral(name),
-                      arg,
-                      t.unaryExpression("typeof", arg, true),
-                    ]
-                  )
-                )
-              );
-            }
-          },
-        });
-
-        const hasReturn = path.get("body.body")?.some((stmt) => stmt.isReturnStatement());
-        if (!hasReturn && path.node.body.type === "BlockStatement") {
-          path.get("body").pushContainer(
-            "body",
-            t.expressionStatement(
-              t.callExpression(
-                t.memberExpression(
-                  t.identifier("AndroidBridge"),
-                  t.identifier("setResult")
-                ),
-                [t.stringLiteral(name)]
-              )
+          retPath.insertBefore(setResultCall);
+        } else {
+          // return with value → setResult(functionName, returnValue, typeof returnValue)
+          const arg = retPath.node.argument;
+          const setResultCall = t.expressionStatement(
+            t.callExpression(
+              t.memberExpression(
+                t.identifier("AndroidBridge"),
+                t.identifier("setResult")
+              ),
+              [
+                t.stringLiteral(functionName),
+                arg,
+                t.unaryExpression("typeof", arg, true),
+              ]
             )
           );
+          retPath.insertBefore(setResultCall);
         }
       },
+    });
 
-      // 🔹 Remove decorators from class methods too
-      ClassMethod(path) {
-        if (path.node.decorators) {
-          path.node.decorators = null;
-        }
-      }
-    },
-  };
-};
+    // If no return statements, append setResult at the end
+    if (!hasReturn && path.node.body.body) {
+      const undef = t.identifier("undefined");
+      const setResultCall = t.expressionStatement(
+        t.callExpression(
+          t.memberExpression(t.identifier("AndroidBridge"), t.identifier("setResult")),
+          [t.stringLiteral(functionName), undef, t.stringLiteral("undefined")]
+        )
+      );
+      path.node.body.body.push(setResultCall);
+    }
+  },
+
+  // 🔹 Remove decorators from class methods too
+  ClassMethod(path) {
+    if (path.node.decorators) {
+      path.node.decorators = null;
+    }
+  },
+});
+
+const output = generate(ast, {}, code).code;
+fs.writeFileSync(outputFile, output, "utf-8");
+
+console.log(
+  `✅ AndroidBridge.setResult inserted and decorators removed: ${outputFile}`
+);

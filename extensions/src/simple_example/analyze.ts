@@ -30,14 +30,21 @@ function tsTypeToAI(typeAnnotation: t.TSType | null | undefined): string {
   return "object";
 }
 
-// Infer return type from AST nodes
-function inferReturnType(node: t.Expression | null | undefined): string {
+// Infer return type from AST nodes and function parameters
+function inferReturnType(
+  node: t.Expression | null | undefined,
+  params: { name: string; type: string }[]
+): string {
   if (!node) return "void"; // default for empty return
   if (t.isNumericLiteral(node)) return "number";
   if (t.isStringLiteral(node)) return "string";
   if (t.isBooleanLiteral(node)) return "boolean";
   if (t.isBinaryExpression(node)) return "number";
   if (t.isCallExpression(node)) return "unknown";
+  if (t.isIdentifier(node)) {
+    const p = params.find((p) => p.name === node.name);
+    if (p) return p.type;
+  }
   return "object";
 }
 
@@ -50,7 +57,7 @@ traverse(ast, {
         const methodNode = methodPath.node;
         let blockType: BlockInfo["type"] = "unknown";
 
-        // Detect decorators (tagged template or function call)
+        // Detect decorators
         if (methodNode.decorators) {
           for (const dec of methodNode.decorators) {
             const expr = dec.expression;
@@ -77,20 +84,6 @@ traverse(ast, {
 
         const methodName = t.isIdentifier(methodNode.key) ? methodNode.key.name : "anonymous";
 
-        // Infer return type
-        let returnType: string | undefined;
-        methodPath.traverse({
-          ReturnStatement(retPath) {
-            const arg = retPath.node.argument;
-            returnType = inferReturnType(arg);
-          },
-        });
-
-        // If no return statement found → default to "void"
-        if (!returnType) {
-          returnType = "void";
-        }
-
         // Extract parameters (ignore destructured ones)
         const params: { name: string; type: string }[] = [];
         for (const p of methodNode.params) {
@@ -100,6 +93,20 @@ traverse(ast, {
             params.push({ name: p.left.name, type: tsTypeToAI(p.left.typeAnnotation?.typeAnnotation || null) });
           }
           // Ignore object patterns like { blockID }
+        }
+
+        // Infer return type
+        let returnType: string | undefined;
+        methodPath.traverse({
+          ReturnStatement(retPath) {
+            const arg = retPath.node.argument;
+            returnType = inferReturnType(arg, params);
+          },
+        });
+
+        // If no return statement found → default to "void"
+        if (!returnType) {
+          returnType = "void";
         }
 
         blocks.push({
