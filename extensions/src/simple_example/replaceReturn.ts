@@ -45,73 +45,67 @@ function getFunctionName(path: any): string {
 
 traverse(ast, {
   Function(path) {
-    // 🔹 Remove decorators from functions
-    if (path.node.decorators) {
-      path.node.decorators = null;
-    }
-
-    if (path.node.async) return; // skip async functions
+    if (path.node.decorators) path.node.decorators = null;
+    if (path.node.async) return; // skip async
 
     const functionName = getFunctionName(path);
     let hasReturn = false;
 
-    // Handle all return statements inside this function
     path.traverse({
       ReturnStatement(retPath) {
         hasReturn = true;
 
-        if (!retPath.node.argument) {
-          // return without value → setResult with undefined + type
-          const undef = t.identifier("undefined");
-          const setResultCall = t.expressionStatement(
-            t.callExpression(
-              t.memberExpression(
-                t.identifier("AndroidBridge"),
-                t.identifier("setResult")
+        const arg = retPath.node.argument || t.identifier("undefined");
+
+        // Build the if/else call to type-specific setResult
+        const callExpr = t.ifStatement(
+          t.binaryExpression("===", t.unaryExpression("typeof", arg, true), t.stringLiteral("number")),
+          t.blockStatement([
+            t.expressionStatement(
+              t.callExpression(
+                t.memberExpression(t.identifier("AndroidBridge"), t.identifier("setResult_double")),
+                [t.stringLiteral(functionName), arg, t.stringLiteral("number")]
+              )
+            ),
+          ]),
+          t.ifStatement(
+            t.binaryExpression("===", t.unaryExpression("typeof", arg, true), t.stringLiteral("string")),
+            t.blockStatement([
+              t.expressionStatement(
+                t.callExpression(
+                  t.memberExpression(t.identifier("AndroidBridge"), t.identifier("setResult_string")),
+                  [t.stringLiteral(functionName), arg, t.stringLiteral("string")]
+                )
               ),
-              [t.stringLiteral(functionName), undef, t.stringLiteral("undefined")]
-            )
-          );
-          retPath.insertBefore(setResultCall);
-        } else {
-          // return with value → setResult(functionName, returnValue, typeof returnValue)
-          const arg = retPath.node.argument;
-          const setResultCall = t.expressionStatement(
-            t.callExpression(
-              t.memberExpression(
-                t.identifier("AndroidBridge"),
-                t.identifier("setResult")
+            ]),
+            t.blockStatement([
+              t.expressionStatement(
+                t.callExpression(
+                  t.memberExpression(t.identifier("AndroidBridge"), t.identifier("setResult")),
+                  [t.stringLiteral(functionName), arg, t.unaryExpression("typeof", arg, true)]
+                )
               ),
-              [
-                t.stringLiteral(functionName),
-                arg,
-                t.unaryExpression("typeof", arg, true),
-              ]
-            )
-          );
-          retPath.insertBefore(setResultCall);
-        }
+            ])
+          )
+        );
+
+        retPath.insertBefore(callExpr);
       },
     });
 
-    // If no return statements, append setResult at the end
     if (!hasReturn && path.node.body.body) {
-      const undef = t.identifier("undefined");
-      const setResultCall = t.expressionStatement(
+      const call = t.expressionStatement(
         t.callExpression(
           t.memberExpression(t.identifier("AndroidBridge"), t.identifier("setResult")),
-          [t.stringLiteral(functionName), undef, t.stringLiteral("undefined")]
+          [t.stringLiteral(functionName), t.identifier("undefined"), t.stringLiteral("undefined")]
         )
       );
-      path.node.body.body.push(setResultCall);
+      path.node.body.body.push(call);
     }
   },
 
-  // 🔹 Remove decorators from class methods too
   ClassMethod(path) {
-    if (path.node.decorators) {
-      path.node.decorators = null;
-    }
+    if (path.node.decorators) path.node.decorators = null;
   },
 });
 
