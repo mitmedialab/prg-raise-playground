@@ -168,6 +168,8 @@ export default class Doodlebot {
     private websocket: WebSocket;
     private encoder = new TextEncoder();
 
+    private lastDisplayedKey;
+
     private isStopped = true; // should this be initializeed more intelligently?
 
     public newSounds: string[] = [];
@@ -1270,6 +1272,11 @@ export default class Doodlebot {
     async display(type: DisplayKey) {
         const value = display[type];
         await this.sendWebsocketCommand(command.display, value);
+        this.lastDisplayedKey = type;
+    }
+
+    getLastDisplayedKey() {
+        return this.lastDisplayedKey;
     }
 
     async displayText(text: string) {

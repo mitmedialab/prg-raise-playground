@@ -130,6 +130,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       await this.setDictionaries();
     })
 
+    
+
     await this.setDictionaries();
     console.log("env", env);
 
@@ -406,6 +408,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     this.doodlebot = doodlebot;
     await this.setIndicator("connected");
 
+    
+
     const urlParams = new URLSearchParams(window.location.search); // Hack for now -jon
     const ip = urlParams.get("ip");
     this.doodlebot.setIP(ip);
@@ -419,6 +423,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     
     // Wait a short moment to ensure connection is established
     await new Promise(resolve => setTimeout(resolve, 1000));
+
     
     try {
       if (this.SOCIAL && Math.random() < this.socialness && this.doodlebot) {
@@ -429,6 +434,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       console.error("Error during welcome message:", error);
       // Don't throw the error - we still want the robot to be usable even if the welcome message fails
     }
+
+    await this.doodlebot.display("happy");
 
     try {
       console.log("FETCHING");
@@ -890,22 +897,21 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     }, {type: "string", defaultValue: 1}]
   }))
   async setDisplayForSeconds(display: DisplayKey | string, seconds: number) {
+    const lastDisplayed = this.doodlebot.getLastDisplayedKey();
     let costumeNames = Object.keys(this.costumeDictionary[this.runtime._editingTarget.id]);
     if (costumeNames.includes(display)) {
       await this.uploadFile("image", this.costumeDictionary[this.runtime._editingTarget.id][display]);
       await this.setArrays();
       await this.doodlebot.displayFile("costume9999.png");
       await new Promise(resolve => setTimeout(resolve, seconds*1000));
-      await this.doodlebot.display("happy");
     } else if (imageFiles.includes(display)) {
       await this.doodlebot?.displayFile(display);
       await new Promise(resolve => setTimeout(resolve, seconds*1000));
-      await this.doodlebot.display("happy");
     } else {
       await this.doodlebot?.display(display as DisplayKey);
       await new Promise(resolve => setTimeout(resolve, seconds*1000));
-      await this.doodlebot.display("happy");
     }
+    await this.doodlebot.display(lastDisplayed);
   }
 
   async getIPAddress() {
