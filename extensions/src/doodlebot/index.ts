@@ -897,7 +897,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     }, {type: "string", defaultValue: 1}]
   }))
   async setDisplayForSeconds(display: DisplayKey | string, seconds: number) {
-    const lastDisplayed = this.doodlebot.getLastDisplayedKey();
+    const lastDisplayedKey = this.doodlebot.getLastDisplayedKey();
+    const lastDisplayedType = this.doodlebot.getLastDisplayedType();
     let costumeNames = Object.keys(this.costumeDictionary[this.runtime._editingTarget.id]);
     if (costumeNames.includes(display)) {
       await this.uploadFile("image", this.costumeDictionary[this.runtime._editingTarget.id][display]);
@@ -911,7 +912,12 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       await this.doodlebot?.display(display as DisplayKey);
       await new Promise(resolve => setTimeout(resolve, seconds*1000));
     }
-    await this.doodlebot.display(lastDisplayed);
+    if (lastDisplayedType == "text") {
+      await this.doodlebot.displayText(lastDisplayedKey);
+    } else {
+      await this.doodlebot.display(lastDisplayedKey);
+    }
+    
   }
 
   async getIPAddress() {

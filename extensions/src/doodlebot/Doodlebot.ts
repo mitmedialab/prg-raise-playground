@@ -169,6 +169,7 @@ export default class Doodlebot {
     private encoder = new TextEncoder();
 
     private lastDisplayedKey;
+    private lastDisplayedType;
 
     private isStopped = true; // should this be initializeed more intelligently?
 
@@ -1273,14 +1274,21 @@ export default class Doodlebot {
         const value = display[type];
         await this.sendWebsocketCommand(command.display, value);
         this.lastDisplayedKey = type;
+        this.lastDisplayedType = "face";
     }
 
     getLastDisplayedKey() {
         return this.lastDisplayedKey;
     }
 
+    getLastDisplayedType() {
+        return this.lastDisplayedType;
+    }
+
     async displayText(text: string) {
         await this.sendWebsocketCommand(command.display, "t", text);
+        this.lastDisplayedKey = text;
+        this.lastDisplayedType = "text";
     }
 
     async moveEyes(direction1: string, direction2: string) {
