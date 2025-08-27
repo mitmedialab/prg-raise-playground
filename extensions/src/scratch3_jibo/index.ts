@@ -1,7 +1,7 @@
 // firebase
 import database from './firebase';
 
-import { ArgumentType, BlockType } from "$common";
+import { ArgumentType, BlockType, BlockUtilityWithID } from "$common";
 import { BlockDefinitions, MenuItem } from "$common";
 import { Extension } from "$common";
 import { RuntimeEvent } from "$common";
@@ -22,7 +22,7 @@ import EmojiArgUI from "./EmojiArgument.svelte";
 import IconArgUI from "./IconArgument.svelte";
 
 import ROSLIB from "roslib";
-import BlockUtility from '$root/packages/scratch-vm/src/engine/block-utility';
+
 
 const EXTENSION_ID = "jibo";
 
@@ -75,71 +75,71 @@ var jibo_event = {
   // volume: 0,
 };
 
-class FirebaseQueue {
-  async timedFinish(timeoutFn: () => Promise<void>): Promise<void> {
-    const requests = [
-      timeoutFn(),
-      this.animFinished(),
-    ];
-    return Promise.race(requests);
-  }
+// class FirebaseQueue {
+//   async timedFinish(timeoutFn: () => Promise<void>): Promise<void> {
+//     const requests = [
+//       timeoutFn(),
+//       this.animFinished(),
+//     ];
+//     return Promise.race(requests);
+//   }
 
-  async ASR_received(): Promise<any> {
-    return new Promise((resolve, reject) => {
-      console.log("Waiting to hear from JiboAsrEvent");
-      const pathRef = database.ref("Jibo-Name/" + jiboName);
-      var eventKey: any;
-      var eventData: any;
-      pathRef.on("value", (snapshot) => {
-        // Loop through the child snapshots of JiboAsrResult
-        snapshot.forEach((childSnapshot) => {
-          eventKey = childSnapshot.key;
-          eventData = childSnapshot.val();
-        });
-        if (eventData.msg_type === "JiboAsrResult") {
-          pathRef.off();
-          // console.log("eventData is: " + JSON.stringify(eventData));
-          var transcription = eventData.transcription;
-          console.log("Jibo heard: " + transcription);
-          resolve(transcription);
-        }
-      });
-    });
-  }
-  async animFinished(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      console.log("Waiting for default message from database");
-      const pathRef = database.ref("Jibo-Name/" + jiboName);
-      var eventKey: any;
-      var eventData: any;
-      pathRef.on("value", (snapshot) => {
-        // Loop through the child snapshots of JiboAsrResult
-        snapshot.forEach((childSnapshot) => {
-          eventKey = childSnapshot.key;
-          eventData = childSnapshot.val();
-        });
-        console.log("last event is");
-        console.log(eventData);
-        if (eventData.msg_type === "default") {
-          pathRef.off();
-          resolve();
-        }
-      });
-    });
-  }
+//   async ASR_received(): Promise<any> {
+//     return new Promise((resolve, reject) => {
+//       console.log("Waiting to hear from JiboAsrEvent");
+//       const pathRef = database.ref("Jibo-Name/" + jiboName);
+//       var eventKey: any;
+//       var eventData: any;
+//       pathRef.on("value", (snapshot) => {
+//         // Loop through the child snapshots of JiboAsrResult
+//         snapshot.forEach((childSnapshot) => {
+//           eventKey = childSnapshot.key;
+//           eventData = childSnapshot.val();
+//         });
+//         if (eventData.msg_type === "JiboAsrResult") {
+//           pathRef.off();
+//           // console.log("eventData is: " + JSON.stringify(eventData));
+//           var transcription = eventData.transcription;
+//           console.log("Jibo heard: " + transcription);
+//           resolve(transcription);
+//         }
+//       });
+//     });
+//   }
+//   async animFinished(): Promise<void> {
+//     return new Promise((resolve, reject) => {
+//       console.log("Waiting for default message from database");
+//       const pathRef = database.ref("Jibo-Name/" + jiboName);
+//       var eventKey: any;
+//       var eventData: any;
+//       pathRef.on("value", (snapshot) => {
+//         // Loop through the child snapshots of JiboAsrResult
+//         snapshot.forEach((childSnapshot) => {
+//           eventKey = childSnapshot.key;
+//           eventData = childSnapshot.val();
+//         });
+//         console.log("last event is");
+//         console.log(eventData);
+//         if (eventData.msg_type === "default") {
+//           pathRef.off();
+//           resolve();
+//         }
+//       });
+//     });
+//   }
 
-  async pushToFirebase(data: any, awaitFn: () => Promise<void>) {
-    if (jiboName != "") {
-      database.ref("Jibo-Name/" + jiboName).push({ ...data });
-      await new Promise(r => setTimeout(r, 2000)); // wait a bit before proceeding
-      await awaitFn();
-    }
-    else {
-      console.log("No Jibo Name added.");
-    }
-  }
-}
-const queue = new FirebaseQueue();
+//   async pushToFirebase(data: any, awaitFn: () => Promise<void>) {
+//     if (jiboName != "") {
+//       database.ref("Jibo-Name/" + jiboName).push({ ...data });
+//       await new Promise(r => setTimeout(r, 2000)); // wait a bit before proceeding
+//       await awaitFn();
+//     }
+//     else {
+//       console.log("No Jibo Name added.");
+//     }
+//   }
+// }
+// const queue = new FirebaseQueue();
 
 export async function setJiboName(name: string): Promise<void> {
   var jiboNameRef = database.ref("Jibo-Name");
@@ -173,8 +173,9 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   dirs: MenuItem<string>[];
   audios: MenuItem<string>[]; // new
   virtualJibo: VirtualJibo;
+  state: any;
 
-  init() {
+  init(env) {
     this.dances = Object.entries(Dance).map(([dance, def]) => ({
       text: Dance[dance],
       value: Dance[dance],
@@ -187,20 +188,34 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
       value: Audio[audio],
       text: Audio[audio],
     }));
+
+    this.openUI("UI");
+    this.runtime._downloadProjectFromURLDirect("https://www.dropbox.com/scl/fi/gfexwdpvq7b0ntyuzs0oj/JiboStarter_fs.sb3?rlkey=joffuyxw0pag8v3o62g1xhxdm&st=ygrbc5cw&dl=0&tutorial=jiboBlocks");
+
     this.runtime.registerPeripheralExtension(EXTENSION_ID, this);
     this.runtime.connectPeripheral(EXTENSION_ID, 0);
     this.runtime.on(RuntimeEvent.PeripheralConnected, this.connect.bind(this));
-
-    this.ros = null;
-    this.connected = false;
-    this.rosbridgeIP = "ws://localhost:9090"; // rosbridgeIP option includes port
-    this.jbVolume = "60";
-    this.asr_out = "";
-
-    this.RosConnect({ rosIP: "localhost" });
-
     this.virtualJibo = new VirtualJibo();
     this.virtualJibo.init(this.runtime);
+    this.asr_out = "";
+
+    this.state = null;
+    
+
+  }
+
+  setJiboName(name: string) {
+    console.log("NAME", name);
+    this.ros = null;
+    this.connected = false;
+    this.rosbridgeIP = `wss://${name}.mitlivinglab.org`; // rosbridgeIP option includes port
+    this.jbVolume = "60";
+    const connection = this.RosConnect({ rosIP: `${name}.mitlivinglab.org` });
+    if (connection) {
+      this.connect();
+      jiboName = name;
+    }
+    
   }
 
   checkBusy(self: Scratch3Jibo) {
@@ -233,7 +248,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
         text: () => `Connect/Disconnect Jibo`,
         operation: async () => {
           if (jiboName === "")
-            this.openUI("jiboNameModal", "Connect Jibo");
+            this.openUI("UI", "Connect Jibo");
           else
             jiboName = "";
         },
@@ -245,7 +260,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           defaultValue: "Hello, I am Jibo",
         },
         text: (text: string) => `say ${text}`,
-        operation: async (text: string, { target }: BlockUtility) => {
+        operation: async (text: string, { target }: BlockUtilityWithID) => {
           let virtualJ = this.virtualJibo.say(text, target);
           let physicalJ = this.jiboTTSFn(text);
           await Promise.all([virtualJ, physicalJ]);
@@ -258,7 +273,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           defaultValue: "How are you?",
         },
         text: (text: string) => `ask ${text} and wait`,
-        operation: async (text: string, { target }: BlockUtility) => {
+        operation: async (text: string, { target }: BlockUtilityWithID) => {
           let virtualJ = this.virtualJibo.say(text, target);;
           let awaitResponse;
           // TODO test
@@ -327,7 +342,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           },
         }),
         text: (aname) => `play ${aname} emotion`,
-        operation: async (anim: EmotionType, { target }: BlockUtility) => {
+        operation: async (anim: EmotionType, { target }: BlockUtilityWithID) => {
           let virtualJ = this.virtualJibo.anim(anim, "emotion", target);
           const akey = emotionFiles[anim].file;
           let physicalJ = this.jiboAnimFn(akey, 1000);
@@ -344,7 +359,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           },
         }),
         text: (aname) => `show ${aname} icon`,
-        operation: async (icon: IconType, { target }: BlockUtility) => {
+        operation: async (icon: IconType, { target }: BlockUtilityWithID) => {
           let virtualJ = this.virtualJibo.anim(icon, "icon", target);
           const akey = iconFiles[icon].file;
           let physicalJ = this.jiboAnimFn(akey, 1000);
@@ -361,7 +376,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           },
         }),
         text: (cname) => `set LED ring to ${cname}`,
-        operation: async (color: ColorType, { target }: BlockUtility) => {
+        operation: async (color: ColorType, { target }: BlockUtilityWithID) => {
           let virtualJ = this.virtualJibo.setLED(color, target);
           let physicalJ = this.jiboLEDFn(color);
           await Promise.all([virtualJ, physicalJ]);
@@ -374,7 +389,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
           options: this.dirs,
         },
         text: (dname) => `look ${dname}`,
-        operation: async (dir: DirType, { target }: BlockUtility) => {
+        operation: async (dir: DirType, { target }: BlockUtilityWithID) => {
           let virtualJ = this.virtualJibo.lookAt(dir, target);
           let physicalJ = this.jiboLookFn(dir);
           await Promise.all([virtualJ, physicalJ]);
@@ -398,7 +413,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
   RosConnect(args: { rosIP: any }) {
     const rosIP = args.rosIP.toString();
-    this.rosbridgeIP = "ws://" + rosIP + ":9090";
+    this.rosbridgeIP = "wss://" + rosIP;
     // log.log("ROS: Attempting to connect to rosbridge at " + this.rosbridgeIP);
 
     if (!this.connected) {
@@ -459,6 +474,8 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   }
 
   async jiboTTSFn(text: string) {
+    console.log("saying");
+    await this.waitToClear();
     var jibo_msg = {
       // readyForNext: false,
       msg_type: "JiboAction",
@@ -471,9 +488,11 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     };
 
     // write to firebase
-    await queue.pushToFirebase(jibo_msg, queue.animFinished);
+    // await queue.pushToFirebase(jibo_msg, queue.animFinished);
 
     await this.JiboPublish(jibo_msg);
+    //await this.waitForFieldToComplete('tts_message');
+    await this.waitToClear();
   }
 
   // TODO figure out why Jibo seems to ignore this value
@@ -483,13 +502,14 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   }
 
   async jiboAskFn(text: string) {
+    await this.waitToClear();
     // say question
     await this.jiboTTSFn(text);
     // making the ASR request
     await this.JiboASR_request();
 
     // wait for sensor to return
-    this.asr_out = await queue.ASR_received();
+    this.asr_out = await this.JiboASR_receive();
   }
   async jiboListenFn() {
     if (jiboName === "") return this.virtualJibo.answer;
@@ -516,18 +536,19 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     };
 
     // write to firebase
-    var timer = () => new Promise<void>((resolve, reject) => {
-      setTimeout(resolve, 500);
-    });
-    await queue.pushToFirebase(jibo_msg,
-      () => queue.timedFinish(timer)
-    ); // set 500ms time limit on led command
+    // var timer = () => new Promise<void>((resolve, reject) => {
+    //   setTimeout(resolve, 500);
+    // });
+    // await queue.pushToFirebase(jibo_msg,
+    //   () => queue.timedFinish(timer)
+    // ); // set 500ms time limit on led command
 
     await this.JiboPublish(jibo_msg);
   }
 
   // there is no message when the look finishes. Just using a set time to finish block
   async jiboLookFn(dir: string) {
+    await this.waitToClear();
     let coords = directionDef[dir].value;
     let jibo_msg = {
       do_lookat: true,
@@ -542,12 +563,14 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     var timer = () => new Promise<void>((resolve, reject) => {
       setTimeout(resolve, 1000); // wait a second for movement to complete
     });
-    await queue.pushToFirebase(jibo_msg, timer)
+    // await queue.pushToFirebase(jibo_msg, timer)
 
     await this.JiboPublish(jibo_msg);
+    await this.waitForMotionToComplete();
   }
 
   async jiboAnimFn(animation_key: string, delay: number) {
+    await this.waitToClear();
     console.log("the animation file is: " + animation_key); // debug statement
     var jibo_msg = {
       // readyForNext: false,
@@ -560,29 +583,30 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     };
 
     // write to firebase
-    var timer = (delay) => new Promise<void>((resolve, reject) => {
-      setTimeout(resolve, delay); // using timer because animFinished does not seem to be reliable
-    });
-    await queue.pushToFirebase(jibo_msg, timer.bind(delay)); // delay before next command
+    // var timer = (delay) => new Promise<void>((resolve, reject) => {
+    //   setTimeout(resolve, delay); // using timer because animFinished does not seem to be reliable
+    // });
+    // await queue.pushToFirebase(jibo_msg, timer.bind(delay)); // delay before next command
 
     await this.JiboPublish(jibo_msg);
+    await this.waitForFieldToComplete('in_motion')
+    console.log("ANIMATION DONE");
   }
 
   async jiboDanceFn(animation_key: string, delay: number) {
+    await this.waitToClear();
     await this.jiboAnimFn(animation_key, delay);
     // transition back to neutral
     var timer = () => new Promise<void>((resolve, reject) => {
       setTimeout(resolve, 500);
     });
-    await queue.pushToFirebase({
-      do_anim_transition: true,
-      anim_transition: 0
-    }, timer);
 
     await this.JiboPublish({ do_anim_transition: true, anim_transition: 0 });
+    await this.waitForFieldToComplete('in_motion');
   }
 
   async jiboAudioFn(audio_file: string) {
+    await this.waitToClear();
     console.log("the audio file is: " + audio_file); // debug statement
     var jibo_msg = {
       // readyForNext: false,
@@ -595,10 +619,58 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     };
 
     // write to firebase
-    await queue.pushToFirebase(jibo_msg, queue.animFinished);
+    // await queue.pushToFirebase(jibo_msg, queue.animFinished);
 
     await this.JiboPublish(jibo_msg);
+    await this.waitForFieldToComplete('audio');
   }
+
+  waitToClear() {
+    return new Promise<void>((resolve) => {
+        console.log(this.state);
+        const interval = setInterval(() => {
+          if (this.state && this.state['is_listening'] === false 
+            && this.state['in_motion'] == '' 
+            && this.state['audio'] == '' 
+            && this.state['tts_msg'] == ''
+            && this.state['doing_motion'] == false) {
+            clearInterval(interval);
+            console.log("All fields clear");
+            resolve();
+          } else {
+            console.log(this.state);
+          }
+        }, 100); // Check every 100ms
+    });
+  }
+
+  waitForFieldToComplete(field: string) {
+    return new Promise<void>((resolve) => {
+        console.log(this.state);
+        const interval = setInterval(() => {
+          if (this.state && this.state[field] === '') {
+            clearInterval(interval);
+            console.log("Dance complete.");
+            resolve();
+          }
+        }, 100); // Check every 100ms
+    });
+  }
+
+  waitForMotionToComplete() {
+    return new Promise<void>((resolve) => {
+      console.log(this.state);
+      const interval = setInterval(() => {
+        if (this.state && this.state.doing_motion === false) {
+          clearInterval(interval);
+          console.log("Dance complete.");
+          resolve();
+        }
+      }, 100); // Check every 100ms
+    });
+  }
+
+  
 
   async JiboPublish(msg: any) {
     if (!this.connected) {
@@ -628,39 +700,42 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
       messageType: "jibo_msgs/JiboState",
     });
 
-    state_listener.subscribe(function (message: any) {
-      console.log("Received message on " + state_listener.name + ": ");
-      console.log(message);
-      state_listener.unsubscribe();
+    state_listener.subscribe((message: any) => {
+      //console.log("Received message on " + state_listener.name + ": ");
+      // console.log(message);
+      this.state = message;
+      //state_listener.unsubscribe();
     });
   }
   async JiboASR_request() {
-    // if (!this.connected) {
-    //   console.log("ROS is not connetced");
-    //   return false;
-    // }
-    // var cmdVel = new ROSLIB.Topic({
-    //   ros: this.ros,
-    //   name: "/jibo_asr_command",
-    //   messageType: "jibo_msgs/JiboAsrCommand",
-    // });
-    // var jibo_msg = new ROSLIB.Message({ heyjibo: false, command: 1 });
-    var jibo_msg = {
-      msg_type: "JiboAsrCommand",
-      command: 1,
-      heyjibo: false,
-      detectend: false,
-      continuous: false,
-      incremental: false,
-      alternatives: false,
-      rule: "",
-    };
-
-    var timer = () => new Promise<void>((resolve, reject) => {
-      setTimeout(resolve, 500);
+    if (!this.connected) {
+      console.log("ROS is not connetced");
+      return false;
+    }
+    var cmdVel = new ROSLIB.Topic({
+      ros: this.ros,
+      name: "/jibo_asr_command",
+      messageType: "jibo_msgs/JiboAsrCommand",
     });
-    await queue.pushToFirebase(jibo_msg, timer); // delay a bit before next command
-    // cmdVel.publish(jibo_msg);
+    var jibo_msg = new ROSLIB.Message({ heyjibo: false, command: 1 });
+    cmdVel.publish(jibo_msg);
+    await new Promise((r) => setTimeout(r, 500));
+    // var jibo_msg = {
+    //   msg_type: "JiboAsrCommand",
+    //   command: 1,
+    //   heyjibo: false,
+    //   detectend: false,
+    //   continuous: false,
+    //   incremental: false,
+    //   alternatives: false,
+    //   rule: "",
+    // };
+
+    // var timer = () => new Promise<void>((resolve, reject) => {
+    //   setTimeout(resolve, 500);
+    // });
+    // await queue.pushToFirebase(jibo_msg, timer); // delay a bit before next command
+    // // cmdVel.publish(jibo_msg);
   }
 
   async JiboASR_receive(): Promise<any> {
