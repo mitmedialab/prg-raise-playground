@@ -2,7 +2,7 @@
   import type Extension from ".";
   import { ReactiveInvoke, reactiveInvoke, activeClass, color } from "$common";
   // my imports
-  import { setJiboName } from "./index";
+  // import { setJiboName } from "./index";
 
   /**
    * @summary This is a reference to the instance of your extension.
@@ -45,7 +45,7 @@
     if (validJiboName(inputText)) {
       inputText = inputText.toLowerCase();
       inputText = inputText.trim();
-      await setJiboName(inputText);
+      // await setJiboName(inputText);
       // run extensions "connect" function once name is set
       invoke("connect");
       errorVisible = true;

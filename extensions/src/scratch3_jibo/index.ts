@@ -1,5 +1,5 @@
 // firebase
-import database from './firebase';
+
 
 import { ArgumentType, BlockType, BlockUtilityWithID } from "$common";
 import { BlockDefinitions, MenuItem } from "$common";
@@ -141,26 +141,26 @@ var jibo_event = {
 // }
 // const queue = new FirebaseQueue();
 
-export async function setJiboName(name: string): Promise<void> {
-  var jiboNameRef = database.ref("Jibo-Name");
-  return new Promise<void>((resolve) => {
-    jiboNameRef
-      .once("value", (snapshot) => {
-        localStorage.setItem("prevJiboName", name);
-        if (snapshot.hasChild(name)) {
-          console.log("'" + name + "' exists.");
-          jiboName = name;
-          resolve();
-        } else {
-          database.ref("Jibo-Name/" + name).push(jibo_event);
-          jiboName = name;
-          console.log(
-            "'" + name + "' did not exist, and has now been created."
-          );
-          resolve();
-        }
-      });
-  });
+export async function setJiboName(name: string) {
+  // var jiboNameRef = database.ref("Jibo-Name");
+  // return new Promise<void>((resolve) => {
+  //   jiboNameRef
+  //     .once("value", (snapshot) => {
+  //       localStorage.setItem("prevJiboName", name);
+  //       if (snapshot.hasChild(name)) {
+  //         console.log("'" + name + "' exists.");
+  //         jiboName = name;
+  //         resolve();
+  //       } else {
+  //         database.ref("Jibo-Name/" + name).push(jibo_event);
+  //         jiboName = name;
+  //         console.log(
+  //           "'" + name + "' did not exist, and has now been created."
+  //         );
+  //         resolve();
+  //       }
+  //     });
+  // });
 }
 
 export default class Scratch3Jibo extends Extension<Details, Blocks> {
@@ -190,7 +190,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     }));
 
     this.openUI("UI");
-    this.runtime._downloadProjectFromURLDirect("https://www.dropbox.com/scl/fi/gfexwdpvq7b0ntyuzs0oj/JiboStarter_fs.sb3?rlkey=joffuyxw0pag8v3o62g1xhxdm&st=ygrbc5cw&dl=0&tutorial=jiboBlocks");
+    //this.runtime._downloadProjectFromURLDirect("https://www.dropbox.com/scl/fi/gfexwdpvq7b0ntyuzs0oj/JiboStarter_fs.sb3?rlkey=joffuyxw0pag8v3o62g1xhxdm&st=ygrbc5cw&dl=0&tutorial=jiboBlocks");
 
     this.runtime.registerPeripheralExtension(EXTENSION_ID, this);
     this.runtime.connectPeripheral(EXTENSION_ID, 0);
@@ -208,10 +208,11 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     console.log("NAME", name);
     this.ros = null;
     this.connected = false;
-    this.rosbridgeIP = `wss://${name}.mitlivinglab.org`; // rosbridgeIP option includes port
+    this.rosbridgeIP = `ws://${name}.local`; // rosbridgeIP option includes port
     this.jbVolume = "60";
-    const connection = this.RosConnect({ rosIP: `${name}.mitlivinglab.org` });
+    const connection = this.RosConnect({ rosIP: `${name}.local` });
     if (connection) {
+      console.log("connected");
       this.connect();
       jiboName = name;
     }
@@ -236,166 +237,262 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   }
 
 
+  async JiboButton() {
+    if (this.jiboName === "")
+      this.openUI("jiboNameModal", "Connect Jibo");
+    else
+      this.jiboName = "";
+    AndroidBridge.setResult("JiboButton", undefined, "undefined");
+  }
+
+  SetJiboName(name: string) {
+    console.log("NAME", name);
+    this.ros = null;
+    this.connected = false;
+    this.rosbridgeIP = `ws://${name}.local`; // rosbridgeIP option includes port
+    this.jbVolume = "60";
+    const connection = this.RosConnect({ rosIP: `${name}.local` });
+    if (connection) {
+      console.log("connected");
+      this.connect();
+      jiboName = name;
+    }
+  }
+
+
+  async JiboTTS(text: string) {
+    //let virtualJ = this.virtualJibo.say(text, target);
+    // let virtualJ = this.virtualJibo.say(text, target);
+    let physicalJ = this.jiboTTSFn(text);
+    await Promise.all([physicalJ]);
+    //AndroidBridge.setResult("JiboTTS", undefined, "undefined");
+    
+  }
+
+  async JiboAsk(text: string) {
+    //let virtualJ = this.virtualJibo.say(text, target);
+    let awaitResponse;
+    if (this.jiboName === "")
+      awaitResponse = this.virtualJibo.ask(text);
+    else
+      awaitResponse = this.jiboAskFn(text);
+
+    await Promise.all([awaitResponse]);
+    AndroidBridge.setResult("JiboAsk", undefined, "undefined");
+  }
+
+  JiboListen() {
+    AndroidBridge.setResult_string("JiboListen", this.jiboListenFn(), "string");
+    return this.jiboListenFn();
+  }
+
+  async JiboDance(dance: DanceType) {
+    const akey = danceFiles[dance].file;
+    await this.jiboDanceFn(akey, 5000);
+    AndroidBridge.setResult("JiboDance", undefined, "undefined");
+  }
+
+  async JiboAudio(audio: AudioType) {
+    const audiokey = audioFiles[audio].file;
+    await this.jiboAudioFn(audiokey);
+    AndroidBridge.setResult("JiboAudio", undefined, "undefined");
+  }
+
+  async JiboVolume(volume: string) {
+    this.jiboVolumeFn(volume);
+    AndroidBridge.setResult("JiboVolume", undefined, "undefined");
+  }
+
+  async JiboEmote(anim: EmotionType) {
+    // let virtualJ = this.virtualJibo.anim(anim, "emotion", target);
+    const akey = emotionFiles[anim].file;
+    let physicalJ = this.jiboAnimFn(akey, 1000);
+    await Promise.all([physicalJ]);
+    AndroidBridge.setResult("JiboEmote", undefined, "undefined");
+  }
+
+  async JiboIcon(icon: IconType) {
+    // let virtualJ = this.virtualJibo.anim(icon, "icon", target);
+    const akey = iconFiles[icon].file;
+    let physicalJ = this.jiboAnimFn(akey, 1000);
+    await Promise.all([physicalJ]);
+    AndroidBridge.setResult("JiboIcon", undefined, "undefined");
+  }
+
+  async JiboLED(color: ColorType) {
+    // let virtualJ = this.virtualJibo.setLED(color, target);
+    let physicalJ = this.jiboLEDFn(color);
+    await Promise.all([physicalJ]);
+    AndroidBridge.setResult("JiboLED", undefined, "undefined");
+  }
+
+  async JiboLook(dir: DirType) {
+
+          let physicalJ = this.jiboLookFn(dir);
+          await Promise.all([physicalJ]);
+    AndroidBridge.setResult("JiboLook", undefined, "undefined");
+  }
 
   defineBlocks(): BlockDefinitions<Scratch3Jibo> {
-    return {
-      JiboButton: (self: Scratch3Jibo) => ({
-        type: BlockType.Button,
-        arg: {
-          type: ArgumentType.String,
-          defaultValue: "Jibo's name here",
-        },
-        text: () => `Connect/Disconnect Jibo`,
-        operation: async () => {
-          if (jiboName === "")
-            this.openUI("UI", "Connect Jibo");
-          else
-            jiboName = "";
-        },
-      }),
-      JiboTTS: () => ({
-        type: BlockType.Command,
-        arg: {
-          type: ArgumentType.String,
-          defaultValue: "Hello, I am Jibo",
-        },
-        text: (text: string) => `say ${text}`,
-        operation: async (text: string, { target }: BlockUtilityWithID) => {
-          let virtualJ = this.virtualJibo.say(text, target);
-          let physicalJ = this.jiboTTSFn(text);
-          await Promise.all([virtualJ, physicalJ]);
-        }
-      }),
-      JiboAsk: () => ({
-        type: BlockType.Command,
-        arg: {
-          type: ArgumentType.String,
-          defaultValue: "How are you?",
-        },
-        text: (text: string) => `ask ${text} and wait`,
-        operation: async (text: string, { target }: BlockUtilityWithID) => {
-          let virtualJ = this.virtualJibo.say(text, target);;
-          let awaitResponse;
-          // TODO test
-          if (jiboName === "") awaitResponse = this.virtualJibo.ask(text);
-          else awaitResponse = this.jiboAskFn(text);
+    return {};
+    // return {
+    //   JiboButton: (self: Scratch3Jibo) => ({
+    //     type: BlockType.Button,
+    //     arg: {
+    //       type: ArgumentType.String,
+    //       defaultValue: "Jibo's name here",
+    //     },
+    //     text: () => `Connect/Disconnect Jibo`,
+    //     operation: async () => {
+    //       if (jiboName === "")
+    //         this.openUI("UI", "Connect Jibo");
+    //       else
+    //         jiboName = "";
+    //     },
+    //   }),
+    //   JiboTTS: () => ({
+    //     type: BlockType.Command,
+    //     arg: {
+    //       type: ArgumentType.String,
+    //       defaultValue: "Hello, I am Jibo",
+    //     },
+    //     text: (text: string) => `say ${text}`,
+    //     operation: async (text: string, { target }: BlockUtilityWithID) => {
+    //       let virtualJ = this.virtualJibo.say(text, target);
+    //       let physicalJ = this.jiboTTSFn(text);
+    //       await Promise.all([virtualJ, physicalJ]);
+    //     }
+    //   }),
+    //   JiboAsk: () => ({
+    //     type: BlockType.Command,
+    //     arg: {
+    //       type: ArgumentType.String,
+    //       defaultValue: "How are you?",
+    //     },
+    //     text: (text: string) => `ask ${text} and wait`,
+    //     operation: async (text: string, { target }: BlockUtilityWithID) => {
+    //       let virtualJ = this.virtualJibo.say(text, target);;
+    //       let awaitResponse;
+    //       // TODO test
+    //       if (jiboName === "") awaitResponse = this.virtualJibo.ask(text);
+    //       else awaitResponse = this.jiboAskFn(text);
 
-          await Promise.all([virtualJ, awaitResponse]);
-        }
-      }),
-      JiboListen: () => ({
-        type: BlockType.Reporter,
-        text: `answer`,
-        operation: () =>
-          this.jiboListenFn(),
-      }),
-      // JiboState: () => ({ // helpful for debugging
-      //     type:BlockType.Command,
-      //     text: `read state`,
-      //     operation: () => self.JiboState()
-      // }),
-      JiboDance: () => ({
-        type: BlockType.Command,
-        arg: {
-          type: ArgumentType.String,
-          options: this.dances,
-        },
-        text: (dname) => `play ${dname} dance`,
-        operation: async (dance: DanceType) => {
-          const akey = danceFiles[dance].file;
-          await this.jiboDanceFn(akey, 5000);
-        },
-      }),
-      JiboAudio: () => ({
-        type: BlockType.Command,
-        arg: {
-          type: ArgumentType.String,
-          options: this.audios,
-        },
-        text: (audioname) => `play ${audioname} audio`,
-        operation: async (audio: AudioType) => {
-          const audiokey = audioFiles[audio].file;
-          await this.jiboAudioFn(audiokey);
-        },
-      }),
-      /* Jibo block still does not work
-      // new volume block start
-      JiboVolume: () => ({
-        type: BlockType.Command,
-        arg: {
-          type: ArgumentType.String,
-          defaultValue: "60",
-        },
-        text: (volume: string) => `set volume to ${volume}`,
-        operation: (volume: string) =>
-          this.jiboVolumeFn(volume),
-      }),
-      // new volume block end
-      */
-      JiboEmote: () => ({
-        type: BlockType.Command,
-        arg: this.makeCustomArgument({
-          component: EmojiArgUI,
-          initial: {
-            value: Emotion.Happy,
-            text: "Happy",
-          },
-        }),
-        text: (aname) => `play ${aname} emotion`,
-        operation: async (anim: EmotionType, { target }: BlockUtilityWithID) => {
-          let virtualJ = this.virtualJibo.anim(anim, "emotion", target);
-          const akey = emotionFiles[anim].file;
-          let physicalJ = this.jiboAnimFn(akey, 1000);
-          await Promise.all([virtualJ, physicalJ]);
-        },
-      }),
-      JiboIcon: () => ({
-        type: BlockType.Command,
-        arg: this.makeCustomArgument({
-          component: IconArgUI,
-          initial: {
-            value: Icon.Taco,
-            text: "taco",
-          },
-        }),
-        text: (aname) => `show ${aname} icon`,
-        operation: async (icon: IconType, { target }: BlockUtilityWithID) => {
-          let virtualJ = this.virtualJibo.anim(icon, "icon", target);
-          const akey = iconFiles[icon].file;
-          let physicalJ = this.jiboAnimFn(akey, 1000);
-          await Promise.all([virtualJ, physicalJ]);
-        }
-      }),
-      JiboLED: () => ({
-        type: BlockType.Command,
-        arg: this.makeCustomArgument({
-          component: ColorArgUI,
-          initial: {
-            value: Color.Blue,
-            text: "blue",
-          },
-        }),
-        text: (cname) => `set LED ring to ${cname}`,
-        operation: async (color: ColorType, { target }: BlockUtilityWithID) => {
-          let virtualJ = this.virtualJibo.setLED(color, target);
-          let physicalJ = this.jiboLEDFn(color);
-          await Promise.all([virtualJ, physicalJ]);
-        }
-      }),
-      JiboLook: () => ({
-        type: BlockType.Command,
-        arg: {
-          type: ArgumentType.String,
-          options: this.dirs,
-        },
-        text: (dname) => `look ${dname}`,
-        operation: async (dir: DirType, { target }: BlockUtilityWithID) => {
-          let virtualJ = this.virtualJibo.lookAt(dir, target);
-          let physicalJ = this.jiboLookFn(dir);
-          await Promise.all([virtualJ, physicalJ]);
-        },
-      }),
-    };
+    //       await Promise.all([virtualJ, awaitResponse]);
+    //     }
+    //   }),
+    //   JiboListen: () => ({
+    //     type: BlockType.Reporter,
+    //     text: `answer`,
+    //     operation: () =>
+    //       this.jiboListenFn(),
+    //   }),
+    //   // JiboState: () => ({ // helpful for debugging
+    //   //     type:BlockType.Command,
+    //   //     text: `read state`,
+    //   //     operation: () => self.JiboState()
+    //   // }),
+    //   JiboDance: () => ({
+    //     type: BlockType.Command,
+    //     arg: {
+    //       type: ArgumentType.String,
+    //       options: this.dances,
+    //     },
+    //     text: (dname) => `play ${dname} dance`,
+    //     operation: async (dance: DanceType) => {
+    //       const akey = danceFiles[dance].file;
+    //       await this.jiboDanceFn(akey, 5000);
+    //     },
+    //   }),
+    //   JiboAudio: () => ({
+    //     type: BlockType.Command,
+    //     arg: {
+    //       type: ArgumentType.String,
+    //       options: this.audios,
+    //     },
+    //     text: (audioname) => `play ${audioname} audio`,
+    //     operation: async (audio: AudioType) => {
+    //       const audiokey = audioFiles[audio].file;
+    //       await this.jiboAudioFn(audiokey);
+    //     },
+    //   }),
+    //   /* Jibo block still does not work
+    //   // new volume block start
+    //   JiboVolume: () => ({
+    //     type: BlockType.Command,
+    //     arg: {
+    //       type: ArgumentType.String,
+    //       defaultValue: "60",
+    //     },
+    //     text: (volume: string) => `set volume to ${volume}`,
+    //     operation: (volume: string) =>
+    //       this.jiboVolumeFn(volume),
+    //   }),
+    //   // new volume block end
+    //   */
+    //   JiboEmote: () => ({
+    //     type: BlockType.Command,
+    //     arg: this.makeCustomArgument({
+    //       component: EmojiArgUI,
+    //       initial: {
+    //         value: Emotion.Happy,
+    //         text: "Happy",
+    //       },
+    //     }),
+    //     text: (aname) => `play ${aname} emotion`,
+    //     operation: async (anim: EmotionType, { target }: BlockUtilityWithID) => {
+    //       let virtualJ = this.virtualJibo.anim(anim, "emotion", target);
+    //       const akey = emotionFiles[anim].file;
+    //       let physicalJ = this.jiboAnimFn(akey, 1000);
+    //       await Promise.all([virtualJ, physicalJ]);
+    //     },
+    //   }),
+    //   JiboIcon: () => ({
+    //     type: BlockType.Command,
+    //     arg: this.makeCustomArgument({
+    //       component: IconArgUI,
+    //       initial: {
+    //         value: Icon.Taco,
+    //         text: "taco",
+    //       },
+    //     }),
+    //     text: (aname) => `show ${aname} icon`,
+    //     operation: async (icon: IconType, { target }: BlockUtilityWithID) => {
+    //       let virtualJ = this.virtualJibo.anim(icon, "icon", target);
+    //       const akey = iconFiles[icon].file;
+    //       let physicalJ = this.jiboAnimFn(akey, 1000);
+    //       await Promise.all([virtualJ, physicalJ]);
+    //     }
+    //   }),
+    //   JiboLED: () => ({
+    //     type: BlockType.Command,
+    //     arg: this.makeCustomArgument({
+    //       component: ColorArgUI,
+    //       initial: {
+    //         value: Color.Blue,
+    //         text: "blue",
+    //       },
+    //     }),
+    //     text: (cname) => `set LED ring to ${cname}`,
+    //     operation: async (color: ColorType, { target }: BlockUtilityWithID) => {
+    //       let virtualJ = this.virtualJibo.setLED(color, target);
+    //       let physicalJ = this.jiboLEDFn(color);
+    //       await Promise.all([virtualJ, physicalJ]);
+    //     }
+    //   }),
+    //   JiboLook: () => ({
+    //     type: BlockType.Command,
+    //     arg: {
+    //       type: ArgumentType.String,
+    //       options: this.dirs,
+    //     },
+    //     text: (dname) => `look ${dname}`,
+    //     operation: async (dir: DirType, { target }: BlockUtilityWithID) => {
+    //       let virtualJ = this.virtualJibo.lookAt(dir, target);
+    //       let physicalJ = this.jiboLookFn(dir);
+    //       await Promise.all([virtualJ, physicalJ]);
+    //     },
+    //   }),
+    // };
   }
 
   /* The following 4 functions have to exist for the peripherial indicator */
@@ -413,7 +510,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
   RosConnect(args: { rosIP: any }) {
     const rosIP = args.rosIP.toString();
-    this.rosbridgeIP = "wss://" + rosIP;
+    this.rosbridgeIP = "ws://" + rosIP + ":9090";
     // log.log("ROS: Attempting to connect to rosbridge at " + this.rosbridgeIP);
 
     if (!this.connected) {
