@@ -1,4 +1,6 @@
-import EventEmitter from "events";
+/// <reference types="@types/web-bluetooth" />
+
+import { EventEmitter } from "eventemitter3";
 import { Service } from "./communication/ServiceHelper";
 import UartService from "./communication/UartService";
 import { followLine } from "./LineFollowing";
@@ -158,7 +160,7 @@ export default class Doodlebot {
         });
     }
 
-    private pending: Pending = { motor: undefined, wifi: undefined, websocket: undefined, ip: undefined };
+    private pending: Pending = { motor: undefined, wifi: undefined, websocket: undefined, ip: undefined, video: undefined, image: undefined };
     private onMotor = new EventEmitter();
     private onSensor = new EventEmitter();
     private onNetwork = new EventEmitter();
@@ -305,23 +307,23 @@ export default class Doodlebot {
         this.ble.onReceive(this.receiveTextBLE.bind(this));
         this.ble.onDisconnect(this.handleBleDisconnect.bind(this));
         this.connectionWorkflow(credentials);
-        
+
         this.pc = new RTCPeerConnection();
         this.pc.addTransceiver("video", { direction: "recvonly" });
         console.log("pc", this.pc);
-        
+
         this.pc.ontrack = (event) => {
             const stream = event.streams[0];
             console.log("stream", stream);
-        
+
             this.webrtcVideo = document.createElement('video');
             this.webrtcVideo.srcObject = stream;
             this.webrtcVideo.autoplay = true;
             this.webrtcVideo.playsInline = true;
             // document.body.appendChild(this.webrtcVideo);
-        
+
             this.webrtcVideo.play().catch(e => console.error("Playback error:", e));
-        
+
             this.webrtcVideo.onerror = (error) => {
                 console.log("ERROR 2", error);
             };
@@ -345,7 +347,7 @@ export default class Doodlebot {
             };
             this.webrtcVideo.requestVideoFrameCallback(handleVideoFrame);
         };
-        
+
         // this is an ugly hack just to get things working
         // (it was crashing on my machine)
         // the pc.createOffer() call below needs the IP
@@ -368,7 +370,7 @@ export default class Doodlebot {
             .then(response => response.json())
             .then(answer => this.pc.setRemoteDescription(answer))
             .catch(err => console.error("WebRTC error:", err));
-        
+
         this.previewImage = document.createElement("img");
         document.body.appendChild(this.previewImage);
 
@@ -377,7 +379,7 @@ export default class Doodlebot {
         //     body: JSON.stringify(this.pc.localDescription),
         //     headers: { 'Content-Type': 'application/json' }
         // })
-        
+
     }
 
     private formCommand(...args: (string | number)[]) {
@@ -592,7 +594,7 @@ export default class Doodlebot {
         let uploadedImages = await this.fetchAndExtractList(endpoint);
         return uploadedImages.filter(item => !this.imageFiles.includes(item));
     }
-    
+
     async callSegmentation(ip) {
         while (!this.connection) {
             await new Promise(resolve => setTimeout(resolve, 100));
@@ -834,7 +836,7 @@ export default class Doodlebot {
         const urlParams = new URLSearchParams(window.location.search); // Hack for now -jon
         let ip = urlParams.get("ip");
         this.setIP(ip);
-        
+
         await this.connectToWebsocket(this.connection.ip);
         this.detector = new LineDetector(this.connection.ip);
         //await this.connectToImageWebSocket(this.connection.ip);
@@ -843,8 +845,8 @@ export default class Doodlebot {
     getImageStream() {
         return this.canvasWebrtc;
     }
-    
-    
+
+
 
     // async getImageStream() {
     //     if (this.pending["websocket"]) await this.pending["websocket"];
@@ -945,11 +947,11 @@ export default class Doodlebot {
     deepEqual = (a, b) => {
         if (a === b) return true;
         if (Array.isArray(a) && Array.isArray(b)) {
-          return a.length === b.length && a.every((val, i) => this.deepEqual(val, b[i]));
+            return a.length === b.length && a.every((val, i) => this.deepEqual(val, b[i]));
         }
         if (typeof a === 'object' && typeof b === 'object') {
-          const keysA = Object.keys(a), keysB = Object.keys(b);
-          return keysA.length === keysB.length && keysA.every(key => this.deepEqual(a[key], b[key]));
+            const keysA = Object.keys(a), keysB = Object.keys(b);
+            return keysA.length === keysB.length && keysA.every(key => this.deepEqual(a[key], b[key]));
         }
         return false;
     };
@@ -984,7 +986,7 @@ export default class Doodlebot {
                 this.lineCounter += 1;
 
                 let newMotorCommands;
-                
+
                 if (first) {
                     ({ motorCommands: newMotorCommands, bezierPoints: this.bezierPoints, line: this.line } = followLine(
                         lineData,
@@ -1002,13 +1004,13 @@ export default class Doodlebot {
                         lineData,
                         prevLine,
                         this.motorCommands,
-                        [prevInterval/2],
+                        [prevInterval / 2],
                         [t.aT],
                         add,
                         false
                     ));
                 }
-                
+
                 lastTime = Date.now();
 
                 // Debugging statement
@@ -1022,7 +1024,7 @@ export default class Doodlebot {
                     newMotorCommands[0].angle = -10;
                 }
 
-                
+
                 if (this.iterationNumber % iterations == 0) {
                     newMotorCommands[0].angle = this.limitArcLength(newMotorCommands[0].angle, newMotorCommands[0].radius, 2);
                     // newMotorCommands[0].angle = this.increaseArcLength(newMotorCommands[0].angle, newMotorCommands[0].radius, );
@@ -1037,14 +1039,14 @@ export default class Doodlebot {
                             t = calculateArcTime(0, 0, newMotorCommands[0].radius, newMotorCommands[0].angle);
                         }
                     }
-                    
+
                     this.motorCommands = newMotorCommands;
                     for (const command of this.motorCommands) {
                         let { radius, angle } = command;
 
                         if ((lineData.length == 0 || !this.deepEqual(lineData, prevLine))) {
                             if (command.distance > 0) {
-                                this.sendWebsocketCommand("m", Math.round(12335.6*command.distance), Math.round(12335.6*command.distance), 500, 500);
+                                this.sendWebsocketCommand("m", Math.round(12335.6 * command.distance), Math.round(12335.6 * command.distance), 500, 500);
                             } else {
                                 this.sendBLECommand("t", radius, angle);
                             }
@@ -1052,7 +1054,7 @@ export default class Doodlebot {
                         if (this.deepEqual(lineData, prevLine) && lineData.length > 0) {
                             console.log("LAG");
                         }
-                        
+
                     }
                     if (prevLine.length < 100 && lineData.length < 100) {
                         add = add + 1;
@@ -1060,9 +1062,9 @@ export default class Doodlebot {
                         add = 0;
                     }
                 }
-                
+
                 await new Promise((resolve) => setTimeout(resolve, waitTime));
-                prevInterval = waitTime/1000;
+                prevInterval = waitTime / 1000;
                 first = false;
                 prevLine = lineData;
             } catch (error) {
@@ -1082,7 +1084,7 @@ export default class Doodlebot {
         }
         angle = Math.abs(angle);
         const maxAngle = (maxArcLength * 180) / ((radius + 2.93) * Math.PI);
-    
+
         const returnAngle = Math.min(angle, maxAngle);
         // Return the limited angle
         return negative ? returnAngle * -1 : returnAngle;
@@ -1096,9 +1098,9 @@ export default class Doodlebot {
         }
         angle = Math.abs(angle);
         const maxAngle = (maxArcLength * 180) / ((radius + 2.93) * Math.PI);
-    
+
         // Return the limited angle
-        return negative ? maxAngle*-1 : maxAngle;
+        return negative ? maxAngle * -1 : maxAngle;
     }
 
     private setupAudioStream() {
@@ -1184,7 +1186,7 @@ export default class Doodlebot {
             console.warn("WebSocket is already sending audio data.");
             return;
         }
-    
+
         this.isSendingAudio = true;
 
         let CHUNK_SIZE = 1024;
@@ -1239,10 +1241,10 @@ export default class Doodlebot {
         const startTime = Date.now();
         const callbacks = this.audioCallbacks;
 
-        
+
 
         return new Promise<{ context: AudioContext, buffer: AudioBuffer }>((resolve) => {
-            const accumulate = (chunk: Float32Array) => {
+            const accumulate = (chunk: Float32Array<ArrayBuffer>) => {
                 // Check if we've exceeded our time limit
                 if (Date.now() - startTime >= numSeconds * 1000) {
                     callbacks.delete(accumulate);
@@ -1293,30 +1295,30 @@ export default class Doodlebot {
 
     async moveEyes(direction1: string, direction2: string) {
         const dirMap: Record<string, string> = {
-          center: "C",
-          left: "<",
-          right: ">",
-          up: "^",
-          down: "v",
+            center: "C",
+            left: "<",
+            right: ">",
+            up: "^",
+            down: "v",
         };
 
         //const websocket2 = new WebSocket(`ws://${this.connection.ip}:${8766}`);
-      
+
         const from = dirMap[direction1];
         const to = dirMap[direction2];
-      
-        if (!from || !to || (from != "C" && to != "C")) {
-          throw new Error(`Invalid direction: ${direction1}, ${direction2}`);
-        }
-      
-        const movement = `${from}${to}`;
-      
-        await this.sendWebsocketCommand(command.display, movement);
-      }
 
-      async displayFile(file: string) {
+        if (!from || !to || (from != "C" && to != "C")) {
+            throw new Error(`Invalid direction: ${direction1}, ${direction2}`);
+        }
+
+        const movement = `${from}${to}`;
+
+        await this.sendWebsocketCommand(command.display, movement);
+    }
+
+    async displayFile(file: string) {
         await this.sendWebsocketCommand(command.display, file);
-     }
+    }
 
     /**
      * NOTE: Consider making private
