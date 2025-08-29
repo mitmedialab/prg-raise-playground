@@ -8,7 +8,7 @@
     "allowJs": false,
     "moduleResolution": "Node",
     "skipLibCheck": true,
-    "ignoreDeprecations": "6.0",
+    "ignoreDeprecations": "5.0",
     "noErrorTruncation": true,
     "strictPropertyInitialization": false,
     "lib": [
