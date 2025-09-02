@@ -174,6 +174,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
   audios: MenuItem<string>[]; // new
   virtualJibo: VirtualJibo;
   state: any;
+  isIP = false;
 
   init(env) {
     this.dances = Object.entries(Dance).map(([dance, def]) => ({
@@ -245,18 +246,36 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     AndroidBridge.setResult("JiboButton", undefined, "undefined");
   }
 
+  startsWithNumber(str) {
+    return /^[0-9]/.test(str);
+  }
+
   SetJiboName(name: string) {
     console.log("NAME", name);
     this.ros = null;
     this.connected = false;
-    this.rosbridgeIP = `ws://${name}.local`; // rosbridgeIP option includes port
+    if (this.startsWithNumber(name)) {
+      this.isIP = true;
+    }
+    if (this.isIP) {
+      this.rosbridgeIP = `ws://${name}`; // rosbridgeIP option includes port
+    } else {
+      this.rosbridgeIP = `ws://${name}.local`; // rosbridgeIP option includes port
+    }
+    
     this.jbVolume = "60";
-    const connection = this.RosConnect({ rosIP: `${name}.local` });
+    let connection;
+    if (this.isIP) {
+      connection = this.RosConnect({ rosIP: `${name}` });
+    } else {
+      connection = this.RosConnect({ rosIP: `${name}.local` });
+    }
     if (connection) {
       console.log("connected");
       this.connect();
       jiboName = name;
     }
+    AndroidBridge.setResult("SetJiboName", undefined, "undefined");
   }
 
 
@@ -265,7 +284,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     // let virtualJ = this.virtualJibo.say(text, target);
     let physicalJ = this.jiboTTSFn(text);
     await Promise.all([physicalJ]);
-    //AndroidBridge.setResult("JiboTTS", undefined, "undefined");
+    AndroidBridge.setResult("JiboTTS", undefined, "undefined");
     
   }
 
