@@ -1,6 +1,4 @@
 // firebase
-import database from './firebase';
-
 import { ArgumentType, BlockType, BlockUtilityWithID } from "$common";
 import { BlockDefinitions, MenuItem } from "$common";
 import { Extension } from "$common";
@@ -141,27 +139,27 @@ var jibo_event = {
 // }
 // const queue = new FirebaseQueue();
 
-export async function setJiboName(name: string): Promise<void> {
-  var jiboNameRef = database.ref("Jibo-Name");
-  return new Promise<void>((resolve) => {
-    jiboNameRef
-      .once("value", (snapshot) => {
-        localStorage.setItem("prevJiboName", name);
-        if (snapshot.hasChild(name)) {
-          console.log("'" + name + "' exists.");
-          jiboName = name;
-          resolve();
-        } else {
-          database.ref("Jibo-Name/" + name).push(jibo_event);
-          jiboName = name;
-          console.log(
-            "'" + name + "' did not exist, and has now been created."
-          );
-          resolve();
-        }
-      });
-  });
-}
+// export async function setJiboName(name: string): Promise<void> {
+//   var jiboNameRef = database.ref("Jibo-Name");
+//   return new Promise<void>((resolve) => {
+//     jiboNameRef
+//       .once("value", (snapshot) => {
+//         localStorage.setItem("prevJiboName", name);
+//         if (snapshot.hasChild(name)) {
+//           console.log("'" + name + "' exists.");
+//           jiboName = name;
+//           resolve();
+//         } else {
+//           database.ref("Jibo-Name/" + name).push(jibo_event);
+//           jiboName = name;
+//           console.log(
+//             "'" + name + "' did not exist, and has now been created."
+//           );
+//           resolve();
+//         }
+//       });
+//   });
+// }
 
 export default class Scratch3Jibo extends Extension<Details, Blocks> {
   ros: any; // TODO
@@ -208,7 +206,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
     console.log("NAME", name);
     this.ros = null;
     this.connected = false;
-    this.rosbridgeIP = `wss://${name}.local`; // rosbridgeIP option includes port
+    this.rosbridgeIP = `ws://${name}.local:9090`; // rosbridgeIP option includes port
     this.jbVolume = "60";
     const connection = this.RosConnect({ rosIP: `${name}.local` });
     if (connection) {
@@ -413,7 +411,7 @@ export default class Scratch3Jibo extends Extension<Details, Blocks> {
 
   RosConnect(args: { rosIP: any }) {
     const rosIP = args.rosIP.toString();
-    this.rosbridgeIP = "wss://" + rosIP;
+    this.rosbridgeIP = "ws://" + rosIP + ":9090";
     // log.log("ROS: Attempting to connect to rosbridge at " + this.rosbridgeIP);
 
     if (!this.connected) {
