@@ -138,6 +138,7 @@ export default class Doodlebot {
      */
     static async tryCreate(
         ble: Bluetooth,
+        ipAddress: string,
         { requestBluetooth, credentials, saveIP }: CreatePayload,
         ...filters: BluetoothLEScanFilter[]) {
         const { robot, services } = await Doodlebot.getBLE(ble, ...filters);
@@ -155,7 +156,8 @@ export default class Doodlebot {
             const responseJson = await response.json();
             console.log("kjson", responseJson);
             return responseJson;
-        });
+        },
+        ipAddress);
     }
 
     private pending: Pending = { motor: undefined, wifi: undefined, websocket: undefined, ip: undefined };
@@ -300,11 +302,12 @@ export default class Doodlebot {
         private requestBluetooth: RequestBluetooth,
         private credentials: NetworkCredentials,
         private saveIP: SaveIP,
-        private fetchFunction
+        private fetchFunction,
+        private ipAddress
     ) {
         this.ble.onReceive(this.receiveTextBLE.bind(this));
         this.ble.onDisconnect(this.handleBleDisconnect.bind(this));
-        this.connectionWorkflow(credentials);
+        this.connectionWorkflow(credentials, ipAddress);
         
         this.pc = new RTCPeerConnection();
         this.pc.addTransceiver("video", { direction: "recvonly" });
@@ -355,12 +358,12 @@ export default class Doodlebot {
         // it looks like this ps.createOffer call was just chucked
         // here in the constructor as a quick test of webrtc video?
         // -jon
-        const urlParams = new URLSearchParams(window.location.search);
-        const ip = urlParams.get("ip");
+        // const urlParams = new URLSearchParams(window.location.search);
+        // const ip = urlParams.get("ip");
         this.pc.createOffer()
             .then(offer => this.pc.setLocalDescription(offer))
             //.then(() => fetch(`http://192.168.41.231:8001/webrtc`, {
-            .then(() => fetch(`https://${ip}/api/v1/video/webrtc`, {
+            .then(() => fetch(`https://${this.connection.ip}/api/v1/video/webrtc`, {
                 method: 'POST',
                 body: JSON.stringify(this.pc.localDescription),
                 headers: { 'Content-Type': 'application/json' }
@@ -826,17 +829,17 @@ export default class Doodlebot {
         }));
     }
 
-    async connectionWorkflow(credentials: NetworkCredentials) {
+    async connectionWorkflow(credentials: NetworkCredentials, ipAddress: string) {
         // i commented out the next line as a hack to get this working
         // quickly on my machine, it probably just needs to be uncommented
         // but I can't test this at the moment -jon
         //await this.connectToWifi(credentials);
         const urlParams = new URLSearchParams(window.location.search); // Hack for now -jon
         let ip = urlParams.get("ip");
-        this.setIP(ip);
+        //this.setIP(ip);
         
-        await this.connectToWebsocket(this.connection.ip);
-        this.detector = new LineDetector(this.connection.ip);
+        await this.connectToWebsocket(ipAddress);
+        this.detector = new LineDetector(ipAddress);
         //await this.connectToImageWebSocket(this.connection.ip);
     }
 

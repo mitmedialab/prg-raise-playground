@@ -14,7 +14,6 @@ import { calculateArcTime } from "./TimeHelper";
 import tmImage from '@teachablemachine/image';
 import * as speechCommands from '@tensorflow-models/speech-commands';
 import JSZip from 'jszip';
-
 const details: ExtensionMenuDisplayDetails = {
   name: "Doodlebot",
   description: "Program a doodlebot robot",
@@ -22,15 +21,29 @@ const details: ExtensionMenuDisplayDetails = {
   insetIconURL: "Replace with the name of your inset icon image file (which should be placed in the same directory as this file)",
   tags: ["Made by PRG"]
 };
-
 const bumperOptions = ["front", "back", "front or back", "front and back", "neither"] as const;
-
 const looper = (action: () => Promise<any>, profileMarker?: string) => {
   const controller = new AbortController();
   let samples = 0;
   let average = 0;
   async function loop() {
-    if (controller.signal.aborted) return;
+    if (controller.signal.aborted) {
+      if (typeof undefined === "number") {
+        AndroidBridge.setResult_double("looper", undefined, "number");
+      } else if (typeof undefined === "string") {
+        AndroidBridge.setResult_string("looper", undefined, "string");
+      } else {
+        AndroidBridge.setResult("looper", undefined, typeof undefined);
+      }
+      if (typeof undefined === "number") {
+        AndroidBridge.setResult_double("looper", undefined, "number");
+      } else if (typeof undefined === "string") {
+        AndroidBridge.setResult_string("looper", undefined, "string");
+      } else {
+        AndroidBridge.setResult("looper", undefined, typeof undefined);
+      }
+      return;
+    }
     const start = performance.now();
     await action();
     const end = performance.now();
@@ -42,21 +55,26 @@ const looper = (action: () => Promise<any>, profileMarker?: string) => {
     requestAnimationFrame(loop);
   }
   loop();
+  if (typeof controller === "number") {
+    AndroidBridge.setResult_double("looper", controller, "number");
+  } else if (typeof controller === "string") {
+    AndroidBridge.setResult_string("looper", controller, "string");
+  } else {
+    AndroidBridge.setResult("looper", controller, typeof controller);
+  }
   return controller;
-}
-
+};
 export var imageFiles: string[] = [];
 export var soundFiles: string[] = [];
-
 export default class DoodlebotBlocks extends extension(details, "ui", "customArguments", "indicators", "video", "drawable") {
   doodlebot: Doodlebot;
-  private indicator: Promise<{ close(): void; }>;
+  private indicator: Promise<{
+    close(): void;
+  }>;
   private lineDetector: (() => Promise<number[][]>) | null = null;
   bluetoothEmitter = new EventEmitter();
-
   gestureLoop: ReturnType<typeof looper>;
   objectLoop: ReturnType<typeof looper>;
-
   gestureState = {
     "Closed_Fist": false,
     "Thumb_Up": false,
@@ -66,7 +84,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     "ILoveYou": false,
     "Open_Palm": false
   } satisfies Record<keyof typeof categoryByGesture, boolean>;
-
   imageStream: HTMLImageElement;
   videoDrawable: ReturnType<typeof this.createDrawable>;
   predictionState = {};
@@ -74,34 +91,39 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   ModelType = {
     POSE: 'pose',
     IMAGE: 'image',
-    AUDIO: 'audio',
+    AUDIO: 'audio'
   };
   teachableImageModel;
-
   lastUpdate: number = null;
   maxConfidence: number = null;
   modelConfidences = {};
   isPredicting: number = 0;
   INTERVAL = 16;
   DIMENSIONS = [480, 360];
-
-  soundDictionary: {} | { string: string[] };
-  costumeDictionary: {} | { string: string[] };
-
-  externalIp: string
-
+  soundDictionary: {} | {
+    string: string[];
+  };
+  costumeDictionary: {} | {
+    string: string[];
+  };
+  externalIp: string;
+  setIP: string;
   voice_id: number;
   pitch_value: number;
-
   blocksRun: number;
-
   SOCIAL = false;
   socialness = 1.0; // Value from 0 to 1, where 1 is always social and 0 is never social
 
   sleep(ms: number) {
+    if (typeof new Promise(resolve => setTimeout(resolve, ms)) === "number") {
+      AndroidBridge.setResult_double("sleep", new Promise(resolve => setTimeout(resolve, ms)), "number");
+    } else if (typeof new Promise(resolve => setTimeout(resolve, ms)) === "string") {
+      AndroidBridge.setResult_string("sleep", new Promise(resolve => setTimeout(resolve, ms)), "string");
+    } else {
+      AndroidBridge.setResult("sleep", new Promise(resolve => setTimeout(resolve, ms)), typeof new Promise(resolve => setTimeout(resolve, ms)));
+    }
     return new Promise(resolve => setTimeout(resolve, ms));
   }
-
   async blockCounter(utility: BlockUtilityWithID) {
     // if (JSON.parse(JSON.stringify(utility.blockID)) == JSON.parse(JSON.stringify(utility.thread.topBlock))) {
     //   this.blocksRun = 0;
@@ -115,7 +137,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     // }
     this.blocksRun = this.blocksRun + 1;
   }
-
   async init(env: Environment) {
     this.blocksRun = 0;
     this.voice_id = 1;
@@ -123,18 +144,13 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     this.soundDictionary = {};
     this.costumeDictionary = {};
     this.setIndicator("disconnected");
-    if (window.isSecureContext) this.openUI("Connect")
-    else this.connectToDoodlebotWithExternalBLE();
+    if (window.isSecureContext) this.openUI("Connect");else this.connectToDoodlebotWithExternalBLE();
     this._loop();
     env.runtime.on("TARGETS_UPDATE", async () => {
       await this.setDictionaries();
-    })
-
-    
-
+    });
     await this.setDictionaries();
     console.log("env", env);
-
     soundFiles = ["File"];
     imageFiles = ["File"];
 
@@ -143,7 +159,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     //   const response = await fetch(url, {
     //     method: "POST"
     //   });
-  
+
     //   if (!response.ok) {
     //     const text = await response.text();
     //     console.error("Error setting voice/pitch:", text);
@@ -153,7 +169,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     // }
 
     // env.runtime.on("PROJECT_RUN_START", async () => {
-      
+
     // })
     // env.runtime.on("PROJECT_RUN_STOP", async () => {
     //   if (this.blocksRun > 10) {
@@ -179,43 +195,43 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     //   }
     // })
   }
-
   async setDictionaries() {
-    for (const target of this.runtime.targets) {
-      this.soundDictionary[target.id] = {};
-      this.costumeDictionary[target.id] = {};
-      if (target.sprite) {
-        for (const sound of target.sprite.sounds) {
-          if (sound.asset.dataFormat == "wav") {
-            this.soundDictionary[target.id][sound.name] = sound.asset.data;
-          }
-        }
-        for (const costume of target.sprite.costumes) {
-          let id = "Costume: " + costume.name;
-          if (costume.asset.dataFormat == "svg") {
-            await this.convertSvgUint8ArrayToPng(costume.asset.data, costume.size[0], costume.size[1])
-              .then((pngBlob: Blob) => {
-                const url = URL.createObjectURL(pngBlob)
-                this.costumeDictionary[target.id][id] = "costume9999.png---name---" + url;
-              })
-          } else if (costume.asset.dataFormat == "png") {
-            const blob = new Blob([costume.asset.data], { type: 'image/png' });
-            const url = URL.createObjectURL(blob)
-            this.costumeDictionary[target.id][id] = "costume9999.png---name---" + url;
-          }
+    // for (const target of this.runtime.targets) {
+    //   this.soundDictionary[target.id] = {};
+    //   this.costumeDictionary[target.id] = {};
+    //   if (target.sprite) {
+    //     for (const sound of target.sprite.sounds) {
+    //       if (sound.asset.dataFormat == "wav") {
+    //         this.soundDictionary[target.id][sound.name] = sound.asset.data;
+    //       }
+    //     }
+    //     for (const costume of target.sprite.costumes) {
+    //       let id = "Costume: " + costume.name;
+    //       if (costume.asset.dataFormat == "svg") {
+    //         await this.convertSvgUint8ArrayToPng(costume.asset.data, costume.size[0], costume.size[1])
+    //           .then((pngBlob: Blob) => {
+    //             const url = URL.createObjectURL(pngBlob)
+    //             this.costumeDictionary[target.id][id] = "costume9999.png---name---" + url;
+    //           })
+    //       } else if (costume.asset.dataFormat == "png") {
+    //         const blob = new Blob([costume.asset.data], { type: 'image/png' });
+    //         const url = URL.createObjectURL(blob)
+    //         this.costumeDictionary[target.id][id] = "costume9999.png---name---" + url;
+    //       }
 
-        }
-      }
-    }
+    //     }
+    //   }
+    // }
   }
-
   async convertSvgUint8ArrayToPng(uint8Array, width, height) {
     return new Promise((resolve, reject) => {
       // Convert Uint8Array to a string
       const svgString = new TextDecoder().decode(uint8Array);
 
       // Create an SVG Blob
-      const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+      const svgBlob = new Blob([svgString], {
+        type: 'image/svg+xml;charset=utf-8'
+      });
       const url = URL.createObjectURL(svgBlob);
 
       // Create an Image element
@@ -234,197 +250,757 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
         const pngDataUrl = canvas.toDataURL('image/png');
 
         // Convert the data URL to a Blob
-        fetch(pngDataUrl)
-          .then(res => res.blob())
-          .then(blob => {
-            // Clean up
-            URL.revokeObjectURL(url);
-            resolve(blob);
-          })
-          .catch(err => {
-            URL.revokeObjectURL(url);
-            reject(err);
-          });
+        fetch(pngDataUrl).then(res => res.blob()).then(blob => {
+          // Clean up
+          URL.revokeObjectURL(url);
+          resolve(blob);
+          AndroidBridge.setResult("anonymous", undefined, "undefined");
+        }).catch(err => {
+          URL.revokeObjectURL(url);
+          reject(err);
+          AndroidBridge.setResult("anonymous", undefined, "undefined");
+        });
+        AndroidBridge.setResult("anonymous", undefined, "undefined");
       };
-
       img.onerror = reject;
       img.src = url;
+      AndroidBridge.setResult("anonymous", undefined, "undefined");
     });
   }
 
+  async createConnection(ipAddress: string) {
+    const storageKeys = {
+      ssid: "doodlebot-ssid",
+      password: "doodlebot-password",
+      ip: "doodlebot-ip",
+    };
+
+    this.setIP = ipAddress;
+
+    console.log("SETTING", this.setIP);
+
+    const { bluetooth } = window.navigator;
+    let error: string;
+  let ssid = localStorage.getItem(storageKeys.ssid) ?? "";
+  let password = localStorage.getItem(storageKeys.password) ?? "";
+
+    try {
+      const doodlebot = await Doodlebot.tryCreate(bluetooth, ipAddress, {
+        credentials: { ssid, password, ipOverride: ipAddress },
+        requestBluetooth: this.requestBluetooth.bind(extension),
+        saveIP: (ip) => localStorage.setItem(storageKeys.ip, ip),
+      });
+
+      this.setDoodlebot(doodlebot, ipAddress);
+      localStorage.setItem(storageKeys.ssid, ssid);
+      localStorage.setItem(storageKeys.password, password);
+      if (ipAddress) localStorage.setItem(storageKeys.ip, ipAddress);
+    } catch (err) {
+      //invoke("setIndicator", "disconnected");
+      console.error(err);
+      error =
+        err.message === "Bluetooth adapter not available."
+          ? "Your device does not support BLE connections."
+          : err.message == "User cancelled the requestDevice() chooser."
+            ? "You must select a device to connect to. Please try again."
+            : err.message !== "User cancelled the requestDevice() chooser."
+              ? "There was a problem connecting your device, please try again or request assistance."
+              : err.message;
+    }
+  };
   private async connectToDoodlebotWithExternalBLE() {
     // A few globals that currently must be set the same across the playground and the https frontend
     const handshakeMessage = "doodlebot";
     const disconnectMessage = "disconnected";
     const commandCompleteIdentifier = "done";
-
     const urlParams = new URLSearchParams(window.location.search); // Hack for now -jon
 
     const ip = urlParams.get("ip");
-
     if (!ip) {
       alert("No IP address provided. Please provide an IP address in the URL query string.");
       return;
     }
-
     this.externalIp = ip;
-
     const networkCredentials: NetworkCredentials = {
-      ssid: "dummy", // NOTE: When using the external BLE, it is assumed a valid ip address will be provided, and thus there is no need for wifi credentials
-      password: "dummy", // NOTE: When using the external BLE, it is assumed a valid ip address will be provided, and thus there is no need for wifi credentials
+      ssid: "dummy",
+      // NOTE: When using the external BLE, it is assumed a valid ip address will be provided, and thus there is no need for wifi credentials
+      password: "dummy",
+      // NOTE: When using the external BLE, it is assumed a valid ip address will be provided, and thus there is no need for wifi credentials
       ipOverride: ip
-    }
-
-    type ExternalPageDetails = { source: MessageEventSource, targetOrigin: string }
-
-    const { source, targetOrigin } = await new Promise<ExternalPageDetails>((resolve) => {
-      const onInitialMessage = ({ data, source, origin }: MessageEvent) => {
-        if (typeof data !== "string" || data !== handshakeMessage) return;
+    };
+    type ExternalPageDetails = {
+      source: MessageEventSource;
+      targetOrigin: string;
+    };
+    const {
+      source,
+      targetOrigin
+    } = await new Promise<ExternalPageDetails>(resolve => {
+      const onInitialMessage = ({
+        data,
+        source,
+        origin
+      }: MessageEvent) => {
+        if (typeof data !== "string" || data !== handshakeMessage) {
+          if (typeof undefined === "number") {
+            AndroidBridge.setResult_double("anonymous", undefined, "number");
+          } else if (typeof undefined === "string") {
+            AndroidBridge.setResult_string("anonymous", undefined, "string");
+          } else {
+            AndroidBridge.setResult("anonymous", undefined, typeof undefined);
+          }
+          if (typeof undefined === "number") {
+            AndroidBridge.setResult_double("anonymous", undefined, "number");
+          } else if (typeof undefined === "string") {
+            AndroidBridge.setResult_string("anonymous", undefined, "string");
+          } else {
+            AndroidBridge.setResult("anonymous", undefined, typeof undefined);
+          }
+          if (typeof undefined === "number") {
+            AndroidBridge.setResult_double("onInitialMessage", undefined, "number");
+          } else if (typeof undefined === "string") {
+            AndroidBridge.setResult_string("onInitialMessage", undefined, "string");
+          } else {
+            AndroidBridge.setResult("onInitialMessage", undefined, typeof undefined);
+          }
+          return;
+        }
         window.removeEventListener("message", onInitialMessage);
         console.log("posting ready");
-        source.postMessage("ready", { targetOrigin: origin })
-        resolve({ source, targetOrigin: origin });
-      }
+        source.postMessage("ready", {
+          targetOrigin: origin
+        });
+        resolve({
+          source,
+          targetOrigin: origin
+        });
+      };
       window.addEventListener("message", onInitialMessage);
     });
-
     console.log("source", source);
     console.log("target origin", targetOrigin);
-
-    const doodlebot = new Doodlebot(
-      {
-        send: (text) => new Promise<void>(resolve => {
-          const onMessageReturn = ({ data, origin }: MessageEvent<string>) => {
-            if (origin !== targetOrigin || !data.includes(text) || !data.includes(commandCompleteIdentifier)) {
-              console.log("error -- source");
-              return;
-            } 
-            window.removeEventListener("message", onMessageReturn);
-            resolve();
+    const doodlebot = new Doodlebot({
+      send: text => new Promise<void>(resolve => {
+        const onMessageReturn = ({
+          data,
+          origin
+        }: MessageEvent<string>) => {
+          if (origin !== targetOrigin || !data.includes(text) || !data.includes(commandCompleteIdentifier)) {
+            console.log("error -- source");
+            if (typeof undefined === "number") {
+              AndroidBridge.setResult_double("anonymous", undefined, "number");
+            } else if (typeof undefined === "string") {
+              AndroidBridge.setResult_string("anonymous", undefined, "string");
+            } else {
+              AndroidBridge.setResult("anonymous", undefined, typeof undefined);
+            }
+            if (typeof undefined === "number") {
+              AndroidBridge.setResult_double("anonymous", undefined, "number");
+            } else if (typeof undefined === "string") {
+              AndroidBridge.setResult_string("anonymous", undefined, "string");
+            } else {
+              AndroidBridge.setResult("anonymous", undefined, typeof undefined);
+            }
+            if (typeof undefined === "number") {
+              AndroidBridge.setResult_double("onMessageReturn", undefined, "number");
+            } else if (typeof undefined === "string") {
+              AndroidBridge.setResult_string("onMessageReturn", undefined, "string");
+            } else {
+              AndroidBridge.setResult("onMessageReturn", undefined, typeof undefined);
+            }
+            return;
           }
-          window.addEventListener("message", onMessageReturn);
-          console.log("posting message");
-          source.postMessage(text, { targetOrigin });
-        }),
-
-        onReceive: (callback) => {
-          window.addEventListener('message', ({ data, origin }) => {
-            console.log("RECEIVED", data);
-            if (origin !== targetOrigin || data === disconnectMessage || data.includes(commandCompleteIdentifier)) {
-              console.log("error 2 -- source", data);
-              return;
-            } 
-            callback(new CustomEvent<string>("ble", { detail: data }));
-          });
-        },
-
-        onDisconnect: () => {
-          window.addEventListener("message", ({ data, origin }) => {
-            if (origin !== targetOrigin || data !== disconnectMessage) return;
-            this.setIndicator("disconnected");
-            alert("Disconnected from robot"); // Decide how to handle (maybe direct user to close window and go back to https)
-          });
-        },
+          window.removeEventListener("message", onMessageReturn);
+          resolve();
+        };
+        window.addEventListener("message", onMessageReturn);
+        console.log("posting message");
+        source.postMessage(text, {
+          targetOrigin
+        });
+      }),
+      onReceive: callback => {
+        window.addEventListener('message', ({
+          data,
+          origin
+        }) => {
+          console.log("RECEIVED", data);
+          if (origin !== targetOrigin || data === disconnectMessage || data.includes(commandCompleteIdentifier)) {
+            console.log("error 2 -- source", data);
+            if (typeof undefined === "number") {
+              AndroidBridge.setResult_double("anonymous", undefined, "number");
+            } else if (typeof undefined === "string") {
+              AndroidBridge.setResult_string("anonymous", undefined, "string");
+            } else {
+              AndroidBridge.setResult("anonymous", undefined, typeof undefined);
+            }
+            if (typeof undefined === "number") {
+              AndroidBridge.setResult_double("anonymous", undefined, "number");
+            } else if (typeof undefined === "string") {
+              AndroidBridge.setResult_string("anonymous", undefined, "string");
+            } else {
+              AndroidBridge.setResult("anonymous", undefined, typeof undefined);
+            }
+            return;
+          }
+          callback(new CustomEvent<string>("ble", {
+            detail: data
+          }));
+        });
       },
-      () => alert("requestBluetooth called"), // placeholder
-      networkCredentials,
-      () => alert("save IP called"), // placeholder,
-      async (description) => {
-        // Send the fetch request to the source
-        console.log("INSIDE FETCH 2");
-        
-        return new Promise<string>((resolve, reject) => {
-          console.log("INSIDE PROMISE 2");
-          const fetchReturn = (event: MessageEvent) => {
-            console.log("inside return");
-            if (event.origin !== targetOrigin) {
-              console.log("ERROR", event.origin, targetOrigin);
-              return;
+      onDisconnect: () => {
+        window.addEventListener("message", ({
+          data,
+          origin
+        }) => {
+          if (origin !== targetOrigin || data !== disconnectMessage) {
+            if (typeof undefined === "number") {
+              AndroidBridge.setResult_double("anonymous", undefined, "number");
+            } else if (typeof undefined === "string") {
+              AndroidBridge.setResult_string("anonymous", undefined, "string");
+            } else {
+              AndroidBridge.setResult("anonymous", undefined, typeof undefined);
             }
-            if (!event.data.startsWith("fetchResponse---")) {
-              console.log("ERROR", event.data);
-              return;
+            if (typeof undefined === "number") {
+              AndroidBridge.setResult_double("anonymous", undefined, "number");
+            } else if (typeof undefined === "string") {
+              AndroidBridge.setResult_string("anonymous", undefined, "string");
+            } else {
+              AndroidBridge.setResult("anonymous", undefined, typeof undefined);
             }
-            const urlReturned = event.data.split("---")[1];
-            if ("webrtc" != urlReturned) {
-              console.log("URL NOT SAME");
-              return;
+            if (typeof undefined === "number") {
+              AndroidBridge.setResult_double("anonymous", undefined, "number");
+            } else if (typeof undefined === "string") {
+              AndroidBridge.setResult_string("anonymous", undefined, "string");
+            } else {
+              AndroidBridge.setResult("anonymous", undefined, typeof undefined);
             }
-            const response = event.data.split("---")[2];
-            console.log("RESPONSE", JSON.parse(response));
-            window.removeEventListener('message', fetchReturn);
-            resolve(JSON.parse(response));
+            return;
           }
-          console.log("adding return");
-          window.addEventListener('message', fetchReturn);
-          console.log("posting message", `fetch---webrtc---${description}`, targetOrigin);
-          source.postMessage(`fetch---webrtc---${description}`, { targetOrigin });
+          this.setIndicator("disconnected");
+          alert("Disconnected from robot"); // Decide how to handle (maybe direct user to close window and go back to https)
         });
       }
-    )
+    }, () => alert("requestBluetooth called"),
+    // placeholder
+    networkCredentials, () => alert("save IP called"),
+    // placeholder,
+    async description => {
+      // Send the fetch request to the source
+      console.log("INSIDE FETCH 2");
+      return new Promise<string>((resolve, reject) => {
+        console.log("INSIDE PROMISE 2");
+        const fetchReturn = (event: MessageEvent) => {
+          console.log("inside return");
+          if (event.origin !== targetOrigin) {
+            console.log("ERROR", event.origin, targetOrigin);
+            if (typeof undefined === "number") {
+              AndroidBridge.setResult_double("anonymous", undefined, "number");
+            } else if (typeof undefined === "string") {
+              AndroidBridge.setResult_string("anonymous", undefined, "string");
+            } else {
+              AndroidBridge.setResult("anonymous", undefined, typeof undefined);
+            }
+            if (typeof undefined === "number") {
+              AndroidBridge.setResult_double("fetchReturn", undefined, "number");
+            } else if (typeof undefined === "string") {
+              AndroidBridge.setResult_string("fetchReturn", undefined, "string");
+            } else {
+              AndroidBridge.setResult("fetchReturn", undefined, typeof undefined);
+            }
+            return;
+          }
+          if (!event.data.startsWith("fetchResponse---")) {
+            console.log("ERROR", event.data);
+            if (typeof undefined === "number") {
+              AndroidBridge.setResult_double("anonymous", undefined, "number");
+            } else if (typeof undefined === "string") {
+              AndroidBridge.setResult_string("anonymous", undefined, "string");
+            } else {
+              AndroidBridge.setResult("anonymous", undefined, typeof undefined);
+            }
+            if (typeof undefined === "number") {
+              AndroidBridge.setResult_double("fetchReturn", undefined, "number");
+            } else if (typeof undefined === "string") {
+              AndroidBridge.setResult_string("fetchReturn", undefined, "string");
+            } else {
+              AndroidBridge.setResult("fetchReturn", undefined, typeof undefined);
+            }
+            return;
+          }
+          const urlReturned = event.data.split("---")[1];
+          if ("webrtc" != urlReturned) {
+            console.log("URL NOT SAME");
+            if (typeof undefined === "number") {
+              AndroidBridge.setResult_double("anonymous", undefined, "number");
+            } else if (typeof undefined === "string") {
+              AndroidBridge.setResult_string("anonymous", undefined, "string");
+            } else {
+              AndroidBridge.setResult("anonymous", undefined, typeof undefined);
+            }
+            if (typeof undefined === "number") {
+              AndroidBridge.setResult_double("fetchReturn", undefined, "number");
+            } else if (typeof undefined === "string") {
+              AndroidBridge.setResult_string("fetchReturn", undefined, "string");
+            } else {
+              AndroidBridge.setResult("fetchReturn", undefined, typeof undefined);
+            }
+            return;
+          }
+          const response = event.data.split("---")[2];
+          console.log("RESPONSE", JSON.parse(response));
+          window.removeEventListener('message', fetchReturn);
+          resolve(JSON.parse(response));
+        };
+        console.log("adding return");
+        window.addEventListener('message', fetchReturn);
+        console.log("posting message", `fetch---webrtc---${description}`, targetOrigin);
+        source.postMessage(`fetch---webrtc---${description}`, {
+          targetOrigin
+        });
+      });
+    },
+    "");
     doodlebot.fetch = async (url: string, type: string, options?: string) => {
       // Send the fetch request to the source
       return new Promise<string>((resolve, reject) => {
         const fetchReturn = (event: MessageEvent) => {
           if (event.origin !== targetOrigin) {
             console.log("ERROR", event.origin, targetOrigin);
+            if (typeof undefined === "number") {
+              AndroidBridge.setResult_double("anonymous", undefined, "number");
+            } else if (typeof undefined === "string") {
+              AndroidBridge.setResult_string("anonymous", undefined, "string");
+            } else {
+              AndroidBridge.setResult("anonymous", undefined, typeof undefined);
+            }
+            if (typeof undefined === "number") {
+              AndroidBridge.setResult_double("fetchReturn", undefined, "number");
+            } else if (typeof undefined === "string") {
+              AndroidBridge.setResult_string("fetchReturn", undefined, "string");
+            } else {
+              AndroidBridge.setResult("fetchReturn", undefined, typeof undefined);
+            }
             return;
           }
           if (!event.data.startsWith("fetchResponse---")) {
             console.log("ERROR", event.data);
+            if (typeof undefined === "number") {
+              AndroidBridge.setResult_double("anonymous", undefined, "number");
+            } else if (typeof undefined === "string") {
+              AndroidBridge.setResult_string("anonymous", undefined, "string");
+            } else {
+              AndroidBridge.setResult("anonymous", undefined, typeof undefined);
+            }
+            if (typeof undefined === "number") {
+              AndroidBridge.setResult_double("fetchReturn", undefined, "number");
+            } else if (typeof undefined === "string") {
+              AndroidBridge.setResult_string("fetchReturn", undefined, "string");
+            } else {
+              AndroidBridge.setResult("fetchReturn", undefined, typeof undefined);
+            }
             return;
           }
           const urlReturned = event.data.split("---")[1];
           if (url != urlReturned) {
             console.log("URL NOT SAME");
+            if (typeof undefined === "number") {
+              AndroidBridge.setResult_double("anonymous", undefined, "number");
+            } else if (typeof undefined === "string") {
+              AndroidBridge.setResult_string("anonymous", undefined, "string");
+            } else {
+              AndroidBridge.setResult("anonymous", undefined, typeof undefined);
+            }
+            if (typeof undefined === "number") {
+              AndroidBridge.setResult_double("fetchReturn", undefined, "number");
+            } else if (typeof undefined === "string") {
+              AndroidBridge.setResult_string("fetchReturn", undefined, "string");
+            } else {
+              AndroidBridge.setResult("fetchReturn", undefined, typeof undefined);
+            }
             return;
           }
           const response = event.data.split("---")[2];
           console.log("RESPONSE", response);
           window.removeEventListener('message', fetchReturn);
           resolve(response);
-        }
+        };
         console.log("adding return");
         window.addEventListener('message', fetchReturn);
         console.log("posting message", `fetch---${type}--${url}`, targetOrigin);
         if (options) {
-          source.postMessage(`fetch---${type}---${url}---${JSON.stringify(options)}`, { targetOrigin });
+          source.postMessage(`fetch---${type}---${url}---${JSON.stringify(options)}`, {
+            targetOrigin
+          });
         } else {
-          source.postMessage(`fetch---${type}---${url}`, { targetOrigin });
+          source.postMessage(`fetch---${type}---${url}`, {
+            targetOrigin
+          });
         }
       });
-    }
+    };
     doodlebot.setIP(ip);
     this.setDoodlebot(doodlebot);
-
-    
   }
-
+  async setIPAddress(ipAddress) {
+        // A few globals that currently must be set the same across the playground and the https frontend
+        const handshakeMessage = "doodlebot";
+        const disconnectMessage = "disconnected";
+        const commandCompleteIdentifier = "done";
+        const urlParams = new URLSearchParams(window.location.search); // Hack for now -jon
+        this.setIP = ipAddress;
+        console.log("ip", this.setIP);
+        const ip = ipAddress;
+        if (!ip) {
+          alert("No IP address provided. Please provide an IP address in the URL query string.");
+          return;
+        }
+        this.externalIp = ip;
+        const networkCredentials: NetworkCredentials = {
+          ssid: "dummy",
+          // NOTE: When using the external BLE, it is assumed a valid ip address will be provided, and thus there is no need for wifi credentials
+          password: "dummy",
+          // NOTE: When using the external BLE, it is assumed a valid ip address will be provided, and thus there is no need for wifi credentials
+          ipOverride: ip
+        };
+        type ExternalPageDetails = {
+          source: MessageEventSource;
+          targetOrigin: string;
+        };
+        const {
+          source,
+          targetOrigin
+        } = await new Promise<ExternalPageDetails>(resolve => {
+          const onInitialMessage = ({
+            data,
+            source,
+            origin
+          }: MessageEvent) => {
+            if (typeof data !== "string" || data !== handshakeMessage) {
+              if (typeof undefined === "number") {
+                AndroidBridge.setResult_double("anonymous", undefined, "number");
+              } else if (typeof undefined === "string") {
+                AndroidBridge.setResult_string("anonymous", undefined, "string");
+              } else {
+                AndroidBridge.setResult("anonymous", undefined, typeof undefined);
+              }
+              if (typeof undefined === "number") {
+                AndroidBridge.setResult_double("anonymous", undefined, "number");
+              } else if (typeof undefined === "string") {
+                AndroidBridge.setResult_string("anonymous", undefined, "string");
+              } else {
+                AndroidBridge.setResult("anonymous", undefined, typeof undefined);
+              }
+              if (typeof undefined === "number") {
+                AndroidBridge.setResult_double("onInitialMessage", undefined, "number");
+              } else if (typeof undefined === "string") {
+                AndroidBridge.setResult_string("onInitialMessage", undefined, "string");
+              } else {
+                AndroidBridge.setResult("onInitialMessage", undefined, typeof undefined);
+              }
+              return;
+            }
+            window.removeEventListener("message", onInitialMessage);
+            console.log("posting ready");
+            source.postMessage("ready", {
+              targetOrigin: origin
+            });
+            resolve({
+              source,
+              targetOrigin: origin
+            });
+          };
+          window.addEventListener("message", onInitialMessage);
+        });
+        console.log("source", source);
+        console.log("target origin", targetOrigin);
+        const doodlebot = new Doodlebot({
+          send: text => new Promise<void>(resolve => {
+            const onMessageReturn = ({
+              data,
+              origin
+            }: MessageEvent<string>) => {
+              if (origin !== targetOrigin || !data.includes(text) || !data.includes(commandCompleteIdentifier)) {
+                console.log("error -- source");
+                if (typeof undefined === "number") {
+                  AndroidBridge.setResult_double("anonymous", undefined, "number");
+                } else if (typeof undefined === "string") {
+                  AndroidBridge.setResult_string("anonymous", undefined, "string");
+                } else {
+                  AndroidBridge.setResult("anonymous", undefined, typeof undefined);
+                }
+                if (typeof undefined === "number") {
+                  AndroidBridge.setResult_double("anonymous", undefined, "number");
+                } else if (typeof undefined === "string") {
+                  AndroidBridge.setResult_string("anonymous", undefined, "string");
+                } else {
+                  AndroidBridge.setResult("anonymous", undefined, typeof undefined);
+                }
+                if (typeof undefined === "number") {
+                  AndroidBridge.setResult_double("onMessageReturn", undefined, "number");
+                } else if (typeof undefined === "string") {
+                  AndroidBridge.setResult_string("onMessageReturn", undefined, "string");
+                } else {
+                  AndroidBridge.setResult("onMessageReturn", undefined, typeof undefined);
+                }
+                return;
+              }
+              window.removeEventListener("message", onMessageReturn);
+              resolve();
+            };
+            window.addEventListener("message", onMessageReturn);
+            console.log("posting message");
+            source.postMessage(text, {
+              targetOrigin
+            });
+          }),
+          onReceive: callback => {
+            window.addEventListener('message', ({
+              data,
+              origin
+            }) => {
+              console.log("RECEIVED", data);
+              if (origin !== targetOrigin || data === disconnectMessage || data.includes(commandCompleteIdentifier)) {
+                console.log("error 2 -- source", data);
+                if (typeof undefined === "number") {
+                  AndroidBridge.setResult_double("anonymous", undefined, "number");
+                } else if (typeof undefined === "string") {
+                  AndroidBridge.setResult_string("anonymous", undefined, "string");
+                } else {
+                  AndroidBridge.setResult("anonymous", undefined, typeof undefined);
+                }
+                if (typeof undefined === "number") {
+                  AndroidBridge.setResult_double("anonymous", undefined, "number");
+                } else if (typeof undefined === "string") {
+                  AndroidBridge.setResult_string("anonymous", undefined, "string");
+                } else {
+                  AndroidBridge.setResult("anonymous", undefined, typeof undefined);
+                }
+                return;
+              }
+              callback(new CustomEvent<string>("ble", {
+                detail: data
+              }));
+            });
+          },
+          onDisconnect: () => {
+            window.addEventListener("message", ({
+              data,
+              origin
+            }) => {
+              if (origin !== targetOrigin || data !== disconnectMessage) {
+                if (typeof undefined === "number") {
+                  AndroidBridge.setResult_double("anonymous", undefined, "number");
+                } else if (typeof undefined === "string") {
+                  AndroidBridge.setResult_string("anonymous", undefined, "string");
+                } else {
+                  AndroidBridge.setResult("anonymous", undefined, typeof undefined);
+                }
+                if (typeof undefined === "number") {
+                  AndroidBridge.setResult_double("anonymous", undefined, "number");
+                } else if (typeof undefined === "string") {
+                  AndroidBridge.setResult_string("anonymous", undefined, "string");
+                } else {
+                  AndroidBridge.setResult("anonymous", undefined, typeof undefined);
+                }
+                if (typeof undefined === "number") {
+                  AndroidBridge.setResult_double("anonymous", undefined, "number");
+                } else if (typeof undefined === "string") {
+                  AndroidBridge.setResult_string("anonymous", undefined, "string");
+                } else {
+                  AndroidBridge.setResult("anonymous", undefined, typeof undefined);
+                }
+                return;
+              }
+              //this.setIndicator("disconnected");
+              alert("Disconnected from robot"); // Decide how to handle (maybe direct user to close window and go back to https)
+            });
+          }
+        }, () => alert("requestBluetooth called"),
+        // placeholder
+        networkCredentials, () => alert("save IP called"),
+        // placeholder,
+        async description => {
+          // Send the fetch request to the source
+          console.log("INSIDE FETCH 2");
+          return new Promise<string>((resolve, reject) => {
+            console.log("INSIDE PROMISE 2");
+            const fetchReturn = (event: MessageEvent) => {
+              console.log("inside return");
+              if (event.origin !== targetOrigin) {
+                console.log("ERROR", event.origin, targetOrigin);
+                if (typeof undefined === "number") {
+                  AndroidBridge.setResult_double("anonymous", undefined, "number");
+                } else if (typeof undefined === "string") {
+                  AndroidBridge.setResult_string("anonymous", undefined, "string");
+                } else {
+                  AndroidBridge.setResult("anonymous", undefined, typeof undefined);
+                }
+                if (typeof undefined === "number") {
+                  AndroidBridge.setResult_double("fetchReturn", undefined, "number");
+                } else if (typeof undefined === "string") {
+                  AndroidBridge.setResult_string("fetchReturn", undefined, "string");
+                } else {
+                  AndroidBridge.setResult("fetchReturn", undefined, typeof undefined);
+                }
+                return;
+              }
+              if (!event.data.startsWith("fetchResponse---")) {
+                console.log("ERROR", event.data);
+                if (typeof undefined === "number") {
+                  AndroidBridge.setResult_double("anonymous", undefined, "number");
+                } else if (typeof undefined === "string") {
+                  AndroidBridge.setResult_string("anonymous", undefined, "string");
+                } else {
+                  AndroidBridge.setResult("anonymous", undefined, typeof undefined);
+                }
+                if (typeof undefined === "number") {
+                  AndroidBridge.setResult_double("fetchReturn", undefined, "number");
+                } else if (typeof undefined === "string") {
+                  AndroidBridge.setResult_string("fetchReturn", undefined, "string");
+                } else {
+                  AndroidBridge.setResult("fetchReturn", undefined, typeof undefined);
+                }
+                return;
+              }
+              const urlReturned = event.data.split("---")[1];
+              if ("webrtc" != urlReturned) {
+                console.log("URL NOT SAME");
+                if (typeof undefined === "number") {
+                  AndroidBridge.setResult_double("anonymous", undefined, "number");
+                } else if (typeof undefined === "string") {
+                  AndroidBridge.setResult_string("anonymous", undefined, "string");
+                } else {
+                  AndroidBridge.setResult("anonymous", undefined, typeof undefined);
+                }
+                if (typeof undefined === "number") {
+                  AndroidBridge.setResult_double("fetchReturn", undefined, "number");
+                } else if (typeof undefined === "string") {
+                  AndroidBridge.setResult_string("fetchReturn", undefined, "string");
+                } else {
+                  AndroidBridge.setResult("fetchReturn", undefined, typeof undefined);
+                }
+                return;
+              }
+              const response = event.data.split("---")[2];
+              console.log("RESPONSE", JSON.parse(response));
+              window.removeEventListener('message', fetchReturn);
+              resolve(JSON.parse(response));
+            };
+            console.log("adding return");
+            window.addEventListener('message', fetchReturn);
+            console.log("posting message", `fetch---webrtc---${description}`, targetOrigin);
+            source.postMessage(`fetch---webrtc---${description}`, {
+              targetOrigin
+            });
+          });
+        },
+      ipAddress);
+        doodlebot.fetch = async (url: string, type: string, options?: string) => {
+          // Send the fetch request to the source
+          return new Promise<string>((resolve, reject) => {
+            const fetchReturn = (event: MessageEvent) => {
+              if (event.origin !== targetOrigin) {
+                console.log("ERROR", event.origin, targetOrigin);
+                if (typeof undefined === "number") {
+                  AndroidBridge.setResult_double("anonymous", undefined, "number");
+                } else if (typeof undefined === "string") {
+                  AndroidBridge.setResult_string("anonymous", undefined, "string");
+                } else {
+                  AndroidBridge.setResult("anonymous", undefined, typeof undefined);
+                }
+                if (typeof undefined === "number") {
+                  AndroidBridge.setResult_double("fetchReturn", undefined, "number");
+                } else if (typeof undefined === "string") {
+                  AndroidBridge.setResult_string("fetchReturn", undefined, "string");
+                } else {
+                  AndroidBridge.setResult("fetchReturn", undefined, typeof undefined);
+                }
+                return;
+              }
+              if (!event.data.startsWith("fetchResponse---")) {
+                console.log("ERROR", event.data);
+                if (typeof undefined === "number") {
+                  AndroidBridge.setResult_double("anonymous", undefined, "number");
+                } else if (typeof undefined === "string") {
+                  AndroidBridge.setResult_string("anonymous", undefined, "string");
+                } else {
+                  AndroidBridge.setResult("anonymous", undefined, typeof undefined);
+                }
+                if (typeof undefined === "number") {
+                  AndroidBridge.setResult_double("fetchReturn", undefined, "number");
+                } else if (typeof undefined === "string") {
+                  AndroidBridge.setResult_string("fetchReturn", undefined, "string");
+                } else {
+                  AndroidBridge.setResult("fetchReturn", undefined, typeof undefined);
+                }
+                return;
+              }
+              const urlReturned = event.data.split("---")[1];
+              if (url != urlReturned) {
+                console.log("URL NOT SAME");
+                if (typeof undefined === "number") {
+                  AndroidBridge.setResult_double("anonymous", undefined, "number");
+                } else if (typeof undefined === "string") {
+                  AndroidBridge.setResult_string("anonymous", undefined, "string");
+                } else {
+                  AndroidBridge.setResult("anonymous", undefined, typeof undefined);
+                }
+                if (typeof undefined === "number") {
+                  AndroidBridge.setResult_double("fetchReturn", undefined, "number");
+                } else if (typeof undefined === "string") {
+                  AndroidBridge.setResult_string("fetchReturn", undefined, "string");
+                } else {
+                  AndroidBridge.setResult("fetchReturn", undefined, typeof undefined);
+                }
+                return;
+              }
+              const response = event.data.split("---")[2];
+              console.log("RESPONSE", response);
+              window.removeEventListener('message', fetchReturn);
+              resolve(response);
+            };
+            console.log("adding return");
+            window.addEventListener('message', fetchReturn);
+            console.log("posting message", `fetch---${type}--${url}`, targetOrigin);
+            if (options) {
+              source.postMessage(`fetch---${type}---${url}---${JSON.stringify(options)}`, {
+                targetOrigin
+              });
+            } else {
+              source.postMessage(`fetch---${type}---${url}`, {
+                targetOrigin
+              });
+            }
+          });
+        };
+        doodlebot.setIP(ip);
+        this.setDoodlebot(doodlebot, ipAddress);
+  }
   getCurrentSounds(id): string[] {
-    return (this.soundDictionary && this.soundDictionary[id]) ? Object.keys(this.soundDictionary[id]) : [];
+    if (typeof (this.soundDictionary && this.soundDictionary[id] ? Object.keys(this.soundDictionary[id]) : []) === "number") {
+      AndroidBridge.setResult_double("getCurrentSounds", this.soundDictionary && this.soundDictionary[id] ? Object.keys(this.soundDictionary[id]) : [], "number");
+    } else if (typeof (this.soundDictionary && this.soundDictionary[id] ? Object.keys(this.soundDictionary[id]) : []) === "string") {
+      AndroidBridge.setResult_string("getCurrentSounds", this.soundDictionary && this.soundDictionary[id] ? Object.keys(this.soundDictionary[id]) : [], "string");
+    } else {
+      AndroidBridge.setResult("getCurrentSounds", this.soundDictionary && this.soundDictionary[id] ? Object.keys(this.soundDictionary[id]) : [], typeof (this.soundDictionary && this.soundDictionary[id] ? Object.keys(this.soundDictionary[id]) : []));
+    }
+    return this.soundDictionary && this.soundDictionary[id] ? Object.keys(this.soundDictionary[id]) : [];
   }
-
-  async setDoodlebot(doodlebot: Doodlebot) {
+  async setDoodlebot(doodlebot: Doodlebot, ipAddress: string) {
     this.doodlebot = doodlebot;
-    await this.setIndicator("connected");
-
-    
-
-    const urlParams = new URLSearchParams(window.location.search); // Hack for now -jon
-    const ip = urlParams.get("ip");
+    //await this.setIndicator("connected");
+    const ip = ipAddress;
     this.doodlebot.setIP(ip);
-
     try {
       imageFiles = await doodlebot.findImageFiles();
       soundFiles = await doodlebot.findSoundFiles();
     } catch (e) {
       //this.openUI("ArrayError");
     }
-    
+
     // Wait a short moment to ensure connection is established
     await new Promise(resolve => setTimeout(resolve, 1000));
-
-    
     try {
       if (this.SOCIAL && Math.random() < this.socialness && this.doodlebot) {
         await this.doodlebot.display("happy");
@@ -434,37 +1010,48 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       console.error("Error during welcome message:", error);
       // Don't throw the error - we still want the robot to be usable even if the welcome message fails
     }
-
     await this.doodlebot.display("happy");
-
     try {
       console.log("FETCHING");
-      const ip = await this.getIPAddress();
+      const ip = this.setIP ? this.setIP : await this.getIPAddress();
       console.log(doodlebot.fetch);
       let tempImage = await doodlebot.fetch(`http://${ip}:8080/images`, "text");
       imageFiles = doodlebot.extractList(tempImage);
-      console.log("FILES", imageFiles)
+      console.log("FILES", imageFiles);
       let tempSound = await doodlebot.fetch(`http://${ip}:8080/sounds`, "text");
       soundFiles = doodlebot.extractList(tempSound);
     } catch (e) {
       //this.openUI("ArrayError");
     }
   }
-
   async setIndicator(status: "connected" | "disconnected") {
-    if (this.indicator) (await this.indicator)?.close();
-    this.indicator = status == "connected"
-      ? this.indicate({ position: "category", msg: "Connected to robot", type: "success", retry: true })
-      : this.indicate({ position: "category", msg: "Not connected to robot", type: "warning", retry: true });
+    // if (this.indicator) (await this.indicator)?.close();
+    // this.indicator = status == "connected" ? this.indicate({
+    //   position: "category",
+    //   msg: "Connected to robot",
+    //   type: "success",
+    //   retry: true
+    // }) : this.indicate({
+    //   position: "category",
+    //   msg: "Not connected to robot",
+    //   type: "warning",
+    //   retry: true
+    // });
   }
-
   requestBluetooth(callback: (bluetooth: Bluetooth) => any) {
     this.bluetoothEmitter.once("bluetooth", callback);
     this.openUI("ReattachBLE");
+    AndroidBridge.setResult("requestBluetooth", undefined, "undefined");
   }
-
   getImageStream() {
     this.imageStream ??= this.doodlebot?.getImageStream();
+    if (typeof this.imageStream === "number") {
+      AndroidBridge.setResult_double("getImageStream", this.imageStream, "number");
+    } else if (typeof this.imageStream === "string") {
+      AndroidBridge.setResult_string("getImageStream", this.imageStream, "string");
+    } else {
+      AndroidBridge.setResult("getImageStream", this.imageStream, typeof this.imageStream);
+    }
     return this.imageStream;
   }
 
@@ -492,37 +1079,46 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       console.error("Failed to get image stream");
       return;
     }
-  
     let stageWidth = 480;
     let stageHeight = 360;
-
     const resizedCanvas = document.createElement('canvas');
     resizedCanvas.width = stageWidth;
     resizedCanvas.height = stageHeight;
     const resizedCtx = resizedCanvas.getContext('2d');
-  
     const drawable = this.createDrawable(resizedCanvas); // draw from resized version
     drawable.setVisible(true);
-  
     const update = () => {
       const latest = this.doodlebot?.getImageStream();
-      if (!latest) return;
-  
+      if (!latest) {
+        if (typeof undefined === "number") {
+          AndroidBridge.setResult_double("update", undefined, "number");
+        } else if (typeof undefined === "string") {
+          AndroidBridge.setResult_string("update", undefined, "string");
+        } else {
+          AndroidBridge.setResult("update", undefined, typeof undefined);
+        }
+        if (typeof undefined === "number") {
+          AndroidBridge.setResult_double("update", undefined, "number");
+        } else if (typeof undefined === "string") {
+          AndroidBridge.setResult_string("update", undefined, "string");
+        } else {
+          AndroidBridge.setResult("update", undefined, typeof undefined);
+        }
+        return;
+      }
+
       // Draw the current stream into the resized canvas
       resizedCtx.clearRect(0, 0, stageWidth, stageHeight);
       resizedCtx.drawImage(latest, 0, 0, stageWidth, stageHeight);
       drawable.update(resizedCanvas);
-  
       requestAnimationFrame(update);
     };
-  
     requestAnimationFrame(update);
     return drawable;
   }
-
-  @buttonBlock("Connect Robot")
   connect() {
     this.openUI("Connect");
+    AndroidBridge.setResult("connect", undefined, "undefined");
   }
 
   // @block({
@@ -536,7 +1132,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   // async setSocialness(value: number) {
   //   // Ensure value is between 0 and 1
   //   this.socialness = Math.max(0, Math.min(1, value));
-    
+
   //   if (this.SOCIAL && Math.random() < this.socialness) {
   //     await this.doodlebot?.display("happy");
   //     await this.speakText(`I'll be ${Math.round(this.socialness * 100)}% social from now on!`);
@@ -561,19 +1157,10 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   //   await this.handleChatInteraction(seconds, "repeat_after_me");
   // }
 
-  @block({
-    type: "command",
-    text: (voice, pitch) => `set voice to ${voice} and pitch to ${pitch}`,
-    args: [
-      { type: "number", defaultValue: 1, name: "voice" },
-      { type: "number", defaultValue: 0, name: "pitch" }
-    ]
-  })
   async setVoiceAndPitch(voice: number, pitch: number) {
     this.voice_id = voice;
     this.pitch_value = pitch;
   }
-  
 
   // @block({
   //   type: "command",
@@ -583,24 +1170,19 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   // async repeatAfterMe(seconds: number) {
   //   // Record the audio
   //   const { context, buffer } = await this.doodlebot?.recordAudio(seconds);
-    
+
   //   // Convert to WAV format
   //   const wavBlob = await this.saveAudioBufferToWav(buffer);
   //   const arrayBuffer = await wavBlob.arrayBuffer();
-    
+
   //   // Send the audio data directly to the Doodlebot for playback
   //   await this.doodlebot.sendAudioData(new Uint8Array(arrayBuffer));
-    
+
   //   // Wait until playback is complete (approximately buffer duration)
   //   const playbackDuration = buffer.duration * 1000; // convert to milliseconds
   //   await new Promise(resolve => setTimeout(resolve, playbackDuration));
   // }
 
-  @block({
-    type: "command",
-    text: (text) => `speak ${text}`,
-    arg: { type: "string", defaultValue: "Hello!" }
-  })
   async speak(text: string, utility: BlockUtilityWithID) {
     await this.blockCounter(utility);
     await this.speakText(text);
@@ -615,63 +1197,27 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   //   await this.doodlebot?.display(display);
   // }
 
-  @block({
-    type: "command",
-    text: (text: string) => `display text ${text}`,
-    arg: { type: "string", defaultValue: "hello world!" }
-  })
   async setText(text: string) {
     await this.doodlebot?.displayText(text);
   }
-
-  @block({
-    type: "command",
-    text: (size) => `set font size to ${size}`,
-    arg: { type: "string", options: ["small", "medium", "large"], defaultValue: "medium" },
-
-  })
   async setFont(size: "small" | "medium" | "large") {
     await this.doodlebot?.setFont(size);
   }
-
-  @block({
-    type: "command",
-    text: "clear display"
-  })
   async clearDisplay() {
     await this.doodlebot?.display("clear");
   }
-
-  @block({
-    type: "command",
-    text: (direction, steps, speed) => `drive ${direction} for ${steps} steps at speed ${speed}`,
-    args: [
-      { type: "string", options: ["forward", "backward", "left", "right"], defaultValue: "forward" },
-      { type: "number", defaultValue: 200 },
-      { type: "number", options: [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000], defaultValue: 2000 }
-    ]
-  })
   async drive(direction: "left" | "right" | "forward" | "backward", steps: number, speed: number) {
     const leftSteps = direction == "left" || direction == "backward" ? -steps * 10 : steps * 10;
     const rightSteps = direction == "right" || direction == "backward" ? -steps * 10 : steps * 10;
     const stepsPerSecond = speed;
-
-    await this.doodlebot?.motorCommand(
-      "steps",
-      { steps: leftSteps, stepsPerSecond },
-      { steps: rightSteps, stepsPerSecond }
-    );
+    await this.doodlebot?.motorCommand("steps", {
+      steps: leftSteps,
+      stepsPerSecond
+    }, {
+      steps: rightSteps,
+      stepsPerSecond
+    });
   }
-
-  @block({
-    type: "command",
-    text: (direction, radius, degrees) => `arc ${direction} with radius ${radius} for ${degrees} degrees`,
-    args: [
-      { type: "string", options: ["left", "right"], defaultValue: "left" },
-      { type: "number", defaultValue: 2 },
-      { type: "number", defaultValue: 90 }
-    ]
-  })
   async arc(direction: "left" | "right", radius: number, degrees: number, utility: BlockUtilityWithID) {
     await this.blockCounter(utility);
     if (this.SOCIAL && Math.random() < this.socialness) {
@@ -681,12 +1227,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     if (direction == "right") degrees *= -1;
     await this.doodlebot?.motorCommand("arc", radius, degrees);
   }
-
-  @block({
-    type: "command",
-    text: (degrees) => `spin ${degrees} degrees`,
-    arg: { type: "number", defaultValue: 90 }
-  })
   async spin(degrees: number, utility: BlockUtilityWithID) {
     await this.blockCounter(utility);
     if (this.SOCIAL && Math.random() < this.socialness) {
@@ -696,11 +1236,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     if (degrees === 0) return;
     await this.doodlebot?.motorCommand("arc", 0, -degrees);
   }
-
-  @block({
-    type: "command",
-    text: "stop driving"
-  })
   async stop() {
     if (this.SOCIAL && Math.random() < this.socialness) {
       await this.doodlebot?.display("disgust");
@@ -708,7 +1243,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     }
     await this.doodlebot?.motorCommand("stop");
   }
-
 
   // @block({
   //   type: "command",
@@ -732,42 +1266,41 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   //   await this.doodlebot.followLine();
   // }
 
-  @block({
-    type: "command",
-    text: (direction) => `move pen ${direction}`,
-    arg: { type: "string", options: ["up", "down"], defaultValue: "up" }
-  })
   async movePen(direction: "up" | "down") {
     await this.doodlebot?.penCommand(direction);
   }
-
-  @block({
-    type: "reporter",
-    text: (sensor: SensorKey) => `${sensor} sensor`,
-    arg: { type: "string", options: ["battery", "temperature", "humidity", "pressure", "distance", "gyroscope", "altimeter", "accelerometer"], defaultValue: "battery" }
-  })
   async getSingleSensorReading(sensor: "battery" | "temperature" | "humidity" | "pressure" | "distance" | "gyroscope" | "altimeter" | "accelerometer") {
     const reading = await this.doodlebot?.getSingleSensorReading(sensor);
     return reading;
   }
-
-  
-
-  @(scratch.hat`
-    when ${{ type: "string", options: ["battery", "temperature", "humidity", "pressure", "distance", "altimeter"], defaultValue: "battery" }} 
-    sensor > ${{ type: "number", defaultValue: 0 }}
-  `)
   whenSensorGreater(sensor: "battery" | "temperature" | "humidity" | "pressure" | "distance" | "altimeter", greater: number) {
     const reading = this.doodlebot?.getSensorReadingSync(sensor);
-    if (!reading) return false;
-    return (Number(reading) > Number(greater));
+    if (!reading) {
+      if (typeof false === "number") {
+        AndroidBridge.setResult_double("whenSensorGreater", false, "number");
+      } else if (typeof false === "string") {
+        AndroidBridge.setResult_string("whenSensorGreater", false, "string");
+      } else {
+        AndroidBridge.setResult("whenSensorGreater", false, typeof false);
+      }
+      if (typeof false === "number") {
+        AndroidBridge.setResult_double("whenSensorGreater", false, "number");
+      } else if (typeof false === "string") {
+        AndroidBridge.setResult_string("whenSensorGreater", false, "string");
+      } else {
+        AndroidBridge.setResult("whenSensorGreater", false, typeof false);
+      }
+      return false;
+    }
+    if (typeof (Number(reading) > Number(greater)) === "number") {
+      AndroidBridge.setResult_double("whenSensorGreater", Number(reading) > Number(greater), "number");
+    } else if (typeof (Number(reading) > Number(greater)) === "string") {
+      AndroidBridge.setResult_string("whenSensorGreater", Number(reading) > Number(greater), "string");
+    } else {
+      AndroidBridge.setResult("whenSensorGreater", Number(reading) > Number(greater), typeof (Number(reading) > Number(greater)));
+    }
+    return Number(reading) > Number(greater);
   }
-
-  @block({
-    type: "Boolean",
-    text: (bumper) => `is ${bumper} bumper pressed`,
-    arg: { type: "string", options: bumperOptions, defaultValue: bumperOptions[0] }
-  })
   async isBumperPressed(bumber: typeof bumperOptions[number]) {
     const isPressed = await this.doodlebot?.getSensorReading("bumper");
     switch (bumber) {
@@ -783,144 +1316,113 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
         return isPressed.front === 0 && isPressed.back === 0;
     }
   }
-
-  @block({
-    type: "hat",
-    text: (bumper, condition) => `when ${bumper} bumper ${condition}`,
-    args: [
-      { type: "string", options: bumperOptions, defaultValue: bumperOptions[0] },
-      { type: "string", options: ["release", "pressed"], defaultValue: "pressed" }
-    ]
-  })
   whenBumperPressed(bumber: typeof bumperOptions[number], condition: "release" | "pressed") {
     const isPressed = this.doodlebot?.getSensorReadingImmediately("bumper");
     const isPressedCondition = condition === "pressed";
     switch (bumber) {
       case "back":
+        if (typeof (isPressedCondition ? isPressed.back > 0 : isPressed.back === 0) === "number") {
+          AndroidBridge.setResult_double("whenBumperPressed", isPressedCondition ? isPressed.back > 0 : isPressed.back === 0, "number");
+        } else if (typeof (isPressedCondition ? isPressed.back > 0 : isPressed.back === 0) === "string") {
+          AndroidBridge.setResult_string("whenBumperPressed", isPressedCondition ? isPressed.back > 0 : isPressed.back === 0, "string");
+        } else {
+          AndroidBridge.setResult("whenBumperPressed", isPressedCondition ? isPressed.back > 0 : isPressed.back === 0, typeof (isPressedCondition ? isPressed.back > 0 : isPressed.back === 0));
+        }
         return isPressedCondition ? isPressed.back > 0 : isPressed.back === 0;
       case "front":
+        if (typeof (isPressedCondition ? isPressed.front > 0 : isPressed.front === 0) === "number") {
+          AndroidBridge.setResult_double("whenBumperPressed", isPressedCondition ? isPressed.front > 0 : isPressed.front === 0, "number");
+        } else if (typeof (isPressedCondition ? isPressed.front > 0 : isPressed.front === 0) === "string") {
+          AndroidBridge.setResult_string("whenBumperPressed", isPressedCondition ? isPressed.front > 0 : isPressed.front === 0, "string");
+        } else {
+          AndroidBridge.setResult("whenBumperPressed", isPressedCondition ? isPressed.front > 0 : isPressed.front === 0, typeof (isPressedCondition ? isPressed.front > 0 : isPressed.front === 0));
+        }
         return isPressedCondition ? isPressed.front > 0 : isPressed.front === 0;
       case "front or back":
+        if (typeof (isPressedCondition ? isPressed.front > 0 || isPressed.back > 0 : isPressed.front === 0 && isPressed.back === 0) === "number") {
+          AndroidBridge.setResult_double("whenBumperPressed", isPressedCondition ? isPressed.front > 0 || isPressed.back > 0 : isPressed.front === 0 && isPressed.back === 0, "number");
+        } else if (typeof (isPressedCondition ? isPressed.front > 0 || isPressed.back > 0 : isPressed.front === 0 && isPressed.back === 0) === "string") {
+          AndroidBridge.setResult_string("whenBumperPressed", isPressedCondition ? isPressed.front > 0 || isPressed.back > 0 : isPressed.front === 0 && isPressed.back === 0, "string");
+        } else {
+          AndroidBridge.setResult("whenBumperPressed", isPressedCondition ? isPressed.front > 0 || isPressed.back > 0 : isPressed.front === 0 && isPressed.back === 0, typeof (isPressedCondition ? isPressed.front > 0 || isPressed.back > 0 : isPressed.front === 0 && isPressed.back === 0));
+        }
         return isPressedCondition ? isPressed.front > 0 || isPressed.back > 0 : isPressed.front === 0 && isPressed.back === 0;
       case "front and back":
+        if (typeof (isPressedCondition ? isPressed.front > 0 && isPressed.back > 0 : isPressed.front === 0 || isPressed.back === 0) === "number") {
+          AndroidBridge.setResult_double("whenBumperPressed", isPressedCondition ? isPressed.front > 0 && isPressed.back > 0 : isPressed.front === 0 || isPressed.back === 0, "number");
+        } else if (typeof (isPressedCondition ? isPressed.front > 0 && isPressed.back > 0 : isPressed.front === 0 || isPressed.back === 0) === "string") {
+          AndroidBridge.setResult_string("whenBumperPressed", isPressedCondition ? isPressed.front > 0 && isPressed.back > 0 : isPressed.front === 0 || isPressed.back === 0, "string");
+        } else {
+          AndroidBridge.setResult("whenBumperPressed", isPressedCondition ? isPressed.front > 0 && isPressed.back > 0 : isPressed.front === 0 || isPressed.back === 0, typeof (isPressedCondition ? isPressed.front > 0 && isPressed.back > 0 : isPressed.front === 0 || isPressed.back === 0));
+        }
         return isPressedCondition ? isPressed.front > 0 && isPressed.back > 0 : isPressed.front === 0 || isPressed.back === 0;
       case "neither":
+        if (typeof (isPressedCondition ? isPressed.front === 0 && isPressed.back === 0 : isPressed.front > 0 && isPressed.back > 0) === "number") {
+          AndroidBridge.setResult_double("whenBumperPressed", isPressedCondition ? isPressed.front === 0 && isPressed.back === 0 : isPressed.front > 0 && isPressed.back > 0, "number");
+        } else if (typeof (isPressedCondition ? isPressed.front === 0 && isPressed.back === 0 : isPressed.front > 0 && isPressed.back > 0) === "string") {
+          AndroidBridge.setResult_string("whenBumperPressed", isPressedCondition ? isPressed.front === 0 && isPressed.back === 0 : isPressed.front > 0 && isPressed.back > 0, "string");
+        } else {
+          AndroidBridge.setResult("whenBumperPressed", isPressedCondition ? isPressed.front === 0 && isPressed.back === 0 : isPressed.front > 0 && isPressed.back > 0, typeof (isPressedCondition ? isPressed.front === 0 && isPressed.back === 0 : isPressed.front > 0 && isPressed.back > 0));
+        }
         return isPressedCondition ? isPressed.front === 0 && isPressed.back === 0 : isPressed.front > 0 && isPressed.back > 0;
     }
   }
-
-  @block({
-    type: "command",
-    text: (sensor: SensorKey) => `disable ${sensor}`,
-    arg: { type: "string", options: sensorKeys, defaultValue: sensorKeys[0] }
-  })
   async disableSensor(sensor: SensorKey) {
     await this.doodlebot?.disableSensor(sensor);
   }
-
-  @block({
-    type: "command",
-    text: (direction1, direction2) => `move eyes from ${direction1} to ${direction2}`,
-    args: [
-      { type: "string", options: ["center", "left", "right", "up", "down"] },
-      { type: "string", options: ["center", "left", "right", "up", "down"] },
-    ]
-  })
   async moveEyes(direction1: string, direction2: string) {
     await this.doodlebot.moveEyes(direction1, direction2);
   }
-
-  @block({
-    type: "command",
-    text: (sound) => `play sound track${sound}`,
-    arg: { type: "number", defaultValue: 1 }
-  })
   async playSound(sound: number) {
-    await this.doodlebot?.sendWebsocketCommand("m", sound)
+    await this.doodlebot?.sendWebsocketCommand("m", sound);
   }
-
-  @block((self) => ({
-    type: "command",
-    text: (sound) => `play sound ${sound}`,
-    arg: {
-      type: "string", options: () => soundFiles.concat(self.getCurrentSounds(self.runtime._editingTarget.id))
-    }
-  }))
   async playSoundFile(sound: string, util: BlockUtilityWithID) {
-    let currentId = this.runtime._editingTarget.id;
-    let costumeSounds = this.getCurrentSounds(currentId);
-    if (costumeSounds.includes(sound)) {
-      let soundArray = this.soundDictionary[currentId][sound];
-      console.log(soundArray);
-      await this.doodlebot.sendAudioData(soundArray);
-    } else {
-      await this.doodlebot?.sendWebsocketCommand("m", sound)
-    }
+    // let currentId = this.runtime._editingTarget.id;
+    // let costumeSounds = this.getCurrentSounds(currentId);
+    // if (costumeSounds.includes(sound)) {
+    //   let soundArray = this.soundDictionary[currentId][sound];
+    //   console.log(soundArray);
+    //   await this.doodlebot.sendAudioData(soundArray);
+    // } else {
 
+    await this.doodlebot?.sendWebsocketCommand("m", sound);
+    //}
   }
-
-  @block((self) => ({
-    type: "command",
-    text: (type: DisplayKey | string) => `display ${type}`,
-    arg: {
-      type: "string", options: () => {
-        self.setDictionaries();
-        return displayKeys.filter(key => key !== "clear").concat(imageFiles).concat(
-          (self.costumeDictionary && self.costumeDictionary[self.runtime._editingTarget.id]) ? Object.keys(self.costumeDictionary[self.runtime._editingTarget.id]) : [] as any[]
-        ).filter((item: string) => item != "costume9999.png")
-      }, defaultValue: "happy"
-    }
-  }))
   async setDisplay(display: DisplayKey | string) {
-    let costumeNames = Object.keys(this.costumeDictionary[this.runtime._editingTarget.id]);
-    if (costumeNames.includes(display)) {
-      await this.uploadFile("image", this.costumeDictionary[this.runtime._editingTarget.id][display]);
-      await this.setArrays();
-      await this.doodlebot.displayFile("costume9999.png");
-    } else if (imageFiles.includes(display)) {
+    //let costumeNames = Object.keys(this.costumeDictionary[this.runtime._editingTarget.id]);
+    if (imageFiles.includes(display)) {
       await this.doodlebot?.displayFile(display);
     } else {
       await this.doodlebot?.display(display as DisplayKey);
     }
   }
-
-  @block((self) => ({
-    type: "command",
-    text: (type: DisplayKey | string, seconds: number) => `display ${type} for ${seconds} seconds`,
-    args: [{
-      type: "string", options: () => {
-        self.setDictionaries();
-        return displayKeys.filter(key => key !== "clear").concat(imageFiles).concat(
-          (self.costumeDictionary && self.costumeDictionary[self.runtime._editingTarget.id]) ? Object.keys(self.costumeDictionary[self.runtime._editingTarget.id]) : [] as any[]
-        ).filter((item: string) => item != "costume9999.png")
-      }, defaultValue: "happy"
-    }, {type: "string", defaultValue: 1}]
-  }))
   async setDisplayForSeconds(display: DisplayKey | string, seconds: number) {
     const lastDisplayedKey = this.doodlebot.getLastDisplayedKey();
     const lastDisplayedType = this.doodlebot.getLastDisplayedType();
-    let costumeNames = Object.keys(this.costumeDictionary[this.runtime._editingTarget.id]);
-    if (costumeNames.includes(display)) {
-      await this.uploadFile("image", this.costumeDictionary[this.runtime._editingTarget.id][display]);
-      await this.setArrays();
-      await this.doodlebot.displayFile("costume9999.png");
-      await new Promise(resolve => setTimeout(resolve, seconds*1000));
-    } else if (imageFiles.includes(display)) {
+    //let costumeNames = Object.keys(this.costumeDictionary[this.runtime._editingTarget.id]);
+    // if (costumeNames.includes(display)) {
+    //   await this.uploadFile("image", this.costumeDictionary[this.runtime._editingTarget.id][display]);
+    //   await this.setArrays();
+    //   await this.doodlebot.displayFile("costume9999.png");
+    //   await new Promise(resolve => setTimeout(resolve, seconds*1000));
+    // } else 
+    if (imageFiles.includes(display)) {
       await this.doodlebot?.displayFile(display);
-      await new Promise(resolve => setTimeout(resolve, seconds*1000));
+      await new Promise(resolve => setTimeout(resolve, seconds * 1000));
     } else {
       await this.doodlebot?.display(display as DisplayKey);
-      await new Promise(resolve => setTimeout(resolve, seconds*1000));
+      await new Promise(resolve => setTimeout(resolve, seconds * 1000));
     }
     if (lastDisplayedType == "text") {
       await this.doodlebot.displayText(lastDisplayedKey);
     } else {
       await this.doodlebot.display(lastDisplayedKey);
     }
-    
   }
-
   async getIPAddress() {
+    if (this.setIP) {
+      return this.setIP;
+    }
     if (window.isSecureContext) {
       return this.doodlebot?.getStoredIPAddress();
     } else {
@@ -938,10 +1440,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   //   this.videoDrawable.setTransparency(transparency);
   // }
 
-  @block({
-    type: "command",
-    text: "display video",
-  })
   async connectToVideo() {
     this.videoDrawable ??= await this.createVideoStreamDrawable();
     if (this.SOCIAL && Math.random() < this.socialness) {
@@ -949,11 +1447,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       await this.speakText("You can now see what I see on your screen!");
     }
   }
-
-  @block({
-    type: "command",
-    text: "start video segmentation",
-  })
   async startVideoSegmentation() {
     const ip = await this.getIP();
     await this.doodlebot?.callSegmentation(ip);
@@ -1031,16 +1524,15 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   //   await new Promise((resolve) => setTimeout(resolve, audioDuration * 1000));
   // }
-  
+
   async setArrays() {
     imageFiles = await this.doodlebot.findImageFiles();
     soundFiles = await this.doodlebot.findSoundFiles();
     console.log("SETTING");
   }
-
   async uploadFile(type: string, blobURL: string) {
     console.log("BEFORE IP");
-    const ip = await this.getIPAddress();
+    const ip = this.setIP ? this.setIP : await this.getIPAddress();
     console.log("GOT IP");
     let uploadEndpoint;
     if (type == "sound") {
@@ -1048,7 +1540,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     } else {
       uploadEndpoint = "https://" + ip + "/api/v1/upload/img_upload";
     }
-
     try {
       const components = blobURL.split("---name---");
       console.log("COMPONENTS");
@@ -1062,44 +1553,40 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       const blob = await response1.blob();
       if (window.isSecureContext) {
         console.log("BEFORE BLOB 2");
-        
         console.log("AFTER BLOB 2");
         // Convert Blob to File
-        const file = new File([blob], components[0], { type: blob.type });
+        const file = new File([blob], components[0], {
+          type: blob.type
+        });
         const formData = new FormData();
         formData.append("file", file);
-
         console.log("file");
         console.log(file);
         console.log("BEFORE FETCH");
         const response2 = await fetch(uploadEndpoint, {
           method: "POST",
-          body: formData,
+          body: formData
         });
         console.log("AFTER FETCH");
         console.log(response2);
-
         if (!response2.ok) {
           throw new Error(`Failed to upload file: ${response2.statusText}`);
         }
-
         console.log("File uploaded successfully");
         this.setArrays();
       } else {
         const base64 = await this.blobToBase64(blob);
-          const payload = {
-            filename: components[0],
-            content: base64,
-            mimeType: blob.type,
-          };
-          const response2 = await this.doodlebot.fetch(uploadEndpoint, "file_upload", payload);
+        const payload = {
+          filename: components[0],
+          content: base64,
+          mimeType: blob.type
+        };
+        const response2 = await this.doodlebot.fetch(uploadEndpoint, "file_upload", payload);
       }
-      
     } catch (error) {
       console.error("Error:", error);
     }
   }
-
   async callSinglePredict() {
     console.log("inside");
     const ip = await this.getIP();
@@ -1114,17 +1601,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       const responseJson = JSON.parse(response2);
       return responseJson;
     }
-    
   }
-
-  @block({
-    type: "reporter",
-    text: (location, type) => `get ${location} of ${type}`,
-    args: [
-      { type: "string", options: ["x", "y"], defaultValue: "x" },
-      { type: "string", options: ["face", "apple", "orange"], defaultValue: "face" }
-    ]
-  })
   async getSinglePredict2s(location: string, type: string) {
     const reading = await this.callSinglePredict();
     if (type == "face") {
@@ -1163,15 +1640,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
           return 0;
         }
       }
-      
     }
   }
-
-  @block({
-    type: "Boolean",
-    text: (type) => `is ${type} detected`,
-    args: [{ type: "string", options: ["face", "apple", "orange"], defaultValue: "face" }]
-  })
   async isFaceDetected(type: string) {
     const reading = await this.callSinglePredict();
     if (reading.faces.length > 0 && type == "face") {
@@ -1193,14 +1663,13 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   //   await this.uploadFile("sound", test);
   // }
 
-  @(scratch.button`Upload sound`)
   uploadSoundUI() {
     this.openUI("UploadSound");
+    AndroidBridge.setResult("uploadSoundUI", undefined, "undefined");
   }
-
-  @(scratch.button`Upload image`)
   uploadImageUI() {
     this.openUI("UploadImage");
+    AndroidBridge.setResult("uploadImageUI", undefined, "undefined");
   }
 
   // @(scratch.command((self, $) => $`Upload image file ${self.makeCustomArgument({ component: FileArgument, initial: { value: "", text: "File" } })}`))
@@ -1208,26 +1677,16 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   //   await this.uploadFile("image", test);
   // }
 
-  @block({
-    type: "command",
-    text: (volume) => `set volume to ${volume}`,
-    arg: { type: "number", options: [0, 25, 50, 75, 100, 200, 300], defaultValue: 100 },
-
-  })
   async setVolume(volume: number) {
-    await this.doodlebot?.setVolume(volume)
+    await this.doodlebot?.setVolume(volume);
   }
-
-  
-  
-
 
   // @block({
   //   type: "reporter",
   //   text: "get IP address"
   // })
   async getIP() {
-    return this.doodlebot?.getIPAddress();
+    return this.setIP ? this.setIP : this.doodlebot?.getIPAddress();
   }
 
   // @block({
@@ -1269,7 +1728,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   //     await this.speakText(`Let me know if you have any questions.`);
   //   }
   // }
-
 
   // @block({
   //   type: "hat",
@@ -1313,74 +1771,103 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   // })
   getConfidence(className: string) {
     if (!this.modelConfidences || !this.modelConfidences[className]) {
+      if (typeof 0 === "number") {
+        AndroidBridge.setResult_double("getConfidence", 0, "number");
+      } else if (typeof 0 === "string") {
+        AndroidBridge.setResult_string("getConfidence", 0, "string");
+      } else {
+        AndroidBridge.setResult("getConfidence", 0, typeof 0);
+      }
       return 0;
+    }
+    if (typeof Math.round(this.modelConfidences[className] * 100) === "number") {
+      AndroidBridge.setResult_double("getConfidence", Math.round(this.modelConfidences[className] * 100), "number");
+    } else if (typeof Math.round(this.modelConfidences[className] * 100) === "string") {
+      AndroidBridge.setResult_string("getConfidence", Math.round(this.modelConfidences[className] * 100), "string");
+    } else {
+      AndroidBridge.setResult("getConfidence", Math.round(this.modelConfidences[className] * 100), typeof Math.round(this.modelConfidences[className] * 100));
     }
     return Math.round(this.modelConfidences[className] * 100);
   }
-
   writeString(view: DataView, offset: number, text: string) {
     for (let i = 0; i < text.length; i++) {
-        view.setUint8(offset + i, text.charCodeAt(i));
+      view.setUint8(offset + i, text.charCodeAt(i));
     }
+    AndroidBridge.setResult("writeString", undefined, "undefined");
   }
-
   async saveAudioBufferToWav(buffer) {
     function createWavHeader(buffer) {
-        const numChannels = buffer.numberOfChannels;
-        const sampleRate = buffer.sampleRate / 4;
-        const bitsPerSample = 16; // 16-bit PCM
-        const blockAlign = (numChannels * bitsPerSample) / 8;
-        const byteRate = sampleRate * blockAlign;
-        const dataLength = buffer.length * numChannels * 2; // 16-bit PCM = 2 bytes per sample
-        const header = new ArrayBuffer(44);
-        const view = new DataView(header);
-        // "RIFF" chunk descriptor
-        writeString(view, 0, "RIFF");
-        view.setUint32(4, 36 + dataLength, true); // File size - 8 bytes
-        writeString(view, 8, "WAVE");
-        // "fmt " sub-chunk
-        writeString(view, 12, "fmt ");
-        view.setUint32(16, 16, true); // Sub-chunk size (16 for PCM)
-        view.setUint16(20, 1, true); // Audio format (1 = PCM)
-        view.setUint16(22, numChannels, true); // Number of channels
-        view.setUint32(24, sampleRate, true); // Sample rate
-        view.setUint32(28, byteRate, true); // Byte rate
-        view.setUint16(32, blockAlign, true); // Block align
-        view.setUint16(34, bitsPerSample, true); // Bits per sample
-        // "data" sub-chunk
-        writeString(view, 36, "data");
-        view.setUint32(40, dataLength, true); // Data length
-        console.log("WAV Header:", new Uint8Array(header));
-        return header;
+      const numChannels = buffer.numberOfChannels;
+      const sampleRate = buffer.sampleRate / 4;
+      const bitsPerSample = 16; // 16-bit PCM
+      const blockAlign = numChannels * bitsPerSample / 8;
+      const byteRate = sampleRate * blockAlign;
+      const dataLength = buffer.length * numChannels * 2; // 16-bit PCM = 2 bytes per sample
+      const header = new ArrayBuffer(44);
+      const view = new DataView(header);
+      // "RIFF" chunk descriptor
+      writeString(view, 0, "RIFF");
+      view.setUint32(4, 36 + dataLength, true); // File size - 8 bytes
+      writeString(view, 8, "WAVE");
+      // "fmt " sub-chunk
+      writeString(view, 12, "fmt ");
+      view.setUint32(16, 16, true); // Sub-chunk size (16 for PCM)
+      view.setUint16(20, 1, true); // Audio format (1 = PCM)
+      view.setUint16(22, numChannels, true); // Number of channels
+      view.setUint32(24, sampleRate, true); // Sample rate
+      view.setUint32(28, byteRate, true); // Byte rate
+      view.setUint16(32, blockAlign, true); // Block align
+      view.setUint16(34, bitsPerSample, true); // Bits per sample
+      // "data" sub-chunk
+      writeString(view, 36, "data");
+      view.setUint32(40, dataLength, true); // Data length
+      console.log("WAV Header:", new Uint8Array(header));
+      if (typeof header === "number") {
+        AndroidBridge.setResult_double("createWavHeader", header, "number");
+      } else if (typeof header === "string") {
+        AndroidBridge.setResult_string("createWavHeader", header, "string");
+      } else {
+        AndroidBridge.setResult("createWavHeader", header, typeof header);
+      }
+      return header;
     }
     function writeString(view, offset, string) {
-        for (let i = 0; i < string.length; i++) {
-            view.setUint8(offset + i, string.charCodeAt(i));
-        }
+      for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i));
+      }
+      AndroidBridge.setResult("writeString", undefined, "undefined");
     }
     function interleave(buffer) {
-        const numChannels = buffer.numberOfChannels;
-        const length = buffer.length * numChannels;
-        const result = new Float32Array(length);
-        const channelData = [];
-        for (let i = 0; i < numChannels; i++) {
-            channelData.push(buffer.getChannelData(i));
+      const numChannels = buffer.numberOfChannels;
+      const length = buffer.length * numChannels;
+      const result = new Float32Array(length);
+      const channelData = [];
+      for (let i = 0; i < numChannels; i++) {
+        channelData.push(buffer.getChannelData(i));
+      }
+      let index = 0;
+      for (let i = 0; i < buffer.length; i++) {
+        for (let j = 0; j < numChannels; j++) {
+          result[index++] = channelData[j][i];
         }
-        let index = 0;
-        for (let i = 0; i < buffer.length; i++) {
-            for (let j = 0; j < numChannels; j++) {
-                result[index++] = channelData[j][i];
-            }
-        }
-        console.log("Interleaved data:", result);
-        return result;
+      }
+      console.log("Interleaved data:", result);
+      if (typeof result === "number") {
+        AndroidBridge.setResult_double("interleave", result, "number");
+      } else if (typeof result === "string") {
+        AndroidBridge.setResult_string("interleave", result, "string");
+      } else {
+        AndroidBridge.setResult("interleave", result, typeof result);
+      }
+      return result;
     }
     function floatTo16BitPCM(output, offset, input) {
-        for (let i = 0; i < input.length; i++, offset += 2) {
-            let s = Math.max(-1, Math.min(1, input[i])); // Clamp to [-1, 1]
-            s = s < 0 ? s * 0x8000 : s * 0x7FFF; // Convert to 16-bit PCM
-            output.setInt16(offset, s, true); // Little-endian
-        }
+      for (let i = 0; i < input.length; i++, offset += 2) {
+        let s = Math.max(-1, Math.min(1, input[i])); // Clamp to [-1, 1]
+        s = s < 0 ? s * 0x8000 : s * 0x7FFF; // Convert to 16-bit PCM
+        output.setInt16(offset, s, true); // Little-endian
+      }
+      AndroidBridge.setResult("floatTo16BitPCM", undefined, "undefined");
     }
     const header = createWavHeader(buffer);
     const interleaved = interleave(buffer);
@@ -1394,73 +1881,173 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     console.log("Final WAV buffer length:", wavBuffer.byteLength);
     console.log("Expected data length:", header.byteLength + interleaved.length * 2);
     // Return a Blob
-    return new Blob([wavBuffer], { type: "audio/wav" });
-}
-
-generateWAV(interleaved: Float32Array, sampleRate: number): Uint8Array {
-  const numChannels = 1; // Mono
-  const bitsPerSample = 16;
-  const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
-  const blockAlign = numChannels * (bitsPerSample / 8);
-  const dataLength = interleaved.length * (bitsPerSample / 8);
-  const bufferLength = 44 + dataLength;
-  const buffer = new ArrayBuffer(bufferLength);
-  const view = new DataView(buffer);
-  // RIFF header
-  this.writeString(view, 0, "RIFF");
-  view.setUint32(4, bufferLength - 8, true); // File size
-  this.writeString(view, 8, "WAVE");
-  // fmt subchunk
-  this.writeString(view, 12, "fmt ");
-  view.setUint32(16, 16, true); // Subchunk size
-  view.setUint16(20, 1, true); // PCM format
-  view.setUint16(22, numChannels, true); // Channels
-  view.setUint32(24, sampleRate, true); // Sample rate
-  view.setUint32(28, byteRate, true); // Byte rate
-  view.setUint16(32, blockAlign, true); // Block align
-  view.setUint16(34, bitsPerSample, true); // Bits per sample
-  // data subchunk
-  this.writeString(view, 36, "data");
-  view.setUint32(40, dataLength, true);
-  // PCM data
-  const offset = 44;
-  for (let i = 0; i < interleaved.length; i++) {
+    return new Blob([wavBuffer], {
+      type: "audio/wav"
+    });
+  }
+  generateWAV(interleaved: Float32Array, sampleRate: number): Uint8Array {
+    const numChannels = 1; // Mono
+    const bitsPerSample = 16;
+    const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
+    const blockAlign = numChannels * (bitsPerSample / 8);
+    const dataLength = interleaved.length * (bitsPerSample / 8);
+    const bufferLength = 44 + dataLength;
+    const buffer = new ArrayBuffer(bufferLength);
+    const view = new DataView(buffer);
+    // RIFF header
+    this.writeString(view, 0, "RIFF");
+    view.setUint32(4, bufferLength - 8, true); // File size
+    this.writeString(view, 8, "WAVE");
+    // fmt subchunk
+    this.writeString(view, 12, "fmt ");
+    view.setUint32(16, 16, true); // Subchunk size
+    view.setUint16(20, 1, true); // PCM format
+    view.setUint16(22, numChannels, true); // Channels
+    view.setUint32(24, sampleRate, true); // Sample rate
+    view.setUint32(28, byteRate, true); // Byte rate
+    view.setUint16(32, blockAlign, true); // Block align
+    view.setUint16(34, bitsPerSample, true); // Bits per sample
+    // data subchunk
+    this.writeString(view, 36, "data");
+    view.setUint32(40, dataLength, true);
+    // PCM data
+    const offset = 44;
+    for (let i = 0; i < interleaved.length; i++) {
       const sample = Math.max(-1, Math.min(1, interleaved[i]));
       view.setInt16(offset + i * 2, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+    }
+    if (typeof new Uint8Array(buffer) === "number") {
+      AndroidBridge.setResult_double("generateWAV", new Uint8Array(buffer), "number");
+    } else if (typeof new Uint8Array(buffer) === "string") {
+      AndroidBridge.setResult_string("generateWAV", new Uint8Array(buffer), "string");
+    } else {
+      AndroidBridge.setResult("generateWAV", new Uint8Array(buffer), typeof new Uint8Array(buffer));
+    }
+    return new Uint8Array(buffer);
   }
-  return new Uint8Array(buffer);
-}
-
-createAndSaveWAV(interleaved, sampleRate) {
-  // Step 1: Get interleaved audio data and sample rate
-  // Step 2: Generate WAV file
-  const wavData = this.generateWAV(interleaved, sampleRate);
-  // Step 3: Save or process the WAV file
-  // Example: Create a Blob and download the file
-  const blob = new Blob([wavData], { type: "audio/wav" });
-  const url = URL.createObjectURL(blob);
-  // Create a link to download the file
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "output.wav";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  return blob;
-}
-
-blobToBase64(blob) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result); // "data:<mime>;base64,<base64>"
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-}
-
+  createAndSaveWAV(interleaved, sampleRate) {
+    // Step 1: Get interleaved audio data and sample rate
+    // Step 2: Generate WAV file
+    const wavData = this.generateWAV(interleaved, sampleRate);
+    // Step 3: Save or process the WAV file
+    // Example: Create a Blob and download the file
+    const blob = new Blob([wavData], {
+      type: "audio/wav"
+    });
+    const url = URL.createObjectURL(blob);
+    // Create a link to download the file
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "output.wav";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    if (typeof blob === "number") {
+      AndroidBridge.setResult_double("createAndSaveWAV", blob, "number");
+    } else if (typeof blob === "string") {
+      AndroidBridge.setResult_string("createAndSaveWAV", blob, "string");
+    } else {
+      AndroidBridge.setResult("createAndSaveWAV", blob, typeof blob);
+    }
+    return blob;
+  }
+  blobToBase64(blob) {
+    if (typeof new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result); // "data:<mime>;base64,<base64>"
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+      AndroidBridge.setResult("anonymous", undefined, "undefined");
+      AndroidBridge.setResult("anonymous", undefined, "undefined");
+      AndroidBridge.setResult("anonymous", undefined, "undefined");
+      AndroidBridge.setResult("anonymous", undefined, "undefined");
+      AndroidBridge.setResult("anonymous", undefined, "undefined");
+      AndroidBridge.setResult("anonymous", undefined, "undefined");
+      AndroidBridge.setResult("anonymous", undefined, "undefined");
+    }) === "number") {
+      AndroidBridge.setResult_double("blobToBase64", new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+        AndroidBridge.setResult("anonymous", undefined, "undefined");
+        AndroidBridge.setResult("anonymous", undefined, "undefined");
+        AndroidBridge.setResult("anonymous", undefined, "undefined");
+        AndroidBridge.setResult("anonymous", undefined, "undefined");
+        AndroidBridge.setResult("anonymous", undefined, "undefined");
+        AndroidBridge.setResult("anonymous", undefined, "undefined");
+        AndroidBridge.setResult("anonymous", undefined, "undefined");
+      }), "number");
+    } else if (typeof new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+      AndroidBridge.setResult("anonymous", undefined, "undefined");
+      AndroidBridge.setResult("anonymous", undefined, "undefined");
+      AndroidBridge.setResult("anonymous", undefined, "undefined");
+      AndroidBridge.setResult("anonymous", undefined, "undefined");
+      AndroidBridge.setResult("anonymous", undefined, "undefined");
+      AndroidBridge.setResult("anonymous", undefined, "undefined");
+      AndroidBridge.setResult("anonymous", undefined, "undefined");
+    }) === "string") {
+      AndroidBridge.setResult_string("blobToBase64", new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+        AndroidBridge.setResult("anonymous", undefined, "undefined");
+        AndroidBridge.setResult("anonymous", undefined, "undefined");
+        AndroidBridge.setResult("anonymous", undefined, "undefined");
+        AndroidBridge.setResult("anonymous", undefined, "undefined");
+        AndroidBridge.setResult("anonymous", undefined, "undefined");
+        AndroidBridge.setResult("anonymous", undefined, "undefined");
+        AndroidBridge.setResult("anonymous", undefined, "undefined");
+      }), "string");
+    } else {
+      AndroidBridge.setResult("blobToBase64", new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+        AndroidBridge.setResult("anonymous", undefined, "undefined");
+        AndroidBridge.setResult("anonymous", undefined, "undefined");
+        AndroidBridge.setResult("anonymous", undefined, "undefined");
+        AndroidBridge.setResult("anonymous", undefined, "undefined");
+        AndroidBridge.setResult("anonymous", undefined, "undefined");
+        AndroidBridge.setResult("anonymous", undefined, "undefined");
+        AndroidBridge.setResult("anonymous", undefined, "undefined");
+      }), typeof new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+        AndroidBridge.setResult("anonymous", undefined, "undefined");
+        AndroidBridge.setResult("anonymous", undefined, "undefined");
+        AndroidBridge.setResult("anonymous", undefined, "undefined");
+        AndroidBridge.setResult("anonymous", undefined, "undefined");
+        AndroidBridge.setResult("anonymous", undefined, "undefined");
+        AndroidBridge.setResult("anonymous", undefined, "undefined");
+        AndroidBridge.setResult("anonymous", undefined, "undefined");
+      }));
+    }
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+      AndroidBridge.setResult("anonymous", undefined, "undefined");
+      AndroidBridge.setResult("anonymous", undefined, "undefined");
+      AndroidBridge.setResult("anonymous", undefined, "undefined");
+      AndroidBridge.setResult("anonymous", undefined, "undefined");
+      AndroidBridge.setResult("anonymous", undefined, "undefined");
+      AndroidBridge.setResult("anonymous", undefined, "undefined");
+      AndroidBridge.setResult("anonymous", undefined, "undefined");
+    });
+  }
   async sendAudioFileToChatEndpoint(file, endpoint, blob, seconds) {
     console.log("sending audio file");
-    const url = `https://doodlebot.media.mit.edu/${endpoint}?voice=${this.voice_id}&pitch=${this.pitch_value}`
+    const url = `https://doodlebot.media.mit.edu/${endpoint}?voice=${this.voice_id}&pitch=${this.pitch_value}`;
     const formData = new FormData();
     formData.append("audio_file", file);
     const audioURL = URL.createObjectURL(file);
@@ -1468,111 +2055,104 @@ blobToBase64(blob) {
     //audio.play();
 
     try {
-        let response;
-        let uint8array;
-        // if (window.isSecureContext) {
-          
-          // if (endpoint == "repeat_after_me") {
-          //   const eventSource = new EventSource("http://doodlebot.media.mit.edu/viseme-events");
+      let response;
+      let uint8array;
+      // if (window.isSecureContext) {
 
-          //   eventSource.onmessage = (event) => {
-          //     console.log("Received viseme event:", event.data);
-          //     try {
-          //       const data = JSON.parse(event.data);
-          //       const visemeId = data.visemeId;
-          //       const offsetMs = data.offsetMs;
-          
-          //       // You can customize which viseme IDs should trigger a command.
-          //       // For now, all non-silence visemes trigger it.
-          //       if (visemeId !== 0) {
-          //         setTimeout(() => {
-          //           this.doodlebot.display("happy");
-          //           console.log("DISPLAYING");
-          //         }, offsetMs);
-          //       }
-          //     } catch (err) {
-          //       console.error("Failed to parse viseme event:", err);
-          //     }
-          //   };
+      // if (endpoint == "repeat_after_me") {
+      //   const eventSource = new EventSource("http://doodlebot.media.mit.edu/viseme-events");
 
-          //   eventSource.onerror = (err) => {
-          //     console.error("EventSource failed:", err);
-          //     eventSource.close();
-          //   };
-          // }
+      //   eventSource.onmessage = (event) => {
+      //     console.log("Received viseme event:", event.data);
+      //     try {
+      //       const data = JSON.parse(event.data);
+      //       const visemeId = data.visemeId;
+      //       const offsetMs = data.offsetMs;
 
-          response = await fetch(url, {
-              method: "POST",
-              body: formData,
-          });
+      //       // You can customize which viseme IDs should trigger a command.
+      //       // For now, all non-silence visemes trigger it.
+      //       if (visemeId !== 0) {
+      //         setTimeout(() => {
+      //           this.doodlebot.display("happy");
+      //           console.log("DISPLAYING");
+      //         }, offsetMs);
+      //       }
+      //     } catch (err) {
+      //       console.error("Failed to parse viseme event:", err);
+      //     }
+      //   };
 
-          if (!response.ok) {
-              const errorText = await response.text();
-              console.log("Error response:", errorText);
-              throw new Error(`HTTP error! status: ${response.status}`);
-          }
+      //   eventSource.onerror = (err) => {
+      //     console.error("EventSource failed:", err);
+      //     eventSource.close();
+      //   };
+      // }
 
-          const textResponse = response.headers.get("text-response");
-          console.log("Text Response:", textResponse);
-
-          const blob = await response.blob();
-          const audioUrl = URL.createObjectURL(blob);
-          console.log("Audio URL:", audioUrl);
-
-          const audio = new Audio(audioUrl);
-          const array = await blob.arrayBuffer();
-          uint8array = new Uint8Array(array);
-        // } else {
-        //   const base64 = await this.blobToBase64(blob);
-        //   const payload = {
-        //     filename: file.name,
-        //     content: base64,
-        //     mimeType: blob.type,
-        //   };
-        //   response = await this.doodlebot.fetch(endpoint, "chatgpt", payload);
-        //   uint8array = new Uint8Array([...atob(response)].map(char => char.charCodeAt(0)));
-        // }
-        const interval = 50; // 0.2 seconds in milliseconds
-        const endTime = Date.now() + 1 * 1000;
-
-        this.doodlebot.sendAudioData(uint8array);
-        while (Date.now() < endTime) {
-          await this.doodlebot.sendWebsocketCommand("d,O");
-          await new Promise((res) => setTimeout(res, interval));
-          await this.doodlebot.sendWebsocketCommand("d,N");
-          await new Promise((res) => setTimeout(res, interval));
-        }
-        
-
+      response = await fetch(url, {
+        method: "POST",
+        body: formData
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.log("Error response:", errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const textResponse = response.headers.get("text-response");
+      console.log("Text Response:", textResponse);
+      const blob = await response.blob();
+      const audioUrl = URL.createObjectURL(blob);
+      console.log("Audio URL:", audioUrl);
+      const audio = new Audio(audioUrl);
+      const array = await blob.arrayBuffer();
+      uint8array = new Uint8Array(array);
+      // } else {
+      //   const base64 = await this.blobToBase64(blob);
+      //   const payload = {
+      //     filename: file.name,
+      //     content: base64,
+      //     mimeType: blob.type,
+      //   };
+      //   response = await this.doodlebot.fetch(endpoint, "chatgpt", payload);
+      //   uint8array = new Uint8Array([...atob(response)].map(char => char.charCodeAt(0)));
+      // }
+      const interval = 50; // 0.2 seconds in milliseconds
+      const endTime = Date.now() + 1 * 1000;
+      this.doodlebot.sendAudioData(uint8array);
+      while (Date.now() < endTime) {
+        await this.doodlebot.sendWebsocketCommand("d,O");
+        await new Promise(res => setTimeout(res, interval));
+        await this.doodlebot.sendWebsocketCommand("d,N");
+        await new Promise(res => setTimeout(res, interval));
+      }
     } catch (error) {
-        console.error("Error sending audio file:", error);
+      console.error("Error sending audio file:", error);
     }
   }
   async isValidWavFile(file) {
     const arrayBuffer = await file.arrayBuffer();
     const dataView = new DataView(arrayBuffer);
-  
+
     // Check the "RIFF" chunk descriptor
     const riff = String.fromCharCode(...new Uint8Array(arrayBuffer.slice(0, 4)));
     if (riff !== "RIFF") {
       console.error("Invalid WAV file: Missing RIFF header");
       return false;
     }
-  
+
     // Check the "WAVE" format
     const wave = String.fromCharCode(...new Uint8Array(arrayBuffer.slice(8, 12)));
     if (wave !== "WAVE") {
       console.error("Invalid WAV file: Missing WAVE format");
       return false;
     }
-  
+
     // Check for "fmt " subchunk
     const fmt = String.fromCharCode(...new Uint8Array(arrayBuffer.slice(12, 16)));
     if (fmt !== "fmt ") {
       console.error("Invalid WAV file: Missing fmt subchunk");
       return false;
     }
-  
+
     // Check for "data" subchunk
     const dataIndex = arrayBuffer.byteLength - 8; // Approximate location
     const dataChunk = String.fromCharCode(...new Uint8Array(arrayBuffer.slice(dataIndex, dataIndex + 4)));
@@ -1580,39 +2160,39 @@ blobToBase64(blob) {
       console.error("Invalid WAV file: Missing data subchunk");
       return false;
     }
-  
     console.log("Valid WAV file");
     return true;
   }
-  
   async processAndSendAudio(buffer, endpoint, seconds) {
     try {
-        const wavBlob = await this.saveAudioBufferToWav(buffer);
-        console.log(wavBlob);
-        const wavFile = new File([wavBlob], "output.wav", { type: "audio/wav" });
+      const wavBlob = await this.saveAudioBufferToWav(buffer);
+      console.log(wavBlob);
+      const wavFile = new File([wavBlob], "output.wav", {
+        type: "audio/wav"
+      });
 
-        // // Create a temporary URL for the file
-        // const url = URL.createObjectURL(wavFile);
+      // // Create a temporary URL for the file
+      // const url = URL.createObjectURL(wavFile);
 
-        // // Create a temporary anchor element
-        // const a = document.createElement("a");
-        // a.href = url;
-        // a.download = "output.wav";
-        // document.body.appendChild(a);
+      // // Create a temporary anchor element
+      // const a = document.createElement("a");
+      // a.href = url;
+      // a.download = "output.wav";
+      // document.body.appendChild(a);
 
-        // // Trigger the download
-        // a.click();
+      // // Trigger the download
+      // a.click();
 
-        // // Clean up
-        // document.body.removeChild(a);
-        // URL.revokeObjectURL(url);
-    //     const isValid = await this.isValidWavFile(wavFile);
-    // if (!isValid) {
-    //   throw new Error("Generated file is not a valid WAV file");
-    // }
-        await this.sendAudioFileToChatEndpoint(wavFile, endpoint, wavBlob, seconds);
+      // // Clean up
+      // document.body.removeChild(a);
+      // URL.revokeObjectURL(url);
+      //     const isValid = await this.isValidWavFile(wavFile);
+      // if (!isValid) {
+      //   throw new Error("Generated file is not a valid WAV file");
+      // }
+      await this.sendAudioFileToChatEndpoint(wavFile, endpoint, wavBlob, seconds);
     } catch (error) {
-        console.error("Error processing and sending audio:", error);
+      console.error("Error processing and sending audio:", error);
     }
   }
 
@@ -1622,66 +2202,72 @@ blobToBase64(blob) {
     // Display "listening" while recording
     await this.doodlebot?.display("clear");
     await this.doodlebot?.displayText("listening");
-    console.log("recording audio?")
-    const { context, buffer } = await this.doodlebot?.recordAudio(seconds);
+    console.log("recording audio?");
+    const {
+      context,
+      buffer
+    } = await this.doodlebot?.recordAudio(seconds);
     console.log("finished recording audio");
-    
+
     // Display "thinking" while processing and waiting for response
     await this.doodlebot?.display("clear");
     await this.doodlebot?.displayText("thinking");
-    
+
     // Before sending audio to be played
     await this.processAndSendAudio(buffer, endpoint, seconds);
-    
+
     // Display "speaking" when ready to speak
     // await this.doodlebot?.display("clear");
     // await this.doodlebot?.displayText("speaking");
-    
+
     // Wait a moment before clearing the display
     await new Promise(resolve => setTimeout(resolve, 2000));
     await this.doodlebot?.display("h");
   }
-
   async useModel(url: string) {
     try {
       const modelUrl = this.modelArgumentToURL(url);
       console.log('Loading model from URL:', modelUrl);
-      
+
       // Initialize prediction state if needed
       this.predictionState[modelUrl] = {};
-      
+
       // Load and initialize the model
-      const { model, type } = await this.initModel(modelUrl);
+      const {
+        model,
+        type
+      } = await this.initModel(modelUrl);
       this.predictionState[modelUrl].modelType = type;
       this.predictionState[modelUrl].model = model;
-      
+
       // Update the current model reference
       this.teachableImageModel = modelUrl;
-      
-      await this.indicate({ 
-        type: "success", 
-        msg: "Model loaded successfully" 
+      await this.indicate({
+        type: "success",
+        msg: "Model loaded successfully"
       });
     } catch (e) {
       console.error('Error loading model:', e);
       this.teachableImageModel = null;
-      await this.indicate({ 
-        type: "error", 
-        msg: "Failed to load model" 
+      await this.indicate({
+        type: "error",
+        msg: "Failed to load model"
       });
     }
   }
-
   modelArgumentToURL(modelArg: string) {
     // Convert user-provided model URL/ID to the correct format
     const endpointProvidedFromInterface = "https://teachablemachine.withgoogle.com/models/";
     const redirectEndpoint = "https://storage.googleapis.com/tm-model/";
-    
-    return modelArg.startsWith(endpointProvidedFromInterface)
-      ? modelArg.replace(endpointProvidedFromInterface, redirectEndpoint)
-      : redirectEndpoint + modelArg + "/";
+    if (typeof (modelArg.startsWith(endpointProvidedFromInterface) ? modelArg.replace(endpointProvidedFromInterface, redirectEndpoint) : redirectEndpoint + modelArg + "/") === "number") {
+      AndroidBridge.setResult_double("modelArgumentToURL", modelArg.startsWith(endpointProvidedFromInterface) ? modelArg.replace(endpointProvidedFromInterface, redirectEndpoint) : redirectEndpoint + modelArg + "/", "number");
+    } else if (typeof (modelArg.startsWith(endpointProvidedFromInterface) ? modelArg.replace(endpointProvidedFromInterface, redirectEndpoint) : redirectEndpoint + modelArg + "/") === "string") {
+      AndroidBridge.setResult_string("modelArgumentToURL", modelArg.startsWith(endpointProvidedFromInterface) ? modelArg.replace(endpointProvidedFromInterface, redirectEndpoint) : redirectEndpoint + modelArg + "/", "string");
+    } else {
+      AndroidBridge.setResult("modelArgumentToURL", modelArg.startsWith(endpointProvidedFromInterface) ? modelArg.replace(endpointProvidedFromInterface, redirectEndpoint) : redirectEndpoint + modelArg + "/", typeof (modelArg.startsWith(endpointProvidedFromInterface) ? modelArg.replace(endpointProvidedFromInterface, redirectEndpoint) : redirectEndpoint + modelArg + "/"));
+    }
+    return modelArg.startsWith(endpointProvidedFromInterface) ? modelArg.replace(endpointProvidedFromInterface, redirectEndpoint) : redirectEndpoint + modelArg + "/";
   }
-
   async initModel(modelUrl: string) {
     const avoidCache = `?x=${Date.now()}`;
     const modelURL = modelUrl + "model.json" + avoidCache;
@@ -1690,12 +2276,12 @@ blobToBase64(blob) {
     // First try loading as an image model
     try {
       const customMobileNet = await tmImage.load(modelURL, metadataURL);
-      
+
       // Check if it's actually an audio model
       if ((customMobileNet as any)._metadata.hasOwnProperty('tfjsSpeechCommandsVersion')) {
         const recognizer = await speechCommands.create("BROWSER_FFT", undefined, modelURL, metadataURL);
         await recognizer.ensureModelLoaded();
-        
+
         // Setup audio listening
         await recognizer.listen(async result => {
           this.latestAudioResults = result;
@@ -1705,17 +2291,25 @@ blobToBase64(blob) {
           invokeCallbackOnNoiseAndUnknown: true,
           overlapFactor: 0.50
         });
-        
-        return { model: recognizer, type: this.ModelType.AUDIO };
-      } 
+        return {
+          model: recognizer,
+          type: this.ModelType.AUDIO
+        };
+      }
       // Check if it's a pose model
       else if ((customMobileNet as any)._metadata.packageName === "@teachablemachine/pose") {
         const customPoseNet = await tmPose.load(modelURL, metadataURL);
-        return { model: customPoseNet, type: this.ModelType.POSE };
+        return {
+          model: customPoseNet,
+          type: this.ModelType.POSE
+        };
       }
       // Otherwise it's an image model
       else {
-        return { model: customMobileNet, type: this.ModelType.IMAGE };
+        return {
+          model: customMobileNet,
+          type: this.ModelType.IMAGE
+        };
       }
     } catch (e) {
       console.error("Failed to load model:", e);
@@ -1723,64 +2317,118 @@ blobToBase64(blob) {
     }
   }
 
+  // TODO: EDIT
   updateStageModel(modelUrl) {
-    const stage = this.runtime.getTargetForStage();
-    this.teachableImageModel = modelUrl;
-    if (stage) {
-      (stage as any).teachableImageModel = modelUrl;
-    }
-  }
-
+    AndroidBridge.setResult("updateStageModel", undefined, "undefined");
+  } // const stage = this.runtime.getTargetForStage();
+  // this.teachableImageModel = modelUrl;
+  // if (stage) {
+  //   (stage as any).teachableImageModel = modelUrl;
+  // }
   private getPredictionStateOrStartPredicting(modelUrl: string) {
     if (!modelUrl || !this.predictionState || !this.predictionState[modelUrl]) {
       console.warn('No prediction state available for model:', modelUrl);
+      if (typeof null === "number") {
+        AndroidBridge.setResult_double("getPredictionStateOrStartPredicting", null, "number");
+      } else if (typeof null === "string") {
+        AndroidBridge.setResult_string("getPredictionStateOrStartPredicting", null, "string");
+      } else {
+        AndroidBridge.setResult("getPredictionStateOrStartPredicting", null, typeof null);
+      }
       return null;
+    }
+    if (typeof this.predictionState[modelUrl] === "number") {
+      AndroidBridge.setResult_double("getPredictionStateOrStartPredicting", this.predictionState[modelUrl], "number");
+    } else if (typeof this.predictionState[modelUrl] === "string") {
+      AndroidBridge.setResult_string("getPredictionStateOrStartPredicting", this.predictionState[modelUrl], "string");
+    } else {
+      AndroidBridge.setResult("getPredictionStateOrStartPredicting", this.predictionState[modelUrl], typeof this.predictionState[modelUrl]);
     }
     return this.predictionState[modelUrl];
   }
-
   model_match(state) {
     const modelUrl = this.teachableImageModel;
     const className = state;
-
     const predictionState = this.getPredictionStateOrStartPredicting(modelUrl);
     if (!predictionState) {
+      if (typeof false === "number") {
+        AndroidBridge.setResult_double("model_match", false, "number");
+      } else if (typeof false === "string") {
+        AndroidBridge.setResult_string("model_match", false, "string");
+      } else {
+        AndroidBridge.setResult("model_match", false, typeof false);
+      }
       return false;
     }
-
     const currentMaxClass = predictionState.topClass;
-    return (currentMaxClass === String(className));
+    if (typeof (currentMaxClass === String(className)) === "number") {
+      AndroidBridge.setResult_double("model_match", currentMaxClass === String(className), "number");
+    } else if (typeof (currentMaxClass === String(className)) === "string") {
+      AndroidBridge.setResult_string("model_match", currentMaxClass === String(className), "string");
+    } else {
+      AndroidBridge.setResult("model_match", currentMaxClass === String(className), typeof (currentMaxClass === String(className)));
+    }
+    return currentMaxClass === String(className);
   }
-
   getModelClasses(): string[] {
-    if (
-      !this.teachableImageModel ||
-      !this.predictionState ||
-      !this.predictionState[this.teachableImageModel] ||
-      !this.predictionState[this.teachableImageModel].hasOwnProperty('model')
-    ) {
+    if (!this.teachableImageModel || !this.predictionState || !this.predictionState[this.teachableImageModel] || !this.predictionState[this.teachableImageModel].hasOwnProperty('model')) {
+      if (typeof ["Select a class"] === "number") {
+        AndroidBridge.setResult_double("getModelClasses", ["Select a class"], "number");
+      } else if (typeof ["Select a class"] === "string") {
+        AndroidBridge.setResult_string("getModelClasses", ["Select a class"], "string");
+      } else {
+        AndroidBridge.setResult("getModelClasses", ["Select a class"], typeof ["Select a class"]);
+      }
       return ["Select a class"];
     }
-
     if (this.predictionState[this.teachableImageModel].modelType === this.ModelType.AUDIO) {
+      if (typeof this.predictionState[this.teachableImageModel].model.wordLabels() === "number") {
+        AndroidBridge.setResult_double("getModelClasses", this.predictionState[this.teachableImageModel].model.wordLabels(), "number");
+      } else if (typeof this.predictionState[this.teachableImageModel].model.wordLabels() === "string") {
+        AndroidBridge.setResult_string("getModelClasses", this.predictionState[this.teachableImageModel].model.wordLabels(), "string");
+      } else {
+        AndroidBridge.setResult("getModelClasses", this.predictionState[this.teachableImageModel].model.wordLabels(), typeof this.predictionState[this.teachableImageModel].model.wordLabels());
+      }
       return this.predictionState[this.teachableImageModel].model.wordLabels();
     }
-
+    if (typeof this.predictionState[this.teachableImageModel].model.getClassLabels() === "number") {
+      AndroidBridge.setResult_double("getModelClasses", this.predictionState[this.teachableImageModel].model.getClassLabels(), "number");
+    } else if (typeof this.predictionState[this.teachableImageModel].model.getClassLabels() === "string") {
+      AndroidBridge.setResult_string("getModelClasses", this.predictionState[this.teachableImageModel].model.getClassLabels(), "string");
+    } else {
+      AndroidBridge.setResult("getModelClasses", this.predictionState[this.teachableImageModel].model.getClassLabels(), typeof this.predictionState[this.teachableImageModel].model.getClassLabels());
+    }
     return this.predictionState[this.teachableImageModel].model.getClassLabels();
   }
-
   getModelPrediction() {
     const modelUrl = this.teachableImageModel;
-    const predictionState: { topClass: string } = this.getPredictionStateOrStartPredicting(modelUrl);
+    const predictionState: {
+      topClass: string;
+    } = this.getPredictionStateOrStartPredicting(modelUrl);
     if (!predictionState) {
       console.error("No prediction state found");
+      if (typeof '' === "number") {
+        AndroidBridge.setResult_double("getModelPrediction", '', "number");
+      } else if (typeof '' === "string") {
+        AndroidBridge.setResult_string("getModelPrediction", '', "string");
+      } else {
+        AndroidBridge.setResult("getModelPrediction", '', typeof '');
+      }
       return '';
+    }
+    if (typeof predictionState.topClass === "number") {
+      AndroidBridge.setResult_double("getModelPrediction", predictionState.topClass, "number");
+    } else if (typeof predictionState.topClass === "string") {
+      AndroidBridge.setResult_string("getModelPrediction", predictionState.topClass, "string");
+    } else {
+      AndroidBridge.setResult("getModelPrediction", predictionState.topClass, typeof predictionState.topClass);
     }
     return predictionState.topClass;
   }
 
+  // TODO: EDIT
   private _loop() {
-    setTimeout(this._loop.bind(this), Math.max(this.runtime.currentStepTime, this.INTERVAL));
+    // setTimeout(this._loop.bind(this), Math.max(this.runtime.currentStepTime, this.INTERVAL));
     const time = Date.now();
     if (this.lastUpdate === null) {
       this.lastUpdate = time;
@@ -1789,14 +2437,13 @@ blobToBase64(blob) {
       this.isPredicting = 0;
     }
     const offset = time - this.lastUpdate;
-
     if (offset > this.INTERVAL && this.isPredicting === 0) {
       this.lastUpdate = time;
       this.isPredicting = 0;
       this.getImageStreamAndPredict();
     }
+    AndroidBridge.setResult("_loop", undefined, "undefined");
   }
-
   private async getImageStreamAndPredict() {
     try {
       const imageStream = this.getImageStream();
@@ -1810,7 +2457,6 @@ blobToBase64(blob) {
       console.error("Error in getting image stream and predicting:", error);
     }
   }
-
   private async predictAllBlocks(frame: ImageBitmap) {
     for (let modelUrl in this.predictionState) {
       if (!this.predictionState[modelUrl].model) {
@@ -1828,7 +2474,6 @@ blobToBase64(blob) {
       --this.isPredicting;
     }
   }
-
   private async predictModel(modelUrl: string, frame: ImageBitmap) {
     const predictions = await this.getPredictionFromModel(modelUrl, frame);
     if (!predictions) {
@@ -1848,16 +2493,21 @@ blobToBase64(blob) {
     this.maxConfidence = maxProbability;
     return maxClassName;
   }
-
   private async getPredictionFromModel(modelUrl: string, frame: ImageBitmap) {
-    const { model, modelType } = this.predictionState[modelUrl];
+    const {
+      model,
+      modelType
+    } = this.predictionState[modelUrl];
     switch (modelType) {
       case this.ModelType.IMAGE:
         if (!frame) return null;
         return await model.predict(frame);
       case this.ModelType.POSE:
         if (!frame) return null;
-        const { pose, posenetOutput } = await model.estimatePose(frame);
+        const {
+          pose,
+          posenetOutput
+        } = await model.estimatePose(frame);
         return await model.predict(posenetOutput);
       case this.ModelType.AUDIO:
         if (this.latestAudioResults) {
@@ -1886,74 +2536,74 @@ blobToBase64(blob) {
     }
 
     // Create indicator to show progress
-    const indicator = await this.indicate({ 
+    const indicator = await this.indicate({
       type: "warning",
-      msg: `Capturing snapshots of ${imageClass}...` 
+      msg: `Capturing snapshots of ${imageClass}...`
     });
-
     const snapshots: string[] = [];
     const zip = new JSZip();
-    
+
     // Ensure we have video stream
     this.imageStream ??= this.doodlebot?.getImageStream();
     if (!this.imageStream) {
       indicator.close();
-      await this.indicate({ 
-        type: "error", 
-        msg: "No video stream available" 
+      await this.indicate({
+        type: "error",
+        msg: "No video stream available"
       });
       return;
     }
 
     // Capture a snapshot every 500ms
     const interval = 100; // 500ms between snapshots
-    const iterations = (seconds * 1000) / interval;
-    
+    const iterations = seconds * 1000 / interval;
     for (let i = 0; i < iterations; i++) {
       // Create a canvas to draw the current frame
       const canvas = document.createElement('canvas');
       canvas.width = this.imageStream.width;
       canvas.height = this.imageStream.height;
       const ctx = canvas.getContext('2d');
-      
+
       // Draw current frame to canvas
       ctx.drawImage(this.imageStream, 0, 0);
-      
+
       // Convert to base64 and store
       const dataUrl = canvas.toDataURL('image/jpeg');
       snapshots.push(dataUrl);
-      
+
       // Add to zip file
       const base64Data = dataUrl.replace(/^data:image\/jpeg;base64,/, "");
-      zip.file(`${imageClass}_${i+1}.jpg`, base64Data, {base64: true});
-      
+      zip.file(`${imageClass}_${i + 1}.jpg`, base64Data, {
+        base64: true
+      });
+
       // Wait for next interval
       await new Promise(resolve => setTimeout(resolve, interval));
     }
 
     // Generate zip file
-    const content = await zip.generateAsync({type: "blob"});
-    
+    const content = await zip.generateAsync({
+      type: "blob"
+    });
+
     // Create download link with image class in filename
     const downloadUrl = URL.createObjectURL(content);
     const link = document.createElement('a');
     link.href = downloadUrl;
     link.download = `${imageClass}_snapshots.zip`;
-    
+
     // Trigger download
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     // Cleanup
     URL.revokeObjectURL(downloadUrl);
-    indicator.close();
-    
-    await this.indicate({ 
-      type: "success", 
-      msg: `Captured ${snapshots.length} snapshots of ${imageClass}` 
-    });
-
+    //indicator.close();
+    // await this.indicate({
+    //   type: "success",
+    //   msg: `Captured ${snapshots.length} snapshots of ${imageClass}`
+    // });
     if (this.SOCIAL && Math.random() < this.socialness) {
       await this.doodlebot?.display("happy");
       await this.speakText(`Done. I've saved the snapshots to the Downloads folder, to a zip file called ${imageClass}_snapshots`);
@@ -1961,7 +2611,6 @@ blobToBase64(blob) {
       await this.speakText("Let me know if you have any questions.");
     }
   }
-
   private async speakText(text: string, showDisplay: boolean = false) {
     try {
       // Display "speaking" while processing if showDisplay is true
@@ -1969,32 +2618,31 @@ blobToBase64(blob) {
         await this.doodlebot?.display("clear");
         await this.doodlebot?.displayText("speaking");
       }
-
       const url = `https://doodlebot.media.mit.edu/speak?voice=${this.voice_id}&pitch=${this.pitch_value}`;
       const response = await fetch(url, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json"
         },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({
+          text
+        })
       });
-
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
       const blob = await response.blob();
       const audioUrl = URL.createObjectURL(blob);
       const audio = new Audio(audioUrl);
-
-      await new Promise((resolve) => {
+      await new Promise(resolve => {
         audio.addEventListener('loadedmetadata', () => {
           resolve(null);
+          AndroidBridge.setResult("anonymous", undefined, "undefined");
         });
+        AndroidBridge.setResult("anonymous", undefined, "undefined");
       });
-      
       const durationMs = audio.duration * 1000; // duration is in seconds
-      
+
       // Convert blob to Uint8Array and send to Doodlebot
       const array = await blob.arrayBuffer();
       await this.doodlebot.sendAudioData(new Uint8Array(array));
@@ -2006,7 +2654,6 @@ blobToBase64(blob) {
         await this.doodlebot?.display("clear");
       }
       await new Promise(resolve => setTimeout(resolve, durationMs));
-
     } catch (error) {
       console.error("Error in speak function:", error);
       if (showDisplay) {
