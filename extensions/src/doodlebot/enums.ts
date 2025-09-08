@@ -47,7 +47,7 @@ export const sensor = {
     altimeter: "u",
     magnometer: "o",
     temperature: "t",
-    accelerometer: "a",
+    accelerometer: "x",
     gyroscope: "g",
     light: "l",
 } as const;

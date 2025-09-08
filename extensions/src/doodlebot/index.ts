@@ -128,12 +128,9 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     this._loop();
     env.runtime.on("TARGETS_UPDATE", async () => {
       await this.setDictionaries();
-    })
-
-    
+    })    
 
     await this.setDictionaries();
-    console.log("env", env);
 
     soundFiles = ["File"];
     imageFiles = ["File"];
@@ -746,9 +743,9 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     text: (sensor: SensorKey) => `${sensor} sensor`,
     arg: { type: "string", options: ["battery", "temperature", "humidity", "pressure", "distance", "gyroscope", "altimeter", "accelerometer"], defaultValue: "battery" }
   })
-  async getSingleSensorReading(sensor: "battery" | "temperature" | "humidity" | "pressure" | "distance" | "gyroscope" | "altimeter" | "accelerometer") {
+  async getSingleSensorReading(sensor: "battery" | "temperature" | "humidity" | "pressure" | "distance" | "gyroscope" | "altimeter" | "accelerometer", utility: BlockUtilityWithID) {
     const reading = await this.doodlebot?.getSingleSensorReading(sensor);
-    return reading;
+    return `${JSON.stringify(reading)} number`;
   }
 
   
@@ -769,7 +766,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     arg: { type: "string", options: bumperOptions, defaultValue: bumperOptions[0] }
   })
   async isBumperPressed(bumber: typeof bumperOptions[number]) {
-    const isPressed = await this.doodlebot?.getSensorReading("bumper");
+    const isPressed = await this.doodlebot?.getSingleSensorReading("bumper");
     switch (bumber) {
       case "back":
         return isPressed.back > 0;

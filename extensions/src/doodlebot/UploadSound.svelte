@@ -143,7 +143,7 @@
   <h2>Upload a Sound</h2>
 
   <div class="input-group">
-    <input type="file" id="fileInput" />
+    <input type="file" id="fileInput" accept=".wav,audio/wav" />
     <input type="text" id="textInput" placeholder="File name..." />
   </div>
 

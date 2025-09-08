@@ -452,6 +452,7 @@ export default class Doodlebot {
                     const [x, y, z] = parameters.map((parameter) => Number.parseFloat(parameter));
                     this.updateSensor(keyBySensor[command], { x, y, z });
                     break;
+                    
                 }
                 case sensor.light: {
                     const [red, green, blue, alpha] = parameters.map((parameter) => Number.parseFloat(parameter));
@@ -670,10 +671,10 @@ export default class Doodlebot {
             }
             case "stop":
                 if (this.isStopped) return;
-                return await this.untilFinishedPending("motor", new Promise(async (resolve) => {
-                    await this.sendBLECommand(command.motor, "s");
-                    this.onMotor.once(events.stop, resolve);
-                }));
+                await this.sendBLECommand(command.motor, "s");
+                // return await this.untilFinishedPending("motor", new Promise(async (resolve) => {
+                //     this.onMotor.once(events.stop, resolve);
+                // }));
         }
     }
 
