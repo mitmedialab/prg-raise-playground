@@ -741,11 +741,27 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   @block({
     type: "reporter",
     text: (sensor: SensorKey) => `${sensor} sensor`,
-    arg: { type: "string", options: ["battery", "temperature", "humidity", "pressure", "distance", "gyroscope", "altimeter", "accelerometer"], defaultValue: "battery" }
+    arg: { type: "string", options: ["battery", "temperature", "humidity", "pressure", "distance", "altimeter"], defaultValue: "battery" }
   })
-  async getSingleSensorReading(sensor: "battery" | "temperature" | "humidity" | "pressure" | "distance" | "gyroscope" | "altimeter" | "accelerometer", utility: BlockUtilityWithID) {
+  async getSingleSensorReading(sensor: "battery" | "temperature" | "humidity" | "pressure" | "distance" | "altimeter", utility: BlockUtilityWithID) {
     const reading = await this.doodlebot?.getSingleSensorReading(sensor);
     return `${JSON.stringify(reading)} number`;
+  }
+
+  @block({
+    type: "reporter",
+    text: (axis: string, sensor: SensorKey) => `get ${axis} of ${sensor} sensor`,
+    args: [
+      {type: 'string', options: ["x", "y", "z"], defaultValue: 'x'},
+      { type: "string", options: ["gyroscope", "accelerometer"], defaultValue: "gyroscope" }
+    ]
+  })
+  async getSingleSensorReadingAxis(axis: string, sensor: "gyroscope" | "accelerometer", utility: BlockUtilityWithID) {
+    const reading = await this.doodlebot?.getSingleSensorReading(sensor);
+    if (!reading) {
+      return NaN;
+    }
+    return `${JSON.stringify(reading[axis])} number`;
   }
 
   
