@@ -836,14 +836,20 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   @block({
     type: "command",
-    text: (direction1, direction2) => `move eyes from ${direction1} to ${direction2}`,
-    args: [
-      { type: "string", options: ["center", "left", "right", "up", "down"] },
-      { type: "string", options: ["center", "left", "right", "up", "down"] },
-    ]
+    text: (direction) => `move eyes from center to ${direction}`,
+    arg: { type: "string", options: ["left", "right", "up", "down"] },
   })
-  async moveEyes(direction1: string, direction2: string) {
-    await this.doodlebot.moveEyes(direction1, direction2);
+  async moveEyes1(direction: string) {
+    await this.doodlebot.moveEyes("center", direction);
+  }
+
+  @block({
+    type: "command",
+    text: (direction) => `move eyes from ${direction} to center`,
+    arg: { type: "string", options: ["left", "right", "up", "down"] },
+  })
+  async moveEyes2(direction: string) {
+    await this.doodlebot.moveEyes(direction, "center");
   }
 
   @block({
