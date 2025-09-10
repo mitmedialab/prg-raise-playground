@@ -544,8 +544,14 @@ export default class Doodlebot {
      * @returns 
      */
     async getSensorReading<T extends SensorKey>(type: T): Promise<SensorData[T]> {
-        await this.enableSensor(type); // should this be automatic?
-        return this.sensorData[type];
+        await this.enableSensor(type);
+    
+        const reading = this.sensorData[type];
+    
+        // Schedule auto-disable after 5s of inactivity
+        this.scheduleDisableSensor(type, 5000);
+    
+        return reading;
     }
 
     async getSingleSensorReading<T extends SensorKey>(
