@@ -503,6 +503,11 @@ export default class Doodlebot {
      * @returns 
      */
     async enableSensor<T extends SensorKey>(type: T) {
+        // Cancel any pending disable
+        if (this.disableTimers[type]) {
+            clearTimeout(this.disableTimers[type]);
+            delete this.disableTimers[type];
+        }
         if (this.sensorState[type]) return;
         await this.sendBLECommand(command.enable, sensor[type]);
         await new Promise((resolve) => this.onSensor.once(type, resolve));
@@ -512,11 +517,26 @@ export default class Doodlebot {
     /**
      * 
      */
+    private disableTimers: Partial<Record<SensorKey, ReturnType<typeof setTimeout>>> = {};
+
     async disableSensor<T extends SensorKey>(type: T) {
+        console.log("DISABLING");
         if (!this.sensorState[type]) return;
         await this.sendBLECommand(command.disable, sensor[type]);
         this.sensorState[type] = false;
     }
+
+    scheduleDisableSensor(type: SensorKey, delay = 5000) {
+        // Reset existing timer
+        if (this.disableTimers[type]) {
+          clearTimeout(this.disableTimers[type]);
+        }
+    
+        this.disableTimers[type] = setTimeout(() => {
+          this.disableSensor(type);
+          delete this.disableTimers[type];
+        }, delay);
+      }
 
     /**
      * 
@@ -528,10 +548,16 @@ export default class Doodlebot {
         return this.sensorData[type];
     }
 
-    async getSingleSensorReading<T extends SensorKey>(type: T): Promise<SensorData[T]> {
-        await this.enableSensor(type); // should this be automatic?
+    async getSingleSensorReading<T extends SensorKey>(
+        type: T
+      ): Promise<SensorData[T]> {
+        await this.enableSensor(type);
+    
         const reading = this.sensorData[type];
-        await this.disableSensor(type);
+    
+        // Schedule auto-disable after 5s of inactivity
+        this.scheduleDisableSensor(type, 5000);
+    
         return reading;
     }
 

@@ -1,5 +1,5 @@
 import { Environment, ExtensionMenuDisplayDetails, extension, block, buttonBlock, BlockUtilityWithID, scratch } from "$common";
-import { DisplayKey, displayKeys, command, type Command, SensorKey, sensorKeys, units } from "./enums";
+import { DisplayKey, displayKeys, command, type Command, SensorKey, sensorKeys, units, keyBySensor, sensor } from "./enums";
 import Doodlebot, { NetworkCredentials } from "./Doodlebot";
 import FileArgument from './FileArgument.svelte';
 import { splitArgsString } from "./utils";
@@ -175,6 +175,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     //     }
     //   }
     // })
+
+    
   }
 
   async setDictionaries() {
@@ -420,6 +422,12 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     
     // Wait a short moment to ensure connection is established
     await new Promise(resolve => setTimeout(resolve, 1000));
+
+    window.addEventListener("beforeunload", async (event) => {
+      for (const key of Object.keys(sensor)) {
+        await this.doodlebot.disableSensor(key as SensorKey);
+      }
+    });
 
     
     try {
