@@ -407,8 +407,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     this.doodlebot = doodlebot;
     await this.setIndicator("connected");
 
-    
-
     const urlParams = new URLSearchParams(window.location.search); // Hack for now -jon
     const ip = urlParams.get("ip");
     this.doodlebot.setIP(ip);
@@ -423,9 +421,15 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     // Wait a short moment to ensure connection is established
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    window.addEventListener("beforeunload", async (event) => {
+    for (const key of Object.keys(sensor)) {
+      console.log("DISABLE SENSOR", key);
+      this.doodlebot.disableSensor(key as SensorKey); // don't await
+    }
+
+    window.addEventListener("pagehide", () => {
       for (const key of Object.keys(sensor)) {
-        await this.doodlebot.disableSensor(key as SensorKey);
+        console.log("DISABLE SENSOR", key);
+        this.doodlebot.disableSensor(key as SensorKey); // don't await
       }
     });
 
@@ -791,6 +795,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   })
   async isBumperPressed(bumber: typeof bumperOptions[number]) {
     const isPressed = await this.doodlebot?.getSingleSensorReading("bumper");
+
     switch (bumber) {
       case "back":
         return isPressed.back > 0;
@@ -814,11 +819,13 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     ]
   })
   whenBumperPressed(bumber: typeof bumperOptions[number], condition: "release" | "pressed") {
-    const isPressed = this.doodlebot?.getSingleSensorReading("bumper");
+    const isPressed = this.doodlebot?.getSensorReadingSync("bumper");
+    
     const isPressedCondition = condition === "pressed";
     if (!isPressed) {
       return false;
     }
+
     switch (bumber) {
       case "back":
         return isPressedCondition ? isPressed.back > 0 : isPressed.back === 0;

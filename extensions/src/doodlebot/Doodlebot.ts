@@ -569,9 +569,11 @@ export default class Doodlebot {
 
     getSensorReadingSync<T extends SensorKey>(type: T): SensorData[T] | false {
         if (this.sensorState[type]) {
+            this.scheduleDisableSensor(type, 5000);
             return this.sensorData[type];
         } else {
             this.enableSensor(type);
+            this.scheduleDisableSensor(type, 5000);
             return false;
         }
     }
