@@ -1,5 +1,5 @@
 import { Environment, ExtensionMenuDisplayDetails, extension, block, buttonBlock, BlockUtilityWithID, scratch } from "$common";
-import { DisplayKey, displayKeys, command, type Command, SensorKey, sensorKeys } from "./enums";
+import { DisplayKey, displayKeys, command, type Command, SensorKey, sensorKeys, units } from "./enums";
 import Doodlebot, { NetworkCredentials } from "./Doodlebot";
 import FileArgument from './FileArgument.svelte';
 import { splitArgsString } from "./utils";
@@ -745,7 +745,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   })
   async getSingleSensorReading(sensor: "battery" | "temperature" | "humidity" | "pressure" | "distance" | "altimeter", utility: BlockUtilityWithID) {
     const reading = await this.doodlebot?.getSingleSensorReading(sensor);
-    return `${JSON.stringify(reading)} number`;
+    return `${JSON.stringify(reading)} ${units[sensor]}`;
   }
 
   @block({
@@ -761,7 +761,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     if (!reading) {
       return NaN;
     }
-    return `${JSON.stringify(reading[axis])} number`;
+    return `${JSON.stringify(reading[axis])} ${units[sensor]}`;
   }
 
   
@@ -887,7 +887,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     arg: {
       type: "string", options: () => {
         self.setDictionaries();
-        return displayKeys.filter(key => key !== "clear").concat(imageFiles).concat(
+        return displayKeys.filter(key => (key !== "clear" && key !== "font")).concat(imageFiles).concat(
           (self.costumeDictionary && self.costumeDictionary[self.runtime._editingTarget.id]) ? Object.keys(self.costumeDictionary[self.runtime._editingTarget.id]) : [] as any[]
         ).filter((item: string) => item != "costume9999.png")
       }, defaultValue: "happy"
