@@ -806,7 +806,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     ]
   })
   whenBumperPressed(bumber: typeof bumperOptions[number], condition: "release" | "pressed") {
-    const isPressed = this.doodlebot?.getSensorReadingImmediately("bumper");
+    const isPressed = this.doodlebot?.getSingleSensorReading("bumper");
     const isPressedCondition = condition === "pressed";
     if (!isPressed) {
       return false;
