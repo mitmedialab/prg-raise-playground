@@ -143,7 +143,7 @@
   <h2>Upload an Image</h2>
 
   <div class="input-group">
-    <input type="file" id="fileInput" />
+    <input type="file" id="fileInput" accept=".gif,.png,.jpg,.jpeg,image/gif,image/png,image/jpeg" />
     <input type="text" id="textInput" placeholder="File name..." />
   </div>
 
