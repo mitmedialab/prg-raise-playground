@@ -636,6 +636,14 @@ export default class Doodlebot {
         await fetch(endpoint);
     }
 
+    async stopSegmentation(ip) {
+        while (!this.connection) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        let endpoint = "https://" + ip + "/api/v1/video/stream?width=640&height=480&set_display=true&set_detect_objects=false&set_detect_faces=false"
+        await fetch(endpoint);
+    }
+
     async findSoundFiles() {
         while (!this.connection) {
             await new Promise(resolve => setTimeout(resolve, 100));

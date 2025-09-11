@@ -128,7 +128,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     this._loop();
     env.runtime.on("TARGETS_UPDATE", async () => {
       await this.setDictionaries();
-    })    
+    })   
 
     await this.setDictionaries();
 
@@ -994,6 +994,15 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   async startVideoSegmentation() {
     const ip = await this.getIP();
     await this.doodlebot?.callSegmentation(ip);
+  }
+
+  @block({
+    type: "command",
+    text: "stop video segmentation",
+  })
+  async stopVideoSegmentation() {
+    const ip = await this.getIP();
+    await this.doodlebot?.stopSegmentation(ip);
   }
 
   // @block({
