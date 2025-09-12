@@ -987,23 +987,23 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     }
   }
 
-  @block({
-    type: "command",
-    text: "start video segmentation",
-  })
-  async startVideoSegmentation() {
-    const ip = await this.getIP();
-    await this.doodlebot?.callSegmentation(ip);
-  }
+  // @block({
+  //   type: "command",
+  //   text: "start video segmentation",
+  // })
+  // async startVideoSegmentation() {
+  //   const ip = await this.getIP();
+  //   await this.doodlebot?.callSegmentation(ip);
+  // }
 
-  @block({
-    type: "command",
-    text: "stop video segmentation",
-  })
-  async stopVideoSegmentation() {
-    const ip = await this.getIP();
-    await this.doodlebot?.stopSegmentation(ip);
-  }
+  // @block({
+  //   type: "command",
+  //   text: "stop video segmentation",
+  // })
+  // async stopVideoSegmentation() {
+  //   const ip = await this.getIP();
+  //   await this.doodlebot?.stopSegmentation(ip);
+  // }
 
   // @block({
   //   type: "hat",
@@ -1147,19 +1147,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   }
 
   async callSinglePredict() {
-    console.log("inside");
-    const ip = await this.getIP();
-    const uploadEndpoint = "https://" + ip + "/api/v1/video/single_predict";
-    console.log("calling single predict");
-    if (window.isSecureContext) {
-      const response2 = await fetch(uploadEndpoint);
-      const responseJson = await response2.json();
-      return responseJson;
-    } else {
-      const response2 = await this.doodlebot.fetch(uploadEndpoint, "json");
-      const responseJson = JSON.parse(response2);
-      return responseJson;
-    }
+    const ip = await this.getIPAddress();
+    return await this.doodlebot.callSinglePredict(this.getIPAddress());
     
   }
 
@@ -1168,49 +1157,13 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     text: (location, type) => `get ${location} of ${type}`,
     args: [
       { type: "string", options: ["x", "y"], defaultValue: "x" },
-      { type: "string", options: ["face", "apple", "orange"], defaultValue: "face" }
+      { type: "string", options: ["face", "object"], defaultValue: "face" }
     ]
   })
-  async getSinglePredict2s(location: string, type: string) {
-    const reading = await this.callSinglePredict();
-    if (type == "face") {
-      if (reading.faces.length == 0) {
-        return 0;
-      }
-      if (location == "x") {
-        return reading.faces[0].x;
-      } else {
-        return reading.faces[0].y;
-      }
-    } else {
-      if (reading.objects.length == 0) {
-        return 0;
-      }
-      if (type == "apple") {
-        const firstApple = reading.objects.find(obj => obj.label === "apple");
-        if (firstApple) {
-          if (location == "x") {
-            return firstApple.x;
-          } else {
-            return firstApple.y;
-          }
-        } else {
-          return 0;
-        }
-      } else {
-        const firstOrange = reading.objects.find(obj => obj.label === "orange");
-        if (firstOrange) {
-          if (location == "x") {
-            return firstOrange.x;
-          } else {
-            return firstOrange.y;
-          }
-        } else {
-          return 0;
-        }
-      }
-      
-    }
+  async getSinglePredict2s(location: string, type: "face" | "object") {
+    const ip = await this.getIPAddress();
+    const reading = await this.doodlebot.getFacePrediction(ip, type);
+    return this.doodlebot.getReadingLocation(location, type == "object" ? "apple" : type, reading);
   }
 
   @block({
@@ -1219,19 +1172,14 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     args: [{ type: "string", options: ["face", "apple", "orange"], defaultValue: "face" }]
   })
   async isFaceDetected(type: string) {
-    const reading = await this.callSinglePredict();
-    if (reading.faces.length > 0 && type == "face") {
-      return true;
+    const ip = await this.getIPAddress();
+    const reading = await this.doodlebot.getFacePrediction(ip, "face");
+    const x = this.doodlebot.getReadingLocation("x", type, reading);
+    const y = this.doodlebot.getReadingLocation("y", type, reading);
+    if (x == -1 && y == -1) {
+      return false;
     }
-    if (reading.objects.length > 0 && type == "apple") {
-      const firstApple = reading.objects.find(obj => obj.label === "apple");
-      return firstApple ? true : false;
-    }
-    if (reading.objects.length > 0 && type == "orange") {
-      const firstOrange = reading.objects.find(obj => obj.label === "orange");
-      return firstOrange ? true : false;
-    }
-    return false;
+    return true;
   }
 
   // @(scratch.command((self, $) => $`Upload sound file ${self.makeCustomArgument({ component: FileArgument, initial: { value: "", text: "File" } })}`))

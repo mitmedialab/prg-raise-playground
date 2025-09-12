@@ -627,21 +627,147 @@ export default class Doodlebot {
         let uploadedImages = await this.fetchAndExtractList(endpoint);
         return uploadedImages.filter(item => !this.imageFiles.includes(item));
     }
-    
-    async callSegmentation(ip) {
-        while (!this.connection) {
-            await new Promise(resolve => setTimeout(resolve, 100));
+
+    private lastCallTime: Record<string, number> = {};
+    private streamActive: Record<string, boolean> = {};
+    private stopTimers: Record<string, any> = {};
+
+    async getFacePrediction(ip: string, type: "face" | "object") {
+        const now = Date.now();
+
+        // Clear old stop timers whenever we get a new call
+        if (this.stopTimers[type]) {
+            clearTimeout(this.stopTimers[type]);
         }
-        let endpoint = "https://" + ip + "/api/v1/video/stream?width=640&height=480&set_display=true&set_detect_objects=true&set_detect_faces=true"
-        await fetch(endpoint);
+
+        // If stream is already active → just return continuous predict
+        if (this.streamActive[type]) {
+            this.lastCallTime[type] = now;
+            this.resetStopTimer(ip, type);
+            return await this.getContinuousPredict(ip, type);
+        }
+
+        // If first call or more than 1s since last call → single_predict
+        if (!this.lastCallTime[type] || now - this.lastCallTime[type] > 1000) {
+            this.lastCallTime[type] = now;
+            console.log(`[${type}] Calling single_predict API...`);
+            return await this.callSinglePredict(ip);
+        }
+
+        // If called again within 1s → switch to stream
+        console.log(`[${type}] Switching to stream API...`);
+        this.streamActive[type] = true;
+        this.lastCallTime[type] = now;
+        await this.startContinuousDetection(ip, type);
+        this.resetStopTimer(ip, type);
+        return await this.getContinuousPredict(ip, type);
     }
 
-    async stopSegmentation(ip) {
+    private resetStopTimer(ip: string, type: "face" | "object") {
+        this.stopTimers[type] = setTimeout(() => {
+            console.log(`[${type}] No calls in 5s, stopping stream...`);
+            this.stopContinuousDetection(ip, type);
+        }, 5000);
+    }
+
+    async callSinglePredict(ip: string) {
+        const uploadEndpoint = `https://${ip}/api/v1/video/single_predict?width=320&height=240`;
+        const response = await fetch(uploadEndpoint);
+        return await response.json();
+    }
+
+    async startContinuousDetection(ip: string, type: "face" | "object") {
         while (!this.connection) {
             await new Promise(resolve => setTimeout(resolve, 100));
         }
-        let endpoint = "https://" + ip + "/api/v1/video/stream?width=640&height=480&set_display=true&set_detect_objects=false&set_detect_faces=false"
+        let endpoint;
+        if (this.streamActive["face"] && this.streamActive["object"]) {
+            endpoint = `https://${ip}/api/v1/video/stream?width=640&height=480&set_display=true&set_detect_objects=true&set_detect_faces=true`;
+        } else if (this.streamActive["face"]) {
+            endpoint = `https://${ip}/api/v1/video/stream?width=640&height=480&set_display=true&set_detect_objects=false&set_detect_faces=true`;
+        } else {
+            endpoint = `https://${ip}/api/v1/video/stream?width=640&height=480&set_display=true&set_detect_objects=true&set_detect_faces=false`;
+        }
+        console.log("starting", endpoint);
         await fetch(endpoint);
+        console.log(`[${type}] Continuous detection started`);
+    }
+
+    async stopContinuousDetection(ip: string, type: "face" | "object") {
+        this.streamActive[type] = false;
+        this.lastCallTime[type] = 0;
+        if (this.stopTimers[type]) {
+            clearTimeout(this.stopTimers[type]);
+            delete this.stopTimers[type];
+        }
+        let endpoint;
+        if (!this.streamActive["face"] && !this.streamActive["object"]) {
+            endpoint = `https://${ip}/api/v1/video/stream_stop`;
+        } else if (!this.streamActive["face"] ) {
+            endpoint = `https://${ip}/api/v1/video/stream?width=640&height=480&set_display=true&set_detect_objects=true&set_detect_faces=false`;
+        } else {
+            endpoint = `https://${ip}/api/v1/video/stream?width=640&height=480&set_display=true&set_detect_objects=false&set_detect_faces=true`;
+        }
+        console.log("stopping", endpoint)
+        await fetch(endpoint);
+        console.log(`[${type}] Continuous detection stopped`);
+    }
+
+    async getContinuousPredict(ip: string, type: "face" | "object") {
+        while (!this.connection) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        const endpoint = `https://${ip}/api/v1/video/stream_latest?screenshot=false`;
+
+            const response = await fetch(endpoint);
+            if (!response.ok) {
+                await this.startContinuousDetection(ip, type);
+                return this.getContinuousPredict(ip, type);
+            } else {
+                return await response.json();
+            }
+
+        
+    }
+
+    getReadingLocation(axis, type, reading) {
+        if (type == "face") {
+            if (reading.faces.length == 0) {
+                return -1;
+            }
+            if (axis == "x") {
+                return reading.faces[0].x;
+            } else {
+                return reading.faces[0].y;
+            }
+        } else {
+            if (reading.objects.length == 0) {
+                return -1;
+            }
+            if (type == "apple") {
+                const firstApple = reading.objects.find(obj => obj.label === "apple");
+                if (firstApple) {
+                    if (axis == "x") {
+                    return firstApple.x;
+                    } else {
+                    return firstApple.y;
+                    }
+                } else {
+                    return -1;
+                }
+            } else {
+            const firstOrange = reading.objects.find(obj => obj.label === "orange");
+                if (firstOrange) {
+                    if (axis == "x") {
+                        return firstOrange.x;
+                    } else {
+                        return firstOrange.y;
+                    }
+                } else {
+                    return -1;
+                }
+            } 
+        }
     }
 
     async findSoundFiles() {
