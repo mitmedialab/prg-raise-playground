@@ -175,7 +175,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     //     }
     //   }
     // })
-
     
   }
 
@@ -572,6 +571,15 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   @block({
     type: "command",
+    text: (seconds) => `transcript audio for ${seconds} seconds`,
+    arg: { type: "number", defaultValue: 3 }
+  })
+  async transcribeAPI(seconds: number) {
+    await this.transcribeAudio(seconds);
+  }
+
+  @block({
+    type: "command",
     text: (voice, pitch) => `set voice to ${voice} and pitch to ${pitch}`,
     args: [
       { type: "number", defaultValue: 1, name: "voice" },
@@ -581,6 +589,22 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   async setVoiceAndPitch(voice: number, pitch: number) {
     this.voice_id = voice;
     this.pitch_value = pitch;
+  }
+
+  @block({
+    type: "command",
+    text: `START MODEL`,
+  })
+  async startModel() {
+    this.doodlebot.startOpenAIRealtime()
+  }
+
+  @block({
+    type: "command",
+    text: `SEND RESPONSE`,
+  })
+  async stopTalking() {
+    this.doodlebot.stopTalking()
   }
   
 
@@ -1242,46 +1266,68 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   //     : await this.doodlebot?.sendWebsocketCommand(candidates[0], ...splitArgsString(args));
   // }
 
-  // @block({
-  //   type: "command",
-  //   text: (url) => `import AI model ${url}`,
-  //   arg: {
-  //     type: "string",
-  //     defaultValue: "URL HERE"
-  //   }
-  // })
-  // async importModel(url: string) {
-  //   if (this.SOCIAL && Math.random() < this.socialness) {
-  //     await this.doodlebot?.display("happy");
-  //     await this.speakText(`Importing Teachable Machine model`);
-  //   }
-  //   await this.useModel(url);
+  @block({
+    type: "command",
+    text: (url) => `import AI model ${url}`,
+    arg: {
+      type: "string",
+      defaultValue: "URL HERE"
+    }
+  })
+  async importModel(url: string) {
+    if (this.SOCIAL && Math.random() < this.socialness) {
+      await this.doodlebot?.display("happy");
+      await this.speakText(`Importing Teachable Machine model`);
+    }
+    await this.useModel(url);
 
-  //   if (this.SOCIAL && Math.random() < this.socialness) {
-  //     await this.doodlebot?.display("happy");
-  //     await this.speakText(`Model imported successfully. You can access your image classes using the model prediction blocks.`);
-  //     await this.speakText(`Let me know if you have any questions.`);
-  //   }
-  // }
+    // if (this.SOCIAL && Math.random() < this.socialness) {
+    //   await this.doodlebot?.display("happy");
+    //   await this.speakText(`Model imported successfully. You can access your image classes using the model prediction blocks.`);
+    //   await this.speakText(`Let me know if you have any questions.`);
+    // }
+  }
+
+  @block({
+    type: "command",
+    text: (url) => `Transcribe`,
+    arg: {
+      type: "string",
+      defaultValue: "URL HERE"
+    }
+  })
+  async importModel(url: string) {
+    if (this.SOCIAL && Math.random() < this.socialness) {
+      await this.doodlebot?.display("happy");
+      await this.speakText(`Importing Teachable Machine model`);
+    }
+    await this.useModel(url);
+
+    // if (this.SOCIAL && Math.random() < this.socialness) {
+    //   await this.doodlebot?.display("happy");
+    //   await this.speakText(`Model imported successfully. You can access your image classes using the model prediction blocks.`);
+    //   await this.speakText(`Let me know if you have any questions.`);
+    // }
+  }
 
 
-  // @block({
-  //   type: "hat",
-  //   text: (className) => `when model detects ${className}`,
-  //   arg: {
-  //     type: "string",
-  //     options: function () {
-  //       if (!this) {
-  //         throw new Error('Context is undefined');
-  //       }
-  //       return this.getModelClasses() || ["Select a class"];
-  //     },
-  //     defaultValue: "Select a class"
-  //   }
-  // })
-  // whenModelDetects(className: string) {
-  //   return this.model_match(className);
-  // }
+  @block({
+    type: "hat",
+    text: (className) => `when model detects ${className}`,
+    arg: {
+      type: "string",
+      options: function () {
+        if (!this) {
+          throw new Error('Context is undefined');
+        }
+        return this.getModelClasses() || ["Select a class"];
+      },
+      defaultValue: "Select a class"
+    }
+  })
+  whenModelDetects(className: string) {
+    return this.model_match(className);
+  }
 
   // @block({
   //   type: "reporter",
@@ -1542,6 +1588,36 @@ blobToBase64(blob) {
         console.error("Error sending audio file:", error);
     }
   }
+
+  async sendAudioFileToTranscribeEndpoint(file) {
+    console.log("sending audio file");
+    const url = `https://doodlebot.media.mit.edu/get-text`
+    const formData = new FormData();
+    formData.append("audio_file", file);
+
+    try {
+        let response;
+        let uint8array;
+
+
+          response = await fetch(url, {
+              method: "POST",
+              body: formData,
+          });
+
+          if (!response.ok) {
+              const errorText = await response.text();
+              console.log("Error response:", errorText);
+              throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const textResponse = response.headers.get("text-response");
+          console.log("Text Response:", textResponse);
+
+    } catch (error) {
+        console.error("Error sending audio file:", error);
+    }
+  }
   async isValidWavFile(file) {
     const arrayBuffer = await file.arrayBuffer();
     const dataView = new DataView(arrayBuffer);
@@ -1604,6 +1680,7 @@ blobToBase64(blob) {
     // if (!isValid) {
     //   throw new Error("Generated file is not a valid WAV file");
     // }
+    // INSERT HERE
         await this.sendAudioFileToChatEndpoint(wavFile, endpoint, wavBlob, seconds);
     } catch (error) {
         console.error("Error processing and sending audio:", error);
@@ -1633,7 +1710,39 @@ blobToBase64(blob) {
     
     // Wait a moment before clearing the display
     await new Promise(resolve => setTimeout(resolve, 2000));
-    await this.doodlebot?.display("h");
+    await this.doodlebot?.display("happy");
+  }
+
+  private async transcribeAudio(seconds: number) {
+    console.log(`recording audio for ${seconds} seconds`);
+    // Display "listening" while recording
+    await this.doodlebot?.display("clear");
+    await this.doodlebot?.displayText("listening");
+    console.log("recording audio?")
+    const { context, buffer } = await this.doodlebot?.recordAudio(seconds);
+    console.log("finished recording audio");
+    
+    // Display "thinking" while processing and waiting for response
+    await this.doodlebot?.display("clear");
+    await this.doodlebot?.displayText("thinking");
+    
+    // Before sending audio to be played
+    try {
+      const wavBlob = await this.saveAudioBufferToWav(buffer);
+      console.log(wavBlob);
+      const wavFile = new File([wavBlob], "output.wav", { type: "audio/wav" });
+        await this.sendAudioFileToTranscribeEndpoint(wavFile);
+    } catch (error) {
+        console.error("Error processing and sending audio:", error);
+    }
+    
+    // Display "speaking" when ready to speak
+    // await this.doodlebot?.display("clear");
+    // await this.doodlebot?.displayText("speaking");
+    
+    // Wait a moment before clearing the display
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    await this.doodlebot?.display("happy");
   }
 
   async useModel(url: string) {
@@ -1787,6 +1896,7 @@ blobToBase64(blob) {
     if (offset > this.INTERVAL && this.isPredicting === 0) {
       this.lastUpdate = time;
       this.isPredicting = 0;
+      console.log("PREDICTING");
       this.getImageStreamAndPredict();
     }
   }
@@ -1798,8 +1908,8 @@ blobToBase64(blob) {
         console.error("Failed to get image stream");
         return;
       }
-      // const imageBitmap = await createImageBitmap(imageStream);
-      // this.predictAllBlocks(imageBitmap);
+      const imageBitmap = await createImageBitmap(imageStream);
+      this.predictAllBlocks(imageBitmap);
     } catch (error) {
       console.error("Error in getting image stream and predicting:", error);
     }
@@ -1816,7 +1926,9 @@ blobToBase64(blob) {
         continue;
       }
       ++this.isPredicting;
+      console.log("predicting");
       const prediction = await this.predictModel(modelUrl, frame);
+
       console.log('Prediction:', prediction);
       this.predictionState[modelUrl].topClass = prediction;
       --this.isPredicting;
