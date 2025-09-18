@@ -88,12 +88,16 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   soundDictionary: {} | { string: string[] };
   costumeDictionary: {} | { string: string[] };
 
-  externalIp: string
+  externalIp: string;
+  currentUrl: string;
 
   voice_id: number;
   pitch_value: number;
 
   blocksRun: number;
+
+  recognizeFace: boolean;
+  drawString: boolean;
 
   SOCIAL = false;
   socialness = 1.0; // Value from 0 to 1, where 1 is always social and 0 is never social
@@ -123,6 +127,9 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     this.soundDictionary = {};
     this.costumeDictionary = {};
     this.setIndicator("disconnected");
+    this.recognizeFace = false;
+    this.drawString = false;
+
     if (window.isSecureContext) this.openUI("Connect")
     else this.connectToDoodlebotWithExternalBLE();
     this._loop();
@@ -569,6 +576,122 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   //   await this.handleChatInteraction(seconds, "repeat_after_me");
   // }
 
+
+  waitSeconds(seconds: number) {
+    return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
+  }
+
+
+
+  @block({
+    type: "command",
+    text: `Start chat interaction`,
+  })
+  async startChat() {
+    await this.waitSeconds(3);
+    await this.speakText("Hi, how are you?");
+    await this.waitSeconds(4);
+    this.tools["recognize-face"].called = true;
+
+  }
+
+  @block({
+    type: "command",
+    text: (name: string) => `Draw string ${name}`,
+    arg: {type: 'string', defaultValue: "Maya"}
+  })
+  async drawName(name: string) {
+    await this.speakText("Here I go!")
+    // Draw commands
+
+  }
+
+  @block({
+    type: "command",
+    text: (url) => `use model ${url}`,
+    arg: {
+      type: "string",
+      defaultValue: "URL HERE"
+    }
+  })
+  async importModel(url: string) {
+    this.currentUrl = this.modelArgumentToURL(url);
+    console.log("IMPORTING MODEL");
+    await this.useModel(url);
+  }
+
+  async waitForPrediction() {
+    while (true) {
+      const entry = this.predictionState[this.currentUrl];
+      if (entry && entry.topClass !== undefined) {
+        // Value is ready
+        return entry.topClass;
+      }
+      // Wait 1 second before retrying
+      await this.waitSeconds(0.1);
+    }
+  }
+
+  @block({
+    type: "command",
+    text: `send model prediction`,
+  })
+  async setModelPrediction() {
+    await this.waitForPrediction();
+    const prediction = this.predictionState[this.currentUrl].topClass;
+    console.log("PREDICTION HERE", prediction);
+    if (prediction.includes("2")) {
+      await this.speakText("You are Maya class 2, right");
+      await this.waitSeconds(2);
+      this.drawString = true;
+    } else if (prediction.includes("1")) {
+      await this.speakText("You are Maya class 1, right");
+      await this.waitSeconds(2);
+    } else {
+      await this.speakText("No Maya found");
+    }
+    this.recognizeFace = false;
+    this.tools["recognize-face"].called = false;
+    this.drawString = true;
+    this.tools["draw-text"].called = true;
+  }
+
+
+  @(scratch.hat`When recognize-face tool called`)
+  recognizeFaceEvent() {
+    return this.tools["recognize-face"].called;
+  }
+
+  @(scratch.hat`When draw-text tool called`)
+  drawText() {
+    return this.tools["draw-text"].called;
+  }
+
+  @block({
+    type: "hat",
+    text: (tool) => `when ${tool} tool called`,
+    arg: {
+      type: "string",
+      options: function () {
+        if (!this) {
+          throw new Error('Context is undefined');
+        }
+        return this.getTools() || ["Select a tool"];
+      },
+      defaultValue: "Select a tool"
+    }
+  })
+  toolCalled(tool: string) {
+    return Object.keys(this.tools).includes(tool) ? this.tools[tool].called : false;
+  }
+
+
+
+
+
+
+
+
   @block({
     type: "command",
     text: (seconds) => `transcript audio for ${seconds} seconds`,
@@ -591,21 +714,23 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     this.pitch_value = pitch;
   }
 
+
+
   @block({
     type: "command",
     text: `START MODEL`,
   })
   async startModel() {
-    this.doodlebot.startOpenAIRealtime()
+    this.doodlebot.initDoodlebotRealtime()
   }
 
-  @block({
-    type: "command",
-    text: `SEND RESPONSE`,
-  })
-  async stopTalking() {
-    this.doodlebot.stopTalking()
-  }
+  // @block({
+  //   type: "command",
+  //   text: `SEND RESPONSE`,
+  // })
+  // async stopTalking() {
+  //   this.doodlebot.stopTalking()
+  // }
   
 
   // @block({
@@ -1266,49 +1391,9 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   //     : await this.doodlebot?.sendWebsocketCommand(candidates[0], ...splitArgsString(args));
   // }
 
-  @block({
-    type: "command",
-    text: (url) => `import AI model ${url}`,
-    arg: {
-      type: "string",
-      defaultValue: "URL HERE"
-    }
-  })
-  async importModel(url: string) {
-    if (this.SOCIAL && Math.random() < this.socialness) {
-      await this.doodlebot?.display("happy");
-      await this.speakText(`Importing Teachable Machine model`);
-    }
-    await this.useModel(url);
+  
 
-    // if (this.SOCIAL && Math.random() < this.socialness) {
-    //   await this.doodlebot?.display("happy");
-    //   await this.speakText(`Model imported successfully. You can access your image classes using the model prediction blocks.`);
-    //   await this.speakText(`Let me know if you have any questions.`);
-    // }
-  }
 
-  @block({
-    type: "command",
-    text: (url) => `Transcribe`,
-    arg: {
-      type: "string",
-      defaultValue: "URL HERE"
-    }
-  })
-  async importModel(url: string) {
-    if (this.SOCIAL && Math.random() < this.socialness) {
-      await this.doodlebot?.display("happy");
-      await this.speakText(`Importing Teachable Machine model`);
-    }
-    await this.useModel(url);
-
-    // if (this.SOCIAL && Math.random() < this.socialness) {
-    //   await this.doodlebot?.display("happy");
-    //   await this.speakText(`Model imported successfully. You can access your image classes using the model prediction blocks.`);
-    //   await this.speakText(`Let me know if you have any questions.`);
-    // }
-  }
 
 
   @block({
@@ -1789,6 +1874,7 @@ blobToBase64(blob) {
     const avoidCache = `?x=${Date.now()}`;
     const modelURL = modelUrl + "model.json" + avoidCache;
     const metadataURL = modelUrl + "metadata.json" + avoidCache;
+    this.currentUrl = modelUrl;
 
     // First try loading as an image model
     try {
@@ -1872,6 +1958,15 @@ blobToBase64(blob) {
     return this.predictionState[this.teachableImageModel].model.getClassLabels();
   }
 
+  tools = {
+    "recognize-face": { called: false, parameters: ""},
+    "draw-text": {called: false, parameters: ""}
+  }
+
+  getTools() {
+    return Object.keys(this.tools);
+  }
+
   getModelPrediction() {
     const modelUrl = this.teachableImageModel;
     const predictionState: { topClass: string } = this.getPredictionStateOrStartPredicting(modelUrl);
@@ -1896,7 +1991,6 @@ blobToBase64(blob) {
     if (offset > this.INTERVAL && this.isPredicting === 0) {
       this.lastUpdate = time;
       this.isPredicting = 0;
-      console.log("PREDICTING");
       this.getImageStreamAndPredict();
     }
   }
@@ -1926,10 +2020,10 @@ blobToBase64(blob) {
         continue;
       }
       ++this.isPredicting;
-      console.log("predicting");
+      // console.log("predicting");
       const prediction = await this.predictModel(modelUrl, frame);
 
-      console.log('Prediction:', prediction);
+      // console.log('Prediction:', prediction);
       this.predictionState[modelUrl].topClass = prediction;
       --this.isPredicting;
     }
