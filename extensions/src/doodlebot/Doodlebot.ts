@@ -1290,143 +1290,395 @@ export default class Doodlebot {
       }
       
 
-      realtimeAISocket;
+    //   realtimeAISocket;
+
+    //   async startOpenAIRealtime() {
+    //     let durl = "https://doodlebot.media.mit.edu/get-ephemeral";
+    //     const res = await fetch(durl, {
+    //         method: "POST",
+
+    //       });
+    //       const data = await res.json();
+    //     const EPHEMERAL_KEY = data.client_secret.value;
+        
+    //     this.realtimeAISocket = new WebSocket(
+    //         "wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17",
+    //         ["realtime-v1", EPHEMERAL_KEY]
+    //       );
+      
+    //       const systemMessage = {
+    //           type: "message",
+    //           role: "system",
+    //           content: [
+    //               {
+    //                   type: "text",
+    //                   text: `
+    //   You are Doodlebot, an interactive robot.
+    //   Capabilities:
+    //   - Can recognize a user’s name from their face using the "recognizeFace" tool.
+    //   - Can draw any string of text using the "drawString" tool.
+    //   - You speak verbally and show facial expressions (smile, effortful, etc.).
+    //   - Your responses should be fun and interactive.
+    //                   `
+    //               }
+    //           ]
+    //       };
+      
+    //     // --- 3) Tools ---
+    //     const tools = [
+    //       {
+    //         name: "recognizeFace",
+    //         description: "Recognize the name of a person from Doodlebot's camera feed",
+    //       },
+    //       {
+    //         name: "drawString",
+    //         description: "Draw a string of text on screen",
+    //         parameters: {
+    //           type: "object",
+    //           properties: { text: { type: "string" } },
+    //           required: ["text"],
+    //         },
+    //       },
+    //     ];
+      
+    //     // --- 4) Create PeerConnection ---
+    //     const pc = new RTCPeerConnection();
+      
+    //     // Capture microphone
+    //     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    //     stream.getTracks().forEach((t) => pc.addTrack(t, stream));
+      
+    //     // Remote audio
+    //     const remoteAudio = document.createElement("audio");
+    //     remoteAudio.autoplay = true;
+    //     pc.ontrack = (e) => (remoteAudio.srcObject = e.streams[0]);
+      
+    //     // Data channel
+    //     const dc = pc.createDataChannel("oai-events");
+    //     dc.onmessage = (ev) => {
+    //       try {
+    //         const msg = JSON.parse(ev.data);
+    //         console.log("📨 From OpenAI:", msg);
+    //       } catch {
+    //         console.log("📨 Raw:", ev.data);
+    //       }
+    //     };
+      
+    //     // --- 5) SDP negotiation ---
+    //     const offer = await pc.createOffer();
+    //     await pc.setLocalDescription(offer);
+
+        
+
+
+    //     const sessionConfig = JSON.stringify({
+    //         session: {
+    //             type: "realtime",
+    //             model: "gpt-realtime",
+    //             audio: {
+    //                 output: { voice: "marin" },
+    //             },
+    //         },
+    //     });
+
+    //     const response = await fetch("https://api.openai.com/v1/realtime/client_secrets", {
+    //         method: "POST",
+    //         headers: {
+    //             Authorization: `Bearer ${apiKey}`,
+    //             "Content-Type": "application/json",
+    //         },
+    //         body: sessionConfig,
+    //     });
+        
+    //     const dataE = await response.json();
+      
+    //     const sdpResp = await fetch(
+    //       "https://api.openai.com/v1/realtime/calls",
+    //       {
+    //         method: "POST",
+    //         body: offer.sdp,
+    //         headers: {
+    //           Authorization: `Bearer ${dataE.value}`,
+    //           "Content-Type": "application/sdp",
+    //         },
+    //       }
+    //     );
+      
+    //     const answerSdp = await sdpResp.text();
+    //     console.log("answer sdp", answerSdp);
+    //     await pc.setRemoteDescription({ type: "answer", sdp: answerSdp });
+      
+    //     // --- 6) Send system message + tools once data channel opens ---
+    //     dc.onopen = () => {
+    //       console.log("✅ Data channel open — sending session.update");
+      
+    //       dc.send(
+    //         JSON.stringify({
+    //           type: "session.update",
+    //           session: {
+    //             type: "session",
+    //             instructions: systemMessage.content[0].text,
+    //           },
+    //           {
+    //               name: "drawString",
+    //               description: "Draw a string of text on screen",
+    //               parameters: {
+    //                   type: "object",
+    //                   properties: { text: { type: "string" } },
+    //                   required: ["text"]
+    //               }
+    //           }
+    //         )}
+    //      );
+      
+      
+    //       this.realtimeAISocket.onopen = () => {
+    //           console.log("✅ WebSocket connection opened.");
+
+    //           console.log("Socket readyState:", this.realtimeAISocket.readyState); // 1 = OPEN
+
+      
+    //           console.log("💬 Sending session.update with system message and tools...");
+    //           this.realtimeAISocket.send(JSON.stringify({
+    //               type: "session.update",
+    //               session: {
+    //                   messages: [systemMessage],
+    //                   tools: tools
+    //               }
+    //           }));
+      
+    //           console.log("💬 Sending initial greeting response...");
+    //           this.realtimeAISocket.send(JSON.stringify({
+    //               type: "response.create",
+    //               response: { instructions: "Hello! I am Doodlebot, nice to meet you!" }
+    //           }));
+    //       };
+      
+    //       this.realtimeAISocket.onmessage = (event) => {
+    //           console.log("📨 Received raw event:", event);
+      
+    //           try {
+    //               const data = JSON.parse(event.data);
+    //               console.log("🔔 Parsed event:", data);
+      
+    //               // Handle tool calls
+    //               if (data.type === "response.output") {
+    //                   console.log("🛠 response.output detected");
+    //                   for (const item of data.output || []) {
+    //                       console.log("🔹 Item:", item);
+      
+    //                       if (item.type === "tool_call") {
+    //                           console.log(`🛠 Tool call detected: ${item.name}`);
+    //                           if (item.name === "recognizeFace") {
+    //                               console.log("👁 RecognizeFace tool triggered");
+    //                               // const name = await recognizeFace(item.arguments.videoFrame);
+    //                               const name = "TEST_USER"; // temporary placeholder
+    //                               console.log("🏷 Recognized name (placeholder):", name);
+    //                               this.realtimeAISocket.send(JSON.stringify({
+    //                                   type: "tool.result",
+    //                                   tool: "recognizeFace",
+    //                                   result: { name }
+    //                               }));
+    //                               console.log("📤 Sent tool.result for recognizeFace");
+    //                           }
+    //                           if (item.name === "drawString") {
+    //                               console.log("✏️ DrawString tool triggered:", item.arguments?.text);
+    //                               // Call drawString here
+    //                           }
+    //                       }
+    //                   }
+    //               }
+    //           } catch (err) {
+    //               console.error("❌ Failed to parse incoming message:", err, event.data);
+    //           }
+    //       };
+      
+    //       this.realtimeAISocket.onerror = (err) => {
+    //           console.error("⚠️ WebSocket error:", err);
+    //       };
+      
+    //       this.realtimeAISocket.onclose = (event) => {
+    //           console.log("❌ WebSocket connection closed", event);
+    //       };
+    //   }
+
+
 
       async startOpenAIRealtime() {
-        let durl = "https://doodlebot.media.mit.edu/get-ephemeral";
-        const res = await fetch(durl, {
-            method: "POST",
+        // --- 1) Get ephemeral key from your backend ---
+        const res = await fetch("https://doodlebot.media.mit.edu/get-ephemeral", {
+          method: "POST",
+        });
+        const data = await res.json();
+        const EPHEMERAL_KEY = data.client_secret?.value;
+        if (!EPHEMERAL_KEY) throw new Error("No ephemeral key returned");
 
-          });
-          const data = await res.json();
-        const EPHEMERAL_KEY = data.client_secret.value;
-        
-        this.realtimeAISocket = new WebSocket(
-            "wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17",
-            ["realtime-v1", EPHEMERAL_KEY]
-          );
+        const sessionConfig = JSON.stringify({
+            session: {
+                type: "realtime",
+                model: "gpt-realtime",
+                audio: {
+                    output: { voice: "marin" },
+                },
+            },
+        });
       
-          const systemMessage = {
-              type: "message",
-              role: "system",
-              content: [
-                  {
-                      type: "text",
-                      text: `
+        // --- 2) System instructions ---
+        const systemMessage = {
+          type: "message",
+          role: "system",
+          content: [
+            {
+              type: "text",
+              text: `
       You are Doodlebot, an interactive robot.
       Capabilities:
       - Can recognize a user’s name from their face using the "recognizeFace" tool.
       - Can draw any string of text using the "drawString" tool.
       - You speak verbally and show facial expressions (smile, effortful, etc.).
       - Your responses should be fun and interactive.
-                      `
-                  }
-              ]
-          };
+              `,
+            },
+          ],
+        };
       
-          const tools = [
-              {
-                  name: "recognizeFace",
-                  description: "Recognize the name of a person from Doodlebot's camera feed",
-              },
-              {
-                  name: "drawString",
-                  description: "Draw a string of text on screen",
-                  parameters: {
-                      type: "object",
-                      properties: { text: { type: "string" } },
-                      required: ["text"]
-                  }
-              }
-          ];
-      
-      
-          this.realtimeAISocket.onopen = () => {
-              console.log("✅ WebSocket connection opened.");
+        // --- 3) Tools definition ---
+        const tools = [
+          {
+            name: "recognizeFace",
+            description: "Recognize the name of a person from Doodlebot's camera feed",
+          },
+          {
+            name: "drawString",
+            description: "Draw a string of text on screen",
+            parameters: {
+              type: "object",
+              properties: { text: { type: "string" } },
+              required: ["text"],
+            },
+          },
+        ];
 
-              console.log("Socket readyState:", this.realtimeAISocket.readyState); // 1 = OPEN
-
+        const apiKey = "";
       
-              console.log("💬 Sending session.update with system message and tools...");
-              this.realtimeAISocket.send(JSON.stringify({
-                  type: "session.update",
-                  session: {
-                      messages: [systemMessage],
-                      tools: tools
+        // --- 4) Create PeerConnection ---
+        const pc = new RTCPeerConnection();
+      
+        // Capture microphone
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach((t) => pc.addTrack(t, stream));
+      
+        // Remote audio
+        const remoteAudio = document.createElement("audio");
+        remoteAudio.autoplay = true;
+        pc.ontrack = (e) => (remoteAudio.srcObject = e.streams[0]);
+      
+        // Data channel for events
+        const dc = pc.createDataChannel("oai-events");
+        dc.onmessage = (ev) => {
+          try {
+            const msg = JSON.parse(ev.data);
+            console.log("📨 From OpenAI:", msg);
+      
+            // Handle tool calls
+            if (msg.type === "response.output") {
+              for (const item of msg.output || []) {
+                if (item.type === "tool_call") {
+                  if (item.name === "recognizeFace") {
+                    console.log("👁 recognizeFace called");
+                    const name = "TEST_USER"; // placeholder
+                    dc.send(JSON.stringify({
+                      type: "tool.result",
+                      tool: "recognizeFace",
+                      result: { name },
+                    }));
                   }
-              }));
-      
-              console.log("💬 Sending initial greeting response...");
-              this.realtimeAISocket.send(JSON.stringify({
-                  type: "response.create",
-                  response: { instructions: "Hello! I am Doodlebot, nice to meet you!" }
-              }));
-          };
-      
-          this.realtimeAISocket.onmessage = (event) => {
-              console.log("📨 Received raw event:", event);
-      
-              try {
-                  const data = JSON.parse(event.data);
-                  console.log("🔔 Parsed event:", data);
-      
-                  // Handle tool calls
-                  if (data.type === "response.output") {
-                      console.log("🛠 response.output detected");
-                      for (const item of data.output || []) {
-                          console.log("🔹 Item:", item);
-      
-                          if (item.type === "tool_call") {
-                              console.log(`🛠 Tool call detected: ${item.name}`);
-                              if (item.name === "recognizeFace") {
-                                  console.log("👁 RecognizeFace tool triggered");
-                                  // const name = await recognizeFace(item.arguments.videoFrame);
-                                  const name = "TEST_USER"; // temporary placeholder
-                                  console.log("🏷 Recognized name (placeholder):", name);
-                                  this.realtimeAISocket.send(JSON.stringify({
-                                      type: "tool.result",
-                                      tool: "recognizeFace",
-                                      result: { name }
-                                  }));
-                                  console.log("📤 Sent tool.result for recognizeFace");
-                              }
-                              if (item.name === "drawString") {
-                                  console.log("✏️ DrawString tool triggered:", item.arguments?.text);
-                                  // Call drawString here
-                              }
-                          }
-                      }
+                  if (item.name === "drawString") {
+                    console.log("✏️ drawString called:", item.arguments?.text);
+                    // call your draw function here
                   }
-              } catch (err) {
-                  console.error("❌ Failed to parse incoming message:", err, event.data);
+                }
               }
-          };
-      
-          this.realtimeAISocket.onerror = (err) => {
-              console.error("⚠️ WebSocket error:", err);
-          };
-      
-          this.realtimeAISocket.onclose = (event) => {
-              console.log("❌ WebSocket connection closed", event);
-          };
-      }
-      
-      stopTalking() {
-          console.log("🛑 stopTalking called");
-          if (!this.realtimeAISocket || this.realtimeAISocket.readyState !== WebSocket.OPEN) {
-              console.warn("⚠️ Cannot stop talking — socket not open");
-              return;
+            }
+          } catch {
+            console.log("📨 Raw:", ev.data);
           }
+        };
       
-          console.log("💾 Committing audio buffer...");
-          this.realtimeAISocket.send(JSON.stringify({ type: "input_audio_buffer.commit" }));
+        // --- 5) SDP negotiation ---
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+
+        const response = await fetch("https://api.openai.com/v1/realtime/client_secrets", {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${apiKey}`,
+                "Content-Type": "application/json",
+            },
+            body: sessionConfig,
+        });
+        
+        const dataE = await response.json();
       
-          console.log("💬 Requesting response.create after audio commit...");
-          this.realtimeAISocket.send(JSON.stringify({
-              type: "response.create",
-              response: { instructions: "Transcribe and respond." },
+        // Exchange SDP with OpenAI
+        const sdpResp = await fetch(
+          "https://api.openai.com/v1/realtime/calls?model=gpt-4o-realtime-preview-2024-12-17",
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${dataE.value}`,
+              "Content-Type": "application/sdp",
+            },
+            body: offer.sdp,
+          }
+        );
+      
+        const answerSdp = await sdpResp.text();
+        await pc.setRemoteDescription({ type: "answer", sdp: answerSdp });
+      
+        // --- 6) Send initial session update once data channel opens ---
+        dc.onopen = () => {
+          console.log("✅ Data channel open — sending session.update");
+      
+          dc.send(JSON.stringify({
+            type: "session.update",
+            session: {
+              type: "session",
+              instructions: systemMessage.content[0].text,
+              tools: tools,
+            },
           }));
+      
+          // Optional: greeting
+          dc.send(JSON.stringify({
+            type: "response.create",
+            response: {
+              instructions: "Hello! I am Doodlebot, nice to meet you!",
+            },
+          }));
+        };
+      
+        return { pc, dc, remoteAudio };
       }
+      
+      
+    //   stopTalking() {
+    //       console.log("🛑 stopTalking called");
+    //       if (!this.realtimeAISocket || this.realtimeAISocket.readyState !== WebSocket.OPEN) {
+    //           console.warn("⚠️ Cannot stop talking — socket not open");
+    //           return;
+    //       }
+      
+    //       console.log("💾 Committing audio buffer...");
+    //       this.realtimeAISocket.send(JSON.stringify({ type: "input_audio_buffer.commit" }));
+      
+    //       console.log("💬 Requesting response.create after audio commit...");
+    //       this.realtimeAISocket.send(JSON.stringify({
+    //           type: "response.create",
+    //           response: { instructions: "Transcribe and respond." },
+    //       }));
+    //   }
+    // }
       
 
     private setupAudioStream() {
@@ -1469,10 +1721,10 @@ export default class Doodlebot {
             const pcm16 = this.float32ToInt16(mono);
             const b64 = this.arrayBufferToBase64(pcm16.buffer as ArrayBuffer);
 
-            this.realtimeAISocket.send(JSON.stringify({
-                type: "input_audio_buffer.append",
-                audio: b64,
-            }));
+            // this.realtimeAISocket.send(JSON.stringify({
+            //     type: "input_audio_buffer.append",
+            //     audio: b64,
+            // }));
 
             for (const callback of self.audioCallbacks) callback(mono);
         };

@@ -596,16 +596,16 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     text: `START MODEL`,
   })
   async startModel() {
-    this.doodlebot.startOpenAIRealtime()
+    this.doodlebot.startOpenAIRealtime();
   }
 
-  @block({
-    type: "command",
-    text: `SEND RESPONSE`,
-  })
-  async stopTalking() {
-    this.doodlebot.stopTalking()
-  }
+  // @block({
+  //   type: "command",
+  //   text: `SEND RESPONSE`,
+  // })
+  // async stopTalking() {
+  //   this.doodlebot.stopTalking()
+  // }
   
 
   // @block({
