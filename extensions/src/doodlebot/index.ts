@@ -581,6 +581,16 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
   }
 
+  async driveStraight(step: number) {
+    await this.doodlebot?.motorCommand("steps", { steps: step*10, stepsPerSecond: 2000 }, { steps: step*10, stepsPerSecond: 2000 })
+  }
+
+
+  async spinInPlace(degrees: number) {
+    if (degrees === 0) return;
+    await this.doodlebot?.motorCommand("arc", 0, -degrees);
+  }
+
 
 
   @block({
@@ -589,20 +599,41 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   })
   async startChat() {
     await this.waitSeconds(3);
-    await this.speakText("Hi, how are you?");
-    await this.waitSeconds(4);
     this.tools["recognize-face"].called = true;
+    
+    
 
   }
 
   @block({
     type: "command",
-    text: (name: string) => `Draw string ${name}`,
-    arg: {type: 'string', defaultValue: "Maya"}
+    text:`Draw image`
   })
-  async drawName(name: string) {
-    await this.speakText("Here I go!")
-    // Draw commands
+  async drawName() {
+    await this.speakText("Watch this!");
+    // await this.doodlebot.displayFile("engaged.png");
+    // await this.spinInPlace(20);
+    // await this.driveStraight(250);
+    // await this.spinInPlace(170);
+    
+    // await this.doodlebot?.penCommand("down");
+    // await this.driveStraight(200);
+    // await this.spinInPlace(120);
+    // await this.driveStraight(200);
+    // await this.spinInPlace(-120);
+    // await this.driveStraight(100);
+    // await this.spinInPlace(120);
+    // await this.driveStraight(100);
+    // await this.spinInPlace(-170);
+    // await this.doodlebot?.penCommand("up");
+    // await this.driveStraight(170);
+    // await this.doodlebot?.penCommand("down");
+    // await this.doodlebot.motorCommand("arc", 1, 360);
+    // await this.doodlebot?.penCommand("up");
+    // await this.spinInPlace(-140);
+    // await this.driveStraight(-150);
+    // await this.doodlebot.displayFile("happy.png");
+    // await this.speakText("Do you like it?");
 
   }
 
@@ -640,32 +671,32 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     await this.waitForPrediction();
     const prediction = this.predictionState[this.currentUrl].topClass;
     console.log("PREDICTION HERE", prediction);
-    if (prediction.includes("2")) {
-      await this.speakText("You are Maya class 2, right");
-      await this.waitSeconds(2);
-      this.drawString = true;
-    } else if (prediction.includes("1")) {
-      await this.speakText("You are Maya class 1, right");
-      await this.waitSeconds(2);
+    if (prediction.includes("Maya") || true) {
+      await this.doodlebot.displayFile("happy.png");
+      await this.speakText("Hi Maya!");
+      await this.doodlebot.displayFile("base@2x.png");
+      await this.speakText("How are you?");
     } else {
       await this.speakText("No Maya found");
     }
-    this.recognizeFace = false;
+    await this.waitSeconds(4);
+    await this.doodlebot.displayFile("love.png");
+    await this.speakText("You like mountains, right?");
+    await this.waitSeconds(2);
     this.tools["recognize-face"].called = false;
-    this.drawString = true;
     this.tools["draw-text"].called = true;
   }
 
 
-  @(scratch.hat`When recognize-face tool called`)
-  recognizeFaceEvent() {
-    return this.tools["recognize-face"].called;
-  }
+  // @(scratch.hat`When recognize-face tool called`)
+  // recognizeFaceEvent() {
+  //   return this.tools["recognize-face"].called;
+  // }
 
-  @(scratch.hat`When draw-text tool called`)
-  drawText() {
-    return this.tools["draw-text"].called;
-  }
+  // @(scratch.hat`When draw-text tool called`)
+  // drawText() {
+  //   return this.tools["draw-text"].called;
+  // }
 
   @block({
     type: "hat",
@@ -686,7 +717,35 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   }
 
 
-
+  // @block({
+  //   type: "reporter",
+  //   text: (tool, param) => `get ${param} of ${tool} tool`,
+  //   args: [
+  //     {
+  //       type: "string",
+  //       options: function () {
+  //         return Object.keys(this.tools) || ["Select a tool"];
+  //       },
+  //       defaultValue: "Select a tool",
+  //       // Whenever the first argument changes, store it
+  //     },
+  //     {
+  //       type: "string",
+  //       options: function () {
+  //         const tool = this._selectedTool;
+  //         if (!tool) return ["Select a parameter"];
+  //         const t = this.tools[tool];
+  //         return t ? Object.keys(t.parameters) : ["Select a parameter"];
+  //       },
+  //       defaultValue: "Select a parameter"
+  //     }
+  //   ]
+  // })
+  // toolParam(tool: string, paramName: string) {
+  //   return this.tools[tool]?.parameters?.[paramName] ?? null;
+  // }
+  
+  
 
 
 
@@ -1414,13 +1473,14 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     return this.model_match(className);
   }
 
-  // @block({
-  //   type: "reporter",
-  //   text: "get AI prediction",
-  // })
-  // modelPrediction() {
-  //   return this.getModelPrediction();
-  // }
+  @block({
+    type: "reporter",
+    text: "get prediction",
+  })
+  modelPrediction() {
+    console.log("PREDICTION", this.getModelPrediction());
+    return this.getModelPrediction();
+  }
 
   // @block({
   //   type: "reporter",
@@ -1959,8 +2019,8 @@ blobToBase64(blob) {
   }
 
   tools = {
-    "recognize-face": { called: false, parameters: ""},
-    "draw-text": {called: false, parameters: ""}
+    "recognize-face": { called: false, parameters: {}},
+    "draw-text": {called: false, parameters: {name: "Maya"}}
   }
 
   getTools() {
@@ -2070,14 +2130,14 @@ blobToBase64(blob) {
     }
   }
 
-  // @block({
-  //   type: "command",
-  //   text: (imageClass, seconds) => `capture snapshots of ${imageClass} class for ${seconds} seconds`,
-  //   args: [
-  //     { type: "string", defaultValue: "class name" },
-  //     { type: "number", defaultValue: 10 }
-  //   ]
-  // })
+  @block({
+    type: "command",
+    text: (imageClass, seconds) => `capture snapshots of ${imageClass} class for ${seconds} seconds`,
+    args: [
+      { type: "string", defaultValue: "class name" },
+      { type: "number", defaultValue: 10 }
+    ]
+  })
   async captureSnapshots(imageClass: string, seconds: number) {
     if (this.SOCIAL && Math.random() < this.socialness) {
       await this.doodlebot?.display("love");
