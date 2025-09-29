@@ -498,7 +498,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   async createVideoStreamDrawable() {
     this.imageStream ??= this.doodlebot?.getImageStream();
     if (!this.imageStream) {
-      console.error("Failed to get image stream");
+      //console.error("Failed to get image stream");
       return;
     }
   
