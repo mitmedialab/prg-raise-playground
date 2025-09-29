@@ -702,7 +702,7 @@ export default class Doodlebot {
         }
         let endpoint;
         if (!this.streamActive["face"] && !this.streamActive["object"]) {
-            endpoint = `https://${ip}/api/v1/video/stream_stop`;
+            endpoint = `https://${ip}/api/v1/video/stream?width=640&height=480&set_display=true&set_detect_objects=false&set_detect_faces=false`;
         } else if (!this.streamActive["face"] ) {
             endpoint = `https://${ip}/api/v1/video/stream?width=640&height=480&set_display=true&set_detect_objects=true&set_detect_faces=false`;
         } else {
