@@ -1,19 +1,14 @@
 import { Environment, ExtensionMenuDisplayDetails, extension, block, buttonBlock, BlockUtilityWithID, scratch } from "$common";
 import { DisplayKey, displayKeys, command, type Command, SensorKey, sensorKeys, units, keyBySensor, sensor } from "./enums";
 import Doodlebot from "./Doodlebot";
-import FileArgument from './FileArgument.svelte';
-import { splitArgsString } from "./utils";
 import EventEmitter from "events";
-import { categoryByGesture, classes, emojiByGesture, gestureDetection, gestureMenuItems, gestures, objectDetection } from "./detection";
+import { categoryByGesture } from "./detection";
 //import { createLineDetector } from "./LineDetection";
-import { line0, line1, line2, line3, line4, line5, line6, line7, line8 } from './Points';
-import { followLine } from "./LineFollowing";
-import { createLineDetector } from "./LineDetection";
 import tmPose from '@teachablemachine/pose';
-import { calculateArcTime } from "./TimeHelper";
 import tmImage from '@teachablemachine/image';
 import * as speechCommands from '@tensorflow-models/speech-commands';
 import JSZip from 'jszip';
+import type { BLEDeviceWithUartService } from "./ble";
 
 const details: ExtensionMenuDisplayDetails = {
   name: "Doodlebot",
@@ -50,6 +45,8 @@ export var soundFiles: string[] = [];
 
 export default class DoodlebotBlocks extends extension(details, "ui", "customArguments", "indicators", "video", "drawable") {
   doodlebot = new Doodlebot();
+  connected = false;
+
   private indicator: Promise<{ close(): void; }>;
   private lineDetector: (() => Promise<number[][]>) | null = null;
   bluetoothEmitter = new EventEmitter();
@@ -122,7 +119,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     this.pitch_value = 0;
     this.soundDictionary = {};
     this.costumeDictionary = {};
-    this.setIndicator("disconnected");
+    //requestAnimationFrame(() => this.setIndicator("disconnected"));
     this.openUI("Connect")
     this._loop();
     env.runtime.on("TARGETS_UPDATE", async () => {
@@ -254,9 +251,9 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     return (this.soundDictionary && this.soundDictionary[id]) ? Object.keys(this.soundDictionary[id]) : [];
   }
 
-  async setDoodlebot(topLevelDomain: string, bluetooth: Bluetooth) {
+  async setDoodlebot(topLevelDomain: string, bluetooth: BLEDeviceWithUartService) {
     this.doodlebot.topLevelDomain.resolve(topLevelDomain);
-    this.doodlebot.bluetooth.resolve(bluetooth);
+    this.doodlebot.bleDevice.resolve(bluetooth);
 
     await this.setIndicator("connected");
 
@@ -978,8 +975,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     ]
   })
   async getSinglePredict2s(location: string, type: "face" | "object") {
-    const tld = await this.doodlebot.topLevelDomain.promise;
-    const reading = await this.doodlebot.getFacePrediction(tld, type);
+    const reading = await this.doodlebot.getFacePrediction(type);
     return this.doodlebot.getReadingLocation(location, type == "object" ? "apple" : type, reading);
   }
 
@@ -989,8 +985,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     arg: { type: "string", options: ["face", "apple", "orange"], defaultValue: "face" }
   })
   async isFaceDetected(type: string) {
-    const ip = await this.getIPAddress();
-    const reading = await this.doodlebot.getFacePrediction(ip, "face");
+    const reading = await this.doodlebot.getFacePrediction("face");
     const x = this.doodlebot.getReadingLocation("x", type, reading);
     const y = this.doodlebot.getReadingLocation("y", type, reading);
     if (x == -1 && y == -1) {
@@ -1605,7 +1600,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     try {
       const imageStream = this.getImageStream();
       if (!imageStream) {
-        console.error("Failed to get image stream");
+        //console.error("Failed to get image stream");
         return;
       }
       // const imageBitmap = await createImageBitmap(imageStream);

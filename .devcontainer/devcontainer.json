@@ -1,4 +1,5 @@
 {
+  "postStartCommand": "pnpm config set store-dir /home/vscode/.local/share/pnpm/store && pnpm install",
   "customizations": {
     "vscode": {
       "extensions": [

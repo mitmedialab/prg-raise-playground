@@ -1,15 +1,14 @@
 /// <reference types="@types/web-bluetooth" />
 
 import { EventEmitter } from "eventemitter3";
-import { Service } from "./communication/ServiceHelper";
 import UartService from "./communication/UartService";
 import { followLine } from "./LineFollowing";
 import { Command, DisplayKey, NetworkStatus, ReceivedCommand, SensorKey, command, display, endpoint, keyBySensor, motorCommandReceived, networkStatus, port, sensor } from "./enums";
 import { base64ToInt32Array, deferred, makeWebsocket, Max32Int } from "./utils";
 import { LineDetector } from "./LineDetection";
 import { calculateArcTime } from "./TimeHelper";
+import type { BLEDeviceWithUartService } from "./ble";
 
-export type Services = Awaited<ReturnType<typeof Doodlebot.getServices>>;
 export type MotorStepRequest = {
     /** Number of steps for the stepper (+ == forward, - == reverse) */
     steps: number,
@@ -54,89 +53,8 @@ type BLECommunication = {
     send: (text: string) => Promise<void>
 }
 
-const bluetoothFilters: BluetoothLEScanFilter[] = [];
 
 export default class Doodlebot {
-    /**
-     * 
-     * @param services 
-     * @param serviceClass 
-     * @returns 
-     */
-    static async tryCreateService<T extends Service & (new (...args: any) => any)>(
-        services: BluetoothRemoteGATTService[], serviceClass: T
-    ): Promise<InstanceType<T>> {
-        const found = services.find((service) => service.uuid === serviceClass.uuid);
-        return found ? await serviceClass.create(found) : undefined;
-    }
-
-    /**
-     * 
-     * @param bluetooth 
-     * @param devicePrefix @todo unused
-     * @returns 
-     */
-    static async requestRobot(bluetooth: Bluetooth, ...filters: BluetoothLEScanFilter[]) {
-        const device = await bluetooth.requestDevice({
-            filters: [
-                ...(filters ?? []),
-                {
-                    services: [UartService.uuid]
-                },
-            ],
-        });
-
-        return device;
-    }
-
-    /**
-     * Get
-     * @param device 
-     * @returns 
-     */
-    static async getServices(device: BluetoothDevice) {
-        if (!device || !device.gatt) return null;
-        if (!device.gatt.connected) await device.gatt.connect();
-
-        const services = await device.gatt.getPrimaryServices();
-        const uartService = await Doodlebot.tryCreateService(services, UartService);
-
-        return { uartService, };
-    }
-
-    static async getBLE(ble: Bluetooth, ...filters: BluetoothLEScanFilter[]) {
-        const robot = await Doodlebot.requestRobot(ble, ...filters);
-        const services = await Doodlebot.getServices(robot);
-        if (!services) throw new Error("Unable to connect to doodlebot's UART service");
-        return { robot, services };
-    }
-
-    /**
-     * 
-     * @param ble 
-     * @param filters 
-     * @throws 
-     * @returns 
-     */
-    static async tryCreate(ble: Bluetooth, ...filters: BluetoothLEScanFilter[]) {
-        const { robot, services } = await Doodlebot.getBLE(ble, ...filters);
-        // return new Doodlebot({
-        //     onReceive: (callback) => services.uartService.addEventListener("receiveText", callback),
-        //     onDisconnect: (callback) => ble.addEventListener("gattserverdisconnected", callback),
-        //     send: (text) => services.uartService.sendText(text),
-        // }, requestBluetooth, credentials, saveIP, async (description) => {
-        //     const response = await fetch(`http://192.168.41.214:8001/webrtc`, {
-        //         method: 'POST',
-        //         body: description,
-        //         headers: { 'Content-Type': 'application/json' }
-        //     });
-        //     console.log("INSIDE INTERNAL FUNCTION");
-        //     const responseJson = await response.json();
-        //     console.log("kjson", responseJson);
-        //     return responseJson;
-        // });
-    }
-
     private pending: Pending = { motor: undefined, websocket: undefined, video: undefined, image: undefined };
     private onMotor = new EventEmitter();
     private onSensor = new EventEmitter();
@@ -146,9 +64,9 @@ export default class Doodlebot {
     private encoder = new TextEncoder();
 
     public readonly topLevelDomain = deferred<string>();
-    public readonly bluetooth = deferred<Bluetooth>();
-    private readonly ble = deferred<BLECommunication>();
+    public readonly bleDevice = deferred<BLEDeviceWithUartService>();
 
+    private readonly ble = deferred<BLECommunication>();
 
     private lastDisplayedKey;
     private lastDisplayedType;
@@ -271,8 +189,8 @@ export default class Doodlebot {
     private audioSocket: WebSocket;
     private audioCallbacks = new Set<(chunk: Float32Array) => void>();
 
-    private pc: any;
-    private webrtcVideo: any;
+    private pc: RTCPeerConnection;
+    private webrtcVideo: HTMLVideoElement;
 
     public previewImage;
     public canvasWebrtc;
@@ -282,13 +200,12 @@ export default class Doodlebot {
     constructor() {
         this.ble.promise.then(ble => ble.onReceive(this.receiveTextBLE.bind(this)));
         this.ble.promise.then(ble => ble.onDisconnect(this.handleBleDisconnect.bind(this)));
-        this.bluetooth.promise.then(async (bluetooth) => {
-            const { services } = await Doodlebot.getBLE(bluetooth, ...bluetoothFilters);
+        this.bleDevice.promise.then(async ({ device, service }) => {
             this.ble.resolve(
                 {
-                    onReceive: (callback) => services.uartService.addEventListener("receiveText", callback),
-                    onDisconnect: (callback) => bluetooth.addEventListener("gattserverdisconnected", callback),
-                    send: (text) => services.uartService.sendText(text),
+                    onReceive: (callback) => service.addEventListener("receiveText", callback),
+                    onDisconnect: (callback) => device.addEventListener("gattserverdisconnected", callback),
+                    send: (text) => service.sendText(text),
                 });
         })
 
@@ -338,11 +255,14 @@ export default class Doodlebot {
             .then(offer => this.pc.setLocalDescription(offer))
             .then(async () => {
                 const tld = await this.topLevelDomain.promise;
-                fetch(`https://${tld}/api/v1/video/webrtc`, {
+                console.log("TLD", tld);
+                const webrtcResponse = await fetch(`https://${tld}/api/v1/video/webrtc`, {
                     method: 'POST',
                     body: JSON.stringify(this.pc.localDescription),
                     headers: { 'Content-Type': 'application/json' }
                 });
+                console.log("webrtcResponse", webrtcResponse);
+                return webrtcResponse;
             })
             .then(response => response.json())
             .then(answer => this.pc.setRemoteDescription(answer))
@@ -579,7 +499,8 @@ export default class Doodlebot {
     }
 
     async findImageFiles() {
-        let endpoint = "https://" + this.topLevelDomain + "/api/v1/upload/images"
+        const tld = await this.topLevelDomain.promise;
+        let endpoint = "https://" + tld + "/api/v1/upload/images"
         let uploadedImages = await this.fetchAndExtractList(endpoint);
         return uploadedImages.filter(item => !this.imageFiles.includes(item));
     }
@@ -725,7 +646,8 @@ export default class Doodlebot {
     }
 
     async findSoundFiles() {
-        let endpoint = "https://" + this.topLevelDomain + "/api/v1/upload/sounds"
+        const tld = await this.topLevelDomain.promise;
+        let endpoint = "https://" + tld + "/api/v1/upload/sounds"
         let uploadedSounds = await this.fetchAndExtractList(endpoint);
         return uploadedSounds.filter(item => !this.soundFiles.includes(item));
     }
@@ -816,24 +738,6 @@ export default class Doodlebot {
         await this.sendBLECommand(command.lowPower);
     }
 
-
-
-    async testIP(ip: string) {
-        if (!ip) return false;
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 2000);
-        try {
-            const resp = await fetch(`http://${ip}:8000/static/webrtc-client.html`, { signal: controller.signal });
-            return resp.ok;
-        }
-        catch {
-            return false;
-        }
-        finally {
-            clearTimeout(timeout);
-        }
-    }
-
     /**
      * 
      * @param credentials 
@@ -852,8 +756,8 @@ export default class Doodlebot {
     }
 
     async connectionWorkflow() {
-        if (this.websocket) this.websocket.close();
         const tld = await this.topLevelDomain.promise;
+        if (this.websocket) this.websocket.close();
         await this.connectToWebsocket(tld);
         this.detector = new LineDetector(tld);
     }
