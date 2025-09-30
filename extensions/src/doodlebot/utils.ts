@@ -27,7 +27,7 @@ export const base64ToInt32Array = async (base64) => {
 export const makeWebsocket = (ip: string, path: string) => new WebSocket(`wss://${ip}${path}`);
 
 export const testWebSocket = (ip: string, port: string | number, timeoutSeconds?: number) => {
-    const websocket = makeWebsocket(ip, port);
+    const websocket = makeWebsocket(ip, String(port));
     return new Promise<boolean>((resolve) => {
         websocket.onopen = () => websocket.close();
         websocket.onclose = (event) => resolve(event.wasClean);
@@ -36,3 +36,18 @@ export const testWebSocket = (ip: string, port: string | number, timeoutSeconds?
 }
 
 export const Max32Int = 2147483647;
+
+
+export const deferred = <T>() => {
+    let resolve: (value: T | PromiseLike<T>) => void;
+    let reject: (reason?: any) => void;
+
+    const promise = new Promise<T>((res, rej) => {
+        resolve = res;
+        reject = rej;
+    });
+
+    return { promise, resolve: resolve!, reject: reject! };
+};
+
+export type Deferred<T> = ReturnType<typeof deferred<T>>;
