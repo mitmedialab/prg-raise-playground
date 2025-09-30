@@ -20,10 +20,6 @@ export type Vector3D = { x: number, y: number, z: number };
 export type Color = { red: number, green: number, blue: number, alpha: number };
 export type SensorReading = number | Vector3D | Bumper | Color;
 export type SensorData = Doodlebot["sensorData"];
-//export type NetworkCredentials = { ssid: string, password: string, ipOverride?: string };
-//export type NetworkConnection = { ip: string, hostname?: string };
-export type RequestBluetooth = (callback: (bluetooth: Bluetooth) => any) => void;
-export type SaveIP = (ip: string) => void;
 
 type MaybePromise<T> = undefined | Promise<T>;
 
@@ -511,7 +507,6 @@ export default class Doodlebot {
 
     async getFacePrediction(type: "face" | "object") {
         const now = Date.now();
-        const tld = await this.topLevelDomain.promise;
 
         // Clear old stop timers whenever we get a new call
         if (this.stopTimers[type]) {
@@ -521,7 +516,7 @@ export default class Doodlebot {
         // If stream is already active → just return continuous predict
         if (this.streamActive[type]) {
             this.lastCallTime[type] = now;
-            this.resetStopTimer(tld, type);
+            this.resetStopTimer(type);
             return await this.getContinuousPredict(type);
         }
 
@@ -529,7 +524,7 @@ export default class Doodlebot {
         if (!this.lastCallTime[type] || now - this.lastCallTime[type] > 1000) {
             this.lastCallTime[type] = now;
             console.log(`[${type}] Calling single_predict API...`);
-            return await this.callSinglePredict(tld);
+            return await this.callSinglePredict();
         }
 
         // If called again within 1s → switch to stream
@@ -537,19 +532,20 @@ export default class Doodlebot {
         this.streamActive[type] = true;
         this.lastCallTime[type] = now;
         await this.startContinuousDetection(type);
-        this.resetStopTimer(tld, type);
+        this.resetStopTimer(type);
         return await this.getContinuousPredict(type);
     }
 
-    private resetStopTimer(ip: string, type: "face" | "object") {
+    private resetStopTimer(type: "face" | "object") {
         this.stopTimers[type] = setTimeout(() => {
             console.log(`[${type}] No calls in 5s, stopping stream...`);
-            this.stopContinuousDetection(ip, type);
+            this.stopContinuousDetection(type);
         }, 5000);
     }
 
-    async callSinglePredict(ip: string) {
-        const uploadEndpoint = `https://${ip}/api/v1/video/single_predict?width=320&height=240`;
+    async callSinglePredict() {
+        const tld = await this.topLevelDomain.promise;
+        const uploadEndpoint = `https://${tld}/api/v1/video/single_predict?width=320&height=240`;
         const response = await fetch(uploadEndpoint);
         return await response.json();
     }
@@ -569,7 +565,7 @@ export default class Doodlebot {
         console.log(`[${type}] Continuous detection started`);
     }
 
-    async stopContinuousDetection(ip: string, type: "face" | "object") {
+    async stopContinuousDetection(type: "face" | "object") {
         this.streamActive[type] = false;
         this.lastCallTime[type] = 0;
         if (this.stopTimers[type]) {
@@ -577,12 +573,13 @@ export default class Doodlebot {
             delete this.stopTimers[type];
         }
         let endpoint;
+        const tld = await this.topLevelDomain.promise;
         if (!this.streamActive["face"] && !this.streamActive["object"]) {
-            endpoint = `https://${ip}/api/v1/video/stream?width=640&height=480&set_display=true&set_detect_objects=false&set_detect_faces=false`;
+            endpoint = `https://${tld}/api/v1/video/stream?width=640&height=480&set_display=true&set_detect_objects=false&set_detect_faces=false`;
         } else if (!this.streamActive["face"]) {
-            endpoint = `https://${ip}/api/v1/video/stream?width=640&height=480&set_display=true&set_detect_objects=true&set_detect_faces=false`;
+            endpoint = `https://${tld}/api/v1/video/stream?width=640&height=480&set_display=true&set_detect_objects=true&set_detect_faces=false`;
         } else {
-            endpoint = `https://${ip}/api/v1/video/stream?width=640&height=480&set_display=true&set_detect_objects=false&set_detect_faces=true`;
+            endpoint = `https://${tld}/api/v1/video/stream?width=640&height=480&set_display=true&set_detect_objects=false&set_detect_faces=true`;
         }
         console.log("stopping", endpoint)
         await fetch(endpoint);
@@ -742,8 +739,9 @@ export default class Doodlebot {
      * 
      * @param credentials 
      */
-    async connectToWebsocket(ip: string) {
-        this.websocket = makeWebsocket(ip, '/api/v1/command');
+    async connectToWebsocket() {
+        const tld = await this.topLevelDomain.promise;
+        this.websocket = makeWebsocket(tld, '/api/v1/command');
         await this.untilFinishedPending("websocket", new Promise<void>((resolve) => {
             const resolveAndRemove = () => {
                 console.log("Connected to websocket");
@@ -758,47 +756,12 @@ export default class Doodlebot {
     async connectionWorkflow() {
         const tld = await this.topLevelDomain.promise;
         if (this.websocket) this.websocket.close();
-        await this.connectToWebsocket(tld);
+        await this.connectToWebsocket();
         this.detector = new LineDetector(tld);
     }
 
     getImageStream() {
         return this.canvasWebrtc;
-    }
-
-    // async getImageStream() {
-    //     if (this.pending["websocket"]) await this.pending["websocket"];
-    //     if (!this.connection.ip) return;
-    //     const image = document.createElement("img");
-    //     image.src = `https://${this.connection.ip}/api/v1/videopush/${endpoint.video}`;
-    //     image.crossOrigin = "anonymous";
-    //     await new Promise((resolve) => image.addEventListener("load", resolve));
-    //     return image;
-    // }
-
-    async connectToImageWebSocket(ip: string) {
-        // Create a WebSocket connection
-        this.websocket = new WebSocket(`wss://${ip}:${port.camera}`);
-
-        // Return a promise that resolves when the WebSocket is connected
-        await this.untilFinishedPending("image", new Promise<void>((resolve, reject) => {
-            const onOpen = () => {
-                console.log("Connected to WebSocket for image stream");
-                this.websocket.removeEventListener("open", onOpen);
-                resolve();
-            };
-
-            const onError = (err: Event) => {
-                console.error("WebSocket error: ", err);
-                reject(err);
-            };
-
-            this.websocket.addEventListener("open", onOpen);
-            this.websocket.addEventListener("error", onError);
-
-            // Handle each message (which could be an image frame)
-            this.websocket.addEventListener("message", (event) => this.onWebSocketImageMessage(event));
-        }));
     }
 
     // Handle incoming image data from WebSocket
@@ -1221,8 +1184,6 @@ export default class Doodlebot {
             up: "^",
             down: "v",
         };
-
-        //const websocket2 = new WebSocket(`ws://${this.connection.ip}:${8766}`);
 
         const from = dirMap[direction1];
         const to = dirMap[direction2];

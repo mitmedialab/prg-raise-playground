@@ -961,8 +961,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   }
 
   async callSinglePredict() {
-    const tld = await this.doodlebot.topLevelDomain.promise;
-    return await this.doodlebot.callSinglePredict(tld);
+    return await this.doodlebot.callSinglePredict();
 
   }
 
