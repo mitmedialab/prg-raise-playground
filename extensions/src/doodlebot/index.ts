@@ -85,8 +85,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   soundDictionary: {} | { string: string[] };
   costumeDictionary: {} | { string: string[] };
 
-  externalIp: string
-
   voice_id: number;
   pitch_value: number;
 
