@@ -1,5 +1,5 @@
 import { Environment, ExtensionMenuDisplayDetails, extension, block, buttonBlock, BlockUtilityWithID, scratch } from "$common";
-import { DisplayKey, displayKeys, command, type Command, SensorKey, sensorKeys } from "./enums";
+import { DisplayKey, displayKeys, command, type Command, SensorKey, sensorKeys, units, keyBySensor, sensor } from "./enums";
 import Doodlebot from "./Doodlebot";
 import FileArgument from './FileArgument.svelte';
 import { splitArgsString } from "./utils";
@@ -129,10 +129,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       await this.setDictionaries();
     })
 
-
-
     await this.setDictionaries();
-    console.log("env", env);
 
     soundFiles = ["File"];
     imageFiles = ["File"];
@@ -177,6 +174,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     //     }
     //   }
     // })
+
+
   }
 
   async setDictionaries() {
@@ -271,6 +270,18 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     // Wait a short moment to ensure connection is established
     await new Promise(resolve => setTimeout(resolve, 1000));
 
+    for (const key of Object.keys(sensor)) {
+      console.log("DISABLE SENSOR", key);
+      this.doodlebot.disableSensor(key as SensorKey); // don't await
+    }
+
+    window.addEventListener("pagehide", () => {
+      for (const key of Object.keys(sensor)) {
+        console.log("DISABLE SENSOR", key);
+        this.doodlebot.disableSensor(key as SensorKey); // don't await
+      }
+    });
+
 
     try {
       if (this.SOCIAL && Math.random() < this.socialness && this.doodlebot) {
@@ -323,7 +334,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   async createVideoStreamDrawable() {
     this.imageStream ??= this.doodlebot?.getImageStream();
     if (!this.imageStream) {
-      console.error("Failed to get image stream");
+      //console.error("Failed to get image stream");
       return;
     }
 
@@ -578,11 +589,27 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   @block({
     type: "reporter",
     text: (sensor: SensorKey) => `${sensor} sensor`,
-    arg: { type: "string", options: ["battery", "temperature", "humidity", "pressure", "distance", "gyroscope", "altimeter", "accelerometer"], defaultValue: "battery" }
+    arg: { type: "string", options: ["battery", "temperature", "humidity", "pressure", "distance", "altimeter"], defaultValue: "battery" }
   })
-  async getSingleSensorReading(sensor: "battery" | "temperature" | "humidity" | "pressure" | "distance" | "gyroscope" | "altimeter" | "accelerometer") {
+  async getSingleSensorReading(sensor: "battery" | "temperature" | "humidity" | "pressure" | "distance" | "altimeter", utility: BlockUtilityWithID) {
     const reading = await this.doodlebot?.getSingleSensorReading(sensor);
-    return reading;
+    return `${JSON.stringify(reading)} ${units[sensor]}`;
+  }
+
+  @block({
+    type: "reporter",
+    text: (axis: string, sensor: SensorKey) => `get ${axis} of ${sensor} sensor`,
+    args: [
+      { type: 'string', options: ["x", "y", "z"], defaultValue: 'x' },
+      { type: "string", options: ["gyroscope", "accelerometer"], defaultValue: "gyroscope" }
+    ]
+  })
+  async getSingleSensorReadingAxis(axis: string, sensor: "gyroscope" | "accelerometer", utility: BlockUtilityWithID) {
+    const reading = await this.doodlebot?.getSingleSensorReading(sensor);
+    if (!reading) {
+      return NaN;
+    }
+    return `${JSON.stringify(reading[axis])} ${units[sensor]}`;
   }
 
 
@@ -603,7 +630,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     arg: { type: "string", options: bumperOptions, defaultValue: bumperOptions[0] }
   })
   async isBumperPressed(bumber: typeof bumperOptions[number]) {
-    const isPressed = await this.doodlebot?.getSensorReading("bumper");
+    const isPressed = await this.doodlebot?.getSingleSensorReading("bumper");
+
     switch (bumber) {
       case "back":
         return isPressed.back > 0;
@@ -627,8 +655,13 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     ]
   })
   whenBumperPressed(bumber: typeof bumperOptions[number], condition: "release" | "pressed") {
-    const isPressed = this.doodlebot?.getSensorReadingImmediately("bumper");
+    const isPressed = this.doodlebot?.getSensorReadingSync("bumper");
+
     const isPressedCondition = condition === "pressed";
+    if (!isPressed) {
+      return false;
+    }
+
     switch (bumber) {
       case "back":
         return isPressedCondition ? isPressed.back > 0 : isPressed.back === 0;
@@ -654,14 +687,20 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   @block({
     type: "command",
-    text: (direction1, direction2) => `move eyes from ${direction1} to ${direction2}`,
-    args: [
-      { type: "string", options: ["center", "left", "right", "up", "down"] },
-      { type: "string", options: ["center", "left", "right", "up", "down"] },
-    ]
+    text: (direction) => `move eyes from center to ${direction}`,
+    arg: { type: "string", options: ["left", "right", "up", "down"] },
   })
-  async moveEyes(direction1: string, direction2: string) {
-    await this.doodlebot.moveEyes(direction1, direction2);
+  async moveEyes1(direction: string) {
+    await this.doodlebot.moveEyes("center", direction);
+  }
+
+  @block({
+    type: "command",
+    text: (direction) => `move eyes from ${direction} to center`,
+    arg: { type: "string", options: ["left", "right", "up", "down"] },
+  })
+  async moveEyes2(direction: string) {
+    await this.doodlebot.moveEyes(direction, "center");
   }
 
   @block({
@@ -699,7 +738,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     arg: {
       type: "string", options: () => {
         self.setDictionaries();
-        return displayKeys.filter(key => key !== "clear").concat(imageFiles).concat(
+        return displayKeys.filter(key => (key !== "clear" && key !== "font")).concat(imageFiles).concat(
           (self.costumeDictionary && self.costumeDictionary[self.runtime._editingTarget.id]) ? Object.keys(self.costumeDictionary[self.runtime._editingTarget.id]) : [] as any[]
         ).filter((item: string) => item != "costume9999.png")
       }, defaultValue: "happy"
@@ -776,13 +815,23 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     }
   }
 
-  @block({
-    type: "command",
-    text: "start video segmentation",
-  })
-  async startVideoSegmentation() {
-    await this.doodlebot?.callSegmentation();
-  }
+  // @block({
+  //   type: "command",
+  //   text: "start video segmentation",
+  // })
+  // async startVideoSegmentation() {
+  //   const ip = await this.getIP();
+  //   await this.doodlebot?.callSegmentation(ip);
+  // }
+
+  // @block({
+  //   type: "command",
+  //   text: "stop video segmentation",
+  // })
+  // async stopVideoSegmentation() {
+  //   const ip = await this.getIP();
+  //   await this.doodlebot?.stopSegmentation(ip);
+  // }
 
   // @block({
   //   type: "hat",
@@ -915,13 +964,9 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   }
 
   async callSinglePredict() {
-    console.log("inside");
-    const ip = await this.doodlebot.topLevelDomain.promise;
-    const uploadEndpoint = "https://" + ip + "/api/v1/video/single_predict";
-    console.log("calling single predict");
-    const response2 = await fetch(uploadEndpoint);
-    const responseJson = await response2.json();
-    return responseJson;
+    const tld = await this.doodlebot.topLevelDomain.promise;
+    return await this.doodlebot.callSinglePredict(tld);
+
   }
 
   @block({
@@ -929,49 +974,13 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     text: (location, type) => `get ${location} of ${type}`,
     args: [
       { type: "string", options: ["x", "y"], defaultValue: "x" },
-      { type: "string", options: ["face", "apple", "orange"], defaultValue: "face" }
+      { type: "string", options: ["face", "object"], defaultValue: "face" }
     ]
   })
-  async getSinglePredict2s(location: string, type: string) {
-    const reading = await this.callSinglePredict();
-    if (type == "face") {
-      if (reading.faces.length == 0) {
-        return 0;
-      }
-      if (location == "x") {
-        return reading.faces[0].x;
-      } else {
-        return reading.faces[0].y;
-      }
-    } else {
-      if (reading.objects.length == 0) {
-        return 0;
-      }
-      if (type == "apple") {
-        const firstApple = reading.objects.find(obj => obj.label === "apple");
-        if (firstApple) {
-          if (location == "x") {
-            return firstApple.x;
-          } else {
-            return firstApple.y;
-          }
-        } else {
-          return 0;
-        }
-      } else {
-        const firstOrange = reading.objects.find(obj => obj.label === "orange");
-        if (firstOrange) {
-          if (location == "x") {
-            return firstOrange.x;
-          } else {
-            return firstOrange.y;
-          }
-        } else {
-          return 0;
-        }
-      }
-
-    }
+  async getSinglePredict2s(location: string, type: "face" | "object") {
+    const tld = await this.doodlebot.topLevelDomain.promise;
+    const reading = await this.doodlebot.getFacePrediction(tld, type);
+    return this.doodlebot.getReadingLocation(location, type == "object" ? "apple" : type, reading);
   }
 
   @block({
@@ -980,19 +989,14 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     arg: { type: "string", options: ["face", "apple", "orange"], defaultValue: "face" }
   })
   async isFaceDetected(type: string) {
-    const reading = await this.callSinglePredict();
-    if (reading.faces.length > 0 && type == "face") {
-      return true;
+    const ip = await this.getIPAddress();
+    const reading = await this.doodlebot.getFacePrediction(ip, "face");
+    const x = this.doodlebot.getReadingLocation("x", type, reading);
+    const y = this.doodlebot.getReadingLocation("y", type, reading);
+    if (x == -1 && y == -1) {
+      return false;
     }
-    if (reading.objects.length > 0 && type == "apple") {
-      const firstApple = reading.objects.find(obj => obj.label === "apple");
-      return firstApple ? true : false;
-    }
-    if (reading.objects.length > 0 && type == "orange") {
-      const firstOrange = reading.objects.find(obj => obj.label === "orange");
-      return firstOrange ? true : false;
-    }
-    return false;
+    return true;
   }
 
   // @(scratch.command((self, $) => $`Upload sound file ${self.makeCustomArgument({ component: FileArgument, initial: { value: "", text: "File" } })}`))

@@ -47,10 +47,24 @@ export const sensor = {
     altimeter: "u",
     magnometer: "o",
     temperature: "t",
-    accelerometer: "a",
+    accelerometer: "x",
     gyroscope: "g",
     light: "l",
 } as const;
+
+export const units = {
+    battery: "volts",
+    bumper: "",
+    humidity: "%",
+    pressure: "hPa",
+    distance: "cm",
+    altimeter: "m",
+    magnometer: "uTesla",
+    temperature: "C",
+    accelerometer: "m/s",
+    gyroscope: "radians/s",
+    light: "lux",
+}
 
 export type SensorKey = keyof typeof sensor;
 export const sensorKeys = Object.keys(sensor) as SensorKey[];

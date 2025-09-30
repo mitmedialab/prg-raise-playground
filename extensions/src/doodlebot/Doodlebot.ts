@@ -420,6 +420,7 @@ export default class Doodlebot {
                     const [x, y, z] = parameters.map((parameter) => Number.parseFloat(parameter));
                     this.updateSensor(keyBySensor[command], { x, y, z });
                     break;
+
                 }
                 case sensor.light: {
                     const [red, green, blue, alpha] = parameters.map((parameter) => Number.parseFloat(parameter));
@@ -461,6 +462,11 @@ export default class Doodlebot {
      * @returns 
      */
     async enableSensor<T extends SensorKey>(type: T) {
+        // Cancel any pending disable
+        if (this.disableTimers[type]) {
+            clearTimeout(this.disableTimers[type]);
+            delete this.disableTimers[type];
+        }
         if (this.sensorState[type]) return;
         await this.sendBLECommand(command.enable, sensor[type]);
         await new Promise((resolve) => this.onSensor.once(type, resolve));
@@ -470,10 +476,25 @@ export default class Doodlebot {
     /**
      * 
      */
+    private disableTimers: Partial<Record<SensorKey, ReturnType<typeof setTimeout>>> = {};
+
     async disableSensor<T extends SensorKey>(type: T) {
+        console.log("DISABLING");
         if (!this.sensorState[type]) return;
         await this.sendBLECommand(command.disable, sensor[type]);
         this.sensorState[type] = false;
+    }
+
+    scheduleDisableSensor(type: SensorKey, delay = 5000) {
+        // Reset existing timer
+        if (this.disableTimers[type]) {
+            clearTimeout(this.disableTimers[type]);
+        }
+
+        this.disableTimers[type] = setTimeout(() => {
+            this.disableSensor(type);
+            delete this.disableTimers[type];
+        }, delay);
     }
 
     /**
@@ -482,22 +503,36 @@ export default class Doodlebot {
      * @returns 
      */
     async getSensorReading<T extends SensorKey>(type: T): Promise<SensorData[T]> {
-        await this.enableSensor(type); // should this be automatic?
-        return this.sensorData[type];
+        await this.enableSensor(type);
+
+        const reading = this.sensorData[type];
+
+        // Schedule auto-disable after 5s of inactivity
+        this.scheduleDisableSensor(type, 5000);
+
+        return reading;
     }
 
-    async getSingleSensorReading<T extends SensorKey>(type: T): Promise<SensorData[T]> {
-        await this.enableSensor(type); // should this be automatic?
+    async getSingleSensorReading<T extends SensorKey>(
+        type: T
+    ): Promise<SensorData[T]> {
+        await this.enableSensor(type);
+
         const reading = this.sensorData[type];
-        await this.disableSensor(type);
+
+        // Schedule auto-disable after 5s of inactivity
+        this.scheduleDisableSensor(type, 5000);
+
         return reading;
     }
 
     getSensorReadingSync<T extends SensorKey>(type: T): SensorData[T] | false {
         if (this.sensorState[type]) {
+            this.scheduleDisableSensor(type, 5000);
             return this.sensorData[type];
         } else {
             this.enableSensor(type);
+            this.scheduleDisableSensor(type, 5000);
             return false;
         }
     }
@@ -549,9 +584,144 @@ export default class Doodlebot {
         return uploadedImages.filter(item => !this.imageFiles.includes(item));
     }
 
-    async callSegmentation() {
-        let endpoint = "https://" + this.topLevelDomain + "/api/v1/video/stream?width=640&height=480&set_display=true&set_detect_objects=true&set_detect_faces=true"
+    private lastCallTime: Record<string, number> = {};
+    private streamActive: Record<string, boolean> = {};
+    private stopTimers: Record<string, any> = {};
+
+    async getFacePrediction(type: "face" | "object") {
+        const now = Date.now();
+        const tld = await this.topLevelDomain.promise;
+
+        // Clear old stop timers whenever we get a new call
+        if (this.stopTimers[type]) {
+            clearTimeout(this.stopTimers[type]);
+        }
+
+        // If stream is already active → just return continuous predict
+        if (this.streamActive[type]) {
+            this.lastCallTime[type] = now;
+            this.resetStopTimer(tld, type);
+            return await this.getContinuousPredict(type);
+        }
+
+        // If first call or more than 1s since last call → single_predict
+        if (!this.lastCallTime[type] || now - this.lastCallTime[type] > 1000) {
+            this.lastCallTime[type] = now;
+            console.log(`[${type}] Calling single_predict API...`);
+            return await this.callSinglePredict(tld);
+        }
+
+        // If called again within 1s → switch to stream
+        console.log(`[${type}] Switching to stream API...`);
+        this.streamActive[type] = true;
+        this.lastCallTime[type] = now;
+        await this.startContinuousDetection(type);
+        this.resetStopTimer(tld, type);
+        return await this.getContinuousPredict(type);
+    }
+
+    private resetStopTimer(ip: string, type: "face" | "object") {
+        this.stopTimers[type] = setTimeout(() => {
+            console.log(`[${type}] No calls in 5s, stopping stream...`);
+            this.stopContinuousDetection(ip, type);
+        }, 5000);
+    }
+
+    async callSinglePredict(ip: string) {
+        const uploadEndpoint = `https://${ip}/api/v1/video/single_predict?width=320&height=240`;
+        const response = await fetch(uploadEndpoint);
+        return await response.json();
+    }
+
+    async startContinuousDetection(type: "face" | "object") {
+        const tld = await this.topLevelDomain.promise;
+        let endpoint;
+        if (this.streamActive["face"] && this.streamActive["object"]) {
+            endpoint = `https://${tld}/api/v1/video/stream?width=640&height=480&set_display=true&set_detect_objects=true&set_detect_faces=true`;
+        } else if (this.streamActive["face"]) {
+            endpoint = `https://${tld}/api/v1/video/stream?width=640&height=480&set_display=true&set_detect_objects=false&set_detect_faces=true`;
+        } else {
+            endpoint = `https://${tld}/api/v1/video/stream?width=640&height=480&set_display=true&set_detect_objects=true&set_detect_faces=false`;
+        }
+        console.log("starting", endpoint);
         await fetch(endpoint);
+        console.log(`[${type}] Continuous detection started`);
+    }
+
+    async stopContinuousDetection(ip: string, type: "face" | "object") {
+        this.streamActive[type] = false;
+        this.lastCallTime[type] = 0;
+        if (this.stopTimers[type]) {
+            clearTimeout(this.stopTimers[type]);
+            delete this.stopTimers[type];
+        }
+        let endpoint;
+        if (!this.streamActive["face"] && !this.streamActive["object"]) {
+            endpoint = `https://${ip}/api/v1/video/stream?width=640&height=480&set_display=true&set_detect_objects=false&set_detect_faces=false`;
+        } else if (!this.streamActive["face"]) {
+            endpoint = `https://${ip}/api/v1/video/stream?width=640&height=480&set_display=true&set_detect_objects=true&set_detect_faces=false`;
+        } else {
+            endpoint = `https://${ip}/api/v1/video/stream?width=640&height=480&set_display=true&set_detect_objects=false&set_detect_faces=true`;
+        }
+        console.log("stopping", endpoint)
+        await fetch(endpoint);
+        console.log(`[${type}] Continuous detection stopped`);
+    }
+
+    async getContinuousPredict(type: "face" | "object") {
+        const tld = await this.topLevelDomain.promise;
+
+        const endpoint = `https://${tld}/api/v1/video/stream_latest?screenshot=false`;
+
+        const response = await fetch(endpoint);
+        if (!response.ok) {
+            await this.startContinuousDetection(type);
+            return this.getContinuousPredict(type);
+        } else {
+            return await response.json();
+        }
+
+
+    }
+
+    getReadingLocation(axis, type, reading) {
+        if (type == "face") {
+            if (reading.faces.length == 0) {
+                return -1;
+            }
+            if (axis == "x") {
+                return reading.faces[0].x;
+            } else {
+                return reading.faces[0].y;
+            }
+        } else {
+            if (reading.objects.length == 0) {
+                return -1;
+            }
+            if (type == "apple") {
+                const firstApple = reading.objects.find(obj => obj.label === "apple");
+                if (firstApple) {
+                    if (axis == "x") {
+                        return firstApple.x;
+                    } else {
+                        return firstApple.y;
+                    }
+                } else {
+                    return -1;
+                }
+            } else {
+                const firstOrange = reading.objects.find(obj => obj.label === "orange");
+                if (firstOrange) {
+                    if (axis == "x") {
+                        return firstOrange.x;
+                    } else {
+                        return firstOrange.y;
+                    }
+                } else {
+                    return -1;
+                }
+            }
+        }
     }
 
     async findSoundFiles() {
@@ -619,10 +789,10 @@ export default class Doodlebot {
             }
             case "stop":
                 if (this.isStopped) return;
-                return await this.untilFinishedPending("motor", new Promise(async (resolve) => {
-                    await this.sendBLECommand(command.motor, "s");
-                    this.onMotor.once(events.stop, resolve);
-                }));
+                await this.sendBLECommand(command.motor, "s");
+            // return await this.untilFinishedPending("motor", new Promise(async (resolve) => {
+            //     this.onMotor.once(events.stop, resolve);
+            // }));
         }
     }
 
