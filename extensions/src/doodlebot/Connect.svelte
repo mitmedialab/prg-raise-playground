@@ -5,6 +5,7 @@
     type BLEDeviceWithUartService,
     getBLEDeviceWithUartService,
   } from "./ble";
+  import { onDestroy } from "svelte";
 
   export let extension: Extension;
 
@@ -16,13 +17,6 @@
     reactiveInvoke((extension = extension), functionName, args);
 
   let connected = extension.connected;
-
-  if (!connected)
-    requestAnimationFrame(() => {
-      try {
-        extension.setIndicator("disconnected");
-      } catch (e) {}
-    });
 
   let error: string | null = null;
 
@@ -45,7 +39,9 @@
         error = result.error;
       } else {
         bleDevice = result;
-        topLevelDomain = result.device.name + ".direct.mitlivinglab.org";
+        topLevelDomain = result.device.name;
+        if (!topLevelDomain.endsWith(".direct.mitlivinglab.org"))
+          topLevelDomain += ".direct.mitlivinglab.org";
       }
     } catch (err) {
       errorOut(
@@ -70,6 +66,13 @@
   };
 
   let showAdvanced = false;
+
+  onDestroy(() => {
+    if (!connected)
+      try {
+        extension.setIndicator("disconnected");
+      } catch (e) {}
+  });
 </script>
 
 <div
