@@ -1795,7 +1795,7 @@ blobToBase64(blob) {
     try {
       const imageStream = this.getImageStream();
       if (!imageStream) {
-        console.error("Failed to get image stream");
+        // console.error("Failed to get image stream");
         return;
       }
       // const imageBitmap = await createImageBitmap(imageStream);
