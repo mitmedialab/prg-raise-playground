@@ -41,6 +41,9 @@ importers:
       curve-matcher:
         specifier: ^1.1.1
         version: 1.1.1
+      eventemitter3:
+        specifier: ^5.0.1
+        version: 5.0.1
       events:
         specifier: ^3.3.0
         version: 3.3.0
@@ -264,6 +267,9 @@ packages:
   escalade@3.2.0:
     resolution: {integrity: sha512-WUj2qlxaQtO4g6Pq5c29GTcWGDyd8itL8zTlipgECz3JesAiiOKotd8JU6otB3PACgG6xkJUyVhboMS+bje/jA==}
     engines: {node: '>=6'}
+
+  eventemitter3@5.0.1:
+    resolution: {integrity: sha512-GWkBvjiSZK87ELrYOSESUYeVIc9mvLLf/nXalMOS5dYrgZq9o5OVkbZAVM06CVxYsCwH9BDZFPlQTlPA1j4ahA==}
 
   events@3.3.0:
     resolution: {integrity: sha512-mQw+2fkQbALzQ7V0MY0IqdnXNOeTtP4r0lN9z7AAawCXgqea7bDii20AYrIBrFd/Hx0M2Ocz6S111CaFkUcb0Q==}
@@ -785,6 +791,8 @@ snapshots:
   emoji-regex@8.0.0: {}
 
   escalade@3.2.0: {}
+
+  eventemitter3@5.0.1: {}
 
   events@3.3.0: {}
 

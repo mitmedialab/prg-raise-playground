@@ -24,7 +24,7 @@ export class LineDetector {
   private readonly MIN_PROCESS_INTERVAL = 100;
   private imageStream: HTMLImageElement | null = null;
 
-  constructor(private raspberryPiIp: string, imageStream: HTMLImageElement, width = 640, height = 480) {
+  constructor(private raspberryPiIp: string, imageStream: HTMLImageElement = null, width = 640, height = 480) {
     debug.info('Initializing LineDetector', { raspberryPiIp, width, height });
 
     this.width = width;
@@ -110,56 +110,56 @@ export class LineDetector {
 
     try {
 
-        try {
+      try {
 
-          debug.info('Clearing canvas and drawing new image');
-          this.ctx.clearRect(0, 0, this.width, this.height);
-          this.ctx.drawImage(this.imageStream!, 0, 0, this.width, this.height);
+        debug.info('Clearing canvas and drawing new image');
+        this.ctx.clearRect(0, 0, this.width, this.height);
+        this.ctx.drawImage(this.imageStream!, 0, 0, this.width, this.height);
 
-          debug.info('Getting image data from canvas');
-          const imageData = this.ctx.getImageData(0, 0, this.width, this.height);
+        debug.info('Getting image data from canvas');
+        const imageData = this.ctx.getImageData(0, 0, this.width, this.height);
 
-          debug.info('Processing image data');
-          const lineCoordinates = this.processImageData(imageData);
+        debug.info('Processing image data');
+        const lineCoordinates = this.processImageData(imageData);
 
-          if (lineCoordinates.length > 0) {
-            debug.info('Line detected successfully', {
-              points: lineCoordinates.length,
-              firstPoint: lineCoordinates[0],
-              lastPoint: lineCoordinates[lineCoordinates.length - 1]
-            });
+        if (lineCoordinates.length > 0) {
+          debug.info('Line detected successfully', {
+            points: lineCoordinates.length,
+            firstPoint: lineCoordinates[0],
+            lastPoint: lineCoordinates[lineCoordinates.length - 1]
+          });
 
-            this.lastDetectedLine = lineCoordinates;
+          this.lastDetectedLine = lineCoordinates;
 
-            if (this.collectLine) {
-              this.allCoordinates.push(lineCoordinates);
-              this.frameCount++;
-              this.collectLine = false;
-              debug.info('Line collected, frame count:', this.frameCount);
-            }
-
-            this.lastProcessTime = now;
-            this.isProcessing = false;
-            debug.timeEnd('detectLine');
-            return lineCoordinates;
-          } else {
-            this.lastDetectedLine = lineCoordinates;
+          if (this.collectLine) {
+            this.allCoordinates.push(lineCoordinates);
+            this.frameCount++;
+            this.collectLine = false;
+            debug.info('Line collected, frame count:', this.frameCount);
           }
 
-          debug.warn('No line detected in this attempt');
-          attempt++;
-          const backoffTime = 100 * Math.pow(2, attempt);
-          debug.info(`Waiting ${backoffTime}ms before next attempt`);
-
-        } catch (error) {
-          debug.error(`Processing attempt ${attempt + 1} failed:`, error);
-          attempt++;
-
-         
-
-          const backoffTime = 100 * Math.pow(2, attempt);
-          debug.info(`Waiting ${backoffTime}ms before retry`);
+          this.lastProcessTime = now;
+          this.isProcessing = false;
+          debug.timeEnd('detectLine');
+          return lineCoordinates;
+        } else {
+          this.lastDetectedLine = lineCoordinates;
         }
+
+        debug.warn('No line detected in this attempt');
+        attempt++;
+        const backoffTime = 100 * Math.pow(2, attempt);
+        debug.info(`Waiting ${backoffTime}ms before next attempt`);
+
+      } catch (error) {
+        debug.error(`Processing attempt ${attempt + 1} failed:`, error);
+        attempt++;
+
+
+
+        const backoffTime = 100 * Math.pow(2, attempt);
+        debug.info(`Waiting ${backoffTime}ms before retry`);
+      }
 
     } catch (error) {
       debug.error('Error getting image stream:', error);
