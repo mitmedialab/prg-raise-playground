@@ -37,9 +37,12 @@ export abstract class ConstructableExtension {
 
   protected async internal_init() {
     const runtime = this.runtime;
+    const id = this.id;
+    
     return await Promise.resolve(this.init({
       runtime,
-      get extensionManager() { return runtime.getExtensionManager() }
+      get extensionManager() { return runtime.getExtensionManager() },
+      scrollIntoView() { runtime.emitScrollUpdate(id) }
     }));
   }
 

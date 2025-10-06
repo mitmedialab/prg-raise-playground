@@ -26,6 +26,7 @@ export type Environment = {
    */
   runtime: Runtime,
   extensionManager: ExtensionManager,
+  scrollIntoView: () => void,
 }
 
 export type Opocde<TExtension extends ExtensionInstance> = TExtension extends Extension<any, any>
