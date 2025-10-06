@@ -987,7 +987,8 @@ class Scratch3TextClassificationBlocks {
     // TODO rename this function to better represent what it does
     async get_embeddings(text, label, direction) {
         // translates text from any language to english
-        const newText = await this.getTranslate(text, "en");
+        // const newText = await this.getTranslate(text, "en");
+        const newText = text;
 
         if (!this.labelListEmpty) {
             // before going through with the expensive USE model loading
