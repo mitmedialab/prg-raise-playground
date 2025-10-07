@@ -14,30 +14,9 @@ jobs:
         node-version: [16.x]
 
     steps:
-    - name: Ensure rsync (and ssh client) is available
-      run: |
-        set -eu
-        if command -v apt-get >/dev/null 2>&1; then
-          if ! apt-get update; then
-            sed -i 's|deb.debian.org|archive.debian.org|g; s|security.debian.org|archive.debian.org|g' /etc/apt/sources.list
-            apt-get -o Acquire::Check-Valid-Until=false update
-          fi
-          apt-get install -y --no-install-recommends rsync openssh-client
-          rm -rf /var/lib/apt/lists/*
-        elif command -v apk >/dev/null 2>&1; then
-          apk add --no-cache rsync openssh
-        else
-          echo "No supported package manager found"; exit 1
-        fi
-    - run: rsync --version
-    - name: Upgrade git (Debian buster container)
-      run: |
-        set -eux
-        sed -i 's|deb.debian.org|archive.debian.org|g; s|security.debian.org|archive.debian.org|g' /etc/apt/sources.list
-        echo "deb http://archive.debian.org/debian buster-backports main" >> /etc/apt/sources.list
-        apt-get -o Acquire::Check-Valid-Until=false update
-        apt-get -y -t buster-backports install git
-        git --version
+    - uses: actions/setup-python@v6
+      with:
+        python-version: '2.7' 
     - uses: actions/setup-java@v5
       with:
         distribution: 'temurin'
