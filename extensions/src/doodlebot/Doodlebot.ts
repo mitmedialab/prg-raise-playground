@@ -17,7 +17,7 @@ export type MotorStepRequest = {
 export type Bumper = { front: number, back: number };
 export type Vector3D = { x: number, y: number, z: number };
 export type Color = { red: number, green: number, blue: number, alpha: number };
-export type SensorReading = number | Vector3D | Bumper | Color;
+export type SensorReading = number | Vector3D | Bumper | Color | number[];
 export type SensorData = Doodlebot["sensorData"];
 export type NetworkCredentials = { ssid: string, password: string, ipOverride?: string };
 export type NetworkConnection = { ip: string, hostname?: string };
@@ -269,7 +269,8 @@ export default class Doodlebot {
         gyroscope: { x: 0, y: 0, z: 0 },
         magnometer: { x: 0, y: 0, z: 0 },
         accelerometer: { x: 0, y: 0, z: 0 },
-        light: { red: 0, green: 0, blue: 0, alpha: 0 }
+        light: { red: 0, green: 0, blue: 0, alpha: 0 },
+        line: [],
     } satisfies Record<SensorKey, SensorReading>);
 
     private sensorState: Record<SensorKey, boolean> = {
@@ -283,7 +284,8 @@ export default class Doodlebot {
         gyroscope: false,
         magnometer: false,
         accelerometer: false,
-        light: false
+        light: false,
+        line: false
     };
 
     private audioSocket: WebSocket;
@@ -453,6 +455,11 @@ export default class Doodlebot {
                     this.updateSensor(keyBySensor[command], { x, y, z });
                     break;
                     
+                }
+                case sensor.line: {
+                    const [l1, l2, l3, l4] =  parameters.map((parameter) => Number.parseFloat(parameter));
+                    this.updateSensor(keyBySensor[command], [l1, l2, l3, l4]);
+                    break;
                 }
                 case sensor.light: {
                     const [red, green, blue, alpha] = parameters.map((parameter) => Number.parseFloat(parameter));
