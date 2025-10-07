@@ -7,15 +7,25 @@ jobs:
 
     runs-on: ubuntu-latest
     container:
-      image: python:2.7.18-alpine3.11
+      image: python:2.7.18-buster # Use a specific Python 2.7 image
 
     strategy:
       matrix:
         node-version: [16.x]
 
     steps:
-    - name: Add rsync
-      run: apk add --no-cache rsync openssh
+    - name: Ensure rsync (and ssh client) is available
+      run: |
+        set -euxo pipefail
+        # buster is EOL; fall back to archive mirrors if the normal update fails
+        if ! apt-get update; then
+          echo "Falling back to Debian archive mirrors (buster is EOL)"
+          sed -i 's|deb.debian.org|archive.debian.org|g' /etc/apt/sources.list
+          sed -i 's|security.debian.org|archive.debian.org|g' /etc/apt/sources.list || true
+          apt-get -o Acquire::Check-Valid-Until=false update
+        fi
+        apt-get install -y --no-install-recommends rsync openssh-client
+        rm -rf /var/lib/apt/lists/*
     - run: rsync --version
     - uses: actions/setup-java@v5
       with:
