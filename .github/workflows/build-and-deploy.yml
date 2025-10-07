@@ -20,16 +20,20 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
 
-    - name: npm install, build, and test
+    - name: npm install
       run: |
         npm install json5
         npx lerna link --force-local
         npx lerna exec -- npm install
         npx lerna link --force-local
+      env:
+        CI: true
+    - name: npm build
+      run: | 
         cd packages/scratch-gui
         npm run build --if-present
       env:
-        CI: true
+        CI: true 
     - name: Extract branch name
       shell: bash
       run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
