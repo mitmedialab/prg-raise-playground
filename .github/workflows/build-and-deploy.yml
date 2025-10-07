@@ -30,6 +30,14 @@ jobs:
           echo "No supported package manager found"; exit 1
         fi
     - run: rsync --version
+    - name: Upgrade git (Debian buster container)
+      run: |
+        set -eux
+        sed -i 's|deb.debian.org|archive.debian.org|g; s|security.debian.org|archive.debian.org|g' /etc/apt/sources.list
+        echo "deb http://archive.debian.org/debian buster-backports main" >> /etc/apt/sources.list
+        apt-get -o Acquire::Check-Valid-Until=false update
+        apt-get -y -t buster-backports install git
+        git --version
     - uses: actions/setup-java@v5
       with:
         distribution: 'temurin'
