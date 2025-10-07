@@ -4,19 +4,16 @@ on: [push]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-    container:
-      image: python:2.7.18-buster # Use a specific Python 2.7 image
 
     strategy:
       matrix:
         node-version: [16.x]
 
     steps:
-    - uses: actions/setup-python@v6
+    - uses: LizardByte/actions/actions/setup_python@master
       with:
-        python-version: '2.7' 
+        python-version: '2.7'
     - uses: actions/setup-java@v5
       with:
         distribution: 'temurin'
