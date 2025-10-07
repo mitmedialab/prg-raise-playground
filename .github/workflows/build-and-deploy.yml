@@ -16,7 +16,7 @@ jobs:
     steps:
     - uses: actions/setup-java@v5
       with:
-        distribution: 'oracle'
+        distribution: 'temurin'
         java-version: '8'
     - uses: actions/checkout@v1
     - name: Use Node.js ${{ matrix.node-version }}
