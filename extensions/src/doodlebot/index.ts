@@ -85,6 +85,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   INTERVAL = 16;
   DIMENSIONS = [480, 360];
 
+  lastError = 0;
+
   soundDictionary: {} | { string: string[] };
   costumeDictionary: {} | { string: string[] };
 
@@ -776,7 +778,113 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     return `${JSON.stringify(reading[axis])} ${units[sensor]}`;
   }
 
+  @block({
+    type: "reporter",
+    text: `get line reading`,
+  })
+  async getSingleSensorReadingLine() {
+    const reading = await this.doodlebot?.getSingleSensorReading("line");
+    if (!reading) {
+      return NaN;
+    }
+    console.log("reading", reading)
+    this.lastError = 0;
+    setInterval(async () => {
+      const sensorValues = await this.doodlebot.getSingleSensorReading("line");
+      this.followLineArray({left: sensorValues[0], center: sensorValues[1], right: sensorValues[2]});
+    }, 300);
+   // this.doodlebot.motorCommand("steps",); // stop any line following
+    return `${JSON.stringify(reading)}`;
+  }
+
+
+  async followLineArray(sensor) {
+    // Initialize lastError if missing
+    if (this.lastError === undefined) this.lastError = 0;
   
+    // Config
+    const stepLength = 0.055; // inches per step
+    const baseSpeed = 500; // base steps per second
+    const Kp = 0.8; // smaller proportional gain for gentle turning
+    const moveDistance = 2; // inches per update
+  
+    // Normalize sensor values: 0 = white, 1 = black
+    const normalize = (v: number) => 1 - v / 1000;
+    const leftVal = normalize(sensor.left);
+    const centerVal = normalize(sensor.center);
+    const rightVal = normalize(sensor.right);
+  
+    // Compute weighted error (-1 left, +1 right)
+    const numerator = (-1 * leftVal) + (0 * centerVal) + (1 * rightVal);
+    const denominator = leftVal + centerVal + rightVal || 1;
+    const error = numerator / denominator;
+  
+    // Compute differential correction
+    const correction = Kp * error;
+  
+    console.log("Sensors:", sensor);
+    console.log("Drive command: Normalized:", { leftVal, centerVal, rightVal });
+    console.log("Error:", error.toFixed(3), "Correction:", correction.toFixed(3));
+  
+    // Base steps for this update
+    const steps = Math.round(moveDistance / stepLength);
+  
+    // Adjust left/right speeds based on correction
+    let leftSpeed = baseSpeed;
+    let rightSpeed = baseSpeed;
+  
+    if (leftVal < 0.1 && centerVal < 0.1 && rightVal < 0.1) {
+      // Line lost → gently pivot based on last error
+      if (this.lastError > 0) {
+        leftSpeed = baseSpeed;
+        rightSpeed = baseSpeed * 0.5; // turn right
+        console.log("Drive command: Line lost: pivoting right");
+      } else {
+        leftSpeed = baseSpeed * 0.5;
+        rightSpeed = baseSpeed; // turn left
+        console.log("Drive command: Line lost: pivoting left");
+      }
+    } else {
+      // Adjust speeds proportionally
+      if (correction < 0) {
+        // Line is to the left → slow left wheel
+        leftSpeed = baseSpeed * (1 + correction); // correction is negative
+        rightSpeed = baseSpeed;
+        console.log(`Drive command: Line to left: leftSpeed=${leftSpeed.toFixed(1)}, rightSpeed=${rightSpeed}`);
+      } else if (correction > 0) {
+        // Line is to the right → slow right wheel
+        leftSpeed = baseSpeed;
+        rightSpeed = baseSpeed * (1 - correction); // correction positive
+        console.log(`Drive command: Line to right: leftSpeed=${leftSpeed}, rightSpeed=${rightSpeed.toFixed(1)}`);
+      } else {
+        // centered
+        leftSpeed = baseSpeed;
+        rightSpeed = baseSpeed;
+        console.log("Drive command: Centered: driving straight");
+      }
+    }
+  
+    console.log("Drive command: ", steps, "steps at", leftSpeed.toFixed(1), rightSpeed.toFixed(1));
+    // Send motor command
+    await this.doodlebot?.motorCommand(
+      "steps",
+      { steps, stepsPerSecond: leftSpeed },
+      { steps, stepsPerSecond: rightSpeed }
+    );
+  
+    // Remember last error
+    this.lastError = error;
+    console.log("Updated lastError:", this.lastError.toFixed(3), "\n");
+  }
+  
+  
+  
+
+
+
+
+
+
 
   @(scratch.hat`
     when ${{ type: "string", options: ["battery", "temperature", "humidity", "pressure", "distance", "altimeter"], defaultValue: "battery" }} 
