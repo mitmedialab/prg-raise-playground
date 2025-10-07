@@ -7,14 +7,15 @@ jobs:
 
     runs-on: ubuntu-latest
     container:
-      image: python:2.7.18-buster # Use a specific Python 2.7 image
+      image: python:2.7.18-alpine3.12
 
     strategy:
       matrix:
         node-version: [16.x]
 
     steps:
-    - uses: GuillaumeFalourd/setup-rsync@v1.2
+    - name: Add rsync
+      run: apk add --no-cache rsync openssh
     - run: rsync --version
     - uses: actions/setup-java@v5
       with:
