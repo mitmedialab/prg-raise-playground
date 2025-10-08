@@ -45,5 +45,5 @@ jobs:
     - name: Deploy 🚀
       uses: JamesIves/github-pages-deploy-action@v4
       with:
-        folder: build # The folder the action should deploy.
+        folder: 'packages/scratch-gui/build' # The folder the action should deploy.
         target-folder: ${{ steps.extract_branch.outputs.branch }}
