@@ -987,7 +987,8 @@ class Scratch3TextClassificationBlocks {
     // TODO rename this function to better represent what it does
     async get_embeddings(text, label, direction) {
         // translates text from any language to english
-        const newText = await this.getTranslate(text, "en");
+        // const newText = await this.getTranslate(text, "en");
+        const newText = text;
 
         if (!this.labelListEmpty) {
             // before going through with the expensive USE model loading
@@ -995,7 +996,10 @@ class Scratch3TextClassificationBlocks {
             let textEmbeddings =
                 this.exampleEmbeddings[newText] || this.lastEmbedding[newText];
             if (!textEmbeddings) {
-                let useModel = await use.load();
+                let useModel = await use.load({
+                    // CORS-friendly CDN
+                    modelUrl: 'https://cdn.jsdelivr.net/npm/@tensorflow-models/universal-sentence-encoder/dist/universal-sentence-encoder.json'
+                  });
                 textEmbeddings = await useModel.embed(newText);
             }
             if (direction === "example") {
