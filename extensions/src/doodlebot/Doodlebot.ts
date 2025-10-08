@@ -282,7 +282,11 @@ export default class Doodlebot {
 
     private updateSensor<T extends SensorKey>(type: T, value: SensorData[T]) {
         this.onSensor.emit(type, value);
-        this.sensorData[type] = value;
+        if (type == "distance" && value as number >= 63) {
+            this.sensorData[type] = 100;
+        } else {
+            this.sensorData[type] = value;
+        }
         this.sensorState[type] = true;
     }
 
