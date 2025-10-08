@@ -492,8 +492,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     ]
   })
   async drive(direction: "left" | "right" | "forward" | "backward", steps: number, speed: number) {
-    const leftSteps = direction == "left" || direction == "backward" ? -steps * 7.160 : steps * 7.160;
-    const rightSteps = direction == "right" || direction == "backward" ? -steps * 7.160 : steps * 7.160;
+    const leftSteps = direction == "left" || direction == "backward" ? -steps * 7.160*16 : steps * 7.160*16;
+    const rightSteps = direction == "right" || direction == "backward" ? -steps * 7.160*16 : steps * 7.160*16;
     const stepsPerSecond = speed;
 
     await this.doodlebot?.motorCommand(
