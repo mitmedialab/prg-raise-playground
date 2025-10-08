@@ -996,7 +996,10 @@ class Scratch3TextClassificationBlocks {
             let textEmbeddings =
                 this.exampleEmbeddings[newText] || this.lastEmbedding[newText];
             if (!textEmbeddings) {
-                let useModel = await use.load();
+                let useModel = await use.load({
+                    // CORS-friendly CDN
+                    modelUrl: 'https://cdn.jsdelivr.net/npm/@tensorflow-models/universal-sentence-encoder/dist/universal-sentence-encoder.json'
+                  });
                 textEmbeddings = await useModel.embed(newText);
             }
             if (direction === "example") {
