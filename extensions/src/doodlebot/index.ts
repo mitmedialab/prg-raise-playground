@@ -1,19 +1,14 @@
 import { Environment, ExtensionMenuDisplayDetails, extension, block, buttonBlock, BlockUtilityWithID, scratch } from "$common";
 import { DisplayKey, displayKeys, command, type Command, SensorKey, sensorKeys, units, keyBySensor, sensor } from "./enums";
-import Doodlebot, { NetworkCredentials } from "./Doodlebot";
-import FileArgument from './FileArgument.svelte';
-import { splitArgsString } from "./utils";
+import Doodlebot from "./Doodlebot";
 import EventEmitter from "events";
-import { categoryByGesture, classes, emojiByGesture, gestureDetection, gestureMenuItems, gestures, objectDetection } from "./detection";
+import { categoryByGesture } from "./detection";
 //import { createLineDetector } from "./LineDetection";
-import { line0, line1, line2, line3, line4, line5, line6, line7, line8 } from './Points';
-import { followLine } from "./LineFollowing";
-import { createLineDetector } from "./LineDetection";
 import tmPose from '@teachablemachine/pose';
-import { calculateArcTime } from "./TimeHelper";
 import tmImage from '@teachablemachine/image';
 import * as speechCommands from '@tensorflow-models/speech-commands';
 import JSZip from 'jszip';
+import type { BLEDeviceWithUartService } from "./ble";
 
 const details: ExtensionMenuDisplayDetails = {
   name: "Doodlebot",
@@ -49,7 +44,9 @@ export var imageFiles: string[] = [];
 export var soundFiles: string[] = [];
 
 export default class DoodlebotBlocks extends extension(details, "ui", "customArguments", "indicators", "video", "drawable") {
-  doodlebot: Doodlebot;
+  doodlebot = new Doodlebot();
+  connected = false;
+
   private indicator: Promise<{ close(): void; }>;
   private lineDetector: (() => Promise<number[][]>) | null = null;
   bluetoothEmitter = new EventEmitter();
@@ -90,8 +87,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   soundDictionary: {} | { string: string[] };
   costumeDictionary: {} | { string: string[] };
 
-  externalIp: string
-
   voice_id: number;
   pitch_value: number;
 
@@ -124,13 +119,12 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     this.pitch_value = 0;
     this.soundDictionary = {};
     this.costumeDictionary = {};
-    this.setIndicator("disconnected");
-    if (window.isSecureContext) this.openUI("Connect")
-    else this.connectToDoodlebotWithExternalBLE();
+    //requestAnimationFrame(() => this.setIndicator("disconnected"));
+    this.openUI("Connect")
     this._loop();
     env.runtime.on("TARGETS_UPDATE", async () => {
       await this.setDictionaries();
-    })   
+    })
 
     await this.setDictionaries();
 
@@ -142,7 +136,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     //   const response = await fetch(url, {
     //     method: "POST"
     //   });
-  
+
     //   if (!response.ok) {
     //     const text = await response.text();
     //     console.error("Error setting voice/pitch:", text);
@@ -152,7 +146,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     // }
 
     // env.runtime.on("PROJECT_RUN_START", async () => {
-      
+
     // })
     // env.runtime.on("PROJECT_RUN_STOP", async () => {
     //   if (this.blocksRun > 10) {
@@ -178,7 +172,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     //   }
     // })
 
-    
+
   }
 
   async setDictionaries() {
@@ -253,173 +247,23 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     });
   }
 
-  private async connectToDoodlebotWithExternalBLE() {
-    // A few globals that currently must be set the same across the playground and the https frontend
-    const handshakeMessage = "doodlebot";
-    const disconnectMessage = "disconnected";
-    const commandCompleteIdentifier = "done";
-
-    const urlParams = new URLSearchParams(window.location.search); // Hack for now -jon
-
-    const ip = urlParams.get("ip");
-
-    if (!ip) {
-      alert("No IP address provided. Please provide an IP address in the URL query string.");
-      return;
-    }
-
-    this.externalIp = ip;
-
-    const networkCredentials: NetworkCredentials = {
-      ssid: "dummy", // NOTE: When using the external BLE, it is assumed a valid ip address will be provided, and thus there is no need for wifi credentials
-      password: "dummy", // NOTE: When using the external BLE, it is assumed a valid ip address will be provided, and thus there is no need for wifi credentials
-      ipOverride: ip
-    }
-
-    type ExternalPageDetails = { source: MessageEventSource, targetOrigin: string }
-
-    const { source, targetOrigin } = await new Promise<ExternalPageDetails>((resolve) => {
-      const onInitialMessage = ({ data, source, origin }: MessageEvent) => {
-        if (typeof data !== "string" || data !== handshakeMessage) return;
-        window.removeEventListener("message", onInitialMessage);
-        console.log("posting ready");
-        source.postMessage("ready", { targetOrigin: origin })
-        resolve({ source, targetOrigin: origin });
-      }
-      window.addEventListener("message", onInitialMessage);
-    });
-
-    console.log("source", source);
-    console.log("target origin", targetOrigin);
-
-    const doodlebot = new Doodlebot(
-      {
-        send: (text) => new Promise<void>(resolve => {
-          const onMessageReturn = ({ data, origin }: MessageEvent<string>) => {
-            if (origin !== targetOrigin || !data.includes(text) || !data.includes(commandCompleteIdentifier)) {
-              console.log("error -- source");
-              return;
-            } 
-            window.removeEventListener("message", onMessageReturn);
-            resolve();
-          }
-          window.addEventListener("message", onMessageReturn);
-          console.log("posting message");
-          source.postMessage(text, { targetOrigin });
-        }),
-
-        onReceive: (callback) => {
-          window.addEventListener('message', ({ data, origin }) => {
-            console.log("RECEIVED", data);
-            if (origin !== targetOrigin || data === disconnectMessage || data.includes(commandCompleteIdentifier)) {
-              console.log("error 2 -- source", data);
-              return;
-            } 
-            callback(new CustomEvent<string>("ble", { detail: data }));
-          });
-        },
-
-        onDisconnect: () => {
-          window.addEventListener("message", ({ data, origin }) => {
-            if (origin !== targetOrigin || data !== disconnectMessage) return;
-            this.setIndicator("disconnected");
-            alert("Disconnected from robot"); // Decide how to handle (maybe direct user to close window and go back to https)
-          });
-        },
-      },
-      () => alert("requestBluetooth called"), // placeholder
-      networkCredentials,
-      () => alert("save IP called"), // placeholder,
-      async (description) => {
-        // Send the fetch request to the source
-        console.log("INSIDE FETCH 2");
-        
-        return new Promise<string>((resolve, reject) => {
-          console.log("INSIDE PROMISE 2");
-          const fetchReturn = (event: MessageEvent) => {
-            console.log("inside return");
-            if (event.origin !== targetOrigin) {
-              console.log("ERROR", event.origin, targetOrigin);
-              return;
-            }
-            if (!event.data.startsWith("fetchResponse---")) {
-              console.log("ERROR", event.data);
-              return;
-            }
-            const urlReturned = event.data.split("---")[1];
-            if ("webrtc" != urlReturned) {
-              console.log("URL NOT SAME");
-              return;
-            }
-            const response = event.data.split("---")[2];
-            console.log("RESPONSE", JSON.parse(response));
-            window.removeEventListener('message', fetchReturn);
-            resolve(JSON.parse(response));
-          }
-          console.log("adding return");
-          window.addEventListener('message', fetchReturn);
-          console.log("posting message", `fetch---webrtc---${description}`, targetOrigin);
-          source.postMessage(`fetch---webrtc---${description}`, { targetOrigin });
-        });
-      }
-    )
-    doodlebot.fetch = async (url: string, type: string, options?: string) => {
-      // Send the fetch request to the source
-      return new Promise<string>((resolve, reject) => {
-        const fetchReturn = (event: MessageEvent) => {
-          if (event.origin !== targetOrigin) {
-            console.log("ERROR", event.origin, targetOrigin);
-            return;
-          }
-          if (!event.data.startsWith("fetchResponse---")) {
-            console.log("ERROR", event.data);
-            return;
-          }
-          const urlReturned = event.data.split("---")[1];
-          if (url != urlReturned) {
-            console.log("URL NOT SAME");
-            return;
-          }
-          const response = event.data.split("---")[2];
-          console.log("RESPONSE", response);
-          window.removeEventListener('message', fetchReturn);
-          resolve(response);
-        }
-        console.log("adding return");
-        window.addEventListener('message', fetchReturn);
-        console.log("posting message", `fetch---${type}--${url}`, targetOrigin);
-        if (options) {
-          source.postMessage(`fetch---${type}---${url}---${JSON.stringify(options)}`, { targetOrigin });
-        } else {
-          source.postMessage(`fetch---${type}---${url}`, { targetOrigin });
-        }
-      });
-    }
-    doodlebot.setIP(ip);
-    this.setDoodlebot(doodlebot);
-
-    
-  }
-
   getCurrentSounds(id): string[] {
     return (this.soundDictionary && this.soundDictionary[id]) ? Object.keys(this.soundDictionary[id]) : [];
   }
 
-  async setDoodlebot(doodlebot: Doodlebot) {
-    this.doodlebot = doodlebot;
+  async setDoodlebot(topLevelDomain: string, bluetooth: BLEDeviceWithUartService) {
+    this.doodlebot.topLevelDomain.resolve(topLevelDomain);
+    this.doodlebot.bleDevice.resolve(bluetooth);
+
     await this.setIndicator("connected");
 
-    const urlParams = new URLSearchParams(window.location.search); // Hack for now -jon
-    const ip = urlParams.get("ip");
-    this.doodlebot.setIP(ip);
-
     try {
-      imageFiles = await doodlebot.findImageFiles();
-      soundFiles = await doodlebot.findSoundFiles();
+      imageFiles = await this.doodlebot.findImageFiles();
+      soundFiles = await this.doodlebot.findSoundFiles();
     } catch (e) {
       //this.openUI("ArrayError");
     }
-    
+
     // Wait a short moment to ensure connection is established
     await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -435,7 +279,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       }
     });
 
-    
+
     try {
       if (this.SOCIAL && Math.random() < this.socialness && this.doodlebot) {
         await this.doodlebot.display("happy");
@@ -447,19 +291,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     }
 
     await this.doodlebot.display("happy");
-
-    try {
-      console.log("FETCHING");
-      const ip = await this.getIPAddress();
-      console.log(doodlebot.fetch);
-      let tempImage = await doodlebot.fetch(`http://${ip}:8080/images`, "text");
-      imageFiles = doodlebot.extractList(tempImage);
-      console.log("FILES", imageFiles)
-      let tempSound = await doodlebot.fetch(`http://${ip}:8080/sounds`, "text");
-      soundFiles = doodlebot.extractList(tempSound);
-    } catch (e) {
-      //this.openUI("ArrayError");
-    }
   }
 
   async setIndicator(status: "connected" | "disconnected") {
@@ -503,7 +334,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       //console.error("Failed to get image stream");
       return;
     }
-  
+
     let stageWidth = 480;
     let stageHeight = 360;
 
@@ -511,22 +342,22 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     resizedCanvas.width = stageWidth;
     resizedCanvas.height = stageHeight;
     const resizedCtx = resizedCanvas.getContext('2d');
-  
+
     const drawable = this.createDrawable(resizedCanvas); // draw from resized version
     drawable.setVisible(true);
-  
+
     const update = () => {
       const latest = this.doodlebot?.getImageStream();
       if (!latest) return;
-  
+
       // Draw the current stream into the resized canvas
       resizedCtx.clearRect(0, 0, stageWidth, stageHeight);
       resizedCtx.drawImage(latest, 0, 0, stageWidth, stageHeight);
       drawable.update(resizedCanvas);
-  
+
       requestAnimationFrame(update);
     };
-  
+
     requestAnimationFrame(update);
     return drawable;
   }
@@ -547,7 +378,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   // async setSocialness(value: number) {
   //   // Ensure value is between 0 and 1
   //   this.socialness = Math.max(0, Math.min(1, value));
-    
+
   //   if (this.SOCIAL && Math.random() < this.socialness) {
   //     await this.doodlebot?.display("happy");
   //     await this.speakText(`I'll be ${Math.round(this.socialness * 100)}% social from now on!`);
@@ -576,15 +407,15 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     type: "command",
     text: (voice, pitch) => `set voice to ${voice} and pitch to ${pitch}`,
     args: [
-      { type: "number", defaultValue: 1, name: "voice" },
-      { type: "number", defaultValue: 0, name: "pitch" }
+      { type: "number", defaultValue: 1 },
+      { type: "number", defaultValue: 0 }
     ]
   })
   async setVoiceAndPitch(voice: number, pitch: number) {
     this.voice_id = voice;
     this.pitch_value = pitch;
   }
-  
+
 
   // @block({
   //   type: "command",
@@ -594,14 +425,14 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   // async repeatAfterMe(seconds: number) {
   //   // Record the audio
   //   const { context, buffer } = await this.doodlebot?.recordAudio(seconds);
-    
+
   //   // Convert to WAV format
   //   const wavBlob = await this.saveAudioBufferToWav(buffer);
   //   const arrayBuffer = await wavBlob.arrayBuffer();
-    
+
   //   // Send the audio data directly to the Doodlebot for playback
   //   await this.doodlebot.sendAudioData(new Uint8Array(arrayBuffer));
-    
+
   //   // Wait until playback is complete (approximately buffer duration)
   //   const playbackDuration = buffer.duration * 1000; // convert to milliseconds
   //   await new Promise(resolve => setTimeout(resolve, playbackDuration));
@@ -655,16 +486,16 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   @block({
     type: "command",
-    text: (direction, steps, speed) => `drive ${direction} for ${steps} steps at speed ${speed}`,
+    text: (direction, steps, speed) => `drive ${direction} for ${steps} cm at speed ${speed}`,
     args: [
       { type: "string", options: ["forward", "backward", "left", "right"], defaultValue: "forward" },
-      { type: "number", defaultValue: 200 },
+      { type: "number", defaultValue: 10 },
       { type: "number", options: [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000], defaultValue: 2000 }
     ]
   })
   async drive(direction: "left" | "right" | "forward" | "backward", steps: number, speed: number) {
-    const leftSteps = direction == "left" || direction == "backward" ? -steps * 10 : steps * 10;
-    const rightSteps = direction == "right" || direction == "backward" ? -steps * 10 : steps * 10;
+    const leftSteps = direction == "left" || direction == "backward" ? -steps * 7.160*16 : steps * 7.160*16;
+    const rightSteps = direction == "right" || direction == "backward" ? -steps * 7.160*16 : steps * 7.160*16;
     const stepsPerSecond = speed;
 
     await this.doodlebot?.motorCommand(
@@ -766,7 +597,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     type: "reporter",
     text: (axis: string, sensor: SensorKey) => `get ${axis} of ${sensor} sensor`,
     args: [
-      {type: 'string', options: ["x", "y", "z"], defaultValue: 'x'},
+      { type: 'string', options: ["x", "y", "z"], defaultValue: 'x' },
       { type: "string", options: ["gyroscope", "accelerometer"], defaultValue: "gyroscope" }
     ]
   })
@@ -897,7 +728,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   })
   whenBumperPressed(bumber: typeof bumperOptions[number], condition: "release" | "pressed") {
     const isPressed = this.doodlebot?.getSensorReadingSync("bumper");
-    
+
     const isPressedCondition = condition === "pressed";
     if (!isPressed) {
       return false;
@@ -1008,7 +839,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
           (self.costumeDictionary && self.costumeDictionary[self.runtime._editingTarget.id]) ? Object.keys(self.costumeDictionary[self.runtime._editingTarget.id]) : [] as any[]
         ).filter((item: string) => item != "costume9999.png")
       }, defaultValue: "happy"
-    }, {type: "string", defaultValue: 1}]
+    }, { type: "string", defaultValue: 1 }]
   }))
   async setDisplayForSeconds(display: DisplayKey | string, seconds: number) {
     const lastDisplayedKey = this.doodlebot.getLastDisplayedKey();
@@ -1018,28 +849,20 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       await this.uploadFile("image", this.costumeDictionary[this.runtime._editingTarget.id][display]);
       await this.setArrays();
       await this.doodlebot.displayFile("costume9999.png");
-      await new Promise(resolve => setTimeout(resolve, seconds*1000));
+      await new Promise(resolve => setTimeout(resolve, seconds * 1000));
     } else if (imageFiles.includes(display)) {
       await this.doodlebot?.displayFile(display);
-      await new Promise(resolve => setTimeout(resolve, seconds*1000));
+      await new Promise(resolve => setTimeout(resolve, seconds * 1000));
     } else {
       await this.doodlebot?.display(display as DisplayKey);
-      await new Promise(resolve => setTimeout(resolve, seconds*1000));
+      await new Promise(resolve => setTimeout(resolve, seconds * 1000));
     }
     if (lastDisplayedType == "text") {
       await this.doodlebot.displayText(lastDisplayedKey);
     } else {
       await this.doodlebot.display(lastDisplayedKey);
     }
-    
-  }
 
-  async getIPAddress() {
-    if (window.isSecureContext) {
-      return this.doodlebot?.getStoredIPAddress();
-    } else {
-      return this.externalIp;
-    }
   }
 
   // @block({
@@ -1154,7 +977,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   //   await new Promise((resolve) => setTimeout(resolve, audioDuration * 1000));
   // }
-  
+
   async setArrays() {
     imageFiles = await this.doodlebot.findImageFiles();
     soundFiles = await this.doodlebot.findSoundFiles();
@@ -1163,13 +986,13 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   async uploadFile(type: string, blobURL: string) {
     console.log("BEFORE IP");
-    const ip = await this.getIPAddress();
+    const tld = await this.doodlebot.topLevelDomain.promise;
     console.log("GOT IP");
     let uploadEndpoint;
     if (type == "sound") {
-      uploadEndpoint = "https://" + ip + "/api/v1/upload/sounds_upload";
+      uploadEndpoint = "https://" + tld + "/api/v1/upload/sounds_upload";
     } else {
-      uploadEndpoint = "https://" + ip + "/api/v1/upload/img_upload";
+      uploadEndpoint = "https://" + tld + "/api/v1/upload/img_upload";
     }
 
     try {
@@ -1183,50 +1006,38 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
         throw new Error(`Failed to fetch Blob from URL: ${blobURL}`);
       }
       const blob = await response1.blob();
-      if (window.isSecureContext) {
-        console.log("BEFORE BLOB 2");
-        
-        console.log("AFTER BLOB 2");
-        // Convert Blob to File
-        const file = new File([blob], components[0], { type: blob.type });
-        const formData = new FormData();
-        formData.append("file", file);
+      console.log("BEFORE BLOB 2");
 
-        console.log("file");
-        console.log(file);
-        console.log("BEFORE FETCH");
-        const response2 = await fetch(uploadEndpoint, {
-          method: "POST",
-          body: formData,
-        });
-        console.log("AFTER FETCH");
-        console.log(response2);
+      console.log("AFTER BLOB 2");
+      // Convert Blob to File
+      const file = new File([blob], components[0], { type: blob.type });
+      const formData = new FormData();
+      formData.append("file", file);
 
-        if (!response2.ok) {
-          throw new Error(`Failed to upload file: ${response2.statusText}`);
-        }
+      console.log("file");
+      console.log(file);
+      console.log("BEFORE FETCH");
+      const response2 = await fetch(uploadEndpoint, {
+        method: "POST",
+        body: formData,
+      });
+      console.log("AFTER FETCH");
+      console.log(response2);
 
-        console.log("File uploaded successfully");
-        this.setArrays();
-      } else {
-        const base64 = await this.blobToBase64(blob);
-          const payload = {
-            filename: components[0],
-            content: base64,
-            mimeType: blob.type,
-          };
-          const response2 = await this.doodlebot.fetch(uploadEndpoint, "file_upload", payload);
+      if (!response2.ok) {
+        throw new Error(`Failed to upload file: ${response2.statusText}`);
       }
-      
+
+      console.log("File uploaded successfully");
+      this.setArrays();
     } catch (error) {
       console.error("Error:", error);
     }
   }
 
   async callSinglePredict() {
-    const ip = await this.getIPAddress();
-    return await this.doodlebot.callSinglePredict(this.getIPAddress());
-    
+    return await this.doodlebot.callSinglePredict();
+
   }
 
   @block({
@@ -1238,19 +1049,17 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     ]
   })
   async getSinglePredict2s(location: string, type: "face" | "object") {
-    const ip = await this.getIPAddress();
-    const reading = await this.doodlebot.getFacePrediction(ip, type);
+    const reading = await this.doodlebot.getFacePrediction(type);
     return this.doodlebot.getReadingLocation(location, type == "object" ? "apple" : type, reading);
   }
 
   @block({
     type: "Boolean",
     text: (type) => `is ${type} detected`,
-    args: [{ type: "string", options: ["face", "apple", "orange"], defaultValue: "face" }]
+    arg: { type: "string", options: ["face", "apple", "orange"], defaultValue: "face" }
   })
   async isFaceDetected(type: string) {
-    const ip = await this.getIPAddress();
-    const reading = await this.doodlebot.getFacePrediction(ip, "face");
+    const reading = await this.doodlebot.getFacePrediction("face");
     const x = this.doodlebot.getReadingLocation("x", type, reading);
     const y = this.doodlebot.getReadingLocation("y", type, reading);
     if (x == -1 && y == -1) {
@@ -1289,17 +1098,10 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     await this.doodlebot?.setVolume(volume)
   }
 
-  
-  
 
 
-  // @block({
-  //   type: "reporter",
-  //   text: "get IP address"
-  // })
-  async getIP() {
-    return this.doodlebot?.getIPAddress();
-  }
+
+
 
   // @block({
   //   type: "command",
@@ -1391,67 +1193,67 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   writeString(view: DataView, offset: number, text: string) {
     for (let i = 0; i < text.length; i++) {
-        view.setUint8(offset + i, text.charCodeAt(i));
+      view.setUint8(offset + i, text.charCodeAt(i));
     }
   }
 
   async saveAudioBufferToWav(buffer) {
     function createWavHeader(buffer) {
-        const numChannels = buffer.numberOfChannels;
-        const sampleRate = buffer.sampleRate / 4;
-        const bitsPerSample = 16; // 16-bit PCM
-        const blockAlign = (numChannels * bitsPerSample) / 8;
-        const byteRate = sampleRate * blockAlign;
-        const dataLength = buffer.length * numChannels * 2; // 16-bit PCM = 2 bytes per sample
-        const header = new ArrayBuffer(44);
-        const view = new DataView(header);
-        // "RIFF" chunk descriptor
-        writeString(view, 0, "RIFF");
-        view.setUint32(4, 36 + dataLength, true); // File size - 8 bytes
-        writeString(view, 8, "WAVE");
-        // "fmt " sub-chunk
-        writeString(view, 12, "fmt ");
-        view.setUint32(16, 16, true); // Sub-chunk size (16 for PCM)
-        view.setUint16(20, 1, true); // Audio format (1 = PCM)
-        view.setUint16(22, numChannels, true); // Number of channels
-        view.setUint32(24, sampleRate, true); // Sample rate
-        view.setUint32(28, byteRate, true); // Byte rate
-        view.setUint16(32, blockAlign, true); // Block align
-        view.setUint16(34, bitsPerSample, true); // Bits per sample
-        // "data" sub-chunk
-        writeString(view, 36, "data");
-        view.setUint32(40, dataLength, true); // Data length
-        console.log("WAV Header:", new Uint8Array(header));
-        return header;
+      const numChannels = buffer.numberOfChannels;
+      const sampleRate = buffer.sampleRate / 4;
+      const bitsPerSample = 16; // 16-bit PCM
+      const blockAlign = (numChannels * bitsPerSample) / 8;
+      const byteRate = sampleRate * blockAlign;
+      const dataLength = buffer.length * numChannels * 2; // 16-bit PCM = 2 bytes per sample
+      const header = new ArrayBuffer(44);
+      const view = new DataView(header);
+      // "RIFF" chunk descriptor
+      writeString(view, 0, "RIFF");
+      view.setUint32(4, 36 + dataLength, true); // File size - 8 bytes
+      writeString(view, 8, "WAVE");
+      // "fmt " sub-chunk
+      writeString(view, 12, "fmt ");
+      view.setUint32(16, 16, true); // Sub-chunk size (16 for PCM)
+      view.setUint16(20, 1, true); // Audio format (1 = PCM)
+      view.setUint16(22, numChannels, true); // Number of channels
+      view.setUint32(24, sampleRate, true); // Sample rate
+      view.setUint32(28, byteRate, true); // Byte rate
+      view.setUint16(32, blockAlign, true); // Block align
+      view.setUint16(34, bitsPerSample, true); // Bits per sample
+      // "data" sub-chunk
+      writeString(view, 36, "data");
+      view.setUint32(40, dataLength, true); // Data length
+      console.log("WAV Header:", new Uint8Array(header));
+      return header;
     }
     function writeString(view, offset, string) {
-        for (let i = 0; i < string.length; i++) {
-            view.setUint8(offset + i, string.charCodeAt(i));
-        }
+      for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i));
+      }
     }
     function interleave(buffer) {
-        const numChannels = buffer.numberOfChannels;
-        const length = buffer.length * numChannels;
-        const result = new Float32Array(length);
-        const channelData = [];
-        for (let i = 0; i < numChannels; i++) {
-            channelData.push(buffer.getChannelData(i));
+      const numChannels = buffer.numberOfChannels;
+      const length = buffer.length * numChannels;
+      const result = new Float32Array(length);
+      const channelData = [];
+      for (let i = 0; i < numChannels; i++) {
+        channelData.push(buffer.getChannelData(i));
+      }
+      let index = 0;
+      for (let i = 0; i < buffer.length; i++) {
+        for (let j = 0; j < numChannels; j++) {
+          result[index++] = channelData[j][i];
         }
-        let index = 0;
-        for (let i = 0; i < buffer.length; i++) {
-            for (let j = 0; j < numChannels; j++) {
-                result[index++] = channelData[j][i];
-            }
-        }
-        console.log("Interleaved data:", result);
-        return result;
+      }
+      console.log("Interleaved data:", result);
+      return result;
     }
     function floatTo16BitPCM(output, offset, input) {
-        for (let i = 0; i < input.length; i++, offset += 2) {
-            let s = Math.max(-1, Math.min(1, input[i])); // Clamp to [-1, 1]
-            s = s < 0 ? s * 0x8000 : s * 0x7FFF; // Convert to 16-bit PCM
-            output.setInt16(offset, s, true); // Little-endian
-        }
+      for (let i = 0; i < input.length; i++, offset += 2) {
+        let s = Math.max(-1, Math.min(1, input[i])); // Clamp to [-1, 1]
+        s = s < 0 ? s * 0x8000 : s * 0x7FFF; // Convert to 16-bit PCM
+        output.setInt16(offset, s, true); // Little-endian
+      }
     }
     const header = createWavHeader(buffer);
     const interleaved = interleave(buffer);
@@ -1466,68 +1268,68 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     console.log("Expected data length:", header.byteLength + interleaved.length * 2);
     // Return a Blob
     return new Blob([wavBuffer], { type: "audio/wav" });
-}
+  }
 
-generateWAV(interleaved: Float32Array, sampleRate: number): Uint8Array {
-  const numChannels = 1; // Mono
-  const bitsPerSample = 16;
-  const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
-  const blockAlign = numChannels * (bitsPerSample / 8);
-  const dataLength = interleaved.length * (bitsPerSample / 8);
-  const bufferLength = 44 + dataLength;
-  const buffer = new ArrayBuffer(bufferLength);
-  const view = new DataView(buffer);
-  // RIFF header
-  this.writeString(view, 0, "RIFF");
-  view.setUint32(4, bufferLength - 8, true); // File size
-  this.writeString(view, 8, "WAVE");
-  // fmt subchunk
-  this.writeString(view, 12, "fmt ");
-  view.setUint32(16, 16, true); // Subchunk size
-  view.setUint16(20, 1, true); // PCM format
-  view.setUint16(22, numChannels, true); // Channels
-  view.setUint32(24, sampleRate, true); // Sample rate
-  view.setUint32(28, byteRate, true); // Byte rate
-  view.setUint16(32, blockAlign, true); // Block align
-  view.setUint16(34, bitsPerSample, true); // Bits per sample
-  // data subchunk
-  this.writeString(view, 36, "data");
-  view.setUint32(40, dataLength, true);
-  // PCM data
-  const offset = 44;
-  for (let i = 0; i < interleaved.length; i++) {
+  generateWAV(interleaved: Float32Array, sampleRate: number): Uint8Array {
+    const numChannels = 1; // Mono
+    const bitsPerSample = 16;
+    const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
+    const blockAlign = numChannels * (bitsPerSample / 8);
+    const dataLength = interleaved.length * (bitsPerSample / 8);
+    const bufferLength = 44 + dataLength;
+    const buffer = new ArrayBuffer(bufferLength);
+    const view = new DataView(buffer);
+    // RIFF header
+    this.writeString(view, 0, "RIFF");
+    view.setUint32(4, bufferLength - 8, true); // File size
+    this.writeString(view, 8, "WAVE");
+    // fmt subchunk
+    this.writeString(view, 12, "fmt ");
+    view.setUint32(16, 16, true); // Subchunk size
+    view.setUint16(20, 1, true); // PCM format
+    view.setUint16(22, numChannels, true); // Channels
+    view.setUint32(24, sampleRate, true); // Sample rate
+    view.setUint32(28, byteRate, true); // Byte rate
+    view.setUint16(32, blockAlign, true); // Block align
+    view.setUint16(34, bitsPerSample, true); // Bits per sample
+    // data subchunk
+    this.writeString(view, 36, "data");
+    view.setUint32(40, dataLength, true);
+    // PCM data
+    const offset = 44;
+    for (let i = 0; i < interleaved.length; i++) {
       const sample = Math.max(-1, Math.min(1, interleaved[i]));
       view.setInt16(offset + i * 2, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+    }
+    return new Uint8Array(buffer);
   }
-  return new Uint8Array(buffer);
-}
 
-createAndSaveWAV(interleaved, sampleRate) {
-  // Step 1: Get interleaved audio data and sample rate
-  // Step 2: Generate WAV file
-  const wavData = this.generateWAV(interleaved, sampleRate);
-  // Step 3: Save or process the WAV file
-  // Example: Create a Blob and download the file
-  const blob = new Blob([wavData], { type: "audio/wav" });
-  const url = URL.createObjectURL(blob);
-  // Create a link to download the file
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "output.wav";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  return blob;
-}
+  createAndSaveWAV(interleaved, sampleRate) {
+    // Step 1: Get interleaved audio data and sample rate
+    // Step 2: Generate WAV file
+    const wavData = this.generateWAV(interleaved, sampleRate);
+    // Step 3: Save or process the WAV file
+    // Example: Create a Blob and download the file
+    const blob = new Blob([wavData], { type: "audio/wav" });
+    const url = URL.createObjectURL(blob);
+    // Create a link to download the file
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "output.wav";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    return blob;
+  }
 
-blobToBase64(blob) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result); // "data:<mime>;base64,<base64>"
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-}
+  blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result); // "data:<mime>;base64,<base64>"
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  }
 
   async sendAudioFileToChatEndpoint(file, endpoint, blob, seconds) {
     console.log("sending audio file");
@@ -1539,111 +1341,111 @@ blobToBase64(blob) {
     //audio.play();
 
     try {
-        let response;
-        let uint8array;
-        // if (window.isSecureContext) {
-          
-          // if (endpoint == "repeat_after_me") {
-          //   const eventSource = new EventSource("http://doodlebot.media.mit.edu/viseme-events");
+      let response;
+      let uint8array;
+      // if (window.isSecureContext) {
 
-          //   eventSource.onmessage = (event) => {
-          //     console.log("Received viseme event:", event.data);
-          //     try {
-          //       const data = JSON.parse(event.data);
-          //       const visemeId = data.visemeId;
-          //       const offsetMs = data.offsetMs;
-          
-          //       // You can customize which viseme IDs should trigger a command.
-          //       // For now, all non-silence visemes trigger it.
-          //       if (visemeId !== 0) {
-          //         setTimeout(() => {
-          //           this.doodlebot.display("happy");
-          //           console.log("DISPLAYING");
-          //         }, offsetMs);
-          //       }
-          //     } catch (err) {
-          //       console.error("Failed to parse viseme event:", err);
-          //     }
-          //   };
+      // if (endpoint == "repeat_after_me") {
+      //   const eventSource = new EventSource("http://doodlebot.media.mit.edu/viseme-events");
 
-          //   eventSource.onerror = (err) => {
-          //     console.error("EventSource failed:", err);
-          //     eventSource.close();
-          //   };
-          // }
+      //   eventSource.onmessage = (event) => {
+      //     console.log("Received viseme event:", event.data);
+      //     try {
+      //       const data = JSON.parse(event.data);
+      //       const visemeId = data.visemeId;
+      //       const offsetMs = data.offsetMs;
 
-          response = await fetch(url, {
-              method: "POST",
-              body: formData,
-          });
+      //       // You can customize which viseme IDs should trigger a command.
+      //       // For now, all non-silence visemes trigger it.
+      //       if (visemeId !== 0) {
+      //         setTimeout(() => {
+      //           this.doodlebot.display("happy");
+      //           console.log("DISPLAYING");
+      //         }, offsetMs);
+      //       }
+      //     } catch (err) {
+      //       console.error("Failed to parse viseme event:", err);
+      //     }
+      //   };
 
-          if (!response.ok) {
-              const errorText = await response.text();
-              console.log("Error response:", errorText);
-              throw new Error(`HTTP error! status: ${response.status}`);
-          }
+      //   eventSource.onerror = (err) => {
+      //     console.error("EventSource failed:", err);
+      //     eventSource.close();
+      //   };
+      // }
 
-          const textResponse = response.headers.get("text-response");
-          console.log("Text Response:", textResponse);
+      response = await fetch(url, {
+        method: "POST",
+        body: formData,
+      });
 
-          const blob = await response.blob();
-          const audioUrl = URL.createObjectURL(blob);
-          console.log("Audio URL:", audioUrl);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.log("Error response:", errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-          const audio = new Audio(audioUrl);
-          const array = await blob.arrayBuffer();
-          uint8array = new Uint8Array(array);
-        // } else {
-        //   const base64 = await this.blobToBase64(blob);
-        //   const payload = {
-        //     filename: file.name,
-        //     content: base64,
-        //     mimeType: blob.type,
-        //   };
-        //   response = await this.doodlebot.fetch(endpoint, "chatgpt", payload);
-        //   uint8array = new Uint8Array([...atob(response)].map(char => char.charCodeAt(0)));
-        // }
-        const interval = 50; // 0.2 seconds in milliseconds
-        const endTime = Date.now() + 1 * 1000;
+      const textResponse = response.headers.get("text-response");
+      console.log("Text Response:", textResponse);
 
-        this.doodlebot.sendAudioData(uint8array);
-        while (Date.now() < endTime) {
-          await this.doodlebot.sendWebsocketCommand("d,O");
-          await new Promise((res) => setTimeout(res, interval));
-          await this.doodlebot.sendWebsocketCommand("d,N");
-          await new Promise((res) => setTimeout(res, interval));
-        }
-        
+      const blob = await response.blob();
+      const audioUrl = URL.createObjectURL(blob);
+      console.log("Audio URL:", audioUrl);
+
+      const audio = new Audio(audioUrl);
+      const array = await blob.arrayBuffer();
+      uint8array = new Uint8Array(array);
+      // } else {
+      //   const base64 = await this.blobToBase64(blob);
+      //   const payload = {
+      //     filename: file.name,
+      //     content: base64,
+      //     mimeType: blob.type,
+      //   };
+      //   response = await this.doodlebot.fetch(endpoint, "chatgpt", payload);
+      //   uint8array = new Uint8Array([...atob(response)].map(char => char.charCodeAt(0)));
+      // }
+      const interval = 50; // 0.2 seconds in milliseconds
+      const endTime = Date.now() + 1 * 1000;
+
+      this.doodlebot.sendAudioData(uint8array);
+      while (Date.now() < endTime) {
+        await this.doodlebot.sendWebsocketCommand("d,O");
+        await new Promise((res) => setTimeout(res, interval));
+        await this.doodlebot.sendWebsocketCommand("d,N");
+        await new Promise((res) => setTimeout(res, interval));
+      }
+
 
     } catch (error) {
-        console.error("Error sending audio file:", error);
+      console.error("Error sending audio file:", error);
     }
   }
   async isValidWavFile(file) {
     const arrayBuffer = await file.arrayBuffer();
     const dataView = new DataView(arrayBuffer);
-  
+
     // Check the "RIFF" chunk descriptor
     const riff = String.fromCharCode(...new Uint8Array(arrayBuffer.slice(0, 4)));
     if (riff !== "RIFF") {
       console.error("Invalid WAV file: Missing RIFF header");
       return false;
     }
-  
+
     // Check the "WAVE" format
     const wave = String.fromCharCode(...new Uint8Array(arrayBuffer.slice(8, 12)));
     if (wave !== "WAVE") {
       console.error("Invalid WAV file: Missing WAVE format");
       return false;
     }
-  
+
     // Check for "fmt " subchunk
     const fmt = String.fromCharCode(...new Uint8Array(arrayBuffer.slice(12, 16)));
     if (fmt !== "fmt ") {
       console.error("Invalid WAV file: Missing fmt subchunk");
       return false;
     }
-  
+
     // Check for "data" subchunk
     const dataIndex = arrayBuffer.byteLength - 8; // Approximate location
     const dataChunk = String.fromCharCode(...new Uint8Array(arrayBuffer.slice(dataIndex, dataIndex + 4)));
@@ -1651,39 +1453,39 @@ blobToBase64(blob) {
       console.error("Invalid WAV file: Missing data subchunk");
       return false;
     }
-  
+
     console.log("Valid WAV file");
     return true;
   }
-  
+
   async processAndSendAudio(buffer, endpoint, seconds) {
     try {
-        const wavBlob = await this.saveAudioBufferToWav(buffer);
-        console.log(wavBlob);
-        const wavFile = new File([wavBlob], "output.wav", { type: "audio/wav" });
+      const wavBlob = await this.saveAudioBufferToWav(buffer);
+      console.log(wavBlob);
+      const wavFile = new File([wavBlob], "output.wav", { type: "audio/wav" });
 
-        // // Create a temporary URL for the file
-        // const url = URL.createObjectURL(wavFile);
+      // // Create a temporary URL for the file
+      // const url = URL.createObjectURL(wavFile);
 
-        // // Create a temporary anchor element
-        // const a = document.createElement("a");
-        // a.href = url;
-        // a.download = "output.wav";
-        // document.body.appendChild(a);
+      // // Create a temporary anchor element
+      // const a = document.createElement("a");
+      // a.href = url;
+      // a.download = "output.wav";
+      // document.body.appendChild(a);
 
-        // // Trigger the download
-        // a.click();
+      // // Trigger the download
+      // a.click();
 
-        // // Clean up
-        // document.body.removeChild(a);
-        // URL.revokeObjectURL(url);
-    //     const isValid = await this.isValidWavFile(wavFile);
-    // if (!isValid) {
-    //   throw new Error("Generated file is not a valid WAV file");
-    // }
-        await this.sendAudioFileToChatEndpoint(wavFile, endpoint, wavBlob, seconds);
+      // // Clean up
+      // document.body.removeChild(a);
+      // URL.revokeObjectURL(url);
+      //     const isValid = await this.isValidWavFile(wavFile);
+      // if (!isValid) {
+      //   throw new Error("Generated file is not a valid WAV file");
+      // }
+      await this.sendAudioFileToChatEndpoint(wavFile, endpoint, wavBlob, seconds);
     } catch (error) {
-        console.error("Error processing and sending audio:", error);
+      console.error("Error processing and sending audio:", error);
     }
   }
 
@@ -1696,18 +1498,18 @@ blobToBase64(blob) {
     console.log("recording audio?")
     const { context, buffer } = await this.doodlebot?.recordAudio(seconds);
     console.log("finished recording audio");
-    
+
     // Display "thinking" while processing and waiting for response
     await this.doodlebot?.display("clear");
     await this.doodlebot?.displayText("thinking");
-    
+
     // Before sending audio to be played
     await this.processAndSendAudio(buffer, endpoint, seconds);
-    
+
     // Display "speaking" when ready to speak
     // await this.doodlebot?.display("clear");
     // await this.doodlebot?.displayText("speaking");
-    
+
     // Wait a moment before clearing the display
     await new Promise(resolve => setTimeout(resolve, 2000));
     await this.doodlebot?.display("h");
@@ -1717,28 +1519,28 @@ blobToBase64(blob) {
     try {
       const modelUrl = this.modelArgumentToURL(url);
       console.log('Loading model from URL:', modelUrl);
-      
+
       // Initialize prediction state if needed
       this.predictionState[modelUrl] = {};
-      
+
       // Load and initialize the model
       const { model, type } = await this.initModel(modelUrl);
       this.predictionState[modelUrl].modelType = type;
       this.predictionState[modelUrl].model = model;
-      
+
       // Update the current model reference
       this.teachableImageModel = modelUrl;
-      
-      await this.indicate({ 
-        type: "success", 
-        msg: "Model loaded successfully" 
+
+      await this.indicate({
+        type: "success",
+        msg: "Model loaded successfully"
       });
     } catch (e) {
       console.error('Error loading model:', e);
       this.teachableImageModel = null;
-      await this.indicate({ 
-        type: "error", 
-        msg: "Failed to load model" 
+      await this.indicate({
+        type: "error",
+        msg: "Failed to load model"
       });
     }
   }
@@ -1747,7 +1549,7 @@ blobToBase64(blob) {
     // Convert user-provided model URL/ID to the correct format
     const endpointProvidedFromInterface = "https://teachablemachine.withgoogle.com/models/";
     const redirectEndpoint = "https://storage.googleapis.com/tm-model/";
-    
+
     return modelArg.startsWith(endpointProvidedFromInterface)
       ? modelArg.replace(endpointProvidedFromInterface, redirectEndpoint)
       : redirectEndpoint + modelArg + "/";
@@ -1761,12 +1563,12 @@ blobToBase64(blob) {
     // First try loading as an image model
     try {
       const customMobileNet = await tmImage.load(modelURL, metadataURL);
-      
+
       // Check if it's actually an audio model
       if ((customMobileNet as any)._metadata.hasOwnProperty('tfjsSpeechCommandsVersion')) {
         const recognizer = await speechCommands.create("BROWSER_FFT", undefined, modelURL, metadataURL);
         await recognizer.ensureModelLoaded();
-        
+
         // Setup audio listening
         await recognizer.listen(async result => {
           this.latestAudioResults = result;
@@ -1776,9 +1578,9 @@ blobToBase64(blob) {
           invokeCallbackOnNoiseAndUnknown: true,
           overlapFactor: 0.50
         });
-        
+
         return { model: recognizer, type: this.ModelType.AUDIO };
-      } 
+      }
       // Check if it's a pose model
       else if ((customMobileNet as any)._metadata.packageName === "@teachablemachine/pose") {
         const customPoseNet = await tmPose.load(modelURL, metadataURL);
@@ -1957,21 +1759,21 @@ blobToBase64(blob) {
     }
 
     // Create indicator to show progress
-    const indicator = await this.indicate({ 
+    const indicator = await this.indicate({
       type: "warning",
-      msg: `Capturing snapshots of ${imageClass}...` 
+      msg: `Capturing snapshots of ${imageClass}...`
     });
 
     const snapshots: string[] = [];
     const zip = new JSZip();
-    
+
     // Ensure we have video stream
     this.imageStream ??= this.doodlebot?.getImageStream();
     if (!this.imageStream) {
       indicator.close();
-      await this.indicate({ 
-        type: "error", 
-        msg: "No video stream available" 
+      await this.indicate({
+        type: "error",
+        msg: "No video stream available"
       });
       return;
     }
@@ -1979,50 +1781,50 @@ blobToBase64(blob) {
     // Capture a snapshot every 500ms
     const interval = 100; // 500ms between snapshots
     const iterations = (seconds * 1000) / interval;
-    
+
     for (let i = 0; i < iterations; i++) {
       // Create a canvas to draw the current frame
       const canvas = document.createElement('canvas');
       canvas.width = this.imageStream.width;
       canvas.height = this.imageStream.height;
       const ctx = canvas.getContext('2d');
-      
+
       // Draw current frame to canvas
       ctx.drawImage(this.imageStream, 0, 0);
-      
+
       // Convert to base64 and store
       const dataUrl = canvas.toDataURL('image/jpeg');
       snapshots.push(dataUrl);
-      
+
       // Add to zip file
       const base64Data = dataUrl.replace(/^data:image\/jpeg;base64,/, "");
-      zip.file(`${imageClass}_${i+1}.jpg`, base64Data, {base64: true});
-      
+      zip.file(`${imageClass}_${i + 1}.jpg`, base64Data, { base64: true });
+
       // Wait for next interval
       await new Promise(resolve => setTimeout(resolve, interval));
     }
 
     // Generate zip file
-    const content = await zip.generateAsync({type: "blob"});
-    
+    const content = await zip.generateAsync({ type: "blob" });
+
     // Create download link with image class in filename
     const downloadUrl = URL.createObjectURL(content);
     const link = document.createElement('a');
     link.href = downloadUrl;
     link.download = `${imageClass}_snapshots.zip`;
-    
+
     // Trigger download
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     // Cleanup
     URL.revokeObjectURL(downloadUrl);
     indicator.close();
-    
-    await this.indicate({ 
-      type: "success", 
-      msg: `Captured ${snapshots.length} snapshots of ${imageClass}` 
+
+    await this.indicate({
+      type: "success",
+      msg: `Captured ${snapshots.length} snapshots of ${imageClass}`
     });
 
     if (this.SOCIAL && Math.random() < this.socialness) {
@@ -2063,9 +1865,9 @@ blobToBase64(blob) {
           resolve(null);
         });
       });
-      
+
       const durationMs = audio.duration * 1000; // duration is in seconds
-      
+
       // Convert blob to Uint8Array and send to Doodlebot
       const array = await blob.arrayBuffer();
       await this.doodlebot.sendAudioData(new Uint8Array(array));
