@@ -798,13 +798,11 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   }
 
 
-  async followLineArray(sensor) {
+  async followLineArray(sensor: {left: number, center: number, right: number}) {
     // Initialize lastError if missing
     if (this.lastError === undefined) this.lastError = 0;
   
     // Config
-    const cmToInches = 0.3937;
-    const driveDistance = 1 * cmToInches; // 1 cm forward each cycle
     const Kp = 1; // proportional gain for pivot correction
   
     // Normalize sensor values: 0 = white, 1 = black
@@ -823,15 +821,15 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     console.log("Normalized:", { leftVal, centerVal, rightVal });
     console.log("Error:", error.toFixed(3), "Correction:", correction.toFixed(3));
   
-    // --- Step 1: Drive forward 1 cm ---
-    console.log(`Driving forward ${driveDistance.toFixed(2)} inches`);
+    // --- Step 1: Drive forward 150 steps ---
+    console.log(`Driving forward 150 steps`);
     await this.doodlebot?.motorCommand(
       "steps",
       { steps: 150, stepsPerSecond: 1000 },
       { steps: 150, stepsPerSecond: 1000 } // reverse left wheel
     );
   
-    // --- Step 2: Pivot (in place) to correct heading ---
+    // --- Step 2: Pivot to correct heading ---
     let pivotAngle = 0;
     if (leftVal < 0.1 && centerVal < 0.1 && rightVal < 0.1) {
       // Line lost → pivot toward last known direction
@@ -844,10 +842,10 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       console.log(`Pivoting correction: ${pivotAngle.toFixed(2)}°`);
     }
   
-    // Execute pivot
+    // Turn in place
     await this.doodlebot.motorCommand("arc", 0, pivotAngle);
   
-    // Update memory
+    // Update error
     this.lastError = error;
     console.log("Updated lastError:", this.lastError.toFixed(3), "\n");
   }
