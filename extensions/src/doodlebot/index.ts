@@ -789,10 +789,10 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     }
     console.log("reading", reading)
     this.lastError = 0;
-    setInterval(async () => {
+    while (true) {
       const sensorValues = await this.doodlebot.getSingleSensorReading("line");
-      this.followLineArray({left: sensorValues[0], center: sensorValues[1], right: sensorValues[2]});
-    }, 300);
+      await this.followLineArray({left: sensorValues[0], center: sensorValues[1], right: sensorValues[2]});
+    };
    // this.doodlebot.motorCommand("steps",); // stop any line following
     return `${JSON.stringify(reading)}`;
   }
@@ -803,10 +803,9 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     if (this.lastError === undefined) this.lastError = 0;
   
     // Config
-    const stepLength = 0.055; // inches per step
-    const baseSpeed = 500; // base steps per second
-    const Kp = 0.8; // smaller proportional gain for gentle turning
-    const moveDistance = 2; // inches per update
+    const cmToInches = 0.3937;
+    const driveDistance = 1 * cmToInches; // 1 cm forward each cycle
+    const Kp = 1; // proportional gain for pivot correction
   
     // Normalize sensor values: 0 = white, 1 = black
     const normalize = (v: number) => 1 - v / 1000;
@@ -818,71 +817,43 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     const numerator = (-1 * leftVal) + (0 * centerVal) + (1 * rightVal);
     const denominator = leftVal + centerVal + rightVal || 1;
     const error = numerator / denominator;
-  
-    // Compute differential correction
     const correction = Kp * error;
   
     console.log("Sensors:", sensor);
-    console.log("Drive command: Normalized:", { leftVal, centerVal, rightVal });
+    console.log("Normalized:", { leftVal, centerVal, rightVal });
     console.log("Error:", error.toFixed(3), "Correction:", correction.toFixed(3));
   
-    // Base steps for this update
-    const steps = Math.round(moveDistance / stepLength);
-  
-    // Adjust left/right speeds based on correction
-    let leftSpeed = baseSpeed;
-    let rightSpeed = baseSpeed;
-  
-    if (leftVal < 0.1 && centerVal < 0.1 && rightVal < 0.1) {
-      // Line lost → gently pivot based on last error
-      if (this.lastError > 0) {
-        leftSpeed = baseSpeed;
-        rightSpeed = baseSpeed * 0.5; // turn right
-        console.log("Drive command: Line lost: pivoting right");
-      } else {
-        leftSpeed = baseSpeed * 0.5;
-        rightSpeed = baseSpeed; // turn left
-        console.log("Drive command: Line lost: pivoting left");
-      }
-    } else {
-      // Adjust speeds proportionally
-      if (correction < 0) {
-        // Line is to the left → slow left wheel
-        leftSpeed = baseSpeed * (1 + correction); // correction is negative
-        rightSpeed = baseSpeed;
-        console.log(`Drive command: Line to left: leftSpeed=${leftSpeed.toFixed(1)}, rightSpeed=${rightSpeed}`);
-      } else if (correction > 0) {
-        // Line is to the right → slow right wheel
-        leftSpeed = baseSpeed;
-        rightSpeed = baseSpeed * (1 - correction); // correction positive
-        console.log(`Drive command: Line to right: leftSpeed=${leftSpeed}, rightSpeed=${rightSpeed.toFixed(1)}`);
-      } else {
-        // centered
-        leftSpeed = baseSpeed;
-        rightSpeed = baseSpeed;
-        console.log("Drive command: Centered: driving straight");
-      }
-    }
-  
-    console.log("Drive command: ", steps, "steps at", leftSpeed.toFixed(1), rightSpeed.toFixed(1));
-    // Send motor command
+    // --- Step 1: Drive forward 1 cm ---
+    console.log(`Driving forward ${driveDistance.toFixed(2)} inches`);
     await this.doodlebot?.motorCommand(
       "steps",
-      { steps, stepsPerSecond: leftSpeed },
-      { steps, stepsPerSecond: rightSpeed }
+      { steps: 150, stepsPerSecond: 1000 },
+      { steps: 150, stepsPerSecond: 1000 } // reverse left wheel
     );
   
-    // Remember last error
+    // --- Step 2: Pivot (in place) to correct heading ---
+    let pivotAngle = 0;
+    if (leftVal < 0.1 && centerVal < 0.1 && rightVal < 0.1) {
+      // Line lost → pivot toward last known direction
+      const turnDir = this.lastError > 0 ? 1 : -1;
+      pivotAngle = 10 * turnDir; // gentle search
+      console.log(`Line lost: pivoting ${turnDir > 0 ? "right" : "left"} (${pivotAngle}°)`);
+    } else {
+      // Normal correction
+      pivotAngle = correction * 10; // scale proportional to error
+      console.log(`Pivoting correction: ${pivotAngle.toFixed(2)}°`);
+    }
+  
+    // Execute pivot
+    await this.doodlebot.motorCommand("arc", 0, pivotAngle);
+  
+    // Update memory
     this.lastError = error;
     console.log("Updated lastError:", this.lastError.toFixed(3), "\n");
   }
   
   
   
-
-
-
-
 
 
 
