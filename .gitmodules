@@ -1,8 +1,11 @@
 [submodule "scratch-packages/scratch-gui"]
 	path = scratch-packages/scratch-gui
-	url = git@github.com:mitmedialab/prg-raise-playground-scratch-gui.git
+	url = https://github.com/mitmedialab/prg-raise-playground-scratch-gui.git
 	branch = main
 [submodule "scratch-packages/scratch-vm"]
 	path = scratch-packages/scratch-vm
-	url = git@github.com:mitmedialab/prg-raise-playground-scratch-vm.git
+	url = https://github.com/mitmedialab/prg-raise-playground-scratch-vm.git
 	branch = main
+[submodule "PRG-Virtual_Jibo"]
+	path = PRG-Virtual_Jibo
+	url = https://github.com/mitmedialab/PRG-Virtual_Jibo

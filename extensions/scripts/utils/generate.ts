@@ -19,7 +19,10 @@ export const vmDeclarations = () => {
     const overrides: ts.CompilerOptions = { allowJs: true, checkJs: false, declaration: true, emitDeclarationOnly: true, };
     const { options, host } = getSrcCompilerHost(overrides);
 
-    const exclude = [path.join(vmSrc, "extensions")];
+    const exclude = [
+        path.join(vmSrc, "extensions"),
+        path.resolve(vmSrc, "../../../PRG-Virtual_Jibo")
+    ];
 
     host.writeFile = (pathToFile: string, contents: string) => {
         if (exclude.some(excluded => pathToFile.includes(excluded)) || !pathToFile.includes(".d.ts")) return;
@@ -32,7 +35,13 @@ export const vmDeclarations = () => {
     const program = ts.createProgram([entry], options, host);
     const result = program.emit();
 
-    if (result.emitSkipped) result.diagnostics.forEach(reportDiagnostic);
+    if (result.emitSkipped) {
+        const filteredDiagnostics = result.diagnostics.filter(diag => {
+            const fileName = diag.file?.fileName ?? "";
+            return !exclude.some(excluded => fileName.includes(excluded));
+        });
+        filteredDiagnostics.forEach(reportDiagnostic);
+    }
 
     const readout = Object.entries(Object.fromEntries(emittedFiles)).map(([dir, files]) => ({ dir, files }));
     console.log(chalk.whiteBright(`Emitted declarations for javascript files:`));
