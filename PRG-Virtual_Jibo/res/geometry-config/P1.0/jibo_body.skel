@@ -1,0 +1,169 @@
+{
+  "header": {
+    "fileType": "Skeleton",
+    "version": "0.001",
+    "creationTime": 1434244315999
+  },
+  "content": {
+    "name": "rootBn",
+    "xyzTranslation": [
+      0.0,
+      0.0,
+      0.01905
+    ],
+    "wxyzRotation": [
+      0.5000000000000001,
+      -0.5,
+      -0.5,
+      -0.4999999999999999
+    ],
+    "children": [
+      {
+        "name": "baseMesh",
+        "xyzTranslation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "wxyzRotation": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "name": "bottomSection",
+        "xyzTranslation": [
+          0.0,
+          0.0,
+          -0.0
+        ],
+        "wxyzRotation": [
+          -0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        "children": [
+          {
+            "name": "lightringMesh",
+            "xyzTranslation": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "wxyzRotation": [
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "name": "middleSection",
+            "xyzTranslation": [
+              0.0,
+              0.045563820749521255,
+              -0.0053259097039699554
+            ],
+            "wxyzRotation": [
+              0.9935718579377518,
+              0.11320319392192023,
+              0.0,
+              -0.0
+            ],
+            "children": [
+              {
+                "name": "topSection",
+                "xyzTranslation": [
+                  0.0,
+                  0.08649425953626633,
+                  0.016203919425606728
+                ],
+                "wxyzRotation": [
+                  0.9821233481679139,
+                  -0.18823848964397946,
+                  0.0,
+                  -0.0
+                ],
+                "children": [
+                  {
+                    "name": "headMesh",
+                    "xyzTranslation": [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    "wxyzRotation": [
+                      1.0,
+                      0.0,
+                      0.0,
+                      -0.0
+                    ]
+                  },
+                  {
+                    "name": "maskMesh",
+                    "xyzTranslation": [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    "wxyzRotation": [
+                      1.0,
+                      0.0,
+                      0.0,
+                      -0.0
+                    ]
+                  },
+                  {
+                    "name": "screenMesh",
+                    "xyzTranslation": [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    "wxyzRotation": [
+                      1.0,
+                      0.0,
+                      0.0,
+                      -0.0
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "torsoMesh",
+                "xyzTranslation": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "wxyzRotation": [
+                  1.0,
+                  0.0,
+                  0.0,
+                  -0.0
+                ]
+              }
+            ]
+          },
+          {
+            "name": "pelvisMesh",
+            "xyzTranslation": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "wxyzRotation": [
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

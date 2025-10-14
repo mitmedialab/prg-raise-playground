@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "emoji_magnifyingGlass.js",
+        "type": "timeline",
+        "src": "emoji_magnifyingGlass.js"
+    },
+    {
+        "type": "metadata",
+        "animdb": "66f89c0531f116fdfccc919a87f45cbcd2aab9c3"
+    }
+]

@@ -1,0 +1,21 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "emoji_bird_black.js",
+        "type": "timeline",
+        "src": "emoji_bird_black.js"
+    },
+    {
+        "id": "project://sfx/sfx_bird_01.m4a",
+        "type": "sound",
+        "src": "project://sfx/sfx_bird_01.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "450efe6c290711eec6f4513ad3b781b88d218d46"
+    }
+]

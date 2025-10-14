@@ -1,0 +1,21 @@
+[
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "sfx/Skills/Hue/sfx_hue_dimmer.ogg",
+        "type": "sound",
+        "src": "sfx/Skills/Hue/sfx_hue_dimmer.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "6b80c2480b58d59f77bf108ad0dd47f9e3e64559"
+    }
+]

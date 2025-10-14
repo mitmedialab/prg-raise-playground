@@ -1,0 +1,16 @@
+[
+    {
+        "id": "emoji_golf.js",
+        "type": "timeline",
+        "src": "emoji_golf.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "3666a2d35f3b5dd35fc269b2ea095f2435aa86cf"
+    }
+]

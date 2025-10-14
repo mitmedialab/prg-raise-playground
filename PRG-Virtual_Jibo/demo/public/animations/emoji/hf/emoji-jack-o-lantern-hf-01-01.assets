@@ -1,0 +1,21 @@
+[
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/emojis/hf/jack-o-lantern.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/hf/jack-o-lantern.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "7016404d4dd0c43e8d3ad3b494c7f4eca0033e01"
+    }
+]

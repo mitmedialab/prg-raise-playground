@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 678,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "6021b675b46a21a7136d68bd7e1711c7",
+            "name": "Audio Event music_techno_03",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "music/music_techno_03.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "6021b675b46a21a7136d68bd7e1711c7-body",
+            "name": "Body music_techno_03",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "music_techno_03",
+        "categories": "audio-music",
+        "meta": "dance, techno, trance, audio-only"
+    }
+}

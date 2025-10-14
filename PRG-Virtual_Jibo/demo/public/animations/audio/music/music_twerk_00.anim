@@ -1,0 +1,57 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "4cb5ea134ff9cd0525de0aaf8b9db54a3044c030"
+    },
+    "content": {
+        "name": "music_twerk_00.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 7.1,
+                "times": [
+                    0,
+                    7.066666666666666
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 7.1,
+                "times": [
+                    0,
+                    7.066666666666666
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 7.1,
+                "times": [
+                    0,
+                    7.066666666666666
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0,
+                "eventName": "play-audio",
+                "payload": {
+                    "file": "music/music_twerk_00.m4a"
+                }
+            }
+        ]
+    }
+}

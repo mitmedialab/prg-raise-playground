@@ -1,0 +1,46 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/personal-report/weather-asets-variants/clear-night-all-together.png",
+        "type": "texture",
+        "src": "animations/textures/personal-report/weather-asets-variants/clear-night-all-together.png"
+    },
+    {
+        "id": "animations/textures/personal-report/weather-assets/comet.png",
+        "type": "texture",
+        "src": "animations/textures/personal-report/weather-assets/comet.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "sfx/Skills/PersonalReport/sfx_weather_clearnight_02_crickets.ogg",
+        "type": "sound",
+        "src": "sfx/Skills/PersonalReport/sfx_weather_clearnight_02_crickets.ogg"
+    },
+    {
+        "id": "sfx/Skills/PersonalReport/sfx_weather_clearnight_02_comet.ogg",
+        "type": "sound",
+        "src": "sfx/Skills/PersonalReport/sfx_weather_clearnight_02_comet.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "65d6ea8655b54c0028e86813ec65ae0782a52bca"
+    }
+]

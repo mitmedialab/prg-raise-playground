@@ -1,0 +1,16 @@
+[
+    {
+        "id": "emoji_waving.js",
+        "type": "timeline",
+        "src": "emoji_waving.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "ae8e49ab380d7c4da76f101361a50ef436e6cfa2"
+    }
+]

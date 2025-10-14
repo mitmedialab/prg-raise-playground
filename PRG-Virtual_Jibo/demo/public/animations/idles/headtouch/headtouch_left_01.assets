@@ -1,0 +1,26 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://emotional_intent/purring/ei_purring_03.m4a",
+        "type": "sound",
+        "src": "project://emotional_intent/purring/ei_purring_03.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "cffb30ebfc20c325c3feec62d91c7d725b406bce"
+    }
+]

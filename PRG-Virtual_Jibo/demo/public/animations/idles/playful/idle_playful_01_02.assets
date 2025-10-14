@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://emotional_intent/ei_whistle_01.mp3",
+        "type": "sound",
+        "src": "project://emotional_intent/ei_whistle_01.mp3"
+    },
+    {
+        "type": "metadata",
+        "animdb": "fa4bc6aec6055e7a33280dcac24f46f610e67e04"
+    }
+]

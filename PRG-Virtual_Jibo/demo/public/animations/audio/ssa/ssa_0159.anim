@@ -1,0 +1,57 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "dfe5ab82625d524a2a5a1b5145ef1d6edbce0d5e"
+    },
+    "content": {
+        "name": "ssa_0159.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 0.43333333333333335,
+                "times": [
+                    0,
+                    0.4
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 0.43333333333333335,
+                "times": [
+                    0,
+                    0.4
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 0.43333333333333335,
+                "times": [
+                    0,
+                    0.4
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0,
+                "eventName": "play-audio",
+                "payload": {
+                    "file": "ssa/SSA_0159.m4a"
+                }
+            }
+        ]
+    }
+}

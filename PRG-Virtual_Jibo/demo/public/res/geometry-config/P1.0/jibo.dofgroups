@@ -1,0 +1,155 @@
+{
+  "header": {
+    "fileType": "DOFSets",
+    "version": "0.001",
+    "creationTime": 1434868725865
+  },
+  "content": {
+    "DOFSets": {
+      "BASE": [
+        "bottomSection_r"
+      ],
+      "BODY": [
+        "bottomSection_r",
+        "middleSection_r",
+        "topSection_r"
+      ],
+      "LED": [
+        "lightring_redChannelBn_r",
+        "lightring_greenChannelBn_r",
+        "lightring_blueChannelBn_r"
+      ],
+      "SCREEN_BG_COLOR": [
+        "screenBG_redChannelBn_r",
+        "screenBG_greenChannelBn_r",
+        "screenBG_blueChannelBn_r"
+      ],
+      "SCREEN_BG_TEXTURE": [
+        "screenBGTextureInfixBn_r"
+      ],
+      "EYE_TRANSLATE": [
+        "eyeSubRootBn_t",
+        "eyeSubRootBn_t_2"
+      ],
+      "EYE_ROTATE": [
+        "eyeSubRootBn_r"
+      ],
+      "EYE_COLOR": [
+        "eye_redChannelBn_r",
+        "eye_greenChannelBn_r",
+        "eye_blueChannelBn_r",
+        "eye_alphaChannelBn_r"
+      ],
+      "EYE_TEXTURE": [
+        "eyeTextureInfixBn_r"
+      ],
+      "EYE_VISIBILITY": [
+        "eyeVisibilityBn_r"
+      ],
+      "EYE_DEFORM": [
+        "vertexJoint1_t",
+        "vertexJoint1_t_2",
+        "vertexJoint2_t",
+        "vertexJoint2_t_2",
+        "vertexJoint3_t",
+        "vertexJoint3_t_2",
+        "vertexJoint4_t",
+        "vertexJoint4_t_2",
+        "vertexJoint5_t",
+        "vertexJoint5_t_2",
+        "vertexJoint6_t",
+        "vertexJoint6_t_2",
+        "vertexJoint7_t",
+        "vertexJoint7_t_2",
+        "vertexJoint8_t",
+        "vertexJoint8_t_2",
+        "vertexJoint9_t",
+        "vertexJoint9_t_2"
+      ],
+      "OVERLAY_TRANSLATE": [
+        "overlay_textureSubRootBn_t",
+        "overlay_textureSubRootBn_t_2"
+      ],
+      "OVERLAY_ROTATE": [
+        "overlay_textureSubRootBn_r"
+      ],
+      "OVERLAY_COLOR": [
+        "overlay_redChannelBn_r",
+        "overlay_greenChannelBn_r",
+        "overlay_blueChannelBn_r",
+        "overlay_alphaChannelBn_r"
+      ],
+      "OVERLAY_TEXTURE": [
+        "overlayTextureInfixBn_r"
+      ],
+      "OVERLAY_VISIBILITY": [
+        "overlayVisibilityBn_r"
+      ],
+      "OVERLAY_DEFORM": [
+        "overlay_vertexJoint1_t",
+        "overlay_vertexJoint1_t_2",
+        "overlay_vertexJoint2_t",
+        "overlay_vertexJoint2_t_2",
+        "overlay_vertexJoint3_t",
+        "overlay_vertexJoint3_t_2",
+        "overlay_vertexJoint4_t",
+        "overlay_vertexJoint4_t_2",
+        "overlay_vertexJoint5_t",
+        "overlay_vertexJoint5_t_2",
+        "overlay_vertexJoint6_t",
+    	"overlay_vertexJoint6_t_2",
+        "overlay_vertexJoint7_t",
+        "overlay_vertexJoint7_t_2",
+        "overlay_vertexJoint8_t",
+        "overlay_vertexJoint8_t_2",
+        "overlay_vertexJoint9_t",
+        "overlay_vertexJoint9_t_2"
+      ]
+    },
+    "CompoundSets": {
+      "SCREEN_BG_RENDER": [
+        "SCREEN_BG_COLOR",
+        "SCREEN_BG_TEXTURE"
+      ],
+      "EYE_RENDER": [
+        "EYE_COLOR",
+        "EYE_TEXTURE",
+        "EYE_VISIBILITY"
+      ],
+      "OVERLAY_RENDER": [
+        "OVERLAY_COLOR",
+        "OVERLAY_TEXTURE",
+        "OVERLAY_VISIBILITY"
+      ],
+      "EYE_ROOT": [
+        "EYE_TRANSLATE",
+        "EYE_ROTATE"
+      ],
+      "OVERLAY_ROOT": [
+        "OVERLAY_TRANSLATE",
+        "OVERLAY_ROTATE"
+      ],
+      "EYE": [
+        "EYE_ROOT",
+        "EYE_RENDER",
+        "EYE_DEFORM"
+      ],
+      "OVERLAY": [
+        "OVERLAY_ROOT",
+        "OVERLAY_RENDER",
+        "OVERLAY_DEFORM"
+      ],
+      "SCREEN": [
+        "EYE",
+        "OVERLAY",
+        "SCREEN_BG_RENDER"
+      ],
+      "ALL": [
+      	"SCREEN",
+      	"LED",
+      	"BODY"
+      ]
+    }
+  }
+}
+

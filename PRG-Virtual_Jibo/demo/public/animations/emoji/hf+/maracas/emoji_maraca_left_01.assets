@@ -1,0 +1,21 @@
+[
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/cs/cs_maracas.png",
+        "type": "texture",
+        "src": "animations/textures/cs/cs_maracas.png"
+    },
+    {
+        "id": "sfx/sfx_maraca_01.m4a",
+        "type": "sound",
+        "src": "sfx/sfx_maraca_01.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "2e37620d2a41c9098b0864c10194b519a12edea8"
+    }
+]

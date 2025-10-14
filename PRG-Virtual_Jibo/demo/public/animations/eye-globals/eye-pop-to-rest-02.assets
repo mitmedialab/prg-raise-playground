@@ -1,0 +1,36 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "project://device/ds_speakbegin_01.m4a",
+        "type": "sound",
+        "src": "project://device/ds_speakbegin_01.m4a"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/jibo_eye_customizer_148.png",
+        "type": "texture",
+        "src": "animations/textures/jibo_eye_customizer_148.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "ee197f11fae19b65104d743389b7291a2711f4cc"
+    }
+]

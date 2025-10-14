@@ -1,0 +1,11 @@
+[
+    {
+        "id": "emotional_intent/greetings/ei_greeting_01.m4a",
+        "type": "sound",
+        "src": "emotional_intent/greetings/ei_greeting_01.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "31f15aef8600d4c2715e88902a0f801827a565ae"
+    }
+]

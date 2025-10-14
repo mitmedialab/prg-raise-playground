@@ -1,0 +1,57 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "98011eda4dd70f96ac4a3ab38401e79785639481"
+    },
+    "content": {
+        "name": "ei_greeting_03.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 1.1666666666666667,
+                "times": [
+                    0,
+                    1.1333333333333333
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 1.1666666666666667,
+                "times": [
+                    0,
+                    1.1333333333333333
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 1.1666666666666667,
+                "times": [
+                    0,
+                    1.1333333333333333
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0,
+                "eventName": "play-audio",
+                "payload": {
+                    "file": "emotional_intent/greetings/ei_greeting_03.m4a"
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,21 @@
+[
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/emoji-placeholder-01.png",
+        "type": "texture",
+        "src": "animations/textures/emoji-placeholder-01.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "2636ca7bddcb521cdd79f31dafcfcedb2133178a"
+    }
+]

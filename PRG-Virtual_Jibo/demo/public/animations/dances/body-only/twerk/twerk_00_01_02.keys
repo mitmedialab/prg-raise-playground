@@ -1,0 +1,64 @@
+{
+    "framerate": 30,
+    "duration": 27,
+    "layers": [
+        {
+            "id": "c2f347dd9a9946b290c212e6500dca81",
+            "name": "Body #2",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": 90,
+                        "Torso": 0,
+                        "Pelvis": 90,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "Head": 150,
+                        "Torso": 0,
+                        "Pelvis": 30,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 13
+                },
+                {
+                    "value": {
+                        "Head": 90,
+                        "Torso": 0,
+                        "Pelvis": 90,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 26
+                }
+            ]
+        }
+    ],
+    "version": "0.14.0",
+    "scale": "1.2",
+    "animdb": {
+        "meta": "dance, twerk, twerk-right, loop, body-only",
+        "categories": "BodyMotions",
+        "name": "Twerk_Right_00_01"
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

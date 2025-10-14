@@ -1,0 +1,74 @@
+{
+    "version": "0.15.0",
+    "framerate": 30,
+    "duration": 55,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "dad974c4af874242bc6be88a8b0b2db0",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_sad_in_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_sad_out_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 40
+                }
+            ]
+        },
+        {
+            "id": "f45425bcdead49028b03c1bf388e1c64",
+            "name": "Event",
+            "type": "Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Event": {
+                            "name": "HOLD_SAFE",
+                            "payload": ""
+                        }
+                    },
+                    "time": 40
+                }
+            ]
+        }
+    ],
+    "animdb": {
+        "categories": "Sad",
+        "name": "",
+        "meta": "eye-only, sad",
+        "speedMax": 1
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

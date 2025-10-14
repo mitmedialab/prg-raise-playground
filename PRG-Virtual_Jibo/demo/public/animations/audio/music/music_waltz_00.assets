@@ -1,0 +1,11 @@
+[
+    {
+        "id": "music/music_waltz_00.m4a",
+        "type": "sound",
+        "src": "music/music_waltz_00.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "6177aeb236ab1662b6e29695c1835c2ab7167c5a"
+    }
+]

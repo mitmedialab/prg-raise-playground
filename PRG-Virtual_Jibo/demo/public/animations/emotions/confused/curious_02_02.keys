@@ -1,0 +1,87 @@
+{
+    "framerate": 30,
+    "duration": 31,
+    "layers": [
+        {
+            "id": "5b631fd526fc49068920fc50cb5c10d6",
+            "name": "Body #1",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "Head": -49.000000000000036,
+                        "Torso": 34.49999999999999,
+                        "Pelvis": 21.50000000000002
+                    },
+                    "time": 25
+                }
+            ]
+        },
+        {
+            "id": "6cb5361dcf294b36bb492d9af79731ed",
+            "name": "Event #10",
+            "type": "Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Event": {
+                            "name": "HOLD_SAFE",
+                            "payload": ""
+                        }
+                    },
+                    "time": 25
+                }
+            ]
+        },
+        {
+            "id": "2a89481c55124eacafb15b741bd37253",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_long_blink_01"
+                        },
+                        "HoldFinalPose": false,
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        }
+    ],
+    "scale": 1,
+    "version": "0.15.0",
+    "animdb": {
+        "name": "Curious_02",
+        "scaleMax": 1,
+        "scaleMin": 0.5,
+        "speedMax": 1,
+        "speedMin": 0.5,
+        "categories": "Confused, Question",
+        "meta": "curious, head-tilt"
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

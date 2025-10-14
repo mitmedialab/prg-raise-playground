@@ -1,0 +1,57 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "cc07cf46e906ca14c6f59c95548e8aac1a33504f"
+    },
+    "content": {
+        "name": "music_japanese_water_garden_00.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 8.633333333333333,
+                "times": [
+                    0,
+                    8.6
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 8.633333333333333,
+                "times": [
+                    0,
+                    8.6
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 8.633333333333333,
+                "times": [
+                    0,
+                    8.6
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0,
+                "eventName": "play-audio",
+                "payload": {
+                    "file": "music/music_japanese_water_garden_00.m4a"
+                }
+            }
+        ]
+    }
+}

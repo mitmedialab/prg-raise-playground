@@ -1,0 +1,11 @@
+[
+    {
+        "id": "emotional_intent/goodbye/ei_goodbye_03.m4a",
+        "type": "sound",
+        "src": "emotional_intent/goodbye/ei_goodbye_03.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "fc5f2a110231539f3317481f8c2781884e4686cb"
+    }
+]

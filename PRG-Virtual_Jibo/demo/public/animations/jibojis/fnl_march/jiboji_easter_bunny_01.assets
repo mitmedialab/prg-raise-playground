@@ -1,0 +1,66 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/jibojis/easter-bunny.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/easter-bunny.png"
+    },
+    {
+        "id": "animations/textures/jibojis/grass-mound.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/grass-mound.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/March_2018/sfx_easter_bunny_01_music.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/March_2018/sfx_easter_bunny_01_music.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/March_2018/sfx_easter_bunny_01_bushrustle.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/March_2018/sfx_easter_bunny_01_bushrustle.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/March_2018/sfx_easter_bunny_01_laugh_01.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/March_2018/sfx_easter_bunny_01_laugh_01.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/March_2018/sfx_easter_bunny_01_laugh_02.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/March_2018/sfx_easter_bunny_01_laugh_02.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/March_2018/sfx_easter_bunny_01_laugh_03.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/March_2018/sfx_easter_bunny_01_laugh_03.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/March_2018/sfx_easter_bunny_01_laugh_04.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/March_2018/sfx_easter_bunny_01_laugh_04.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "90d3023cef034b177dd67142003ce8d3cd0e7087"
+    }
+]

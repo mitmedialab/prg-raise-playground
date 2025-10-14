@@ -1,0 +1,16 @@
+[
+    {
+        "id": "emoji_carrot.js",
+        "type": "timeline",
+        "src": "emoji_carrot.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "f99d068695a744b492e9ee56ddbf764522454282"
+    }
+]

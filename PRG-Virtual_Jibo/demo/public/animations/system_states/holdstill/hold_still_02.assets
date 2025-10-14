@@ -1,0 +1,21 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/whiteeye_blur1.png",
+        "type": "texture",
+        "src": "animations/textures/whiteeye_blur1.png"
+    },
+    {
+        "id": "sfx/sfx_blip_heavy_01.m4a",
+        "type": "sound",
+        "src": "sfx/sfx_blip_heavy_01.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "5870eef415f85d3486a1fa52c7b3820519d62c33"
+    }
+]

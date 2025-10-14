@@ -1,0 +1,21 @@
+[
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/helpline/eatingdisorder.png",
+        "type": "texture",
+        "src": "animations/textures/helpline/eatingdisorder.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "e2ca78f5e1ed908cb9a8a7bc03c6e5fd128d4e67"
+    }
+]

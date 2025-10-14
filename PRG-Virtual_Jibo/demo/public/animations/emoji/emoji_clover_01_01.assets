@@ -1,0 +1,16 @@
+[
+    {
+        "id": "emoji_clover.js",
+        "type": "timeline",
+        "src": "emoji_clover.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "85fa9d2941a5a8a447c7ef1f2e9f03ce26e53ca9"
+    }
+]

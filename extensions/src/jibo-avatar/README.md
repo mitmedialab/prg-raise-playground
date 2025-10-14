@@ -10,5 +10,10 @@ cd ~/MiT/virtual-scratch/prg-raise-playground && pnpm --filter prg-extension-roo
 ## Blocks
 - Reset Jibo pose
 - Rotate Jibo by degrees
-- Set Jibo eye color (r, g, b)
+- Set Jibo eye color (preset dropdown)
+- Set Jibo eye color (custom RGB)
+- Set Jibo body color (preset dropdown)
+- Set Jibo body color (custom RGB)
+- Make Jibo blink
+- Play Jibo emotion animation (neutral, happy, sad, surprised, calm)
 

@@ -1,0 +1,31 @@
+[
+    {
+        "id": "emoji_gift.js",
+        "type": "timeline",
+        "src": "emoji_gift.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "sfx/Emojis/sfx_emoji_gift_open_01.ogg",
+        "type": "sound",
+        "src": "sfx/Emojis/sfx_emoji_gift_open_01.ogg"
+    },
+    {
+        "id": "sfx/Emojis/sfx_emoji_gift_music_01.ogg",
+        "type": "sound",
+        "src": "sfx/Emojis/sfx_emoji_gift_music_01.ogg"
+    },
+    {
+        "id": "sfx/Emojis/sfx_emoji_gift_close_01.ogg",
+        "type": "sound",
+        "src": "sfx/Emojis/sfx_emoji_gift_close_01.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "5a16b6e1b3531dfc54e41594c93c1ed35192b55a"
+    }
+]

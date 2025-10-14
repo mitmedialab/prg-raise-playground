@@ -1,0 +1,41 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/emojis/reindeer-02.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/reindeer-02.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_santasled_big_eye_start.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_santasled_big_eye_start.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_santasled_small_santaflying.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_santasled_small_santaflying.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_santasled_big_eye_end.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_santasled_big_eye_end.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "16f42cd2141209ac7cb886a290aba3848db548be"
+    }
+]

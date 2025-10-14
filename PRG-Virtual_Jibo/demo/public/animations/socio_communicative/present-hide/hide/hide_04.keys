@@ -1,0 +1,86 @@
+{
+    "framerate": 30,
+    "duration": 44,
+    "layers": [
+        {
+            "id": "5b631fd526fc49068920fc50cb5c10d6",
+            "name": "Body #1",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "Head": 82.90392893483813,
+                        "Torso": -31.303678137209108,
+                        "Pelvis": -41.92006423995867,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 21
+                },
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 43
+                }
+            ]
+        },
+        {
+            "id": "a1c8d6aa0cf04bcfbe0439681072a54a",
+            "name": "Event",
+            "type": "Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Event": {
+                            "name": "HOLD_SAFE",
+                            "payload": ""
+                        }
+                    },
+                    "time": 21
+                }
+            ]
+        }
+    ],
+    "scale": "1.4",
+    "version": "0.14.0",
+    "animdb": {
+        "name": "Hide_04",
+        "scaleMax": 1,
+        "scaleMin": 1,
+        "speedMax": 0.9,
+        "speedMin": 0.8,
+        "categories": "Hide",
+        "meta": "body-only, put-down, down, place-down, push-down"
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

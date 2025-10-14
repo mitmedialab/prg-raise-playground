@@ -1,0 +1,11 @@
+[
+    {
+        "id": "music/music_funny_01.m4a",
+        "type": "sound",
+        "src": "music/music_funny_01.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "5cb32c51c632a2e8b6c5c617e83a7f31fc13e95f"
+    }
+]

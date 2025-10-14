@@ -1,0 +1,26 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/jibojis/mitten-right.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/mitten-right.png"
+    },
+    {
+        "id": "animations/textures/jibojis/mitten-left.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/mitten-left.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "9b90c38588d563aefa55ee59e06185498609ee14"
+    }
+]

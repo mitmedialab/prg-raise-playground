@@ -52,4 +52,44 @@ export default class JiboAvatarExtension extends extension(details) {
   setEyeColor(r: number, g: number, b: number) {
     this.jiboScene?.setEyeColor(r, g, b);
   }
+
+  @(scratch.command`Make Jibo blink`)
+  async blink() {
+    if (this.jiboScene) {
+      await this.jiboScene.blink();
+    }
+  }
+
+  @(scratch.command`Play Jibo ${{ type: "string", options: ["neutral", "happy", "sad", "surprised", "calm", "confused", "excited", "worried", "scared", "proud"] }} animation`)
+  async playEmotion(emotion: string) {
+    if (this.jiboScene) {
+      await this.jiboScene.playEmotionAnimation(emotion);
+    }
+  }
+
+  @(scratch.command`Make Jibo look at mouse ${{ type: "string", options: ["on", "off"] }}`)
+  setLookAtMouse(state: string) {
+    this.jiboScene?.setLookAtMouse(state === "on");
+  }
+
+  @(scratch.command`Set Jibo body color to ${{ type: "string", options: ["white", "warm grey", "cool grey", "light blue", "light pink", "mint", "lavender", "peach"] }}`)
+  setBodyColorPreset(color: string) {
+    const colors = {
+      white: [255, 255, 255],
+      "warm grey": [210, 195, 175],
+      "cool grey": [180, 200, 215],
+      "light blue": [185, 215, 250],
+      "light pink": [250, 200, 215],
+      mint: [195, 250, 215],
+      lavender: [225, 195, 250],
+      peach: [250, 220, 185]
+    };
+    const [r, g, b] = colors[color] || [255, 255, 255];
+    this.jiboScene?.setBodyColor(r, g, b);
+  }
+
+  @(scratch.command`Set Jibo body color r ${{ type: "number", defaultValue: 1 }}, g ${{ type: "number", defaultValue: 1 }}, b ${{ type: "number", defaultValue: 1 }}`)
+  setBodyColor(r: number, g: number, b: number) {
+    this.jiboScene?.setBodyColor(r, g, b);
+  }
 }

@@ -1,0 +1,16 @@
+[
+    {
+        "id": "emoji_baseball.js",
+        "type": "timeline",
+        "src": "emoji_baseball.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "fc16a88f2b98b57d684c5644c4040a0ed91d28e0"
+    }
+]

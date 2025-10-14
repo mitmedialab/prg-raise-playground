@@ -1,0 +1,21 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "thinking_dots.js",
+        "type": "timeline",
+        "src": "thinking_dots.js"
+    },
+    {
+        "id": "project://device/ds_processing_01.m4a",
+        "type": "sound",
+        "src": "project://device/ds_processing_01.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "46b20acc4712069b77441a8555b338b09138af19"
+    }
+]

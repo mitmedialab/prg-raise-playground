@@ -1,0 +1,51 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/jibojis/mountain.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/mountain.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/jibojis/skiis.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/skiis.png"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/January_2018/jiboji_skiing_01_amb.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/January_2018/jiboji_skiing_01_amb.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/January_2018/jiboji_skiing_01_intro.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/January_2018/jiboji_skiing_01_intro.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/January_2018/jiboji_skiing_01_boot.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/January_2018/jiboji_skiing_01_boot.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/January_2018/jiboji_skiing_01_ski.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/January_2018/jiboji_skiing_01_ski.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/January_2018/jiboji_skiing_01_outro.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/January_2018/jiboji_skiing_01_outro.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "abcb81d96f2726c59d7a7e86173a08a8799bfafe"
+    }
+]

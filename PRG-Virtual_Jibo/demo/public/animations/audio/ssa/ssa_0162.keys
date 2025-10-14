@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 34,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "7c6adf4b5c13212c58909e6768f8cad0",
+            "name": "Audio Event SSA_0162",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "ssa/SSA_0162.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "7c6adf4b5c13212c58909e6768f8cad0-body",
+            "name": "Body SSA_0162",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "SSA_0162",
+        "categories": "worried, sad",
+        "meta": "audio-only, ssa-only"
+    }
+}

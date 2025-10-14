@@ -1,0 +1,55 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "18a6aac2fdf4ea4d37840d246267e70a3702b8f2"
+    },
+    "content": {
+        "name": "but_01_01.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 0.1,
+                "times": [
+                    0,
+                    0.06666666666666667
+                ],
+                "values": [
+                    0.3490658503988659,
+                    0.3490658503988659
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 0.1,
+                "times": [
+                    0,
+                    0.06666666666666667
+                ],
+                "values": [
+                    -1.3089969389957472,
+                    -1.3089969389957472
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 0.1,
+                "times": [
+                    0,
+                    0.06666666666666667
+                ],
+                "values": [
+                    0.7853981633974483,
+                    0.7853981633974483
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0.03333333333333333,
+                "eventName": "HOLD_SAFE",
+                "payload": {}
+            }
+        ]
+    }
+}

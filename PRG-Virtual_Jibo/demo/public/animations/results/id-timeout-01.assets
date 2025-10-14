@@ -1,0 +1,26 @@
+[
+    {
+        "id": "animations/textures/whiteeye_blur1.png",
+        "type": "texture",
+        "src": "animations/textures/whiteeye_blur1.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "sfx/sfx_tick_01.mp3",
+        "type": "sound",
+        "src": "sfx/sfx_tick_01.mp3"
+    },
+    {
+        "type": "metadata",
+        "animdb": "278cecebe33e62ab182cbb44bcd5528fbdeed25e"
+    }
+]

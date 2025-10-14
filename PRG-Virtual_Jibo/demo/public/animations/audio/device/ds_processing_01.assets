@@ -1,0 +1,11 @@
+[
+    {
+        "id": "device/ds_processing_01.m4a",
+        "type": "sound",
+        "src": "device/ds_processing_01.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "79b228ff1bf907c0e4d6f6ec1713ccbd3ec70e77"
+    }
+]

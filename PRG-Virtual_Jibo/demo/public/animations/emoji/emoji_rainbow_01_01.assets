@@ -1,0 +1,16 @@
+[
+    {
+        "id": "emoji_rainbow.js",
+        "type": "timeline",
+        "src": "emoji_rainbow.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "27f63472f9126092f106024274897855752f33a5"
+    }
+]

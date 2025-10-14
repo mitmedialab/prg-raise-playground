@@ -1,0 +1,31 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/jibojis/earth-with-stars.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/earth-with-stars.png"
+    },
+    {
+        "id": "animations/textures/jibojis/moon.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/moon.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/January_2018/emoji_moon_02.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/January_2018/emoji_moon_02.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "764985075b34f5d73566c296d699c599d34cb4a7"
+    }
+]

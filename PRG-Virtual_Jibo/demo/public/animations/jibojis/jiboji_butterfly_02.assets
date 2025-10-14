@@ -1,0 +1,31 @@
+[
+    {
+        "id": "project://animations/textures/jibojis/butterfly-head-01.png",
+        "type": "texture",
+        "src": "project://animations/textures/jibojis/butterfly-head-01.png"
+    },
+    {
+        "id": "project://animations/textures/jibojis/butterfly-wings-01.png",
+        "type": "texture",
+        "src": "project://animations/textures/jibojis/butterfly-wings-01.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/jibojis/butterfly-wings-01.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/butterfly-wings-01.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "b686630ffaca3460e92e42bbbacb3f8ba1c17f6b"
+    }
+]

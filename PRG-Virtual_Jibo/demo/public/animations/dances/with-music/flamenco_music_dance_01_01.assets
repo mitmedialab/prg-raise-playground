@@ -1,0 +1,21 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/emojis/hf/guitar.png",
+        "type": "texture",
+        "src": "project://animations/textures/emojis/hf/guitar.png"
+    },
+    {
+        "id": "music/music_flamenco_guitar_01.m4a",
+        "type": "sound",
+        "src": "music/music_flamenco_guitar_01.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "ca861291236ff2522814e86fd3846d4f1a93fc48"
+    }
+]

@@ -1,0 +1,41 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/jibojis/basketball-hoop-01.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/basketball-hoop-01.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/white-circle.png",
+        "type": "texture",
+        "src": "animations/textures/white-circle.png"
+    },
+    {
+        "id": "animations/textures/jibojis/basketball-ball-01.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/basketball-ball-01.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "9ba9228063fed3114baa0fdda7f90c8f552ce7e6"
+    }
+]

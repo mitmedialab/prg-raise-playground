@@ -1,0 +1,878 @@
+{
+  "header": {
+    "fileType": "DOFAnimation",
+    "version": "0.002",
+    "creationTime": 1438845266024
+  },
+  "content": {
+    "name": "jibo_blink.dae",
+    "channels": [
+      {
+        "dofName": "bottomSection_r",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          -0.0,
+          0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "eyeSubRootBn_r",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          -0.0,
+          -0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "eyeSubRootBn_t",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.0,
+          0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "eyeSubRootBn_t_2",
+        "times": [
+          0.0,
+          0.033334,
+          0.2,
+          0.233334,
+          0.366667
+        ],
+        "values": [
+          0.0,
+          -1.0E-8,
+          -1.0E-8,
+          0.0,
+          0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "eyeTextureInfixBn_r",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.0,
+          0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "eye_blueChannelBn_r",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.0,
+          0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "eye_greenChannelBn_r",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.0,
+          0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "eye_redChannelBn_r",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.0,
+          0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "lightring_blueChannelBn_r",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.0,
+          0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "lightring_greenChannelBn_r",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.0,
+          0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "lightring_redChannelBn_r",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.0,
+          0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "middleSection_r",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          -0.0,
+          0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "overlayTextureInfixBn_r",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          43.999977,
+          43.999977
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "overlay_blueChannelBn_r",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.0,
+          0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "overlay_greenChannelBn_r",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.0,
+          0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "overlay_redChannelBn_r",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.0,
+          0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "overlay_textureSubRootBn_r",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          -0.0,
+          -0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "overlay_textureSubRootBn_t",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.0,
+          0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "overlay_textureSubRootBn_t_2",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          -0.0015,
+          -0.0015
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "overlay_vertexJoint1_t",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          -0.03044654063,
+          -0.03044654063
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "overlay_vertexJoint1_t_2",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.03047753125,
+          0.03047753125
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "overlay_vertexJoint2_t",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.0,
+          0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "overlay_vertexJoint2_t_2",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.03047753125,
+          0.03047753125
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "overlay_vertexJoint3_t",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.03044654063,
+          0.03044654063
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "overlay_vertexJoint3_t_2",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.03047753125,
+          0.03047753125
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "overlay_vertexJoint4_t",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          -0.03044654063,
+          -0.03044654063
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "overlay_vertexJoint4_t_2",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.0,
+          0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "overlay_vertexJoint5_t",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.0,
+          0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "overlay_vertexJoint5_t_2",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.0,
+          0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "overlay_vertexJoint6_t",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.03044654063,
+          0.03044654063
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "overlay_vertexJoint6_t_2",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.0,
+          0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "overlay_vertexJoint7_t",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          -0.03044654063,
+          -0.03044654063
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "overlay_vertexJoint7_t_2",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          -0.03047753125,
+          -0.03047753125
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "overlay_vertexJoint8_t",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.0,
+          0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "overlay_vertexJoint8_t_2",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          -0.03047753125,
+          -0.03047753125
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "overlay_vertexJoint9_t",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.03044654063,
+          0.03044654063
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "overlay_vertexJoint9_t_2",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          -0.03047753125,
+          -0.03047753125
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "screenBGTextureInfixBn_r",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.0,
+          0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "screenBG_blueChannelBn_r",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.0,
+          0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "screenBG_greenChannelBn_r",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.0,
+          0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "screenBG_redChannelBn_r",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.0,
+          0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "topSection_r",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          -0.0052362327,
+          -0.0052362327
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "vertexJoint1_t",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          -0.03044654063,
+          -0.03044654063
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "vertexJoint1_t_2",
+        "times": [
+          0.0,
+          0.033334,
+          0.066667,
+          0.1,
+          0.133334,
+          0.166667,
+          0.2,
+          0.233334,
+          0.266667,
+          0.3,
+          0.333334,
+          0.366667
+        ],
+        "values": [
+          0.03047753125,
+          0.02258400715,
+          0.007899499601,
+          0.0,
+          0.0,
+          0.0,
+          0.02370817912,
+          0.03278455466,
+          0.0365907728,
+          0.0350093551,
+          0.03207245359,
+          0.03047753125
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "vertexJoint2_t",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.0,
+          0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "vertexJoint2_t_2",
+        "times": [
+          0.0,
+          0.033334,
+          0.066667,
+          0.1,
+          0.133334,
+          0.166667,
+          0.2,
+          0.233334,
+          0.266667,
+          0.3,
+          0.333334,
+          0.366667
+        ],
+        "values": [
+          0.03047753125,
+          0.02258400715,
+          0.007899499601,
+          0.0,
+          0.0,
+          0.0,
+          0.02370817912,
+          0.03278455466,
+          0.0365907728,
+          0.0350093551,
+          0.03207245359,
+          0.03047753125
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "vertexJoint3_t",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.03044654063,
+          0.03044654063
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "vertexJoint3_t_2",
+        "times": [
+          0.0,
+          0.033334,
+          0.066667,
+          0.1,
+          0.133334,
+          0.166667,
+          0.2,
+          0.233334,
+          0.266667,
+          0.3,
+          0.333334,
+          0.366667
+        ],
+        "values": [
+          0.03047753125,
+          0.02258400715,
+          0.007899499601,
+          0.0,
+          0.0,
+          0.0,
+          0.02370817912,
+          0.03278455466,
+          0.0365907728,
+          0.0350093551,
+          0.03207245359,
+          0.03047753125
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "vertexJoint4_t",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          -0.03044654063,
+          -0.03044654063
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "vertexJoint4_t_2",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.0,
+          0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "vertexJoint5_t",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.0,
+          0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "vertexJoint5_t_2",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.0,
+          0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "vertexJoint6_t",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.03044654063,
+          0.03044654063
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "vertexJoint6_t_2",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.0,
+          0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "vertexJoint7_t",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          -0.03044654063,
+          -0.03044654063
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "vertexJoint7_t_2",
+        "times": [
+          0.0,
+          0.033334,
+          0.066667,
+          0.1,
+          0.133334,
+          0.166667,
+          0.2,
+          0.233334,
+          0.266667,
+          0.3,
+          0.333334,
+          0.366667
+        ],
+        "values": [
+          -0.03047753125,
+          -0.02258400715,
+          -0.007899499601,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.02370817912,
+          -0.03278455466,
+          -0.0365907728,
+          -0.0350093551,
+          -0.03207245359,
+          -0.03047753125
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "vertexJoint8_t",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.0,
+          0.0
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "vertexJoint8_t_2",
+        "times": [
+          0.0,
+          0.033334,
+          0.066667,
+          0.1,
+          0.133334,
+          0.166667,
+          0.2,
+          0.233334,
+          0.266667,
+          0.3,
+          0.333334,
+          0.366667
+        ],
+        "values": [
+          -0.03047753125,
+          -0.02258400715,
+          -0.007899499601,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.02370817912,
+          -0.03278455466,
+          -0.0365907728,
+          -0.0350093551,
+          -0.03207245359,
+          -0.03047753125
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "vertexJoint9_t",
+        "times": [
+          0.0,
+          0.366667
+        ],
+        "values": [
+          0.03044654063,
+          0.03044654063
+        ],
+        "length": 0.366667
+      },
+      {
+        "dofName": "vertexJoint9_t_2",
+        "times": [
+          0.0,
+          0.033334,
+          0.066667,
+          0.1,
+          0.133334,
+          0.166667,
+          0.2,
+          0.233334,
+          0.266667,
+          0.3,
+          0.333334,
+          0.366667
+        ],
+        "values": [
+          -0.03047753125,
+          -0.02258400715,
+          -0.007899499601,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.02370817912,
+          -0.03278455466,
+          -0.0365907728,
+          -0.0350093551,
+          -0.03207245359,
+          -0.03047753125
+        ],
+        "length": 0.366667
+      }
+    ],
+    "enumMaps": [
+      {
+        "dofName": "eyeTextureInfixBn_r",
+        "values": {
+          "0": "textures/JiBO_eye_customizer_00.png"
+        }
+      },
+      {
+        "dofName": "overlayTextureInfixBn_r",
+        "values": {
+          "44": "textures/JiBO_eye_customizer_44.png"
+        }
+      },
+      {
+        "dofName": "screenBGTextureInfixBn_r",
+        "values": {
+          "0": "textures/JiBO_BG_00.png"
+        }
+      }
+    ]
+  }
+}

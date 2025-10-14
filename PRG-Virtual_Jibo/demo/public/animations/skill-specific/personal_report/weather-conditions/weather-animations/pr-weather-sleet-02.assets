@@ -1,0 +1,51 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/personal-report/weather-asets-variants/sleet-rain.png",
+        "type": "texture",
+        "src": "animations/textures/personal-report/weather-asets-variants/sleet-rain.png"
+    },
+    {
+        "id": "animations/textures/personal-report/weather-assets/flower-rain.png",
+        "type": "texture",
+        "src": "animations/textures/personal-report/weather-assets/flower-rain.png"
+    },
+    {
+        "id": "animations/textures/personal-report/weather-asets-variants/sleet-snow.png",
+        "type": "texture",
+        "src": "animations/textures/personal-report/weather-asets-variants/sleet-snow.png"
+    },
+    {
+        "id": "animations/textures/personal-report/weather-assets/snow.png",
+        "type": "texture",
+        "src": "animations/textures/personal-report/weather-assets/snow.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "sfx/Skills/PersonalReport/sfx_weather_sleet_02_sleetamb.ogg",
+        "type": "sound",
+        "src": "sfx/Skills/PersonalReport/sfx_weather_sleet_02_sleetamb.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "1c25f84cf5b2fb43869c24a9a6c53d213ff20a41"
+    }
+]

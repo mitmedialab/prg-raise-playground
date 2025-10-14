@@ -1,0 +1,36 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/emojis/lights-dim-01.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/lights-dim-01.png"
+    },
+    {
+        "id": "animations/textures/emojis/light-glow-01.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/light-glow-01.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "6420844053f52ef877f7df5b7af92978b21e8fa0"
+    }
+]

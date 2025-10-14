@@ -1,0 +1,135 @@
+{
+    "framerate": 30,
+    "duration": 70,
+    "layers": [
+        {
+            "id": "5b631fd526fc49068920fc50cb5c10d6",
+            "name": "Body #1",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "Head": -10,
+                        "Torso": -11.999999999999993,
+                        "Pelvis": 18.5
+                    },
+                    "time": 15
+                },
+                {
+                    "value": {
+                        "Head": 10,
+                        "Torso": 10.499999999999998,
+                        "Pelvis": -16.999999999999993,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 35
+                },
+                {
+                    "value": {
+                        "Head": -10,
+                        "Torso": -11.999999999999993,
+                        "Pelvis": 18.5
+                    },
+                    "time": 55
+                },
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0
+                    },
+                    "time": 69
+                }
+            ]
+        },
+        {
+            "id": "b7b8949a241045dca0ca9414ce202027",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye-center-to-down-01"
+                        },
+                        "HoldFinalPose": true,
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_quick_blink_01"
+                        },
+                        "HoldFinalPose": false,
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        }
+                    },
+                    "time": 55
+                }
+            ]
+        },
+        {
+            "id": "5cc29897f6bb43248f803d7c6dce405b",
+            "name": "Event",
+            "type": "Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 54,
+                    "value": {
+                        "Event": {
+                            "name": "HOLD_SAFE",
+                            "payload": ""
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "scale": "1.2",
+    "version": "0.15.0",
+    "animdb": {
+        "name": "",
+        "scaleMax": 1,
+        "scaleMin": 1,
+        "speedMax": 1,
+        "categories": "Shift, ib",
+        "meta": "adjust, shift, postural-shift, body-only, bored, medium, ib-face-true, ib-face-false, ib-idle-short-time,ib-idle-long-time, ib-low-valence, ib-drive-social, ib-drive-playful"
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

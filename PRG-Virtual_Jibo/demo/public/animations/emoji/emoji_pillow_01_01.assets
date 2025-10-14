@@ -1,0 +1,16 @@
+[
+    {
+        "id": "emoji_pillow.js",
+        "type": "timeline",
+        "src": "emoji_pillow.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "6a7a6fc2fcef1dfe76819cd1f1ec44f7a57d6ec8"
+    }
+]

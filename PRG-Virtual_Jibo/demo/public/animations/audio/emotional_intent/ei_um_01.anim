@@ -1,0 +1,57 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "ae98edd5baf17792bd5220e95146478e72296808"
+    },
+    "content": {
+        "name": "ei_um_01.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 0.5333333333333333,
+                "times": [
+                    0,
+                    0.5
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 0.5333333333333333,
+                "times": [
+                    0,
+                    0.5
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 0.5333333333333333,
+                "times": [
+                    0,
+                    0.5
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0,
+                "eventName": "play-audio",
+                "payload": {
+                    "file": "emotional_intent/ei_um_01.m4a"
+                }
+            }
+        ]
+    }
+}

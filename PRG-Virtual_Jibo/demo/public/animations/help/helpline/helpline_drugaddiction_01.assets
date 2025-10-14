@@ -1,0 +1,21 @@
+[
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/helpline/drugaddiction.png",
+        "type": "texture",
+        "src": "animations/textures/helpline/drugaddiction.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "49e5e8dc6cc443ce0b6b4bfdc35caa80941dab79"
+    }
+]

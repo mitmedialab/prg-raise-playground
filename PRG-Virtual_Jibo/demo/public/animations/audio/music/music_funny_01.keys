@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 486,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "41b234a44496483c2e43126d6f5b2705",
+            "name": "Audio Event music_funny_01",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "music/music_funny_01.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "41b234a44496483c2e43126d6f5b2705-body",
+            "name": "Body music_funny_01",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "music_funny_01",
+        "categories": "audio-music",
+        "meta": "dance, short, funny, joke, ukulele, trombone, happy, cheerful, audio-only"
+    }
+}

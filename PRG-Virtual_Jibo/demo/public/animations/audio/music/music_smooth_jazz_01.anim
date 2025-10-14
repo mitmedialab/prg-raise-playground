@@ -1,0 +1,57 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "a7ad2971c50742005968ece325dff017169436d0"
+    },
+    "content": {
+        "name": "music_smooth_jazz_01.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 25.133333333333333,
+                "times": [
+                    0,
+                    25.1
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 25.133333333333333,
+                "times": [
+                    0,
+                    25.1
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 25.133333333333333,
+                "times": [
+                    0,
+                    25.1
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0,
+                "eventName": "play-audio",
+                "payload": {
+                    "file": "music/music_smooth_jazz_01.m4a"
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,16 @@
+[
+    {
+        "id": "emoji_frenchbulldog.js",
+        "type": "timeline",
+        "src": "emoji_frenchbulldog.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "a171de9901d49f2789d17acf4bf75dce3c878b45"
+    }
+]

@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/yoga/sun_salutation/heart_center_front.png",
+        "type": "texture",
+        "src": "animations/textures/yoga/sun_salutation/heart_center_front.png"
+    },
+    {
+        "id": "animations/textures/yoga/Assets/Yoga_Directional_UI.png",
+        "type": "texture",
+        "src": "animations/textures/yoga/Assets/Yoga_Directional_UI.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "4bca6489b29b3cb24161cc92cc61b7ef9322b70c"
+    }
+]

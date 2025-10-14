@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "emoji_pretzel.js",
+        "type": "timeline",
+        "src": "emoji_pretzel.js"
+    },
+    {
+        "type": "metadata",
+        "animdb": "5241b27cd0176a54d424680d84c680b3a6f44dea"
+    }
+]

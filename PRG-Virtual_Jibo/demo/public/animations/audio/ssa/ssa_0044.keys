@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 56,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "08ddad4aa92eab76dfc6d9b4caa985d8",
+            "name": "Audio Event SSA_0044",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "ssa/SSA_0044.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "08ddad4aa92eab76dfc6d9b4caa985d8-body",
+            "name": "Body SSA_0044",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "SSA_0044",
+        "categories": "laughing, short",
+        "meta": "audio-only, ssa-only"
+    }
+}

@@ -1,0 +1,41 @@
+[
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "jibo-anim-db-animations://device/ticks/ds_tick_01.m4a",
+        "type": "sound",
+        "src": "jibo-anim-db-animations://device/ticks/ds_tick_01.m4a"
+    },
+    {
+        "id": "jibo-anim-db-animations://device/ticks/ds_tick_02.m4a",
+        "type": "sound",
+        "src": "jibo-anim-db-animations://device/ticks/ds_tick_02.m4a"
+    },
+    {
+        "id": "jibo-anim-db-animations://device/ticks/ds_tick_03.m4a",
+        "type": "sound",
+        "src": "jibo-anim-db-animations://device/ticks/ds_tick_03.m4a"
+    },
+    {
+        "id": "jibo-anim-db-animations://device/ticks/ds_tick_04.m4a",
+        "type": "sound",
+        "src": "jibo-anim-db-animations://device/ticks/ds_tick_04.m4a"
+    },
+    {
+        "id": "jibo-anim-db-animations://device/ticks/ds_tick_05.m4a",
+        "type": "sound",
+        "src": "jibo-anim-db-animations://device/ticks/ds_tick_05.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "138818219e72f4a0d15571f6663391bf41373c79"
+    }
+]

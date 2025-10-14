@@ -1,0 +1,21 @@
+[
+    {
+        "id": "music/music_waltz_00.m4a",
+        "type": "sound",
+        "src": "music/music_waltz_00.m4a"
+    },
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "ef9f7e958a4efbf6f23214fcf7a51667530bb4ab"
+    }
+]

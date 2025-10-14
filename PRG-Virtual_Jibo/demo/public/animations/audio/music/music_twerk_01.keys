@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 579,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "720ce1d81ff0b82abb2a7f8cca35a091",
+            "name": "Audio Event music_twerk_01",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "music/music_twerk_01.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "720ce1d81ff0b82abb2a7f8cca35a091-body",
+            "name": "Body music_twerk_01",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "music_twerk_01",
+        "categories": "audio-music",
+        "meta": "dance, twerk, twerking, audio-only"
+    }
+}

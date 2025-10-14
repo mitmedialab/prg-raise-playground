@@ -1,0 +1,8 @@
+IFR components: Copyright (c) 2011-2016, IF Robots LLC.  All rights reserved.
+Other components: Copyright (c) 2012-2016, Jibo, Inc.  All rights reserved.
+
+IFR components provided to Jibo, Inc. by IF Robots LLC for use only in the Jibo SDK.
+
+All use of the Jibo SDK is subject to the Jibo SDK End User License Agreement (EULA)
+distributed herewith.  If you did not receive a copy of the EULA, you may view a
+copy at https://developers.jibo.com/license.

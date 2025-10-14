@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 30,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "f6580083d11226e9a29cc47b9d8eeb4b",
+            "name": "Audio Event SSA_0073",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "ssa/SSA_0073.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "f6580083d11226e9a29cc47b9d8eeb4b-body",
+            "name": "Body SSA_0073",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "SSA_0073",
+        "categories": "embarrassed",
+        "meta": "short, audio-only, ssa-only"
+    }
+}

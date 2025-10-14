@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 259,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "afd693b47a951d15df18c952d77d7584",
+            "name": "Audio Event music_japanese_water_garden_00",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "music/music_japanese_water_garden_00.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "afd693b47a951d15df18c952d77d7584-body",
+            "name": "Body music_japanese_water_garden_00",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "music_japanese_water_garden_00",
+        "categories": "audio-music",
+        "meta": "dance, short, smooth, tranquil, japanese, calm, meditation, audio-only"
+    }
+}

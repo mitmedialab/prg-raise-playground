@@ -1,0 +1,26 @@
+[
+    {
+        "id": "emoji_gift_open.js",
+        "type": "timeline",
+        "src": "emoji_gift_open.js"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://sfx/sfx_sparkles_02.wav",
+        "type": "sound",
+        "src": "project://sfx/sfx_sparkles_02.wav"
+    },
+    {
+        "type": "metadata",
+        "animdb": "9c0107c12d7aff7891a0a1bed1b5f872d3e166da"
+    }
+]

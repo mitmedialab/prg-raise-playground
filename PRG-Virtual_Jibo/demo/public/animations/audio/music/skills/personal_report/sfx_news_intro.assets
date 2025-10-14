@@ -1,0 +1,11 @@
+[
+    {
+        "id": "music/skills/personal_report/sfx_news_intro.ogg",
+        "type": "sound",
+        "src": "music/skills/personal_report/sfx_news_intro.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "a9bd6d235e36fffe29c724e4f6f1a5e59d493abb"
+    }
+]

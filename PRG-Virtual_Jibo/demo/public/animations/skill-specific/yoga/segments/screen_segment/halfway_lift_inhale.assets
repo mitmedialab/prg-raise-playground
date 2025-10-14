@@ -1,0 +1,11 @@
+[
+    {
+        "id": "animations/textures/yoga/sun_salutation/halfway_lift_side.png",
+        "type": "texture",
+        "src": "animations/textures/yoga/sun_salutation/halfway_lift_side.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "a8d7f150a93d342de0c4836086acc50bc9f18a6d"
+    }
+]

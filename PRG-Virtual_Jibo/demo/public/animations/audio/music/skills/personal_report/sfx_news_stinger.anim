@@ -1,0 +1,57 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "b0db7e57882490f03e71e6bcd408eb9c389c7646"
+    },
+    "content": {
+        "name": "sfx_news_stinger.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 1.6,
+                "times": [
+                    0,
+                    1.5666666666666667
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 1.6,
+                "times": [
+                    0,
+                    1.5666666666666667
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 1.6,
+                "times": [
+                    0,
+                    1.5666666666666667
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0,
+                "eventName": "play-audio",
+                "payload": {
+                    "file": "music/skills/personal_report/sfx_news_stinger.ogg"
+                }
+            }
+        ]
+    }
+}

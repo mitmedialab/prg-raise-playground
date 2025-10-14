@@ -1,0 +1,21 @@
+[
+    {
+        "id": "music/music_japanese_water_garden_00.m4a",
+        "type": "sound",
+        "src": "music/music_japanese_water_garden_00.m4a"
+    },
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "ae39f2eec6dd155308615cad17a298f1e0e0e32d"
+    }
+]

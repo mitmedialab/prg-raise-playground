@@ -1,0 +1,41 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/personal-report/weather-asets-variants/cloudy-gray-cloud-01.png",
+        "type": "texture",
+        "src": "animations/textures/personal-report/weather-asets-variants/cloudy-gray-cloud-01.png"
+    },
+    {
+        "id": "animations/textures/personal-report/weather-asets-variants/cloudy-gray-cloud-02.png",
+        "type": "texture",
+        "src": "animations/textures/personal-report/weather-asets-variants/cloudy-gray-cloud-02.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "sfx/Skills/PersonalReport/sfx_weather_cloudy01_amb.ogg",
+        "type": "sound",
+        "src": "sfx/Skills/PersonalReport/sfx_weather_cloudy01_amb.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "44956e1328a0d3b4df08e345ab244bf6b16ea2d5"
+    }
+]

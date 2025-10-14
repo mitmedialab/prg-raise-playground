@@ -1,0 +1,21 @@
+[
+    {
+        "id": "project://device/ds_speakend_01.m4a",
+        "type": "sound",
+        "src": "project://device/ds_speakend_01.m4a"
+    },
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "7b2ea9dd7ef1e2c8c017d1a86e679853cfae9ea5"
+    }
+]

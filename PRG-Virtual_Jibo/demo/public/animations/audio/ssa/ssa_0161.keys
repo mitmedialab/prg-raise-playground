@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 18,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "bbd677e2a6504e52cbf48f308e0d3d9a",
+            "name": "Audio Event SSA_0161",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "ssa/SSA_0161.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "bbd677e2a6504e52cbf48f308e0d3d9a-body",
+            "name": "Body SSA_0161",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "SSA_0161",
+        "categories": "disgusted",
+        "meta": "audio-only, ssa-only"
+    }
+}

@@ -1,0 +1,57 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "1bb455b44cd8deead6686630f4f4f0e83395e924"
+    },
+    "content": {
+        "name": "ei_yawn_04.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 3.2666666666666666,
+                "times": [
+                    0,
+                    3.2333333333333334
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 3.2666666666666666,
+                "times": [
+                    0,
+                    3.2333333333333334
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 3.2666666666666666,
+                "times": [
+                    0,
+                    3.2333333333333334
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0,
+                "eventName": "play-audio",
+                "payload": {
+                    "file": "emotional_intent/yawns/ei_yawn_04.m4a"
+                }
+            }
+        ]
+    }
+}

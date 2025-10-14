@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "drawing_mondrian.js",
+        "type": "timeline",
+        "src": "drawing_mondrian.js"
+    },
+    {
+        "type": "metadata",
+        "animdb": "0f2d210e84573c7bde045305ffd1bb0f62a3d948"
+    }
+]

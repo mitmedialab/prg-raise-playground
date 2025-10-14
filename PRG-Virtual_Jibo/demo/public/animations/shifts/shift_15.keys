@@ -1,0 +1,131 @@
+{
+    "framerate": 30,
+    "duration": 77,
+    "layers": [
+        {
+            "id": "5b631fd526fc49068920fc50cb5c10d6",
+            "name": "Body #1",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "Head": -10,
+                        "Torso": -11.999999999999993,
+                        "Pelvis": 20
+                    },
+                    "time": 14
+                },
+                {
+                    "value": {
+                        "Head": 10,
+                        "Torso": 12,
+                        "Pelvis": -20
+                    },
+                    "time": 35
+                },
+                {
+                    "value": {
+                        "Head": -10,
+                        "Torso": -11.999999999999993,
+                        "Pelvis": 20
+                    },
+                    "time": 57
+                },
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 76
+                }
+            ]
+        },
+        {
+            "id": "dbe98fdf28ec44b595269126f6ee769a",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye-center-to-down-01"
+                        },
+                        "HoldFinalPose": true,
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye-down-to-center-01"
+                        },
+                        "HoldFinalPose": true,
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        }
+                    },
+                    "time": 50
+                },
+                {
+                    "value": {
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "Eye_Quick_Blink_01"
+                        },
+                        "HoldFinalPose": false,
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        }
+                    },
+                    "time": 68
+                }
+            ]
+        }
+    ],
+    "scale": "1.4",
+    "version": "0.15.0",
+    "animdb": {
+        "name": "",
+        "scaleMax": 1,
+        "scaleMin": 1,
+        "categories": "Excited, Nervous, Shift, ib",
+        "meta": "wiggle, anxious, postural-shift, bored, sway, long, ib-face-true, ib-face-false, ib-idle-short-time, ib-idle-long-time, ib-drive-playful, ib-low-valence, ib-drive-social, ib-drive-embodiment"
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

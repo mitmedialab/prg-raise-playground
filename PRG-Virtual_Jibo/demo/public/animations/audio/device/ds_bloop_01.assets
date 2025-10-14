@@ -1,0 +1,11 @@
+[
+    {
+        "id": "device/ds_bloop_01.mp3",
+        "type": "sound",
+        "src": "device/ds_bloop_01.mp3"
+    },
+    {
+        "type": "metadata",
+        "animdb": "66b973a1b4c89833533e1c5ff5eb884defbd4c5f"
+    }
+]

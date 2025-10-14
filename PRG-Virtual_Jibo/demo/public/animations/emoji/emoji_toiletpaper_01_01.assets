@@ -1,0 +1,16 @@
+[
+    {
+        "id": "emoji_toiletPaper.js",
+        "type": "timeline",
+        "src": "emoji_toiletPaper.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "267fe14435d7d2355cc92e465415f0a44a9d622a"
+    }
+]

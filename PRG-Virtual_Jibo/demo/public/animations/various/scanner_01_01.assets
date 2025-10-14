@@ -1,0 +1,26 @@
+[
+    {
+        "id": "animations/textures/radar_center.png",
+        "type": "texture",
+        "src": "animations/textures/radar_center.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/radar.png",
+        "type": "texture",
+        "src": "animations/textures/radar.png"
+    },
+    {
+        "id": "project://sfx/sfx_scanner_01.m4a",
+        "type": "sound",
+        "src": "project://sfx/sfx_scanner_01.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "34192fa1a39015b87e747c0196b6ac29a9510bf7"
+    }
+]

@@ -1,0 +1,62 @@
+{
+    "framerate": 30,
+    "duration": 26,
+    "layers": [
+        {
+            "id": "5b631fd526fc49068920fc50cb5c10d6",
+            "name": "Body #1",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "Head": 5.625,
+                        "Torso": 6.749999999999999,
+                        "Pelvis": -11.249999999999998,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 12
+                },
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0
+                    },
+                    "time": 25
+                }
+            ]
+        }
+    ],
+    "scale": "1",
+    "version": "0.14.0",
+    "animdb": {
+        "name": "engaged-05",
+        "scaleMax": 1,
+        "scaleMin": 1,
+        "speedMax": 1,
+        "categories": "Shift, Beat, Idle",
+        "meta": "adjust, shift, postural-shift, body-only, bored, medium"
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

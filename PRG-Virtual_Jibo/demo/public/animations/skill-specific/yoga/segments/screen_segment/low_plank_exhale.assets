@@ -1,0 +1,11 @@
+[
+    {
+        "id": "animations/textures/yoga/sun_salutation/low_plank_side.png",
+        "type": "texture",
+        "src": "animations/textures/yoga/sun_salutation/low_plank_side.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "8f279bcc3a8a8352f1df3670d49a5a24cf56c65a"
+    }
+]

@@ -1,0 +1,21 @@
+[
+    {
+        "id": "music/music_techno_05.m4a",
+        "type": "sound",
+        "src": "music/music_techno_05.m4a"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "fcd014fba564e4abb61a01978139e21625dc432b"
+    }
+]

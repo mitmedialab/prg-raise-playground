@@ -1,0 +1,16 @@
+[
+    {
+        "id": "emoji_flowerRed.js",
+        "type": "timeline",
+        "src": "emoji_flowerRed.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "b3278b991ecac3df6daaccb5f982973ae683e8e8"
+    }
+]

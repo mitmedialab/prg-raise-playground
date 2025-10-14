@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 66,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "8502603c845ed2530f62550490233020",
+            "name": "Audio Event sfx_heart_01",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "sfx/sfx_heart_01.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "8502603c845ed2530f62550490233020-body",
+            "name": "Body sfx_heart_01",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "sfx_heart_01",
+        "categories": "sfx, heart",
+        "meta": "audio-only, sfx-only, emoji"
+    }
+}

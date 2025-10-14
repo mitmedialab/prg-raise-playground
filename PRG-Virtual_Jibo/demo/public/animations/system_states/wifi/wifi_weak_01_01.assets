@@ -1,0 +1,26 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/pixelate-step1.png",
+        "type": "texture",
+        "src": "animations/textures/pixelate-step1.png"
+    },
+    {
+        "id": "animations/textures/pixelate-step2.png",
+        "type": "texture",
+        "src": "animations/textures/pixelate-step2.png"
+    },
+    {
+        "id": "animations/textures/pixelate-step3.png",
+        "type": "texture",
+        "src": "animations/textures/pixelate-step3.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "b6f4b6b14eab59ee2c3b4de418fdef7ab52844ba"
+    }
+]
