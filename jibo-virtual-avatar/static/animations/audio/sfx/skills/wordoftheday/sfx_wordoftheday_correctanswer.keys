@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 64,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "4bcdc6a3551088d8a67e4502675152ee",
+            "name": "Audio Event sfx_wordoftheday_correctanswer",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "sfx/Skills/WordoftheDay/sfx_wordoftheday_correctanswer.ogg"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "4bcdc6a3551088d8a67e4502675152ee-body",
+            "name": "Body sfx_wordoftheday_correctanswer",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "sfx_wordoftheday_correctanswer",
+        "categories": "sfx",
+        "meta": "audio-only, skills, word-of-the-day, correct-answer"
+    }
+}

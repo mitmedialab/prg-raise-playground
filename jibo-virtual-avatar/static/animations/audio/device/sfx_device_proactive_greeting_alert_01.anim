@@ -1,0 +1,57 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "8d8f8bf8768c8ca78db7eef5a8a0d122a12a0672"
+    },
+    "content": {
+        "name": "sfx_device_proactive_greeting_alert_01.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 0.43333333333333335,
+                "times": [
+                    0,
+                    0.4
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 0.43333333333333335,
+                "times": [
+                    0,
+                    0.4
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 0.43333333333333335,
+                "times": [
+                    0,
+                    0.4
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0,
+                "eventName": "play-audio",
+                "payload": {
+                    "file": "device/sfx_device_proactive_greeting_alert_01.m4a"
+                }
+            }
+        ]
+    }
+}

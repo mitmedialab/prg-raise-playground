@@ -1,0 +1,36 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/jibojis/car-01.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/car-01.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/white-circle.png",
+        "type": "texture",
+        "src": "animations/textures/white-circle.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "23076285f5152a75756063dee18edf98661f0ee9"
+    }
+]

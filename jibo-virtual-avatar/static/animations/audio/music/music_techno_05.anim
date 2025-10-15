@@ -1,0 +1,57 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "1c7106d9eaf94c1b4ecb4c528052b72760dd5052"
+    },
+    "content": {
+        "name": "music_techno_05.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 5.1,
+                "times": [
+                    0,
+                    5.066666666666666
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 5.1,
+                "times": [
+                    0,
+                    5.066666666666666
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 5.1,
+                "times": [
+                    0,
+                    5.066666666666666
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0,
+                "eventName": "play-audio",
+                "payload": {
+                    "file": "music/music_techno_05.m4a"
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,97 @@
+{
+    "framerate": 30,
+    "duration": 11,
+    "layers": [
+        {
+            "id": "f2d60ac03905403c82075b655f5cdbdb",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_closed_01"
+                        },
+                        "HoldFinalPose": true
+                    }
+                }
+            ]
+        },
+        {
+            "id": "56cb752cdd504770b9163ca7a0f7ed1f",
+            "name": "Body - key poses",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": 180,
+                        "Torso": 0,
+                        "Pelvis": -180,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "b4e6d13f35e346c6b754c3774249de2c",
+            "name": "Audio Event",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "sfx/Skills/Hue/sfx_hue_cooler.ogg"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "be746a2a3c54448ba593eb66ab1198ee",
+            "name": "LED",
+            "type": "LED",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Color": {
+                            "r": 60,
+                            "g": 0,
+                            "b": 255
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        }
+    ],
+    "version": "0.15.0",
+    "scale": 1,
+    "animdb": {
+        "categories": "hue",
+        "meta": "lights-cool, to, intro, pose"
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

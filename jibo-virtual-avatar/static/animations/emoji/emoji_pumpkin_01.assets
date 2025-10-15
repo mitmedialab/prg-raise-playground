@@ -1,0 +1,21 @@
+[
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/jibojis/fall-related/pumpkin-01.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/fall-related/pumpkin-01.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "b0eb1af6f989d239d0537c13bb136492fa745a00"
+    }
+]

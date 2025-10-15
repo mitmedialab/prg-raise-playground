@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 29,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "c62733e08d4a6c63dadfca04fdbaf6fe",
+            "name": "Audio Event SSA_0127",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "ssa/SSA_0127.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "c62733e08d4a6c63dadfca04fdbaf6fe-body",
+            "name": "Body SSA_0127",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "SSA_0127",
+        "categories": "surprised, happy, proud",
+        "meta": "audio-only, ssa-only"
+    }
+}

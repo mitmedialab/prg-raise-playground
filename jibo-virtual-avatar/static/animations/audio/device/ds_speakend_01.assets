@@ -1,0 +1,11 @@
+[
+    {
+        "id": "device/ds_speakend_01.m4a",
+        "type": "sound",
+        "src": "device/ds_speakend_01.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "b21450dd81139a5f25a7b97836310365baa018c7"
+    }
+]

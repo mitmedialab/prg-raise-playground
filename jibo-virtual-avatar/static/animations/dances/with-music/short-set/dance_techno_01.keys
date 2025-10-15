@@ -1,0 +1,144 @@
+{
+    "version": "0.15.0",
+    "framerate": 30,
+    "duration": 344,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "5b9f7216e696a818949703b68fceda4a",
+            "name": "Audio Event music_techno_04",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "music/music_techno_04.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "b80cc350b86f4f088f1719c70dd9a062",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "pigeon_02"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "pigeon_02"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 49
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "pigeon_02"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 98
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "pigeon_02"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 147
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "pigeon_02"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 196
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "pigeon_02"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 245
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "pigeon_02"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 294
+                }
+            ]
+        }
+    ],
+    "animdb": {
+        "name": "",
+        "categories": "dance",
+        "meta": "dance, techno, beverly-hills, short, music, rom-electronic"
+    }
+}

@@ -1,0 +1,94 @@
+{
+    "framerate": 30,
+    "duration": 40,
+    "layers": [
+        {
+            "id": "e9ed886d631541a1b098f0d3cb3b4c63",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_happy_in_01"
+                        },
+                        "HoldFinalPose": true
+                    }
+                }
+            ]
+        },
+        {
+            "id": "c2f347dd9a9946b290c212e6500dca81",
+            "name": "Body",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "Head": 37.06060185441487,
+                        "Torso": 37.488340554529294,
+                        "Pelvis": -73.89443391175685,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 25
+                }
+            ]
+        },
+        {
+            "id": "6bd4853c49394d91a4aa8b9ff1d8796c",
+            "name": "Event",
+            "type": "Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Event": {
+                            "name": "HOLD_SAFE",
+                            "payload": ""
+                        }
+                    },
+                    "time": 25
+                }
+            ]
+        }
+    ],
+    "version": "0.15.0",
+    "scale": "1.4",
+    "animdb": {
+        "categories": "Proud",
+        "name": "",
+        "speedMin": 1,
+        "meta": "confident, lean-back, defiant, courage, rom"
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

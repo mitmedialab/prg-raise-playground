@@ -1,0 +1,16 @@
+[
+    {
+        "id": "emoji_rainCloud.js",
+        "type": "timeline",
+        "src": "emoji_rainCloud.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "90ec85e457e5917feeb2fca7e87a14ba6ec227c6"
+    }
+]

@@ -1,0 +1,432 @@
+{
+    "version": "0.15.0",
+    "framerate": 30,
+    "duration": 109,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "7e4dfe17d12b4721ae9a42ebed692205",
+            "name": "Reference #1",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_to_close_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "close_to_eye_02"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 45
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_laugh_in_00"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 60
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_laugh_loop_00"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 69
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_laugh_loop_00"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 74
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_laugh_loop_00"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 79
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_laugh_out_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 90
+                }
+            ]
+        },
+        {
+            "id": "ce9f68e2204846de9d613de448003207",
+            "name": "Reference #3",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye-bounce-02"
+                        },
+                        "HoldFinalPose": false
+                    },
+                    "time": 4
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye-bounce-02"
+                        },
+                        "HoldFinalPose": false
+                    },
+                    "time": 7
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye-bounce-02"
+                        },
+                        "HoldFinalPose": false
+                    },
+                    "time": 10
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye-bounce-02"
+                        },
+                        "HoldFinalPose": false
+                    },
+                    "time": 13
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye-bounce-02"
+                        },
+                        "HoldFinalPose": false
+                    },
+                    "time": 16
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye-bounce-02"
+                        },
+                        "HoldFinalPose": false
+                    },
+                    "time": 19
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye-bounce-02"
+                        },
+                        "HoldFinalPose": false
+                    },
+                    "time": 22
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye-bounce-02"
+                        },
+                        "HoldFinalPose": false
+                    },
+                    "time": 25
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye-bounce-02"
+                        },
+                        "HoldFinalPose": false
+                    },
+                    "time": 28
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye-bounce-02"
+                        },
+                        "HoldFinalPose": false
+                    },
+                    "time": 31
+                }
+            ]
+        },
+        {
+            "id": "ce8a9a5a7a2b487c9d9122dae7bed17b",
+            "name": "Body",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "Head": -36.999999999999986,
+                        "Torso": 3.999999999999978,
+                        "Pelvis": 43.00000000000002,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 35
+                },
+                {
+                    "value": {
+                        "Head": -36.999999999999986,
+                        "Torso": 3.999999999999978,
+                        "Pelvis": 43.00000000000002,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 45
+                },
+                {
+                    "value": {
+                        "Head": -36.999999999999986,
+                        "Torso": 3.999999999999978,
+                        "Pelvis": 43.00000000000002,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 90
+                },
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 108
+                }
+            ]
+        },
+        {
+            "id": "cf25bd32398743ccb79d5e37fb41f64f",
+            "name": "Event",
+            "type": "Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Event": {
+                            "name": "HOLD_SAFE",
+                            "payload": ""
+                        }
+                    },
+                    "time": 35
+                }
+            ]
+        },
+        {
+            "id": "fd943a2edbeb47eabdf7cdc18eb07642",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_quick_blink_01"
+                        },
+                        "HoldFinalPose": false
+                    },
+                    "time": 98
+                }
+            ]
+        },
+        {
+            "id": "bf882b6507cc42bc8d2e5af3fb65b733",
+            "name": "Audio Event",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "sfx/sfx_fart_robotic_01.m4a"
+                        }
+                    },
+                    "time": 10
+                },
+                {
+                    "time": 60,
+                    "value": {
+                        "AudioEvent": {
+                            "file": "emotional_intent/ei_giggle_01.m4a"
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "animdb": {
+        "name": "Fart_02",
+        "categories": "Various",
+        "meta": "fart, pass-gas, farting, quick, squeeze",
+        "scaleMin": 1,
+        "speedMin": 1
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

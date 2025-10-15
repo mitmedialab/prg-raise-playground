@@ -1,0 +1,41 @@
+{
+    "framerate": 30,
+    "duration": 8,
+    "layers": [
+        {
+            "id": "f5328fd0721b4b2fa2d3c2b46a72a5b5",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_to_close_02"
+                        },
+                        "HoldFinalPose": true
+                    }
+                }
+            ]
+        }
+    ],
+    "version": "0.15.0",
+    "scale": "1",
+    "animdb": {
+        "speedMin": 1,
+        "categories": "GlobalEye",
+        "meta": "eye-only, open-to-close, o-to-c, opened-to-closed",
+        "name": "Open_To_Close_01"
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

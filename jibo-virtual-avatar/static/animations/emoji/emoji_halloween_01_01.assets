@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "emoji_halloween.js",
+        "type": "timeline",
+        "src": "emoji_halloween.js"
+    },
+    {
+        "type": "metadata",
+        "animdb": "0ec0a3d048b510251068566262a46ec36014f386"
+    }
+]

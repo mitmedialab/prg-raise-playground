@@ -1,0 +1,26 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/personal-report/weather-assets/Fog.png",
+        "type": "texture",
+        "src": "animations/textures/personal-report/weather-assets/Fog.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "sfx/Skills/PersonalReport/sfx_weather_fog_01.ogg",
+        "type": "sound",
+        "src": "sfx/Skills/PersonalReport/sfx_weather_fog_01.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "80aff45a24ea979278519172dbf01c19edd4552b"
+    }
+]

@@ -1,0 +1,910 @@
+{
+  "header": {
+    "fileType": "Kinematics",
+    "version": "0.001",
+    "creationTime": 1434244315999
+  },
+  "content": {
+    "controls": [
+      {
+        "dofName": "bottomSection_r",
+        "skeletonFrameName": "bottomSection",
+        "xyzRotationAxis": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "wxyzQuatInitialRotation": [
+          -0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        "min": -3.0543270111083984,
+        "max": 3.054326057434082,
+        "isCyclic": true,
+        "controlType": "ROTATION",
+        "controlName": "bottomSection_r rotation"
+      },
+      {
+        "dofName": "eyeSubRootBn_r",
+        "skeletonFrameName": "eyeSubRootBn",
+        "xyzRotationAxis": [
+          -0.0,
+          -0.0,
+          1.0
+        ],
+        "wxyzQuatInitialRotation": [
+          1.0,
+          0.0,
+          0.0,
+          -0.0
+        ],
+        "min": -3.0543270111083984,
+        "max": 3.0543270111083984,
+        "isCyclic": true,
+        "controlType": "ROTATION",
+        "controlName": "eyeSubRootBn_r rotation"
+      },
+      {
+        "dofName": "eyeSubRootBn_t",
+        "skeletonFrameName": "eyeSubRootBn",
+        "xyzTranslationDirection": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          -0.0,
+          9.99999993922529E-9,
+          0.0
+        ],
+        "min": -0.09999999403953552,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "eyeSubRootBn_t translation"
+      },
+      {
+        "dofName": "eyeSubRootBn_t_2",
+        "skeletonFrameName": "eyeSubRootBn",
+        "xyzTranslationDirection": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          -0.0,
+          9.99999993922529E-9,
+          0.0
+        ],
+        "min": -0.09999999403953552,
+        "max": 0.10000000149011612,
+        "controlType": "TRANSLATION",
+        "controlName": "eyeSubRootBn_t_2 translation"
+      },
+      {
+        "dofName": "eyeTextureInfixBn_r",
+        "meshName": "jiboEyeMeshMesh",
+        "baseTextureFile": "/Users/jg/projects/ifrobots/clients/jibo/production/mycontent/collada/prototype/textures/JiBO_eye_customizer_00.png",
+        "controlType": "TEXTURE",
+        "controlName": "eyeTextureInfixBn_r texture"
+      },
+      {
+        "redDOFName": "eye_redChannelBn_r",
+        "greenDOFName": "eye_greenChannelBn_r",
+        "blueDOFName": "eye_blueChannelBn_r",
+        "alphaDOFName": "eye_alphaChannelBn_r",
+        "meshNames": [
+          "jiboEyeMeshMesh"
+        ],
+        "controlType": "COLOR",
+        "controlName": "jiboEyeMeshMesh color"
+      },
+      {
+        "dofName": "eyeVisibilityBn_r",
+        "meshNames": [
+          "jiboEyeMeshMesh"
+        ],
+        "controlType": "VISIBILITY",
+        "controlName": "jiboEyeMeshMesh visibility"
+      },
+      {
+        "redDOFName": "lightring_redChannelBn_r",
+        "greenDOFName": "lightring_greenChannelBn_r",
+        "blueDOFName": "lightring_blueChannelBn_r",
+        "meshNames": [
+          "lightringMeshMesh"
+        ],
+        "controlType": "COLOR",
+        "controlName": "lightringMeshMesh color"
+      },
+      {
+        "dofName": "middleSection_r",
+        "skeletonFrameName": "middleSection",
+        "xyzRotationAxis": [
+          -5.1624581942633085E-8,
+          1.0,
+          -1.763809365229463E-8
+        ],
+        "wxyzQuatInitialRotation": [
+          0.9935718579377518,
+          0.11320319392192023,
+          0.0,
+          -0.0
+        ],
+        "min": -3.0543265342712402,
+        "max": 3.0543265342712402,
+        "isCyclic": true,
+        "controlType": "ROTATION",
+        "controlName": "middleSection_r rotation"
+      },
+      {
+        "redDOFName": "overlay_redChannelBn_r",
+        "greenDOFName": "overlay_greenChannelBn_r",
+        "blueDOFName": "overlay_blueChannelBn_r",
+        "alphaDOFName": "overlay_alphaChannelBn_r",
+        "meshNames": [
+          "overlayMeshMesh"
+        ],
+        "controlType": "COLOR",
+        "controlName": "overlayMeshMesh color"
+      },
+      {
+        "dofName": "overlayVisibilityBn_r",
+        "meshNames": [
+          "overlayMeshMesh"
+        ],
+        "controlType": "VISIBILITY",
+        "controlName": "overlayMeshMesh visibility"
+      },
+      {
+        "dofName": "overlayTextureInfixBn_r",
+        "meshName": "overlayMeshMesh",
+        "baseTextureFile": "/Users/jg/Documents/ifrobots/jibo/prototype/textures/JiBO_eye_customizer_00.png",
+        "controlType": "TEXTURE",
+        "controlName": "overlayTextureInfixBn_r texture"
+      },
+      {
+        "dofName": "overlay_textureSubRootBn_r",
+        "skeletonFrameName": "overlay_textureSubRootBn",
+        "xyzRotationAxis": [
+          -0.0,
+          -0.0,
+          1.0
+        ],
+        "wxyzQuatInitialRotation": [
+          1.0,
+          0.0,
+          0.0,
+          -0.0
+        ],
+        "min": -3.0543270111083984,
+        "max": 3.0543270111083984,
+        "isCyclic": true,
+        "controlType": "ROTATION",
+        "controlName": "overlay_textureSubRootBn_r rotation"
+      },
+      {
+        "dofName": "overlay_textureSubRootBn_t",
+        "skeletonFrameName": "overlay_textureSubRootBn",
+        "xyzTranslationDirection": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          -0.0,
+          0.0015000100247561932,
+          0.0
+        ],
+        "min": -0.09999999403953552,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "overlay_textureSubRootBn_t translation"
+      },
+      {
+        "dofName": "overlay_textureSubRootBn_t_2",
+        "skeletonFrameName": "overlay_textureSubRootBn",
+        "xyzTranslationDirection": [
+          -0.0,
+          1.0,
+          -0.0
+        ],
+        "xyzInitialPosition": [
+          -0.0,
+          0.0015000100247561932,
+          0.0
+        ],
+        "min": -0.1014999970793724,
+        "max": 0.09849999845027924,
+        "controlType": "TRANSLATION",
+        "controlName": "overlay_textureSubRootBn_t_2 translation"
+      },
+      {
+        "dofName": "overlay_vertexJoint1_t",
+        "skeletonFrameName": "overlay_vertexJoint1",
+        "xyzTranslationDirection": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          4.659999831346795E-6,
+          -0.0
+        ],
+        "min": -0.09999999403953552,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "overlay_vertexJoint1_t translation"
+      },
+      {
+        "dofName": "overlay_vertexJoint1_t_2",
+        "skeletonFrameName": "overlay_vertexJoint1",
+        "xyzTranslationDirection": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          4.659999831346795E-6,
+          -0.0
+        ],
+        "min": -0.09999999403953552,
+        "max": 0.10000000149011612,
+        "controlType": "TRANSLATION",
+        "controlName": "overlay_vertexJoint1_t_2 translation"
+      },
+      {
+        "dofName": "overlay_vertexJoint2_t",
+        "skeletonFrameName": "overlay_vertexJoint2",
+        "xyzTranslationDirection": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          4.659999831346795E-6,
+          -0.0
+        ],
+        "min": -0.09999999403953552,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "overlay_vertexJoint2_t translation"
+      },
+      {
+        "dofName": "overlay_vertexJoint2_t_2",
+        "skeletonFrameName": "overlay_vertexJoint2",
+        "xyzTranslationDirection": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          4.659999831346795E-6,
+          -0.0
+        ],
+        "min": -0.09999999403953552,
+        "max": 0.10000000149011612,
+        "controlType": "TRANSLATION",
+        "controlName": "overlay_vertexJoint2_t_2 translation"
+      },
+      {
+        "dofName": "overlay_vertexJoint3_t",
+        "skeletonFrameName": "overlay_vertexJoint3",
+        "xyzTranslationDirection": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          4.659999831346795E-6,
+          -0.0
+        ],
+        "min": -0.09999999403953552,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "overlay_vertexJoint3_t translation"
+      },
+      {
+        "dofName": "overlay_vertexJoint3_t_2",
+        "skeletonFrameName": "overlay_vertexJoint3",
+        "xyzTranslationDirection": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          4.659999831346795E-6,
+          -0.0
+        ],
+        "min": -0.09999999403953552,
+        "max": 0.10000000149011612,
+        "controlType": "TRANSLATION",
+        "controlName": "overlay_vertexJoint3_t_2 translation"
+      },
+      {
+        "dofName": "overlay_vertexJoint4_t",
+        "skeletonFrameName": "overlay_vertexJoint4",
+        "xyzTranslationDirection": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          -9.99999993922529E-9,
+          0.0
+        ],
+        "min": -0.09999999403953552,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "overlay_vertexJoint4_t translation"
+      },
+      {
+        "dofName": "overlay_vertexJoint4_t_2",
+        "skeletonFrameName": "overlay_vertexJoint4",
+        "xyzTranslationDirection": [
+          0.0,
+          1.0,
+          -0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          -9.99999993922529E-9,
+          0.0
+        ],
+        "min": -0.10000000149011612,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "overlay_vertexJoint4_t_2 translation"
+      },
+      {
+        "dofName": "overlay_vertexJoint5_t",
+        "skeletonFrameName": "overlay_vertexJoint5",
+        "xyzTranslationDirection": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          -9.99999993922529E-9,
+          -0.0
+        ],
+        "min": -0.09999999403953552,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "overlay_vertexJoint5_t translation"
+      },
+      {
+        "dofName": "overlay_vertexJoint5_t_2",
+        "skeletonFrameName": "overlay_vertexJoint5",
+        "xyzTranslationDirection": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          -9.99999993922529E-9,
+          -0.0
+        ],
+        "min": -0.10000000149011612,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "overlay_vertexJoint5_t_2 translation"
+      },
+      {
+        "dofName": "overlay_vertexJoint6_t",
+        "skeletonFrameName": "overlay_vertexJoint6",
+        "xyzTranslationDirection": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          -9.99999993922529E-9,
+          0.0
+        ],
+        "min": -0.09999999403953552,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "overlay_vertexJoint6_t translation"
+      },
+      {
+        "dofName": "overlay_vertexJoint6_t_2",
+        "skeletonFrameName": "overlay_vertexJoint6",
+        "xyzTranslationDirection": [
+          0.0,
+          1.0,
+          -0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          -9.99999993922529E-9,
+          0.0
+        ],
+        "min": -0.10000000149011612,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "overlay_vertexJoint6_t_2 translation"
+      },
+      {
+        "dofName": "overlay_vertexJoint7_t",
+        "skeletonFrameName": "overlay_vertexJoint7",
+        "xyzTranslationDirection": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          -4.689999968832126E-6,
+          -0.0
+        ],
+        "min": -0.09999999403953552,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "overlay_vertexJoint7_t translation"
+      },
+      {
+        "dofName": "overlay_vertexJoint7_t_2",
+        "skeletonFrameName": "overlay_vertexJoint7",
+        "xyzTranslationDirection": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          -4.689999968832126E-6,
+          -0.0
+        ],
+        "min": -0.10000000149011612,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "overlay_vertexJoint7_t_2 translation"
+      },
+      {
+        "dofName": "overlay_vertexJoint8_t",
+        "skeletonFrameName": "overlay_vertexJoint8",
+        "xyzTranslationDirection": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          -4.689999968832126E-6,
+          -0.0
+        ],
+        "min": -0.09999999403953552,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "overlay_vertexJoint8_t translation"
+      },
+      {
+        "dofName": "overlay_vertexJoint8_t_2",
+        "skeletonFrameName": "overlay_vertexJoint8",
+        "xyzTranslationDirection": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          -4.689999968832126E-6,
+          -0.0
+        ],
+        "min": -0.10000000149011612,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "overlay_vertexJoint8_t_2 translation"
+      },
+      {
+        "dofName": "overlay_vertexJoint9_t",
+        "skeletonFrameName": "overlay_vertexJoint9",
+        "xyzTranslationDirection": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          -4.689999968832126E-6,
+          -0.0
+        ],
+        "min": -0.09999999403953552,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "overlay_vertexJoint9_t translation"
+      },
+      {
+        "dofName": "overlay_vertexJoint9_t_2",
+        "skeletonFrameName": "overlay_vertexJoint9",
+        "xyzTranslationDirection": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          -4.689999968832126E-6,
+          -0.0
+        ],
+        "min": -0.10000000149011612,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "overlay_vertexJoint9_t_2 translation"
+      },
+      {
+        "dofName": "screenBGTextureInfixBn_r",
+        "meshName": "screenMeshMesh",
+        "baseTextureFile": "/Users/jg/Documents/ifrobots/jibo/prototype/textures/JiBO_BG_00.png",
+        "controlType": "TEXTURE",
+        "controlName": "screenBGTextureInfixBn_r texture"
+      },
+      {
+        "redDOFName": "screenBG_redChannelBn_r",
+        "greenDOFName": "screenBG_greenChannelBn_r",
+        "blueDOFName": "screenBG_blueChannelBn_r",
+        "meshNames": [
+          "screenMeshMesh"
+        ],
+        "controlType": "COLOR",
+        "controlName": "screenMeshMesh color"
+      },
+      {
+        "dofName": "topSection_r",
+        "skeletonFrameName": "topSection",
+        "xyzRotationAxis": [
+          -1.0862225252594726E-7,
+          1.0,
+          2.1507238656681693E-8
+        ],
+        "wxyzQuatInitialRotation": [
+          0.9821233481679139,
+          -0.18823848964397946,
+          0.0,
+          -0.0
+        ],
+        "min": -3.0543267726898193,
+        "max": 3.0543267726898193,
+        "isCyclic": true,
+        "controlType": "ROTATION",
+        "controlName": "topSection_r rotation"
+      },
+      {
+        "dofName": "vertexJoint1_t",
+        "skeletonFrameName": "vertexJoint1",
+        "xyzTranslationDirection": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          4.659999831346795E-6,
+          -0.0
+        ],
+        "min": -0.09999999403953552,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "vertexJoint1_t translation"
+      },
+      {
+        "dofName": "vertexJoint1_t_2",
+        "skeletonFrameName": "vertexJoint1",
+        "xyzTranslationDirection": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          4.659999831346795E-6,
+          -0.0
+        ],
+        "min": -0.09999999403953552,
+        "max": 0.10000000149011612,
+        "controlType": "TRANSLATION",
+        "controlName": "vertexJoint1_t_2 translation"
+      },
+      {
+        "dofName": "vertexJoint2_t",
+        "skeletonFrameName": "vertexJoint2",
+        "xyzTranslationDirection": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          4.659999831346795E-6,
+          -0.0
+        ],
+        "min": -0.09999999403953552,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "vertexJoint2_t translation"
+      },
+      {
+        "dofName": "vertexJoint2_t_2",
+        "skeletonFrameName": "vertexJoint2",
+        "xyzTranslationDirection": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          4.659999831346795E-6,
+          -0.0
+        ],
+        "min": -0.09999999403953552,
+        "max": 0.10000000149011612,
+        "controlType": "TRANSLATION",
+        "controlName": "vertexJoint2_t_2 translation"
+      },
+      {
+        "dofName": "vertexJoint3_t",
+        "skeletonFrameName": "vertexJoint3",
+        "xyzTranslationDirection": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          4.659999831346795E-6,
+          -0.0
+        ],
+        "min": -0.09999999403953552,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "vertexJoint3_t translation"
+      },
+      {
+        "dofName": "vertexJoint3_t_2",
+        "skeletonFrameName": "vertexJoint3",
+        "xyzTranslationDirection": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          4.659999831346795E-6,
+          -0.0
+        ],
+        "min": -0.09999999403953552,
+        "max": 0.10000000149011612,
+        "controlType": "TRANSLATION",
+        "controlName": "vertexJoint3_t_2 translation"
+      },
+      {
+        "dofName": "vertexJoint4_t",
+        "skeletonFrameName": "vertexJoint4",
+        "xyzTranslationDirection": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          -9.99999993922529E-9,
+          0.0
+        ],
+        "min": -0.09999999403953552,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "vertexJoint4_t translation"
+      },
+      {
+        "dofName": "vertexJoint4_t_2",
+        "skeletonFrameName": "vertexJoint4",
+        "xyzTranslationDirection": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          -9.99999993922529E-9,
+          0.0
+        ],
+        "min": -0.10000000149011612,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "vertexJoint4_t_2 translation"
+      },
+      {
+        "dofName": "vertexJoint5_t",
+        "skeletonFrameName": "vertexJoint5",
+        "xyzTranslationDirection": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          -9.99999993922529E-9,
+          0.0
+        ],
+        "min": -0.09999999403953552,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "vertexJoint5_t translation"
+      },
+      {
+        "dofName": "vertexJoint5_t_2",
+        "skeletonFrameName": "vertexJoint5",
+        "xyzTranslationDirection": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          -9.99999993922529E-9,
+          0.0
+        ],
+        "min": -0.10000000149011612,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "vertexJoint5_t_2 translation"
+      },
+      {
+        "dofName": "vertexJoint6_t",
+        "skeletonFrameName": "vertexJoint6",
+        "xyzTranslationDirection": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          -9.99999993922529E-9,
+          0.0
+        ],
+        "min": -0.09999999403953552,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "vertexJoint6_t translation"
+      },
+      {
+        "dofName": "vertexJoint6_t_2",
+        "skeletonFrameName": "vertexJoint6",
+        "xyzTranslationDirection": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          -9.99999993922529E-9,
+          0.0
+        ],
+        "min": -0.10000000149011612,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "vertexJoint6_t_2 translation"
+      },
+      {
+        "dofName": "vertexJoint7_t",
+        "skeletonFrameName": "vertexJoint7",
+        "xyzTranslationDirection": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          -4.689999968832126E-6,
+          0.0
+        ],
+        "min": -0.09999999403953552,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "vertexJoint7_t translation"
+      },
+      {
+        "dofName": "vertexJoint7_t_2",
+        "skeletonFrameName": "vertexJoint7",
+        "xyzTranslationDirection": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          -4.689999968832126E-6,
+          0.0
+        ],
+        "min": -0.10000000149011612,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "vertexJoint7_t_2 translation"
+      },
+      {
+        "dofName": "vertexJoint8_t",
+        "skeletonFrameName": "vertexJoint8",
+        "xyzTranslationDirection": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          -4.689999968832126E-6,
+          0.0
+        ],
+        "min": -0.09999999403953552,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "vertexJoint8_t translation"
+      },
+      {
+        "dofName": "vertexJoint8_t_2",
+        "skeletonFrameName": "vertexJoint8",
+        "xyzTranslationDirection": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          -4.689999968832126E-6,
+          0.0
+        ],
+        "min": -0.10000000149011612,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "vertexJoint8_t_2 translation"
+      },
+      {
+        "dofName": "vertexJoint9_t",
+        "skeletonFrameName": "vertexJoint9",
+        "xyzTranslationDirection": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          -4.689999968832126E-6,
+          0.0
+        ],
+        "min": -0.09999999403953552,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "vertexJoint9_t translation"
+      },
+      {
+        "dofName": "vertexJoint9_t_2",
+        "skeletonFrameName": "vertexJoint9",
+        "xyzTranslationDirection": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "xyzInitialPosition": [
+          0.0,
+          -4.689999968832126E-6,
+          0.0
+        ],
+        "min": -0.10000000149011612,
+        "max": 0.09999999403953552,
+        "controlType": "TRANSLATION",
+        "controlName": "vertexJoint9_t_2 translation"
+      }
+    ]
+  }
+}

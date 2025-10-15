@@ -1,0 +1,121 @@
+{
+    "framerate": 30,
+    "duration": 32,
+    "layers": [
+        {
+            "id": "40401900abe240c49fcb26d84067ae23",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_happy_in_00"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_happy_out_00"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 16
+                }
+            ]
+        },
+        {
+            "id": "5528e6b4737a4fb19b74ed5f3b28dd0c",
+            "name": "Body #1",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "cubic in out",
+                            "label": "Cubic Ease In Out",
+                            "value": "cubicInOut"
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "Head": -10,
+                        "Torso": 15,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in",
+                            "label": "Sine Ease In",
+                            "value": "sineIn"
+                        }
+                    },
+                    "time": 16
+                },
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "cubic in out",
+                            "label": "Cubic Ease In Out",
+                            "value": "cubicInOut"
+                        }
+                    },
+                    "time": 31
+                }
+            ]
+        },
+        {
+            "id": "b8358aa9973b4a92922a1d90e9c0e413",
+            "name": "Event",
+            "type": "Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Event": {
+                            "name": "HOLD_SAFE",
+                            "payload": ""
+                        }
+                    },
+                    "time": 16
+                }
+            ]
+        }
+    ],
+    "version": "0.15.0",
+    "scale": "1.2",
+    "animdb": {
+        "categories": "Happy",
+        "meta": "tilt, quick, smile, small",
+        "name": ""
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

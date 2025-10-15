@@ -1,0 +1,83 @@
+{
+    "framerate": 30,
+    "duration": 5,
+    "layers": [
+        {
+            "id": "44a5c48a04b24beb8afce5903c392609",
+            "name": "Body - key poses",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": -180,
+                        "Torso": 0.9999999999999922,
+                        "Pelvis": 180,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "8c515564efc24d88b9bffb4c6afae46b",
+            "name": "Body - secondary",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 360,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "4d6932d7f6ce4d208565796f3ecad209",
+            "name": "Reference #1",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye-closed-loop-01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 0
+                }
+            ]
+        }
+    ],
+    "version": "0.15.0",
+    "scale": 1,
+    "animdb": {
+        "categories": "hue",
+        "meta": "lights-off-all, loop"
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

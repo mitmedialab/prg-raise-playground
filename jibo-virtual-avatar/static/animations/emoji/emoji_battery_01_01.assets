@@ -1,0 +1,16 @@
+[
+    {
+        "id": "emoji_battery.js",
+        "type": "timeline",
+        "src": "emoji_battery.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "a59cadd2fd88b50b4a3e059bc7767b833a993c0e"
+    }
+]

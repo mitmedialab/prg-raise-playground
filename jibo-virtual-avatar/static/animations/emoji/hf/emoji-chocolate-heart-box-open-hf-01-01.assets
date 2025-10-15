@@ -1,0 +1,21 @@
+[
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/emojis/hf/chocolate-heart-box-open.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/hf/chocolate-heart-box-open.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "47386363edbbdf51049bc8eb8b9c59a1ad555688"
+    }
+]

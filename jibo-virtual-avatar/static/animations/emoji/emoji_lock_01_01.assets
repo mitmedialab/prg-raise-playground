@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "emoji_lock.js",
+        "type": "timeline",
+        "src": "emoji_lock.js"
+    },
+    {
+        "type": "metadata",
+        "animdb": "9775d4529350f57d78e378462613bfd0fd5d329b"
+    }
+]

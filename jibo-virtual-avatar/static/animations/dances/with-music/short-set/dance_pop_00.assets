@@ -1,0 +1,21 @@
+[
+    {
+        "id": "music/music_pop_00.m4a",
+        "type": "sound",
+        "src": "music/music_pop_00.m4a"
+    },
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "58610b2965f0a7563da0d384aa73f56cc05e1279"
+    }
+]

@@ -1,0 +1,176 @@
+{
+    "framerate": 30,
+    "duration": 21,
+    "layers": [
+        {
+            "id": "74761c70b7af43d2a67239b2155ce88d",
+            "name": "Eye #3",
+            "type": "Eye",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Rotate": 0,
+                        "Scale": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "Translate": {
+                            "x": 0,
+                            "y": 0
+                        },
+                        "Vertex 1": {
+                            "x": -300,
+                            "y": -300
+                        },
+                        "Vertex 2": {
+                            "x": 0,
+                            "y": -300
+                        },
+                        "Vertex 3": {
+                            "x": 300,
+                            "y": -300
+                        },
+                        "Vertex 4": {
+                            "x": -300,
+                            "y": 0
+                        },
+                        "Vertex 5": {
+                            "x": 0,
+                            "y": 0
+                        },
+                        "Vertex 6": {
+                            "x": 300,
+                            "y": 0
+                        },
+                        "Vertex 7": {
+                            "x": -300,
+                            "y": 300
+                        },
+                        "Vertex 8": {
+                            "x": 0,
+                            "y": 300
+                        },
+                        "Vertex 9": {
+                            "x": 300,
+                            "y": 300
+                        },
+                        "Alpha": 1,
+                        "Visible": true
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "8f39a788b43048dd836ff9d9ce702165",
+            "name": "Eye Texture #1",
+            "type": "Eye Texture",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Texture": "animations/textures/White_Eye.png",
+                        "Color": {
+                            "r": 255,
+                            "g": 255,
+                            "b": 255
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "5b631fd526fc49068920fc50cb5c10d6",
+            "name": "Body #1",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0
+                    },
+                    "time": 4
+                },
+                {
+                    "value": {
+                        "Head": -13.000000000000004,
+                        "Torso": 13.000000000000004,
+                        "Pelvis": 0
+                    },
+                    "time": 20
+                }
+            ]
+        },
+        {
+            "id": "6cb5361dcf294b36bb492d9af79731ed",
+            "name": "Event #10",
+            "type": "Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Event": {
+                            "name": "HOLD_SAFE",
+                            "payload": ""
+                        }
+                    },
+                    "time": 20
+                }
+            ]
+        },
+        {
+            "id": "9f8ef50bf8ac4ea39205a29d7867ed9f",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_blink_01"
+                        },
+                        "HoldFinalPose": false
+                    },
+                    "time": 0
+                }
+            ]
+        }
+    ],
+    "scale": 1,
+    "version": "0.15.0",
+    "animdb": {
+        "name": "Puzzled_01",
+        "scaleMax": 1,
+        "scaleMin": 1,
+        "speedMax": 1,
+        "speedMin": 0.5,
+        "categories": "Confused, Question",
+        "meta": "head-tilt"
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

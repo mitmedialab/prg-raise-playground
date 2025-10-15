@@ -1,0 +1,31 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/jibojis/steam.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/steam.png"
+    },
+    {
+        "id": "animations/textures/jibojis/soup.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/soup.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/January_2018/jiboji_soup_02.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/January_2018/jiboji_soup_02.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "80cb3a232c1cde8b95095d8d954b2460e675e618"
+    }
+]

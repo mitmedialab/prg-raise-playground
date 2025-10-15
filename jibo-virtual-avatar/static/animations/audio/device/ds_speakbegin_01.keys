@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 9,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "fec03ebfd0e64d92bf75ed39e83d83ed",
+            "name": "Audio Event ds_speakbegin_01",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "device/ds_speakbegin_01.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "fec03ebfd0e64d92bf75ed39e83d83ed-body",
+            "name": "Body ds_speakbegin_01",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "ds_speakbegin_01",
+        "categories": "device",
+        "meta": "audio-only, sfx-only, device"
+    }
+}

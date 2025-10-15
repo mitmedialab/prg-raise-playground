@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 23,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "a3eaed1612197ba35bd16cdb36f9865b",
+            "name": "Audio Event ds_dismissal_01",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "device/ds_dismissal_01.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "a3eaed1612197ba35bd16cdb36f9865b-body",
+            "name": "Body ds_dismissal_01",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "ds_dismissal_01",
+        "categories": "device",
+        "meta": "audio-only, sfx-only, device"
+    }
+}

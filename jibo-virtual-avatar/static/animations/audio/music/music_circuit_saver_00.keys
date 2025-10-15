@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 183,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "abe34994b4aab8d51044a8b795273f09",
+            "name": "Audio Event music_circuit_saver_00",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "music/music_circuit_saver_00.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "abe34994b4aab8d51044a8b795273f09-body",
+            "name": "Body music_circuit_saver_00",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "music_circuit_saver_00",
+        "categories": "audio-music",
+        "meta": "dance, short, circuit-saver, video-game, audio-only"
+    }
+}

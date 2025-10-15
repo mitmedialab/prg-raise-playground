@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/yoga/sun_salutation/upward_salute_front.png",
+        "type": "texture",
+        "src": "animations/textures/yoga/sun_salutation/upward_salute_front.png"
+    },
+    {
+        "id": "animations/textures/yoga/Assets/Yoga_Directional_UI.png",
+        "type": "texture",
+        "src": "animations/textures/yoga/Assets/Yoga_Directional_UI.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "97162e01515f09e5b9d8a18ae045e2d6e4c986ff"
+    }
+]

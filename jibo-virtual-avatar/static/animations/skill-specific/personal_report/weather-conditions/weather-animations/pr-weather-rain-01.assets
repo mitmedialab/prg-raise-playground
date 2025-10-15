@@ -1,0 +1,56 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/emojis/hf/umbrella.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/hf/umbrella.png"
+    },
+    {
+        "id": "animations/textures/personal-report/weather-asets-variants/rain-drop.png",
+        "type": "texture",
+        "src": "animations/textures/personal-report/weather-asets-variants/rain-drop.png"
+    },
+    {
+        "id": "animations/textures/personal-report/weather-asets-variants/rain.png",
+        "type": "texture",
+        "src": "animations/textures/personal-report/weather-asets-variants/rain.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "sfx/Skills/PersonalReport/sfx_weather_rain_01_umbrellaopen.ogg",
+        "type": "sound",
+        "src": "sfx/Skills/PersonalReport/sfx_weather_rain_01_umbrellaopen.ogg"
+    },
+    {
+        "id": "sfx/Skills/PersonalReport/sfx_weather_rain_01_umbrellaclose.ogg",
+        "type": "sound",
+        "src": "sfx/Skills/PersonalReport/sfx_weather_rain_01_umbrellaclose.ogg"
+    },
+    {
+        "id": "sfx/Skills/PersonalReport/sfx_weather_rain_01_rainamb.ogg",
+        "type": "sound",
+        "src": "sfx/Skills/PersonalReport/sfx_weather_rain_01_rainamb.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "af23c86336dfdee87fc80a0a74351f1865e55caf"
+    }
+]

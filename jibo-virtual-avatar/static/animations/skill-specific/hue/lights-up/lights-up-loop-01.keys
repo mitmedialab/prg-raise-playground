@@ -1,0 +1,61 @@
+{
+    "framerate": 30,
+    "duration": 5,
+    "layers": [
+        {
+            "id": "44a5c48a04b24beb8afce5903c392609",
+            "name": "Body - key poses",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": -30,
+                        "Torso": -60,
+                        "Pelvis": 90,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "d09e8c0332d14a9db686e78206f93ff3",
+            "name": "Reference #1",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye-closed-loop-01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 0
+                }
+            ]
+        }
+    ],
+    "version": "0.15.0",
+    "scale": 1,
+    "animdb": {
+        "categories": "hue",
+        "meta": "lights-up, loop"
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

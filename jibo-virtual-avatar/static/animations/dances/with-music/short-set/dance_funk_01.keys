@@ -1,0 +1,84 @@
+{
+    "version": "0.15.0",
+    "framerate": 30,
+    "duration": 420,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "6910109d15c96dedce5b83a1cd4d6bad",
+            "name": "Audio Event music_funk_01",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "music/music_funk_01.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "210e85632fff4d3e850455ab789a7b34",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "carlton_02"
+                        },
+                        "HoldFinalPose": true
+                    }
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "carlton_02"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 127
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "carlton_02"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 254
+                }
+            ]
+        }
+    ],
+    "animdb": {
+        "name": "",
+        "categories": "dance",
+        "meta": "dance, short, funk, mo-town, music, rom, rom-upbeat"
+    }
+}

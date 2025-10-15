@@ -1,0 +1,51 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/emojis/bell-dot-01.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/bell-dot-01.png"
+    },
+    {
+        "id": "animations/textures/emojis/bell-01.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/bell-01.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_jinglebells02_bellringing.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_jinglebells02_bellringing.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_jinglebells02_eye_start.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_jinglebells02_eye_start.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_jinglebells02_eye_end.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_jinglebells02_eye_end.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "902763b569becf92be3e0b0f041a172aa64b44bb"
+    }
+]

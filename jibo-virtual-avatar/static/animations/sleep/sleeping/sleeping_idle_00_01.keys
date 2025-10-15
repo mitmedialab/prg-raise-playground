@@ -1,0 +1,62 @@
+{
+    "version": "0.15.0",
+    "framerate": 30,
+    "duration": 1,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "a17ad6527f04490c958d5b24cf315db2",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_closed_01"
+                        },
+                        "HoldFinalPose": false
+                    }
+                }
+            ]
+        },
+        {
+            "id": "7f4af826f9dc49da91ad4c1b01d614e5",
+            "name": "Body",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": -180,
+                        "Torso": 180,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "cubic in out",
+                            "label": "Cubic Ease In Out",
+                            "value": "cubicInOut"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        }
+    ],
+    "animdb": {
+        "categories": "Sleep",
+        "meta": "pose-only, sleeping, rem, still, asleep",
+        "name": "Sleeping_Idle_00"
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

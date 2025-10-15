@@ -1,0 +1,41 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/jibojis/clouds-night.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/clouds-night.png"
+    },
+    {
+        "id": "animations/textures/jibojis/moon.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/moon.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/April_2018/sfx_emoji_full_moon_01.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/April_2018/sfx_emoji_full_moon_01.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "b4a0d4ebc2f68577e5de27cebdad3b2daa86b024"
+    }
+]

@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 64,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "968735719ba1a3d09236289d8678ddce",
+            "name": "Audio Event ei_purring_02",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "emotional_intent/purring/ei_purring_02.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "968735719ba1a3d09236289d8678ddce-body",
+            "name": "Body ei_purring_02",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "ei_purring_02",
+        "categories": "emotional-intent",
+        "meta": "audio-only, ssa-only, emotional-intent"
+    }
+}

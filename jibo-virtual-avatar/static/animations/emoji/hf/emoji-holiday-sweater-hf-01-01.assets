@@ -1,0 +1,21 @@
+[
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/emojis/hf/holiday-sweater.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/hf/holiday-sweater.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "f0f389ac82d1158e01e07b480d1c535244e63eb2"
+    }
+]

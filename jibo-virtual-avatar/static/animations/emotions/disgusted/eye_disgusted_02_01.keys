@@ -1,0 +1,74 @@
+{
+    "version": "0.15.0",
+    "framerate": 30,
+    "duration": 41,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "f45425bcdead49028b03c1bf388e1c64",
+            "name": "Event",
+            "type": "Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Event": {
+                            "name": "HOLD_SAFE",
+                            "payload": ""
+                        }
+                    },
+                    "time": 30
+                }
+            ]
+        },
+        {
+            "id": "05e58f55cd06425fb8dfff866be06de0",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_disgust_in_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_disgust_out_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 30
+                }
+            ]
+        }
+    ],
+    "animdb": {
+        "name": "Eye_Disgusted_02",
+        "categories": "disgusted",
+        "meta": "eye-only",
+        "speedMax": 1
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

@@ -1,0 +1,49 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "1c8acfd342f7a24f36b950bf97f91b4d860e7877"
+    },
+    "content": {
+        "name": "initiation_01.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    -0.6283185307179588
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    0.04363323129985844
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    0.6108652381980154
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0,
+                "eventName": "HOLD_SAFE",
+                "payload": {}
+            }
+        ]
+    }
+}

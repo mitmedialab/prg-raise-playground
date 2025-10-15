@@ -1,0 +1,21 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/personal-report/commute-assets/Traffic_Bad_2.png",
+        "type": "texture",
+        "src": "animations/textures/personal-report/commute-assets/Traffic_Bad_2.png"
+    },
+    {
+        "id": "animations/textures/personal-report/commute-assets/Traffic_Bad_3.png",
+        "type": "texture",
+        "src": "animations/textures/personal-report/commute-assets/Traffic_Bad_3.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "b8bdbcc7cd3aff602e44ca663273cdcc32bc4316"
+    }
+]

@@ -1,0 +1,16 @@
+[
+    {
+        "id": "emoji_trashcan.js",
+        "type": "timeline",
+        "src": "emoji_trashcan.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "dec4c93d4e10c3592b2864caf5229c44d8129878"
+    }
+]

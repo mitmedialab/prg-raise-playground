@@ -1,0 +1,11 @@
+[
+    {
+        "id": "music/music_pop_00.m4a",
+        "type": "sound",
+        "src": "music/music_pop_00.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "60ab02e4094d1e6fc44d0b1969a2eba0775b8d8a"
+    }
+]

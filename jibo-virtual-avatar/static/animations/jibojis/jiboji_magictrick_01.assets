@@ -1,0 +1,36 @@
+[
+    {
+        "id": "emoji_magic_trick.js",
+        "type": "timeline",
+        "src": "emoji_magic_trick.js"
+    },
+    {
+        "id": "animations/textures/eye_shape_03.png",
+        "type": "texture",
+        "src": "animations/textures/eye_shape_03.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://sfx/sfx_sparkles_02.wav",
+        "type": "sound",
+        "src": "project://sfx/sfx_sparkles_02.wav"
+    },
+    {
+        "id": "project://device/ds_bloop_01.mp3",
+        "type": "sound",
+        "src": "project://device/ds_bloop_01.mp3"
+    },
+    {
+        "id": "project://sfx/sfx_whoosh_01.m4a",
+        "type": "sound",
+        "src": "project://sfx/sfx_whoosh_01.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "521fccf5d44228dfe617f28928536ad7ffe4bb44"
+    }
+]

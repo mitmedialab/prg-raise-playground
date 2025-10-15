@@ -1,0 +1,46 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/emojis/hf/maracas-left.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/hf/maracas-left.png"
+    },
+    {
+        "id": "animations/textures/emojis/hf/maracas-right.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/hf/maracas-right.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/April_2018/mus_cinco_de_mayo_01.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/April_2018/mus_cinco_de_mayo_01.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_santasled_big_eye_end.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_santasled_big_eye_end.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "1559f335825e64b7b7e8042080144a9d822246bb"
+    }
+]

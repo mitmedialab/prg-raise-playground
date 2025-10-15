@@ -1,0 +1,11 @@
+[
+    {
+        "id": "sfx/sfx_blip_01.mp3",
+        "type": "sound",
+        "src": "sfx/sfx_blip_01.mp3"
+    },
+    {
+        "type": "metadata",
+        "animdb": "bf07ff8533a6dcd4b9a8d3a34d30db91ca41d5e5"
+    }
+]

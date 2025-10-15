@@ -1,0 +1,26 @@
+[
+    {
+        "id": "device/ds_dismissal_01.m4a",
+        "type": "sound",
+        "src": "device/ds_dismissal_01.m4a"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/hollow-circle-01.png",
+        "type": "texture",
+        "src": "animations/textures/hollow-circle-01.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "3463051916baa4f668e3f2fbb9ba19241e1a3192"
+    }
+]

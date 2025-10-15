@@ -1,0 +1,21 @@
+[
+    {
+        "id": "emoji_partyBlue.js",
+        "type": "timeline",
+        "src": "emoji_partyBlue.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "sfx/sfx_party_01.m4a",
+        "type": "sound",
+        "src": "sfx/sfx_party_01.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "5d7453ed72c36b9994ec4f57136b52728d2d9449"
+    }
+]

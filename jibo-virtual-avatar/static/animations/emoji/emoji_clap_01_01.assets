@@ -1,0 +1,16 @@
+[
+    {
+        "id": "emoji_clap.js",
+        "type": "timeline",
+        "src": "emoji_clap.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "e423eba5600af4708a92e2a4d91f54e65b75a7f4"
+    }
+]

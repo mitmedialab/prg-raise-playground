@@ -1,0 +1,57 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "6177aeb236ab1662b6e29695c1835c2ab7167c5a"
+    },
+    "content": {
+        "name": "music_waltz_00.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 8.066666666666666,
+                "times": [
+                    0,
+                    8.033333333333333
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 8.066666666666666,
+                "times": [
+                    0,
+                    8.033333333333333
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 8.066666666666666,
+                "times": [
+                    0,
+                    8.033333333333333
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0,
+                "eventName": "play-audio",
+                "payload": {
+                    "file": "music/music_waltz_00.m4a"
+                }
+            }
+        ]
+    }
+}

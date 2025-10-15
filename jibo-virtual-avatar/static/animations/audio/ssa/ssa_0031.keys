@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 37,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "3a6848f29701c7f8111e7170d8afac18",
+            "name": "Audio Event SSA_0031",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "ssa/SSA_0031.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "3a6848f29701c7f8111e7170d8afac18-body",
+            "name": "Body SSA_0031",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "SSA_0031",
+        "categories": "yawn",
+        "meta": "medium, audio-only, ssa-only"
+    }
+}

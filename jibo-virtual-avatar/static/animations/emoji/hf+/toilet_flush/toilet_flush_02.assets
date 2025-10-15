@@ -1,0 +1,36 @@
+[
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/jibojis/toilet/toilet_handle.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/toilet/toilet_handle.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/jibojis/toilet/toilet_base.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/toilet/toilet_base.png"
+    },
+    {
+        "id": "sfx/sfx_toilet_flush_01.m4a",
+        "type": "sound",
+        "src": "sfx/sfx_toilet_flush_01.m4a"
+    },
+    {
+        "id": "sfx/sfx_toilet_seat_01.m4a",
+        "type": "sound",
+        "src": "sfx/sfx_toilet_seat_01.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "c5cca63a40bd15a618dcc65f68510a5390278fd5"
+    }
+]

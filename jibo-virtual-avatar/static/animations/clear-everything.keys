@@ -1,0 +1,14 @@
+{
+    "framerate": 30,
+    "duration": 3,
+    "layers": [],
+    "version": "0.14.0",
+    "scale": 1,
+    "animdb": {
+        "categories": "Default",
+        "meta": "default, starting, start-pose, pose, center-pose"
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

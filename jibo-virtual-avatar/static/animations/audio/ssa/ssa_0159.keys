@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 13,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "662bc723a77fb7ba1c17f133c125ba18",
+            "name": "Audio Event SSA_0159",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "ssa/SSA_0159.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "662bc723a77fb7ba1c17f133c125ba18-body",
+            "name": "Body SSA_0159",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "SSA_0159",
+        "categories": "question",
+        "meta": "audio-only, ssa-only"
+    }
+}

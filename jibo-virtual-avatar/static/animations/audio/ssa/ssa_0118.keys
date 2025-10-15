@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 25,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "01a46c08784e063379539b379db60edf",
+            "name": "Audio Event SSA_0118",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "ssa/SSA_0118.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "01a46c08784e063379539b379db60edf-body",
+            "name": "Body SSA_0118",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "SSA_0118",
+        "categories": "thinking",
+        "meta": "audio-only, ssa-only"
+    }
+}

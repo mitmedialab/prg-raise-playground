@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 84,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "e3c52322b40d41c2e288b0970c81101b",
+            "name": "Audio Event ds_processing_02",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "device/ds_processing_02.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "e3c52322b40d41c2e288b0970c81101b-body",
+            "name": "Body ds_processing_02",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "ds_processing_02",
+        "categories": "device",
+        "meta": "audio-only, sfx-only, device"
+    }
+}

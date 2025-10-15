@@ -1,0 +1,21 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "project://device/ds_nomatch_02.m4a",
+        "type": "sound",
+        "src": "project://device/ds_nomatch_02.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "7543eaee745b0a07a2fd1d18bba656126d0d5cdc"
+    }
+]

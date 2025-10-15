@@ -1,0 +1,31 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/jibojis/soccer-goal.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/soccer-goal.png"
+    },
+    {
+        "id": "animations/textures/jibojis/soccer-ball.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/soccer-ball.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/jibojis/grass-plain.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/grass-plain.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "f6588cd35e0950f22f99d75dcc44008b879658fc"
+    }
+]

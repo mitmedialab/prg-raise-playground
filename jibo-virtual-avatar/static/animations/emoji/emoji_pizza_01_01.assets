@@ -1,0 +1,16 @@
+[
+    {
+        "id": "emoji_pizza.js",
+        "type": "timeline",
+        "src": "emoji_pizza.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "780054976a6eefad30ade1843896c8f23018c1eb"
+    }
+]

@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 183,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "49df23875e3744b336bbb9a41daede6c",
+            "name": "Audio Event music_belly_dance_00",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "music/music_belly_dance_00.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "49df23875e3744b336bbb9a41daede6c-body",
+            "name": "Body music_belly_dance_00",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "music_belly_dance_00",
+        "categories": "audio-music",
+        "meta": "dance, short, middle-eastern, belly-dance, belly-dancing, audio-only"
+    }
+}

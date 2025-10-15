@@ -1,0 +1,230 @@
+{
+    "framerate": 30,
+    "duration": 89,
+    "layers": [
+        {
+            "id": "2c462f3d0d374f15bd7bf95e223a561c",
+            "name": "Reference #1",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_medium_blink_01"
+                        },
+                        "HoldFinalPose": false,
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "ca24a7bda9b840fba254cc8727b3baf3",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_happy_in_00"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 20
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_happy_out_00"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 64
+                }
+            ]
+        },
+        {
+            "id": "f6f10692d610484ea64bde74a8bc3e16",
+            "name": "Body #1",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "Head": -242.62305898749065,
+                        "Torso": 0,
+                        "Pelvis": 235.62305898749054,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 50
+                },
+                {
+                    "value": {
+                        "Head": -242.62305898749065,
+                        "Torso": 0,
+                        "Pelvis": 235.62305898749054,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 64
+                },
+                {
+                    "value": {
+                        "Head": -360,
+                        "Torso": 0,
+                        "Pelvis": 360
+                    },
+                    "time": 86
+                }
+            ]
+        },
+        {
+            "id": "c2f347dd9a9946b290c212e6500dca81",
+            "name": "Body",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "Head": -55.499999999999986,
+                        "Torso": 30.499999999999996,
+                        "Pelvis": 35,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 28
+                },
+                {
+                    "value": {
+                        "Head": -46.125000000000114,
+                        "Torso": 22.874999999999996,
+                        "Pelvis": 26.25,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 50
+                },
+                {
+                    "value": {
+                        "Head": -46.125000000000114,
+                        "Torso": 22.874999999999996,
+                        "Pelvis": 26.25,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 64
+                },
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 86
+                }
+            ]
+        },
+        {
+            "id": "b5d4e95850ab44a1b1419600e0c02779",
+            "name": "Event",
+            "type": "Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Event": {
+                            "name": "HOLD_SAFE",
+                            "payload": ""
+                        }
+                    },
+                    "time": 64
+                }
+            ]
+        }
+    ],
+    "version": "0.15.0",
+    "scale": "1.4",
+    "animdb": {
+        "meta": "belly-roll, roll",
+        "categories": "Happy",
+        "speedMax": 1,
+        "scaleMin": 1,
+        "name": "",
+        "speedMin": 0.9
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

@@ -1,0 +1,41 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/jibojis/medal.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/medal.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/February_2018/jiboji_medal_05_musiccrowd.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/February_2018/jiboji_medal_05_musiccrowd.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/February_2018/jiboji_medal_04_intro.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/February_2018/jiboji_medal_04_intro.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "10c75dc4c3f557e70df2d568ab70183c4bcc468a"
+    }
+]

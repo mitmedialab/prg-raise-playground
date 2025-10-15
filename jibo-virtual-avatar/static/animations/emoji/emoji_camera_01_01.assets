@@ -1,0 +1,16 @@
+[
+    {
+        "id": "emoji_camera.js",
+        "type": "timeline",
+        "src": "emoji_camera.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "c221efeff0d234842eb6f0187d0a13ea1f7f805b"
+    }
+]

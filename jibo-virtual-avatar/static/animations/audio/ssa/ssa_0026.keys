@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 29,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "e17240b94fdc0d8d10831f7d5009991f",
+            "name": "Audio Event SSA_0026",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "ssa/SSA_0026.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "e17240b94fdc0d8d10831f7d5009991f-body",
+            "name": "Body SSA_0026",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "SSA_0026",
+        "categories": "happy",
+        "meta": "medium, audio-only, ssa-only"
+    }
+}

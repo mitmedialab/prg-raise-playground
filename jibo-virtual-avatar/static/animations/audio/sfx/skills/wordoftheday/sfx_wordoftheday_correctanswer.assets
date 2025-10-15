@@ -1,0 +1,11 @@
+[
+    {
+        "id": "sfx/Skills/WordoftheDay/sfx_wordoftheday_correctanswer.ogg",
+        "type": "sound",
+        "src": "sfx/Skills/WordoftheDay/sfx_wordoftheday_correctanswer.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "257f8f984fdcc0b0aeb8e6a21f6c5ce5d5d33bd7"
+    }
+]

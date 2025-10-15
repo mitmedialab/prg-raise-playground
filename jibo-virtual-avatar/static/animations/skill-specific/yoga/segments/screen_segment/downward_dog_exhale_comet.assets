@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/yoga/sun_salutation/downward_dog_side.png",
+        "type": "texture",
+        "src": "animations/textures/yoga/sun_salutation/downward_dog_side.png"
+    },
+    {
+        "id": "animations/textures/yoga/Assets/Yoga_Directional_UI.png",
+        "type": "texture",
+        "src": "animations/textures/yoga/Assets/Yoga_Directional_UI.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "a770e596dea5fac7b5c64cab859e053062dd4e77"
+    }
+]

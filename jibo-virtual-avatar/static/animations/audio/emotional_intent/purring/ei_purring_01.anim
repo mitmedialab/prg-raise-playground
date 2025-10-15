@@ -1,0 +1,57 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "593deee0c7d9d216aad086aff6260b6cc0a2392f"
+    },
+    "content": {
+        "name": "ei_purring_01.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 1.3333333333333333,
+                "times": [
+                    0,
+                    1.3
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 1.3333333333333333,
+                "times": [
+                    0,
+                    1.3
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 1.3333333333333333,
+                "times": [
+                    0,
+                    1.3
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0,
+                "eventName": "play-audio",
+                "payload": {
+                    "file": "emotional_intent/purring/ei_purring_01.m4a"
+                }
+            }
+        ]
+    }
+}

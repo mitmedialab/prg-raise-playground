@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 32,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "52f2977b5a395a47073c91122cc27772",
+            "name": "Audio Event sfx_dog_panting_01",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "sfx/sfx_dog_panting_01.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "52f2977b5a395a47073c91122cc27772-body",
+            "name": "Body sfx_dog_panting_01",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "sfx_dog_panting_01",
+        "categories": "sfx, dog",
+        "meta": "audio-only, sfx-only, emoji"
+    }
+}

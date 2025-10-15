@@ -1,0 +1,21 @@
+[
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/emojis/hf/exclamation-mark-red.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/hf/exclamation-mark-red.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "534c8dd4071f7af63e5bbf6a1ca5b310ce247bc3"
+    }
+]

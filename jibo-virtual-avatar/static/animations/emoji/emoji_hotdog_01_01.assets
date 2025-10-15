@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "emoji_hotdog.js",
+        "type": "timeline",
+        "src": "emoji_hotdog.js"
+    },
+    {
+        "type": "metadata",
+        "animdb": "dd8ae13f69510ab37036f607c4b7750c1d29e401"
+    }
+]

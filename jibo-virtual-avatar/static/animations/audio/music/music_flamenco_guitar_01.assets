@@ -1,0 +1,11 @@
+[
+    {
+        "id": "music/music_flamenco_guitar_01.m4a",
+        "type": "sound",
+        "src": "music/music_flamenco_guitar_01.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "4aad0b7ca96dd0529a34bef2aade243833838505"
+    }
+]

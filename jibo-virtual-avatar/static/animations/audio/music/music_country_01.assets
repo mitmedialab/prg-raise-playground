@@ -1,0 +1,11 @@
+[
+    {
+        "id": "music/music_country_01.m4a",
+        "type": "sound",
+        "src": "music/music_country_01.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "8016463891459b81dc53627ac9683a304010925b"
+    }
+]

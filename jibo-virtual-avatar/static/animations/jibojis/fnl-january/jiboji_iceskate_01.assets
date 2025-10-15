@@ -1,0 +1,36 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/jibojis/iceskate.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/iceskate.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/January_2018/jiboji_iceskate_01_skate01.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/January_2018/jiboji_iceskate_01_skate01.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/January_2018/jiboji_iceskate_01_turn.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/January_2018/jiboji_iceskate_01_turn.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/January_2018/jiboji_iceskate_01_skate02.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/January_2018/jiboji_iceskate_01_skate02.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "07408730e3137ea207217ac801a6e8e7eafb4c05"
+    }
+]

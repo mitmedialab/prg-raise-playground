@@ -1,0 +1,21 @@
+[
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/yoga/Assets/yoga-splash-screen.png",
+        "type": "texture",
+        "src": "animations/textures/yoga/Assets/yoga-splash-screen.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "b66e679f635434d28a27304db8c733677a05958e"
+    }
+]

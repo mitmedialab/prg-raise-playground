@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 30,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "a1894988b7e426a3d15cbaf97707b666",
+            "name": "Audio Event SSA_0009",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "ssa/SSA_0009.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "a1894988b7e426a3d15cbaf97707b666-body",
+            "name": "Body SSA_0009",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "SSA_0009",
+        "categories": "scared, embarrassed",
+        "meta": "medium, audio-only, ssa-only"
+    }
+}

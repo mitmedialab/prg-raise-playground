@@ -1,0 +1,16 @@
+[
+    {
+        "id": "emoji_house.js",
+        "type": "timeline",
+        "src": "emoji_house.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "63130421274d527969d2a7a6350fccbaf8525968"
+    }
+]

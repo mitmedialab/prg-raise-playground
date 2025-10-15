@@ -1,0 +1,11 @@
+[
+    {
+        "id": "emotional_intent/mutterings/ei_mutter_01.m4a",
+        "type": "sound",
+        "src": "emotional_intent/mutterings/ei_mutter_01.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "15a506f684d741588f720f4fd9dd3d19b1137d2a"
+    }
+]

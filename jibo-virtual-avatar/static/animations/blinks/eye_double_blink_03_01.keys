@@ -1,0 +1,55 @@
+{
+    "framerate": 30,
+    "duration": 17,
+    "layers": [
+        {
+            "id": "9cffa97941764146b0bbc3a03534f3fe",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "KeysFileReference": {
+                            "file": "eye_blink_02_01.keys",
+                            "name": "eye_blink_02"
+                        },
+                        "HoldFinalPose": true,
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "KeysFileReference": {
+                            "file": "eye_blink_02_01.keys",
+                            "name": "eye_blink_02"
+                        },
+                        "HoldFinalPose": true,
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        }
+                    },
+                    "time": 6
+                }
+            ]
+        }
+    ],
+    "version": "0.15.0",
+    "scale": "1",
+    "animdb": {
+        "categories": "Blinks, Beat",
+        "meta": "eye-only, double-blink, double",
+        "name": "Eye_Double_Blink_03"
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/hollow-circle-fade-02.png",
+        "type": "texture",
+        "src": "animations/textures/hollow-circle-fade-02.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "1021fbf1da84fe0d7a4005a3d22ff3be76266c42"
+    }
+]

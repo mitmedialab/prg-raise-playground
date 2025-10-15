@@ -1,0 +1,107 @@
+{
+    "framerate": 30,
+    "duration": 62,
+    "layers": [
+        {
+            "id": "5b631fd526fc49068920fc50cb5c10d6",
+            "name": "Body #1",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "Head": -360,
+                        "Torso": 0,
+                        "Pelvis": 360,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 61
+                }
+            ]
+        },
+        {
+            "id": "87f8ac8817e44c9480dbeb59eb3de5a8",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye-center-to-down-01"
+                        },
+                        "HoldFinalPose": true,
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye-down-to-center-01"
+                        },
+                        "HoldFinalPose": true,
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        }
+                    },
+                    "time": 36
+                },
+                {
+                    "value": {
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "Eye_Quick_Blink_01"
+                        },
+                        "HoldFinalPose": false,
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        }
+                    },
+                    "time": 53
+                }
+            ]
+        }
+    ],
+    "scale": "1.2",
+    "version": "0.15.0",
+    "animdb": {
+        "name": "",
+        "scaleMax": 1,
+        "speedMax": 1,
+        "categories": "Shift, ib",
+        "meta": "body-only, settle, postural-shift, bored, belly-roll, medium, ib-face-true, ib-face-false, ib-idle-short-time, ib-low-valence, ib-drive-social, ib-drive-embodiment, ib-drive-playful"
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

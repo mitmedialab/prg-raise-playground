@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 29,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "d1df3519309ab8a8de50e2140b1e0d45",
+            "name": "Audio Event SSA_0124",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "ssa/SSA_0124.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "d1df3519309ab8a8de50e2140b1e0d45-body",
+            "name": "Body SSA_0124",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "SSA_0124",
+        "categories": "frustrated",
+        "meta": "audio-only, ssa-only"
+    }
+}

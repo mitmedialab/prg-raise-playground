@@ -1,0 +1,57 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "2000aa0bc8cd93c8359d550250d121670ee0b325"
+    },
+    "content": {
+        "name": "sfx_scanner_01.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 3.8666666666666667,
+                "times": [
+                    0,
+                    3.8333333333333335
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 3.8666666666666667,
+                "times": [
+                    0,
+                    3.8333333333333335
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 3.8666666666666667,
+                "times": [
+                    0,
+                    3.8333333333333335
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0,
+                "eventName": "play-audio",
+                "payload": {
+                    "file": "sfx/sfx_scanner_01.m4a"
+                }
+            }
+        ]
+    }
+}

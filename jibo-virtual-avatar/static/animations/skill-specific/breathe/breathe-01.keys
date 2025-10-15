@@ -1,0 +1,69 @@
+{
+    "framerate": 30,
+    "duration": 330,
+    "layers": [
+        {
+            "id": "4bf8fd0248134bd899e43444bc95bd8e",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "breathe-in-01"
+                        },
+                        "HoldFinalPose": true
+                    }
+                },
+                {
+                    "time": 105,
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "breathe-out-01"
+                        },
+                        "HoldFinalPose": true
+                    }
+                },
+                {
+                    "time": 242,
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "breathe-out-to-idle-01"
+                        },
+                        "HoldFinalPose": true
+                    }
+                }
+            ]
+        }
+    ],
+    "version": "0.15.0",
+    "scale": 1,
+    "animdb": {
+        "categories": "breathe",
+        "meta": "breathe-in"
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

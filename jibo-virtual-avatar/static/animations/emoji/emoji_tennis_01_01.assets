@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "emoji_tennis.js",
+        "type": "timeline",
+        "src": "emoji_tennis.js"
+    },
+    {
+        "type": "metadata",
+        "animdb": "9617fdda8438e607fd9f9ae8e07b682daea2c26c"
+    }
+]

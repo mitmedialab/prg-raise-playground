@@ -1,0 +1,90 @@
+{
+    "version": "0.15.0",
+    "framerate": 30,
+    "duration": 35,
+    "scale": "1.2",
+    "layers": [
+        {
+            "id": "30541583ec444eda9aaf98f8f3eb769d",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_closed_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "97f58e6c57364e66ae798d822d3de8d0",
+            "name": "Body",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": -132,
+                        "Torso": 70,
+                        "Pelvis": 65,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "Head": -155,
+                        "Torso": 115,
+                        "Pelvis": 40,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 12
+                },
+                {
+                    "value": {
+                        "Head": -132,
+                        "Torso": 70,
+                        "Pelvis": 65,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 34
+                }
+            ]
+        }
+    ],
+    "animdb": {
+        "meta": "loop, head-bang, head-bop, bop, headbanger, rom-silly",
+        "categories": "Dance",
+        "name": "Headbanger_01",
+        "speedMax": 1.1,
+        "speedMin": 0.9
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

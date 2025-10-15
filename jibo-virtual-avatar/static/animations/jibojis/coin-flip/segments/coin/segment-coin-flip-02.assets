@@ -1,0 +1,41 @@
+[
+    {
+        "id": "animations/textures/jibojis/coin-flip/coin-heads-angle-02.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/coin-flip/coin-heads-angle-02.png"
+    },
+    {
+        "id": "animations/textures/jibojis/coin-flip/coin-heads.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/coin-flip/coin-heads.png"
+    },
+    {
+        "id": "animations/textures/jibojis/coin-flip/coin-heads-angle-01.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/coin-flip/coin-heads-angle-01.png"
+    },
+    {
+        "id": "animations/textures/jibojis/coin-flip/coin-side.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/coin-flip/coin-side.png"
+    },
+    {
+        "id": "animations/textures/jibojis/coin-flip/coin-tails-angle-01.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/coin-flip/coin-tails-angle-01.png"
+    },
+    {
+        "id": "animations/textures/jibojis/coin-flip/coin-tails.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/coin-flip/coin-tails.png"
+    },
+    {
+        "id": "animations/textures/jibojis/coin-flip/coin-tails-angle-02.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/coin-flip/coin-tails-angle-02.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "323217f643c3e3f1fe7532e72ac01bb0748c97be"
+    }
+]

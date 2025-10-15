@@ -1,0 +1,55 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "7c9f7e19d26c14768e7bb817dced13fe89e8addc"
+    },
+    "content": {
+        "name": "period_01_01.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 0.1,
+                "times": [
+                    0,
+                    0.06666666666666667
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 0.1,
+                "times": [
+                    0,
+                    0.06666666666666667
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 0.1,
+                "times": [
+                    0,
+                    0.06666666666666667
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0.03333333333333333,
+                "eventName": "HOLD_SAFE",
+                "payload": {}
+            }
+        ]
+    }
+}

@@ -1,0 +1,21 @@
+[
+    {
+        "id": "emoji_lightbulb.js",
+        "type": "timeline",
+        "src": "emoji_lightbulb.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://sfx/sfx_lightbulb_01.m4a",
+        "type": "sound",
+        "src": "project://sfx/sfx_lightbulb_01.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "6add9c032ce60e13c8c0172ea9517b71be33e32e"
+    }
+]

@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "emoji_sunNoClouds.js",
+        "type": "timeline",
+        "src": "emoji_sunNoClouds.js"
+    },
+    {
+        "type": "metadata",
+        "animdb": "e288d4bde263ca5851be4b7e50264d5232801dd2"
+    }
+]

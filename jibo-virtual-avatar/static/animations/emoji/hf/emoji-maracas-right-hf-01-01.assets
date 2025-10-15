@@ -1,0 +1,21 @@
+[
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/emojis/hf/maracas-right.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/hf/maracas-right.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "796909e61d2a2caa5cde3fc9a3baaacbb4bbbd53"
+    }
+]
