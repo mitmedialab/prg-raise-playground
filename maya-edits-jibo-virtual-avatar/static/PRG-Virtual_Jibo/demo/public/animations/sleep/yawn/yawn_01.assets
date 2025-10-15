@@ -1,0 +1,26 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://emotional_intent/yawns/ei_yawn_04.m4a",
+        "type": "sound",
+        "src": "project://emotional_intent/yawns/ei_yawn_04.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "f1c5cabbc883cc9334faa54732d6b094210e5611"
+    }
+]

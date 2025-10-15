@@ -1,0 +1,21 @@
+[
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/emojis/hf/dreidel-04.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/hf/dreidel-04.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "8fa3b29c8e50fc0d9448b36070041eb4b9623269"
+    }
+]

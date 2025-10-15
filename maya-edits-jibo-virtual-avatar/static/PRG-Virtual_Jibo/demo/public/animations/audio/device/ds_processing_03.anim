@@ -1,0 +1,57 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "4df3f64c609d0210409a264c24ff4e3bea5915f7"
+    },
+    "content": {
+        "name": "ds_processing_03.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 2.8666666666666667,
+                "times": [
+                    0,
+                    2.8333333333333335
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 2.8666666666666667,
+                "times": [
+                    0,
+                    2.8333333333333335
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 2.8666666666666667,
+                "times": [
+                    0,
+                    2.8333333333333335
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0,
+                "eventName": "play-audio",
+                "payload": {
+                    "file": "device/ds_processing_03.m4a"
+                }
+            }
+        ]
+    }
+}

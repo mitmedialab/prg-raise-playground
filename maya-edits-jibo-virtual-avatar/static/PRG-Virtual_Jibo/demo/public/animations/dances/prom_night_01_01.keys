@@ -1,0 +1,612 @@
+{
+    "framerate": 30,
+    "duration": 121,
+    "layers": [
+        {
+            "id": "cdcdb033af614ab18072e8a9473726ff",
+            "name": "Overlay",
+            "type": "Overlay",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Rotate": 0,
+                        "Scale": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "Translate": {
+                            "x": 0,
+                            "y": 0
+                        },
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        },
+                        "Vertex 1": {
+                            "x": -350,
+                            "y": -350
+                        },
+                        "Vertex 2": {
+                            "x": 0,
+                            "y": -350
+                        },
+                        "Vertex 3": {
+                            "x": 350,
+                            "y": -350
+                        },
+                        "Vertex 4": {
+                            "x": -350,
+                            "y": 0
+                        },
+                        "Vertex 5": {
+                            "x": 0,
+                            "y": 0
+                        },
+                        "Vertex 6": {
+                            "x": 350,
+                            "y": 0
+                        },
+                        "Vertex 7": {
+                            "x": -350,
+                            "y": 350
+                        },
+                        "Vertex 8": {
+                            "x": 0,
+                            "y": 350
+                        },
+                        "Vertex 9": {
+                            "x": 350,
+                            "y": 350
+                        },
+                        "Alpha": 1,
+                        "Visible": false
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "Rotate": 0,
+                        "Scale": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "Translate": {
+                            "x": 0,
+                            "y": 0
+                        },
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        },
+                        "Vertex 1": {
+                            "x": -350,
+                            "y": -350
+                        },
+                        "Vertex 2": {
+                            "x": 0,
+                            "y": -350
+                        },
+                        "Vertex 3": {
+                            "x": 350,
+                            "y": -350
+                        },
+                        "Vertex 4": {
+                            "x": -350,
+                            "y": 0
+                        },
+                        "Vertex 5": {
+                            "x": 0,
+                            "y": 0
+                        },
+                        "Vertex 6": {
+                            "x": 350,
+                            "y": 0
+                        },
+                        "Vertex 7": {
+                            "x": -350,
+                            "y": 350
+                        },
+                        "Vertex 8": {
+                            "x": 0,
+                            "y": 350
+                        },
+                        "Vertex 9": {
+                            "x": 350,
+                            "y": 350
+                        },
+                        "Alpha": 1,
+                        "Visible": false
+                    },
+                    "time": 120
+                }
+            ]
+        },
+        {
+            "id": "f19a6ac551714099a0288270e5b65650",
+            "name": "Overlay Texture",
+            "type": "Overlay Texture",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Texture": "animations/textures/empty.png",
+                        "Color": {
+                            "r": 255,
+                            "g": 255,
+                            "b": 255
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "Texture": "animations/textures/empty.png",
+                        "Color": {
+                            "r": 255,
+                            "g": 255,
+                            "b": 255
+                        }
+                    },
+                    "time": 120
+                }
+            ]
+        },
+        {
+            "id": "74761c70b7af43d2a67239b2155ce88d",
+            "name": "Eye",
+            "type": "Eye",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Rotate": 0,
+                        "Scale": {
+                            "x": 0.977659442154973,
+                            "y": 0.9776594421549734
+                        },
+                        "Translate": {
+                            "x": 0,
+                            "y": -130.3621251228984
+                        },
+                        "Vertex 1": {
+                            "x": -331.3073655214508,
+                            "y": -331.2879680308992
+                        },
+                        "Vertex 2": {
+                            "x": 2.0094193138680363,
+                            "y": -156.8932591296758
+                        },
+                        "Vertex 3": {
+                            "x": 331.3073655214508,
+                            "y": -331.2879680308992
+                        },
+                        "Vertex 4": {
+                            "x": -331.3073655214508,
+                            "y": 0
+                        },
+                        "Vertex 5": {
+                            "x": 0,
+                            "y": 68.15425405335169
+                        },
+                        "Vertex 6": {
+                            "x": 331.3073655214508,
+                            "y": 0
+                        },
+                        "Vertex 7": {
+                            "x": -323.7516772804673,
+                            "y": 277.019192276279
+                        },
+                        "Vertex 8": {
+                            "x": -2.0094193138679652,
+                            "y": 387.4150007807183
+                        },
+                        "Vertex 9": {
+                            "x": 328.2850902250574,
+                            "y": 287.5714542285662
+                        },
+                        "Alpha": 1,
+                        "Visible": true
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "Rotate": 0,
+                        "Scale": {
+                            "x": 1.132162111976134,
+                            "y": 1.1321621119761347
+                        },
+                        "Translate": {
+                            "x": 0,
+                            "y": -102.86386435478701
+                        },
+                        "Vertex 1": {
+                            "x": -331.3073655214508,
+                            "y": -331.2879680308992
+                        },
+                        "Vertex 2": {
+                            "x": 1.5855574273489974,
+                            "y": -193.67964303852762
+                        },
+                        "Vertex 3": {
+                            "x": 331.3073655214508,
+                            "y": -331.2879680308992
+                        },
+                        "Vertex 4": {
+                            "x": -331.3073655214508,
+                            "y": 0
+                        },
+                        "Vertex 5": {
+                            "x": 0,
+                            "y": 53.77796608897282
+                        },
+                        "Vertex 6": {
+                            "x": 331.3073655214508,
+                            "y": 0
+                        },
+                        "Vertex 7": {
+                            "x": -325.34545526879975,
+                            "y": 288.46651216201917
+                        },
+                        "Vertex 8": {
+                            "x": -1.5855574273489412,
+                            "y": 375.5757048100533
+                        },
+                        "Vertex 9": {
+                            "x": 328.9226014203904,
+                            "y": 296.7929063587458
+                        },
+                        "Alpha": 1,
+                        "Visible": true
+                    },
+                    "time": 30
+                },
+                {
+                    "value": {
+                        "Rotate": 0,
+                        "Scale": {
+                            "x": 0.977659442154973,
+                            "y": 0.9776594421549734
+                        },
+                        "Translate": {
+                            "x": 0,
+                            "y": -130.3621251228984
+                        },
+                        "Vertex 1": {
+                            "x": -331.3073655214508,
+                            "y": -331.2879680308992
+                        },
+                        "Vertex 2": {
+                            "x": 2.0094193138680363,
+                            "y": -156.8932591296758
+                        },
+                        "Vertex 3": {
+                            "x": 331.3073655214508,
+                            "y": -331.2879680308992
+                        },
+                        "Vertex 4": {
+                            "x": -331.3073655214508,
+                            "y": 0
+                        },
+                        "Vertex 5": {
+                            "x": 0,
+                            "y": 68.15425405335169
+                        },
+                        "Vertex 6": {
+                            "x": 331.3073655214508,
+                            "y": 0
+                        },
+                        "Vertex 7": {
+                            "x": -323.7516772804673,
+                            "y": 277.019192276279
+                        },
+                        "Vertex 8": {
+                            "x": -2.0094193138679652,
+                            "y": 387.4150007807183
+                        },
+                        "Vertex 9": {
+                            "x": 328.2850902250574,
+                            "y": 287.5714542285662
+                        },
+                        "Alpha": 1,
+                        "Visible": true
+                    },
+                    "time": 60
+                },
+                {
+                    "value": {
+                        "Rotate": 0,
+                        "Scale": {
+                            "x": 1.132162111976134,
+                            "y": 1.1321621119761347
+                        },
+                        "Translate": {
+                            "x": 0,
+                            "y": -102.86386435478701
+                        },
+                        "Vertex 1": {
+                            "x": -331.3073655214508,
+                            "y": -331.2879680308992
+                        },
+                        "Vertex 2": {
+                            "x": 1.5855574273489974,
+                            "y": -193.67964303852762
+                        },
+                        "Vertex 3": {
+                            "x": 331.3073655214508,
+                            "y": -331.2879680308992
+                        },
+                        "Vertex 4": {
+                            "x": -331.3073655214508,
+                            "y": 0
+                        },
+                        "Vertex 5": {
+                            "x": 0,
+                            "y": 53.77796608897282
+                        },
+                        "Vertex 6": {
+                            "x": 331.3073655214508,
+                            "y": 0
+                        },
+                        "Vertex 7": {
+                            "x": -325.34545526879975,
+                            "y": 288.46651216201917
+                        },
+                        "Vertex 8": {
+                            "x": -1.5855574273489412,
+                            "y": 375.5757048100533
+                        },
+                        "Vertex 9": {
+                            "x": 328.9226014203904,
+                            "y": 296.7929063587458
+                        },
+                        "Alpha": 1,
+                        "Visible": true
+                    },
+                    "time": 90
+                },
+                {
+                    "value": {
+                        "Rotate": 0,
+                        "Scale": {
+                            "x": 0.977659442154973,
+                            "y": 0.9776594421549734
+                        },
+                        "Translate": {
+                            "x": 0,
+                            "y": -130.3621251228984
+                        },
+                        "Vertex 1": {
+                            "x": -331.3073655214508,
+                            "y": -331.2879680308992
+                        },
+                        "Vertex 2": {
+                            "x": 2.0094193138680363,
+                            "y": -156.8932591296758
+                        },
+                        "Vertex 3": {
+                            "x": 331.3073655214508,
+                            "y": -331.2879680308992
+                        },
+                        "Vertex 4": {
+                            "x": -331.3073655214508,
+                            "y": 0
+                        },
+                        "Vertex 5": {
+                            "x": 0,
+                            "y": 68.15425405335169
+                        },
+                        "Vertex 6": {
+                            "x": 331.3073655214508,
+                            "y": 0
+                        },
+                        "Vertex 7": {
+                            "x": -323.7516772804673,
+                            "y": 277.019192276279
+                        },
+                        "Vertex 8": {
+                            "x": -2.0094193138679652,
+                            "y": 387.4150007807183
+                        },
+                        "Vertex 9": {
+                            "x": 328.2850902250574,
+                            "y": 287.5714542285662
+                        },
+                        "Alpha": 1,
+                        "Visible": true
+                    },
+                    "time": 120
+                }
+            ]
+        },
+        {
+            "id": "8f39a788b43048dd836ff9d9ce702165",
+            "name": "Eye Texture",
+            "type": "Eye Texture",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Texture": "animations/textures/White_Eye.png",
+                        "Color": {
+                            "r": 255,
+                            "g": 59,
+                            "b": 59
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "Texture": "animations/textures/White_Eye.png",
+                        "Color": {
+                            "r": 255,
+                            "g": 59,
+                            "b": 59
+                        }
+                    },
+                    "time": 30
+                },
+                {
+                    "value": {
+                        "Texture": "animations/textures/White_Eye.png",
+                        "Color": {
+                            "r": 255,
+                            "g": 59,
+                            "b": 59
+                        }
+                    },
+                    "time": 60
+                },
+                {
+                    "value": {
+                        "Texture": "animations/textures/White_Eye.png",
+                        "Color": {
+                            "r": 255,
+                            "g": 59,
+                            "b": 59
+                        }
+                    },
+                    "time": 90
+                },
+                {
+                    "value": {
+                        "Texture": "animations/textures/White_Eye.png",
+                        "Color": {
+                            "r": 255,
+                            "g": 59,
+                            "b": 59
+                        }
+                    },
+                    "time": 120
+                }
+            ]
+        },
+        {
+            "id": "f6e595ff0b954a3e8c2548b54706ae50",
+            "name": "Body",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "value": {
+                        "Head": -45,
+                        "Torso": 0,
+                        "Pelvis": 45,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    }
+                },
+                {
+                    "value": {
+                        "Head": 45,
+                        "Torso": 0,
+                        "Pelvis": -45,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 60
+                },
+                {
+                    "value": {
+                        "Head": -45,
+                        "Torso": 0,
+                        "Pelvis": 45,
+                        "Tween": {
+                            "display": "linear",
+                            "label": "Linear Tween",
+                            "value": "linear"
+                        }
+                    },
+                    "time": 120
+                }
+            ]
+        },
+        {
+            "id": "ce612b0b57fb4f849c68fd70dfea8287",
+            "name": "Body #1",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "linear",
+                            "label": "Linear Tween",
+                            "value": "linear"
+                        }
+                    }
+                },
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 30.000000000000004,
+                        "Pelvis": -30.000000000000007,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 30
+                },
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": -30,
+                        "Pelvis": 30,
+                        "Tween": {
+                            "display": "linear",
+                            "label": "Linear Tween",
+                            "value": "linear"
+                        }
+                    },
+                    "time": 90
+                },
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "linear",
+                            "label": "Linear Tween",
+                            "value": "linear"
+                        }
+                    },
+                    "time": 120
+                }
+            ]
+        }
+    ],
+    "scale": "5",
+    "version": "0.15.0",
+    "animdb": {
+        "meta": "loop, serenade, slow-dance, love, love-dance, prom, prom-night",
+        "categories": "Dance",
+        "name": "Prom_Night_01"
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

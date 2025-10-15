@@ -1,0 +1,21 @@
+[
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://device/ds_shutdown_01.m4a",
+        "type": "sound",
+        "src": "project://device/ds_shutdown_01.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "658a6deec5dbb71423b492bea7c1c342fd758ea3"
+    }
+]

@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 33,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "ebc978b153ba1f9d5e63d3fbf87453a6",
+            "name": "Audio Event sfx_bird_01",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "sfx/sfx_bird_01.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "ebc978b153ba1f9d5e63d3fbf87453a6-body",
+            "name": "Body sfx_bird_01",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "sfx_bird_01",
+        "categories": "sfx, bird",
+        "meta": "audio-only, sfx-only, emoji"
+    }
+}

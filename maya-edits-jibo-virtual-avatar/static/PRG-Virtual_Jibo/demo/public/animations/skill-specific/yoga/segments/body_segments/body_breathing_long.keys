@@ -1,0 +1,51 @@
+{
+    "version": "0.15.0",
+    "framerate": 30,
+    "duration": 300,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "85a7b42eb7564aa9be443e9601ddec35",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "File Path",
+                            "label": "By File path",
+                            "value": "file"
+                        },
+                        "KeysFileReference": {
+                            "file": "body_breath_in_long.keys",
+                            "name": ""
+                        },
+                        "HoldFinalPose": true
+                    }
+                },
+                {
+                    "time": 150,
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "File Path",
+                            "label": "By File path",
+                            "value": "file"
+                        },
+                        "KeysFileReference": {
+                            "file": "body_breath_out_long.keys",
+                            "name": ""
+                        },
+                        "HoldFinalPose": true
+                    }
+                }
+            ]
+        }
+    ],
+    "animdb": {
+        "categories": "yoga",
+        "meta": "belly-roll, light-ring, breathing"
+    }
+}

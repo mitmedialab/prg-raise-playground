@@ -1,0 +1,21 @@
+[
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/white-circle.png",
+        "type": "texture",
+        "src": "animations/textures/white-circle.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "ac6d5fd2acdcbdf162b3163cc17bb2ce36100392"
+    }
+]

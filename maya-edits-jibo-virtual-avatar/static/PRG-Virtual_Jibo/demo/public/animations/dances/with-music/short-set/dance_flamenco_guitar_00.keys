@@ -1,0 +1,123 @@
+{
+    "version": "0.15.0",
+    "framerate": 30,
+    "duration": 361,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "9a64ca91c3f9f6c6b6717d1ada63db59",
+            "name": "Audio Event music_flamenco_guitar_00",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "music/music_flamenco_guitar_00.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "fafdda4583bd4a5aa08e9c388087f0af",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "smooth_00"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "smooth_00"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 120
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "smooth_00"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 240
+                }
+            ]
+        },
+        {
+            "id": "5137451e20c843afaf5f18a006371700",
+            "name": "Reference #1",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_to_close_02"
+                        },
+                        "HoldFinalPose": true
+                    }
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "close_to_eye_03"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 349
+                }
+            ]
+        }
+    ],
+    "animdb": {
+        "name": "",
+        "categories": "dance",
+        "meta": "dance, flamenco, spanish, short, music, rom-ballroom, rom-upbeat"
+    }
+}

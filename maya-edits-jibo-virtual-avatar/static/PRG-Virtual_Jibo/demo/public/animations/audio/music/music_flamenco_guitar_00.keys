@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 304,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "57576fa64bf4150552b20d5f3f4000d7",
+            "name": "Audio Event music_flamenco_guitar_00",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "music/music_flamenco_guitar_00.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "57576fa64bf4150552b20d5f3f4000d7-body",
+            "name": "Body music_flamenco_guitar_00",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "music_flamenco_guitar_00",
+        "categories": "audio-music",
+        "meta": "dance, flamenco, spanish, audio-only"
+    }
+}

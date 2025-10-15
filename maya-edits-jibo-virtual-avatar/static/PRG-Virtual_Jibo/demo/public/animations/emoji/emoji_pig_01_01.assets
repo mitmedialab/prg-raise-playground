@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "emoji_pig.js",
+        "type": "timeline",
+        "src": "emoji_pig.js"
+    },
+    {
+        "type": "metadata",
+        "animdb": "03041a0dfa22ee6212f7c2b698573e434c571904"
+    }
+]

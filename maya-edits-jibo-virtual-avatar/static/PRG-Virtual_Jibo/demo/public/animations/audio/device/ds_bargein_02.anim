@@ -1,0 +1,57 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "38df24306d0edf7077e3382c7c0205d278f2d746"
+    },
+    "content": {
+        "name": "ds_bargein_02.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 0.5333333333333333,
+                "times": [
+                    0,
+                    0.5
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 0.5333333333333333,
+                "times": [
+                    0,
+                    0.5
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 0.5333333333333333,
+                "times": [
+                    0,
+                    0.5
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0,
+                "eventName": "play-audio",
+                "payload": {
+                    "file": "device/ds_bargein_02.m4a"
+                }
+            }
+        ]
+    }
+}

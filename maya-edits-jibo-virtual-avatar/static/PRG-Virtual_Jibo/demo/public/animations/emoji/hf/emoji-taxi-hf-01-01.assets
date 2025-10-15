@@ -1,0 +1,21 @@
+[
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/emojis/hf/taxi.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/hf/taxi.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "29cc372b93408dda7dd931172aa1a4dec0f1c1b0"
+    }
+]

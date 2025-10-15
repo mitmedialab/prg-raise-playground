@@ -1,0 +1,165 @@
+{
+    "framerate": 30,
+    "duration": 91,
+    "layers": [
+        {
+            "id": "387a96d76291495ba554eb3519defbcf",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye-lights-error-00"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_medium_blink_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 25
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "nope_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 50
+                }
+            ]
+        },
+        {
+            "id": "31812b13ce144cfb8aeeb62ca7b4ad88",
+            "name": "Body - key poses",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": 25,
+                        "Torso": 95,
+                        "Pelvis": 260,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "Head": 25,
+                        "Torso": 95,
+                        "Pelvis": 260,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 25
+                },
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 360,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 50
+                }
+            ]
+        },
+        {
+            "id": "42b8c6b3774348e8baa82ce51343304a",
+            "name": "Body - secondary",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 25
+                },
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 50
+                }
+            ]
+        }
+    ],
+    "version": "0.15.0",
+    "scale": 1,
+    "animdb": {
+        "categories": "hue",
+        "meta": "lights-on-all, from, fail, outro"
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

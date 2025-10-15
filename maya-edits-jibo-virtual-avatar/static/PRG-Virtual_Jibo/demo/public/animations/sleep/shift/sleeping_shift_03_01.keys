@@ -1,0 +1,88 @@
+{
+    "version": "0.15.0",
+    "framerate": 30,
+    "duration": 60,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "7f4af826f9dc49da91ad4c1b01d614e5",
+            "name": "Body",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": -180,
+                        "Torso": 180,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "Head": -199.49999999999974,
+                        "Torso": 223.5,
+                        "Pelvis": -23,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 30
+                },
+                {
+                    "value": {
+                        "Head": -180,
+                        "Torso": 180,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "cubic in out",
+                            "label": "Cubic Ease In Out",
+                            "value": "cubicInOut"
+                        }
+                    },
+                    "time": 59
+                }
+            ]
+        },
+        {
+            "id": "1be3dc1f799c4c7687c221b25cf8164b",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_closed_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 0
+                }
+            ]
+        }
+    ],
+    "animdb": {
+        "categories": "Sleep",
+        "meta": "shift, sleeping-shift, body-only",
+        "name": "Sleeping_Shift_03"
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

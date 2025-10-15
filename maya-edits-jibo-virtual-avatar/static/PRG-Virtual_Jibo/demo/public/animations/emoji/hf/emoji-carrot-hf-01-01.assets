@@ -1,0 +1,21 @@
+[
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/emojis/hf/carrot.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/hf/carrot.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "b6be9cf2af1625afef082751f51b24f9ff94733e"
+    }
+]

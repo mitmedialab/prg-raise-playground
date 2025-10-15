@@ -1,0 +1,21 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "project://animations/textures/happy-glow-01.png",
+        "type": "texture",
+        "src": "project://animations/textures/happy-glow-01.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "73b1c650bf341b366cc9bbc48a6273cbda722710"
+    }
+]

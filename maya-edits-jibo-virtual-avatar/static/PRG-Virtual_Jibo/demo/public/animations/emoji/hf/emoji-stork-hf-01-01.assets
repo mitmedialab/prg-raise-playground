@@ -1,0 +1,21 @@
+[
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/emojis/hf/stork.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/hf/stork.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "1d9bab946c653244403ce3dff28737f8dfa1de4e"
+    }
+]

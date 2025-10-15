@@ -1,0 +1,21 @@
+[
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://emotional_intent/yawns/ei_yawn_01.m4a",
+        "type": "sound",
+        "src": "project://emotional_intent/yawns/ei_yawn_01.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "ed4d89baa1b2094d308b76672e69f541fa6f3143"
+    }
+]

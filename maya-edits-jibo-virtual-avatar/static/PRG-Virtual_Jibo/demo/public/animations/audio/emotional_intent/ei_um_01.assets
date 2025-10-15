@@ -1,0 +1,11 @@
+[
+    {
+        "id": "emotional_intent/ei_um_01.m4a",
+        "type": "sound",
+        "src": "emotional_intent/ei_um_01.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "ae98edd5baf17792bd5220e95146478e72296808"
+    }
+]

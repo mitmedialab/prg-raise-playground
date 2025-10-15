@@ -1,0 +1,21 @@
+[
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/emojis/hf/burger.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/hf/burger.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "4a1be9c3ce6f60eb4fbe215c2cbe482339bd8cba"
+    }
+]

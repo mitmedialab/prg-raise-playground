@@ -1,0 +1,14 @@
+{
+  "header": {
+    "fileType": "SceneInfo",
+    "version": "0.001",
+    "creationTime": 1459456393340
+  },
+  "content": {
+    "faceScreenMeshName": "screenMeshBillboardMesh",
+    "faceScreenInternalBounds": [
+      0.12990524,
+      0.073146075
+    ]
+  }
+}

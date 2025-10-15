@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 24,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "03e3956db3cc8b4bb68c6475d27dbd89",
+            "name": "Audio Event SSA_0036",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "ssa/SSA_0036.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "03e3956db3cc8b4bb68c6475d27dbd89-body",
+            "name": "Body SSA_0036",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "SSA_0036",
+        "categories": "goodbye",
+        "meta": "short, audio-only, ssa-only"
+    }
+}

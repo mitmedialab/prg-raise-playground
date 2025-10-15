@@ -1,0 +1,11 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "5d3f1a6fff9f8fbb2e71d95ca965d167d186116c"
+    }
+]

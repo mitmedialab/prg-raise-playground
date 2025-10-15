@@ -1,0 +1,117 @@
+{
+    "version": "0.15.0",
+    "framerate": 30,
+    "duration": 50,
+    "scale": "1.2",
+    "layers": [
+        {
+            "id": "05614439bd6a463f9bb1b112761e3424",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_closed_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "f26043a5fdcf42db89f09a9f2d8ad2b7",
+            "name": "Body",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": -200,
+                        "Torso": 325,
+                        "Pelvis": -125,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "Head": -200,
+                        "Torso": 325,
+                        "Pelvis": -125,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 6
+                },
+                {
+                    "value": {
+                        "Head": -174.49999999999977,
+                        "Torso": 404.0000000000002,
+                        "Pelvis": -233.0000000000002,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 24
+                },
+                {
+                    "value": {
+                        "Head": -174.49999999999977,
+                        "Torso": 404.0000000000002,
+                        "Pelvis": -233.0000000000002,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 30
+                },
+                {
+                    "value": {
+                        "Head": -200,
+                        "Torso": 325,
+                        "Pelvis": -125,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 49
+                }
+            ]
+        }
+    ],
+    "animdb": {
+        "meta": "loop, sway, pigeon, box, beat-box, beat-neck, rom-silly",
+        "categories": "Dance",
+        "name": "Pigeon_01",
+        "speedMin": 1,
+        "speedMax": 1,
+        "scaleMin": 1
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

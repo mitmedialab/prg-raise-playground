@@ -1,0 +1,635 @@
+{
+    "version": "0.15.0",
+    "framerate": 30,
+    "duration": 56,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "5a2a333b46224fd494d29a0486564417",
+            "name": "Eye",
+            "type": "Eye",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "value": {
+                        "Rotate": 0,
+                        "Scale": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "Translate": {
+                            "x": 0,
+                            "y": 0
+                        },
+                        "Visible": true,
+                        "Alpha": 1,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        },
+                        "Vertex 1": {
+                            "x": -300,
+                            "y": -300
+                        },
+                        "Vertex 2": {
+                            "x": 0,
+                            "y": -300
+                        },
+                        "Vertex 3": {
+                            "x": 300,
+                            "y": -300
+                        },
+                        "Vertex 4": {
+                            "x": -300,
+                            "y": 0
+                        },
+                        "Vertex 5": {
+                            "x": 0,
+                            "y": 0
+                        },
+                        "Vertex 6": {
+                            "x": 300,
+                            "y": 0
+                        },
+                        "Vertex 7": {
+                            "x": -300,
+                            "y": 300
+                        },
+                        "Vertex 8": {
+                            "x": 0,
+                            "y": 300
+                        },
+                        "Vertex 9": {
+                            "x": 300,
+                            "y": 300
+                        }
+                    }
+                },
+                {
+                    "time": 5,
+                    "value": {
+                        "Rotate": 0,
+                        "Scale": {
+                            "x": 0.6437915600256008,
+                            "y": 0.7660013781314957
+                        },
+                        "Translate": {
+                            "x": 0,
+                            "y": 0
+                        },
+                        "Visible": true,
+                        "Alpha": 1,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        },
+                        "Vertex 1": {
+                            "x": -241.84500760100363,
+                            "y": -298.01455204954664
+                        },
+                        "Vertex 2": {
+                            "x": 0,
+                            "y": -300
+                        },
+                        "Vertex 3": {
+                            "x": 248.5015598229912,
+                            "y": -306.20580337500365
+                        },
+                        "Vertex 4": {
+                            "x": -278.4380350207047,
+                            "y": 7.109559823729851
+                        },
+                        "Vertex 5": {
+                            "x": 0,
+                            "y": 0
+                        },
+                        "Vertex 6": {
+                            "x": 280.2155169200655,
+                            "y": 13.252998317822644
+                        },
+                        "Vertex 7": {
+                            "x": -300,
+                            "y": 300
+                        },
+                        "Vertex 8": {
+                            "x": 0,
+                            "y": 300
+                        },
+                        "Vertex 9": {
+                            "x": 300,
+                            "y": 300
+                        }
+                    }
+                },
+                {
+                    "time": 6,
+                    "value": {
+                        "Rotate": 0,
+                        "Scale": {
+                            "x": 0.6437915600256008,
+                            "y": 0.7660013781314957
+                        },
+                        "Translate": {
+                            "x": 0,
+                            "y": 0
+                        },
+                        "Visible": false,
+                        "Alpha": 1,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        },
+                        "Vertex 1": {
+                            "x": -241.84500760100363,
+                            "y": -298.01455204954664
+                        },
+                        "Vertex 2": {
+                            "x": 0,
+                            "y": -300
+                        },
+                        "Vertex 3": {
+                            "x": 248.5015598229912,
+                            "y": -306.20580337500365
+                        },
+                        "Vertex 4": {
+                            "x": -278.4380350207047,
+                            "y": 7.109559823729851
+                        },
+                        "Vertex 5": {
+                            "x": 0,
+                            "y": 0
+                        },
+                        "Vertex 6": {
+                            "x": 280.2155169200655,
+                            "y": 13.252998317822644
+                        },
+                        "Vertex 7": {
+                            "x": -300,
+                            "y": 300
+                        },
+                        "Vertex 8": {
+                            "x": 0,
+                            "y": 300
+                        },
+                        "Vertex 9": {
+                            "x": 300,
+                            "y": 300
+                        }
+                    }
+                },
+                {
+                    "value": {
+                        "Rotate": 0,
+                        "Scale": {
+                            "x": 0.6437915600256008,
+                            "y": 0.7660013781314957
+                        },
+                        "Translate": {
+                            "x": 0,
+                            "y": 0
+                        },
+                        "Visible": false,
+                        "Alpha": 1,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        },
+                        "Vertex 1": {
+                            "x": -241.84500760100363,
+                            "y": -298.01455204954664
+                        },
+                        "Vertex 2": {
+                            "x": 0,
+                            "y": -300
+                        },
+                        "Vertex 3": {
+                            "x": 248.5015598229912,
+                            "y": -306.20580337500365
+                        },
+                        "Vertex 4": {
+                            "x": -278.4380350207047,
+                            "y": 7.109559823729851
+                        },
+                        "Vertex 5": {
+                            "x": 0,
+                            "y": 0
+                        },
+                        "Vertex 6": {
+                            "x": 280.2155169200655,
+                            "y": 13.252998317822644
+                        },
+                        "Vertex 7": {
+                            "x": -300,
+                            "y": 300
+                        },
+                        "Vertex 8": {
+                            "x": 0,
+                            "y": 300
+                        },
+                        "Vertex 9": {
+                            "x": 300,
+                            "y": 300
+                        }
+                    },
+                    "time": 47
+                },
+                {
+                    "value": {
+                        "Rotate": 0,
+                        "Scale": {
+                            "x": 0.9948608172351562,
+                            "y": 0.5005429747573885
+                        },
+                        "Translate": {
+                            "x": 0,
+                            "y": 80
+                        },
+                        "Vertex 1": {
+                            "x": -234,
+                            "y": -107
+                        },
+                        "Vertex 2": {
+                            "x": 3,
+                            "y": -110
+                        },
+                        "Vertex 3": {
+                            "x": 266,
+                            "y": -107
+                        },
+                        "Vertex 4": {
+                            "x": -286,
+                            "y": 14
+                        },
+                        "Vertex 5": {
+                            "x": 0,
+                            "y": 0
+                        },
+                        "Vertex 6": {
+                            "x": 294,
+                            "y": 28
+                        },
+                        "Vertex 7": {
+                            "x": -300,
+                            "y": 300
+                        },
+                        "Vertex 8": {
+                            "x": 0,
+                            "y": 300
+                        },
+                        "Vertex 9": {
+                            "x": 300,
+                            "y": 300
+                        },
+                        "Alpha": 1,
+                        "Visible": true
+                    },
+                    "time": 48
+                },
+                {
+                    "value": {
+                        "Rotate": 0,
+                        "Scale": {
+                            "x": 1.012509611365603,
+                            "y": 0.5125592684356811
+                        },
+                        "Translate": {
+                            "x": 0,
+                            "y": 54.993725255904394
+                        },
+                        "Vertex 1": {
+                            "x": -234,
+                            "y": -107
+                        },
+                        "Vertex 2": {
+                            "x": 3,
+                            "y": -110
+                        },
+                        "Vertex 3": {
+                            "x": 266,
+                            "y": -107
+                        },
+                        "Vertex 4": {
+                            "x": -286,
+                            "y": 14
+                        },
+                        "Vertex 5": {
+                            "x": 0,
+                            "y": 0
+                        },
+                        "Vertex 6": {
+                            "x": 294,
+                            "y": 28
+                        },
+                        "Vertex 7": {
+                            "x": -300,
+                            "y": 300
+                        },
+                        "Vertex 8": {
+                            "x": 0,
+                            "y": 300
+                        },
+                        "Vertex 9": {
+                            "x": 300,
+                            "y": 300
+                        },
+                        "Alpha": 1,
+                        "Visible": true
+                    },
+                    "time": 49
+                },
+                {
+                    "value": {
+                        "Rotate": 0,
+                        "Scale": {
+                            "x": 1.0247037010454134,
+                            "y": 0.9389589530920903
+                        },
+                        "Translate": {
+                            "x": 0,
+                            "y": -6.769322191849881
+                        },
+                        "Vertex 1": {
+                            "x": -287,
+                            "y": -128
+                        },
+                        "Vertex 2": {
+                            "x": 11,
+                            "y": -128
+                        },
+                        "Vertex 3": {
+                            "x": 282,
+                            "y": -128
+                        },
+                        "Vertex 4": {
+                            "x": -300,
+                            "y": 0
+                        },
+                        "Vertex 5": {
+                            "x": 0,
+                            "y": 0
+                        },
+                        "Vertex 6": {
+                            "x": 300,
+                            "y": 0
+                        },
+                        "Vertex 7": {
+                            "x": -300,
+                            "y": 300
+                        },
+                        "Vertex 8": {
+                            "x": 0,
+                            "y": 300
+                        },
+                        "Vertex 9": {
+                            "x": 300,
+                            "y": 300
+                        },
+                        "Alpha": 1,
+                        "Visible": true
+                    },
+                    "time": 50
+                },
+                {
+                    "value": {
+                        "Rotate": 0,
+                        "Scale": {
+                            "x": 0.9596461914110598,
+                            "y": 1.0486890043091806
+                        },
+                        "Translate": {
+                            "x": 0,
+                            "y": 0
+                        },
+                        "Vertex 1": {
+                            "x": -300,
+                            "y": -300
+                        },
+                        "Vertex 2": {
+                            "x": 0,
+                            "y": -300
+                        },
+                        "Vertex 3": {
+                            "x": 300,
+                            "y": -300
+                        },
+                        "Vertex 4": {
+                            "x": -300,
+                            "y": 0
+                        },
+                        "Vertex 5": {
+                            "x": 0,
+                            "y": 0
+                        },
+                        "Vertex 6": {
+                            "x": 300,
+                            "y": 0
+                        },
+                        "Vertex 7": {
+                            "x": -300,
+                            "y": 300
+                        },
+                        "Vertex 8": {
+                            "x": 0,
+                            "y": 300
+                        },
+                        "Vertex 9": {
+                            "x": 300,
+                            "y": 300
+                        },
+                        "Alpha": 1,
+                        "Visible": true
+                    },
+                    "time": 51
+                },
+                {
+                    "value": {
+                        "Rotate": 0,
+                        "Scale": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "Translate": {
+                            "x": 0,
+                            "y": 0
+                        },
+                        "Vertex 1": {
+                            "x": -300,
+                            "y": -300
+                        },
+                        "Vertex 2": {
+                            "x": 0,
+                            "y": -300
+                        },
+                        "Vertex 3": {
+                            "x": 300,
+                            "y": -300
+                        },
+                        "Vertex 4": {
+                            "x": -300,
+                            "y": 0
+                        },
+                        "Vertex 5": {
+                            "x": 0,
+                            "y": 0
+                        },
+                        "Vertex 6": {
+                            "x": 300,
+                            "y": 0
+                        },
+                        "Vertex 7": {
+                            "x": -300,
+                            "y": 300
+                        },
+                        "Vertex 8": {
+                            "x": 0,
+                            "y": 300
+                        },
+                        "Vertex 9": {
+                            "x": 300,
+                            "y": 300
+                        },
+                        "Alpha": 1,
+                        "Visible": true
+                    },
+                    "time": 55
+                }
+            ]
+        },
+        {
+            "id": "ba49b082363e4a2ba7399b17c85e586c",
+            "name": "Eye Texture",
+            "type": "Eye Texture",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "value": {
+                        "Texture": "",
+                        "Color": {
+                            "r": 255,
+                            "g": 255,
+                            "b": 255
+                        }
+                    }
+                },
+                {
+                    "time": 5,
+                    "value": {
+                        "Texture": "",
+                        "Color": {
+                            "r": 255,
+                            "g": 255,
+                            "b": 255
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "id": "c87518e535ca48c69d129b2c7245f958",
+            "name": "Overlay",
+            "type": "Overlay",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Rotate": 0,
+                        "Scale": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "Translate": {
+                            "x": 0,
+                            "y": 0
+                        },
+                        "Visible": false,
+                        "Alpha": 1,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        },
+                        "Vertex 1": {
+                            "x": null,
+                            "y": null
+                        },
+                        "Vertex 2": {
+                            "x": 0,
+                            "y": null
+                        },
+                        "Vertex 3": {
+                            "y": null
+                        },
+                        "Vertex 4": {
+                            "x": null,
+                            "y": 0
+                        },
+                        "Vertex 5": {
+                            "x": 0,
+                            "y": 0
+                        },
+                        "Vertex 6": {
+                            "y": 0
+                        },
+                        "Vertex 7": {
+                            "x": null
+                        },
+                        "Vertex 8": {
+                            "x": 0
+                        },
+                        "Vertex 9": {}
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "b62cf3503ee24797a736fd50f91e2aa9",
+            "name": "Pixi",
+            "type": "Pixi",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Pixi": "emoji_easterEgg.js",
+                        "Attach To Eye": false,
+                        "Frame Offset": ""
+                    },
+                    "time": 5
+                }
+            ]
+        },
+        {
+            "id": "aef59cd2c0354cfe8cf7ff5c493f0841",
+            "name": "Event",
+            "type": "Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 37,
+                    "value": {
+                        "Event": {
+                            "name": "HOLD_SAFE",
+                            "payload": ""
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "animdb": {
+        "name": "Emoji_EasterEgg",
+        "categories": "emoji, ib",
+        "meta": "eye-only, easter, easter-egg, chick, holiday, ib-idle-short-time, ib-idle-long-time"
+    }
+}

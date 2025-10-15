@@ -1,0 +1,21 @@
+[
+    {
+        "id": "animations/textures/hollow-circle-01.png",
+        "type": "texture",
+        "src": "animations/textures/hollow-circle-01.png"
+    },
+    {
+        "id": "animations/textures/fc/touch-here.png",
+        "type": "texture",
+        "src": "animations/textures/fc/touch-here.png"
+    },
+    {
+        "id": "device/ticks/ds_tick_06.m4a",
+        "type": "sound",
+        "src": "device/ticks/ds_tick_06.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "323217f643c3e3f1fe7532e72ac01bb0748c97be"
+    }
+]

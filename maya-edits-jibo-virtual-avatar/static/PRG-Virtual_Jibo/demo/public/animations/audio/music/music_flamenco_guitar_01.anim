@@ -1,0 +1,57 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "4aad0b7ca96dd0529a34bef2aade243833838505"
+    },
+    "content": {
+        "name": "music_flamenco_guitar_01.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 21.1,
+                "times": [
+                    0,
+                    21.066666666666666
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 21.1,
+                "times": [
+                    0,
+                    21.066666666666666
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 21.1,
+                "times": [
+                    0,
+                    21.066666666666666
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0,
+                "eventName": "play-audio",
+                "payload": {
+                    "file": "music/music_flamenco_guitar_01.m4a"
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/yoga/Assets/Yoga_Directional_UI.png",
+        "type": "texture",
+        "src": "animations/textures/yoga/Assets/Yoga_Directional_UI.png"
+    },
+    {
+        "id": "animations/textures/yoga/sun_salutation/halfway_lift_side.png",
+        "type": "texture",
+        "src": "animations/textures/yoga/sun_salutation/halfway_lift_side.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "47630cc9e11f8b0eac27d224b4648610544d6789"
+    }
+]

@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 24,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "2ca0c92d240acc4b6b2292b22f28bd99",
+            "name": "Audio Event SSA_0059",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "ssa/SSA_0059.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "2ca0c92d240acc4b6b2292b22f28bd99-body",
+            "name": "Body SSA_0059",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "SSA_0059",
+        "categories": "hello",
+        "meta": "short, audio-only, ssa-only"
+    }
+}

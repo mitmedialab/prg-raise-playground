@@ -1,0 +1,16 @@
+{
+  "name": "threejs-r70",
+  "version": "70.0.0",
+  "description": "Three.js r70 with browserify support",
+  "main": "three.js",
+  "browser": "three.js",
+  "files": [
+    "three.js"
+  ],
+  "keywords": [
+    "threejs",
+    "3d",
+    "webgl"
+  ],
+  "license": "MIT"
+} 

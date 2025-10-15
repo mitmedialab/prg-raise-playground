@@ -1,0 +1,1053 @@
+{
+    "framerate": 30,
+    "duration": 631,
+    "layers": [
+        {
+            "id": "14415039dff5442696496d3c3f5cb8fb",
+            "name": "Reference #2",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_up_01"
+                        },
+                        "HoldFinalPose": true
+                    }
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_up_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 6
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_up_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 12
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_up_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 18
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_up_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 24
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_up_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 30
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_up_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 36
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_up_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 45
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_up_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 51
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_up_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 57
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_up_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 63
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_up_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 69
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_up_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 80
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_up_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 86
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_up_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 92
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_up_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 98
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_up_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 104
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_02"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 127
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 146
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 156
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 163
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 171
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 179
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 187
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 195
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 203
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 211
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 219
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_02"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 226
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 250
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 258
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 266
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 274
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 282
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 290
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 298
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 306
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_02"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 313
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 334
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 342
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 350
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 358
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 366
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 374
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 382
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 390
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_02"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 397
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 416
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 424
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 432
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 440
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 448
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 456
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 464
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 472
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 479
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 494
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "flamenco_strum_up_down_02"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 519
+                }
+            ]
+        },
+        {
+            "id": "4e42861af5a44f96972e06d5a407f12e",
+            "name": "Reference #1",
+            "type": "Reference",
+            "visible": false,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_closed_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "05f99f8e086044bba82843bb61a92d34",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "smooth_00"
+                        },
+                        "HoldFinalPose": true
+                    }
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "smooth_00"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 120
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "smooth_00"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 240
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "smooth_00"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 360
+                }
+            ]
+        },
+        {
+            "id": "d4aa419209804d64bbef75a37239b59f",
+            "name": "Audio Event",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "value": {
+                        "AudioEvent": {
+                            "file": "music/music_flamenco_guitar_01.m4a"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "id": "f3b84379b22941e6a5ab622fe53f5da9",
+            "name": "Body",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    }
+                },
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 435
+                },
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 360,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 525
+                }
+            ]
+        }
+    ],
+    "scale": "1",
+    "version": "0.15.0",
+    "animdb": {
+        "meta": "spanish, flamenco, flamenco-guitar, music, rom-upbeat, rom-ballroom",
+        "categories": "Dance",
+        "name": "Flamenco_music_dance_01"
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

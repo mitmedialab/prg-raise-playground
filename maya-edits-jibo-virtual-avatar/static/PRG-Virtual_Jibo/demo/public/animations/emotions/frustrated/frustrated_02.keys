@@ -1,0 +1,324 @@
+{
+    "framerate": 30,
+    "duration": 71,
+    "layers": [
+        {
+            "id": "b86e60b84f1a4b6ebe93e8b042ad4989",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_annoyed_in_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_annoyed_out_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 45
+                }
+            ]
+        },
+        {
+            "id": "565a356ed6a64b81a49fb932e514ec8e",
+            "name": "Reference #1",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "quiver-02"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "quiver-02"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 4
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "quiver-02"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 8
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "quiver-02"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 12
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "quiver-02"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 16
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "quiver-02"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 20
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "quiver-02"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 24
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "quiver-02"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 28
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "quiver-02"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 32
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "quiver-02"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 36
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "quiver-02"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 40
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "quiver-02"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 44
+                }
+            ]
+        },
+        {
+            "id": "e8e0de1f99ad4a3b917e9fa0573fa861",
+            "name": "Body",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "Head": 37.99999999999999,
+                        "Torso": -28,
+                        "Pelvis": -28.000000000000014,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 40
+                },
+                {
+                    "value": {
+                        "Head": 37.99999999999999,
+                        "Torso": -28,
+                        "Pelvis": -28.000000000000014,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 45
+                },
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 70
+                }
+            ]
+        },
+        {
+            "id": "bd6f0a3ef4104491bb42d37cf1424b74",
+            "name": "Event",
+            "type": "Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Event": {
+                            "name": "HOLD_SAFE",
+                            "payload": ""
+                        }
+                    },
+                    "time": 45
+                }
+            ]
+        }
+    ],
+    "version": "0.15.0",
+    "scale": 1,
+    "animdb": {
+        "categories": "Frustrated",
+        "meta": "forward",
+        "speedMax": 1,
+        "name": ""
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

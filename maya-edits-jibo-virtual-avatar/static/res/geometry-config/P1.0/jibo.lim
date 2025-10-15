@@ -1,0 +1,32 @@
+{
+  "header": {
+    "fileType": "Limits",
+    "version": "0.001",
+    "creationTime": 1489702644947
+  },
+  "content": {
+    "dofLimits": [
+      {
+        "dofName": "bottomSection_r",
+        "limits": {
+          "acceleration": 30.0,
+          "velocity": 10.0
+        }
+      },
+      {
+        "dofName": "middleSection_r",
+        "limits": {
+          "acceleration": 30.0,
+          "velocity": 10.0
+        }
+      },
+      {
+        "dofName": "topSection_r",
+        "limits": {
+          "acceleration": 30.0,
+          "velocity": 10.0
+        }
+      }
+    ]
+  }
+}

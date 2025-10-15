@@ -1,0 +1,41 @@
+{
+    "framerate": 30,
+    "duration": 46,
+    "layers": [
+        {
+            "id": "19f55ab1a1d1479784b263a1f8e298bf",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "belly_roll_01"
+                        },
+                        "HoldFinalPose": true
+                    }
+                }
+            ]
+        }
+    ],
+    "version": "0.15.0",
+    "scale": 1,
+    "animdb": {
+        "categories": "ReIndex",
+        "name": "",
+        "speedMin": 1,
+        "meta": "stop"
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

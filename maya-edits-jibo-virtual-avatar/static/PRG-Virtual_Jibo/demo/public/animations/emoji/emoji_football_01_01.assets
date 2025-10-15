@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "emoji_football.js",
+        "type": "timeline",
+        "src": "emoji_football.js"
+    },
+    {
+        "type": "metadata",
+        "animdb": "eca39e478f47d7b60fce2a0b205f583e6b6b8515"
+    }
+]

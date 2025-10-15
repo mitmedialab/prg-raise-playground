@@ -1,0 +1,73 @@
+{
+    "framerate": 30,
+    "duration": 26,
+    "layers": [
+        {
+            "id": "8458df88506d44d6ba249617dcac17c8",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_surprised_in_01"
+                        },
+                        "HoldFinalPose": true
+                    }
+                },
+                {
+                    "time": 20,
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_surprised_out_01"
+                        },
+                        "HoldFinalPose": true
+                    }
+                }
+            ]
+        },
+        {
+            "id": "b5fe4b89e4a74f3788d6ce265ad244c3",
+            "name": "Event",
+            "type": "Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Event": {
+                            "name": "",
+                            "payload": ""
+                        }
+                    },
+                    "time": 10
+                }
+            ]
+        }
+    ],
+    "version": "0.15.0",
+    "scale": 1,
+    "animdb": {
+        "categories": "Surprised",
+        "meta": "quick, eye-only, notice, aware",
+        "name": ""
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

@@ -1,0 +1,209 @@
+{
+    "framerate": 30,
+    "duration": 50,
+    "layers": [
+        {
+            "id": "2cb78d566bbc4c71ab960d9f4adef77e",
+            "name": "Reference #1",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_scared_in_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_scared_loop_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 7
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_scared_loop_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 11
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_scared_loop_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 15
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_scared_loop_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 19
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_scared_loop_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 23
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_scared_out_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 29
+                }
+            ]
+        },
+        {
+            "id": "f442e5256036497b9d42b001ce8d92e4",
+            "name": "Body #1",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "Head": -10,
+                        "Torso": -10,
+                        "Pelvis": 20,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 11
+                },
+                {
+                    "time": 29,
+                    "value": {
+                        "Head": -10,
+                        "Torso": -10,
+                        "Pelvis": 20,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    }
+                },
+                {
+                    "time": 45,
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "id": "f9e938d2b1114168ad43fbdbe14102e8",
+            "name": "Event",
+            "type": "Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Event": {
+                            "name": "HOLD_SAFE",
+                            "payload": ""
+                        }
+                    },
+                    "time": 29
+                }
+            ]
+        }
+    ],
+    "version": "0.15.0",
+    "scale": 1,
+    "animdb": {
+        "name": "",
+        "categories": "Scared",
+        "meta": "glances, startled, nervous, frightened, rom"
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

@@ -1,0 +1,134 @@
+{
+    "framerate": 30,
+    "duration": 41,
+    "layers": [
+        {
+            "id": "b9d37d9a3a194d04aad7d63333b79134",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_surprised_in_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_surprised_out_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 25
+                }
+            ]
+        },
+        {
+            "id": "d401a60ad2b44e659f7e3c9fcc2753ef",
+            "name": "Body",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "Head": -11.000000000000005,
+                        "Torso": -14.000000000000004,
+                        "Pelvis": 23,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 15
+                },
+                {
+                    "value": {
+                        "Head": -11.000000000000005,
+                        "Torso": -14.000000000000004,
+                        "Pelvis": 23,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 25
+                },
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 40
+                }
+            ]
+        },
+        {
+            "id": "b5fe4b89e4a74f3788d6ce265ad244c3",
+            "name": "Event",
+            "type": "Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Event": {
+                            "name": "",
+                            "payload": ""
+                        }
+                    },
+                    "time": 25
+                }
+            ]
+        }
+    ],
+    "version": "0.15.0",
+    "scale": 1,
+    "animdb": {
+        "categories": "Surprised",
+        "meta": "quick",
+        "name": ""
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

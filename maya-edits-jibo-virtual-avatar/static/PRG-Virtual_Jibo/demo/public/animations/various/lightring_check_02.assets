@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "device/ds_bloop_01.mp3",
+        "type": "sound",
+        "src": "device/ds_bloop_01.mp3"
+    },
+    {
+        "type": "metadata",
+        "animdb": "7cee73976ef1ed4182a6cf1e018275a97a610a36"
+    }
+]

@@ -1,0 +1,42 @@
+export default TrackballControls;
+declare function TrackballControls(object: any, domElement: any): void;
+declare class TrackballControls {
+    constructor(object: any, domElement: any);
+    object: any;
+    domElement: any;
+    enabled: boolean;
+    screen: {
+        left: number;
+        top: number;
+        width: number;
+        height: number;
+    };
+    rotateSpeed: number;
+    zoomSpeed: number;
+    panSpeed: number;
+    noRotate: boolean;
+    noZoom: boolean;
+    noPan: boolean;
+    noRoll: boolean;
+    staticMoving: boolean;
+    dynamicDampingFactor: number;
+    minDistance: number;
+    maxDistance: number;
+    keys: number[];
+    target: any;
+    target0: any;
+    position0: any;
+    up0: any;
+    handleResize: () => void;
+    handleEvent: (event: any) => void;
+    rotateCamera: () => void;
+    zoomCamera: () => void;
+    panCamera: () => void;
+    checkDistances: () => void;
+    update: () => void;
+    reset: () => void;
+    detachFromContainer: () => void;
+    dispose: () => void;
+    destroy: () => void;
+    attachToContainer: (element: any) => void;
+}

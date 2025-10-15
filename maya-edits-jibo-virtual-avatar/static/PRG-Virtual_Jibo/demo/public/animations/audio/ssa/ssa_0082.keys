@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 34,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "fd62ca8309ca6d3872c1afb7499c1a8a",
+            "name": "Audio Event SSA_0082",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "ssa/SSA_0082.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "fd62ca8309ca6d3872c1afb7499c1a8a-body",
+            "name": "Body SSA_0082",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "SSA_0082",
+        "categories": "sad",
+        "meta": "medium, audio-only, ssa-only"
+    }
+}

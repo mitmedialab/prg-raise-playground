@@ -1,0 +1,74 @@
+{
+    "framerate": 30,
+    "duration": 8,
+    "layers": [
+        {
+            "id": "ddfc2dbfd53d49418ed25f63e0d449bf",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_to_close_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "close_to_eye_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 3
+                }
+            ]
+        },
+        {
+            "id": "183f5cc69e5f4383ba61b6ce81f0d985",
+            "name": "Event",
+            "type": "Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Event": {
+                            "name": "HOLD_SAFE",
+                            "payload": ""
+                        }
+                    },
+                    "time": 3
+                }
+            ]
+        }
+    ],
+    "version": "0.15.0",
+    "scale": "1",
+    "animdb": {
+        "speedMin": 1,
+        "categories": "Blinks",
+        "meta": "eye-only, quick, single, active, listening",
+        "name": "Eye_Quick_Blink_02"
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

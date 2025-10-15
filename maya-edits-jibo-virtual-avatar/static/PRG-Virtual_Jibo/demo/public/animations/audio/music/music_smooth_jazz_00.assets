@@ -1,0 +1,11 @@
+[
+    {
+        "id": "music/music_smooth_jazz_00.m4a",
+        "type": "sound",
+        "src": "music/music_smooth_jazz_00.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "c4ed23b71064a29c758881aebcfe81e1f0fb67ea"
+    }
+]

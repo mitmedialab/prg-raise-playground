@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "emoji_sushi.js",
+        "type": "timeline",
+        "src": "emoji_sushi.js"
+    },
+    {
+        "type": "metadata",
+        "animdb": "2c0b6528736750ca98b0b4998b4a7f2dd616a25f"
+    }
+]

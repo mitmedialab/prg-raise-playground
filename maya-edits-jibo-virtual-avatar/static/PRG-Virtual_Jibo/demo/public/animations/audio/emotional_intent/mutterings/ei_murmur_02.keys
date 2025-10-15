@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 95,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "0925159144a57a3437df6c8962512d4c",
+            "name": "Audio Event ei_murmur_02",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "emotional_intent/mutterings/ei_murmur_02.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "0925159144a57a3437df6c8962512d4c-body",
+            "name": "Body ei_murmur_02",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "ei_murmur_02",
+        "categories": "emotional-intent",
+        "meta": "audio-only, ssa-only, emotional-intent"
+    }
+}

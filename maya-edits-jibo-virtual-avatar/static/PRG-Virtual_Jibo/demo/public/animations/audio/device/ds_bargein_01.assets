@@ -1,0 +1,11 @@
+[
+    {
+        "id": "device/ds_bargein_01.m4a",
+        "type": "sound",
+        "src": "device/ds_bargein_01.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "c385f9faf3ed4d483a586494c0747f845acfd503"
+    }
+]

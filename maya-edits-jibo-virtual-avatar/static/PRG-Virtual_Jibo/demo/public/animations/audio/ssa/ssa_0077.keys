@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 56,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "3f6730d569d07ea1bada17a8fbdc7dca",
+            "name": "Audio Event SSA_0077",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "ssa/SSA_0077.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "3f6730d569d07ea1bada17a8fbdc7dca-body",
+            "name": "Body SSA_0077",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "SSA_0077",
+        "categories": "laughing",
+        "meta": "medium, audio-only, ssa-only"
+    }
+}

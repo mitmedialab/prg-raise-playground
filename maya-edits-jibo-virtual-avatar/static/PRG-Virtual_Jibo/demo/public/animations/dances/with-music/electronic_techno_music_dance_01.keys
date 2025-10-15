@@ -1,0 +1,90 @@
+{
+    "version": "0.15.0",
+    "framerate": 30,
+    "duration": 676,
+    "scale": "1",
+    "layers": [
+        {
+            "id": "d036e0d47fba454b8d67cc7bccd55ff5",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "clockworker_01"
+                        },
+                        "HoldFinalPose": true
+                    }
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "clockworker_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 320
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "close_to_eye_03"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 664
+                }
+            ]
+        },
+        {
+            "id": "7210a2a7c61e4229af5d9277edfff13f",
+            "name": "Audio Event",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "value": {
+                        "AudioEvent": {
+                            "file": "music/music_techno_03.m4a"
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "animdb": {
+        "meta": "electronic, techno, music, rom-electronic",
+        "categories": "Dance",
+        "name": "electronic_techno_music_dance_01",
+        "speedMin": 1,
+        "speedMax": 1,
+        "scaleMin": 1
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

@@ -1,0 +1,49 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "f38570792c76054063cdf8f51f9ae0e5135a3a4b"
+    },
+    "content": {
+        "name": "body_lean_left_back_01_01.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    0.3490658503988659
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    -2.792526803190927
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    2.356194490192345
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0,
+                "eventName": "HOLD_SAFE",
+                "payload": {}
+            }
+        ]
+    }
+}

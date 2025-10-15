@@ -1,0 +1,128 @@
+{
+    "framerate": 30,
+    "duration": 45,
+    "layers": [
+        {
+            "id": "4d8c10cd00cb4275b29bd5619a73acb8",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_sad_in_01"
+                        },
+                        "HoldFinalPose": true
+                    }
+                }
+            ]
+        },
+        {
+            "id": "44a5fa0f855e45169757ea3b6501cf41",
+            "name": "Body #1",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "Head": 117.81152949374527,
+                        "Torso": 0,
+                        "Pelvis": -117.81152949374527,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 25
+                }
+            ]
+        },
+        {
+            "id": "760ce8fd510045f1bc78155ab978ed25",
+            "name": "Body",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": -34.36169610234232,
+                        "Pelvis": 34.36169610234238,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 25
+                }
+            ]
+        },
+        {
+            "id": "c1d8af62e4384f3387047b3908ae09ba",
+            "name": "Event",
+            "type": "Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 30,
+                    "value": {
+                        "Event": {
+                            "name": "HOLD_SAFE",
+                            "payload": ""
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "version": "0.15.0",
+    "scale": 1,
+    "animdb": {
+        "categories": "Sad",
+        "meta": "head-tilt, roll, back, rom",
+        "name": "Sad_06"
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

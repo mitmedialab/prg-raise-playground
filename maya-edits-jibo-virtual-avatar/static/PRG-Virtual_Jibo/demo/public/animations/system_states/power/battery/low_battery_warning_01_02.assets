@@ -1,0 +1,16 @@
+[
+    {
+        "id": "alert_lowBattery.js",
+        "type": "timeline",
+        "src": "alert_lowBattery.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "0a8ec9f96b507b135c12edd1b571aed07d5cbbe6"
+    }
+]

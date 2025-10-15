@@ -1,0 +1,485 @@
+{
+  "header": {
+    "fileType": "Skeleton",
+    "version": "0.001",
+    "creationTime": 1459456393340
+  },
+  "content": {
+    "name": "rootBn",
+    "xyzTranslation": [
+      0.0,
+      0.0,
+      0.01905
+    ],
+    "wxyzRotation": [
+      0.5000000000000001,
+      -0.5,
+      -0.5,
+      -0.4999999999999999
+    ],
+    "children": [
+      {
+        "name": "baseMesh",
+        "xyzTranslation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "wxyzRotation": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "name": "bottomSection",
+        "xyzTranslation": [
+          0.0,
+          0.0,
+          -0.0
+        ],
+        "wxyzRotation": [
+          -0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        "children": [
+          {
+            "name": "lightringMesh",
+            "xyzTranslation": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "wxyzRotation": [
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "name": "middleSection",
+            "xyzTranslation": [
+              0.0,
+              0.045563820749521255,
+              -0.0053259097039699554
+            ],
+            "wxyzRotation": [
+              0.9935718579377518,
+              0.11320319392192023,
+              0.0,
+              -0.0
+            ],
+            "children": [
+              {
+                "name": "topSection",
+                "xyzTranslation": [
+                  0.0,
+                  0.08649425953626633,
+                  0.016203919425606728
+                ],
+                "wxyzRotation": [
+                  0.9821233481679139,
+                  -0.18823848964397946,
+                  0.0,
+                  -0.0
+                ],
+                "children": [
+                  {
+                    "name": "eyeRootBn",
+                    "xyzTranslation": [
+                      2.9999999242136255E-5,
+                      0.09872739762067795,
+                      -0.04314199835062027
+                    ],
+                    "wxyzRotation": [
+                      -0.0,
+                      0.0,
+                      0.9890158491768658,
+                      0.14780950604397208
+                    ],
+                    "children": [
+                      {
+                        "name": "eyeSubRootBn",
+                        "xyzTranslation": [
+                          9.899999895424116E-7,
+                          9.99999993922529E-9,
+                          0.0
+                        ],
+                        "wxyzRotation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          -0.0
+                        ],
+                        "children": [
+                          {
+                            "name": "vertexJoint1",
+                            "xyzTranslation": [
+                              -0.028574999421834946,
+                              0.028566999360919,
+                              -6.754100322723389E-4
+                            ],
+                            "wxyzRotation": [
+                              1.0,
+                              0.0,
+                              0.0,
+                              -0.0
+                            ]
+                          },
+                          {
+                            "name": "vertexJoint2",
+                            "xyzTranslation": [
+                              0.0,
+                              0.028566999360919,
+                              -6.754100322723389E-4
+                            ],
+                            "wxyzRotation": [
+                              1.0,
+                              0.0,
+                              0.0,
+                              -0.0
+                            ]
+                          },
+                          {
+                            "name": "vertexJoint3",
+                            "xyzTranslation": [
+                              0.028574999421834946,
+                              0.028566999360919,
+                              -6.754100322723389E-4
+                            ],
+                            "wxyzRotation": [
+                              1.0,
+                              0.0,
+                              0.0,
+                              -0.0
+                            ]
+                          },
+                          {
+                            "name": "vertexJoint4",
+                            "xyzTranslation": [
+                              -0.028574999421834946,
+                              -1.999999987845058E-8,
+                              -0.0
+                            ],
+                            "wxyzRotation": [
+                              1.0,
+                              0.0,
+                              0.0,
+                              -0.0
+                            ]
+                          },
+                          {
+                            "name": "vertexJoint5",
+                            "xyzTranslation": [
+                              0.0,
+                              -1.999999987845058E-8,
+                              -0.0
+                            ],
+                            "wxyzRotation": [
+                              1.0,
+                              0.0,
+                              0.0,
+                              -0.0
+                            ]
+                          },
+                          {
+                            "name": "vertexJoint6",
+                            "xyzTranslation": [
+                              0.028574999421834946,
+                              -1.999999987845058E-8,
+                              -0.0
+                            ],
+                            "wxyzRotation": [
+                              1.0,
+                              0.0,
+                              0.0,
+                              -0.0
+                            ]
+                          },
+                          {
+                            "name": "vertexJoint7",
+                            "xyzTranslation": [
+                              -0.028574999421834946,
+                              -0.028567038476467133,
+                              6.754100322723389E-4
+                            ],
+                            "wxyzRotation": [
+                              1.0,
+                              0.0,
+                              0.0,
+                              -0.0
+                            ]
+                          },
+                          {
+                            "name": "vertexJoint8",
+                            "xyzTranslation": [
+                              0.0,
+                              -0.028567038476467133,
+                              6.754100322723389E-4
+                            ],
+                            "wxyzRotation": [
+                              1.0,
+                              0.0,
+                              0.0,
+                              -0.0
+                            ]
+                          },
+                          {
+                            "name": "vertexJoint9",
+                            "xyzTranslation": [
+                              0.028574999421834946,
+                              -0.028567038476467133,
+                              6.754100322723389E-4
+                            ],
+                            "wxyzRotation": [
+                              1.0,
+                              0.0,
+                              0.0,
+                              -0.0
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "headMesh",
+                    "xyzTranslation": [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    "wxyzRotation": [
+                      1.0,
+                      0.0,
+                      0.0,
+                      -0.0
+                    ]
+                  },
+                  {
+                    "name": "maskMesh",
+                    "xyzTranslation": [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    "wxyzRotation": [
+                      1.0,
+                      0.0,
+                      0.0,
+                      -0.0
+                    ]
+                  },
+                  {
+                    "name": "overlay_textureRootBn",
+                    "xyzTranslation": [
+                      4.0000002627493814E-5,
+                      0.09886220097541809,
+                      -0.04807629808783531
+                    ],
+                    "wxyzRotation": [
+                      -0.0,
+                      0.0,
+                      0.9890158491768658,
+                      0.14780950604397208
+                    ],
+                    "children": [
+                      {
+                        "name": "overlay_textureSubRootBn",
+                        "xyzTranslation": [
+                          9.899999895424116E-7,
+                          0.0015000100247561932,
+                          0.0
+                        ],
+                        "wxyzRotation": [
+                          1.0,
+                          0.0,
+                          0.0,
+                          -0.0
+                        ],
+                        "children": [
+                          {
+                            "name": "overlay_vertexJoint1",
+                            "xyzTranslation": [
+                              -0.028574999421834946,
+                              0.028566999360919,
+                              -9.99999993922529E-9
+                            ],
+                            "wxyzRotation": [
+                              1.0,
+                              0.0,
+                              0.0,
+                              -0.0
+                            ]
+                          },
+                          {
+                            "name": "overlay_vertexJoint2",
+                            "xyzTranslation": [
+                              0.0,
+                              0.028566999360919,
+                              -9.99999993922529E-9
+                            ],
+                            "wxyzRotation": [
+                              1.0,
+                              0.0,
+                              0.0,
+                              -0.0
+                            ]
+                          },
+                          {
+                            "name": "overlay_vertexJoint3",
+                            "xyzTranslation": [
+                              0.028574999421834946,
+                              0.028566999360919,
+                              -9.99999993922529E-9
+                            ],
+                            "wxyzRotation": [
+                              1.0,
+                              0.0,
+                              0.0,
+                              -0.0
+                            ]
+                          },
+                          {
+                            "name": "overlay_vertexJoint4",
+                            "xyzTranslation": [
+                              -0.028574999421834946,
+                              -1.999999987845058E-8,
+                              -0.0
+                            ],
+                            "wxyzRotation": [
+                              1.0,
+                              0.0,
+                              0.0,
+                              -0.0
+                            ]
+                          },
+                          {
+                            "name": "overlay_vertexJoint5",
+                            "xyzTranslation": [
+                              0.0,
+                              -1.999999987845058E-8,
+                              -0.0
+                            ],
+                            "wxyzRotation": [
+                              1.0,
+                              0.0,
+                              0.0,
+                              -0.0
+                            ]
+                          },
+                          {
+                            "name": "overlay_vertexJoint6",
+                            "xyzTranslation": [
+                              0.028574999421834946,
+                              -1.999999987845058E-8,
+                              -0.0
+                            ],
+                            "wxyzRotation": [
+                              1.0,
+                              0.0,
+                              0.0,
+                              -0.0
+                            ]
+                          },
+                          {
+                            "name": "overlay_vertexJoint7",
+                            "xyzTranslation": [
+                              -0.028574999421834946,
+                              -0.028567038476467133,
+                              9.99999993922529E-9
+                            ],
+                            "wxyzRotation": [
+                              1.0,
+                              0.0,
+                              0.0,
+                              -0.0
+                            ]
+                          },
+                          {
+                            "name": "overlay_vertexJoint8",
+                            "xyzTranslation": [
+                              0.0,
+                              -0.028567038476467133,
+                              9.99999993922529E-9
+                            ],
+                            "wxyzRotation": [
+                              1.0,
+                              0.0,
+                              0.0,
+                              -0.0
+                            ]
+                          },
+                          {
+                            "name": "overlay_vertexJoint9",
+                            "xyzTranslation": [
+                              0.028574999421834946,
+                              -0.028567038476467133,
+                              9.99999993922529E-9
+                            ],
+                            "wxyzRotation": [
+                              1.0,
+                              0.0,
+                              0.0,
+                              -0.0
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "screenMesh",
+                    "xyzTranslation": [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    "wxyzRotation": [
+                      1.0,
+                      0.0,
+                      0.0,
+                      -0.0
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "torsoMesh",
+                "xyzTranslation": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "wxyzRotation": [
+                  1.0,
+                  0.0,
+                  0.0,
+                  -0.0
+                ]
+              }
+            ]
+          },
+          {
+            "name": "pelvisMesh",
+            "xyzTranslation": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "wxyzRotation": [
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

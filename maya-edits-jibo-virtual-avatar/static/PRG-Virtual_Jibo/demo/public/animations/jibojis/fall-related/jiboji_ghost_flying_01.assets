@@ -1,0 +1,26 @@
+[
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/emojis/hf/ghost.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/hf/ghost.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "sfx/fall_animations/sfx_jiboji_fall_ghost_flying.m4a",
+        "type": "sound",
+        "src": "sfx/fall_animations/sfx_jiboji_fall_ghost_flying.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "7ee877a404719062b23b9e0b8658a07d849ef93a"
+    }
+]

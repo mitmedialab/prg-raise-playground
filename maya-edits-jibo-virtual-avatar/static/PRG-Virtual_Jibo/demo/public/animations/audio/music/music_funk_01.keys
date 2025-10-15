@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 421,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "8a0c97ffe5ce6c3787dc44b0cccbd383",
+            "name": "Audio Event music_funk_01",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "music/music_funk_01.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "8a0c97ffe5ce6c3787dc44b0cccbd383-body",
+            "name": "Body music_funk_01",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "music_funk_01",
+        "categories": "audio-music",
+        "meta": "dance, short, funk, mo-town, audio-only"
+    }
+}

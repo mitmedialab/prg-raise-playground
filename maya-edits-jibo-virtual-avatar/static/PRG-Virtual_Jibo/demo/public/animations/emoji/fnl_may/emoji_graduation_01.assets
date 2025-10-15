@@ -1,0 +1,26 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/jibojis/graduation-cap.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/graduation-cap.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "fee6e166647f33aaa6ba72ec0490bf6fb41f2e85"
+    }
+]

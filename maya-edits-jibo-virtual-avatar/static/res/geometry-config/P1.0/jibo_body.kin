@@ -1,0 +1,81 @@
+{
+  "header": {
+    "fileType": "Kinematics",
+    "version": "0.001",
+    "creationTime": 1434244315999
+  },
+  "content": {
+    "controls": [
+      {
+        "dofName": "bottomSection_r",
+        "skeletonFrameName": "bottomSection",
+        "xyzRotationAxis": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "wxyzQuatInitialRotation": [
+          -0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        "min": -3.0543270111083984,
+        "max": 3.054326057434082,
+        "isCyclic": true,
+        "controlType": "ROTATION",
+        "controlName": "bottomSection_r rotation"
+      },
+      {
+        "redDOFName": "lightring_redChannelBn_r",
+        "greenDOFName": "lightring_greenChannelBn_r",
+        "blueDOFName": "lightring_blueChannelBn_r",
+        "meshNames": [
+          "lightringMeshMesh"
+        ],
+        "controlType": "COLOR",
+        "controlName": "lightringMeshMesh color"
+      },
+      {
+        "dofName": "middleSection_r",
+        "skeletonFrameName": "middleSection",
+        "xyzRotationAxis": [
+          -5.1624581942633085E-8,
+          1.0,
+          -1.763809365229463E-8
+        ],
+        "wxyzQuatInitialRotation": [
+          0.9935718579377518,
+          0.11320319392192023,
+          0.0,
+          -0.0
+        ],
+        "min": -3.0543265342712402,
+        "max": 3.0543265342712402,
+        "isCyclic": true,
+        "controlType": "ROTATION",
+        "controlName": "middleSection_r rotation"
+      },
+      {
+        "dofName": "topSection_r",
+        "skeletonFrameName": "topSection",
+        "xyzRotationAxis": [
+          -1.0862225252594726E-7,
+          1.0,
+          2.1507238656681693E-8
+        ],
+        "wxyzQuatInitialRotation": [
+          0.9821233481679139,
+          -0.18823848964397946,
+          0.0,
+          -0.0
+        ],
+        "min": -3.0543267726898193,
+        "max": 3.0543267726898193,
+        "isCyclic": true,
+        "controlType": "ROTATION",
+        "controlName": "topSection_r rotation"
+      }
+    ]
+  }
+}

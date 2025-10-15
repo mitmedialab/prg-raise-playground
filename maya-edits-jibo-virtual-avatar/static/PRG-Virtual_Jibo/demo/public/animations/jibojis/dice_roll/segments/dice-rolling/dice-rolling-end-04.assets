@@ -1,0 +1,51 @@
+[
+    {
+        "id": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-01.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-01.png"
+    },
+    {
+        "id": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-02.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-02.png"
+    },
+    {
+        "id": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-03.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-03.png"
+    },
+    {
+        "id": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-04.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-04.png"
+    },
+    {
+        "id": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-05.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-05.png"
+    },
+    {
+        "id": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-06.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-06.png"
+    },
+    {
+        "id": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-07.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-07.png"
+    },
+    {
+        "id": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-08.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-08.png"
+    },
+    {
+        "id": "animations/textures/jibojis/dice-roll/dice-flat/dice-flat-side-04.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/dice-roll/dice-flat/dice-flat-side-04.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "323217f643c3e3f1fe7532e72ac01bb0748c97be"
+    }
+]

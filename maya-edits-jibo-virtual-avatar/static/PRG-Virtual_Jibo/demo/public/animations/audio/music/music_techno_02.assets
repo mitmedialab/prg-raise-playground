@@ -1,0 +1,11 @@
+[
+    {
+        "id": "music/music_techno_02.m4a",
+        "type": "sound",
+        "src": "music/music_techno_02.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "234e7bdf78594714b16cd40640adb074fed1a299"
+    }
+]

@@ -1,0 +1,21 @@
+[
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/emojis/fnl_january_hf/mittens.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/fnl_january_hf/mittens.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "1c73eafb0aefca65730a851682e0f3116505704f"
+    }
+]

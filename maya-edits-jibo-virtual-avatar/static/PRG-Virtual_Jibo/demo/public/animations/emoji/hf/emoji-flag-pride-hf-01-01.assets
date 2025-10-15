@@ -1,0 +1,26 @@
+[
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/emojis/hf/flag-pride.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/hf/flag-pride.png"
+    },
+    {
+        "id": "animations/textures/jibojis/flag-pride.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/flag-pride.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "b2b302899fcc55dad134f409efbdea6b38ee822e"
+    }
+]

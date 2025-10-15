@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 637,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "b56d9c16b63cf9e96d4b77b8e7cae0e8",
+            "name": "Audio Event music_techno_02",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "music/music_techno_02.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "b56d9c16b63cf9e96d4b77b8e7cae0e8-body",
+            "name": "Body music_techno_02",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "music_techno_02",
+        "categories": "audio-music",
+        "meta": "dance, techno, robotic, audio-only"
+    }
+}

@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "emoji_ice.js",
+        "type": "timeline",
+        "src": "emoji_ice.js"
+    },
+    {
+        "type": "metadata",
+        "animdb": "26fe1ca945d9c67a4fb66307c3ad884335382761"
+    }
+]

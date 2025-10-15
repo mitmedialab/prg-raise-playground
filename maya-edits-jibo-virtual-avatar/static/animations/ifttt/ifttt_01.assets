@@ -1,0 +1,21 @@
+[
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/ifttt/ifttt-01.png",
+        "type": "texture",
+        "src": "animations/textures/ifttt/ifttt-01.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "e2d2a6a8f1276683d5e04d5630cbbecd983abe9b"
+    }
+]

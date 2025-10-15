@@ -1,0 +1,81 @@
+[
+    {
+        "id": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-01.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-01.png"
+    },
+    {
+        "id": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-02.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-02.png"
+    },
+    {
+        "id": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-03.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-03.png"
+    },
+    {
+        "id": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-04.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-04.png"
+    },
+    {
+        "id": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-05.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-05.png"
+    },
+    {
+        "id": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-06.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-06.png"
+    },
+    {
+        "id": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-07.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-07.png"
+    },
+    {
+        "id": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-08.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/dice-roll/dice-rolling/dice-roll-08.png"
+    },
+    {
+        "id": "animations/textures/jibojis/dice-roll/dice-flat/dice-flat-side-04.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/dice-roll/dice-flat/dice-flat-side-04.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/March_2018/sfx_dice_roll_shake.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/March_2018/sfx_dice_roll_shake.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/March_2018/sfx_dice_roll_diceroll.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/March_2018/sfx_dice_roll_diceroll.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "ead4aba3b6a6f8bc90a2fd86e886417e2680de58"
+    }
+]

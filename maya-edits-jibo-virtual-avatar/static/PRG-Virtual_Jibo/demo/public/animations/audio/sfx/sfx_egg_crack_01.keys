@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 18,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "ad663caa8afd4bb786d3abff33af6ccf",
+            "name": "Audio Event sfx_egg_crack_01",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "sfx/sfx_egg_crack_01.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "ad663caa8afd4bb786d3abff33af6ccf-body",
+            "name": "Body sfx_egg_crack_01",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "sfx_egg_crack_01",
+        "categories": "sfx, egg",
+        "meta": "audio-only, sfx-only, emoji"
+    }
+}

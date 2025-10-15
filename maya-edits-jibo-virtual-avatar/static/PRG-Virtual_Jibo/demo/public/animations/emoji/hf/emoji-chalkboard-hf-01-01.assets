@@ -1,0 +1,21 @@
+[
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/emojis/hf/chalkboard.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/hf/chalkboard.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "89aab3719b4b2b1ca4ce6974ce5cfb898c936c13"
+    }
+]

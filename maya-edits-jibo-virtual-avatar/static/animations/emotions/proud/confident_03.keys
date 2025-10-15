@@ -1,0 +1,151 @@
+{
+    "framerate": 30,
+    "duration": 58,
+    "layers": [
+        {
+            "id": "6c34e4af2a02418da7ca0a1440d61e12",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_happy_in_00"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_happy_out_00"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 46
+                }
+            ]
+        },
+        {
+            "id": "c2f347dd9a9946b290c212e6500dca81",
+            "name": "Body",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "Head": 15,
+                        "Torso": 10,
+                        "Pelvis": -25,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 14
+                },
+                {
+                    "value": {
+                        "Head": -15,
+                        "Torso": -10,
+                        "Pelvis": 25,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 28
+                },
+                {
+                    "value": {
+                        "Head": 15,
+                        "Torso": 10,
+                        "Pelvis": -25,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 42
+                },
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 57
+                }
+            ]
+        },
+        {
+            "id": "dd2610d274274552adffeaa2a9fa44d9",
+            "name": "Background Texture",
+            "type": "Background Texture",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Texture": "animations/textures/bg/jibo_bg_00.png",
+                        "Color": {
+                            "r": 0,
+                            "g": 0,
+                            "b": 0
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        }
+    ],
+    "version": "0.15.0",
+    "scale": "1.4",
+    "animdb": {
+        "categories": "Proud",
+        "name": "",
+        "speedMin": 0.8,
+        "speedMax": 1,
+        "meta": "side-to-side, happy, courage"
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

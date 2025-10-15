@@ -1,0 +1,124 @@
+{
+    "framerate": 30,
+    "duration": 60,
+    "layers": [
+        {
+            "id": "9026d1ad19344328a7594923308cacbd",
+            "name": "Reference #1",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_to_close_02"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye-default"
+                        },
+                        "HoldFinalPose": false
+                    },
+                    "time": 26
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_surprised_in_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 27
+                }
+            ]
+        },
+        {
+            "id": "b5fe4b89e4a74f3788d6ce265ad244c3",
+            "name": "Event",
+            "type": "Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Event": {
+                            "name": "",
+                            "payload": ""
+                        }
+                    },
+                    "time": 45
+                }
+            ]
+        },
+        {
+            "id": "bb963b217f634c76b2c9c02a8915a9a9",
+            "name": "Body",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "Head": -360.49999999999955,
+                        "Torso": -32.999999999999986,
+                        "Pelvis": 387,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 45
+                }
+            ]
+        }
+    ],
+    "version": "0.15.0",
+    "scale": 1,
+    "animdb": {
+        "categories": "Surprised",
+        "meta": "disbelief,belly-roll, roll, say-what, rom",
+        "name": "",
+        "speedMin": 1
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

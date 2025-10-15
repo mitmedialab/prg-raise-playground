@@ -1,0 +1,102 @@
+{
+    "framerate": 30,
+    "duration": 40,
+    "layers": [
+        {
+            "id": "7167bb3b0a8745b689f320ead8d5f0c6",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_scared_in_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 0
+                },
+                {
+                    "time": 7,
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_scared_loop_01"
+                        },
+                        "HoldFinalPose": true
+                    }
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_scared_loop_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 11
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_scared_out_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 19
+                }
+            ]
+        },
+        {
+            "id": "3c8d66e97a9243d08648cfd4e4a9a124",
+            "name": "Event",
+            "type": "Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Event": {
+                            "name": "HOLD_SAFE",
+                            "payload": ""
+                        }
+                    },
+                    "time": 19
+                }
+            ]
+        }
+    ],
+    "version": "0.15.0",
+    "scale": "1",
+    "animdb": {
+        "categories": "scared",
+        "meta": "eye-only"
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

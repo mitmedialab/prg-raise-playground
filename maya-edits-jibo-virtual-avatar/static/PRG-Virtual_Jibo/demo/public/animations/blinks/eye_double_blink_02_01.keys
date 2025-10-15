@@ -1,0 +1,55 @@
+{
+    "framerate": 30,
+    "duration": 19,
+    "layers": [
+        {
+            "id": "29f8c7eaddab4c30a54f89f21df97ec9",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "KeysFileReference": {
+                            "file": "eye_quick_blink_01_01.keys",
+                            "name": "eye_quick_blink_01"
+                        },
+                        "HoldFinalPose": true,
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "KeysFileReference": {
+                            "file": "eye_blink_02_01.keys",
+                            "name": "eye_blink_02"
+                        },
+                        "HoldFinalPose": true,
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        }
+                    },
+                    "time": 8
+                }
+            ]
+        }
+    ],
+    "version": "0.15.0",
+    "scale": "1",
+    "animdb": {
+        "categories": "Blinks",
+        "meta": "eye-only, double-blink, double",
+        "name": "Eye_Double_Blink_02"
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

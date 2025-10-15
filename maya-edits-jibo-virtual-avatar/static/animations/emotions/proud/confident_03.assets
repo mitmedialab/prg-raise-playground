@@ -1,0 +1,26 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "project://animations/textures/happy-glow-01.png",
+        "type": "texture",
+        "src": "project://animations/textures/happy-glow-01.png"
+    },
+    {
+        "id": "animations/textures/bg/jibo_bg_00.png",
+        "type": "texture",
+        "src": "animations/textures/bg/jibo_bg_00.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "241cbbbf648e47e7811c762fc7c4859bf3b773f8"
+    }
+]

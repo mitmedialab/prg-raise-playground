@@ -1,0 +1,51 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/emojis/snowglobe-01.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/snowglobe-01.png"
+    },
+    {
+        "id": "animations/textures/emojis/snowglobe-snow-01.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/snowglobe-snow-01.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_snowglobe_cityscape01_eye_start.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_snowglobe_cityscape01_eye_start.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_snowglobe_cityscape01_ambience.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_snowglobe_cityscape01_ambience.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_jinglebells02_eye_end.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_jinglebells02_eye_end.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "543e8b2ee6d3055856bb71a7b68172e940c90d91"
+    }
+]

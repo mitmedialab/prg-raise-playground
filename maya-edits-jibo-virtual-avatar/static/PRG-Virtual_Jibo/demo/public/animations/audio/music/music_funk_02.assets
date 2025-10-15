@@ -1,0 +1,11 @@
+[
+    {
+        "id": "music/music_funk_02.m4a",
+        "type": "sound",
+        "src": "music/music_funk_02.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "a66df95435a9f24203192f351826397aec28fa27"
+    }
+]

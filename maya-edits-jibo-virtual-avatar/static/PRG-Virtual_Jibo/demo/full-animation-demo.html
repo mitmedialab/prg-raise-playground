@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timeline System Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: white;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #4CAF50;
+            margin: 0 0 10px 0;
+        }
+        
+        .status {
+            background-color: #333;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .container {
+            display: flex;
+            gap: 20px;
+            height: 80vh;
+        }
+        
+        .robot-section {
+            flex: 2;
+            position: relative;
+        }
+        
+        #robot-container {
+            width: 100%;
+            height: 100%;
+            border: 2px solid #555;
+            border-radius: 10px;
+            background-color: #2a2a2a;
+            position: relative;
+        }
+        
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            color: #888;
+        }
+        
+        .controls {
+            flex: 1;
+            background-color: #333;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .control-section {
+            margin-bottom: 30px;
+        }
+        
+        .control-section h3 {
+            color: #4CAF50;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #555;
+            padding-bottom: 5px;
+        }
+        
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .button-row {
+            display: flex;
+            gap: 10px;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+            flex: 1;
+        }
+        
+        button:hover:not(:disabled) {
+            background-color: #45a049;
+        }
+        
+        button:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+        }
+        
+        .emotion-button {
+            background-color: #2196F3;
+        }
+        
+        .emotion-button:hover:not(:disabled) {
+            background-color: #1976D2;
+        }
+        
+        .system-button {
+            background-color: #FF9800;
+        }
+        
+        .system-button:hover:not(:disabled) {
+            background-color: #F57C00;
+        }
+        
+        .danger-button {
+            background-color: #f44336;
+        }
+        
+        .danger-button:hover:not(:disabled) {
+            background-color: #d32f2f;
+        }
+        
+        .info {
+            background-color: #2a2a2a;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #4CAF50;
+            margin-bottom: 20px;
+        }
+        
+        .info h4 {
+            margin: 0 0 10px 0;
+            color: #4CAF50;
+        }
+        
+        .info ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .console-log {
+            background-color: #1a1a1a;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Timeline System Test</h1>
+    </div>
+    
+    <div class="status">
+        <div id="status-text">Initializing...</div>
+    </div>
+    
+    <div class="container">
+        <div class="robot-section">
+            <div id="robot-container">
+                <div class="loading">Loading Avatar...</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="control-section">
+                <h3>Emotion Animations</h3>
+                <div class="button-group">
+                    <button class="emotion-button" onclick="playAnimation('emotions/happy/happy_01.anim')" disabled>Happy 01</button>
+                    <button class="emotion-button" onclick="playAnimation('emotions/happy/eye_happy_01.anim')" disabled>Eye Happy</button>
+                    <button class="emotion-button" onclick="playAnimation('blinks/eye_quick_blink_01_01.anim')" disabled>Quick Blink</button>
+                    <button class="emotion-button" onclick="playAnimation('clear-everything.anim')" disabled>Clear Everything</button>
+                    <button class="emotion-button" onclick="playAnimation('emotions/happy/happy_07.anim')" disabled>Happy 07 Complex</button>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <h3>Animation Control</h3>
+                <div class="button-group">
+                    <button class="danger-button" onclick="stopAnimation()" disabled>Stop Animation</button>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <h3>Testing & Debugging</h3>
+                <div class="button-group">
+                    <button onclick="testAnimationLoader()" disabled>Test AnimationLoader</button>
+                    <button onclick="console.log('Timeline:', window.motionTimeline())" disabled>Log Timeline</button>
+                    <button onclick="console.log('AnimUtils:', window.animUtils())" disabled>Log AnimUtils</button>
+                    <button onclick="console.log('RobotInfo:', window.robotInfo())" disabled>Log RobotInfo</button>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <h3>System Information</h3>
+                <div class="console-log" id="system-info">
+                    <div>Animation System Status: Initializing...</div>
+                    <div>Check browser console for detailed logs</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module" src="full-animation-demo.js"></script>
+    
+    <script>
+        // Update system info periodically
+        function updateSystemInfo() {
+            const infoDiv = document.getElementById('system-info');
+            if (window.animUtils && window.motionTimeline && window.robotInfo) {
+                const animUtils = window.animUtils();
+                const timeline = window.motionTimeline();
+                const robotInfo = window.robotInfo();
+                
+                if (animUtils && timeline && robotInfo) {
+                    infoDiv.innerHTML = `
+                        <div>Animation System: Ready</div>
+                        <div>Motion Timeline: Active (${timeline.getName()})</div>
+                        <div>Robot Info: Loaded (${robotInfo.getConfig().getRobotURL()})</div>
+                        <div>DOF Count: ${robotInfo.getDOFNames().length}</div>
+                        <div>Layers: ${timeline.getLayerNames().join(', ')}</div>
+                    `;
+                } else {
+                    infoDiv.innerHTML = `
+                        <div>Animation System: Loading...</div>
+                        <div>Please wait for initialization to complete</div>
+                    `;
+                }
+            }
+        }
+        
+        // Update every 2 seconds
+        setInterval(updateSystemInfo, 2000);
+    </script>
+</body>
+</html>

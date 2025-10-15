@@ -1,0 +1,16 @@
+[
+    {
+        "id": "emoji_exclamationRed.js",
+        "type": "timeline",
+        "src": "emoji_exclamationRed.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "ad799be171e3a6a15413ed64d3521b5e5a1265d6"
+    }
+]

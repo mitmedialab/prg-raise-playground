@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 29,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "32fa936f1ff1b7a03ef126f06d866956",
+            "name": "Audio Event SSA_0126",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "ssa/SSA_0126.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "32fa936f1ff1b7a03ef126f06d866956-body",
+            "name": "Body SSA_0126",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "SSA_0126",
+        "categories": "laughing, happy",
+        "meta": "long, audio-only, ssa-only"
+    }
+}

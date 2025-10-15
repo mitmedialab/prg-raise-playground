@@ -1,0 +1,33 @@
+{
+    "framerate": 30,
+    "duration": 1,
+    "layers": [
+        {
+            "id": "53f073f9471c4bdeb54610ec691bfa96",
+            "name": "Body",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": 5,
+                        "Torso": 30,
+                        "Pelvis": -30,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        }
+    ],
+    "version": "0.15.0",
+    "scale": 1,
+    "animdb": {
+        "meta": "pose-only"
+    }
+}

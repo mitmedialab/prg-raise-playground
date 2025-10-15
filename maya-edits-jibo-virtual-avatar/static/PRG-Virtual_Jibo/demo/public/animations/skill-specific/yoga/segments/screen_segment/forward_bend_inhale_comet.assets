@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/yoga/Assets/Yoga_Directional_UI.png",
+        "type": "texture",
+        "src": "animations/textures/yoga/Assets/Yoga_Directional_UI.png"
+    },
+    {
+        "id": "animations/textures/yoga/sun_salutation/forward_bend_side.png",
+        "type": "texture",
+        "src": "animations/textures/yoga/sun_salutation/forward_bend_side.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "286f154d298c80c1400dac620b9adb2ee6c6e2ac"
+    }
+]

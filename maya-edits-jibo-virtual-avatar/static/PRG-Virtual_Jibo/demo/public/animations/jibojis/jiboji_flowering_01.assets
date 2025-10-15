@@ -1,0 +1,46 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/jibojis/pot-01.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/pot-01.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/white-circle.png",
+        "type": "texture",
+        "src": "animations/textures/white-circle.png"
+    },
+    {
+        "id": "animations/textures/jibojis/rain-01.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/rain-01.png"
+    },
+    {
+        "id": "animations/textures/jibojis/flower-01.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/flower-01.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "ca6ea29130c561b09fdba7d671eac9d8d1dcf503"
+    }
+]

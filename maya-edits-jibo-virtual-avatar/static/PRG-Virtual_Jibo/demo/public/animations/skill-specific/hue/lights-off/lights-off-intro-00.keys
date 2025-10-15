@@ -1,0 +1,78 @@
+{
+    "framerate": 30,
+    "duration": 20,
+    "layers": [
+        {
+            "id": "a442f7c46a504ba89523c29bd33c34eb",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_closed_01"
+                        },
+                        "HoldFinalPose": true
+                    }
+                }
+            ]
+        },
+        {
+            "id": "8330b893095c441d8ef2fc30fc6dbde7",
+            "name": "Body - key poses",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": 100,
+                        "Torso": -30,
+                        "Pelvis": -70,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "2be2afd0fe654dca8fb5a1edae6e6442",
+            "name": "Audio Event",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "value": {
+                        "AudioEvent": {
+                            "file": "sfx/Skills/Hue/sfx_hue_off.ogg"
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "version": "0.15.0",
+    "scale": 1,
+    "animdb": {
+        "categories": "hue",
+        "meta": "lights-off, to, intro, pose"
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

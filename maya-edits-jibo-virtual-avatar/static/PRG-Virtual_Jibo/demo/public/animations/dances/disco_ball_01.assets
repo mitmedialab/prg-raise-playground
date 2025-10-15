@@ -1,0 +1,46 @@
+[
+    {
+        "id": "project://animations/textures/jibojis/disco-ball/disco_1.png",
+        "type": "texture",
+        "src": "project://animations/textures/jibojis/disco-ball/disco_1.png"
+    },
+    {
+        "id": "project://animations/textures/jibojis/disco-ball/disco_2.png",
+        "type": "texture",
+        "src": "project://animations/textures/jibojis/disco-ball/disco_2.png"
+    },
+    {
+        "id": "project://animations/textures/jibojis/disco-ball/disco_3.png",
+        "type": "texture",
+        "src": "project://animations/textures/jibojis/disco-ball/disco_3.png"
+    },
+    {
+        "id": "project://animations/textures/jibojis/disco-ball/disco_4.png",
+        "type": "texture",
+        "src": "project://animations/textures/jibojis/disco-ball/disco_4.png"
+    },
+    {
+        "id": "project://animations/textures/jibojis/disco-ball/disco_5.png",
+        "type": "texture",
+        "src": "project://animations/textures/jibojis/disco-ball/disco_5.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/jibojis/disco-ball/disco_glitter.png",
+        "type": "texture",
+        "src": "project://animations/textures/jibojis/disco-ball/disco_glitter.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "58ddebafd437e6fe8812048841903ac5b2ebd361"
+    }
+]

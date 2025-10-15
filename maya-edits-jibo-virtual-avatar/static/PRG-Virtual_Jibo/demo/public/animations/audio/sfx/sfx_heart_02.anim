@@ -1,0 +1,57 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "4692cd839a0fb583ffe36d81ff570f3b6f5be0b3"
+    },
+    "content": {
+        "name": "sfx_heart_02.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 2.2,
+                "times": [
+                    0,
+                    2.1666666666666665
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 2.2,
+                "times": [
+                    0,
+                    2.1666666666666665
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 2.2,
+                "times": [
+                    0,
+                    2.1666666666666665
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0,
+                "eventName": "play-audio",
+                "payload": {
+                    "file": "sfx/sfx_heart_02.m4a"
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,49 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "a9bd6d235e36fffe29c724e4f6f1a5e59d493abb"
+    },
+    "content": {
+        "name": "sfx_news_intro.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 6.566666666666666,
+                "times": [
+                    0,
+                    6.533333333333333
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 6.566666666666666,
+                "times": [
+                    0,
+                    6.533333333333333
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 6.566666666666666,
+                "times": [
+                    0,
+                    6.533333333333333
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            }
+        ],
+        "events": []
+    }
+}

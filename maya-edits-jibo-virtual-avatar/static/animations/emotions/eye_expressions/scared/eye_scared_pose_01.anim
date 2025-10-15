@@ -1,0 +1,283 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "0dc5fa3aa842e9ff2cff5c8d9fb9cfa9ad8804c0"
+    },
+    "content": {
+        "name": "eye_scared_pose_01.keys",
+        "channels": [
+            {
+                "dofName": "eyeTextureInfixBn_r",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    "animations/textures/White_Eye.png"
+                ]
+            },
+            {
+                "dofName": "eye_redChannelBn_r",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    1
+                ]
+            },
+            {
+                "dofName": "eye_greenChannelBn_r",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    1
+                ]
+            },
+            {
+                "dofName": "eye_blueChannelBn_r",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    1
+                ]
+            },
+            {
+                "dofName": "vertexJoint1_t",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    -0.02285533828125
+                ]
+            },
+            {
+                "dofName": "vertexJoint1_t_2",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    0.022856914375000002
+                ]
+            },
+            {
+                "dofName": "vertexJoint2_t",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    0
+                ]
+            },
+            {
+                "dofName": "vertexJoint2_t_2",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    0.022856914375000002
+                ]
+            },
+            {
+                "dofName": "vertexJoint3_t",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    0.02285533828125
+                ]
+            },
+            {
+                "dofName": "vertexJoint3_t_2",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    0.022856914375000002
+                ]
+            },
+            {
+                "dofName": "vertexJoint4_t",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    -0.02285533828125
+                ]
+            },
+            {
+                "dofName": "vertexJoint4_t_2",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    0
+                ]
+            },
+            {
+                "dofName": "vertexJoint5_t",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    0
+                ]
+            },
+            {
+                "dofName": "vertexJoint5_t_2",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    0
+                ]
+            },
+            {
+                "dofName": "vertexJoint6_t",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    0.02285533828125
+                ]
+            },
+            {
+                "dofName": "vertexJoint6_t_2",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    0
+                ]
+            },
+            {
+                "dofName": "vertexJoint7_t",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    -0.02285533828125
+                ]
+            },
+            {
+                "dofName": "vertexJoint7_t_2",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    -0.022856914375000002
+                ]
+            },
+            {
+                "dofName": "vertexJoint8_t",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    0
+                ]
+            },
+            {
+                "dofName": "vertexJoint8_t_2",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    -0.022856914375000002
+                ]
+            },
+            {
+                "dofName": "vertexJoint9_t",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    0.02285533828125
+                ]
+            },
+            {
+                "dofName": "vertexJoint9_t_2",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    -0.022856914375000002
+                ]
+            },
+            {
+                "dofName": "eyeSubRootBn_r",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    0
+                ]
+            },
+            {
+                "dofName": "eyeSubRootBn_t",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    0
+                ]
+            },
+            {
+                "dofName": "eyeSubRootBn_t_2",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    0
+                ]
+            },
+            {
+                "dofName": "eyeVisibilityBn_r",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    1
+                ]
+            },
+            {
+                "dofName": "eye_alphaChannelBn_r",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    1
+                ]
+            }
+        ],
+        "events": []
+    }
+}

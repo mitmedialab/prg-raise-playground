@@ -1,0 +1,11 @@
+[
+    {
+        "id": "sfx/sfx_drumroll_01.wav",
+        "type": "sound",
+        "src": "sfx/sfx_drumroll_01.wav"
+    },
+    {
+        "type": "metadata",
+        "animdb": "0103cef1a02882e49b1b13f29a3b95ad5877214d"
+    }
+]

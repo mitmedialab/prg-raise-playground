@@ -1,0 +1,21 @@
+[
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "music/music_belly_dance_01.m4a",
+        "type": "sound",
+        "src": "music/music_belly_dance_01.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "71f9ca4471e5e7c71009ef34b4ba1b4cabe852a9"
+    }
+]

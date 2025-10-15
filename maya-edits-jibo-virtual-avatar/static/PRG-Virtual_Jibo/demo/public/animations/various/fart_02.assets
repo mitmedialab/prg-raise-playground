@@ -1,0 +1,31 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "project://animations/textures/glow_01.png",
+        "type": "texture",
+        "src": "project://animations/textures/glow_01.png"
+    },
+    {
+        "id": "sfx/sfx_fart_robotic_01.m4a",
+        "type": "sound",
+        "src": "sfx/sfx_fart_robotic_01.m4a"
+    },
+    {
+        "id": "emotional_intent/ei_giggle_01.m4a",
+        "type": "sound",
+        "src": "emotional_intent/ei_giggle_01.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "f4fa2d4110e1c3ff3139692b4d5299554f3a665f"
+    }
+]

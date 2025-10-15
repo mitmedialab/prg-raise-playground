@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 11,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "dc41f382ec1cbf4021fce0c9c8f6e26e",
+            "name": "Audio Event ei_confusion_01",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "emotional_intent/ei_confusion_01.mp3"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "dc41f382ec1cbf4021fce0c9c8f6e26e-body",
+            "name": "Body ei_confusion_01",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "ei_confusion_01",
+        "categories": "emotional-intent",
+        "meta": "audio-only, ssa-only, emotional-intent"
+    }
+}

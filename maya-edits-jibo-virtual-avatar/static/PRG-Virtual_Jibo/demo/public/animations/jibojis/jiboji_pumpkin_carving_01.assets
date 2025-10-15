@@ -1,0 +1,36 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/jibojis/pumpkin-glow-01.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/pumpkin-glow-01.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/emojis/hf/pumpkin.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/hf/pumpkin.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "38d6fd767adb47fa0f6f427d1914eda5973ca2f3"
+    }
+]

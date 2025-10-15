@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 65,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "dc707087feab6d8c622791bb3da94f2c",
+            "name": "Audio Event ei_mutter_04",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "emotional_intent/mutterings/ei_mutter_04.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "dc707087feab6d8c622791bb3da94f2c-body",
+            "name": "Body ei_mutter_04",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "ei_mutter_04",
+        "categories": "emotional-intent",
+        "meta": "audio-only, ssa-only, emotional-intent"
+    }
+}

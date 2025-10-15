@@ -1,0 +1,57 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "0adc0c8dc524efb5c3a912dc8d2e2f3d7b87bb40"
+    },
+    "content": {
+        "name": "ds_shutter_release_01.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 0.4666666666666667,
+                "times": [
+                    0,
+                    0.43333333333333335
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 0.4666666666666667,
+                "times": [
+                    0,
+                    0.43333333333333335
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 0.4666666666666667,
+                "times": [
+                    0,
+                    0.43333333333333335
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0,
+                "eventName": "play-audio",
+                "payload": {
+                    "file": "device/ds_shutter_release_01.m4a"
+                }
+            }
+        ]
+    }
+}

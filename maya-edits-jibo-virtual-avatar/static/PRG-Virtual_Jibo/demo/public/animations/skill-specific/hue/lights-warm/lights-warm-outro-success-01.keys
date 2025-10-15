@@ -1,0 +1,135 @@
+{
+    "framerate": 30,
+    "duration": 41,
+    "layers": [
+        {
+            "id": "24352e01af2d4814a57fb15686e214de",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye-lights-warm-00"
+                        },
+                        "HoldFinalPose": true
+                    }
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_blink_02"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 30
+                }
+            ]
+        },
+        {
+            "id": "2416d200c92b4c91827c814edf6b2c61",
+            "name": "Body - key poses",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": -179.99999999999997,
+                        "Torso": 0,
+                        "Pelvis": 179.99999999999997,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "time": 30,
+                    "value": {
+                        "Head": -360,
+                        "Torso": 0,
+                        "Pelvis": 360,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "id": "2e1b560514de48dcaf6f67d38b5ad484",
+            "name": "Audio - Confirmation sfx",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "sfx/Skills/Hue/sfx_hue_success_high.ogg"
+                        }
+                    },
+                    "time": 4
+                }
+            ]
+        },
+        {
+            "id": "7c95a1c7510b4f41a8de92e090b38d39",
+            "name": "LED",
+            "type": "LED",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Color": {
+                            "r": 255,
+                            "g": 145,
+                            "b": 0
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "time": 30,
+                    "value": {
+                        "Color": {
+                            "r": 0,
+                            "g": 0,
+                            "b": 0
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "version": "0.15.0",
+    "scale": 1,
+    "animdb": {
+        "categories": "hue",
+        "meta": "lights-warm, from, success, outro"
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/yoga/sun_salutation/high_lunge_right_side.png",
+        "type": "texture",
+        "src": "animations/textures/yoga/sun_salutation/high_lunge_right_side.png"
+    },
+    {
+        "id": "animations/textures/yoga/Assets/Yoga_Directional_UI.png",
+        "type": "texture",
+        "src": "animations/textures/yoga/Assets/Yoga_Directional_UI.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "8af9c16d539d630d97858cbd73b0e9967039161d"
+    }
+]

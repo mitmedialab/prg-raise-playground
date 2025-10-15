@@ -1,0 +1,16 @@
+[
+    {
+        "id": "emoji_icecream.js",
+        "type": "timeline",
+        "src": "emoji_icecream.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "fb6f75f05d3bcf74341e19e1192280cf676a3235"
+    }
+]

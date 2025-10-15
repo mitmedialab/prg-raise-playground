@@ -1,0 +1,38 @@
+{
+    "version": "0.15.0",
+    "framerate": 30,
+    "duration": 197,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "b09f61c6a52bdd8b5cebd4fdf6151d8c",
+            "name": "Audio Event sfx_news_intro",
+            "type": "Audio Event",
+            "visible": false,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "music/skills/personal_report/sfx_news_intro.ogg"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "b09f61c6a52bdd8b5cebd4fdf6151d8c-body",
+            "name": "Body sfx_news_intro",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "sfx_news_intro",
+        "categories": "music, personal-report, news",
+        "meta": "personal-report, news-intro, audio-only"
+    }
+}

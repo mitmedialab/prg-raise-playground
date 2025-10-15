@@ -1,0 +1,57 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "3c495928aa358d4054f94f0de72e32ba251b2e4e"
+    },
+    "content": {
+        "name": "sfx_egg_crack_01.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 0.6,
+                "times": [
+                    0,
+                    0.5666666666666667
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 0.6,
+                "times": [
+                    0,
+                    0.5666666666666667
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 0.6,
+                "times": [
+                    0,
+                    0.5666666666666667
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0,
+                "eventName": "play-audio",
+                "payload": {
+                    "file": "sfx/sfx_egg_crack_01.m4a"
+                }
+            }
+        ]
+    }
+}

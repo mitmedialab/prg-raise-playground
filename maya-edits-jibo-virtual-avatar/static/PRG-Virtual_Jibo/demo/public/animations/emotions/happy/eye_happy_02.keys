@@ -1,0 +1,74 @@
+{
+    "version": "0.15.0",
+    "framerate": 30,
+    "duration": 45,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "6aff5343fb3e4040ae05a3a53c1cff99",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_happy_in_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_happy_out_01"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 25
+                }
+            ]
+        },
+        {
+            "id": "f45425bcdead49028b03c1bf388e1c64",
+            "name": "Event",
+            "type": "Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Event": {
+                            "name": "HOLD_SAFE",
+                            "payload": ""
+                        }
+                    },
+                    "time": 25
+                }
+            ]
+        }
+    ],
+    "animdb": {
+        "name": "",
+        "categories": "Happy",
+        "meta": "eye-only, smile, small",
+        "speedMax": 1.4
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

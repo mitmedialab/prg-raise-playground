@@ -1,0 +1,49 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "eeb46241f88109dc55b5ba8f7d6d6a5186734e06"
+    },
+    "content": {
+        "name": "body_lean_left_forward_01_01.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    2.0943951023931953
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    -3.141592653589793
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 0.03333333333333333,
+                "times": [
+                    0
+                ],
+                "values": [
+                    0.7853981633974483
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0,
+                "eventName": "HOLD_SAFE",
+                "payload": {}
+            }
+        ]
+    }
+}

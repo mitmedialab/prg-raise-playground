@@ -1,0 +1,93 @@
+{
+    "version": "0.15.0",
+    "framerate": 30,
+    "duration": 325,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "d9111c61298cfe2831713b76ed6cc6a7",
+            "name": "Audio Event music_funny_00",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "music/music_funny_00.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "a5247d2b469844af987625f7226dc1f0",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "happy_lucky_00"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "f699405dbc66413981eb0194760d7d9a",
+            "name": "Reference #1",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_to_close_02"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "close_to_eye_03"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 313
+                }
+            ]
+        }
+    ],
+    "animdb": {
+        "name": "",
+        "categories": "dance",
+        "meta": "dance, short, funny, joke, weasel, music, rom-silly"
+    }
+}

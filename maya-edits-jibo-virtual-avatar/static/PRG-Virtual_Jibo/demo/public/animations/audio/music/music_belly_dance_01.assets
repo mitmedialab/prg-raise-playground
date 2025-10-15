@@ -1,0 +1,11 @@
+[
+    {
+        "id": "music/music_belly_dance_01.m4a",
+        "type": "sound",
+        "src": "music/music_belly_dance_01.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "1310d82ae41db6f97e5e0760cfe4c34cd4e6fe61"
+    }
+]

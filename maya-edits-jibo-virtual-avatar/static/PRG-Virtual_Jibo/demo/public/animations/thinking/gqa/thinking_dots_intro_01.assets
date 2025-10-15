@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/3-dots.png",
+        "type": "texture",
+        "src": "animations/textures/3-dots.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "8b7b6f8f0b2b6fc5795762d9c8ba6aaf9d0b38c5"
+    }
+]

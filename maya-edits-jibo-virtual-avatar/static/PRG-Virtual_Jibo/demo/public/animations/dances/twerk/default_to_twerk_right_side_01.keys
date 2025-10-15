@@ -1,0 +1,51 @@
+{
+    "framerate": 30,
+    "duration": 25,
+    "layers": [
+        {
+            "id": "c2f347dd9a9946b290c212e6500dca81",
+            "name": "Body #2",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 180,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    }
+                },
+                {
+                    "value": {
+                        "Head": -90,
+                        "Torso": 0,
+                        "Pelvis": 270,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 24
+                }
+            ]
+        }
+    ],
+    "version": "0.15.0",
+    "scale": "1.2",
+    "animdb": {
+        "meta": "twerk-segment, default-to-twerk-side ",
+        "categories": "Dance",
+        "name": ""
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

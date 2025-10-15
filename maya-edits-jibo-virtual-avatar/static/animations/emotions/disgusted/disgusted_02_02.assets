@@ -1,0 +1,16 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://emotional_intent/ei_disgust_01.m4a",
+        "type": "sound",
+        "src": "project://emotional_intent/ei_disgust_01.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "a5eb5e49e6e505aaaacc5a58216e901d48bb4e9e"
+    }
+]

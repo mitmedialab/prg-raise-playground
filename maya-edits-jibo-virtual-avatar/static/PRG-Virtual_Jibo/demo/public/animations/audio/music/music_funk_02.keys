@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 169,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "192ac8041a89f10b96f0b1719d0e67eb",
+            "name": "Audio Event music_funk_02",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "music/music_funk_02.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "192ac8041a89f10b96f0b1719d0e67eb-body",
+            "name": "Body music_funk_02",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "music_funk_02",
+        "categories": "audio-music",
+        "meta": "dance, short, funk, pop, beat-drop, audio-only"
+    }
+}

@@ -1,0 +1,11 @@
+[
+    {
+        "id": "music/music_disco_00.m4a",
+        "type": "sound",
+        "src": "music/music_disco_00.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "58e29ec19708ae297854ede0e8d6562098fb8e0a"
+    }
+]
