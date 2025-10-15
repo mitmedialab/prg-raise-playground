@@ -9,17 +9,17 @@ importers:
   .:
     dependencies:
       animation-utilities:
-        specifier: file:../../../PRG-Virtual_Jibo
-        version: file:../../../PRG-Virtual_Jibo
+        specifier: file:../../../scratch-packages/scratch-gui/static/PRG-Virtual_Jibo
+        version: file:../../../scratch-packages/scratch-gui/static/PRG-Virtual_Jibo
     optionalDependencies:
       jibo-plugins:
-        specifier: file:../../../PRG-Virtual_Jibo
-        version: animation-utilities@file:../../../PRG-Virtual_Jibo
+        specifier: file:../../../scratch-packages/scratch-gui/static/PRG-Virtual_Jibo
+        version: animation-utilities@file:../../../scratch-packages/scratch-gui/static/PRG-Virtual_Jibo
 
 packages:
 
-  animation-utilities@file:../../../PRG-Virtual_Jibo:
-    resolution: {directory: ../../../PRG-Virtual_Jibo, type: directory}
+  animation-utilities@file:../../../scratch-packages/scratch-gui/static/PRG-Virtual_Jibo:
+    resolution: {directory: ../../../scratch-packages/scratch-gui/static/PRG-Virtual_Jibo, type: directory}
     engines: {node: '>=6.0'}
 
   find-root@1.0.0:
@@ -28,17 +28,17 @@ packages:
   stats-js@1.0.0-alpha1:
     resolution: {integrity: sha512-BKrDAFE/YuRRWNrKBL6rRykJWx0LBxZJeJCcKeidpGlfqmTYhMEi/YfLZ8GoA5/KVWaIgPZnoApPli1LX0QQ8A==}
 
-  threejs-r70@file:../../../PRG-Virtual_Jibo/threejs-r70:
-    resolution: {directory: ../../../PRG-Virtual_Jibo/threejs-r70, type: directory}
+  threejs-r70@file:../../../scratch-packages/scratch-gui/static/PRG-Virtual_Jibo/threejs-r70:
+    resolution: {directory: ../../../scratch-packages/scratch-gui/static/PRG-Virtual_Jibo/threejs-r70, type: directory}
 
   urijs@1.17.1:
     resolution: {integrity: sha512-vG1NrwxlfideDDpZAbV3sitGyPW4UORs1Y4MDwHtvpWO8n/W0CPNpemvAvgrt9oy4F7MmMWGpu3lz+BZFke+Bw==}
 
 snapshots:
 
-  animation-utilities@file:../../../PRG-Virtual_Jibo:
+  animation-utilities@file:../../../scratch-packages/scratch-gui/static/PRG-Virtual_Jibo:
     dependencies:
-      '@jibo/three': threejs-r70@file:../../../PRG-Virtual_Jibo/threejs-r70
+      '@jibo/three': threejs-r70@file:../../../scratch-packages/scratch-gui/static/PRG-Virtual_Jibo/threejs-r70
       find-root: 1.0.0
       stats-js: 1.0.0-alpha1
       urijs: 1.17.1
@@ -47,6 +47,6 @@ snapshots:
 
   stats-js@1.0.0-alpha1: {}
 
-  threejs-r70@file:../../../PRG-Virtual_Jibo/threejs-r70: {}
+  threejs-r70@file:../../../scratch-packages/scratch-gui/static/PRG-Virtual_Jibo/threejs-r70: {}
 
   urijs@1.17.1: {}

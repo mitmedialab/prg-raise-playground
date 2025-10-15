@@ -21,7 +21,7 @@ export const vmDeclarations = () => {
 
     const exclude = [
         path.join(vmSrc, "extensions"),
-        path.resolve(vmSrc, "../../../PRG-Virtual_Jibo")
+        path.resolve(vmSrc, "../../../scratch-packages/scratch-gui/static/PRG-Virtual_Jibo")
     ];
 
     host.writeFile = (pathToFile: string, contents: string) => {
