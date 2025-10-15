@@ -10,7 +10,7 @@ export const jiboThreeAlias = "@jibo/three";
 
 const getCommonAliasEntry = () => getAlias(commonDirectory, commonAlias);
 const getScratchVmAliasEntry = () => getAlias(vmSrc, scratchVmAlias);
-const getJiboThreeAliasEntry = () => getAlias(path.join(root, "PRG-Virtual_Jibo", "threejs-r70", "three.js"), jiboThreeAlias);
+const getJiboThreeAliasEntry = () => getAlias(path.join(root, "scratch-packages", "scratch-gui", "static", "PRG-Virtual_Jibo", "threejs-r70", "three.js"), jiboThreeAlias);
 
 const getAlias = (location: string, alias: string) => {
   if (!fs.existsSync(location)) throw new Error(`Could not form alias '${alias}' because location didn't exist: ${location}`);
