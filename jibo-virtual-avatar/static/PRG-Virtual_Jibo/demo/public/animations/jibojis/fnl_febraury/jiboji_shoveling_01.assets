@@ -1,0 +1,66 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/jibojis/shovel.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/shovel.png"
+    },
+    {
+        "id": "animations/textures/jibojis/snow-pile.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/snow-pile.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/February_2018/jiboji_shoveling_02_amb.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/February_2018/jiboji_shoveling_02_amb.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/February_2018/jiboji_shoveling_02_snowplop01.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/February_2018/jiboji_shoveling_02_snowplop01.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/February_2018/jiboji_shoveling_02_shovel01.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/February_2018/jiboji_shoveling_02_shovel01.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/February_2018/jiboji_shoveling_02_snowplop_02.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/February_2018/jiboji_shoveling_02_snowplop_02.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/February_2018/jiboji_shoveling_02_shovel02.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/February_2018/jiboji_shoveling_02_shovel02.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/February_2018/jiboji_shoveling_02_outro.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/February_2018/jiboji_shoveling_02_outro.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "0aa92565c2aeee704c6be68ceee630a640b07898"
+    }
+]

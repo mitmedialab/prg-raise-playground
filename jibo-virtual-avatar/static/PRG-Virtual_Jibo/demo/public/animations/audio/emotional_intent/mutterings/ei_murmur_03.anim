@@ -1,0 +1,57 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "06af3d2927229524c89e778ee9415437a7ee968b"
+    },
+    "content": {
+        "name": "ei_murmur_03.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 3.933333333333333,
+                "times": [
+                    0,
+                    3.9
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 3.933333333333333,
+                "times": [
+                    0,
+                    3.9
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 3.933333333333333,
+                "times": [
+                    0,
+                    3.9
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0,
+                "eventName": "play-audio",
+                "payload": {
+                    "file": "emotional_intent/mutterings/ei_murmur_03.m4a"
+                }
+            }
+        ]
+    }
+}

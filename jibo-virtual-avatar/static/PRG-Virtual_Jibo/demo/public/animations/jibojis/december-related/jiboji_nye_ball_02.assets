@@ -1,0 +1,46 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/emojis/nye-pole-01.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/nye-pole-01.png"
+    },
+    {
+        "id": "animations/textures/emojis/nye-ball-01.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/nye-ball-01.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_nyeball01_countdown.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_nyeball01_countdown.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_nyeball_eyepop_end.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_nyeball_eyepop_end.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "1c0b7e4f4280b583011ec39d34c075c00c87dcdc"
+    }
+]

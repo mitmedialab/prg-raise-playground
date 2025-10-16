@@ -1,0 +1,26 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/whiteeye_blur1.png",
+        "type": "texture",
+        "src": "animations/textures/whiteeye_blur1.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "device/ds_plugged_01.m4a",
+        "type": "sound",
+        "src": "device/ds_plugged_01.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "3b121e0434ec7a57e0425b42f96628e084e94e6f"
+    }
+]

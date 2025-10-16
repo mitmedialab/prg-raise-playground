@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/yoga/sun_salutation/mountain_front.png",
+        "type": "texture",
+        "src": "animations/textures/yoga/sun_salutation/mountain_front.png"
+    },
+    {
+        "id": "animations/textures/yoga/Assets/Yoga_Directional_UI.png",
+        "type": "texture",
+        "src": "animations/textures/yoga/Assets/Yoga_Directional_UI.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "27a94abc5d2704e6c722fb8f32a7561b16aa93ee"
+    }
+]

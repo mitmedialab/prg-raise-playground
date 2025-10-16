@@ -1,0 +1,31 @@
+[
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/jibojis/fall-related/baseball-01.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/fall-related/baseball-01.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/jibojis/fall-related/baseball-bat-01.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/fall-related/baseball-bat-01.png"
+    },
+    {
+        "id": "sfx/fall_animations/jibo_sfx_jiboji_fall_baseball.m4a",
+        "type": "sound",
+        "src": "sfx/fall_animations/jibo_sfx_jiboji_fall_baseball.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "35cb0c61a934d491edd39db2fa3dbfd04f7cca2e"
+    }
+]

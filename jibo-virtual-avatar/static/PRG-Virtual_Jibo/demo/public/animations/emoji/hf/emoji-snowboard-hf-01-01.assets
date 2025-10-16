@@ -1,0 +1,21 @@
+[
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/emojis/fnl_january_hf/snowboard.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/fnl_january_hf/snowboard.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "1a457343143260f2f58b890fb463a13701838835"
+    }
+]

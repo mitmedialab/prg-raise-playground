@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/emojis/hf/guitar.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/hf/guitar.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "b3491f29d7a47af79a39ce0ca1f89a44ee293760"
+    }
+]

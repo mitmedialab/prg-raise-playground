@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 357,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "e2e3b6d478625ab8fa66610e248a4ed2",
+            "name": "Audio Event music_pop_00",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "music/music_pop_00.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "e2e3b6d478625ab8fa66610e248a4ed2-body",
+            "name": "Body music_pop_00",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "music_pop_00",
+        "categories": "audio-music",
+        "meta": "dance, short, pop, cheerful, happy, sunshine-and-lollipops, audio-only"
+    }
+}

@@ -1,0 +1,41 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/jibojis/fish-1-01.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/fish-1-01.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/white-circle.png",
+        "type": "texture",
+        "src": "animations/textures/white-circle.png"
+    },
+    {
+        "id": "animations/textures/jibojis/fishhook-01.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/fishhook-01.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "4516515995e07aebf65da87605bb6ae3106f5121"
+    }
+]

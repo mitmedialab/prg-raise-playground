@@ -1,0 +1,21 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "personal_report_news_intro.js",
+        "type": "timeline",
+        "src": "personal_report_news_intro.js"
+    },
+    {
+        "id": "sfx/Skills/PersonalReport/news/sfx_news_intro.ogg",
+        "type": "sound",
+        "src": "sfx/Skills/PersonalReport/news/sfx_news_intro.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "079df3c8f20e75fab381e7d717427f95dbc42b33"
+    }
+]

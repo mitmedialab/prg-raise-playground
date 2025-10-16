@@ -1,0 +1,21 @@
+[
+    {
+        "id": "device/ds_dismissal_01.m4a",
+        "type": "sound",
+        "src": "device/ds_dismissal_01.m4a"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "bf5c3f309c496bbd287fe74f72d6516065b4230b"
+    }
+]

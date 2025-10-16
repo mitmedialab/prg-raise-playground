@@ -1,0 +1,16 @@
+[
+    {
+        "id": "emoji_buffalochickenfood.js",
+        "type": "timeline",
+        "src": "emoji_buffalochickenfood.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "6dee197880e7eec2fe67929ee6778e5f5aecef03"
+    }
+]

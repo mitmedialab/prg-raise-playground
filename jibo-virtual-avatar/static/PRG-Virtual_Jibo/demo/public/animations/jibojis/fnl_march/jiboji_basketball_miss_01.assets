@@ -1,0 +1,81 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/jibojis/basketball-ball-01.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/basketball-ball-01.png"
+    },
+    {
+        "id": "animations/textures/jibojis/basketball-hoop-01.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/basketball-hoop-01.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/March_2018/sfx_basketball_make_dribble_02.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/March_2018/sfx_basketball_make_dribble_02.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/March_2018/sfx_basketball_make_catch_01.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/March_2018/sfx_basketball_make_catch_01.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/March_2018/sfx_basketball_miss_crowd_awww_01.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/March_2018/sfx_basketball_miss_crowd_awww_01.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/March_2018/sfx_basketball_make_dribble_01.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/March_2018/sfx_basketball_make_dribble_01.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/March_2018/sfx_basketball_make_buzzer_01.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/March_2018/sfx_basketball_make_buzzer_01.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/March_2018/sfx_basketball_make_dribble_03.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/March_2018/sfx_basketball_make_dribble_03.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/March_2018/sfx_basketball_miss_backboard_01.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/March_2018/sfx_basketball_miss_backboard_01.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/March_2018/sfx_basketball_make_crowd_01.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/March_2018/sfx_basketball_make_crowd_01.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/March_2018/sfx_basketball_make_sneakers_01.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/March_2018/sfx_basketball_make_sneakers_01.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "fbf2a2f00d896504183ed5b3c0d8adf8cfb4c326"
+    }
+]

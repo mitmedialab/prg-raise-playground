@@ -1,0 +1,57 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "2d380049efde60ecbf68210bae6c15cdd14de031"
+    },
+    "content": {
+        "name": "ds_speakbegin_01.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 0.3,
+                "times": [
+                    0,
+                    0.26666666666666666
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 0.3,
+                "times": [
+                    0,
+                    0.26666666666666666
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 0.3,
+                "times": [
+                    0,
+                    0.26666666666666666
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0,
+                "eventName": "play-audio",
+                "payload": {
+                    "file": "device/ds_speakbegin_01.m4a"
+                }
+            }
+        ]
+    }
+}

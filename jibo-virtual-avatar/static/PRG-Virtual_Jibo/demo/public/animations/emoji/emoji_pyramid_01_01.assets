@@ -1,0 +1,16 @@
+[
+    {
+        "id": "emoji_pyramid.js",
+        "type": "timeline",
+        "src": "emoji_pyramid.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "a5297d18a71e946c3263ddc45d2b2a7f9adcbd0b"
+    }
+]

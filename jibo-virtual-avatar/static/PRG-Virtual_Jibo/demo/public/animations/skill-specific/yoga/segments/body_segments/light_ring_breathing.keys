@@ -1,0 +1,51 @@
+{
+    "version": "0.15.0",
+    "framerate": 30,
+    "duration": 180,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "dca3655e2f4144699ba9df67a4b6ef3a",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "File Path",
+                            "label": "By File path",
+                            "value": "file"
+                        },
+                        "KeysFileReference": {
+                            "file": "light_ring_only_inhale.keys",
+                            "name": ""
+                        },
+                        "HoldFinalPose": true
+                    }
+                },
+                {
+                    "time": 90,
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "File Path",
+                            "label": "By File path",
+                            "value": "file"
+                        },
+                        "KeysFileReference": {
+                            "file": "light_ring_only_exhale.keys",
+                            "name": ""
+                        },
+                        "HoldFinalPose": true
+                    }
+                }
+            ]
+        }
+    ],
+    "animdb": {
+        "categories": "yoga",
+        "meta": "light-ring-only, light-ring, breathing"
+    }
+}

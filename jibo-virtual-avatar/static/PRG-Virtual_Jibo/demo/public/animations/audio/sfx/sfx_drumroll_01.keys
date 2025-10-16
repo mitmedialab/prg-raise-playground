@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 62,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "2df58d25d3e0bb908d4c2300ae8de903",
+            "name": "Audio Event sfx_drumroll_01",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "sfx/sfx_drumroll_01.wav"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "2df58d25d3e0bb908d4c2300ae8de903-body",
+            "name": "Body sfx_drumroll_01",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "sfx_drumroll_01",
+        "categories": "sfx, drumroll",
+        "meta": "audio-only, sfx-only, emoji"
+    }
+}

@@ -1,0 +1,26 @@
+[
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/jibojis/trampoline-03.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/trampoline-03.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/white-circle.png",
+        "type": "texture",
+        "src": "animations/textures/white-circle.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "24b2cb86f80ed465ec88c49a575d292cebf8453b"
+    }
+]

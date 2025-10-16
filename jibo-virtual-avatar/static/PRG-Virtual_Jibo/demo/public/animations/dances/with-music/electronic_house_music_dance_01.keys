@@ -1,0 +1,386 @@
+{
+    "version": "0.15.0",
+    "framerate": 30,
+    "duration": 571,
+    "scale": "1.8",
+    "layers": [
+        {
+            "id": "48e7f65f48444b3eb400e987b3a79a9f",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_to_close_02"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "close_to_eye_03"
+                        },
+                        "HoldFinalPose": true
+                    },
+                    "time": 559
+                }
+            ]
+        },
+        {
+            "id": "f26043a5fdcf42db89f09a9f2d8ad2b7",
+            "name": "Body",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "Head": 310.72,
+                        "Torso": -310.72,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 61
+                },
+                {
+                    "value": {
+                        "Head": -310.7231435123273,
+                        "Torso": 310.7231435123273,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 123
+                },
+                {
+                    "value": {
+                        "Head": 310.72,
+                        "Torso": -310.72,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 186
+                },
+                {
+                    "value": {
+                        "Head": -310.7231435123273,
+                        "Torso": 310.7231435123273,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 248
+                },
+                {
+                    "value": {
+                        "Head": 310.72,
+                        "Torso": -310.72,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 310
+                },
+                {
+                    "value": {
+                        "Head": -310.7231435123273,
+                        "Torso": 310.7231435123273,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 373
+                },
+                {
+                    "value": {
+                        "Head": 310.72,
+                        "Torso": -310.72,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 435
+                },
+                {
+                    "value": {
+                        "Head": -310.7231435123273,
+                        "Torso": 310.7231435123273,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 498
+                },
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 570
+                }
+            ]
+        },
+        {
+            "id": "710cd208b44c4f80a8d5faac59aed4ea",
+            "name": "Body #1",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 0
+                },
+                {
+                    "value": {
+                        "Head": -61,
+                        "Torso": 212.84,
+                        "Pelvis": -151.84,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 61
+                },
+                {
+                    "value": {
+                        "Head": 61.00191803087218,
+                        "Torso": -212.84371432363062,
+                        "Pelvis": 151.84179629275843,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 123
+                },
+                {
+                    "value": {
+                        "Head": -61,
+                        "Torso": 212.84,
+                        "Pelvis": -151.84,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 186
+                },
+                {
+                    "value": {
+                        "Head": 61.00191803087218,
+                        "Torso": -212.84371432363062,
+                        "Pelvis": 151.84179629275843,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 248
+                },
+                {
+                    "value": {
+                        "Head": -61,
+                        "Torso": 212.84,
+                        "Pelvis": -151.84,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 310
+                },
+                {
+                    "value": {
+                        "Head": 61.00191803087218,
+                        "Torso": -212.84371432363062,
+                        "Pelvis": 151.84179629275843,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 373
+                },
+                {
+                    "value": {
+                        "Head": -61,
+                        "Torso": 212.84,
+                        "Pelvis": -151.84,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 435
+                },
+                {
+                    "value": {
+                        "Head": 61.00191803087218,
+                        "Torso": -212.84371432363062,
+                        "Pelvis": 151.84179629275843,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 498
+                },
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 570
+                }
+            ]
+        },
+        {
+            "id": "54b0a6f899b44f719d1ed75a37a73642",
+            "name": "Body #2",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 0,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    }
+                },
+                {
+                    "value": {
+                        "Head": 0,
+                        "Torso": 0,
+                        "Pelvis": 360,
+                        "Tween": {
+                            "display": "sine in out",
+                            "label": "Sine Ease In Out",
+                            "value": "sineInOut"
+                        }
+                    },
+                    "time": 570
+                }
+            ]
+        },
+        {
+            "id": "d3dc8c148dd34d02b6b826838852e88e",
+            "name": "Audio Event",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "value": {
+                        "AudioEvent": {
+                            "file": "music/music_techno_01.m4a"
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "animdb": {
+        "meta": "house, electronic, trance, uplifting, music, rom-electronic",
+        "categories": "Dance",
+        "name": "electronic_house_music_dance_01",
+        "speedMax": 1
+    },
+    "log": {
+        "03-OCT-2016 Scaled by 250/300": true
+    }
+}

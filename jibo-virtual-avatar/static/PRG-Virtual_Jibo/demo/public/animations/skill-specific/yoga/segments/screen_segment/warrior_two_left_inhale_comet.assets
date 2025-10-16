@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/yoga/Assets/Yoga_Directional_UI.png",
+        "type": "texture",
+        "src": "animations/textures/yoga/Assets/Yoga_Directional_UI.png"
+    },
+    {
+        "id": "animations/textures/yoga/sun_salutation/warrior_two_left_side.png",
+        "type": "texture",
+        "src": "animations/textures/yoga/sun_salutation/warrior_two_left_side.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "971f9a64b1b6dad57cd0c04f813cc3b4cc3ddde4"
+    }
+]

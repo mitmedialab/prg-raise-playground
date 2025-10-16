@@ -1,0 +1,55 @@
+{
+  "name": "animation-utilities",
+  "version": "6.0.1",
+  "description": "Animation utilities for Jibo's coordinated expression output",
+  "contributors": [
+    "Jesse Gray <jg@ifrobots.com>",
+    "Matt Berlin <mattb@ifrobots.com>"
+  ],
+  "license": "SEE LICENSE IN LICENSE.txt",
+  "main": "./lib/animation-utilities.js",
+  "scripts": {
+    "build": "gulp debug",
+    "build:release": "gulp",
+    "clean": "gulp clean-all",
+    "coverage:check": "istanbul check-coverage --statements 10 --branches 0 --functions 0 --lines 10",
+    "coverage:report": "istanbul report && open coverage/lcov-report/index.html",
+    "coverage:remap": "remap-istanbul --input ./coverage/coverage-final.json --output ./coverage/coverage-final.json -b animation-utilities/",
+    "test": "gulp test && istanbul report && yarn coverage:check",
+    "test:debug": "gulp test --debug && istanbul report && yarn coverage:check",
+    "test:report": "gulp test-report",
+    "watch": "gulp watch"
+  },
+  "engines": {
+    "node": ">=6.0"
+  },
+  "monorailConfig": {
+    "publicLicense": "licenses/license-release.txt",
+    "publicReadme": "readme/readme-release.md"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.jibo.com:sdk/sdk.git"
+  },
+  "publishConfig": {
+    "registry": "http://npm.jibo.media.mit.edu:8081/repository/private"
+  },
+  "dependencies": {
+    "@jibo/three": "file:./threejs-r70",
+    "find-root": "1.0.0",
+    "stats-js": "1.0.0-alpha1",
+    "urijs": "1.17.1"
+  },
+  "files": [
+    "lib",
+    "dts",
+    "res",
+    "typings"
+  ],
+  "devDependencies": {
+    "@types/three": "^0.84.20",
+    "gulp": "^3.9.1",
+    "istanbul": "^0.4.5",
+    "remap-istanbul": "^0.9.5"
+  }
+}

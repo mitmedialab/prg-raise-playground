@@ -1,0 +1,16 @@
+/.release
+/docs
+/dts
+/licenses
+/readme
+/src
+/tasks
+/test
+/typings
+.DS_Store
+.eslintrc
+.gitignore
+.npmignore
+.syncignore
+gulpfile.js
+typings.json

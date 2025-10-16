@@ -1,0 +1,55 @@
+{
+    "version": "0.15.0",
+    "framerate": 30,
+    "duration": 1,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "f65ca28eecd742f88d6cd8ec3ba4598b",
+            "name": "Reference",
+            "type": "Reference",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "value": {
+                        "ReferenceMode": {
+                            "display": "Name",
+                            "label": "By Name",
+                            "value": "name"
+                        },
+                        "KeysFileReference": {
+                            "file": "",
+                            "name": "eye_annoyed_pose_01"
+                        },
+                        "HoldFinalPose": true
+                    }
+                }
+            ]
+        },
+        {
+            "id": "c3f3445cacce455785a97ff0cd67b053",
+            "name": "Eye Texture",
+            "type": "Eye Texture",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "Texture": "animations/textures/White_Eye.png",
+                        "Color": {
+                            "r": 246,
+                            "g": 77,
+                            "b": 38
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        }
+    ],
+    "animdb": {
+        "meta": "eye-angry-pose, angry-eye-pose"
+    }
+}

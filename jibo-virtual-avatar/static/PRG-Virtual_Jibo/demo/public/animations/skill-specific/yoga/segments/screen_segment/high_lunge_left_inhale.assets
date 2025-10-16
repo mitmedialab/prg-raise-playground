@@ -1,0 +1,11 @@
+[
+    {
+        "id": "animations/textures/yoga/sun_salutation/high_lunge_left_side.png",
+        "type": "texture",
+        "src": "animations/textures/yoga/sun_salutation/high_lunge_left_side.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "afc8e721855edc3ba421354214c2ccfc9c6f9fb3"
+    }
+]

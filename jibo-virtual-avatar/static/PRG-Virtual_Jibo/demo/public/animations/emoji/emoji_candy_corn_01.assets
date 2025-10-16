@@ -1,0 +1,31 @@
+[
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/jibojis/fall-related/candycorn-01.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/fall-related/candycorn-01.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "sfx/fall_animations/jibo_sfx_jiboji_flipin.m4a",
+        "type": "sound",
+        "src": "sfx/fall_animations/jibo_sfx_jiboji_flipin.m4a"
+    },
+    {
+        "id": "sfx/fall_animations/jibo_sfx_jiboji_flipout.m4a",
+        "type": "sound",
+        "src": "sfx/fall_animations/jibo_sfx_jiboji_flipout.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "43d4b8d8ae08805d5ad9d5e465dcaa0a70805fff"
+    }
+]

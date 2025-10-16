@@ -1,0 +1,57 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "60ab02e4094d1e6fc44d0b1969a2eba0775b8d8a"
+    },
+    "content": {
+        "name": "music_pop_00.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 11.9,
+                "times": [
+                    0,
+                    11.866666666666667
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 11.9,
+                "times": [
+                    0,
+                    11.866666666666667
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 11.9,
+                "times": [
+                    0,
+                    11.866666666666667
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0,
+                "eventName": "play-audio",
+                "payload": {
+                    "file": "music/music_pop_00.m4a"
+                }
+            }
+        ]
+    }
+}

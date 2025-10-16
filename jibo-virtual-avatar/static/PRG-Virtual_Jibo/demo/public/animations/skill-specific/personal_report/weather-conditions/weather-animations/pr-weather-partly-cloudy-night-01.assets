@@ -1,0 +1,31 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/personal-report/weather-asets-variants/partly-cloudy-night-clouds-01.png",
+        "type": "texture",
+        "src": "animations/textures/personal-report/weather-asets-variants/partly-cloudy-night-clouds-01.png"
+    },
+    {
+        "id": "animations/textures/personal-report/weather-asets-variants/partly-cloudy-night-all-together.png",
+        "type": "texture",
+        "src": "animations/textures/personal-report/weather-asets-variants/partly-cloudy-night-all-together.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "sfx/Skills/PersonalReport/sfx_weather_partlycloudy_night_01_amb.ogg",
+        "type": "sound",
+        "src": "sfx/Skills/PersonalReport/sfx_weather_partlycloudy_night_01_amb.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "ba9c171cb050353f7dbabebed4e9fef280039a7f"
+    }
+]

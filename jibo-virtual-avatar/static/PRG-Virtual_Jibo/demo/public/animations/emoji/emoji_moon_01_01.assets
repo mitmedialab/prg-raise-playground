@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "emoji_moon.js",
+        "type": "timeline",
+        "src": "emoji_moon.js"
+    },
+    {
+        "type": "metadata",
+        "animdb": "754ac95a7b7eafc728f4f02fa109798afc536a45"
+    }
+]

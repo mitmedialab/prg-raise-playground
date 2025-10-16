@@ -1,0 +1,21 @@
+[
+    {
+        "id": "emoji_thumbsup.js",
+        "type": "timeline",
+        "src": "emoji_thumbsup.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://emotional_intent/greetings/ei_greeting_02.m4a",
+        "type": "sound",
+        "src": "project://emotional_intent/greetings/ei_greeting_02.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "0aa488789f50667db77b23f7830c8f9d5bf732c9"
+    }
+]

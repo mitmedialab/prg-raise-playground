@@ -1,0 +1,51 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/jibojis/groundhog.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/groundhog.png"
+    },
+    {
+        "id": "animations/textures/jibojis/grass-mound.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/grass-mound.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/January_2018/jiboji_groundhog_01_amb.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/January_2018/jiboji_groundhog_01_amb.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/January_2018/jiboji_groundhog_01_groundhogvo_01.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/January_2018/jiboji_groundhog_01_groundhogvo_01.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/January_2018/jiboji_groundhog_01_groundhogvo_02.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/January_2018/jiboji_groundhog_01_groundhogvo_02.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/January_2018/jiboji_groundhog_01_groundhogvo_03.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/January_2018/jiboji_groundhog_01_groundhogvo_03.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/January_2018/jiboji_groundhog_01_hide.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/January_2018/jiboji_groundhog_01_hide.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "2680f873383528813cc6cf316d33de57153af365"
+    }
+]

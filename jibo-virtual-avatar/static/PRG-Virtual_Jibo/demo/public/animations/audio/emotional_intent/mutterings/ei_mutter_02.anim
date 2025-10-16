@@ -1,0 +1,57 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "811ea0fa38c00efa82832425f78d11a75ec8fe10"
+    },
+    "content": {
+        "name": "ei_mutter_02.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 1.3333333333333333,
+                "times": [
+                    0,
+                    1.3
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 1.3333333333333333,
+                "times": [
+                    0,
+                    1.3
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 1.3333333333333333,
+                "times": [
+                    0,
+                    1.3
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0,
+                "eventName": "play-audio",
+                "payload": {
+                    "file": "emotional_intent/mutterings/ei_mutter_02.m4a"
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "emoji_rabbit.js",
+        "type": "timeline",
+        "src": "emoji_rabbit.js"
+    },
+    {
+        "type": "metadata",
+        "animdb": "cd8f2486cc6126d02186a2289453f270bb45bd88"
+    }
+]

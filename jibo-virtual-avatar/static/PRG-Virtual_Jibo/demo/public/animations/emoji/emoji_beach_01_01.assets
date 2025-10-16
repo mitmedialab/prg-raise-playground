@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "emoji_beach.js",
+        "type": "timeline",
+        "src": "emoji_beach.js"
+    },
+    {
+        "type": "metadata",
+        "animdb": "3252756a79f5ae62be7a38eb1716b96930d68861"
+    }
+]

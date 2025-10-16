@@ -1,0 +1,11 @@
+[
+    {
+        "id": "animations/textures/yoga/sun_salutation/warrior_two_right_side.png",
+        "type": "texture",
+        "src": "animations/textures/yoga/sun_salutation/warrior_two_right_side.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "c454e1711836b213888ac10af257d12c9541a32e"
+    }
+]

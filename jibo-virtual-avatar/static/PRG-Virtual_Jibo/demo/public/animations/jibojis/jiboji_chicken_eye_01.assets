@@ -1,0 +1,46 @@
+[
+    {
+        "id": "animations/textures/jibojis/chicken-01.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/chicken-01.png"
+    },
+    {
+        "id": "animations/textures/jibojis/chicken-02.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/chicken-02.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/white-circle.png",
+        "type": "texture",
+        "src": "animations/textures/white-circle.png"
+    },
+    {
+        "id": "animations/textures/jibojis/chick-01.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/chick-01.png"
+    },
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "23605d6db8a49db210627e7950144407fcf158d0"
+    }
+]

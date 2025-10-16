@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "emoji_rocket.js",
+        "type": "timeline",
+        "src": "emoji_rocket.js"
+    },
+    {
+        "type": "metadata",
+        "animdb": "e8a0763732af437f13246cc48120bb87f8f8dde4"
+    }
+]

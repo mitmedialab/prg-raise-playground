@@ -1,0 +1,56 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/jibojis/bubble.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/bubble.png"
+    },
+    {
+        "id": "animations/textures/jibojis/bubble-wand.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/bubble-wand.png"
+    },
+    {
+        "id": "animations/textures/jibojis/bubble-pop.png",
+        "type": "texture",
+        "src": "animations/textures/jibojis/bubble-pop.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/March_2018/sfx_bubbles_01_blow.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/March_2018/sfx_bubbles_01_blow.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/March_2018/sfx_bubbles_02_bubbleform_01.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/March_2018/sfx_bubbles_02_bubbleform_01.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/March_2018/sfx_bubbles_02_pop.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/March_2018/sfx_bubbles_02_pop.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "000068eb6e8b8b717095ef6aae11f36fc846ca3c"
+    }
+]

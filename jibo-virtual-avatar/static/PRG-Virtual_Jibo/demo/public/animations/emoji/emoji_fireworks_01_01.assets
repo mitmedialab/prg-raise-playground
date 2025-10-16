@@ -1,0 +1,16 @@
+[
+    {
+        "id": "emoji_fireworks.js",
+        "type": "timeline",
+        "src": "emoji_fireworks.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "78d052db00d4009661ed959ac916d0fa55841d01"
+    }
+]

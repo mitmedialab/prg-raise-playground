@@ -1,0 +1,36 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/white-circle.png",
+        "type": "texture",
+        "src": "animations/textures/white-circle.png"
+    },
+    {
+        "id": "rom/test_rom_jibo_to_rom_01.ogg",
+        "type": "sound",
+        "src": "rom/test_rom_jibo_to_rom_01.ogg"
+    },
+    {
+        "id": "device/ticks/ds_tick_05.m4a",
+        "type": "sound",
+        "src": "device/ticks/ds_tick_05.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "a8344b82df267e0de6ec8158d002b107bcfea3e3"
+    }
+]

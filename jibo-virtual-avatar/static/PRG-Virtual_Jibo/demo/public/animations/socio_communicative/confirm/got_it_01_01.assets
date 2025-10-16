@@ -1,0 +1,16 @@
+[
+    {
+        "id": "emoji_checkmark.js",
+        "type": "timeline",
+        "src": "emoji_checkmark.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "ac51773942c01ca0e97b6b206aafafee81436ded"
+    }
+]

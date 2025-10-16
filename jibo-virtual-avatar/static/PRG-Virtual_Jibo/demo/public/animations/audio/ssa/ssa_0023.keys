@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 29,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "b6f8fa47e307ce2b8adf49719342f726",
+            "name": "Audio Event SSA_0023",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "ssa/SSA_0023.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "b6f8fa47e307ce2b8adf49719342f726-body",
+            "name": "Body SSA_0023",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "SSA_0023",
+        "categories": "happy, proud",
+        "meta": "medium, audio-only, ssa-only"
+    }
+}

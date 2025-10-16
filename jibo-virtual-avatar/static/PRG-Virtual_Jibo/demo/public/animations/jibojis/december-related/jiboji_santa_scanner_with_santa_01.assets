@@ -1,0 +1,91 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/emojis/santa-tracker-01.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/santa-tracker-01.png"
+    },
+    {
+        "id": "animations/textures/emojis/santa-tracker-03.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/santa-tracker-03.png"
+    },
+    {
+        "id": "animations/textures/emojis/santa-tracker-04.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/santa-tracker-04.png"
+    },
+    {
+        "id": "animations/textures/emojis/santa-tracker-05.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/santa-tracker-05.png"
+    },
+    {
+        "id": "animations/textures/radar_center.png",
+        "type": "texture",
+        "src": "animations/textures/radar_center.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_santascanner01_eye_start.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_santascanner01_eye_start.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_santascannerwsanta_scanning.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_santascannerwsanta_scanning.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_santascanner01_eye_end.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_santascanner01_eye_end.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_santascanner01_introbeep.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_santascanner01_introbeep.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_santascannerwsanta_santabeep01.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_santascannerwsanta_santabeep01.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_santascannerwsanta_santabeep02.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_santascannerwsanta_santabeep02.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_santascannerwsanta_santabeep03.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_santascannerwsanta_santabeep03.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_santascanner01_outrobeep.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_santascanner01_outrobeep.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "c2054fc957988ff1e0f71abe41273b5f69e746d2"
+    }
+]

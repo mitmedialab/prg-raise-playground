@@ -1,0 +1,16 @@
+[
+    {
+        "id": "emoji_heartRed.js",
+        "type": "timeline",
+        "src": "emoji_heartRed.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "43930f1201d5ca02f96fac593e731f24a143bf2f"
+    }
+]

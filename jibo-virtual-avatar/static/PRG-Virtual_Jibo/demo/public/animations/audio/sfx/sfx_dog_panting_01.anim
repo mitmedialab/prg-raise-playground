@@ -1,0 +1,57 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "7f5242f1e0647cd279612ee9c540436c62080bd6"
+    },
+    "content": {
+        "name": "sfx_dog_panting_01.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 1.0666666666666667,
+                "times": [
+                    0,
+                    1.0333333333333334
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 1.0666666666666667,
+                "times": [
+                    0,
+                    1.0333333333333334
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 1.0666666666666667,
+                "times": [
+                    0,
+                    1.0333333333333334
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0,
+                "eventName": "play-audio",
+                "payload": {
+                    "file": "sfx/sfx_dog_panting_01.m4a"
+                }
+            }
+        ]
+    }
+}

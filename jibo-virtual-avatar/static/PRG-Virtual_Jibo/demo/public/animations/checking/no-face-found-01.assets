@@ -1,0 +1,21 @@
+[
+    {
+        "id": "animations/textures/whiteeye_blur1.png",
+        "type": "texture",
+        "src": "animations/textures/whiteeye_blur1.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "145f9b574bac71659f9d405af47960fdc63309d2"
+    }
+]

@@ -1,0 +1,41 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/whiteeye_blur1.png",
+        "type": "texture",
+        "src": "animations/textures/whiteeye_blur1.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "sfx/sfx_sneeze_ah_01.m4a",
+        "type": "sound",
+        "src": "sfx/sfx_sneeze_ah_01.m4a"
+    },
+    {
+        "id": "sfx/sfx_sneeze_choo_01.m4a",
+        "type": "sound",
+        "src": "sfx/sfx_sneeze_choo_01.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "b852d1562636420d70417fca209ecaa6ec6516ae"
+    }
+]

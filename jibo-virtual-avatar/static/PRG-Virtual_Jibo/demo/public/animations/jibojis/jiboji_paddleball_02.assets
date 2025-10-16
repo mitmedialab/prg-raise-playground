@@ -1,0 +1,16 @@
+[
+    {
+        "id": "idle_paddleball.js",
+        "type": "timeline",
+        "src": "idle_paddleball.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "6cbfcefb55a85d07a4789a87213a5dcbb03ae6a0"
+    }
+]

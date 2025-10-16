@@ -1,0 +1,57 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "ed82c841d0f529d923aefcfb34e5a6b14fe1e137"
+    },
+    "content": {
+        "name": "music_circuit_saver_00.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 6.1,
+                "times": [
+                    0,
+                    6.066666666666666
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 6.1,
+                "times": [
+                    0,
+                    6.066666666666666
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 6.1,
+                "times": [
+                    0,
+                    6.066666666666666
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0,
+                "eventName": "play-audio",
+                "payload": {
+                    "file": "music/music_circuit_saver_00.m4a"
+                }
+            }
+        ]
+    }
+}

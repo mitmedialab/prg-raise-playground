@@ -1,0 +1,16 @@
+[
+    {
+        "id": "emoji_appleRed.js",
+        "type": "timeline",
+        "src": "emoji_appleRed.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "4b8c27d47640b26e6c86b9ec3b8b93d1f815cb5c"
+    }
+]

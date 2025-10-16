@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "emoji_barbell.js",
+        "type": "timeline",
+        "src": "emoji_barbell.js"
+    },
+    {
+        "type": "metadata",
+        "animdb": "5dddd6e08aaad78fdf7a8ef59e94337774078440"
+    }
+]

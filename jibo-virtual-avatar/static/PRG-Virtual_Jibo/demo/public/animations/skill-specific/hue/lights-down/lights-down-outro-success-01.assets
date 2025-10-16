@@ -1,0 +1,21 @@
+[
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "sfx/Skills/Hue/sfx_hue_success_low.ogg",
+        "type": "sound",
+        "src": "sfx/Skills/Hue/sfx_hue_success_low.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "91a4c828e99f1b85efd7543c116c3dbed7480ac9"
+    }
+]

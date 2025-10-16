@@ -1,0 +1,26 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "emoji_breakfast.js",
+        "type": "timeline",
+        "src": "emoji_breakfast.js"
+    },
+    {
+        "id": "project://sfx/sfx_frying_01.m4a",
+        "type": "sound",
+        "src": "project://sfx/sfx_frying_01.m4a"
+    },
+    {
+        "id": "project://sfx/sfx_egg_crack_01.m4a",
+        "type": "sound",
+        "src": "project://sfx/sfx_egg_crack_01.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "b4a14158d6ab2d63356460b706bb628834029679"
+    }
+]

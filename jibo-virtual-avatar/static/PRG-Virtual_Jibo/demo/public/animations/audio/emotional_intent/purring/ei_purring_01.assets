@@ -1,0 +1,11 @@
+[
+    {
+        "id": "emotional_intent/purring/ei_purring_01.m4a",
+        "type": "sound",
+        "src": "emotional_intent/purring/ei_purring_01.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "593deee0c7d9d216aad086aff6260b6cc0a2392f"
+    }
+]

@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 24,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "f3488600d24971c4c97c167cebd98ea5",
+            "name": "Audio Event SSA_0021",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "ssa/SSA_0021.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "f3488600d24971c4c97c167cebd98ea5-body",
+            "name": "Body SSA_0021",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "SSA_0021",
+        "categories": "happy, affection",
+        "meta": "medium, audio-only, ssa-only"
+    }
+}

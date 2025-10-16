@@ -1,0 +1,57 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "1310d82ae41db6f97e5e0760cfe4c34cd4e6fe61"
+    },
+    "content": {
+        "name": "music_belly_dance_01.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 20.4,
+                "times": [
+                    0,
+                    20.366666666666667
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 20.4,
+                "times": [
+                    0,
+                    20.366666666666667
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 20.4,
+                "times": [
+                    0,
+                    20.366666666666667
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0,
+                "eventName": "play-audio",
+                "payload": {
+                    "file": "music/music_belly_dance_01.m4a"
+                }
+            }
+        ]
+    }
+}

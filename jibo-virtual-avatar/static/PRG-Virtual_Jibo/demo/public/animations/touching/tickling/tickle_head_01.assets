@@ -1,0 +1,31 @@
+[
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/glow_01.png",
+        "type": "texture",
+        "src": "project://animations/textures/glow_01.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "emotional_intent/ei_giggle_01.m4a",
+        "type": "sound",
+        "src": "emotional_intent/ei_giggle_01.m4a"
+    },
+    {
+        "type": "metadata",
+        "animdb": "1987a7e33d4a9291c9e33789db2b7c4901bdccf8"
+    }
+]

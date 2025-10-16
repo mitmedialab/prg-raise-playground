@@ -1,0 +1,26 @@
+[
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "project://animations/textures/white-circle.png",
+        "type": "texture",
+        "src": "project://animations/textures/white-circle.png"
+    },
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "sfx/Skills/Hue/sfx_hue_success_high.ogg",
+        "type": "sound",
+        "src": "sfx/Skills/Hue/sfx_hue_success_high.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "94c6540c811054594d1f76d59808ab067e811d45"
+    }
+]

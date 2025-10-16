@@ -1,0 +1,57 @@
+{
+    "header": {
+        "fileType": "Animation",
+        "version": "0.15.0",
+        "animdb": "bf07ff8533a6dcd4b9a8d3a34d30db91ca41d5e5"
+    },
+    "content": {
+        "name": "sfx_blip_01.keys",
+        "channels": [
+            {
+                "dofName": "topSection_r",
+                "length": 0.2,
+                "times": [
+                    0,
+                    0.16666666666666666
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "middleSection_r",
+                "length": 0.2,
+                "times": [
+                    0,
+                    0.16666666666666666
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "dofName": "bottomSection_r",
+                "length": 0.2,
+                "times": [
+                    0,
+                    0.16666666666666666
+                ],
+                "values": [
+                    0,
+                    0
+                ]
+            }
+        ],
+        "events": [
+            {
+                "time": 0,
+                "eventName": "play-audio",
+                "payload": {
+                    "file": "sfx/sfx_blip_01.mp3"
+                }
+            }
+        ]
+    }
+}

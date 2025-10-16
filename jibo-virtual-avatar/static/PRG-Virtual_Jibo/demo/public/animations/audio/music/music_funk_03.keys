@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 388,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "4b265fd97158ecd3a26b93f9940829c7",
+            "name": "Audio Event music_funk_03",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "music/music_funk_03.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "4b265fd97158ecd3a26b93f9940829c7-body",
+            "name": "Body music_funk_03",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "music_funk_03",
+        "categories": "audio-music",
+        "meta": "dance, short, funk, robot-dance-party, audio-only"
+    }
+}

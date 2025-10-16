@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "emoji_lightningBolt.js",
+        "type": "timeline",
+        "src": "emoji_lightningBolt.js"
+    },
+    {
+        "type": "metadata",
+        "animdb": "6b67fdc7f7b680947cdae7784230592cdf999ee6"
+    }
+]

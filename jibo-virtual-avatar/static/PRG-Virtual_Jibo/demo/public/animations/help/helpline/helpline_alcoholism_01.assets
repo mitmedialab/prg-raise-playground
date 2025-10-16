@@ -1,0 +1,21 @@
+[
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "animations/textures/helpline/alcoholism.png",
+        "type": "texture",
+        "src": "animations/textures/helpline/alcoholism.png"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "c77ac8ea7030ff6b5f06ae0ce8371e9cdbea42c3"
+    }
+]

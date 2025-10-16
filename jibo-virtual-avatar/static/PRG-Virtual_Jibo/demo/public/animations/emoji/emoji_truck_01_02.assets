@@ -1,0 +1,16 @@
+[
+    {
+        "id": "emoji_truck.js",
+        "type": "timeline",
+        "src": "emoji_truck.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "1951113b09956d9b09bd61f2d7717260a41bf315"
+    }
+]

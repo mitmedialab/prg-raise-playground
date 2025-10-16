@@ -1,0 +1,16 @@
+[
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "id": "emoji_baby.js",
+        "type": "timeline",
+        "src": "emoji_baby.js"
+    },
+    {
+        "type": "metadata",
+        "animdb": "7547fc56ec25b51d4f3d1c48bcaa4790dcf1a5be"
+    }
+]

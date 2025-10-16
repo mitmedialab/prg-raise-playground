@@ -1,0 +1,38 @@
+{
+    "version": "0.13.0",
+    "framerate": 30,
+    "duration": 24,
+    "scale": 1,
+    "layers": [
+        {
+            "id": "a9c6cbb6cc475f5f69bd6922c6ed037e",
+            "name": "Audio Event sfx_whoosh_01",
+            "type": "Audio Event",
+            "visible": true,
+            "locked": false,
+            "keyframes": [
+                {
+                    "value": {
+                        "AudioEvent": {
+                            "file": "sfx/sfx_whoosh_01.m4a"
+                        }
+                    },
+                    "time": 0
+                }
+            ]
+        },
+        {
+            "id": "a9c6cbb6cc475f5f69bd6922c6ed037e-body",
+            "name": "Body sfx_whoosh_01",
+            "type": "Body",
+            "visible": true,
+            "locked": false,
+            "keyframes": []
+        }
+    ],
+    "animdb": {
+        "name": "sfx_whoosh_01",
+        "categories": "sfx, whoosh",
+        "meta": "audio-only, sfx-only, emoji"
+    }
+}

@@ -1,0 +1,36 @@
+[
+    {
+        "id": "animations/textures/emojis/fidget-spinner-02.png",
+        "type": "texture",
+        "src": "animations/textures/emojis/fidget-spinner-02.png"
+    },
+    {
+        "id": "animations/textures/empty.png",
+        "type": "texture",
+        "src": "animations/textures/empty.png"
+    },
+    {
+        "id": "project://animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "project://animations/textures/White_Eye.png"
+    },
+    {
+        "id": "project://animations/textures/empty.png",
+        "type": "texture",
+        "src": "project://animations/textures/empty.png"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_fidget_spinner_eyepop_start.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_fidget_spinner_eyepop_start.ogg"
+    },
+    {
+        "id": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_fidget_spinner_spinning.ogg",
+        "type": "sound",
+        "src": "sfx/Fresh_and_Lively/December_2017/sfx_jiboji_fidget_spinner_spinning.ogg"
+    },
+    {
+        "type": "metadata",
+        "animdb": "f84180e3dd61d4e91c05e8193ec4edb781891e2f"
+    }
+]

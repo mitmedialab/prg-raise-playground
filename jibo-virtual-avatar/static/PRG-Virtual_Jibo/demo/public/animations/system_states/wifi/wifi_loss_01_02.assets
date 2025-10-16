@@ -1,0 +1,16 @@
+[
+    {
+        "id": "alert_wifiDisconnected.js",
+        "type": "timeline",
+        "src": "alert_wifiDisconnected.js"
+    },
+    {
+        "id": "animations/textures/White_Eye.png",
+        "type": "texture",
+        "src": "animations/textures/White_Eye.png"
+    },
+    {
+        "type": "metadata",
+        "animdb": "c491b4d0ee9467fa6d87d4fe66efa85f7bbab393"
+    }
+]
