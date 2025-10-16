@@ -10,9 +10,9 @@
   },
   "license": "MIT",
   "dependencies": {
-    "animation-utilities": "file:../../../PRG-Virtual_Jibo"
+    "animation-utilities": "file:../../../scratch-packages/scratch-gui/static/PRG-Virtual_Jibo"
   },
   "optionalDependencies": {
-    "jibo-plugins": "file:../../../PRG-Virtual_Jibo"
+    "jibo-plugins": "file:../../../scratch-packages/scratch-gui/static/PRG-Virtual_Jibo"
   }
 }
