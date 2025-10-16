@@ -198,10 +198,6 @@ class TextureControl extends ModelControl {
             return url;
         }
         
-        if (url.startsWith('/static/PRG-Virtual_Jibo')) {
-            return url;
-        }
-        
         if (url.startsWith('/static/')) {
             return url;
         }
@@ -211,7 +207,7 @@ class TextureControl extends ModelControl {
         }
         
         if (url.startsWith('res/')) {
-            return '/static/PRG-Virtual_Jibo/' + url;
+            return '/' + url;
         }
         
         if (url.startsWith('textures/')) {
@@ -228,28 +224,7 @@ class TextureControl extends ModelControl {
         
         if (this._baseURL) {
             try {
-                if (url.startsWith('animations/textures/')) {
-                    return '/static/' + url;
-                }
-                
-                const resolved = new URL(url, this._baseURL).href;
-                const pathname = new URL(resolved).pathname;
-                
-                const animPattern = /\/static\/animations\/emotions\/[^/]+\//;
-                if (animPattern.test(pathname)) {
-                    const idx = url.indexOf('animations/textures/');
-                    if (idx >= 0) {
-                        return '/static/' + url.substring(idx);
-                    }
-                }
-                
-                if (pathname.includes('/res/geometry-config/P1.0/') && pathname.includes('/static/PRG-Virtual_Jibo/')) {
-                    const parts = pathname.split('/static/PRG-Virtual_Jibo/');
-                    if (parts.length > 1) {
-                        return '/static/PRG-Virtual_Jibo/' + parts[parts.length - 1];
-                    }
-                }
-                return resolved;
+                return new URL(url, this._baseURL).href;
             } catch (error) {
                 console.warn('Failed to resolve texture URL:', url, 'with base:', this._baseURL);
                 return url;
