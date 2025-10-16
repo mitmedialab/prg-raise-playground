@@ -228,8 +228,21 @@ class TextureControl extends ModelControl {
         
         if (this._baseURL) {
             try {
+                if (url.startsWith('animations/textures/')) {
+                    return '/static/' + url;
+                }
+                
                 const resolved = new URL(url, this._baseURL).href;
                 const pathname = new URL(resolved).pathname;
+                
+                const animPattern = /\/static\/animations\/emotions\/[^/]+\//;
+                if (animPattern.test(pathname)) {
+                    const idx = url.indexOf('animations/textures/');
+                    if (idx >= 0) {
+                        return '/static/' + url.substring(idx);
+                    }
+                }
+                
                 if (pathname.includes('/res/geometry-config/P1.0/') && pathname.includes('/static/PRG-Virtual_Jibo/')) {
                     const parts = pathname.split('/static/PRG-Virtual_Jibo/');
                     if (parts.length > 1) {
