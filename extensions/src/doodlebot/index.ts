@@ -676,20 +676,20 @@ clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 async followLineArray(sensor: { left: number; center: number; right: number }) {
   if (this.lastError === undefined) this.lastError = 0;
 
+  // The constants below can be tuned for different performance
   const Kp = 1.1;
   const baseSpeed = 300;
   const maxSpeed = 1000;
   const minSpeed = 0;
 
-  // --- Normalize raw -> 0..1 where 1 = black (on line)
+  // Step 1: Normalize sensor values to 0 (white) to 1 (black)
   const rawToLineStrength = (raw: number) => this.clamp(raw / 1000, 0, 1);
-
   const leftLine = rawToLineStrength(sensor.left);
   const centerLine = rawToLineStrength(sensor.center);
   const rightLine = rawToLineStrength(sensor.right);
 
-  // --- If all sensors see strong black (centered on line)
-  if (leftLine > 0.75 && centerLine > 0.75 && rightLine > 0.75) {
+  // Step 2: If the robot is doing good ENOUGH (mostly on the black line), just go straight
+  if (leftLine > 0.8 && centerLine > 0.8 && rightLine > 0.8) {
     const leftSpeed = baseSpeed;
     const rightSpeed = baseSpeed;
 
@@ -700,26 +700,25 @@ async followLineArray(sensor: { left: number; center: number; right: number }) {
     return;
   }
 
-  // --- Direction and presence
+  // Step 3: Determine if the robot is on the left or the right side of the line
   const sideDiff = leftLine - rightLine;
-  const presence = leftLine + centerLine + rightLine;
-
-  // --- Determine sign and magnitude
   const sign = Math.sign(sideDiff) || Math.sign(this.lastError) || 1;
+
+  // Step 4: Determine how far off the line the robot is -- the sum of the values should be as close to 3 (1+1+1) as possible
+  const presence = leftLine + centerLine + rightLine;
   const magnitude = 1 - this.clamp(presence / 3, 0, 1);
 
-  // --- Final error and correction
+  // Step 5: Calculate the amount we need to adjust the motor speeds by, and clamp speeds to min/max
   const error = sign * magnitude;
   const correction = Kp * error;
 
-  // --- Compute speeds
   let leftSpeed = baseSpeed - correction * baseSpeed;
   let rightSpeed = baseSpeed + correction * baseSpeed;
 
   leftSpeed = this.clamp(leftSpeed, minSpeed, maxSpeed);
   rightSpeed = this.clamp(rightSpeed, minSpeed, maxSpeed);
 
-  // --- Lost line (too white)
+  // Step 6: If everything is mostly white (0 presence), the line is probably lost -- turn in the last known direction
   const lineLost = presence < 0.2;
   if (lineLost) {
     const turnDir = this.lastError > 0 ? 1 : -1;
@@ -728,16 +727,13 @@ async followLineArray(sensor: { left: number; center: number; right: number }) {
     console.log(`🚨 Line lost → turning ${turnDir > 0 ? "right" : "left"}`);
   }
 
-  // --- Send motor command
-  // this.doodlebot?.motorCommand(
-  //   "steps",
-  //   { steps: 1000, stepsPerSecond: Math.round(leftSpeed) },
-  //   { steps: 1000, stepsPerSecond: Math.round(rightSpeed) }
-  // );
+  // Step 7: Send the motor command (no await for continuous control)
   this.doodlebot.sendBLECommand(command.motor, 1000, 1000, Math.round(leftSpeed), Math.round(rightSpeed));
 
+  // Step 8: Update last error
   this.lastError = error;
 
+  // Debug output
   console.log("RAW:", sensor);
   console.log("Strengths:", {
     left: leftLine.toFixed(2),
