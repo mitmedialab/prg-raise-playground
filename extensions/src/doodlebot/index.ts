@@ -486,14 +486,14 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     type: "command",
     text: (direction, steps, speed) => `drive ${direction} for ${steps} cm at speed ${speed}`,
     args: [
-      { type: "string", options: ["forward", "backward", "left", "right"], defaultValue: "forward" },
+      { type: "string", options: ["forward", "backward"], defaultValue: "forward" },
       { type: "number", defaultValue: 10 },
       { type: "number", options: [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000], defaultValue: 2000 }
     ]
   })
-  async drive(direction: "left" | "right" | "forward" | "backward", steps: number, speed: number) {
-    const leftSteps = direction == "left" || direction == "backward" ? -steps * 7.160*16 : steps * 7.160*16;
-    const rightSteps = direction == "right" || direction == "backward" ? -steps * 7.160*16 : steps * 7.160*16;
+  async drive(direction: "forward" | "backward", steps: number, speed: number) {
+    const leftSteps = direction == "backward" ? -steps * 7.160*16 : steps * 7.160*16;
+    const rightSteps = direction == "backward" ? -steps * 7.160*16 : steps * 7.160*16;
     const stepsPerSecond = speed;
 
     await this.doodlebot?.motorCommand(
