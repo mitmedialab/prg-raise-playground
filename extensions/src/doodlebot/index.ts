@@ -505,7 +505,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   @block({
     type: "command",
-    text: (direction, radius, degrees) => `arc ${direction} with radius ${radius} for ${degrees} degrees`,
+    text: (direction, radius, degrees) => `arc ${direction} with radius ${radius} cm for ${degrees} degrees`,
     args: [
       { type: "string", options: ["left", "right"], defaultValue: "left" },
       { type: "number", defaultValue: 2 },
@@ -519,7 +519,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       await this.speakText(`Driving ${direction} arc with radius ${radius} for ${degrees} degrees`);
     }
     if (direction == "right") degrees *= -1;
-    await this.doodlebot?.motorCommand("arc", radius, degrees);
+    await this.doodlebot?.motorCommand("arc", radius/2.54, degrees);
   }
 
   @block({
