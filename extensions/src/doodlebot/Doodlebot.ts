@@ -151,7 +151,11 @@ export default class Doodlebot {
         "base_v1.png",
         "2sleep.png",
         "1confused.png",
-        "angry_RTeye.bmp"
+        "angry_RTeye.bmp",
+        "closedmouth.png",
+        "cheeksbase.png",
+        "eyebase.png",
+        "EL.png"
     ];
 
     private sensorData = ({
