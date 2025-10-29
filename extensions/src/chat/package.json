@@ -1,0 +1,15 @@
+{
+  "name": "chat-extension",
+  "version": "1.0.0",
+  "description": "An extension created using the PRG AI Blocks framework",
+  "main": "index.ts",
+  "scripts": {
+    "directory": "echo chat",
+    "test": "pnpm --filter prg-extension-root test chat/index.test.ts",
+    "dev": "pnpm --filter prg-extension-root dev --include chat",
+    "add:ui": "pnpm --filter prg-extension-root add:ui chat",
+    "add:arg": "pnpm --filter prg-extension-root add:arg chat"
+  },
+  "author": "",
+  "license": "ISC"
+}
