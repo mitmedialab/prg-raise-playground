@@ -358,17 +358,6 @@ export default class ExtensionNameGoesHere extends extension(details) {
   
       // 3️⃣ Create a playable file
       const wavFile = new File([wavBlob], "output.wav", { type: "audio/wav" });
-      const audioUrl = URL.createObjectURL(wavFile);
-  
-      // 4️⃣ Play the WAV
-      const audio = new Audio(audioUrl);
-      audio.play();
-      await new Promise<void>((resolve) => {
-        audio.onended = () => {
-          URL.revokeObjectURL(audioUrl);
-          resolve();
-        };
-      });
   
       // 5️⃣ Send WAV to server
       await this.sendAudioFileToChatEndpoint(wavFile, endpoint, wavBlob, seconds);
@@ -385,22 +374,6 @@ export default class ExtensionNameGoesHere extends extension(details) {
     console.log("recording audio?")
     const buffer = await this.recordMicrophoneAudio(seconds);
     console.log("finished recording audio");
-
-    const audioCtx = new AudioContext();
-  const audioBuffer = audioCtx.createBuffer(1, buffer.length, audioCtx.sampleRate);
-  audioBuffer.copyToChannel(buffer, 0);
-
-  const source = audioCtx.createBufferSource();
-  source.buffer = audioBuffer;
-  source.connect(audioCtx.destination);
-  source.start();
-
-  // ⏳ Optionally wait for playback to finish
-  await new Promise((resolve) => {
-    source.onended = resolve;
-  });
-
-  console.log("playback finished, now sending to server...");
 
 
     await this.processAndSendAudio(buffer, endpoint, seconds);
@@ -454,7 +427,7 @@ export default class ExtensionNameGoesHere extends extension(details) {
 
   @block({
     type: "command",
-    text: (seconds) => `chat with me for ${seconds} seconds`,
+    text: (seconds) => `chat for ${seconds} seconds`,
     arg: { type: "number", defaultValue: 3 }
   })
   async testChatAPI(seconds: number) {
@@ -472,7 +445,7 @@ export default class ExtensionNameGoesHere extends extension(details) {
 
   @block({
     type: "command",
-    text: (text) => `speak ${text}`,
+    text: (text) => `say ${text}`,
     arg: { type: "string", defaultValue: "Hello!" }
   })
   async speak(text: string, utility: BlockUtilityWithID) {
