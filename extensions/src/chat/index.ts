@@ -264,6 +264,37 @@ export default class ExtensionNameGoesHere extends extension(details) {
   }
 
 
+  async getListenEndpoint(file) {
+    console.log("sending audio file");
+    const url = `https://doodlebot.media.mit.edu/listen`
+    const formData = new FormData();
+    formData.append("audio_file", file);
+
+    try {
+      let response;
+
+      response = await fetch(url, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.log("Error response:", errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+        const data = await response.json();
+        const textResponse = data.text;
+        return textResponse;
+
+    } catch (error) {
+      console.error("Error sending audio file:", error);
+      return "Error";
+    }
+  }
+
+
   async sendAudioFileToChatEndpoint(file, endpoint, blob, seconds) {
     console.log("sending audio file");
     const url = `https://doodlebot.media.mit.edu/${endpoint}?voice=${this.voice_id}&pitch=${this.pitch_value}`
@@ -286,6 +317,12 @@ export default class ExtensionNameGoesHere extends extension(details) {
         const errorText = await response.text();
         console.log("Error response:", errorText);
         throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      if (endpoint == "listen") {
+        const data = await response.json();
+        const textResponse = data.text;
+        return textResponse;
       }
 
       const textResponse = response.headers.get("text-response");
@@ -366,6 +403,32 @@ export default class ExtensionNameGoesHere extends extension(details) {
       console.error("Error processing and sending audio:", error);
     }
   }
+
+  async processAndSendAudioListen(float32Buffer: Float32Array) {
+    try {
+      // 1️⃣ Create AudioContext and AudioBuffer
+      const audioCtx = new AudioContext();
+      const audioBuffer = audioCtx.createBuffer(
+        1, // mono
+        float32Buffer.length,
+        audioCtx.sampleRate
+      );
+      audioBuffer.copyToChannel(float32Buffer, 0);
+  
+      // 2️⃣ Encode AudioBuffer to WAV
+      const wavBlob = await this.saveAudioBufferToWav(audioBuffer); // now works
+  
+      // 3️⃣ Create a playable file
+      const wavFile = new File([wavBlob], "output.wav", { type: "audio/wav" });
+  
+      // 5️⃣ Send WAV to server
+      return await this.getListenEndpoint(wavFile);
+  
+    } catch (error) {
+      console.error("Error processing and sending audio:", error);
+      return "Error";
+    }
+  }
   
 
   private async handleChatInteraction(seconds: number, endpoint: string) {
@@ -379,6 +442,45 @@ export default class ExtensionNameGoesHere extends extension(details) {
     await this.processAndSendAudio(buffer, endpoint, seconds);
 
 
+  }
+
+  private async handleReturnListenInteraction(seconds: number) {
+    console.log(`recording audio for ${seconds} seconds`);
+
+    console.log("recording audio?")
+    const buffer = await this.recordMicrophoneAudio(seconds);
+    console.log("finished recording audio");
+
+
+    return await this.processAndSendAudioListen(buffer);
+  }
+
+  private async handleReturnChatInteraction(prompt: string) {
+
+    const url = `https://doodlebot.media.mit.edu/prompt`
+
+    try {
+      let response;
+
+      response = await fetch(url, {
+        method: "POST",
+        body: JSON.stringify({ text_input: prompt }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.log("Error response:", errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+        const data = await response.json();
+        const textResponse = data.text;
+        return textResponse;
+
+    } catch (error) {
+      console.error("Error sending audio file:", error);
+      return "Error";
+    }
   }
 
   private async speakText(text: string, showDisplay: boolean = false) {
@@ -426,21 +528,21 @@ export default class ExtensionNameGoesHere extends extension(details) {
 
 
   @block({
-    type: "command",
-    text: (seconds) => `chat for ${seconds} seconds`,
-    arg: { type: "number", defaultValue: 3 }
+    type: "reporter",
+    text: (text) => `prompt ${text}`,
+    arg: { type: "string", defaultValue: "What is your favorite color?" }
   })
-  async testChatAPI(seconds: number) {
-    await this.handleChatInteraction(seconds, "chat");
+  async promptChatAPI(text: string) {
+    return await this.handleReturnChatInteraction(text);
   }
 
   @block({
-    type: "command",
-    text: (seconds) => `repeat after me for ${seconds} seconds`,
+    type: "reporter",
+    text: (seconds) => `listen for ${seconds} seconds`,
     arg: { type: "number", defaultValue: 3 }
   })
   async testRepeatAPI(seconds: number) {
-    await this.handleChatInteraction(seconds, "repeat_after_me");
+    return await this.handleReturnListenInteraction(seconds);
   }
 
   @block({
