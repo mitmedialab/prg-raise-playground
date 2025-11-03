@@ -485,7 +485,6 @@ export default class ExtensionNameGoesHere extends extension(details) {
 
   private async speakText(text: string, showDisplay: boolean = false) {
     try {
-
       const url = `https://doodlebot.media.mit.edu/speak?voice=${this.voice_id}&pitch=${this.pitch_value}`;
       const response = await fetch(url, {
         method: "POST",
@@ -494,30 +493,37 @@ export default class ExtensionNameGoesHere extends extension(details) {
         },
         body: JSON.stringify({ text }),
       });
-
+  
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
+  
       const blob = await response.blob();
       const audioUrl = URL.createObjectURL(blob);
       const audio = new Audio(audioUrl);
-
-      await new Promise((resolve) => {
-        audio.addEventListener('loadedmetadata', () => {
-          resolve(null);
-        });
+  
+      // ✅ Wait for the audio to be ready
+      await new Promise<void>((resolve) => {
+        audio.addEventListener("loadedmetadata", () => resolve());
       });
-
+  
+      // ✅ Play the audio
       audio.play();
-
-
+  
+      // ✅ Wait until playback finishes
+      await new Promise<void>((resolve) => {
+        audio.addEventListener("ended", () => resolve());
+        audio.addEventListener("error", () => resolve()); // failsafe
+      });
+  
+      console.log("✅ Audio playback finished");
+  
     } catch (error) {
-      console.error("Error in speak function:", error);
-
-      throw error; // Re-throw the error so calling functions can handle it
+      console.error("Error in speakText function:", error);
+      throw error;
     }
   }
+  
 
 
 
