@@ -26,14 +26,14 @@ Happy coding! 👋 */
 
 /** @see {ExplanationOfDetails} */
 const details: ExtensionMenuDisplayDetails = {
-  name: "Chat Extension",
-  description: "Replace me with a description of your extension",
+  name: "GenAI Extension",
+  description: "Use generative AI to listen, speak, and chat!",
   iconURL: "Replace with the name of your icon image file (which should be placed in the same directory as this file)",
   insetIconURL: "Replace with the name of your inset icon image file (which should be placed in the same directory as this file)"
 };
 
 /** @see {ExplanationOfClass} */
-export default class ExtensionNameGoesHere extends extension(details) {
+export default class GenAIExtension extends extension(details) {
 
   voice_id: number;
   pitch_value: number;
