@@ -1,5 +1,5 @@
 import { scratch, extension, type ExtensionMenuDisplayDetails, type BlockUtilityWithID, type Environment, block } from "$common";
-
+import { getImageHelper } from "./utils";
 /** 👋 Hi!
 
 Below is a working Extension that you should adapt to fit your needs. 
@@ -33,7 +33,7 @@ const details: ExtensionMenuDisplayDetails = {
 };
 
 /** @see {ExplanationOfClass} */
-export default class GenAIExtension extends extension(details) {
+export default class GenAIExtension extends extension(details, "addCostumes") {
 
   voice_id: number;
   pitch_value: number;
@@ -504,6 +504,34 @@ Your goal is to make learning feel exciting, safe, and curious — like a helpfu
     }
   }
 
+  private async handleReturnDalleInteraction(prompt: string) {
+
+    const url = `https://doodlebot.media.mit.edu/create_image`
+
+    try {
+      let response;
+
+      response = await fetch(url, {
+        method: "POST",
+        body: JSON.stringify({ text_input: prompt }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.log("Error response:", errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+        const data = await response.json();
+        const textResponse = data.image;
+        return textResponse;
+
+    } catch (error) {
+      console.error("Error sending audio file:", error);
+      return "Error";
+    }
+  }
+
   private async speakText(text: string, showDisplay: boolean = false) {
     try {
       const url = `https://doodlebot.media.mit.edu/speak?voice=${this.voice_id}&pitch=${this.pitch_value}`;
@@ -546,7 +574,24 @@ Your goal is to make learning feel exciting, safe, and curious — like a helpfu
   }
   
 
-
+  base64ToUint8ClampedArray(base64) {
+    // Remove base64 header if present (e.g. "data:image/png;base64,")
+    const cleaned = base64.split(',').pop();
+  
+    // Decode base64 to binary string
+    const binary = atob(cleaned);
+  
+    // Convert binary string to Uint8ClampedArray
+    const len = binary.length;
+    const bytes = new Uint8ClampedArray(len);
+  
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+  
+    return bytes;
+  }
+  
 
 
 
@@ -561,6 +606,26 @@ Your goal is to make learning feel exciting, safe, and curious — like a helpfu
   })
   async promptChatAPI(text: string) {
     return await this.handleReturnChatInteraction(text);
+  }
+
+  @block({
+    type: "command",
+    text: (text) => `add costume from DallE with prompt ${text}`,
+    arg: { type: "string", defaultValue: "A pretty cute little cow" }
+  })
+  async promptDalleAPI(text: string, { target }: BlockUtilityWithID) {
+    const image = await this.handleReturnDalleInteraction(text);
+    console.log("IMAGE  DATA:", image);
+    //const uintclamped = this.base64ToUint8ClampedArray(image);
+    const uintclamped = new Uint8ClampedArray([10, 200, 300, -20]);
+    const imageHelper = getImageHelper(100, 100);
+    const base64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8Xw8AAn8B9cxhcgAAAABJRU5ErkJggg==";
+
+    const imageData = await imageHelper.drawBase64(image);
+    console.log("CLAMPED", uintclamped);
+    this.addCostume(target, imageData, "add and set");
+    console.log("ADDED COSTUME", new ImageData(uintclamped, 10, 10));
+
   }
 
   @block({
