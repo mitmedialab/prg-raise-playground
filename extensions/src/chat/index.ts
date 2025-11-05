@@ -615,16 +615,9 @@ Your goal is to make learning feel exciting, safe, and curious — like a helpfu
   })
   async promptDalleAPI(text: string, { target }: BlockUtilityWithID) {
     const image = await this.handleReturnDalleInteraction(text);
-    console.log("IMAGE  DATA:", image);
-    //const uintclamped = this.base64ToUint8ClampedArray(image);
-    const uintclamped = new Uint8ClampedArray([10, 200, 300, -20]);
     const imageHelper = getImageHelper(100, 100);
-    const base64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8Xw8AAn8B9cxhcgAAAABJRU5ErkJggg==";
-
     const imageData = await imageHelper.drawBase64(image);
-    console.log("CLAMPED", uintclamped);
     this.addCostume(target, imageData, "add and set");
-    console.log("ADDED COSTUME", new ImageData(uintclamped, 10, 10));
 
   }
 
