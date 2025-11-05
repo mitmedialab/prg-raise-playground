@@ -39,10 +39,22 @@ export default class GenAIExtension extends extension(details) {
   pitch_value: number;
   system_prompt: string;
 
+  voice_map: any;
+
   /** @see {ExplanationOfInitMethod} */
   init(env: Environment) {
+    this.voice_map = {
+      'en-US-AnaNeural': 1,
+      'en-US-AndrewMultilingualNeural': 2,
+      'en-US-AvaNeural': 3,
+      'en-US-BlueNeural': 4,
+      'en-US-BrianMultilingualNeural': 5,
+      'en-US-CoraMultilingualNeural': 6,
+      'en-US-LewisMultilingualNeural': 7,
+      'en-US-EmmaNeural': 8
+    };
     this.exampleField = 0;
-    this.voice_id = 1;
+    this.voice_id = 6;
     this.pitch_value = 0;
     this.system_prompt = `You are a friendly and encouraging classroom helper who explains ideas clearly for 4th-grade students. 
 You use simple language, fun examples, and a positive tone to help kids learn and think for themselves. 
@@ -569,16 +581,20 @@ Your goal is to make learning feel exciting, safe, and curious — like a helpfu
     await this.speakText(text);
   }
 
-  @block({
+  @block((self) => ({ 
     type: "command",
     text: (voice, pitch) => `set voice to ${voice} and pitch to ${pitch}`,
     args: [
-      { type: "number", defaultValue: 1 },
+      { 
+        type: "string",
+        options: Object.keys(self.voice_map),
+        defaultValue: "en-US-CoraMultilingualNeural"
+      },
       { type: "number", defaultValue: 0 }
     ]
-  })
-  async setVoiceAndPitch(voice: number, pitch: number) {
-    this.voice_id = voice;
+  }))
+  async setVoiceAndPitch(voice: string, pitch: number) {
+    this.voice_id = this.voice_map[voice];
     this.pitch_value = pitch;
   }
 
