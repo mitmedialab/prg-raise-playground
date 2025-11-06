@@ -261,8 +261,8 @@ export default class PoseHand extends Extension<Details, Blocks> {
       operation: (coord: string, handPart: string, fingerPart: number) => {
         if (this.isConnected()) {
           console.log('connected 2');
-          const [x, y, z] = this.handPoseState[0].annotations[handPart][fingerPart];
-          const { x: scratchX, y: scratchY } = this.tfCoordsToScratch({ x, y, z });
+          const { x, y, z } = this.handPoseState.landmarks[0][handOptions[handPart][fingerPart]];
+          const { x: scratchX, y: scratchY } = this.mediapipeCoordsToScratch(x, y, z);
           if (coord === 'x') {
             return scratchX;
           } else {
