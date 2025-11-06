@@ -1,7 +1,6 @@
 import { ArgumentType, BlockType, Extension, Block, DefineBlock, Environment, ExtensionMenuDisplayDetails, RuntimeEvent } from "$common";
 import { legacyFullSupport, info } from "./legacy";
-
-import * as handpose from '@tensorflow-models/handpose';
+import { HandLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
 const { legacyExtension, legacyDefinition } = legacyFullSupport.for<PoseHand>();
 
 // TODO: Add extension's health check (peripheral)
@@ -37,6 +36,7 @@ type Details = {
  */
 type Blocks = {
   goToHandPart(handPart: string, fingerPart: number): void;
+  returnHandPart(coord: string, handPart: string, fingerPart: number): number;
   // these video blocks are present in a few different extensions, perhaps making a file just for these?
   videoToggle(state: string): void;
   setVideoTransparency(transparency: number): void;
@@ -82,10 +82,21 @@ export default class PoseHand extends Extension<Details, Blocks> {
    * @param env 
    */
   init(env: Environment) {
-
+    this.loadMediaPipeModel();
     if (this.runtime.ioDevices) {
       this._loop();
     }
+  }
+
+  /**
+ * Converts the coordinates from the MediaPipe hand estimate to Scratch coordinates
+ * @param x 
+ * @param y
+ * @param z
+ * @returns enum
+ */
+  mediapipeCoordsToScratch(x, y, z) {
+    return this.tfCoordsToScratch({ x: this.DIMENSIONS[0] * x, y: this.DIMENSIONS[1] * y, z });
   }
 
   /**
@@ -113,8 +124,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
    * @returns {boolean} true if connected, false if not connected
    */
   isConnected() {
-    console.log('connected');
-    return !!this.handPoseState && this.handPoseState.length > 0;
+    return !!this.handPoseState && this.handPoseState.landmarks.length > 0;
   }
 
   /**
@@ -125,38 +135,34 @@ export default class PoseHand extends Extension<Details, Blocks> {
   async _loop() {
     while (true) {
       const frame = this.runtime.ioDevices.video.getFrame({
-        format: 'image-data',
+        format: 'canvas',
         dimensions: this.DIMENSIONS
       });
 
       const time = +new Date();
-      if (frame) {
-        this.handPoseState = await this.estimateHandPoseOnImage(frame);
+      if (this.handModel && frame) {
+        this.handPoseState = this.handModel.detect(frame);
       }
       const estimateThrottleTimeout = (+new Date() - time) / 4;
       await new Promise(r => setTimeout(r, estimateThrottleTimeout));
     }
   }
 
-  /**
-   * Estimates where the hand is on the video frame.
-   * @param imageElement
-   * @returns {Promise<AnnotatedPrediction[]>}
-   */
-  async estimateHandPoseOnImage(imageElement) {
-    const handModel = await this.getLoadedHandModel();
-    return await handModel.estimateHands(imageElement, {
-      flipHorizontal: false
-    });
-  }
 
-  /**
-   * Gets the hand model from handpose
-   * @returns hand model
-   */
-  async getLoadedHandModel() {
-    this.handModel ??= await handpose.load();
-    return this.handModel;
+
+  async loadMediaPipeModel() {
+    const vision = await FilesetResolver.forVisionTasks(
+      // path/to/wasm/root
+      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+    );
+    this.handModel = await HandLandmarker.createFromOptions(
+      vision,
+      {
+        baseOptions: {
+          modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task"
+        },
+        numHands: 2
+      });
   }
 
   /**
@@ -196,12 +202,44 @@ export default class PoseHand extends Extension<Details, Blocks> {
 
     const handlerFingerOptions: Array<string> = this.fingerOptions.map(finger => finger.value);
 
+    const handOptions = {
+      "thumb": {
+        3: 4,
+        1: 2,
+        0: 1,
+        2: 3
+      },
+      "indexFinger": {
+        3: 8,
+        1: 6,
+        0: 5,
+        2: 7
+      },
+      "middleFinger": {
+        3: 12,
+        1: 10,
+        0: 9,
+        2: 11
+      },
+      "ringFinger": {
+        3: 16,
+        1: 14,
+        0: 13,
+        2: 15
+      },
+      "pinky": {
+        3: 20,
+        1: 18,
+        0: 17,
+        2: 19
+      },
+    }
+
     const goToHandPart = legacyDefinition.goToHandPart({
       operation: (handPart: string, fingerPart: number, util) => {
         if (this.isConnected()) {
-          console.log('connected 2');
-          const [x, y, z] = this.handPoseState[0].annotations[handPart][fingerPart];
-          const { x: scratchX, y: scratchY } = this.tfCoordsToScratch({ x, y, z });
+          const { x, y, z } = this.handPoseState.landmarks[0][handOptions[handPart][fingerPart]];
+          const { x: scratchX, y: scratchY } = this.mediapipeCoordsToScratch(x, y, z);
           (util.target as any).setXY(scratchX, scratchY, false);
         }
       },
@@ -212,6 +250,40 @@ export default class PoseHand extends Extension<Details, Blocks> {
           }
         },
         1: {
+          handler: (part: number) => {
+            return Math.max(Math.min(part, 3), 0)
+          }
+        }
+      }
+    });
+
+    const returnHandPart = legacyDefinition.returnHandPart({
+      operation: (coord: string, handPart: string, fingerPart: number) => {
+        if (this.isConnected()) {
+          console.log('connected 2');
+          const { x, y, z } = this.handPoseState.landmarks[0][handOptions[handPart][fingerPart]];
+          const { x: scratchX, y: scratchY } = this.mediapipeCoordsToScratch(x, y, z);
+          if (coord === 'x') {
+            return scratchX;
+          } else {
+            return scratchY;
+          }
+        } else {
+          return 0;
+        }
+      },
+      argumentMethods: {
+        0: {
+          handler: (coord: string) => {
+            return ['x', 'y'].includes(coord) ? coord : "x";
+          }
+        },
+        1: {
+          handler: (finger: string) => {
+            return handlerFingerOptions.includes(finger) ? finger : "thumb";
+          }
+        },
+        2: {
           handler: (part: number) => {
             return Math.max(Math.min(part, 3), 0)
           }
@@ -241,6 +313,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
 
     return {
       goToHandPart,
+      returnHandPart,
       videoToggle,
       setVideoTransparency
     }
