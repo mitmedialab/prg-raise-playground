@@ -37,6 +37,7 @@ type Details = {
  * Contains descriptions of the blocks of the Block Sensing extension
  */
 type Blocks = {
+  returnPart(coord: string, bodyPart: string): number;
   goToPart(bodyPart: string): void;
   // these video blocks are present in a few different extensions, perhaps making a file just for these?
   videoToggle(state: string): void;
@@ -219,6 +220,32 @@ export default class PoseBody extends Extension<Details, Blocks> {
       }
     });
 
+    const returnPart = legacyDefinition.returnPart({
+      operation: (coord: string, bodyPart: string, util) => {
+
+        if (this.hasPose()) {
+          const { x, y } = this.tfCoordsToScratch(this.poseState.keypoints.find(point => point.part === bodyPart).position);
+          if (coord === 'x') {
+            return x;
+          } else {
+            return y;
+          }
+        }
+      },
+      argumentMethods: {
+        0: {
+          handler(coord: string) {
+            return ['x', 'y'].includes(coord) ? coord : 'x';
+          }
+        },
+        1: {
+          handler: (bodyPart: string) => {
+            return handlerOptions.includes(bodyPart) ? bodyPart : 'nose';
+          }
+        }
+      }
+    });
+
     const videoToggle = legacyDefinition.videoToggle({
       operation: (video_state) => {
         this.toggleVideo(video_state);
@@ -240,6 +267,7 @@ export default class PoseBody extends Extension<Details, Blocks> {
 
     return {
       goToPart,
+      returnPart,
       videoToggle,
       setVideoTransparency
     }
