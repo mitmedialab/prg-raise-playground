@@ -11,6 +11,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@mediapipe/tasks-vision": "^0.1.0-alpha-12"
+    "@mediapipe/tasks-vision": "^0.10.0"
   }
 }
