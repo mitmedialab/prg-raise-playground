@@ -37,6 +37,7 @@ type Details = {
  */
 type Blocks = {
   goToHandPart(handPart: string, fingerPart: number): void;
+  returnHandPart(coord: string, handPart: string, fingerPart: number): number;
   // these video blocks are present in a few different extensions, perhaps making a file just for these?
   videoToggle(state: string): void;
   setVideoTransparency(transparency: number): void;
@@ -219,6 +220,40 @@ export default class PoseHand extends Extension<Details, Blocks> {
       }
     });
 
+    const returnHandPart = legacyDefinition.returnHandPart({
+      operation: (coord: string, handPart: string, fingerPart: number, util): number => {
+        if (this.isConnected()) {
+          console.log('connected 2');
+          const [x, y, z] = this.handPoseState[0].annotations[handPart][fingerPart];
+          const { x: scratchX, y: scratchY } = this.tfCoordsToScratch({ x, y, z });
+          if (coord === 'x') {
+            return scratchX;
+          } else {
+            return scratchY;
+          }
+        } else {
+          return 0;
+        }
+      },
+      argumentMethods: {
+        0: {
+          handler: (coord: string) => {
+            return ['x', 'y'].includes(coord) ? coord : "x";
+          }
+        },
+        1: {
+          handler: (finger: string) => {
+            return handlerFingerOptions.includes(finger) ? finger : "thumb";
+          }
+        },
+        2: {
+          handler: (part: number) => {
+            return Math.max(Math.min(part, 3), 0)
+          }
+        }
+      }
+    });
+
     const videoToggle = legacyDefinition.videoToggle({
       operation: (video_state) => {
         this.toggleVideo(video_state);
@@ -241,6 +276,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
 
     return {
       goToHandPart,
+      returnHandPart,
       videoToggle,
       setVideoTransparency
     }
