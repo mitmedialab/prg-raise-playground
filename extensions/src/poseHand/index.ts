@@ -221,7 +221,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
     });
 
     const returnHandPart = legacyDefinition.returnHandPart({
-      operation: (coord: string, handPart: string, fingerPart: number, util): number => {
+      operation: (coord: string, handPart: string, fingerPart: number) => {
         if (this.isConnected()) {
           console.log('connected 2');
           const [x, y, z] = this.handPoseState[0].annotations[handPart][fingerPart];

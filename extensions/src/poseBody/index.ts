@@ -221,7 +221,7 @@ export default class PoseBody extends Extension<Details, Blocks> {
     });
 
     const returnPart = legacyDefinition.returnPart({
-      operation: (coord: string, bodyPart: string, util) => {
+      operation: (coord: string, bodyPart: string) => {
 
         if (this.hasPose()) {
           const { x, y } = this.tfCoordsToScratch(this.poseState.keypoints.find(point => point.part === bodyPart).position);
