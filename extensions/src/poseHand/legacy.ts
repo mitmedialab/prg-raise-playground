@@ -23,6 +23,29 @@ export const info = {
       }
     },
     {
+      "opcode": "returnHandPart",
+      "text": "get [COORD] from [HAND_PART] [HAND_SUB_PART]",
+      "blockType": "reporter",
+      "isTerminal": false,
+      "arguments": {
+        "COORD": {
+          "type": "string",
+          "defaultValue": "x",
+          "menu": "COORD"
+        },
+        "HAND_PART": {
+          "type": "string",
+          "defaultValue": "thumb",
+          "menu": "HAND_PART"
+        },
+        "HAND_SUB_PART": {
+          "type": "number",
+          "defaultValue": 3,
+          "menu": "HAND_SUB_PART"
+        }
+      }
+    },
+    {
       "opcode": "videoToggle",
       "text": "turn video [VIDEO_STATE]",
       "arguments": {
@@ -116,6 +139,19 @@ export const info = {
         {
           "text": "stage",
           "value": "Stage"
+        }
+      ]
+    },
+    "COORD": {
+      "acceptReporters": false,
+      "items": [
+        {
+          "text": "x",
+          "value": "x"
+        },
+        {
+          "text": "y",
+          "value": "y"
         }
       ]
     },

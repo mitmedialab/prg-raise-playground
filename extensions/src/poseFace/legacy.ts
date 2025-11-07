@@ -18,6 +18,24 @@ export const info = {
       }
     },
     {
+      "opcode": "affdexReturnPart",
+      "text": "get [COORD] from [AFFDEX_POINT]",
+      "blockType": "reporter",
+      "isTerminal": false,
+      "arguments": {
+        "COORD": {
+          "type": "string",
+          "defaultValue": "x",
+          "menu": "COORD"
+        },
+        "AFFDEX_POINT": {
+          "type": "string",
+          "defaultValue": "0",
+          "menu": "AFFDEX_POINT"
+        }
+      }
+    },
+    {
       "opcode": "affdexWhenExpression",
       "text": "when [EXPRESSION] detected",
       "blockType": "hat",
@@ -445,6 +463,19 @@ export const info = {
           "text": "on flipped",
           "value": "on-flipped"
         }
+      ]
+    },
+    "COORD": {
+      "acceptReporters": false,
+      "items": [
+        {
+          "text": "x",
+          "value": "x"
+        },
+        {
+          "text": "y",
+          "value": "y"
+        },
       ]
     }
   }

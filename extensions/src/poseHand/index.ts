@@ -36,6 +36,7 @@ type Details = {
  */
 type Blocks = {
   goToHandPart(handPart: string, fingerPart: number): void;
+  returnHandPart(coord: string, handPart: string, fingerPart: number): number;
   // these video blocks are present in a few different extensions, perhaps making a file just for these?
   videoToggle(state: string): void;
   setVideoTransparency(transparency: number): void;
@@ -160,7 +161,8 @@ export default class PoseHand extends Extension<Details, Blocks> {
       vision,
       {
         baseOptions: {
-          modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task"
+          modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task",
+          //delegate: "GPU",
         },
         runningMode: "VIDEO",
         numHands: 2
@@ -329,6 +331,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
 
     return {
       goToHandPart,
+      returnHandPart,
       videoToggle,
       setVideoTransparency
     }
