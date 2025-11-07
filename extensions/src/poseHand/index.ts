@@ -83,7 +83,8 @@ export default class PoseHand extends Extension<Details, Blocks> {
   init(env: Environment) {
     this.loadMediaPipeModel();
     if (this.runtime.ioDevices) {
-      this._loop();
+      // this._loop();
+      // this.handModel
     }
   }
 
@@ -95,7 +96,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
  * @returns enum
  */
   mediapipeCoordsToScratch(x, y, z) {
-    return this.tfCoordsToScratch({ x: this.DIMENSIONS[0] * x, y: this.DIMENSIONS[1] * y, z });
+    return this.tfCoordsToScratch({ x: (this.DIMENSIONS[0] - (this.DIMENSIONS[0] * x)), y: this.DIMENSIONS[1] * y, z });
   }
 
   /**
@@ -123,6 +124,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
    * @returns {boolean} true if connected, false if not connected
    */
   isConnected() {
+    console.log(this.handPoseState);
     return !!this.handPoseState && this.handPoseState.landmarks.length > 0;
   }
 
@@ -160,8 +162,15 @@ export default class PoseHand extends Extension<Details, Blocks> {
         baseOptions: {
           modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task"
         },
+        runningMode: "VIDEO",
         numHands: 2
       });
+      console.log(this.runtime.ioDevices.video);
+      if (this.runtime.ioDevices.video.provider._video) {
+        this.handModel.detectForVideo(this.runtime.ioDevices.video.provider._video, Date.now());
+      }
+      
+      console.log("CONNECTED");
   }
 
   /**
@@ -249,6 +258,48 @@ export default class PoseHand extends Extension<Details, Blocks> {
           }
         },
         1: {
+          handler: (part: number) => {
+            return Math.max(Math.min(part, 3), 0)
+          }
+        }
+      }
+    });
+
+    const returnHandPart = legacyDefinition.returnHandPart({
+      operation: (coord: string, handPart: string, fingerPart: number) => {
+        console.log(this.runtime.ioDevices.video.provider._track);
+        console.log(this.runtime.ioDevices.video.provider);
+        let results;
+        if (this.runtime.ioDevices.video.provider._video) {
+          results = this.handModel.detectForVideo(this.runtime.ioDevices.video.provider._video, Date.now());
+          console.log("results", results);
+        }
+        
+        if (results && results.landmarks.length > 0) {
+          console.log('connected 2');
+          const { x, y, z } = results.landmarks[0][handOptions[handPart][fingerPart]];
+          const { x: scratchX, y: scratchY } = this.mediapipeCoordsToScratch(x, y, z);
+          if (coord === 'x') {
+            return scratchX;
+          } else {
+            return scratchY;
+          }
+        } else {
+          return 0;
+        }
+      },
+      argumentMethods: {
+        0: {
+          handler: (coord: string) => {
+            return ['x', 'y'].includes(coord) ? coord : "x";
+          }
+        },
+        1: {
+          handler: (finger: string) => {
+            return handlerFingerOptions.includes(finger) ? finger : "thumb";
+          }
+        },
+        2: {
           handler: (part: number) => {
             return Math.max(Math.min(part, 3), 0)
           }
