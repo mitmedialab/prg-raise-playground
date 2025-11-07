@@ -37,7 +37,8 @@ export default class GenAIExtension extends extension(details, "addCostumes") {
 
   voice_id: number;
   pitch_value: number;
-  system_prompt: string;
+  target_prompts: any;
+  default_prompt: string;
 
   voice_map: any;
 
@@ -56,14 +57,16 @@ export default class GenAIExtension extends extension(details, "addCostumes") {
     this.exampleField = 0;
     this.voice_id = 6;
     this.pitch_value = 0;
-    this.system_prompt = `You are a friendly and encouraging classroom helper who explains ideas clearly for 4th-grade students. 
-You use simple language, fun examples, and a positive tone to help kids learn and think for themselves. 
+    this.target_prompts = {};
 
-When a student asks a question, don't just give the answer — guide them with hints or questions that help them figure it out. 
-Keep your replies short, warm, and easy to understand. Avoid big words, emojis, or anything too advanced. 
+    this.default_prompt = `You are a friendly and encouraging classroom helper who explains ideas clearly for 4th-grade students. 
+    You use simple language, fun examples, and a positive tone to help kids learn and think for themselves. 
 
-Your goal is to make learning feel exciting, safe, and curious — like a helpful teacher's assistant who loves explaining things in creative ways.
-`;
+    When a student asks a question, don't just give the answer — guide them with hints or questions that help them figure it out. 
+    Keep your replies short, warm, and easy to understand. Avoid big words, emojis, or anything too advanced. 
+
+    Your goal is to make learning feel exciting, safe, and curious — like a helpful teacher's assistant who loves explaining things in creative ways.
+    `;
   }
 
   /** @see {ExplanationOfField} */
@@ -476,16 +479,24 @@ Your goal is to make learning feel exciting, safe, and curious — like a helpfu
     return await this.processAndSendAudioListen(buffer);
   }
 
-  private async handleReturnChatInteraction(prompt: string) {
+  private async handleReturnChatInteraction(prompt: string, target) {
 
     const url = `https://doodlebot.media.mit.edu/prompt`
+
+
+    let temporary_prompt;
+    if (this.target_prompts[target.id]) {
+      temporary_prompt = this.target_prompts[target.id];
+    } else {
+      temporary_prompt = this.default_prompt;
+    }
 
     try {
       let response;
 
       response = await fetch(url, {
         method: "POST",
-        body: JSON.stringify({ text_input: prompt, system_prompt: this.system_prompt }),
+        body: JSON.stringify({ text_input: prompt, system_prompt: temporary_prompt }),
       });
 
       if (!response.ok) {
@@ -604,8 +615,8 @@ Your goal is to make learning feel exciting, safe, and curious — like a helpfu
     text: (text) => `prompt ${text}`,
     arg: { type: "string", defaultValue: "What is your favorite color?" }
   })
-  async promptChatAPI(text: string) {
-    return await this.handleReturnChatInteraction(text);
+  async promptChatAPI(text: string, { target }: BlockUtilityWithID) {
+    return await this.handleReturnChatInteraction(text, target);
   }
 
   @block({
@@ -661,7 +672,7 @@ Your goal is to make learning feel exciting, safe, and curious — like a helpfu
     text: (system_prompt) => `set system prompt to ${system_prompt}`,
     arg: { type: "string", defaultValue: "You are a 4th grade classroom assistant..." },
   })
-  async setSystemPrompt(system_prompt: string) {
-    this.system_prompt = system_prompt;
+  async setSystemPrompt(system_prompt: string, {target} : BlockUtilityWithID) {
+    this.target_prompts[target.id] = system_prompt;
   }
 }
