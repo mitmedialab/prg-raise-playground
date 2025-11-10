@@ -1,9 +1,9 @@
 import 'regenerator-runtime/runtime'
 
 import classNames from 'classnames';
-import {connect} from 'react-redux';
-import {compose} from 'redux';
-import {defineMessages, FormattedMessage, injectIntl, intlShape} from 'react-intl';
+import { connect } from 'react-redux';
+import { compose } from 'redux';
+import { defineMessages, FormattedMessage, injectIntl, intlShape } from 'react-intl';
 import PropTypes from 'prop-types';
 import bindAll from 'lodash.bindall';
 import bowser from 'bowser';
@@ -15,14 +15,14 @@ import Box from '../box/box.jsx';
 import Button from '../button/button.jsx';
 import CommunityButton from './community-button.jsx';
 import ShareButton from './share-button.jsx';
-import {ComingSoonTooltip} from '../coming-soon/coming-soon.jsx';
+import { ComingSoonTooltip } from '../coming-soon/coming-soon.jsx';
 import Divider from '../divider/divider.jsx';
 import LanguageSelector from '../../containers/language-selector.jsx';
 import SaveStatus from './save-status.jsx';
 import SBFileUploader from '../../containers/sb-file-uploader.jsx';
 import ProjectWatcher from '../../containers/project-watcher.jsx';
 import MenuBarMenu from './menu-bar-menu.jsx';
-import {MenuItem, MenuSection} from '../menu/menu.jsx';
+import { MenuItem, MenuSection } from '../menu/menu.jsx';
 import ProjectTitleInput from './project-title-input.jsx';
 import AuthorInfo from './author-info.jsx';
 import AccountNav from '../../containers/account-nav.jsx';
@@ -33,9 +33,9 @@ import TurboMode from '../../containers/turbo-mode.jsx';
 import MenuBarHOC from '../../containers/menu-bar-hoc.jsx';
 import GoogleChooser from '../google-drive-picker/google-drive-picker.jsx';
 
-import {setProjectTitle} from '../../reducers/project-title';
-import {openTipsLibrary} from '../../reducers/modals';
-import {setPlayer} from '../../reducers/mode';
+import { setProjectTitle } from '../../reducers/project-title';
+import { openTipsLibrary } from '../../reducers/modals';
+import { setPlayer } from '../../reducers/mode';
 import {
     autoUpdateProject,
     getIsUpdating,
@@ -131,7 +131,7 @@ MenuBarItemTooltip.propTypes = {
     place: PropTypes.oneOf(['top', 'bottom', 'left', 'right'])
 };
 
-const MenuItemTooltip = ({id, isRtl, children, className}) => (
+const MenuItemTooltip = ({ id, isRtl, children, className }) => (
     <ComingSoonTooltip
         className={classNames(styles.comingSoon, className)}
         isRtl={isRtl}
@@ -156,7 +156,7 @@ MenuItemTooltip.propTypes = {
 };
 
 class MenuBar extends React.Component {
-    constructor (props) {
+    constructor(props) {
         super(props);
         bindAll(this, [
             'handleClickNew',
@@ -188,9 +188,9 @@ class MenuBar extends React.Component {
             permissionId: null,
         };
     }
-    componentDidMount () {
+    componentDidMount() {
         document.addEventListener('keydown', this.handleKeyPress);
-        if(this.isGoogleReady()) {
+        if (this.isGoogleReady()) {
             // google api is already exists
             // init immediately
             this.onApiLoad();
@@ -200,10 +200,10 @@ class MenuBar extends React.Component {
             loadScript(GOOGLE_SDK_URL, this.onApiLoad)
         }
     }
-    componentWillUnmount () {
+    componentWillUnmount() {
         document.removeEventListener('keydown', this.handleKeyPress);
     }
-    handleClickNew () {
+    handleClickNew() {
         // if the project is dirty, and user owns the project, we will autosave.
         // but if they are not logged in and can't save, user should consider
         // downloading or logging in first.
@@ -215,26 +215,26 @@ class MenuBar extends React.Component {
         this.props.onRequestCloseFile();
         if (readyToReplaceProject) {
             this.props.onClickNew(this.props.canSave && this.props.canCreateNew);
-            
+
             this.setState({
                 fileId: null
             });
         }
         this.props.onRequestCloseFile();
     }
-    handleClickRemix () {
+    handleClickRemix() {
         this.props.onClickRemix();
         this.props.onRequestCloseFile();
     }
-    handleClickSave () {
+    handleClickSave() {
         this.props.onClickSave();
         this.props.onRequestCloseFile();
     }
-    handleClickSaveAsCopy () {
+    handleClickSaveAsCopy() {
         this.props.onClickSaveAsCopy();
         this.props.onRequestCloseFile();
     }
-    handleClickSeeCommunity (waitForUpdate) {
+    handleClickSeeCommunity(waitForUpdate) {
         if (this.props.shouldSaveBeforeTransition()) {
             this.props.autoUpdateProject(); // save before transitioning to project page
             waitForUpdate(true); // queue the transition to project page
@@ -242,7 +242,7 @@ class MenuBar extends React.Component {
             waitForUpdate(false); // immediately transition to project page
         }
     }
-    handleClickShare (waitForUpdate) {
+    handleClickShare(waitForUpdate) {
         if (!this.props.isShared) {
             if (this.props.canShare) { // save before transitioning to project page
                 this.props.onShare();
@@ -255,20 +255,20 @@ class MenuBar extends React.Component {
             }
         }
     }
-    handleRestoreOption (restoreFun) {
+    handleRestoreOption(restoreFun) {
         return () => {
             restoreFun();
             this.props.onRequestCloseEdit();
         };
     }
-    handleKeyPress (event) {
+    handleKeyPress(event) {
         const modifier = bowser.mac ? event.metaKey : event.ctrlKey;
         if (modifier && event.key === 's') {
             this.props.onClickSave();
             event.preventDefault();
         }
     }
-    getSaveToComputerHandler (downloadProjectCallback) {
+    getSaveToComputerHandler(downloadProjectCallback) {
         return () => {
             this.props.onRequestCloseFile();
             downloadProjectCallback();
@@ -278,38 +278,38 @@ class MenuBar extends React.Component {
             }
         };
     }
-    handleLanguageMouseUp (e) {
+    handleLanguageMouseUp(e) {
         if (!this.props.languageMenuOpen) {
             this.props.onClickLanguage(e);
         }
     }
-    restoreOptionMessage (deletedItem) {
+    restoreOptionMessage(deletedItem) {
         switch (deletedItem) {
-        case 'Sprite':
-            return (<FormattedMessage
-                defaultMessage="Restore Sprite"
-                description="Menu bar item for restoring the last deleted sprite."
-                id="gui.menuBar.restoreSprite"
-            />);
-        case 'Sound':
-            return (<FormattedMessage
-                defaultMessage="Restore Sound"
-                description="Menu bar item for restoring the last deleted sound."
-                id="gui.menuBar.restoreSound"
-            />);
-        case 'Costume':
-            return (<FormattedMessage
-                defaultMessage="Restore Costume"
-                description="Menu bar item for restoring the last deleted costume."
-                id="gui.menuBar.restoreCostume"
-            />);
-        default: {
-            return (<FormattedMessage
-                defaultMessage="Restore"
-                description="Menu bar item for restoring the last deleted item in its disabled state." /* eslint-disable-line max-len */
-                id="gui.menuBar.restore"
-            />);
-        }
+            case 'Sprite':
+                return (<FormattedMessage
+                    defaultMessage="Restore Sprite"
+                    description="Menu bar item for restoring the last deleted sprite."
+                    id="gui.menuBar.restoreSprite"
+                />);
+            case 'Sound':
+                return (<FormattedMessage
+                    defaultMessage="Restore Sound"
+                    description="Menu bar item for restoring the last deleted sound."
+                    id="gui.menuBar.restoreSound"
+                />);
+            case 'Costume':
+                return (<FormattedMessage
+                    defaultMessage="Restore Costume"
+                    description="Menu bar item for restoring the last deleted costume."
+                    id="gui.menuBar.restoreCostume"
+                />);
+            default: {
+                return (<FormattedMessage
+                    defaultMessage="Restore"
+                    description="Menu bar item for restoring the last deleted item in its disabled state." /* eslint-disable-line max-len */
+                    id="gui.menuBar.restore"
+                />);
+            }
         }
     }
     doAuth(callback) {
@@ -317,7 +317,7 @@ class MenuBar extends React.Component {
             client_id: CLIENT_ID,
             scope: DRIVE_SCOPE,
             immediate: false
-            },
+        },
             callback
         );
     }
@@ -328,7 +328,7 @@ class MenuBar extends React.Component {
                 gapi.client.request({
                     'method': 'GET',
                     'path': '/drive/v3/about',
-                    'params': {'fields': 'user'}
+                    'params': { 'fields': 'user' }
                 }).execute((response) => {
                     resolve(response.user.permissionId);
                 });
@@ -337,7 +337,7 @@ class MenuBar extends React.Component {
 
         const { permissionId } = this.state;
         return await new Promise((resolve, reject) => {
-            window.gapi.client.drive.permissions.list({fileId})
+            window.gapi.client.drive.permissions.list({ fileId })
                 .execute((resp) => {
                     if (!resp.permissions) resolve(false);
                     const owner = resp.permissions.find(p => p.role === 'owner');
@@ -350,13 +350,13 @@ class MenuBar extends React.Component {
     handleClickLoadProjectLink() {
         let templateLink = "https://www.dropbox.com/s/o8jegh940y7f7qc/SimpleProject.sb3";
         let url = window.prompt("Enter project url (e.g. from Dropbox or Github)", templateLink);
-        if (url != null && url != "") {   
+        if (url != null && url != "") {
             const readyToReplaceProject = this.props.confirmReadyToReplaceProject(
                 this.props.intl.formatMessage(sharedMessages.replaceProjectWarning)
             );
             if (readyToReplaceProject) {
                 this.props.vm.downloadProjectFromURLDirect(url);
-                
+
                 this.props.onReceivedProjectTitle(this.getProjectTitleFromFilename(url));
                 this.setState({
                     fileId: null
@@ -376,15 +376,15 @@ Then, after clicking 'OK', you'll be prompted to select the folder to save to.`;
 
         if (currentFileName) {
             message = isOwnerOfCurrentFile
-            ? `Choose a name for your project. ${newLine}
+                ? `Choose a name for your project. ${newLine}
 If you use the same name as the currently loaded cloud project ('${currentFileName}') we'll update the corresponding drive file. ${newLine}
 If you use a different name, you'll be prompted to pick a folder to save the new file to.`
-            : `Choose a name for your project. ${newLine}
+                : `Choose a name for your project. ${newLine}
 Since you are not the owner of the current Google Drive project, you must name it something different than '${currentFileName}'. ${newLine}
 Then, after clicking 'OK', you'll be prompted to select the folder to save to.`;
             placeholder = isOwnerOfCurrentFile ? this.props.projectTitle : `${this.props.projectTitle} Remix`;
         }
-        
+
         const fileName = prompt(message, placeholder);
 
         if (fileName === null || fileName === "") {
@@ -413,7 +413,7 @@ Then, after clicking 'OK', you'll be prompted to select the folder to save to.`;
             authToken: token
         });
     }
-    getProjectTitleFromFilename (fileInputFilename) {
+    getProjectTitleFromFilename(fileInputFilename) {
         if (!fileInputFilename) return '';
         // only parse title with valid scratch project extensions
         // (.sb, .sb2, and .sb3)
@@ -434,14 +434,14 @@ Then, after clicking 'OK', you'll be prompted to select the folder to save to.`;
             mimeType: "application/x-zip"
         }).then((response) => {
             if (response.status !== 200) return;
-            const {id} = response.result;
-            this.uploadFile(id);      
-            this.setState({...this.state, currentFileId: id});
+            const { id } = response.result;
+            this.uploadFile(id);
+            this.setState({ ...this.state, currentFileId: id });
             return id;
         }).then((id) => {
             return this.hasPermissionToEdit(id);
         }).then((isOwnerOfCurrentFile) => {
-            this.setState({...this.state, isOwnerOfCurrentFile});
+            this.setState({ ...this.state, isOwnerOfCurrentFile });
             this.props.onReceivedProjectTitle(fileName);
             alert(`Project succesfully saved to: ${parentName}/${fileName}.sb3`);
         });
@@ -450,11 +450,11 @@ Then, after clicking 'OK', you'll be prompted to select the folder to save to.`;
 
     handleDriveProjectSelect(data) {
         if (!data.docs) return this.props.onRequestCloseFile();
-        
+
         console.log(data.docs[0]);
         const { id, name } = data.docs[0];
         const url = "https://www.googleapis.com/drive/v3/files/" + id + "/?alt=media;" + this.state.authToken;
-        
+
         const readyToReplaceProject = this.props.confirmReadyToReplaceProject(
             this.props.intl.formatMessage(sharedMessages.replaceProjectWarning)
         );
@@ -464,8 +464,9 @@ Then, after clicking 'OK', you'll be prompted to select the folder to save to.`;
         this.hasPermissionToEdit(id).then((isOwnerOfCurrentFile) => {
             this.props.vm.downloadProjectFromURLDirect(url);
             this.props.onReceivedProjectTitle(this.getProjectTitleFromFilename(name));
-            this.setState({...this.state, 
-                currentFileName: name.replace(".sb3", ""), 
+            this.setState({
+                ...this.state,
+                currentFileName: name.replace(".sb3", ""),
                 isOwnerOfCurrentFile,
                 currentFileId: id
             });
@@ -476,14 +477,14 @@ Then, after clicking 'OK', you'll be prompted to select the folder to save to.`;
     isGoogleReady() {
         return !!window.gapi;
     }
-    
+
     isGoogleAuthReady() {
         return !!window.gapi.auth;
     }
     isGoogleDriveReady() {
         return !!window.gapi.client.drive;
     }
-    
+
     onApiLoad() {
         window.gapi.load('auth');
         window.gapi.load('client', () => {
@@ -492,7 +493,7 @@ Then, after clicking 'OK', you'll be prompted to select the folder to save to.`;
     }
 
 
-    render () {
+    render() {
         const saveNowMessage = (
             <FormattedMessage
                 defaultMessage="Save now"
@@ -595,23 +596,23 @@ Then, after clicking 'OK', you'll be prompted to select the folder to save to.`;
                                             {newProjectMessage}
                                         </MenuItem>
                                     </MenuSection>
-                                    <MenuSection>	                                   
-                                        <MenuItem	                                   
-                                            isRtl={this.props.isRtl}	                                  
-                                            onClick={() => {	                                  
-                                                this.props.vm.sendLastClipToGfy();	                                           
-                                            }}	                                   
-                                        >	                                    
-                                            Upload Clip to Gfycat	                                  
-                                        </MenuItem>	                                  
-                                        <MenuItem	                                  
-                                            isRtl={this.props.isRtl}	                                   
-                                            onClick={() => {	                                    
-                                                this.props.vm.loadLastClipOnGfy();	                                   
-                                            }}	                                   
-                                        >	                                  
-                                            Load Last Uploaded Clip	                                  
-                                        </MenuItem>	                                 
+                                    <MenuSection>
+                                        <MenuItem
+                                            isRtl={this.props.isRtl}
+                                            onClick={() => {
+                                                this.props.vm.sendLastClipToGfy();
+                                            }}
+                                        >
+                                            Upload Clip to Gfycat
+                                        </MenuItem>
+                                        <MenuItem
+                                            isRtl={this.props.isRtl}
+                                            onClick={() => {
+                                                this.props.vm.loadLastClipOnGfy();
+                                            }}
+                                        >
+                                            Load Last Uploaded Clip
+                                        </MenuItem>
                                     </MenuSection>
                                     {(this.props.canSave || this.props.canCreateCopy || this.props.canRemix) && (
                                         <MenuSection>
@@ -664,7 +665,7 @@ Then, after clicking 'OK', you'll be prompted to select the folder to save to.`;
                                                 <MenuItem
                                                     className={className}
                                                     onClick={() => {
-                                                        this.setState({...this.state, currentFileName: ""});
+                                                        this.setState({ ...this.state, currentFileName: "" });
                                                         handleLoadProject();
                                                     }}
                                                 >
@@ -677,9 +678,9 @@ Then, after clicking 'OK', you'll be prompted to select the folder to save to.`;
                                         </SBFileUploader>
                                     </MenuSection>
                                     <MenuSection>
-                                        <GoogleChooser 
+                                        <GoogleChooser
                                             appId={APP_ID}
-                                            clientId={CLIENT_ID}                                            developerKey={DEVELOPER_KEY}
+                                            clientId={CLIENT_ID} developerKey={DEVELOPER_KEY}
                                             scope={DRIVE_SCOPE}
                                             showPicker={this.handleSavePickerClicked}
                                             onAuthenticate={this.handleDriveAuthenticate}
@@ -701,9 +702,9 @@ Then, after clicking 'OK', you'll be prompted to select the folder to save to.`;
                                                 />
                                             </MenuItem>
                                         </GoogleChooser>
-                                        <GoogleChooser 
+                                        <GoogleChooser
                                             appId={APP_ID}
-                                            clientId={CLIENT_ID}                                            developerKey={DEVELOPER_KEY}
+                                            clientId={CLIENT_ID} developerKey={DEVELOPER_KEY}
                                             scope={DRIVE_SCOPE}
                                             onAuthenticate={this.handleDriveAuthenticate}
                                             onChange={this.handleDriveProjectSelect}
@@ -711,9 +712,10 @@ Then, after clicking 'OK', you'll be prompted to select the folder to save to.`;
                                             multiselect={false}
                                             navHidden={false}
                                             authImmediate={false}
-                                            mimeTypes={['application/x.scratch.sb3']}
                                             viewID={'DOCS'}
-                                            >
+                                            query={"name contains '.sb3'"}
+
+                                        >
                                             <MenuItem classname="google">
                                                 <FormattedMessage
                                                     defaultMessage="Load project from Google Drive"
@@ -745,16 +747,16 @@ Then, after clicking 'OK', you'll be prompted to select the folder to save to.`;
                                 place={this.props.isRtl ? 'left' : 'right'}
                                 onRequestClose={this.props.onRequestCloseEdit}
                             >
-                                <DeletionRestorer>{(handleRestore, {restorable, deletedItem}) => (
+                                <DeletionRestorer>{(handleRestore, { restorable, deletedItem }) => (
                                     <MenuItem
-                                        className={classNames({[styles.disabled]: !restorable})}
+                                        className={classNames({ [styles.disabled]: !restorable })}
                                         onClick={this.handleRestoreOption(handleRestore)}
                                     >
                                         {this.restoreOptionMessage(deletedItem)}
                                     </MenuItem>
                                 )}</DeletionRestorer>
                                 <MenuSection>
-                                    <TurboMode>{(toggleTurboMode, {turboMode}) => (
+                                    <TurboMode>{(toggleTurboMode, { turboMode }) => (
                                         <MenuItem onClick={toggleTurboMode}>
                                             {turboMode ? (
                                                 <FormattedMessage
@@ -867,7 +869,7 @@ Then, after clicking 'OK', you'll be prompted to select the folder to save to.`;
                                                 onClick={() => {
                                                     this.handleClickShare(waitForUpdate);
                                                 }}
-                                                /* eslint-enable react/jsx-no-bind */
+                                            /* eslint-enable react/jsx-no-bind */
                                             />
                                         )
                                     }
@@ -894,7 +896,7 @@ Then, after clicking 'OK', you'll be prompted to select the folder to save to.`;
                                                 onClick={() => {
                                                     this.handleClickSeeCommunity(waitForUpdate);
                                                 }}
-                                                /* eslint-enable react/jsx-no-bind */
+                                            /* eslint-enable react/jsx-no-bind */
                                             />
                                         )
                                     }
@@ -938,7 +940,7 @@ Then, after clicking 'OK', you'll be prompted to select the folder to save to.`;
                                     className={classNames(
                                         styles.menuBarItem,
                                         styles.hoverable,
-                                        {[styles.active]: this.props.accountMenuOpen}
+                                        { [styles.active]: this.props.accountMenuOpen }
                                     )}
                                     isOpen={this.props.accountMenuOpen}
                                     isRtl={this.props.isRtl}
@@ -1105,7 +1107,7 @@ MenuBar.propTypes = {
 
 MenuBar.defaultProps = {
     logo: scratchLogo,
-    onShare: () => {}
+    onShare: () => { }
 };
 
 const mapStateToProps = (state, ownProps) => {
