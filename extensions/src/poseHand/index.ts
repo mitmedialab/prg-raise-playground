@@ -161,7 +161,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
       {
         baseOptions: {
           modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task",
-          delegate: "GPU"
+          // delegate: "GPU"
         },
         numHands: 2
       });
