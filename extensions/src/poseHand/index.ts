@@ -248,10 +248,17 @@ export default class PoseHand extends Extension<Details, Blocks> {
       
       operation: (handPart: string, fingerPart: number, util) => {
         let results;
+        const start = performance.now();
+        
         if (this.runtime.ioDevices && this.runtime.ioDevices.video.provider._video) {
-          results = this.handModel.detectForVideo(this.runtime.ioDevices.video.provider._video, Date.now());
+          results = this.handModel.detectForVideo(
+            this.runtime.ioDevices.video.provider._video,
+            Date.now()
+          );
         }
         
+        const end = performance.now();
+        console.log(`detectForVideo took ${(end - start).toFixed(2)} ms`);
         if (results && results.landmarks.length > 0) {
           const { x, y, z } = results.landmarks[0][handOptions[handPart][fingerPart]];
           const { x: scratchX, y: scratchY } = this.mediapipeCoordsToScratch(x, y, z);
