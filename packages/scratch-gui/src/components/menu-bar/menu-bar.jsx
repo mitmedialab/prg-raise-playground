@@ -713,7 +713,7 @@ Then, after clicking 'OK', you'll be prompted to select the folder to save to.`;
                                             navHidden={false}
                                             authImmediate={false}
                                             viewID={'DOCS'}
-                                            query={"name contains '.sb3'"}
+                                            query={'.sb3'}
 
                                         >
                                             <MenuItem classname="google">
