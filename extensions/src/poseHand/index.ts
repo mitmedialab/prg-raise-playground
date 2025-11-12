@@ -124,7 +124,6 @@ export default class PoseHand extends Extension<Details, Blocks> {
    * @returns {boolean} true if connected, false if not connected
    */
   isConnected() {
-    console.log(this.handPoseState);
     return !!this.handPoseState && this.handPoseState.landmarks.length > 0;
   }
 
@@ -279,7 +278,6 @@ export default class PoseHand extends Extension<Details, Blocks> {
     const returnHandPart = legacyDefinition.returnHandPart({
       operation: (coord: string, handPart: string, fingerPart: number) => {
         if (this.isConnected()) {
-          console.log('connected 2');
           const { x, y, z } = this.handPoseState.landmarks[0][handOptions[handPart][fingerPart]];
           const { x: scratchX, y: scratchY } = this.mediapipeCoordsToScratch(x, y, z);
           if (coord === 'x') {
