@@ -167,10 +167,6 @@ export default class PoseHand extends Extension<Details, Blocks> {
         runningMode: "VIDEO",
         numHands: 2
       });
-      console.log(this.runtime.ioDevices.video);
-      if (this.runtime.ioDevices.video.provider._video) {
-        this.handModel.detectForVideo(this.runtime.ioDevices.video.provider._video, Date.now());
-      }
       
   }
 
