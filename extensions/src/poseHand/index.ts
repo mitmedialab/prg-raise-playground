@@ -157,7 +157,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
       const totalLoopTime = (loopEnd - loopStart).toFixed(2);
   
       console.log(
-        `detect() took ${detectTime} ms | total loop iteration: ${totalLoopTime} ms`
+        `detect() took ${detectTime} ms | total loop iteration: ${totalLoopTime} ms `
       );
   
       await new Promise(r => setTimeout(r, estimateThrottleTimeout));
