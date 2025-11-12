@@ -83,10 +83,12 @@ export default class PoseHand extends Extension<Details, Blocks> {
    */
   init(env: Environment) {
     this.loadMediaPipeModel();
-    // if (this.runtime.ioDevices) {
-    //   // this._loop();
-    //   // this.handModel
-    // }
+    setTimeout(() => {
+      if (this.runtime.ioDevices) {
+        this._loop();
+      }
+    }, 1000)
+   
   }
 
   /**
@@ -124,31 +126,45 @@ export default class PoseHand extends Extension<Details, Blocks> {
    * Checks if the hand pose estimate is ready to be used
    * @returns {boolean} true if connected, false if not connected
    */
-  // isConnected() {
-  //   console.log(this.handPoseState);
-  //   return !!this.handPoseState && this.handPoseState.landmarks.length > 0;
-  // }
+  isConnected() {
+    return !!this.handPoseState && this.handPoseState.landmarks.length > 0;
+  }
 
   /**
    * Runs for the entire time the extension is running. Gets information about the video frame.
    * Estimates where the hand is on the video frame. Creates a delay to prevent this function from constantly running,
    * so as to prevent the entire program from slowing down.
    */
-  // async _loop() {
-  //   while (true) {
-  //     const frame = this.runtime.ioDevices.video.getFrame({
-  //       format: 'canvas',
-  //       dimensions: this.DIMENSIONS
-  //     });
+  async _loop() {
+    while (true) {
+      // const frame = this.runtime.ioDevices.video.getFrame({
+      //   format: 'canvas',
+      //   dimensions: this.DIMENSIONS
+      // });
 
-  //     const time = +new Date();
-  //     if (this.handModel && frame) {
-  //       this.handPoseState = this.handModel.detect(frame);
-  //     }
-  //     const estimateThrottleTimeout = (+new Date() - time) / 4;
-  //     await new Promise(r => setTimeout(r, estimateThrottleTimeout));
-  //   }
-  // }
+      const time = +new Date();
+      // if (this.handModel && frame) {
+      //   this.handPoseState = this.handModel.detect(frame);
+      // }
+      const start = performance.now();
+      
+      if (this.handModel && this.runtime.ioDevices && this.runtime.ioDevices.video.provider._video) {
+        try {
+        this.handPoseState = this.handModel.detectForVideo(
+          this.runtime.ioDevices.video.provider._video,
+          Date.now()
+        );
+      } catch (e) {
+        console.log(e);
+      }
+      }
+      
+      const end = performance.now();
+      console.log(`detectForVideo took ${(end - start).toFixed(2)} ms`);
+      const estimateThrottleTimeout = (+new Date() - time)*2;
+      await new Promise(r => setTimeout(r, 50));
+    }
+  }
 
 
 
@@ -243,20 +259,9 @@ export default class PoseHand extends Extension<Details, Blocks> {
     const goToHandPart = legacyDefinition.goToHandPart({
       
       operation: (handPart: string, fingerPart: number, util) => {
-        let results;
-        const start = performance.now();
         
-        if (this.runtime.ioDevices && this.runtime.ioDevices.video.provider._video) {
-          results = this.handModel.detectForVideo(
-            this.runtime.ioDevices.video.provider._video,
-            Date.now()
-          );
-        }
-        
-        const end = performance.now();
-        console.log(`detectForVideo took ${(end - start).toFixed(2)} ms`);
-        if (results && results.landmarks.length > 0) {
-          const { x, y, z } = results.landmarks[0][handOptions[handPart][fingerPart]];
+        if (this.isConnected()) {
+          const { x, y, z } = this.handPoseState.landmarks[0][handOptions[handPart][fingerPart]];
           const { x: scratchX, y: scratchY } = this.mediapipeCoordsToScratch(x, y, z);
           (util.target as any).setXY(scratchX, scratchY, false);
         }
@@ -277,15 +282,9 @@ export default class PoseHand extends Extension<Details, Blocks> {
 
     const returnHandPart = legacyDefinition.returnHandPart({
       operation: (coord: string, handPart: string, fingerPart: number) => {
-
-        let results;
-        if (this.runtime.ioDevices && this.runtime.ioDevices.video.provider._video) {
-          results = this.handModel.detectForVideo(this.runtime.ioDevices.video.provider._video, Date.now());
-        }
         
-        if (results && results.landmarks.length > 0) {
-          console.log('connected 2');
-          const { x, y, z } = results.landmarks[0][handOptions[handPart][fingerPart]];
+        if (this.isConnected()) {
+          const { x, y, z } = this.handPoseState.landmarks[0][handOptions[handPart][fingerPart]];
           const { x: scratchX, y: scratchY } = this.mediapipeCoordsToScratch(x, y, z);
           if (coord === 'x') {
             return scratchX;
