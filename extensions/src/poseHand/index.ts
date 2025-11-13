@@ -151,10 +151,17 @@ export default class PoseHand extends Extension<Details, Blocks> {
     // console.log("Loop running");
     console.log(video);
     console.log(this.handModel);
-    if (!video || !this.handModel) {
+    if (
+      !video ||
+      !this.handModel ||
+      video.readyState < 2 || 
+      video.videoWidth === 0 ||
+      video.videoHeight === 0
+    ) {
       requestAnimationFrame(this.loop.bind(this));
       return;
     }
+  
   
     const startTimeMs = performance.now();
   
