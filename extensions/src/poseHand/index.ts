@@ -72,6 +72,8 @@ export default class PoseHand extends Extension<Details, Blocks> {
    */
   DIMENSIONS = [480, 360];
 
+  _running: boolean;
+
   /**
    * Access different fingers
    */
@@ -82,12 +84,20 @@ export default class PoseHand extends Extension<Details, Blocks> {
    * @param env 
    */
   init(env: Environment) {
+    this.lastVideoTime = -1;
+    this.runtime.ioDevices.video.enableVideo();
+    this.runtime.ioDevices.video.disableVideo();
     this.loadMediaPipeModel();
-    setTimeout(() => {
-      if (this.runtime.ioDevices) {
-        this._loop();
-      }
-    }, 1000)
+    window.addEventListener("beforeunload", () => {
+      console.log("UNLOADING");
+      this.runtime.ioDevices.video.disableVideo();
+      this._running = false;
+      if (this.handModel) this.handModel.close();
+    });
+    if (this.runtime.ioDevices) {
+      console.log("before loop");
+      this.loop();
+    }
    
   }
 
@@ -135,36 +145,38 @@ export default class PoseHand extends Extension<Details, Blocks> {
    * Estimates where the hand is on the video frame. Creates a delay to prevent this function from constantly running,
    * so as to prevent the entire program from slowing down.
    */
-  async _loop() {
-    while (true) {
-      // const frame = this.runtime.ioDevices.video.getFrame({
-      //   format: 'canvas',
-      //   dimensions: this.DIMENSIONS
-      // });
-
-      const time = +new Date();
-      // if (this.handModel && frame) {
-      //   this.handPoseState = this.handModel.detect(frame);
-      // }
-      const start = performance.now();
-      
-      if (this.handModel && this.runtime.ioDevices && this.runtime.ioDevices.video.provider._video) {
-        try {
-        this.handPoseState = this.handModel.detectForVideo(
-          this.runtime.ioDevices.video.provider._video,
-          Date.now()
-        );
-      } catch (e) {
-        console.log(e);
-      }
-      }
-      
-      const end = performance.now();
-      console.log(`detectForVideo took ${(end - start).toFixed(2)} ms`);
-      const estimateThrottleTimeout = (+new Date() - time)*2;
-      await new Promise(r => setTimeout(r, 50));
+  lastVideoTime; // 👈 defined outside so it persists across calls
+  async loop() {
+    const video = this.runtime.ioDevices.video.provider._video;
+    console.log("Loop running");
+    console.log(video);
+    console.log(this.handModel);
+    if (!video || !this.handModel) {
+      requestAnimationFrame(this.loop.bind(this));
+      return;
     }
+  
+    const startTimeMs = performance.now();
+  
+    if (this.lastVideoTime !== video.currentTime) {
+      this.lastVideoTime = video.currentTime;
+      try {
+        this.handPoseState = this.handModel.detectForVideo(video, startTimeMs);
+      } catch (e) {
+        console.error("Hand detection error:", e);
+      }
+    }
+  
+    // Example: visualize or log results
+    if (this.handPoseState?.landmarks?.length) {
+      console.log("Detected hand landmarks:", this.handPoseState.landmarks[0]);
+    }
+  
+    // Keep the loop running at the browser’s refresh rate
+    requestAnimationFrame(this.loop.bind(this));
   }
+  
+
 
 
 
