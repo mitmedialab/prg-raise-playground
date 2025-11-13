@@ -83,10 +83,9 @@ export default class PoseHand extends Extension<Details, Blocks> {
    */
   init(env: Environment) {
     this.loadMediaPipeModel();
-    // if (this.runtime.ioDevices) {
-    //   // this._loop();
-    //   // this.handModel
-    // }
+    if (this.runtime.ioDevices) {
+      this._loop();
+    }
   }
 
   /**
@@ -97,7 +96,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
  * @returns enum
  */
   mediapipeCoordsToScratch(x, y, z) {
-    return this.tfCoordsToScratch({ x: (this.DIMENSIONS[0] - (this.DIMENSIONS[0] * x)), y: this.DIMENSIONS[1] * y, z });
+    return this.tfCoordsToScratch({ x: (this.DIMENSIONS[0] * x), y: this.DIMENSIONS[1] * y, z });
   }
 
   /**
@@ -124,32 +123,50 @@ export default class PoseHand extends Extension<Details, Blocks> {
    * Checks if the hand pose estimate is ready to be used
    * @returns {boolean} true if connected, false if not connected
    */
-  // isConnected() {
-  //   console.log(this.handPoseState);
-  //   return !!this.handPoseState && this.handPoseState.landmarks.length > 0;
-  // }
+  isConnected() {
+    return !!this.handPoseState && this.handPoseState.landmarks.length > 0;
+  }
 
   /**
    * Runs for the entire time the extension is running. Gets information about the video frame.
    * Estimates where the hand is on the video frame. Creates a delay to prevent this function from constantly running,
    * so as to prevent the entire program from slowing down.
    */
-  // async _loop() {
-  //   while (true) {
-  //     const frame = this.runtime.ioDevices.video.getFrame({
-  //       format: 'canvas',
-  //       dimensions: this.DIMENSIONS
-  //     });
+  async _loop() {
+  
+      const frame = this.runtime.ioDevices.video.getFrame({
+        format: 'canvas',
+        dimensions: this.DIMENSIONS
+      });
+  
+      if (!this.handModel || !frame) { 
+        requestAnimationFrame(this._loop.bind(this));
+        return;
+      }
 
-  //     const time = +new Date();
-  //     if (this.handModel && frame) {
-  //       this.handPoseState = this.handModel.detect(frame);
-  //     }
-  //     const estimateThrottleTimeout = (+new Date() - time) / 4;
-  //     await new Promise(r => setTimeout(r, estimateThrottleTimeout));
-  //   }
-  // }
+  
+      if (this.handModel && frame) {
+        this.handPoseState = this.handModel.detect(frame);
+      }
 
+      requestAnimationFrame(this._loop.bind(this));
+  
+      // const detectEnd = performance.now();
+  
+      // const estimateThrottleTimeout = (detectEnd - detectStart) / 4;
+  
+      // const loopEnd = performance.now();
+      // const detectTime = (detectEnd - detectStart).toFixed(2);
+      // const totalLoopTime = (loopEnd - loopStart).toFixed(2);
+  
+      // console.log(
+      //   `detect() took ${detectTime} ms | total loop iteration: ${totalLoopTime} ms `
+      // );
+  
+      // await new Promise(r => setTimeout(r, estimateThrottleTimeout));
+
+  }
+  
 
 
   async loadMediaPipeModel() {
@@ -162,13 +179,11 @@ export default class PoseHand extends Extension<Details, Blocks> {
       {
         baseOptions: {
           modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task",
-          delegate: "GPU",
+          delegate: "GPU"
         },
-        runningMode: "VIDEO",
         numHands: 2
       });
-      
-  }
+    }
 
   /**
    * Turns the video camera off/on/on and flipped. This is called in the operation of videoToggleBlock
@@ -243,20 +258,9 @@ export default class PoseHand extends Extension<Details, Blocks> {
     const goToHandPart = legacyDefinition.goToHandPart({
       
       operation: (handPart: string, fingerPart: number, util) => {
-        let results;
-        const start = performance.now();
         
-        if (this.runtime.ioDevices && this.runtime.ioDevices.video.provider._video) {
-          results = this.handModel.detectForVideo(
-            this.runtime.ioDevices.video.provider._video,
-            Date.now()
-          );
-        }
-        
-        const end = performance.now();
-        console.log(`detectForVideo took ${(end - start).toFixed(2)} ms`);
-        if (results && results.landmarks.length > 0) {
-          const { x, y, z } = results.landmarks[0][handOptions[handPart][fingerPart]];
+        if (this.isConnected()) {
+          const { x, y, z } = this.handPoseState.landmarks[0][handOptions[handPart][fingerPart]];
           const { x: scratchX, y: scratchY } = this.mediapipeCoordsToScratch(x, y, z);
           (util.target as any).setXY(scratchX, scratchY, false);
         }
@@ -277,15 +281,8 @@ export default class PoseHand extends Extension<Details, Blocks> {
 
     const returnHandPart = legacyDefinition.returnHandPart({
       operation: (coord: string, handPart: string, fingerPart: number) => {
-
-        let results;
-        if (this.runtime.ioDevices && this.runtime.ioDevices.video.provider._video) {
-          results = this.handModel.detectForVideo(this.runtime.ioDevices.video.provider._video, Date.now());
-        }
-        
-        if (results && results.landmarks.length > 0) {
-          console.log('connected 2');
-          const { x, y, z } = results.landmarks[0][handOptions[handPart][fingerPart]];
+        if (this.isConnected()) {
+          const { x, y, z } = this.handPoseState.landmarks[0][handOptions[handPart][fingerPart]];
           const { x: scratchX, y: scratchY } = this.mediapipeCoordsToScratch(x, y, z);
           if (coord === 'x') {
             return scratchX;
