@@ -148,9 +148,7 @@ export default class PoseHand extends Extension<Details, Blocks> {
   lastVideoTime; // 👈 defined outside so it persists across calls
   async loop() {
     const video = this.runtime.ioDevices.video.provider._video;
-    // console.log("Loop running");
-    console.log(video);
-    console.log(this.handModel);
+
     if (
       !video ||
       !this.handModel ||
@@ -174,12 +172,6 @@ export default class PoseHand extends Extension<Details, Blocks> {
       }
     }
   
-    // // Example: visualize or log results
-    // if (this.handPoseState?.landmarks?.length) {
-    //   console.log("Detected hand landmarks:", this.handPoseState.landmarks[0]);
-    // }
-  
-    // Keep the loop running at the browser’s refresh rate
     requestAnimationFrame(this.loop.bind(this));
   }
   
