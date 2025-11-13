@@ -133,34 +133,38 @@ export default class PoseHand extends Extension<Details, Blocks> {
    * so as to prevent the entire program from slowing down.
    */
   async _loop() {
-    while (true) {
-      const loopStart = performance.now();
   
       const frame = this.runtime.ioDevices.video.getFrame({
         format: 'canvas',
         dimensions: this.DIMENSIONS
       });
   
-      const detectStart = performance.now();
+      if (!this.handModel || !frame) { 
+        requestAnimationFrame(this._loop.bind(this));
+        return;
+      }
+
   
       if (this.handModel && frame) {
         this.handPoseState = this.handModel.detect(frame);
       }
+
+      requestAnimationFrame(this._loop.bind(this));
   
-      const detectEnd = performance.now();
+      // const detectEnd = performance.now();
   
-      const estimateThrottleTimeout = (detectEnd - detectStart) / 4;
+      // const estimateThrottleTimeout = (detectEnd - detectStart) / 4;
   
-      const loopEnd = performance.now();
-      const detectTime = (detectEnd - detectStart).toFixed(2);
-      const totalLoopTime = (loopEnd - loopStart).toFixed(2);
+      // const loopEnd = performance.now();
+      // const detectTime = (detectEnd - detectStart).toFixed(2);
+      // const totalLoopTime = (loopEnd - loopStart).toFixed(2);
   
-      console.log(
-        `detect() took ${detectTime} ms | total loop iteration: ${totalLoopTime} ms `
-      );
+      // console.log(
+      //   `detect() took ${detectTime} ms | total loop iteration: ${totalLoopTime} ms `
+      // );
   
-      await new Promise(r => setTimeout(r, estimateThrottleTimeout));
-    }
+      // await new Promise(r => setTimeout(r, estimateThrottleTimeout));
+
   }
   
 
