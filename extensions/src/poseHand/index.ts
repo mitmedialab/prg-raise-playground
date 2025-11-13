@@ -151,20 +151,6 @@ export default class PoseHand extends Extension<Details, Blocks> {
 
       requestAnimationFrame(this._loop.bind(this));
   
-      // const detectEnd = performance.now();
-  
-      // const estimateThrottleTimeout = (detectEnd - detectStart) / 4;
-  
-      // const loopEnd = performance.now();
-      // const detectTime = (detectEnd - detectStart).toFixed(2);
-      // const totalLoopTime = (loopEnd - loopStart).toFixed(2);
-  
-      // console.log(
-      //   `detect() took ${detectTime} ms | total loop iteration: ${totalLoopTime} ms `
-      // );
-  
-      // await new Promise(r => setTimeout(r, estimateThrottleTimeout));
-
   }
   
 
