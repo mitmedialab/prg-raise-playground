@@ -45,6 +45,7 @@ type Details = {
  */
 type Blocks = {
   affdexGoToPart(facePart: string): void;
+  affdexReturnPart(coord: string, facePart: string): number;
   affdexWhenExpression(expression: string): boolean;
   affdexExpressionAmount(expression: string): number;
   affdexIsExpression(expression: string): boolean;
@@ -199,6 +200,18 @@ export default class PoseFace extends Extension<Details, Blocks> {
     (util.target as any).setXY(x, y, false);
   }
 
+  returnPart(coord, part, util) {
+    if (!this.affdexState || !this.affdexState.featurePoints) return;
+
+    const featurePoint = this.affdexState.featurePoints[part];
+    const { x, y } = this.convertCoordsToScratch(featurePoint);
+    if (coord === 'x') {
+      return x;
+    } else {
+      return y;
+    }
+  }
+
   /**
    * If an expression is being expressed
    * @param expression 
@@ -299,6 +312,12 @@ export default class PoseFace extends Extension<Details, Blocks> {
     const affdexGoToPart = legacyDefinition.affdexGoToPart({
       operation: (part: string, util: BlockUtility) => {
         this.goToPart(part, util)
+      }
+    });
+
+    const affdexReturnPart = legacyDefinition.affdexReturnPart({
+      operation: (coord: string, part: string, util: BlockUtility) => {
+        return this.returnPart(coord, part, util)
       }
     });
 
@@ -403,6 +422,7 @@ export default class PoseFace extends Extension<Details, Blocks> {
 
     return {
       affdexGoToPart,
+      affdexReturnPart,
       affdexWhenExpression,
       affdexExpressionAmount,
       affdexIsExpression,
