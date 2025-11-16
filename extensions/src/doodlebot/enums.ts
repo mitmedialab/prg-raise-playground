@@ -74,7 +74,7 @@ export type SensorKeyByValue = { [K in SensorKey as typeof sensor[K]]: K };
 export const display = {
     clear: "c",
     sad: "s",
-    happy: "T",
+    happy: "h",
     child: "H",
     angry: "a",
     annoyed: "n",
