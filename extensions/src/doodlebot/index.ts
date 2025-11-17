@@ -2,7 +2,7 @@ import { Environment, ExtensionMenuDisplayDetails, extension, block, buttonBlock
 import { DisplayKey, displayKeys, command, type Command, SensorKey, sensorKeys, units, keyBySensor, sensor } from "./enums";
 import Doodlebot from "./Doodlebot";
 import EventEmitter from "events";
-import { TeachableMachine } from "./ModelUtils";
+import TeachableMachine from "./ModelUtils";
 import { convertSvgUint8ArrayToPng } from "./utils";
 //import { createLineDetector } from "./LineDetection";
 
@@ -46,7 +46,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   doodlebot = new Doodlebot();
   connected = false;
 
-  teachableMachine = new TeachableMachine();
+  teachableMachine;
 
   private indicator: Promise<{ close(): void; }>;
   private lineDetector: (() => Promise<number[][]>) | null = null;
@@ -65,6 +65,9 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   soundDictionary: {} | { string: string[] };
   costumeDictionary: {} | { string: string[] };
 
+  lastUpdate: number = null;
+  isPredicting;
+
   voice_id: number;
   pitch_value: number;
 
@@ -79,12 +82,48 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       await this.setDictionaries();
     })
 
+    
+
     // move dictionaries to doodlebot
     await this.setDictionaries();
-
+    this.teachableMachine = new TeachableMachine();
+    this._loop();
     soundFiles = ["File"];
     imageFiles = ["File"];
 
+  }
+
+  private _loop() {
+    setTimeout(this._loop.bind(this), Math.max(this.runtime.currentStepTime, this.INTERVAL));
+    const time = Date.now();
+    if (this.lastUpdate === null) {
+      this.lastUpdate = time;
+    }
+    if (!this.teachableMachine.isPredicting) {
+      this.teachableMachine.isPredicting = 0;
+    }
+    const offset = time - this.lastUpdate;
+
+    if (offset > this.INTERVAL && this.teachableMachine.isPredicting === 0) {
+      this.lastUpdate = time;
+      this.teachableMachine.isPredicting = 0;
+      this.getImageStreamAndPredict();
+    }
+  }
+
+  private async getImageStreamAndPredict() {
+    try {
+
+      const imageStream = this.getImageStream();
+      if (!imageStream) {
+        // console.error("Failed to get image stream");
+        return;
+      }
+      const imageBitmap = await createImageBitmap(imageStream);
+      this.teachableMachine.predictAllBlocks(imageBitmap);
+    } catch (error) {
+      console.error("Error in getting image stream and predicting:", error);
+    }
   }
 
   async setDictionaries() {
@@ -618,7 +657,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
         if (!this) {
           throw new Error('Context is undefined');
         }
-        return this.getModelClasses() || ["Select a class"];
+        return this.teachableMachine.getModelClasses() || ["Select a class"];
       },
       defaultValue: "Select a class"
     }
@@ -629,7 +668,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   @block({
     type: "reporter",
-    text: "get AI prediction",
+    text: "get AI prediction", 
   })
   modelPrediction() {
     return this.teachableMachine.getModelPrediction();
@@ -644,7 +683,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
         if (!this) {
           throw new Error('Context is undefined');
         }
-        return this.getModelClasses() || ["Select a class"];
+        return this.teachableMachine.getModelClasses() || ["Select a class"];
       },
       defaultValue: "Select a class"
     }

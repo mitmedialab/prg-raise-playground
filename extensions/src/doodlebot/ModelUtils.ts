@@ -4,12 +4,13 @@ import * as speechCommands from '@tensorflow-models/speech-commands';
 
 
 
-export class TeachableMachine {
+export default class TeachableMachine {
     latestAudioResults: any;
-    predictionState = {};
+    predictionState;
     modelConfidences = {};
     maxConfidence: number = null;
     teachableImageModel;
+    isPredicting: number = 0;
     ModelType = {
         POSE: 'pose',
         IMAGE: 'image',
@@ -17,6 +18,7 @@ export class TeachableMachine {
       };
 
     constructor() {
+      this.predictionState = {};
     }
     
     useModel = async (url: string): Promise<{type: "success" | "error" | "warning", msg: string}> => {
@@ -29,6 +31,7 @@ export class TeachableMachine {
     
           // Load and initialize the model
           const { model, type } = await this.initModel(modelUrl);
+
           this.predictionState[modelUrl].modelType = type;
           this.predictionState[modelUrl].model = model;
     
@@ -168,6 +171,23 @@ export class TeachableMachine {
           return '';
         }
         return predictionState.topClass;
+      }
+
+      async predictAllBlocks(frame: ImageBitmap) {
+        for (let modelUrl in this.predictionState) {
+          if (!this.predictionState[modelUrl].model) {
+            console.log('No model found for:', modelUrl);
+            continue;
+          }
+          if (this.teachableImageModel !== modelUrl) {
+            console.log('Model URL mismatch:', modelUrl);
+            continue;
+          }
+          ++this.isPredicting;
+          const prediction = await this.predictModel(modelUrl, frame);
+          this.predictionState[modelUrl].topClass = prediction;
+          --this.isPredicting;
+        }
       }
 
       private async predictModel(modelUrl: string, frame: ImageBitmap) {
