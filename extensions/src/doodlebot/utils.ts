@@ -50,7 +50,7 @@ export const deferred = <T>() => {
     return { promise, resolve: resolve!, reject: reject! };
 };
 
-export const convertSvgUint8ArrayToPng = async (uint8Array, width, height) => {
+export const convertSvgUint8ArrayToPng = async (uint8Array: Uint8Array, width: number, height: number): Promise<Blob> => {
     return new Promise((resolve, reject) => {
       // Convert Uint8Array to a string
       const svgString = new TextDecoder().decode(uint8Array);
