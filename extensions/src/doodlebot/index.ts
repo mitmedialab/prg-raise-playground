@@ -4,6 +4,7 @@ import Doodlebot from "./Doodlebot";
 import EventEmitter from "events";
 import TeachableMachine from "./ModelUtils";
 import { convertSvgUint8ArrayToPng } from "./utils";
+import LineFollowingArray from "./LineFollowingArray";
 //import { createLineDetector } from "./LineDetection";
 
 import JSZip from 'jszip';
@@ -71,6 +72,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   voice_id: number;
   pitch_value: number;
 
+  lineFollower;
+
   async init(env: Environment) {
     this.voice_id = 1;
     this.pitch_value = 0;
@@ -82,6 +85,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       await this.setDictionaries();
     })
 
+    this.lineFollower = new LineFollowingArray(1.3, 300, 1000, 0, this.doodlebot.sendBLECommand.bind(this.doodlebot) , this.doodlebot.getSensorReading.bind(this.doodlebot));
+
     // move dictionaries to doodlebot
     await this.setDictionaries();
     this.teachableMachine = new TeachableMachine();
@@ -90,6 +95,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     imageFiles = ["File"];
 
   }
+
 
   private _loop() {
     setTimeout(this._loop.bind(this), Math.max(this.runtime.currentStepTime, this.INTERVAL));
@@ -785,6 +791,70 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     });
 
   }
+
+  @block({
+    type: "command",
+    text: `calibrate`,
+  })
+  async calibrateSensor() {
+    await this.doodlebot?.sendBLECommand("m", "c");
+  }
+
+
+  @block({
+    type: "reporter",
+    text: "Line array: get line status", 
+  })
+  lineArray_getLineStatus() {
+    return this.lineFollower.getLineStatus();
+  }
+
+  @block({
+    type: "command",
+    text: "Line array: start driving", 
+  })
+  lineArray_startDriving() {
+    this.doodlebot.sendBLECommand(command.motor, 1000, 1000, this.lineFollower.baseSpeed, this.lineFollower.baseSpeed);
+    this.lineFollower.drivingStarted = true;
+    if (!this.lineFollower.isLoopRunning) {
+      this.lineFollower.loop();
+    }
+  }
+
+  @block({
+    type: "command",
+    text: "Line array: turn left", 
+  })
+  async lineArray_turnLeft() {
+    await this.lineFollower.turnLeft();
+  }
+
+
+  @block({
+    type: "command",
+    text: "Line array: turn right", 
+  })
+  async lineArray_turnRight() {
+    await this.lineFollower.turnRight();
+  }
+
+  @block({
+    type: "command",
+    text: "Line array: go straight", 
+  })
+  async lineArray_goStraight() {
+    await this.lineFollower.goStraight();
+  }
+
+  @block({
+    type: "command",
+    text: "Line array: stop line following", 
+  })
+  async lineArray_stopDriving() {
+    this.lineFollower.keepDriving = false;
+    await this.doodlebot?.motorCommand("stop");
+  }
+
 
   private async speakText(text: string, showDisplay: boolean = false) {
     try {

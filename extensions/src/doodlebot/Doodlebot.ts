@@ -170,7 +170,8 @@ export default class Doodlebot {
         gyroscope: { x: 0, y: 0, z: 0 },
         magnometer: { x: 0, y: 0, z: 0 },
         accelerometer: { x: 0, y: 0, z: 0 },
-        light: { red: 0, green: 0, blue: 0, alpha: 0 }
+        light: { red: 0, green: 0, blue: 0, alpha: 0 },
+        line: [],
     } satisfies Record<SensorKey, SensorReading>);
 
     private sensorState: Record<SensorKey, boolean> = {
@@ -184,7 +185,8 @@ export default class Doodlebot {
         gyroscope: false,
         magnometer: false,
         accelerometer: false,
-        light: false
+        light: false,
+        line: [],
     };
 
     private audioSocket: WebSocket;
@@ -347,11 +349,17 @@ export default class Doodlebot {
                     break;
 
                 }
+                case sensor.line: {
+                    const [l1, l2, l3, l4] =  parameters.map((parameter) => Number.parseFloat(parameter));
+                    this.updateSensor(keyBySensor[command], [l1, l2, l3, l4]);
+                    break;
+                }
                 case sensor.light: {
                     const [red, green, blue, alpha] = parameters.map((parameter) => Number.parseFloat(parameter));
                     this.updateSensor(keyBySensor[command], { red, green, blue, alpha });
                     break;
                 }
+                
                 default:
                     throw new Error(`Not implemented: ${command}`);
             }
