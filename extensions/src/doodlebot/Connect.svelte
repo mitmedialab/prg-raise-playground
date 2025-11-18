@@ -16,6 +16,8 @@
   const invoke: ReactiveInvoke<Extension> = (functionName, ...args) =>
     reactiveInvoke((extension = extension), functionName, args);
 
+  let connected = extension.connected;
+
   let error: string | null = null;
 
   let bleDevice: BLEDeviceWithUartService | null = null;
@@ -66,7 +68,7 @@
   let showAdvanced = false;
 
   onDestroy(() => {
-    if (!extension.connected)
+    if (!connected)
       try {
         extension.setIndicator("disconnected");
       } catch (e) {}
@@ -79,7 +81,7 @@
   style:background-color={color.ui.white}
   style:color={color.text.primary}
 >
-  {#if extension.connected}
+  {#if connected}
     <h1>You're connected to doodlebot!</h1>
     <div>
       If you'd like to reconnect, or connect to a different device, you must
