@@ -8,6 +8,7 @@ import { base64ToInt32Array, deferred, makeWebsocket, Max32Int } from "./utils";
 import { LineDetector } from "./LineDetection";
 import { calculateArcTime } from "./TimeHelper";
 import type { BLEDeviceWithUartService } from "./ble";
+import { saveAudioBufferToWav } from "./SoundUtils";
 
 export type MotorStepRequest = {
     /** Number of steps for the stepper (+ == forward, - == reverse) */
@@ -287,7 +288,7 @@ export default class Doodlebot {
     private updateSensor<T extends SensorKey>(type: T, value: SensorData[T]) {
         this.onSensor.emit(type, value);
         if (type == "distance" && value as number >= 63) {
-            this.sensorData[type] = 100;
+            (this.sensorData[type] as number) = 100;
         } else {
             this.sensorData[type] = value;
         }
@@ -1119,6 +1120,62 @@ export default class Doodlebot {
         };
     }
 
+    async sendAudioFileToChatEndpoint(file, endpoint, voice_id, pitch_value) {
+        console.log("sending audio file");
+        const url = `https://doodlebot.media.mit.edu/${endpoint}?voice=${voice_id}&pitch=${pitch_value}`
+        const formData = new FormData();
+        formData.append("audio_file", file);
+        const audioURL = URL.createObjectURL(file);
+        const audio = new Audio(audioURL);
+        //audio.play();
+    
+        try {
+          let response;
+          let uint8array;
+         
+          response = await fetch(url, {
+            method: "POST",
+            body: formData,
+          });
+    
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.log("Error response:", errorText);
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+    
+          const textResponse = response.headers.get("text-response");
+          console.log("Text Response:", textResponse);
+    
+          const blob = await response.blob();
+          const audioUrl = URL.createObjectURL(blob);
+          console.log("Audio URL:", audioUrl);
+    
+          const audio = new Audio(audioUrl);
+          const array = await blob.arrayBuffer();
+          uint8array = new Uint8Array(array);
+    
+          this.sendAudioData(uint8array);
+    
+    
+        } catch (error) {
+          console.error("Error sending audio file:", error);
+        }
+      }
+
+    
+      async processAndSendAudio(buffer, endpoint, voice_id, pitch_value) {
+        try {
+          const wavBlob = await saveAudioBufferToWav(buffer);
+          console.log(wavBlob);
+          const wavFile = new File([wavBlob], "output.wav", { type: "audio/wav" });
+    
+          await this.sendAudioFileToChatEndpoint(wavFile, endpoint, voice_id, pitch_value);
+        } catch (error) {
+          console.error("Error processing and sending audio:", error);
+        }
+      }
+
     recordAudio(numSeconds = 1) {
         if (!this.setupAudioStream()) return;
 
@@ -1237,4 +1294,40 @@ export default class Doodlebot {
         this.pending[type] = undefined;
         return value;
     }
+
+    async uploadFile(type: string, blobURL: string) {
+        const tld = await this.topLevelDomain.promise;
+        let uploadEndpoint;
+        if (type == "sound") {
+          uploadEndpoint = "https://" + tld + "/api/v1/upload/sounds_upload";
+        } else {
+          uploadEndpoint = "https://" + tld + "/api/v1/upload/img_upload";
+        }
+    
+        try {
+          const components = blobURL.split("---name---");
+          const response1 = await fetch(components[1]);
+          if (!response1.ok) {
+            throw new Error(`Failed to fetch Blob from URL: ${blobURL}`);
+          }
+          const blob = await response1.blob();
+          // Convert Blob to File
+          const file = new File([blob], components[0], { type: blob.type });
+          const formData = new FormData();
+          formData.append("file", file);
+    
+          const response2 = await fetch(uploadEndpoint, {
+            method: "POST",
+            body: formData,
+          });
+    
+    
+          if (!response2.ok) {
+            throw new Error(`Failed to upload file: ${response2.statusText}`);
+          }
+    
+        } catch (error) {
+          console.error("Error:", error);
+        }
+      }
 }
