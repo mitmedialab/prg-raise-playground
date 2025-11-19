@@ -4,7 +4,7 @@ import Doodlebot from "./Doodlebot";
 import EventEmitter from "events";
 import TeachableMachine from "./ModelUtils";
 import { convertSvgUint8ArrayToPng } from "./utils";
-import LineFollowingArray from "./LineFollowingArray";
+import LineArrayFollowing from "./LineArrayFollowing";
 //import { createLineDetector } from "./LineDetection";
 
 import JSZip from 'jszip';
@@ -85,7 +85,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       await this.setDictionaries();
     })
 
-    this.lineFollower = new LineFollowingArray(1.3, 300, 1000, 0, this.doodlebot.sendBLECommand.bind(this.doodlebot) , this.doodlebot.getSensorReading.bind(this.doodlebot));
+    this.lineFollower = new LineArrayFollowing(4, 200, 500, 0, this.doodlebot.sendBLECommand.bind(this.doodlebot) , this.doodlebot.getSensorReading.bind(this.doodlebot));
 
     // move dictionaries to doodlebot
     await this.setDictionaries();
@@ -819,6 +819,19 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     if (!this.lineFollower.isLoopRunning) {
       this.lineFollower.loop();
     }
+  }
+
+  @block({
+    type: "loop",
+    text: (direction) => `Line array: is doodlebot ${direction}`,
+    arg: { type: "string", options: ["left of line", "right of line", "on the line", "off the line"], defaultValue: "on the line" },
+  })
+  lineArray_lineConditional(direction: string, util: BlockUtilityWithID) {
+    const status = this.lineFollower.getLineStatus();
+    const condition = (direction == status);
+      if (condition) {
+          util.startBranch(1, false);
+      }
   }
 
   @block({

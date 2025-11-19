@@ -22,7 +22,7 @@ export default class LineArrayFollowing {
     magnitude: number;
     lineLost: boolean;
 
-    INTERVAL = 250;
+    INTERVAL = 475;
     isLoopRunning: boolean;
 
     keepDriving: boolean;
@@ -45,6 +45,7 @@ export default class LineArrayFollowing {
         if (!this.keepDriving) {
             console.log("⛔ keepDriving false → stopping loop");
             this.isLoopRunning = false;
+            this.drivingStarted = false;
             return;
         }
 
@@ -126,7 +127,7 @@ export default class LineArrayFollowing {
         this.magnitude = 1 - this.clamp(presence / 3, 0, 1);
         const error = this.sign * this.magnitude;
 
-        this.lineLost = presence < 0.3 || centerLine < 0.1;
+        this.lineLost = presence < 0.3 || centerLine < 0.1 || (leftLine > centerLine && rightLine > centerLine);
         if (!this.lineLost) {
             this.lastError = error;
         }
@@ -172,10 +173,10 @@ export default class LineArrayFollowing {
         } else {
             tempSign = this.sign;
         }
-        if (tempSign === 0 && this.magnitude === 0) { return "on straight"; } 
-        else if (tempSign > 0) { return "left"; } 
-        else if (tempSign < 0) { return "right"; } 
-        else { return "none"; } 
+        if (tempSign === 0 && this.magnitude === 0) { return "on the line"; } 
+        else if (tempSign > 0) { return "left of line"; } 
+        else if (tempSign < 0) { return "right of line"; } 
+        else { return "off the line"; } 
     }
 
     private turn(sign) {
@@ -186,12 +187,14 @@ export default class LineArrayFollowing {
         if (this.lineLost) {
             leftSpeed = this.baseSpeed * (sign > 0 ? -0 : this.Kp);
             rightSpeed = this.baseSpeed * (sign < 0 ? -0 : this.Kp);
+            leftSpeed = this.clamp(leftSpeed, this.minSpeed, this.maxSpeed);
+            rightSpeed = this.clamp(rightSpeed, this.minSpeed, this.maxSpeed);
             console.log(`🚨 Line lost → turning ${sign > 0 ? "right" : "left"}`);
         } else {
             const error = sign * this.magnitude;
             const correction = this.Kp * error;
-            leftSpeed = this.clamp(this.baseSpeed - correction * this.baseSpeed, 0, this.maxSpeed);
-            rightSpeed = this.clamp(this.baseSpeed + correction * this.baseSpeed, 0, this.maxSpeed);
+            leftSpeed = this.clamp(this.baseSpeed - correction * this.baseSpeed, this.minSpeed, this.maxSpeed);
+            rightSpeed = this.clamp(this.baseSpeed + correction * this.baseSpeed, this.minSpeed, this.maxSpeed);
         }
 
         console.log(`Speeds → L:${leftSpeed.toFixed(0)} R:${rightSpeed.toFixed(0)}`);
