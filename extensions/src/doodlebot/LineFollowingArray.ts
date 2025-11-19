@@ -143,9 +143,14 @@ export default class LineFollowingArray {
         this.magnitude = 1 - this.clamp(presence / 3, 0, 1);
         const error = this.sign * this.magnitude;
 
-        this.lastError = error;
-
-        this.lineLost = presence < 0.2;
+        
+)
+        this.lineLost = presence < 0.3 || centerLine < 0.1;
+        if (!this.lineLost) {
+            this.lastError = error;
+        }
+        console.log("LINE LOST", this.lineLost);
+        console.log("presence:", presence.toFixed(4), "center:", error.toFixed(4));
     }
 
     /* Movement Commands */
@@ -179,9 +184,16 @@ export default class LineFollowingArray {
     }
 
     getLineStatus() { 
-        if (this.sign === 0 && this.magnitude === 0) { return "on straight"; } 
-        else if (this.sign > 0) { return "left"; } 
-        else if (this.sign < 0) { return "right"; } 
+        let tempSign;
+        if (this.lineLost) {
+            const turnDir = this.lastError > 0 ? 1 : -1;
+            tempSign = turnDir;
+        } else {
+            tempSign = this.sign;
+        }
+        if (tempSign === 0 && this.magnitude === 0) { return "on straight"; } 
+        else if (tempSign > 0) { return "left"; } 
+        else if (tempSign < 0) { return "right"; } 
         else { return "none"; } 
     }
 
@@ -191,14 +203,14 @@ export default class LineFollowingArray {
         let rightSpeed = 0;
 
         if (this.lineLost) {
-            leftSpeed = this.baseSpeed * (sign > 0 ? 0.6 : 1.2);
-            rightSpeed = this.baseSpeed * (sign < 0 ? 0.6 : 1.2);
+            leftSpeed = this.baseSpeed * (sign > 0 ? -0 : this.Kp);
+            rightSpeed = this.baseSpeed * (sign < 0 ? -0 : this.Kp);
             console.log(`🚨 Line lost → turning ${sign > 0 ? "right" : "left"}`);
         } else {
             const error = sign * this.magnitude;
             const correction = this.Kp * error;
-            leftSpeed = this.clamp(this.baseSpeed - correction * this.baseSpeed, this.minSpeed, this.maxSpeed);
-            rightSpeed = this.clamp(this.baseSpeed + correction * this.baseSpeed, this.minSpeed, this.maxSpeed);
+            leftSpeed = this.clamp(this.baseSpeed - correction * this.baseSpeed, 0, this.maxSpeed);
+            rightSpeed = this.clamp(this.baseSpeed + correction * this.baseSpeed, 0, this.maxSpeed);
         }
 
         console.log(`Speeds → L:${leftSpeed.toFixed(0)} R:${rightSpeed.toFixed(0)}`);
