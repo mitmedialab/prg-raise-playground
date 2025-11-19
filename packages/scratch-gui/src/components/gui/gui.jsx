@@ -305,6 +305,7 @@ const GUIComponent = props => {
                                             id="gui.gui.soundsTab"
                                         />
                                     </Tab>
+                                    {/* Commenting out Text Classifier Auxiliary UI per ProjectSTEM's request - Parker, 12/9/22
                                     <Tab
                                         className={tabClassNames.tab}
                                         onClick={onActivateProgressTab}
@@ -319,6 +320,21 @@ const GUIComponent = props => {
                                             id="gui.gui.progressTab"
                                         />
                                     </Tab>
+                                    */}
+                                    {/*<Tab*/}
+                                    {/*    className={tabClassNames.tab}*/}
+                                    {/*    onClick={onActivateModelsTab}*/}
+                                    {/*>*/}
+                                    {/*    <img*/}
+                                    {/*        draggable={false}*/}
+                                    {/*        src={modelsIcon}*/}
+                                    {/*    />*/}
+                                    {/*    <FormattedMessage*/}
+                                    {/*        defaultMessage="Models"*/}
+                                    {/*        description="Button to get to the models panel"*/}
+                                    {/*        id="gui.gui.modelsTab"*/}
+                                    {/*    />*/}
+                                    {/*</Tab>*/}
                                 </TabList>
                                 <TabPanel className={tabClassNames.tabPanel}>
                                     <Box className={styles.blocksWrapper}>
@@ -356,9 +372,14 @@ const GUIComponent = props => {
                                 <TabPanel className={tabClassNames.tabPanel}>
                                     {soundsTabVisible ? <SoundTab vm={vm} /> : null}
                                 </TabPanel>
+                                {/*
                                 <TabPanel className={tabClassNames.tabPanel}>
                                     {progressTabVisible ? <ProgressTab vm={vm} /> : null}
                                 </TabPanel>
+                                */}
+                                {/*<TabPanel className={tabClassNames.tabPanel}>*/}
+                                {/*    {modelsTabVisible ? <ModelsTab vm={vm} /> : null}*/}
+                                {/*</TabPanel>*/}
                             </Tabs>
                             {backpackVisible ? (
                                 <Backpack host={backpackHost} />
