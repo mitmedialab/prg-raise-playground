@@ -24,7 +24,8 @@ import {
 
 import {
     activateTab,
-    SOUNDS_TAB_INDEX
+    SOUNDS_TAB_INDEX,
+    PROGRESS_TAB_INDEX
 } from '../reducers/editor-tab';
 
 import {setRestore} from '../reducers/restore-deletion';
@@ -241,6 +242,7 @@ class CostumeTab extends React.Component {
             });
         } else if (dropInfo.dragType === DragConstants.BACKPACK_SOUND) {
             this.props.onActivateSoundsTab();
+            this.props.onActivateProgressTab();
             this.props.vm.addSound({
                 md5: dropInfo.payload.body,
                 name: dropInfo.payload.name
@@ -363,6 +365,7 @@ CostumeTab.propTypes = {
     intl: intlShape,
     isRtl: PropTypes.bool,
     onActivateSoundsTab: PropTypes.func.isRequired,
+    onActivateProgressTab: PropTypes.func.isRequired,
     onCloseImporting: PropTypes.func.isRequired,
     onNewCostumeFromCameraClick: PropTypes.func.isRequired,
     onNewLibraryBackdropClick: PropTypes.func.isRequired,
@@ -397,6 +400,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
     onActivateSoundsTab: () => dispatch(activateTab(SOUNDS_TAB_INDEX)),
+    onActivateProgressTab: () => dispatch(activateTab(PROGRESS_TAB_INDEX)),
     onNewLibraryBackdropClick: e => {
         e.preventDefault();
         dispatch(openBackdropLibrary());

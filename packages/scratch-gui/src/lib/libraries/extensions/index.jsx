@@ -1,12 +1,22 @@
 import React from 'react';
 import {FormattedMessage} from 'react-intl';
 
+import textClassificationBlocksIconURL from './text_classification/text-classification-blocks.png';
+import textClassificationBlocksInsetIconURL from './text_classification/text-classification-blocks-small.svg';
+
 import poseBodyBlocksIconURL from './posenet/pose-body.png';
 import poseHandBlocksIconURL from './posenet/pose-hand.png';
 import poseFaceBlocksIconURL from './posenet/pose-face.png';
 import teachableMachineBlocksIconURL from './teachable-machine-blocks/teachable-machine-logo.png';
 import teachableMachineBlocksInsetIconURL from './teachable-machine-blocks/teachable-machine-blocks-small.svg';
 
+import arduinoRobotIconURL from './arduino_extension/arduino_extension.png';
+import arduinoRobotInsetIconURL from './arduino_extension/arduino_small.svg';
+
+import microbitRobotIconURL from './arduino_extension/microbot_extension.png';
+
+import gizmoRobotIconURL from './arduino_extension/gizmo_extension.png';
+import gizmoRobotInsetIconURL from './arduino_extension/gizmo_small.png';
 
 import musicIconURL from './music/music.png';
 import musicInsetIconURL from './music/music-small.svg';
@@ -70,6 +80,7 @@ export default [
         extensionId: 'teachableMachine',
         iconURL: teachableMachineBlocksIconURL,
         insetIconURL: teachableMachineBlocksInsetIconURL,
+        //launchPeripheralConnectionFlow: true,
         description: (
             <FormattedMessage
                 defaultMessage="Use Google Teachable Machine models in your Scratch project."
@@ -142,6 +153,86 @@ export default [
         ),
         featured: true
     },
+    {
+        name: (
+            <FormattedMessage
+                defaultMessage="Text Classification"
+                description="Text Classification name"
+                id="gui.extension.text-classification.name"
+            />
+        ),
+        extensionId: 'textClassification',
+        iconURL: textClassificationBlocksIconURL,
+        insetIconURL: textClassificationBlocksInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Create a text classification model for use in a Scratch project!"
+                description="Text Classification Description"
+                id="gui.extension.text-classification.description"
+            />
+        ),
+        featured: true
+    },
+    /*{
+         name: (
+            <FormattedMessage
+                defaultMessage="PRG Microbit Robot"
+                description="Name for the 'Microbit Robot' Extension"
+                id="gui.extension.microbit-robot.name"
+            />
+        ),
+        extensionId: 'microbitRobot',
+        iconURL: microbitRobotIconURL,
+        insetIconURL: microbitInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Use Scratch to program a Microbit smart car robot"
+                description="PRG Microbit Robot description"
+                id="gui.extension.microbit-robot.description"
+            />
+        ),
+        featured: true
+    },
+    {
+         name: (
+            <FormattedMessage
+                defaultMessage="PRG Gizmo Robot"
+                description="Name for the 'Gizmo Robot' Extension"
+                id="gui.extension.gizmo-robot.name"
+            />
+        ),
+        extensionId: 'gizmoRobot',
+        iconURL: gizmoRobotIconURL,
+        insetIconURL: gizmoRobotInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Use Scratch to program the Gizmo robot"
+                description="PRG Gizmo Robot description"
+                id="gui.extension.gizmo-robot.description"
+            />
+        ),
+        featured: true
+    },
+    {
+         name: (
+            <FormattedMessage
+                defaultMessage="PRG Arduino Robot"
+                description="Name for the 'Arduino Robot' Extension"
+                id="gui.extension.arduino-robot.name"
+            />
+        ),
+        extensionId: 'arduinoRobot',
+        iconURL: arduinoRobotIconURL,
+        insetIconURL: arduinoRobotInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Use Scratch to program an Arduino smart car robot"
+                description="PRG Arduino Robot Car description"
+                id="gui.extension.arduino-robot.description"
+            />
+        ),
+        featured: true
+    },*/
     {
         name: (
             <FormattedMessage

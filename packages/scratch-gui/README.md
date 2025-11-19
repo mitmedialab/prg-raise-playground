@@ -194,6 +194,14 @@ Further reading: [Stack Overflow](https://stackoverflow.com/questions/46602286/n
 You can publish the GUI to github.io so that others on the Internet can view it.
 [Read the wiki for a step-by-step guide.](https://github.com/LLK/scratch-gui/wiki/Publishing-to-GitHub-Pages)
 
+## Creating a New Modal Model
+You can create a new modal by editing the following files:
+blocks.jsx in containers
+gui.jsx in containers
+gui.jsx in components
+modals.js in reducers
+creating a new modal-model folder in components
+
 ## Donate
 We provide [Scratch](https://scratch.mit.edu) free of charge, and want to keep it that way! Please consider making a [donation](https://secure.donationpay.org/scratchfoundation/) to support our continued engineering, design, community, and resource development efforts. Donations of any size are appreciated. Thank you!
 

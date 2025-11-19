@@ -5,21 +5,17 @@ import keyMirror from 'keymirror';
 import Box from '../box/box.jsx';
 import Modal from '../../containers/modal.jsx';
 
-import ScanningStep from '../../containers/scanning-step.jsx';
-import AutoScanningStep from '../../containers/auto-scanning-step.jsx';
-import ConnectingStep from './connecting-step.jsx';
-import ConnectedStep from './connected-step.jsx';
-import ErrorStep from './error-step.jsx';
-import UnavailableStep from './unavailable-step.jsx';
+import ModelEditor from './model-editor.jsx';
+import LabelEditor from './label-editor.jsx';
+import ExampleEditor from './example-editor.jsx';
 
-import styles from './connection-modal.css';
+
+import styles from './ml-modal.css';
 
 const PHASES = keyMirror({
-    scanning: null,
-    connecting: null,
-    connected: null,
-    error: null,
-    unavailable: null
+    modelEditor: null,
+    labelEditor: null,
+    exampleEditor: null
 });
 
 const ConnectionModalComponent = props => (
@@ -33,30 +29,42 @@ const ConnectionModalComponent = props => (
         onRequestClose={props.onCancel}
     >
         <Box className={styles.body}>
-            {props.phase === PHASES.scanning && !props.useAutoScan && <ScanningStep {...props} />}
-            {props.phase === PHASES.scanning && props.useAutoScan && <AutoScanningStep {...props} />}
-            {props.phase === PHASES.connecting && <ConnectingStep {...props} />}
-            {props.phase === PHASES.connected && <ConnectedStep {...props} />}
-            {props.phase === PHASES.error && <ErrorStep {...props} />}
-            {props.phase === PHASES.unavailable && <UnavailableStep {...props} />}
+            {props.phase === PHASES.modelEditor && <ModelEditor
+            onAddLabel={props.onAddLabel}
+            onCancel={props.onCancel}
+            onClearAll={props.onClearAll}
+            onDeleteLabel={props.onDeleteLabel}
+            onEditLabel={props.onEditLabel}
+            classifierData={props.classifierData} 
+            imageData={props.imageData} />}
+
+            {props.phase === PHASES.labelEditor && <LabelEditor
+            onAddExamples={props.onAddExamples}
+            onDeleteExample={props.onDeleteExample}
+            onDeleteLoadedExamples={props.onDeleteLoadedExamples}
+            onEditModel={props.onEditModel}
+            onRenameLabel={props.onRenameLabel}
+            activeLabel={props.activeLabel}
+            classifierData={props.classifierData}
+            imageData={props.imageData} />}
+
+            {props.phase === PHASES.exampleEditor && <ExampleEditor
+            onEditLabel={props.onEditLabel}
+            onEditModel={props.onEditModel}
+            onNewExamples={props.onNewExamples}
+            activeLabel={props.activeLabel}
+            imageData={props.imageData} />}
+
         </Box>
     </Modal>
 );
 
 ConnectionModalComponent.propTypes = {
-    connectingMessage: PropTypes.node.isRequired,
-    connectionSmallIconURL: PropTypes.string,
-    connectionTipIconURL: PropTypes.string,
     name: PropTypes.node,
     onCancel: PropTypes.func.isRequired,
     onHelp: PropTypes.func.isRequired,
     phase: PropTypes.oneOf(Object.keys(PHASES)).isRequired,
     title: PropTypes.string.isRequired,
-    useAutoScan: PropTypes.bool.isRequired
-};
-
-ConnectionModalComponent.defaultProps = {
-    connectingMessage: 'Connecting'
 };
 
 export {

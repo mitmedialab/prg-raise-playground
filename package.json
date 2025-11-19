@@ -1,7 +1,13 @@
 {
   "name": "root",
+  "author": {"name": "PRG"},
   "private": true,
   "devDependencies": {
     "lerna": "^3.20.2"
+  },
+  "dependencies": {
+    "natural": "^2.1.5",
+    "numpy": "0.0.1",
+    "papaparse": "^5.3.0"
   }
 }
