@@ -1,4 +1,4 @@
-export default class LineFollowingArray {
+export default class LineArrayFollowing {
 
     // New reporter block to report line state: 
     // // left of line 
@@ -18,11 +18,6 @@ export default class LineFollowingArray {
     lastError: number | undefined;
     sensorValues: { left: number; center: number; right: number } | undefined;
 
-    Kp: number;
-    baseSpeed: number
-    maxSpeed: number;
-    minSpeed: number;
-
     sign: number;
     magnitude: number;
     lineLost: boolean;
@@ -30,25 +25,13 @@ export default class LineFollowingArray {
     INTERVAL = 250;
     isLoopRunning: boolean;
 
-    motorFunction: Function;
-    getSensorReading: Function;
-
     keepDriving: boolean;
     drivingStarted: boolean;
     lastCommandTime: number;
 
     delay = 475;
 
-    constructor(Kp, baseSpeed, maxSpeed, minSpeed, motorFunction, getSensorReading) {
-        console.log("INITIALIZING LINE FOLLOWER");
-        this.Kp = Kp;
-        this.baseSpeed = baseSpeed;
-        this.maxSpeed = maxSpeed;
-        this.minSpeed = minSpeed;
-
-        this.motorFunction = motorFunction;
-        this.getSensorReading = getSensorReading;
-
+    constructor(public Kp: number, public baseSpeed: number, public maxSpeed: number, public minSpeed: number, public motorFunction: Function, public getSensorReading: Function) {
         this.keepDriving = true;
         this.lastCommandTime = Date.now();
         this.drivingStarted = false;
@@ -143,8 +126,6 @@ export default class LineFollowingArray {
         this.magnitude = 1 - this.clamp(presence / 3, 0, 1);
         const error = this.sign * this.magnitude;
 
-        
-)
         this.lineLost = presence < 0.3 || centerLine < 0.1;
         if (!this.lineLost) {
             this.lastError = error;
