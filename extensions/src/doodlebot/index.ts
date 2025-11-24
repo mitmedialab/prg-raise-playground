@@ -4,7 +4,7 @@ import Doodlebot from "./Doodlebot";
 import EventEmitter from "events";
 import TeachableMachine from "./ModelUtils";
 import { convertSvgUint8ArrayToPng } from "./utils";
-import LineArrayFollowing from "./LineArrayFollowing";
+import LineArrayFollowing from "./LineArrayFollowingCopy";
 //import { createLineDetector } from "./LineDetection";
 
 import JSZip from 'jszip';
@@ -85,7 +85,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       await this.setDictionaries();
     })
 
-    this.lineFollower = new LineArrayFollowing(4, 200, 500, 0, this.doodlebot.sendBLECommand.bind(this.doodlebot) , this.doodlebot.getSensorReading.bind(this.doodlebot));
+    this.lineFollower = new LineArrayFollowing(1.3, 200, 500, 0, this.doodlebot.sendBLECommand.bind(this.doodlebot) , this.doodlebot.getSensorReading.bind(this.doodlebot));
 
     // move dictionaries to doodlebot
     await this.setDictionaries();
@@ -370,9 +370,9 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   @block({
     type: "reporter",
     text: (sensor: SensorKey) => `${sensor} sensor`,
-    arg: { type: "string", options: ["battery", "temperature", "humidity", "pressure", "distance", "altimeter"], defaultValue: "battery" }
+    arg: { type: "string", options: ["battery", "temperature", "humidity", "pressure", "distance", "altimeter", "line"], defaultValue: "battery" }
   })
-  async getSingleSensorReading(sensor: "battery" | "temperature" | "humidity" | "pressure" | "distance" | "altimeter", utility: BlockUtilityWithID) {
+  async getSingleSensorReading(sensor: "battery" | "temperature" | "humidity" | "pressure" | "distance" | "altimeter" | "line", utility: BlockUtilityWithID) {
     const reading = await this.doodlebot?.getSingleSensorReading(sensor);
     return `${JSON.stringify(reading)} ${units[sensor]}`;
   }
@@ -801,13 +801,13 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   }
 
 
-  @block({
-    type: "reporter",
-    text: "Line array: get line status", 
-  })
-  lineArray_getLineStatus() {
-    return this.lineFollower.getLineStatus();
-  }
+  // @block({
+  //   type: "reporter",
+  //   text: "Line array: get line status", 
+  // })
+  // lineArray_getLineStatus() {
+  //   return this.lineFollower.getLineStatus();
+  // }
 
   @block({
     type: "command",
@@ -821,18 +821,40 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     }
   }
 
+  // @block({
+  //   type: "loop",
+  //   text: (direction) => `Line array: is doodlebot ${direction}`,
+  //   arg: { type: "string", options: ["left of line", "right of line", "on the line", "off the line"], defaultValue: "on the line" },
+  // })
+  // lineArray_lineConditional(direction: string, util: BlockUtilityWithID) {
+  //   const status = this.lineFollower.getLineStatus();
+  //   const condition = (direction == status);
+  //     if (condition) {
+  //         util.startBranch(1, false);
+  //     }
+  // }
+
   @block({
-    type: "loop",
+    type: "Boolean",
     text: (direction) => `Line array: is doodlebot ${direction}`,
     arg: { type: "string", options: ["left of line", "right of line", "on the line", "off the line"], defaultValue: "on the line" },
   })
-  lineArray_lineConditional(direction: string, util: BlockUtilityWithID) {
+  lineArray_lineBoolean(direction: string, util: BlockUtilityWithID) {
     const status = this.lineFollower.getLineStatus();
     const condition = (direction == status);
-      if (condition) {
-          util.startBranch(1, false);
-      }
+    return condition;
   }
+
+  // @block({
+  //   type: "hat",
+  //   text: (direction) => `Line array: is doodlebot ${direction}`,
+  //   arg: { type: "string", options: ["left of line", "right of line", "on the line", "off the line"], defaultValue: "on the line" },
+  // })
+  // lineArray_lineEvent(direction: string, util: BlockUtilityWithID) {
+  //   const status = this.lineFollower.getLineStatus();
+  //   const condition = (direction == status);
+  //   return condition;
+  // }
 
   @block({
     type: "command",
