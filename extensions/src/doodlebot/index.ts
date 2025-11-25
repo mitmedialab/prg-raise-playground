@@ -82,8 +82,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       await this.setDictionaries();
     })
 
-    
-
     // move dictionaries to doodlebot
     await this.setDictionaries();
     this.teachableMachine = new TeachableMachine();
@@ -170,6 +168,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     try {
       imageFiles = await this.doodlebot.findImageFiles();
       soundFiles = await this.doodlebot.findSoundFiles();
+      if (soundFiles.length == 0) soundFiles.push("File");
+
     } catch (e) {
       //this.openUI("ArrayError");
     }
@@ -491,7 +491,16 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     type: "command",
     text: (sound) => `play sound ${sound}`,
     arg: {
-      type: "string", options: () => soundFiles.concat(self.getCurrentSounds(self.runtime._editingTarget.id))
+      type: "string", options: () => {
+        const soundList = self.getCurrentSounds(self.runtime._editingTarget.id);
+        if (soundFiles.length == 0 && soundList.length == 0) {
+          return ["File"];
+        }
+        if ((soundFiles.length == 1 && soundFiles[0] == "File") && soundList.length > 0) {
+          soundFiles = [];
+        }
+        return soundFiles.concat(soundList);
+      }
     }
   }))
   async playSoundFile(sound: string, util: BlockUtilityWithID) {
