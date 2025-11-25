@@ -116,6 +116,7 @@ export default class LineArrayFollowing {
             this.sign = 0;
             this.magnitude = 0;
             this.lastError = 0;
+            this.lineLost = false;
             console.log("✅ Centered on line");
             return;
         }
@@ -127,11 +128,11 @@ export default class LineArrayFollowing {
         this.magnitude = 1 - this.clamp(presence / 3, 0, 1);
         const error = this.sign * this.magnitude;
 
-        this.lineLost = presence < 0.3 || centerLine < 0.1 || (leftLine > centerLine && rightLine > centerLine);
+        this.lineLost = presence < 0.3 || (leftLine > centerLine && rightLine > centerLine && leftLine < 0.6 && rightLine < 0.6);
         if (!this.lineLost) {
             this.lastError = error;
         }
-        console.log("LINE LOST", this.lineLost);
+        console.log("LINE LOST", this.lineLost, presence, centerLine, leftLine, rightLine);
         console.log("presence:", presence.toFixed(4), "center:", error.toFixed(4));
     }
 
@@ -174,8 +175,8 @@ export default class LineArrayFollowing {
             tempSign = this.sign;
         }
         if (tempSign === 0 && this.magnitude === 0) { return "on the line"; } 
-        else if (tempSign > 0) { return "left of line"; } 
-        else if (tempSign < 0) { return "right of line"; } 
+        else if (tempSign > 0) { return "right of line"; } 
+        else if (tempSign < 0) { return "left of line"; } 
         else { return "off the line"; } 
     }
 
