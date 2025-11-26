@@ -93,7 +93,7 @@ export default class Tables extends Extension<Details, Blocks> {
 
   changeTableValue(info: { name: string, row: number, column: number, value: number }) {
     const { name, row, column, value } = info;
-    this.tables[name][row][column] = value;
+    this.tables[name][row][column] = value ? value : 0;
   }
 
   defineBlocks(): Tables["BlockDefinitions"] {
