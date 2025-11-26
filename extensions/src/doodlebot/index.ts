@@ -85,7 +85,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       await this.setDictionaries();
     })
 
-    this.lineFollower = new LineArrayFollowing(5, 200, 400, 0, this.doodlebot.sendBLECommand.bind(this.doodlebot) , this.doodlebot.getSensorReading.bind(this.doodlebot));
+    this.lineFollower = new LineArrayFollowing(2, 200, 500, 0, this.doodlebot.sendBLECommand.bind(this.doodlebot) , this.doodlebot.getSensorReading.bind(this.doodlebot));
 
     // move dictionaries to doodlebot
     await this.setDictionaries();
@@ -182,11 +182,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
     // Wait a short moment to ensure connection is established
     await new Promise(resolve => setTimeout(resolve, 1000));
-
-    for (const key of Object.keys(sensor)) {
-      console.log("DISABLE SENSOR", key);
-      this.doodlebot.disableSensor(key as SensorKey); // don't await
-    }
 
     window.addEventListener("pagehide", () => {
       for (const key of Object.keys(sensor)) {
@@ -823,7 +818,40 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   })
   lineArray_recordCsv() {
     this.doodlebot?.motorCommand("arc", 0, -720);
-    this.lineFollower.recordSensorsAndDownloadCSV();
+    this.lineFollower.recordSensorsAndDownloadCSV("cheesecake", true);
+  }
+
+  @block({
+    type: "command",
+    text: (wiggle) => `Line array: set wiggle factor ${wiggle}`,
+    arg: {
+      type: "number", defaultValue: 2
+    }
+  })
+  lineArray_setWiggle(wiggle: number) {
+    this.lineFollower.Kp = wiggle;
+  }
+
+  @block({
+    type: "command",
+    text: (speed) => `Line array: set max speed ${speed}`,
+    arg: {
+      type: "number", defaultValue: 500
+    }
+  })
+  lineArray_setSpeed(speed: number) {
+    this.lineFollower.setMaxSpeed(speed);
+  }
+
+  @block({
+    type: "command",
+    text: (speed) => `Line array: set average speed ${speed}`,
+    arg: {
+      type: "number", defaultValue: 500
+    }
+  })
+  lineArray_setBaseSpeed(speed: number) {
+    this.lineFollower.setBaseSpeed(speed);
   }
 
   @block({
@@ -833,6 +861,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   lineArray_startDriving() {
     this.doodlebot.sendBLECommand(command.motor, 1000, 1000, this.lineFollower.baseSpeed, this.lineFollower.baseSpeed);
     this.lineFollower.drivingStarted = true;
+    this.lineFollower.keepDriving = true;
+    console.log(this.lineFollower);
     if (!this.lineFollower.isLoopRunning) {
       this.lineFollower.loop();
     }
@@ -904,6 +934,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   })
   async lineArray_stopDriving() {
     this.lineFollower.keepDriving = false;
+    this.lineFollower.isLoopRunning = false;
     await this.doodlebot?.motorCommand("stop");
   }
 

@@ -186,7 +186,7 @@ export default class Doodlebot {
         magnometer: false,
         accelerometer: false,
         light: false,
-        line: [],
+        line: false,
     };
 
     private audioSocket: WebSocket;
@@ -400,6 +400,7 @@ export default class Doodlebot {
             clearTimeout(this.disableTimers[type]);
             delete this.disableTimers[type];
         }
+
         if (this.sensorState[type]) return;
         await this.sendBLECommand(command.enable, sensor[type]);
         await new Promise((resolve) => this.onSensor.once(type, resolve));
@@ -416,6 +417,9 @@ export default class Doodlebot {
         if (!this.sensorState[type]) return;
         await this.sendBLECommand(command.disable, sensor[type]);
         this.sensorState[type] = false;
+        setTimeout(() => {
+            this.sensorState[type] = false;
+        }, 100)
     }
 
     scheduleDisableSensor(type: SensorKey, delay = 5000) {

@@ -38,6 +38,16 @@ export default class LineArrayFollowing {
         this.isLoopRunning = false;
     }
 
+    setMaxSpeed(newMax: number) {
+        console.log("Setting max speed to", newMax);
+        this.maxSpeed = newMax;
+        console.log("Max speed is now", this.maxSpeed);
+    }
+
+    setBaseSpeed(newBase: number) {
+        this.baseSpeed = newBase;
+    }
+
     centerTrue;
     lastSign = 0;
 
@@ -58,6 +68,7 @@ export default class LineArrayFollowing {
             if (this.keepDriving) {
                 this.loop();
             } else {
+                this.isLoopRunning = false;
                 console.log("🛑 Loop cancelled on next tick");
             }
         }, this.INTERVAL);
@@ -140,6 +151,7 @@ export default class LineArrayFollowing {
         // || (leftLine > centerLine && rightLine > centerLine && leftLine < 0.6 && rightLine < 0.6)
         // || (Math.abs(leftLine - rightLine) < 0.1 && centerLine < 0.4 && leftLine < 0.9 && rightLine < 0.9);
         this.lineLost = presence < 0.3 
+        || (leftLine < 0.3 && rightLine < 0.3 && centerLine < 0.3)
         || (leftLine > centerLine && rightLine > centerLine && leftLine < 0.6 && rightLine < 0.6) 
         || (this.centerTrue === false && Math.abs(leftLine - rightLine) < 0.1 && centerLine < 0.4 && leftLine < 0.9 && rightLine < 0.9);
         if (!this.lineLost) {
@@ -159,7 +171,7 @@ export default class LineArrayFollowing {
     }
 
     async turnLeft() {
-        if (this.drivingStarted) {
+        if (this.drivingStarted && this.keepDriving) {
             this.updateTimer();
             this.turn(1);
         }
@@ -167,7 +179,7 @@ export default class LineArrayFollowing {
     }
 
     async turnRight() {
-        if (this.drivingStarted) {
+        if (this.drivingStarted && this.keepDriving) {
             this.updateTimer();
             this.turn(-1);
         }  
@@ -243,7 +255,7 @@ export default class LineArrayFollowing {
 
     }
 
-    async recordSensorsAndDownloadCSV(robotName: string, durationMs = 5000, intervalMs = 10) {
+    async recordSensorsAndDownloadCSV(robotName: string, calibrated, durationMs = 5000, intervalMs = 10) {
         const rows: string[] = [];
 
         // Add robot name and column header
@@ -275,7 +287,7 @@ export default class LineArrayFollowing {
 
         const a = document.createElement("a");
         a.href = url;
-        a.download = `sensor_data_${robotName}_${new Date().toISOString()}.csv`; // timestamps + robot name
+        a.download = `sensor_data_${robotName}_${calibrated ? "calibrated" : "uncalibrated"}_${new Date().toISOString()}.csv`; // timestamps + robot name
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
