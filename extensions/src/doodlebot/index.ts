@@ -85,7 +85,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       await this.setDictionaries();
     })
 
-    this.lineFollower = new LineArrayFollowing(1.3, 200, 500, 0, this.doodlebot.sendBLECommand.bind(this.doodlebot) , this.doodlebot.getSensorReading.bind(this.doodlebot));
+    this.lineFollower = new LineArrayFollowing(5, 200, 400, 0, this.doodlebot.sendBLECommand.bind(this.doodlebot) , this.doodlebot.getSensorReading.bind(this.doodlebot));
 
     // move dictionaries to doodlebot
     await this.setDictionaries();
@@ -808,6 +808,23 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   // lineArray_getLineStatus() {
   //   return this.lineFollower.getLineStatus();
   // }
+
+   @block({
+    type: "reporter",
+    text: "Line array: is center true", 
+  })
+  lineArray_isCenter() {
+    return this.lineFollower.isCenter();
+  }
+
+  @block({
+    type: "command",
+    text: "Line array: record csv", 
+  })
+  lineArray_recordCsv() {
+    this.doodlebot?.motorCommand("arc", 0, -720);
+    this.lineFollower.recordSensorsAndDownloadCSV();
+  }
 
   @block({
     type: "command",

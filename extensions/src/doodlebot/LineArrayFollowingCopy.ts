@@ -139,7 +139,9 @@ export default class LineArrayFollowing {
         // this.lineLost = presence < 0.3 
         // || (leftLine > centerLine && rightLine > centerLine && leftLine < 0.6 && rightLine < 0.6)
         // || (Math.abs(leftLine - rightLine) < 0.1 && centerLine < 0.4 && leftLine < 0.9 && rightLine < 0.9);
-        this.lineLost = presence < 0.3 || (leftLine > centerLine && rightLine > centerLine && leftLine < 0.6 && rightLine < 0.6) || (this.centerTrue === false && Math.abs(leftLine - rightLine) < 0.1 && centerLine < 0.4 && leftLine < 0.9 && rightLine < 0.9);
+        this.lineLost = presence < 0.3 
+        || (leftLine > centerLine && rightLine > centerLine && leftLine < 0.6 && rightLine < 0.6) 
+        || (this.centerTrue === false && Math.abs(leftLine - rightLine) < 0.1 && centerLine < 0.4 && leftLine < 0.9 && rightLine < 0.9);
         if (!this.lineLost) {
             this.lastError = error;
         } else {
@@ -179,6 +181,111 @@ export default class LineArrayFollowing {
         }
         await this.sleep(this.delay);
     }
+
+    async isCenter() {
+
+        let sensorValues;
+
+        const readings: { left: number; center: number; right: number }[] = [];
+  
+        // Collect 5 readings, spaced 50ms apart
+        for (let i = 0; i < 3; i++) {
+            const sensorValues = await this.getSensorReading("line");
+            console.log("Sensor values:", sensorValues);
+            if (sensorValues) {
+            readings.push({
+                left: sensorValues[0],
+                center: sensorValues[1],
+                right: sensorValues[2],
+            });
+            }
+        await this.sleep(10);
+            
+        }
+    
+        // Compute averages (if we got any readings)
+        if (readings.length > 0) {
+            const avg = readings.reduce(
+            (acc, r) => ({
+                left: acc.left + r.left,
+                center: acc.center + r.center,
+                right: acc.right + r.right,
+            }),
+            { left: 0, center: 0, right: 0 }
+            );
+    
+            const averaged = {
+                left: avg.left / readings.length,
+                center: avg.center / readings.length,
+                right: avg.right / readings.length,
+            };
+    
+            console.log("Averaged sensor:", averaged);
+    
+            // Follow the line with smoothed values
+            sensorValues = averaged;
+        }
+
+
+
+        const rawToLineStrength = (raw: number) => this.clamp(raw / 1000, 0, 1);
+        const leftLine = rawToLineStrength(sensorValues.left);
+        const centerLine = rawToLineStrength(sensorValues.center);
+        const rightLine = rawToLineStrength(sensorValues.right);
+
+        let centerTrue = false;
+        // If centered, do nothing (straight path)
+        if ((leftLine > 0.9 && rightLine > 0.9) || (centerLine > 0.9)) {
+            centerTrue = true;
+        }
+
+        return centerTrue;
+
+    }
+
+    async recordSensorsAndDownloadCSV(robotName: string, durationMs = 5000, intervalMs = 10) {
+        const rows: string[] = [];
+
+        // Add robot name and column header
+        rows.push(`robot_name,${robotName}`);
+        rows.push("time_ms,left,center,right"); 
+
+        const startTime = Date.now();
+
+        while (Date.now() - startTime < durationMs) {
+            const sensorValues = await this.getSensorReading("line");
+
+            if (sensorValues) {
+                const timeMs = Date.now() - startTime;
+                const left = sensorValues[0];
+                const center = sensorValues[1];
+                const right = sensorValues[2];
+
+                rows.push(`${timeMs},${left},${center},${right}`);
+            }
+
+            await this.sleep(intervalMs);
+        }
+
+        const csv = rows.join("\n");
+
+        // Download CSV in browser
+        const blob = new Blob([csv], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `sensor_data_${robotName}_${new Date().toISOString()}.csv`; // timestamps + robot name
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        console.log("CSV file downloaded");
+    }
+
+
+
 
     getLineStatus() { 
         let tempSign;
