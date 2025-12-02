@@ -71,15 +71,39 @@
       <thead>
         <tr>
           <th></th>
-          {#each [...Array(extension.tables[selected][0].length)] as _, i}
-            <th>{i + 1}</th>
+          {#each extension.columnNames[selected] as columnName, i}
+            <th>
+              <span
+              contenteditable="false"
+              class="editableHeader"
+              on:click={(e) => e.currentTarget.contentEditable = "true"}
+              on:blur={(e) => {
+                e.currentTarget.contentEditable = "false";
+                invoke("renameColumn", { name: selected, column: i, value: e.currentTarget.innerText });
+              }}
+            >
+              {columnName}
+            </span>
+            </th>
           {/each}
       </tr>
       </thead>
       <tbody>
         {#each extension.tables[selected] as row, i}
           <tr>
-            <th>{i + 1}</th>
+            <th>
+              <span
+                contenteditable="false"
+                class="editableHeader"
+                on:click={(e) => e.currentTarget.contentEditable = "true"}
+                on:blur={(e) => {
+                  e.currentTarget.contentEditable = "false";
+                  invoke("renameRow", { name: selected, row: i, value: e.currentTarget.innerText });
+                }}
+              >
+                {extension.rowNames[selected][i]}
+              </span>
+            </th>
             {#each row as value, j}
               <th>
                 <input class:tableValueInput type="number" {value} on:change={(e) => update(e, i, j)} data-testid="tableCell">
