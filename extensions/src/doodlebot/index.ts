@@ -58,8 +58,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   imageStream: HTMLImageElement;
   videoDrawable: ReturnType<typeof this.createDrawable>;
-  
-  
+
+
   INTERVAL = 16;
   DIMENSIONS = [480, 360];
 
@@ -85,7 +85,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       await this.setDictionaries();
     })
 
-    this.lineFollower = new LineArrayFollowing(2, 200, 500, 0, this.doodlebot.sendBLECommand.bind(this.doodlebot) , this.doodlebot.getSensorReading.bind(this.doodlebot));
+    this.lineFollower = new LineArrayFollowing(2, 200, 500, 0, this.doodlebot.sendBLECommand.bind(this.doodlebot), this.doodlebot.getSensorReading.bind(this.doodlebot));
 
     // move dictionaries to doodlebot
     await this.setDictionaries();
@@ -159,7 +159,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     }
   }
 
-  
+
 
   getCurrentSounds(id): string[] {
     return (this.soundDictionary && this.soundDictionary[id]) ? Object.keys(this.soundDictionary[id]) : [];
@@ -310,8 +310,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     ]
   })
   async drive(direction: "forward" | "backward", steps: number, speed: number) {
-    const leftSteps = direction == "backward" ? -steps * 7.160*16 : steps * 7.160*16;
-    const rightSteps = direction == "backward" ? -steps * 7.160*16 : steps * 7.160*16;
+    const leftSteps = direction == "backward" ? -steps * 7.160 * 16 : steps * 7.160 * 16;
+    const rightSteps = direction == "backward" ? -steps * 7.160 * 16 : steps * 7.160 * 16;
     const stepsPerSecond = speed;
 
     await this.doodlebot?.motorCommand(
@@ -332,7 +332,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   })
   async arc(direction: "left" | "right", radius: number, degrees: number, utility: BlockUtilityWithID) {
     if (direction == "right") degrees *= -1;
-    await this.doodlebot?.motorCommand("arc", radius/2.54, degrees);
+    await this.doodlebot?.motorCommand("arc", radius / 2.54, degrees);
   }
 
   @block({
@@ -593,7 +593,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     soundFiles = await this.doodlebot.findSoundFiles();
   }
 
-  
+
 
   @block({
     type: "reporter",
@@ -622,6 +622,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     }
     return true;
   }
+
 
   @(scratch.button`Upload sound`)
   uploadSoundUI() {
@@ -678,7 +679,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   @block({
     type: "reporter",
-    text: "get AI prediction", 
+    text: "get AI prediction",
   })
   modelPrediction() {
     return this.teachableMachine.getModelPrediction();
@@ -804,9 +805,9 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   //   return this.lineFollower.getLineStatus();
   // }
 
-   @block({
+  @block({
     type: "reporter",
-    text: "Line array: is center true", 
+    text: "Line array: is center true",
   })
   lineArray_isCenter() {
     return this.lineFollower.isCenter();
@@ -814,10 +815,14 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   @block({
     type: "command",
-    text: "Line array: record csv", 
+    text: "Line array: record csv",
   })
   lineArray_recordCsv() {
-    this.doodlebot?.motorCommand("arc", 0, -720);
+    this.doodlebot?.motorCommand(
+      "steps",
+      { steps: 3000, stepsPerSecond: 2000 },
+      { steps: 3000, stepsPerSecond: 2000 }
+    );
     this.lineFollower.recordSensorsAndDownloadCSV("cheesecake", true);
   }
 
@@ -847,7 +852,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     type: "command",
     text: (speed) => `Line array: set average speed ${speed}`,
     arg: {
-      type: "number", defaultValue: 500
+      type: "number", defaultValue: 200
     }
   })
   lineArray_setBaseSpeed(speed: number) {
@@ -856,7 +861,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   @block({
     type: "command",
-    text: "Line array: start driving", 
+    text: "Line array: start driving",
   })
   lineArray_startDriving() {
     this.doodlebot.sendBLECommand(command.motor, 1000, 1000, this.lineFollower.baseSpeed, this.lineFollower.baseSpeed);
@@ -866,6 +871,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     if (!this.lineFollower.isLoopRunning) {
       this.lineFollower.loop();
     }
+
   }
 
   // @block({
@@ -905,7 +911,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   @block({
     type: "command",
-    text: "Line array: turn left", 
+    text: "Line array: turn left",
   })
   async lineArray_turnLeft() {
     await this.lineFollower.turnLeft();
@@ -914,7 +920,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   @block({
     type: "command",
-    text: "Line array: turn right", 
+    text: "Line array: turn right",
   })
   async lineArray_turnRight() {
     await this.lineFollower.turnRight();
@@ -922,7 +928,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   @block({
     type: "command",
-    text: "Line array: go straight", 
+    text: "Line array: go straight",
   })
   async lineArray_goStraight() {
     await this.lineFollower.goStraight();
@@ -930,7 +936,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   @block({
     type: "command",
-    text: "Line array: stop line following", 
+    text: "Line array: stop line following",
   })
   async lineArray_stopDriving() {
     this.lineFollower.keepDriving = false;
