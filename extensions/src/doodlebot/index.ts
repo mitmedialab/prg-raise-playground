@@ -877,8 +877,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       while (running) {
 
         // Example speeds (replace with your logic)
-        const leftSpeed = 80;
-        const rightSpeed = 80;
+        const leftSpeed = 3000;
+        const rightSpeed = 3000;
 
         this.doodlebot.sendBLECommand(
           "m",
