@@ -813,17 +813,110 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     return this.lineFollower.isCenter();
   }
 
+  // @block({
+  //   type: "command",
+  //   text: "Line array: record csv",
+  // })
+  // lineArray_recordCsv() {
+  //   this.doodlebot?.motorCommand(
+  //     "steps",
+  //     { steps: 3000, stepsPerSecond: 2000 },
+  //     { steps: 3000, stepsPerSecond: 2000 }
+  //   );
+  //   this.lineFollower.recordSensorsAndDownloadCSV("cheesecake", true);
+  // }
+
+
+
+  sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
   @block({
     type: "command",
-    text: "Line array: record csv",
+    text: "CSV TEST",
   })
-  lineArray_recordCsv() {
-    this.doodlebot?.motorCommand(
-      "steps",
-      { steps: 3000, stepsPerSecond: 2000 },
-      { steps: 3000, stepsPerSecond: 2000 }
-    );
-    this.lineFollower.recordSensorsAndDownloadCSV("cheesecake", true);
+  async lineArray_recordCsv() {
+    const durationMs = 5000;
+    const sensorIntervalMs = 10;
+    const motorIntervalMs = 100;
+    const rows: string[] = [];
+
+    // CSV header
+    rows.push("time_ms,left,center,right");
+
+    const startTime = Date.now();
+    let running = true;
+
+    // -------------------
+    // SENSOR RECORD LOOP
+    // -------------------
+    const sensorTask = (async () => {
+      while (Date.now() - startTime < durationMs) {
+        const sensorValues = await this.doodlebot.getSensorReading("line");
+
+        if (sensorValues) {
+          const timeMs = Date.now() - startTime;
+          const [left, center, right] = sensorValues;
+
+          rows.push(`${timeMs},${left},${center},${right}`);
+        }
+
+        await this.sleep(sensorIntervalMs);
+      }
+
+      running = false;
+    })();
+
+    // -------------------
+    // MOTOR COMMAND LOOP
+    // -------------------
+    const motorTask = (async () => {
+
+      // Wait 1 second before starting motors
+      await this.sleep(1000);
+
+      while (running) {
+
+        // Example speeds (replace with your logic)
+        const leftSpeed = 80;
+        const rightSpeed = 80;
+
+        this.doodlebot.sendBLECommand(
+          "m",
+          1000,
+          1000,
+          Math.round(leftSpeed),
+          Math.round(rightSpeed)
+        );
+
+        await this.sleep(motorIntervalMs);
+      }
+
+      // Stop motors when finished
+      this.doodlebot.sendBLECommand("m", "s");
+
+    })();
+
+    // Wait for both tasks to finish
+    await Promise.all([sensorTask, motorTask]);
+
+    // -------------------
+    // DOWNLOAD CSV
+    // -------------------
+    const csv = rows.join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `sensor_data.csv`;
+
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    console.log("CSV file downloaded");
   }
 
   @block({
