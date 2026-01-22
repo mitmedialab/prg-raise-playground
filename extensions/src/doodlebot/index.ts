@@ -796,6 +796,18 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     await this.doodlebot?.sendBLECommand("m", "c");
   }
 
+  @block({
+    type: "Boolean",
+    text: `is black line detected?`,
+  })
+  async blackLineDetected() {
+    const sensorReading = this.doodlebot?.getSensorReadingSync("line");
+    if (sensorReading[0] > 900 && sensorReading[1] > 900 && sensorReading[2] > 900) {
+      return true;
+    }
+    return false;
+  }
+
 
   // @block({
   //   type: "reporter",
