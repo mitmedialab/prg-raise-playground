@@ -835,7 +835,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     text: "CSV TEST",
   })
   async lineArray_recordCsv() {
-    const durationMs = 5000;
+    const durationMs = 8000;
     const sensorIntervalMs = 10;
     const motorIntervalMs = 100;
     const rows: string[] = [];
@@ -879,6 +879,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
         // Example speeds (replace with your logic)
         const leftSpeed = 3000;
         const rightSpeed = 3000;
+        const timeMs = Date.now() - startTime;
+        console.log("TIME MS", timeMs);
 
         this.doodlebot.sendBLECommand(
           "m",
@@ -888,7 +890,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
           Math.round(rightSpeed)
         );
 
-        await this.sleep(motorIntervalMs);
+        await this.sleep((Math.random() * 2000) + 1000);
       }
 
       // Stop motors when finished
