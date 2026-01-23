@@ -808,6 +808,18 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     return false;
   }
 
+  @block({
+    type: "Boolean",
+    text: `is white line detected?`,
+  })
+  async whiteLineDetected() {
+    const sensorReading = this.doodlebot?.getSensorReadingSync("line");
+    if (sensorReading[0] < 200 && sensorReading[1] < 200 && sensorReading[2] < 200) {
+      return true;
+    }
+    return false;
+  }
+
 
   // @block({
   //   type: "reporter",
