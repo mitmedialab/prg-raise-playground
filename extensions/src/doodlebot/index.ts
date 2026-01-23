@@ -798,15 +798,20 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   @block({
     type: "Boolean",
-    text: `is black line detected?`,
+    text: (threshold) => `is black line detected ${threshold}`,
+    arg: {
+      type: "number",
+      defaultValue: 700
+    }
   })
-  async blackLineDetected() {
+  async blackLineDetected1(threshold: number) {
     const sensorReading = this.doodlebot?.getSensorReadingSync("line");
-    if (sensorReading[0] > 900 && sensorReading[1] > 900 && sensorReading[2] > 900) {
+    if (sensorReading[0] > threshold && sensorReading[1] > threshold && sensorReading[2] > threshold) {
       return true;
     }
     return false;
   }
+
 
   @block({
     type: "Boolean",
