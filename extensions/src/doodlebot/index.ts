@@ -844,26 +844,21 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     rows.push("time_ms,left,center,right");
 
     const startTime = Date.now();
+    this.doodlebot.enableSensor("line");
     let running = true;
 
     // -------------------
     // SENSOR RECORD LOOP
     // -------------------
+    this.doodlebot.csvEnabled = true;
     const sensorTask = (async () => {
       while (Date.now() - startTime < durationMs) {
-        const sensorValues = await this.doodlebot.getSensorReading("line");
-
-        if (sensorValues) {
-          const timeMs = Date.now() - startTime;
-          const [left, center, right] = sensorValues;
-
-          rows.push(`${timeMs},${left},${center},${right}`);
-        }
 
         await this.sleep(sensorIntervalMs);
       }
 
       running = false;
+      this.doodlebot.csvEnabled = false;
     })();
 
     // -------------------
@@ -879,8 +874,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
         // Example speeds (replace with your logic)
         const leftSpeed = 3000;
         const rightSpeed = 3000;
-        const timeMs = Date.now() - startTime;
-        console.log("TIME MS", timeMs);
+        const timeMs = performance.now();
+        console.log("TIME MS", Math.round(timeMs));
 
         this.doodlebot.sendBLECommand(
           "m",
@@ -904,21 +899,21 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     // -------------------
     // DOWNLOAD CSV
     // -------------------
-    const csv = rows.join("\n");
+    // const csv = rows.join("\n");
 
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
+    // const blob = new Blob([csv], { type: "text/csv" });
+    // const url = URL.createObjectURL(blob);
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `sensor_data.csv`;
+    // const a = document.createElement("a");
+    // a.href = url;
+    // a.download = `sensor_data.csv`;
 
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    // document.body.appendChild(a);
+    // a.click();
+    // document.body.removeChild(a);
+    // URL.revokeObjectURL(url);
 
-    console.log("CSV file downloaded");
+    // console.log("CSV file downloaded");
   }
 
   @block({
