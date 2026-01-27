@@ -49,6 +49,19 @@ export const info = {
       }
     },
     {
+      "opcode": "setStageMode",
+      "text": "set stage mode [STAGE_MODE]",
+      "blockType": "command",
+      "arguments": {
+        "STAGE_MODE": {
+          "type": "string",
+          // "defaultValue": "Class 1",
+          "defaultValue": "off",
+          "menu": "STAGE_MODE"
+        }
+      }
+    },
+    {
       "opcode": "classConfidence",
       "text": "confidence for [CLASS_NAME]",
       "blockType": "reporter",
@@ -98,6 +111,19 @@ export const info = {
         {
           "text": "direction",
           "value": "direction"
+        }
+      ]
+    },
+    "STAGE_MODE": {
+      "acceptReporters": true,
+      "items": [
+        {
+          "text": "on",
+          "value": "on"
+        },
+        {
+          "text": "off",
+          "value": "off"
         }
       ]
     },

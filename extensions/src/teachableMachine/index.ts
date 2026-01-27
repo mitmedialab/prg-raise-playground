@@ -36,6 +36,8 @@ export default class teachableMachine extends extension({
 
   test: string = "";
 
+  useCanvas: boolean = true;
+
   /**
    * Video refresh rate
    * @type {number}
@@ -66,6 +68,11 @@ export default class teachableMachine extends extension({
     // What is the confidence of the latest prediction
     this.maxConfidence = null;
     this.modelConfidences = {};
+    console.log("RUNTIME", this.runtime);
+    const stage = this.runtime.getTargetForStage();
+    const stage1 = this.runtime.renderer.canvas;
+    console.log("STAGE", stage);
+    console.log("STAGE1", stage1);
 
     if (this.runtime.ioDevices) {
       // Configure the video device with values from globally stored locations.
@@ -96,10 +103,36 @@ export default class teachableMachine extends extension({
 
     // TODO: Self-throttle interval if slow to run predictions
     if (offset > this.INTERVAL && this.isPredicting === 0) {
-      const frame = this.runtime.ioDevices.video.getFrame({
-        format: 'image-data',
-        dimensions: this.DIMENSIONS
-      });
+      let frame;
+      if (this.useCanvas) {
+        const canvas = this.runtime.renderer.canvas;
+        console.log("CANVAS", canvas);
+        const gl = canvas.getContext("webgl", { preserveDrawingBuffer: true });
+        //const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const width = gl.drawingBufferWidth;
+        const height = gl.drawingBufferHeight;
+        const pixels = new Uint8Array(width * height * 4); // 4 components (R, G, B, A) per pixel
+
+        gl.readPixels(
+          0,                         // x-coordinate of the top-left corner
+          0,                         // y-coordinate of the top-left corner
+          width,                     // width of the rectangle
+          height,                    // height of the rectangle
+          gl.RGBA,                   // format (RGBA is usually required)
+          gl.UNSIGNED_BYTE,          // type of data
+          pixels                     // the array to store the pixel data
+        )
+        //  const imageData = gl.getImageData(0, 0, canvas.width, canvas.height);
+
+        // Access pixel array
+        frame = pixels;
+      } else {
+        frame = this.runtime.ioDevices.video.getFrame({
+          format: 'image-data',
+          dimensions: this.DIMENSIONS
+        });
+      }
+
 
       this.lastUpdate = time;
       this.isPredicting = 0;
@@ -312,6 +345,15 @@ export default class teachableMachine extends extension({
     this.runtime.ioDevices.video.mirror = (state === VideoState.ON);
   }
 
+  toggleStage(stage: string) {
+    if (stage == "on") {
+      this.useCanvas = true;
+    } else {
+      this.useCanvas = false;
+    }
+
+  }
+
   /**
    * Sets the video's transparency. This is called in the operation of setVideoTransparencyBlock
    * @param transparency 
@@ -347,6 +389,19 @@ export default class teachableMachine extends extension({
   @legacyBlock.modelMatches(dynamicClassMenu)
   modelMatches(state: string) {
     return this.model_match(state);
+  }
+
+  @legacyBlock.setStageMode({
+    argumentMethods: {
+      0: {
+        handler: (stage: string) => {
+          return ['on', 'off'].includes(stage) ? stage : "off";
+        },
+      }
+    }
+  })
+  setStageMode(stage: string) {
+    this.toggleStage(stage);
   }
 
   @legacyBlock.classConfidence(dynamicClassMenu)
