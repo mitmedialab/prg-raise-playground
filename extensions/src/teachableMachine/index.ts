@@ -133,94 +133,39 @@ export default class teachableMachine extends extension({
 
     // TODO: Self-throttle interval if slow to run predictions
     if (offset > this.INTERVAL && this.isPredicting === 0) {
-      let frame;
       if (this.useCanvas) {
+        const dataURL = this.runtime.renderer.canvas.toDataURL("image/png");
+        const img = new Image();
 
-        // if (this.gl) {
-        //   this.gl.finish();
-        // }
-
-
-        //  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        // const width = this.gl.drawingBufferWidth;
-        // const height = this.gl.drawingBufferHeight;
-        // const pixels = new Uint8Array(width * height * 4); // 4 components (R, G, B, A) per pixel
-        // this.gl.finish();
-        // this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
-        // this.gl.readPixels(
-        //   0,                         // x-coordinate of the top-left corner
-        //   0,                         // y-coordinate of the top-left corner
-        //   480,                     // width of the rectangle
-        //   360,                    // height of the rectangle
-        //   this.gl.RGBA,                   // format (RGBA is usually required)
-        //   this.gl.UNSIGNED_BYTE,          // type of data
-        //   pixels                     // the array to store the pixel data
-        // )
-        // //  const imageData = gl.getImageData(0, 0, canvas.width, canvas.height);
-
-        // for (let i = 3; i < pixels.length; i += 4) {
-        //   pixels[i] = 255;
-        // }
-
-        // // Access pixel array
-        // const clamped = new Uint8ClampedArray(pixels.buffer);
-        // console.log(width);
-        // console.log(height);
-        // frame = new ImageData(clamped, width, height);
-
-        // const stageCanvas = this.runtime.renderer._tempCanvas;
-
-        // const copyCanvas = document.createElement("canvas");
-        // copyCanvas.width = stageCanvas.width;
-        // copyCanvas.height = stageCanvas.height;
-
-        // const ctx2d = copyCanvas.getContext("2d")!;
-        // ctx2d.drawImage(stageCanvas, 0, 0);
-
-        // frame = ctx2d.getImageData(0, 0, copyCanvas.width, copyCanvas.height);
-
-        // Copy current WebGL frame into 2D canvas
-        this.ctx2d.drawImage(this.glCanvas, 0, 0);
-
-        // Get ImageData
-        frame = this.ctx2d.getImageData(0, 0, this.copyCanvas.width, this.copyCanvas.height);
-
-        if (this.downloadFrame) {
+        img.src = dataURL;
+        img.onload = () => {
           // Create offscreen canvas
           const canvas = document.createElement("canvas");
-          canvas.width = 480;
-          canvas.height = 360;
+          canvas.width = img.width;
+          canvas.height = img.height;
 
           const ctx = canvas.getContext("2d")!;
-          ctx.putImageData(frame, 0, 0);
+          ctx.drawImage(img, 0, 0);
 
-          // Convert to blob and download
-          canvas.toBlob((blob) => {
-            if (!blob) return;
+          // Extract ImageData
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          if (!imageData.data.slice(0, 3).every(v => v === 0)) {
+            this.frame = imageData;
+          }
 
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = "frame.png";
+        };
 
-            document.body.appendChild(link);
-            link.click();
-
-            document.body.removeChild(link);
-            URL.revokeObjectURL(link.href);
-          });
-          this.downloadFrame = false
-        }
       } else {
-        frame = this.runtime.ioDevices.video.getFrame({
+        this.frame = this.runtime.ioDevices.video.getFrame({
           format: 'image-data',
           dimensions: this.DIMENSIONS
         });
       }
 
-      this.frame = frame;
+
       this.lastUpdate = time;
       this.isPredicting = 0;
-      this.predictAllBlocks(frame);
+      this.predictAllBlocks(this.frame);
     }
   }
 
@@ -475,8 +420,8 @@ export default class teachableMachine extends extension({
   @legacyBlock.downloadFrameBlock()
   downloadFrameBlock() {
     const canvas = document.createElement("canvas");
-    canvas.width = 480;
-    canvas.height = 360;
+    canvas.width = this.frame.width;
+    canvas.height = this.frame.height;
 
     const ctx = canvas.getContext("2d")!;
     ctx.putImageData(this.frame, 0, 0);
