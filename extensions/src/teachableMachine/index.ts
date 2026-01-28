@@ -55,6 +55,9 @@ export default class teachableMachine extends extension({
     AUDIO: 'audio',
   };
 
+  glCanvas;
+  ctx2d;
+  copyCanvas;
   init(env: Environment) {
 
     /**
@@ -72,9 +75,29 @@ export default class teachableMachine extends extension({
     const stage = this.runtime.getTargetForStage();
     const stage1 = this.runtime.renderer.canvas;
     console.log("STAGE", stage);
-    console.log("STAGE1", stage1);
 
-    if (this.runtime.ioDevices) {
+    this.runtime.ioDevices.video.enableVideo();
+    this.runtime.ioDevices.video.disableVideo();
+
+    setTimeout(() => {
+      this.downloadFrame = true;
+    }, 2000);
+
+    const canvas = this.runtime.renderer._tempCanvas;
+    console.log("CANVAS", canvas);
+    this.gl = this.runtime.renderer.gl;
+
+    // Initialization (run once)
+    this.glCanvas = this.runtime.renderer.canvas;
+
+    this.copyCanvas = document.createElement("canvas");
+    this.copyCanvas.width = this.glCanvas.width;
+    this.copyCanvas.height = this.glCanvas.height;
+
+    this.ctx2d = this.copyCanvas.getContext("2d")!;
+
+
+    if (this.runtime.ioDevices || this.useCanvas) {
       // Configure the video device with values from globally stored locations.
       // this.runtime.on(Runtime.PROJECT_LOADED, this.updateVideoDisplay.bind(this));
 
@@ -83,11 +106,16 @@ export default class teachableMachine extends extension({
     }
   }
 
+  downloadFrame = false;
+
   /**
      * Occasionally step a loop to sample the video, stamp it to the preview
      * skin, and add a TypedArray copy of the canvas's pixel data.
      * @private
      */
+
+  frame;
+  gl;
   _loop() {
     setTimeout(this._loop.bind(this), Math.max(this.runtime.currentStepTime, this.INTERVAL));
 
@@ -101,31 +129,87 @@ export default class teachableMachine extends extension({
     }
     const offset = time - this.lastUpdate;
 
+
+
     // TODO: Self-throttle interval if slow to run predictions
     if (offset > this.INTERVAL && this.isPredicting === 0) {
       let frame;
       if (this.useCanvas) {
-        const canvas = this.runtime.renderer.canvas;
-        console.log("CANVAS", canvas);
-        const gl = canvas.getContext("webgl", { preserveDrawingBuffer: true });
-        //const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const width = gl.drawingBufferWidth;
-        const height = gl.drawingBufferHeight;
-        const pixels = new Uint8Array(width * height * 4); // 4 components (R, G, B, A) per pixel
 
-        gl.readPixels(
-          0,                         // x-coordinate of the top-left corner
-          0,                         // y-coordinate of the top-left corner
-          width,                     // width of the rectangle
-          height,                    // height of the rectangle
-          gl.RGBA,                   // format (RGBA is usually required)
-          gl.UNSIGNED_BYTE,          // type of data
-          pixels                     // the array to store the pixel data
-        )
-        //  const imageData = gl.getImageData(0, 0, canvas.width, canvas.height);
+        // if (this.gl) {
+        //   this.gl.finish();
+        // }
 
-        // Access pixel array
-        frame = pixels;
+
+        //  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        // const width = this.gl.drawingBufferWidth;
+        // const height = this.gl.drawingBufferHeight;
+        // const pixels = new Uint8Array(width * height * 4); // 4 components (R, G, B, A) per pixel
+        // this.gl.finish();
+        // this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+        // this.gl.readPixels(
+        //   0,                         // x-coordinate of the top-left corner
+        //   0,                         // y-coordinate of the top-left corner
+        //   480,                     // width of the rectangle
+        //   360,                    // height of the rectangle
+        //   this.gl.RGBA,                   // format (RGBA is usually required)
+        //   this.gl.UNSIGNED_BYTE,          // type of data
+        //   pixels                     // the array to store the pixel data
+        // )
+        // //  const imageData = gl.getImageData(0, 0, canvas.width, canvas.height);
+
+        // for (let i = 3; i < pixels.length; i += 4) {
+        //   pixels[i] = 255;
+        // }
+
+        // // Access pixel array
+        // const clamped = new Uint8ClampedArray(pixels.buffer);
+        // console.log(width);
+        // console.log(height);
+        // frame = new ImageData(clamped, width, height);
+
+        // const stageCanvas = this.runtime.renderer._tempCanvas;
+
+        // const copyCanvas = document.createElement("canvas");
+        // copyCanvas.width = stageCanvas.width;
+        // copyCanvas.height = stageCanvas.height;
+
+        // const ctx2d = copyCanvas.getContext("2d")!;
+        // ctx2d.drawImage(stageCanvas, 0, 0);
+
+        // frame = ctx2d.getImageData(0, 0, copyCanvas.width, copyCanvas.height);
+
+        // Copy current WebGL frame into 2D canvas
+        this.ctx2d.drawImage(this.glCanvas, 0, 0);
+
+        // Get ImageData
+        frame = this.ctx2d.getImageData(0, 0, this.copyCanvas.width, this.copyCanvas.height);
+
+        if (this.downloadFrame) {
+          // Create offscreen canvas
+          const canvas = document.createElement("canvas");
+          canvas.width = 480;
+          canvas.height = 360;
+
+          const ctx = canvas.getContext("2d")!;
+          ctx.putImageData(frame, 0, 0);
+
+          // Convert to blob and download
+          canvas.toBlob((blob) => {
+            if (!blob) return;
+
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "frame.png";
+
+            document.body.appendChild(link);
+            link.click();
+
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+          });
+          this.downloadFrame = false
+        }
       } else {
         frame = this.runtime.ioDevices.video.getFrame({
           format: 'image-data',
@@ -133,12 +217,14 @@ export default class teachableMachine extends extension({
         });
       }
 
-
+      this.frame = frame;
       this.lastUpdate = time;
       this.isPredicting = 0;
       this.predictAllBlocks(frame);
     }
   }
+
+
 
   async predictAllBlocks(frame) {
     for (let modelUrl in this.predictionState) {
@@ -384,6 +470,31 @@ export default class teachableMachine extends extension({
   @legacyBlock.modelPrediction()
   modelPrediction() {
     return this.getModelPrediction();
+  }
+
+  @legacyBlock.downloadFrameBlock()
+  downloadFrameBlock() {
+    const canvas = document.createElement("canvas");
+    canvas.width = 480;
+    canvas.height = 360;
+
+    const ctx = canvas.getContext("2d")!;
+    ctx.putImageData(this.frame, 0, 0);
+
+    // Convert to blob and download
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "frame.png";
+
+      document.body.appendChild(link);
+      link.click();
+
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+    });
   }
 
   @legacyBlock.modelMatches(dynamicClassMenu)

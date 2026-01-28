@@ -97,6 +97,11 @@ export const info = {
         }
       },
       "blockType": "command"
+    },
+    {
+      "opcode": "downloadFrameBlock",
+      "text": "download frame",
+      "blockType": "command"
     }
   ],
   "menus": {
