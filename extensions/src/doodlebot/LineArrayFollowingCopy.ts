@@ -22,14 +22,14 @@ export default class LineArrayFollowing {
     magnitude: number;
     lineLost: boolean;
 
-    INTERVAL = 475;
+    INTERVAL = 10;
     isLoopRunning: boolean;
 
     keepDriving: boolean;
     drivingStarted: boolean;
     lastCommandTime: number;
 
-    delay = 475;
+    delay = 10;
 
     constructor(public Kp: number, public baseSpeed: number, public maxSpeed: number, public minSpeed: number, public motorFunction: Function, public getSensorReading: Function) {
         this.keepDriving = true;
@@ -73,41 +73,41 @@ export default class LineArrayFollowing {
             }
         }, this.INTERVAL);
         const readings: { left: number; center: number; right: number }[] = [];
-  
+
         // Collect 5 readings, spaced 50ms apart
         for (let i = 0; i < 3; i++) {
             const sensorValues = await this.getSensorReading("line");
             console.log("Sensor values:", sensorValues);
             if (sensorValues) {
-            readings.push({
-                left: sensorValues[0],
-                center: sensorValues[1],
-                right: sensorValues[2],
-            });
+                readings.push({
+                    left: sensorValues[0],
+                    center: sensorValues[1],
+                    right: sensorValues[2],
+                });
             }
-        await this.sleep(10);
-            
+            await this.sleep(10);
+
         }
-    
+
         // Compute averages (if we got any readings)
         if (readings.length > 0) {
             const avg = readings.reduce(
-            (acc, r) => ({
-                left: acc.left + r.left,
-                center: acc.center + r.center,
-                right: acc.right + r.right,
-            }),
-            { left: 0, center: 0, right: 0 }
+                (acc, r) => ({
+                    left: acc.left + r.left,
+                    center: acc.center + r.center,
+                    right: acc.right + r.right,
+                }),
+                { left: 0, center: 0, right: 0 }
             );
-    
+
             const averaged = {
                 left: avg.left / readings.length,
                 center: avg.center / readings.length,
                 right: avg.right / readings.length,
             };
-    
+
             console.log("Averaged sensor:", averaged);
-    
+
             // Follow the line with smoothed values
             this.sensorValues = averaged;
         }
@@ -116,7 +116,7 @@ export default class LineArrayFollowing {
         if (Date.now() - this.lastCommandTime > 5000) {
             this.keepDriving = false;
             console.log("⛔ No turn commands received → stopping driving");
-        } 
+        }
 
         // let sensorValues = await this.getSensorReading("line");
         // this.sensorValues = { left: sensorValues[0], center: sensorValues[1], right: sensorValues[2] };
@@ -150,10 +150,10 @@ export default class LineArrayFollowing {
         // this.lineLost = presence < 0.3 
         // || (leftLine > centerLine && rightLine > centerLine && leftLine < 0.6 && rightLine < 0.6)
         // || (Math.abs(leftLine - rightLine) < 0.1 && centerLine < 0.4 && leftLine < 0.9 && rightLine < 0.9);
-        this.lineLost = presence < 0.3 
-        || (leftLine < 0.3 && rightLine < 0.3 && centerLine < 0.3)
-        || (leftLine > centerLine && rightLine > centerLine && leftLine < 0.6 && rightLine < 0.6) 
-        || (this.centerTrue === false && Math.abs(leftLine - rightLine) < 0.1 && centerLine < 0.4 && leftLine < 0.9 && rightLine < 0.9);
+        this.lineLost = presence < 0.3
+            || (leftLine < 0.3 && rightLine < 0.3 && centerLine < 0.3)
+            || (leftLine > centerLine && rightLine > centerLine && leftLine < 0.6 && rightLine < 0.6)
+            || (this.centerTrue === false && Math.abs(leftLine - rightLine) < 0.1 && centerLine < 0.4 && leftLine < 0.9 && rightLine < 0.9);
         if (!this.lineLost) {
             this.lastError = error;
         } else {
@@ -182,14 +182,14 @@ export default class LineArrayFollowing {
         if (this.drivingStarted && this.keepDriving) {
             this.updateTimer();
             this.turn(-1);
-        }  
+        }
         await this.sleep(this.delay);
     }
 
     async goStraight() {
         if (this.drivingStarted) {
             this.updateTimer();
-            this.motorFunction("m", 1000, 1000, this.baseSpeed, this.baseSpeed);
+            this.motorFunction("l", 1000, 1000, this.baseSpeed, this.baseSpeed);
         }
         await this.sleep(this.delay);
     }
@@ -199,41 +199,41 @@ export default class LineArrayFollowing {
         let sensorValues;
 
         const readings: { left: number; center: number; right: number }[] = [];
-  
+
         // Collect 5 readings, spaced 50ms apart
         for (let i = 0; i < 3; i++) {
             const sensorValues = await this.getSensorReading("line");
             console.log("Sensor values:", sensorValues);
             if (sensorValues) {
-            readings.push({
-                left: sensorValues[0],
-                center: sensorValues[1],
-                right: sensorValues[2],
-            });
+                readings.push({
+                    left: sensorValues[0],
+                    center: sensorValues[1],
+                    right: sensorValues[2],
+                });
             }
-        await this.sleep(10);
-            
+            await this.sleep(10);
+
         }
-    
+
         // Compute averages (if we got any readings)
         if (readings.length > 0) {
             const avg = readings.reduce(
-            (acc, r) => ({
-                left: acc.left + r.left,
-                center: acc.center + r.center,
-                right: acc.right + r.right,
-            }),
-            { left: 0, center: 0, right: 0 }
+                (acc, r) => ({
+                    left: acc.left + r.left,
+                    center: acc.center + r.center,
+                    right: acc.right + r.right,
+                }),
+                { left: 0, center: 0, right: 0 }
             );
-    
+
             const averaged = {
                 left: avg.left / readings.length,
                 center: avg.center / readings.length,
                 right: avg.right / readings.length,
             };
-    
+
             console.log("Averaged sensor:", averaged);
-    
+
             // Follow the line with smoothed values
             sensorValues = averaged;
         }
@@ -260,7 +260,7 @@ export default class LineArrayFollowing {
 
         // Add robot name and column header
         rows.push(`robot_name,${robotName}`);
-        rows.push("time_ms,left,center,right"); 
+        rows.push("time_ms,left,center,right");
 
         const startTime = Date.now();
 
@@ -299,7 +299,7 @@ export default class LineArrayFollowing {
 
 
 
-    getLineStatus() { 
+    getLineStatus() {
         let tempSign;
         if (this.lineLost) {
             const turnDir = this.lastError > 0 ? 1 : -1;
@@ -307,10 +307,10 @@ export default class LineArrayFollowing {
         } else {
             tempSign = this.sign;
         }
-        if (tempSign === 0 && this.magnitude === 0) { return "on the line"; } 
-        else if (tempSign > 0) { return "right of line"; } 
-        else if (tempSign < 0) { return "left of line"; } 
-        else { return "off the line"; } 
+        if (tempSign === 0 && this.magnitude === 0) { return "on the line"; }
+        else if (tempSign > 0) { return "right of line"; }
+        else if (tempSign < 0) { return "left of line"; }
+        else { return "off the line"; }
     }
 
     private turn(sign) {
