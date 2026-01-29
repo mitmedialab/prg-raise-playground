@@ -3,6 +3,7 @@ import tmImage from '@teachablemachine/image';
 import tmPose from '@teachablemachine/pose';
 import { create } from '@tensorflow-models/speech-commands';
 import { legacyFullSupport, } from "./legacy";
+import { HTMLCanvasAttributes } from "svelte/elements";
 
 const { legacyBlock, legacyExtension } = legacyFullSupport.for<teachableMachine>();
 const VideoState = {
@@ -55,9 +56,12 @@ export default class teachableMachine extends extension({
     AUDIO: 'audio',
   };
 
-  glCanvas;
-  ctx2d;
-  copyCanvas;
+  canvas: HTMLCanvasElement;
+  stream: MediaStream;
+  video: HTMLVideoElement;
+  captureCanvas: HTMLCanvasElement;
+  captureCtx: CanvasRenderingContext2D;
+
   init(env: Environment) {
 
     /**
@@ -71,31 +75,17 @@ export default class teachableMachine extends extension({
     // What is the confidence of the latest prediction
     this.maxConfidence = null;
     this.modelConfidences = {};
-    console.log("RUNTIME", this.runtime);
-    const stage = this.runtime.getTargetForStage();
-    const stage1 = this.runtime.renderer.canvas;
-    console.log("STAGE", stage);
 
-    this.runtime.ioDevices.video.enableVideo();
-    this.runtime.ioDevices.video.disableVideo();
+    this.canvas = this.runtime.renderer.canvas;
+    this.stream = this.canvas.captureStream(30);
 
-    setTimeout(() => {
-      this.downloadFrame = true;
-    }, 2000);
-
-    const canvas = this.runtime.renderer._tempCanvas;
-    console.log("CANVAS", canvas);
-    this.gl = this.runtime.renderer.gl;
-
-    // Initialization (run once)
-    this.glCanvas = this.runtime.renderer.canvas;
-
-    this.copyCanvas = document.createElement("canvas");
-    this.copyCanvas.width = this.glCanvas.width;
-    this.copyCanvas.height = this.glCanvas.height;
-
-    this.ctx2d = this.copyCanvas.getContext("2d")!;
-
+    this.video = document.createElement("video");
+    this.video.srcObject = this.stream;
+    this.video.muted = true;
+    this.video.playsInline = true;
+    this.video.play();
+    this.captureCanvas = document.createElement("canvas");
+    this.captureCtx = this.captureCanvas.getContext("2d")!;
 
     if (this.runtime.ioDevices || this.useCanvas) {
       // Configure the video device with values from globally stored locations.
@@ -106,16 +96,12 @@ export default class teachableMachine extends extension({
     }
   }
 
-  downloadFrame = false;
-
   /**
      * Occasionally step a loop to sample the video, stamp it to the preview
      * skin, and add a TypedArray copy of the canvas's pixel data.
      * @private
      */
 
-  frame;
-  gl;
   _loop() {
     setTimeout(this._loop.bind(this), Math.max(this.runtime.currentStepTime, this.INTERVAL));
 
@@ -129,43 +115,34 @@ export default class teachableMachine extends extension({
     }
     const offset = time - this.lastUpdate;
 
-
-
+    let frame;
     // TODO: Self-throttle interval if slow to run predictions
     if (offset > this.INTERVAL && this.isPredicting === 0) {
       if (this.useCanvas) {
-        const dataURL = this.runtime.renderer.canvas.toDataURL("image/png");
-        const img = new Image();
 
-        img.src = dataURL;
-        img.onload = () => {
-          // Create offscreen canvas
-          const canvas = document.createElement("canvas");
-          canvas.width = img.width;
-          canvas.height = img.height;
+        const w = this.video.videoWidth;
+        const h = this.video.videoHeight;
 
-          const ctx = canvas.getContext("2d")!;
-          ctx.drawImage(img, 0, 0);
+        this.captureCanvas.width = w;
+        this.captureCanvas.height = h;
 
-          // Extract ImageData
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          if (!imageData.data.slice(0, 3).every(v => v === 0)) {
-            this.frame = imageData;
-          }
+        if (w > 0) {
+          this.captureCtx.drawImage(this.video, 0, 0, w, h);
 
-        };
+          const imageData = this.captureCtx.getImageData(0, 0, w, h);
+          frame = imageData;
+        }
+
 
       } else {
-        this.frame = this.runtime.ioDevices.video.getFrame({
+        frame = this.runtime.ioDevices.video.getFrame({
           format: 'image-data',
           dimensions: this.DIMENSIONS
         });
       }
-
-
       this.lastUpdate = time;
       this.isPredicting = 0;
-      this.predictAllBlocks(this.frame);
+      this.predictAllBlocks(frame);
     }
   }
 
@@ -415,31 +392,6 @@ export default class teachableMachine extends extension({
   @legacyBlock.modelPrediction()
   modelPrediction() {
     return this.getModelPrediction();
-  }
-
-  @legacyBlock.downloadFrameBlock()
-  downloadFrameBlock() {
-    const canvas = document.createElement("canvas");
-    canvas.width = this.frame.width;
-    canvas.height = this.frame.height;
-
-    const ctx = canvas.getContext("2d")!;
-    ctx.putImageData(this.frame, 0, 0);
-
-    // Convert to blob and download
-    canvas.toBlob((blob) => {
-      if (!blob) return;
-
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = "frame.png";
-
-      document.body.appendChild(link);
-      link.click();
-
-      document.body.removeChild(link);
-      URL.revokeObjectURL(link.href);
-    });
   }
 
   @legacyBlock.modelMatches(dynamicClassMenu)
