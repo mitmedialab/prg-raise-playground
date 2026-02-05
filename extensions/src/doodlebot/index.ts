@@ -100,6 +100,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   private _loop() {
     setTimeout(this._loop.bind(this), Math.max(this.runtime.currentStepTime, this.INTERVAL));
     const time = Date.now();
+    // console.log("pre", this.doodlebot.preReading)
+    // console.log("post", this.doodlebot.postReading)
     if (this.lastUpdate === null) {
       this.lastUpdate = time;
     }
@@ -316,8 +318,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
     await this.doodlebot?.motorCommand(
       "steps",
-      { steps: leftSteps, stepsPerSecond },
-      { steps: rightSteps, stepsPerSecond }
+      { steps: Math.round(leftSteps * 1000) / 1000, stepsPerSecond: Math.round(stepsPerSecond * 1000) / 1000 },
+      { steps: Math.round(rightSteps * 1000) / 1000, stepsPerSecond: Math.round(stepsPerSecond * 1000) / 1000 }
     );
   }
 
@@ -788,161 +790,188 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   }
 
-  @block({
-    type: "command",
-    text: `calibrate`,
-  })
-  async calibrateSensor() {
-    await this.doodlebot?.sendBLECommand("m", "c");
-  }
+  // @block({
+  //   type: "command",
+  //   text: `calibrate`,
+  // })
+  // async calibrateSensor() {
+  //   await this.doodlebot?.sendBLECommand("m", "c");
+  // }
 
+  // @block({
+  //   type: "command",
+  //   text: (delay) => `set motor check delay ${delay}`,
+  //   arg: { type: "number", defaultValue: 100 }
+  // })
+  // async setDelay(delay: number) {
+  //   await this.doodlebot?.sendBLECommand("y", delay);
+  // }
+
+  // @block({
+  //   type: "command",
+  //   text: (leftSpeed, rightSpeed, leftDistance, rightDistance) => `send line following command with left distance ${leftDistance}, right distance ${rightDistance}, left speed ${leftSpeed}, right speed ${rightSpeed}`,
+  //   args: [
+  //     { type: "number", defaultValue: 2000 },
+  //     { type: "number", defaultValue: 2000 },
+  //     { type: "number", defaultValue: 2000 },
+  //     { type: "number", defaultValue: 2000 },
+  //   ]
+  // })
+  // async sendLineCommand(leftSpeed: number, rightSpeed: number, leftDistance: number, rightDistance: number) {
+  //   await this.doodlebot?.motorCommand(
+  //     "steps",
+  //     { steps: leftDistance, stepsPerSecond: leftSpeed },
+  //     { steps: rightDistance, stepsPerSecond: rightSpeed }
+  //   );
+  // }
+
+
+  // // @block({
+  // //   type: "reporter",
+  // //   text: "Line array: get line status", 
+  // // })
+  // // lineArray_getLineStatus() {
+  // //   return this.lineFollower.getLineStatus();
+  // // }
 
   // @block({
   //   type: "reporter",
-  //   text: "Line array: get line status", 
+  //   text: "Line array: is center true",
   // })
-  // lineArray_getLineStatus() {
-  //   return this.lineFollower.getLineStatus();
+  // lineArray_isCenter() {
+  //   return this.lineFollower.isCenter();
   // }
 
-  @block({
-    type: "reporter",
-    text: "Line array: is center true",
-  })
-  lineArray_isCenter() {
-    return this.lineFollower.isCenter();
-  }
-
-  @block({
-    type: "command",
-    text: "Line array: record csv",
-  })
-  lineArray_recordCsv() {
-    this.doodlebot?.motorCommand(
-      "steps",
-      { steps: 3000, stepsPerSecond: 2000 },
-      { steps: 3000, stepsPerSecond: 2000 }
-    );
-    this.lineFollower.recordSensorsAndDownloadCSV("cheesecake", true);
-  }
-
-  @block({
-    type: "command",
-    text: (wiggle) => `Line array: set wiggle factor ${wiggle}`,
-    arg: {
-      type: "number", defaultValue: 2
-    }
-  })
-  lineArray_setWiggle(wiggle: number) {
-    this.lineFollower.Kp = wiggle;
-  }
-
-  @block({
-    type: "command",
-    text: (speed) => `Line array: set max speed ${speed}`,
-    arg: {
-      type: "number", defaultValue: 500
-    }
-  })
-  lineArray_setSpeed(speed: number) {
-    this.lineFollower.setMaxSpeed(speed);
-  }
-
-  @block({
-    type: "command",
-    text: (speed) => `Line array: set average speed ${speed}`,
-    arg: {
-      type: "number", defaultValue: 200
-    }
-  })
-  lineArray_setBaseSpeed(speed: number) {
-    this.lineFollower.setBaseSpeed(speed);
-  }
-
-  @block({
-    type: "command",
-    text: "Line array: start driving",
-  })
-  lineArray_startDriving() {
-    this.doodlebot.sendBLECommand(command.motor, 1000, 1000, this.lineFollower.baseSpeed, this.lineFollower.baseSpeed);
-    this.lineFollower.drivingStarted = true;
-    this.lineFollower.keepDriving = true;
-    console.log(this.lineFollower);
-    if (!this.lineFollower.isLoopRunning) {
-      this.lineFollower.loop();
-    }
-
-  }
+  // @block({
+  //   type: "command",
+  //   text: "Line array: record csv",
+  // })
+  // lineArray_recordCsv() {
+  //   this.doodlebot?.motorCommand(
+  //     "steps",
+  //     { steps: 3000, stepsPerSecond: 2000 },
+  //     { steps: 3000, stepsPerSecond: 2000 }
+  //   );
+  //   this.lineFollower.recordSensorsAndDownloadCSV("cheesecake", true);
+  // }
 
   // @block({
-  //   type: "loop",
+  //   type: "command",
+  //   text: (wiggle) => `Line array: set wiggle factor ${wiggle}`,
+  //   arg: {
+  //     type: "number", defaultValue: 2
+  //   }
+  // })
+  // lineArray_setWiggle(wiggle: number) {
+  //   this.lineFollower.Kp = wiggle;
+  // }
+
+  // @block({
+  //   type: "command",
+  //   text: (speed) => `Line array: set max speed ${speed}`,
+  //   arg: {
+  //     type: "number", defaultValue: 500
+  //   }
+  // })
+  // lineArray_setSpeed(speed: number) {
+  //   this.lineFollower.setMaxSpeed(speed);
+  // }
+
+  // @block({
+  //   type: "command",
+  //   text: (speed) => `Line array: set average speed ${speed}`,
+  //   arg: {
+  //     type: "number", defaultValue: 200
+  //   }
+  // })
+  // lineArray_setBaseSpeed(speed: number) {
+  //   this.lineFollower.setBaseSpeed(speed);
+  // }
+
+  // @block({
+  //   type: "command",
+  //   text: "Line array: start driving",
+  // })
+  // lineArray_startDriving() {
+  //   this.doodlebot.sendBLECommand(command.motor, 1000, 1000, this.lineFollower.baseSpeed, this.lineFollower.baseSpeed);
+  //   this.lineFollower.drivingStarted = true;
+  //   this.lineFollower.keepDriving = true;
+  //   console.log(this.lineFollower);
+  //   if (!this.lineFollower.isLoopRunning) {
+  //     this.lineFollower.loop();
+  //   }
+
+  // }
+
+  // // @block({
+  // //   type: "loop",
+  // //   text: (direction) => `Line array: is doodlebot ${direction}`,
+  // //   arg: { type: "string", options: ["left of line", "right of line", "on the line", "off the line"], defaultValue: "on the line" },
+  // // })
+  // // lineArray_lineConditional(direction: string, util: BlockUtilityWithID) {
+  // //   const status = this.lineFollower.getLineStatus();
+  // //   const condition = (direction == status);
+  // //     if (condition) {
+  // //         util.startBranch(1, false);
+  // //     }
+  // // }
+
+  // @block({
+  //   type: "Boolean",
   //   text: (direction) => `Line array: is doodlebot ${direction}`,
   //   arg: { type: "string", options: ["left of line", "right of line", "on the line", "off the line"], defaultValue: "on the line" },
   // })
-  // lineArray_lineConditional(direction: string, util: BlockUtilityWithID) {
-  //   const status = this.lineFollower.getLineStatus();
-  //   const condition = (direction == status);
-  //     if (condition) {
-  //         util.startBranch(1, false);
-  //     }
-  // }
-
-  @block({
-    type: "Boolean",
-    text: (direction) => `Line array: is doodlebot ${direction}`,
-    arg: { type: "string", options: ["left of line", "right of line", "on the line", "off the line"], defaultValue: "on the line" },
-  })
-  lineArray_lineBoolean(direction: string, util: BlockUtilityWithID) {
-    const status = this.lineFollower.getLineStatus();
-    const condition = (direction == status);
-    return condition;
-  }
-
-  // @block({
-  //   type: "hat",
-  //   text: (direction) => `Line array: is doodlebot ${direction}`,
-  //   arg: { type: "string", options: ["left of line", "right of line", "on the line", "off the line"], defaultValue: "on the line" },
-  // })
-  // lineArray_lineEvent(direction: string, util: BlockUtilityWithID) {
+  // lineArray_lineBoolean(direction: string, util: BlockUtilityWithID) {
   //   const status = this.lineFollower.getLineStatus();
   //   const condition = (direction == status);
   //   return condition;
   // }
 
-  @block({
-    type: "command",
-    text: "Line array: turn left",
-  })
-  async lineArray_turnLeft() {
-    await this.lineFollower.turnLeft();
-  }
+  // // @block({
+  // //   type: "hat",
+  // //   text: (direction) => `Line array: is doodlebot ${direction}`,
+  // //   arg: { type: "string", options: ["left of line", "right of line", "on the line", "off the line"], defaultValue: "on the line" },
+  // // })
+  // // lineArray_lineEvent(direction: string, util: BlockUtilityWithID) {
+  // //   const status = this.lineFollower.getLineStatus();
+  // //   const condition = (direction == status);
+  // //   return condition;
+  // // }
+
+  // @block({
+  //   type: "command",
+  //   text: "Line array: turn left",
+  // })
+  // async lineArray_turnLeft() {
+  //   await this.lineFollower.turnLeft();
+  // }
 
 
-  @block({
-    type: "command",
-    text: "Line array: turn right",
-  })
-  async lineArray_turnRight() {
-    await this.lineFollower.turnRight();
-  }
+  // @block({
+  //   type: "command",
+  //   text: "Line array: turn right",
+  // })
+  // async lineArray_turnRight() {
+  //   await this.lineFollower.turnRight();
+  // }
 
-  @block({
-    type: "command",
-    text: "Line array: go straight",
-  })
-  async lineArray_goStraight() {
-    await this.lineFollower.goStraight();
-  }
+  // @block({
+  //   type: "command",
+  //   text: "Line array: go straight",
+  // })
+  // async lineArray_goStraight() {
+  //   await this.lineFollower.goStraight();
+  // }
 
-  @block({
-    type: "command",
-    text: "Line array: stop line following",
-  })
-  async lineArray_stopDriving() {
-    this.lineFollower.keepDriving = false;
-    this.lineFollower.isLoopRunning = false;
-    await this.doodlebot?.motorCommand("stop");
-  }
+  // @block({
+  //   type: "command",
+  //   text: "Line array: stop line following",
+  // })
+  // async lineArray_stopDriving() {
+  //   this.lineFollower.keepDriving = false;
+  //   this.lineFollower.isLoopRunning = false;
+  //   await this.doodlebot?.motorCommand("stop");
+  // }
 
 
   private async speakText(text: string, showDisplay: boolean = false) {
