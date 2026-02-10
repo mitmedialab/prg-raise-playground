@@ -796,6 +796,78 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     await this.doodlebot?.sendBLECommand("m", "c");
   }
 
+  @block({
+    type: "command",
+    text: `swivel left`,
+  })
+  async swivelLeft() {
+    await this.doodlebot?.motorCommand(
+      "steps",
+      { steps: 2000, stepsPerSecond: 2000 },
+      { steps: 0, stepsPerSecond: 2000 }
+    );
+    await this.doodlebot?.motorCommand(
+      "steps",
+      { steps: -2000, stepsPerSecond: 2000 },
+      { steps: 0, stepsPerSecond: 2000 }
+    );
+
+  }
+
+  @block({
+    type: "command",
+    text: (delay) => `set delay1 ${delay}`,
+    arg: { type: "number", defaultValue: 500 }
+  })
+  async setDelay1(delay: number) {
+    await this.doodlebot?.sendBLECommand("u", delay);
+  }
+
+  @block({
+    type: "command",
+    text: (delay) => `set delay2 ${delay}`,
+    arg: { type: "number", defaultValue: 10 }
+  })
+  async setDelay2(delay: number) {
+    await this.doodlebot?.sendBLECommand("i", delay);
+  }
+
+  @block({
+    type: "command",
+    text: (delayIterations) => `set delay iterations ${delayIterations}`,
+    arg: { type: "number", defaultValue: 10 }
+  })
+  async setDelayIterations(delayIterations: number) {
+    await this.doodlebot?.sendBLECommand("w", delayIterations);
+  }
+
+  @block({
+    type: "command",
+    text: (delay) => `set delay3 ${delay}`,
+    arg: { type: "number", defaultValue: 500 }
+  })
+  async setDelay3(delay: number) {
+    await this.doodlebot?.sendBLECommand("j", delay);
+  }
+
+  @block({
+    type: "command",
+    text: (leftSpeed, rightSpeed, leftDistance, rightDistance) => `send line following command with left distance ${leftDistance}, right distance ${rightDistance}, left speed ${leftSpeed}, right speed ${rightSpeed}`,
+    args: [
+      { type: "number", defaultValue: 2000 },
+      { type: "number", defaultValue: 2000 },
+      { type: "number", defaultValue: 2000 },
+      { type: "number", defaultValue: 2000 },
+    ]
+  })
+  async sendLineCommand(leftSpeed: number, rightSpeed: number, leftDistance: number, rightDistance: number) {
+    await this.doodlebot?.motorCommand(
+      "steps",
+      { steps: leftDistance, stepsPerSecond: leftSpeed },
+      { steps: rightDistance, stepsPerSecond: rightSpeed }
+    );
+  }
+
 
   // @block({
   //   type: "reporter",

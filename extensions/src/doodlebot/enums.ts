@@ -50,7 +50,8 @@ export const sensor = {
     accelerometer: "x",
     gyroscope: "g",
     light: "l",
-    line: "l"
+    line: "l",
+    position: "p"
 } as const;
 
 export const units = {
@@ -97,6 +98,8 @@ export const keyBySensor = Object.fromEntries(Object.entries(sensor).map(([key, 
 
 export const motorCommandReceived = "ms";
 
+export const actualPositionReceived = "mp";
+
 export const networkStatus = {
     ipPrefix: "RPI ipaddr:",
     hostnamePrefix: "hname:",
@@ -105,7 +108,7 @@ export const networkStatus = {
 export type NetworkStatusKey = keyof typeof networkStatus;
 export type NetworkStatus = typeof networkStatus[NetworkStatusKey];
 
-export type ReceivedCommand = Sensor | typeof motorCommandReceived;
+export type ReceivedCommand = Sensor | typeof motorCommandReceived | "pre" | "post";
 
 export const port = {
     websocket: "8765",
