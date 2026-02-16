@@ -56,7 +56,7 @@ export const info = {
         "STAGE_MODE": {
           "type": "string",
           // "defaultValue": "Class 1",
-          "defaultValue": "off",
+          "defaultValue": "canvas",
           "menu": "STAGE_MODE"
         }
       }
@@ -101,6 +101,7 @@ export const info = {
   ],
   "menus": {
     "CLASS_NAME": "getCurrentClasses",
+    "STAGE_MODE": "getStageMode",
     "ATTRIBUTE": {
       "acceptReporters": true,
       "items": [
@@ -111,19 +112,6 @@ export const info = {
         {
           "text": "direction",
           "value": "direction"
-        }
-      ]
-    },
-    "STAGE_MODE": {
-      "acceptReporters": true,
-      "items": [
-        {
-          "text": "on",
-          "value": "on"
-        },
-        {
-          "text": "off",
-          "value": "off"
         }
       ]
     },

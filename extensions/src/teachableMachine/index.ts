@@ -4,6 +4,7 @@ import tmPose from '@teachablemachine/pose';
 import { create } from '@tensorflow-models/speech-commands';
 import { legacyFullSupport, } from "./legacy";
 import { HTMLCanvasAttributes } from "svelte/elements";
+import { Runtime } from "$common/types/scratch/vm";
 
 const { legacyBlock, legacyExtension } = legacyFullSupport.for<teachableMachine>();
 const VideoState = {
@@ -37,7 +38,7 @@ export default class teachableMachine extends extension({
 
   test: string = "";
 
-  useCanvas: boolean = true;
+  stageMode: string;
 
   /**
    * Video refresh rate
@@ -62,6 +63,8 @@ export default class teachableMachine extends extension({
   captureCanvas: HTMLCanvasElement;
   captureCtx: CanvasRenderingContext2D;
 
+  costumeDictionary: {} | { string: string[] };
+
   init(env: Environment) {
 
     /**
@@ -70,6 +73,11 @@ export default class teachableMachine extends extension({
      * @type {number}
      */
     this.lastUpdate = null;
+    console.log(env);
+    const targets = env.runtime.targets;
+    this.costumeDictionary = {};
+    this.setDictionaries();
+    console.log(this.costumeDictionary);
 
 
     // What is the confidence of the latest prediction
@@ -87,12 +95,22 @@ export default class teachableMachine extends extension({
     this.captureCanvas = document.createElement("canvas");
     this.captureCtx = this.captureCanvas.getContext("2d")!;
 
-    if (this.runtime.ioDevices || this.useCanvas) {
+    if (this.runtime.ioDevices || this.stageMode == "canvas") {
       // Configure the video device with values from globally stored locations.
       // this.runtime.on(Runtime.PROJECT_LOADED, this.updateVideoDisplay.bind(this));
 
       // Kick off looping the analysis logic.
       this._loop();
+    }
+  }
+
+  async setDictionaries() {
+    for (const target of this.runtime.targets) {
+      if (target.sprite) {
+        const costumeIndex = target.currentCostume;
+        const costume = target.sprite.costumes[costumeIndex];
+        this.costumeDictionary[target.sprite.name] = costume;
+      }
     }
   }
 
@@ -115,10 +133,12 @@ export default class teachableMachine extends extension({
     }
     const offset = time - this.lastUpdate;
 
+    const included = this.costumeDictionary ? Object.keys(this.costumeDictionary).includes(this.stageMode) : false;
+
     let frame;
     // TODO: Self-throttle interval if slow to run predictions
     if (offset > this.INTERVAL && this.isPredicting === 0) {
-      if (this.useCanvas) {
+      if (this.stageMode == "canvas") {
 
         const w = this.video.videoWidth;
         const h = this.video.videoHeight;
@@ -134,6 +154,9 @@ export default class teachableMachine extends extension({
         }
 
 
+      } else if (included) {
+        console.log(this.costumeDictionary[this.stageMode]);
+        frame = new ImageData(new Uint8ClampedArray(this.costumeDictionary[this.stageMode].asset.data), this.costumeDictionary[this.stageMode].size[1], this.costumeDictionary[this.stageMode].size[0]);
       } else {
         frame = this.runtime.ioDevices.video.getFrame({
           format: 'image-data',
@@ -354,12 +377,7 @@ export default class teachableMachine extends extension({
   }
 
   toggleStage(stage: string) {
-    if (stage == "on") {
-      this.useCanvas = true;
-    } else {
-      this.useCanvas = false;
-    }
-
+    this.stageMode = stage;
   }
 
   /**
@@ -399,15 +417,20 @@ export default class teachableMachine extends extension({
     return this.model_match(state);
   }
 
-  @legacyBlock.setStageMode({
+  getModes() {
+    return this.costumeDictionary ? ["stage", "canvas"].concat(Object.keys(this.costumeDictionary)) : ["stage", "canvas"];
+  }
+
+  @legacyBlock.setStageMode((self) => ({
     argumentMethods: {
       0: {
         handler: (stage: string) => {
-          return ['on', 'off'].includes(stage) ? stage : "off";
+          return stage;
         },
+        getItems: self.getModes.bind(self)
       }
     }
-  })
+  }))
   setStageMode(stage: string) {
     this.toggleStage(stage);
   }
