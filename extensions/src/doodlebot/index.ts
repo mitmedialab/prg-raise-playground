@@ -253,19 +253,20 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   }
 
 
-  @block({
-    type: "command",
-    text: (voice, pitch) => `set voice to ${voice} and pitch to ${pitch}`,
-    args: [
-      { type: "number", defaultValue: 1 },
-      { type: "number", defaultValue: 0 }
-    ]
-  })
-  async setVoiceAndPitch(voice: number, pitch: number) {
-    this.voice_id = voice;
-    this.pitch_value = pitch;
-  }
+  // @block({
+  //   type: "command",
+  //   text: (voice, pitch) => `set voice to ${voice} and pitch to ${pitch}`,
+  //   args: [
+  //     { type: "number", defaultValue: 1 },
+  //     { type: "number", defaultValue: 0 }
+  //   ]
+  // })
+  // async setVoiceAndPitch(voice: number, pitch: number) {
+  //   this.voice_id = voice;
+  //   this.pitch_value = pitch;
+  // }
 
+  // KEEP
   @block({
     type: "command",
     text: (text) => `speak ${text}`,
@@ -275,6 +276,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     await this.speakText(text);
   }
 
+  // KEEP
   @block({
     type: "command",
     text: (text: string) => `display text ${text}`,
@@ -284,15 +286,15 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     await this.doodlebot?.displayText(text);
   }
 
-  @block({
-    type: "command",
-    text: (size) => `set font size to ${size}`,
-    arg: { type: "string", options: ["small", "medium", "large"], defaultValue: "medium" },
+  // @block({
+  //   type: "command",
+  //   text: (size) => `set font size to ${size}`,
+  //   arg: { type: "string", options: ["small", "medium", "large"], defaultValue: "medium" },
 
-  })
-  async setFont(size: "small" | "medium" | "large") {
-    await this.doodlebot?.setFont(size);
-  }
+  // })
+  // async setFont(size: "small" | "medium" | "large") {
+  //   await this.doodlebot?.setFont(size);
+  // }
 
   @block({
     type: "command",
@@ -302,6 +304,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     await this.doodlebot?.display("clear");
   }
 
+  // KEEP
   @block({
     type: "command",
     text: (direction, steps, speed) => `drive ${direction} for ${steps} cm at speed ${speed}`,
@@ -323,6 +326,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     );
   }
 
+  // KEEP
   @block({
     type: "command",
     text: (direction, radius, degrees) => `arc ${direction} with radius ${radius} cm for ${degrees} degrees`,
@@ -337,6 +341,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     await this.doodlebot?.motorCommand("arc", radius / 2.54, degrees);
   }
 
+  // KEEP
   @block({
     type: "command",
     text: (degrees) => `spin ${degrees} degrees`,
@@ -347,6 +352,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     await this.doodlebot?.motorCommand("arc", 0, -degrees);
   }
 
+  // KEEP
   @block({
     type: "command",
     text: "stop driving"
@@ -355,6 +361,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     await this.doodlebot?.motorCommand("stop");
   }
 
+  // KEEP
   @block({
     type: "command",
     text: (direction) => `move pen ${direction}`,
@@ -364,161 +371,162 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     await this.doodlebot?.penCommand(direction);
   }
 
-  @block({
-    type: "reporter",
-    text: (sensor: SensorKey) => `${sensor} sensor`,
-    arg: { type: "string", options: ["battery", "temperature", "humidity", "pressure", "distance", "altimeter", "line"], defaultValue: "battery" }
-  })
-  async getSingleSensorReading(sensor: "battery" | "temperature" | "humidity" | "pressure" | "distance" | "altimeter" | "line", utility: BlockUtilityWithID) {
-    const reading = await this.doodlebot?.getSingleSensorReading(sensor);
-    return `${JSON.stringify(reading)} ${units[sensor]}`;
-  }
+  // @block({
+  //   type: "reporter",
+  //   text: (sensor: SensorKey) => `${sensor} sensor`,
+  //   arg: { type: "string", options: ["battery", "temperature", "humidity", "pressure", "distance", "altimeter", "line"], defaultValue: "battery" }
+  // })
+  // async getSingleSensorReading(sensor: "battery" | "temperature" | "humidity" | "pressure" | "distance" | "altimeter" | "line", utility: BlockUtilityWithID) {
+  //   const reading = await this.doodlebot?.getSingleSensorReading(sensor);
+  //   return `${JSON.stringify(reading)} ${units[sensor]}`;
+  // }
 
-  @block({
-    type: "reporter",
-    text: (axis: string, sensor: SensorKey) => `get ${axis} of ${sensor} sensor`,
-    args: [
-      { type: 'string', options: ["x", "y", "z"], defaultValue: 'x' },
-      { type: "string", options: ["gyroscope", "accelerometer"], defaultValue: "gyroscope" }
-    ]
-  })
-  async getSingleSensorReadingAxis(axis: string, sensor: "gyroscope" | "accelerometer", utility: BlockUtilityWithID) {
-    const reading = await this.doodlebot?.getSingleSensorReading(sensor);
-    if (!reading) {
-      return NaN;
-    }
-    return `${JSON.stringify(reading[axis])} ${units[sensor]}`;
-  }
+  // @block({
+  //   type: "reporter",
+  //   text: (axis: string, sensor: SensorKey) => `get ${axis} of ${sensor} sensor`,
+  //   args: [
+  //     { type: 'string', options: ["x", "y", "z"], defaultValue: 'x' },
+  //     { type: "string", options: ["gyroscope", "accelerometer"], defaultValue: "gyroscope" }
+  //   ]
+  // })
+  // async getSingleSensorReadingAxis(axis: string, sensor: "gyroscope" | "accelerometer", utility: BlockUtilityWithID) {
+  //   const reading = await this.doodlebot?.getSingleSensorReading(sensor);
+  //   if (!reading) {
+  //     return NaN;
+  //   }
+  //   return `${JSON.stringify(reading[axis])} ${units[sensor]}`;
+  // }
 
 
 
-  @(scratch.hat`
-    when ${{ type: "string", options: ["battery", "temperature", "humidity", "pressure", "distance", "altimeter"], defaultValue: "battery" }} 
-    sensor > ${{ type: "number", defaultValue: 0 }}
-  `)
-  whenSensorGreater(sensor: "battery" | "temperature" | "humidity" | "pressure" | "distance" | "altimeter", greater: number) {
-    const reading = this.doodlebot?.getSensorReadingSync(sensor);
-    if (!reading) return false;
-    return (Number(reading) > Number(greater));
-  }
+  // @(scratch.hat`
+  //   when ${{ type: "string", options: ["battery", "temperature", "humidity", "pressure", "distance", "altimeter"], defaultValue: "battery" }} 
+  //   sensor > ${{ type: "number", defaultValue: 0 }}
+  // `)
+  // whenSensorGreater(sensor: "battery" | "temperature" | "humidity" | "pressure" | "distance" | "altimeter", greater: number) {
+  //   const reading = this.doodlebot?.getSensorReadingSync(sensor);
+  //   if (!reading) return false;
+  //   return (Number(reading) > Number(greater));
+  // }
 
-  @block({
-    type: "Boolean",
-    text: (bumper) => `is ${bumper} bumper pressed`,
-    arg: { type: "string", options: bumperOptions, defaultValue: bumperOptions[0] }
-  })
-  async isBumperPressed(bumber: typeof bumperOptions[number]) {
-    const isPressed = await this.doodlebot?.getSingleSensorReading("bumper");
+  // @block({
+  //   type: "Boolean",
+  //   text: (bumper) => `is ${bumper} bumper pressed`,
+  //   arg: { type: "string", options: bumperOptions, defaultValue: bumperOptions[0] }
+  // })
+  // async isBumperPressed(bumber: typeof bumperOptions[number]) {
+  //   const isPressed = await this.doodlebot?.getSingleSensorReading("bumper");
 
-    switch (bumber) {
-      case "back":
-        return isPressed.back > 0;
-      case "front":
-        return isPressed.front > 0;
-      case "front or back":
-        return isPressed.front > 0 || isPressed.back > 0;
-      case "front and back":
-        return isPressed.front > 0 && isPressed.back > 0;
-      case "neither":
-        return isPressed.front === 0 && isPressed.back === 0;
-    }
-  }
+  //   switch (bumber) {
+  //     case "back":
+  //       return isPressed.back > 0;
+  //     case "front":
+  //       return isPressed.front > 0;
+  //     case "front or back":
+  //       return isPressed.front > 0 || isPressed.back > 0;
+  //     case "front and back":
+  //       return isPressed.front > 0 && isPressed.back > 0;
+  //     case "neither":
+  //       return isPressed.front === 0 && isPressed.back === 0;
+  //   }
+  // }
 
-  @block({
-    type: "hat",
-    text: (bumper, condition) => `when ${bumper} bumper ${condition}`,
-    args: [
-      { type: "string", options: bumperOptions, defaultValue: bumperOptions[0] },
-      { type: "string", options: ["release", "pressed"], defaultValue: "pressed" }
-    ]
-  })
-  whenBumperPressed(bumber: typeof bumperOptions[number], condition: "release" | "pressed") {
-    const isPressed = this.doodlebot?.getSensorReadingSync("bumper");
+  // @block({
+  //   type: "hat",
+  //   text: (bumper, condition) => `when ${bumper} bumper ${condition}`,
+  //   args: [
+  //     { type: "string", options: bumperOptions, defaultValue: bumperOptions[0] },
+  //     { type: "string", options: ["release", "pressed"], defaultValue: "pressed" }
+  //   ]
+  // })
+  // whenBumperPressed(bumber: typeof bumperOptions[number], condition: "release" | "pressed") {
+  //   const isPressed = this.doodlebot?.getSensorReadingSync("bumper");
 
-    const isPressedCondition = condition === "pressed";
-    if (!isPressed) {
-      return false;
-    }
+  //   const isPressedCondition = condition === "pressed";
+  //   if (!isPressed) {
+  //     return false;
+  //   }
 
-    switch (bumber) {
-      case "back":
-        return isPressedCondition ? isPressed.back > 0 : isPressed.back === 0;
-      case "front":
-        return isPressedCondition ? isPressed.front > 0 : isPressed.front === 0;
-      case "front or back":
-        return isPressedCondition ? isPressed.front > 0 || isPressed.back > 0 : isPressed.front === 0 && isPressed.back === 0;
-      case "front and back":
-        return isPressedCondition ? isPressed.front > 0 && isPressed.back > 0 : isPressed.front === 0 || isPressed.back === 0;
-      case "neither":
-        return isPressedCondition ? isPressed.front === 0 && isPressed.back === 0 : isPressed.front > 0 && isPressed.back > 0;
-    }
-  }
+  //   switch (bumber) {
+  //     case "back":
+  //       return isPressedCondition ? isPressed.back > 0 : isPressed.back === 0;
+  //     case "front":
+  //       return isPressedCondition ? isPressed.front > 0 : isPressed.front === 0;
+  //     case "front or back":
+  //       return isPressedCondition ? isPressed.front > 0 || isPressed.back > 0 : isPressed.front === 0 && isPressed.back === 0;
+  //     case "front and back":
+  //       return isPressedCondition ? isPressed.front > 0 && isPressed.back > 0 : isPressed.front === 0 || isPressed.back === 0;
+  //     case "neither":
+  //       return isPressedCondition ? isPressed.front === 0 && isPressed.back === 0 : isPressed.front > 0 && isPressed.back > 0;
+  //   }
+  // }
 
-  @block({
-    type: "command",
-    text: (sensor: SensorKey) => `disable ${sensor}`,
-    arg: { type: "string", options: sensorKeys, defaultValue: sensorKeys[0] }
-  })
-  async disableSensor(sensor: SensorKey) {
-    await this.doodlebot?.disableSensor(sensor);
-  }
+  // @block({
+  //   type: "command",
+  //   text: (sensor: SensorKey) => `disable ${sensor}`,
+  //   arg: { type: "string", options: sensorKeys, defaultValue: sensorKeys[0] }
+  // })
+  // async disableSensor(sensor: SensorKey) {
+  //   await this.doodlebot?.disableSensor(sensor);
+  // }
 
-  @block({
-    type: "command",
-    text: (direction) => `move eyes from center to ${direction}`,
-    arg: { type: "string", options: ["left", "right", "up", "down"] },
-  })
-  async moveEyes1(direction: string) {
-    await this.doodlebot.moveEyes("center", direction);
-  }
+  // @block({
+  //   type: "command",
+  //   text: (direction) => `move eyes from center to ${direction}`,
+  //   arg: { type: "string", options: ["left", "right", "up", "down"] },
+  // })
+  // async moveEyes1(direction: string) {
+  //   await this.doodlebot.moveEyes("center", direction);
+  // }
 
-  @block({
-    type: "command",
-    text: (direction) => `move eyes from ${direction} to center`,
-    arg: { type: "string", options: ["left", "right", "up", "down"] },
-  })
-  async moveEyes2(direction: string) {
-    await this.doodlebot.moveEyes(direction, "center");
-  }
+  // @block({
+  //   type: "command",
+  //   text: (direction) => `move eyes from ${direction} to center`,
+  //   arg: { type: "string", options: ["left", "right", "up", "down"] },
+  // })
+  // async moveEyes2(direction: string) {
+  //   await this.doodlebot.moveEyes(direction, "center");
+  // }
 
-  @block({
-    type: "command",
-    text: (sound) => `play sound track${sound}`,
-    arg: { type: "number", defaultValue: 1 }
-  })
-  async playSound(sound: number) {
-    await this.doodlebot?.sendWebsocketCommand("m", sound)
-  }
+  // @block({
+  //   type: "command",
+  //   text: (sound) => `play sound track${sound}`,
+  //   arg: { type: "number", defaultValue: 1 }
+  // })
+  // async playSound(sound: number) {
+  //   await this.doodlebot?.sendWebsocketCommand("m", sound)
+  // }
 
-  @block((self) => ({
-    type: "command",
-    text: (sound) => `play sound ${sound}`,
-    arg: {
-      type: "string", options: () => {
-        const soundList = self.getCurrentSounds(self.runtime._editingTarget.id);
-        if (soundFiles.length == 0 && soundList.length == 0) {
-          return ["File"];
-        }
-        if ((soundFiles.length == 1 && soundFiles[0] == "File") && soundList.length > 0) {
-          soundFiles = [];
-        }
-        return soundFiles.concat(soundList);
-      }
-    }
-  }))
-  async playSoundFile(sound: string, util: BlockUtilityWithID) {
-    let currentId = this.runtime._editingTarget.id;
-    let costumeSounds = this.getCurrentSounds(currentId);
-    if (costumeSounds.includes(sound)) {
-      let soundArray = this.soundDictionary[currentId][sound];
-      console.log(soundArray);
-      await this.doodlebot.sendAudioData(soundArray);
-    } else {
-      await this.doodlebot?.sendWebsocketCommand("m", sound)
-    }
+  // @block((self) => ({
+  //   type: "command",
+  //   text: (sound) => `play sound ${sound}`,
+  //   arg: {
+  //     type: "string", options: () => {
+  //       const soundList = self.getCurrentSounds(self.runtime._editingTarget.id);
+  //       if (soundFiles.length == 0 && soundList.length == 0) {
+  //         return ["File"];
+  //       }
+  //       if ((soundFiles.length == 1 && soundFiles[0] == "File") && soundList.length > 0) {
+  //         soundFiles = [];
+  //       }
+  //       return soundFiles.concat(soundList);
+  //     }
+  //   }
+  // }))
+  // async playSoundFile(sound: string, util: BlockUtilityWithID) {
+  //   let currentId = this.runtime._editingTarget.id;
+  //   let costumeSounds = this.getCurrentSounds(currentId);
+  //   if (costumeSounds.includes(sound)) {
+  //     let soundArray = this.soundDictionary[currentId][sound];
+  //     console.log(soundArray);
+  //     await this.doodlebot.sendAudioData(soundArray);
+  //   } else {
+  //     await this.doodlebot?.sendWebsocketCommand("m", sound)
+  //   }
 
-  }
+  // }
 
+  // KEEP
   @block((self) => ({
     type: "command",
     text: (type: DisplayKey | string) => `display ${type}`,
@@ -544,6 +552,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     }
   }
 
+  // KEEP
   // @ts-ignore
   @block((self) => ({
     type: "command",
@@ -582,60 +591,61 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   }
 
 
-  @block({
-    type: "command",
-    text: "display video",
-  })
-  async connectToVideo() {
-    this.videoDrawable ??= await this.createVideoStreamDrawable();
-  }
+  // @block({
+  //   type: "command",
+  //   text: "display video",
+  // })
+  // async connectToVideo() {
+  //   this.videoDrawable ??= await this.createVideoStreamDrawable();
+  // }
 
-  async setArrays() {
-    imageFiles = await this.doodlebot.findImageFiles();
-    soundFiles = await this.doodlebot.findSoundFiles();
-  }
-
-
-
-  @block({
-    type: "reporter",
-    text: (location, type) => `get ${location} of ${type}`,
-    args: [
-      { type: "string", options: ["x", "y"], defaultValue: "x" },
-      { type: "string", options: ["face", "object"], defaultValue: "face" }
-    ]
-  })
-  async getSinglePredict2s(location: string, type: "face" | "object") {
-    const reading = await this.doodlebot.getFacePrediction(type);
-    return this.doodlebot.getReadingLocation(location, type == "object" ? "apple" : type, reading);
-  }
-
-  @block({
-    type: "Boolean",
-    text: (type) => `is ${type} detected`,
-    arg: { type: "string", options: ["face", "apple", "orange"], defaultValue: "face" }
-  })
-  async isFaceDetected(type: string) {
-    const reading = await this.doodlebot.getFacePrediction("face");
-    const x = this.doodlebot.getReadingLocation("x", type, reading);
-    const y = this.doodlebot.getReadingLocation("y", type, reading);
-    if (x == -1 && y == -1) {
-      return false;
-    }
-    return true;
-  }
+  // async setArrays() {
+  //   imageFiles = await this.doodlebot.findImageFiles();
+  //   soundFiles = await this.doodlebot.findSoundFiles();
+  // }
 
 
-  @(scratch.button`Upload sound`)
-  uploadSoundUI() {
-    this.openUI("UploadSound");
-  }
 
-  @(scratch.button`Upload image`)
-  uploadImageUI() {
-    this.openUI("UploadImage");
-  }
+  // @block({
+  //   type: "reporter",
+  //   text: (location, type) => `get ${location} of ${type}`,
+  //   args: [
+  //     { type: "string", options: ["x", "y"], defaultValue: "x" },
+  //     { type: "string", options: ["face", "object"], defaultValue: "face" }
+  //   ]
+  // })
+  // async getSinglePredict2s(location: string, type: "face" | "object") {
+  //   const reading = await this.doodlebot.getFacePrediction(type);
+  //   return this.doodlebot.getReadingLocation(location, type == "object" ? "apple" : type, reading);
+  // }
 
+  // @block({
+  //   type: "Boolean",
+  //   text: (type) => `is ${type} detected`,
+  //   arg: { type: "string", options: ["face", "apple", "orange"], defaultValue: "face" }
+  // })
+  // async isFaceDetected(type: string) {
+  //   const reading = await this.doodlebot.getFacePrediction("face");
+  //   const x = this.doodlebot.getReadingLocation("x", type, reading);
+  //   const y = this.doodlebot.getReadingLocation("y", type, reading);
+  //   if (x == -1 && y == -1) {
+  //     return false;
+  //   }
+  //   return true;
+  // }
+
+
+  // @(scratch.button`Upload sound`)
+  // uploadSoundUI() {
+  //   this.openUI("UploadSound");
+  // }
+
+  // @(scratch.button`Upload image`)
+  // uploadImageUI() {
+  //   this.openUI("UploadImage");
+  // }
+
+  // KEEP
   @block({
     type: "command",
     text: (volume) => `set volume to ${volume}`,
@@ -647,148 +657,148 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   }
 
 
-  @block({
-    type: "command",
-    text: (url) => `import AI model ${url}`,
-    arg: {
-      type: "string",
-      defaultValue: "URL HERE"
-    }
-  })
-  async importModel(url: string) {
-    const result = await this.teachableMachine.useModel(url);
-    await this.indicate(result);
-  }
+  // @block({
+  //   type: "command",
+  //   text: (url) => `import AI model ${url}`,
+  //   arg: {
+  //     type: "string",
+  //     defaultValue: "URL HERE"
+  //   }
+  // })
+  // async importModel(url: string) {
+  //   const result = await this.teachableMachine.useModel(url);
+  //   await this.indicate(result);
+  // }
 
 
-  @block({
-    type: "hat",
-    text: (className) => `when model detects ${className}`,
-    arg: {
-      type: "string",
-      options: function () {
-        if (!this) {
-          throw new Error('Context is undefined');
-        }
-        return this.teachableMachine.getModelClasses() || ["Select a class"];
-      },
-      defaultValue: "Select a class"
-    }
-  })
-  whenModelDetects(className: string) {
-    return this.teachableMachine.model_match(className);
-  }
+  // @block({
+  //   type: "hat",
+  //   text: (className) => `when model detects ${className}`,
+  //   arg: {
+  //     type: "string",
+  //     options: function () {
+  //       if (!this) {
+  //         throw new Error('Context is undefined');
+  //       }
+  //       return this.teachableMachine.getModelClasses() || ["Select a class"];
+  //     },
+  //     defaultValue: "Select a class"
+  //   }
+  // })
+  // whenModelDetects(className: string) {
+  //   return this.teachableMachine.model_match(className);
+  // }
 
-  @block({
-    type: "reporter",
-    text: "get AI prediction",
-  })
-  modelPrediction() {
-    return this.teachableMachine.getModelPrediction();
-  }
+  // @block({
+  //   type: "reporter",
+  //   text: "get AI prediction",
+  // })
+  // modelPrediction() {
+  //   return this.teachableMachine.getModelPrediction();
+  // }
 
-  @block({
-    type: "reporter",
-    text: (className) => `confidence for ${className}`,
-    arg: {
-      type: "string",
-      options: function () {
-        if (!this) {
-          throw new Error('Context is undefined');
-        }
-        return this.teachableMachine.getModelClasses() || ["Select a class"];
-      },
-      defaultValue: "Select a class"
-    }
-  })
-  getConfidence(className: string) {
-    if (!this.teachableMachine.modelConfidences || !this.teachableMachine.modelConfidences[className]) {
-      return 0;
-    }
-    return Math.round(this.teachableMachine.modelConfidences[className] * 100);
-  }
+  // @block({
+  //   type: "reporter",
+  //   text: (className) => `confidence for ${className}`,
+  //   arg: {
+  //     type: "string",
+  //     options: function () {
+  //       if (!this) {
+  //         throw new Error('Context is undefined');
+  //       }
+  //       return this.teachableMachine.getModelClasses() || ["Select a class"];
+  //     },
+  //     defaultValue: "Select a class"
+  //   }
+  // })
+  // getConfidence(className: string) {
+  //   if (!this.teachableMachine.modelConfidences || !this.teachableMachine.modelConfidences[className]) {
+  //     return 0;
+  //   }
+  //   return Math.round(this.teachableMachine.modelConfidences[className] * 100);
+  // }
 
 
 
-  @block({
-    type: "command",
-    text: (imageClass, seconds) => `capture snapshots of ${imageClass} class for ${seconds} seconds`,
-    args: [
-      { type: "string", defaultValue: "class name" },
-      { type: "number", defaultValue: 10 }
-    ]
-  })
-  async captureSnapshots(imageClass: string, seconds: number) {
-    // Create indicator to show progress
-    const indicator = await this.indicate({
-      type: "warning",
-      msg: `Capturing snapshots of ${imageClass}...`
-    });
+  // @block({
+  //   type: "command",
+  //   text: (imageClass, seconds) => `capture snapshots of ${imageClass} class for ${seconds} seconds`,
+  //   args: [
+  //     { type: "string", defaultValue: "class name" },
+  //     { type: "number", defaultValue: 10 }
+  //   ]
+  // })
+  // async captureSnapshots(imageClass: string, seconds: number) {
+  //   // Create indicator to show progress
+  //   const indicator = await this.indicate({
+  //     type: "warning",
+  //     msg: `Capturing snapshots of ${imageClass}...`
+  //   });
 
-    const snapshots: string[] = [];
-    const zip = new JSZip();
+  //   const snapshots: string[] = [];
+  //   const zip = new JSZip();
 
-    // Ensure we have video stream
-    this.imageStream ??= this.doodlebot?.getImageStream();
-    if (!this.imageStream) {
-      indicator.close();
-      await this.indicate({
-        type: "error",
-        msg: "No video stream available"
-      });
-      return;
-    }
+  //   // Ensure we have video stream
+  //   this.imageStream ??= this.doodlebot?.getImageStream();
+  //   if (!this.imageStream) {
+  //     indicator.close();
+  //     await this.indicate({
+  //       type: "error",
+  //       msg: "No video stream available"
+  //     });
+  //     return;
+  //   }
 
-    // Capture a snapshot every 500ms
-    const interval = 100; // 500ms between snapshots
-    const iterations = (seconds * 1000) / interval;
+  //   // Capture a snapshot every 500ms
+  //   const interval = 100; // 500ms between snapshots
+  //   const iterations = (seconds * 1000) / interval;
 
-    for (let i = 0; i < iterations; i++) {
-      // Create a canvas to draw the current frame
-      const canvas = document.createElement('canvas');
-      canvas.width = this.imageStream.width;
-      canvas.height = this.imageStream.height;
-      const ctx = canvas.getContext('2d');
+  //   for (let i = 0; i < iterations; i++) {
+  //     // Create a canvas to draw the current frame
+  //     const canvas = document.createElement('canvas');
+  //     canvas.width = this.imageStream.width;
+  //     canvas.height = this.imageStream.height;
+  //     const ctx = canvas.getContext('2d');
 
-      // Draw current frame to canvas
-      ctx.drawImage(this.imageStream, 0, 0);
+  //     // Draw current frame to canvas
+  //     ctx.drawImage(this.imageStream, 0, 0);
 
-      // Convert to base64 and store
-      const dataUrl = canvas.toDataURL('image/jpeg');
-      snapshots.push(dataUrl);
+  //     // Convert to base64 and store
+  //     const dataUrl = canvas.toDataURL('image/jpeg');
+  //     snapshots.push(dataUrl);
 
-      // Add to zip file
-      const base64Data = dataUrl.replace(/^data:image\/jpeg;base64,/, "");
-      zip.file(`${imageClass}_${i + 1}.jpg`, base64Data, { base64: true });
+  //     // Add to zip file
+  //     const base64Data = dataUrl.replace(/^data:image\/jpeg;base64,/, "");
+  //     zip.file(`${imageClass}_${i + 1}.jpg`, base64Data, { base64: true });
 
-      // Wait for next interval
-      await new Promise(resolve => setTimeout(resolve, interval));
-    }
+  //     // Wait for next interval
+  //     await new Promise(resolve => setTimeout(resolve, interval));
+  //   }
 
-    // Generate zip file
-    const content = await zip.generateAsync({ type: "blob" });
+  //   // Generate zip file
+  //   const content = await zip.generateAsync({ type: "blob" });
 
-    // Create download link with image class in filename
-    const downloadUrl = URL.createObjectURL(content);
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.download = `${imageClass}_snapshots.zip`;
+  //   // Create download link with image class in filename
+  //   const downloadUrl = URL.createObjectURL(content);
+  //   const link = document.createElement('a');
+  //   link.href = downloadUrl;
+  //   link.download = `${imageClass}_snapshots.zip`;
 
-    // Trigger download
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  //   // Trigger download
+  //   document.body.appendChild(link);
+  //   link.click();
+  //   document.body.removeChild(link);
 
-    // Cleanup
-    URL.revokeObjectURL(downloadUrl);
-    indicator.close();
+  //   // Cleanup
+  //   URL.revokeObjectURL(downloadUrl);
+  //   indicator.close();
 
-    await this.indicate({
-      type: "success",
-      msg: `Captured ${snapshots.length} snapshots of ${imageClass}`
-    });
+  //   await this.indicate({
+  //     type: "success",
+  //     msg: `Captured ${snapshots.length} snapshots of ${imageClass}`
+  //   });
 
-  }
+  // }
 
   // @block({
   //   type: "command",
