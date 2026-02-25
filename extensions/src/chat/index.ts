@@ -32,6 +32,9 @@ const details: ExtensionMenuDisplayDetails = {
   insetIconURL: "Replace with the name of your inset icon image file (which should be placed in the same directory as this file)"
 };
 
+const backendHost = "https://goai-backend-3309c298eb92.herokuapp.com";
+//const backendHost = "http://localhost:3000";
+
 /** @see {ExplanationOfClass} */
 export default class GenAIExtension extends extension(details, "addCostumes") {
 
@@ -108,44 +111,44 @@ export default class GenAIExtension extends extension(details, "addCostumes") {
   async recordMicrophoneAudio(seconds: number): Promise<Float32Array> {
     // Ask for microphone access
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-  
+
     // Create MediaRecorder
     const recorder = new MediaRecorder(stream);
     const chunks: BlobPart[] = [];
-  
+
     recorder.ondataavailable = (event) => {
       if (event.data.size > 0) chunks.push(event.data);
     };
-  
+
     // Start recording
     recorder.start();
-  
+
     // Stop after given seconds
     await new Promise((resolve) => setTimeout(resolve, seconds * 1000));
     recorder.stop();
-  
+
     // Wait until the recorder finishes
     await new Promise<void>((resolve) => {
       recorder.onstop = () => resolve();
     });
-  
+
     // Stop the stream tracks
     stream.getTracks().forEach((t) => t.stop());
-  
+
     // Combine chunks into a single Blob
     const blob = new Blob(chunks, { type: "audio/webm" });
     const arrayBuffer = await blob.arrayBuffer();
-  
+
     // Decode into Float32 PCM data
     const audioCtx = new AudioContext();
     const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-  
+
     // Flatten all channels into one Float32Array (mono)
     const channelData = audioBuffer.getChannelData(0);
     return new Float32Array(channelData);
   }
-  
-  
+
+
 
   async saveAudioBufferToWav(buffer) {
     function createWavHeader(buffer) {
@@ -290,7 +293,7 @@ export default class GenAIExtension extends extension(details, "addCostumes") {
 
   async getListenEndpoint(file) {
     console.log("sending audio file");
-    const url = `https://doodlebot.media.mit.edu/listen`
+    const url = `${backendHost}/listen`
     const formData = new FormData();
     formData.append("audio_file", file);
 
@@ -308,9 +311,9 @@ export default class GenAIExtension extends extension(details, "addCostumes") {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-        const data = await response.json();
-        const textResponse = data.text;
-        return textResponse;
+      const data = await response.json();
+      const textResponse = data.text;
+      return textResponse;
 
     } catch (error) {
       console.error("Error sending audio file:", error);
@@ -321,7 +324,7 @@ export default class GenAIExtension extends extension(details, "addCostumes") {
 
   async sendAudioFileToChatEndpoint(file, endpoint, blob, seconds) {
     console.log("sending audio file");
-    const url = `https://doodlebot.media.mit.edu/${endpoint}?voice=${this.voice_id}&pitch=${this.pitch_value}`
+    const url = `${backendHost}/${endpoint}?voice=${this.voice_id}&pitch=${this.pitch_value}`
     const formData = new FormData();
     formData.append("audio_file", file);
     const audioURL = URL.createObjectURL(file);
@@ -401,7 +404,7 @@ export default class GenAIExtension extends extension(details, "addCostumes") {
     console.log("Valid WAV file");
     return true;
   }
-  
+
 
   async processAndSendAudio(float32Buffer: Float32Array, endpoint: string, seconds: number) {
     try {
@@ -413,16 +416,16 @@ export default class GenAIExtension extends extension(details, "addCostumes") {
         audioCtx.sampleRate
       );
       audioBuffer.copyToChannel(float32Buffer, 0);
-  
+
       // 2️⃣ Encode AudioBuffer to WAV
       const wavBlob = await this.saveAudioBufferToWav(audioBuffer); // now works
-  
+
       // 3️⃣ Create a playable file
       const wavFile = new File([wavBlob], "output.wav", { type: "audio/wav" });
-  
+
       // 5️⃣ Send WAV to server
       await this.sendAudioFileToChatEndpoint(wavFile, endpoint, wavBlob, seconds);
-  
+
     } catch (error) {
       console.error("Error processing and sending audio:", error);
     }
@@ -438,22 +441,22 @@ export default class GenAIExtension extends extension(details, "addCostumes") {
         audioCtx.sampleRate
       );
       audioBuffer.copyToChannel(float32Buffer, 0);
-  
+
       // 2️⃣ Encode AudioBuffer to WAV
       const wavBlob = await this.saveAudioBufferToWav(audioBuffer); // now works
-  
+
       // 3️⃣ Create a playable file
       const wavFile = new File([wavBlob], "output.wav", { type: "audio/wav" });
-  
+
       // 5️⃣ Send WAV to server
       return await this.getListenEndpoint(wavFile);
-  
+
     } catch (error) {
       console.error("Error processing and sending audio:", error);
       return "Error";
     }
   }
-  
+
 
   private async handleChatInteraction(seconds: number, endpoint: string) {
     console.log(`recording audio for ${seconds} seconds`);
@@ -481,7 +484,7 @@ export default class GenAIExtension extends extension(details, "addCostumes") {
 
   private async handleReturnChatInteraction(prompt: string, target) {
 
-    const url = `https://doodlebot.media.mit.edu/prompt`
+    const url = `${backendHost}/prompt`
 
 
     let temporary_prompt;
@@ -496,6 +499,9 @@ export default class GenAIExtension extends extension(details, "addCostumes") {
 
       response = await fetch(url, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify({ text_input: prompt, system_prompt: temporary_prompt }),
       });
 
@@ -505,9 +511,9 @@ export default class GenAIExtension extends extension(details, "addCostumes") {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-        const data = await response.json();
-        const textResponse = data.text;
-        return textResponse;
+      const data = await response.json();
+      const textResponse = data.text;
+      return textResponse;
 
     } catch (error) {
       console.error("Error sending audio file:", error);
@@ -515,37 +521,86 @@ export default class GenAIExtension extends extension(details, "addCostumes") {
     }
   }
 
-  private async handleReturnDalleInteraction(prompt: string) {
-
-    const url = `https://doodlebot.media.mit.edu/create_image`
-
+  private async generateImage(prompt: string) {
     try {
-      let response;
-
-      response = await fetch(url, {
+      // Step 1: create job
+      const createResponse = await fetch(`${backendHost}/create_image`, {
         method: "POST",
-        body: JSON.stringify({ text_input: prompt }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
       });
+      const { jobId } = await createResponse.json();
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.log("Error response:", errorText);
-        throw new Error(`HTTP error! status: ${response.status}`);
+      // Step 2: poll until ready
+      let imageReady = false;
+      let imageB64 = "";
+
+      while (!imageReady) {
+        const statusRes = await fetch(`${backendHost}/create_image/${jobId}`);
+        const statusData = await statusRes.json();
+
+        // If we serve the image directly
+        if (statusData.image) {
+          imageReady = true;
+          imageB64 = statusData.image;
+        } else {
+          if (statusData.status === "done") {
+            imageReady = true;
+            // optionally fetch the image here if your server returns a URL
+          } else if (statusData.status === "error") {
+            throw new Error(statusData.error);
+          } else {
+            // pending
+            await new Promise((r) => setTimeout(r, 2000));
+          }
+        }
       }
 
-        const data = await response.json();
-        const textResponse = data.image;
-        return textResponse;
+      return imageB64;
 
     } catch (error) {
-      console.error("Error sending audio file:", error);
-      return "Error";
+      console.error("Error generating image:", error);
+      throw error;
     }
   }
+
+  // private async handleReturnDalleInteraction(prompt: string) {
+
+  //   // Step 1: Submit prompt
+
+
+  //   const url = `${backendHost}/create_image`
+
+  //   try {
+  //     let response;
+
+  //     response = await fetch(url, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json"
+  //       },
+  //       body: JSON.stringify({ text_input: prompt }),
+  //     });
+
+  //     if (!response.ok) {
+  //       const errorText = await response.text();
+  //       console.log("Error response:", errorText);
+  //       throw new Error(`HTTP error! status: ${response.status}`);
+  //     }
+
+  //     const data = await response.json();
+  //     const textResponse = data.image;
+  //     return textResponse;
+
+  //   } catch (error) {
+  //     console.error("Error sending audio file:", error);
+  //     return "Error";
+  //   }
+  // }
 
   private async speakText(text: string, showDisplay: boolean = false) {
     try {
-      const url = `https://doodlebot.media.mit.edu/speak?voice=${this.voice_id}&pitch=${this.pitch_value}`;
+      const url = `${backendHost}/speak?voice=${this.voice_id}&pitch=${this.pitch_value}`;
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -553,56 +608,56 @@ export default class GenAIExtension extends extension(details, "addCostumes") {
         },
         body: JSON.stringify({ text }),
       });
-  
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-  
+
       const blob = await response.blob();
       const audioUrl = URL.createObjectURL(blob);
       const audio = new Audio(audioUrl);
-  
+
       // ✅ Wait for the audio to be ready
       await new Promise<void>((resolve) => {
         audio.addEventListener("loadedmetadata", () => resolve());
       });
-  
+
       // ✅ Play the audio
       audio.play();
-  
+
       // ✅ Wait until playback finishes
       await new Promise<void>((resolve) => {
         audio.addEventListener("ended", () => resolve());
         audio.addEventListener("error", () => resolve()); // failsafe
       });
-  
+
       console.log("✅ Audio playback finished");
-  
+
     } catch (error) {
       console.error("Error in speakText function:", error);
       throw error;
     }
   }
-  
+
 
   base64ToUint8ClampedArray(base64) {
     // Remove base64 header if present (e.g. "data:image/png;base64,")
     const cleaned = base64.split(',').pop();
-  
+
     // Decode base64 to binary string
     const binary = atob(cleaned);
-  
+
     // Convert binary string to Uint8ClampedArray
     const len = binary.length;
     const bytes = new Uint8ClampedArray(len);
-  
+
     for (let i = 0; i < len; i++) {
       bytes[i] = binary.charCodeAt(i);
     }
-  
+
     return bytes;
   }
-  
+
 
 
 
@@ -619,13 +674,22 @@ export default class GenAIExtension extends extension(details, "addCostumes") {
     return await this.handleReturnChatInteraction(text, target);
   }
 
+  async urlToBase64(url: string): Promise<string> {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Failed to fetch image: ${res.statusText}`);
+    const arrayBuffer = await res.arrayBuffer();
+    const base64 = Buffer.from(arrayBuffer).toString("base64");
+    const mime = res.headers.get("content-type") || "image/png";
+    return `data:${mime};base64,${base64}`;
+  }
+
   @block({
     type: "command",
     text: (text) => `add costume from DallE with prompt ${text}`,
     arg: { type: "string", defaultValue: "A pretty cute little cow" }
   })
   async promptDalleAPI(text: string, { target }: BlockUtilityWithID) {
-    const image = await this.handleReturnDalleInteraction(text);
+    const image = await this.generateImage(text);
     const imageHelper = getImageHelper(100, 100);
     const imageData = await imageHelper.drawBase64(image);
     this.addCostume(target, imageData, "add and set");
@@ -650,11 +714,11 @@ export default class GenAIExtension extends extension(details, "addCostumes") {
     await this.speakText(text);
   }
 
-  @block((self) => ({ 
+  @block((self) => ({
     type: "command",
     text: (voice, pitch) => `set voice to ${voice} and pitch to ${pitch}`,
     args: [
-      { 
+      {
         type: "string",
         options: Object.keys(self.voice_map),
         defaultValue: "en-US-CoraMultilingualNeural"
@@ -672,7 +736,7 @@ export default class GenAIExtension extends extension(details, "addCostumes") {
     text: (system_prompt) => `set system prompt to ${system_prompt}`,
     arg: { type: "string", defaultValue: "You are a 4th grade classroom assistant..." },
   })
-  async setSystemPrompt(system_prompt: string, {target} : BlockUtilityWithID) {
+  async setSystemPrompt(system_prompt: string, { target }: BlockUtilityWithID) {
     this.target_prompts[target.id] = system_prompt;
   }
 }
