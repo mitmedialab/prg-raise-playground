@@ -796,6 +796,41 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     await this.doodlebot?.sendBLECommand("m", "c");
   }
 
+  @block({
+    type: "command",
+    text: (delay) => `send delay 1 ${delay}`,
+    arg: { type: "number", defaultValue: 200 }
+  })
+  async delay1(delay: number) {
+    await this.doodlebot?.sendBLECommand("i", delay);
+  }
+
+  @block({
+    type: "command",
+    text: (delay) => `send delay 2 ${delay}`,
+    arg: { type: "number", defaultValue: 200 }
+  })
+  async delay2(delay: number) {
+    await this.doodlebot?.sendBLECommand("j", delay);
+  }
+
+  @block({
+    type: "command",
+    text: (delay) => `send delay 3 ${delay}`,
+    arg: { type: "number", defaultValue: 200 }
+  })
+  async delay3(delay: number) {
+    await this.doodlebot?.sendBLECommand("y", delay);
+  }
+
+  @block({
+    type: "command",
+    text: (delay) => `send delay 4 ${delay}`,
+    arg: { type: "number", defaultValue: 200 }
+  })
+  async delay4(delay: number) {
+    await this.doodlebot?.sendBLECommand("z", delay);
+  }
 
   // @block({
   //   type: "reporter",
