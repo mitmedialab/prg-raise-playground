@@ -8,7 +8,7 @@ import timer from "./timer";
 import voices, { Voice } from "./voices";
 import Sentiment from "sentiment";
 import { ToxicityClassifier, load as loadToxicity } from "@tensorflow-models/toxicity";
-import { getTranslationToEnglish } from "./services/translation";
+// import { getTranslationToEnglish } from "./services/translation";
 import { Predictor, build, failure, success } from "./model";
 
 const { legacyBlock, } = legacyFullSupport.for<TextClassification>();
@@ -309,13 +309,15 @@ export default class TextClassification extends extension(details, "legacySuppor
   }
 
   private async getConfidence(text: string) {
-    const translation = await getTranslationToEnglish(text);
+    // const translation = await getTranslationToEnglish(text);
+    const translation = text;
     const { score } = await this.customPredictor(translation);
     return score;
   }
 
   private async getEmbeddings(text) {
-    const newText = await getTranslationToEnglish(text); //translates text from any language to english
+    // const newText = await getTranslationToEnglish(text); //translates text from any language to english
+    const newText = text;
     if (this.labels.length === 0 || !this.labels[0] || !this.customPredictor) return;
     const { label } = await this.customPredictor(newText);
     return label;
