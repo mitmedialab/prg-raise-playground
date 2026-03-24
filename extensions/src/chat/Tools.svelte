@@ -12,8 +12,8 @@
     // 1. Create a placeholder tool
     // We use a timestamp or random string for 'value' to keep it unique
     const newTool = {
-      name: "Tool name",
-      description: "Tool description",
+      name: "tool_name",
+      description: "Tool description...",
     };
 
     // 2. Tell the backend to add this tool
@@ -27,10 +27,14 @@
   // Function to handle saving changes on blur (when user clicks away)
   const saveToolEdit = async (tool, index, field, event) => {
     // Get the new value from the editable element
+    let newValue = event.target.innerText.trim();
 
-    console.log("NEW TOOL", tool);
-    console.log("OLD TOOL", extension.tools);
-    const newValue = event.target.innerText.trim();
+    if (field === "name") {
+      newValue = newValue.replace(/\s+/g, "_");
+
+      // Update the UI immediately so the user sees the "snap"
+      event.target.innerText = newValue;
+    }
 
     await invoke("updateTool", index, field, newValue);
 
