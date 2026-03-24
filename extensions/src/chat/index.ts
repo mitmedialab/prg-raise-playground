@@ -36,14 +36,21 @@ const backendHost = "https://goai-backend-3309c298eb92.herokuapp.com";
 //const backendHost = "http://localhost:3000";
 
 /** @see {ExplanationOfClass} */
-export default class GenAIExtension extends extension(details, "addCostumes") {
+export default class GenAIExtension extends extension(details, "addCostumes", "ui") {
 
   voice_id: number;
   pitch_value: number;
   target_prompts: any;
   default_prompt: string;
 
+  internalChatHistory: { type?: string, call_id?: string, output?: string, role?: string, content?: string }[] = [];
+
+  displayChatHistory: { role: string, content: string }[] = [];
+
   voice_map: any;
+
+  tools = [];
+  toolEvents = {};
 
   /** @see {ExplanationOfInitMethod} */
   init(env: Environment) {
@@ -521,6 +528,70 @@ export default class GenAIExtension extends extension(details, "addCostumes") {
     }
   }
 
+  updateTool(index, field, value) {
+    if (field == "name") {
+      this.tools[index].name = value;
+    } else if (field == "description") {
+      this.tools[index].description = value;
+    }
+  }
+
+  addTool(name, description) {
+    const tempTool =
+    {
+      type: "function",
+      name: name,
+      description: description,
+      parameters: {
+        type: "object",
+        properties: {
+        },
+        additionalProperties: false,
+      },
+      strict: true,
+    };
+    this.tools.push(tempTool);
+    this.toolEvents[name] = false;
+  }
+
+  private async handleReturnAgenticChatInteraction(prompt, target) {
+
+    const url = `${backendHost}/agentic_prompt`
+
+    let temporary_prompt;
+    if (this.target_prompts[target.id]) {
+      temporary_prompt = this.target_prompts[target.id];
+    } else {
+      temporary_prompt = this.default_prompt;
+    }
+
+    try {
+      let response;
+
+      response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ text_input: prompt, system_prompt: temporary_prompt, tools: this.tools }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.log("Error response:", errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const textResponse = data.text;
+      return textResponse;
+
+    } catch (error) {
+      console.error("Error sending audio file:", error);
+      return "Error";
+    }
+  }
+
   private async generateImage(prompt: string) {
     try {
       // Step 1: create job
@@ -671,7 +742,77 @@ export default class GenAIExtension extends extension(details, "addCostumes") {
     arg: { type: "string", defaultValue: "What is your favorite color?" }
   })
   async promptChatAPI(text: string, { target }: BlockUtilityWithID) {
-    return await this.handleReturnChatInteraction(text, target);
+    this.internalChatHistory.push({ role: "user", content: text });
+    const response = await this.handleReturnChatInteraction(text, target);
+    this.displayChatHistory.push({ role: "student", content: text });
+    this.displayChatHistory.push({ role: "assistant", content: response });
+
+    this.internalChatHistory.push({ role: "assistant", content: response });
+    return response;
+  }
+
+  @block({
+    type: "command",
+    text: (text) => `agentic prompt ${text}`,
+    arg: { type: "string", defaultValue: "What is your favorite color?" }
+  })
+  async promptAgenticChatAPI(text: string, { target }: BlockUtilityWithID) {
+    this.internalChatHistory.push({ role: "user", content: text });
+    this.displayChatHistory.push({ role: "student", content: text });
+    const response = await this.handleReturnAgenticChatInteraction(this.internalChatHistory, target);
+    this.internalChatHistory.push(...response);
+    for (const entry of response) {
+      if (entry.type == "function_call") {
+        this.toolEvents[entry.name] = true;
+        this.internalChatHistory.push({
+          type: "function_call_output",
+          call_id: entry.call_id,
+          output: "",
+        });
+        this.displayChatHistory.push({
+          role: "tool",
+          content: `${entry.name}`
+        })
+      }
+    }
+  }
+
+  @block({
+    type: "hat",
+    text: (toolName) => `when I receive ${toolName}`,
+    arg: {
+      type: "string",
+      options: function () {
+        if (!this) {
+          throw new Error('Context is undefined');
+        }
+        return this.tools.length > 0 ? this.tools.map(tool => tool.name) : ["Add a tool"];
+      },
+      defaultValue: "Add a tool"
+    }
+  })
+  whenModelDetects(toolName: string) {
+    if (this.toolEvents[toolName]) {
+      this.toolEvents[toolName] = false;
+      return true;
+    }
+    return false;
+  }
+
+  @block({
+    type: "button",
+    text: `Edit tools`,
+  })
+  showTools() {
+    this.openUI("Tools");
+  }
+
+  @block({
+    type: "button",
+    text: `Show chat history`,
+  })
+  showChatHistory() {
+    this.openUI("ChatHistory");
   }
 
   async urlToBase64(url: string): Promise<string> {
