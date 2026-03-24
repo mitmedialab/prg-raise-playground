@@ -798,8 +798,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   @block({
     type: "command",
-    text: (delay) => `send delay 1 ${delay}`,
-    arg: { type: "number", defaultValue: 200 }
+    text: (delay) => `set clock frequency ${delay}`,
+    arg: { type: "number", defaultValue: 16 }
   })
   async delay1(delay: number) {
     await this.doodlebot?.sendBLECommand("i", delay);
@@ -807,8 +807,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   @block({
     type: "command",
-    text: (delay) => `send delay 2 ${delay}`,
-    arg: { type: "number", defaultValue: 200 }
+    text: (delay) => `set max acceleration ${delay}`,
+    arg: { type: "number", defaultValue: 1000 }
   })
   async delay2(delay: number) {
     await this.doodlebot?.sendBLECommand("j", delay);
@@ -816,20 +816,47 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   @block({
     type: "command",
-    text: (delay) => `send delay 3 ${delay}`,
-    arg: { type: "number", defaultValue: 200 }
+    text: (delay) => `set min velocity ${delay}`,
+    arg: { type: "number", defaultValue: 1 }
   })
   async delay3(delay: number) {
+    await this.doodlebot?.sendBLECommand("v", delay);
+  }
+
+  @block({
+    type: "command",
+    text: (delay) => `set velocity divide ${delay}`,
+    arg: { type: "number", defaultValue: 1 }
+  })
+  async delay5(delay: number) {
+    await this.doodlebot?.sendBLECommand("w", delay);
+  }
+
+  @block({
+    type: "command",
+    text: (delay) => `send microsteps per step ${delay}`,
+    arg: { type: "number", defaultValue: 16 }
+  })
+  async delay6(delay: number) {
     await this.doodlebot?.sendBLECommand("y", delay);
   }
 
   @block({
     type: "command",
-    text: (delay) => `send delay 4 ${delay}`,
-    arg: { type: "number", defaultValue: 200 }
+    text: (delay) => `set run current ${delay}`,
+    arg: { type: "number", defaultValue: 30 }
   })
   async delay4(delay: number) {
     await this.doodlebot?.sendBLECommand("z", delay);
+  }
+
+  @block({
+    type: "command",
+    text: (delay) => `set multiplier ${delay}`,
+    arg: { type: "number", defaultValue: 1 }
+  })
+  async delay7(delay: number) {
+    await this.doodlebot?.sendBLECommand("k", delay);
   }
 
   // @block({
