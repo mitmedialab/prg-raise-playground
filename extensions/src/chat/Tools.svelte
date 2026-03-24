@@ -96,36 +96,79 @@
   }
   table {
     width: 100%;
-    border-collapse: collapse;
+    /* Fixes the width so columns don't jump while typing */
+    table-layout: fixed;
+    border-collapse: separate; /* Allows for rounded corners on cells */
+    border-spacing: 0;
     margin-bottom: 15px;
+    font-family: sans-serif;
   }
-  th,
-  td {
-    text-align: left;
-    padding: 8px;
-    border-bottom: 1px solid #eee;
-  }
+
   th {
-    font-weight: bold;
-    color: #555;
-    font-size: 14px;
+    font-weight: 600;
+    color: #6b7280; /* Subtle gray */
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 10px 8px;
+    text-align: left;
+    border-bottom: 2px solid #f3f4f6;
   }
 
-  /* Styling to make editable cells look interactive */
+  /* Define column ratios here */
+  th:nth-child(1) {
+    width: 30%;
+  }
+  th:nth-child(2) {
+    width: 70%;
+  }
+
+  td {
+    padding: 4px; /* Reduced padding because the editable div adds internal space */
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: top;
+    /* Prevents content from pushing the table out of its 400px container */
+    overflow: hidden;
+  }
+
+  /* The actual editable cell */
   td[contenteditable="true"] {
-    background-color: rgba(0, 0, 0, 0.02); /* Slight background hint */
-    border-radius: 4px;
-    outline: none; /* Remove default blue focus outline */
+    padding: 8px;
+    margin: 2px;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #374151;
+    background-color: transparent;
+    transition: all 0.2s ease;
+    outline: none;
+
+    /* Ensures text wraps instead of stretching the row horizontally */
+    white-space: pre-wrap;
+    word-break: break-word;
+    min-height: 1.5em;
   }
 
+  /* Hover State */
   td[contenteditable="true"]:hover {
-    background-color: rgba(0, 0, 0, 0.05); /* Darken slightly on hover */
+    background-color: #f9fafb;
     cursor: text;
   }
 
+  /* Focus State */
   td[contenteditable="true"]:focus {
     background-color: #fff;
-    box-shadow: inset 0 0 0 1px "#007bff"; /* Highlight on focus */
+    /* Uses the CSS variable we set on the container */
+    box-shadow: 0 0 0 2px var(--focus-color, #007bff);
+    position: relative;
+    z-index: 10; /* Ensures the focus ring stays above other borders */
+  }
+
+  /* Placeholder styling for empty description */
+  td[contenteditable="true"]:empty:before {
+    content: attr(data-placeholder);
+    color: #9ca3af;
+    font-style: italic;
   }
 
   /* Wrapper to center the button below the table */
