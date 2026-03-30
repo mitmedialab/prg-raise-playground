@@ -162,22 +162,20 @@ class ExtensionManager {
             if (this.isExtensionLoaded(extensionURL)) {
                 const message = `Rejecting attempt to load a second extension with ID ${extensionURL}`;
                 log.warn(message);
-                return Promise.resolve();
+                return;
             }
-
-            const extension = builtinExtensions[extensionURL]();
             const extensionInstance = new extension(this.runtime);
             await tryInitExtension(extensionInstance);
             const serviceName = this._registerInternalExtension(extensionInstance);
             this._loadedExtensions.set(extensionURL, serviceName);
-            return Promise.resolve();
+            return;
         }
 
         return new Promise((resolve, reject) => {
             // If we `require` this at the global level it breaks non-webpack targets, including tests
             const worker = new Worker('./extension-worker.js');
 
-            this.pendingExtensions.push({extensionURL, resolve, reject});
+            this.pendingExtensions.push({ extensionURL, resolve, reject });
             dispatch.addWorker(worker);
         });
     }
