@@ -28,7 +28,7 @@ jobs:
           (cd $pkg && npm install --ignore-scripts)
         done
     - name: install & build
-      run: pnpm build
+      run: pnpm install --frozen-lockfile && pnpm transpile:vm && pnpm build:extensions:and:gui --include all --watch false --parrallel false
       env:
         CI: true
     - name: Extract branch name
