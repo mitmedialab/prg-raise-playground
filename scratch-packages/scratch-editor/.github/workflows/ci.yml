@@ -1,0 +1,120 @@
+name: CI
+
+on:
+  merge_group:
+  pull_request:
+  push: # WARNING: Renovate sometimes automerges without PR, so we MUST build and test renovate/** branches
+  workflow_call:
+    inputs:
+      force-full-build:
+        description: 'Build all packages regardless of path filters'
+        type: boolean
+        default: false
+  workflow_dispatch:
+    inputs:
+      force-full-build:
+        description: 'Build all packages regardless of path filters'
+        type: boolean
+        default: false
+
+concurrency:
+  group: "${{ github.workflow }} @ ${{ github.event.compare || github.head_ref || github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    outputs:
+      any-workspace: ${{ steps.filter.outputs.any-workspace }}
+      packages: ${{ steps.filter.outputs.changes }}
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+      - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6
+        with:
+          cache: 'npm'
+          node-version-file: '.nvmrc'
+      - name: Debug Info
+        # https://docs.github.com/en/actions/reference/security/secure-use#use-an-intermediate-environment-variable
+        env:
+          # `env:` values are printed to the log even without using them in `run:`
+          GH_CONTEXT: ${{ toJson(github) }}
+          SCRATCH_ENV: ${{ vars.SCRATCH_ENV || '<none>' }}
+        run: |
+          cat <<EOF
+          Working directory: $(pwd)
+          Node version: $(node --version)
+          NPM version: $(npm --version)
+          Scratch environment: $SCRATCH_ENV
+          EOF
+
+      - uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4
+        id: paths-filter
+        if: ${{ !inputs.force-full-build }}
+        with:
+          filters: ./.github/path-filters.yml
+
+      - name: Resolve Changed Packages
+        id: filter
+        run: |
+          if [ "${{ inputs.force-full-build }}" = "true" ]; then
+            echo "any-workspace=true" >> "$GITHUB_OUTPUT"
+            PACKAGES=$(ls -1d packages/*/ | xargs -n1 basename | jq -Rcn '[inputs]')
+            echo "changes=$PACKAGES" >> "$GITHUB_OUTPUT"
+          else
+            echo "any-workspace=${{ steps.paths-filter.outputs.any-workspace }}" >> "$GITHUB_OUTPUT"
+            PACKAGES=$(echo '${{ steps.paths-filter.outputs.changes }}' | jq -c '[.[] | select(. != "global" and . != "any-workspace")]')
+            echo "changes=$PACKAGES" >> "$GITHUB_OUTPUT"
+          fi
+
+      - if: ${{ steps.filter.outputs.any-workspace == 'true' }}
+        uses: ./.github/actions/install-dependencies
+
+      # TODO: Packages currently depend on each other's compiled dist at build time. Fix that and matrix the builds.
+      - name: Build Packages
+        if: ${{ steps.filter.outputs.any-workspace == 'true' }}
+        run: npm run build
+
+      - name: Store Build Artifacts
+        if: ${{ steps.filter.outputs.any-workspace == 'true' }}
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
+        with:
+          name: build
+          retention-days: 90
+          path: |
+            packages/**/build
+            packages/**/dist
+            packages/**/playground
+
+  test:
+    name: Test
+    needs: build
+    if: ${{ needs.build.outputs.any-workspace == 'true' && needs.build.outputs.packages != '[]' }}
+    uses: ./.github/workflows/test-packages.yml
+    with:
+      packages: ${{ needs.build.outputs.packages }}
+
+  preview:
+    name: Preview
+    needs: build
+    # We don't want to give forks free reign to publish to our GitHub Pages, so run this job only if both:
+    # - any workspace changed (otherwise there's no work to do)
+    # - and either
+    #   - this is not a PR (so it's some other event that happened in our fork, like a push or merge group)
+    #   - or it's a PR from our fork (not some other fork)
+    # - and
+    #   - it's not a Renovate branch (just to reduce noise)
+    if: ${{
+        (needs.build.outputs.any-workspace == 'true') &&
+        (
+          (!github.event.pull_request) ||
+          (github.event.pull_request.head.repo.full_name == github.repository)
+        ) &&
+        (!startsWith((github.head_ref || github.ref_name), 'renovate/'))
+      }}
+    uses: ./.github/workflows/deploy-playground-preview.yml
+    with:
+      # even `develop` should be published to a subdirectory
+      # that way each branch can be updated or cleaned up independently
+      destination_dir: ${{ github.head_ref || github.ref_name }}
+      full_commit_message: "Build for ${{ github.sha }} ${{ github.event.head_commit.message }}"

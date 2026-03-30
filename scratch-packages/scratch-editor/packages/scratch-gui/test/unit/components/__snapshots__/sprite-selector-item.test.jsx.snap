@@ -1,0 +1,102 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SpriteSelectorItemComponent does not have a close box when not selected 1`] = `
+<div
+  class="ponies"
+  data-state="closed"
+  role="button"
+  tabindex="0"
+>
+  <div>
+    <div>
+      <img
+        draggable="false"
+        src="https://scratch.mit.edu/foo/bar/pony"
+      />
+    </div>
+  </div>
+  <div>
+    <div>
+      Pony sprite
+    </div>
+  </div>
+</div>
+`;
+
+exports[`SpriteSelectorItemComponent matches snapshot when given a number and details to show 1`] = `
+<div
+  class="ponies undefined"
+  data-state="closed"
+  role="button"
+  tabindex="0"
+>
+  <div>
+    5
+  </div>
+  <div>
+    <div>
+      <img
+        draggable="false"
+        src="https://scratch.mit.edu/foo/bar/pony"
+      />
+    </div>
+  </div>
+  <div>
+    <div>
+      Pony sprite
+    </div>
+    <div>
+      480 x 360
+    </div>
+  </div>
+  <button
+    aria-label="Delete"
+    class=""
+    tabindex="0"
+  >
+    <div
+      class=""
+    >
+      <img
+        src="test-file-stub"
+      />
+    </div>
+  </button>
+</div>
+`;
+
+exports[`SpriteSelectorItemComponent matches snapshot when selected 1`] = `
+<div
+  class="ponies undefined"
+  data-state="closed"
+  role="button"
+  tabindex="0"
+>
+  <div>
+    <div>
+      <img
+        draggable="false"
+        src="https://scratch.mit.edu/foo/bar/pony"
+      />
+    </div>
+  </div>
+  <div>
+    <div>
+      Pony sprite
+    </div>
+  </div>
+  <button
+    aria-label="Delete"
+    class=""
+    tabindex="0"
+  >
+    <div
+      class=""
+    >
+      <img
+        src="test-file-stub"
+      />
+    </div>
+  </button>
+</div>
+`;

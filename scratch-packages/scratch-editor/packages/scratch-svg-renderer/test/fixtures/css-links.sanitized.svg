@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <mask id="myMask">
+            <rect fill="white"></rect>
+        </mask>
+
+        <pattern id="dataPattern">
+            <image href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCI+PHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9InJlZCIvPjwvc3ZnPg=="></image>
+        </pattern>
+    </defs>
+
+    <circle mask="url(#myMask)"></circle>
+
+    <circle></circle>
+    <circle></circle>
+
+    <rect></rect>
+    <rect></rect>
+
+    <style>.url{fill:url(#myMask);stroke:url(#myMask);background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA")}.url .inner-2{}</style>
+
+    <rect class="url"></rect>
+
+    <style>@font-face{font-family:'ExternalFont'}@font-face{font-family:'DataFont';src:url("data:font/woff;base64,d09GRgABAAAAAAnSUhEUgAAAAUA") format('woff')}text{font-family:'DataFont'}</style>
+</svg>

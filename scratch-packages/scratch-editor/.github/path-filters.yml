@@ -1,0 +1,37 @@
+# The `&global` anchor defines a set of common paths to include by reference in the other filters.
+global: &global
+  - ".github/path-filters.yml"
+  - ".github/workflows/ci.yml"
+  - ".nvmrc"
+  - "package.json"
+  - "package-lock.json"
+  - "scripts/**"
+
+any-workspace:
+  - *global
+  - "packages/**"
+
+task-herder:
+  - *global
+  - "packages/task-herder/**"
+scratch-media-lib-scripts:
+  - *global
+  - "packages/scratch-media-lib-scripts/**"
+scratch-svg-renderer:
+  - *global
+  - "packages/scratch-svg-renderer/**"
+scratch-render:
+  - *global
+  - "packages/scratch-render/**"
+  - "packages/scratch-svg-renderer/**"
+scratch-vm:
+  - *global
+  - "packages/scratch-render/**"
+  - "packages/scratch-svg-renderer/**"
+  - "packages/scratch-vm/**"
+scratch-gui:
+  - *global
+  - "packages/scratch-gui/**"
+  - "packages/scratch-render/**"
+  - "packages/scratch-svg-renderer/**"
+  - "packages/scratch-vm/**"

@@ -1,0 +1,33 @@
+# Generated content
+src/dist/globals.js
+
+# pnpm used at the root level
+package-lock.json
+
+# Typescript declaration files (which are generated)
+**/*.d.ts
+
+# Mac OS
+.DS_Store
+
+# NPM
+/node_modules
+npm-*
+
+# Testing
+/.nyc_output
+/.tap
+/coverage
+/test-results
+
+# Editor
+/.idea
+/.vscode
+
+# Build
+/dist
+/playground
+/benchmark
+
+# Localization
+/translations

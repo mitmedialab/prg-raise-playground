@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <mask id="myMask">
+            <rect fill="white" />
+        </mask>
+
+        <pattern id="dataPattern">
+            <image href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCI+PHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9InJlZCIvPjwvc3ZnPg==" />
+        </pattern>
+    </defs>
+
+    <circle mask="url(#myMask)" />
+
+    <circle fill="url(https://example.com/using-circle-fill-attribute)" />
+    <circle style="fill: url(https://example.com/using-circle-fill-inline-style)" />
+
+    <rect stroke="url(https://example.com/using-rect-stroke-attribute)" />
+    <rect style="stroke: url(https://example.com/using-rect-fill-inline-style)" />
+
+    <style>
+        .url {
+            fill: url(#myMask);
+            stroke: url(#myMask);
+            shape-outside: url(https://example.com/using-shape-outside-stylesheet);
+            filter: url(https://example.com/using-filter-stylesheet);
+            mask-image: url(https://example.com/using-mask-image-stylesheet);
+
+            background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA");
+        }
+
+        .url .inner-2 {
+            filter: url(https://example.com/using-external-filter-stylesheet);
+        }
+    </style>
+
+    <rect class="url" />
+
+    <style>
+        @font-face {
+            font-family: 'ExternalFont';
+            src: url(https://example.com/using-font-face.woff) format(woff), url(https://example.com/using-font-face.woff2) format(woff2);
+        }
+        @font-face {
+            font-family: 'DataFont';
+            src: url("data:font/woff;base64,d09GRgABAAAAAAnSUhEUgAAAAUA") format('woff');
+        }
+        text {
+            font-family: 'DataFont';
+        }
+    </style>
+</svg>

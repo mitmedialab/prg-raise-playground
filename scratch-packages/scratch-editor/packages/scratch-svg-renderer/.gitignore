@@ -1,0 +1,21 @@
+# Mac OS
+.DS_Store
+
+# NPM
+/node_modules
+npm-*
+
+# Build
+/dist
+/playground
+
+# Test
+/.tap
+/test-results
+
+# Editors
+/#*
+*~
+
+# Act
+.secrets

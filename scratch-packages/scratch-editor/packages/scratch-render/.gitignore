@@ -1,0 +1,22 @@
+# Mac OS
+.DS_Store
+
+# NPM
+/node_modules
+npm-*
+
+# Testing
+/.nyc_output
+/.tap
+/coverage
+/test-results
+
+# IDEA
+/.idea
+
+# Build
+/dist
+/playground
+
+# Act
+.secrets

@@ -1,0 +1,95 @@
+{
+  "name": "@scratch/scratch-render",
+  "version": "13.4.0-test.7",
+  "description": "WebGL Renderer for Scratch 3.0",
+  "keywords": [],
+  "homepage": "https://github.com/scratchfoundation/scratch-render#readme",
+  "bugs": {
+    "url": "https://github.com/scratchfoundation/scratch-editor/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/scratchfoundation/scratch-editor.git"
+  },
+  "license": "AGPL-3.0-only",
+  "author": "Massachusetts Institute of Technology",
+  "exports": {
+    "webpack": "./src/index.js",
+    "browser": "./dist/web/scratch-render.js",
+    "node": "./dist/node/scratch-render.js",
+    "default": "./src/index.js"
+  },
+  "main": "./dist/node/scratch-render.js",
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  },
+  "files": [
+    "dist",
+    "src",
+    "LICENSE",
+    "TRADEMARK"
+  ],
+  "scripts": {
+    "build": "webpack --progress && npm run docs",
+    "clean": "rimraf dist playground",
+    "docs": "typedoc",
+    "lint": "eslint",
+    "prepublish-watch": "npm run watch",
+    "prepublishOnly": "echo \"Please publish through CI only.\" && exit 1",
+    "start": "webpack-dev-server",
+    "tap": "tap test/unit test/integration",
+    "test": "npm run lint && npm run tap",
+    "watch": "webpack --progress --watch --watch-poll"
+  },
+  "browserslist": [
+    "Chrome >= 63",
+    "Edge >= 15",
+    "Firefox >= 57",
+    "Safari >= 8",
+    "Android >= 63",
+    "iOS >= 8"
+  ],
+  "tap": {
+    "allow-incomplete-coverage": true
+  },
+  "dependencies": {
+    "@scratch/scratch-svg-renderer": "13.4.0-test.7",
+    "grapheme-breaker": "0.3.2",
+    "hull.js": "0.2.10",
+    "ify-loader": "1.1.0",
+    "linebreak": "0.3.0",
+    "raw-loader": "0.5.1",
+    "tslog": "4.10.2",
+    "twgl.js": "4.24.0"
+  },
+  "devDependencies": {
+    "@babel/core": "7.29.0",
+    "@babel/polyfill": "7.12.1",
+    "@babel/preset-env": "7.29.2",
+    "@scratch/scratch-vm": "13.4.0-test.7",
+    "babel-loader": "9.2.1",
+    "copy-webpack-plugin": "6.4.1",
+    "docdash": "0.4.0",
+    "eslint": "9.39.4",
+    "eslint-config-scratch": "14.0.13",
+    "gh-pages": "1.2.0",
+    "globals": "16.5.0",
+    "html-webpack-plugin": "5.6.6",
+    "playwright-chromium": "1.58.2",
+    "scratch-render-fonts": "1.0.252",
+    "scratch-semantic-release-config": "4.0.1",
+    "scratch-storage": "6.2.0",
+    "scratch-webpack-configuration": "3.1.2",
+    "semantic-release": "25.0.3",
+    "tap": "21.6.2",
+    "terser-webpack-plugin": "5.4.0",
+    "typedoc": "0.28.16",
+    "webpack": "5.105.4",
+    "webpack-cli": "5.1.4",
+    "webpack-dev-server": "5.2.3"
+  },
+  "peerDependencies": {
+    "scratch-render-fonts": "^1.0.0"
+  }
+}
