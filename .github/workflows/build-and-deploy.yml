@@ -21,6 +21,8 @@ jobs:
     - uses: pnpm/action-setup@v4
       with:
         version: 9.10.0
+    - name: Install first step
+      run: pnpm install --frozen-lockfile
     - name: Install subpackage dependencies
       run: |
         for pkg in scratch-packages/scratch-editor/packages/scratch-gui scratch-packages/scratch-editor/packages/scratch-vm; do
@@ -28,7 +30,7 @@ jobs:
           (cd $pkg && npm install --ignore-scripts)
         done
     - name: install & build
-      run: pnpm install --frozen-lockfile && pnpm transpile:vm && pnpm build:extensions:and:gui --include all --watch false --parrallel false
+      run: pnpm transpile:vm && pnpm build:extensions:and:gui --include all --watch false --parrallel false
       env:
         CI: true
     - name: Extract branch name
