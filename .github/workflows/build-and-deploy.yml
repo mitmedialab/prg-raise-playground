@@ -25,6 +25,12 @@ jobs:
       run: pnpm build
       env:
         CI: true
+    - name: Install subpackage dependencies
+      run: |
+        for pkg in scratch-packages/scratch-editor/packages/scratch-gui scratch-packages/scratch-editor/packages/scratch-vm; do
+          echo "Installing $pkg..."
+          (cd $pkg && npm install --ignore-scripts)
+        done
     - name: Extract branch name
       shell: bash
       run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"

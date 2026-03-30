@@ -2,4 +2,3 @@ packages:
   - "extensions/**"
   - "extensions/src/**"
   - "scratch-packages/*"
-  - "scratch-packages/scratch-editor/packages/*"
