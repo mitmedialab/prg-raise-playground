@@ -20,7 +20,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - uses: pnpm/action-setup@v4
       with:
-        version: 9.1.2
+        version: 9.10.0
     - name: Install subpackage dependencies
       run: |
         for pkg in scratch-packages/scratch-editor/packages/scratch-gui scratch-packages/scratch-editor/packages/scratch-vm; do
