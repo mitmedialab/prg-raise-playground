@@ -7,7 +7,7 @@
       "request": "launch",
       "runtimeExecutable": "node",
       "resolveSourceMapLocations": [
-        "${workspaceFolder}/scratch-packages/scratch-vm/**",
+        "${workspaceFolder}/scratch-packages/scratch-editor/packages/scratch-vm/**",
         "!**/node_modules/**"
       ],
       "runtimeArgs": [
@@ -18,7 +18,7 @@
       "args": [
         "scripts/transpile.ts"
       ],
-      "cwd": "${workspaceRoot}/scratch-packages/scratch-vm/",
+      "cwd": "${workspaceRoot}/scratch-packages/scratch-editor/packages/scratch-vm/",
       "internalConsoleOptions": "openOnSessionStart",
       "skipFiles": [
         "<node_internals>/**",

@@ -4,7 +4,7 @@ import assert from "assert";
 
 export const root = path.resolve(__dirname, "..");
 
-const getPackage = (name: string) => path.join(root, "scratch-packages", `scratch-${name}`);
+const getPackage = (name: string) => path.join(root, "scratch-packages", "scratch-editor", "packages", `scratch-${name}`);
 
 export const scratchPackages = {
   gui: getPackage("gui"),

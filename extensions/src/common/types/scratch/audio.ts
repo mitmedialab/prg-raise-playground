@@ -1,4 +1,4 @@
-import type Target from "$root/scratch-packages/scratch-vm/src/engine/target";
+import type Target from "$root/scratch-packages/scratch-editor/packages/scratch-vm/src/engine/target";
 import type { EventEmitter } from "events";
 
 /**

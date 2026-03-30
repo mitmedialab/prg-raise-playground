@@ -39,7 +39,7 @@ bundleExtensions.on("message", (msg: Message) => {
       break;
     case Conditon.ExtensionsSuccesfullyBundled:
       if (childProcesses.serveGui) return;
-      const webpack = path.join(getNodeModule(gui, "webpack"), "bin", "webpack.js");
+      const webpack = path.join("gui", "..", "..", "..", "node_modules", "webpack", "bin", "webpack.js");
       const config = path.join(gui, "webpack.config.js");
       const clearTsNodeArgs = [];
       const options = { cwd: gui, execArgv: clearTsNodeArgs };

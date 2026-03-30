@@ -28,10 +28,10 @@
         "./testing/*"
       ],
       "$scratch-vm": [
-        "../scratch-packages/scratch-vm/src"
+        "../scratch-packages/scratch-editor/packages/scratch-vm/src"
       ],
       "$scratch-vm/*": [
-        "../scratch-packages/scratch-vm/src/*"
+        "../scratch-packages/scratch-editor/packages/scratch-vm/src/*"
       ]
     }
   }
