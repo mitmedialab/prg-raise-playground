@@ -172,7 +172,7 @@ const distStandaloneConfig = baseConfig.clone()
             'scratch-gui-standalone': path.join(__dirname, 'src/index-standalone.tsx')
         },
         output: {
-            path: path.resolve(__dirname, 'dist')
+            path: path.resolve(__dirname, 'build')
         }
     });
 
