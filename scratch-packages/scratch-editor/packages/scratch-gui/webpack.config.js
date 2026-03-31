@@ -20,7 +20,8 @@ const commonHtmlWebpackPluginOptions = {
     // Looks like '&gtm_auth=0123456789abcdefghijklm&gtm_preview=env-00&gtm_cookies_win=x'
     // Taken from the middle of: GTM -> Admin -> Environments -> (environment) -> Get Snippet
     // Blank for production
-    gtm_env_auth: process.env.GTM_ENV_AUTH || ''
+    gtm_env_auth: process.env.GTM_ENV_AUTH || '',
+    base: process.env.PUBLIC_PATH || '/'
 };
 
 const cssModuleExceptions = [
@@ -197,7 +198,9 @@ if (!process.env.CI) {
             // Having `publicPath: '/'` (the default) means the `gui.js` file in `build/index.html`
             // would be looked for at the root of the filesystem, which is incorrect.
             // Hence, we're resetting the public path to be relative.
-            publicPath: process.env.PUBLIC_PATH || ''
+            publicPath: process.env.CI
+                ? process.env.PUBLIC_PATH
+                : ''
         }
     })
     .addPlugin(new HtmlWebpackPlugin({
