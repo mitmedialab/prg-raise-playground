@@ -149,7 +149,7 @@ const distConfig = baseConfig.clone()
             // which depend on a relative path resolution.
             // (e.g. `/tmp/*path-to-packaged-dist*/static/assets` in scratch-desktop)
             publicPath: 'auto',
-            path: path.resolve(__dirname, 'build')
+            path: path.resolve(__dirname, 'dist')
         }
     })
     .addExternals(['react', 'react-dom', 'redux', 'react-redux'])
@@ -172,7 +172,7 @@ const distStandaloneConfig = baseConfig.clone()
             'scratch-gui-standalone': path.join(__dirname, 'src/index-standalone.tsx')
         },
         output: {
-            path: path.resolve(__dirname, 'build')
+            path: path.resolve(__dirname, 'dist')
         }
     });
 
@@ -194,7 +194,7 @@ const buildConfig = baseConfig.clone()
             // Having `publicPath: '/'` (the default) means the `gui.js` file in `build/index.html`
             // would be looked for at the root of the filesystem, which is incorrect.
             // Hence, we're resetting the public path to be relative.
-            publicPath: ''
+            // publicPath: ''
         }
     })
     .addPlugin(new HtmlWebpackPlugin({
