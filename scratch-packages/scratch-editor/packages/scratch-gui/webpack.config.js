@@ -149,7 +149,7 @@ const distConfig = baseConfig.clone()
             // which depend on a relative path resolution.
             // (e.g. `/tmp/*path-to-packaged-dist*/static/assets` in scratch-desktop)
             publicPath: 'auto',
-            path: path.resolve(__dirname, 'dist')
+            path: path.resolve(__dirname, 'build')
         }
     })
     .addExternals(['react', 'react-dom', 'redux', 'react-redux'])
