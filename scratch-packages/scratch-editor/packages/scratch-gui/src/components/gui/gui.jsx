@@ -1,3 +1,25 @@
+if (process.env.NODE_ENV === "production") {
+    const ignoreMessages = [
+        "Unknown event handler property",
+        "Use JavaScript default parameters instead.",
+        "Support for defaultProps will be removed",
+        "Failed prop type: The prop",
+        "If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase",
+        "findDOMNode is deprecated and will be removed",
+        "Failed prop type: Invalid prop",
+        "Failed %s type: %s%s"
+    ]
+    const originalConsoleError = console.error;
+    console.error = (...args) => {
+        console.log("ERROR INTERCEPTED", args[0]);
+        if (ignoreMessages.some(msg => args[0].includes(msg))) {
+                console.log("ERROR INTERCEPTED:", ...args); // optional log for debugging
+                return;
+        }
+        originalConsoleError(...args);
+    };
+}
+
 import classNames from 'classnames';
 import omit from 'lodash.omit';
 import PropTypes from 'prop-types';
