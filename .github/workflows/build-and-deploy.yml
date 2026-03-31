@@ -29,15 +29,16 @@ jobs:
           echo "Installing $pkg..."
           (cd $pkg && npm install --ignore-scripts)
         done
-    - name: install & build
-      run: pnpm transpile:vm && pnpm build:extensions:and:gui --include all --watch false --parrallel false
-      env:
-        CI: true
-        NODE_ENV: production  
     - name: Extract branch name
       shell: bash
       run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
       id: extract_branch
+    - name: install & build
+      run: pnpm transpile:vm && pnpm build:extensions:and:gui --include all --watch false --parrallel false
+      env:
+        CI: true
+        NODE_ENV: production 
+        PUBLIC_PATH: /${{ steps.extract_branch.outputs.branch }}/ 
     - name: Deploy 🚀
       uses: JamesIves/github-pages-deploy-action@v4
       with:
