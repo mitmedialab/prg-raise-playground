@@ -19,3 +19,5 @@ declare module '!!raw-loader!.*' {
 }
 
 declare module 'scratch-paint';
+
+declare let __webpack_public_path__: string;
