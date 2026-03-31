@@ -34,7 +34,6 @@ const baseConfig = new ScratchWebpackConfigBuilder(
         rootPath: path.resolve(__dirname),
         enableReact: true,
         enableTs: true,
-        shouldSplitChunks: false,
         cssModuleExceptions
     })
     .setTarget('browserslist')
@@ -182,7 +181,18 @@ const buildConfig = baseConfig.clone();
 
 if (!process.env.CI) {
     buildConfig.enableDevServer(process.env.PORT || 8602);
+
 }
+
+    buildConfig.merge({
+        optimization: {
+            runtimeChunk: 'single',
+            splitChunks: {
+                chunks: 'all'
+            }
+        }
+    });
+
     buildConfig.merge({
         entry: {
             gui: './src/playground/index.jsx',
