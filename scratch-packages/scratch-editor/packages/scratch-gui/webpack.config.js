@@ -50,40 +50,6 @@ class PatchWorkerPlugin {
     });
   }
 }
-
-// class PatchWorkerPlugin {
-//   constructor() {
-//     this.folder = '../../node_modules/scratch-storage/dist/web'; // folder to patch
-//     this.publicPath = process.env.PUBLIC_PATH || '/';
-//   }
-
-//   apply(compiler) {
-//     compiler.hooks.afterEmit.tap('PatchWorkerPlugin', () => {
-//       if (!this.folder) return;
-
-//       const folderPath = path.resolve(__dirname, this.folder);
-
-//       if (!fs.existsSync(folderPath)) return;
-
-//       const files = fs.readdirSync(folderPath);
-
-//       files.forEach((file) => {
-//         if (!file.endsWith('.js') && !file.endsWith('.js.map')) return;
-
-//         const filePath = path.join(folderPath, file);
-//         let code = fs.readFileSync(filePath, 'utf-8');
-
-//         code = code.replace(
-//           /__webpack_require__\.p\s*=\s*["'].*?["'];/,
-//           `__webpack_require__.p = "${this.publicPath}";`
-//         );
-
-//         fs.writeFileSync(filePath, code, 'utf-8');
-//         console.log(`[PatchWorkerPlugin] Patched ${filePath}`);
-//       });
-//     });
-//   }
-// }
     
 const commonHtmlWebpackPluginOptions = {
     // Google Tag Manager ID
@@ -108,6 +74,7 @@ const baseConfig = new ScratchWebpackConfigBuilder(
         rootPath: path.resolve(__dirname),
         enableReact: true,
         enableTs: true,
+        shouldSplitChunks: false,
         cssModuleExceptions
     })
     .setTarget('browserslist')
@@ -224,9 +191,6 @@ const distConfig = baseConfig.clone()
             // - if the publicPath is static here (defaults to `/`), they are unable to load their assets,
             // which depend on a relative path resolution.
             // (e.g. `/tmp/*path-to-packaged-dist*/static/assets` in scratch-desktop)
-            // publicPath: process.env.PUBLIC_PATH
-            //     ? process.env.PUBLIC_PATH
-            //     : '',
             publicPath: 'auto',
             path: path.resolve(__dirname, 'dist')
         }
@@ -248,7 +212,6 @@ const distConfig = baseConfig.clone()
 const distStandaloneConfig = baseConfig.clone()
     .merge({
         entry: {
-            
             'scratch-gui-standalone': path.join(__dirname, 'src/index-standalone.tsx')
         },
         output: {
@@ -257,31 +220,16 @@ const distStandaloneConfig = baseConfig.clone()
     });
 
 // build the examples and debugging tools in `build/`
-const buildConfig = baseConfig.clone();
-
-if (!process.env.CI) {
-    buildConfig.enableDevServer(process.env.PORT || 8602);
-
-}
-
-    // buildConfig.merge({
-    //     optimization: {
-    //         runtimeChunk: 'single',
-    //         splitChunks: {
-    //             chunks: 'all'
-    //         }
-    //     }
-    // });
-
-    buildConfig.merge({
+const buildConfig = baseConfig.clone()
+    .enableDevServer(process.env.PORT || 8602)
+    .merge({
     watchOptions: {
             ignored: [
                 path.resolve(__dirname, '../../node_modules/scratch-storage/dist/web/**')
             ]
         }
-    });
-
-    buildConfig.merge({
+    })
+    .merge({
         entry: {
             gui: './src/playground/index.jsx',
             guistandalone: './src/playground/standalone.jsx',
