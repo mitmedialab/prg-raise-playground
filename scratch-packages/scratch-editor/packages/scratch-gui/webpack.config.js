@@ -177,9 +177,12 @@ const distStandaloneConfig = baseConfig.clone()
     });
 
 // build the examples and debugging tools in `build/`
-const buildConfig = baseConfig.clone()
-    .enableDevServer(process.env.PORT || 8602)
-    .merge({
+const buildConfig = baseConfig.clone();
+
+if (!process.env.CI) {
+    buildConfig.enableDevServer(process.env.PORT || 8602);
+}
+    buildConfig.merge({
         entry: {
             gui: './src/playground/index.jsx',
             guistandalone: './src/playground/standalone.jsx',
