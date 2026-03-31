@@ -76,7 +76,8 @@ const baseConfig = new ScratchWebpackConfigBuilder(
         'process.env.DEBUG': Boolean(process.env.DEBUG),
         'process.env.GA_ID': `"${process.env.GA_ID || 'UA-000000-01'}"`,
         'process.env.GTM_ENV_AUTH': `"${process.env.GTM_ENV_AUTH || ''}"`,
-        'process.env.GTM_ID': process.env.GTM_ID ? `"${process.env.GTM_ID}"` : null
+        'process.env.GTM_ID': process.env.GTM_ID ? `"${process.env.GTM_ID}"` : null,
+        'process.env.PUBLIC_PATH': JSON.stringify(process.env.PUBLIC_PATH || '/')
     }))
     .addPlugin(new CopyWebpackPlugin({
         patterns: [
@@ -169,6 +170,7 @@ const distConfig = baseConfig.clone()
 const distStandaloneConfig = baseConfig.clone()
     .merge({
         entry: {
+            
             'scratch-gui-standalone': path.join(__dirname, 'src/index-standalone.tsx')
         },
         output: {
