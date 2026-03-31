@@ -1,9 +1,8 @@
 
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 import GUI from './containers/gui';
-import './setPublicPath';
+
 import {AppStateProviderHOC} from './lib/app-state-provider-hoc';
 import {EditorState} from './lib/editor-state';
 import {type ReactComponentLike} from 'prop-types';

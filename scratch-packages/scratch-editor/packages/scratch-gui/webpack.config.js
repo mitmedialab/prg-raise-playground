@@ -11,6 +11,43 @@ const { createSveltePreprocessor } = require("./svelte.config.js");
 
 // const STATIC_PATH = process.env.STATIC_PATH || '/static';
 
+const fs = require('fs');
+
+
+class PatchWorkerPlugin {
+  constructor(options = {}) {
+    this.folder = '../../node_modules/scratch-storage/dist/web'; // folder to patch
+    this.publicPath = process.env.PUBLIC_PATH || '/';
+  }
+
+  apply(compiler) {
+    compiler.hooks.afterEmit.tap('PatchWorkerPlugin', () => {
+      if (!this.folder) return;
+
+      const folderPath = path.resolve(__dirname, this.folder);
+
+      if (!fs.existsSync(folderPath)) return;
+
+      const files = fs.readdirSync(folderPath);
+
+      files.forEach((file) => {
+        if (!file.endsWith('.js') && !file.endsWith('.js.map')) return;
+
+        const filePath = path.join(folderPath, file);
+        let code = fs.readFileSync(filePath, 'utf-8');
+
+        code = code.replace(
+          /__webpack_require__\.p\s*=\s*["'].*?["'];/,
+          `__webpack_require__.p = "${this.publicPath}";`
+        );
+
+        fs.writeFileSync(filePath, code, 'utf-8');
+        console.log(`[PatchWorkerPlugin] Patched ${filePath}`);
+      });
+    });
+  }
+}
+    
 const commonHtmlWebpackPluginOptions = {
     // Google Tag Manager ID
     // Looks like 'GTM-XXXXXXX'
@@ -79,6 +116,7 @@ const baseConfig = new ScratchWebpackConfigBuilder(
         'process.env.GTM_ID': process.env.GTM_ID ? `"${process.env.GTM_ID}"` : null,
         'process.env.PUBLIC_PATH': JSON.stringify(process.env.PUBLIC_PATH || '/')
     }))
+    .addPlugin(new PatchWorkerPlugin())
     .addPlugin(new CopyWebpackPlugin({
         patterns: [
             {
@@ -195,6 +233,14 @@ if (!process.env.CI) {
             splitChunks: {
                 chunks: 'all'
             }
+        }
+    });
+
+    buildConfig.merge({
+    watchOptions: {
+            ignored: [
+                path.resolve(__dirname, '../../node_modules/scratch-storage/dist/web/**')
+            ]
         }
     });
 

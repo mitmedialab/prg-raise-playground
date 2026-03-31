@@ -1,5 +1,3 @@
-import '../setPublicPath';
-
 // Polyfills
 import 'es6-object-assign/auto';
 import 'core-js/fn/array/includes';
