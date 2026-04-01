@@ -6,7 +6,7 @@
 [subrepo]
 	remote = git@github.com:mitmedialab/prg-raise-playground-scratch-editor.git
 	branch = playground-fork-updated
-	commit = d902304aebb3bbf3552c4a51641faae494944d7d
-	parent = 6c2ae8821fbfc0ecfac500d2d05fdb1efd462c89
+	commit = 3bc3e460783c9e08960ae7393c30c5cdddc9bebe
+	parent = 63ca1e2ae1965ffda5fea489d5ec6cb982647ad8
 	method = merge
 	cmdver = 0.4.9
