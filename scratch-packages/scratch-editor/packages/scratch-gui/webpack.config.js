@@ -244,10 +244,7 @@ const buildConfig = baseConfig.clone()
             // Having `publicPath: '/'` (the default) means the `gui.js` file in `build/index.html`
             // would be looked for at the root of the filesystem, which is incorrect.
             // Hence, we're resetting the public path to be relative.
-            // publicPath: process.env.PUBLIC_PATH
-            //     ? process.env.PUBLIC_PATH
-            //     : ''
-            publicPath: 'auto'
+            publicPath: ''
         }
     })
     .addPlugin(new HtmlWebpackPlugin({
