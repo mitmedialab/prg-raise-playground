@@ -36,7 +36,7 @@ import {activateCustomProcedures, deactivateCustomProcedures} from '../reducers/
 import {setConnectionModalExtensionId} from '../reducers/connection-modal';
 import {updateMetrics} from '../reducers/workspace-metrics';
 import {isTimeTravel2020} from '../reducers/time-travel';
-import { openUIEvent, registerButtonCallbackEvent } from "../../../../extensions/dist/globals";
+import { openUIEvent, registerButtonCallbackEvent } from "../../../../../../extensions/dist/globals";
 import {
     activateTab,
     SOUNDS_TAB_INDEX
@@ -190,9 +190,7 @@ class Blocks extends React.Component {
         addFunctionListener(this.workspace, 'zoom', this.onWorkspaceMetricsChange);
         this.workspace.getToolbox().selectItemByPosition(0);
 
-        console.log(this.workspace, "Before");
         new KeyboardNavigation(this.workspace, navigationOptions);
-        console.log(this.workspace, "After");
 
         //this.workspace.getToolbox().selectItemByPosition(0);
 
