@@ -1,0 +1,114 @@
+# Build & lint checks workflow
+name: Build & Lint Checks
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build_tip_of_tree_v12:
+    name: Build test (against tip-of-tree core main)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout experimentation plugin
+        uses: actions/checkout@v4
+        with:
+          path: main
+
+      - name: Checkout core Blockly
+        uses: actions/checkout@v4
+        with:
+          repository: 'google/blockly'
+          ref: 'main'
+          path: core-blockly
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: NPM install
+        run: |
+          cd main
+          npm install
+          cd ..
+          cd core-blockly
+          npm install
+          cd ..
+
+      - name: Link latest Blockly main
+        run: |
+          cd core-blockly/packages/blockly
+          npm run package
+          cd dist
+          npm link
+          cd ../../../../main
+          npm link blockly
+          cd ..
+
+      - name: Verify build
+        run: |
+          cd main
+          npm run build
+
+  build:
+    name: Build test (against pinned v12)
+    # Don't run pinned version checks for PRs.
+    if: ${{ !github.base_ref }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout experimentation plugin
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: NPM install
+        run: npm install
+
+      - name: Verify build
+        run: npm run build
+
+  lint:
+    name: Eslint check
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: NPM install
+        run: npm install
+
+      - name: Eslint check format
+        run: npm run lint
+
+  format:
+    name: Prettier check
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: NPM install
+        run: npm install
+
+      - name: Prettier check format
+        run: npm run format:check
