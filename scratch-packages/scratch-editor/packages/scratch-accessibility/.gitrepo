@@ -4,9 +4,9 @@
 ; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
 ;
 [subrepo]
-	remote = git@github.com:mitmedialab/prg-raise-playground-scratch-editor.git
-	branch = keyboard-navigation
-	commit = f26528176cd0edf141ec3927607bb36c7cb5b449
-	parent = 492f2cc133003ff4840b67ff9ed7becb5cb30135
+	remote = git@github.com:mitmedialab/prg-raise-playground-keyboard-navigation.git
+	branch = accessibility-changes
+	commit = c7145c3490ebaf5c607d5694ebe19506c50e5b98
+	parent = 22605520029c5a455baee3830390dead0779de77
 	method = merge
 	cmdver = 0.4.9
