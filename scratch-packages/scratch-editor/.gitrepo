@@ -6,7 +6,7 @@
 [subrepo]
 	remote = git@github.com:mitmedialab/prg-raise-playground-scratch-editor.git
 	branch = samar-screen-reader
-	commit = 6d6c9d0e2ff014ae8e82d1577e3e2224a796166d
-	parent = 492f2cc133003ff4840b67ff9ed7becb5cb30135
+	commit = 11f973ed3244d687ee5f3279be465fd96949bb24
+	parent = 14dc389138ec026c1d19b783a744cdfd09073641
 	method = merge
 	cmdver = 0.4.9
