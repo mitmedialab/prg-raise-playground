@@ -35,11 +35,13 @@ import {activateCustomProcedures, deactivateCustomProcedures} from '../reducers/
 import {setConnectionModalExtensionId} from '../reducers/connection-modal';
 import {updateMetrics} from '../reducers/workspace-metrics';
 import {isTimeTravel2020} from '../reducers/time-travel';
+// import { openUIEvent, registerButtonCallbackEvent } from "../../../../extensions/dist/globals";
 import { openUIEvent, registerButtonCallbackEvent } from "../../../../../../extensions/dist/globals";
 import {
     activateTab,
     SOUNDS_TAB_INDEX
 } from '../reducers/editor-tab';
+import {KeyboardNavigation} from '../../../keyboard-experimentation/src/index';
 
 const addFunctionListener = (object, property, callback) => {
     const oldFn = object[property];
@@ -56,6 +58,8 @@ const DroppableBlocks = DropAreaHOC([
 
 class Blocks extends React.Component {
     constructor (props) {
+        KeyboardNavigation.registerKeyboardNavigationStyles();
+        // KeyboardNavigation.registerNavigationDeferringToolbox();
         super(props);
         this.ScratchBlocks = VMScratchBlocks(props.vm);
         bindAll(this, [
@@ -99,6 +103,7 @@ class Blocks extends React.Component {
         this.toolboxUpdateQueue = [];
     }
     componentDidMount () {
+        
         this.ScratchBlocks = VMScratchBlocks(this.props.vm, this.props.useCatBlocks);
         this.ScratchBlocks.dialog.setPrompt(this.handlePromptStart);
         this.ScratchBlocks.StatusIndicatorLabel.statusButtonCallback = this.handleConnectionModalStart;
@@ -122,7 +127,9 @@ class Blocks extends React.Component {
                 scratchTheme: this.props.useCatBlocks ? 'catblocks' : 'classic'
             }
         );
+        
         this.workspace = this.ScratchBlocks.inject(this.blocks, workspaceConfig);
+        
         this.workspace.registerToolboxCategoryCallback(
             'VARIABLE',
             this.ScratchBlocks.ScratchVariables.getVariablesCategory
@@ -131,6 +138,8 @@ class Blocks extends React.Component {
             'PROCEDURE',
             this.ScratchBlocks.ScratchProcedures.getProceduresCategory
         );
+
+        
 
         this.toolboxUpdateChangeListener = event => {
             if (
@@ -191,6 +200,8 @@ class Blocks extends React.Component {
         if (this.props.isVisible) {
             this.setLocale();
         }
+
+        this.keyboardNavInstance = new KeyboardNavigation(this.workspace);
 
         window.addEventListener('load-extension', () => {
             this.props.vm.extensionManager.loadExtensionURL('faceSensing').then(() => {

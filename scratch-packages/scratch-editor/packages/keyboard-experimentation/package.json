@@ -1,0 +1,92 @@
+{
+  "name": "@blockly/keyboard-navigation",
+  "version": "3.0.3",
+  "description": "A plugin for keyboard navigation.",
+  "scripts": {
+    "audit:fix": "blockly-scripts auditFix",
+    "build": "blockly-scripts build",
+    "clean": "blockly-scripts clean",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "ghpages": "node scripts/deploy.js",
+    "predeploy": "blockly-scripts predeploy",
+    "prepublishOnly": "npm login --registry https://wombat-dressing-room.appspot.com",
+    "start": "blockly-scripts start",
+    "test": "npm run test:mocha && npm run test:wdio",
+    "test:ci": "npm run test:mocha && npm run test:wdio:ci",
+    "test:mocha": "blockly-scripts test",
+    "test:wdio": "npm run wdio:clean && npm run wdio:run",
+    "test:wdio:ci": "npm run wdio:clean && npm run wdio:run:ci",
+    "wdio:build": "npm run wdio:build:app && npm run wdio:build:tests",
+    "wdio:build:app": "cd test/webdriverio && webpack",
+    "wdio:build:tests": "tsc -p ./test/webdriverio/test/tsconfig.json",
+    "wdio:clean": "cd test/webdriverio/test && rm -rf dist && rm -rf failures",
+    "wdio:run": "npm run wdio:build && cd test/webdriverio/test && mkdir -p failures && npx mocha dist",
+    "wdio:run:ci": "npm run wdio:build && cd test/webdriverio/test && mkdir -p failures && npx mocha --timeout 30000 dist"
+  },
+  "main": "./dist/index.js",
+  "module": "./src/index.js",
+  "unpkg": "./dist/index.js",
+  "author": "Blockly Team",
+  "keywords": [
+    "blockly",
+    "blockly-plugin",
+    "keyboard-experiment"
+  ],
+  "homepage": "https://github.com/google/blockly-keyboard-experimentation#readme",
+  "bugs": {
+    "url": "https://github.com/google/blockly-keyboard-experimentation/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/google/blockly-keyboard-experimentation.git"
+  },
+  "license": "Apache-2.0",
+  "directories": {
+    "dist": "dist",
+    "src": "src"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "devDependencies": {
+    "@blockly/dev-scripts": "^4.0.8",
+    "@blockly/dev-tools": "^9.0.3",
+    "@blockly/field-colour": "^6.0.2",
+    "@eslint/eslintrc": "^2.1.2",
+    "@eslint/js": "^8.49.0",
+    "@types/chai": "^5.2.1",
+    "@types/mocha": "^10.0.10",
+    "@types/p5": "^1.7.6",
+    "@typescript-eslint/eslint-plugin": "^6.7.2",
+    "@typescript-eslint/parser": "^6.7.2",
+    "blockly": "^12.5.1",
+    "chai": "^5.2.0",
+    "eslint": "^8.49.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-jsdoc": "^46.8.2",
+    "globals": "^15.4.0",
+    "html-webpack-plugin": "^5.6.0",
+    "jsdom-global": "^3.0.2",
+    "mocha": "^11.1.0",
+    "p5": "^1.10.0",
+    "prettier": "^3.3.1",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.4.5",
+    "webdriverio": "^9.12.1"
+  },
+  "peerDependencies": {
+    "blockly": "^12.3.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://wombat-dressing-room.appspot.com"
+  },
+  "eslintConfig": {
+    "extends": "@blockly/eslint-config"
+  }
+}
