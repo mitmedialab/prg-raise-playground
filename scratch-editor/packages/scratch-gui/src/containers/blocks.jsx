@@ -36,7 +36,7 @@ import {activateCustomProcedures, deactivateCustomProcedures} from '../reducers/
 import {setConnectionModalExtensionId} from '../reducers/connection-modal';
 import {updateMetrics} from '../reducers/workspace-metrics';
 import {isTimeTravel2020} from '../reducers/time-travel';
-import { openUIEvent, registerButtonCallbackEvent } from "../../../../../../extensions/dist/globals";
+import { openUIEvent, registerButtonCallbackEvent } from "../../../../../extensions/dist/globals";
 import {
     activateTab,
     SOUNDS_TAB_INDEX
