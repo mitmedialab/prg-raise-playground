@@ -16,7 +16,7 @@
  * identifiers that WebdriverIO can use to find those elements.
  */
 
-import * as Blockly from 'blockly';
+import * as Blockly from 'scratch-blocks';
 import * as webdriverio from 'webdriverio';
 import * as path from 'path';
 import {fileURLToPath} from 'url';

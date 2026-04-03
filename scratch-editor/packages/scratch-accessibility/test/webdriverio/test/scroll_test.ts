@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import * as Blockly from 'blockly';
+import * as Blockly from 'scratch-blocks';
 import * as chai from 'chai';
 import {Key} from 'webdriverio';
 import {

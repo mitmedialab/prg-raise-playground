@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import * as Blockly from 'blockly';
+import * as Blockly from 'scratch-blocks';
 // Import the default blocks.
 import 'blockly/blocks';
 import {installAllBlocks as installColourBlocks} from '@blockly/field-colour';

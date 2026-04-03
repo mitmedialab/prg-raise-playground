@@ -4,21 +4,24 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import * as Blockly from 'blockly';
-import { getBlockMessage } from './block_descriptions';
-import { type SpeechSettings } from './settings_dialog';
+import { getBlockMessage } from '../test/block_descriptions';
+import { type SpeechSettings } from '../test/settings_dialog';
 
+import * as Blockly from 'scratch-blocks';
 /**
  * A simple screen reader implementation for Blockly that announces actions.
  */
 export class ScreenReader {
-  private workspace: Blockly.WorkspaceSvg;
+  private workspace: any;
   private lastAnnouncedBlockId: string | null = null;
   private cursorInterval: number | null = null;
   private lastWorkspaceNodeId: string | null = null;
   private isSpeaking: boolean = false;
   private debugMode: boolean = true;
   private isEnabled: boolean = true;
+
+  
+
 
   private menuObservers?: {
     menuObserver: MutationObserver | null;
@@ -43,7 +46,7 @@ export class ScreenReader {
    * Constructs a new ScreenReader instance.
    * @param workspace The Blockly workspace to attach to.
    */
-  constructor(workspace: Blockly.WorkspaceSvg) {
+  constructor(workspace: any) {
     this.workspace = workspace;
     this.debugLog('Initializing ScreenReader...');
 
@@ -1094,15 +1097,14 @@ export class ScreenReader {
    * Generate a unique identifier for a node to avoid repeating announcements
    */
   private getNodeIdentifier(node: Blockly.IFocusableNode | null): string {
-
-    if (node instanceof Blockly.Block) {
+    if (node instanceof Blockly.Block && !node.getNextBlock()) {
       const block = node as Blockly.Block;
       return `block-${block?.id || 'unknown'}`;
     } else if (node instanceof Blockly.Workspace) {
       return 'workspace';
-    // } else if (node instanceof Blockly.Stack) {
-    //   const block = location as Blockly.Block;
-    //   return `stack-${block?.id || 'unknown'}`;
+    } else if (node instanceof Blockly.Block && node.getNextBlock()) {
+      const block = node as Blockly.Block;
+      return `stack-${block?.id || 'unknown'}`;
     } else if (node instanceof Blockly.Connection) {
       const connection = node as Blockly.Connection;
       const block = connection.getSourceBlock();
@@ -1167,11 +1169,17 @@ export class ScreenReader {
   /**
  * Enhanced getBlockDescription method to include field values
  */
-  private getBlockDescription(block: Blockly.Block): string {
+  private getBlockDescription(block: Blockly.Block | Blockly.Workspace): string {
     // Get variables from workspace for context
-    const workspace = block.workspace;
-    const variableMap = workspace.getVariableMap();
+    // const workspace = block.workspace;
+    let variableMap: Blockly.IVariableMap<Blockly.IVariableModel<Blockly.IVariableState>>;
+    if (block instanceof Blockly.Block) {
+      variableMap = block.workspace.getVariableMap();
+    } else {
+      variableMap = (block as Blockly.Workspace).getVariableMap();
+    }
     const allVariables = variableMap.getAllVariables();
+
 
     // Map variables with the correct method
     const variables = allVariables.map(variable => ({
@@ -1179,9 +1187,9 @@ export class ScreenReader {
       id: variable.getId()
     }));
 
+    if (block instanceof Blockly.Block) {
     // Try to get description from block_descriptions
     const detailedDescription = getBlockMessage(block, variables);
-
     // If we got a meaningful description, use it
     if (!detailedDescription.startsWith('Block of type')) {
       return detailedDescription;
@@ -1308,6 +1316,9 @@ export class ScreenReader {
 
     // Default description
     return blockType.replace(/_/g, ' ') + " block";
+  } else {
+    return "workspace";
+  }
   }
 
 
@@ -1588,9 +1599,9 @@ export class ScreenReader {
   private announceNode(node: Blockly.IFocusableNode | null): void {
     const location = node?.getFocusableElement();
 
+    
     // ALL navigation announcements should be high priority to clear pending messages
-    if (node instanceof Blockly.Block ) {
-      // || node instanceof Blockly.Stack) {
+    if (node instanceof Blockly.Block && !node.getNextBlock()) {
       const block = node as Blockly.BlockSvg;
 
       if (block) {
@@ -1611,13 +1622,13 @@ export class ScreenReader {
       }
     } else if (node instanceof Blockly.Workspace) {
       this.speakHighPriority("Workspace. Use arrow keys to navigate blocks.");
-    // } else if (node instanceof Blockly.Stack) {
-    //   const block = node as Blockly.Stack;
-    //   if (block) {
-    //     this.speakHighPriority(`Block stack starting with ${this.getBlockDescription(block)}`);
-    //   } else {
-    //     this.speakHighPriority("Unknown block stack");
-    //   }
+    } else if (node instanceof Blockly.Block && node.getNextBlock()) {
+      const block = node as Blockly.Block;
+      if (block) {
+        this.speakHighPriority(`Block stack starting with ${this.getBlockDescription(block)}`);
+      } else {
+        this.speakHighPriority("Unknown block stack");
+      }
     } else if (node instanceof Blockly.Connection) {
       const connection = node
       const block = connection.getSourceBlock();
@@ -1656,6 +1667,7 @@ export class ScreenReader {
       const input = node;
       const block = input.getSourceBlock();
       if (block) {
+        // COMMENTED
         this.speakHighPriority(`Input ${input.name} on ${this.getBlockDescription(block)}`);
       } else {
         this.speakHighPriority(`Input ${input.name} on unknown block`);

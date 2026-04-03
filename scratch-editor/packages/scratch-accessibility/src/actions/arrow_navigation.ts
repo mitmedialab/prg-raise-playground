@@ -13,7 +13,7 @@ import {
 
 import type {Toolbox, WorkspaceSvg} from 'blockly/core';
 
-import * as Blockly from 'blockly/core';
+import * as Blockly from 'scratch-blocks';
 import * as Constants from '../constants';
 import type {Navigation} from '../navigation';
 

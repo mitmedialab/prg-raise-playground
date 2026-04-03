@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import * as Blockly from 'blockly/core';
+import * as Blockly from 'scratch-blocks';
 
 /**
  * Toolbox class that does not handle keyboard navigation.

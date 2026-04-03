@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import * as Blockly from 'blockly/core';
+import * as Blockly from 'scratch-blocks';
 
 /**
  * Bubble that displays a four-way arrow attached to a block to indicate that

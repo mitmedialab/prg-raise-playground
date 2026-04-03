@@ -5,7 +5,7 @@
  */
 
 import 'jsdom-global/register';
-import * as Blockly from 'blockly';
+import * as Blockly from 'scratch-blocks';
 import {KeyboardNavigation} from '../src/index';
 import {registerFlyoutCursor} from '../src/flyout_cursor';
 import {registerNavigationDeferringToolbox} from '../src/navigation_deferring_toolbox';

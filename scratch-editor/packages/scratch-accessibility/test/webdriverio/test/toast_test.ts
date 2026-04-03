@@ -5,7 +5,7 @@
  */
 
 import * as chai from 'chai';
-import * as Blockly from 'blockly/core';
+import * as Blockly from 'scratch-blocks';
 import {
   PAUSE_TIME,
   testFileLocations,

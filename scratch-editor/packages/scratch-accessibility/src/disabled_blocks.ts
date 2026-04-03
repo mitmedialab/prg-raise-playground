@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import * as Blockly from 'blockly/core';
+import * as Blockly from 'scratch-blocks';
 
 const lastBlockDisabledReasons: Map<string, Set<string>> = new Map();
 

@@ -10,7 +10,7 @@
  * @author aschmiedt@google.com (Abby Schmiedt)
  */
 
-import * as Blockly from 'blockly/core';
+import * as Blockly from 'scratch-blocks';
 import {
   ShortcutRegistry,
   Toolbox,

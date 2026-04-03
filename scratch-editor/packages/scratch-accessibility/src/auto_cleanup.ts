@@ -9,7 +9,7 @@
  * Organizes blocks automatically when they are added or removed.
  */
 
-import * as Blockly from 'blockly/core';
+import * as Blockly from 'scratch-blocks';
 
 /**
  * Class to handle automatic workspace cleanup when blocks are added or removed.
