@@ -25,7 +25,7 @@ jobs:
       run: pnpm install --frozen-lockfile
     - name: Install subpackage dependencies
       run: |
-        for pkg in scratch-packages/scratch-editor/packages/scratch-gui scratch-packages/scratch-editor/packages/scratch-vm; do
+        for pkg in scratch-editor/packages/scratch-gui scratch-editor/packages/scratch-vm; do
           echo "Installing $pkg..."
           (cd $pkg && npm install --ignore-scripts)
         done
