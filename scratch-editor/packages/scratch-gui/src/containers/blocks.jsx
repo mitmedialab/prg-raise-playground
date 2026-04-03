@@ -27,7 +27,7 @@ import {
     getExtensionColors
 } from '../lib/settings/color-mode/blockHelpers';
 import {KeyboardNavigation} from "../../../scratch-accessibility/src/index"
-import {ScreenReader} from "../../../scratch-accessibility/test/screen_reader";
+import {ScreenReader} from "../../../scratch-accessibility/src/screen_reader";
 import { SettingsDialog } from "../../../scratch-accessibility/test/settings_dialog";
 
 import {connect} from 'react-redux';
