@@ -21026,7 +21026,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
 /* harmony import */ var _RAISE_Logo_png__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../RAISE_Logo.png */ "./src/generated/prg/RAISE_Logo.png");
-/* harmony import */ var _PRG_Logo_png__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../PRG_Logo.png */ "./src/generated/prg/PRG_Logo.png");
+/* harmony import */ var _doodlebot_icon_png__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./doodlebot_icon.png */ "./src/generated/prg/doodlebot/doodlebot_icon.png");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "./node_modules/.pnpm/react@16.14.0/node_modules/react/index.js");
 /* harmony import */ var react_intl__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react-intl */ "./node_modules/.pnpm/react-intl@2.9.0_prop-types@15.8.1_react@16.14.0/node_modules/react-intl/lib/index.es.js");
 /* 
@@ -21049,7 +21049,7 @@ Any changes you make to this file will not be saved nor git tracked.
     id: "extension.doodlebot.description"
   }),
   iconURL: _RAISE_Logo_png__WEBPACK_IMPORTED_MODULE_0__,
-  insetIconURL: _PRG_Logo_png__WEBPACK_IMPORTED_MODULE_1__,
+  insetIconURL: _doodlebot_icon_png__WEBPACK_IMPORTED_MODULE_1__,
   tags: ["Made by PRG"],
   featured: true,
   extensionId: 'doodlebot'
@@ -83178,6 +83178,17 @@ module.exports = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwcHgiIGhlaWdodD0i
 
 /***/ }),
 
+/***/ "./src/generated/prg/doodlebot/doodlebot_icon.png":
+/*!********************************************************!*\
+  !*** ./src/generated/prg/doodlebot/doodlebot_icon.png ***!
+  \********************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+module.exports = __webpack_require__.p + "static/assets/doodlebot_icon.26bfbdb6eb303cd48ae5.png";
+
+/***/ }),
+
 /***/ "./src/generated/prg/objectDetection/Typescript_logo.png":
 /*!***************************************************************!*\
   !*** ./src/generated/prg/objectDetection/Typescript_logo.png ***!
@@ -85898,4 +85909,4 @@ module.exports = /*#__PURE__*/JSON.parse('{"name":"scratch-vm","version":"4.5.15
 /***/ })
 
 }]);
-//# sourceMappingURL=src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx.13fd5d3c056cd284a6a3.js.map
+//# sourceMappingURL=src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx.72e8cde145f7da7b9f3c.js.map
