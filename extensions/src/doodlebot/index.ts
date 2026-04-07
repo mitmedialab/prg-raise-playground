@@ -13,8 +13,8 @@ import type { BLEDeviceWithUartService } from "./ble";
 const details: ExtensionMenuDisplayDetails = {
   name: "Doodlebot",
   description: "Program a doodlebot robot",
-  iconURL: "Replace with the name of your icon image file (which should be placed in the same directory as this file)",
-  insetIconURL: "Replace with the name of your inset icon image file (which should be placed in the same directory as this file)",
+  iconURL: "Replace me here",
+  insetIconURL: "doodlebot_icon.png",
   tags: ["Made by PRG"]
 };
 
