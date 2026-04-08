@@ -51,6 +51,32 @@ export default class LineArrayFollowing {
     centerTrue;
     lastSign = 0;
 
+    sensorReadingsStack = [];
+    sensorReadingStackSize = 5;
+    averageSensorReading = { left: 0, center: 0, right: 0 };
+    
+    async sensorLoop () {
+        const sensorValues = await this.getSensorReading("line");
+        this.sensorReadingsStack.push(sensorValues);
+        if (this.sensorReadingsStack.length > this.sensorReadingStackSize)
+            this.sensorReadingsStack.pop()
+        
+        const avg = readings.reduce(
+            (acc, r) => ({
+                left: acc.left + r.left,
+                center: acc.center + r.center,
+                right: acc.right + r.right,
+            }),
+            { left: 0, center: 0, right: 0 }
+            );
+    
+        this.averageSensorReading = {
+            left: avg.left / readings.length,
+            center: avg.center / readings.length,
+            right: avg.right / readings.length,
+        };
+    }
+
     // Main loop
     async loop() {
         console.log("loop")
