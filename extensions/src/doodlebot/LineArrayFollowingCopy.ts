@@ -18,6 +18,8 @@ export default class LineArrayFollowing {
     lastError: number | undefined;
     sensorValues: { left: number; center: number; right: number } | undefined;
 
+    maxSpeed: number;
+
     sign: number;
     magnitude: number;
     lineLost: boolean;
@@ -31,11 +33,17 @@ export default class LineArrayFollowing {
 
     delay = 1;
 
-    constructor(public Kp: number, public baseSpeed: number, public maxSpeed: number, public minSpeed: number, public motorFunction: Function, public getSensorReading: Function) {
+    previousLeftSpeed: number;
+    previousRightSpeed: number;
+
+    constructor(public Kp: number, public baseSpeed: number, public minSpeed: number, public motorFunction: Function, public getSensorReading: Function) {
         this.keepDriving = true;
         this.lastCommandTime = Date.now();
         this.drivingStarted = false;
         this.isLoopRunning = false;
+        this.previousLeftSpeed = 0;
+        this.previousRightSpeed = 0;
+        this.maxSpeed = this.baseSpeed * 2;
     }
 
     setMaxSpeed(newMax: number) {
@@ -72,44 +80,13 @@ export default class LineArrayFollowing {
                 console.log("🛑 Loop cancelled on next tick");
             }
         }, this.INTERVAL);
-        const readings: { left: number; center: number; right: number }[] = [];
-
-        // Collect 5 readings, spaced 50ms apart
-        for (let i = 0; i < 3; i++) {
-            const sensorValues = await this.getSensorReading("line");
-            console.log("Sensor values:", sensorValues);
-            if (sensorValues) {
-                readings.push({
-                    left: sensorValues[0],
-                    center: sensorValues[1],
-                    right: sensorValues[2],
-                });
-            }
-            await this.sleep(10);
-
-        }
-
-        // Compute averages (if we got any readings)
-        if (readings.length > 0) {
-            const avg = readings.reduce(
-                (acc, r) => ({
-                    left: acc.left + r.left,
-                    center: acc.center + r.center,
-                    right: acc.right + r.right,
-                }),
-                { left: 0, center: 0, right: 0 }
-            );
-
-            const averaged = {
-                left: avg.left / readings.length,
-                center: avg.center / readings.length,
-                right: avg.right / readings.length,
-            };
-
-            console.log("Averaged sensor:", averaged);
-
-            // Follow the line with smoothed values
-            this.sensorValues = averaged;
+        
+        const reading = this.getSensorReading("line");
+        console.log(Date.now());
+        this.sensorValues = {
+            "left": reading[0],
+            "center": reading[1],
+            "right": reading[2]
         }
 
         // ⏳ Auto-disable keepDriving if inactive > 5s
@@ -130,7 +107,9 @@ export default class LineArrayFollowing {
 
         this.centerTrue = false;
         // If centered, do nothing (straight path)
-        if ((leftLine > 0.9 && rightLine > 0.9) || (centerLine > 0.9)) {
+        if (((leftLine > 0.9 && rightLine > 0.9) || (centerLine > 0.9)) 
+            || (centerLine > leftLine && centerLine > rightLine && centerLine > 0.5) 
+            || ((Math.abs(centerLine - rightLine) < 0.1) && (Math.abs(centerLine - leftLine) < 0.1) && centerLine > 0.5)) {
             this.sign = 0;
             this.magnitude = 0;
             this.lastError = 0;
@@ -150,10 +129,12 @@ export default class LineArrayFollowing {
         // this.lineLost = presence < 0.3 
         // || (leftLine > centerLine && rightLine > centerLine && leftLine < 0.6 && rightLine < 0.6)
         // || (Math.abs(leftLine - rightLine) < 0.1 && centerLine < 0.4 && leftLine < 0.9 && rightLine < 0.9);
+        // EDITED
         this.lineLost = presence < 0.3
             || (leftLine < 0.3 && rightLine < 0.3 && centerLine < 0.3)
             || (leftLine > centerLine && rightLine > centerLine && leftLine < 0.6 && rightLine < 0.6)
             || (this.centerTrue === false && Math.abs(leftLine - rightLine) < 0.1 && centerLine < 0.4 && leftLine < 0.9 && rightLine < 0.9);
+        //this.lineLost = presence < 0.3;
         if (!this.lineLost) {
             this.lastError = error;
         } else {
@@ -196,50 +177,13 @@ export default class LineArrayFollowing {
 
     async isCenter() {
 
-        let sensorValues;
-
-        const readings: { left: number; center: number; right: number }[] = [];
-
-        // Collect 5 readings, spaced 50ms apart
-        for (let i = 0; i < 3; i++) {
-            const sensorValues = await this.getSensorReading("line");
-            console.log("Sensor values:", sensorValues);
-            if (sensorValues) {
-                readings.push({
-                    left: sensorValues[0],
-                    center: sensorValues[1],
-                    right: sensorValues[2],
-                });
-            }
-            await this.sleep(10);
-
+        const reading = this.getSensorReading("line");
+        let sensorValues = {
+            "left": reading.left,
+            "center": reading.center,
+            "right": reading.right
         }
-
-        // Compute averages (if we got any readings)
-        if (readings.length > 0) {
-            const avg = readings.reduce(
-                (acc, r) => ({
-                    left: acc.left + r.left,
-                    center: acc.center + r.center,
-                    right: acc.right + r.right,
-                }),
-                { left: 0, center: 0, right: 0 }
-            );
-
-            const averaged = {
-                left: avg.left / readings.length,
-                center: avg.center / readings.length,
-                right: avg.right / readings.length,
-            };
-
-            console.log("Averaged sensor:", averaged);
-
-            // Follow the line with smoothed values
-            sensorValues = averaged;
-        }
-
-
-
+        
         const rawToLineStrength = (raw: number) => this.clamp(raw / 1000, 0, 1);
         const leftLine = rawToLineStrength(sensorValues.left);
         const centerLine = rawToLineStrength(sensorValues.center);
@@ -265,7 +209,7 @@ export default class LineArrayFollowing {
         const startTime = Date.now();
 
         while (Date.now() - startTime < durationMs) {
-            const sensorValues = await this.getSensorReading("line");
+            const sensorValues = this.getSensorReading("line");
 
             if (sensorValues) {
                 const timeMs = Date.now() - startTime;
@@ -314,13 +258,16 @@ export default class LineArrayFollowing {
     }
 
     private turn(sign) {
+        const alpha = 0.5;
         if (!this.keepDriving) return;
         let leftSpeed = 0;
         let rightSpeed = 0;
 
         if (this.lineLost) {
-            leftSpeed = this.baseSpeed * (sign > 0 ? -0 : this.Kp);
-            rightSpeed = this.baseSpeed * (sign < 0 ? -0 : this.Kp);
+            // leftSpeed = this.maxSpeed * (sign > 0 ? -0 : this.Kp);
+            // rightSpeed = this.maxSpeed * (sign < 0 ? -0 : this.Kp);
+            leftSpeed = this.maxSpeed * (sign > 0 ? -0 : 1);
+            rightSpeed = this.maxSpeed * (sign < 0 ? -0 : 1);
             leftSpeed = this.clamp(leftSpeed, this.minSpeed, this.maxSpeed);
             rightSpeed = this.clamp(rightSpeed, this.minSpeed, this.maxSpeed);
             console.log(`🚨 Line lost → turning ${sign > 0 ? "right" : "left"}`);
@@ -330,8 +277,12 @@ export default class LineArrayFollowing {
             leftSpeed = this.clamp(this.baseSpeed - correction * this.baseSpeed, this.minSpeed, this.maxSpeed);
             rightSpeed = this.clamp(this.baseSpeed + correction * this.baseSpeed, this.minSpeed, this.maxSpeed);
         }
-
+        console.log(`Speeds before → L:${leftSpeed.toFixed(0)} R:${rightSpeed.toFixed(0)}`);
+        leftSpeed = alpha * this.previousLeftSpeed + (1 - alpha) * leftSpeed;
+        rightSpeed = alpha * this.previousRightSpeed + (1 - alpha) * rightSpeed;
         console.log(`Speeds → L:${leftSpeed.toFixed(0)} R:${rightSpeed.toFixed(0)}`);
+        this.previousLeftSpeed = leftSpeed;
+        this.previousRightSpeed = rightSpeed;
         this.motorFunction("l", 1000, 1000, Math.round(leftSpeed), Math.round(rightSpeed));
     }
 

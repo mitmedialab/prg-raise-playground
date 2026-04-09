@@ -85,7 +85,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       await this.setDictionaries();
     })
 
-    this.lineFollower = new LineArrayFollowing(2, 200, 500, 0, this.doodlebot.sendBLECommand.bind(this.doodlebot), this.doodlebot.getSensorReading.bind(this.doodlebot));
+    this.lineFollower = new LineArrayFollowing(2, 200, 0, this.doodlebot.sendBLECommand.bind(this.doodlebot), this.doodlebot.getSensorReadingSync.bind(this.doodlebot));
 
     // move dictionaries to doodlebot
     await this.setDictionaries();
@@ -835,17 +835,6 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   })
   lineArray_setWiggle(wiggle: number) {
     this.lineFollower.Kp = wiggle;
-  }
-
-  @block({
-    type: "command",
-    text: (speed) => `Line array: set max speed ${speed}`,
-    arg: {
-      type: "number", defaultValue: 500
-    }
-  })
-  lineArray_setSpeed(speed: number) {
-    this.lineFollower.setMaxSpeed(speed);
   }
 
   @block({
