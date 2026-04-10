@@ -41,6 +41,9 @@ export default function <T extends MinimalExtensionConstructor>(Ctor: T) {
      */
     getVideoFrame<TFormat extends keyof typeof Format>(format: TFormat) {
       return this.video?.getFrame({
+        dimensions: [this.videoDimensions.width, this.videoDimensions.height],
+        mirror: false,
+        cacheTimeout: 0,
         format: Format[format]
       }) as VideoFrameTypeByFormat[typeof Format[typeof format]]
     }

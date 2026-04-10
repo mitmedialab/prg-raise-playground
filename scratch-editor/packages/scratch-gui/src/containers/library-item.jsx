@@ -1,0 +1,201 @@
+import bindAll from 'lodash.bindall';
+import PropTypes from 'prop-types';
+import React from 'react';
+import {connect} from 'react-redux';
+import {compose} from 'redux';
+import {injectIntl} from 'react-intl';
+
+import LibraryItemComponent from '../components/library-item/library-item.jsx';
+import {PLATFORM} from '../lib/platform.js';
+import {KEY} from '../lib/navigation-keys.js';
+
+
+class LibraryItem extends React.PureComponent {
+    constructor (props) {
+        super(props);
+        bindAll(this, [
+            'handleBlur',
+            'handleClick',
+            'handleFocus',
+            'handleKeyDown',
+            'handleMouseEnter',
+            'handleMouseLeave',
+            'handlePlay',
+            'handleStop',
+            'rotateIcon',
+            'startRotatingIcons',
+            'stopRotatingIcons'
+        ]);
+        this.hasIconsArray = Array.isArray(props.icons);
+        this.state = {
+            iconIndex: 0,
+            isRotatingIcon: false
+        };
+    }
+    componentWillUnmount () {
+        clearInterval(this.intervalId);
+    }
+    handleBlur (id) {
+        this.handleMouseLeave(id);
+    }
+    handleClick (e) {
+        if (!this.props.disabled) {
+            this.props.onSelect(this.props.id);
+        }
+        e.preventDefault();
+    }
+    handleFocus (id) {
+        if (!this.props.showPlayButton) {
+            this.handleMouseEnter(id);
+        }
+    }
+    handleKeyDown (e) {
+        if (this.props.disabled) {
+            return;
+        }
+
+        if (e.key === KEY.ENTER) {
+            e.preventDefault();
+            this.props.onSelect(this.props.id);
+        }
+        /*
+            - Costumes, Sprites, and Backdrops are selectable with both ENTER and SPACE.
+            - Sounds are selectable with ENTER; SPACE previews the sound.
+        */
+        if (e.key === KEY.SPACE) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (this.props.showPlayButton) {
+                this.handlePlay();
+            } else {
+                this.props.onSelect(this.props.id);
+            }
+        }
+    }
+    handleMouseEnter () {
+        if (!this.props.showPlayButton) {
+            this.props.onMouseEnter(this.props.id);
+            if (this.hasIconsArray) {
+                this.stopRotatingIcons();
+                this.setState({
+                    isRotatingIcon: true
+                }, this.startRotatingIcons);
+            }
+        }
+    }
+    handleMouseLeave () {
+        if (!this.props.showPlayButton) {
+            this.props.onMouseLeave(this.props.id);
+            if (this.hasIconsArray) {
+                this.setState({
+                    isRotatingIcon: false
+                }, this.stopRotatingIcons);
+            }
+        }
+    }
+    handlePlay () {
+        this.props.onMouseEnter(this.props.id);
+    }
+    handleStop () {
+        this.props.onMouseLeave(this.props.id);
+    }
+    startRotatingIcons () {
+        this.rotateIcon();
+        this.intervalId = setInterval(this.rotateIcon, 300);
+    }
+    stopRotatingIcons () {
+        if (this.intervalId) {
+            this.intervalId = clearInterval(this.intervalId);
+        }
+    }
+    rotateIcon () {
+        const nextIconIndex = (this.state.iconIndex + 1) % this.props.icons.length;
+        this.setState({iconIndex: nextIconIndex});
+    }
+    curIconSource () {
+        if (this.hasIconsArray) {
+            if (this.state.isRotatingIcon &&
+                this.state.iconIndex < this.props.icons.length &&
+                this.props.icons[this.state.iconIndex]) {
+                // multiple icons, currently animating: show current frame
+                return this.props.icons[this.state.iconIndex];
+            }
+            // multiple icons, not currently animating: show first frame
+            return this.props.icons[0];
+        }
+        // single icon
+        return this.props.icons;
+    }
+    render () {
+        const iconSource = this.curIconSource();
+        return (
+            <LibraryItemComponent
+                bluetoothRequired={this.props.bluetoothRequired}
+                collaborator={this.props.collaborator}
+                description={this.props.description}
+                disabled={this.props.disabled}
+                extensionId={this.props.extensionId}
+                featured={this.props.featured}
+                hidden={this.props.hidden}
+                iconSource={iconSource}
+                id={this.props.id}
+                insetIconURL={this.props.insetIconURL}
+                internetConnectionRequired={this.props.internetConnectionRequired}
+                isPlaying={this.props.isPlaying}
+                name={this.props.name}
+                showPlayButton={this.props.showPlayButton}
+                platform={this.props.platform}
+                onBlur={this.handleBlur}
+                onClick={this.handleClick}
+                onFocus={this.handleFocus}
+                onKeyDown={this.handleKeyDown}
+                onMouseEnter={this.handleMouseEnter}
+                onMouseLeave={this.handleMouseLeave}
+                onPlay={this.handlePlay}
+                onStop={this.handleStop}
+                isMemberOnly={this.props.isMemberOnly}
+            />
+        );
+    }
+}
+
+const mapStateToProps = state => ({
+    platform: state.scratchGui.platform.platform
+});
+
+LibraryItem.propTypes = {
+    bluetoothRequired: PropTypes.bool,
+    collaborator: PropTypes.string,
+    description: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.node
+    ]),
+    disabled: PropTypes.bool,
+    extensionId: PropTypes.string,
+    featured: PropTypes.bool,
+    hidden: PropTypes.bool,
+    icons: PropTypes.oneOfType([
+        LibraryItemComponent.propTypes.iconSource, // single icon
+        PropTypes.arrayOf(LibraryItemComponent.propTypes.iconSource) // rotating icons
+    ]),
+    id: PropTypes.string.isRequired,
+    insetIconURL: PropTypes.string,
+    internetConnectionRequired: PropTypes.bool,
+    isPlaying: PropTypes.bool,
+    name: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.node
+    ]),
+    onMouseEnter: PropTypes.func.isRequired,
+    onMouseLeave: PropTypes.func.isRequired,
+    onSelect: PropTypes.func.isRequired,
+    platform: PropTypes.oneOf(Object.keys(PLATFORM)),
+    showPlayButton: PropTypes.bool,
+    isMemberOnly: PropTypes.bool
+};
+
+export default compose(
+    injectIntl,
+    connect(mapStateToProps)
+)(LibraryItem);

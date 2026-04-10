@@ -23,10 +23,23 @@ export const vmDeclarations = () => {
 
     host.writeFile = (pathToFile: string, contents: string) => {
         if (exclude.some(excluded => pathToFile.includes(excluded)) || !pathToFile.includes(".d.ts")) return;
-        fs.writeFileSync(pathToFile, contents);
+        
+        let fixedContents = contents;
+
+        fixedContents = fixedContents.replace(
+            /\bobject<([^>]+)>/g,
+            "Record<$1>"
+        );
+
+        // ✅ Step 2: Fix plain object
+        fixedContents = fixedContents.replace(
+            /\bobject\b/g,
+            "any"
+        );
+        fs.writeFileSync(pathToFile, fixedContents);
         const { directory, fileName } = getDirectoryAndFileName(pathToFile, vmSrc);
         emittedFiles.has(directory) ? emittedFiles.get(directory).push(fileName) : emittedFiles.set(directory, [fileName]);
-    };;
+    };
 
     const entry = path.join(vmSrc, "virtual-machine.js");
     const program = ts.createProgram([entry], options, host);

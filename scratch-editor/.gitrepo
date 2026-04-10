@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:mitmedialab/prg-raise-playground-scratch-editor.git
+	branch = playground-fork-updated
+	commit = 8568e026f0926fc469a9d47b04f0ffcb7c4777d3
+	parent = 244ecc040c09076f8ef782af3e3f1a2e4f455817
+	method = merge
+	cmdver = 0.4.9

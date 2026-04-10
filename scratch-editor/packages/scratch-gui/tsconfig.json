@@ -1,0 +1,32 @@
+{
+  "extends": "@tsconfig/svelte/tsconfig.json",
+  "include": [
+    "src",
+    "node_modules/scratch-vm/src/**/*",
+    "../scratch-vm/src/**/*",
+    "node_modules/scratch-blocks/src/**/*",
+    "../scratch-blocks/src/**/*"
+  ],
+  
+  "compilerOptions": {
+    "ignoreDeprecations": "5.0",
+    "verbatimModuleSyntax": true,
+    "importsNotUsedAsValues": "remove",
+
+    "target": "ESNext",
+    "jsx": "react",
+    "module": "ESNext",
+    "types": ["./src/types.d.ts"],
+
+    "declaration": true,
+    "sourceMap": true,
+    "outDir": "./dist/types/",
+
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+
+    "strict": true,
+    "noImplicitAny": false,
+    "skipLibCheck": true
+  }
+}

@@ -18,6 +18,24 @@ export const info = {
       }
     },
     {
+      "opcode": "returnPart",
+      "text": "get [COORD] of [PART]",
+      "blockType": "reporter",
+      "isTerminal": false,
+      "arguments": {
+        "COORD": {
+          "type": "string",
+          "defaultValue": "x",
+          "menu": "COORD"
+        },
+        "PART": {
+          "type": "string",
+          "defaultValue": "rightShoulder",
+          "menu": "PART"
+        }
+      }
+    },
+    {
       "opcode": "videoToggle",
       "text": "turn video [VIDEO_STATE]",
       "arguments": {
@@ -112,6 +130,19 @@ export const info = {
         {
           "text": "left ankle",
           "value": "rightAnkle"
+        }
+      ]
+    },
+    "COORD": {
+      "acceptReporters": false,
+      "items": [
+        {
+          "text": "x",
+          "value": "x"
+        },
+        {
+          "text": "y",
+          "value": "y"
         }
       ]
     },

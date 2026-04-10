@@ -1,0 +1,24 @@
+declare module '!arraybuffer-loader!.*' {
+  declare const value: ArrayBuffer;
+  export default value;
+}
+
+declare module '!raw-loader!.*' {
+  declare const value: string;
+  export default value;
+}
+
+declare module '!!arraybuffer-loader!.*' {
+  declare const value: ArrayBuffer;
+  export default value;
+}
+
+declare module '!!raw-loader!.*' {
+  declare const value: string;
+  export default value;
+}
+
+declare module 'scratch-paint';
+
+declare let __webpack_public_path__: string;
+declare let __webpack_require__: any;

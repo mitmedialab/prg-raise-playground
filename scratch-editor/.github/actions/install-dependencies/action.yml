@@ -1,0 +1,49 @@
+name: Install dependencies
+description: Install NPM dependencies after installing any missing system library dependencies.
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        echo "Using pkg-config $(pkg-config --version)"
+        # These dependencies are from scratch-paint -> paper.js -> canvas
+        # See also `util/has_lib.js` in the `canvas` package
+        # There must be a better way to detect gif_lib.h than this...
+        missing_libraries="$(
+          ldconfig -p | grep -q 'libcairo\.so' || echo libcairo2-dev
+          pkg-config pangocairo || echo libpango1.0-dev
+          pkg-config libssl || echo libssl-dev
+          pkg-config libjpeg || echo libjpeg-dev
+          test -f /usr/include/gif_lib.h || echo libgif-dev
+        )"
+        echo "Missing libraries: [$missing_libraries]"
+        if [ -n "$missing_libraries" ]; then
+          sudo apt update # avoiding this is the main reason for detecting missing libraries
+          sudo apt install -y $missing_libraries
+        else
+          echo "No missing libraries"
+        fi
+    # When the main workflow calls many workspace workflows, we can reuse this cache for all of them.
+    # Since this is caching the node_modules directory, DO NOT add partial-match restore keys!
+    - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      id: restore-node-modules-cache
+      with:
+        path: |
+          node_modules
+          packages/*/node_modules
+          packages/*/src/generated
+          packages/scratch-gui/static/microbit
+        key: ${{ runner.os }}-npm-${{ hashFiles('.nvmrc', 'package-lock.json') }}
+    - if: steps.restore-node-modules-cache.outputs.cache-hit != 'true'
+      name: Install NPM dependencies
+      shell: bash
+      run: NODE_ENV=development npm ci
+    - uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      if: steps.restore-node-modules-cache.outputs.cache-hit != 'true'
+      with:
+        path: |
+          node_modules
+          packages/*/node_modules
+          packages/*/src/generated
+          packages/scratch-gui/static/microbit
+        key: ${{ runner.os }}-npm-${{ hashFiles('.nvmrc', 'package-lock.json') }}
