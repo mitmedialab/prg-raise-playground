@@ -18,29 +18,43 @@ export default class LineArrayFollowing {
     lastError: number | undefined;
     sensorValues: { left: number; center: number; right: number } | undefined;
 
+    maxSpeed: number;
+
     sign: number;
     magnitude: number;
     lineLost: boolean;
 
-    INTERVAL = 475;
+    INTERVAL = 1;
     isLoopRunning: boolean;
 
     keepDriving: boolean;
     drivingStarted: boolean;
     lastCommandTime: number;
 
-    delay = 475;
+    delay = 1;
 
-    constructor(public Kp: number, public baseSpeed: number, public maxSpeed: number, public minSpeed: number, public motorFunction: Function, public getSensorReading: Function) {
+    previousLeftSpeed: number;
+    previousRightSpeed: number;
+
+    constructor(public Kp: number, public baseSpeed: number, public minSpeed: number, public motorFunction: Function, public getSensorReading: Function) {
         this.keepDriving = true;
         this.lastCommandTime = Date.now();
         this.drivingStarted = false;
         this.isLoopRunning = false;
+        this.previousLeftSpeed = 0;
+        this.previousRightSpeed = 0;
+        this.maxSpeed = this.baseSpeed * 2;
     }
+
+    setBaseSpeed(newBase: number) {
+        this.baseSpeed = newBase;
+    }
+
+    centerTrue;
+    lastSign = 0;
 
     // Main loop
     async loop() {
-        console.log("loop")
         // Stop immediately if keepDriving is false
         if (!this.keepDriving) {
             console.log("⛔ keepDriving false → stopping loop");
@@ -55,55 +69,25 @@ export default class LineArrayFollowing {
             if (this.keepDriving) {
                 this.loop();
             } else {
+                this.isLoopRunning = false;
                 console.log("🛑 Loop cancelled on next tick");
             }
         }, this.INTERVAL);
-        const readings: { left: number; center: number; right: number }[] = [];
-  
-        // Collect 5 readings, spaced 50ms apart
-        for (let i = 0; i < 1; i++) {
-            const sensorValues = await this.getSensorReading("line");
-            console.log("Sensor values:", sensorValues);
-            if (sensorValues) {
-            readings.push({
-                left: sensorValues[0],
-                center: sensorValues[1],
-                right: sensorValues[2],
-            });
-            }
-        await this.sleep(10);
-            
-        }
-    
-        // Compute averages (if we got any readings)
-        if (readings.length > 0) {
-            const avg = readings.reduce(
-            (acc, r) => ({
-                left: acc.left + r.left,
-                center: acc.center + r.center,
-                right: acc.right + r.right,
-            }),
-            { left: 0, center: 0, right: 0 }
-            );
-    
-            const averaged = {
-                left: avg.left / readings.length,
-                center: avg.center / readings.length,
-                right: avg.right / readings.length,
-            };
-    
-            console.log("Averaged sensor:", averaged);
-    
-            // Follow the line with smoothed values
-            this.sensorValues = averaged;
+        
+        const reading = this.getSensorReading("line");
+        this.sensorValues = {
+            "left": reading[0],
+            "center": reading[1],
+            "right": reading[2]
         }
 
         // ⏳ Auto-disable keepDriving if inactive > 5s
         if (Date.now() - this.lastCommandTime > 5000) {
             this.keepDriving = false;
             console.log("⛔ No turn commands received → stopping driving");
-        } 
+        }
 
+        console.log("Sensor values:", this.sensorValues);
         if (this.lastError === undefined) this.lastError = 0;
 
         const rawToLineStrength = (raw: number) => this.clamp(raw / 1000, 0, 1);
@@ -111,29 +95,39 @@ export default class LineArrayFollowing {
         const centerLine = rawToLineStrength(this.sensorValues.center);
         const rightLine = rawToLineStrength(this.sensorValues.right);
 
+        this.centerTrue = false;
         // If centered, do nothing (straight path)
-        if (leftLine > 0.8 && centerLine > 0.8 && rightLine > 0.8) {
+        if (((leftLine > 0.9 && rightLine > 0.9) || (centerLine > 0.9)) 
+            || (centerLine > leftLine && centerLine > rightLine && centerLine > 0.5) 
+            || ((Math.abs(centerLine - rightLine) < 0.1) && (Math.abs(centerLine - leftLine) < 0.1) && centerLine > 0.5)) {
             this.sign = 0;
             this.magnitude = 0;
             this.lastError = 0;
             this.lineLost = false;
             console.log("✅ Centered on line");
+            this.centerTrue = true;
             return;
         }
 
         const sideDiff = leftLine - rightLine;
-        this.sign = Math.sign(sideDiff) || Math.sign(this.lastError) || 1;
+        this.sign = Math.sign(sideDiff);
 
         const presence = leftLine + centerLine + rightLine;
         this.magnitude = 1 - this.clamp(presence / 3, 0, 1);
         const error = this.sign * this.magnitude;
 
-        this.lineLost = presence < 0.3 || (leftLine > centerLine && rightLine > centerLine && leftLine < 0.6 && rightLine < 0.6);
+        this.lineLost = presence < 0.3
+            || (leftLine < 0.3 && rightLine < 0.3 && centerLine < 0.3)
+            || (leftLine > centerLine && rightLine > centerLine && leftLine < 0.6 && rightLine < 0.6)
+            || (this.centerTrue === false && Math.abs(leftLine - rightLine) < 0.1 && centerLine < 0.4 && leftLine < 0.9 && rightLine < 0.9);
         if (!this.lineLost) {
             this.lastError = error;
+        } else {
+            this.sign = Math.sign(this.lastError);
         }
-        console.log("LINE LOST", this.lineLost, presence, centerLine, leftLine, rightLine);
-        console.log("presence:", presence.toFixed(4), "center:", error.toFixed(4));
+        console.log("sign", this.sign);
+        console.log("magnitude", this.magnitude);
+        console.log("LINE LOST", this.lineLost);
     }
 
     /* Movement Commands */
@@ -143,7 +137,7 @@ export default class LineArrayFollowing {
     }
 
     async turnLeft() {
-        if (this.drivingStarted) {
+        if (this.drivingStarted && this.keepDriving) {
             this.updateTimer();
             this.turn(1);
         }
@@ -151,22 +145,90 @@ export default class LineArrayFollowing {
     }
 
     async turnRight() {
-        if (this.drivingStarted) {
+        if (this.drivingStarted && this.keepDriving) {
             this.updateTimer();
             this.turn(-1);
-        }  
+        }
         await this.sleep(this.delay);
     }
 
     async goStraight() {
         if (this.drivingStarted) {
             this.updateTimer();
-            this.motorFunction("m", 1000, 1000, this.baseSpeed, this.baseSpeed);
+            this.motorFunction("l", 1000, 1000, this.baseSpeed, this.baseSpeed);
         }
         await this.sleep(this.delay);
     }
 
-    getLineStatus() { 
+    async isCenter() {
+
+        const reading = this.getSensorReading("line");
+        let sensorValues = {
+            "left": reading.left,
+            "center": reading.center,
+            "right": reading.right
+        }
+        
+        const rawToLineStrength = (raw: number) => this.clamp(raw / 1000, 0, 1);
+        const leftLine = rawToLineStrength(sensorValues.left);
+        const centerLine = rawToLineStrength(sensorValues.center);
+        const rightLine = rawToLineStrength(sensorValues.right);
+
+        let centerTrue = false;
+        // If centered, do nothing (straight path)
+        if ((leftLine > 0.9 && rightLine > 0.9) || (centerLine > 0.9)) {
+            centerTrue = true;
+        }
+
+        return centerTrue;
+
+    }
+
+    async recordSensorsAndDownloadCSV(robotName: string, calibrated, durationMs = 5000, intervalMs = 10) {
+        const rows: string[] = [];
+
+        // Add robot name and column header
+        rows.push(`robot_name,${robotName}`);
+        rows.push("time_ms,left,center,right");
+
+        const startTime = Date.now();
+
+        while (Date.now() - startTime < durationMs) {
+            const sensorValues = this.getSensorReading("line");
+
+            if (sensorValues) {
+                const timeMs = Date.now() - startTime;
+                const left = sensorValues[0];
+                const center = sensorValues[1];
+                const right = sensorValues[2];
+
+                rows.push(`${timeMs},${left},${center},${right}`);
+            }
+
+            await this.sleep(intervalMs);
+        }
+
+        const csv = rows.join("\n");
+
+        // Download CSV in browser
+        const blob = new Blob([csv], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `sensor_data_${robotName}_${calibrated ? "calibrated" : "uncalibrated"}_${new Date().toISOString()}.csv`; // timestamps + robot name
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        console.log("CSV file downloaded");
+    }
+
+
+
+
+    getLineStatus() {
         let tempSign;
         if (this.lineLost) {
             const turnDir = this.lastError > 0 ? 1 : -1;
@@ -174,20 +236,21 @@ export default class LineArrayFollowing {
         } else {
             tempSign = this.sign;
         }
-        if (tempSign === 0 && this.magnitude === 0) { return "on the line"; } 
-        else if (tempSign > 0) { return "right of line"; } 
-        else if (tempSign < 0) { return "left of line"; } 
-        else { return "off the line"; } 
+        if (tempSign === 0 && this.magnitude === 0) { return "on the line"; }
+        else if (tempSign > 0) { return "right of line"; }
+        else if (tempSign < 0) { return "left of line"; }
+        else { return "off the line"; }
     }
 
     private turn(sign) {
+        const alpha = 0.5;
         if (!this.keepDriving) return;
         let leftSpeed = 0;
         let rightSpeed = 0;
 
         if (this.lineLost) {
-            leftSpeed = this.baseSpeed * (sign > 0 ? -0 : this.Kp);
-            rightSpeed = this.baseSpeed * (sign < 0 ? -0 : this.Kp);
+            leftSpeed = this.maxSpeed * (sign > 0 ? 0 : 1);
+            rightSpeed = this.maxSpeed * (sign < 0 ? 0 : 1);
             leftSpeed = this.clamp(leftSpeed, this.minSpeed, this.maxSpeed);
             rightSpeed = this.clamp(rightSpeed, this.minSpeed, this.maxSpeed);
             console.log(`🚨 Line lost → turning ${sign > 0 ? "right" : "left"}`);
@@ -197,9 +260,12 @@ export default class LineArrayFollowing {
             leftSpeed = this.clamp(this.baseSpeed - correction * this.baseSpeed, this.minSpeed, this.maxSpeed);
             rightSpeed = this.clamp(this.baseSpeed + correction * this.baseSpeed, this.minSpeed, this.maxSpeed);
         }
-
+        leftSpeed = alpha * this.previousLeftSpeed + (1 - alpha) * leftSpeed;
+        rightSpeed = alpha * this.previousRightSpeed + (1 - alpha) * rightSpeed;
         console.log(`Speeds → L:${leftSpeed.toFixed(0)} R:${rightSpeed.toFixed(0)}`);
-        this.motorFunction("m", 1000, 1000, Math.round(leftSpeed), Math.round(rightSpeed));
+        this.previousLeftSpeed = leftSpeed;
+        this.previousRightSpeed = rightSpeed;
+        this.motorFunction("l", 1000, 1000, Math.round(leftSpeed), Math.round(rightSpeed));
     }
 
     clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));

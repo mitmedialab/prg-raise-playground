@@ -4,7 +4,7 @@ import Doodlebot from "./Doodlebot";
 import EventEmitter from "events";
 import TeachableMachine from "./ModelUtils";
 import { convertSvgUint8ArrayToPng } from "./utils";
-import LineArrayFollowing from "./LineArrayFollowingCopy";
+import LineArrayFollowing from "./LineArrayFollowing";
 //import { createLineDetector } from "./LineDetection";
 
 import JSZip from 'jszip';
@@ -804,6 +804,18 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   // lineArray_getLineStatus() {
   //   return this.lineFollower.getLineStatus();
   // }
+
+  @block({
+    type: "command",
+    text: (leftSpeed, rightSpeed) => `Set left speed ${leftSpeed} and right speed ${rightSpeed}`,
+    args: [
+      { type: "number", defaultValue: 200 },
+      { type: "number", defaultValue: 200 }
+    ]
+  })
+  lineArray_setSpeeds(leftSpeed: number, rightSpeed: number) {
+    this.doodlebot.sendBLECommand("l", 1000, 1000, leftSpeed, rightSpeed);
+  }
 
   @block({
     type: "reporter",
