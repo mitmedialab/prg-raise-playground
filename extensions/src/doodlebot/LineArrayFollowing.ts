@@ -48,6 +48,7 @@ export default class LineArrayFollowing {
 
     setBaseSpeed(newBase: number) {
         this.baseSpeed = newBase;
+        this.maxSpeed = this.baseSpeed * 2;
     }
 
     centerTrue;
