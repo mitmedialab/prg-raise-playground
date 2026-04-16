@@ -805,6 +805,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   //   return this.lineFollower.getLineStatus();
   // }
 
+  sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
   @block({
     type: "command",
     text: (leftSpeed, rightSpeed) => `Set left speed ${leftSpeed} and right speed ${rightSpeed}`,
@@ -813,8 +814,11 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       { type: "number", defaultValue: 200 }
     ]
   })
-  lineArray_setSpeeds(leftSpeed: number, rightSpeed: number) {
-    this.doodlebot.sendBLECommand("l", 1000, 1000, leftSpeed, rightSpeed);
+  async lineArray_setSpeeds(leftSpeed: number, rightSpeed: number) {
+    for (let i = 0; i < 10000; i++) {
+      this.doodlebot.sendBLECommand("l", 1000, 1000, Math.round(leftSpeed), Math.round(rightSpeed));
+      await this.sleep(1);
+    }
   }
 
   @block({

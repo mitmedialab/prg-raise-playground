@@ -88,7 +88,7 @@ export default class LineArrayFollowing {
             console.log("⛔ No turn commands received → stopping driving");
         }
 
-        console.log("Sensor values:", this.sensorValues);
+        // console.log("Sensor values:", this.sensorValues);
         if (this.lastError === undefined) this.lastError = 0;
 
         const rawToLineStrength = (raw: number) => this.clamp(raw / 1000, 0, 1);
@@ -103,9 +103,9 @@ export default class LineArrayFollowing {
             || ((Math.abs(centerLine - rightLine) < 0.1) && (Math.abs(centerLine - leftLine) < 0.1) && centerLine > 0.5)) {
             this.sign = 0;
             this.magnitude = 0;
-            this.lastError = 0;
+            // this.lastError = 0;
             this.lineLost = false;
-            console.log("✅ Centered on line");
+            // console.log("✅ Centered on line");
             this.centerTrue = true;
             return;
         }
@@ -126,9 +126,10 @@ export default class LineArrayFollowing {
         } else {
             this.sign = Math.sign(this.lastError);
         }
-        console.log("sign", this.sign);
-        console.log("magnitude", this.magnitude);
-        console.log("LINE LOST", this.lineLost);
+        // COMMENT
+        // console.log("sign", this.sign);
+        // console.log("magnitude", this.magnitude);
+        // console.log("LINE LOST", this.lineLost);
     }
 
     /* Movement Commands */
@@ -263,7 +264,7 @@ export default class LineArrayFollowing {
         }
         leftSpeed = alpha * this.previousLeftSpeed + (1 - alpha) * leftSpeed;
         rightSpeed = alpha * this.previousRightSpeed + (1 - alpha) * rightSpeed;
-        console.log(`Speeds → L:${leftSpeed.toFixed(0)} R:${rightSpeed.toFixed(0)}`);
+        console.log(`Speeds → L:${leftSpeed.toFixed(0)} R:${rightSpeed.toFixed(0)} Date: ${Date.now()}`);
         this.previousLeftSpeed = leftSpeed;
         this.previousRightSpeed = rightSpeed;
         this.motorFunction("l", 1000, 1000, Math.round(leftSpeed), Math.round(rightSpeed));
