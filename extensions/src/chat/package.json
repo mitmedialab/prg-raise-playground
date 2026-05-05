@@ -11,5 +11,8 @@
     "add:arg": "pnpm --filter prg-extension-root add:arg chat"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@mit-app-inventor/chatbot": "^2.0.0"
+  }
 }

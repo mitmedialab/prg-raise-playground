@@ -1,5 +1,6 @@
 import { scratch, extension, type ExtensionMenuDisplayDetails, type BlockUtilityWithID, type Environment, block } from "$common";
 import { getImageHelper } from "./utils";
+import ChatBot from "@mit-app-inventor/chatbot";
 /** 👋 Hi!
 
 Below is a working Extension that you should adapt to fit your needs. 
@@ -45,6 +46,8 @@ export default class GenAIExtension extends extension(details, "addCostumes") {
 
   voice_map: any;
 
+  chatbot: ChatBot;
+
   /** @see {ExplanationOfInitMethod} */
   init(env: Environment) {
     this.voice_map = {
@@ -70,6 +73,8 @@ export default class GenAIExtension extends extension(details, "addCostumes") {
 
     Your goal is to make learning feel exciting, safe, and curious — like a helpful teacher's assistant who loves explaining things in creative ways.
     `;
+    this.chatbot = new ChatBot.ChatBot();
+    this.chatbot.ApiKey = "";
   }
 
   /** @see {ExplanationOfField} */
@@ -497,13 +502,17 @@ export default class GenAIExtension extends extension(details, "addCostumes") {
     try {
       let response;
 
-      response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ text_input: prompt, system_prompt: temporary_prompt }),
-      });
+      // response = await fetch(url, {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json"
+      //   },
+      //   body: JSON.stringify({ text_input: prompt, system_prompt: temporary_prompt }),
+      // });
+      this.chatbot.System = temporary_prompt;
+      console.log("prompt", prompt);
+      response = await this.chatbot.Converse(prompt);
+      console.log("RESPONSE", response);
 
       if (!response.ok) {
         const errorText = await response.text();
