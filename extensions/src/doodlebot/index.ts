@@ -815,9 +815,11 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     ]
   })
   async lineArray_setSpeeds(leftSpeed: number, rightSpeed: number) {
+    //this.doodlebot.sendBLECommand("m", 10000, 10000, Math.round(leftSpeed), Math.round(rightSpeed));
+    //await this.sleep(1000);
     for (let i = 0; i < 10000; i++) {
       this.doodlebot.sendBLECommand("l", 1000, 1000, Math.round(leftSpeed), Math.round(rightSpeed));
-      await this.sleep(1);
+      await this.sleep(100);
     }
   }
 
@@ -834,12 +836,25 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     text: "Line array: record csv",
   })
   lineArray_recordCsv() {
-    this.doodlebot?.motorCommand(
-      "steps",
-      { steps: 3000, stepsPerSecond: 2000 },
-      { steps: 3000, stepsPerSecond: 2000 }
-    );
-    this.lineFollower.recordSensorsAndDownloadCSV("cheesecake", true);
+    // this.doodlebot?.motorCommand(
+    //   "steps",
+    //   { steps: 3000, stepsPerSecond: 2000 },
+    //   { steps: 3000, stepsPerSecond: 2000 }
+    // );
+    this.lineFollower.recordSensorsAndDownloadCSV();
+  }
+
+  @block({
+    type: "command",
+    text: "Line array: stop record csv",
+  })
+  lineArray_stopRecordCsv() {
+    // this.doodlebot?.motorCommand(
+    //   "steps",
+    //   { steps: 3000, stepsPerSecond: 2000 },
+    //   { steps: 3000, stepsPerSecond: 2000 }
+    // );
+    this.lineFollower.stopRecordingCsv();
   }
 
   @block({

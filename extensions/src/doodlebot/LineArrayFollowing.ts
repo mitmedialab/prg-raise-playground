@@ -186,49 +186,77 @@ export default class LineArrayFollowing {
 
     }
 
-    async recordSensorsAndDownloadCSV(robotName: string, calibrated, durationMs = 5000, intervalMs = 10) {
-        const rows: string[] = [];
+    rowsAccelerometer: string[] = [];
+    rowsGyroscope: string[] = [];
 
+    recording: boolean;
+
+    async recordSensorsAndDownloadCSV(intervalMs = 10) {
+        this.recording = true;
         // Add robot name and column header
-        rows.push(`robot_name,${robotName}`);
-        rows.push("time_ms,left,center,right");
+        this.rowsAccelerometer = [];
+        this.rowsGyroscope = [];
+        this.rowsAccelerometer.push("time_ms,x,y,z");
+        this.rowsGyroscope.push("time_ms,x,y,z");
 
-        const startTime = Date.now();
+        //const startTime = Date.now();
 
-        while (Date.now() - startTime < durationMs) {
-            const sensorValues = this.getSensorReading("line");
+        while (this.recording) {
+            const accelerometerValues = this.getSensorReading("accelerometer");
+            const gyroscopeValues = this.getSensorReading("accelerometer");
 
-            if (sensorValues) {
-                const timeMs = Date.now() - startTime;
-                const left = sensorValues[0];
-                const center = sensorValues[1];
-                const right = sensorValues[2];
+            if (accelerometerValues) {
+                const timeMs = Date.now();
+                const x = accelerometerValues.x;
+                const y = accelerometerValues.y;
+                const z = accelerometerValues.z;
 
-                rows.push(`${timeMs},${left},${center},${right}`);
+                this.rowsAccelerometer.push(`${timeMs},${x},${y},${z}`);
+            }
+
+            console.log("NOW", Date.now());
+
+            if (gyroscopeValues) {
+                const timeMs = Date.now();
+                const x = gyroscopeValues.x;
+                const y = gyroscopeValues.y;
+                const z = gyroscopeValues.z;
+
+                this.rowsGyroscope.push(`${timeMs},${x},${y},${z}`);
             }
 
             await this.sleep(intervalMs);
         }
+    }
 
-        const csv = rows.join("\n");
+    stopRecordingCsv() {
+        this.recording = false;
+        const csvAccelerometer = this.rowsAccelerometer.join("\n");
+        const csvGyroscope = this.rowsGyroscope.join("\n");
 
         // Download CSV in browser
-        const blob = new Blob([csv], { type: "text/csv" });
-        const url = URL.createObjectURL(blob);
+        const blobAccelerometer = new Blob([csvAccelerometer], { type: "text/csv" });
+        const blobGyroscope = new Blob([csvGyroscope], { type: "text/csv" });
+        const urlAccelerometer = URL.createObjectURL(blobAccelerometer);
+        const urlGyroscope = URL.createObjectURL(blobGyroscope);
 
         const a = document.createElement("a");
-        a.href = url;
-        a.download = `sensor_data_${robotName}_${calibrated ? "calibrated" : "uncalibrated"}_${new Date().toISOString()}.csv`; // timestamps + robot name
+        a.href = urlAccelerometer;
+        a.download = `sensor_data_accelerometer.csv`; // timestamps + robot name
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        URL.revokeObjectURL(urlAccelerometer);
+
+        a.href = urlGyroscope;
+        a.download = `sensor_data_gyroscope.csv`; // timestamps + robot name
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(urlGyroscope);
 
         console.log("CSV file downloaded");
     }
-
-
-
 
     getLineStatus() {
         let tempSign;
