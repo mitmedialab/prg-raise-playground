@@ -4402,7 +4402,7 @@ class GoogleChooser extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
     return _asyncToGenerator(function* () {
       var _searchResponse$resul;
       // const fileName = prompt("Name your project", this.props.projectTitle);
-      const result = yield showSaveDialog(_this.props.projectTitle);
+      const result = yield _this.showSaveDialog(_this.props.projectTitle);
       if (!result) return;
       const {
         fileName,
@@ -85851,4 +85851,4 @@ module.exports = /*#__PURE__*/JSON.parse('{"name":"scratch-vm","version":"4.5.15
 /***/ })
 
 }]);
-//# sourceMappingURL=src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx.dd70a2dd3c5500112f19.js.map
+//# sourceMappingURL=src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx.1fff62bbe1e0835f34f7.js.map
