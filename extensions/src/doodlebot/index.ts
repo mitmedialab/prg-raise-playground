@@ -74,11 +74,14 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   lineFollower;
 
+  blocksRun: number;
+
   async init(env: Environment) {
     this.voice_id = 1;
     this.pitch_value = 0;
     this.soundDictionary = {};
     this.costumeDictionary = {};
+    this.blocksRun = 0;
     //requestAnimationFrame(() => this.setIndicator("disconnected"));
     this.openUI("Connect")
     env.runtime.on("TARGETS_UPDATE", async () => {
@@ -94,7 +97,29 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     soundFiles = ["File"];
     imageFiles = ["File"];
 
+    env.runtime.on("PROJECT_RUN_STOP", async() => {
+      
+    })
+
   }
+
+   async blockCounter(utility: BlockUtilityWithID) {
+    if (JSON.parse(JSON.stringify(utility.blockID)) == JSON.parse(JSON.stringify(utility.thread.topBlock))) {
+      this.blocksRun = 0;
+      const r = Math.random();
+      if (this.blocksRun > 0) {
+        console.log("starting", r);
+        if (r < 0.3) {
+          await this.speakText("Here I go!");
+        } else if (r < 0.6) {
+          await this.speakText("Let's do it!");
+        }
+      }
+      
+    }
+    this.blocksRun = this.blocksRun + 1;
+  }
+
 
 
   private _loop() {
