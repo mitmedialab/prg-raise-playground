@@ -73,8 +73,8 @@ export default class GenAIExtension extends extension(details, "addCostumes") {
 
     Your goal is to make learning feel exciting, safe, and curious — like a helpful teacher's assistant who loves explaining things in creative ways.
     `;
-    this.chatbot = new ChatBot.ChatBot();
-    this.chatbot.ApiKey = "";
+    this.chatbot = new ChatBot.ChatBot("");
+    //this.chatbot.ApiKey = "";
   }
 
   /** @see {ExplanationOfField} */
@@ -500,28 +500,8 @@ export default class GenAIExtension extends extension(details, "addCostumes") {
     }
 
     try {
-      let response;
-
-      // response = await fetch(url, {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json"
-      //   },
-      //   body: JSON.stringify({ text_input: prompt, system_prompt: temporary_prompt }),
-      // });
       this.chatbot.System = temporary_prompt;
-      console.log("prompt", prompt);
-      response = await this.chatbot.Converse(prompt);
-      console.log("RESPONSE", response);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.log("Error response:", errorText);
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const textResponse = data.text;
+      const textResponse = await this.chatbot.Converse(prompt);
       return textResponse;
 
     } catch (error) {
@@ -532,40 +512,8 @@ export default class GenAIExtension extends extension(details, "addCostumes") {
 
   private async generateImage(prompt: string) {
     try {
-      // Step 1: create job
-      const createResponse = await fetch(`${backendHost}/create_image`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
-      });
-      const { jobId } = await createResponse.json();
-
-      // Step 2: poll until ready
-      let imageReady = false;
-      let imageB64 = "";
-
-      while (!imageReady) {
-        const statusRes = await fetch(`${backendHost}/create_image/${jobId}`);
-        const statusData = await statusRes.json();
-
-        // If we serve the image directly
-        if (statusData.image) {
-          imageReady = true;
-          imageB64 = statusData.image;
-        } else {
-          if (statusData.status === "done") {
-            imageReady = true;
-            // optionally fetch the image here if your server returns a URL
-          } else if (statusData.status === "error") {
-            throw new Error(statusData.error);
-          } else {
-            // pending
-            await new Promise((r) => setTimeout(r, 2000));
-          }
-        }
-      }
-
-      return imageB64;
+      const imageResponse = await this.chatbot.CreateImage(prompt);
+      return imageResponse.responseImage;
 
     } catch (error) {
       console.error("Error generating image:", error);
