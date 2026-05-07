@@ -77,6 +77,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   lineFollower;
 
   blocksRun: number;
+  runId: number;
 
   async init(env: Environment) {
     this.voice_id = 1;
@@ -84,6 +85,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     this.soundDictionary = {};
     this.costumeDictionary = {};
     this.blocksRun = 0;
+    this.runId = 0;
     //requestAnimationFrame(() => this.setIndicator("disconnected"));
     this.openUI("Connect")
     env.runtime.on("TARGETS_UPDATE", async () => {
@@ -101,10 +103,9 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     })
 
     env.runtime.on("PROJECT_RUN_START", async() => {
-      console.log("PROJECT STARTED");
+
     })
 
-    // 
     env.runtime.on("PROJECT_STOP_ALL", async() => {
       console.log("PROJECT STOPPED");
     })
@@ -118,17 +119,35 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   }
 
    async blockCounter(utility: BlockUtilityWithID) {
+    console.log("utility", utility);
     if (JSON.parse(JSON.stringify(utility.blockID)) == JSON.parse(JSON.stringify(utility.thread.topBlock))) {
       this.blocksRun = 0;
+      this.runId += 1;
+      const opcodes = [];
+      const blockIds = JSON.parse(JSON.stringify(utility.thread.blockContainer._scripts));
+      for (const id of blockIds) {
+        const block = JSON.parse(JSON.stringify(utility.thread.blockContainer._blocks[id]));
+        opcodes.push(block.opcode);
+      }
+      if (Object.keys(this.studyJson).includes("run_start")) {
+        this.studyJson["run_start"].push({
+          "run_id": this.runId,
+          "block_snapshot": opcodes,
+          "block_count": opcodes.length,
+          "timstamp": Date.now()
+        })
+      }
+
+      console.log("FINAL OPCODES", opcodes);
     }
     this.blocksRun = this.blocksRun + 1;
     if (this.blocksRun > 1) {
       const r = Math.random();
       console.log("starting", r);
       if (r < 0.3) {
-        await this.speakText("Here I go!");
+        // await this.speakText("Here I go!");
       } else if (r < 0.6) {
-        await this.speakText("Let's do it!");
+        // await this.speakText("Let's do it!");
       }
     }
   }
