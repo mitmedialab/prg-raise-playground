@@ -120,18 +120,17 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
    async blockCounter(utility: BlockUtilityWithID) {
     if (JSON.parse(JSON.stringify(utility.blockID)) == JSON.parse(JSON.stringify(utility.thread.topBlock))) {
       this.blocksRun = 0;
-      const r = Math.random();
-      if (this.blocksRun > 0) {
-        console.log("starting", r);
-        if (r < 0.3) {
-          await this.speakText("Here I go!");
-        } else if (r < 0.6) {
-          await this.speakText("Let's do it!");
-        }
-      }
-      
     }
     this.blocksRun = this.blocksRun + 1;
+    if (this.blocksRun > 1) {
+      const r = Math.random();
+      console.log("starting", r);
+      if (r < 0.3) {
+        await this.speakText("Here I go!");
+      } else if (r < 0.6) {
+        await this.speakText("Let's do it!");
+      }
+    }
   }
 
 
@@ -301,7 +300,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       { type: "number", defaultValue: 0 }
     ]
   })
-  async setVoiceAndPitch(voice: number, pitch: number) {
+  async setVoiceAndPitch(voice: number, pitch: number, utility: BlockUtilityWithID) {
+    await this.blockCounter(utility);
     this.voice_id = voice;
     this.pitch_value = pitch;
   }
@@ -312,6 +312,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     arg: { type: "string", defaultValue: "Hello!" }
   })
   async speak(text: string, utility: BlockUtilityWithID) {
+    await this.blockCounter(utility);
     await this.speakText(text);
   }
 
@@ -320,7 +321,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     text: (text: string) => `display text ${text}`,
     arg: { type: "string", defaultValue: "hello world!" }
   })
-  async setText(text: string) {
+  async setText(text: string, utility: BlockUtilityWithID) {
+    await this.blockCounter(utility);
     await this.doodlebot?.displayText(text);
   }
 
@@ -330,7 +332,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     arg: { type: "string", options: ["small", "medium", "large"], defaultValue: "medium" },
 
   })
-  async setFont(size: "small" | "medium" | "large") {
+  async setFont(size: "small" | "medium" | "large", utility: BlockUtilityWithID) {
+    await this.blockCounter(utility);
     await this.doodlebot?.setFont(size);
   }
 
@@ -338,7 +341,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     type: "command",
     text: "clear display"
   })
-  async clearDisplay() {
+  async clearDisplay(utility: BlockUtilityWithID) {
+    await this.blockCounter(utility);
     await this.doodlebot?.display("clear");
   }
 
@@ -351,7 +355,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       { type: "number", options: [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000], defaultValue: 2000 }
     ]
   })
-  async drive(direction: "forward" | "backward", steps: number, speed: number) {
+  async drive(direction: "forward" | "backward", steps: number, speed: number, utility: BlockUtilityWithID) {
+    await this.blockCounter(utility);
     const leftSteps = direction == "backward" ? -steps * 7.160 * 16 : steps * 7.160 * 16;
     const rightSteps = direction == "backward" ? -steps * 7.160 * 16 : steps * 7.160 * 16;
     const stepsPerSecond = speed;
@@ -373,6 +378,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     ]
   })
   async arc(direction: "left" | "right", radius: number, degrees: number, utility: BlockUtilityWithID) {
+    await this.blockCounter(utility);
     if (direction == "right") degrees *= -1;
     await this.doodlebot?.motorCommand("arc", radius / 2.54, degrees);
   }
@@ -383,6 +389,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     arg: { type: "number", defaultValue: 90 }
   })
   async spin(degrees: number, utility: BlockUtilityWithID) {
+    await this.blockCounter(utility);
     if (degrees === 0) return;
     await this.doodlebot?.motorCommand("arc", 0, -degrees);
   }
@@ -391,7 +398,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     type: "command",
     text: "stop driving"
   })
-  async stop() {
+  async stop(utility: BlockUtilityWithID) {
+    await this.blockCounter(utility);
     await this.doodlebot?.motorCommand("stop");
   }
 
@@ -400,7 +408,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     text: (direction) => `move pen ${direction}`,
     arg: { type: "string", options: ["up", "down"], defaultValue: "up" }
   })
-  async movePen(direction: "up" | "down") {
+  async movePen(direction: "up" | "down", utility: BlockUtilityWithID) {
+    await this.blockCounter(utility);
     await this.doodlebot?.penCommand(direction);
   }
 
@@ -499,7 +508,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     text: (sensor: SensorKey) => `disable ${sensor}`,
     arg: { type: "string", options: sensorKeys, defaultValue: sensorKeys[0] }
   })
-  async disableSensor(sensor: SensorKey) {
+  async disableSensor(sensor: SensorKey, utility: BlockUtilityWithID) {
+    await this.blockCounter(utility);
     await this.doodlebot?.disableSensor(sensor);
   }
 
@@ -508,7 +518,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     text: (direction) => `move eyes from center to ${direction}`,
     arg: { type: "string", options: ["left", "right", "up", "down"] },
   })
-  async moveEyes1(direction: string) {
+  async moveEyes1(direction: string, utility: BlockUtilityWithID) {
+    await this.blockCounter(utility);
     await this.doodlebot.moveEyes("center", direction);
   }
 
@@ -517,7 +528,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     text: (direction) => `move eyes from ${direction} to center`,
     arg: { type: "string", options: ["left", "right", "up", "down"] },
   })
-  async moveEyes2(direction: string) {
+  async moveEyes2(direction: string, utility: BlockUtilityWithID) {
+    await this.blockCounter(utility);
     await this.doodlebot.moveEyes(direction, "center");
   }
 
@@ -526,7 +538,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     text: (sound) => `play sound track${sound}`,
     arg: { type: "number", defaultValue: 1 }
   })
-  async playSound(sound: number) {
+  async playSound(sound: number, utility: BlockUtilityWithID) {
+    await this.blockCounter(utility);
     await this.doodlebot?.sendWebsocketCommand("m", sound)
   }
 
@@ -546,7 +559,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       }
     }
   }))
-  async playSoundFile(sound: string, util: BlockUtilityWithID) {
+  async playSoundFile(sound: string, utility: BlockUtilityWithID) {
+    await this.blockCounter(utility);
     let currentId = this.runtime._editingTarget.id;
     let costumeSounds = this.getCurrentSounds(currentId);
     if (costumeSounds.includes(sound)) {
@@ -571,7 +585,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       }, defaultValue: "happy"
     }
   }))
-  async setDisplay(display: DisplayKey | string) {
+  async setDisplay(display: DisplayKey | string, utility: BlockUtilityWithID) {
+    await this.blockCounter(utility);
     let costumeNames = Object.keys(this.costumeDictionary[this.runtime._editingTarget.id]);
     if (costumeNames.includes(display)) {
       await this.doodlebot.uploadFile("image", this.costumeDictionary[this.runtime._editingTarget.id][display]);
@@ -597,7 +612,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       }, defaultValue: "happy"
     }, { type: "number", defaultValue: 1 }]
   }))
-  async setDisplayForSeconds(display: DisplayKey | string, seconds: number) {
+  async setDisplayForSeconds(display: DisplayKey | string, seconds: number, utility: BlockUtilityWithID) {
+    await this.blockCounter(utility);
     const lastDisplayedKey = this.doodlebot.getLastDisplayedKey();
     const lastDisplayedType = this.doodlebot.getLastDisplayedType();
     let costumeNames = Object.keys(this.costumeDictionary[this.runtime._editingTarget.id]);
@@ -624,7 +640,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     type: "command",
     text: "display video",
   })
-  async connectToVideo() {
+  async connectToVideo(utility: BlockUtilityWithID) {
+    await this.blockCounter(utility);
     this.videoDrawable ??= await this.createVideoStreamDrawable();
   }
 
@@ -649,7 +666,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     arg: { type: "number", options: [0, 25, 50, 75, 100, 200, 300], defaultValue: 100 },
 
   })
-  async setVolume(volume: number) {
+  async setVolume(volume: number, utility: BlockUtilityWithID) {
+    await this.blockCounter(utility);
     await this.doodlebot?.setVolume(volume)
   }
 
