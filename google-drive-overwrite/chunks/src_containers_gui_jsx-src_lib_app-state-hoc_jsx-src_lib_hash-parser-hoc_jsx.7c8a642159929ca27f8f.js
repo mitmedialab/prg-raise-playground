@@ -4438,8 +4438,8 @@ class GoogleChooser extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
       }
 
       // Upload/overwrite content
-      const url = "https://www.googleapis.com/upload/drive/v3/files/".concat(fileId, "?uploadType=media");
-      _this.props.vm.uploadProjectToURL(url, oauthToken);
+      const url = "https://www.googleapis.com/upload/drive/v3/files/".concat(fileId, "?uploadType=media;").concat(oauthToken);
+      _this.props.vm.uploadProjectToURL(url);
       window.alert("Project saved");
       _this.props.onRequestCloseFile();
     })();
@@ -85851,4 +85851,4 @@ module.exports = /*#__PURE__*/JSON.parse('{"name":"scratch-vm","version":"4.5.15
 /***/ })
 
 }]);
-//# sourceMappingURL=src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx.1fff62bbe1e0835f34f7.js.map
+//# sourceMappingURL=src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx.7c8a642159929ca27f8f.js.map
