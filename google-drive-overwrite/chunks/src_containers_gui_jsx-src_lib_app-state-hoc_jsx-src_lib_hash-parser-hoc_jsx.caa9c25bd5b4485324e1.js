@@ -43955,6 +43955,7 @@ class Runtime extends EventEmitter {
    * @return {?import("./target")} The target, if found.
    */
   getTargetForStage() {
+    console.log(this.targets);
     for (let i = 0; i < this.targets.length; i++) {
       const target = this.targets[i];
       if (target.isStage) {
@@ -74774,6 +74775,8 @@ class VirtualMachine extends EventEmitter {
    * @returns {Promise} resolved once targets have been installed
    */
   installTargets(targets, extensions, wholeProject, fullJSON) {
+    console.log("loaded targets", targets);
+
     /** PRG ADDITION BEGIN */
     const {
       extensionManager
@@ -85851,4 +85854,4 @@ module.exports = /*#__PURE__*/JSON.parse('{"name":"scratch-vm","version":"4.5.15
 /***/ })
 
 }]);
-//# sourceMappingURL=src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx.7c8a642159929ca27f8f.js.map
+//# sourceMappingURL=src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx.caa9c25bd5b4485324e1.js.map
