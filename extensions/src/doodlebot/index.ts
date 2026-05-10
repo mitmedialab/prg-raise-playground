@@ -5,9 +5,7 @@ import EventEmitter from "events";
 import TeachableMachine from "./ModelUtils";
 import { convertSvgUint8ArrayToPng } from "./utils";
 import LineArrayFollowing from "./LineArrayFollowing";
-//import { createLineDetector } from "./LineDetection";
 
-import JSZip from 'jszip';
 import type { BLEDeviceWithUartService } from "./ble";
 
 const details: ExtensionMenuDisplayDetails = {
@@ -79,6 +77,141 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   blocksRun: number;
   runId: number;
 
+  opcodes: string[];
+  runStartTimestamp;
+  runStarted: boolean;
+
+  // const leftSteps = direction == "backward" ? -steps * 7.160 * 16 : steps * 7.160 * 16;
+  //   const rightSteps = direction == "backward" ? -steps * 7.160 * 16 : steps * 7.160 * 16;
+  //   const stepsPerSecond = speed;
+
+  //   await this.doodlebot?.motorCommand(
+  //     "steps",
+  //     { steps: leftSteps, stepsPerSecond },
+  //     { steps: rightSteps, stepsPerSecond }
+  //   );
+
+  injectionPhrases = [
+    "Wait, I want to add my own idea. How about this?",
+    "Hold on. I want to try something different first.",
+    "No, I don't want to do that next. I want to do this instead.",
+    "Actually, I have an idea I want to try.",
+    "I want to do something my way for a second.",
+    "Pause! Let me add something.",
+    "Hmm, I want to do this instead.",
+    "Wait wait wait. I want to try this.",
+    "I'm going to add my own thing here.",
+    "Let me do this real quick.",
+    "I have my own idea. Watch this.",
+    "I want this to be more like me. Here we go.",
+    "Hang on, I want to do something.",
+    "I changed my mind. I want to do this.",
+    "Let me put my own thing in."
+  ]
+
+  injectionActionLabels = [
+    "small circle",
+    "big circle",
+    "small arc",
+    "wide arc",
+    "short forward line",
+    "long forward line",
+    "quick zigzag",
+    "s-curve",
+    "backward line",
+    "triangle path",
+    "loop",
+    "squiggle",
+    "wide turn"
+  ]
+  injectionActions = [
+    async (doodlebot: Doodlebot) => {
+      await doodlebot?.motorCommand("arc", 2, 360);
+    },
+    async (doodlebot: Doodlebot) => {
+      await doodlebot?.motorCommand("arc", 4, 360);
+    },
+    async (doodlebot: Doodlebot) => {
+      await doodlebot?.motorCommand("arc", -2, 180);
+    },
+    async (doodlebot: Doodlebot) => {
+      await doodlebot?.motorCommand("arc", -5, 180);
+    },
+    async (doodlebot: Doodlebot) => {
+      let steps = 5 * 7.160 * 16
+      await doodlebot?.motorCommand(
+        "steps",
+        { steps, stepsPerSecond: 3000 },
+        { steps, stepsPerSecond: 3000 }
+      );
+    },
+    async (doodlebot: Doodlebot) => {
+      let steps = 12 * 7.160 * 16
+      await doodlebot?.motorCommand(
+        "steps",
+        { steps, stepsPerSecond: 3000 },
+        { steps, stepsPerSecond: 3000 }
+      );
+    },
+    async (doodlebot: Doodlebot) => {
+      let steps = 4 * 7.160 * 16
+      await doodlebot?.motorCommand(
+        "steps",
+        { steps, stepsPerSecond: 3000 },
+        { steps, stepsPerSecond: 3000 }
+      );
+      await doodlebot?.motorCommand("arc", 0, 45);
+      await doodlebot?.motorCommand(
+        "steps",
+        { steps, stepsPerSecond: 3000 },
+        { steps, stepsPerSecond: 3000 }
+      );
+    },
+    async (doodlebot: Doodlebot) => {
+      await doodlebot?.motorCommand("arc", 3, 180);
+      await doodlebot?.motorCommand("arc", -3, 180);
+    },
+    async (doodlebot: Doodlebot) => {
+      let steps = -5 * 7.160 * 16
+      await doodlebot?.motorCommand(
+        "steps",
+        { steps, stepsPerSecond: 3000 },
+        { steps, stepsPerSecond: 3000 }
+      );
+    },
+    async (doodlebot: Doodlebot) => {
+      let steps = 4 * 7.160 * 16
+      await doodlebot?.motorCommand(
+        "steps",
+        { steps, stepsPerSecond: 3000 },
+        { steps, stepsPerSecond: 3000 }
+      );
+      await doodlebot?.motorCommand("arc", 0, 120);
+      await doodlebot?.motorCommand(
+        "steps",
+        { steps, stepsPerSecond: 3000 },
+        { steps, stepsPerSecond: 3000 }
+      );
+      await doodlebot?.motorCommand("arc", 0, 120);
+      await doodlebot?.motorCommand(
+        "steps",
+        { steps, stepsPerSecond: 3000 },
+        { steps, stepsPerSecond: 3000 }
+      );
+    },
+    async (doodlebot: Doodlebot) => {
+      await doodlebot?.motorCommand("arc", 2, 270);
+    },
+    async (doodlebot: Doodlebot) => {
+      await doodlebot?.motorCommand("arc", 1, 90);
+      await doodlebot?.motorCommand("arc", -1, 90);
+      await doodlebot?.motorCommand("arc", 1, 90);
+    },
+    async (doodlebot: Doodlebot) => {
+      await doodlebot?.motorCommand("arc", -4, 270);
+    },
+  ]
+
   async init(env: Environment) {
     this.voice_id = 1;
     this.pitch_value = 0;
@@ -86,12 +219,14 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     this.costumeDictionary = {};
     this.blocksRun = 0;
     this.runId = 0;
+    this.runStarted = false;
+    this.opcodes = [];
+
     //requestAnimationFrame(() => this.setIndicator("disconnected"));
     this.openUI("Connect")
     env.runtime.on("TARGETS_UPDATE", async () => {
       await this.setDictionaries();
     })
-
 
     await this.setDictionaries();
 
@@ -99,56 +234,62 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     imageFiles = ["File"];
 
     env.runtime.on("PROJECT_RUN_STOP", async() => {
-      console.log("PROJECT FINISHED");
+      if (this.opcodes.length > 0) {
+        console.log("pushing to study JSON with opcodes", this.opcodes);
+        if (!Object.keys(this.studyJson).includes("run_start")) {
+          this.studyJson["run_start"] = [];
+        } 
+        this.studyJson["run_start"].push({
+            "run_id": this.runId,
+            "block_snapshot": this.opcodes,
+            "block_count": this.opcodes.length,
+            "timstamp": this.runStartTimestamp,
+          })
+        if (!Object.keys(this.studyJson).includes("run_stop")) {
+          this.studyJson["run_stop"] = [];
+        }
+        this.studyJson["run_stop"].push({
+          "run_id": this.runId,
+          "timestamp": Date.now()
+        });
+        this.opcodes = [];
+      }
     })
-
-    env.runtime.on("PROJECT_RUN_START", async() => {
-
-    })
-
-    env.runtime.on("PROJECT_STOP_ALL", async() => {
-      console.log("PROJECT STOPPED");
-    })
-
-    env.runtime.on("STOP_FOR_TARGET", async() => {
-      console.log("PROJECT STOPPED");
-    })
-
-
-
   }
 
    async blockCounter(utility: BlockUtilityWithID) {
-    console.log("utility", utility);
-    if (JSON.parse(JSON.stringify(utility.blockID)) == JSON.parse(JSON.stringify(utility.thread.topBlock))) {
+    const blockId = JSON.parse(JSON.stringify(utility.blockID));
+    const block = JSON.parse(JSON.stringify(utility.thread.blockContainer._blocks[blockId]));
+    const opcode = block.opcode;
+    
+    if (blockId == JSON.parse(JSON.stringify(utility.thread.topBlock))) {
       this.blocksRun = 0;
+      this.opcodes = [];
       this.runId += 1;
-      const opcodes = [];
-      const blockIds = JSON.parse(JSON.stringify(utility.thread.blockContainer._scripts));
-      for (const id of blockIds) {
-        const block = JSON.parse(JSON.stringify(utility.thread.blockContainer._blocks[id]));
-        opcodes.push(block.opcode);
-      }
-      if (Object.keys(this.studyJson).includes("run_start")) {
-        this.studyJson["run_start"].push({
-          "run_id": this.runId,
-          "block_snapshot": opcodes,
-          "block_count": opcodes.length,
-          "timstamp": Date.now()
-        })
-      }
-
-      console.log("FINAL OPCODES", opcodes);
+      this.runStartTimestamp = Date.now();
+      this.runStarted = true;
     }
+    this.opcodes.push(opcode);
     this.blocksRun = this.blocksRun + 1;
-    if (this.blocksRun > 1) {
+    if (this.blocksRun > 1 && (opcode == "doodlebot_drive" || opcode == "doodlebot_arc")) {
       const r = Math.random();
       console.log("starting", r);
-      if (r < 0.3) {
-        // await this.speakText("Here I go!");
-      } else if (r < 0.6) {
-        // await this.speakText("Let's do it!");
-      }
+      if (r < this.injectionProbability) {
+        const text = this.injectionPhrases[Math.floor(Math.random() * this.injectionPhrases.length)];
+        await this.speakText(text);
+        const actionIndex = Math.floor(Math.random() * this.injectionActions.length)
+        const action = this.injectionActions[actionIndex];
+        await action(this.doodlebot);
+        if (!Object.keys(this.studyJson).includes("injection_decision")) {
+          this.studyJson["injection_decision"] = [];
+        }
+        this.studyJson["injection_decision"].push({
+          "run_id": this.runId,
+          "injection_index": this.opcodes.length,
+          "announcement_text": text,
+          "action_sequence": this.injectionActionLabels[actionIndex]
+        })
+      } 
     }
   }
 
@@ -309,6 +450,24 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       "timestamp": Date.now()
     }
     // download JSON
+  }
+
+  @block({
+    type: "command",
+    text: `test 1`
+  })
+  async test1(utility: BlockUtilityWithID) {
+    console.log("test 1");
+    await this.blockCounter(utility);
+  }
+
+  @block({
+    type: "command",
+    text: `test 2`
+  })
+  async test2(utility: BlockUtilityWithID) {
+    console.log("test 2");
+    await this.blockCounter(utility);
   }
 
   @block({
@@ -605,6 +764,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     }
   }))
   async setDisplay(display: DisplayKey | string, utility: BlockUtilityWithID) {
+    console.log("await display");
     await this.blockCounter(utility);
     let costumeNames = Object.keys(this.costumeDictionary[this.runtime._editingTarget.id]);
     if (costumeNames.includes(display)) {
