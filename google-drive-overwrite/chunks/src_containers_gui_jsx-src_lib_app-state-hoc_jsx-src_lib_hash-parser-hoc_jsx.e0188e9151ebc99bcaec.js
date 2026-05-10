@@ -4376,38 +4376,11 @@ class GoogleChooser extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
     }
     picker.build().setVisible(true);
   }
-  showSaveDialog() {
-    let defaultName = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
-    return new Promise(resolve => {
-      const overlay = document.createElement("div");
-      overlay.innerHTML = "\n            <div style=\"\n                position: fixed;\n                inset: 0;\n                background: rgba(0,0,0,0.4);\n                display: flex;\n                align-items: center;\n                justify-content: center;\n                z-index: 9999;\n            \">\n                <div style=\"\n                    background: white;\n                    padding: 20px;\n                    border-radius: 8px;\n                    width: 300px;\n                    font-family: sans-serif;\n                \">\n                    <h3>Save Project</h3>\n\n                    <input\n                        id=\"save-name\"\n                        type=\"text\"\n                        value=\"".concat(defaultName, "\"\n                        style=\"\n                            width: 100%;\n                            margin-bottom: 12px;\n                            padding: 6px;\n                        \"\n                    />\n\n                    <label style=\"display:flex; gap:8px; margin-bottom:16px;\">\n                        <input id=\"overwrite-check\" type=\"checkbox\" />\n                        Overwrite existing file\n                    </label>\n\n                    <div style=\"display:flex; justify-content:flex-end; gap:8px;\">\n                        <button id=\"cancel-btn\">Cancel</button>\n                        <button id=\"save-btn\">Save</button>\n                    </div>\n                </div>\n            </div>\n        ");
-      document.body.appendChild(overlay);
-      overlay.querySelector("#cancel-btn").onclick = () => {
-        overlay.remove();
-        resolve(null);
-      };
-      overlay.querySelector("#save-btn").onclick = () => {
-        const fileName = overlay.querySelector("#save-name").value;
-        const overwrite = overlay.querySelector("#overwrite-check").checked;
-        overlay.remove();
-        resolve({
-          fileName,
-          overwrite
-        });
-      };
-    });
-  }
   handleDriveSave(oauthToken) {
     var _this = this;
     return _asyncToGenerator(function* () {
       var _searchResponse$resul;
-      // const fileName = prompt("Name your project", this.props.projectTitle);
-      const result = yield _this.showSaveDialog(_this.props.projectTitle);
-      if (!result) return;
-      const {
-        fileName,
-        overwrite
-      } = result;
+      const fileName = prompt("Name your project", _this.props.projectTitle);
       if (!fileName) return;
       const fullName = fileName + ".sb3";
 
@@ -4419,6 +4392,7 @@ class GoogleChooser extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
       const existingFile = (_searchResponse$resul = searchResponse.result.files) === null || _searchResponse$resul === void 0 ? void 0 : _searchResponse$resul[0];
       let fileId;
       if (existingFile) {
+        const overwrite = confirm("\"".concat(fullName, "\" already exists.\n\nOverwrite it?"));
         // Overwrite existing file
         if (!overwrite) {
           alert("File already exists");
@@ -85851,4 +85825,4 @@ module.exports = /*#__PURE__*/JSON.parse('{"name":"scratch-vm","version":"4.5.15
 /***/ })
 
 }]);
-//# sourceMappingURL=src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx.7c8a642159929ca27f8f.js.map
+//# sourceMappingURL=src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx.e0188e9151ebc99bcaec.js.map
