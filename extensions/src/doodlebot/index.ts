@@ -441,6 +441,26 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     }
   }
 
+  downloadJSON(data: any, filename = "data.json") {
+    const json = JSON.stringify(data, null, 2);
+
+    const blob = new Blob([json], {
+      type: "application/json"
+    });
+
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    URL.revokeObjectURL(url);
+  }
+
   @block({
     type: "command",
     text: `end session`
@@ -449,7 +469,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     this.studyJson["session_end"] = {
       "timestamp": Date.now()
     }
-    // download JSON
+    this.downloadJSON(this.studyJson, `${this.sessionId}.json`)
   }
 
   @block({
