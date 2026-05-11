@@ -4392,7 +4392,7 @@ class GoogleChooser extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
       const existingFile = (_searchResponse$resul = searchResponse.result.files) === null || _searchResponse$resul === void 0 ? void 0 : _searchResponse$resul[0];
       let fileId;
       if (existingFile) {
-        const overwrite = confirm("\"File already exists -- overwrite it?");
+        const overwrite = confirm("File already exists -- press OK to overwrite or Cancel to create a new file.");
         // Overwrite existing file
         if (overwrite) {
           fileId = existingFile.id;
@@ -85832,4 +85832,4 @@ module.exports = /*#__PURE__*/JSON.parse('{"name":"scratch-vm","version":"4.5.15
 /***/ })
 
 }]);
-//# sourceMappingURL=src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx.9aa0ad75af82d5d33694.js.map
+//# sourceMappingURL=src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx.c8154d5bc51fe7006c4c.js.map
