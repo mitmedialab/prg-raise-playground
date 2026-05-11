@@ -4392,13 +4392,20 @@ class GoogleChooser extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
       const existingFile = (_searchResponse$resul = searchResponse.result.files) === null || _searchResponse$resul === void 0 ? void 0 : _searchResponse$resul[0];
       let fileId;
       if (existingFile) {
-        const overwrite = confirm("\"".concat(fullName, "\" already exists.\n\nOverwrite it?"));
+        const overwrite = confirm("\"File already exists -- overwrite it?");
         // Overwrite existing file
-        if (!overwrite) {
-          alert("File already exists");
-          return;
+        if (overwrite) {
+          fileId = existingFile.id;
+        } else {
+          const createResponse = yield window.gapi.client.drive.files.create({
+            resource: {
+              name: fullName,
+              mimeType: "application/x-zip"
+            },
+            fields: "id"
+          });
+          fileId = createResponse.result.id;
         }
-        fileId = existingFile.id;
       } else {
         // Create new file
         const createResponse = yield window.gapi.client.drive.files.create({
@@ -85825,4 +85832,4 @@ module.exports = /*#__PURE__*/JSON.parse('{"name":"scratch-vm","version":"4.5.15
 /***/ })
 
 }]);
-//# sourceMappingURL=src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx.e0188e9151ebc99bcaec.js.map
+//# sourceMappingURL=src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx.9aa0ad75af82d5d33694.js.map
