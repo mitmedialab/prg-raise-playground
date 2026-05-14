@@ -117,7 +117,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     "short forward line",
     "long forward line",
     "quick zigzag",
-    "s-curve",
+    //"s-curve",
     "backward line",
     "triangle path",
     "loop",
@@ -167,10 +167,10 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
         { steps, stepsPerSecond: 3000 }
       );
     },
-    async (doodlebot: Doodlebot) => {
-      await doodlebot?.motorCommand("arc", 3, 180);
-      await doodlebot?.motorCommand("arc", -3, 180);
-    },
+    // async (doodlebot: Doodlebot) => {
+    //   await doodlebot?.motorCommand("arc", 3, 180);
+    //   await doodlebot?.motorCommand("arc", -3, 180);
+    // },
     async (doodlebot: Doodlebot) => {
       let steps = -5 * 7.160 * 16
       await doodlebot?.motorCommand(
