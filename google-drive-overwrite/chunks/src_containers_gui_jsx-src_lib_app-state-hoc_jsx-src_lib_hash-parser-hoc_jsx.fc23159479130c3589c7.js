@@ -4380,7 +4380,7 @@ class GoogleChooser extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
     var _this = this;
     return _asyncToGenerator(function* () {
       var _searchResponse$resul;
-      const fileName = prompt("Name your project", _this.props.projectTitle);
+      const fileName = prompt("Name your project -- if a file with this name already exists, you'll be prompted to confirm before overwriting.", _this.props.projectTitle);
       if (!fileName) return;
       const fullName = fileName + ".sb3";
 
@@ -85832,4 +85832,4 @@ module.exports = /*#__PURE__*/JSON.parse('{"name":"scratch-vm","version":"4.5.15
 /***/ })
 
 }]);
-//# sourceMappingURL=src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx.c8154d5bc51fe7006c4c.js.map
+//# sourceMappingURL=src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx.fc23159479130c3589c7.js.map
