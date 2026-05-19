@@ -77,6 +77,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   blocksRun: number;
   runId: number;
 
+  currentStackLength: number;
+
   opcodes: string[];
   runStartTimestamp;
   runStarted: boolean;
@@ -222,6 +224,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     this.runStarted = false;
     this.opcodes = [];
 
+    this.currentStackLength = 0;
+
     //requestAnimationFrame(() => this.setIndicator("disconnected"));
     this.openUI("Connect")
     env.runtime.on("TARGETS_UPDATE", async () => {
@@ -258,6 +262,9 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   }
 
    async blockCounter(utility: BlockUtilityWithID) {
+
+    console.log("UTILITY", utility);
+
     const blockId = JSON.parse(JSON.stringify(utility.blockID));
     const block = JSON.parse(JSON.stringify(utility.thread.blockContainer._blocks[blockId]));
     const opcode = block.opcode;
@@ -268,6 +275,15 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       this.runId += 1;
       this.runStartTimestamp = Date.now();
       this.runStarted = true;
+      const blocks = utility.thread.blockContainer._blocks;
+      let curBlock = block;
+      let length = 0;
+      while (curBlock) {
+        curBlock = blocks[curBlock.next];
+        length += 1;
+      }
+      console.log("TOTAL STACK LENGTH", length);
+      this.currentStackLength = length;
     }
     this.opcodes.push(opcode);
     this.blocksRun = this.blocksRun + 1;
