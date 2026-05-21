@@ -78,6 +78,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   runId: number;
 
   currentStackLength: number;
+  stackInjection: number;
 
   opcodes: string[];
   runStartTimestamp;
@@ -282,12 +283,12 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
         curBlock = blocks[curBlock.next];
         length += 1;
       }
-      console.log("TOTAL STACK LENGTH", length);
       this.currentStackLength = length;
+      this.stackInjection = length > 1 ? Math.ceil(Math.random() * (length - 1)) + 1 : 0;
     }
     this.opcodes.push(opcode);
     this.blocksRun = this.blocksRun + 1;
-    if (this.blocksRun > 1 && (opcode == "doodlebot_drive" || opcode == "doodlebot_arc")) {
+    if (this.blocksRun == this.stackInjection && this.blocksRun > 1 && (opcode == "doodlebot_drive" || opcode == "doodlebot_arc")) {
       const r = Math.random();
       console.log("starting", r);
       if (r < this.injectionProbability) {
@@ -488,23 +489,23 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     this.downloadJSON(this.studyJson, `${this.sessionId}.json`)
   }
 
-  @block({
-    type: "command",
-    text: `test 1`
-  })
-  async test1(utility: BlockUtilityWithID) {
-    console.log("test 1");
-    await this.blockCounter(utility);
-  }
+  // @block({
+  //   type: "command",
+  //   text: `test 1`
+  // })
+  // async test1(utility: BlockUtilityWithID) {
+  //   console.log("test 1");
+  //   await this.blockCounter(utility);
+  // }
 
-  @block({
-    type: "command",
-    text: `test 2`
-  })
-  async test2(utility: BlockUtilityWithID) {
-    console.log("test 2");
-    await this.blockCounter(utility);
-  }
+  // @block({
+  //   type: "command",
+  //   text: `test 2`
+  // })
+  // async test2(utility: BlockUtilityWithID) {
+  //   console.log("test 2");
+  //   await this.blockCounter(utility);
+  // }
 
   @block({
     type: "command",
