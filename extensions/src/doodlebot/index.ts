@@ -1,14 +1,16 @@
 import { Environment, ExtensionMenuDisplayDetails, extension, block, buttonBlock, BlockUtilityWithID, scratch } from "$common";
-import { DisplayKey, displayKeys, command, type Command, SensorKey, sensorKeys, units, keyBySensor, sensor } from "./enums";
+import { DisplayKey, displayKeys, command, type Command, SensorKey, sensorKeys, units, keyBySensor, sensor, MarkerCorner, DetectedMarker } from "./enums";
 import Doodlebot from "./Doodlebot";
 import EventEmitter from "events";
 import TeachableMachine from "./ModelUtils";
 import { convertSvgUint8ArrayToPng } from "./utils";
 import LineArrayFollowing from "./LineArrayFollowing";
-//import { createLineDetector } from "./LineDetection";
+import AR from "js-aruco";
+
 
 import JSZip from 'jszip';
 import type { BLEDeviceWithUartService } from "./ble";
+import { image } from "@tensorflow/tfjs";
 
 const details: ExtensionMenuDisplayDetails = {
   name: "Doodlebot",
@@ -56,7 +58,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   gestureLoop: ReturnType<typeof looper>;
   objectLoop: ReturnType<typeof looper>;
 
-  imageStream: HTMLImageElement;
+  imageStream: HTMLCanvasElement;
   videoDrawable: ReturnType<typeof this.createDrawable>;
 
 
@@ -73,6 +75,10 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   pitch_value: number;
 
   lineFollower;
+  markers: {
+    corners: { x: number, y: number }[],
+    id: number
+  }[];
 
   async init(env: Environment) {
     this.voice_id = 1;
@@ -93,7 +99,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     this._loop();
     soundFiles = ["File"];
     imageFiles = ["File"];
-
+    this.detectArucoMarkers();
   }
 
 
@@ -113,6 +119,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       this.teachableMachine.isPredicting = 0;
       this.getImageStreamAndPredict();
     }
+    
+
   }
 
   private async getImageStreamAndPredict() {
@@ -127,6 +135,23 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       this.teachableMachine.predictAllBlocks(imageBitmap);
     } catch (error) {
       console.error("Error in getting image stream and predicting:", error);
+    }
+  }
+
+
+  private async detectArucoMarkers() {
+    try {
+      const detector = new AR.AR.Detector();
+      const update = () => {
+        if (this.doodlebot.lastImageData && this.doodlebot.lastImageData.width > 0) {
+          const detections = detector.detect(this.doodlebot.lastImageData);
+          this.markers = detections;
+        }
+        requestAnimationFrame(update);
+      };
+      requestAnimationFrame(update);
+    } catch (error) {
+      console.error("Error detecting aruco marker:", error);
     }
   }
 
@@ -206,7 +231,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     this.openUI("ReattachBLE");
   }
 
-  getImageStream() {
+  getImageStream(): HTMLCanvasElement {
     this.imageStream ??= this.doodlebot?.getImageStream();
     return this.imageStream;
   }
@@ -248,6 +273,48 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   @buttonBlock("Connect Robot")
   connect() {
     this.openUI("Connect");
+  }
+
+  @block({
+    type: "Boolean",
+    text: `is marker detected?`,
+  })
+  markerDetected() {
+    return this.markers.length > 0;
+  }
+
+  @block({
+    type: "reporter",
+    text: `get id of marker`,
+  })
+  getMarkerId() {
+    return (this.markers.length > 0) ? this.markers[0].id : -1;
+  }
+
+  @block({
+    type: "reporter",
+    text: (axis: string, corner: string) => `get ${axis} of ${corner}`,
+    args: [
+      { type: 'string', options: ["x", "y"], defaultValue: 'x' },
+      { type: "string", options: ["corner 1", "corner 2", "corner 3", "corner 4"], defaultValue: "corner 1" }
+    ]
+  })
+  getMarkerPosition(axis: string, corner: string) {
+    if (this.markers.length == 0) {
+      return -1;
+    }
+    let id = 0;
+    if (corner == "corner 1") {
+      id = 0;
+    } else if (corner == "corner 2") {
+      id = 1;
+    } else if (corner == "corner 3") {
+      id = 2;
+    } else if (corner == "corner 4") {
+      id = 3
+    }
+    const position = this.markers[0].corners[id];
+    return axis == "x" ? position.x : position.y;
   }
 
 

@@ -197,6 +197,7 @@ export default class Doodlebot {
 
     public previewImage;
     public canvasWebrtc;
+    public lastImageData;
 
     private reloadRequired?: ((msg: string) => void) | null = null;
 
@@ -249,6 +250,7 @@ export default class Doodlebot {
                 // lastUpdateTime = now;
 
                 ctx.drawImage(this.webrtcVideo, 0, 0, this.canvasWebrtc.width, this.canvasWebrtc.height);
+                this.lastImageData = ctx.getImageData(0, 0, this.canvasWebrtc.width, this.canvasWebrtc.height);
                 this.webrtcVideo.requestVideoFrameCallback(handleVideoFrame);
             };
             this.webrtcVideo.requestVideoFrameCallback(handleVideoFrame);
@@ -781,7 +783,7 @@ export default class Doodlebot {
         this.detector = new LineDetector(tld);
     }
 
-    getImageStream() {
+    getImageStream(): HTMLCanvasElement {
         return this.canvasWebrtc;
     }
 
