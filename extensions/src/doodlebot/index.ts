@@ -63,12 +63,15 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
 
   INTERVAL = 16;
+  MOTOR_INTERVAL = 500;
   DIMENSIONS = [480, 360];
+  CANVAS_DIMENSIONS = [640, 480];
 
   soundDictionary: {} | { string: string[] };
   costumeDictionary: {} | { string: string[] };
 
   lastUpdate: number = null;
+  lastUpdateMotor: number = null;
   isPredicting;
 
   voice_id: number;
@@ -79,6 +82,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     corners: { x: number, y: number }[],
     id: number
   }[];
+  followMarker = false;
 
   async init(env: Environment) {
     this.voice_id = 1;
@@ -97,6 +101,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     await this.setDictionaries();
     this.teachableMachine = new TeachableMachine();
     this._loop();
+    this._motorLoop();
     soundFiles = ["File"];
     imageFiles = ["File"];
     this.detectArucoMarkers();
@@ -123,6 +128,22 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   }
 
+  private _motorLoop() {
+    setTimeout(this._motorLoop.bind(this), Math.max(this.runtime.currentStepTime, this.MOTOR_INTERVAL));
+    const time = Date.now();
+    if (this.lastUpdateMotor === null) {
+      this.lastUpdateMotor = time;
+    }
+    const offset = time - this.lastUpdateMotor;
+
+    if (offset > this.MOTOR_INTERVAL && this.followMarker) {
+      this.lastUpdateMotor = time;
+      this.calculateMarkerAlignment();
+    }
+    
+
+  }
+
   private async getImageStreamAndPredict() {
     try {
 
@@ -139,6 +160,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   }
 
 
+
   private async detectArucoMarkers() {
     try {
       const detector = new AR.AR.Detector();
@@ -153,6 +175,85 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     } catch (error) {
       console.error("Error detecting aruco marker:", error);
     }
+  }
+
+  Kp_track = 5;
+  Kp_angular = 1.5;
+  targetWidthPixels = 100; 
+
+  async calculateMarkerAlignment() {
+    if (this.markers.length == 0) {
+      return;
+    }
+    const marker = this.markers[0];
+
+    const cameraCenterX = this.CANVAS_DIMENSIONS[0] / 2; 
+    const markerCenterX = (marker.corners[0].x + marker.corners[1].x + marker.corners[2].x + marker.corners[3].x) / 4;
+    const errorX = markerCenterX - cameraCenterX; 
+    const currentWidth = Math.abs(marker.corners[1].x - marker.corners[0].x);
+
+    console.log("Error x", errorX);
+
+    if (Math.abs(errorX) > 30) {
+        const angularVelocity = -errorX * this.Kp_angular; 
+        const linearVelocity = 0.0; 
+        
+        await this.sendRobotCommand(linearVelocity, angularVelocity);
+    } else {
+        const errorDistance = this.targetWidthPixels - currentWidth;
+        console.log("Distance error", errorDistance);
+
+        let linearVelocity;
+        let angularVelocity;
+        if (Math.abs(errorX) < 5 && Math.abs(errorDistance) < 5) {
+          linearVelocity = 0;
+          angularVelocity = 0;
+        } else {
+          if (errorDistance > 30) {
+            linearVelocity = 700;
+          } else if (errorDistance > 3) {
+            linearVelocity = 700 * (errorDistance / 30); 
+          } else {
+            linearVelocity = 0;
+          }
+          if (linearVelocity < 0) linearVelocity = 0;
+          angularVelocity = -errorX * this.Kp_track; 
+        }
+
+        await this.sendRobotCommand(linearVelocity, angularVelocity);
+    }
+  }
+
+  scaleUp = 5000;
+  lastCommandStraight = false;
+
+  async sendRobotCommand(v: number, w: number) {
+    const trackWidth = 0.074422; 
+
+    console.log("COMMAND", "linear velocity (v):", v, "angular velocity (w):", w);
+
+    const rightWheelSpeed = v + (w * trackWidth / 2);
+    const leftWheelSpeed  = v - (w * trackWidth / 2);
+
+    console.log("left wheel speed:", leftWheelSpeed, "right wheel speed:", rightWheelSpeed);
+
+
+    if (v == 0 && Math.abs(leftWheelSpeed) == Math.abs(rightWheelSpeed) && Math.abs(leftWheelSpeed) > 0) {
+      const angle = Math.abs(leftWheelSpeed);
+      if (this.lastCommandStraight) {
+        this.doodlebot.sendBLECommand("m", "s");
+        this.lastCommandStraight = false;
+      }
+      this.doodlebot.sendBLECommand("t", 0, rightWheelSpeed > leftWheelSpeed ? angle : -angle);
+    } else if (v == 0) {
+      console.log('REACHED');
+      this.followMarker = false;
+      this.doodlebot.sendBLECommand("m", "s");
+    } else {
+      this.doodlebot.sendBLECommand("m", 1000, 1000, Math.round(leftWheelSpeed), Math.round(rightWheelSpeed));
+      this.lastCommandStraight = true;
+    }
+    
   }
 
   async setDictionaries() {
@@ -317,6 +418,21 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     return axis == "x" ? position.x : position.y;
   }
 
+  @block({
+    type: "command",
+    text: `align with marker`,
+  })
+  alignMarker() {
+    this.followMarker = true;
+  }
+
+  @block({
+    type: "command",
+    text: `stop aligning with marker`,
+  })
+  stopAligning() {
+    this.followMarker = false;
+  }
 
   @block({
     type: "command",
