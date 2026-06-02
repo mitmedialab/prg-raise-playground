@@ -32,6 +32,8 @@ type Blocks = {
 @validGenericExtension()
 export default class Tables extends Extension<Details, Blocks> {
   tables: Record<string, number[][]>;
+  columnNames: Record<string, string[]>;
+  rowNames: Record<string, string[]>;
   tableNamesArg: any;
   defaultNumberArg: any;
 
@@ -46,6 +48,10 @@ export default class Tables extends Extension<Details, Blocks> {
     if (!this.tables) {
       this.tables = {};
       this.tables.myTable = [];
+      this.columnNames = {};
+      this.rowNames = {};
+      this.columnNames.myTable = ["Col 1"];
+      this.rowNames.myTable = ["Row 1"];
       this.tables.myTable.push([0]);
     }
 
@@ -80,6 +86,24 @@ export default class Tables extends Extension<Details, Blocks> {
     );
   }
 
+  renameColumn(info: { name: string, column: number, value: string }) {
+    const { name, column, value } = info;
+    if (this.columnNames[name] && this.columnNames[name][column] !== undefined) {
+      this.columnNames[name][column] = value;
+    } else {
+      alert(`That table or column does not exist.`);
+    }
+  }
+
+  renameRow(info: { name: string, row: number, value: string }) {
+    const { name, row, value } = info;
+    if (this.rowNames[name] && this.rowNames[name][row] !== undefined) {
+      this.rowNames[name][row] = value;
+    } else {
+      alert(`That table or row does not exist.`);
+    }
+  }
+
 
   newTable(info: { name: string, rows: number, columns: number }) {
     const { name, rows, columns } = info;
@@ -89,11 +113,15 @@ export default class Tables extends Extension<Details, Blocks> {
       for (let j = 0; j < columns; j++) newRow.push(0);
       this.tables[name].push(newRow);
     }
+
+    // Default row & column names
+    this.rowNames[name] = Array.from({ length: rows }, (_, i) => `Row ${i + 1}`);
+    this.columnNames[name] = Array.from({ length: columns }, (_, i) => `Col ${i + 1}`);
   }
 
   changeTableValue(info: { name: string, row: number, column: number, value: number }) {
     const { name, row, column, value } = info;
-    this.tables[name][row][column] = value;
+    this.tables[name][row][column] = value ? value : 0;
   }
 
   defineBlocks(): Tables["BlockDefinitions"] {
@@ -150,6 +178,8 @@ export default class Tables extends Extension<Details, Blocks> {
           for (let i = 0; i < this.tables[table].length; i++) {
             this.tables[table][i].push(0);
           }
+          const colCount = this.columnNames[table].length;
+          this.columnNames[table].push(`Col ${colCount + 1}`);
         }
       }),
       // add a row to the given table
@@ -167,6 +197,8 @@ export default class Tables extends Extension<Details, Blocks> {
             newRow.push(0);
           }
           this.tables[table].push(newRow);
+          const rowCount = this.rowNames[table].length;
+          this.rowNames[table].push(`Row ${rowCount + 1}`);
         }
       }),
       // change the value in a given table cell
