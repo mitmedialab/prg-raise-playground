@@ -4244,6 +4244,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(prop_types__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var load_script__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! load-script */ "./node_modules/.pnpm/load-script@2.0.0/node_modules/load-script/index.js");
 /* harmony import */ var load_script__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(load_script__WEBPACK_IMPORTED_MODULE_1__);
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 /**
  * This file was added to overcome issues with existing npm packages that:
  *   (a) https://github.com/sdoomz/react-google-picker/blob/master/src/react-google-picker.js
@@ -4375,24 +4377,53 @@ class GoogleChooser extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
     picker.build().setVisible(true);
   }
   handleDriveSave(oauthToken) {
-    // check if we have already created file
-    let fileName = prompt("Name your project", this.props.projectTitle);
-    if (fileName != null && fileName != "") {
-      window.gapi.client.drive.files.create({
-        name: fileName + ".sb3",
-        mimeType: "application/x-zip"
-      }).then(response => {
-        if (response.status == 200) {
-          let fileId = response.result.id;
-          const url = "https://www.googleapis.com/upload/drive/v3/files/" + fileId + "?uploadType=media;" + oauthToken;
-          this.props.vm.uploadProjectToURL(url);
+    var _this = this;
+    return _asyncToGenerator(function* () {
+      var _searchResponse$resul;
+      const fileName = prompt("Name your project -- if a file with this name already exists, you'll be prompted to confirm before overwriting.", _this.props.projectTitle);
+      if (!fileName) return;
+      const fullName = fileName + ".sb3";
 
-          // show alert that we are saving project
-          window.alert("Project saved");
-          this.props.onRequestCloseFile();
-        }
+      // Search for existing file
+      const searchResponse = yield window.gapi.client.drive.files.list({
+        q: "name='".concat(fullName, "' and trashed=false"),
+        fields: "files(id, name)"
       });
-    }
+      const existingFile = (_searchResponse$resul = searchResponse.result.files) === null || _searchResponse$resul === void 0 ? void 0 : _searchResponse$resul[0];
+      let fileId;
+      if (existingFile) {
+        const overwrite = confirm("File already exists -- press OK to overwrite or Cancel to create a new file.");
+        // Overwrite existing file
+        if (overwrite) {
+          fileId = existingFile.id;
+        } else {
+          const createResponse = yield window.gapi.client.drive.files.create({
+            resource: {
+              name: fullName,
+              mimeType: "application/x-zip"
+            },
+            fields: "id"
+          });
+          fileId = createResponse.result.id;
+        }
+      } else {
+        // Create new file
+        const createResponse = yield window.gapi.client.drive.files.create({
+          resource: {
+            name: fullName,
+            mimeType: "application/x-zip"
+          },
+          fields: "id"
+        });
+        fileId = createResponse.result.id;
+      }
+
+      // Upload/overwrite content
+      const url = "https://www.googleapis.com/upload/drive/v3/files/".concat(fileId, "?uploadType=media;").concat(oauthToken);
+      _this.props.vm.uploadProjectToURL(url);
+      window.alert("Project saved");
+      _this.props.onRequestCloseFile();
+    })();
   }
   render() {
     return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", {
@@ -85801,4 +85832,4 @@ module.exports = /*#__PURE__*/JSON.parse('{"name":"scratch-vm","version":"4.5.15
 /***/ })
 
 }]);
-//# sourceMappingURL=src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx.7027bf654ea65b9138bc.js.map
+//# sourceMappingURL=src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx.fc23159479130c3589c7.js.map
