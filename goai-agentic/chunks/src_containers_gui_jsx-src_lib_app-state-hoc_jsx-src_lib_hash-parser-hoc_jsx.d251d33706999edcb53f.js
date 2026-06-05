@@ -70826,6 +70826,7 @@ const serialize = function serialize(runtime, targetId, /* PRG ADDITION BEGIN */
   /* PRG ADDITION BEGIN */
   // Save training data for the text classifier model
   obj.textModel = runtime.modelData ? runtime.modelData.classifierData : undefined;
+  obj.tools = runtime.tools ? runtime.tools : undefined;
   /* PRG ADDITION END */
 
   // Assemble metadata
@@ -71514,6 +71515,9 @@ const deserialize = function deserialize(json, runtime, zip, isSingleSprite) {
         runtime.modelData.classifierData[label].push(example);
       }
     }
+  }
+  if (json.hasOwnProperty("tools")) {
+    runtime.tools = json.tools;
   }
   /* PRG ADDITION END */
 
@@ -86167,4 +86171,4 @@ module.exports = /*#__PURE__*/JSON.parse('{"name":"scratch-vm","version":"4.5.15
 /***/ })
 
 }]);
-//# sourceMappingURL=src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx.8bff9e879056b2c8ec4d.js.map
+//# sourceMappingURL=src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx.d251d33706999edcb53f.js.map
