@@ -49,7 +49,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
 
   voice_map: any;
 
-  tools = [];
+  tools: [];
   toolEvents = {};
 
   /** @see {ExplanationOfInitMethod} */
@@ -68,6 +68,16 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
     this.voice_id = 6;
     this.pitch_value = 0;
     this.target_prompts = {};
+
+
+    env.runtime.on("PROJECT_LOADED", () => {
+      if (env.runtime.tools) {
+        this.tools = env.runtime.tools;
+      } else {
+        this.tools = [];
+      }
+    })
+    
 
     this.default_prompt = `You are a friendly and encouraging classroom helper who explains ideas clearly for 4th-grade students. 
     You use simple language, fun examples, and a positive tone to help kids learn and think for themselves. 
@@ -534,6 +544,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
     } else if (field == "description") {
       this.tools[index].description = value;
     }
+    this.runtime.tools = this.tools;
   }
 
   addTool(name, description) {
@@ -552,6 +563,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
     };
     this.tools.push(tempTool);
     this.toolEvents[name] = false;
+    this.runtime.tools = this.tools;
   }
 
   private async handleReturnAgenticChatInteraction(prompt, target) {
