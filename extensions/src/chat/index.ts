@@ -49,7 +49,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
 
   voice_map: any;
 
-  tools: [];
+  tools: {name: string, description: string}[];
   toolEvents = {};
 
   /** @see {ExplanationOfInitMethod} */
@@ -68,6 +68,8 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
     this.voice_id = 6;
     this.pitch_value = 0;
     this.target_prompts = {};
+
+    console.log("env", env);
 
 
     env.runtime.on("PROJECT_LOADED", () => {
@@ -892,4 +894,82 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
   async setSystemPrompt(system_prompt: string, { target }: BlockUtilityWithID) {
     this.target_prompts[target.id] = system_prompt;
   }
+
+  parseJsonResponse(text: string) {
+    const match = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+
+    const jsonText = match ? match[1] : text;
+
+    return JSON.parse(jsonText);
+  }
+
+
+  @block({
+    type: "command",
+    text: (prompt) => `add costume with prompt ${prompt}`,
+    arg: { type: "string", defaultValue: "The bluest cloudy sky" },
+  })
+  async addCostumeWithPrompt(prompt: string, utility: BlockUtilityWithID) {
+    console.log(this.runtime.getSpriteJson());
+    const spriteJson = this.runtime.getSpriteJson();
+    const spriteInfo = spriteJson.map((sprite) => ({
+      tags: sprite.tags,
+      costumes: sprite.costumes.map(c => c.name),
+      name: sprite.name
+    }));
+
+    const url = `${backendHost}/prompt`
+    const builtPrompt = `You are selecting a Scratch sprite and costume for a project.
+
+    Given a user request and a list of available Scratch sprites, choose the sprite and costume that best match the request.
+
+    Each sprite contains:
+    - name
+    - tags
+    - costumes
+
+    User request:
+    ${prompt}
+
+    Available sprites:
+    ${JSON.stringify(spriteInfo)}
+
+    Return ONLY valid JSON:
+
+    {
+      "sprite": "sprite name",
+      "costume": "costume name",
+      "reason": "short explanation"
+    }
+`
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ text_input: builtPrompt, system_prompt: "" }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.log("Error response:", errorText);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const textResponse = data.text;
+    const chosenCostume = this.parseJsonResponse(textResponse);
+    console.log("Selected costume: ", chosenCostume);
+    if (chosenCostume) {
+      const costumeObject = spriteJson.find(s => s.name === chosenCostume.sprite)?.costumes.find(c => c.name === chosenCostume.costume);
+      if (costumeObject && costumeObject.md5ext) costumeObject.md5 = costumeObject.md5ext; 
+      const loadedCostume = await this.runtime.addCostume(costumeObject);
+      utility.target.addCostume(loadedCostume);
+      utility.target.setCostume(utility.target.getCostumes().length - 1);
+    } else {
+      throw new Error(`AI did not return a valid costume choice. Response was: ${textResponse}`);
+    }
+  }
+
+    
 }
