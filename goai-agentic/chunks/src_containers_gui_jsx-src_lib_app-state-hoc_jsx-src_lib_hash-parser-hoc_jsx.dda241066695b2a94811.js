@@ -41761,6 +41761,7 @@ const dispatch = __webpack_require__(/*! ../dispatch/central-dispatch */ "../scr
 const {
   loadCostume
 } = __webpack_require__(/*! ../import/load-costume */ "../scratch-vm/src/import/load-costume.js");
+const sprites = __webpack_require__(/*! ../../../scratch-gui/src/lib/libraries/sprites.json */ "./src/lib/libraries/sprites.json");
 /** PRG ADDITION END */
 
 const defaultBlockPackages = {
@@ -43259,6 +43260,10 @@ class Runtime extends EventEmitter {
    */
   getIsEdgeActivatedHat(opcode) {
     return Object.prototype.hasOwnProperty.call(this._hats, opcode) && this._hats[opcode].edgeActivated;
+  }
+  getSpriteJson() {
+    console.log(sprites);
+    return sprites;
   }
 
   /**
@@ -86171,4 +86176,4 @@ module.exports = /*#__PURE__*/JSON.parse('{"name":"scratch-vm","version":"4.5.15
 /***/ })
 
 }]);
-//# sourceMappingURL=src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx.d251d33706999edcb53f.js.map
+//# sourceMappingURL=src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx.dda241066695b2a94811.js.map
