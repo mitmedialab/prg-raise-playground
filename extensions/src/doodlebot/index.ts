@@ -250,6 +250,24 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     this.openUI("Connect");
   }
 
+  @block({
+    type: "command",
+    text: (angle: number) => `set pen down angle to ${angle} degrees`,
+    arg: { type: 'number', defaultValue: 40 },
+  })
+  async penDownAngle(angle: number) {
+    await this.doodlebot.sendBLECommand("i", angle);
+  }
+
+  @block({
+    type: "command",
+    text: (angle: number) => `set pen up angle to ${angle} degrees`,
+    arg: { type: 'number', defaultValue: 1 },
+  })
+  async penUpAngle(angle: number) {
+    await this.doodlebot.sendBLECommand("j", angle);
+  }
+
 
   @block({
     type: "command",
