@@ -81,33 +81,6 @@ export default class GenAIExtension extends extension(details, "addCostumes") {
   //   return ++this.exampleField;
   // }
 
-  // /** @see {ExplanationOfReporterWithArguments}*/
-  // @(scratch.reporter`This is the block's display text with inputs here --> ${"string"} and here --> ${{ type: "number", defaultValue: 1 }}`)
-  // reporterThatTakesTwoArguments(exampleString: string, exampleNumber: number) {
-  //   return exampleString + exampleNumber;
-  // }
-
-  // /** @see {ExplanationOfExampleCommand} */
-  // @(scratch.command`This is the block's display text`)
-  // exampleCommand() {
-  //   alert("This is a command!");
-  // }
-
-  // /** @see {ExplanationOfCommandWithExtendDefinition} */
-  // @(scratch.command((instance, tag) => {
-  //   console.log("Creating a block for extension: ", instance.id);
-  //   return tag`This is the block's display text`;
-  // }))
-  // exampleCommandWithExtendedDefinition() {
-  //   alert("This is a command defined using the extended definition strategy!");
-  // }
-
-  // /** @see {ExplanationOfExampleHatAndBlockUtility} */
-  // @(scratch.hat`Should the below block execute: ${"Boolean"}`)
-  // async exampleHatThatUsesBlockUtility(condition: boolean, util: BlockUtilityWithID) {
-  //   return util.stackFrame.isLoop === condition;
-  // }
-
   async recordMicrophoneAudio(seconds: number): Promise<Float32Array> {
     // Ask for microphone access
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
