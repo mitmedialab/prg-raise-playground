@@ -45,11 +45,11 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
 
   internalChatHistory: { type?: string, call_id?: string, output?: string, role?: string, content?: string }[] = [];
 
-  displayChatHistory: { role: string, content: string }[] = [];
+  displayChatHistory: { role: string, content: string, reason?: string }[] = [];
 
   voice_map: any;
 
-  tools: {name: string, description: string}[];
+  allTools: {target: string, tools: {name: string, description: string}[]};
   toolEvents = {};
 
   /** @see {ExplanationOfInitMethod} */
@@ -74,9 +74,9 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
 
     env.runtime.on("PROJECT_LOADED", () => {
       if (env.runtime.tools) {
-        this.tools = env.runtime.tools;
+        this.allTools = env.runtime.tools;
       } else {
-        this.tools = [];
+        this.allTools = {};
       }
     })
     
@@ -94,38 +94,6 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
   /** @see {ExplanationOfField} */
   exampleField: number;
 
-  /** @see {ExplanationOfExampleReporter}*/
-  // @(scratch.reporter`This is the block's display text (so replace me with what you want the block to say)`)
-  // exampleReporter() {
-  //   return ++this.exampleField;
-  // }
-
-  // /** @see {ExplanationOfReporterWithArguments}*/
-  // @(scratch.reporter`This is the block's display text with inputs here --> ${"string"} and here --> ${{ type: "number", defaultValue: 1 }}`)
-  // reporterThatTakesTwoArguments(exampleString: string, exampleNumber: number) {
-  //   return exampleString + exampleNumber;
-  // }
-
-  // /** @see {ExplanationOfExampleCommand} */
-  // @(scratch.command`This is the block's display text`)
-  // exampleCommand() {
-  //   alert("This is a command!");
-  // }
-
-  // /** @see {ExplanationOfCommandWithExtendDefinition} */
-  // @(scratch.command((instance, tag) => {
-  //   console.log("Creating a block for extension: ", instance.id);
-  //   return tag`This is the block's display text`;
-  // }))
-  // exampleCommandWithExtendedDefinition() {
-  //   alert("This is a command defined using the extended definition strategy!");
-  // }
-
-  // /** @see {ExplanationOfExampleHatAndBlockUtility} */
-  // @(scratch.hat`Should the below block execute: ${"Boolean"}`)
-  // async exampleHatThatUsesBlockUtility(condition: boolean, util: BlockUtilityWithID) {
-  //   return util.stackFrame.isLoop === condition;
-  // }
 
   async recordMicrophoneAudio(seconds: number): Promise<Float32Array> {
     // Ask for microphone access
@@ -542,11 +510,11 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
 
   updateTool(index, field, value) {
     if (field == "name") {
-      this.tools[index].name = value;
+      this.allTools[this.runtime._editingTarget.id][index].name = value;
     } else if (field == "description") {
-      this.tools[index].description = value;
+      this.allTools[this.runtime._editingTarget.id][index].description = value;
     }
-    this.runtime.tools = this.tools;
+    this.runtime.tools = this.allTools;
   }
 
   addTool(name, description) {
@@ -558,14 +526,22 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
       parameters: {
         type: "object",
         properties: {
+          reason: {
+            type: "string",
+            description: "A short explanation of why you chose this tool over the other tools included."
+          }
         },
+        required: ["reason"],
         additionalProperties: false,
       },
       strict: true,
     };
-    this.tools.push(tempTool);
+    if (!this.allTools[this.runtime._editingTarget.id]) {
+      this.allTools[this.runtime._editingTarget.id] = [];
+    }
+    this.allTools[this.runtime._editingTarget.id].push(tempTool);
     this.toolEvents[name] = false;
-    this.runtime.tools = this.tools;
+    this.runtime.tools = this.allTools;
   }
 
   private async handleReturnAgenticChatInteraction(prompt, target) {
@@ -582,12 +558,14 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
     try {
       let response;
 
+      console.log("input prompt", prompt)
+
       response = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ text_input: prompt, system_prompt: temporary_prompt, tools: this.tools }),
+        body: JSON.stringify({ text_input: prompt, system_prompt: temporary_prompt, tools: this.allTools[target.id] }),
       });
 
       if (!response.ok) {
@@ -597,6 +575,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
       }
 
       const data = await response.json();
+      console.log("data", data);
       const textResponse = data.text;
       return textResponse;
 
@@ -774,9 +753,11 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
     this.internalChatHistory.push({ role: "user", content: text });
     this.displayChatHistory.push({ role: "student", content: text });
     const response = await this.handleReturnAgenticChatInteraction(this.internalChatHistory, target);
+    console.log("REASON", response);
     this.internalChatHistory.push(...response);
     for (const entry of response) {
       if (entry.type == "function_call") {
+        const reason = JSON.parse(entry.arguments).reason;
         this.toolEvents[entry.name] = true;
         this.internalChatHistory.push({
           type: "function_call_output",
@@ -785,7 +766,8 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
         });
         this.displayChatHistory.push({
           role: "tool",
-          content: `${entry.name}`
+          content: `${entry.name}`,
+          reason: reason
         })
       }
     }
@@ -800,7 +782,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
         if (!this) {
           throw new Error('Context is undefined');
         }
-        return this.tools.length > 0 ? this.tools.map(tool => tool.name) : ["Add a tool"];
+        return this.allTools[this.runtime._editingTarget.id] && this.allTools[this.runtime._editingTarget.id].length > 0 ? this.allTools[this.runtime._editingTarget.id].map(tool => tool.name) : ["Add a tool"];
       },
       defaultValue: "Add a tool"
     }

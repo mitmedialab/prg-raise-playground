@@ -26,6 +26,10 @@
             <code>
               {`Calling: ${chat.content}`}
             </code>
+              <div class="tool-reason">
+                <span class="role-label">Reason</span>
+                <p>{chat.reason}</p>
+              </div>
           </div>
         {:else}
           <div
@@ -112,6 +116,21 @@
     padding: 8px;
     border-radius: 6px;
     text-align: center;
+  }
+
+  .tool-reason {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #e5e5e5;
+    text-align: left;
+  }
+
+  .tool-reason p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #555;
+    word-break: break-word;
   }
 
   code {
