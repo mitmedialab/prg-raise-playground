@@ -70704,7 +70704,7 @@ const serializeComments = function serializeComments(comments) {
  * @param {Set} extensions A set of extensions to add extension IDs to
  * @return {object} A serialized representation of the given target.
  */
-const serializeTarget = function serializeTarget(target, extensions) {
+const serializeTarget = function serializeTarget(target, extensions, /* PRG ADDITION BEGIN */tools /* PRG ADDITION END */) {
   const obj = Object.create(null);
   let targetExtensions = [];
   obj.isStage = target.isStage;
@@ -70750,6 +70750,14 @@ const serializeTarget = function serializeTarget(target, extensions) {
     obj.draggable = target.draggable;
     obj.rotationStyle = target.rotationStyle;
   }
+
+  // * PRG ADDITION BEGIN */
+
+  if (tools[target.id]) {
+    obj.tools = tools[target.id];
+  }
+
+  // * PRG ADDITION END */
 
   // Add found extensions to the extensions object
   targetExtensions.forEach(extensionId => {
@@ -70810,7 +70818,7 @@ const serialize = function serialize(runtime, targetId, /* PRG ADDITION BEGIN */
       t.layerOrder = layerOrdering[index];
     });
   }
-  const serializedTargets = flattenedOriginalTargets.map(t => serializeTarget(t, extensions));
+  const serializedTargets = flattenedOriginalTargets.map(t => serializeTarget(t, extensions, /* PRG ADDITION BEGIN */runtime.tools ? runtime.tools : {} /* PRG ADDITION END */));
   if (targetId) {
     return serializedTargets[0];
   }
@@ -70831,7 +70839,6 @@ const serialize = function serialize(runtime, targetId, /* PRG ADDITION BEGIN */
   /* PRG ADDITION BEGIN */
   // Save training data for the text classifier model
   obj.textModel = runtime.modelData ? runtime.modelData.classifierData : undefined;
-  obj.tools = runtime.tools ? runtime.tools : undefined;
   /* PRG ADDITION END */
 
   // Assemble metadata
@@ -71521,9 +71528,6 @@ const deserialize = function deserialize(json, runtime, zip, isSingleSprite) {
       }
     }
   }
-  if (json.hasOwnProperty("tools")) {
-    runtime.tools = json.tools;
-  }
   /* PRG ADDITION END */
 
   // Store the origin field (e.g. project originated at CSFirst) so that we can save it again.
@@ -71541,10 +71545,22 @@ const deserialize = function deserialize(json, runtime, zip, isSingleSprite) {
     targetPaneOrder: i
   })).sort((a, b) => a.layerOrder - b.layerOrder);
   const monitorObjects = json.monitors || [];
+  const tools = {};
   return Promise.resolve(targetObjects.map(target => parseScratchAssets(target, runtime, zip)))
   // Force this promise to wait for the next loop in the js tick. Let
   // storage have some time to send off asset requests.
-  .then(assets => Promise.resolve(assets)).then(assets => Promise.all(targetObjects.map((target, index) => parseScratchObject(target, runtime, extensions, zip, assets[index])))).then(targets => targets // Re-sort targets back into original sprite-pane ordering
+  .then(assets => Promise.resolve(assets)).then(assets => Promise.all(targetObjects.map((target, index) => {
+    return parseScratchObject(target, runtime, extensions, zip, assets[index])
+    // * PRG ADDITION BEGIN *
+    .then(parsedObject => {
+      if (target.tools) {
+        tools[parsedObject.id] = target.tools;
+      }
+      runtime.tools = tools;
+      return parsedObject;
+    });
+    // * PRG ADDITION END *
+  }))).then(targets => targets // Re-sort targets back into original sprite-pane ordering
   .map((t, i) => {
     // Add layer order property to deserialized targets.
     // This property is used to initialize executable targets in
@@ -71559,10 +71575,12 @@ const deserialize = function deserialize(json, runtime, zip, isSingleSprite) {
   })).then(targets => replaceUnsafeCharsInVariableIds(targets)).then(targets => {
     monitorObjects.map(monitorDesc => deserializeMonitor(monitorDesc, runtime, targets, extensions));
     return targets;
-  }).then(targets => ({
-    targets,
-    extensions
-  }));
+  }).then(targets => {
+    return {
+      targets,
+      extensions
+    };
+  });
 };
 module.exports = {
   serialize: serialize,
@@ -86176,4 +86194,4 @@ module.exports = /*#__PURE__*/JSON.parse('{"name":"scratch-vm","version":"4.5.15
 /***/ })
 
 }]);
-//# sourceMappingURL=src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx.dda241066695b2a94811.js.map
+//# sourceMappingURL=src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx.fdaa224591b49c50400a.js.map
