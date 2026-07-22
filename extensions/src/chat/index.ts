@@ -36,14 +36,21 @@ const backendHost = "https://goai-backend-3309c298eb92.herokuapp.com";
 //const backendHost = "http://localhost:3000";
 
 /** @see {ExplanationOfClass} */
-export default class GenAIExtension extends extension(details, "addCostumes") {
+export default class GenAIExtension extends extension(details, "addCostumes", "ui") {
 
   voice_id: number;
   pitch_value: number;
   target_prompts: any;
   default_prompt: string;
 
+  internalChatHistory: { type?: string, call_id?: string, output?: string, role?: string, content?: string }[] = [];
+
+  displayChatHistory: { role: string, content: string, reason?: string }[] = [];
+
   voice_map: any;
+
+  allTools: {target: string, tools: {name: string, description: string}[]};
+  toolEvents = {};
 
   /** @see {ExplanationOfInitMethod} */
   init(env: Environment) {
@@ -62,6 +69,18 @@ export default class GenAIExtension extends extension(details, "addCostumes") {
     this.pitch_value = 0;
     this.target_prompts = {};
 
+    console.log("env", env);
+
+
+    env.runtime.on("PROJECT_LOADED", () => {
+      if (env.runtime.tools) {
+        this.allTools = env.runtime.tools;
+      } else {
+        this.allTools = {};
+      }
+    })
+    
+
     this.default_prompt = `You are a friendly and encouraging classroom helper who explains ideas clearly for 4th-grade students. 
     You use simple language, fun examples, and a positive tone to help kids learn and think for themselves. 
 
@@ -75,11 +94,6 @@ export default class GenAIExtension extends extension(details, "addCostumes") {
   /** @see {ExplanationOfField} */
   exampleField: number;
 
-  /** @see {ExplanationOfExampleReporter}*/
-  // @(scratch.reporter`This is the block's display text (so replace me with what you want the block to say)`)
-  // exampleReporter() {
-  //   return ++this.exampleField;
-  // }
 
   async recordMicrophoneAudio(seconds: number): Promise<Float32Array> {
     // Ask for microphone access
@@ -494,6 +508,83 @@ export default class GenAIExtension extends extension(details, "addCostumes") {
     }
   }
 
+  updateTool(index, field, value) {
+    if (field == "name") {
+      this.allTools[this.runtime._editingTarget.id][index].name = value;
+    } else if (field == "description") {
+      this.allTools[this.runtime._editingTarget.id][index].description = value;
+    }
+    this.runtime.tools = this.allTools;
+  }
+
+  addTool(name, description) {
+    const tempTool =
+    {
+      type: "function",
+      name: name,
+      description: description,
+      parameters: {
+        type: "object",
+        properties: {
+          reason: {
+            type: "string",
+            description: "A short explanation of why you chose this tool over the other tools included."
+          }
+        },
+        required: ["reason"],
+        additionalProperties: false,
+      },
+      strict: true,
+    };
+    if (!this.allTools[this.runtime._editingTarget.id]) {
+      this.allTools[this.runtime._editingTarget.id] = [];
+    }
+    this.allTools[this.runtime._editingTarget.id].push(tempTool);
+    this.toolEvents[name] = false;
+    this.runtime.tools = this.allTools;
+  }
+
+  private async handleReturnAgenticChatInteraction(prompt, target) {
+
+    const url = `${backendHost}/agentic_prompt`
+
+    let temporary_prompt;
+    if (this.target_prompts[target.id]) {
+      temporary_prompt = this.target_prompts[target.id];
+    } else {
+      temporary_prompt = this.default_prompt;
+    }
+
+    try {
+      let response;
+
+      console.log("input prompt", prompt)
+
+      response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ text_input: prompt, system_prompt: temporary_prompt, tools: this.allTools[target.id] }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.log("Error response:", errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("data", data);
+      const textResponse = data.text;
+      return textResponse;
+
+    } catch (error) {
+      console.error("Error sending audio file:", error);
+      return "Error";
+    }
+  }
+
   private async generateImage(prompt: string) {
     try {
       // Step 1: create job
@@ -644,7 +735,80 @@ export default class GenAIExtension extends extension(details, "addCostumes") {
     arg: { type: "string", defaultValue: "What is your favorite color?" }
   })
   async promptChatAPI(text: string, { target }: BlockUtilityWithID) {
-    return await this.handleReturnChatInteraction(text, target);
+    this.internalChatHistory.push({ role: "user", content: text });
+    const response = await this.handleReturnChatInteraction(text, target);
+    this.displayChatHistory.push({ role: "student", content: text });
+    this.displayChatHistory.push({ role: "assistant", content: response });
+
+    this.internalChatHistory.push({ role: "assistant", content: response });
+    return response;
+  }
+
+  @block({
+    type: "command",
+    text: (text) => `agentic prompt ${text}`,
+    arg: { type: "string", defaultValue: "What is your favorite color?" }
+  })
+  async promptAgenticChatAPI(text: string, { target }: BlockUtilityWithID) {
+    this.internalChatHistory.push({ role: "user", content: text });
+    this.displayChatHistory.push({ role: "student", content: text });
+    const response = await this.handleReturnAgenticChatInteraction(this.internalChatHistory, target);
+    console.log("REASON", response);
+    this.internalChatHistory.push(...response);
+    for (const entry of response) {
+      if (entry.type == "function_call") {
+        const reason = JSON.parse(entry.arguments).reason;
+        this.toolEvents[entry.name] = true;
+        this.internalChatHistory.push({
+          type: "function_call_output",
+          call_id: entry.call_id,
+          output: "",
+        });
+        this.displayChatHistory.push({
+          role: "tool",
+          content: `${entry.name}`,
+          reason: reason
+        })
+      }
+    }
+  }
+
+  @block({
+    type: "hat",
+    text: (toolName) => `when I receive ${toolName}`,
+    arg: {
+      type: "string",
+      options: function () {
+        if (!this) {
+          throw new Error('Context is undefined');
+        }
+        return this.allTools[this.runtime._editingTarget.id] && this.allTools[this.runtime._editingTarget.id].length > 0 ? this.allTools[this.runtime._editingTarget.id].map(tool => tool.name) : ["Add a tool"];
+      },
+      defaultValue: "Add a tool"
+    }
+  })
+  whenModelDetects(toolName: string) {
+    if (this.toolEvents[toolName]) {
+      this.toolEvents[toolName] = false;
+      return true;
+    }
+    return false;
+  }
+
+  @block({
+    type: "button",
+    text: `Edit tools`,
+  })
+  showTools() {
+    this.openUI("Tools");
+  }
+
+  @block({
+    type: "button",
+    text: `Show chat history`,
+  })
+  showChatHistory() {
+    this.openUI("ChatHistory");
   }
 
   async urlToBase64(url: string): Promise<string> {
@@ -712,4 +876,82 @@ export default class GenAIExtension extends extension(details, "addCostumes") {
   async setSystemPrompt(system_prompt: string, { target }: BlockUtilityWithID) {
     this.target_prompts[target.id] = system_prompt;
   }
+
+  parseJsonResponse(text: string) {
+    const match = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+
+    const jsonText = match ? match[1] : text;
+
+    return JSON.parse(jsonText);
+  }
+
+
+  @block({
+    type: "command",
+    text: (prompt) => `add costume with prompt ${prompt}`,
+    arg: { type: "string", defaultValue: "The bluest cloudy sky" },
+  })
+  async addCostumeWithPrompt(prompt: string, utility: BlockUtilityWithID) {
+    console.log(this.runtime.getSpriteJson());
+    const spriteJson = this.runtime.getSpriteJson();
+    const spriteInfo = spriteJson.map((sprite) => ({
+      tags: sprite.tags,
+      costumes: sprite.costumes.map(c => c.name),
+      name: sprite.name
+    }));
+
+    const url = `${backendHost}/prompt`
+    const builtPrompt = `You are selecting a Scratch sprite and costume for a project.
+
+    Given a user request and a list of available Scratch sprites, choose the sprite and costume that best match the request.
+
+    Each sprite contains:
+    - name
+    - tags
+    - costumes
+
+    User request:
+    ${prompt}
+
+    Available sprites:
+    ${JSON.stringify(spriteInfo)}
+
+    Return ONLY valid JSON:
+
+    {
+      "sprite": "sprite name",
+      "costume": "costume name",
+      "reason": "short explanation"
+    }
+`
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ text_input: builtPrompt, system_prompt: "" }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.log("Error response:", errorText);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const textResponse = data.text;
+    const chosenCostume = this.parseJsonResponse(textResponse);
+    console.log("Selected costume: ", chosenCostume);
+    if (chosenCostume) {
+      const costumeObject = spriteJson.find(s => s.name === chosenCostume.sprite)?.costumes.find(c => c.name === chosenCostume.costume);
+      if (costumeObject && costumeObject.md5ext) costumeObject.md5 = costumeObject.md5ext; 
+      const loadedCostume = await this.runtime.addCostume(costumeObject);
+      utility.target.addCostume(loadedCostume);
+      utility.target.setCostume(utility.target.getCostumes().length - 1);
+    } else {
+      throw new Error(`AI did not return a valid costume choice. Response was: ${textResponse}`);
+    }
+  }
+
+    
 }
