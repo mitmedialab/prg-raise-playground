@@ -469,7 +469,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
     return await this.processAndSendAudioListen(buffer);
   }
 
-  private async handleReturnChatInteraction(prompt: string, target) {
+  private async handleReturnChatInteraction(prompt, target) {
 
     const url = `${backendHost}/prompt`
 
@@ -731,21 +731,27 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
 
   @block({
     type: "reporter",
-    text: (text) => `prompt ${text}`,
-    arg: { type: "string", defaultValue: "What is your favorite color?" }
+    text: (text, history) => `prompt ${text} ${history}`,
+    args: [{ type: "string", defaultValue: "What is your favorite color?" },
+      { type: "string", options: ["with history", "without history"], defaultValue: "with history" }]
   })
-  async promptChatAPI(text: string, { target }: BlockUtilityWithID) {
+  async promptChatAPI(text: string, history: string, { target }: BlockUtilityWithID) {
     if (!this.internalChatHistory[target.id]) {
       this.internalChatHistory[target.id] = [];
     }
     if (!this.displayChatHistory[target.id]) {
       this.displayChatHistory[target.id] = [];
     }
+    const includeHistory = history === "with history";
 
     this.internalChatHistory[target.id].push({ role: "system", content: this.target_prompts[target.id] || this.default_prompt });
     this.internalChatHistory[target.id].push({ role: "user", content: text });
-
-    let response = await this.handleReturnChatInteraction(this.internalChatHistory[target.id], target);
+    let response;
+    if (includeHistory) {
+      response = await this.handleReturnChatInteraction(this.internalChatHistory[target.id], target);
+    } else {
+      response = await this.handleReturnChatInteraction([{ role: "user", content: text }], target);
+    }
 
     this.displayChatHistory[target.id].push({ role: "student", content: text });
     this.displayChatHistory[target.id].push({ role: "assistant", content: response });
