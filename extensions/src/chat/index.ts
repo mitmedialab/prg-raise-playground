@@ -43,9 +43,9 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
   target_prompts: any;
   default_prompt: string;
 
-  internalChatHistory: { type?: string, call_id?: string, output?: string, role?: string, content?: string }[] = [];
+  internalChatHistory: {target: string, history: { type?: string, call_id?: string, output?: string, role?: string, content?: string }[]} = {};
 
-  displayChatHistory: { role: string, content: string, reason?: string }[] = [];
+  displayChatHistory: {target: string, history:{ role: string, content: string, reason?: string }[]} = {};
 
   voice_map: any;
 
@@ -489,7 +489,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ text_input: prompt, system_prompt: temporary_prompt }),
+        body: JSON.stringify({ text_input: prompt }),
       });
 
       if (!response.ok) {
@@ -735,36 +735,63 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
     arg: { type: "string", defaultValue: "What is your favorite color?" }
   })
   async promptChatAPI(text: string, { target }: BlockUtilityWithID) {
-    this.internalChatHistory.push({ role: "user", content: text });
-    const response = await this.handleReturnChatInteraction(text, target);
-    this.displayChatHistory.push({ role: "student", content: text });
-    this.displayChatHistory.push({ role: "assistant", content: response });
+    if (!this.internalChatHistory[target.id]) {
+      this.internalChatHistory[target.id] = [];
+    }
+    if (!this.displayChatHistory[target.id]) {
+      this.displayChatHistory[target.id] = [];
+    }
 
-    this.internalChatHistory.push({ role: "assistant", content: response });
+    this.internalChatHistory[target.id].push({ role: "system", content: this.target_prompts[target.id] || this.default_prompt });
+    this.internalChatHistory[target.id].push({ role: "user", content: text });
+
+    let response = await this.handleReturnChatInteraction(this.internalChatHistory[target.id], target);
+
+    this.displayChatHistory[target.id].push({ role: "student", content: text });
+    this.displayChatHistory[target.id].push({ role: "assistant", content: response });
+
+    this.internalChatHistory[target.id].push({ role: "assistant", content: response });
     return response;
   }
 
   @block({
     type: "command",
-    text: (text) => `agentic prompt ${text}`,
-    arg: { type: "string", defaultValue: "What is your favorite color?" }
+    text: (text, history) => `agentic prompt ${text} ${history}`,
+    args: [{ type: "string", defaultValue: "What is your favorite color?" },
+      { type: "string", options: ["with history", "without history"], defaultValue: "with history" }]
   })
-  async promptAgenticChatAPI(text: string, { target }: BlockUtilityWithID) {
-    this.internalChatHistory.push({ role: "user", content: text });
-    this.displayChatHistory.push({ role: "student", content: text });
-    const response = await this.handleReturnAgenticChatInteraction(this.internalChatHistory, target);
+  async promptAgenticChatAPI(text: string, history: string, { target }: BlockUtilityWithID) {
+    if (!this.internalChatHistory[target.id]) {
+      this.internalChatHistory[target.id] = [];
+    }
+    if (!this.displayChatHistory[target.id]) {
+      this.displayChatHistory[target.id] = [];
+    }
+    const includeHistory = history === "with history";
+    //this.internalChatHistory.push({ role: "system", content: systemPrompt });
+    this.internalChatHistory[target.id].push({ role: "system", content: this.target_prompts[target.id] || this.default_prompt });
+    this.internalChatHistory[target.id].push({ role: "user", content: text });
+
+    this.displayChatHistory[target.id].push({ role: "student", content: text });
+    let response;
+    if (includeHistory) {
+      response = await this.handleReturnAgenticChatInteraction(this.internalChatHistory[target.id], target);
+    } else {
+      response = await this.handleReturnAgenticChatInteraction([{ role: "user", content: text }], target);
+    }
+    
     console.log("REASON", response);
-    this.internalChatHistory.push(...response);
+    this.internalChatHistory[target.id].push(...response);
     for (const entry of response) {
       if (entry.type == "function_call") {
         const reason = JSON.parse(entry.arguments).reason;
         this.toolEvents[entry.name] = true;
-        this.internalChatHistory.push({
+        this.internalChatHistory[target.id].push({
           type: "function_call_output",
           call_id: entry.call_id,
           output: "",
         });
-        this.displayChatHistory.push({
+        this.displayChatHistory[target.id].push({
           role: "tool",
           content: `${entry.name}`,
           reason: reason
@@ -875,6 +902,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
   })
   async setSystemPrompt(system_prompt: string, { target }: BlockUtilityWithID) {
     this.target_prompts[target.id] = system_prompt;
+
   }
 
   parseJsonResponse(text: string) {
@@ -929,7 +957,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ text_input: builtPrompt, system_prompt: "" }),
+        body: JSON.stringify({ text_input: builtPrompt }),
     });
 
     if (!response.ok) {
