@@ -540,7 +540,10 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
       this.allTools[this.runtime._editingTarget.id] = [];
     }
     this.allTools[this.runtime._editingTarget.id].push(tempTool);
-    this.toolEvents[name] = false;
+    if (!this.toolEvents[this.runtime._editingTarget.id]) {
+      this.toolEvents[this.runtime._editingTarget.id] = {};
+    }
+    this.toolEvents[this.runtime._editingTarget.id][name] = false;
     this.runtime.tools = this.allTools;
   }
 
@@ -748,8 +751,10 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
     this.internalChatHistory[target.id].push({ role: "user", content: text });
     let response;
     if (includeHistory) {
+      console.log("internalChatHistory", this.internalChatHistory[target.id]);
       response = await this.handleReturnChatInteraction(this.internalChatHistory[target.id], target);
     } else {
+      console.log("singular", [{ role: "user", content: text }]);
       response = await this.handleReturnChatInteraction([{ role: "user", content: text }], target);
     }
 
@@ -792,7 +797,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
       for (const entry of response) {
         if (entry.type == "function_call") {
           const reason = JSON.parse(entry.arguments).reason;
-          this.toolEvents[entry.name] = true;
+          this.toolEvents[target.id][entry.name] = true;
           this.internalChatHistory[target.id].push({
             type: "function_call_output",
             call_id: entry.call_id,
@@ -822,9 +827,9 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
       defaultValue: "Add a tool"
     }
   })
-  whenModelDetects(toolName: string) {
-    if (this.toolEvents[toolName]) {
-      this.toolEvents[toolName] = false;
+  whenModelDetects(toolName: string, { target }: BlockUtilityWithID) {
+    if (this.toolEvents[this.runtime._editingTarget.id] && this.toolEvents[this.runtime._editingTarget.id][toolName] && target.id === this.runtime._editingTarget.id) {
+      this.toolEvents[this.runtime._editingTarget.id][toolName] = false;
       return true;
     }
     return false;
@@ -965,7 +970,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ text_input: builtPrompt }),
+        body: JSON.stringify({ text_input: [{ role: "user", content: builtPrompt }] }),
     });
 
     if (!response.ok) {

@@ -18,8 +18,8 @@
   </header>
 
   <div class="history-viewport">
-    {#if extension.displayChatHistory && extension.displayChatHistory.length > 0}
-      {#each extension.displayChatHistory as chat}
+    {#if extension.displayChatHistory[extension.runtime._editingTarget.id] && extension.displayChatHistory[extension.runtime._editingTarget.id].length > 0}
+      {#each extension.displayChatHistory[extension.runtime._editingTarget.id] as chat}
         {#if chat.role === "tool"}
           <div class="tool-log">
             <span class="role-label">System Action</span>
