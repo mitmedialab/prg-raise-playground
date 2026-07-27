@@ -565,7 +565,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ text_input: prompt, system_prompt: temporary_prompt, tools: this.allTools[target.id] }),
+        body: JSON.stringify({ text_input: prompt, system_prompt: temporary_prompt, tools: this.allTools[target.id] ? this.allTools[target.id] : [] }),
       });
 
       if (!response.ok) {
@@ -780,28 +780,30 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
 
     this.displayChatHistory[target.id].push({ role: "student", content: text });
     let response;
-    if (includeHistory) {
-      response = await this.handleReturnAgenticChatInteraction(this.internalChatHistory[target.id], target);
-    } else {
-      response = await this.handleReturnAgenticChatInteraction([{ role: "user", content: text }], target);
-    }
-    
-    console.log("REASON", response);
-    this.internalChatHistory[target.id].push(...response);
-    for (const entry of response) {
-      if (entry.type == "function_call") {
-        const reason = JSON.parse(entry.arguments).reason;
-        this.toolEvents[entry.name] = true;
-        this.internalChatHistory[target.id].push({
-          type: "function_call_output",
-          call_id: entry.call_id,
-          output: "",
-        });
-        this.displayChatHistory[target.id].push({
-          role: "tool",
-          content: `${entry.name}`,
-          reason: reason
-        })
+    if (this.allTools[target.id] && this.allTools[target.id].length > 0) {
+      if (includeHistory) {
+        response = await this.handleReturnAgenticChatInteraction(this.internalChatHistory[target.id], target);
+      } else {
+        response = await this.handleReturnAgenticChatInteraction([{ role: "user", content: text }], target);
+      }
+      
+      console.log("REASON", response);
+      this.internalChatHistory[target.id].push(...response);
+      for (const entry of response) {
+        if (entry.type == "function_call") {
+          const reason = JSON.parse(entry.arguments).reason;
+          this.toolEvents[entry.name] = true;
+          this.internalChatHistory[target.id].push({
+            type: "function_call_output",
+            call_id: entry.call_id,
+            output: "",
+          });
+          this.displayChatHistory[target.id].push({
+            role: "tool",
+            content: `${entry.name}`,
+            reason: reason
+          })
+        }
       }
     }
   }
