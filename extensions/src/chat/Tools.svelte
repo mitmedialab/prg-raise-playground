@@ -62,7 +62,7 @@
       </tr>
     </thead>
     <tbody>
-      {#each extension.allTools[extension.runtime._editingTarget.id] || [] as tool, i}
+      {#each extension.tools as tool, i}
         <tr>
           <td
             contenteditable="true"

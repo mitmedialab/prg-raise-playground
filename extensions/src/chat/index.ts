@@ -49,7 +49,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
 
   voice_map: any;
 
-  allTools: {target: string, tools: {name: string, description: string}[]};
+  tools: {name: string, description: string}[] = [];
   toolEvents = {};
 
   /** @see {ExplanationOfInitMethod} */
@@ -74,9 +74,9 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
 
     env.runtime.on("PROJECT_LOADED", () => {
       if (env.runtime.tools) {
-        this.allTools = env.runtime.tools;
+        this.tools = env.runtime.tools;
       } else {
-        this.allTools = {};
+        this.tools = [];
       }
     })
     
@@ -510,11 +510,11 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
 
   updateTool(index, field, value) {
     if (field == "name") {
-      this.allTools[this.runtime._editingTarget.id][index].name = value;
+      this.tools[index].name = value;
     } else if (field == "description") {
-      this.allTools[this.runtime._editingTarget.id][index].description = value;
+      this.tools[index].description = value;
     }
-    this.runtime.tools = this.allTools;
+    this.runtime.tools = this.tools;
   }
 
   addTool(name, description) {
@@ -536,15 +536,10 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
       },
       strict: true,
     };
-    if (!this.allTools[this.runtime._editingTarget.id]) {
-      this.allTools[this.runtime._editingTarget.id] = [];
-    }
-    this.allTools[this.runtime._editingTarget.id].push(tempTool);
-    if (!this.toolEvents[this.runtime._editingTarget.id]) {
-      this.toolEvents[this.runtime._editingTarget.id] = {};
-    }
-    this.toolEvents[this.runtime._editingTarget.id][name] = false;
-    this.runtime.tools = this.allTools;
+
+    this.tools.push(tempTool);
+    this.toolEvents[name] = false;
+    this.runtime.tools = this.tools;
   }
 
   private async handleReturnAgenticChatInteraction(prompt, target) {
@@ -568,7 +563,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ text_input: prompt, system_prompt: temporary_prompt, tools: this.allTools[target.id] ? this.allTools[target.id] : [] }),
+        body: JSON.stringify({ text_input: prompt, system_prompt: temporary_prompt, tools: this.tools }),
       });
 
       if (!response.ok) {
@@ -785,7 +780,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
 
     this.displayChatHistory[target.id].push({ role: "student", content: text });
     let response;
-    if (this.allTools[target.id] && this.allTools[target.id].length > 0) {
+    if (this.tools && this.tools.length > 0) {
       if (includeHistory) {
         response = await this.handleReturnAgenticChatInteraction(this.internalChatHistory[target.id], target);
       } else {
@@ -797,7 +792,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
       for (const entry of response) {
         if (entry.type == "function_call") {
           const reason = JSON.parse(entry.arguments).reason;
-          this.toolEvents[target.id][entry.name] = true;
+          this.toolEvents[entry.name] = true;
           this.internalChatHistory[target.id].push({
             type: "function_call_output",
             call_id: entry.call_id,
@@ -822,14 +817,14 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
         if (!this) {
           throw new Error('Context is undefined');
         }
-        return this.allTools[this.runtime._editingTarget.id] && this.allTools[this.runtime._editingTarget.id].length > 0 ? this.allTools[this.runtime._editingTarget.id].map(tool => tool.name) : ["Add a tool"];
+        return this.tools && this.tools.length > 0 ? this.tools.map(tool => tool.name) : ["Add a tool"];
       },
       defaultValue: "Add a tool"
     }
   })
   whenModelDetects(toolName: string, { target }: BlockUtilityWithID) {
-    if (this.toolEvents[this.runtime._editingTarget.id] && this.toolEvents[this.runtime._editingTarget.id][toolName] && target.id === this.runtime._editingTarget.id) {
-      this.toolEvents[this.runtime._editingTarget.id][toolName] = false;
+    if (this.toolEvents[toolName]) {
+      this.toolEvents[toolName] = false;
       return true;
     }
     return false;
@@ -869,6 +864,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
     const image = await this.generateImage(text);
     const imageHelper = getImageHelper(100, 100);
     const imageData = await imageHelper.drawBase64(image);
+    console.log("target", target)
     this.addCostume(target, imageData, "add and set");
 
   }
@@ -908,13 +904,15 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
     this.pitch_value = pitch;
   }
 
-  @block({
-    type: "command",
-    text: (system_prompt) => `set system prompt to ${system_prompt}`,
-    arg: { type: "string", defaultValue: "You are a 4th grade classroom assistant..." },
-  })
-  async setSystemPrompt(system_prompt: string, { target }: BlockUtilityWithID) {
-    this.target_prompts[target.id] = system_prompt;
+  // @block({
+  //   type: "command",
+  //   text: (system_prompt) => `set system prompt to ${system_prompt}`,
+  //   arg: ,
+  // })
+  @(scratch.command`set system prompt to ${{ type: "string", defaultValue: "You are a 4th grade classroom assistant..." }}`)
+  async setSystemPrompt(system_prompt: string, utility: BlockUtilityWithID) {
+    console.log("target test again", utility.target)
+    this.target_prompts[utility.target.id] = system_prompt;
 
   }
 
@@ -927,13 +925,15 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
   }
 
 
-  @block({
-    type: "command",
-    text: (prompt) => `add costume with prompt ${prompt}`,
-    arg: { type: "string", defaultValue: "The bluest cloudy sky" },
-  })
+  // @block({
+  //   type: "command",
+  //   text: (prompt) => `add costume with prompt ${prompt}`,
+  //   arg: { type: "string", defaultValue: "The bluest cloudy sky" },
+  // })
+  @(scratch.command`add costume with prompt ${{ type: "string", defaultValue: "The bluest cloudy sky" }}`)
   async addCostumeWithPrompt(prompt: string, utility: BlockUtilityWithID) {
-    console.log(this.runtime.getSpriteJson());
+    const originalTargetId = utility.target.id;
+
     const spriteJson = this.runtime.getSpriteJson();
     const spriteInfo = spriteJson.map((sprite) => ({
       tags: sprite.tags,
@@ -982,13 +982,19 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
     const data = await response.json();
     const textResponse = data.text;
     const chosenCostume = this.parseJsonResponse(textResponse);
-    console.log("Selected costume: ", chosenCostume);
+
+    let costumeTarget = utility.target;
+    for (const target of this.runtime.targets) {
+      if (target.id === originalTargetId) {
+        costumeTarget = target;
+      }
+    }
     if (chosenCostume) {
       const costumeObject = spriteJson.find(s => s.name === chosenCostume.sprite)?.costumes.find(c => c.name === chosenCostume.costume);
       if (costumeObject && costumeObject.md5ext) costumeObject.md5 = costumeObject.md5ext; 
       const loadedCostume = await this.runtime.addCostume(costumeObject);
-      utility.target.addCostume(loadedCostume);
-      utility.target.setCostume(utility.target.getCostumes().length - 1);
+      costumeTarget.addCostume(loadedCostume);
+      costumeTarget.setCostume(costumeTarget.getCostumes().length - 1);
     } else {
       throw new Error(`AI did not return a valid costume choice. Response was: ${textResponse}`);
     }
