@@ -729,9 +729,9 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
 
   @block({
     type: "reporter",
-    text: (text, history) => `prompt ${text} ${history}`,
+    text: (text, history) => `prompt ${text} ${history} history`,
     args: [{ type: "string", defaultValue: "What is your favorite color?" },
-      { type: "string", options: ["with history", "without history"], defaultValue: "with history" }]
+      { type: "string", options: ["with", "without"], defaultValue: "with" }]
   })
   async promptChatAPI(text: string, history: string, { target }: BlockUtilityWithID) {
     if (!this.internalChatHistory[target.id]) {
@@ -740,14 +740,16 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
     if (!this.displayChatHistory[target.id]) {
       this.displayChatHistory[target.id] = [];
     }
-    const includeHistory = history === "with history";
+
+    const includeHistory = history == "with";
+    
 
     this.internalChatHistory[target.id].push({ role: "system", content: this.target_prompts[target.id] || this.default_prompt });
     this.internalChatHistory[target.id].push({ role: "user", content: text });
     let response;
     if (includeHistory) {
       console.log("internalChatHistory", this.internalChatHistory[target.id]);
-      response = await this.handleReturnChatInteraction(this.internalChatHistory[target.id], target);
+      response = await this.handleReturnChatInteraction(this.internalChatHistory[target.id].filter((call) => call.type != "function_call" && call.type !="function_call_output"), target);
     } else {
       console.log("singular", [{ role: "user", content: text }]);
       response = await this.handleReturnChatInteraction([{ role: "user", content: text }], target);
