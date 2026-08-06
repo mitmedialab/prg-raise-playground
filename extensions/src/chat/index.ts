@@ -75,6 +75,17 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
     env.runtime.on("PROJECT_LOADED", () => {
       if (env.runtime.tools) {
         this.tools = env.runtime.tools;
+        for (const tool of this.tools) {
+          if (Object.keys(tool.parameters.properties).length == 0) {
+            tool.parameters.properties = {
+              reason: {
+                type: "string",
+                description: "A short explanation of why you chose this tool over the other tools included."
+              }
+            };
+            tool.parameters.required = ["reason"];
+          }
+        }
       } else {
         this.tools = [];
       }
@@ -752,7 +763,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
       response = await this.handleReturnChatInteraction(this.internalChatHistory[target.id].filter((call) => call.type != "function_call" && call.type !="function_call_output"), target);
     } else {
       console.log("singular", [{ role: "user", content: text }]);
-      response = await this.handleReturnChatInteraction([{ role: "user", content: text }], target);
+      response = await this.handleReturnChatInteraction([{ role: "system", content: this.target_prompts[target.id] || this.default_prompt }, { role: "user", content: text }], target);
     }
 
     this.displayChatHistory[target.id].push({ role: "student", content: text });
@@ -764,9 +775,9 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
 
   @block({
     type: "command",
-    text: (text, history) => `agentic prompt ${text} ${history}`,
+    text: (text, history) => `agentic prompt ${text} ${history} history`,
     args: [{ type: "string", defaultValue: "What is your favorite color?" },
-      { type: "string", options: ["with history", "without history"], defaultValue: "with history" }]
+      { type: "string", options: ["with", "without"], defaultValue: "with" }]
   })
   async promptAgenticChatAPI(text: string, history: string, { target }: BlockUtilityWithID) {
     if (!this.internalChatHistory[target.id]) {
@@ -775,7 +786,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
     if (!this.displayChatHistory[target.id]) {
       this.displayChatHistory[target.id] = [];
     }
-    const includeHistory = history === "with history";
+    const includeHistory = history == "with";
     //this.internalChatHistory.push({ role: "system", content: systemPrompt });
     this.internalChatHistory[target.id].push({ role: "system", content: this.target_prompts[target.id] || this.default_prompt });
     this.internalChatHistory[target.id].push({ role: "user", content: text });
@@ -786,7 +797,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
       if (includeHistory) {
         response = await this.handleReturnAgenticChatInteraction(this.internalChatHistory[target.id], target);
       } else {
-        response = await this.handleReturnAgenticChatInteraction([{ role: "user", content: text }], target);
+        response = await this.handleReturnAgenticChatInteraction([{ role: "system", content: this.target_prompts[target.id] || this.default_prompt }, { role: "user", content: text }], target);
       }
       
       console.log("REASON", response);
