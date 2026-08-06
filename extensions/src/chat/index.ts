@@ -43,6 +43,8 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
   target_prompts: any;
   default_prompt: string;
 
+  currentAudio: HTMLAudioElement | null = null;
+
   internalChatHistory: {target: string, history: { type?: string, call_id?: string, output?: string, role?: string, content?: string }[]} = {};
 
   displayChatHistory: {target: string, history:{ role: string, content: string, reason?: string }[]} = {};
@@ -90,6 +92,16 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
         this.tools = [];
       }
     })
+
+    env.runtime.on("PROJECT_STOP_ALL", () => {  
+      if (this.currentAudio) {
+        this.currentAudio.pause();
+        this.currentAudio.currentTime = 0;
+        URL.revokeObjectURL(this.currentAudio.src);
+        this.currentAudio = null;
+        
+      }
+    });
     
 
     this.default_prompt = `You are a friendly and encouraging classroom helper who explains ideas clearly for 4th-grade students. 
@@ -689,6 +701,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
       const blob = await response.blob();
       const audioUrl = URL.createObjectURL(blob);
       const audio = new Audio(audioUrl);
+      this.currentAudio = audio;
 
       // ✅ Wait for the audio to be ready
       await new Promise<void>((resolve) => {
@@ -700,8 +713,16 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
 
       // ✅ Wait until playback finishes
       await new Promise<void>((resolve) => {
-        audio.addEventListener("ended", () => resolve());
-        audio.addEventListener("error", () => resolve()); // failsafe
+        const finish = () => {
+          audio.removeEventListener("ended", finish);
+          audio.removeEventListener("error", finish);
+          audio.removeEventListener("pause", finish);
+          resolve();
+        };
+
+        audio.addEventListener("ended", finish);
+        audio.addEventListener("error", finish);
+        audio.addEventListener("pause", finish);
       });
 
       console.log("✅ Audio playback finished");
