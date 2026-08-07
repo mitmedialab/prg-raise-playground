@@ -938,6 +938,13 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
     this.pitch_value = pitch;
   }
 
+
+  setAllSystemPrompts(system_prompt: string) {
+    for (const key of this.target_prompts) {
+      this.target_prompts[key] = system_prompt;
+    }
+
+  }
   // @block({
   //   type: "command",
   //   text: (system_prompt) => `set system prompt to ${system_prompt}`,
@@ -1036,3 +1043,4 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
 
     
 }
+
