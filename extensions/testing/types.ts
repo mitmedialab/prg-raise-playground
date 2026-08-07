@@ -134,6 +134,8 @@ export type RuntimeForTest<T extends ExtensionInstance> = Runtime & {
   forTest: {
     extension: Testable<T>,
     UIPromise: Promise<RenderedUI>;
+    /** Stub target handed to blocks via `util.target`, and the sole entry of `runtime.targets`. */
+    target: Runtime["targets"][number];
   }
 }
 

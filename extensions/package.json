@@ -1,5 +1,5 @@
 {
-  "name": "extensions",
+  "name": "prg-extension-root",
   "version": "1.0.0",
   "description": "All extensions",
   "main": "index.js",

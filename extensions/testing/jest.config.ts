@@ -92,6 +92,13 @@ export default {
   // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
   moduleNameMapper: {
     "^.+\\.(jpg|jpeg|png|gif|webp|svg)$": path.resolve(".", "mocks", "image.ts"),
+    // jsdom's default export condition is "browser", but scratch-svg-renderer's browser
+    // entry is a web bundle that never populates module.exports (so scratch-vm's
+    // import/load-costume.js destructures undefined). Point at its node build instead.
+    "^scratch-svg-renderer$": path.resolve(
+      "..", "..", "scratch-packages", "scratch-vm", "node_modules",
+      "scratch-svg-renderer", "dist", "node", "ScratchSVGRenderer.js"
+    ),
     ...pathsToModuleNameMapper(paths, { prefix: pathsBase }),
   },
 
@@ -150,7 +157,8 @@ export default {
   // snapshotSerializers: [],
 
   // The test environment that will be used for testing
-  testEnvironment: "jsdom",
+  // jsdom, plus Node's fetch stack -- see the file for why.
+  testEnvironment: path.resolve(".", "jsdomWithFetch.ts"),
 
   // Options that will be passed to the testEnvironment
   // testEnvironmentOptions: {},
@@ -187,13 +195,28 @@ export default {
         preprocess: true,
       },
     ],
+    // Svelte 4 ships ESM only (no CJS build), so its sources must be transpiled
+    // down for jest's CommonJS runtime. See `transformIgnorePatterns` below.
+    '^.+\\.js$': [
+      'babel-jest',
+      {
+        presets: [['@babel/preset-env', { targets: { node: 'current' } }]],
+        babelrc: false,
+        configFile: false,
+      },
+    ],
   },
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
-  // transformIgnorePatterns: [
-  //   "/node_modules/",
-  //   "\\.pnp\\.[^\\/]+$"
-  // ],
+  // node_modules is skipped by default, but these packages ship ESM-only builds (svelte 4
+  // has no CJS build at all; uuid resolves to esm-browser under jsdom's "browser" export
+  // condition), so they must be exempted and run through the babel-jest transform above.
+  // NOTE: the negative lookahead must reject at *every* "/node_modules/" in the path,
+  // including the inner one pnpm creates, hence the leading ".*".
+  transformIgnorePatterns: [
+    "/node_modules/(?!.*(svelte|uuid))",
+    "\\.pnp\\.[^\\/]+$"
+  ],
 
   // An array of regexp pattern strings that are matched against all modules before the module loader will automatically return a mock for them
   // unmockedModulePathPatterns: undefined,
