@@ -57,6 +57,9 @@ export class BlockRunner<T extends ExtensionInstance> {
   private mockBlockUtility(): BlockUtility {
     const utility = new (jest.createMockFromModule(getEngineFile("block-utility")) as any)() as BlockUtility;
     utility[blockIDKey] = "test-block";
+    // `target` is a getter on the real BlockUtility (backed by its thread), so the automock
+    // leaves it undefined -- point it at the runtime's stub target.
+    (utility as any).target = (this.instance.runtime as RuntimeForTest<T>).forTest.target;
     // utility can be built up over time
     return utility;
   }
