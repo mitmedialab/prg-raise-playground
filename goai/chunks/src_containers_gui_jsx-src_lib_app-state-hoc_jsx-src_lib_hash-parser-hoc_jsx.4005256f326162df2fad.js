@@ -70810,7 +70810,7 @@ const serialize = function serialize(runtime, targetId, /* PRG ADDITION BEGIN */
       t.layerOrder = layerOrdering[index];
     });
   }
-  const serializedTargets = flattenedOriginalTargets.map(t => serializeTarget(t, extensions, /* PRG ADDITION BEGIN */runtime.tools ? runtime.tools : {} /* PRG ADDITION END */));
+  const serializedTargets = flattenedOriginalTargets.map(t => serializeTarget(t, extensions));
   if (targetId) {
     return serializedTargets[0];
   }
@@ -70831,6 +70831,7 @@ const serialize = function serialize(runtime, targetId, /* PRG ADDITION BEGIN */
   /* PRG ADDITION BEGIN */
   // Save training data for the text classifier model
   obj.textModel = runtime.modelData ? runtime.modelData.classifierData : undefined;
+  obj.tools = runtime.tools ? runtime.tools : [];
   /* PRG ADDITION END */
 
   // Assemble metadata
@@ -86179,4 +86180,4 @@ module.exports = /*#__PURE__*/JSON.parse('{"name":"scratch-vm","version":"4.5.15
 /***/ })
 
 }]);
-//# sourceMappingURL=src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx.d0865cb383de5fab13cd.js.map
+//# sourceMappingURL=src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx.4005256f326162df2fad.js.map
