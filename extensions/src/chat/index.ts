@@ -779,7 +779,7 @@ private addAgenticExplanation() {
   return `
   You are part of an agentic system with tools that can perform project actions.
   When the user requests an action, do not claim it was completed unless the action is confirmed.
-  Do not mention, describe, or simulate tool calls in your response.
+  Do not simulate tool calls in your response if the response is text.
 
   Available actions:
   ${this.tools.map(tool => `- ${tool.name}: ${tool.description}`).join("\n")}
