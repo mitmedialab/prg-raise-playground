@@ -59,7 +59,6 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
   pitch_value: number;
   target_prompts: any;
   default_prompt: string;
-  add_agentic_explanation: string;
 
   currentAudio: HTMLAudioElement | null = null;
 
@@ -127,12 +126,6 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
     });
     
 
-    this.add_agentic_explanation = `You are operating as part of an agentic system. The system has a separate agentic tool-calling component that can perform actions in the project on the user's behalf.
-
-    When a user asks you to perform an action (for example, "make the sprite jump" or "make the sprite run"), do NOT say that you cannot perform the action, cannot control the sprite, cannot access the project, or cannot call tools. Do not explain that you lack tool-calling capabilities. Instead, treat the requested action as something the agentic system can handle and respond naturally to the user's request.
-
-    Your role is to understand the user's intent and provide an appropriate response. When an action is requested, the separate agentic tool-calling component may select and execute the appropriate tool.`
-  
     this.default_prompt = `You are a friendly and encouraging classroom helper who explains ideas clearly for 4th-grade students. 
     You use simple language, fun examples, and a positive tone to help kids learn and think for themselves. 
 
@@ -140,8 +133,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
     Keep your replies short, warm, and easy to understand. Avoid big words, emojis, or anything too advanced. 
 
     Your goal is to make learning feel exciting, safe, and curious — like a helpful teacher's assistant who loves explaining things in creative ways.
-    
-    ${this.add_agentic_explanation}
+  
     `;
   }
 
@@ -783,6 +775,17 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
     return bytes;
   }
 
+private addAgenticExplanation() {
+  return `
+  You are part of an agentic system with tools that can perform project actions.
+  When the user requests an action, do not claim it was completed unless the action is confirmed.
+  Do not mention, describe, or simulate tool calls in your response.
+
+  Available actions:
+  ${this.tools.map(tool => `- ${tool.name}: ${tool.description}`).join("\n")}
+  `;
+}
+
 
 
 
@@ -807,7 +810,11 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
     const includeHistory = history == "with";
     
 
-    this.internalChatHistory[target.id].push({ role: "system", content: this.target_prompts[target.id] || this.default_prompt });
+    const system_prompt = `${this.target_prompts[target.id] || this.default_prompt}
+    
+    ${this.addAgenticExplanation()}`;
+
+    this.internalChatHistory[target.id].push({ role: "system", content: system_prompt });
     this.internalChatHistory[target.id].push({ role: "user", content: text });
     let response;
     if (includeHistory) {
@@ -815,7 +822,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
       const filtered = this.internalChatHistory[target.id].filter((call) => call.type != "reasoning" && call.type != "function_call" && call.type != "function_call_output");
       response = await this.handleReturnChatInteraction(filtered, target);
     } else {
-      response = await this.handleReturnChatInteraction([{ role: "system", content: this.target_prompts[target.id] || this.default_prompt }, { role: "user", content: text }], target);
+      response = await this.handleReturnChatInteraction([{ role: "system", content: system_prompt }, { role: "user", content: text }], target);
     }
 
     this.displayChatHistory[target.id].push({ role: "student", content: text });
@@ -839,8 +846,12 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
       this.displayChatHistory[target.id] = [];
     }
     const includeHistory = history == "with";
+
+    const system_prompt = `${this.target_prompts[target.id] || this.default_prompt}
+    
+    ${this.addAgenticExplanation()}`;
     //this.internalChatHistory.push({ role: "system", content: systemPrompt });
-    this.internalChatHistory[target.id].push({ role: "system", content: this.target_prompts[target.id] || this.default_prompt });
+    this.internalChatHistory[target.id].push({ role: "system", content: system_prompt });
     this.internalChatHistory[target.id].push({ role: "user", content: text });
 
     this.displayChatHistory[target.id].push({ role: "student", content: text });
@@ -849,7 +860,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
       if (includeHistory) {
         response = await this.handleReturnAgenticChatInteraction(this.internalChatHistory[target.id], target);
       } else {
-        response = await this.handleReturnAgenticChatInteraction([{ role: "system", content: this.target_prompts[target.id] || this.default_prompt }, { role: "user", content: text }], target);
+        response = await this.handleReturnAgenticChatInteraction([{ role: "system", content: system_prompt }, { role: "user", content: text }], target);
       }
       
       this.internalChatHistory[target.id].push(...response);
@@ -983,9 +994,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
   // })
   @(scratch.command`set system prompt to ${{ type: "string", defaultValue: "You are a 4th grade classroom assistant..." }}`)
   async setSystemPrompt(system_prompt: string, utility: BlockUtilityWithID) {
-    this.target_prompts[utility.target.id] = `${system_prompt}
-    
-    ${this.add_agentic_explanation}`;
+    this.target_prompts[utility.target.id] = system_prompt;
   }
 
   parseJsonResponse(text: string) {
