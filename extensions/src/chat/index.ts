@@ -781,7 +781,8 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
     let response;
     if (includeHistory) {
       console.log("internalChatHistory", this.internalChatHistory[target.id]);
-      response = await this.handleReturnChatInteraction(this.internalChatHistory[target.id].filter((call) => call.type != "function_call" && call.type !="function_call_output"), target);
+      const filtered = this.internalChatHistory[target.id].filter((call) => call.type != "reasoning" && call.type != "function_call" && call.type != "function_call_output");
+      response = await this.handleReturnChatInteraction(filtered, target);
     } else {
       console.log("singular", [{ role: "user", content: text }]);
       response = await this.handleReturnChatInteraction([{ role: "system", content: this.target_prompts[target.id] || this.default_prompt }, { role: "user", content: text }], target);
