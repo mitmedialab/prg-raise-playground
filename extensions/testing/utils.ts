@@ -1,5 +1,8 @@
 import { ExtensionConstructorParams, isString } from "$common";
-import type Runtime from "$scratch-vm/engine/runtime";
+// NOTE: must be the framework's Runtime (what ExtensionConstructorParams expects),
+// not the raw `$scratch-vm/engine/runtime` class -- the latter has `private` members
+// and so is not structurally assignable from the framework type.
+import type { Runtime } from "$common/types/scratch/vm";
 import { vmSrc } from "$root/scripts/paths";
 import path from "path";
 
@@ -18,6 +21,8 @@ export const executeAndSquashWarnings = <T extends (...args: any[]) => any>(oper
 };
 
 export const getEngineFile = (name: string) => path.join(vmSrc, "engine", name);
+
+export const getSpriteFile = (name: string) => path.join(vmSrc, "sprites", name);
 
 const stubbed: Map<object, Record<keyof any, any>> = new Map();
 

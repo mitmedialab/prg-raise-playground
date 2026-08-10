@@ -1,5 +1,6 @@
 import { scratch, extension, type ExtensionMenuDisplayDetails, type BlockUtilityWithID, type Environment, block } from "$common";
 import { getImageHelper } from "./utils";
+import type RenderedTarget from "$scratch-vm/sprites/rendered-target";
 /** 👋 Hi!
 
 Below is a working Extension that you should adapt to fit your needs. 
@@ -35,6 +36,22 @@ const details: ExtensionMenuDisplayDetails = {
 const backendHost = "https://goai-backend-3309c298eb92.herokuapp.com";
 //const backendHost = "http://localhost:3000";
 
+type Tool = {
+  name: string,
+  description: string,
+  parameters: {
+    properties: Record<string, { type: string, description: string }>,
+    required?: string[],
+  },
+};
+
+/**
+ * `tools` is a PRG addition that scratch-vm's sb3 deserializer assigns onto the runtime
+ * (see scratch-vm's src/serialization/sb3.js). It is never declared as a field on the
+ * Runtime class, so it does not appear in the generated declarations.
+ */
+type RuntimeWithTools = Environment["runtime"] & { tools?: Tool[] };
+
 /** @see {ExplanationOfClass} */
 export default class GenAIExtension extends extension(details, "addCostumes", "ui") {
 
@@ -42,16 +59,19 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
   pitch_value: number;
   target_prompts: any;
   default_prompt: string;
+  add_agentic_explanation: string;
 
   currentAudio: HTMLAudioElement | null = null;
 
-  internalChatHistory: {target: string, history: { type?: string, call_id?: string, output?: string, role?: string, content?: string }[]} = {};
+  /** Keyed by target id. */
+  internalChatHistory: Record<string, { type?: string, call_id?: string, output?: string, role?: string, content?: string }[]> = {};
 
-  displayChatHistory: {target: string, history:{ role: string, content: string, reason?: string }[]} = {};
+  /** Keyed by target id. */
+  displayChatHistory: Record<string, { role: string, content: string, reason?: string }[]> = {};
 
   voice_map: any;
 
-  tools: {name: string, description: string}[] = [];
+  tools: Tool[] = [];
   toolEvents = {};
 
   /** @see {ExplanationOfInitMethod} */
@@ -71,12 +91,14 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
     this.pitch_value = 0;
     this.target_prompts = {};
 
-    console.log("env", env);
+    //console.log("env", env);
 
 
     env.runtime.on("PROJECT_LOADED", () => {
-      if (env.runtime.tools) {
-        this.tools = env.runtime.tools;
+      const runtime = env.runtime as RuntimeWithTools;
+      console.log("runtime", runtime);
+      if (runtime.tools) {
+        this.tools = runtime.tools;
         for (const tool of this.tools) {
           if (Object.keys(tool.parameters.properties).length == 0) {
             tool.parameters.properties = {
@@ -88,6 +110,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
             tool.parameters.required = ["reason"];
           }
         }
+        console.log("tools", this.tools);
       } else {
         this.tools = [];
       }
@@ -104,6 +127,12 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
     });
     
 
+    this.add_agentic_explanation = `You are operating as part of an agentic system. The system has a separate agentic tool-calling component that can perform actions in the project on the user's behalf.
+
+    When a user asks you to perform an action (for example, "make the sprite jump" or "make the sprite run"), do NOT say that you cannot perform the action, cannot control the sprite, cannot access the project, or cannot call tools. Do not explain that you lack tool-calling capabilities. Instead, treat the requested action as something the agentic system can handle and respond naturally to the user's request.
+
+    Your role is to understand the user's intent and provide an appropriate response. When an action is requested, the separate agentic tool-calling component may select and execute the appropriate tool.`
+  
     this.default_prompt = `You are a friendly and encouraging classroom helper who explains ideas clearly for 4th-grade students. 
     You use simple language, fun examples, and a positive tone to help kids learn and think for themselves. 
 
@@ -111,6 +140,8 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
     Keep your replies short, warm, and easy to understand. Avoid big words, emojis, or anything too advanced. 
 
     Your goal is to make learning feel exciting, safe, and curious — like a helpful teacher's assistant who loves explaining things in creative ways.
+    
+    ${this.add_agentic_explanation}
     `;
   }
 
@@ -537,7 +568,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
     } else if (field == "description") {
       this.tools[index].description = value;
     }
-    this.runtime.tools = this.tools;
+    (this.runtime as RuntimeWithTools).tools = this.tools;
   }
 
   addTool(name, description) {
@@ -562,7 +593,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
 
     this.tools.push(tempTool);
     this.toolEvents[name] = false;
-    this.runtime.tools = this.tools;
+    (this.runtime as RuntimeWithTools).tools = this.tools;
   }
 
   private async handleReturnAgenticChatInteraction(prompt, target) {
@@ -579,7 +610,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
     try {
       let response;
 
-      console.log("input prompt", prompt)
+      // console.log("input prompt", prompt)
 
       response = await fetch(url, {
         method: "POST",
@@ -596,7 +627,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
       }
 
       const data = await response.json();
-      console.log("data", data);
+      //console.log("data", data);
       const textResponse = data.text;
       return textResponse;
 
@@ -784,7 +815,6 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
       const filtered = this.internalChatHistory[target.id].filter((call) => call.type != "reasoning" && call.type != "function_call" && call.type != "function_call_output");
       response = await this.handleReturnChatInteraction(filtered, target);
     } else {
-      console.log("singular", [{ role: "user", content: text }]);
       response = await this.handleReturnChatInteraction([{ role: "system", content: this.target_prompts[target.id] || this.default_prompt }, { role: "user", content: text }], target);
     }
 
@@ -822,7 +852,6 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
         response = await this.handleReturnAgenticChatInteraction([{ role: "system", content: this.target_prompts[target.id] || this.default_prompt }, { role: "user", content: text }], target);
       }
       
-      console.log("REASON", response);
       this.internalChatHistory[target.id].push(...response);
       for (const entry of response) {
         if (entry.type == "function_call") {
@@ -899,7 +928,6 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
     const image = await this.generateImage(text);
     const imageHelper = getImageHelper(100, 100);
     const imageData = await imageHelper.drawBase64(image);
-    console.log("target", target)
     this.addCostume(target, imageData, "add and set");
 
   }
@@ -927,11 +955,13 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
     text: (voice, pitch) => `set voice to ${voice} and pitch to ${pitch}`,
     args: [
       {
-        type: "string",
+        // `as const` is needed here (but not for the object form of @block) because
+        // the callback's return type is inferred, so "string" would widen to string.
+        type: "string" as const,
         options: Object.keys(self.voice_map),
         defaultValue: "en-US-CoraMultilingualNeural"
       },
-      { type: "number", defaultValue: 0 }
+      { type: "number" as const, defaultValue: 0 }
     ]
   }))
   async setVoiceAndPitch(voice: string, pitch: number) {
@@ -939,6 +969,13 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
     this.pitch_value = pitch;
   }
 
+
+  setAllSystemPrompts(system_prompt: string) {
+    for (const key in this.target_prompts) {
+      this.target_prompts[key] = system_prompt;
+    }
+
+  }
   // @block({
   //   type: "command",
   //   text: (system_prompt) => `set system prompt to ${system_prompt}`,
@@ -946,9 +983,9 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
   // })
   @(scratch.command`set system prompt to ${{ type: "string", defaultValue: "You are a 4th grade classroom assistant..." }}`)
   async setSystemPrompt(system_prompt: string, utility: BlockUtilityWithID) {
-    console.log("target test again", utility.target)
-    this.target_prompts[utility.target.id] = system_prompt;
-
+    this.target_prompts[utility.target.id] = `${system_prompt}
+    
+    ${this.add_agentic_explanation}`;
   }
 
   parseJsonResponse(text: string) {
@@ -1018,18 +1055,20 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
     const textResponse = data.text;
     const chosenCostume = this.parseJsonResponse(textResponse);
 
-    let costumeTarget = utility.target;
+    // addCostume/setCostume/getCostumes live on RenderedTarget, not the base Target.
+    let costumeTarget = utility.target as unknown as RenderedTarget;
     for (const target of this.runtime.targets) {
       if (target.id === originalTargetId) {
-        costumeTarget = target;
+        costumeTarget = target as unknown as RenderedTarget;
       }
     }
     if (chosenCostume) {
       const costumeObject = spriteJson.find(s => s.name === chosenCostume.sprite)?.costumes.find(c => c.name === chosenCostume.costume);
       if (costumeObject && costumeObject.md5ext) costumeObject.md5 = costumeObject.md5ext; 
       const loadedCostume = await this.runtime.addCostume(costumeObject);
-      costumeTarget.addCostume(loadedCostume);
-      costumeTarget.setCostume(costumeTarget.getCostumes().length - 1);
+      const costumeIndex = costumeTarget.getCostumes().length;
+      costumeTarget.addCostume(loadedCostume, costumeIndex);
+      costumeTarget.setCostume(costumeIndex);
     } else {
       throw new Error(`AI did not return a valid costume choice. Response was: ${textResponse}`);
     }
@@ -1037,3 +1076,4 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
 
     
 }
+

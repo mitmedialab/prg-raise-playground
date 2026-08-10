@@ -2,3 +2,14 @@ packages:
   - "extensions/**"
   - "extensions/src/**"
   - "scratch-packages/*"
+allowBuilds:
+  core-js: false
+  esbuild: true
+  protobufjs: true
+  svelte-preprocess: true
+# pnpm >=10 reads these from here instead of .npmrc.
+# NOTE: do not turn on shamefullyHoist — scratch-gui pins jest-cli@21, which
+# would get hoisted to the root and hijack jest's `import-local` bin shim.
+includeWorkspaceRoot: true
+overrides:
+  typescript: "5.4.5"

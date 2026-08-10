@@ -3,9 +3,9 @@ import { describe, expect, jest, test } from '@jest/globals';
 import path from "path";
 import { BlockKey, BlockTestCase, RuntimeForTest, TestHelper, UnitTests, GetTestCase, TestCaseEntry, InputArray, KeyToBlockIndexMap, IntegrationTest, Testable } from "./types";
 import { render, fireEvent } from '@testing-library/svelte';
-import glob from "glob";
+import { globSync } from "glob";
 import fs from "fs";
-import { executeAndSquashWarnings, extensionConstructorArgs, getEngineFile } from "./utils";
+import { executeAndSquashWarnings, extensionConstructorArgs, getEngineFile, getSpriteFile } from "./utils";
 import { BlockRunner } from "./BlockRunner";
 import testable from "./mixins/testable";
 import imageMock from "./mocks/image";
@@ -14,6 +14,7 @@ export { describe, expect, test, imageMock };
 
 export const testID = "extensionUnderTest";
 export const testName = "Extension Under Test";
+export const testTargetID = "targetUnderTest";
 
 type TestDetails<T extends ExtensionInstance, Key extends BlockKey<T>> = {
   Extension: NonAbstractConstructor<ExtensionInstance>,
@@ -27,7 +28,7 @@ async function mockOpenUI<T extends ExtensionInstance>({ component }: Parameters
   const fileName = component.endsWith(".svelte") ? component : `${component}.svelte`;
   const pathToComponent = fs.existsSync(path.join(directory, fileName))
     ? path.join(directory, fileName)
-    : glob.sync(path.join(directory, "**", fileName))[0];
+    : globSync(path.join(directory, "**", fileName))[0];
   const { forTest } = runtime;
   const { extension } = forTest;
   const ignoreWarnings = ["created with unknown prop"];
@@ -39,10 +40,22 @@ async function mockOpenUI<T extends ExtensionInstance>({ component }: Parameters
 const mockRuntime = <T extends ExtensionInstance>(details: TestDetails<T, any>): RuntimeForTest<T> => {
   const runtime = jest.createMockFromModule(getEngineFile("runtime")) as any as RuntimeForTest<T>;
 
+  // Blocks routinely read `util.target` (e.g. to key per-sprite state), so stand up a single
+  // stub target. RenderedTarget is mocked rather than Target so that the extra methods
+  // rendered targets carry (addCostume, setCostume, ...) are present too.
+  const RenderedTargetMock = jest.createMockFromModule(getSpriteFile("rendered-target")) as any;
+  const target = new RenderedTargetMock();
+  target.id = testTargetID;
+
   runtime.forTest = {
     UIPromise: undefined,
     extension: undefined,
+    target,
   };
+
+  runtime.targets = [target];
+  runtime.getEditingTarget = () => target;
+  runtime.getTargetForStage = () => target;
 
   // runtime can be built up over time
   runtime[openUIEvent] = mockOpenUI.bind({ ...details, runtime });
@@ -150,7 +163,7 @@ export const createTestSuite = <T extends ExtensionInstance>(
       const blockKey = key as any as BlockKey<T>;
       type Case = TestCaseEntry<T, typeof blockKey>;
 
-      const asSingleOrFunc = unitTests[blockKey] as unknown as Case;
+      const asSingleOrFunc = unitTests[key] as unknown as Case;
       const asArray = unitTests[key] as Array<Case>;
       const args: TestDetails<T, typeof blockKey> = { Extension, key: blockKey, directory, testHelper };
 

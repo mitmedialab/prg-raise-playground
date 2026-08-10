@@ -10,21 +10,18 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@jest/globals": "^29.3.1",
+    "@babel/core": "^7.24.5",
+    "@babel/preset-env": "^7.24.5",
+    "@jest/globals": "^29.7.0",
+    "babel-jest": "^29.7.0",
     "@testing-library/svelte": "^3.2.2",
     "@types/jest": "^29.2.4",
-    "jest": "^29.3.1",
-    "jest-environment-jsdom": "^29.3.1",
+    "glob": "^10.3.10",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "svelte": "^4.2.7",
     "svelte-jester": "^2.3.2",
-    "svelte-preprocess": "^5.0.0",
-    "ts-jest": "^29.0.3"
-  },
-  "overrides": {
-    "svelte-preprocess": {
-      "typescript": "latest"
-    },
-    "ts-jest": {
-      "typescript": "latest"
-    }
+    "svelte-preprocess": "^5.1.4",
+    "ts-jest": "^29.1.3"
   }
 }

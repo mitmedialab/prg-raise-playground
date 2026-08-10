@@ -1,0 +1,37 @@
+{
+  "customizations": {
+    "desolate": {
+      "allowPrivileged": true
+    },
+    "vscode": {
+      "extensions": [
+        "anthropic.claude-code",
+        "ms-azuretools.vscode-containers",
+        "ms-vscode.vscode-typescript-next",
+        "esbenp.prettier-vscode"
+      ],
+      "settings": {
+        "[javascript]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[markdown]": {
+          "editor.defaultFormatter": null
+        },
+        "[typescript]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "editor.formatOnSave": true,
+        "editor.tabSize": 2
+      }
+    }
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:4": {},
+    "ghcr.io/devcontainers/features/node:latest": {
+      "version": "24"
+    },
+    "ghcr.io/guiyomh/features/vim:0": {}
+  },
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "postCreateCommand": "bash -c 'if [ -f \"./install.sh\" ]; then echo \"Found install.sh, executing...\" && bash ./install.sh && echo \"install.sh completed successfully\" || exit 1; else echo \"No install.sh found at project root, skipping\"; fi' && git config core.editor '/usr/bin/vim' && git config pull.rebase false && sudo curl -fsSL https://gist.githubusercontent.com/pmalacho-mit/d64caa8e16b0b0fdd5e58cc37a0ce242/raw/8f0f620d4a65f6f3d930ea14e7c2fdf382ef1bf1/codeblockify.sh -o /usr/local/bin/codeblockify && sudo chmod +x /usr/local/bin/codeblockify && curl -fsSL https://raw.githubusercontent.com/pmalacho-mit/devcontainers/refs/heads/main/src/difftastic/install.sh | sudo install -m 0755 /dev/stdin /usr/local/bin/difftastic && git config diff.external difftastic"
+}

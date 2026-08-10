@@ -14,6 +14,7 @@
     "add:test": "pnpm ts:node:extensions ./extensions/scripts/factories/test.ts",
     "add:package": "pnpm ts:node:extensions ./extensions/scripts/factories/package.ts",
     "transpile:vm": "pnpm ts:node:extensions ./extensions/scripts/transpileVm.ts",
+    "transpile:globals": "pnpm ts:node:extensions ./extensions/scripts/transpileGlobals.ts",
     "test:extensions": "pnpm --filter extensions test",
     "document:extensions": "pnpm --filter extensions document",
     "edocument": "pnpm document:extensions",
@@ -26,7 +27,7 @@
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.1.1",
     "tslib": "^2.4.1",
-    "typescript": "latest",
+    "typescript": "5.4.5",
     "yargs": "^17.7.2"
   },
   "overrides": {
