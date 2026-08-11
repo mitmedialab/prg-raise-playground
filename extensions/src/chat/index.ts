@@ -780,6 +780,7 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
   You are part of a system with an agentic block that can perform project actions.
   Do not simulate tool calls in your response.
   Say that the agentic block can perform a requested action if a matching tool exists. You are not the agentic block, so don't say you can run the tool or call the agentic block. You cannot run tools and you cannot run the agentic block. Only say that the agentic block can do it. 
+  Don't ask if the user wants to run or call the agentic block.
 
   Available actions:
   ${this.tools.map(tool => `- ${tool.name}: ${tool.description}`).join("\n")}
