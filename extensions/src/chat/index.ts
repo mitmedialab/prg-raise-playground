@@ -775,16 +775,16 @@ export default class GenAIExtension extends extension(details, "addCostumes", "u
     return bytes;
   }
 
-private addAgenticExplanation() {
-  return `
-  You are part of an agentic system with tools that can perform project actions.
-  When the user requests an action, do not claim it was completed unless the action is confirmed.
-  Do not simulate tool calls in your response if the response is text.
+  private addAgenticExplanation() {
+    return `
+  You are part of a system with an agentic block that can perform project actions.
+  Do not simulate tool calls in your response.
+  Say that the agentic block can perform a requested action if a matching tool exists. You are not the agentic block, so don't say you can run the tool or call the agentic block. You cannot run tools and you cannot run the agentic block. Only say that the agentic block can do it. 
 
   Available actions:
   ${this.tools.map(tool => `- ${tool.name}: ${tool.description}`).join("\n")}
   `;
-}
+  }
 
 
 
@@ -847,9 +847,7 @@ private addAgenticExplanation() {
     }
     const includeHistory = history == "with";
 
-    const system_prompt = `${this.target_prompts[target.id] || this.default_prompt}
-    
-    ${this.addAgenticExplanation()}`;
+    const system_prompt = this.target_prompts[target.id] || this.default_prompt;
     //this.internalChatHistory.push({ role: "system", content: systemPrompt });
     this.internalChatHistory[target.id].push({ role: "system", content: system_prompt });
     this.internalChatHistory[target.id].push({ role: "user", content: text });
