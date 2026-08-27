@@ -1,4 +1,4 @@
-import { ArgumentType, BlockType } from "./enums";
+import { ArgumentType, BlockType, TargetType } from "./enums";
 import { ValueOf } from "./utils";
 
 // Type definitions for scratch-vm (extension environment) 3.0
@@ -128,6 +128,9 @@ export interface ExtensionBlockMetadata {
 
   /** For flow control blocks, the number of branches/substacks for this block. */
   branchCount?: number | undefined;
+
+  /** The kinds of target (sprite / stage) this block should be shown for. If omitted, the block is shown for all targets. */
+  filter?: ValueOf<typeof TargetType>[] | undefined;
 
   /** Map of argument placeholder to metadata about each arg. */
   arguments?: Record<string, ExtensionArgumentMetadata> | undefined;

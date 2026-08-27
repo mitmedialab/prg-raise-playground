@@ -109,7 +109,7 @@ export default function (Ctor: CustomizableExtensionConstructor) {
         ? typesafeCall(definition, this, this) as BlockMetadata<BlockOperation>
         : definition as BlockMetadata<BlockOperation>;
 
-      const { type, text } = block;
+      const { type, text, filter } = block;
 
       const args = extractArgs(block);
 
@@ -119,6 +119,10 @@ export default function (Ctor: CustomizableExtensionConstructor) {
       const argumentsInfo = convertToArgumentInfo(opcode, args, menus);
 
       const info: ExtensionBlockMetadata = { opcode, text: displayText, blockType: type, arguments: argumentsInfo };
+
+      // Only forward `filter` when the block defines it, so that blocks without one
+      // keep scratch-vm's default behavior of being displayed for every target.
+      if (filter) info.filter = [...filter];
 
       if (type === BlockType.Button) {
         const buttonID = getButtonID(id, opcode);

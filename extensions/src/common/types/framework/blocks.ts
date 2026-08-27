@@ -1,6 +1,6 @@
 import type BlockUtility from "$scratch-vm/engine/block-utility";
 import { BaseGenericExtension } from ".";
-import { BlockType } from "../enums";
+import { BlockType, TargetType } from "../enums";
 import { NonEmptyArray, ValueOf } from "../utils";
 import { ParamsAndUtility, ToArguments } from "./arguments";
 
@@ -10,7 +10,7 @@ export type ButtonBlock = () => InternalButtonKey;
 export type BlockMetadata<
   Fn extends BlockOperation,
   TParameters extends any[] = Parameters<Fn> extends [...infer R, BlockUtility] ? R : Parameters<Fn>
-> = Type<ReturnType<Fn>> & Text<TParameters> & Arguments<TParameters>;
+> = Type<ReturnType<Fn>> & Text<TParameters> & Arguments<TParameters> & Filter;
 
 export type Block<TExt extends BaseGenericExtension, TOp extends BlockOperation> = BlockMetadata<TOp> & Operation<TExt, TOp>;
 
@@ -62,6 +62,25 @@ type Type<Return> = {
   : Return extends Promise<infer Awaited>
   ? Type<Awaited>["type"]
   : typeof BlockType.Reporter | typeof BlockType.Event;
+}
+
+type Filter = {
+  /**
+   * @example filter: [TargetType.Sprite]
+   * @example filter: [TargetType.Stage]
+   * @example filter: [TargetType.Sprite, TargetType.Stage] // equivalent to omitting the field
+   * @summary Restricts which kinds of target (sprite or stage) this block appears for.
+   * @description By default, a block is displayed in the palette no matter which target
+   * (sprite or the stage) is currently being edited.
+   *
+   * Specifying this field limits the block to only the listed target types, which is useful
+   * for blocks that are meaningless outside of one of them
+   * (for example, a block that moves a sprite has no meaning while editing the stage).
+   *
+   * NOTE: This only affects which blocks are *offered* in the palette --
+   * it does not remove blocks that are already present in a project.
+   */
+  filter?: ValueOf<typeof TargetType>[];
 }
 
 type Text<TParameters extends any[]> = {
