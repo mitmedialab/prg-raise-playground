@@ -8,6 +8,7 @@ import tmPose from '@teachablemachine/pose';
 import tmImage from '@teachablemachine/image';
 import * as speechCommands from '@tensorflow-models/speech-commands';
 import JSZip from 'jszip';
+import { Conversation } from "./Conversation";
 import type { BLEDeviceWithUartService } from "./ble";
 
 const details: ExtensionMenuDisplayDetails = {
@@ -123,6 +124,11 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     env.runtime.on("TARGETS_UPDATE", async () => {
       await this.setDictionaries();
     })
+
+    // Study test: green flag -> Doodlebot says hello with a Tega face reaction
+    env.runtime.on("PROJECT_START", () => this.onGreenFlag());
+    // Study test: glance at the screen while a block is dragged, comment on the drop
+    this.watchBlockDrags();
 
     await this.setDictionaries();
 
@@ -249,6 +255,166 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     return (this.soundDictionary && this.soundDictionary[id]) ? Object.keys(this.soundDictionary[id]) : [];
   }
 
+  /** Green flag: play a Tega animation on the r1d1v2 face and say hello.
+   * `(d,tega,<ANIM>)` is handled by r1d1v2's playground_audio.py on the robot. */
+  private async onGreenFlag() {
+    if (!this.connected) return;
+    try {
+      this.doodlebot?.sendWebsocketCommand(command.display, "tega", "SILENT_EXCITED");
+    } catch (error) {
+      console.log("green flag: face command failed", error);
+    }
+    await this.speakText("Hello!");
+  }
+
+  // ---- Study test: block dragging -> Doodlebot watches the screen ----
+  // Doodlebot's home base is to the right of the laptop. The first drag of a
+  // burst: a small spin toward the screen, eyes up-left, a little "o". He
+  // keeps watching through a run of drags; SETTLE_MS after the last drop he
+  // does the exact inverse spin (back to his home heading), recenters, and
+  // sometimes makes one comment if the burst added blocks (removing or
+  // rearranging stays silent; see COMMENT_CHANCE). Adds/removes are still
+  // tallied per burst and logged. Scratch exposes no drag-start event,
+  // so drags are detected from pointer events on blocks (palette or
+  // workspace); add vs remove comes from the editing target's block count.
+  static readonly LOOK_DEGREES = 15; // spin-block convention: + = turn right
+  static readonly SETTLE_MS = 3000; // quiet time after the last drop before he turns back
+  static readonly COMMENT_COOLDOWN_MS = 30000; // minimum gap between spoken comments
+  static readonly DROP_SETTLE_MS = 150; // let Blockly's queued events reach the VM
+  // Face gaze targets for r1d1v2's look-at layer (x = left/right; +x = the
+  // robot's left, verified on meringue 2026-11-12; y = up/down, default 30).
+  // Screen glance: left and a little up (diagonal toward the laptop screen).
+  static readonly GAZE_SCREEN = [60, 60, 100];
+  static readonly GAZE_CENTER = [0, 30, 100]; // the face's default straight-ahead
+  // A small "o" while he watches: the AO_AW lip-sync shape at 60% strength
+  // (1 = the full shape). Released on drop, before he speaks.
+  static readonly MOUTH_OOH: (string | number)[] = ["AO_AW", 0.6];
+  static readonly GAZE_LAG_MS = 150; // eyes start this long after the body turn starts
+  static readonly DRAG_THRESHOLD_PX = 10; // Blockly's flyout drag radius
+  // Spoken comments are occasional: only after a burst that ADDED blocks
+  // (removing/rearranging stays silent), only COMMENT_CHANCE of the time,
+  // and never within COMMENT_COOLDOWN_MS of the last one.
+  static readonly ADDED_LINES = ["Ooh, nice!", "Got it!", "Ooh, what's that one do?", "Cool block!"];
+  static readonly COMMENT_CHANCE = 0.3;
+  private motionChain: Promise<unknown> = Promise.resolve();
+  private looking = false; // body turned toward the screen
+  private dragging = false;
+  private settleTimer: ReturnType<typeof setTimeout> | null = null;
+  private burst = { added: 0, removed: 0, moved: 0 };
+  private lastCommentAt = -Infinity;
+
+  /** Blocks in the sprite being edited (shadow inputs included; only the
+   * before/after difference matters). */
+  private blockCount(): number {
+    const blocks = (this.runtime as any)?._editingTarget?.blocks?._blocks;
+    return blocks ? Object.keys(blocks).length : 0;
+  }
+
+  private watchBlockDrags() {
+    let press: { x: number, y: number, count: number } | null = null;
+    let dragging = false;
+    document.addEventListener("pointerdown", (event) => {
+      const target = event.target as Element | null;
+      if (event.button !== 0 || !target?.closest?.("g.blocklyDraggable")) return;
+      // count BEFORE the drag: a palette drag creates its block at drag start
+      press = { x: event.clientX, y: event.clientY, count: this.blockCount() };
+    }, true);
+    document.addEventListener("pointermove", (event) => {
+      if (!press || dragging) return;
+      const moved = Math.hypot(event.clientX - press.x, event.clientY - press.y);
+      if (moved < DoodlebotBlocks.DRAG_THRESHOLD_PX) return;
+      dragging = true;
+      this.onBlockDragStart();
+    }, true);
+    const release = () => {
+      if (dragging) this.onBlockDrop(press!.count);
+      press = null;
+      dragging = false;
+    };
+    document.addEventListener("pointerup", release, true);
+    document.addEventListener("pointercancel", release, true);
+  }
+
+  /** Motions run strictly in order, so every glance is undone by its return. */
+  private queueMotion(step: () => Promise<unknown>) {
+    this.motionChain = this.motionChain
+      .then(step)
+      .catch((error) => console.log("drag glance: motion failed", error));
+  }
+
+  /** Same convention as the spin block: spin(+d) turns right. */
+  private spinBy(degrees: number) {
+    return this.doodlebot.motorCommand("arc", 0, -degrees);
+  }
+
+  /** Send an r1d1v2 face command, e.g. ("look", x, y, z) or ("mouth", "AO_AW", 0.6);
+   * `(d,<what>,...)` is handled by playground_audio.py on the robot. */
+  private face(...args: (string | number)[]) {
+    try {
+      this.doodlebot?.sendWebsocketCommand(command.display, ...args);
+    } catch (error) {
+      console.log("drag glance: face command failed", args, error);
+    }
+  }
+
+  /** Spin, and start the gaze (+ mouth) shortly after the body starts moving
+   * (not after it finishes — waiting for the Feather's done report felt
+   * sluggish). Resolves once the spin is done, so the next motion waits. */
+  private async turnThenLook(degrees: number, target: number[], mouth: (string | number)[]) {
+    const spin = this.spinBy(degrees);
+    await new Promise((resolve) => setTimeout(resolve, DoodlebotBlocks.GAZE_LAG_MS));
+    this.face("look", ...target);
+    this.face("mouth", ...mouth);
+    await spin;
+  }
+
+  // Body leads, eyes (and a little "o") follow. Later drags in the same burst
+  // just keep him watching.
+  private onBlockDragStart() {
+    this.dragging = true;
+    if (this.settleTimer) clearTimeout(this.settleTimer);
+    this.settleTimer = null;
+    if (!this.connected || this.looking) return;
+    this.looking = true;
+    this.queueMotion(() => this.turnThenLook(
+      DoodlebotBlocks.LOOK_DEGREES, DoodlebotBlocks.GAZE_SCREEN, DoodlebotBlocks.MOUTH_OOH));
+  }
+
+  private onBlockDrop(countBefore: number) {
+    this.dragging = false;
+    // Blockly fires its create/delete events asynchronously; classify after
+    setTimeout(() => {
+      const delta = this.blockCount() - countBefore;
+      if (delta > 0) this.burst.added++;
+      else if (delta < 0) this.burst.removed++;
+      else this.burst.moved++; // rearranged, or dropped back on the palette
+      console.log(`block drop: ${delta > 0 ? "added" : delta < 0 ? "removed" : "moved"}`, { ...this.burst });
+      if (this.dragging) return; // a new drag already started
+      if (this.settleTimer) clearTimeout(this.settleTimer);
+      this.settleTimer = setTimeout(() => this.endBurst(), DoodlebotBlocks.SETTLE_MS);
+    }, DoodlebotBlocks.DROP_SETTLE_MS);
+  }
+
+  /** The burst is over: turn back home, recenter, and comment once. */
+  private endBurst() {
+    this.settleTimer = null;
+    if (this.dragging) return;
+    const { added } = this.burst;
+    this.burst = { added: 0, removed: 0, moved: 0 };
+    if (!this.looking) return;
+    this.looking = false;
+    this.queueMotion(() => this.turnThenLook(
+      -DoodlebotBlocks.LOOK_DEGREES, DoodlebotBlocks.GAZE_CENTER, ["none"]));
+
+    const now = Date.now();
+    if (!added) return; // removing or rearranging stays silent
+    if (now - this.lastCommentAt < DoodlebotBlocks.COMMENT_COOLDOWN_MS) return;
+    if (Math.random() >= DoodlebotBlocks.COMMENT_CHANCE) return;
+    this.lastCommentAt = now;
+    const lines = DoodlebotBlocks.ADDED_LINES;
+    this.speakText(lines[Math.floor(Math.random() * lines.length)]);
+  }
+
   async setDoodlebot(topLevelDomain: string, bluetooth: BLEDeviceWithUartService) {
     this.doodlebot.topLevelDomain.resolve(topLevelDomain);
     this.doodlebot.bleDevice.resolve(bluetooth);
@@ -291,11 +457,23 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     await this.doodlebot.display("happy");
   }
 
-  async setIndicator(status: "connected" | "disconnected") {
-    if (this.indicator) (await this.indicator)?.close();
-    this.indicator = status == "connected"
-      ? this.indicate({ position: "category", msg: "Connected to robot", type: "success", retry: true })
-      : this.indicate({ position: "category", msg: "Not connected to robot", type: "warning", retry: true });
+  private indicatorChain: Promise<void> = Promise.resolve();
+
+  // Calls run one at a time: overlapping calls (connect + closing the Connect
+  // dialog) used to close the same indicator twice -> removeChild error.
+  setIndicator(status: "connected" | "disconnected") {
+    this.indicatorChain = this.indicatorChain.then(async () => {
+      try {
+        if (this.indicator) (await this.indicator)?.close();
+      } catch (error) {
+        console.log("indicator already closed", error);
+      }
+      this.indicator = status == "connected"
+        ? this.indicate({ position: "category", msg: "Connected to robot", type: "success", retry: true })
+        : this.indicate({ position: "category", msg: "Not connected to robot", type: "warning", retry: true });
+      await this.indicator;
+    });
+    return this.indicatorChain;
   }
 
   requestBluetooth(callback: (bluetooth: Bluetooth) => any) {
@@ -363,6 +541,81 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   @buttonBlock("Connect Robot")
   connect() {
     this.openUI("Connect");
+  }
+
+  // ---- Study prototype: turn-based voice conversation (see Conversation.ts) ----
+  private conversation = new Conversation({
+    face: (...args) => this.face(...args),
+    speak: (text, onSent) => this.speakText(text, false, onSent),
+    status: async (msg) => {
+      const indicator = await this.indicate({ position: "category", msg, type: "warning" });
+      return () => { try { indicator.close(); } catch { /* already gone */ } };
+    },
+    respond: (heard) => this.askBrain(heard),
+  });
+
+  // The study brain: study-server/server.py on this laptop holds the OpenAI key.
+  static readonly BRAIN_URL = "http://localhost:8787/respond";
+  private chatHistory: { role: "child" | "robot", text: string }[] = [];
+
+  // Persona (edited in Persona.svelte; saved in this browser's localStorage)
+  static readonly PERSONA_KEY = "doodlebot.persona";
+  static readonly DEFAULT_PERSONA =
+    "You are Doodlebot, a small, friendly drawing robot talking with a child " +
+    "(about 8-11 years old) who is programming you with blocks to make a drawing. " +
+    "You are curious, warm, and a little playful.";
+
+  defaultPersona() { return DoodlebotBlocks.DEFAULT_PERSONA; }
+
+  getPersona(): string {
+    try {
+      return localStorage.getItem(DoodlebotBlocks.PERSONA_KEY) || DoodlebotBlocks.DEFAULT_PERSONA;
+    } catch {
+      return DoodlebotBlocks.DEFAULT_PERSONA;
+    }
+  }
+
+  setPersona(text: string) {
+    try {
+      localStorage.setItem(DoodlebotBlocks.PERSONA_KEY, text.trim() || DoodlebotBlocks.DEFAULT_PERSONA);
+    } catch (error) {
+      console.log("persona not saved (storage unavailable)", error);
+    }
+  }
+
+  resetConversation() { this.chatHistory = []; }
+
+  @buttonBlock("🧠 Doodlebot persona")
+  openPersona() {
+    this.openUI("Persona", "Doodlebot persona");
+  }
+
+  private async askBrain(heard: string) {
+    try {
+      const response = await fetch(DoodlebotBlocks.BRAIN_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ heard, history: this.chatHistory, persona: this.getPersona() }),
+      });
+      const reply = await response.json();
+      if (!response.ok) throw new Error(reply.error ?? `HTTP ${response.status}`);
+      console.log(`brain (${reply.model}, ${reply.ms}ms): "${reply.say}" [${reply.motion}]`);
+      if (heard) this.chatHistory.push({ role: "child", text: heard });
+      this.chatHistory.push({ role: "robot", text: reply.say });
+      return { say: reply.say as string, motion: reply.motion as string };
+    } catch (error) {
+      console.error("brain unreachable — is study-server/server.py running?", error);
+      return { say: "Hmm, my brain isn't connected right now.", motion: "SILENT_PUZZLED" };
+    }
+  }
+
+  @buttonBlock("🎤 Speak to Doodlebot")
+  speakToDoodlebot() {
+    if (!this.connected) {
+      this.indicateFor({ position: "category", msg: "Connect to Doodlebot first", type: "warning" }, 3);
+      return;
+    }
+    this.conversation.startTurn();
   }
 
   // @block({
@@ -455,32 +708,32 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   //   await this.doodlebot?.display(display);
   // }
 
-  @block({
-    type: "command",
-    text: (text: string) => `display text ${text}`,
-    arg: { type: "string", defaultValue: "hello world!" }
-  })
-  async setText(text: string) {
-    await this.doodlebot?.displayText(text);
-  }
+  // @block({
+  //   type: "command",
+  //   text: (text: string) => `display text ${text}`,
+  //   arg: { type: "string", defaultValue: "hello world!" }
+  // })
+  // async setText(text: string) {
+  //   await this.doodlebot?.displayText(text);
+  // }
 
-  @block({
-    type: "command",
-    text: (size) => `set font size to ${size}`,
-    arg: { type: "string", options: ["small", "medium", "large"], defaultValue: "medium" },
+  // @block({
+  //   type: "command",
+  //   text: (size) => `set font size to ${size}`,
+  //   arg: { type: "string", options: ["small", "medium", "large"], defaultValue: "medium" },
 
-  })
-  async setFont(size: "small" | "medium" | "large") {
-    await this.doodlebot?.setFont(size);
-  }
+  // })
+  // async setFont(size: "small" | "medium" | "large") {
+  //   await this.doodlebot?.setFont(size);
+  // }
 
-  @block({
-    type: "command",
-    text: "clear display"
-  })
-  async clearDisplay() {
-    await this.doodlebot?.display("clear");
-  }
+  // @block({
+  //   type: "command",
+  //   text: "clear display"
+  // })
+  // async clearDisplay() {
+  //   await this.doodlebot?.display("clear");
+  // } 
 
   @block({
     type: "command",
@@ -680,23 +933,23 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     await this.doodlebot?.disableSensor(sensor);
   }
 
-  @block({
-    type: "command",
-    text: (direction) => `move eyes from center to ${direction}`,
-    arg: { type: "string", options: ["left", "right", "up", "down"] },
-  })
-  async moveEyes1(direction: string) {
-    await this.doodlebot.moveEyes("center", direction);
-  }
+  // @block({
+  //   type: "command",
+  //   text: (direction) => `move eyes from center to ${direction}`,
+  //   arg: { type: "string", options: ["left", "right", "up", "down"] },
+  // })
+  // async moveEyes1(direction: string) {
+  //   await this.doodlebot.moveEyes("center", direction);
+  // }
 
-  @block({
-    type: "command",
-    text: (direction) => `move eyes from ${direction} to center`,
-    arg: { type: "string", options: ["left", "right", "up", "down"] },
-  })
-  async moveEyes2(direction: string) {
-    await this.doodlebot.moveEyes(direction, "center");
-  }
+  // @block({
+  //   type: "command",
+  //   text: (direction) => `move eyes from ${direction} to center`,
+  //   arg: { type: "string", options: ["left", "right", "up", "down"] },
+  // })
+  // async moveEyes2(direction: string) {
+  //   await this.doodlebot.moveEyes(direction, "center");
+  // }
 
   @block({
     type: "command",
@@ -727,66 +980,66 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   }
 
-  @block((self) => ({
-    type: "command",
-    text: (type: DisplayKey | string) => `display ${type}`,
-    arg: {
-      type: "string", options: () => {
-        self.setDictionaries();
-        return displayKeys.filter(key => (key !== "clear" && key !== "font")).concat(imageFiles).concat(
-          (self.costumeDictionary && self.costumeDictionary[self.runtime._editingTarget.id]) ? Object.keys(self.costumeDictionary[self.runtime._editingTarget.id]) : [] as any[]
-        ).filter((item: string) => item != "costume9999.png")
-      }, defaultValue: "happy"
-    }
-  }))
-  async setDisplay(display: DisplayKey | string) {
-    let costumeNames = Object.keys(this.costumeDictionary[this.runtime._editingTarget.id]);
-    if (costumeNames.includes(display)) {
-      await this.uploadFile("image", this.costumeDictionary[this.runtime._editingTarget.id][display]);
-      await this.setArrays();
-      await this.doodlebot.displayFile("costume9999.png");
-    } else if (imageFiles.includes(display)) {
-      await this.doodlebot?.displayFile(display);
-    } else {
-      await this.doodlebot?.display(display as DisplayKey);
-    }
-  }
+  // @block((self) => ({
+  //   type: "command",
+  //   text: (type: DisplayKey | string) => `display ${type}`,
+  //   arg: {
+  //     type: "string", options: () => {
+  //       self.setDictionaries();
+  //       return displayKeys.filter(key => (key !== "clear" && key !== "font")).concat(imageFiles).concat(
+  //         (self.costumeDictionary && self.costumeDictionary[self.runtime._editingTarget.id]) ? Object.keys(self.costumeDictionary[self.runtime._editingTarget.id]) : [] as any[]
+  //       ).filter((item: string) => item != "costume9999.png")
+  //     }, defaultValue: "happy"
+  //   }
+  // }))
+  // async setDisplay(display: DisplayKey | string) {
+  //   let costumeNames = Object.keys(this.costumeDictionary[this.runtime._editingTarget.id]);
+  //   if (costumeNames.includes(display)) {
+  //     await this.uploadFile("image", this.costumeDictionary[this.runtime._editingTarget.id][display]);
+  //     await this.setArrays();
+  //     await this.doodlebot.displayFile("costume9999.png");
+  //   } else if (imageFiles.includes(display)) {
+  //     await this.doodlebot?.displayFile(display);
+  //   } else {
+  //     await this.doodlebot?.display(display as DisplayKey);
+  //   }
+  // }
 
-  @block((self) => ({
-    type: "command",
-    text: (type: DisplayKey | string, seconds: number) => `display ${type} for ${seconds} seconds`,
-    args: [{
-      type: "string", options: () => {
-        self.setDictionaries();
-        return displayKeys.filter(key => key !== "clear").concat(imageFiles).concat(
-          (self.costumeDictionary && self.costumeDictionary[self.runtime._editingTarget.id]) ? Object.keys(self.costumeDictionary[self.runtime._editingTarget.id]) : [] as any[]
-        ).filter((item: string) => item != "costume9999.png")
-      }, defaultValue: "happy"
-    }, { type: "string", defaultValue: 1 }]
-  }))
-  async setDisplayForSeconds(display: DisplayKey | string, seconds: number) {
-    const lastDisplayedKey = this.doodlebot.getLastDisplayedKey();
-    const lastDisplayedType = this.doodlebot.getLastDisplayedType();
-    let costumeNames = Object.keys(this.costumeDictionary[this.runtime._editingTarget.id]);
-    if (costumeNames.includes(display)) {
-      await this.uploadFile("image", this.costumeDictionary[this.runtime._editingTarget.id][display]);
-      await this.setArrays();
-      await this.doodlebot.displayFile("costume9999.png");
-      await new Promise(resolve => setTimeout(resolve, seconds * 1000));
-    } else if (imageFiles.includes(display)) {
-      await this.doodlebot?.displayFile(display);
-      await new Promise(resolve => setTimeout(resolve, seconds * 1000));
-    } else {
-      await this.doodlebot?.display(display as DisplayKey);
-      await new Promise(resolve => setTimeout(resolve, seconds * 1000));
-    }
-    if (lastDisplayedType == "text") {
-      await this.doodlebot.displayText(lastDisplayedKey);
-    } else {
-      await this.doodlebot.display(lastDisplayedKey);
-    }
+  // @block((self) => ({
+  //   type: "command",
+  //   text: (type: DisplayKey | string, seconds: number) => `display ${type} for ${seconds} seconds`,
+  //   args: [{
+  //     type: "string", options: () => {
+  //       self.setDictionaries();
+  //       return displayKeys.filter(key => key !== "clear").concat(imageFiles).concat(
+  //         (self.costumeDictionary && self.costumeDictionary[self.runtime._editingTarget.id]) ? Object.keys(self.costumeDictionary[self.runtime._editingTarget.id]) : [] as any[]
+  //       ).filter((item: string) => item != "costume9999.png")
+  //     }, defaultValue: "happy"
+  //   }, { type: "string", defaultValue: 1 }]
+  // }))
+  // async setDisplayForSeconds(display: DisplayKey | string, seconds: number) {
+  //   const lastDisplayedKey = this.doodlebot.getLastDisplayedKey();
+  //   const lastDisplayedType = this.doodlebot.getLastDisplayedType();
+  //   let costumeNames = Object.keys(this.costumeDictionary[this.runtime._editingTarget.id]);
+  //   if (costumeNames.includes(display)) {
+  //     await this.uploadFile("image", this.costumeDictionary[this.runtime._editingTarget.id][display]);
+  //     await this.setArrays();
+  //     await this.doodlebot.displayFile("costume9999.png");
+  //     await new Promise(resolve => setTimeout(resolve, seconds * 1000));
+  //   } else if (imageFiles.includes(display)) {
+  //     await this.doodlebot?.displayFile(display);
+  //     await new Promise(resolve => setTimeout(resolve, seconds * 1000));
+  //   } else {
+  //     await this.doodlebot?.display(display as DisplayKey);
+  //     await new Promise(resolve => setTimeout(resolve, seconds * 1000));
+  //   }
+  //   if (lastDisplayedType == "text") {
+  //     await this.doodlebot.displayText(lastDisplayedKey);
+  //   } else {
+  //     await this.doodlebot.display(lastDisplayedKey);
+  //   }
 
-  }
+  // }
 
   // @block({
   //   type: "command",
@@ -798,17 +1051,17 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   //   this.videoDrawable.setTransparency(transparency);
   // }
 
-  @block({
-    type: "command",
-    text: "display video",
-  })
-  async connectToVideo() {
-    this.videoDrawable ??= await this.createVideoStreamDrawable();
-    if (this.SOCIAL && Math.random() < this.socialness) {
-      await this.doodlebot?.display("happy");
-      await this.speakText("You can now see what I see on your screen!");
-    }
-  }
+  // @block({
+  //   type: "command",
+  //   text: "display video",
+  // })
+  // async connectToVideo() {
+  //   this.videoDrawable ??= await this.createVideoStreamDrawable();
+  //   if (this.SOCIAL && Math.random() < this.socialness) {
+  //     await this.doodlebot?.display("happy");
+  //     await this.speakText("You can now see what I see on your screen!");
+  //   }
+  // }
 
   // @block({
   //   type: "command",
@@ -1758,7 +2011,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     }
   }
 
-  private async speakText(text: string, showDisplay: boolean = false) {
+  private async speakText(text: string, showDisplay: boolean = false, onSent?: () => void) {
     try {
       // Display "speaking" while processing if showDisplay is true
       if (showDisplay) {
@@ -1793,6 +2046,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
       // Convert blob to Uint8Array and send to Doodlebot
       const array = await blob.arrayBuffer();
+      onSent?.();
       await this.doodlebot.sendAudioData(new Uint8Array(array));
       console.log("DATA SENT");
 

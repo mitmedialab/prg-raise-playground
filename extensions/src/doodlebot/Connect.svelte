@@ -68,7 +68,8 @@
   let showAdvanced = false;
 
   onDestroy(() => {
-    if (!connected)
+    // read the live flag: the local `connected` is a stale copy from mount
+    if (!extension.connected)
       try {
         extension.setIndicator("disconnected");
       } catch (e) {}
