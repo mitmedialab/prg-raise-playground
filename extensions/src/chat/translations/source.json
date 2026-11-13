@@ -1,0 +1,78 @@
+{
+  "chat.name": {
+    "message": "GenAI Extension",
+    "description": "Extension name shown in the extension library."
+  },
+  "chat.description": {
+    "message": "Use generative AI to listen, speak, and chat!",
+    "description": "Extension description shown in the extension library."
+  },
+  "chat.promptChatAPI.text": {
+    "message": "prompt {text} {history} history",
+    "description": "Text on a reporter block. Keep {text}, {history} unchanged; they are replaced by inputs and may be reordered to fit your language."
+  },
+  "chat.promptChatAPI.arg0.default": {
+    "message": "What is your favorite color?",
+    "description": "Default text in the \"text\" input of the block \"prompt {text} {history} history\"."
+  },
+  "chat.promptChatAPI.arg1.option.with": {
+    "message": "with",
+    "description": "Dropdown choice for \"history\" in the block \"prompt {text} {history} history\"."
+  },
+  "chat.promptChatAPI.arg1.option.without": {
+    "message": "without",
+    "description": "Dropdown choice for \"history\" in the block \"prompt {text} {history} history\"."
+  },
+  "chat.promptAgenticChatAPI.text": {
+    "message": "agentic prompt {text} {history} history",
+    "description": "Text on a command block. Keep {text}, {history} unchanged; they are replaced by inputs and may be reordered to fit your language."
+  },
+  "chat.promptAgenticChatAPI.arg0.default": {
+    "message": "What is your favorite color?",
+    "description": "Default text in the \"text\" input of the block \"agentic prompt {text} {history} history\"."
+  },
+  "chat.promptAgenticChatAPI.arg1.option.with": {
+    "message": "with",
+    "description": "Dropdown choice for \"history\" in the block \"agentic prompt {text} {history} history\"."
+  },
+  "chat.promptAgenticChatAPI.arg1.option.without": {
+    "message": "without",
+    "description": "Dropdown choice for \"history\" in the block \"agentic prompt {text} {history} history\"."
+  },
+  "chat.whenModelDetects.text": {
+    "message": "when I receive {toolName}",
+    "description": "Text on a hat block. Keep {toolName} unchanged; they are replaced by inputs and may be reordered to fit your language."
+  },
+  "chat.showTools.text": {
+    "message": "Edit tools",
+    "description": "Text on a button block."
+  },
+  "chat.showChatHistory.text": {
+    "message": "Show chat history",
+    "description": "Text on a button block."
+  },
+  "chat.promptDalleAPI.text": {
+    "message": "add costume from DallE with prompt {text}",
+    "description": "Text on a command block. Keep {text} unchanged; they are replaced by inputs and may be reordered to fit your language."
+  },
+  "chat.promptDalleAPI.arg0.default": {
+    "message": "A pretty cute little cow",
+    "description": "Default text in the \"text\" input of the block \"add costume from DallE with prompt {text}\"."
+  },
+  "chat.testRepeatAPI.text": {
+    "message": "listen for {seconds} seconds",
+    "description": "Text on a reporter block. Keep {seconds} unchanged; they are replaced by inputs and may be reordered to fit your language."
+  },
+  "chat.speak.text": {
+    "message": "say {text}",
+    "description": "Text on a command block. Keep {text} unchanged; they are replaced by inputs and may be reordered to fit your language."
+  },
+  "chat.speak.arg0.default": {
+    "message": "Hello!",
+    "description": "Default text in the \"text\" input of the block \"say {text}\"."
+  },
+  "chat.setVoiceAndPitch.text": {
+    "message": "set voice to {voice} and pitch to {pitch}",
+    "description": "Text on a command block. Keep {voice}, {pitch} unchanged; they are replaced by inputs and may be reordered to fit your language."
+  }
+}
