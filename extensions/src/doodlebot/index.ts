@@ -9,6 +9,8 @@ import tmImage from '@teachablemachine/image';
 import * as speechCommands from '@tensorflow-models/speech-commands';
 import JSZip from 'jszip';
 import { Conversation } from "./Conversation";
+import { Arbiter, type Resource } from "./Behaviors";
+import { Turtle, planScripts, render, describe, STAGE_W, STAGE_H } from "./DrawingSim";
 import type { BLEDeviceWithUartService } from "./ble";
 
 const details: ExtensionMenuDisplayDetails = {
@@ -129,6 +131,9 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     env.runtime.on("PROJECT_START", () => this.onGreenFlag());
     // Study test: glance at the screen while a block is dragged, comment on the drop
     this.watchBlockDrags();
+    // drawing simulator: keep the preview current; restore it if it was on
+    this.watchProgramForSim();
+    if (this.simVisible) setTimeout(() => this.redraw(), 1500);
 
     await this.setDictionaries();
 
@@ -281,6 +286,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   static readonly SETTLE_MS = 3000; // quiet time after the last drop before he turns back
   static readonly COMMENT_COOLDOWN_MS = 30000; // minimum gap between spoken comments
   static readonly DROP_SETTLE_MS = 150; // let Blockly's queued events reach the VM
+  static readonly MOTION_TIMEOUT_MS = 3000; // max wait for a glance turn's done report
   // Face gaze targets for r1d1v2's look-at layer (x = left/right; +x = the
   // robot's left, verified on meringue 2026-11-12; y = up/down, default 30).
   // Screen glance: left and a little up (diagonal toward the laptop screen).
@@ -297,8 +303,39 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   static readonly ADDED_LINES = ["Ooh, nice!", "Got it!", "Ooh, what's that one do?", "Cool block!"];
   static readonly COMMENT_CHANCE = 0.3;
   private motionChain: Promise<unknown> = Promise.resolve();
-  private looking = false; // body turned toward the screen
   private dragging = false;
+
+  // Subsumption arbiter (Behaviors.ts): layers claim body/gaze/mouth/ring;
+  // the winner per resource is sent to the robot, only on change.
+  private arbiter = new Arbiter(
+    { body: 0, gaze: DoodlebotBlocks.GAZE_CENTER, mouth: "none", ring: "off" },
+    (resource, value) => this.actuate(resource, value));
+  private gazeTimer: ReturnType<typeof setTimeout> | null = null;
+
+  private actuate(resource: Resource, value: unknown) {
+    if (!this.connected) return;
+    switch (resource) {
+      case "body": // a heading relative to home; turns run in order
+        if (value === "hold") break; // the child's program is driving the wheels
+        this.queueMotion(() => this.turnTo(value as number));
+        break;
+      case "gaze": // eyes follow just after the body starts moving
+        if (this.gazeTimer) clearTimeout(this.gazeTimer);
+        this.gazeTimer = setTimeout(() => this.face("look", ...(value as number[])), DoodlebotBlocks.GAZE_LAG_MS);
+        break;
+      case "mouth":
+        this.face("mouth", ...(Array.isArray(value) ? value : [value as string]));
+        break;
+      case "ring":
+        this.face("ring", value as string);
+        break;
+    }
+  }
+
+  private async turnTo(heading: number) {
+    const delta = heading - this.headingOffset();
+    if (Math.abs(delta) > 0.5) await this.spinBy(delta);
+  }
   private settleTimer: ReturnType<typeof setTimeout> | null = null;
   private burst = { added: 0, removed: 0, moved: 0 };
   private lastCommentAt = -Infinity;
@@ -342,9 +379,42 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       .catch((error) => console.log("drag glance: motion failed", error));
   }
 
-  /** Same convention as the spin block: spin(+d) turns right. */
-  private spinBy(degrees: number) {
-    return this.doodlebot.motorCommand("arc", 0, -degrees);
+  /** Same convention as the spin block: spin(+d) turns right. Tracks how far
+   * glances have turned him from home (persisted, so Recenter works after a
+   * reload) and never waits longer than MOTION_TIMEOUT_MS for the Feather's
+   * done report, so one lost report can't freeze the motion queue. */
+  private async spinBy(degrees: number) {
+    // social turns are temporary (always undone), so they don't move the
+    // simulator; squareUp() puts him back before the child's program draws
+    this.setHeadingOffset(this.headingOffset() + degrees);
+    const spin = this.doodlebot.motorCommand("arc", 0, -degrees);
+    const timedOut = await Promise.race([
+      spin.then(() => false),
+      new Promise<boolean>((resolve) => setTimeout(() => resolve(true), DoodlebotBlocks.MOTION_TIMEOUT_MS)),
+    ]);
+    if (timedOut) {
+      console.warn(`spin ${degrees}°: no done report after ${DoodlebotBlocks.MOTION_TIMEOUT_MS}ms; releasing the motor queue`);
+      this.doodlebot.releaseStuckMotor();
+    }
+  }
+
+  static readonly HEADING_KEY = "doodlebot.glanceHeadingOffset";
+  private headingOffset(): number {
+    try { return Number(localStorage.getItem(DoodlebotBlocks.HEADING_KEY)) || 0; } catch { return 0; }
+  }
+  private setHeadingOffset(degrees: number) {
+    try { localStorage.setItem(DoodlebotBlocks.HEADING_KEY, String(degrees)); } catch { /* storage unavailable */ }
+  }
+
+  @buttonBlock("↺ Recenter Doodlebot")
+  recenter() {
+    if (this.settleTimer) clearTimeout(this.settleTimer);
+    this.settleTimer = null;
+    this.burst = { added: 0, removed: 0, moved: 0 };
+    console.log(`recenter: undoing ${this.headingOffset()}° of glance turns`);
+    this.arbiter.release("attention");
+    this.queueMotion(() => this.turnTo(0)); // even if the arbiter thinks he's home
+    this.arbiter.resync(); // re-send gaze/mouth/ring
   }
 
   /** Send an r1d1v2 face command, e.g. ("look", x, y, z) or ("mouth", "AO_AW", 0.6);
@@ -357,27 +427,17 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     }
   }
 
-  /** Spin, and start the gaze (+ mouth) shortly after the body starts moving
-   * (not after it finishes — waiting for the Feather's done report felt
-   * sluggish). Resolves once the spin is done, so the next motion waits. */
-  private async turnThenLook(degrees: number, target: number[], mouth: (string | number)[]) {
-    const spin = this.spinBy(degrees);
-    await new Promise((resolve) => setTimeout(resolve, DoodlebotBlocks.GAZE_LAG_MS));
-    this.face("look", ...target);
-    this.face("mouth", ...mouth);
-    await spin;
-  }
-
-  // Body leads, eyes (and a little "o") follow. Later drags in the same burst
-  // just keep him watching.
+  // Attention layer: while blocks are being dragged he turns to the screen,
+  // eyes up-left, a little "o" — alongside whatever the conversation is doing
+  // (the arbiter gives attention the body+gaze, conversation the mouth+ring).
   private onBlockDragStart() {
     this.dragging = true;
     if (this.settleTimer) clearTimeout(this.settleTimer);
     this.settleTimer = null;
-    if (!this.connected || this.looking) return;
-    this.looking = true;
-    this.queueMotion(() => this.turnThenLook(
-      DoodlebotBlocks.LOOK_DEGREES, DoodlebotBlocks.GAZE_SCREEN, DoodlebotBlocks.MOUTH_OOH));
+    if (!this.connected) return;
+    this.arbiter.claim("attention", "body", DoodlebotBlocks.LOOK_DEGREES);
+    this.arbiter.claim("attention", "gaze", DoodlebotBlocks.GAZE_SCREEN);
+    this.arbiter.claim("attention", "mouth", DoodlebotBlocks.MOUTH_OOH);
   }
 
   private onBlockDrop(countBefore: number) {
@@ -401,13 +461,11 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     if (this.dragging) return;
     const { added } = this.burst;
     this.burst = { added: 0, removed: 0, moved: 0 };
-    if (!this.looking) return;
-    this.looking = false;
-    this.queueMotion(() => this.turnThenLook(
-      -DoodlebotBlocks.LOOK_DEGREES, DoodlebotBlocks.GAZE_CENTER, ["none"]));
+    this.arbiter.release("attention"); // body/gaze/mouth go back to whoever's next
 
     const now = Date.now();
     if (!added) return; // removing or rearranging stays silent
+    if (this.conversation.busy) return; // don't talk over a conversation
     if (now - this.lastCommentAt < DoodlebotBlocks.COMMENT_COOLDOWN_MS) return;
     if (Math.random() >= DoodlebotBlocks.COMMENT_CHANCE) return;
     this.lastCommentAt = now;
@@ -417,6 +475,9 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
   async setDoodlebot(topLevelDomain: string, bluetooth: BLEDeviceWithUartService) {
     this.doodlebot.topLevelDomain.resolve(topLevelDomain);
+    // e.g. meringue.direct.mitlivinglab.org -> "meringue" (the wake word name)
+    this.robotName = topLevelDomain.split(".")[0] || "doodlebot";
+    this.startSocialLayers();
     this.doodlebot.bleDevice.resolve(bluetooth);
 
     await this.setIndicator("connected");
@@ -546,12 +607,19 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   // ---- Study prototype: turn-based voice conversation (see Conversation.ts) ----
   private conversation = new Conversation({
     face: (...args) => this.face(...args),
+    express: (motion) => this.expressMotion(motion),
+    activity: () => this.cancelIdle(),
     speak: (text, onSent) => this.speakText(text, false, onSent),
+    hush: () => this.face("hush"),
+    interrupted: (spoken) => this.noteInterruption(spoken),
+    claim: (resource, value) => this.arbiter.claim("conversation", resource, value),
+    release: (...resources) => this.arbiter.release("conversation", ...resources),
     status: async (msg) => {
       const indicator = await this.indicate({ position: "category", msg, type: "warning" });
       return () => { try { indicator.close(); } catch { /* already gone */ } };
     },
     respond: (heard) => this.askBrain(heard),
+    robotName: () => this.robotName,
   });
 
   // The study brain: study-server/server.py on this laptop holds the OpenAI key.
@@ -583,7 +651,303 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     }
   }
 
+  // ---- Body gestures: short twists that undo themselves ----
+  // Doodlebot can't nod or tilt, so body language is a twist of the base.
+  // A gesture nets out to 0°, so his home heading is untouched. Never while
+  // the child's program drives the wheels.
+  // Gestures drive the wheels directly at GESTURE_SPEED (microsteps/s, ~3x
+  // the drawing speed): the firmware's turn command is a fixed, gentle speed,
+  // which made a headshake read as a slow "hmm". Geometry from cmdloop2's
+  // TMC429.ino: wheels 2.93 in from center, 0.055 in per step, 16 microsteps.
+  static readonly GESTURE_SPEED = 6000;
+  static readonly WHEELBASE_RADIUS_IN = 2.93;
+  static readonly MICROSTEP_IN = 0.055 / 16;
+  static readonly GESTURES: Record<string, number[]> = {
+    no: [12, -24, 24, -12], // a headshake
+    wiggle: [7, -14, 14, -7], // happy wiggle
+  };
+  static readonly WIGGLE_EYES_EXTRA_MS = 500; // eyes stay shut a beat after the twist
+  // Reply faces that get a matching body gesture
+  static readonly MOTION_GESTURES: Record<string, string> = {
+    SILENT_NO: "no", NO: "no", SLIGHTDISAPPROVEMENT1: "no",
+    SILENT_HAPPY_WIGGLE: "wiggle", HAPPY_WIGGLE: "wiggle", SILENT_EXCITED: "wiggle",
+  };
+
+  /** Social activity started: idle stops right now (claims dropped, eyes
+   * reopened, a wiggle in progress turns back and quits). */
+  private cancelIdle() {
+    this.idleEpoch++;
+    this.arbiter.release("idle");
+    if (this.idleWiggling) this.face("eyes", "open");
+  }
+
+  gesture(name: string, { idle = false } = {}) {
+    const steps = DoodlebotBlocks.GESTURES[name];
+    if (!steps || !this.connected) return;
+    // a happy wiggle is the whole face too: eyes shut, the happy-wiggle
+    // animation's tilt-wobble, then eyes open again after the twist
+    const happy = name === "wiggle";
+    const epoch = this.idleEpoch;
+    // an idle fidget yields the moment anything social starts
+    const cancelled = () => idle && (epoch !== this.idleEpoch || !this.quiet);
+    this.queueMotion(async () => {
+      if (this.arbiter.owner("body") === "program") return;
+      if (cancelled()) return; // waited in the queue; things got social meanwhile
+      if (happy) {
+        this.face("eyes", "closed");
+        this.face("tega", "SILENT_HAPPY_WIGGLE");
+        if (idle) this.idleWiggling = true;
+      }
+      let turned = 0;
+      try {
+        for (const degrees of steps) {
+          if (cancelled()) break;
+          await this.quickSpin(degrees);
+          turned += degrees;
+        }
+        if (turned) await this.quickSpin(-turned); // cut short: undo what's left
+        else if (happy && !cancelled()) await new Promise((resolve) => setTimeout(resolve, DoodlebotBlocks.WIGGLE_EYES_EXTRA_MS));
+      } finally {
+        if (happy) this.face("eyes", "open");
+        if (idle) this.idleWiggling = false;
+      }
+    });
+  }
+
+  /** A fast in-place twist (+ = right) on the raw wheel command. */
+  private async quickSpin(degrees: number) {
+    this.setHeadingOffset(this.headingOffset() + degrees);
+    const arc = 2 * Math.PI * DoodlebotBlocks.WHEELBASE_RADIUS_IN * Math.abs(degrees) / 360;
+    const microsteps = Math.round(arc / DoodlebotBlocks.MICROSTEP_IN);
+    const sign = Math.sign(degrees); // turning right: left wheel forward, right wheel back
+    const speed = DoodlebotBlocks.GESTURE_SPEED;
+    const move = this.doodlebot.motorCommand("steps",
+      { steps: sign * microsteps, stepsPerSecond: speed },
+      { steps: -sign * microsteps, stepsPerSecond: speed });
+    const timedOut = await Promise.race([
+      move.then(() => false),
+      new Promise<boolean>((resolve) => setTimeout(() => resolve(true), DoodlebotBlocks.MOTION_TIMEOUT_MS)),
+    ]);
+    if (timedOut) this.doodlebot.releaseStuckMotor();
+  }
+
+  /** A face animation plus, when it has one, its body gesture. */
+  private expressMotion(motion: string) {
+    const gesture = DoodlebotBlocks.MOTION_GESTURES[motion.toUpperCase()];
+    if (gesture !== "wiggle") this.face("tega", motion); // the wiggle plays its own face
+    if (gesture) this.gesture(gesture);
+  }
+
+  // ---- Idle layer: the lowest; he's never a statue ----
+  // Every IDLE_MIN..MAX ms, if nothing else wants his body or eyes (no
+  // conversation, no dragging, no program running), he does one small thing:
+  // a glance at the computer, eyes wandering side to side, or a wiggle.
+  // Anything higher-priority takes the body/eyes over instantly.
+  static readonly IDLE_MIN_MS = 8000;
+  static readonly IDLE_MAX_MS = 20000;
+  static readonly IDLE_GLANCE_DEG = 8; // a smaller turn than the drag glance
+  private idleTimer: ReturnType<typeof setTimeout> | null = null;
+  private speakingUntil = 0; // he's talking (any speech) until then
+  private idleEpoch = 0; // bumped by cancelIdle(); idle work from older epochs quits
+  private idleWiggling = false;
+  static readonly SPEECH_TAIL_MS = 800;
+
+  private scheduleIdle() {
+    if (this.idleTimer) clearTimeout(this.idleTimer);
+    const wait = DoodlebotBlocks.IDLE_MIN_MS + Math.random() * (DoodlebotBlocks.IDLE_MAX_MS - DoodlebotBlocks.IDLE_MIN_MS);
+    this.idleTimer = setTimeout(() => void this.idleAct().finally(() => this.scheduleIdle()), wait);
+  }
+
+  /** Nothing social is going on: not talking (any speech), no conversation,
+   * no dragging. (Body/gaze ownership is checked separately: idle's own
+   * claims shouldn't count against it.) */
+  private get quiet() {
+    return this.connected && !this.dragging && !this.conversation.busy
+      && performance.now() > this.speakingUntil;
+  }
+
+  private get idleFree() {
+    return this.quiet && this.arbiter.owner("body") === null && this.arbiter.owner("gaze") === null;
+  }
+
+  /** Wait up to `ms`, but stop early if anything social starts. */
+  private async idleWait(ms: number) {
+    const end = performance.now() + ms;
+    const epoch = this.idleEpoch;
+    while (performance.now() < end) {
+      if (!this.quiet || epoch !== this.idleEpoch) return false;
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    return true;
+  }
+
+  private async idleAct() {
+    if (!this.idleFree) return;
+    const pick = Math.random();
+    if (pick < 0.45) {
+      // glance at the computer, linger, come back (abandoned if he's spoken to)
+      this.arbiter.claim("idle", "body", DoodlebotBlocks.IDLE_GLANCE_DEG);
+      this.arbiter.claim("idle", "gaze", DoodlebotBlocks.GAZE_SCREEN);
+      await this.idleWait(1500 + Math.random() * 1500);
+    } else if (pick < 0.8) {
+      // eyes wander: one side, the other, back
+      const side = Math.random() < 0.5 ? 1 : -1;
+      this.arbiter.claim("idle", "gaze", [55 * side, 32, 100]);
+      if (await this.idleWait(900 + Math.random() * 500)) {
+        this.arbiter.claim("idle", "gaze", [-55 * side, 32, 100]);
+        await this.idleWait(900 + Math.random() * 500);
+      }
+    } else {
+      this.gesture("wiggle", { idle: true });
+    }
+    this.arbiter.release("idle");
+  }
+
+  // ---- Drawing simulator (DrawingSim.ts) ----
+  // What he has drawn (from the moves he executed) plus a dashed preview of
+  // what the current code would add, on the stage. The VIEW is a researcher
+  // toggle (the study may keep it hidden); the model always runs, and the
+  // brain gets it as text either way.
+  static readonly SIM_VISIBLE_KEY = "doodlebot.simVisible";
+  private drawn = new Turtle();
+  private simCanvas: HTMLCanvasElement | null = null;
+  private simLayer: ReturnType<typeof this.createDrawable> | null = null;
+  private simTimer: ReturnType<typeof setTimeout> | null = null;
+  private simWatching = false;
+  /** the code as it was when it last ran; its preview is hidden until edited */
+  private simRanCode: string | null = null;
+
+  private get simVisible(): boolean {
+    try { return localStorage.getItem(DoodlebotBlocks.SIM_VISIBLE_KEY) === "1"; } catch { return false; }
+  }
+
+  private currentPlans() {
+    const blocks = (this.runtime as any)?._editingTarget?.blocks;
+    return planScripts(blocks, this.drawn.pose, this.drawn.pen);
+  }
+
+  /** The scripts' steps, independent of where he is (identifies "this code"). */
+  private codeSignature(plans: ReturnType<typeof planScripts>): string {
+    return JSON.stringify(plans.map((plan) => plan.lines));
+  }
+
+  describeDrawing(): string {
+    try { return describe(this.drawn, this.currentPlans()); } catch (error) { return ""; }
+  }
+
+  /** Before a drawing move: undo any social turn (glance, idle, gesture) still
+   * in effect, so the real drawing matches the simulator's steady preview. */
+  private async squareUp() {
+    const offset = this.headingOffset();
+    if (Math.abs(offset) < 0.5) return;
+    this.setHeadingOffset(0);
+    const turn = this.doodlebot.motorCommand("arc", 0, offset); // = spin by -offset
+    const timedOut = await Promise.race([
+      turn.then(() => false),
+      new Promise<boolean>((resolve) => setTimeout(() => resolve(true), DoodlebotBlocks.MOTION_TIMEOUT_MS)),
+    ]);
+    if (timedOut) this.doodlebot.releaseStuckMotor();
+  }
+
+  /** No robot connected: run a motion block in the simulator only, taking
+   * roughly real time (~10 cm/s) so a program plays out on the stage. */
+  private async simulateMove(apply: () => void, cm: number) {
+    apply();
+    this.redrawSoon();
+    await new Promise((resolve) => setTimeout(resolve, Math.min(3000, 150 + cm * 100)));
+  }
+
+  private redrawSoon() {
+    if (!this.simVisible || this.simTimer) return;
+    this.simTimer = setTimeout(() => { this.simTimer = null; this.redraw(); }, 120);
+  }
+
+  private redraw() {
+    if (!this.simVisible) return;
+    if (!this.simCanvas) {
+      this.simCanvas = document.createElement("canvas");
+      this.simCanvas.width = STAGE_W;
+      this.simCanvas.height = STAGE_H;
+    }
+    // Right after a run the code's preview would just show "run it again from
+    // here" (rarely what the kid means), so it's hidden until the code changes.
+    const plans = this.currentPlans();
+    const shown = this.codeSignature(plans) === this.simRanCode ? [] : plans;
+    render(this.simCanvas, this.drawn, shown);
+    if (!this.simLayer) this.simLayer = this.createDrawable(this.simCanvas);
+    else this.simLayer.update(this.simCanvas);
+    this.simLayer?.setVisible(true);
+  }
+
+  private watchProgramForSim() {
+    if (this.simWatching) return;
+    this.simWatching = true;
+    // any block edit re-plans the preview
+    this.runtime.on("PROJECT_CHANGED", () => this.redrawSoon());
+    // remember what code is running, so its preview steps aside afterwards
+    this.runtime.on("PROJECT_RUN_START", () => {
+      this.simRanCode = this.codeSignature(this.currentPlans());
+      this.redrawSoon();
+    });
+  }
+
+  @buttonBlock("👁 Drawing preview on/off")
+  toggleDrawingPreview() {
+    const on = !this.simVisible;
+    try { localStorage.setItem(DoodlebotBlocks.SIM_VISIBLE_KEY, on ? "1" : "0"); } catch { /* storage unavailable */ }
+    this.watchProgramForSim();
+    if (on) this.redraw();
+    else this.simLayer?.setVisible(false);
+  }
+
+  @buttonBlock("🧽 New paper")
+  newPaper() {
+    this.drawn = new Turtle();
+    this.simRanCode = null;
+    this.redraw();
+    console.log("drawing: new paper (simulator reset to the origin)");
+  }
+
+  /** Once connected: always listening, and the bumper reflex. */
+  private socialLayersStarted = false;
+  private startSocialLayers() {
+    if (this.socialLayersStarted) return;
+    this.socialLayersStarted = true;
+    let pressed = false;
+    this.doodlebot.onSensorUpdate("bumper", ({ front, back }) => {
+      const now = front > 0 || back > 0;
+      if (now && !pressed) this.conversation.bumperTap(); // press edge: interrupt or start talking
+      pressed = now;
+    });
+    void this.doodlebot.enableSensor("bumper").catch(() => { });
+
+    // idle layer: small glances and wiggles when nothing else is going on
+    this.scheduleIdle();
+
+    // program layer: while the child's program runs, nothing social turns
+    // the wheels; afterwards wherever the drawing left him is his new home
+    this.runtime.on("PROJECT_RUN_START", () => this.arbiter.claim("program", "body", "hold"));
+    this.runtime.on("PROJECT_RUN_STOP", () => {
+      this.setHeadingOffset(0);
+      this.arbiter.release("program", "body");
+    });
+    // give the Connect dialog a moment to finish, then start listening
+    setTimeout(() => {
+      this.arbiter.resync();
+      void this.conversation.setContinuous(true);
+    }, 800);
+    // and once more after the robot's command socket has surely opened, so
+    // the first ring/gaze/mouth states aren't lost
+    setTimeout(() => this.arbiter.resync(), 4000);
+  }
+
   resetConversation() { this.chatHistory = []; }
+
+  /** He was cut off mid-reply: record what he actually got out. */
+  private noteInterruption(spoken: string) {
+    const last = this.chatHistory[this.chatHistory.length - 1];
+    if (last?.role === "robot") last.text = `${spoken}… (the child interrupted you here)`;
+  }
 
   @buttonBlock("🧠 Doodlebot persona")
   openPersona() {
@@ -595,18 +959,30 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       const response = await fetch(DoodlebotBlocks.BRAIN_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ heard, history: this.chatHistory, persona: this.getPersona() }),
+        body: JSON.stringify({ heard, history: this.chatHistory, persona: this.getPersona(), name: this.robotName, drawing: this.describeDrawing() }),
       });
       const reply = await response.json();
       if (!response.ok) throw new Error(reply.error ?? `HTTP ${response.status}`);
-      console.log(`brain (${reply.model}, ${reply.ms}ms): "${reply.say}" [${reply.motion}]`);
+      console.log(`brain (${reply.model}, ${reply.ms}ms): "${reply.say}" [${reply.motion}]${reply.done ? " (done)" : ""}`);
       if (heard) this.chatHistory.push({ role: "child", text: heard });
       this.chatHistory.push({ role: "robot", text: reply.say });
-      return { say: reply.say as string, motion: reply.motion as string };
+      return { say: reply.say as string, motion: reply.motion as string, done: !!reply.done };
     } catch (error) {
       console.error("brain unreachable — is study-server/server.py running?", error);
       return { say: "Hmm, my brain isn't connected right now.", motion: "SILENT_PUZZLED" };
     }
+  }
+
+  robotName = "doodlebot";
+
+  @buttonBlock("🎙 Listening on/off")
+  async toggleConversation() {
+    if (!this.connected) {
+      this.indicateFor({ position: "category", msg: "Connect to Doodlebot first", type: "warning" }, 3);
+      return;
+    }
+    const on = await this.conversation.setContinuous(!this.conversation.continuous);
+    console.log(`conversation mode ${on ? "ON" : "OFF"} (wake word: "hey ${this.robotName}")`);
   }
 
   @buttonBlock("🎤 Speak to Doodlebot")
@@ -745,6 +1121,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     ]
   })
   async drive(direction: "forward" | "backward", steps: number, speed: number) {
+    if (!this.connected) return this.simulateMove(() => this.drawn.drive(direction === "backward" ? -steps : steps), steps);
+    await this.squareUp();
     const leftSteps = direction == "backward" ? -steps * 7.160*16 : steps * 7.160*16;
     const rightSteps = direction == "backward" ? -steps * 7.160*16 : steps * 7.160*16;
     const stepsPerSecond = speed;
@@ -754,6 +1132,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
       { steps: leftSteps, stepsPerSecond },
       { steps: rightSteps, stepsPerSecond }
     );
+    this.drawn.drive(direction === "backward" ? -steps : steps);
+    this.redrawSoon();
   }
 
   @block({
@@ -766,13 +1146,18 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     ]
   })
   async arc(direction: "left" | "right", radius: number, degrees: number, utility: BlockUtilityWithID) {
+    if (!this.connected) return this.simulateMove(() => this.drawn.arc(radius, direction === "right" ? degrees : -degrees), Math.abs(radius * degrees * Math.PI / 180));
+    await this.squareUp();
     await this.blockCounter(utility);
     if (this.SOCIAL && Math.random() < this.socialness) {
       await this.doodlebot?.display("happy");
       await this.speakText(`Driving ${direction} arc with radius ${radius} for ${degrees} degrees`);
     }
+    const turn = direction === "right" ? degrees : -degrees; // + = right, for the simulator
     if (direction == "right") degrees *= -1;
     await this.doodlebot?.motorCommand("arc", radius/2.54, degrees);
+    this.drawn.arc(radius, turn);
+    this.redrawSoon();
   }
 
   @block({
@@ -781,6 +1166,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     arg: { type: "number", defaultValue: 90 }
   })
   async spin(degrees: number, utility: BlockUtilityWithID) {
+    if (!this.connected) return this.simulateMove(() => this.drawn.spin(degrees), Math.abs(degrees) / 12);
+    await this.squareUp();
     await this.blockCounter(utility);
     if (this.SOCIAL && Math.random() < this.socialness) {
       await this.doodlebot?.display("happy");
@@ -788,6 +1175,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     }
     if (degrees === 0) return;
     await this.doodlebot?.motorCommand("arc", 0, -degrees);
+    this.drawn.spin(degrees);
+    this.redrawSoon();
   }
 
   @block({
@@ -831,7 +1220,10 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     arg: { type: "string", options: ["up", "down"], defaultValue: "up" }
   })
   async movePen(direction: "up" | "down") {
+    if (!this.connected) return this.simulateMove(() => this.drawn.setPen(direction === "down"), 0);
     await this.doodlebot?.penCommand(direction);
+    this.drawn.setPen(direction === "down");
+    this.redrawSoon();
   }
 
   @block({
@@ -2011,7 +2403,7 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     }
   }
 
-  private async speakText(text: string, showDisplay: boolean = false, onSent?: () => void) {
+  private async speakText(text: string, showDisplay: boolean = false, onSent?: (durationMs: number) => void) {
     try {
       // Display "speaking" while processing if showDisplay is true
       if (showDisplay) {
@@ -2046,7 +2438,11 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
 
       // Convert blob to Uint8Array and send to Doodlebot
       const array = await blob.arrayBuffer();
-      onSent?.();
+      // keep the laptop mic closed while he talks (his speaker is next to it),
+      // and no idle fidgets while he's talking
+      this.conversation.muteFor(durationMs);
+      this.speakingUntil = performance.now() + durationMs + DoodlebotBlocks.SPEECH_TAIL_MS;
+      onSent?.(durationMs);
       await this.doodlebot.sendAudioData(new Uint8Array(array));
       console.log("DATA SENT");
 

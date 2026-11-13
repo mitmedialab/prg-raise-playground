@@ -45,7 +45,11 @@ RULES = (
     "Reply in ONE or TWO short spoken sentences (under 25 words total) — this is "
     "said out loud by a robot, so no lists, emoji, or markdown. Match the "
     "child's language level. If you didn't understand, say so briefly. Also pick "
-    "the one face animation from the allowed list that best fits your reply."
+    "the one face animation from the allowed list that best fits your reply. "
+    "Set done=true when the exchange has naturally wrapped up — the child is "
+    "closing it (\"thanks\", \"okay bye\", \"never mind\", \"cool, that's all\") "
+    "and your reply closes it too; then you stop listening for follow-ups until "
+    "they call you again. If your reply asks the child anything, done must be false."
 )
 
 # Preference order for auto-picking a cheap, fast text model.
@@ -93,8 +97,11 @@ class Brain:
         self.model = model
         self.reasoning_effort = os.environ.get("OPENAI_REASONING", "minimal")
 
-    def respond(self, heard, history, persona):
-        messages = [{"role": "system", "content": f"{persona or DEFAULT_PERSONA}\n\n{RULES}"}]
+    def respond(self, heard, history, persona, name=None, drawing=None):
+        named = f"\n\nYour name is {name.capitalize()}; kids may call you that." if name else ""
+        seen = (f"\n\nWhat you know about the drawing right now (from your own moves and "
+                f"the child's code; refer to it naturally, don't read it out):\n{drawing}") if drawing else ""
+        messages = [{"role": "system", "content": f"{persona or DEFAULT_PERSONA}{named}\n\n{RULES}{seen}"}]
         for turn in history[-MAX_HISTORY_TURNS:]:
             role = "assistant" if turn.get("role") == "robot" else "user"
             messages.append({"role": role, "content": str(turn.get("text", ""))})
@@ -107,10 +114,11 @@ class Brain:
                 "name": "doodlebot_reply", "strict": True,
                 "schema": {
                     "type": "object", "additionalProperties": False,
-                    "required": ["say", "motion"],
+                    "required": ["say", "motion", "done"],
                     "properties": {
                         "say": {"type": "string"},
                         "motion": {"type": "string", "enum": MOTIONS},
+                        "done": {"type": "boolean"},
                     },
                 },
             }},
@@ -125,10 +133,12 @@ class Brain:
                 # this model doesn't take reasoning_effort (or not this value): drop it
                 print(f"  model rejected reasoning_effort={self.reasoning_effort!r}; retrying without")
                 self.reasoning_effort = None
-                return self.respond(heard, history, persona)
+                return self.respond(heard, history, persona, name, drawing)
             raise RuntimeError(f"OpenAI {error.code}: {detail[:300]}") from error
         reply = json.loads(result["choices"][0]["message"]["content"])
-        return {"say": reply["say"].strip(), "motion": reply["motion"]}
+        say = reply["say"].strip()
+        done = bool(reply.get("done")) and "?" not in say  # a question keeps the floor open
+        return {"say": say, "motion": reply["motion"], "done": done}
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -169,10 +179,11 @@ class Handler(BaseHTTPRequestHandler):
             request = json.loads(self.rfile.read(int(self.headers.get("Content-Length", 0))))
             started = time.perf_counter()
             reply = self.brain.respond(str(request.get("heard", "")), request.get("history", []),
-                                       request.get("persona"))
+                                       request.get("persona"), request.get("name"), request.get("drawing"))
             reply["ms"] = round((time.perf_counter() - started) * 1000)
             reply["model"] = self.brain.model
-            print(f'  heard "{request.get("heard", "")}" -> "{reply["say"]}" [{reply["motion"]}] {reply["ms"]}ms')
+            print(f'  heard "{request.get("heard", "")}" -> "{reply["say"]}" [{reply["motion"]}]'
+                  f'{" (done)" if reply["done"] else ""} {reply["ms"]}ms')
             self.send_json(200, reply)
         except Exception as error:  # noqa: BLE001 — report any failure to the page
             print(f"  error: {error}")

@@ -357,17 +357,20 @@ export default class Doodlebot {
         }
     }
 
+    private robotMessageListeners: ((text: string) => void)[] = [];
+
+    /** Messages the robot sends on the command socket, e.g. face reports "(f,x,y,s)". */
+    onRobotMessage(callback: (text: string) => void) {
+        this.robotMessageListeners.push(callback);
+    }
+
     private async onWebsocketMessage(event: MessageEvent) {
-        console.log("websocket message", { event });
-        if (event.data instanceof Blob) {
-            const text = await event.data.text();
-            console.log(text);
-        }
-        else if (event.data instanceof ArrayBuffer) {
-            const decoder = new TextDecoder('utf-8');
-            const decodedMessage = decoder.decode(event.data);
-            console.log('Received ArrayBuffer as text:', decodedMessage);
-        }
+        let text: string;
+        if (event.data instanceof Blob) text = await event.data.text();
+        else if (event.data instanceof ArrayBuffer) text = new TextDecoder('utf-8').decode(event.data);
+        else text = String(event.data);
+        if (!text.startsWith("(f,")) console.log("websocket message:", text);
+        for (const listener of this.robotMessageListeners) listener(text);
     }
 
     private handleBleDisconnect() {
@@ -701,8 +704,11 @@ export default class Doodlebot {
                 const [left, right] = args as MotorStepRequest[];
                 return await this.untilFinishedPending("motor", new Promise(async (resolve) => {
                     this.isStopped = false;
-                    await this.sendBLECommand(command.motor, left.steps, right.steps, left.stepsPerSecond, right.stepsPerSecond);
+                    // listen BEFORE sending: a short move can report (ms) before the
+                    // BLE write resolves (esp. through the Pi's BLE relay), and a
+                    // missed (ms) left this promise -- and every later move -- hanging
                     this.onMotor.once(events.stop, resolve);
+                    await this.sendBLECommand(command.motor, left.steps, right.steps, left.stepsPerSecond, right.stepsPerSecond);
                 }));
             }
             case "arc": {
@@ -710,8 +716,8 @@ export default class Doodlebot {
                 const [radius, degrees] = args as number[];
                 return await this.untilFinishedPending("motor", new Promise(async (resolve) => {
                     this.isStopped = false;
+                    this.onMotor.once(events.stop, resolve); // before sending; see "steps"
                     await this.sendBLECommand(command.arc, radius, degrees);
-                    this.onMotor.once(events.stop, resolve);
                 }));
             }
             case "stop":
@@ -1229,6 +1235,18 @@ export default class Doodlebot {
         const msg = this.formCommand(command, ...args);
         console.log("sending websocket message", msg);
         this.websocket.send(this.encoder.encode(msg));
+    }
+
+    /** Subscribe to every reading of a sensor (e.g. bumper presses). */
+    onSensorUpdate<T extends SensorKey>(type: T, callback: (value: SensorData[T]) => void) {
+        this.onSensor.on(type, callback);
+    }
+
+    /** Recovery for a lost (ms) "motor done" report: resolve whatever motor
+     * command is waiting on it so later moves aren't blocked forever. */
+    releaseStuckMotor() {
+        this.isStopped = true;
+        this.onMotor.emit(events.stop);
     }
 
     async untilFinishedPending<TKey extends keyof Pending>(type: TKey, promise: Pending[TKey]) {
