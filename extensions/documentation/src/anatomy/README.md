@@ -46,6 +46,9 @@ In adition to the above files, you might find any of the below:
     - Currently **NOT** used.
 - Additional `.ts` files
     - Developers are free to create as many typescript files as they need within their extensions's directory -- and frankly it's encouraged! Long files can be difficult to read. 
+- `tutorial.json`
+    - An optional guided tour of the extension, which the editor shows when a user clicks the **?** next to the extension's title in the palette.
+    - Hop down to [Guided Tutorials](#guided-tutorials) for how to write one.
 - `README.md`
     - Motivated developers might include a README file to help document their extension. 
 
