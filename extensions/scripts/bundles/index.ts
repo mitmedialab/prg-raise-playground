@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs";
 import { ExtensionMenuDisplayDetails, FrameworkID, encode } from "$common"
-import { fileName, getBundleFile, getMenuDetailsAssetsDirectory, getMenuDetailsAssetsFile } from "../utils/fileSystem";
+import { fileName, getBundleFile, getMenuDetailsAssetsDirectory, getMenuDetailsAssetsFile, getTutorialFile } from "../utils/fileSystem";
 import { type Plugin, type RollupOptions, type OutputOptions, type RollupWatcher, rollup, watch } from "rollup";
 import alias from "@rollup/plugin-alias";
 import { commonAlias, getAliasEntries } from "scripts/utils/aliases";
@@ -130,7 +130,8 @@ type BundleOptions = { plugins: Plugin[], info: BundleInfo, external?: RollupOpt
 export const bundleBasedOnWatchMode = async ({ plugins, info, globals, external }: BundleOptions) => {
   const { bundleEntry, watch: doWatch, name, directory } = info;
   const watchableFileExtensions = ["ts", "svelte", "png", "svg"];
-  const filesToWatch = [...watchableFileExtensions.map(ext => `**/*.${ext}`)].map(file => path.join(directory, file));
+  const filesToWatch = [...watchableFileExtensions.map(ext => `**/*.${ext}`), path.basename(getTutorialFile(directory))]
+    .map(file => path.join(directory, file));
   const options: RollupOptions = { input: bundleEntry, plugins, external, watch: { include: filesToWatch }, preserveSymlinks: true, };
   const output = getOutputOptions(info, { globals });
 

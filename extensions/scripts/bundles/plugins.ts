@@ -5,7 +5,7 @@ import { type Plugin } from "rollup";
 import { appendToRootDetailsFile, populateMenuFileForExtension } from "../extensionsMenu";
 import { exportAllFromModule, toNamedDefaultExport } from "../utils/importExport";
 import { glob } from 'glob';
-import { commonDirectory, deleteAllFilesInDir, extensionBundlesDirectory, fileName, generatedMenuDetailsDirectory, getBundleFile, tsToJs } from "../utils/fileSystem";
+import { commonDirectory, deleteAllFilesInDir, extensionBundlesDirectory, fileName, generatedMenuDetailsDirectory, getBundleFile, getTutorialFile, tsToJs } from "../utils/fileSystem";
 import { BundleInfo } from ".";
 import ts from "typescript";
 import { getSrcCompilerHost } from "../typeProbing/tsConfig";
@@ -85,7 +85,7 @@ export const setupExtensionBundleEntry = ({ indexFile, bundleEntry, directory }:
         fs.writeFileSync(bundleEntry, filesToBundle.join("\n"));
     },
     buildEnd() {
-      fs.rmSync(bundleEntry);
+    //  fs.rmSync(bundleEntry);
     },
   }
 }
@@ -94,6 +94,11 @@ export const finalizeGenericExtensionBundle = (info: BundleInfo): Plugin => {
   const runner = runOncePerBundling();
   return {
     name: "Finalize Generic Extension Bundle",
+    buildStart() {
+      // The tutorial is read from disk when writing menu details, so the watcher wouldn't otherwise notice changes to it
+      const tutorialFile = getTutorialFile(info.directory);
+      if (fs.existsSync(tutorialFile)) this.addWatchFile(tutorialFile);
+    },
     buildEnd() {
       setAuxiliaryInfoForExtension(info);
       if (runner.check()) appendToRootDetailsFile(info);
@@ -177,6 +182,10 @@ export const finalizeConfigurableExtensionBundle = (info: BundleInfo): Plugin =>
 
   return {
     name: "Finalize Configurable Extension Bundle",
+    buildStart() {
+      const tutorialFile = getTutorialFile(info.directory);
+      if (fs.existsSync(tutorialFile)) this.addWatchFile(tutorialFile);
+    },
     writeBundle: async () => {
       try {
         await executeBundleAndExtractMenuDetails();

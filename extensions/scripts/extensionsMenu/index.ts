@@ -2,9 +2,10 @@ import { copyFileSync, existsSync, writeFileSync, mkdirSync, readFileSync } from
 import path = require("path");
 import { ExtensionMenuDisplayDetails } from "$common";
 import MenuDetailItem from "./MenuDetailItem";
+import { readTutorial } from "./tutorial";
 import { BundleInfo } from "../bundles";
 import { importStatement } from "scripts/utils/importExport";
-import { generatedDetailsFileName, generatedMenuDetailsDirectory, getMenuDetailsAssetsFile, menuDetailsRootFile, prgLogo, raiseLogo } from "scripts/utils/fileSystem";
+import { generatedDetailsFileName, generatedMenuDetailsDirectory, getMenuDetailsAssetsFile, getTutorialFile, menuDetailsRootFile, prgLogo, raiseLogo } from "scripts/utils/fileSystem";
 import { PathToIcons, copyIconsToAssetsDirectory } from "./icons";
 
 export const generatedFileWarning = `/* 
@@ -25,6 +26,10 @@ export const populateMenuFileForExtension = ({ menuDetails, id, directory, menuA
 
   const menuItem = new MenuDetailItem(menuDetails, id);
   menuItem.append('extensionId', id, false, true);
+
+  // expose tutorial to scratch-gui
+  const tutorialFile = getTutorialFile(directory);
+  if (existsSync(tutorialFile)) menuItem.append('tutorial', readTutorial(tutorialFile));
 
   Object.entries(iconImports).forEach(([key, { variable }]) => menuItem.append(key, variable, true));
 

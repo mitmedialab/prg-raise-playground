@@ -1,0 +1,148 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "tutorial.schema.json",
+  "title": "Extension tutorial",
+  "description": "A guided tour of an extension. Save it as `tutorial.json` next to the extension's `index.ts`. The editor walks the user through the steps, spotlighting blocks and explaining them.",
+  "type": "object",
+  "required": ["steps"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "description": "Points your editor at this file, so it can offer help while you write. Not used otherwise.",
+      "type": "string"
+    },
+    "steps": {
+      "description": "The steps of the tour, in order.",
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/step" }
+    }
+  },
+  "definitions": {
+    "step": {
+      "type": "object",
+      "required": ["title", "text"],
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "description": "The heading of the step's popover.",
+          "type": "string",
+          "minLength": 1
+        },
+        "text": {
+          "description": "The explanation shown in the popover. Keep it short: a couple of sentences.",
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "description": "What the step spotlights (and what the popover's arrow points at). Leave it out to show the popover on its own, in the middle of the screen.",
+          "oneOf": [
+            {
+              "title": "A block",
+              "type": "object",
+              "required": ["block"],
+              "additionalProperties": false,
+              "properties": {
+                "block": {
+                  "description": "A block in the extension's palette, by its opcode (for most extensions, the name of the method that implements the block).",
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            {
+              "title": "A button",
+              "type": "object",
+              "required": ["button"],
+              "additionalProperties": false,
+              "properties": {
+                "button": {
+                  "description": "A button in the extension's palette, by the text on it.",
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            {
+              "title": "A part of the editor",
+              "type": "object",
+              "required": ["ui"],
+              "additionalProperties": false,
+              "properties": {
+                "ui": {
+                  "description": "`category`: the extension's entry in the category list. `palette`: the list of the extension's blocks. `stage`: the stage. `green-flag`: the green flag button. `workspace`: the coding area.",
+                  "enum": ["category", "palette", "stage", "green-flag", "workspace"]
+                }
+              }
+            }
+          ]
+        },
+        "position": {
+          "description": "Pins the popover somewhere, instead of placing it next to the target (which is still spotlit). Useful when the popover would cover something the user needs to see. Steps with `waitFor` default to `workspace-bottom-right`.",
+          "enum": ["stage-bottom-left", "stage-bottom-right", "workspace-bottom-left", "workspace-bottom-right"]
+        },
+        "addBlocks": {
+          "description": "Standard Scratch blocks (by opcode, like `event_whenflagclicked`) to add to the code area when the user reaches this step, connected one under the other from top to bottom. Use it to set up the parts of an activity that aren't about your extension. Say in the step's text that they've been added. If the sprite already has scripts, the user is asked whether to delete them first.",
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "waitFor": {
+          "description": "Turns the step into an activity: a checklist of things for the user to do, which tick off as they do them. Conditions are checked in order. Until they're all done the Next button reads \"Skip\", so nobody gets stuck.",
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/condition" }
+        }
+      }
+    },
+    "condition": {
+      "description": "Something for the user to do.",
+      "oneOf": [
+        {
+          "title": "Place a block",
+          "type": "object",
+          "required": ["type", "label", "block"],
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "blockPlaced" },
+            "label": { "$ref": "#/definitions/label" },
+            "block": {
+              "description": "One of the extension's blocks, by opcode, that the user has to drag into the code area.",
+              "type": "string",
+              "minLength": 1
+            },
+            "inside": {
+              "description": "The block has to be nested inside a block of this type: in a C block's mouth, or in an input, like the condition of an `if`. For example `control_forever`.",
+              "type": "string",
+              "minLength": 1
+            },
+            "onTopOf": {
+              "description": "A block of this type has to be below this one in the same stack. How a hat block is placed above, say, `looks_say`.",
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        {
+          "title": "Run a script",
+          "type": "object",
+          "required": ["type", "label", "block"],
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "scriptRun" },
+            "label": { "$ref": "#/definitions/label" },
+            "block": {
+              "description": "A script that contains this block of the extension (by opcode) has to start running: its hat block fires, or the user clicks the green flag or the script.",
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "label": {
+      "description": "What to tell the user to do. Shown in the step's checklist.",
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

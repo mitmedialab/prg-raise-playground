@@ -1,0 +1,118 @@
+{
+  "$schema": "../../tutorial.schema.json",
+  "steps": [
+    {
+      "title": "Meet Text Classification",
+      "text": "This extension lets you teach the computer to sort text into groups you choose, like \"happy\" and \"sad\" messages. It can also judge text with ready-made models, and your project can speak and listen. Let's take a quick tour.",
+      "target": {
+        "ui": "category"
+      }
+    },
+    {
+      "title": "Build your model",
+      "text": "This button opens the model editor. Make a class for each group, then add example phrases to each class. The model learns from your examples, so the more good examples you add, the better it gets.",
+      "target": {
+        "button": "Edit Model"
+      }
+    },
+    {
+      "title": "Save and load models",
+      "text": "Use this button to save your model to a file, or to load one you saved earlier or got from someone else.",
+      "target": {
+        "button": "Load / Save Model"
+      }
+    },
+    {
+      "title": "Does the text match a class?",
+      "text": "This block is true when your model decides the text belongs to the class you pick, and false otherwise. Use it inside \"if\" blocks.",
+      "target": {
+        "block": "ifTextMatchesClass"
+      }
+    },
+    {
+      "title": "Which class is it?",
+      "text": "This block reports the name of the class your model thinks the text belongs to.",
+      "target": {
+        "block": "getModelPrediction"
+      }
+    },
+    {
+      "title": "How sure is the model?",
+      "text": "This block reports how confident your model is about its prediction for the text. A higher number means the model is more sure.",
+      "target": {
+        "block": "getModelConfidence"
+      }
+    },
+    {
+      "title": "Check text for harmful language",
+      "text": "This block uses a ready-made model, so you don't need to train anything. It reports how likely the text is to be toxic, insulting, threatening, profane, and more. Pick which kind from the menu.",
+      "target": {
+        "block": "confidenceTrue"
+      }
+    },
+    {
+      "title": "Is the text positive or negative?",
+      "text": "This block gives the text a score. Positive numbers mean positive text, negative numbers mean negative text, and 0 is neutral.",
+      "target": {
+        "block": "sentimentScore"
+      }
+    },
+    {
+      "title": "Say it out loud",
+      "text": "This block speaks the text out loud. Try giving it the class your model predicts.",
+      "target": {
+        "block": "speakText"
+      }
+    },
+    {
+      "title": "Ask a question and listen",
+      "text": "This block says your question out loud, then listens through your microphone for a spoken answer. Your browser may ask for permission to use the microphone.",
+      "target": {
+        "block": "askSpeechRecognition"
+      }
+    },
+    {
+      "title": "What did it hear?",
+      "text": "This block reports what the microphone heard the last time you used “speak, then listen”, as text. Use it anywhere text fits: for example, as the text your model checks.",
+      "target": {
+        "block": "getRecognizedSpeech"
+      }
+    },
+    {
+      "title": "Change the voice",
+      "text": "Choose a voice for the speak blocks: squeak, tenor, alto or giant.",
+      "target": {
+        "block": "setVoice"
+      }
+    },
+    {
+      "title": "React to a loud sound",
+      "text": "This hat block starts its script when the microphone hears a sound louder than the number you set. A higher number needs a louder sound.",
+      "target": {
+        "block": "onHeardSound"
+      }
+    },
+    {
+      "title": "Try it yourself!",
+      "text": "I've started a script for you, with “when green flag clicked”, “ask and wait” and an “if” block. First, open Edit Model and add two classes with a few example phrases each. Then drag “matches” into the “if”, put the “answer” block (from Sensing) in its text slot, and pick a class. Click the green flag and try answering!",
+      "waitFor": [
+        {
+          "type": "blockPlaced",
+          "block": "ifTextMatchesClass",
+          "label": "Drag the “matches” block into the “if” block’s condition",
+          "inside": "control_if"
+        },
+        {
+          "type": "scriptRun",
+          "block": "ifTextMatchesClass",
+          "label": "Click the green flag and answer the question"
+        }
+      ],
+      "addBlocks": [
+        "event_whenflagclicked",
+        "sensing_askandwait",
+        "control_if"
+      ]
+    }
+  ]
+}

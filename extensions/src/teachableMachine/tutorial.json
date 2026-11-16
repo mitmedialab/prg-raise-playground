@@ -1,0 +1,88 @@
+{
+  "$schema": "../../tutorial.schema.json",
+  "steps": [
+    {
+      "title": "Meet Teachable Machine",
+      "text": "Teachable Machine lets you train your own model by showing it examples: pictures, body poses or sounds. This extension lets your Scratch project use the model you trained. Let's take a quick tour.",
+      "target": {
+        "ui": "category"
+      }
+    },
+    {
+      "title": "First, train a model",
+      "text": "This button opens the Teachable Machine website. There, add classes (like \"thumbs up\" and \"thumbs down\"), record examples of each, and train. Then choose Export Model, upload it, and copy the shareable link.",
+      "target": {
+        "button": "Teachable Machine Site ↗"
+      }
+    },
+    {
+      "title": "Load your model",
+      "text": "Paste your model's link here, then click the block to load it. After it loads, the class menus in the blocks below will show the names of your classes.",
+      "target": {
+        "block": "useModelBlock"
+      }
+    },
+    {
+      "title": "React when something is detected",
+      "text": "This hat block starts its script when the model detects the class you pick. Attach blocks below it to decide what happens.",
+      "target": {
+        "block": "whenModelMatches"
+      }
+    },
+    {
+      "title": "What does the model see?",
+      "text": "This block reports the name of the class the model thinks it's seeing or hearing right now.",
+      "target": {
+        "block": "modelPrediction"
+      }
+    },
+    {
+      "title": "Is it this class?",
+      "text": "This block is true when the model's prediction is the class you pick, and false otherwise. Use it inside \"if\" blocks.",
+      "target": {
+        "block": "modelMatches"
+      }
+    },
+    {
+      "title": "How sure is the model?",
+      "text": "This block reports how confident the model is that it's seeing the class you pick, as a number. A higher number means the model is more sure.",
+      "target": {
+        "block": "classConfidence"
+      }
+    },
+    {
+      "title": "Show or hide your video",
+      "text": "If your model uses the camera, choose whether the video shows on the stage. \"on\" shows it mirrored, like a mirror. \"on-flipped\" shows it the other way around. \"off\" hides it.",
+      "target": {
+        "block": "videoToggle"
+      }
+    },
+    {
+      "title": "See-through video",
+      "text": "If your model uses the camera, set how see-through the video is, from 0 (fully visible) to 100 (invisible). A higher number makes your sprites and backdrop easier to see.",
+      "target": {
+        "block": "setVideoTransparency"
+      }
+    },
+    {
+      "title": "Try it yourself!",
+      "text": "I've added a “say Hello!” block to your code area. Load your model, then drag “when model detects” on top of it. Show the camera your example and watch your sprite respond.",
+      "waitFor": [
+        {
+          "type": "blockPlaced",
+          "block": "whenModelMatches",
+          "label": "Drag the “when model detects” block on top of the “say” block",
+          "onTopOf": "looks_say"
+        },
+        {
+          "type": "scriptRun",
+          "block": "whenModelMatches",
+          "label": "Show the camera something your model knows, so your script runs"
+        }
+      ],
+      "addBlocks": [
+        "looks_say"
+      ]
+    }
+  ]
+}

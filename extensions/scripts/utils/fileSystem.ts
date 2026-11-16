@@ -12,6 +12,8 @@ export const prgLogo = path.join(templatesDirectory, "PRG_Logo.png")
 
 export const getBundleFile = (extensionID: string) => path.join(extensionBundlesDirectory, `${extensionID}.js`);
 
+export const getTutorialFile = (directory: string) => path.join(directory, "tutorial.json");
+
 export const generatedDetailsFileName = "details.generated.js";
 export const getMenuDetailsAssetsDirectory = (extensionID: string) => path.join(generatedMenuDetailsDirectory, extensionID);
 export const getMenuDetailsAssetsFile = (extensionID: string) => path.join(generatedMenuDetailsDirectory, extensionID, generatedDetailsFileName);

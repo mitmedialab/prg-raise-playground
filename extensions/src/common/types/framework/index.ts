@@ -8,6 +8,7 @@ import { MethodNames, ValueOf } from "../utils";
 import { ExtensionInstance } from "$common/extension";
 import { Tag } from "./tags";
 import { Runtime } from "../scratch/vm";
+import type { ExtensionTutorial } from "./tutorial";
 
 export type BaseGenericExtension = Extension<ExtensionMenuDisplayDetails, ExtensionBlocks>;
 
@@ -118,4 +119,5 @@ export type ExtensionMenuDisplayDetails = {
   hidden?: boolean;
   disabled?: boolean;
   implementationLanguage?: ValueOf<typeof Language>;
+  tutorial?: ExtensionTutorial;
 } & Partial<Record<ValueOf<typeof Language>, { name: string, description: string }>>;

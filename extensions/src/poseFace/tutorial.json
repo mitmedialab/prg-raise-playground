@@ -1,0 +1,109 @@
+{
+  "$schema": "../../tutorial.schema.json",
+  "steps": [
+    {
+      "title": "Meet Face Sensing",
+      "text": "This extension uses your camera to find your face, follow points on it (like your eyes, nose and mouth), and guess your expressions and feelings. Let's take a quick tour.",
+      "target": {
+        "ui": "category"
+      }
+    },
+    {
+      "title": "Your camera shows up here",
+      "text": "Once the extension is added, your camera video appears on the stage. If your browser asks for permission to use the camera, choose Allow, then look at the camera so it can find your face.",
+      "target": {
+        "ui": "stage"
+      }
+    },
+    {
+      "title": "Go to a point on your face",
+      "text": "This block moves the sprite to a point on your face. Choose which point from the menu, and the sprite will follow it as you move.",
+      "target": {
+        "block": "affdexGoToPart"
+      }
+    },
+    {
+      "title": "Get where a face point is",
+      "text": "This block reports the x or y position of a point on your face, as a number. Use it anywhere a number fits.",
+      "target": {
+        "block": "affdexReturnPart"
+      }
+    },
+    {
+      "title": "React to an expression",
+      "text": "This hat block starts its script when it sees the expression you pick, like a smile, an open mouth or raised eyebrows. Attach blocks below it to decide what happens.",
+      "target": {
+        "block": "affdexWhenExpression"
+      }
+    },
+    {
+      "title": "How much of an expression?",
+      "text": "This block reports how strong an expression is right now, as a number. A big smile gives a bigger number than a small one.",
+      "target": {
+        "block": "affdexExpressionAmount"
+      }
+    },
+    {
+      "title": "Is it happening right now?",
+      "text": "This block is true when you are making the chosen expression and false when you aren't. Use it inside \"if\" blocks.",
+      "target": {
+        "block": "affdexIsExpression"
+      }
+    },
+    {
+      "title": "React to a feeling",
+      "text": "This hat block starts its script when it detects a feeling, like joyful, sad, angry or fearful. It guesses from your whole face, not just one expression.",
+      "target": {
+        "block": "affdexWhenEmotion"
+      }
+    },
+    {
+      "title": "How strong is the feeling?",
+      "text": "This block reports the level of a feeling as a number. You can also choose \"valence\" (how positive or negative the face looks) and \"engagement\" (how expressive it is).",
+      "target": {
+        "block": "affdexEmotionAmount"
+      }
+    },
+    {
+      "title": "What's the main feeling?",
+      "text": "This block is true when the feeling you pick is the strongest one the camera sees right now.",
+      "target": {
+        "block": "affdexIsTopEmotion"
+      }
+    },
+    {
+      "title": "Show or hide your video",
+      "text": "Choose whether your camera video shows on the stage. \"on\" shows it mirrored, like a mirror. \"on-flipped\" shows it the other way around. \"off\" hides it, and face tracking keeps working.",
+      "target": {
+        "block": "videoToggle"
+      }
+    },
+    {
+      "title": "See-through video",
+      "text": "Set how see-through the video is, from 0 (fully visible) to 100 (invisible). A higher number makes your sprites and backdrop easier to see.",
+      "target": {
+        "block": "setVideoTransparency"
+      }
+    },
+    {
+      "title": "Try it yourself!",
+      "text": "I've added a “say Hello!” block to your code area. Drag “when smile detected” on top of it, then smile at the camera. Then try other expressions and feelings!",
+      "waitFor": [
+        {
+          "type": "blockPlaced",
+          "block": "affdexWhenExpression",
+          "label": "Drag the “when … detected” block on top of the “say” block",
+          "onTopOf": "looks_say"
+        },
+        {
+          "type": "scriptRun",
+          "block": "affdexWhenExpression",
+          "label": "Make the expression at the camera so your script runs"
+        }
+      ],
+      "addBlocks": [
+        "looks_say"
+      ]
+    }
+  ]
+}

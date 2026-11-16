@@ -1,0 +1,68 @@
+{
+  "$schema": "../../tutorial.schema.json",
+  "steps": [
+    {
+      "title": "Meet Body Sensing",
+      "text": "This extension uses your camera to find your body and track points on it, like your nose, shoulders, elbows, wrists, hips and knees. You can move sprites, or control your project, with your whole body. Let's take a quick tour.",
+      "target": {
+        "ui": "category"
+      }
+    },
+    {
+      "title": "Your camera shows up here",
+      "text": "Once the extension is added, your camera video appears on the stage. If your browser asks for permission to use the camera, choose Allow. Step back so the camera can see more of your body.",
+      "target": {
+        "ui": "stage"
+      }
+    },
+    {
+      "title": "Go to a part of your body",
+      "text": "This block moves the sprite to a point on your body. Choose a part, like your nose or your left wrist, and the sprite will follow it as you move.",
+      "target": {
+        "block": "goToPart"
+      }
+    },
+    {
+      "title": "Get where a body part is",
+      "text": "This block reports the x or y position of a body part, as a number. Use it anywhere a number fits: for example, to change a sprite's size when you raise your hands.",
+      "target": {
+        "block": "returnPart"
+      }
+    },
+    {
+      "title": "Show or hide your video",
+      "text": "Choose whether your camera video shows on the stage. \"on\" shows it mirrored, like looking in a mirror. \"on-flipped\" shows it the other way around. \"off\" hides it, and body tracking keeps working.",
+      "target": {
+        "block": "videoToggle"
+      }
+    },
+    {
+      "title": "See-through video",
+      "text": "Set how see-through the video is, from 0 (fully visible) to 100 (invisible). A higher number makes your sprites and backdrop easier to see.",
+      "target": {
+        "block": "setVideoTransparency"
+      }
+    },
+    {
+      "title": "Try it yourself!",
+      "text": "I've added “when green flag clicked” and “forever” blocks to your code area. Drag “go to nose” into the forever loop, then click the green flag. Your sprite will follow your nose. Then try your wrists!",
+      "waitFor": [
+        {
+          "type": "blockPlaced",
+          "block": "goToPart",
+          "label": "Drag the “go to” block into the “forever” loop",
+          "inside": "control_forever"
+        },
+        {
+          "type": "scriptRun",
+          "block": "goToPart",
+          "label": "Click the green flag"
+        }
+      ],
+      "addBlocks": [
+        "event_whenflagclicked",
+        "control_forever"
+      ]
+    }
+  ]
+}

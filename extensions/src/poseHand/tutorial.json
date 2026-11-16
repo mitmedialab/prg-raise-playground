@@ -1,0 +1,68 @@
+{
+  "$schema": "../../tutorial.schema.json",
+  "steps": [
+    {
+      "title": "Meet Hand Sensing",
+      "text": "This extension uses your camera to find your hand and track points on each finger, so your sprites can follow, react to, and be controlled by your hand. Let's take a quick tour of how it works.",
+      "target": {
+        "ui": "category"
+      }
+    },
+    {
+      "title": "Your camera shows up here",
+      "text": "Once the extension is added, your camera video appears on the stage. If your browser asks for permission to use the camera, choose Allow. Hold a hand up so the camera can see it.",
+      "target": {
+        "ui": "stage"
+      }
+    },
+    {
+      "title": "Go to a part of your hand",
+      "text": "This block moves the sprite to a point on your hand. Pick a finger (thumb, index finger, middle finger, ring finger or pinky), then where along it: the base, the first knuckle, the second knuckle, or the tip.",
+      "target": {
+        "block": "goToHandPart"
+      }
+    },
+    {
+      "title": "Get where your hand is",
+      "text": "This block reports the x or y position of a point on your finger, as a number. Use it anywhere a number fits: for example, to set a sprite's size from how high your index finger is.",
+      "target": {
+        "block": "returnHandPart"
+      }
+    },
+    {
+      "title": "Show or hide your video",
+      "text": "Choose whether your camera video shows on the stage. \"on\" shows it mirrored, like looking in a mirror. \"on-flipped\" shows it the other way around. \"off\" hides it, and hand tracking keeps working.",
+      "target": {
+        "block": "videoToggle"
+      }
+    },
+    {
+      "title": "See-through video",
+      "text": "Set how see-through the video is, from 0 (fully visible) to 100 (invisible). A higher number makes your sprites and backdrop easier to see.",
+      "target": {
+        "block": "setVideoTransparency"
+      }
+    },
+    {
+      "title": "Try it yourself!",
+      "text": "I've added “when green flag clicked” and “forever” blocks to your code area. Drag “go to thumb tip” into the forever loop, then click the green flag. Your sprite will follow your thumb. Then try the other fingers!",
+      "waitFor": [
+        {
+          "type": "blockPlaced",
+          "block": "goToHandPart",
+          "label": "Drag the “go to” block into the “forever” loop",
+          "inside": "control_forever"
+        },
+        {
+          "type": "scriptRun",
+          "block": "goToHandPart",
+          "label": "Click the green flag"
+        }
+      ],
+      "addBlocks": [
+        "event_whenflagclicked",
+        "control_forever"
+      ]
+    }
+  ]
+}
