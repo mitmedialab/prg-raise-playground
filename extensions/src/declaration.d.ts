@@ -29,3 +29,8 @@ declare module "*.webp" {
     export default value;
 };
 /** End: Supported Image Formats */
+
+declare module "*.wasm" {
+    const bytes: Uint8Array;
+    export default bytes;
+};

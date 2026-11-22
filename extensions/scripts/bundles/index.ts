@@ -56,7 +56,39 @@ export const getBundleInfo = (directory: string, { totalNumberOfExtensions, id, 
 
 export type ProgramBasedTransformer = (program: ts.Program) => CustomTransformerFactory;
 
+/**
+ * Inlines imported `.wasm` files as a base64-encoded `Uint8Array` (the module's default export).
+ * Extension bundles are single IIFE files, so a separate `.wasm` file can't be fetched
+ * relative to the bundle; pass the bytes to the wasm-bindgen glue's `init` / `initSync` instead.
+ */
+const wasmAsBytes = (): Plugin => ({
+  name: "prg-wasm-as-bytes",
+  load(id) {
+    if (!id.endsWith(".wasm")) return null;
+    const base64 = fs.readFileSync(id).toString("base64");
+    return `const base64 = ${JSON.stringify(base64)};
+const binary = atob(base64);
+const bytes = new Uint8Array(binary.length);
+for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+export default bytes;`;
+  },
+});
+
+/**
+ * Resolves `import.meta.url` ourselves, since rollup's built-in shim for IIFE output
+ * is emitted without spaces when `compact: true` (`typeofdocument`), which throws at runtime.
+ */
+const importMetaUrlForIIFE = (): Plugin => ({
+  name: "prg-import-meta-url",
+  resolveImportMeta(property) {
+    if (property !== "url") return null;
+    return `(typeof document !== "undefined" && document.currentScript ? document.currentScript.src : typeof location !== "undefined" ? location.href : "file:///")`;
+  },
+});
+
 export const getThirdPartyPlugins = (customizations?: { tsTransformers?: ProgramBasedTransformer[] }): Plugin[] => [
+  wasmAsBytes(),
+  importMetaUrlForIIFE(),
   alias({ entries: getAliasEntries() }),
   json(),
   nodePolyfills(),

@@ -19,6 +19,7 @@
     "@tensorflow-models/speech-commands": "^0.5.4",
     "@tensorflow/tfjs": "^4.17.0",
     "@types/web-bluetooth": "^0.0.20",
+    "arcline-vectorize-web": "https://github.com/pmalacho-mit/suede.doodlebot-vectorize/releases/download/v0.1.0/arcline-vectorize-web-0.1.0.tgz",
     "axios": "^1.7.7",
     "bezier-js": "^6.1.4",
     "canvas": "^2.11.2",

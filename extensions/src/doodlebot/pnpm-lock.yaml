@@ -26,6 +26,9 @@ importers:
       '@types/web-bluetooth':
         specifier: ^0.0.20
         version: 0.0.20
+      arcline-vectorize-web:
+        specifier: https://github.com/pmalacho-mit/suede.doodlebot-vectorize/releases/download/v0.1.0/arcline-vectorize-web-0.1.0.tgz
+        version: https://github.com/pmalacho-mit/suede.doodlebot-vectorize/releases/download/v0.1.0/arcline-vectorize-web-0.1.0.tgz
       axios:
         specifier: ^1.7.7
         version: 1.7.7
@@ -160,6 +163,10 @@ packages:
 
   aproba@2.0.0:
     resolution: {integrity: sha512-lYe4Gx7QT+MKGbDsA+Z+he/Wtef0BiwDOlK/XkBrdfsh9J/jPPXbX0tE9x9cl27Tmu5gg3QUbUrQYa/y+KOHPQ==}
+
+  arcline-vectorize-web@https://github.com/pmalacho-mit/suede.doodlebot-vectorize/releases/download/v0.1.0/arcline-vectorize-web-0.1.0.tgz:
+    resolution: {tarball: https://github.com/pmalacho-mit/suede.doodlebot-vectorize/releases/download/v0.1.0/arcline-vectorize-web-0.1.0.tgz}
+    version: 0.1.0
 
   are-we-there-yet@2.0.0:
     resolution: {integrity: sha512-Ci/qENmwHnsYo9xKIcUJN5LeDKdJ6R1Z1j9V/J5wyq8nh/mYPEpIKJbBZXtZjG04HiK7zV/p6Vs9952MrMeUIw==}
@@ -697,6 +704,8 @@ snapshots:
       color-convert: 2.0.1
 
   aproba@2.0.0: {}
+
+  arcline-vectorize-web@https://github.com/pmalacho-mit/suede.doodlebot-vectorize/releases/download/v0.1.0/arcline-vectorize-web-0.1.0.tgz: {}
 
   are-we-there-yet@2.0.0:
     dependencies:

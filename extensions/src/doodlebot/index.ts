@@ -5,6 +5,9 @@ import EventEmitter from "events";
 import TeachableMachine from "./ModelUtils";
 import { convertSvgUint8ArrayToPng } from "./utils";
 import LineArrayFollowing from "./LineArrayFollowing";
+import { rasterize, renderStrokes, summarize, vectorize, type VectorizationResult } from "./vectorize";
+import { planDrawing, drawnLengthCm, trimLeadingTravel, type RobotStep, type Strokes } from "./drawing";
+import DrawingArgument from "./DrawingArgument.svelte";
 //import { createLineDetector } from "./LineDetection";
 
 import JSZip from 'jszip';
@@ -18,7 +21,30 @@ const details: ExtensionMenuDisplayDetails = {
   tags: ["Made by PRG"]
 };
 
-const bumperOptions = ["front", "back", "front or back", "front and back", "neither"] as const;
+/** Tuning for the "draw costume" block */
+const DrawingSettings = {
+  /** wheel steps per cm, as used by the "drive" block */
+  stepsPerCm: 7.160 * 16,
+  /** straight-line speed while drawing */
+  stepsPerSecond: 2000,
+  /** wait after moving the pen so it touches down / lifts before driving */
+  penSettleMs: 250,
+} as const;
+
+/**
+ * Draws the vectorizer's preview SVG (low vs high geometry, side by side) directly in the console.
+ * (A blob: link doesn't work: DevTools only linkifies the http:// part, so clicking it hits the dev server.)
+ */
+const logPreview = (svg: string) => {
+  const url = `data:image/svg+xml,${encodeURIComponent(svg)}`;
+  console.log(
+    "%c ",
+    `font-size: 1px; padding: 160px 320px; background: white url("${url}") no-repeat center / contain; border: 1px solid #ccc;`
+  );
+  console.log("preview svg markup (paste into a .svg file to open it full size)", { svg });
+};
+
+const bumperOptions =["front", "back", "front or back", "front and back", "neither"] as const;
 
 const looper = (action: () => Promise<any>, profileMarker?: string) => {
   const controller = new AbortController();
@@ -360,6 +386,109 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   })
   async movePen(direction: "up" | "down") {
     await this.doodlebot?.penCommand(direction);
+  }
+
+  /** Costumes of the sprite with the given target id (the stage counts as a sprite with backdrops) */
+  private getCostumes(targetID: string | undefined) {
+    return this.runtime.targets.find(({ id }) => id === targetID)?.sprite?.costumes ?? [];
+  }
+
+  /** Debug: vectorize a costume and log the resulting drawing commands (does not move the robot). */
+  @block((self) => ({
+    type: "reporter",
+    text: (costume: string) => `vectorize costume ${costume}`,
+    arg: {
+      type: "string",
+      options: () => self.getCostumes(self.runtime._editingTarget?.id).map(({ name }) => name),
+      defaultValue: "costume1"
+    }
+  }))
+  async vectorizeCostume(costumeName: string, utility: BlockUtilityWithID) {
+    const vectorized = await this.vectorizeCostumeNamed(costumeName, utility);
+    if (!vectorized) return `No costume named "${costumeName}"`;
+    const { result, image, ms } = vectorized;
+
+    const summary = summarize(trimLeadingTravel(result.low_geometry));
+    console.groupCollapsed(`[doodlebot] vectorized "${costumeName}" (${image.width}x${image.height} px, ${ms} ms): ${summary}`);
+    console.log("low geometry", result.low_geometry);
+    console.log("high geometry", result.high_geometry);
+    logPreview(result.svg);
+    console.groupEnd();
+    return `${summary} in ${ms} ms`;
+  }
+
+  @block((self) => ({
+    type: "command",
+    text: (drawing: Strokes, size: number) => `draw ${drawing} at size ${size} cm`,
+    args: [
+      self.makeCustomArgument({ component: DrawingArgument, initial: { value: [] as Strokes, text: "empty drawing" } }),
+      { type: "number" as const, defaultValue: 10 }
+    ]
+  }))
+  async drawDrawing(strokes: Strokes, sizeCm: number) {
+    if (!Array.isArray(strokes) || strokes.length === 0)
+      return console.warn("[doodlebot] the drawing is empty: click the block's drawing argument to draw something");
+    const result = await vectorize(renderStrokes(strokes));
+    await this.drawVectorized(`drawing (${strokes.length} strokes)`, result, sizeCm);
+  }
+
+  /** Scales the vectorizer's output to `sizeCm`, logs what will be drawn, and drives the robot through it */
+  private async drawVectorized(label: string, result: VectorizationResult, sizeCm: number) {
+    const plan = planDrawing(result.low_geometry, sizeCm);
+    console.groupCollapsed(`[doodlebot] drawing ${label} at ${sizeCm} cm: ${plan.length} steps, ${drawnLengthCm(plan).toFixed(1)} cm of ink`);
+    console.log("robot steps", plan);
+    console.log("low geometry", result.low_geometry);
+    logPreview(result.svg);
+    console.groupEnd();
+
+    // stop drawing (after the current motion) when the stop sign is clicked
+    let stopped = false;
+    const onStop = () => stopped = true;
+    this.runtime.on("PROJECT_STOP_ALL", onStop);
+    try {
+      for (const step of plan) {
+        if (stopped) break;
+        await this.runRobotStep(step);
+      }
+    } finally {
+      this.runtime.removeListener("PROJECT_STOP_ALL", onStop);
+      await this.doodlebot?.penCommand("up");
+    }
+  }
+
+  private async runRobotStep(step: RobotStep) {
+    const round = (value: number, digits = 2) => Number(value.toFixed(digits));
+    switch (step.kind) {
+      case "pen":
+        await this.doodlebot?.penCommand(step.down ? "down" : "up");
+        await new Promise(resolve => setTimeout(resolve, DrawingSettings.penSettleMs));
+        break;
+      case "drive": {
+        const steps = Math.round(step.cm * DrawingSettings.stepsPerCm);
+        if (steps === 0) break;
+        const stepsPerSecond = DrawingSettings.stepsPerSecond;
+        await this.doodlebot?.motorCommand("steps", { steps, stepsPerSecond }, { steps, stepsPerSecond });
+        break;
+      }
+      case "turn": {
+        const degrees = round(step.degrees);
+        if (degrees === 0) break;
+        await this.doodlebot?.motorCommand("arc", round(step.radiusCm / 2.54, 3), degrees);
+        break;
+      }
+    }
+  }
+
+  /** Rasterizes and vectorizes a costume of the sprite running the block (or the selected sprite) */
+  private async vectorizeCostumeNamed(costumeName: string, utility: BlockUtilityWithID) {
+    const targetID = utility.target?.id ?? this.runtime._editingTarget?.id;
+    const costume = this.getCostumes(targetID).find(({ name }) => name === costumeName);
+    if (!costume) return undefined;
+
+    const start = performance.now();
+    const image = await rasterize(costume.asset.data, costume.asset.dataFormat, costume.size);
+    const result = await vectorize(image);
+    return { result, image, ms: Math.round(performance.now() - start) };
   }
 
   @block({
