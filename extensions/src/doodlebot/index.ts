@@ -63,6 +63,8 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
   INTERVAL = 16;
   DIMENSIONS = [480, 360];
 
+  lastError = 0;
+
   soundDictionary: {} | { string: string[] };
   costumeDictionary: {} | { string: string[] };
 
@@ -387,6 +389,266 @@ export default class DoodlebotBlocks extends extension(details, "ui", "customArg
     }
     return `${JSON.stringify(reading[axis])} ${units[sensor]}`;
   }
+
+  @block({
+    type: "command",
+    text: `calibrate`,
+  })
+  async calibrateSensor() {
+    await this.doodlebot?.sendBLECommand("m", "c");
+  }
+
+  @block({
+    type: "reporter",
+    text: `get line reading`,
+  })
+  async startLineFollowing() {
+    const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+  
+    console.log("▶️ Starting line following with averaging...");
+  
+    while (true) {
+      const readings: { left: number; center: number; right: number }[] = [];
+  
+      // Collect 5 readings, spaced 50ms apart
+      for (let i = 0; i < 1; i++) {
+        const sensorValues = await this.doodlebot.getSensorReading("line");
+        if (sensorValues) {
+          readings.push({
+            left: sensorValues[0],
+            center: sensorValues[1],
+            right: sensorValues[2],
+          });
+        }
+       await sleep(10);
+        
+      }
+  
+      // Compute averages (if we got any readings)
+      if (readings.length > 0) {
+        const avg = readings.reduce(
+          (acc, r) => ({
+            left: acc.left + r.left,
+            center: acc.center + r.center,
+            right: acc.right + r.right,
+          }),
+          { left: 0, center: 0, right: 0 }
+        );
+  
+        const averaged = {
+          left: avg.left / readings.length,
+          center: avg.center / readings.length,
+          right: avg.right / readings.length,
+        };
+  
+        console.log("Averaged sensor:", averaged);
+  
+        // Follow the line with smoothed values
+        this.followLineArray(averaged);
+        await sleep(500);
+      }
+    }
+  }
+  
+
+  // helper clamp
+clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+
+async followLineArray(sensor: { left: number; center: number; right: number }) {
+  if (this.lastError === undefined) this.lastError = 0;
+
+  // The constants below can be tuned for different performance
+  const Kp = 1.1;
+  const baseSpeed = 300;
+  const maxSpeed = 1000;
+  const minSpeed = 0;
+
+  // Step 1: Normalize sensor values to 0 (white) to 1 (black)
+  const rawToLineStrength = (raw: number) => this.clamp(raw / 1000, 0, 1);
+  const leftLine = rawToLineStrength(sensor.left);
+  const centerLine = rawToLineStrength(sensor.center);
+  const rightLine = rawToLineStrength(sensor.right);
+
+  // Step 2: If the robot is doing good ENOUGH (mostly on the black line), just go straight
+  if (leftLine > 0.8 && centerLine > 0.8 && rightLine > 0.8) {
+    const leftSpeed = baseSpeed;
+    const rightSpeed = baseSpeed;
+
+    this.doodlebot.sendBLECommand(command.motor, 1000, 1000, Math.round(leftSpeed), Math.round(rightSpeed));
+
+    this.lastError = 0;
+    console.log("✅ Centered on line");
+    return;
+  }
+
+  // Step 3: Determine if the robot is on the left or the right side of the line
+  const sideDiff = leftLine - rightLine;
+  const sign = Math.sign(sideDiff) || Math.sign(this.lastError) || 1;
+
+  // Step 4: Determine how far off the line the robot is -- the sum of the values should be as close to 3 (1+1+1) as possible
+  const presence = leftLine + centerLine + rightLine;
+  const magnitude = 1 - this.clamp(presence / 3, 0, 1);
+
+  // Step 5: Calculate the amount we need to adjust the motor speeds by, and clamp speeds to min/max
+  const error = sign * magnitude;
+  const correction = Kp * error;
+
+  let leftSpeed = baseSpeed - correction * baseSpeed;
+  let rightSpeed = baseSpeed + correction * baseSpeed;
+
+  leftSpeed = this.clamp(leftSpeed, minSpeed, maxSpeed);
+  rightSpeed = this.clamp(rightSpeed, minSpeed, maxSpeed);
+
+  // Step 6: If everything is mostly white (0 presence), the line is probably lost -- turn in the last known direction
+  const lineLost = presence < 0.2;
+  if (lineLost) {
+    const turnDir = this.lastError > 0 ? 1 : -1;
+    leftSpeed = baseSpeed * (turnDir > 0 ? 0.6 : 1.2);
+    rightSpeed = baseSpeed * (turnDir < 0 ? 0.6 : 1.2);
+    console.log(`🚨 Line lost → turning ${turnDir > 0 ? "right" : "left"}`);
+  }
+
+  // Step 7: Send the motor command (no await for continuous control)
+  this.doodlebot.sendBLECommand(command.motor, 1000, 1000, Math.round(leftSpeed), Math.round(rightSpeed));
+
+  // Step 8: Update last error
+  this.lastError = error;
+
+  // Debug output
+  console.log("RAW:", sensor);
+  console.log("Strengths:", {
+    left: leftLine.toFixed(2),
+    center: centerLine.toFixed(2),
+    right: rightLine.toFixed(2),
+  });
+  console.log(
+    "sideDiff:", sideDiff.toFixed(2),
+    "presence:", presence.toFixed(2),
+    "error:", error.toFixed(2),
+    "correction:", correction.toFixed(2)
+  );
+  console.log(`Speeds → L:${leftSpeed.toFixed(0)} R:${rightSpeed.toFixed(0)}\n`);
+}
+
+
+
+
+
+
+
+
+  // async followLineArray(sensor: { left: number; center: number; right: number }) {
+  //   // Initialize lastError if missing
+  //   if (this.lastError === undefined) this.lastError = 0;
+  
+  //   // --- Config ---
+  //   const Kp = 0.9;              // proportional gain (tune this)
+  //   const baseSpeed = 300;      // baseline speed (steps per second)
+  //   const maxSpeed = 800;       // cap motor speeds
+  //   const minSpeed = 0;        // minimum motor speed to keep movement smooth
+  
+  //   // --- Normalize sensor values (0 = white, 1 = black) ---
+  //   const normalize = (v: number) => 1 - v / 1000;
+  //   const leftVal = normalize(sensor.left);
+  //   const centerVal = normalize(sensor.center);
+  //   const rightVal = normalize(sensor.right);
+  
+  //   // --- Compute weighted error (-1 = left, +1 = right) ---
+  //   const numerator = (-1 * leftVal) + (0 * centerVal) + (1 * rightVal);
+  //   const denominator = leftVal + centerVal + rightVal || 1;
+  //   const error = numerator / denominator;
+  
+  //   // --- Compute correction ---
+  //   const correction = Kp * error; // proportional correction term
+  
+  //   // --- Compute motor speeds ---
+  //   let leftSpeed = baseSpeed - correction * baseSpeed;
+  //   let rightSpeed = baseSpeed + correction * baseSpeed;
+  
+  //   // Clamp speeds to avoid too low or too high values
+  //   leftSpeed = Math.max(minSpeed, Math.min(maxSpeed, leftSpeed));
+  //   rightSpeed = Math.max(minSpeed, Math.min(maxSpeed, rightSpeed));
+  
+  //   // --- If line lost (all sensors see white) ---
+  //   if (leftVal > 0.9 && centerVal > 0.9 && rightVal > 0.9) {
+  //     // Line lost — turn toward last known direction
+  //     const turnDir = this.lastError > 0 ? 1 : -1;
+  //     leftSpeed = baseSpeed * (turnDir < 0 ? 0.6 : 1.2);
+  //     rightSpeed = baseSpeed * (turnDir > 0 ? 0.6 : 1.2);
+  //     console.log(`Drive: Line lost → turning ${turnDir > 0 ? "right" : "left"}`);
+  //   }
+  
+  //   // --- Send command (no await for continuous control) ---
+  //   // this.doodlebot?.motorCommand("steps", 
+  //   //   { steps: 1000, stepsPerSecond: leftSpeed },   // left motor
+  //   //   { steps: 1000, stepsPerSecond: rightSpeed }   // right motor
+  //   // );
+  
+  //   // --- Update last error ---
+  //   this.lastError = error;
+  
+  //   console.log("Averaged Drive: Sensors:", { leftVal, centerVal, rightVal });
+  //   console.log("Averaged error", error);
+  //   console.log(`Error: ${error.toFixed(3)}, Correction: ${correction.toFixed(3)}`);
+  //   console.log(`Drive: Speeds → L: ${leftSpeed.toFixed(0)}, R: ${rightSpeed.toFixed(0)}\n`);
+  // }
+  
+
+
+  // async followLineArray(sensor: {left: number, center: number, right: number}) {
+  //   // Initialize lastError if missing
+  //   if (this.lastError === undefined) this.lastError = 0;
+  
+  //   // Config
+  //   const Kp = 1; // proportional gain for pivot correction
+  
+  //   // Normalize sensor values: 0 = white, 1 = black
+  //   const normalize = (v: number) => 1 - v / 1000;
+  //   const leftVal = normalize(sensor.left);
+  //   const centerVal = normalize(sensor.center);
+  //   const rightVal = normalize(sensor.right);
+  
+  //   // Compute weighted error (-1 left, +1 right)
+  //   const numerator = (-1 * leftVal) + (0 * centerVal) + (1 * rightVal);
+  //   const denominator = leftVal + centerVal + rightVal || 1;
+  //   const error = numerator / denominator;
+  //   const correction = Kp * error;
+  
+  //   console.log("Sensors:", sensor);
+  //   console.log("Normalized:", { leftVal, centerVal, rightVal });
+  //   console.log("Error:", error.toFixed(3), "Correction:", correction.toFixed(3));
+  
+  //   // --- Step 1: Drive forward 150 steps ---
+  //   console.log(`Driving forward 150 steps`);
+  //   await this.doodlebot?.motorCommand(
+  //     "steps",
+  //     { steps: 150, stepsPerSecond: 1000 },
+  //     { steps: 150, stepsPerSecond: 1000 } // reverse left wheel
+  //   );
+  
+  //   // --- Step 2: Pivot to correct heading ---
+  //   let pivotAngle = 0;
+  //   if (leftVal < 0.1 && centerVal < 0.1 && rightVal < 0.1) {
+  //     // Line lost → pivot toward last known direction
+  //     const turnDir = this.lastError > 0 ? 1 : -1;
+  //     pivotAngle = 10 * turnDir; // gentle search
+  //     console.log(`Line lost: pivoting ${turnDir > 0 ? "right" : "left"} (${pivotAngle}°)`);
+  //   } else {
+  //     // Normal correction
+  //     pivotAngle = correction * 10; // scale proportional to error
+  //     console.log(`Pivoting correction: ${pivotAngle.toFixed(2)}°`);
+  //   }
+  
+  //   // Turn in place
+  //   await this.doodlebot.motorCommand("arc", 0, pivotAngle);
+  
+  //   // Update error
+  //   this.lastError = error;
+  //   console.log("Updated lastError:", this.lastError.toFixed(3), "\n");
+  // }
+  
+  
+  
 
 
 

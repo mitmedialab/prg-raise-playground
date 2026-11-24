@@ -50,7 +50,7 @@ export const sensor = {
     accelerometer: "x",
     gyroscope: "g",
     light: "l",
-    line: "l"
+    line: "l",
 } as const;
 
 export const units = {

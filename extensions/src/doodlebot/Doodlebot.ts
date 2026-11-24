@@ -19,7 +19,7 @@ export type MotorStepRequest = {
 export type Bumper = { front: number, back: number };
 export type Vector3D = { x: number, y: number, z: number };
 export type Color = { red: number, green: number, blue: number, alpha: number };
-export type SensorReading = number | Vector3D | Bumper | Color;
+export type SensorReading = number | Vector3D | Bumper | Color | number[];
 export type SensorData = Doodlebot["sensorData"];
 
 type MaybePromise<T> = undefined | Promise<T>;
@@ -186,7 +186,7 @@ export default class Doodlebot {
         magnometer: false,
         accelerometer: false,
         light: false,
-        line: false,
+        line: false
     };
 
     private audioSocket: WebSocket;
