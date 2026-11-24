@@ -65,6 +65,7 @@ export const units = {
     accelerometer: "m/s",
     gyroscope: "radians/s",
     light: "lux",
+    line: ""
 }
 
 export type SensorKey = keyof typeof sensor;
