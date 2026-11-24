@@ -937,6 +937,35 @@ async followLineArray(sensor: { left: number; center: number; right: number }) {
     await this.doodlebot?.sendBLECommand("m", "c");
   }
 
+  @block({
+    type: "Boolean",
+    text: (threshold) => `is black line detected ${threshold}`,
+    arg: {
+      type: "number",
+      defaultValue: 700
+    }
+  })
+  async blackLineDetected1(threshold: number) {
+    const sensorReading = this.doodlebot?.getSensorReadingSync("line");
+    if (sensorReading[0] > threshold && sensorReading[1] > threshold && sensorReading[2] > threshold) {
+      return true;
+    }
+    return false;
+  }
+
+
+  @block({
+    type: "Boolean",
+    text: `is white line detected?`,
+  })
+  async whiteLineDetected() {
+    const sensorReading = this.doodlebot?.getSensorReadingSync("line");
+    if (sensorReading[0] < 200 && sensorReading[1] < 200 && sensorReading[2] < 200) {
+      return true;
+    }
+    return false;
+  }
+
 
   // @block({
   //   type: "reporter",
